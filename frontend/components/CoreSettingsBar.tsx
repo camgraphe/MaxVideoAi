@@ -7,6 +7,7 @@ import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
+import { formatResolutionLabel } from '@/lib/resolution-labels';
 
 interface CoreSettingsBarProps {
   engine: EngineCaps;
@@ -186,7 +187,11 @@ export function CoreSettingsBar({
       '4k': `4K ${resolutionCopy.ultraHd}`,
       auto: resolutionCopy.auto,
     };
+    const formattedResolution = formatResolutionLabel(engine.id, optionKey);
     let label = baseMap[optionKey] ?? optionKey;
+    if (formattedResolution !== optionKey) {
+      label = formattedResolution;
+    }
     if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
       label = `${label} ${resolutionCopy.proSuffix}`;
     }

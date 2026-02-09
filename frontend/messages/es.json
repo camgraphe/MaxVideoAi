@@ -850,7 +850,7 @@
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
-        "description": "Sincronización labial cinematográfica con salida 1080p y control de Imagen→Video para equipos premium.",
+        "description": "Sincronización labial cinematográfica con salida 1792×1024 y control de imagen→video para equipos premium.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Pro"
       },
@@ -902,7 +902,7 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-    "title": "Modelos de video IA: precios y límites | MaxVideoAI",
+      "title": "Modelos de video IA: precios y límites | MaxVideoAI",
       "description": "Compara modelos de video IA con precios en vivo y límites reales, luego elige 2 motores para una página lado a lado con specs, prompts y ejemplos clonables."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
@@ -2056,7 +2056,7 @@
           "sora-2-pro": {
             "description": "Sora 2 Pro desbloquea resoluciones mayores, diálogo sincronizado y control imagen→video para producciones premium.",
             "badges": [
-              "1080p",
+              "1792×1024",
               "Audio nativo",
               "Lip-sync"
             ]

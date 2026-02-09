@@ -16,7 +16,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparer Sora 2 et Sora 2 Pro (1080p) →",
+        "label": "Comparer Sora 2 et Sora 2 Pro (haute résolution) →",
         "href": "/modeles/sora-2-pro"
       }
     ]
@@ -24,7 +24,7 @@
   "custom": {
     "heroDesc1": "Créez des vidéos courtes et cinématographiques avec Sora 2, directement dans le navigateur. MaxVideoAI vous donne un accès instantané au texte‑vers‑vidéo et à l’image‑vers‑vidéo Sora 2, avec un prix transparent à la seconde et un workspace pensé pour tester, prototyper et produire des clips prêts pour les réseaux.",
     "heroDesc2": "Décrivez la scène, choisissez une durée (4, 8 ou 12 secondes), sélectionnez 16:9 ou 9:16, et laissez Sora 2 générer des plans prêts pour vos pubs, contenus ou missions clients.",
-    "secondaryCta": "Comparer Sora 2 et Sora 2 Pro (1080p) →",
+    "secondaryCta": "Comparer Sora 2 et Sora 2 Pro (haute résolution) →",
     "whyTitle": "Pourquoi Sora 2 est puissant dans MaxVideoAI :",
     "heroHighlights": [
       "Texte → Vidéo et Image → Vidéo au même endroit",
@@ -60,7 +60,7 @@
         "items": [
           "Durées : 4 s, 8 s, 12 s (au choix)",
           "Résolution : 720p (1280×720)",
-          "Besoin de 1080p ? Passez à Sora 2 Pro dans la même interface."
+          "Besoin de haute résolution ? Passez à Sora 2 Pro dans la même interface."
         ]
       },
       {
@@ -162,7 +162,7 @@
       "Idéal pour du UGC premium ou des inserts ciné"
     ],
     "boundaries": [
-      "Sortie 720p (pas 1080p) – Sora 2 Pro gère le 1080p.",
+      "Sortie 720p — Sora 2 Pro couvre la haute résolution (jusqu’à 1792×1024).",
       "Clips de 4–12 s : assemblez plusieurs plans pour plus long.",
       "Pas d’entrée vidéo : on part du texte ou d’une image.",
       "Pas de seed : itérez en raffinant le prompt.",
@@ -184,10 +184,10 @@
     "comparisonTitle": "Sora 2 vs Sora 2 Pro – résumé rapide",
     "comparisonPoints": [
       "Sora 2 : machine à idées 720p rapide.",
-      "Sora 2 Pro : plus de contrôle et 1080p.",
+      "Sora 2 Pro : plus de contrôle et haute résolution.",
       "Storyboard avec Sora 2, finalisez en Sora 2 Pro pour plus de qualité et d’audio."
     ],
-    "comparisonCta": "Commencez avec Sora 2, passez à Sora 2 Pro pour le 1080p →",
+    "comparisonCta": "Commencez avec Sora 2, passez à Sora 2 Pro pour la haute résolution →",
     "faqTitle": "FAQ – Sora 2 dans MaxVideoAI",
     "faqs": [
       {
@@ -196,7 +196,7 @@
       },
       {
         "q": "Sora 2 génère-t-il du 1080p ?",
-        "a": "Cette version sort du 720p. Pour du 1080p, utilisez Sora 2 Pro."
+        "a": "Cette version sort du 720p. Pour la haute résolution (jusqu’à 1792×1024), utilisez Sora 2 Pro."
       },
       {
         "q": "Sora 2 accepte-t-il l’image→vidéo ?",

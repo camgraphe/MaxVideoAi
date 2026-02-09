@@ -83,7 +83,7 @@
     { "q": "Quel style de prompt marche le mieux ?", "a": "Prompts courts centrés motion : sujet, décor, caméra, physique; une idée par clip." },
     { "q": "Supporte-t-il le vertical ?", "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI." },
     { "q": "Supporte-t-il l’audio ?", "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio." },
-    { "q": "Et si j’ai besoin de 1080p ?", "a": "Prototypage en 512p/768p, puis upscale ou relance en 1080p (Veo/Kling/Wan/Sora 2 Pro)." }
+    { "q": "Et si j’ai besoin de 1080p ?", "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)." }
   ],
   "custom": {
     "heroDesc1": "Générez des drafts rapides avec physique en 512p/768p depuis texte ou une image, frame final optionnel pour verrouiller la fin.",
@@ -250,7 +250,7 @@
       { "q": "Quel style de prompt marche le mieux ?", "a": "Prompts courts orientés motion : sujet, décor, caméra, physique; une idée par clip." },
       { "q": "Peut-il faire du vertical ?", "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI." },
       { "q": "Supporte-t-il l’audio ?", "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio." },
-      { "q": "Et si j’ai besoin de 1080p ?", "a": "Prototypage en 512p/768p, puis upscale ou relance en 1080p (Veo/Kling/Wan/Sora 2 Pro)." }
+      { "q": "Et si j’ai besoin de 1080p ?", "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)." }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et sorties dans le catalogue MaxVideoAI.",

@@ -766,7 +766,7 @@
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
-        "description": "Cinematic lip-sync with 1080p output and image-to-video control for premium teams.",
+        "description": "Cinematic lip-sync with 1792×1024 output and image-to-video control for premium teams.",
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Pro"
       },
@@ -818,7 +818,7 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-    "title": "AI Video Models: Pricing & Limits | MaxVideoAI",
+      "title": "AI Video Models: Pricing & Limits | MaxVideoAI",
       "description": "Compare AI video models with live pricing and real limits, then select two engines to open a side-by-side page with specs, prompts, and cloneable examples."
     },
     "note": "",
@@ -2059,7 +2059,7 @@
           "sora-2-pro": {
             "description": "Sora 2 Pro unlocks higher resolutions, synced dialogue, and image-to-video control for top-tier productions.",
             "badges": [
-              "1080p",
+              "1792×1024",
               "Audio native",
               "Lip-sync"
             ]

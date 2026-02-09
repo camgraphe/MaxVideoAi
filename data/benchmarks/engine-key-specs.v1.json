@@ -44,7 +44,9 @@
         "https://maxvideoai.com/models/sora-2-pro",
         "https://openai.com/index/sora-2-pro/",
         "https://openai.com/index/launching-sora-responsibly/",
-        "https://fal.ai/models/fal-ai/sora/v2.0/pro/text-to-video/api"
+        "https://fal.ai/models/fal-ai/sora/v2.0/pro/text-to-video/api",
+        "https://platform.openai.com/docs/models/sora-2-pro",
+        "https://cookbook.openai.com/examples/sora/sora2_prompting_guide"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
@@ -53,7 +55,7 @@
         "firstLastFrame": "Not supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Not supported",
-        "maxResolution": "1080p (1920×1080) or 720p",
+        "maxResolution": "1792×1024",
         "maxDuration": "12s",
         "aspectRatios": [
           "16:9",

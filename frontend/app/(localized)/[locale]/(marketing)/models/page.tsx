@@ -123,11 +123,24 @@ function resolveSupported(value: unknown) {
 function extractMaxResolution(value?: string | null, fallback?: string[]) {
   const candidates = [value ?? '', ...(fallback ?? [])];
   let explicitMax = 0;
+  let explicitLabel: string | null = null;
   let fallbackMax = 0;
   candidates.forEach((entry) => {
     const normalized = entry.toLowerCase();
     if (normalized.includes('4k')) {
       explicitMax = Math.max(explicitMax, 2160);
+      if (!explicitLabel) explicitLabel = '4K';
+      return;
+    }
+    const dimensionMatch = entry.trim().match(/^(\d{3,4})\s*[x×]\s*(\d{3,4})$/);
+    if (dimensionMatch) {
+      const width = Number(dimensionMatch[1]);
+      const height = Number(dimensionMatch[2]);
+      const max = Math.max(width, height);
+      if (!Number.isNaN(max) && max > explicitMax) {
+        explicitMax = max;
+        explicitLabel = `${dimensionMatch[1]}×${dimensionMatch[2]}`;
+      }
       return;
     }
     const pMatches = normalized.match(/(\d{3,4})p/g) ?? [];
@@ -146,6 +159,7 @@ function extractMaxResolution(value?: string | null, fallback?: string[]) {
   });
   const max = explicitMax || fallbackMax;
   if (!max) return { label: 'Data pending', value: null };
+  if (explicitLabel) return { label: explicitLabel, value: max };
   return { label: `${max}p`, value: max };
 }
 

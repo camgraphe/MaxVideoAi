@@ -652,9 +652,9 @@ const SORA_2_ENGINE: EngineCaps = {
   pricingDetails: {
     currency: 'USD',
     perSecondCents: {
-      default: 12,
+      default: 10,
       byResolution: {
-        '720p': 12,
+        '720p': 10,
       },
     },
   },

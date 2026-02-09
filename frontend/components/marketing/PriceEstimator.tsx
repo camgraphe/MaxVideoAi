@@ -10,6 +10,7 @@ import { getPartnerByEngineId } from '@/lib/brand-partners';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
+import { formatResolutionLabel } from '@/lib/resolution-labels';
 import { Button } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
@@ -263,17 +264,18 @@ function buildEngineOption(
       .map((resolution) => {
         const rule = pricingRules ? selectPricingRule(pricingRules, pricingEngineId, resolution) : null;
         const platformMultiplier = 1 + (rule?.marginPercent ?? defaultMarginPct);
+        const displayResolution = formatResolutionLabel(entry.id, resolution);
         if (definition) {
           const multiplier =
             definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
           const rate = (definition.baseUnitPriceCents * multiplier) / 100;
           if (!rate) return null;
-          return { value: resolution, label: resolution.toUpperCase(), rate: rate * platformMultiplier };
+          return { value: resolution, label: displayResolution.toUpperCase(), rate: rate * platformMultiplier };
         }
         const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
         const rate = centsToDollars(cents) ?? perSecondDefault;
         if (!rate) return null;
-        return { value: resolution, label: resolution.toUpperCase(), rate: rate * platformMultiplier };
+        return { value: resolution, label: displayResolution.toUpperCase(), rate: rate * platformMultiplier };
       })
       .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
 

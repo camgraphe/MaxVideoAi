@@ -137,7 +137,7 @@
     },
     {
       "q": "What if I need 1080p?",
-      "a": "Use Hailuo 02 for drafts at 512p/768p, then upscale or rerun the prompt in 1080p engines (Veo, Kling, Wan, Sora 2 Pro)."
+      "a": "Use Hailuo 02 for drafts at 512p/768p, then upscale or rerun the prompt in higher-resolution engines (Veo, Kling, Wan, Sora 2 Pro)."
     }
   ],
   "custom": {
@@ -306,13 +306,13 @@
       },
       {
         "q": "What if I need 1080p?",
-        "a": "Draft in Hailuo 02 (512p/768p), then upscale or rerun in 1080p engines like Veo/Kling/Wan/Sora 2 Pro."
+        "a": "Draft in Hailuo 02 (512p/768p), then upscale or rerun in higher-resolution engines like Veo/Kling/Wan/Sora 2 Pro."
       }
     ],
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare pricing, latency, and output options across MaxVideoAI.",
     "finalPara1": "MiniMax Hailuo 02 is your fast, physics-savvy sketch engine for testing motion and transitions cheaply.",
-    "finalPara2": "Use it to explore ideas, then promote winners to higher-end models for audio and 1080p finals.",
+    "finalPara2": "Use it to explore ideas, then promote winners to higher-end models for audio and high-res finals.",
     "finalButton": "Open Generate",
     "promptingTitle": "How to Write a Great Hailuo 02 Prompt",
     "promptingIntro": "Hailuo performs best with clear subject/action and a grounded environment.",

@@ -16,6 +16,7 @@ import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { formatResolutionLabel } from '@/lib/resolution-labels';
 import type { EngineCaps } from '@/types/engines';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
@@ -277,7 +278,7 @@ type KeySpecKey =
   | 'lipSync'
   | 'cameraMotionControls'
   | 'watermark';
-type KeySpecRow = { key: KeySpecKey; label: string; value: string };
+type KeySpecRow = { id: string; key: KeySpecKey; label: string; value: string; valueLines?: string[] };
 type KeySpecValues = Record<KeySpecKey, string>;
 
 type PromptingTabId = 'quick' | 'structured' | 'pro' | 'storyboard';
@@ -705,9 +706,9 @@ function formatCurrency(locale: AppLocale, currency: string, amount: number) {
   }).format(amount);
 }
 
-function formatPricingLine(locale: AppLocale, amountLabel: string, resolution: string) {
+function formatPricingLine(locale: AppLocale, amountLabel: string, resolution: string, engineId: string) {
   const spacer = locale === 'en' ? 'at' : 'en';
-  return `${amountLabel}/s ${spacer} ${resolution}`;
+  return `${amountLabel}/s ${spacer} ${formatResolutionLabel(engineId, resolution)}`;
 }
 
 function selectPricingResolutions(resolutions: string[]): string[] {
@@ -722,6 +723,139 @@ function selectPricingResolutions(resolutions: string[]): string[] {
     if (!ordered.includes(value)) ordered.push(value);
   });
   return ordered.slice(0, 3);
+}
+
+function formatPerSecondLabel(locale: AppLocale, currency: string, perSecond: number): string {
+  return `${formatPerSecond(locale, currency, perSecond)}/s`;
+}
+
+function resolvePricingResolutions(engineCaps: EngineCaps): string[] {
+  const resolutions = (engineCaps.resolutions ?? []).filter((value) => value && value !== 'auto');
+  if (resolutions.length) return Array.from(new Set(resolutions));
+  const fallback = resolveDefaultResolution(engineCaps);
+  return fallback ? [fallback] : [];
+}
+
+async function computePerSecondValue(
+  engineCaps: EngineCaps,
+  locale: AppLocale,
+  resolution: string,
+  addons?: Record<string, boolean>
+): Promise<{ label: string; perSecond: number } | null> {
+  const durationSec = selectQuickDurations(engineCaps)[0] ?? 5;
+  try {
+    const snapshot = await computePricingSnapshot({
+      engine: engineCaps,
+      durationSec,
+      resolution,
+      membershipTier: 'member',
+      ...(addons ? { addons } : {}),
+    });
+    const seconds = typeof snapshot.base.seconds === 'number' ? snapshot.base.seconds : durationSec;
+    if (!seconds) return null;
+    const perSecond = snapshot.totalCents / seconds / 100;
+    const currency = snapshot.currency ?? 'USD';
+    return { label: formatPerSecondLabel(locale, currency, perSecond), perSecond };
+  } catch {
+    return null;
+  }
+}
+
+async function buildPricePerSecondRows(engineCaps: EngineCaps, locale: AppLocale): Promise<KeySpecRow[]> {
+  const resolutions = resolvePricingResolutions(engineCaps);
+  if (!resolutions.length) return [];
+
+  const hasAudioOff = Boolean(engineCaps.pricingDetails?.addons?.audio_off);
+  const rows: KeySpecRow[] = [];
+  const displayOn = new Map<string, string>();
+  const displayOff = new Map<string, string>();
+
+  for (const resolution of resolutions) {
+    const onValue = await computePerSecondValue(engineCaps, locale, resolution);
+    if (onValue) {
+      displayOn.set(resolution, onValue.label);
+    }
+    if (hasAudioOff) {
+      const offValue = await computePerSecondValue(engineCaps, locale, resolution, { audio_off: true });
+      if (offValue) {
+        displayOff.set(resolution, offValue.label);
+      }
+    }
+  }
+
+  if (!displayOn.size) return [];
+
+  const onValues = Array.from(displayOn.values());
+  const onSame = new Set(onValues).size === 1;
+  const offValues = Array.from(displayOff.values());
+  const offSame = offValues.length ? new Set(offValues).size === 1 : false;
+
+  if (hasAudioOff && displayOff.size === displayOn.size) {
+    const audioDiffers = Array.from(displayOn.entries()).some(([resolution, value]) => displayOff.get(resolution) !== value);
+    if (audioDiffers && onSame && offSame) {
+      const onLabel = onValues[0];
+      const offLabel = offValues[0];
+      rows.push({
+        id: 'pricePerSecond',
+        key: 'pricePerSecond',
+        label: 'Price / second',
+        value: `Audio on ${onLabel} · Audio off ${offLabel}`,
+      });
+      return rows;
+    }
+
+    if (audioDiffers) {
+      const lines = resolutions
+        .map((resolution) => {
+          const onLabel = displayOn.get(resolution);
+          const offLabel = displayOff.get(resolution);
+          if (!onLabel || !offLabel) return null;
+          const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
+          return `${displayResolution}: Audio on ${onLabel} · Audio off ${offLabel}`;
+        })
+        .filter((line): line is string => Boolean(line));
+      if (lines.length) {
+        rows.push({
+          id: 'pricePerSecond',
+          key: 'pricePerSecond',
+          label: 'Price / second',
+          value: lines[0],
+          valueLines: lines,
+        });
+        return rows;
+      }
+    }
+  }
+
+  if (onSame) {
+    rows.push({
+      id: 'pricePerSecond',
+      key: 'pricePerSecond',
+      label: 'Price / second',
+      value: onValues[0],
+    });
+    return rows;
+  }
+
+  const lines = resolutions
+    .map((resolution) => {
+      const label = displayOn.get(resolution);
+      const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
+      return label ? `${displayResolution} ${label}` : null;
+    })
+    .filter((line): line is string => Boolean(line));
+
+  if (lines.length) {
+    rows.push({
+      id: 'pricePerSecond',
+      key: 'pricePerSecond',
+      label: 'Price / second',
+      value: lines[0],
+      valueLines: lines,
+    });
+  }
+
+  return rows;
 }
 
 function parseDurationValue(raw: number | string | null | undefined): number | null {
@@ -804,7 +938,7 @@ async function buildPricingItems(engine: EngineCaps, locale: AppLocale): Promise
       const seconds = typeof snapshot.base.seconds === 'number' ? snapshot.base.seconds : requestedDuration;
       const perSecond = seconds > 0 ? snapshot.totalCents / seconds / 100 : snapshot.totalCents / 100;
       const amountLabel = formatPerSecond(locale, snapshot.currency ?? 'USD', perSecond);
-      items.push(formatPricingLine(locale, amountLabel, resolution));
+      items.push(formatPricingLine(locale, amountLabel, resolution, engine.id));
     } catch {
       // ignore pricing failures for marketing surface
     }
@@ -1958,17 +2092,31 @@ async function renderSoraModelPage({
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
   const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
   const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, pricePerSecondLabel);
-  const keySpecDefs = showPricePerSecondInSpecs
-    ? KEY_SPEC_ROW_DEFS
-    : KEY_SPEC_ROW_DEFS.filter((row) => row.key !== 'pricePerSecond');
+  const priceRows = showPricePerSecondInSpecs ? await buildPricePerSecondRows(pricingEngine, locale) : [];
+  const keySpecDefs = KEY_SPEC_ROW_DEFS.filter((row) => row.key !== 'pricePerSecond');
   const keySpecRows: KeySpecRow[] = keySpecValues
-    ? keySpecDefs
-        .map(({ key, label }) => ({
-          key,
-          label,
-          value: key === 'maxResolution' ? normalizeMaxResolution(keySpecValues[key]) : keySpecValues[key],
-        }))
-        .filter((row) => (row.key === 'pricePerSecond' ? !isUnsupported(row.value) : !isPending(row.value) && !isUnsupported(row.value)))
+    ? [
+        ...(priceRows.length
+          ? priceRows
+          : keySpecValues.pricePerSecond && !isUnsupported(keySpecValues.pricePerSecond)
+            ? [
+                {
+                  id: 'pricePerSecond',
+                  key: 'pricePerSecond',
+                  label: 'Price / second',
+                  value: keySpecValues.pricePerSecond,
+                },
+              ]
+            : []),
+        ...keySpecDefs
+          .map(({ key, label }) => ({
+            id: key,
+            key,
+            label,
+            value: key === 'maxResolution' ? normalizeMaxResolution(keySpecValues[key]) : keySpecValues[key],
+          }))
+          .filter((row) => !isPending(row.value) && !isUnsupported(row.value)),
+      ]
     : [];
 
   return (
@@ -2531,7 +2679,7 @@ function Sora2PageLayout({
               <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-3 gap-y-1.5 border-t border-hairline/70 pt-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {keySpecRows.map((row, index) => (
                   <div
-                    key={row.key}
+                    key={row.id}
                     className={`flex items-start gap-2 border-hairline/70 py-1.5 pr-1 ${
                       index < keySpecRows.length - 1 ? 'border-b' : ''
                     }`}
@@ -2542,7 +2690,13 @@ function Sora2PageLayout({
                         {row.label}
                       </span>
                       <span className="text-[13px] font-semibold leading-snug text-text-primary">
-                        {isSupported(row.value) ? (
+                        {row.valueLines?.length ? (
+                          <span className="flex flex-col gap-1">
+                            {row.valueLines.map((line) => (
+                              <span key={line}>{line}</span>
+                            ))}
+                          </span>
+                        ) : isSupported(row.value) ? (
                           <span className="inline-flex items-center gap-1 text-emerald-600">
                             <UIIcon icon={Check} size={14} className="text-emerald-600" />
                             <span className="sr-only">Supported</span>

@@ -9,6 +9,7 @@ import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { formatResolutionLabel } from '@/lib/resolution-labels';
 
 interface Props {
   engine: EngineCaps;
@@ -407,7 +408,11 @@ export function SettingsControls({
                     '4k': `4K ${resolutionCopy.ultraHd}`,
                     auto: resolutionCopy.auto,
                   };
+                  const formattedResolution = formatResolutionLabel(engine.id, optionKey);
                   let label = baseMap[optionKey] ?? optionKey;
+                  if (formattedResolution !== optionKey) {
+                    label = formattedResolution;
+                  }
                   if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
                     label = `${label} ${resolutionCopy.proSuffix}`;
                   }

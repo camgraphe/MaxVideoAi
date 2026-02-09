@@ -11,6 +11,7 @@ import type { FalEngineEntry } from '@/config/falEngines';
 import type { Mode } from '@/types/engines';
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { getExamplesHref } from '@/lib/examples-links';
+import { formatResolutionList } from '@/lib/resolution-labels';
 
 type CompareCopy = {
   title?: string;
@@ -299,7 +300,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
                 <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
                   <span>Modes: {modes}</span>
                   <span>
-                    Max {engine.engine.maxDurationSec}s / Res {engine.engine.resolutions.join(' / ')}
+                    Max {engine.engine.maxDurationSec}s / Res {formatResolutionList(engine.engine.id, engine.engine.resolutions).join(' / ')}
                   </span>
                 </div>
               </div>

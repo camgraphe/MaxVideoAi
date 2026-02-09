@@ -22,6 +22,7 @@ import { Link } from '@/i18n/navigation';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { getExamplesHref } from '@/lib/examples-links';
+import { formatResolutionList } from '@/lib/resolution-labels';
 
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
@@ -1114,7 +1115,7 @@ function BrowseEnginesModal({
                           .join(' / ')}
                       </span>
                       <span>
-                        Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}
+                        Max {engine.maxDurationSec}s / Res {formatResolutionList(engine.id, engine.resolutions).join(' / ')}
                       </span>
                     </div>
                   </div>
