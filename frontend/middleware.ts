@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { isbot as detectBot } from 'isbot';
 import { routing } from '@/i18n/routing';
-import { defaultLocale, localePathnames, locales } from '@/i18n/locales';
+import { defaultLocale, localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
 import { updateSession } from '@/lib/supabase-ssr';
@@ -156,10 +156,36 @@ locales.forEach((locale) => {
     PREFIX_TO_LOCALE.set(prefix.toLowerCase(), locale);
   }
 });
+const LOCALE_SEGMENT_TO_LOCALE = new Map<string, (typeof locales)[number]>();
+locales.forEach((locale) => {
+  LOCALE_SEGMENT_TO_LOCALE.set(locale.toLowerCase(), locale);
+  const prefix = localePathnames[locale];
+  if (prefix) {
+    LOCALE_SEGMENT_TO_LOCALE.set(prefix.toLowerCase(), locale);
+  }
+});
 const LOCALIZED_PREFIX_SET = new Set(LOCALIZED_PREFIXES.map((value) => value.toLowerCase()));
 const LOCALE_PREFIX_REGEX = LOCALIZED_PREFIXES.length
   ? new RegExp(`^/(${LOCALIZED_PREFIXES.join('|')})(/|$)`)
   : null;
+const APP_NOINDEX_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/connect'];
+const ENGLISH_SEGMENT_TO_LOCALIZED = new Map<string, Record<AppLocale, string>>();
+const LOCALIZED_SEGMENT_TO_ENGLISH = new Map<string, string>();
+Object.values(localizedSlugConfig as Record<string, Record<string, string>>).forEach((entry) => {
+  const english = entry.en?.toLowerCase?.() ?? '';
+  if (!english) return;
+  const localized: Record<AppLocale, string> = {
+    en: entry.en,
+    fr: entry.fr ?? entry.en,
+    es: entry.es ?? entry.en,
+  };
+  ENGLISH_SEGMENT_TO_LOCALIZED.set(english, localized);
+  Object.values(entry).forEach((value) => {
+    if (typeof value === 'string' && value.trim().length) {
+      LOCALIZED_SEGMENT_TO_ENGLISH.set(value.toLowerCase(), english);
+    }
+  });
+});
 
 function hasLocalePrefix(pathname: string) {
   if (!LOCALE_PREFIX_REGEX) {
@@ -286,9 +312,14 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(rewriteToNotFound(req, localePrefix), hasLogoutIntentCookie);
   }
 
-  const sanitizedLocalePath = dropDuplicateLocaleSegments(pathname);
+  const sanitizedLocalePath = normalizeLeadingLocaleSegments(pathname);
   if (sanitizedLocalePath) {
     pathname = sanitizedLocalePath;
+  }
+
+  const langRedirect = resolveLangParamRedirect(req, pathname);
+  if (langRedirect) {
+    return finalizeResponse(langRedirect, hasLogoutIntentCookie);
   }
 
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
@@ -310,10 +341,11 @@ export async function middleware(req: NextRequest) {
   pathname = normalizedPathname;
   localeFromPath = extractLocaleFromPathname(pathname);
   const isAdminRoute = pathname.toLowerCase() === '/admin' || pathname.toLowerCase().startsWith('/admin/');
+  const appNoindex = shouldMarkAppNoindex(pathname);
   const trackingNoindex = shouldMarkTrackingNoindex(req, pathname, isAdminRoute);
   const queryCleanup = normalizePublicQueryParams(req, pathname);
   if (queryCleanup) {
-    return finalizeResponse(queryCleanup, hasLogoutIntentCookie, trackingNoindex);
+    return finalizeResponse(queryCleanup, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
   const isMarketingPath = shouldHandleLocale(pathname);
@@ -321,7 +353,7 @@ export async function middleware(req: NextRequest) {
 
   const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
   if (marketingResponse) {
-    return finalizeResponse(marketingResponse, hasLogoutIntentCookie, trackingNoindex);
+    return finalizeResponse(marketingResponse, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
   if (isMarketingPath && !localeFromPath && !isBotRequest && !bypassLocaleRedirect) {
@@ -334,7 +366,12 @@ export async function middleware(req: NextRequest) {
       if (normalizedTarget !== pathname) {
         const redirectUrl = req.nextUrl.clone();
         redirectUrl.pathname = normalizedTarget;
-        return finalizeResponse(NextResponse.redirect(redirectUrl, 307), hasLogoutIntentCookie, trackingNoindex);
+        return finalizeResponse(
+          NextResponse.redirect(redirectUrl, 307),
+          hasLogoutIntentCookie,
+          trackingNoindex,
+          appNoindex
+        );
       }
     }
   }
@@ -385,7 +422,7 @@ export async function middleware(req: NextRequest) {
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
-    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex);
+    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
   if (isAdminRoute) {
@@ -396,7 +433,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (userId) {
-    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex);
+    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
   if (isAdminRoute) {
@@ -406,7 +443,7 @@ export async function middleware(req: NextRequest) {
     unauthorized.headers.set('Pragma', 'no-cache');
     unauthorized.headers.append('Vary', 'Cookie');
     mergeResponseCookies(unauthorized, response);
-    return finalizeResponse(unauthorized, hasLogoutIntentCookie, trackingNoindex);
+    return finalizeResponse(unauthorized, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
   if (hasLogoutIntentCookie) {
@@ -415,7 +452,7 @@ export async function middleware(req: NextRequest) {
     redirectUrl.search = '';
     const logoutResponse = NextResponse.redirect(redirectUrl);
     mergeResponseCookies(logoutResponse, response);
-    return finalizeResponse(logoutResponse, true, trackingNoindex);
+    return finalizeResponse(logoutResponse, true, trackingNoindex, appNoindex);
   }
 
   const redirectUrl = req.nextUrl.clone();
@@ -430,15 +467,15 @@ export async function middleware(req: NextRequest) {
 
   const loginResponse = NextResponse.redirect(redirectUrl);
   mergeResponseCookies(loginResponse, response);
-  return finalizeResponse(loginResponse, false, trackingNoindex);
+  return finalizeResponse(loginResponse, false, trackingNoindex, appNoindex);
 }
 
 export const config = {
   matcher: ['/admin/:path*', '/((?!_next|.*\\..*|api).*)'],
 };
 
-function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean, trackingNoindex = false) {
-  if (trackingNoindex && !res.headers.has('X-Robots-Tag')) {
+function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean, trackingNoindex = false, appNoindex = false) {
+  if ((trackingNoindex || appNoindex) && !res.headers.has('X-Robots-Tag')) {
     res.headers.set('X-Robots-Tag', 'noindex, follow');
   }
   if (clearLogoutIntent) {
@@ -498,29 +535,23 @@ function containsLocalePlaceholder(pathname: string) {
     .some((segment) => PLACEHOLDER_SEGMENTS.has(segment.toLowerCase()));
 }
 
-function dropDuplicateLocaleSegments(pathname: string) {
+function normalizeLeadingLocaleSegments(pathname: string) {
   const segments = pathname.split('/').filter(Boolean);
-  if (!segments.length) {
+  if (segments.length < 2) {
     return null;
   }
-  const normalized: string[] = [];
-  let foundLocale = false;
-  let removed = false;
-  segments.forEach((segment) => {
-    const lower = segment.toLowerCase();
-    if (LOCALIZED_PREFIX_SET.has(lower)) {
-      if (foundLocale) {
-        removed = true;
-        return;
-      }
-      foundLocale = true;
-    }
-    normalized.push(segment);
-  });
-  if (!removed) {
+  const localeRun: AppLocale[] = [];
+  for (const segment of segments) {
+    const locale = resolveLocaleFromSegment(segment);
+    if (!locale) break;
+    localeRun.push(locale);
+  }
+  if (localeRun.length < 2) {
     return null;
   }
-  return normalized.length ? `/${normalized.join('/')}` : '/';
+  const targetLocale = localeRun[localeRun.length - 1];
+  const rest = segments.slice(localeRun.length);
+  return buildPathForLocale(targetLocale, rest);
 }
 
 function normalizePath(pathname: string) {
@@ -533,6 +564,19 @@ function normalizePath(pathname: string) {
     return '/';
   }
   return withoutTrailing.startsWith('/') ? withoutTrailing.toLowerCase() : `/${withoutTrailing.toLowerCase()}`;
+}
+
+function resolveLocaleFromSegment(segment: string): AppLocale | null {
+  if (!segment) return null;
+  return LOCALE_SEGMENT_TO_LOCALE.get(segment.toLowerCase()) ?? null;
+}
+
+function buildPathForLocale(locale: AppLocale, restSegments: string[]): string {
+  const prefix = localePathnames[locale];
+  const prefixPath = prefix ? `/${prefix}` : '';
+  const restPath = restSegments.length ? `/${restSegments.join('/')}` : '';
+  const combined = `${prefixPath}${restPath}` || '/';
+  return combined.replace(/\/{2,}/g, '/') || '/';
 }
 
 function shouldStripQueryParams(pathWithoutLocale: string): boolean {
@@ -570,6 +614,61 @@ function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, isAdminRo
   }
   const { pathWithoutLocale } = splitLocaleFromPath(pathname);
   return shouldStripQueryParams(pathWithoutLocale);
+}
+
+function shouldMarkAppNoindex(pathname: string): boolean {
+  const normalized = pathname.toLowerCase();
+  if (normalized.startsWith('/video/job_')) {
+    return true;
+  }
+  return APP_NOINDEX_PREFIXES.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`));
+}
+
+function stripLegacyEnPrefix(pathname: string): string {
+  if (pathname === '/en') {
+    return '/';
+  }
+  if (pathname.startsWith('/en/')) {
+    return pathname.slice(3) || '/';
+  }
+  return pathname;
+}
+
+function localizePathForLocale(targetLocale: AppLocale, pathWithoutLocale: string): string {
+  const trimmed = stripLegacyEnPrefix(pathWithoutLocale || '/');
+  const normalized = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  if (normalized === '/' || normalized === '') {
+    return buildPathForLocale(targetLocale, []);
+  }
+  const segments = normalized.split('/').filter(Boolean);
+  if (!segments.length) {
+    return buildPathForLocale(targetLocale, []);
+  }
+  const [first, ...rest] = segments;
+  const english = LOCALIZED_SEGMENT_TO_ENGLISH.get(first.toLowerCase()) ?? first;
+  const localizedFirst = ENGLISH_SEGMENT_TO_LOCALIZED.get(english.toLowerCase())?.[targetLocale] ?? english;
+  return buildPathForLocale(targetLocale, [localizedFirst, ...rest]);
+}
+
+function resolveLangParamRedirect(req: NextRequest, pathname: string): NextResponse | null {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return null;
+  }
+  const langRaw = req.nextUrl.searchParams.get('lang');
+  if (!langRaw) {
+    return null;
+  }
+  const lang = langRaw.trim().toLowerCase();
+  if (!LOCALE_SET.has(lang as AppLocale)) {
+    return null;
+  }
+  const targetLocale = lang as AppLocale;
+  const { pathWithoutLocale } = splitLocaleFromPath(pathname);
+  const localizedPath = localizePathForLocale(targetLocale, pathWithoutLocale);
+  const redirectUrl = req.nextUrl.clone();
+  redirectUrl.pathname = localizedPath;
+  redirectUrl.searchParams.delete('lang');
+  return NextResponse.redirect(redirectUrl, 301);
 }
 
 function resolveQueryAllowlist(pathWithoutLocale: string): Set<string> | null {

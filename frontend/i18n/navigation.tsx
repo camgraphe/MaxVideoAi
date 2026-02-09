@@ -10,6 +10,7 @@ import type {
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
+import { applyNofollowRel } from '@/lib/seo/nofollow';
 
 const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/generate', '/login', '/legal'];
 const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z0-9+\-.]*:|\/\/)/i;
@@ -91,6 +92,7 @@ export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedL
   const normalizedHrefLang =
     typeof hrefLang === 'string' && hrefLang.trim().length ? hrefLang : undefined;
   const normalizedHref = normalizeHref(rest.href);
+  const resolvedRel = applyNofollowRel(rel, normalizedHref);
   const normalizedRest = { ...rest, href: normalizedHref };
 
   if (shouldBypassLocalization(normalizedRest.href)) {
@@ -99,7 +101,7 @@ export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedL
         {...(normalizedRest as unknown as NextLinkProps)}
         locale={false}
         className={className}
-        rel={rel}
+        rel={resolvedRel}
         hrefLang={normalizedHrefLang}
       >
         {children}
@@ -115,7 +117,7 @@ export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedL
     <Localized
       {...(normalizedRest as unknown as ComponentProps<typeof LocalizedLink>)}
       className={className}
-      rel={rel}
+      rel={resolvedRel}
       hrefLang={normalizedHrefLang}
     >
       {children}

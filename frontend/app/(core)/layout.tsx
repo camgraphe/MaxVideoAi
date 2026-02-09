@@ -10,6 +10,7 @@ import { SWRFocusResync } from '@/components/swr/SWRFocusResync';
 import { SWRProvider } from '@/components/swr/SWRProvider';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { LocaleSync } from '@/components/i18n/LocaleSync';
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
   process.env.SITE_URL ??
@@ -81,6 +82,7 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
       <ConsentModeBootstrap />
       <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
         <SWRProvider>
+          <LocaleSync />
           <SessionWatchdog />
           <SWRFocusResync />
           {children}

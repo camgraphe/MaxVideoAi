@@ -161,7 +161,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
               'Your repeatable AI video workflow: pick an engine, set the shot, preview price, and generate variants you can reuse.'}
           </p>
           <div className="flex flex-wrap gap-3">
-            <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
+            <ButtonLink href="/app" prefetch={false} size="lg" className="shadow-card" linkComponent={Link}>
               {content.hero?.primaryCta ?? 'Generate now'}
             </ButtonLink>
             <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>
@@ -278,7 +278,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
+              <ButtonLink href="/app" prefetch={false} size="lg" className="shadow-card" linkComponent={Link}>
                 {content.cta?.primaryCta ?? 'Generate now'}
               </ButtonLink>
               <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>

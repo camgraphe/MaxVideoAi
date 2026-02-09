@@ -3980,6 +3980,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </ButtonLink>
         <ButtonLink
           href={launchHref}
+          prefetch={false}
           className="shadow-card"
           linkComponent={Link}
         >

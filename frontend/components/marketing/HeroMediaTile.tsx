@@ -173,6 +173,7 @@ export function HeroMediaTile({
     overlayHref != null ? (
       <Link
         href={overlayHref}
+        prefetch={false}
         onClick={(event) => {
           event.stopPropagation();
         }}

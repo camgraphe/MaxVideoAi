@@ -1032,6 +1032,7 @@ export default async function ModelsPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/app"
+                  prefetch={false}
                   className="inline-flex items-center rounded-full bg-text-primary px-5 py-3 text-xs font-semibold uppercase tracking-micro text-bg transition hover:opacity-90"
                   aria-label="Generate now (opens workspace)"
                 >
