@@ -21,6 +21,29 @@
       }
     ]
   },
+  "faqTitle": "FAQ – Sora 2",
+  "faqs": [
+    {
+      "q": "Is Sora 2 available in Europe / the UK?",
+      "a": "Yes. Use Sora 2 from Europe, the UK and most locations where our service is available—no direct OpenAI invite needed."
+    },
+    {
+      "q": "Can Sora 2 generate 1080p videos?",
+      "a": "This tier outputs 720p. For higher resolution (up to 1792×1024), use Sora 2 Pro."
+    },
+    {
+      "q": "Does Sora 2 support image-to-video?",
+      "a": "Yes. Upload a PNG/JPG/WEBP/GIF/AVIF frame (up to ~50 MB) and Sora 2 will animate it based on your motion-focused prompt."
+    },
+    {
+      "q": "Can I remix or extend existing videos with Sora 2?",
+      "a": "This configuration is for text→video and image→video only. Combine multiple clips for longer edits."
+    },
+    {
+      "q": "How do I keep Sora 2 on-brand?",
+      "a": "Use image references from Nano Banana or your own design system, mention brand colors, and keep mood consistent across prompts."
+    }
+  ],
   "custom": {
     "heroEyebrow": "OpenAI model",
     "heroSupportLine": "Fast, polished clips for ads, UGC-style shots, and storyboards",
@@ -195,29 +218,6 @@
       "Storyboard with Sora 2, then regenerate finals in Sora 2 Pro with high-res (up to 1792×1024) and audio control."
     ],
     "comparisonCta": "Start with Sora 2, move to Sora 2 Pro when you’re ready for higher resolution →",
-    "faqTitle": "FAQ – Sora 2 in MaxVideoAI",
-    "faqs": [
-      {
-        "q": "Is Sora 2 available in Europe / the UK?",
-        "a": "Yes. Use Sora 2 from Europe, the UK and most locations where our service is available—no direct OpenAI invite needed."
-      },
-      {
-        "q": "Can Sora 2 generate 1080p videos?",
-        "a": "This tier outputs 720p. For higher resolution (up to 1792×1024), use Sora 2 Pro."
-      },
-      {
-        "q": "Does Sora 2 support image-to-video?",
-        "a": "Yes. Upload a PNG/JPG/WEBP/GIF/AVIF frame (up to ~50 MB) and Sora 2 will animate it based on your motion-focused prompt."
-      },
-      {
-        "q": "Can I remix or extend existing videos with Sora 2?",
-        "a": "This configuration is for text→video and image→video only. Combine multiple clips for longer edits."
-      },
-      {
-        "q": "How do I keep Sora 2 on-brand?",
-        "a": "Use image references from Nano Banana or your own design system, mention brand colors, and keep mood consistent across prompts."
-      }
-    ],
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare pricing, latency, and output options across other engines available in MaxVideoAI.",
     "relatedItems": [
