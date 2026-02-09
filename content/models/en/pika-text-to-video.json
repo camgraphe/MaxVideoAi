@@ -219,17 +219,6 @@
     "galleryIntro": "Curated clips generated with the same settings you have in MaxVideoAI.",
     "galleryAllCta": "View all Pika 2.2 examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Text-to-Video with Pika 2.2",
-    "promptIntro": "Treat your prompt like a stylized animation brief: one scene, strong style, clear motion and effects.",
-    "promptPatternSteps": [
-      "Subject & style",
-      "Environment (single location)",
-      "Motion (subject/camera/background)",
-      "Effects (glitch, trails, particles, smear frames)",
-      "Framing & duration (5/10 s; aspect ratio)"
-    ],
-    "promptSkeleton": "Stylized [style] animation of [subject] in [environment]. Camera [movement] while [key action] happens over [5/10] seconds, [aspect ratio], with [effects]. No audio.",
-    "promptSkeletonNote": "Keep wording concise and swap style/subject to A/B variants quickly.",
     "imageTitle": "Image-to-Video Flow with Pika 2.2 (+ Nano Banana)",
     "imageIntro": "Lock visual style with a still, then iterate only on motion and effects.",
     "imageFlow": [

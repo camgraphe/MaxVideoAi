@@ -205,17 +205,6 @@
     "galleryIntro": "Clips curés générés avec la même config que vous avez dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Pika 2.2 →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Texte→vidéo avec Pika 2.2",
-    "promptIntro": "Traitez le prompt comme un brief d’animation : une scène, un style fort, mouvement et effets clairs.",
-    "promptPatternSteps": [
-      "Sujet et style",
-      "Environnement (une seule loc.)",
-      "Mouvement (sujet/caméra/fond)",
-      "Effets (glitch, trails, particules, smear)",
-      "Cadrage et durée (5/10 s ; ratio)"
-    ],
-    "promptSkeleton": "Animation stylisée [style] de [sujet] dans [environnement]. Caméra [mouvement] pendant que [action] se passe en [5/10] s, [ratio], avec [effets]. Sans audio.",
-    "promptSkeletonNote": "Gardez un wording concis et changez style/sujet pour A/B rapide.",
     "imageTitle": "Image→vidéo avec Pika 2.2 (+ Nano Banana)",
     "imageIntro": "Verrouillez le style avec un still, puis itérez seulement sur le mouvement et les effets.",
     "imageFlow": [

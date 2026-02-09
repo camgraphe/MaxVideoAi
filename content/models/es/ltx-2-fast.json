@@ -196,17 +196,6 @@
     "galleryIntro": "Renders recientes LTX-2 Fast con audio on/off para clips sociales y pruebas rápidas.",
     "galleryAllCta": "Ver todos los ejemplos LTX-2 Fast →",
     "recreateLabel": "Recrear esta toma →",
-    "promptTitle": "Ideas de prompt LTX-2 Fast",
-    "promptIntro": "Prompt breve pero para imagen y sonido: sujeto/acción, cámara, luz, duración, aspecto, luego una nota de audio clara.",
-    "promptPatternSteps": [
-      "Sujeto + escenario (1–2 beats que se ven y se escuchan)",
-      "Movimiento de cámara y ritmo",
-      "Luz/grade",
-      "Duración & resolución (12–20 s = 1080p/25)",
-      "Audio on/off con ambiente/diálogo/SFX/música, o «mudo»"
-    ],
-    "promptSkeleton": "Toma cinemática de [sujeto] en [entorno], [movimiento de cámara], [luz/estilo], [duración 6–20s], 16:9, audio [on/off] con [nota corta de ambiente/diálogo/SFX/música].",
-    "promptSkeletonNote": "Usa 50 fps en 6–10 s para un movimiento más nítido.",
     "tipsTitle": "Consejos y límites",
     "strengths": [
       "Renders rápidos 6–20 s con audio nativo",

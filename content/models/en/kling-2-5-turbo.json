@@ -222,18 +222,6 @@
     "galleryIntro": "Actual runs from the current Kling route in MaxVideoAI.",
     "galleryAllCta": "View all Kling 2.5 Turbo examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Text-to-Video with Kling 2.5 Turbo",
-    "promptIntro": "Write like a DoP: subject/framing, environment, camera, pacing, look, and negatives.",
-    "promptPatternSteps": [
-      "Subject & framing",
-      "Environment",
-      "Camera move",
-      "Motion & pacing over 5/10 s",
-      "Lighting/look",
-      "Negative prompt"
-    ],
-    "promptSkeleton": "10 second [aspect ratio] cinematic shot of [subject] in [environment]. Camera [movement] while [main action] plays out. Lighting [style], [grade] look. No text, no logos, no extra characters.",
-    "promptSkeletonNote": "Keep it concise; avoid overlong briefs to prevent wandering cameras.",
     "imageTitle": "Image-to-Video Flow with Kling 2.5 Turbo",
     "imageIntro": "Animate one still via Pro Image or Standard tiers.",
     "imageFlow": [

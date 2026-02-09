@@ -183,17 +183,6 @@
     "galleryIntro": "Recent 2K/4K stills and edits crafted for campaign boards and product reveals.",
     "galleryAllCta": "View image examples →",
     "recreateLabel": "Recreate this still →",
-    "promptTitle": "Prompt ideas for Nano Banana Pro",
-    "promptIntro": "Describe subject, lighting, typography, and output intent. Mention 4K when you need it.",
-    "promptPatternSteps": [
-      "Subject + hero focus",
-      "Environment + lighting cues",
-      "Lens/look + finishing details",
-      "Typography or copy requirements",
-      "Resolution + intent (draft vs final)"
-    ],
-    "promptSkeleton": "[Resolution] [subject] in [environment], lit by [lighting], shot on [lens/look], include text \"[copy]\" in [style], final still for [use case].",
-    "promptSkeletonNote": "For edits: \"Remix this still by [change] while keeping [elements] consistent.\"",
     "tipsTitle": "Tips & limits",
     "strengths": [
       "Legible typography and UI elements",

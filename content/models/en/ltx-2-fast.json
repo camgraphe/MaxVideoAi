@@ -191,17 +191,6 @@
     "galleryIntro": "Recent LTX-2 Fast renders with audio on/off for social clips and quick iterations.",
     "galleryAllCta": "View all LTX-2 Fast examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Prompt ideas for LTX-2 Fast",
-    "promptIntro": "Stay concise but write for picture and sound: subject/action, camera, lighting, duration, aspect, then a clear audio note.",
-    "promptPatternSteps": [
-      "Subject + setting (1–2 beats you can see and hear)",
-      "Camera move and pacing",
-      "Lighting/grade and mood",
-      "Duration & resolution (note 12–20s = 1080p/25)",
-      "Audio on/off with ambience/dialogue/SFX/music, or “mute”"
-    ],
-    "promptSkeleton": "Cinematic [subject] in [environment], [camera move], [lighting/style], [duration 6–20s], 16:9, audio [on/off] with [short ambience/dialogue/SFX/music note].",
-    "promptSkeletonNote": "Use 50 fps for 6–10s when you want crisper motion.",
     "tipsTitle": "Tips & limitations",
     "strengths": [
       "Fast 6–20s renders with native audio",

@@ -146,18 +146,6 @@
     "galleryIntro": "Transitions réelles : croquis → rendu final, bureau → rooftop, wireframe UI → UI finale.",
     "galleryAllCta": "Voir tous les exemples Veo 3.1 First/Last →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Comment prompt Veo 3.1 First/Last",
-    "promptIntro": "Dirigez ce qui se passe entre deux images : définissez début, fin, chemin, caméra, rythme et audio.",
-    "promptPatternSteps": [
-      "Décrire le first frame.",
-      "Décrire le last frame.",
-      "Chemin caméra : dolly, orbit, pan, etc.",
-      "Changements intermédiaires : lumière, heure, pose, style.",
-      "Rythme : doux, rapide, dramatique; événements intermédiaires.",
-      "Audio : ambiance/musique/VO courte ou “sans dialogue”."
-    ],
-    "promptSkeleton": "Animer en douceur du first frame au last frame en [durée] secondes et [ratio]. Commencer par [sujet/environnement du first frame], puis [changer/mouvoir/transformer] jusqu’à [sujet/environnement du last frame]. Caméra : [mouvement]. Lumière/style : [description]. Audio : [ambiance/musique/VO courte ou “sans dialogue”].",
-    "promptSkeletonNote": "Focalisez-vous sur le trajet A → B; mentionnez caméra et rythme.",
     "demoTitle": "Démo – “Bureau vers rooftop” (6s, 16:9)",
     "demoPromptLabel": "6s bureau → rooftop",
     "demoPrompt": [

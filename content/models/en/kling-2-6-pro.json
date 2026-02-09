@@ -181,17 +181,6 @@
     "galleryIntro": "Recent Kling 2.6 Pro renders with native audio for dialogue, ambience, and emotional storytelling.",
     "galleryAllCta": "View all Kling 2.6 examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Prompt ideas for Kling 2.6 Pro",
-    "promptIntro": "Stay concise but write for both picture and sound: subject, action, camera, lighting, 5–10s, aspect, then a clear audio note.",
-    "promptPatternSteps": [
-      "Subject & action (1–2 beats you can see and hear)",
-      "Camera move and pacing",
-      "Lighting/grade and mood",
-      "Aspect (16:9/9:16/1:1) and duration 5–10s",
-      "Audio note: short dialogue line + ambience/SFX/music, or “mute”"
-    ],
-    "promptSkeleton": "Cinematic [subject] in [setting], [camera move], [lighting/grade], [duration 5–10s], [aspect], audio [on/off] with [short dialogue line + ambience/SFX/music].",
-    "promptSkeletonNote": "Keep dialogue short and clear; negatives help avoid extra subjects.",
     "tipsTitle": "Tips & limits",
     "strengths": [
       "Native audio for dialogue, ambience, SFX and a light music bed",

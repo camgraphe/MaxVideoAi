@@ -196,17 +196,6 @@
     "galleryIntro": "Rendus récents LTX-2 Fast avec audio on/off pour clips sociaux et tests rapides.",
     "galleryAllCta": "Voir tous les exemples LTX-2 Fast →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Idées de prompts LTX-2 Fast",
-    "promptIntro": "Prompt concis mais pour l’image et le son : sujet/action, caméra, lumière, durée, ratio, puis une note audio claire.",
-    "promptPatternSteps": [
-      "Sujet + décor (1–2 temps visibles et audibles)",
-      "Mouvement de caméra et rythme",
-      "Lumière / grade",
-      "Durée & résolution (12–20 s = 1080p/25)",
-      "Audio on/off avec ambiance/dialogue/SFX/musique, ou « muet »"
-    ],
-    "promptSkeleton": "Plan ciné de [sujet] dans [décor], [mouvement caméra], [lumière/style], [durée 6–20s], 16:9, audio [on/off] avec [note courte ambiance/dialogue/SFX/musique].",
-    "promptSkeletonNote": "Privilégier 50 fps sur 6–10 s pour un mouvement plus net.",
     "tipsTitle": "Conseils & limites",
     "strengths": [
       "Rendus rapides 6–20 s avec audio natif",

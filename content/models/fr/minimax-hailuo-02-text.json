@@ -201,17 +201,6 @@
     "galleryIntro": "Runs texte et image rendus avec la même config que la vôtre.",
     "galleryAllCta": "Voir tous les exemples MiniMax Hailuo 02 →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Texte→vidéo avec MiniMax Hailuo 02",
-    "promptIntro": "Prompts courts centrés motion : sujet, décor, caméra, physique, style, négatif.",
-    "promptPatternSteps": [
-      "Sujet en mouvement",
-      "Environnement & ambiance",
-      "Mouvement caméra",
-      "Physique/mouvement secondaire",
-      "Style + prompt négatif"
-    ],
-    "promptSkeleton": "Clip [durée] [ratio] de [sujet] en mouvement dans [environnement]. Caméra [mouvement]; [mouvement secondaire] réagit. Style : [réaliste/stylisé]. Sans texte/logos/UI.",
-    "promptSkeletonNote": "Une idée par clip; wording concis.",
     "imageTitle": "Image→vidéo avec MiniMax Hailuo 02 (+ frame final)",
     "imageIntro": "Animez boards/renders/concepts rapidement avec frame final optionnel.",
     "imageFlow": [

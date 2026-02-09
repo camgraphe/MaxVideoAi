@@ -213,19 +213,6 @@
     "galleryIntro": "Découvrez des rendus Veo 3.1 générés avec les mêmes réglages que dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Veo 3.1 →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Texte→Vidéo avec Veo 3.1",
-    "promptIntro": "Écrivez le prompt comme une note de réal courte : cinématographie, sujet, action, contexte et style.",
-    "promptPatternSteps": [
-      "Cinématographie et cadrage – moyen, large, macro, tracking, etc.",
-      "Sujet – qui/quoi on voit.",
-      "Action – ce qui se passe en 4–8 s.",
-      "Contexte / environnement – bureau, rue de nuit, studio, salle de classe…",
-      "Style et ambiance – ciné, réaliste, docu ; lumière et grade.",
-      "Indications audio – ambiance, musique, une courte VO ; précisez « sans sous-titres » si vous ne voulez pas de texte à l’écran.",
-      "Format et durée – ex. 8 secondes, 16:9 (ou 9:16 / 1:1)."
-    ],
-    "promptSkeleton": "Plan moyen de [sujet] dans [environnement], [action claire] sur 8 secondes. Caméra [mouvement], 16:9 en 1080p, look ciné avec [lumière et couleur]. Audio : [ambiance] + [musique/VO], sans sous-titres.",
-    "promptSkeletonNote": "Collez ça dans MaxVideoAI, choisissez Veo 3.1, réglez durée/ratio, et vous êtes prêt à lancer.",
     "imageTitle": "Workflow Image→Vidéo avec Veo 3.1 (+ Nano Banana)",
     "imageIntro": "Associez Veo 3.1 à Nano Banana pour verrouiller le style et itérer sur le mouvement.",
     "imageFlow": [

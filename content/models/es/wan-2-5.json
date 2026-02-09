@@ -213,18 +213,6 @@
     "galleryIntro": "Clips generados con la misma config que tienes en MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos Wan 2.5 →",
     "recreateLabel": "Recrear esta toma →",
-    "promptTitle": "Texto→video con Wan 2.5",
-    "promptIntro": "Usa prompts de plano con notas de cámara y audio.",
-    "promptPatternSteps": [
-      "Sujeto y tono",
-      "Entorno",
-      "Lenguaje de cámara",
-      "Timing 5/10 s",
-      "Luz y look",
-      "Audio: ambiente, SFX, música, diálogo corto"
-    ],
-    "promptSkeleton": "[Duración] segundos [relación] plano cinemático de [sujeto] en [entorno]. Cámara [movimiento] mientras [acción]. Luz [estilo], look [grade]. Audio: [ambiente + música/SFX], línea opcional: “[…]”.",
-    "promptSkeletonNote": "Sé conciso; agrega o quita cues de audio según subas pista o no.",
     "imageTitle": "Imagen→video con Wan 2.5",
     "imageIntro": "Anima un solo still en un beat con audio.",
     "imageFlow": [

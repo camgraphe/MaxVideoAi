@@ -137,17 +137,6 @@
     "galleryIntro": "Stills y ediciones fotorrealistas usados como keyframes en flujos de video.",
     "galleryAllCta": "Ver ejemplos de imagen →",
     "recreateLabel": "Recrear este still →",
-    "promptTitle": "Ideas de prompt Nano Banana",
-    "promptIntro": "Describe sujeto, iluminación, lente y uso del frame. En edición, explica la transformación.",
-    "promptPatternSteps": [
-      "Sujeto y entorno (producto/persona/escena)",
-      "Luz y lente (studio/soft/50mm/grade)",
-      "Mood y composición (ángulo hero, fondo limpio)",
-      "Uso (keyframe/miniatura/referencia)",
-      "Instrucciones de edición si aplica"
-    ],
-    "promptSkeleton": "Imagen fotorrealista de [sujeto] en/sobre [entorno/superficie], iluminado por [luz], lente [óptica/estilo], fondo limpio para [uso].",
-    "promptSkeletonNote": "En edición: “Limpia / restylea esta imagen: [instrucciones].”",
     "tipsTitle": "Consejos y límites",
     "strengths": [
       "Stills fotorrealistas rápidos para keyframes y miniaturas",

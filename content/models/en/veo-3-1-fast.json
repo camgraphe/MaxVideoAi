@@ -220,18 +220,6 @@
     "galleryIntro": "Explore clips generated with Veo 3.1 Fast using the same presets you have.",
     "galleryAllCta": "View all Veo 3.1 Fast examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Text-to-Video with Veo 3.1 Fast",
-    "promptIntro": "Fast mode is for quick A/B tests. Keep prompts focused, single-scene, and easy to tweak.",
-    "promptPatternSteps": [
-      "Subject + focal point for the whole clip",
-      "One environment",
-      "Camera motion over 4–8 seconds",
-      "Light and mood",
-      "Optional audio: ambience + short VO, or specify no dialogue",
-      "Format and duration (16:9 or 9:16; 4/6/8 s)"
-    ],
-    "promptSkeleton": "Misty forest at dawn, medium shot on a mossy rock, slow push forward as light rays appear, 6 seconds, 16:9 at 1080p. Audio: gentle birds and wind, no dialogue.",
-    "promptSkeletonNote": "Use consistent wording across variants so you can see exactly what changes.",
     "imageTitle": "Image-to-Video Flow with Veo 3.1 Fast",
     "imageIntro": "Animate a single still into a quick loop or hero shot.",
     "imageFlow": [

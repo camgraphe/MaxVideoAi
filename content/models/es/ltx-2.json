@@ -37,13 +37,34 @@
   },
   "technicalOverviewTitle": "Ficha técnica",
   "technicalOverview": [
-    { "label": "Duración", "body": "6–10 s" },
-    { "label": "Resolución", "body": "1080p, 1440p, 2160p (4K)" },
-    { "label": "Relación de aspecto", "body": "16:9" },
-    { "label": "FPS", "body": "25 o 50" },
-    { "label": "Entradas", "body": "Texto → Vídeo; Imagen → Vídeo (PNG/JPG/WebP, ~25 MB), seed y negative prompt" },
-    { "label": "Audio", "body": "Audio nativo activado por defecto; se puede desactivar" },
-    { "label": "Precios", "body": "$0.06/s @1080p; $0.12/s @1440p; $0.24/s @4K" }
+    {
+      "label": "Duración",
+      "body": "6–10 s"
+    },
+    {
+      "label": "Resolución",
+      "body": "1080p, 1440p, 2160p (4K)"
+    },
+    {
+      "label": "Relación de aspecto",
+      "body": "16:9"
+    },
+    {
+      "label": "FPS",
+      "body": "25 o 50"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Vídeo; Imagen → Vídeo (PNG/JPG/WebP, ~25 MB), seed y negative prompt"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo activado por defecto; se puede desactivar"
+    },
+    {
+      "label": "Precios",
+      "body": "$0.06/s @1080p; $0.12/s @1440p; $0.24/s @4K"
+    }
   ],
   "promptStructure": {
     "title": "Cómo pedir a LTX-2 Pro",
@@ -77,9 +98,18 @@
     }
   ],
   "faqs": [
-    { "q": "¿Qué duraciones soporta?", "a": "6–10 s por render en la ruta Pro actual." },
-    { "q": "¿Incluye audio?", "a": "Sí, audio nativo activado por defecto. Puedes desactivarlo para exportes mudos." },
-    { "q": "¿Aspectos soportados?", "a": "16:9 en esta configuración. Usa Wan u otro motor para multi-AR." }
+    {
+      "q": "¿Qué duraciones soporta?",
+      "a": "6–10 s por render en la ruta Pro actual."
+    },
+    {
+      "q": "¿Incluye audio?",
+      "a": "Sí, audio nativo activado por defecto. Puedes desactivarlo para exportes mudos."
+    },
+    {
+      "q": "¿Aspectos soportados?",
+      "a": "16:9 en esta configuración. Usa Wan u otro motor para multi-AR."
+    }
   ],
   "custom": {
     "whyTitle": "Por qué LTX-2 Pro en MaxVideoAI",
@@ -156,17 +186,6 @@
     "galleryIntro": "Renders LTX-2 Pro de alta fidelidad con audio para spots premium y planos hero.",
     "galleryAllCta": "Ver todos los ejemplos LTX-2 Pro →",
     "recreateLabel": "Recrear esta toma →",
-    "promptTitle": "Ideas de prompt LTX-2 Pro",
-    "promptIntro": "Escribe como un storyboard: sujeto, cámara, luz, duración, fps/resolución y audio.",
-    "promptPatternSteps": [
-      "Sujeto y escena (producto/personaje)",
-      "Movimiento de cámara y ritmo",
-      "Luz/grade y mood",
-      "Duración (6–10 s) y resolución/fps",
-      "Audio on/off con ambiente/diálogo/música"
-    ],
-    "promptSkeleton": "Toma de alta fidelidad de [sujeto] en [entorno], [movimiento de cámara] durante 6–10 s, [luz/grade], 16:9 en [1080p/4K, 25/50 fps], audio [on/off] con [línea corta de diálogo y/o ambiente + música].",
-    "promptSkeletonNote": "Usa 50 fps para la máxima fluidez; 25 fps para una cadencia suave.",
     "tipsTitle": "Consejos y límites",
     "strengths": [
       "Renders premium 6–10 s con audio sincronizado",

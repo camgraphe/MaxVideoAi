@@ -37,13 +37,34 @@
   },
   "technicalOverviewTitle": "Vue technique",
   "technicalOverview": [
-    { "label": "Durée", "body": "5–10 s" },
-    { "label": "Résolution", "body": "1080p" },
-    { "label": "Ratios", "body": "16:9, 9:16, 1:1" },
-    { "label": "FPS", "body": "24 fps (Fal)" },
-    { "label": "Entrées", "body": "Texte → Vidéo ; Image → Vidéo (PNG/JPG/WebP), negative + seed" },
-    { "label": "Audio", "body": "Audio natif activé par défaut ; toggle off pour muet" },
-    { "label": "Tarifs", "body": "~$0.07/s audio off, ~$0.14/s audio on" }
+    {
+      "label": "Durée",
+      "body": "5–10 s"
+    },
+    {
+      "label": "Résolution",
+      "body": "1080p"
+    },
+    {
+      "label": "Ratios",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "FPS",
+      "body": "24 fps (Fal)"
+    },
+    {
+      "label": "Entrées",
+      "body": "Texte → Vidéo ; Image → Vidéo (PNG/JPG/WebP), negative + seed"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio natif activé par défaut ; toggle off pour muet"
+    },
+    {
+      "label": "Tarifs",
+      "body": "~$0.07/s audio off, ~$0.14/s audio on"
+    }
   ],
   "promptStructure": {
     "title": "Prompt Kling 2.6 Pro",
@@ -77,9 +98,18 @@
     }
   ],
   "faqs": [
-    { "q": "L’audio est-il inclus ?", "a": "Oui, audio natif activé par défaut. Toggle off pour un export muet." },
-    { "q": "Quelles modes ?", "a": "Texte → Vidéo et Image → Vidéo. Pas de first/last frame dans cette route." },
-    { "q": "Quelles durées ?", "a": "5–10 s conseillées ; assembler plusieurs rendus pour plus long." }
+    {
+      "q": "L’audio est-il inclus ?",
+      "a": "Oui, audio natif activé par défaut. Toggle off pour un export muet."
+    },
+    {
+      "q": "Quelles modes ?",
+      "a": "Texte → Vidéo et Image → Vidéo. Pas de first/last frame dans cette route."
+    },
+    {
+      "q": "Quelles durées ?",
+      "a": "5–10 s conseillées ; assembler plusieurs rendus pour plus long."
+    }
   ],
   "custom": {
     "whyTitle": "Pourquoi Kling 2.6 Pro dans MaxVideoAI",
@@ -149,17 +179,6 @@
     "galleryIntro": "Rendus Kling 2.6 Pro avec audio natif pour dialogues, ambiance et storytelling.",
     "galleryAllCta": "Voir tous les exemples Kling 2.6 →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Idées de prompts Kling 2.6 Pro",
-    "promptIntro": "Prompt concis mais pour l’image et le son : sujet, action, caméra, lumière, 5–10 s, ratio, puis une note audio claire.",
-    "promptPatternSteps": [
-      "Sujet et action (1–2 temps visibles et audibles)",
-      "Mouvement de caméra et rythme",
-      "Lumière/grade et ambiance",
-      "Ratio (16:9/9:16/1:1) et durée 5–10 s",
-      "Note audio : courte réplique + ambiance/SFX/musique, ou « muet »"
-    ],
-    "promptSkeleton": "Plan ciné de [sujet] dans [décor], [mouvement caméra], [lumière/grade], [durée 5–10s], [ratio], audio [on/off] avec [réplique courte + ambiance/SFX/musique].",
-    "promptSkeletonNote": "Dialogues courts, negative pour éviter les sujets en plus.",
     "tipsTitle": "Conseils & limites",
     "strengths": [
       "Audio natif pour dialogue, ambiance, SFX et tapis musical léger",

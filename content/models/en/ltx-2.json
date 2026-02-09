@@ -182,17 +182,6 @@
     "galleryIntro": "Recent high-fidelity LTX-2 Pro renders with audio for premium spots and hero shots.",
     "galleryAllCta": "View all LTX-2 Pro examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Prompt ideas for LTX-2 Pro",
-    "promptIntro": "Write it like a storyboard: subject, camera, lighting, duration, audio.",
-    "promptPatternSteps": [
-      "Subject & scene (product/character)",
-      "Camera move and pace",
-      "Lighting/grade and mood",
-      "Duration (6–10s) and resolution/fps",
-      "Audio cue on/off with ambience/dialogue/music"
-    ],
-    "promptSkeleton": "High-fidelity [subject] in [environment], [camera move] over 6–10 seconds, [lighting/grade], 16:9 at [1080p/4K, 25/50 fps], audio [on/off] with [short dialogue line and/or ambience + music].",
-    "promptSkeletonNote": "Use 50 fps for the most polished motion; 25 fps for a softer cadence.",
     "tipsTitle": "Tips & limitations",
     "strengths": [
       "Premium 6–10s renders with synced audio",

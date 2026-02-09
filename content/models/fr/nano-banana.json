@@ -137,17 +137,6 @@
     "galleryIntro": "Visuels photoréalistes et retouches utilisés comme keyframes pour les workflows vidéo.",
     "galleryAllCta": "Voir les exemples d’images →",
     "recreateLabel": "Recréer ce visuel →",
-    "promptTitle": "Idées de prompts Nano Banana",
-    "promptIntro": "Décrivez sujet, lumière, optique et usage du frame. En retouche, détaillez la transformation.",
-    "promptPatternSteps": [
-      "Sujet et décor (produit/personne/scene)",
-      "Lumière et optique (studio/douce/50mm/grade)",
-      "Mood et composition (angle héros, fond propre)",
-      "Usage (keyframe/miniature/référence)",
-      "Instructions d’édition si besoin"
-    ],
-    "promptSkeleton": "Visuel photoréaliste de [sujet] dans/sur [décor/support], éclairé par [lumière], optique [objectif/look], fond propre pour [usage].",
-    "promptSkeletonNote": "En retouche : « Nettoyer / restyler cette image : [instructions]. »",
     "tipsTitle": "Conseils & limites",
     "strengths": [
       "Stills photoréalistes rapides pour keyframes et miniatures",

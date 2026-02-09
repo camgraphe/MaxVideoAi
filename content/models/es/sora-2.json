@@ -118,18 +118,6 @@
     "galleryIntro": "Mira algunos renders reales de Sora 2 con los mismos ajustes disponibles en MaxVideoAI. Perfecto para ver cómo responde el generador de video IA a distintos prompts.",
     "galleryAllCta": "Ver todos los ejemplos de Sora 2 →",
     "recreateLabel": "Recrear este plano →",
-    "promptTitle": "Cómo escribir un buen prompt para Sora 2",
-    "promptIntro": "Sora 2 funciona mejor cuando el prompt parece una mini lista de planos, no una lista de adjetivos. Así creas videos con IA que se ven coherentes.",
-    "promptPatternSteps": [
-      "Sujeto y acción: quién y qué hace",
-      "Entorno: dónde ocurre (oficina, calle, café, estudio…)",
-      "Cámara: cómo se ve (plano abierto, medio, primer plano, sobre el hombro…)",
-      "Movimiento: cómo se mueve la cámara (dolly-in suave, handheld, paneo, estilo dron…)",
-      "Luz y mood: golden hour, luz suave, noche neón, alto contraste, dramático…",
-      "Formato y duración: indica 16:9 o 9:16 y si son 4, 8 o 12 segundos"
-    ],
-    "promptSkeleton": "Plano amplio de [sujeto] en [entorno], iluminación [luz], cámara [movimiento], 8 segundos, 16:9, cinematográfico, colores naturales.",
-    "promptSkeletonNote": "Pégalo en MaxVideoAI, elige Sora 2 y genera.",
     "imageTitle": "Flujo imagen→video con Nano Banana",
     "imageIntro": "Otra ventaja de Sora en MaxVideoAI es combinarlo con un motor de imagen como Nano Banana.",
     "imageFlow": [

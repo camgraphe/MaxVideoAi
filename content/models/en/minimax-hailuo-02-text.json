@@ -219,17 +219,6 @@
     "galleryIntro": "See text and image runs rendered with the same configuration you have.",
     "galleryAllCta": "View all MiniMax Hailuo 02 examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Text-to-Video with MiniMax Hailuo 02",
-    "promptIntro": "Short, motion-driven prompts: subject, environment, camera, physics, style, negative prompt.",
-    "promptPatternSteps": [
-      "Subject in motion",
-      "Environment & atmosphere",
-      "Camera move",
-      "Physics/secondary motion",
-      "Style + negative prompt"
-    ],
-    "promptSkeleton": "[Duration] second [aspect ratio] shot of [subject] moving through [environment]. Camera [movement]; [secondary motion] reacts naturally. Style: [realistic/stylized]. No text/logos/UI.",
-    "promptSkeletonNote": "One idea per clip; keep wording tight.",
     "imageTitle": "Image-to-Video with MiniMax Hailuo 02 (+ End Frames)",
     "imageIntro": "Animate boards/renders/concepts quickly with optional end frame.",
     "imageFlow": [

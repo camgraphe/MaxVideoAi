@@ -186,17 +186,6 @@
     "galleryIntro": "Rendus LTX-2 Pro haute fidélité avec audio pour spots premium et plans héros.",
     "galleryAllCta": "Voir tous les exemples LTX-2 Pro →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Idées de prompts LTX-2 Pro",
-    "promptIntro": "Rédigez comme un mini storyboard : sujet, caméra, lumière, durée, fps/résolution et audio.",
-    "promptPatternSteps": [
-      "Sujet & scène (produit/personnage)",
-      "Mouvement caméra et rythme",
-      "Lumière/grade et ambiance",
-      "Durée (6–10 s) et résolution/fps",
-      "Audio on/off avec ambiance/dialogue/musique"
-    ],
-    "promptSkeleton": "[Sujet] haute fidélité dans [décor], [mouvement caméra] sur 6–10 s, [lumière/étalonnage], 16:9 en [1080p/4K, 25/50 fps], audio [on/off] avec [réplique courte et/ou ambiance + musique].",
-    "promptSkeletonNote": "50 fps pour la fluidité maximale ; 25 fps pour une cadence plus douce.",
     "tipsTitle": "Conseils & limites",
     "strengths": [
       "Rendus premium 6–10 s avec audio synchro",

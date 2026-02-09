@@ -221,18 +221,6 @@
     "galleryIntro": "Clips generated with the exact configuration you have access to in MaxVideoAI.",
     "galleryAllCta": "View all Wan 2.5 examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Text-to-Video with Wan 2.5",
-    "promptIntro": "Use shot-style prompts with camera and audio notes.",
-    "promptPatternSteps": [
-      "Subject and tone",
-      "Environment",
-      "Camera language",
-      "Timing over 5 or 10 seconds",
-      "Lighting and look",
-      "Audio: ambience, SFX, music, short dialogue"
-    ],
-    "promptSkeleton": "[Duration] second [aspect ratio] cinematic shot of [subject] in [environment]. Camera [movement] while [main action] happens. Lighting [style], [grade] look. Audio: [ambience + music/SFX], optional line: “[…]”.",
-    "promptSkeletonNote": "Keep it concise; add or remove audio cues depending on whether you upload a track.",
     "imageTitle": "Image-to-Video Flow with Wan 2.5",
     "imageIntro": "Animate a single still into an audio-backed beat.",
     "imageFlow": [

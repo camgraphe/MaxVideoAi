@@ -208,17 +208,6 @@
     "galleryIntro": "Recent photoreal stills and edits used as keyframes for video workflows.",
     "galleryAllCta": "View image examples →",
     "recreateLabel": "Recreate this still →",
-    "promptTitle": "Prompt ideas for Nano Banana",
-    "promptIntro": "Describe subject, lighting, lens, and how you’ll use the frame. For edits, spell out the transformation.",
-    "promptPatternSteps": [
-      "Subject and setting (product/person/scene)",
-      "Lighting and lens (studio/soft/50mm/grade)",
-      "Mood and composition (hero angle, clean background)",
-      "Output intent (keyframe/thumbnail/reference)",
-      "Edit instructions if applicable"
-    ],
-    "promptSkeleton": "Photoreal [subject] in/on [environment/surface], lit by [lighting], shot on [lens/look], clean background for [use case].",
-    "promptSkeletonNote": "For edits: “Clean up / restyle this image: [instructions].”",
     "tipsTitle": "Tips & limits",
     "strengths": [
       "Fast photoreal stills for keyframes and thumbnails",

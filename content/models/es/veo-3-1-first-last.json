@@ -146,18 +146,6 @@
     "galleryIntro": "Transiciones reales: boceto → render final, oficina → azotea, wireframe UI → UI final.",
     "galleryAllCta": "Ver todos los ejemplos Veo 3.1 First/Last →",
     "recreateLabel": "Recrear este plano →",
-    "promptTitle": "Cómo hacer prompt en Veo 3.1 First/Last",
-    "promptIntro": "Dirige lo que pasa entre dos imágenes: define inicio, fin, camino, cámara, ritmo y audio.",
-    "promptPatternSteps": [
-      "Describe el primer frame.",
-      "Describe el último frame.",
-      "Trayectoria de cámara: dolly, órbita, pan, etc.",
-      "Cambios intermedios: luz, hora, pose, estilo.",
-      "Ritmo: suave, rápido, dramático; eventos intermedios.",
-      "Audio: ambiente/música/VO corta o “sin diálogo”."
-    ],
-    "promptSkeleton": "Anima suavemente del primer frame al último en [duración] segundos y [ratio]. Empieza con [sujeto/entorno del primer frame], luego [cambio/movimiento] hasta llegar a [sujeto/entorno del último frame]. Cámara: [movimiento]. Luz/estilo: [descripción]. Audio: [ambiente/música/VO corta o “sin diálogo”].",
-    "promptSkeletonNote": "Enfócate en el viaje de A → B; menciona cámara y ritmo.",
     "demoTitle": "Demo – “Oficina a azotea” (6s, 16:9)",
     "demoPromptLabel": "6s oficina → azotea",
     "demoPrompt": [

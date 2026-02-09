@@ -180,17 +180,6 @@
         ]
       }
     ],
-    "promptTitle": "Idées de prompt pour Wan 2.6",
-    "promptIntro": "Commencez par le look global, puis des plans horodatés.",
-    "promptPatternSteps": [
-      "Look global et sujet",
-      "Plan 1 avec timestamp",
-      "Plan 2 avec timestamp",
-      "Beat final et fin",
-      "Notes audio optionnelles (T2V/I2V)"
-    ],
-    "promptSkeleton": "Plan 1 [0-3s] ... Plan 2 [3-8s] ... Plan 3 [8-15s] ... lumière, caméra, mouvement.",
-    "promptSkeletonNote": "En R2V, placez @Video1/@Video2/@Video3 pour ancrer les sujets.",
     "demoTitle": "Exemple prêt à rendre",
     "demoPromptLabel": "Exemple prêt à rendre (multi-shot, 15 s, 16:9, 1080p)",
     "demoPrompt": [

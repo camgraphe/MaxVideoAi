@@ -220,19 +220,6 @@
     "galleryIntro": "See live Veo 3.1 renders powered by the same settings you have in MaxVideoAI.",
     "galleryAllCta": "View all Veo 3.1 examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Text-to-Video with Veo 3.1",
-    "promptIntro": "Write prompts like a short director’s note, built around cinematography, subject, action, context and style.",
-    "promptPatternSteps": [
-      "Cinematography and framing – medium close-up, wide tracking shot, top-down macro, etc.",
-      "Subject – who or what we see.",
-      "Action – what happens in 4–8 seconds.",
-      "Context / environment – office, city street at night, kitchen studio, classroom.",
-      "Style and ambiance – cinematic, realistic, documentary; lighting and grade.",
-      "Audio cues – ambience, music style, one short VO line; specify no subtitles if you don’t want on-screen text.",
-      "Format and length – e.g., 8 seconds, 16:9 (or 9:16 / 1:1)."
-    ],
-    "promptSkeleton": "Medium shot of [subject] in [environment], [clear action] over 8 seconds. Camera [movement], 16:9 at 1080p, cinematic look with [lighting and color]. Audio: [ambience] + [music/VO cue], no subtitles.",
-    "promptSkeletonNote": "Drop that into MaxVideoAI, choose Veo 3.1, set duration/orientation, and you’re ready to render.",
     "imageTitle": "Image-to-Video Workflow with Veo 3.1 (+ Nano Banana)",
     "imageIntro": "Pair Veo 3.1 with Nano Banana to lock style and iterate on motion.",
     "imageFlow": [

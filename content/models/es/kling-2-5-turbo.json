@@ -213,18 +213,6 @@
     "galleryIntro": "Runs reales de la ruta Kling actual en MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos Kling 2.5 Turbo →",
     "recreateLabel": "Recrear esta toma →",
-    "promptTitle": "Texto→video con Kling 2.5 Turbo",
-    "promptIntro": "Escribe como DoP: sujeto/encuadre, entorno, cámara, ritmo, look y negativos.",
-    "promptPatternSteps": [
-      "Sujeto y encuadre",
-      "Entorno",
-      "Movimiento de cámara",
-      "Ritmo en 5/10 s",
-      "Luz/look",
-      "Prompt negativo"
-    ],
-    "promptSkeleton": "Clip de 10 s [relación] de [sujeto] en [entorno]. Cámara [movimiento] mientras ocurre [acción]. Luz [estilo], look [grade]. Sin texto, sin logos, sin personas extra.",
-    "promptSkeletonNote": "Sé conciso; evita prompts larguísimos que desvían la cámara.",
     "imageTitle": "Imagen→video con Kling 2.5 Turbo",
     "imageIntro": "Anima un still con los tiers Pro Image o Standard.",
     "imageFlow": [

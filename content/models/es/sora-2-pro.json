@@ -107,18 +107,6 @@
     "galleryIntro": "Mira clips en 1792×1024 con varios beats generados con Sora 2 Pro en MaxVideoAI con el generador de video IA.",
     "galleryAllCta": "Ver todos los ejemplos de Sora 2 Pro →",
     "recreateLabel": "Recrear este plano Pro →",
-    "promptTitle": "Prompts para Sora 2 Pro con control cinemático",
-    "promptIntro": "En Sora 2 Pro, redacta el prompt como un mini storyboard con cues de audio y tiempo.",
-    "promptPatternSteps": [
-      "Beats de escena con duraciones",
-      "Sujeto, vestuario y continuidad",
-      "Lenguaje de cámara por escena (push, dolly, tilt, handheld)",
-      "Cues de audio (voz en off, ambiente, FX, música)",
-      "Transiciones (match cut, whip pan, fundido)",
-      "Formato + duración + relación de aspecto"
-    ],
-    "promptSkeleton": "Escena 1 (4s): [sujeto/acción], [movimiento de cámara], [luz], [cue de audio]. Escena 2 (4s): [sujeto/acción], [movimiento de cámara], [transición], [cue de audio], 1792×1024, 16:9.",
-    "promptSkeletonNote": "Detállalo beat por beat; Sora 2 Pro lo ejecutará con más fidelidad.",
     "imageTitle": "Imagen→Video con Sora 2 Pro",
     "imageIntro": "Fija el estilo con un still y luego anima con movimiento y audio precisos.",
     "imageFlow": [

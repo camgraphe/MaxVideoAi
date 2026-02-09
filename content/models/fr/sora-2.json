@@ -102,18 +102,6 @@
     "galleryIntro": "Découvrez quelques rendus Sora 2 en production, avec les mêmes réglages que dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Sora 2 →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Comment bien écrire un prompt Sora 2",
-    "promptIntro": "Sora 2 réagit mieux quand le prompt ressemble à une mini-liste de plans plutôt qu’à une liste d’adjectifs.",
-    "promptPatternSteps": [
-      "Sujet et action – qui/quoi et ce qu’il fait",
-      "Environnement – où ça se passe (bureau, rue, café, studio…)",
-      "Caméra – comment on voit la scène (large, moyen, gros plan, épaule…)",
-      "Mouvement – comment la caméra bouge (dolly-in, handheld, pan, drone…)",
-      "Lumière & ambiance – golden hour, lumière douce, nuit néon, contraste…",
-      "Format & durée – préciser 16:9 ou 9:16 et 4/8/12 secondes"
-    ],
-    "promptSkeleton": "Plan large de [sujet] dans [environnement], éclairage [lumière], caméra [mouvement], 8 secondes, 16:9, cinématographique, couleurs naturelles.",
-    "promptSkeletonNote": "Collez-le dans MaxVideoAI, choisissez Sora 2, et lancez.",
     "imageTitle": "Workflow image→vidéo avec Nano Banana",
     "imageIntro": "Un avantage de Sora dans MaxVideoAI : l’associer à un moteur image comme Nano Banana.",
     "imageFlow": [

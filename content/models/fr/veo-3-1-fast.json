@@ -206,18 +206,6 @@
     "galleryIntro": "Clips générés avec Veo 3.1 Fast via les mêmes presets que vous avez.",
     "galleryAllCta": "Voir tous les exemples Veo 3.1 Fast →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Texte→Vidéo avec Veo 3.1 Fast",
-    "promptIntro": "Fast sert aux A/B rapides. Prompts focalisés, mono-scène, faciles à itérer.",
-    "promptPatternSteps": [
-      "Sujet + point focal unique",
-      "Un environnement",
-      "Mouvement caméra sur 4–8 s",
-      "Lumière et mood",
-      "Audio optionnel : ambiance + VO courte, ou sans dialogue",
-      "Format et durée (16:9 ou 9:16 ; 4/6/8 s)"
-    ],
-    "promptSkeleton": "Forêt brumeuse à l’aube, plan moyen sur rocher moussu, push lent, 6 s, 16:9 en 1080p. Audio : oiseaux et vent doux, sans dialogue.",
-    "promptSkeletonNote": "Gardez un wording cohérent entre variantes pour mesurer les écarts.",
     "imageTitle": "Image→Vidéo avec Veo 3.1 Fast",
     "imageIntro": "Animez un still en loop rapide ou hero shot.",
     "imageFlow": [

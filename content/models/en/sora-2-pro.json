@@ -100,18 +100,6 @@
     "galleryIntro": "See high-res, multi-beat clips (up to 1792×1024) rendered with Sora 2 Pro in MaxVideoAI.",
     "galleryAllCta": "View all Sora 2 Pro examples →",
     "recreateLabel": "Recreate this Pro shot →",
-    "promptTitle": "Prompting Sora 2 Pro for Cinematic Control",
-    "promptIntro": "For Sora 2 Pro, treat prompts like a mini storyboard with audio cues and timing.",
-    "promptPatternSteps": [
-      "Scene beats with durations per beat",
-      "Subject, wardrobe, and continuity notes",
-      "Camera language per scene (push, dolly, tilt, handheld)",
-      "Audio cues (voice-over lines, ambience, FX, music tone)",
-      "Transitions (match cut, whip pan, crossfade)",
-      "Format + duration + aspect ratio callout"
-    ],
-    "promptSkeleton": "Scene 1 (4s): [subject/action], [camera move], [lighting], [audio cue]. Scene 2 (4s): [subject/action], [camera move], [transition], [audio cue], 1792×1024, 16:9.",
-    "promptSkeletonNote": "Lay it out beat by beat; Sora 2 Pro will execute with higher fidelity.",
     "imageTitle": "Image-to-Video with Sora 2 Pro",
     "imageIntro": "Lock style with a still, then animate with precise motion and audio cues.",
     "imageFlow": [

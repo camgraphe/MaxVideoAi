@@ -334,11 +334,6 @@ type SoraCopy = {
   gallerySceneCta: string | null;
   galleryAllCta: string | null;
   recreateLabel: string | null;
-  promptTitle: string | null;
-  promptIntro: string | null;
-  promptPatternSteps: string[];
-  promptSkeleton: string | null;
-  promptSkeletonNote: string | null;
   promptingTitle?: string | null;
   promptingIntro?: string | null;
   promptingTip?: string | null;
@@ -1659,14 +1654,6 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
   })();
   const specTitle = getString('specTitle') ?? localized.technicalOverviewTitle ?? 'Specs';
   const specNote = getString('specNote') ?? localized.pricingNotes ?? null;
-  const promptTitle = getString('promptTitle') ?? localized.promptStructure?.title ?? 'Prompt ideas';
-  const promptIntro = getString('promptIntro') ?? localized.promptStructure?.description ?? null;
-  const promptPatternSteps =
-    getStringArray('promptPatternSteps').length > 0
-      ? getStringArray('promptPatternSteps')
-      : localized.promptStructure?.steps ?? [];
-  const promptSkeleton = getString('promptSkeleton') ?? localized.promptStructure?.quote ?? null;
-  const promptSkeletonNote = getString('promptSkeletonNote') ?? localized.promptStructure?.description ?? null;
   const promptingGlobalPrinciples = getStringArray('promptingGlobalPrinciples');
   const promptingEngineWhy = getStringArray('promptingEngineWhy');
   const promptingTabNotes = getPromptingTabNotes();
@@ -1728,11 +1715,6 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
     gallerySceneCta: getString('gallerySceneCta'),
     galleryAllCta: getString('galleryAllCta'),
     recreateLabel: getString('recreateLabel'),
-    promptTitle,
-    promptIntro,
-    promptPatternSteps,
-    promptSkeleton,
-    promptSkeletonNote,
     promptingTitle,
     promptingIntro,
     promptingTip,
@@ -2282,7 +2264,6 @@ function Sora2PageLayout({
       : copy.specSections;
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const quickPricingTitle = copy.quickPricingTitle;
-  const promptPatternSteps = copy.promptPatternSteps;
   const imageToVideoSteps = copy.imageFlow;
   const imageToVideoUseCases = copy.imageWhy;
   const strengths = copy.strengths;
@@ -2338,10 +2319,7 @@ function Sora2PageLayout({
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
   const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
-  const hasTextSection =
-    isSoraPrompting ||
-    promptPatternSteps.length > 0 ||
-    Boolean(copy.promptTitle || copy.promptIntro || copy.promptSkeleton || copy.promptSkeletonNote);
+  const hasTextSection = true;
   const hasWhatSection =
     !isSoraPrompting &&
     Boolean(
@@ -2897,11 +2875,6 @@ function Sora2PageLayout({
                   engineWhy={copy.promptingEngineWhy}
                   tabNotes={copy.promptingTabNotes}
                 />
-              {(copy.promptTitle || copy.promptIntro || promptPatternSteps.length || copy.promptSkeleton) ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  {copy.promptTitle ? (
-                    <h3 className="text-base font-semibold text-text-primary">{copy.promptTitle}</h3>
-                  ) : null}
                   {copy.promptIntro ? (
                     <p className="text-sm text-text-secondary">{copy.promptIntro}</p>
                   ) : null}

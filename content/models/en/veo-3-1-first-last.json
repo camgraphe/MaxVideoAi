@@ -163,18 +163,6 @@
     "galleryIntro": "Real transitions: sketch → final render, office → rooftop, wireframe UI → high-fidelity UI.",
     "galleryAllCta": "View all Veo 3.1 First/Last examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "How to prompt Veo 3.1 First/Last",
-    "promptIntro": "Direct what happens between two images: define the start, the end, the journey, camera, pacing and audio.",
-    "promptPatternSteps": [
-      "Describe the first frame: subject/environment.",
-      "Describe the last frame: destination or transformation.",
-      "Camera path: dolly, orbit, pan, crane, POV or static morph.",
-      "Changes along the way: lighting, time of day, pose, style.",
-      "Pacing: gentle, brisk, dramatic; mid-point events.",
-      "Audio: ambience/music/short VO or “no dialogue”."
-    ],
-    "promptSkeleton": "Animate smoothly from the first frame to the last frame over [duration] seconds in [aspect ratio]. Start with [subject/environment in first frame], then gradually [change/move/transform] until we reach [subject/environment in last frame]. Camera: [movement]. Lighting/style: [description]. Audio: [ambience/music/short VO, or “no dialogue”].",
-    "promptSkeletonNote": "Keep it focused on the journey from A → B; mention camera and pacing.",
     "demoTitle": "Demo prompt – “Office to Rooftop” (6s, 16:9)",
     "demoPromptLabel": "6s office → rooftop",
     "demoPrompt": [

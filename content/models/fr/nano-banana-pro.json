@@ -138,17 +138,6 @@
     "galleryIntro": "Stills 2K/4K utilisés pour boards de campagne et lancements.",
     "galleryAllCta": "Voir les exemples →",
     "recreateLabel": "Recréer ce still →",
-    "promptTitle": "Idées de prompt Nano Banana Pro",
-    "promptIntro": "Décrivez sujet, lumière, typo et intention. Mentionnez 4K si nécessaire.",
-    "promptPatternSteps": [
-      "Sujet + focus",
-      "Environnement + lumière",
-      "Objectif/look + finitions",
-      "Copy/logos requis",
-      "Résolution + usage (draft vs final)"
-    ],
-    "promptSkeleton": "[Résolution] [sujet] dans [environnement], éclairé par [lumière], objectif [look], inclure \"[copy]\" en [style], visuel final pour [usage].",
-    "promptSkeletonNote": "Pour une édition: \"Remixez ce visuel en [changement] tout en gardant [éléments].\"",
     "tipsTitle": "Conseils & limites",
     "strengths": [
       "Typo et UI ultra lisibles",

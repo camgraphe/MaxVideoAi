@@ -201,17 +201,6 @@
         ]
       }
     ],
-    "promptTitle": "Prompt ideas for Wan 2.6",
-    "promptIntro": "Use a global look line, then timestamped shots for pacing.",
-    "promptPatternSteps": [
-      "Global look and subject",
-      "Shot 1 with timestamp",
-      "Shot 2 with timestamp",
-      "Final beat and end frame",
-      "Optional audio notes (T2V/I2V)"
-    ],
-    "promptSkeleton": "Shot 1 [0-3s] ... Shot 2 [3-8s] ... Shot 3 [8-15s] ... lighting, camera, motion.",
-    "promptSkeletonNote": "For R2V, place @Video1/@Video2/@Video3 in the prompt to anchor subjects.",
     "tipsTitle": "Tips & limitations",
     "strengths": [
       "Multi-shot control for mini narratives",
