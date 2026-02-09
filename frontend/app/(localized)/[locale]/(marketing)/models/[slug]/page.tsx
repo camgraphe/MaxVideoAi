@@ -1947,6 +1947,11 @@ async function renderSoraModelPage({
   const canonicalUrl = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
   const localizedCanonicalUrl = canonicalUrl;
   const copy = buildSoraCopy(localizedContent, engine.modelSlug, locale);
+  const engineModes = engine.engine.modes ?? [];
+  const hasVideoMode = engineModes.some((mode) => mode.endsWith('v'));
+  const hasImageMode = engineModes.some((mode) => mode.endsWith('i'));
+  const isVideoEngine = hasVideoMode;
+  const isImageEngine = hasImageMode && !hasVideoMode;
   const enginePricingOverrides = await listEnginePricingOverrides();
   const pricingEngine = applyEnginePricingOverride(
     engine.engine,
@@ -2056,7 +2061,6 @@ async function renderSoraModelPage({
     demoMedia.prompt =
       'A cinematic 10-second shot in 16:9. At night, the camera flies smoothly through a modern city full of soft neon lights and warm windows, then glides towards a single bright window high on a building. Without cutting, the camera passes through the glass into a cozy creator studio with a large desk and an ultra-wide monitor glowing in the dark. The room is lit by the screen and a warm desk lamp. The camera continues to push in until the monitor fills most of the frame. On the screen there is a clean AI video workspace UI (generic, no real logos) showing four small video previews playing at the same time: one realistic city street shot, one colourful animation, one product hero shot and one abstract motion-graphics scene. The overall style is cinematic, with smooth camera motion, gentle depth of field and rich contrast.';
   }
-  const isImageEngine = engine.type === 'image';
   const galleryCtaHref = heroMedia?.id
     ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
     : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}`;
@@ -2106,6 +2110,8 @@ async function renderSoraModelPage({
       localizedContent={localizedContent}
       copy={copy}
       engine={engine}
+      isVideoEngine={isVideoEngine}
+      isImageEngine={isImageEngine}
       heroMedia={heroMedia}
       demoMedia={demoMedia}
       galleryVideos={galleryVideos}
@@ -2133,6 +2139,8 @@ function Sora2PageLayout({
   pricingLinkLabel,
   localizedContent,
   copy,
+  isVideoEngine,
+  isImageEngine,
   heroMedia,
   demoMedia,
   galleryVideos,
@@ -2156,6 +2164,8 @@ function Sora2PageLayout({
   pricingLinkLabel: string;
   localizedContent: EngineLocalizedContent;
   copy: SoraCopy;
+  isVideoEngine: boolean;
+  isImageEngine: boolean;
   heroMedia: FeaturedMedia;
   demoMedia: FeaturedMedia | null;
   galleryVideos: ExampleGalleryVideo[];
@@ -2249,8 +2259,6 @@ function Sora2PageLayout({
   const bestUseCases = bestUseCaseItems.map((item) => item.title);
   const heroEyebrow = copy.heroEyebrow ?? buildEyebrow(providerName);
   const heroSupportLine = copy.heroSupportLine ?? buildSupportLine(bestUseCases);
-  const isVideoEngine = engine.type === 'video';
-  const isImageEngine = engine.type === 'image';
   const whatFlowSteps = copy.whatFlowSteps;
   const quickStartTitle = copy.quickStartTitle;
   const quickStartBlocks = copy.quickStartBlocks;
@@ -2278,6 +2286,7 @@ function Sora2PageLayout({
   const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
+  const useDemoMediaPrompt = Boolean(demoMedia?.prompt?.trim());
   const baseFaqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
@@ -2849,8 +2858,8 @@ function Sora2PageLayout({
                         media={demoMedia}
                         label={copy.demoTitle ?? 'Sora 2 demo'}
                         hideLabel
-                        promptLabel={copy.demoPromptLabel ?? undefined}
-                        promptLines={copy.demoPrompt}
+                        promptLabel={useDemoMediaPrompt ? undefined : copy.demoPromptLabel ?? undefined}
+                        promptLines={useDemoMediaPrompt ? [] : copy.demoPrompt}
                       />
                     ) : (
                       <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
