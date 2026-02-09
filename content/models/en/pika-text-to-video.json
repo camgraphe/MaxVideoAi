@@ -8,8 +8,8 @@
   },
   "overview": "Pika 2.2 in MaxVideoAI: silent, stylized 5–10s clips at 720p/1080p, from text or a single image, across 1:1, 16:9 or 9:16. Ideal for anime, comic, pixel and playful 3D looks built for social feeds.",
   "hero": {
-    "title": "Pika Labs 2.2 – Text-to-Video & Image-to-Video",
-    "intro": "Pika 2.2 – Stylized AI Video for Social-First Clips (5–10s, up to 1080p)",
+    "title": "Pika 2.2",
+    "intro": "Stylized, social-first clips from text or a single frame — built to stand out in the feed.",
     "badge": "Up to 1080p · 5–10s · Text or Image input",
     "ctaPrimary": {
       "label": "Start generating with Pika 2.2",
@@ -25,11 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Short TikTok/Reel-style clips with stylized animation",
-      "Animating moodboards, styleframes or cover art into motion",
-      "Snappy loops and cutaways for editors and motion designers",
-      "Playful visuals for gaming, fashion, fandom and pop-culture campaigns",
-      "Overlay backgrounds and UI motion behind titles and screen captures"
+      {
+        "title": "Social-first stylized clips",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Moodboards & styleframes (animated)",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Loops & motion inserts for editors",
+        "icon": "repeat"
+      },
+      {
+        "title": "Gaming / fandom / pop visuals",
+        "icon": "gamepad2"
+      },
+      {
+        "title": "Backgrounds & UI motion behind titles",
+        "icon": "layout"
+      },
+      {
+        "title": "Keyframe-style transitions (start/end control)",
+        "icon": "image"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -124,24 +143,40 @@
   "custom": {
     "heroDesc1": "Use Pika 2.2 to generate stylized 5s or 10s clips in up to 1080p from text or a single reference image. See the price per clip before you run, then recreate proven examples in one click.",
     "heroDesc2": "Pick 5 or 10 seconds, choose 1:1, 16:9 or 9:16, start from text or a reference frame, and get a silent clip ready for your edit.",
-    "whyTitle": "Why Pika 2.2 is powerful inside MaxVideoAI",
+    "heroSupportLine": "Best when you want a strong look fast: moodboards, loops, cutaways, and playful creative variants.",
+    "whyTitle": "Why Pika 2.2 is powerful",
     "heroHighlights": [
-      "Text → Video and Image → Video in a single engine card",
-      "Stylized motion (anime, comic, game-like, experimental) that stands out in feeds",
-      "Multiple aspect ratios: 1:1, 16:9, 9:16",
-      "No audio: lightweight exports you can score however you like",
-      "Seeds and negative prompts to keep style consistent and suppress artifacts",
-      "Pay-as-you-go pricing; no Pika Labs subscription required",
-      "Available Europe/UK/worldwide via your MaxVideoAI wallet",
-      "Designed to sit alongside Sora, Veo, Kling, Wan, MiniMax Hailuo, Nano Banana"
+      "Stylized motion that reads instantly||Great for bold looks (anime/comic/toon/experimental) without chasing photorealism.",
+      "Consistency controls||Seed + negative prompt let you keep a look stable and suppress unwanted artifacts across variants.",
+      "Keyframe-style direction||“First/last”-style or keyframe transition workflows make transforms and reveals much easier to steer.",
+      "Silent by design (edit-friendly)||Lightweight exports you can score however you like in post."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Short stylized clips for TikTok/Reels/Shorts",
-      "Animating moodboards, styleframes or cover art",
-      "Loops and cutaways for editors and motion designers",
-      "Playful visuals for gaming, fashion, fandom and pop culture",
-      "Backgrounds and UI motion behind titles and screen captures"
+      {
+        "title": "Social-first stylized clips",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Moodboards & styleframes (animated)",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Loops & motion inserts for editors",
+        "icon": "repeat"
+      },
+      {
+        "title": "Gaming / fandom / pop visuals",
+        "icon": "gamepad2"
+      },
+      {
+        "title": "Backgrounds & UI motion behind titles",
+        "icon": "layout"
+      },
+      {
+        "title": "Keyframe-style transitions (start/end control)",
+        "icon": "image"
+      }
     ],
     "whatTitle": "What Pika 2.2 Actually Is in MaxVideoAI",
     "whatIntro1": "Pika 2.2 is a short-form, stylized video model tuned for social-first animation.",

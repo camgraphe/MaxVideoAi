@@ -9,7 +9,7 @@
   "overview": "Kling 2.5 Turbo in MaxVideoAI: cinematic, silent 1080p clips from text or one image, 5–10 seconds, 16:9/9:16/1:1. Choose Pro Text, Pro Image or Standard per render to balance quality and cost.",
   "hero": {
     "title": "Kling 2.5 Turbo – AI Text-to-Video & Image-to-Video in MaxVideoAI (1080p, 5–10s)",
-    "intro": "Kling 2.5 Turbo – Cinematic, Silent 1080p AI Video (5–10s, Text or Image Input)",
+    "intro": "Cinematic, silent clips with standout motion and physics — built for camera-forward shots.",
     "badge": "1080p · 5–10s · Text or Image input · Silent output",
     "ctaPrimary": {
       "label": "Start generating with Kling 2.5 Turbo",
@@ -25,11 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Hero product beats needing camera polish without Sora-level cost/latency",
-      "High-intensity action sequences and dynamic movement in 5–10 seconds",
-      "Portrait/selfie-style animation from a single still",
-      "Budget-friendly B-roll and loops via Standard image tier",
-      "Reels/Shorts intros where 10 seconds is the whole story"
+      {
+        "title": "Product hero beats",
+        "icon": "product"
+      },
+      {
+        "title": "Action & dynamic movement",
+        "icon": "zap"
+      },
+      {
+        "title": "Portrait / selfie animation (from a still)",
+        "icon": "ugc"
+      },
+      {
+        "title": "Cinematic handheld & tracking shots",
+        "icon": "camera"
+      },
+      {
+        "title": "Budget B-roll loops for edits",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Fast look-dev & style variants",
+        "icon": "wand2"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -125,24 +144,41 @@
   "custom": {
     "heroDesc1": "Generate cinematic, silent 1080p clips from text or a single still. Choose Pro Text, Pro Image or Standard per render to balance fidelity and cost.",
     "heroDesc2": "Pick 5 or 10 seconds, 16:9/9:16/1:1, upload one image or write a focused prompt, and get crisp footage ready for editors and social teams.",
-    "whyTitle": "Why Kling 2.5 Turbo is powerful inside MaxVideoAI",
+    "heroSupportLine": "Best for product hero beats, dynamic action moments, and portrait/selfie animation from a single still.",
+    "whyTitle": "Why Kling 2.5 Turbo is powerful",
     "heroHighlights": [
-      "1080p by default for sharp, broadcast-style footage",
-      "5 or 10 second clips tuned for cinematic beats",
-      "Text → Video and Image → Video in one card",
-      "Pro Text / Pro Image / Standard tiers exposed together",
-      "Aspect ratios: 16:9, 9:16, 1:1 per render",
-      "Silent exports ready to score however you like",
-      "Strong motion & physics with consistent style",
-      "Price-before-render and live timing via MaxVideoAI wallet/queue"
+      "Motion + physics that feel intentional||Strong inertia and believable movement in short beats.",
+      "Camera-first results||Clear framing and one-move shots read like real cinematography.",
+      "Silent by design||Easy to score in post and match your brand audio.",
+      "Clean-up controls||Negative prompts help avoid text, logos, and extra characters.",
+      "Quick quality switching||Move between tiers without rewriting your whole prompt."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Hero product beats with polished camera work",
-      "Action/dynamic movement in 5–10 seconds",
-      "Portrait/selfie animation from a single still",
-      "Budget B-roll/mood loops using Standard image tier",
-      "Short social intros where 10s is the whole story"
+      {
+        "title": "Product hero beats",
+        "icon": "product"
+      },
+      {
+        "title": "Action & dynamic movement",
+        "icon": "zap"
+      },
+      {
+        "title": "Portrait / selfie animation (from a still)",
+        "icon": "ugc"
+      },
+      {
+        "title": "Cinematic handheld & tracking shots",
+        "icon": "camera"
+      },
+      {
+        "title": "Budget B-roll loops for edits",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Fast look-dev & style variants",
+        "icon": "wand2"
+      }
     ],
     "whatTitle": "What Kling 2.5 Turbo Actually Is in MaxVideoAI",
     "whatIntro1": "Kling 2.5 Turbo is a high-performance short-form video model for cinematic motion, strong prompt adherence and consistent style.",

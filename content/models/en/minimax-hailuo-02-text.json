@@ -9,7 +9,7 @@
   "overview": "MiniMax Hailuo 02 in MaxVideoAI: short, cheap, physics-aware clips at 512p/768p in 6 or 10 seconds. Text or image input, optional end frame, silent output, and wallet-based pricing for rapid drafts and loops.",
   "hero": {
     "title": "MiniMax Hailuo 02 – Budget AI Video Drafts with Strong Physics",
-    "intro": "MiniMax Hailuo 02 – Fast, Stylized Drafts with Strong Physics (6–10s, Silent)",
+    "intro": "Physics-forward draft clips for motion tests, camera experiments, and fast visual iteration.",
     "badge": "512p/768p · 6–10s · Text or Image input · Silent output",
     "ctaPrimary": {
       "label": "Try MiniMax Hailuo 02",
@@ -25,11 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Draft motion ideas before Sora/Veo/Kling/Wan finals",
-      "Animate storyboards, renders or styleframes into quick clips",
-      "Test transitions, camera moves or physics-heavy moments",
-      "Build experimental loops and background plates for reels/openers",
-      "Budget-friendly multi-variant campaigns with dozens of clips"
+      {
+        "title": "Motion drafts",
+        "icon": "zap"
+      },
+      {
+        "title": "Physics & secondary motion",
+        "icon": "wind"
+      },
+      {
+        "title": "Storyboard animatics",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Transition tests & match cuts",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Start/end-frame guided shots",
+        "icon": "image"
+      },
+      {
+        "title": "Budget multi-variant campaigns",
+        "icon": "coins"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -124,23 +143,40 @@
   "custom": {
     "heroDesc1": "Generate fast, physics-aware drafts at 512p/768p from text or a single image, with optional end frame to lock the landing.",
     "heroDesc2": "Pick 6 or 10 seconds, choose 16:9/9:16/1:1, and get silent clips ready for storyboards, loops and motion tests.",
-    "whyTitle": "Why MiniMax Hailuo 02 is powerful inside MaxVideoAI",
+    "heroSupportLine": "Best when you want to explore movement and transitions cheaply before rebuilding the keepers in premium engines.",
+    "whyTitle": "Why MiniMax Hailuo 02 is powerful",
     "heroHighlights": [
-      "Text → Video & Image → Video in one engine",
-      "6 or 10 second clips tuned for social intros and motion tests",
-      "512p/768p output for fast, cheap iterations",
-      "Reference image + end frame to guide motion and landing",
-      "Silent output so you can score in your own stack",
-      "Optimized for physics, motion and camera control",
-      "Budget-friendly tier next to Pika 2.2 for volume campaigns"
+      "Extreme physics cues||Wind, cloth, particles, and inertia read surprisingly well for quick tests.",
+      "End-frame control||Add a target last frame to steer how the shot lands.",
+      "Built for volume||Great when you need lots of variants without burning budget.",
+      "Silent drafts||Easy to score in post (or pair with an audio-capable engine for finals)."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Motion drafts before Sora/Veo/Kling/Wan finals",
-      "Animating storyboards, renders or styleframes",
-      "Testing transitions/camera/physics (wind, cloth, particles)",
-      "Experimental loops and background plates",
-      "Budget-friendly multi-variant campaigns"
+      {
+        "title": "Motion drafts",
+        "icon": "zap"
+      },
+      {
+        "title": "Physics & secondary motion",
+        "icon": "wind"
+      },
+      {
+        "title": "Storyboard animatics",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Transition tests & match cuts",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Start/end-frame guided shots",
+        "icon": "image"
+      },
+      {
+        "title": "Budget multi-variant campaigns",
+        "icon": "coins"
+      }
     ],
     "whatTitle": "What MiniMax Hailuo 02 Actually Is in MaxVideoAI",
     "whatIntro1": "MiniMax’s headline model for short sequences with strong physics and prompt adherence.",

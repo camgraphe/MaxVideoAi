@@ -9,7 +9,7 @@
   "overview": "Veo 3.1 Fast is the speed-and-cost tier of the Veo family: 4–8s clips, 720p/1080p, text or image input, framing/tone presets, optional native audio, and per-second pricing for rapid testing.",
   "hero": {
     "title": "Veo 3.1 Fast – High-Speed AI Video with Optional Audio",
-    "intro": "Veo 3.1 Fast – High-Speed AI Video with Optional Audio (4–8s, 720p/1080p)",
+    "intro": "Draft-tier Veo for quick volume testing — with the same cinematic language.",
     "badge": "720p/1080p · 4–8s · Text or Image input",
     "ctaPrimary": {
       "label": "Try Veo 3.1 Fast",
@@ -25,10 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Fast concept testing before full Veo 3.1 or Sora 2 Pro renders",
-      "Short 9:16 or 16:9 clips for TikTok, Reels, Shorts, YouTube intros",
-      "Mood-driven B-roll and loops for landing pages and product sections",
-      "Lightweight internal comms, announcements and training snippets"
+      {
+        "title": "Rapid concept testing",
+        "icon": "zap"
+      },
+      {
+        "title": "Ad variants & A/B tests",
+        "icon": "ads"
+      },
+      {
+        "title": "Social drafts & loops",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Quick product takes",
+        "icon": "product"
+      },
+      {
+        "title": "Pre-viz & story beats",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Style exploration (many variants)",
+        "icon": "wand2"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -124,22 +144,40 @@
   "custom": {
     "heroDesc1": "Veo 3.1 Fast brings DeepMind’s cinematic engine to a lower price point and faster turnaround—perfect for rapid testing and social loops.",
     "heroDesc2": "Start from a short text brief or a single reference image, pick 4/6/8 seconds, choose 16:9 or 9:16, toggle audio, and generate clips fast enough to A/B multiple ideas in one session.",
-    "whyTitle": "Why Veo 3.1 Fast is powerful inside MaxVideoAI:",
+    "heroSupportLine": "Best for exploring hooks, angles, and pacing fast before you regenerate winners in Veo 3.1.",
+    "whyTitle": "Why Veo 3.1 Fast is powerful",
     "heroHighlights": [
-      "Fast, affordable 4–8s clips for social and experimentation",
-      "Text → Video and Image → Video from a single composer",
-      "Cinematic Controls (framing, tone, camera hints) shared with Veo 3.1",
-      "Audio toggle – native audio when you need it, silent when you don’t",
-      "Pay-as-you-go pricing for iteration and client reviews",
-      "Available in Europe, UK and worldwide via the same MaxVideoAI wallet",
-      "Works alongside Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax Hailuo, Nano Banana for easy A/B tests"
+      "Optimized for speed + business workflows||Built for programmatic ad generation and rapid creative testing at scale.",
+      "Keeps Veo’s cinematic intent||Clear camera language + style cues translate well into consistent variants.",
+      "Sound-ready drafts||Great for rough timing and vibe; polish the final take in the premium tier.",
+      "Simple upgrade path||Draft in Fast, then regenerate the keepers in Veo 3.1 for higher-fidelity finals."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Fast concept testing before a full Veo 3.1 or Sora 2 Pro render",
-      "Short 9:16 or 16:9 clips for TikTok, Reels, Shorts, YouTube intros",
-      "Mood-driven B-roll and loops for landing pages and product sections",
-      "Lightweight internal comms, announcements and training snippets"
+      {
+        "title": "Rapid concept testing",
+        "icon": "zap"
+      },
+      {
+        "title": "Ad variants & A/B tests",
+        "icon": "ads"
+      },
+      {
+        "title": "Social drafts & loops",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Quick product takes",
+        "icon": "product"
+      },
+      {
+        "title": "Pre-viz & story beats",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Style exploration (many variants)",
+        "icon": "wand2"
+      }
     ],
     "whatTitle": "What Veo 3.1 Fast Actually Is in MaxVideoAI",
     "whatIntro1": "Veo 3.1 Fast is tuned for speed and efficiency within the Veo family.",

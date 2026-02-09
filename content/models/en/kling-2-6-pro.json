@@ -9,7 +9,7 @@
   "overview": "Kling 2.6 Pro in MaxVideoAI: short-form cinematic clips with native audio, text or image input, 1080p output, 5–10s runs, and audio on/off toggle.",
   "hero": {
     "title": "Kling 2.6 Pro – Cinematic AI Video with Native Audio",
-    "intro": "Emotionally rich, cinematic AI video with realistic dialogue and sound for ads, VFX and storytelling.",
+    "intro": "Dialogue-ready cinematic clips from text or a single frame — with native audio that matches the scene.",
     "badge": "1080p · 5–10s · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 2.6 Pro",
@@ -29,10 +29,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Product ads with dialogue and ambience baked in",
-      "Emotional storytelling in short, cinematic beats",
-      "Social-first clips needing polished motion and sound",
-      "Previsualization for VFX and motion design"
+      {
+        "title": "Product ads with dialogue + ambience",
+        "icon": "ads"
+      },
+      {
+        "title": "Emotional storytelling beats",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Voiceover hooks & character lines",
+        "icon": "mic"
+      },
+      {
+        "title": "Social promos with polished motion + sound",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Trailer-style beats (music/SFX mood)",
+        "icon": "storyboard"
+      },
+      {
+        "title": "VFX / motion design previs with synced audio",
+        "icon": "sparkles"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -112,16 +132,15 @@
     }
   ],
   "custom": {
-    "whyTitle": "Why Kling 2.6 Pro inside MaxVideoAI",
+    "heroSupportLine": "Best for short ads, mini-stories, and VFX beats where emotion + sound matter.",
+    "whyTitle": "Why Kling 2.6 Pro is powerful",
     "heroDesc1": "Cinematic 5–10s clips where video, dialogue, ambience, sound effects, and music are generated together in one pass at 1080p. Text or image input in a single card, with native audio in English and Chinese built in.",
     "heroDesc2": "Use Kling 2.6 Pro when you need emotionally rich motion with fully synced sound; toggle audio off for silent drafts or manual sound design.",
     "heroHighlights": [
-      "Text → Video and Image → Video in one card",
-      "End-to-end audio: dialogue/narration, SFX, ambience, music in one pass",
-      "5–10s cinematic clips at 1080p with strong prompt adherence",
-      "Audio toggle for previs or sound-on renders",
-      "Native speech in English and Chinese",
-      "Per-second pricing through your MaxVideoAI wallet"
+      "Native audio in one pass||Dialogue, ambience, and SFX land in sync with the visuals.",
+      "Speech-ready outputs||Built-in voice support for English and Chinese lines.",
+      "Cinematic intent holds up||Clear camera direction and beats translate with less drift.",
+      "Flexible for post||Keep audio on for drafts, or mute and finish sound in your editor."
     ],
     "specTitle": "Real Specs – Kling 2.6 Pro in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",

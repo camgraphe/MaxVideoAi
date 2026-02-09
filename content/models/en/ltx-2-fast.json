@@ -9,7 +9,7 @@
   "overview": "LTX-2 Fast in MaxVideoAI: 6–20s renders, 1080p/1440p/4K, 25 or 50 fps, text or image input, native audio on/off, priced per second.",
   "hero": {
     "title": "LTX-2 Fast – AI Video with Native Audio",
-    "intro": "Fast 20-second AI video with native audio. Perfect for tests, social clips, and quick iterations.",
+    "intro": "Draft-tier clips built for speed — ideal when you want to test ideas without friction.",
     "badge": "1080p/1440p/4K · 6–20s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
       "label": "Start generating with LTX-2 Fast",
@@ -29,10 +29,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Rapid social clips and ads with synced audio",
-      "Concept tests before premium renders",
-      "Story beats and mood pieces up to 20 seconds",
-      "Vertical reels that need quick iteration"
+      {
+        "title": "Rapid concept testing",
+        "icon": "zap"
+      },
+      {
+        "title": "Ad drafts & variant testing",
+        "icon": "ads"
+      },
+      {
+        "title": "Social clips & quick iterations",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Pre-viz & story beats",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Mood pieces & cinematic B-roll",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Rough-cut sequences & loops",
+        "icon": "repeat2"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -124,13 +144,12 @@
     "whyTitle": "Why LTX-2 Fast inside MaxVideoAI",
     "heroDesc1": "Create 6–20 second clips with native audio, 1080p–4K and 25/50 fps in one card. LTX-2 Fast is the “instant” tier of the LTX-2 family: perfect for rapid social cuts, drafts, storyboards and mood pieces when you want 4K quality without waiting.",
     "heroDesc2": "Above 10 seconds we automatically keep runs at 1080p/25 fps to match the Fal routing and keep turnarounds reliable.",
+    "heroSupportLine": "Use it for hooks, pacing, and mood exploration, then regenerate winners in the premium tier.",
     "heroHighlights": [
-      "6–20s renders with audio on/off in a single card",
-      "1080p, 1440p or 4K with 25/50 fps for crisp motion",
-      "Text → Video and Image → Video using the same prompt lab",
-      "“Fast” tier of the LTX-2 family — lowest cost and quickest turnaround for drafts and social clips",
-      "Native audio (dialogue/ambience/SFX/music) included by default",
-      "Wallet-based per-second pricing; no extra contracts or LTX Studio account needed"
+      "Built for iteration speed||Make lots of variations fast without overthinking the first pass.",
+      "More room per clip||Better for pacing, build-up, and “mini-scene” beats than ultra-short engines.",
+      "Sound-ready drafts||Great for temp dialogue/ambience/SFX timing (or mute and finish audio in post).",
+      "Easy upgrade path||Keep the same prompt structure and rerun the keepers in LTX-2 Pro for polish."
     ],
     "specTitle": "Real Specs – LTX-2 Fast in MaxVideoAI",
     "specNote": "Specs reflect the live routing via Fal today.",

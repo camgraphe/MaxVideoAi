@@ -9,7 +9,7 @@
   "overview": "LTX-2 Pro in MaxVideoAI: 6–10s cinematic clips, 1080p/1440p/4K, 25 or 50 fps, text or image input, native audio toggle, priced per second.",
   "hero": {
     "title": "LTX-2 Pro – High-Fidelity AI Video with Audio",
-    "intro": "High-fidelity cinematic AI video with synchronized audio, up to 4K and 50 fps for production work.",
+    "intro": "Production-grade clips from text or a still — built for polished motion and sound that lands in sync.",
     "badge": "1080p/1440p/4K · 6–10s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
       "label": "Start generating with LTX-2 Pro",
@@ -29,10 +29,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Premium product spots with synced sound design",
-      "Cinematic brand stories and hero shots",
-      "Short ads and social cutdowns that need polish",
-      "Production previz with audio timing intact"
+      {
+        "title": "Premium product spots",
+        "icon": "product"
+      },
+      {
+        "title": "Brand hero shots",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Paid ads & campaign creatives",
+        "icon": "ads"
+      },
+      {
+        "title": "Polished social cutdowns",
+        "icon": "scissors"
+      },
+      {
+        "title": "Pre-viz with timing intact",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Dialogue-led beats & voiceover hooks",
+        "icon": "mic"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -112,15 +132,15 @@
     }
   ],
   "custom": {
-    "whyTitle": "Why LTX-2 Pro inside MaxVideoAI",
+    "heroSupportLine": "Best for premium product spots, brand stories, and client-ready cutdowns when you want the cleanest finish.",
+    "whyTitle": "Why LTX-2 Pro is powerful",
     "heroDesc1": "High-fidelity 6–10 second renders with native audio, up to 4K/50 fps, for premium stories and hero shots. LTX-2 Pro is the highest-quality tier of the LTX-2 family, built for final-quality campaigns rather than drafts.",
     "heroDesc2": "Use Pro when you need the cleanest detail, the most stable motion, and nuanced sound design. Toggle audio off for silent scoring in post.",
     "heroHighlights": [
-      "High-fidelity 6–10s renders with audio on/off in one card",
-      "1080p, 1440p or 4K at 25/50 fps for production-ready motion",
-      "Text → Video and Image → Video using the same prompt lab as LTX-2 Fast",
-      "Tuned for premium campaigns: sharper detail, smoother motion, more nuanced audio than Fast",
-      "Wallet-based per-second pricing through MaxVideoAI — no extra LTX account required"
+      "Audio-visual sync in one pass||Dialogue, ambience, and SFX land with the action.",
+      "Premium finish||Cleaner detail and smoother motion for final-take deliverables.",
+      "Directable with clear prompts||Simple beats + camera language translate reliably.",
+      "Built for production workflows||Keep sound for drafts, or mute and finish in post."
     ],
     "specTitle": "Real Specs – LTX-2 Pro in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",

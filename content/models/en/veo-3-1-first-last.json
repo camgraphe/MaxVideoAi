@@ -9,7 +9,7 @@
   "overview": "Veo 3.1 First/Last in MaxVideoAI bridges two images with a directed, cinematic transition. You provide a first frame, a last frame, and a short prompt; Veo generates a smooth 4/6/8 second clip at 720p or 1080p, with optional native audio.",
   "hero": {
     "title": "Veo 3.1 First/Last – First & Last Frame to Video in MaxVideoAI (720p/1080p, up to 8s)",
-    "intro": "Veo 3.1 First/Last – Seamless transitions between two frames, with native audio",
+    "intro": "Turn two keyframes into one smooth, cinematic transition.",
     "badge": "720p/1080p · up to 8 s · First & last frame + text prompt",
     "ctaPrimary": {
       "label": "Start generating with Veo 3.1 First/Last",
@@ -25,11 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Before/after transitions: product upgrades, glow-ups, environmental changes",
-      "Scene bridges in short films, ads or explainers",
-      "Logo or brand transitions using designed first and last keyframes",
-      "Stylized morphs between two character designs or environments",
-      "Camera moves from one layout to another without cutting"
+      {
+        "title": "Before/after transformations",
+        "icon": "arrowLeftRight"
+      },
+      {
+        "title": "Scene bridges",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Logo & brand morphs",
+        "icon": "sparkles"
+      },
+      {
+        "title": "UI & layout transitions",
+        "icon": "layout"
+      },
+      {
+        "title": "Sketch → final reveals",
+        "icon": "pen"
+      },
+      {
+        "title": "Camera-path transitions",
+        "icon": "camera"
+      }
     ]
   },
   "compareLink": {
@@ -68,22 +87,40 @@
   "custom": {
     "heroDesc1": "Bridge two frames with Veo 3.1 First/Last: upload start and end images, add a prompt, and get a smooth 4/6/8s transition at 720p or 1080p with optional native audio.",
     "heroDesc2": "Use it for scene bridges, before/after stories, logo/UI morphs, and designed transitions where you already know the start and end composition.",
-    "whyTitle": "Why Veo 3.1 First/Last is powerful inside MaxVideoAI",
+    "heroSupportLine": "Perfect when you already know the start and end layout — let Veo handle everything in between.",
+    "whyTitle": "Why Veo 3.1 First/Last is powerful",
     "heroHighlights": [
-      "Bridges two stills into a continuous, cinematic transition",
-      "Native audio support when enabled",
-      "720p or 1080p, up to ~8 seconds",
-      "Direction via text prompt to control motion and pacing",
-      "Audio toggle and pay-per-second pricing (same logic as Veo 3.1)",
-      "Lives alongside Veo 3.1 and Veo 3.1 Fast in the same UI"
+      "Two-frame control||Lock the start and the destination; generate the bridge between them.",
+      "Promptable motion path||Direct camera movement, pacing, and what changes along the way.",
+      "Continuity by design||Great for keeping layout and identity stable across the shot.",
+      "Sound-aware transitions||Add a couple of ambience/SFX cues to sell the change (or keep it silent)."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Before/after transitions and environmental changes",
-      "Scene bridges in ads, explainers or short films",
-      "Logo / brand transitions with designed keyframes",
-      "Stylized morphs between character or layout designs",
-      "Camera moves from one layout to another without cuts"
+      {
+        "title": "Before/after transformations",
+        "icon": "arrowLeftRight"
+      },
+      {
+        "title": "Scene bridges",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Logo & brand morphs",
+        "icon": "sparkles"
+      },
+      {
+        "title": "UI & layout transitions",
+        "icon": "layout"
+      },
+      {
+        "title": "Sketch → final reveals",
+        "icon": "pen"
+      },
+      {
+        "title": "Camera-path transitions",
+        "icon": "camera"
+      }
     ],
     "whatTitle": "What Veo 3.1 First/Last actually is in MaxVideoAI",
     "whatIntro1": "Google’s Veo 3.1 “first and last frame” / “Frames to Video” mode that interpolates between two images with optional audio.",

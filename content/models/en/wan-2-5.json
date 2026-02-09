@@ -9,7 +9,7 @@
   "overview": "Wan 2.5 in MaxVideoAI: audio-ready 5–10s clips from text or a single image, at 480p/720p/1080p. Optional WAV/MP3 upload, native audio when no track is provided, prompt expansion toggle, and per-second pricing by resolution.",
   "hero": {
     "title": "Wan 2.5 – Text or Image to Video with Optional Audio in MaxVideoAI (480p–1080p, 5–10s)",
-    "intro": "Wan 2.5 – Audio-Ready AI Video for Cinematic 5–10s Clips (480p/720p/1080p)",
+    "intro": "Audio-ready cinematic beats from text or a still — sync to your track or let Wan generate sound.",
     "badge": "480p/720p/1080p · 5–10s · Text or Image input · Optional audio",
     "ctaPrimary": {
       "label": "Start generating with Wan 2.5",
@@ -25,11 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "5 or 10 second hero beats with synchronized sound",
-      "Animating portraits, concept art or product stills with audio-backed motion",
-      "Cheap 480p look-dev before committing to 1080p finals",
-      "Localized story beats (English or Chinese prompts) with prompt expansion help",
-      "Sound-led concepts where music hits, SFX or VO define the moment"
+      {
+        "title": "Ad hero beats (sound-led)",
+        "icon": "ads"
+      },
+      {
+        "title": "Music-timed reveals",
+        "icon": "music"
+      },
+      {
+        "title": "Voiceover hooks & dialogue moments",
+        "icon": "mic"
+      },
+      {
+        "title": "Product still → motion",
+        "icon": "product"
+      },
+      {
+        "title": "Portraits & concept art motion",
+        "icon": "ugc"
+      },
+      {
+        "title": "Look-dev & style exploration",
+        "icon": "wand2"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -125,25 +144,40 @@
   "custom": {
     "heroDesc1": "Wan 2.5 lets you storyboard cinematic beats with built-in audio: prompt or image input, optional WAV/MP3, 5 or 10 seconds at 480p/720p/1080p.",
     "heroDesc2": "Use it for hero beats and reveals where music, ambience or dialogue matter. Upload a track for tight sync or let Wan score the scene natively.",
-    "whyTitle": "Why Wan 2.5 is powerful inside MaxVideoAI",
+    "heroSupportLine": "Best for music-led reveals, voiceover hooks, and punchy hero beats that feel finished.",
+    "whyTitle": "Why Wan 2.5 is powerful",
     "heroHighlights": [
-      "Text → Video and Image → Video in one engine",
-      "Optional audio upload (WAV/MP3) to lock timing to music or VO",
-      "Native audio generation when no track is attached",
-      "Flexible resolution tiers: 480p, 720p, 1080p",
-      "5 or 10 second beats that feel like finished shots",
-      "Prompt expansion toggle to enrich short briefs",
-      "Pay-as-you-go pricing with clear per-second rates",
-      "Available in Europe, UK and worldwide via the MaxVideoAI wallet",
-      "Fits alongside Sora, Veo, Pika, Kling, MiniMax Hailuo for cross-engine tests"
+      "Audio + visuals together||Native dialogue, ambience, and SFX in the same render.",
+      "Bring your own track||Use an audio URL/upload to lock timing to music or VO.",
+      "Stronger prompt follow-through||Camera + sound cues land more consistently with structured direction.",
+      "Style-flexible outputs||Works for both realistic and stylized looks when you keep prompts concrete."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Hero beats with synchronized sound",
-      "Portraits, concept art or product stills animated with audio",
-      "480p look-dev, 1080p finals",
-      "English/Chinese prompts with optional expansion",
-      "Sound-led ideas where music hits or VO matter"
+      {
+        "title": "Ad hero beats (sound-led)",
+        "icon": "ads"
+      },
+      {
+        "title": "Music-timed reveals",
+        "icon": "music"
+      },
+      {
+        "title": "Voiceover hooks & dialogue moments",
+        "icon": "mic"
+      },
+      {
+        "title": "Product still → motion",
+        "icon": "product"
+      },
+      {
+        "title": "Portraits & concept art motion",
+        "icon": "ugc"
+      },
+      {
+        "title": "Look-dev & style exploration",
+        "icon": "wand2"
+      }
     ],
     "whatTitle": "What Wan 2.5 Actually Is in MaxVideoAI",
     "whatIntro1": "Wan 2.5 is a text-and-image-to-video model built for short cinematic clips with native audio.",

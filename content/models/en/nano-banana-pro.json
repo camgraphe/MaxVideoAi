@@ -9,7 +9,7 @@
   "overview": "Nano Banana Pro is the Gemini 3-powered upgrade for brands that need legible text, consistent characters, and export-ready stills. Draft 1K/2K explorations, then flip to 4K when the frame is locked—all inside the MaxVideoAI image lab.",
   "hero": {
     "title": "Nano Banana Pro – 4K Text-to-Image & Editing",
-    "intro": "Studio-quality stills with 1K/2K/4K outputs, precise typography, and multi-image edits. Built for campaign work, product launches, and high-end references.",
+    "intro": "Studio-grade still generation and semantic edits — built for campaign assets and clean typography.",
     "badge": "Text → Image · Image → Image · 1K / 2K / 4K",
     "ctaPrimary": {
       "label": "Launch Nano Banana Pro",
@@ -33,9 +33,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "4K campaign stills with readable typography",
-      "Multi-image edits for consistent product families",
-      "Reference boards before you animate in Veo, Sora, Kling, or Wan"
+      {
+        "title": "Posters & ads with readable copy",
+        "icon": "type"
+      },
+      {
+        "title": "Product shots & packaging mockups",
+        "icon": "product"
+      },
+      {
+        "title": "Consistent product families (variants & SKUs)",
+        "icon": "layers"
+      },
+      {
+        "title": "No-mask edits (relight / restyle / swap details)",
+        "icon": "wand2"
+      },
+      {
+        "title": "Slides, UI mockups & diagram visuals",
+        "icon": "layout"
+      },
+      {
+        "title": "Keyframes & reference boards before video animation",
+        "icon": "storyboard"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -113,15 +134,39 @@
   ],
   "pricingNotes": "$0.15 per 1K/2K image, $0.30 at 4K. Pricing shown live inside the workspace before you render.",
   "custom": {
-    "whyTitle": "Why Nano Banana Pro inside MaxVideoAI",
+    "heroEyebrow": "Google — Gemini 3 Pro Image",
+    "heroSupportLine": "Best for brand-ready stills, product family consistency, and reference boards before you animate in video engines.",
+    "heroSpecChips": [
+      {
+        "label": "Text→Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image→Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "No-mask edits"
+      },
+      {
+        "label": "Multi-image references"
+      },
+      {
+        "label": "Typography"
+      },
+      {
+        "label": "Up to 4K",
+        "icon": "resolution"
+      }
+    ],
+    "whyTitle": "Why Nano Banana Pro is powerful",
     "heroDesc1": "Generate 1K, 2K, or 4K stills with laser-sharp text and tone, right next to your video engines.",
     "heroDesc2": "One wallet, one prompt lab, and full logging—no separate Fal account needed.",
     "heroHighlights": [
-      "Studio-quality text-to-image and image-to-image",
-      "1K/2K drafts plus export-ready 4K finals",
-      "Legible typography and signage powered by Gemini 3",
-      "Upload references for consistent people, wardrobe, and products",
-      "Commercial licensing handled via MaxVideoAI credits"
+      "Readable text and layouts||Built for marketing assets where typography actually needs to hold up.",
+      "Semantic edits without masks||Describe the change; keep the rest consistent (composition, lighting, identity).",
+      "Reference-driven consistency||Great for keeping a product/character “on model” across a full set.",
+      "Follows detailed briefs better||Handles multi-part art direction with fewer random surprises."
     ],
     "whatTitle": "How Nano Banana Pro works here",
     "whatIntro1": "Choose Generate or Edit, set num_images (1–8), pick your aspect ratio, and decide whether you need 1K/2K or 4K outputs.",

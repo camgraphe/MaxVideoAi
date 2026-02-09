@@ -34,6 +34,7 @@ import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import { getExamplesHref } from '@/lib/examples-links';
 import {
   Box,
+  ArrowLeftRight,
   Camera,
   Check,
   ChevronDown,
@@ -41,15 +42,27 @@ import {
   Clock,
   Crop,
   Film,
+  Gamepad2,
   Image as ImageIcon,
   Layers,
+  LayoutTemplate,
   Megaphone,
   Monitor,
+  Mic,
+  Music,
+  PenTool,
+  Repeat,
+  Repeat2,
+  Scissors,
   Smartphone,
   Sparkles,
   Type,
   User,
+  Users,
+  Wind,
+  Coins,
   Volume2,
+  Wand2,
   Zap,
 } from 'lucide-react';
 
@@ -202,13 +215,29 @@ type BestUseCaseIconKey =
   | 'ugc'
   | 'product'
   | 'storyboard'
+  | 'type'
   | 'cinematic'
   | 'camera'
   | 'layers'
   | 'zap'
   | 'audio'
   | 'sparkles'
-  | 'smartphone';
+  | 'smartphone'
+  | 'wand2'
+  | 'arrowLeftRight'
+  | 'layout'
+  | 'pen'
+  | 'repeat'
+  | 'gamepad2'
+  | 'image'
+  | 'users'
+  | 'repeat2'
+  | 'volume2'
+  | 'music'
+  | 'mic'
+  | 'scissors'
+  | 'wind'
+  | 'coins';
 type BestUseCaseItem = { title: string; icon: BestUseCaseIconKey; chips?: string[] };
 type RelatedItem = {
   brand: string;
@@ -247,7 +276,7 @@ type KeySpecKey =
   | 'lipSync'
   | 'cameraMotionControls'
   | 'watermark';
-type KeySpecRow = { label: string; value: string };
+type KeySpecRow = { key: KeySpecKey; label: string; value: string };
 type KeySpecValues = Record<KeySpecKey, string>;
 
 type PromptingTabId = 'quick' | 'structured' | 'pro' | 'storyboard';
@@ -394,6 +423,7 @@ const BEST_USE_CASE_ICON_MAP = {
   ugc: User,
   product: Box,
   storyboard: Clapperboard,
+  type: Type,
   cinematic: Film,
   camera: Camera,
   layers: Layers,
@@ -401,6 +431,21 @@ const BEST_USE_CASE_ICON_MAP = {
   audio: Volume2,
   sparkles: Sparkles,
   smartphone: Smartphone,
+  wand2: Wand2,
+  arrowLeftRight: ArrowLeftRight,
+  layout: LayoutTemplate,
+  pen: PenTool,
+  repeat: Repeat,
+  gamepad2: Gamepad2,
+  image: ImageIcon,
+  users: Users,
+  repeat2: Repeat2,
+  volume2: Volume2,
+  music: Music,
+  mic: Mic,
+  scissors: Scissors,
+  wind: Wind,
+  coins: Coins,
 } as const;
 const FULL_BLEED_SECTION =
   "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-[2] after:absolute after:inset-y-0 after:left-1/2 after:right-1/2 after:-ml-[50vw] after:-mr-[50vw] after:content-[''] after:-z-[1]";
@@ -419,6 +464,7 @@ const BEST_USE_CASE_ICON_KEYS: BestUseCaseIconKey[] = [
   'ugc',
   'product',
   'storyboard',
+  'type',
   'cinematic',
   'camera',
   'layers',
@@ -426,12 +472,28 @@ const BEST_USE_CASE_ICON_KEYS: BestUseCaseIconKey[] = [
   'audio',
   'sparkles',
   'smartphone',
+  'wand2',
+  'arrowLeftRight',
+  'layout',
+  'pen',
+  'repeat',
+  'gamepad2',
+  'image',
+  'users',
+  'repeat2',
+  'volume2',
+  'music',
+  'mic',
+  'scissors',
+  'wind',
+  'coins',
 ];
 const BEST_USE_CASE_ICON_RULES: Array<{ icon: BestUseCaseIconKey; test: RegExp }> = [
   { icon: 'ads', test: /\b(ad|ads|advert|advertising|marketing|campaign|promo|commercial)s?\b/i },
   { icon: 'ugc', test: /\bugc\b|user[-\s]?generated|creator|influencer|lifestyle|social\b/i },
   { icon: 'product', test: /\bproduct|e-?commerce|shop|retail|catalog|packaging|brand\b/i },
   { icon: 'storyboard', test: /\bstoryboard|concept|previs|animatic|pitch|shot list|story\b/i },
+  { icon: 'type', test: /\btypography|type|poster|copy|text\b/i },
   { icon: 'layers', test: /\bcontinuity|multi[-\s]?beat|multi[-\s]?scene|sequenc|chain\b/i },
   { icon: 'cinematic', test: /\bcinematic|film|director|lens|camera\b/i },
   { icon: 'camera', test: /\bimage-to-video|image to video|remaster|reference still|lighting\b/i },
@@ -439,12 +501,28 @@ const BEST_USE_CASE_ICON_RULES: Array<{ icon: BestUseCaseIconKey; test: RegExp }
   { icon: 'audio', test: /\baudio|sound|music|voice|sfx\b/i },
   { icon: 'sparkles', test: /\bhero|premium|polished|showcase|sparkle|sparkles\b/i },
   { icon: 'smartphone', test: /\bsocial|mobile|phone|vertical|reel|tiktok|shorts\b/i },
+  { icon: 'wand2', test: /\bstyle|stylize|variation|variants|explore|exploration|look\b/i },
+  { icon: 'arrowLeftRight', test: /\bbefore\/after|before and after|transform|transition\b/i },
+  { icon: 'layout', test: /\bui|layout|interface|screen|wireframe\b/i },
+  { icon: 'pen', test: /\bsketch|draw|draft|illustration\b/i },
+  { icon: 'repeat', test: /\bloop|repeat|seamless\b/i },
+  { icon: 'gamepad2', test: /\bgaming|game|fandom|pop\b/i },
+  { icon: 'image', test: /\bkeyframe|still|image\b/i },
+  { icon: 'users', test: /\bsubject consistency|reference video|characters|people\b/i },
+  { icon: 'repeat2', test: /\bmatch cut|transition|bridge\b/i },
+  { icon: 'volume2', test: /\bsound bed|audio url|soundtrack\b/i },
+  { icon: 'music', test: /\bmusic|track|beat|score\b/i },
+  { icon: 'mic', test: /\bvoiceover|voice over|dialogue|vo\b/i },
+  { icon: 'scissors', test: /\bcutdown|edit|trim|cut\b/i },
+  { icon: 'wind', test: /\bwind|cloth|particles|physics|inertia\b/i },
+  { icon: 'coins', test: /\bbudget|cheap|low cost|volume\b/i },
 ];
 const DEFAULT_CHIPS_BY_ICON: Record<BestUseCaseIconKey, string[]> = {
   ads: ['Fast iteration', 'Audio'],
   ugc: ['Vertical', 'Natural motion'],
   product: ['Clean detail', 'Lighting'],
   storyboard: ['Shot list', '4–12s'],
+  type: ['Typography', 'Readable'],
   cinematic: ['Camera control', 'Motion'],
   camera: ['Lighting continuity', 'High-res'],
   layers: ['Continuity', 'Multi-beat'],
@@ -452,6 +530,21 @@ const DEFAULT_CHIPS_BY_ICON: Record<BestUseCaseIconKey, string[]> = {
   audio: ['Sound cues', 'Rhythm'],
   sparkles: ['Hero shot', 'Polished'],
   smartphone: ['Vertical', 'Variants'],
+  wand2: ['Style', 'Variants'],
+  arrowLeftRight: ['Before/after', 'Transitions'],
+  layout: ['UI', 'Layout'],
+  pen: ['Sketch', 'Reveal'],
+  repeat: ['Loops', 'Motion'],
+  gamepad2: ['Gaming', 'Pop'],
+  image: ['Keyframe', 'Transition'],
+  users: ['Consistency', 'Reference'],
+  repeat2: ['Transitions', 'Match cuts'],
+  volume2: ['Sound bed', 'Audio'],
+  music: ['Timing', 'Beats'],
+  mic: ['Voice', 'Dialogue'],
+  scissors: ['Cutdowns', 'Edits'],
+  wind: ['Physics', 'Motion'],
+  coins: ['Budget', 'Variants'],
 };
 const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'pricePerSecond', label: 'Price / second' },
@@ -1028,6 +1121,36 @@ function normalizeHeroSubtitle(text: string, locale: AppLocale): string {
   });
   output = output.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
   return output;
+}
+
+function stripMaxVideoAI(text: string): string {
+  let output = text;
+  output = output.replace(/\b(as\s+available|available)\s+in\s+MaxVideoAI(?:\s+today)?\b/gi, '');
+  output = output.replace(/\b(in|inside|on|via)\s+MaxVideoAI(?:\s+today)?\b/gi, '');
+  output = output.replace(/\bMaxVideoAI\b/gi, '');
+  output = output.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?])/g, '$1');
+  output = output.replace(/^[\s–—-]+/, '').replace(/[\s–—-]+$/, '');
+  return output.trim();
+}
+
+function buildDefaultSpecTitle(providerName: string | null, heroTitle: string): string {
+  const parts = [providerName, heroTitle].filter(Boolean);
+  if (!parts.length) return 'Real Specs';
+  return `Real Specs — ${parts.join(' ')}`;
+}
+
+function normalizeSpecTitle(rawTitle: string | null, providerName: string | null, heroTitle: string): string {
+  if (!rawTitle) return buildDefaultSpecTitle(providerName, heroTitle);
+  const cleaned = stripMaxVideoAI(rawTitle);
+  if (!cleaned) return buildDefaultSpecTitle(providerName, heroTitle);
+  if (/^specs?$/i.test(cleaned)) return buildDefaultSpecTitle(providerName, heroTitle);
+  return cleaned;
+}
+
+function normalizeSpecNote(rawNote: string | null): string | null {
+  if (!rawNote) return null;
+  const cleaned = stripMaxVideoAI(rawNote);
+  return cleaned || null;
 }
 
 function inferBestUseCaseIcon(title: string): BestUseCaseIconKey {
@@ -1776,6 +1899,17 @@ async function renderSoraModelPage({
       ];
     }
   }
+  if (engine.modelSlug === 'kling-2-5-turbo') {
+    const isSixteenNine = (aspect?: string | null) => {
+      const normalized = (aspect ?? '').trim();
+      return normalized === '16:9' || normalized.startsWith('16:9');
+    };
+    galleryVideos = [...galleryVideos].sort((a, b) => {
+      const aScore = (isSixteenNine(a.aspectRatio) ? 0 : 2) + (a.videoUrl ? 0 : 1);
+      const bScore = (isSixteenNine(b.aspectRatio) ? 0 : 2) + (b.videoUrl ? 0 : 1);
+      return aScore - bScore;
+    });
+  }
 
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
@@ -1791,7 +1925,15 @@ async function renderSoraModelPage({
     label: localizedContent.marketingName ?? engine.marketingName ?? 'Sora',
   };
 
-  const heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
+  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
+  if (engine.modelSlug === 'kling-2-5-turbo') {
+    const heroCandidate =
+      galleryVideos.find((video) => video.aspectRatio === '16:9' && Boolean(video.videoUrl)) ??
+      galleryVideos.find((video) => video.aspectRatio === '16:9');
+    if (heroCandidate) {
+      heroMedia = toFeaturedMedia(heroCandidate) ?? heroMedia;
+    }
+  }
   const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
   if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
     demoMedia.prompt =
@@ -1806,22 +1948,23 @@ async function renderSoraModelPage({
     .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
     .slice(0, 3);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
-  const showPricePerSecondInSpecs = copy.showPricePerSecondInSpecs;
+  const showPricePerSecondInSpecs = true;
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
   const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
-  const keySpecValues = keySpecsEntry
-    ? buildSpecValues(engine, keySpecsEntry.keySpecs, pricePerSecondLabel)
-    : null;
+  const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, pricePerSecondLabel);
   const keySpecDefs = showPricePerSecondInSpecs
     ? KEY_SPEC_ROW_DEFS
     : KEY_SPEC_ROW_DEFS.filter((row) => row.key !== 'pricePerSecond');
   const keySpecRows: KeySpecRow[] = keySpecValues
-    ? keySpecDefs.map(({ key, label }) => ({
-        label,
-        value: key === 'maxResolution' ? normalizeMaxResolution(keySpecValues[key]) : keySpecValues[key],
-      })).filter((row) => !isPending(row.value) && !isUnsupported(row.value))
+    ? keySpecDefs
+        .map(({ key, label }) => ({
+          key,
+          label,
+          value: key === 'maxResolution' ? normalizeMaxResolution(keySpecValues[key]) : keySpecValues[key],
+        }))
+        .filter((row) => (row.key === 'pricePerSecond' ? !isUnsupported(row.value) : !isPending(row.value) && !isUnsupported(row.value)))
     : [];
 
   return (
@@ -1922,6 +2065,8 @@ function Sora2PageLayout({
   const heroDesc2 = copy.heroDesc2;
   const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues);
   const heroTrustLine = locale === 'en' ? GENERIC_TRUST_LINE : copy.heroTrustLine;
+  const specTitle = normalizeSpecTitle(copy.specTitle, providerName, heroTitle);
+  const specNote = normalizeSpecNote(copy.specNote);
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? formatPricePerSecond(engine);
   const heroDuration =
@@ -2367,21 +2512,21 @@ function Sora2PageLayout({
             id="specs"
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
-            {copy.specTitle ? (
+            {specTitle ? (
               <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                {copy.specTitle}
+                {specTitle}
               </h2>
             ) : null}
-            {copy.specNote ? (
+            {specNote ? (
               <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-center text-sm text-text-secondary">
-                {copy.specNote}
+                {specNote}
               </blockquote>
             ) : null}
             {keySpecRows.length ? (
               <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-3 gap-y-1.5 border-t border-hairline/70 pt-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {keySpecRows.map((row, index) => (
                   <div
-                    key={row.label}
+                    key={row.key}
                     className={`flex items-start gap-2 border-hairline/70 py-1.5 pr-1 ${
                       index < keySpecRows.length - 1 ? 'border-b' : ''
                     }`}

@@ -3070,8 +3070,8 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       'Bring your existing MaxVideoAI workflow to still imagery. Nano Banana covers both text-to-image runs and prompt-driven edits from the same prompt lab, wallet, and logging stack.',
     media: {
       videoUrl: '/hero/pika-22.mp4',
-      imagePath: '/hero/pika-22.jpg',
-      altText: 'Nano Banana photoreal product still placeholder',
+      imagePath: 'https://v3b.fal.media/files/b/elephant/swnM7Nh3lbF0WcmLFEd7v.png',
+      altText: 'Nano Banana image preview',
     },
     prompts: [
       {

@@ -9,7 +9,7 @@
   "overview": "Wan 2.6 in MaxVideoAI: multi-shot 5–15s clips from text or a still image, plus reference-to-video (5–10s) for subject consistency across variations. 720p/1080p output, optional audio on T2V/I2V, pay-as-you-go pricing.",
   "hero": {
     "title": "Wan 2.6 – Multi-shot AI video (Text/Image 5–15s, Reference 5–10s, 720p/1080p)",
-    "intro": "Cinematic short clips built for structured prompts, clean transitions, and consistent subjects.",
+    "intro": "Structured, multi-shot clips with stronger subject consistency — especially when you start from references.",
     "badge": "720p/1080p · Text/Image 5–15s · Reference 5–10s · Optional audio (T2V/I2V)",
     "ctaPrimary": {
       "label": "Start generating with Wan 2.6",
@@ -25,10 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Short cinematic storyboards and mini trailers (multi-shot, 10–15s)",
-      "Product hero motion from a single key visual (I2V)",
-      "Character or subject consistency with 1–3 reference videos (R2V)",
-      "Cross-format social deliverables without re-cropping"
+      {
+        "title": "Mini trailers & storyboards",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Product hero motion (from a still)",
+        "icon": "product"
+      },
+      {
+        "title": "Subject consistency (reference video)",
+        "icon": "users"
+      },
+      {
+        "title": "Multi-shot sequences (timestamped beats)",
+        "icon": "layers"
+      },
+      {
+        "title": "Match cuts & clean transitions",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Sound beds via audio URL (T2V/I2V)",
+        "icon": "volume2"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -108,22 +128,42 @@
     }
   ],
   "custom": {
-    "whyTitle": "Why Wan 2.6 is powerful inside MaxVideoAI",
+    "heroSupportLine": "Ideal for storyboards, mini-trailers, and product motion where clean transitions matter.",
+    "whyTitle": "Why Wan 2.6 is powerful",
     "heroDesc1": "Wan 2.6 unifies Text, Image, and Reference video inputs in one engine card, so you can iterate on short cinematic beats without switching models.",
     "heroDesc2": "Use multi-shot prompts for mini trailers, animate a single still, or lock character consistency using 1–3 reference videos.",
     "heroHighlights": [
-      "Text → Video, Image → Video, and Reference → Video in one engine card",
-      "Multi-shot prompting with timestamp markers for mini narratives",
-      "Optional background audio via URL on T2V/I2V (disabled on R2V)",
-      "Expanded aspect ratios for cross-platform delivery",
-      "Transparent per-second pricing in the MaxVideoAI wallet"
+      "Three modes, one workflow||Pick text, image, or reference video depending on how much control you need.",
+      "Timestamped shot lists||Beat-by-beat prompts steer pacing and transitions with less drift.",
+      "Reference anchoring||Tag @Video1/@Video2/@Video3 to keep the same subject across variants.",
+      "Optional sound bed input||Add a background track for text/image runs; keep reference runs focused on visuals."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Cinematic storyboards and mini trailers",
-      "Product hero motion from a still image",
-      "Subject consistency using reference videos",
-      "Cross-format social outputs"
+      {
+        "title": "Mini trailers & storyboards",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Product hero motion (from a still)",
+        "icon": "product"
+      },
+      {
+        "title": "Subject consistency (reference video)",
+        "icon": "users"
+      },
+      {
+        "title": "Multi-shot sequences (timestamped beats)",
+        "icon": "layers"
+      },
+      {
+        "title": "Match cuts & clean transitions",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Sound beds via audio URL (T2V/I2V)",
+        "icon": "volume2"
+      }
     ],
     "whatTitle": "How Wan 2.6 works in MaxVideoAI",
     "whatIntro1": "Choose Text, Image, or Reference mode, set duration and resolution, then prompt.",
