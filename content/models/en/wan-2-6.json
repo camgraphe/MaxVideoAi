@@ -203,14 +203,17 @@
     ],
     "tipsTitle": "Tips & limitations",
     "strengths": [
-      "Multi-shot control for mini narratives",
-      "Reference videos for stronger identity consistency",
-      "Flexible aspect ratios for social platforms"
+      "Use timestamped beats for pacing (2–3 beats max). One clear action per beat.",
+      "Repeat the same anchors across beats (subject, wardrobe/props, location, lighting, lens feel) to reduce drift.",
+      "For consistency, use Reference mode and tag clips directly in the prompt (@Video1 / @Video2 / @Video3).",
+      "Call out transitions (match cut, whip pan, cut on action) instead of “dynamic” wording.",
+      "Add a sound bed only when you’re in Text/Image modes; keep Reference runs focused on visuals."
     ],
     "boundaries": [
-      "Reference mode is limited to 5–10s",
-      "Audio uploads are disabled in Reference mode",
-      "Keep prompts short and clear to avoid drift"
+      "Reference-to-Video supports only 5s or 10s (not 15s).",
+      "Reference mode uses 1–3 videos and expects @Video1/@Video2/@Video3 tags.",
+      "Prompts are short-form (800 characters); keep the “must-have” details early.",
+      "Audio URL / sound bed is not part of Reference-to-Video in this routing."
     ],
     "comparisonTitle": "Wan 2.6 vs Wan 2.5 – Quick overview",
     "comparisonPoints": [
@@ -276,10 +279,11 @@
     ],
     "troubleshootingTitle": "Common issues (quick fixes)",
     "troubleshootingItems": [
-      "Subject changes / drift → shorter prompts + fewer beats + switch to Reference with 2 tighter-framed videos",
-      "Camera too jittery → replace \"dynamic\" with \"slow, smooth, controlled\" + specify \"single take\"",
-      "Beats feel inconsistent → repeat anchors (lens, location, time of day, wardrobe) in each beat",
-      "Look deviates from the key visual (I2V) → say \"same scene / same subject\", then ask only for motion"
+      "Subject changes / drift → reduce beats, repeat anchors in every beat, and switch to Reference with cleaner, tighter-framed videos.",
+      "Camera too jittery → replace “dynamic” with “slow, smooth, controlled”; specify “tripod-stable” or “smooth track”.",
+      "Beats feel inconsistent → add timestamps ([0–5s], [5–10s]) and make each beat a single readable action.",
+      "Look deviates from the key visual → start from Image→Video (hero frame), then only ask for motion; keep the style recipe identical.",
+      "Transitions feel jumpy → explicitly name the transition + keep the camera move continuous between beats."
     ],
     "promptingTitle": "How to Write a Great Wan 2.6 Prompt",
     "promptingIntro": "Wan 2.6 follows short prompts with clear subject, scene, and motion; use a simple shot list for multi-shot.",
@@ -289,7 +293,7 @@
       "For multi-shot, keep it to 2-3 beats.",
       "Add a short negative prompt to avoid artifacts."
     ],
-    "tipsIntro": "Wan is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Wan 2.6 is easiest to steer when you use short beats, explicit transitions, and reference anchoring when identity must stay stable.",
     "promptingEngineWhy": [
       "Prompt expansion handles short, concrete prompts.",
       "Reference mode works best when you specify what must stay consistent.",
@@ -345,6 +349,16 @@
     ],
     "demoNotes": [
       "Audio option: URL to a soft ambient bed 3–15s, low volume."
-    ]
+    ],
+    "safetyTitle": "Safety & people / likeness",
+    "safetyRules": [
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t include private personal data (addresses, phone numbers, documents, non-consenting faces).",
+      "Some prompts or reference videos may be blocked by provider safety filters."
+    ],
+    "safetyInterpretation": [],
+    "safetyNote": null
   }
 }

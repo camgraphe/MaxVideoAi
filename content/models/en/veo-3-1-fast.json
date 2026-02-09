@@ -243,27 +243,27 @@
     ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "Speed and price for A/B tests and explorations",
-      "Strong for ambient, mood-driven scenes and clear product shots",
-      "Audio toggle for rough mixes or silent drafts",
-      "Ideal for social formats where 4–8 seconds is the whole story"
+      "Lead with framing + camera move (wide/medium/close + dolly/pan/handheld) before style.",
+      "Keep one hero subject and one readable action per clip.",
+      "Use 2–3 concrete anchors (time of day, weather, 1–2 set details) instead of long lists.",
+      "For continuity, reuse the same “shot recipe” (palette, lighting, lens feel) and change one variable per take.",
+      "Audio is best with minimal cues: ambience + 1 key sound, or one short VO line."
     ],
     "boundaries": [
-      "Single-scene focus; not for multi-location narratives",
-      "No multi-image reference or first/last frame chaining in this tier",
-      "Slightly lower detail/realism than full Veo 3.1 (trade speed for fidelity)",
-      "Tiny text or dense UI may be soft; overlay critical copy in post"
+      "Single-scene focus works best; multi-location narratives tend to drift.",
+      "This tier is draft-first (slightly less detail/fidelity than full Veo 3.1).",
+      "Tiny UI text and small lettering are unreliable — add in post."
     ],
-    "safetyTitle": "Safety, People & Likeness",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "Avoid real public figures, political content, explicit material or minors.",
-      "Some generations may be blocked or adjusted per provider policies.",
-      "Outputs carry AI provenance markers (SynthID-style watermarking)."
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t include private personal data (addresses, phone numbers, documents, non-consenting faces).",
+      "Some prompts or references may be blocked by provider safety filters."
     ],
-    "safetyInterpretation": [
-      "Provider safety applies; MaxVideoAI layers additional checks for pro use."
-    ],
-    "safetyNote": "These safeguards keep Veo 3.1 Fast appropriate for professional environments.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "Veo 3.1 Fast vs Veo 3.1 – Quick Overview",
     "comparisonPoints": [
       "Veo 3.1 Fast: cheaper, faster; best for tests, social loops, internal reviews.",
@@ -307,7 +307,7 @@
       "Call out framing and camera move.",
       "Use 2-3 visual anchors, not long lists."
     ],
-    "tipsIntro": "Veo Fast is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Veo 3.1 Fast is most reliable when you write a short shot brief: one subject, one action, clear framing, and one camera move.",
     "promptingEngineWhy": [
       "Fast favors simple beats and short prompts.",
       "Camera language improves consistency.",
@@ -362,6 +362,14 @@
       "One clear subject and one environment.",
       "Simple movement that loops cleanly.",
       "Audio supports the mood without adding complexity."
+    ],
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Drift / ignores details → move subject + action + framing to the first line; remove extra beats; keep constraints positive (“clean background”, “centered subject”).",
+      "Motion feels messy → one camera move only; slow the action; simplify the background.",
+      "Off-brand look → lock palette + lighting; reuse the same wording; add a reference frame when you can.",
+      "Text/signage breaks → keep readable text off-screen; overlay critical copy in post.",
+      "VO / lip sync feels off → shorten lines; avoid fast speech and long monologues."
     ]
   }
 }

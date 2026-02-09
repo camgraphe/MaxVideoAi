@@ -245,29 +245,27 @@
     ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "Strong camera control via framing presets and motion cues",
-      "Great for ads, explainers and campaigns that need consistency across variants",
-      "Native audio for first-pass sound design and VO",
-      "Handles short, focused sequences better than chaotic prompts"
+      "Director notes win: shot size + angle + one camera move (dolly / pan / handheld) before you describe style.",
+      "Keep one hero subject per shot; make the action physical and easy to read.",
+      "For continuity, reuse the same “shot recipe” (palette, lighting, lens feel) and change only one variable at a time.",
+      "Audio works best with minimal cues: ambience + 1 key sound, or one short VO line."
     ],
     "boundaries": [
-      "Clips are 4–8 seconds; use Extend and editing to go longer",
-      "1080p max – no 4K outputs in this configuration",
-      "Tiny text and detailed UI are hit-or-miss; overlay critical copy in post",
-      "If it drifts, tighten subject and camera instructions and reduce actions"
+      "Up to 8 seconds per render; go longer by chaining clips (or Extend).",
+      "1080p max in this routing.",
+      "24 fps only.",
+      "Tiny UI text and small lettering are unreliable — add in post."
     ],
-    "safetyTitle": "Safety, People & Likeness",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "Do not generate real public figures, politicians or celebrities.",
-      "No minors in risky or suggestive contexts; no explicit sexual content or hateful/violent scenes.",
-      "Avoid using real people’s likeness without consent.",
-      "Some prompts and images may be blocked or adjusted by provider policies; this is expected."
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "No non-consensual intimate imagery; don’t include private personal data (addresses, phone numbers, documents).",
+      "Keep outputs brand-safe — some prompts or reference images may be blocked by provider safety filters."
     ],
-    "safetyInterpretation": [
-      "Generic characters and scenes are fine.",
-      "Provider policies and SynthID-style provenance apply; MaxVideoAI adds its own safety filters."
-    ],
-    "safetyNote": "These guardrails keep Veo 3.1 usable and compliant for professional work.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "Veo 3.1 vs Veo 3.1 Fast – Quick Overview",
     "comparisonPoints": [
       "Veo 3.1 is the premium, full-fidelity tier with richer audio and motion.",
@@ -311,7 +309,7 @@
       "Name framing and camera movement explicitly.",
       "Use concrete style anchors (lighting, lens feel, color)."
     ],
-    "tipsIntro": "Veo is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Veo 3.1 is easiest to control when you write like a shot brief: framing, one camera move, and clear lighting cues.",
     "promptingEngineWhy": [
       "Veo responds to camera language (shot size, angle, movement).",
       "Keep actions physical and simple per clip.",
@@ -370,6 +368,14 @@
     "demoNotes": [
       "Clear 3-beat structure, consistent environment, and defined cinematography.",
       "VO fits within 8s; explicit “no subtitles” prevents text overlays."
+    ],
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Prompt drift / ignores details → cut extra actions, move camera + framing to the first lines, and keep constraints positive (“clean background”, “centered subject”).",
+      "Motion feels messy → one move only, slower action, simpler background.",
+      "Off-brand look → lock palette + lighting, reuse the same wording across takes, use a reference frame when possible.",
+      "Text/signage breaks → keep readable text off-screen; plan to overlay critical copy in post.",
+      "VO / lip sync feels off → shorten lines and avoid long monologues."
     ]
   }
 }

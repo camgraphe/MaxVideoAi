@@ -244,28 +244,28 @@
     ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "Stylized animation (anime, illustration, pixel, comic, toon, stylized 3D)",
-      "High-energy short clips for feeds and overlays",
-      "Silent output keeps files light and edit-friendly",
-      "Seeds + negative prompts help refine motion and clean artifacts"
+      "Stylized-first: call out the art style early (anime / toon / comic / pixel / stylized 3D) + 2–3 palette anchors.",
+      "Loop-friendly motion: choose one repeating action (blink, sway, steam, parallax) and keep the camera mostly simple.",
+      "Consistency runs: lock a seed when iterating, and keep the phrasing stable across takes.",
+      "Cleaner outputs: use a short negative prompt to block text/logos and reduce artifacts.",
+      "First/Last frame is best for transitions: define a clear start pose and a clear end pose (simple transforms > complex scenes)."
     ],
     "boundaries": [
-      "5–10 second focus; not for long narratives",
-      "Better at stylized motion than strict photorealism",
-      "Small text/UI may be soft; overlay critical copy in post",
-      "No multi-image sequencing; for multi-beat mini-films, use Sora or Veo and keep Pika for stylized inserts"
+      "Short-form only (5–10s in this setup).",
+      "Silent output in this tier — add sound in post when needed.",
+      "Best for stylized motion and inserts; use other engines for strict photoreal + native audio.",
+      "Small on-screen text is unreliable — overlay critical copy in post."
     ],
-    "safetyTitle": "Safety & People / Likeness",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "Do not recreate real people, celebrities or politicians.",
-      "No explicit, pornographic or fetish content; no sexualized minors; no graphic gore.",
-      "Avoid hateful or harassing content, or anything misleading or harmful.",
-      "Some prompts or images may be blocked or adjusted by provider and MaxVideoAI safeguards."
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t recreate real people/public figures without clear consent/rights (especially from photos/portraits).",
+      "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
+      "Some prompts or reference images may be blocked by provider safety filters."
     ],
-    "safetyInterpretation": [
-      "Use fictional characters, stylized worlds and brand-safe content."
-    ],
-    "safetyNote": "These guardrails keep Pika 2.2 usable and compliant inside MaxVideoAI.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "Pika 2.2 vs MiniMax Hailuo 02 – Quick Overview",
     "comparisonPoints": [
       "Pika 2.2: stylized, silent short clips for animation looks, loops and playful visuals in 720p/1080p.",
@@ -309,7 +309,7 @@
       "Use style keywords and color palette anchors.",
       "Add a short negative prompt for text/logos/extra limbs."
     ],
-    "tipsIntro": "Pika is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Pika 2.2 shines when you lean into stylized looks, tight loops, and controlled iterations (seed + negative prompt).",
     "promptingEngineWhy": [
       "Short, stylized prompts keep motion clean.",
       "Camera language helps loops feel intentional.",
@@ -358,6 +358,14 @@
       "Strong style direction (pixel-art, retro palette).",
       "Simple, repeatable motion for a clean loop.",
       "Avoid conflicting camera instructions or multiple locations."
+    ],
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Looks “uncanny” / too real → push the style harder (texture, line work, palette) and avoid photoreal descriptors.",
+      "Extra limbs / weird anatomy → simplify the action, reduce secondary characters, strengthen the negative prompt.",
+      "Motion feels jittery → one subject, one action, minimal camera move; avoid fast handheld.",
+      "Loop doesn’t loop → explicitly say “seamless loop” + describe what repeats (and keep the start/end state identical).",
+      "Random text/logos appear → add “no text, no logos, no UI” to negative prompt; keep signage out of frame."
     ]
   }
 }

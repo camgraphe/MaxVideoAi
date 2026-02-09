@@ -193,7 +193,7 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     demo: 'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
   },
   'pika-text-to-video': {
-    hero: 'job_af053cfc-3164-4e25-9f5a-8a89f006617e',
+    hero: 'job_2c958e35-92e7-4c0f-8828-ec49476c8c4e',
     demo: 'job_f5992c71-a197-482f-8d0f-028f261ed27b',
   },
   'wan-2-5': {
