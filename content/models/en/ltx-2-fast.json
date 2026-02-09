@@ -193,25 +193,25 @@
     "recreateLabel": "Recreate this shot →",
     "tipsTitle": "Tips & limitations",
     "strengths": [
-      "Fast 6–20s renders with native audio",
-      "Up to 4K, 25 or 50 fps for quick iteration",
-      "Simple per-second pricing with live chip"
+      "Draft-first workflow: generate a few variants, pick a winner, then rerun in Pro for polish.",
+      "One clear action + one camera move beats long “wish-list” prompts.",
+      "Audio works best with 1–2 clear cues (ambience + one key sound). Keep dialogue short."
     ],
     "boundaries": [
-      "12–20s runs are locked to 1080p/25 fps",
-      "Only 16:9 in this routing",
-      "One reference image for I2V; no multi-image control"
+      "12–20s runs are locked to 1080p / 25 fps in this routing.",
+      "16:9 only.",
+      "Image→Video uses one reference image (no multi-image control)."
     ],
-    "safetyTitle": "Safety & suitability",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "Avoid harmful, hateful, or violent prompts",
-      "No sexual content or exploitation",
-      "Do not mimic real public figures without rights"
+      "No sexual content, and absolutely nothing involving minors.",
+      "No hateful, harassing, or violent/graphic content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
+      "Keep outputs brand-safe; if you use dialogue, keep it clean and short."
     ],
-    "safetyInterpretation": [
-      "Keep prompts brand-safe; borderline content may be blocked"
-    ],
-    "safetyNote": "Best for brand-safe social/ads; keep dialogue short and clean.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "demoTitle": "Demo prompt – fast social clip",
     "demoPromptLabel": "8s landscape social",
     "demoPrompt": [
@@ -260,7 +260,7 @@
       "Use concrete visual anchors.",
       "Keep prompts short; avoid long lists."
     ],
-    "tipsIntro": "LTX Fast is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "LTX-2 Fast is most reliable when you treat it like a draft pass: simple shots, quick variations, then polish the winner.",
     "promptingEngineWhy": [
       "Fast is optimized for quick iterations; simple prompts win.",
       "Explicit camera language reduces drift.",
@@ -303,6 +303,14 @@
       }
     ],
     "promptingGuideLabel": "LTX",
-    "promptingGuideUrl": "https://www.ltx.studio"
+    "promptingGuideUrl": "https://www.ltx.studio",
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Feels random / inconsistent → remove extra beats; rerun 2–3 tight variations.",
+      "Motion looks weird → slow the action and keep the camera move simple; reduce background clutter.",
+      "Subject drifts off-brand → start from a reference image; keep wardrobe, lighting, and palette consistent.",
+      "Text looks wrong → avoid readable signage, tiny UI, labels, and on-screen text.",
+      "Dialogue drifts → keep lines short; avoid long monologues."
+    ]
   }
 }

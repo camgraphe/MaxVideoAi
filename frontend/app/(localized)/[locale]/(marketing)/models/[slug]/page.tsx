@@ -206,6 +206,254 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
   },
 };
 
+type FocusVsPair = {
+  slugA: string;
+  slugB: string;
+  nameA: string;
+  nameB: string;
+  copyA: { title: string; items: string[] };
+  copyB: { title: string; items: string[] };
+  onlyFor?: string[];
+};
+
+type FocusVsConfig = {
+  title: string;
+  ctaLabel: string;
+  ctaSlug: string;
+  leftTitle: string;
+  leftItems: string[];
+  rightTitle: string;
+  rightItems: string[];
+};
+
+const FOCUS_VS_PAIRS: FocusVsPair[] = [
+  {
+    slugA: 'sora-2',
+    slugB: 'sora-2-pro',
+    nameA: 'Sora 2',
+    nameB: 'Sora 2 Pro',
+    copyA: {
+      title: 'Use Sora 2 when you want:',
+      items: [
+        'Fast idea → clip iteration',
+        'Storyboards, concepts, UGC-style beats, short ads',
+        'A quick first pass where 720p is enough',
+      ],
+    },
+    copyB: {
+      title: 'Use Sora 2 Pro when you need:',
+      items: [
+        'Higher resolution output',
+        'More control for finals (including audio control in the UI)',
+        'Cleaner final takes after you’ve validated the idea',
+      ],
+    },
+  },
+  {
+    slugA: 'veo-3-1-fast',
+    slugB: 'veo-3-1',
+    nameA: 'Veo 3.1 Fast',
+    nameB: 'Veo 3.1',
+    copyA: {
+      title: 'Use Veo 3.1 Fast when you want:',
+      items: [
+        'Rapid concept testing and volume drafts',
+        'Cheaper A/B ad variants and social loops',
+        'Quick iteration before upgrading winners',
+      ],
+    },
+    copyB: {
+      title: 'Use Veo 3.1 when you need:',
+      items: [
+        'Higher-fidelity frames and polish',
+        'Sound in the same pass when you want it',
+        'More reliable follow-through on prompts',
+      ],
+    },
+  },
+  {
+    slugA: 'wan-2-5',
+    slugB: 'wan-2-6',
+    nameA: 'Wan 2.5',
+    nameB: 'Wan 2.6',
+    copyA: {
+      title: 'Use Wan 2.5 when you want:',
+      items: [
+        'Native audio in the same render',
+        'Simple short beats at lower cost',
+        'Quick ideation with sound-led timing',
+      ],
+    },
+    copyB: {
+      title: 'Use Wan 2.6 when you need:',
+      items: [
+        'Reference-to-video consistency',
+        'Timestamped multi-shot sequences',
+        'More aspect-ratio control and structure',
+      ],
+    },
+  },
+  {
+    slugA: 'kling-2-5-turbo',
+    slugB: 'kling-2-6-pro',
+    nameA: 'Kling 2.5 Turbo',
+    nameB: 'Kling 2.6 Pro',
+    copyA: {
+      title: 'Use Kling 2.5 Turbo when you want:',
+      items: [
+        'Fast silent clips with strong motion',
+        'Budget B-roll loops for edits',
+        'Quick look-dev and drafts',
+      ],
+    },
+    copyB: {
+      title: 'Use Kling 2.6 Pro when you need:',
+      items: [
+        'Native audio with dialogue and SFX',
+        'Polished ad/story beats',
+        'Stronger continuity on camera direction',
+      ],
+    },
+  },
+  {
+    slugA: 'ltx-2-fast',
+    slugB: 'ltx-2',
+    nameA: 'LTX-2 Fast',
+    nameB: 'LTX-2 Pro',
+    copyA: {
+      title: 'Use LTX-2 Fast when you want:',
+      items: [
+        'High-volume drafts and iteration speed',
+        'Quick concept testing and pacing checks',
+        'Rough cuts before finals',
+      ],
+    },
+    copyB: {
+      title: 'Use LTX-2 Pro when you need:',
+      items: [
+        'Polished client-ready deliverables',
+        'Higher resolution and smoother motion',
+        'Audio-visual sync for finals',
+      ],
+    },
+  },
+  {
+    slugA: 'nano-banana',
+    slugB: 'nano-banana-pro',
+    nameA: 'Nano Banana',
+    nameB: 'Nano Banana Pro',
+    copyA: {
+      title: 'Use Nano Banana when you want:',
+      items: [
+        'Fast drafts and quick edits',
+        'Rapid concepting and exploration',
+        'Lightweight layout tests',
+      ],
+    },
+    copyB: {
+      title: 'Use Nano Banana Pro when you need:',
+      items: [
+        'Clean typography and layouts',
+        'Consistent product families',
+        'High-res finals for campaigns',
+      ],
+    },
+  },
+  {
+    slugA: 'veo-3-1-first-last',
+    slugB: 'veo-3-1',
+    nameA: 'Veo 3.1 First/Last',
+    nameB: 'Veo 3.1',
+    copyA: {
+      title: 'Use Veo 3.1 First/Last when you want:',
+      items: [
+        'Two-frame control for start/end locked shots',
+        'Smooth transitions between keyframes',
+        'Continuity on layout and identity',
+      ],
+    },
+    copyB: {
+      title: 'Use Veo 3.1 when you need:',
+      items: [
+        'General-purpose cinematic clips',
+        'More flexible shot variation',
+        'Broader use cases beyond transitions',
+      ],
+    },
+  },
+  {
+    slugA: 'pika-text-to-video',
+    slugB: 'kling-2-5-turbo',
+    nameA: 'Pika 2.2',
+    nameB: 'Kling 2.5 Turbo',
+    onlyFor: ['pika-text-to-video'],
+    copyA: {
+      title: 'Use Pika 2.2 when you want:',
+      items: [
+        'Stylized, social-first motion',
+        'Fast loops and playful variants',
+        'Edit-friendly silent clips',
+      ],
+    },
+    copyB: {
+      title: 'Use Kling 2.5 Turbo when you need:',
+      items: [
+        'More cinematic motion and physics',
+        'Camera-forward action beats',
+        'Cleaner realism for product shots',
+      ],
+    },
+  },
+  {
+    slugA: 'minimax-hailuo-02-text',
+    slugB: 'ltx-2-fast',
+    nameA: 'Hailuo 02',
+    nameB: 'LTX-2 Fast',
+    onlyFor: ['minimax-hailuo-02-text'],
+    copyA: {
+      title: 'Use Hailuo 02 when you want:',
+      items: [
+        'Physics-heavy motion drafts',
+        'Fast visual iteration on a budget',
+        'Quick storyboard animatics',
+      ],
+    },
+    copyB: {
+      title: 'Use LTX-2 Fast when you need:',
+      items: [
+        'More room per clip for pacing',
+        'Drafts that stay closer to camera intent',
+        'An easy upgrade path to Pro',
+      ],
+    },
+  },
+];
+
+function resolveFocusVsConfig(currentSlug: string): FocusVsConfig | null {
+  const entry = FOCUS_VS_PAIRS.find((pair) => {
+    if (pair.onlyFor && !pair.onlyFor.includes(currentSlug)) {
+      return false;
+    }
+    return pair.slugA === currentSlug || pair.slugB === currentSlug;
+  });
+  if (!entry) return null;
+  const isA = entry.slugA === currentSlug;
+  const currentName = isA ? entry.nameA : entry.nameB;
+  const otherName = isA ? entry.nameB : entry.nameA;
+  const currentCopy = isA ? entry.copyA : entry.copyB;
+  const otherCopy = isA ? entry.copyB : entry.copyA;
+  const ctaSlug = isA ? entry.slugB : entry.slugA;
+  return {
+    title: `${currentName} vs ${otherName}`,
+    ctaLabel: `View ${otherName} details →`,
+    ctaSlug,
+    leftTitle: currentCopy.title,
+    leftItems: currentCopy.items,
+    rightTitle: otherCopy.title,
+    rightItems: otherCopy.items,
+  };
+}
+
 type SpecSection = SpecDetailsSection;
 type LocalizedFaqEntry = { question: string; answer: string };
 type QuickStartBlock = { title: string; subtitle?: string | null; steps: string[] };
@@ -1379,6 +1627,36 @@ const DEFAULT_VIDEO_SAFETY = [
   'Some prompts and reference images may be blocked — generic characters and scenes are fine.',
 ];
 
+const DEFAULT_GENERIC_SAFETY = DEFAULT_VIDEO_SAFETY;
+
+function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
+  const filtered = allEngines.filter((entry) => {
+    if (entry.modelSlug === currentSlug) return false;
+    const modes = entry.engine?.modes ?? [];
+    const hasVideoMode = modes.some((mode) => mode.endsWith('v'));
+    return hasVideoMode;
+  });
+
+  const selected: FalEngineEntry[] = [];
+  const usedFamilies = new Set<string>();
+
+  for (const entry of filtered) {
+    const familyKey = entry.family ?? entry.brandId ?? entry.provider ?? entry.modelSlug;
+    if (usedFamilies.has(familyKey)) continue;
+    selected.push(entry);
+    usedFamilies.add(familyKey);
+    if (selected.length >= limit) return selected;
+  }
+
+  for (const entry of filtered) {
+    if (selected.includes(entry)) continue;
+    selected.push(entry);
+    if (selected.length >= limit) break;
+  }
+
+  return selected;
+}
+
 function buildVideoBoundaries(values: KeySpecValues | null): string[] {
   if (!values) {
     return [
@@ -2066,10 +2344,7 @@ async function renderSoraModelPage({
   const galleryCtaHref = heroMedia?.id
     ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
     : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}`;
-  const relatedEngines = listFalEngines()
-    .filter((entry) => entry.modelSlug !== engine.modelSlug)
-    .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
-    .slice(0, 3);
+  const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const showPricePerSecondInSpecs = true;
   const keySpecsMap = await loadEngineKeySpecs();
@@ -2118,7 +2393,7 @@ async function renderSoraModelPage({
       demoMedia={demoMedia}
       galleryVideos={galleryVideos}
       galleryCtaHref={galleryCtaHref}
-      relatedEngines={relatedEngines}
+      compareEngines={compareEngines}
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}
       keySpecValues={keySpecValues}
@@ -2147,7 +2422,7 @@ function Sora2PageLayout({
   demoMedia,
   galleryVideos,
   galleryCtaHref,
-  relatedEngines,
+  compareEngines,
   faqEntries,
   keySpecRows,
   keySpecValues,
@@ -2172,7 +2447,7 @@ function Sora2PageLayout({
   demoMedia: FeaturedMedia | null;
   galleryVideos: ExampleGalleryVideo[];
   galleryCtaHref: string;
-  relatedEngines: FalEngineEntry[];
+  compareEngines: FalEngineEntry[];
   faqEntries: LocalizedFaqEntry[];
   keySpecRows: KeySpecRow[];
   keySpecValues: KeySpecValues | null;
@@ -2261,9 +2536,6 @@ function Sora2PageLayout({
   const bestUseCases = bestUseCaseItems.map((item) => item.title);
   const heroEyebrow = copy.heroEyebrow ?? buildEyebrow(providerName);
   const heroSupportLine = copy.heroSupportLine ?? buildSupportLine(bestUseCases);
-  const whatFlowSteps = copy.whatFlowSteps;
-  const quickStartTitle = copy.quickStartTitle;
-  const quickStartBlocks = copy.quickStartBlocks;
   const breadcrumbModelLabel = localizedContent.marketingName ?? engine.marketingName ?? heroTitle;
   const howToLatamTitle = copy.howToLatamTitle;
   const howToLatamSteps = copy.howToLatamSteps;
@@ -2274,21 +2546,17 @@ function Sora2PageLayout({
       : copy.specSections;
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const quickPricingTitle = copy.quickPricingTitle;
-  const imageToVideoSteps = copy.imageFlow;
-  const imageToVideoUseCases = copy.imageWhy;
   const strengths = copy.strengths;
   const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues) : [];
   const troubleshootingTitle = copy.troubleshootingTitle ?? (isVideoEngine ? 'Common problems → fast fixes' : null);
   const troubleshootingItems =
     copy.troubleshootingItems.length ? copy.troubleshootingItems : isVideoEngine ? DEFAULT_VIDEO_TROUBLESHOOTING : [];
-  const safetyRules = copy.safetyRules.length ? copy.safetyRules : isVideoEngine ? DEFAULT_VIDEO_SAFETY : [];
+  const safetyRules = copy.safetyRules.length ? copy.safetyRules : DEFAULT_GENERIC_SAFETY;
   const safetyInterpretation = copy.safetyInterpretation;
-  const comparisonPoints = copy.comparisonPoints;
-  const relatedCtaSora2 = copy.relatedCtaSora2;
-  const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
   const useDemoMediaPrompt = Boolean(demoMedia?.prompt?.trim());
+  const focusVsConfig = resolveFocusVsConfig(engine.modelSlug);
   const baseFaqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
@@ -2331,26 +2599,15 @@ function Sora2PageLayout({
   const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
   const hasTextSection = true;
-  const hasWhatSection =
-    !isSoraPrompting &&
-    Boolean(
-      copy.whatTitle ||
-        copy.whatIntro1 ||
-        copy.whatIntro2 ||
-        quickStartTitle ||
-        quickStartBlocks.length ||
-        whatFlowSteps.length
-    );
-  const hasImageSection = isSoraPrompting || imageToVideoSteps.length > 0 || imageToVideoUseCases.length > 0;
   const hasTipsSection =
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
-  const hasSafetySection =
-    isSoraPrompting || safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
+  const hasSafetySection = safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
   const hasFaqSection = isSoraPrompting || faqList.length > 0;
+  const hasCompareGrid = !isImageEngine && (relatedItems.length > 0 || compareEngines.length > 0);
+  const hasCompareSection = Boolean(focusVsConfig) || hasCompareGrid;
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
-  const imageWorkflowAnchorId = 'image-workflow';
-  const compareAnchorId = isSoraPrompting ? 'compare' : imageWorkflowAnchorId;
+  const compareAnchorId = 'compare';
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: textAnchorId, label: 'Examples', visible: hasExamples },
@@ -2358,8 +2615,8 @@ function Sora2PageLayout({
     { id: 'tips', label: 'Tips', visible: hasTipsSection },
     {
       id: compareAnchorId,
-      label: isSoraPrompting ? 'Compare' : isImageEngine ? 'Image to Image' : 'Image to Video',
-      visible: hasImageSection,
+      label: 'Compare',
+      visible: hasCompareSection,
     },
     { id: 'safety', label: 'Safety', visible: hasSafetySection },
     { id: 'faq', label: 'FAQ', visible: hasFaqSection },
@@ -2936,46 +3193,50 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {isSoraPrompting ? (
+        {hasCompareSection ? (
           <section
             id={compareAnchorId}
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}
           >
-            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              Sora vs Sora Pro
-            </h2>
-            <TextLink
-              href={localizeModelsPath('sora-2-pro')}
-              className="mx-auto text-sm font-semibold text-brand hover:text-brandHover"
-              linkComponent={Link}
-            >
-              View Sora 2 Pro details →
-            </TextLink>
-            <div className="grid grid-gap-sm lg:grid-cols-2">
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">Use Sora when you want:</h3>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  <li>Fast idea → clip iteration</li>
-                  <li>Storyboards, concepts, UGC-style beats, short ads</li>
-                  <li>A quick first pass where 720p is enough</li>
-                </ul>
-              </div>
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">Use Sora Pro when you need:</h3>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  <li>Higher resolution output</li>
-                  <li>More control for finals (including audio control in the UI)</li>
-                  <li>Cleaner final takes after you’ve validated the idea</li>
-                </ul>
-              </div>
-            </div>
-            {isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
-              <div className="mt-10 stack-gap sm:mt-12">
-                <h2 className="mt-8 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                  Compare Sora 2 vs other AI video models
+            {focusVsConfig ? (
+              <>
+                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                  {focusVsConfig.title}
+                </h2>
+                <TextLink
+                  href={localizeModelsPath(focusVsConfig.ctaSlug)}
+                  className="mx-auto text-sm font-semibold text-brand hover:text-brandHover"
+                  linkComponent={Link}
+                >
+                  {focusVsConfig.ctaLabel}
+                </TextLink>
+                <div className="grid grid-gap-sm lg:grid-cols-2">
+                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                    <h3 className="text-base font-semibold text-text-primary">{focusVsConfig.leftTitle}</h3>
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                      {focusVsConfig.leftItems.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                    <h3 className="text-base font-semibold text-text-primary">{focusVsConfig.rightTitle}</h3>
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                      {focusVsConfig.rightItems.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </>
+            ) : null}
+            {hasCompareGrid ? (
+              <div className={focusVsConfig ? 'mt-10 stack-gap sm:mt-12' : 'stack-gap'}>
+                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                  Compare {heroTitle} vs other AI video models
                 </h2>
                 <p className="text-center text-base leading-relaxed text-text-secondary">
-                  Not sure if Sora 2 is the best fit for your shot? These side-by-side comparisons break down the tradeoffs —
+                  Not sure if {heroTitle} is the best fit for your shot? These side-by-side comparisons break down the tradeoffs —
                   <strong> price per second, resolution, audio, speed, and motion style</strong> — so you can pick the right
                   engine fast.
                 </p>
@@ -2983,35 +3244,26 @@ function Sora2PageLayout({
                 <div className="grid grid-gap-sm md:grid-cols-3">
                   {(relatedItems.length
                     ? relatedItems
-                    : relatedEngines.map((entry) => ({
+                    : compareEngines.map((entry) => ({
                         brand: entry.brandId,
                         title: entry.marketingName ?? entry.engine.label,
                         modelSlug: entry.modelSlug,
+                        description: entry.seo?.description ?? '',
                       }))
                   )
                     .filter((entry) => Boolean(entry.modelSlug))
                     .map((entry) => {
                       const label = entry.title ?? '';
-                      const compareBaseSlug = 'sora-2';
-                      const compareSlug = [compareBaseSlug, entry.modelSlug].sort().join('-vs-');
-                      const compareHref = localizeComparePath(compareSlug, compareBaseSlug);
-                      const descriptionBySlug: Record<string, string> = {
-                        'sora-2-pro':
-                          'Need higher resolution or more control for finals? Sora 2 Pro is the upgrade path from Sora 2 when you’re done storyboarding and want cleaner deliverables.',
-                        'veo-3-1':
-                          'Veo 3.1 is strong for cinematic short-form with a different motion feel. Compare it to Sora 2 if you’re optimizing for audio, style, or a specific look.',
-                        'veo-3-1-fast':
-                          'Veo 3.1 Fast is built for cheaper, faster iteration. Compare it to Sora 2 if you want quick volume testing for ads and social.',
-                      };
-                      const ctaBySlug: Record<string, string> = {
-                        'sora-2-pro': 'Compare OpenAI Sora 2 vs OpenAI Sora 2 Pro →',
-                        'veo-3-1': 'Compare OpenAI Sora 2 vs Google Veo 3.1 →',
-                        'veo-3-1-fast': 'Compare OpenAI Sora 2 vs Google Veo 3.1 Fast →',
-                      };
+                      const canCompare =
+                        !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug ?? '');
+                      const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
+                      const compareHref = canCompare
+                        ? localizeComparePath(compareSlug, engineSlug)
+                        : localizeModelsPath(entry.modelSlug ?? '');
+                      const ctaLabel = canCompare ? `Compare ${heroTitle} vs ${label} →` : `Explore ${label} →`;
                       const description =
-                        descriptionBySlug[entry.modelSlug ?? ''] ??
-                        `Compare Sora 2 vs ${label} on price, resolution, audio, speed, and motion style.`;
-                      const ctaLabel = ctaBySlug[entry.modelSlug ?? ''] ?? `Compare Sora 2 vs ${label} →`;
+                        entry.description ||
+                        `Compare ${heroTitle} vs ${label} on price, resolution, audio, speed, and motion style.`;
                       return (
                         <article
                           key={entry.modelSlug}
@@ -3022,230 +3274,19 @@ function Sora2PageLayout({
                               {entry.brand}
                             </p>
                           ) : null}
-                          <h3 className="mt-2 text-lg font-semibold text-text-primary">Sora 2 vs {label}</h3>
+                          <h3 className="mt-2 text-lg font-semibold text-text-primary">
+                            {heroTitle} vs {label}
+                          </h3>
                           <p className="mt-2 text-sm text-text-secondary line-clamp-2">{description}</p>
-                          <TextLink
-                            href={compareHref}
-                            className="mt-4 gap-1 text-sm font-semibold text-brand hover:text-brandHover"
-                            linkComponent={Link}
-                          >
+                          <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
                             {ctaLabel}
                           </TextLink>
                         </article>
                       );
                     })}
                 </div>
-                <ButtonLink
-                  href={normalizedPrimaryCtaHref}
-                  size="lg"
-                  className="w-fit shadow-card"
-                  linkComponent={Link}
-                >
-                  Generate Sora 2 in MaxVideoAI →
-                </ButtonLink>
               </div>
             ) : null}
-          </section>
-        ) : null}
-
-        {!isSoraPrompting ? (
-          <section
-            id={compareAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-          >
-            {copy.imageTitle ? (
-              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                {copy.imageTitle}
-              </h2>
-            ) : null}
-            {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
-            <div className="grid grid-gap-sm lg:grid-cols-2">
-              {imageToVideoSteps.length ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
-                    {imageToVideoSteps.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
-              ) : null}
-              {imageToVideoUseCases.length ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                    {imageToVideoUseCases.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          </section>
-        ) : null}
-
-        {!isSoraPrompting ? (
-          <section
-            id="examples"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
-          >
-          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
-          {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
-          {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
-          {quickStartTitle && quickStartBlocks.length ? (
-            <div className="stack-gap rounded-2xl border border-hairline bg-surface/70 p-4 shadow-card">
-              <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
-              <div className="stack-gap">
-                {quickStartBlocks.map((block) => (
-                  <div key={block.title} className="space-y-2">
-                    <p className="text-sm font-semibold text-text-primary">
-                      {block.title}
-                      {block.subtitle ? <span className="text-text-secondary"> — {block.subtitle}</span> : null}
-                    </p>
-                    <ol className="list-decimal space-y-1 pl-5 text-sm text-text-secondary">
-                      {block.steps.map((step) => (
-                        <li key={step}>{step}</li>
-                      ))}
-                    </ol>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {whatFlowSteps.length ? (
-            <>
-              {copy.whatFlowTitle ? (
-                <p className="text-base font-semibold text-text-primary">{copy.whatFlowTitle}</p>
-              ) : null}
-              <ol className="space-y-2 rounded-2xl border border-hairline bg-surface/70 p-4 text-sm text-text-secondary">
-                {whatFlowSteps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </>
-          ) : null}
-          </section>
-        ) : null}
-
-        {!isSoraPrompting && (copy.comparisonTitle || comparisonPoints.length) ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}>
-            {copy.comparisonTitle ? (
-              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
-            ) : null}
-            <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-              {comparisonPoints.length ? (
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {comparisonPoints.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              ) : null}
-              {copy.comparisonCta ? (
-                <ButtonLink
-                  href={localizedSecondaryCtaHref ?? secondaryCtaHref}
-                  className="shadow-card"
-                  linkComponent={Link}
-                >
-                  {copy.comparisonCta}
-                </ButtonLink>
-              ) : null}
-            </div>
-          </section>
-        ) : null}
-
-        {!isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}>
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-              {copy.relatedTitle ?? 'Explore other models'}
-            </h2>
-            {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
-            <div className="grid grid-gap-sm md:grid-cols-3">
-              {(relatedItems.length
-                ? relatedItems.map((item) => {
-                    const compareSlug = item.modelSlug
-                      ? [engineSlug, item.modelSlug].sort().join('-vs-')
-                      : null;
-                    const compareHref = item.href
-                      ? item.href
-                      : compareSlug
-                        ? localizeComparePath(compareSlug, engineSlug)
-                        : localizeModelsPath(item.modelSlug ?? '');
-                    const label = item.ctaLabel ?? 'Compare →';
-                    return (
-                      <article
-                        key={`${item.brand}-${item.title}`}
-                        className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
-                      >
-                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                          {item.brand}
-                        </p>
-                        <h3 className="mt-2 text-lg font-semibold text-text-primary">{item.title}</h3>
-                        <p className="mt-2 text-sm text-text-secondary line-clamp-3">{item.description}</p>
-                        <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
-                          {label}
-                        </TextLink>
-                      </article>
-                    );
-                  })
-                : relatedEngines.map((entry) => {
-                    const label = entry.marketingName ?? entry.engine.label;
-                    const currentLabel = breadcrumbModelLabel || heroTitle || engine.marketingName || engine.engine.label;
-                    const compareTemplate =
-                      locale === 'fr'
-                        ? 'Comparer {a} vs {b} →'
-                        : locale === 'es'
-                          ? 'Comparar {a} vs {b} →'
-                          : 'Compare {a} vs {b} →';
-                    const exploreTemplate =
-                      locale === 'fr'
-                        ? 'Découvrir {a} →'
-                        : locale === 'es'
-                          ? 'Explorar {a} →'
-                          : 'Explore {a} →';
-                    const fallbackCompare = compareTemplate
-                      .replace('{a}', currentLabel)
-                      .replace('{b}', label);
-                    const fallbackExplore = exploreTemplate.replace('{a}', label);
-                    const ctaLabel =
-                      engineSlug === 'veo-3-1-first-last'
-                        ? entry.modelSlug === 'veo-3-1'
-                          ? 'Explore Veo 3.1 →'
-                          : entry.modelSlug === 'veo-3-1-fast'
-                            ? 'Explore Veo 3.1 Fast →'
-                            : entry.modelSlug === 'sora-2'
-                              ? 'Explore Sora 2 →'
-                              : fallbackCompare
-                        : engineSlug === 'wan-2-6'
-                          ? entry.modelSlug === 'sora-2'
-                            ? relatedCtaSora2 ?? secondaryCta ?? fallbackCompare
-                            : entry.modelSlug === 'sora-2-pro'
-                              ? relatedCtaSora2Pro ?? fallbackCompare
-                              : fallbackCompare
-                          : fallbackCompare;
-                    const canCompare =
-                      !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug);
-                    const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
-                    const compareHref = canCompare
-                      ? localizeComparePath(compareSlug, engineSlug)
-                      : localizeModelsPath(entry.modelSlug);
-                    const linkLabel = canCompare ? ctaLabel : fallbackExplore;
-                    return (
-                      <article
-                        key={entry.modelSlug}
-                        className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
-                      >
-                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
-                        <h3 className="mt-2 text-lg font-semibold text-text-primary">
-                          {label}
-                        </h3>
-                        <p className="mt-2 text-sm text-text-secondary line-clamp-3">
-                          {entry.seo?.description ?? localizedContent.overview ?? ''}
-                        </p>
-                        <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
-                          {linkLabel}
-                        </TextLink>
-                      </article>
-                    );
-                  }))}
-            </div>
           </section>
         ) : null}
 

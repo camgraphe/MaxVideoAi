@@ -184,25 +184,27 @@
     "recreateLabel": "Recreate this shot →",
     "tipsTitle": "Tips & limitations",
     "strengths": [
-      "Premium 6–10s renders with synced audio",
-      "Up to 4K at 25/50 fps",
-      "Great for hero product shots and polished social cutdowns"
+      "Final takes (6–10s): premium polish for ads, hero shots, and brand cutdowns.",
+      "4K output when detail matters (product textures, clean lighting, controlled motion).",
+      "Use 50 fps for action / fast motion; use 25 fps for dialogue-led or calmer shots.",
+      "Audio is strongest with 1–2 deliberate cues (ambience + one key sound). Keep dialogue short."
     ],
     "boundaries": [
-      "16:9 only in this routing",
-      "One reference still for I2V; no multi-image control",
-      "Stay within 6–10s; stitch clips for longer beats"
+      "6–10s max per render in this routing.",
+      "16:9 only.",
+      "Image→Video uses a single reference image (no multi-image control).",
+      "Tiny on-screen text remains unreliable — plan to add text in post."
     ],
-    "safetyTitle": "Safety & suitability",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "Avoid harmful or hateful content",
-      "No sexual content or exploitation",
-      "Do not mimic public figures without rights"
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
+      "Keep outputs brand-safe; if you use dialogue, keep it clean and short."
     ],
-    "safetyInterpretation": [
-      "Keep dialogue and scenes brand-safe; questionable prompts may be blocked"
-    ],
-    "safetyNote": "Use Pro for premium, brand-safe work; keep VO brief and clean.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "demoTitle": "Demo prompt – premium product hero",
     "demoPromptLabel": "6s hero product",
     "demoPrompt": [
@@ -251,7 +253,7 @@
       "Use lens + lighting anchors for consistency.",
       "Keep beats readable; one move per shot."
     ],
-    "tipsIntro": "LTX is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "LTX-2 Pro is a final-take tier: use it when the concept is locked and you want the cleanest finish.",
     "promptingEngineWhy": [
       "Longer prompts are OK if structured.",
       "Camera language and lighting anchors drive fidelity.",
@@ -294,6 +296,14 @@
       }
     ],
     "promptingGuideLabel": "LTX",
-    "promptingGuideUrl": "https://www.ltx.studio"
+    "promptingGuideUrl": "https://www.ltx.studio",
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Looks “busy” or unstable → reduce to one camera move and one main action; simplify the background.",
+      "Subject drifts / changes → keep wardrobe + lighting + palette constant; start from a reference still for consistency.",
+      "Motion feels floaty → slow the action, avoid fast handheld, and keep the move smooth (dolly/track/pan).",
+      "Lip sync feels off → shorten lines, reduce speed of speech, and avoid long monologues.",
+      "Text/signage breaks → keep readable text off-screen; avoid tiny UI labels and logos."
+    ]
   }
 }
