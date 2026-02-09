@@ -241,29 +241,28 @@
     ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "Strong physics/motion for short clips",
-      "Good instruction following",
-      "Excellent price-to-quality for volume runs",
-      "Reference + end-frame support to lock composition"
+      "Physics-first prompts: call out force direction + material response (wind/cloth/particles/inertia/contact) instead of long style lists.",
+      "Use bracketed camera moves ([pan], [tilt], [push in]) and keep it to one move per clip.",
+      "Keep scenes simple so motion reads (one hero subject, one clear action).",
+      "Use First/Last frame when you need a clean landing (match cuts, transforms, start→end transitions).",
+      "Generate multiple variants fast; pick the best motion, then rebuild finals in a higher-fidelity engine."
     ],
     "boundaries": [
-      "512p/768p draft/social tiers, not broadcast 1080p",
-      "6 or 10 s max; stitch for longer edits",
-      "Always silent; add sound in post or via audio engines",
-      "Tiny on-screen text/UI unreliable—overlay critical copy"
+      "Draft resolutions (512p / 768p), not 1080p finals.",
+      "6s or 10s per render in this routing.",
+      "Silent output — add sound in post.",
+      "Tiny on-screen text is unreliable — overlay critical copy in post."
     ],
-    "safetyTitle": "Safety & People / Likeness",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "No real public figures or celebrities",
-      "No explicit sexual content or sexualized minors",
-      "Avoid hateful, harassing or extremist content",
-      "Don’t impersonate real people without consent",
-      "Provider + MaxVideoAI moderation may block or alter outputs"
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness.",
+      "Don’t include private personal data (addresses, phone numbers, documents, non-consenting faces).",
+      "Use only content you have rights to (images/brands/IP); some prompts/inputs may be blocked by provider safety filters."
     ],
-    "safetyInterpretation": [
-      "Use for fictional, brand-safe stories and stylized worlds"
-    ],
-    "safetyNote": "Respect guardrails; Hailuo is for professional, ethical use.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "MiniMax Hailuo 02 vs Pika / Veo / Kling / Wan",
     "comparisonPoints": [
       "MiniMax Hailuo 02: silent 6–10s at 512p/768p, strong physics, low cost",
@@ -309,7 +308,7 @@
       "Use bracketed camera/motion cues.",
       "Use an end frame (optional) to land the transition."
     ],
-    "tipsIntro": "Hailuo is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Hailuo 02 is a draft-tier physics engine: use it for motion tests, transition experiments, and landing clean end frames.",
     "promptingEngineWhy": [
       "Prompt optimizer can expand short prompts.",
       "Camera brackets help steer motion.",
@@ -356,6 +355,14 @@
       "One environment with physical cues.",
       "Easy to loop as a background.",
       "Silent output ready for your soundtrack."
+    ],
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Motion feels floaty → add weight/contact cues (“grounded”, “friction”, “objects don’t slide”), slow the action, reduce camera shake.",
+      "Drift / changes mid-clip → reduce props and secondary characters; repeat the same subject + wardrobe + lighting anchors.",
+      "End frame doesn’t land → describe the final pose/composition explicitly; remove extra actions near the end.",
+      "Jittery camera → specify “tripod-stable” or “smooth track”; avoid “dynamic” wording.",
+      "Random text/logos → add a short negative (“no text, no logos, no UI”) and keep signage out of frame."
     ]
   }
 }

@@ -245,29 +245,28 @@
     ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "Top-tier cinematic motion and realism in short clips",
-      "Default 1080p makes it hero-ready",
-      "Great for action, handheld, tracking, and “shot on phone” looks",
-      "Tier selector simplifies cost/fidelity trade-offs"
+      "Camera-first prompts: framing + angle + a single move (dolly / pan / handheld drift) before style.",
+      "Motion/physics cues: call out weight, inertia, friction, and contact (“heavy footsteps”, “objects stay grounded”, “no floaty motion”).",
+      "Keep action readable: one main action per clip; avoid stacked beats in 5–10s.",
+      "Clean frames: use a short negative prompt to block text/logos and extra characters.",
+      "Image→Video shines for portraits/products: start from a clean still and only ask for motion + camera."
     ],
     "boundaries": [
-      "5 or 10 seconds max; stitch for longer stories",
-      "No native audio; add sound in post or pair with audio engines",
-      "Very verbose prompts can wander; keep it tight",
-      "Tiny on-screen text/UI is unreliable—overlay critical copy"
+      "5s or 10s per render.",
+      "Silent output in this tier — add sound in post when needed.",
+      "1080p max, 24 fps.",
+      "Tiny on-screen text is unreliable — overlay critical copy in post."
     ],
-    "safetyTitle": "Safety & People / Likeness",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "No real celebrities/politicians/public figures",
-      "No explicit sexual content or sexualized minors",
-      "Avoid hateful, harassing or extremist content",
-      "Don’t use real likeness without consent; avoid IP infringement",
-      "Provider and MaxVideoAI moderation may block/adjust content"
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness.",
+      "Don’t include private personal data (addresses, phone numbers, documents, non-consenting faces).",
+      "Use only content you have rights to (images/brands/IP); some prompts or inputs may be blocked by safety filters."
     ],
-    "safetyInterpretation": [
-      "Use Kling for brand-safe, legal, ethical content"
-    ],
-    "safetyNote": "Treat Kling as a professional, compliant tool.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "Kling vs Sora / Veo / Wan / Pika – Quick Overview",
     "comparisonPoints": [
       "Kling 2.5 Turbo: 1080p, silent, cinematic; great for action and hero shots",
@@ -313,7 +312,7 @@
       "Use concrete nouns and settings.",
       "Add a short negative prompt for text/logos/extra people."
     ],
-    "tipsIntro": "Kling Turbo is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Kling 2.5 Turbo is easiest to steer when you write for motion: one subject, one clear action, one camera move — and explicit weight/inertia.",
     "promptingEngineWhy": [
       "Short, physical actions read best in 5-10s.",
       "Explicit camera language improves consistency.",
@@ -361,6 +360,14 @@
       "Single subject, single location, clear camera path.",
       "Room for VO/graphics in post.",
       "Pro Image for best fidelity on a portrait."
+    ],
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Motion feels floaty / fake → add weight + contact cues; slow the action; remove handheld shake; simplify the background.",
+      "Subject/face warps → avoid extreme close-ups + fast turns; reduce facial performance; use Image→Video for stability.",
+      "Identity drifts across takes → reuse the same subject wording + wardrobe + lighting; keep the prompt structure identical.",
+      "Random text/logos appear → strengthen negative prompt (“no text, no logos, no UI, no watermark”) and keep signage out of frame.",
+      "Frame looks chaotic → remove secondary characters/props; keep one hero subject and center the action."
     ]
   }
 }

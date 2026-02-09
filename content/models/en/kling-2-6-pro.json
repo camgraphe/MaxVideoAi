@@ -183,14 +183,17 @@
     "recreateLabel": "Recreate this shot →",
     "tipsTitle": "Tips & limits",
     "strengths": [
-      "Native audio for dialogue, ambience, SFX and a light music bed",
-      "Best results between 5–10s with 1–2 clear actions; chain clips for longer arcs",
-      "1080p-only in this routing; use Kling 2.5, Wan or Veo for 4K"
+      "Write camera-first: framing + angle + a single move (dolly / pan / slow handheld drift), then style.",
+      "Keep the visual beat simple (one subject, one clear action). Short beats sync best with audio.",
+      "If audio is on: add minimal cues (ambience + 1 key SFX) and keep dialogue to one short line.",
+      "State the spoken line explicitly, then leave room for sound (don’t over-direct the mix).",
+      "Generate 2–3 takes for timing; pick the one where lip sync and pacing land."
     ],
     "boundaries": [
-      "English and Chinese speech only; disable audio and dub in post for other languages",
-      "Max 10s per render",
-      "One reference still for I2V; no multi-image or per-character voice control yet"
+      "5s or 10s per render.",
+      "1080p max, 24 fps.",
+      "Speech output is English/Chinese (other languages may be auto-translated to English when audio is enabled).",
+      "Image→Video uses a single reference image; tiny on-screen text remains unreliable (overlay in post)."
     ],
     "promptingTitle": "How to Write a Great Kling 2.6 Pro Prompt",
     "promptingIntro": "Kling 2.6 Pro prefers clear subject, action, and camera direction; add sound cues if audio is on.",
@@ -200,7 +203,7 @@
       "Call out lighting and lens feel.",
       "Add short sound cues or dialogue if audio is on."
     ],
-    "tipsIntro": "Kling is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Kling 2.6 Pro is easiest to steer when you write a tight shot brief and treat audio as part of the scene (not an afterthought).",
     "promptingEngineWhy": [
       "Audio mode supports simple ambience and short lines.",
       "Camera language improves consistency.",
@@ -249,6 +252,24 @@
       }
     ],
     "promptingGuideLabel": "Kling by Kuaishou",
-    "promptingGuideUrl": "https://www.kuaishou.com/en"
+    "promptingGuideUrl": "https://www.kuaishou.com/en",
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Dialogue/lip sync drifts → shorten the line, slow delivery, avoid long monologues; reduce head turns and fast facial performance.",
+      "Audio language mismatch → speech output is English/Chinese; if you need another language, turn audio off and dub in post.",
+      "Motion feels messy → one camera move only, slower action, simpler background.",
+      "Subject/identity drifts → start from Image→Video, keep wardrobe + lighting + palette constant, reuse the same wording across takes.",
+      "Random text/logos appear → add a short negative prompt (“no text, no logos, no UI”) and keep signage out of frame."
+    ],
+    "safetyTitle": "Safety & people / likeness",
+    "safetyRules": [
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t include private personal data (addresses, phone numbers, documents, non-consenting faces).",
+      "Use only content you have rights to; some prompts/inputs may be blocked by provider safety filters."
+    ],
+    "safetyInterpretation": [],
+    "safetyNote": null
   }
 }

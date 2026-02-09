@@ -245,29 +245,28 @@
     ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "Short 5–10 s beats that feel complete",
-      "Audio + video together for trailers, intros and reveals",
-      "Flexible resolution tiers for cheap drafts and polished finals",
-      "Handles realistic or stylized content with clear prompts"
+      "Treat it as a 5–10s “hero beat”: one subject, one clear action, one camera move.",
+      "If timing matters, use an Audio URL and describe what should land on key moments (1–2 cues max).",
+      "Keep dialogue short (one line). Ambience + one SFX cue is usually enough.",
+      "For Image→Video, start from a clean still and prompt motion + camera — don’t re-describe the whole scene.",
+      "Prompt expansion is great for short prompts; keep your input literal and structured so it expands in the right direction."
     ],
     "boundaries": [
-      "Max 10 s per render; stitch clips for longer stories",
-      "Plan a light sound pass in your editor for client work",
-      "Tiny text/UI may be unreliable; keep critical copy as overlays",
-      "Prompt expansion can change nuance; disable for literal control"
+      "Duration is 5s or 10s per render.",
+      "Audio URL: if audio is longer than the video, it’s truncated; if shorter, the remaining video is silent.",
+      "Prompts are short-form (max ~800 chars). Negative prompts are capped too — keep them minimal.",
+      "Safety checks can block borderline content — keep people/likeness and dialogue brand-safe."
     ],
-    "safetyTitle": "Safety & People / Likeness",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "No explicit sexual content or sexualized minors",
-      "No graphic/shocking or glorified violence",
-      "Avoid hateful, harassing or extremist material",
-      "Don’t use real likeness without consent; avoid public figures",
-      "Prompts/images/audio may be blocked or modified by moderation layers"
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t upload private personal data or copyrighted material you don’t have rights to (including audio).",
+      "Some prompts, images, or audio may be blocked by safety filters."
     ],
-    "safetyInterpretation": [
-      "Use Wan 2.5 for brand-safe, legal and ethical content"
-    ],
-    "safetyNote": "Wan 2.5 outputs run through provider and MaxVideoAI safeguards.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "Wan 2.5 vs Sora 2 – Quick Overview",
     "comparisonPoints": [
       "Wan 2.5: audio-ready 5–10s beats with optional track upload and flexible resolution tiers",
@@ -311,7 +310,7 @@
       "Specify camera move and lighting.",
       "Use a short negative prompt to avoid artifacts."
     ],
-    "tipsIntro": "Wan is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Wan 2.5 works best for short, sound-led beats — keep the visual brief simple and let timing come from the audio.",
     "promptingEngineWhy": [
       "Short prompts are expanded automatically.",
       "Audio URL can sync timing; keep cues minimal.",
@@ -361,6 +360,14 @@
       "Audio anchors the transitions.",
       "Single subject/location, clear camera path.",
       "Explicit cues for the hits."
+    ],
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Audio feels off → remember uploaded audio is trimmed to the first 5/10s; prompt to the segment you’re actually using.",
+      "Too much happening / messy motion → cut to one main action; remove extra beats; simplify the background.",
+      "Drift / ignores details → move subject + action + camera to the first line; keep constraints positive (“clean background”, “centered subject”).",
+      "Lip sync drifts → shorten the line and slow the delivery; avoid long monologues.",
+      "Prompt expansion changes nuance → disable expansion for literal control, or shorten the prompt and remove ambiguous adjectives."
     ]
   }
 }
