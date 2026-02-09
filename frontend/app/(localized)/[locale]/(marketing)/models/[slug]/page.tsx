@@ -1983,7 +1983,7 @@ async function renderSoraModelPage({
   })();
   let examples: GalleryVideo[] = [];
   try {
-    examples = await listExamples('date-desc', 60);
+    examples = await listExamples('date-desc', 200);
   } catch (error) {
     console.warn('[models/sora-2] failed to load examples', error);
   }
