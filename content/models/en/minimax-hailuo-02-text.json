@@ -303,18 +303,18 @@
     "finalPara2": "Use it to explore ideas, then promote winners to higher-end models for audio and high-res finals.",
     "finalButton": "Open Generate",
     "promptingTitle": "How to Write a Great Hailuo 02 Prompt",
-    "promptingIntro": "Hailuo performs best with clear subject/action and a grounded environment.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "Hailuo 02 works best with short prompts and explicit motion cues.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, and style. Use bracketed camera moves like [pan], [tilt], [zoom].",
     "promptingGlobalPrinciples": [
-      "Describe the subject, composition, and lighting clearly.",
-      "Use visual anchors (specific nouns > vague adjectives).",
-      "Iterate: change one thing at a time."
+      "Keep prompts short and concrete.",
+      "Use bracketed camera/motion cues.",
+      "Use an end frame (optional) to land the transition."
     ],
     "tipsIntro": "Hailuo is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Short, focused prompts reduce visual drift.",
-      "Clear camera direction improves motion quality.",
-      "Use concrete visual anchors for style consistency."
+      "Prompt optimizer can expand short prompts.",
+      "Camera brackets help steer motion.",
+      "End frame improves landing and match cuts."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -327,21 +327,21 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "copy": "[Subject] [action] in [scene], [camera move in brackets], [lighting/style]."
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "copy": "Subject:\n[Who/what + one action.]\n\nScene:\n[Location + time + 2 anchors.]\n\nCamera:\n[Shot + angle + motion in brackets, e.g., [pan left], [zoom in].]\n\nLook:\n[Lighting + palette + style.]"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
         "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + setting:\n[Key traits + location + anchors.]\n\nCamera + motion:\n[Framing + bracketed motion cue.]\n\nOptional end frame:\n[Describe the target last frame if using one.]\n\nLighting + style:\n[Key light + palette.]"
       }
     ],
     "promptingGuideLabel": "MiniMax",

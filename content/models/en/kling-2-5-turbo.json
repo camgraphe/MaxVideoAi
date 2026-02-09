@@ -307,18 +307,18 @@
     "finalPara2": "Use it when camera work and motion carry the story, then layer audio in post or pair with audio engines.",
     "finalButton": "Open Generate",
     "promptingTitle": "How to Write a Great Kling 2.5 Turbo Prompt",
-    "promptingIntro": "Kling Turbo performs best with short, concrete prompts and clear motion cues.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "Kling Turbo responds best to short, concrete prompts and one clear camera move.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, and style. Use Negative prompt to block artifacts.",
     "promptingGlobalPrinciples": [
-      "Describe the subject, composition, and lighting clearly.",
-      "Use visual anchors (specific nouns > vague adjectives).",
-      "Iterate: change one thing at a time."
+      "One subject, one action, one camera move.",
+      "Use concrete nouns and settings.",
+      "Add a short negative prompt for text/logos/extra people."
     ],
     "tipsIntro": "Kling Turbo is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Optimized for speed — keep prompts short and focused.",
-      "Clear camera language improves consistency.",
-      "Avoid too many beats in one clip."
+      "Short, physical actions read best in 5-10s.",
+      "Explicit camera language improves consistency.",
+      "Negative prompts keep frames clean."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -331,21 +331,21 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "copy": "Prompt: [Subject + action] in [setting], [camera move], [lighting/style].\nNegative: [text, logos, extra limbs, blur]"
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 visual anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nNegative:\n[What to avoid: text, logos, extra people, blur.]"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
         "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet:\n[Location + 3 anchors.]\n\nCinematography:\n[Framing + angle + one move + lens feel.]\n\nLighting:\n[Key light + palette.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
       }
     ],
     "promptingGuideLabel": "Kling by Kuaishou",

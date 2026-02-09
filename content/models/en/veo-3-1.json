@@ -305,19 +305,19 @@
     "finalPara2": "Framing and audio controls make it feel like a virtual camera, not just another black-box generator.",
     "finalButton": "Open Generate",
     "promptingTitle": "How to Write a Great Veo 3.1 Prompt",
-    "promptingIntro": "Veo performs best with clear subject, action, camera direction, and a grounded setting.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "Veo works best when you specify subject, action, context, camera, and style in plain language.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and sound cues.",
     "promptingGlobalPrinciples": [
-      "1 shot = 1 camera move + 1 subject action",
-      "Use visual anchors (specific nouns > vague adjectives)",
-      "Iterate: change one thing at a time"
+      "Lead with subject + action + context.",
+      "Name framing and camera movement explicitly.",
+      "Use concrete style anchors (lighting, lens feel, color)."
     ],
     "tipsIntro": "Veo is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Veo responds well to camera language (framing + motion cues).",
-      "Keep beats short (4–8s) and avoid too many actions per clip.",
-      "Use concrete visual anchors to reduce drift.",
-      "Audio cues can improve pacing; describe 1–2 key sounds."
+      "Veo responds to camera language (shot size, angle, movement).",
+      "Keep actions physical and simple per clip.",
+      "Specify atmosphere: lighting, weather, and mood.",
+      "Prefer positive constraints (say what you want, not what you do not)."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -331,21 +331,28 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "copy": "[Subject] [action] in [context], [camera shot + movement], [lighting], [style], [ambience/sound cue]."
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "copy": "Subject:\n[Who/what + 2-3 defining details.]\n\nAction:\n[One clear physical action.]\n\nContext:\n[Location + time of day + environment.]\n\nCamera:\n- Shot + angle\n- Movement: [pan / dolly / handheld / static]\n- Lens feel: [e.g., 35mm, shallow DOF]\n\nStyle + lighting:\n[Look / palette / key light.]\n\nAmbience + sound (optional):\n[Atmosphere + 1-2 SFX cues.]\n\nConstraints:\nState the desired result (e.g., \"clean background\") instead of \"no/don't\"."
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
         "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "copy": "Director brief:\n[Goal for the shot + intended vibe.]\n\nSubject + wardrobe/props:\n[Key traits + textures.]\n\nSet + continuity:\n[Location, time, weather, 3 visual anchors.]\n\nCinematography:\n- Framing + angle\n- Movement (one move)\n- Lens + depth of field\n- Composition rule (centered / thirds / negative space)\n\nLighting + grade:\n[Key light + contrast + palette anchors.]\n\nSound (optional):\n[Ambience + 1-2 SFX cues.]\n\nConstraints:\nDescribe what to include, not what to exclude."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (shot list)",
+        "description": "Use for short multi-beat sequences in one clip.",
+        "copy": "Shot list (same subject + same setting)\nDuration: [4/6/8s]\n\nShot 1 (0-2s):\n[Framing + action + camera move]\n\nShot 2 (2-5s):\n[Framing + action + camera move]\n\nShot 3 (5-8s):\n[Final action/reveal + camera settle]\n\nLook + mood:\n[Lighting + palette + atmosphere]\n\nSound (optional):\n[Ambience + 1-2 cues]"
       }
     ],
     "promptingGuideLabel": "Google DeepMind",

@@ -282,18 +282,18 @@
       "Look deviates from the key visual (I2V) → say \"same scene / same subject\", then ask only for motion"
     ],
     "promptingTitle": "How to Write a Great Wan 2.6 Prompt",
-    "promptingIntro": "Wan performs best with clear subject, action, and a single camera move.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "Wan 2.6 follows short prompts with clear subject, scene, and motion; use a simple shot list for multi-shot.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, motion, camera, style, and optional sound. Keep prompts concise; prompt expansion helps.",
     "promptingGlobalPrinciples": [
-      "Describe the subject, composition, and lighting clearly.",
-      "Use visual anchors (specific nouns > vague adjectives).",
-      "Iterate: change one thing at a time."
+      "Subject + scene + motion in one clear sentence.",
+      "For multi-shot, keep it to 2-3 beats.",
+      "Add a short negative prompt to avoid artifacts."
     ],
     "tipsIntro": "Wan is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Keep prompts short and explicit to reduce drift.",
-      "Use concrete visual anchors to lock style.",
-      "Avoid too many beats per clip."
+      "Prompt expansion handles short, concrete prompts.",
+      "Reference mode works best when you specify what must stay consistent.",
+      "Audio cues help pacing; keep them minimal."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -306,21 +306,28 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "copy": "[Subject] [motion] in [scene], [camera], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "copy": "Subject:\n[Who/what + key traits.]\n\nScene:\n[Location + time + 2 anchors.]\n\nMotion:\n[One clear action + camera move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
         "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "copy": "Shot list (same subject + same setting)\nShot 1: [action + camera]\nShot 2: [action + camera]\nShot 3: [final action/reveal]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[Text/logos/extra characters.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (timestamped beats)",
+        "description": "Best for multi-shot sequences in one clip.",
+        "copy": "Shot list (same subject + same setting)\nDuration: [5/10/15s]\n\nBeat 1 (0-3s):\n[Framing + action + camera move]\n\nBeat 2 (3-7s):\n[Framing + action + camera move]\n\nBeat 3 (7-10/15s):\n[Final action/reveal + camera settle]\n\nContinuity:\n[Repeat anchors: wardrobe, props, lighting, background]\n[If using references: tag @Video1/@Video2/@Video3]\n\nSound (optional):\n[Ambience + 1-2 cues]\n\nNegative:\n[Text, logos, extra characters, blur]"
       }
     ],
     "promptingGuideLabel": "Wan AI",

@@ -303,18 +303,18 @@
     "finalPara2": "Draft hooks here, then translate winners to Sora or Veo when you need realism or native audio.",
     "finalButton": "Open Generate",
     "promptingTitle": "How to Write a Great Pika Prompt",
-    "promptingIntro": "Pika performs best with clear subject, action, and a specific camera move.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "Pika performs best with stylized prompts, clear motion, and one camera move.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, and style. Use Negative prompt to block text/logos.",
     "promptingGlobalPrinciples": [
-      "Describe the subject, composition, and lighting clearly.",
-      "Use visual anchors (specific nouns > vague adjectives).",
-      "Iterate: change one thing at a time."
+      "One subject, one action, one camera move.",
+      "Use style keywords and color palette anchors.",
+      "Add a short negative prompt for text/logos/extra limbs."
     ],
     "tipsIntro": "Pika is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Keep prompts short and concrete to reduce drift.",
-      "Use a single camera move per clip.",
-      "Visual anchors improve style consistency."
+      "Short, stylized prompts keep motion clean.",
+      "Camera language helps loops feel intentional.",
+      "Negative prompts reduce artifacts."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -327,21 +327,21 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "copy": "Prompt: [Style] + [Subject + action] + [Setting] + [Camera move] + [Lighting].\nNegative: [text, logos, extra limbs, blur]"
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nStyle:\n[Art style + palette + texture.]\n\nNegative:\n[What to avoid.]"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
         "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet + lighting:\n[Location + key light + palette.]\n\nCamera:\n[Framing + angle + one move + lens feel.]\n\nStyle controls:\n[Animation style, texture, grain, color.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
       }
     ],
     "promptingGuideLabel": "Pika Labs",

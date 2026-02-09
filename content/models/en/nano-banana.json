@@ -220,18 +220,18 @@
       "No audio or video inputs in this route"
     ],
     "promptingTitle": "How to Write a Great Nano Banana Prompt",
-    "promptingIntro": "Describe the subject, composition, lighting, and style in clear, concrete terms.",
-    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.",
+    "promptingIntro": "Gemini image models respond to clear subject, composition, and lighting; describe edits in plain language.",
+    "promptingTip": "Tip: resolution + aspect ratio are set in the UI - your prompt controls subject, composition, lighting, style, and edit instructions.",
     "promptingGlobalPrinciples": [
-      "Describe the subject, composition, and lighting clearly.",
-      "Use visual anchors (specific nouns > vague adjectives).",
-      "Iterate: change one thing at a time."
+      "Name the subject and composition first.",
+      "Specify lighting, lens, and style anchors.",
+      "For edits, say what to change and what to keep."
     ],
     "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
     "promptingEngineWhy": [
-      "Keep prompts focused: one subject, one action, one camera angle.",
-      "Use concrete visual anchors (props, textures, lighting cues).",
-      "Iterate by changing a single variable per take."
+      "Fast iteration favors short, specific prompts.",
+      "Multi-image blends work best when you name each reference role.",
+      "Simple text prompts produce cleaner typography."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -244,21 +244,21 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "copy": "[Subject] in [setting], [composition], [lighting], [style]."
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "copy": "Subject:\n[Who/what + key traits.]\n\nComposition:\n[Framing + angle + background.]\n\nLighting:\n[Key light + mood.]\n\nStyle:\n[Photoreal / illustration / palette.]\n\nText (if needed):\n[Exact copy + placement.]\n\nEdit (if editing):\n[Change X, keep Y.]"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
         "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "copy": "Brief:\n[Goal + use case.]\n\nSubject + materials:\n[Details + textures.]\n\nLayout:\n[Grid, spacing, background.]\n\nTypography:\n[Font vibe + hierarchy + exact copy.]\n\nReferences (optional):\n[Ref A controls style; Ref B controls product.]\n\nEdits (if needed):\n[Change list + keep list.]"
       }
     ],
     "promptingGuideLabel": "Learn more"

@@ -244,18 +244,18 @@
     "finalPara2": "Use LTX-2 Fast to iterate, then switch to Pro to finalize.",
     "finalButton": "Open LTX-2 Pro in Generate →",
     "promptingTitle": "How to Write a Great LTX 2 Prompt",
-    "promptingIntro": "LTX performs best with concise prompts and clear camera direction.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "LTX-2 Pro responds to structured, production-style prompts with clear camera direction.",
+    "promptingTip": "Tip: duration + fps are set in the UI - your prompt controls subject, action, camera, lighting, style, and optional sound cues.",
     "promptingGlobalPrinciples": [
-      "1 shot = 1 camera move + 1 subject action",
-      "Use visual anchors (specific nouns > vague adjectives)",
-      "Iterate: change one thing at a time"
+      "Define subject, action, and camera in the first lines.",
+      "Use lens + lighting anchors for consistency.",
+      "Keep beats readable; one move per shot."
     ],
     "tipsIntro": "LTX is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Clear camera language improves consistency.",
-      "Short beats reduce drift.",
-      "Visual anchors stabilize style."
+      "Longer prompts are OK if structured.",
+      "Camera language and lighting anchors drive fidelity.",
+      "Negative prompts help avoid artifacts."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -269,28 +269,28 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject doing 1 clear action] + [Where] + [Camera move] + [Lighting] + [Sound cue]"
+        "copy": "[Subject + action] in [setting], [camera move], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Scene (plain language):\n[Subject + setting + props + time of day. Add 2–3 distinctive visual anchors.]\n\nCinematography:\n- Camera shot: [wide / medium / close-up, angle]\n- Camera motion: [slow push-in / handheld / pan / tracking]\n- Lens look + depth of field: [e.g., 35mm, shallow DOF]\n- Lighting + palette: [key light + 3 palette anchors]\n\nActions (beats):\n- [Beat 1: a small, visible action]\n- [Beat 2: another clear beat]\n- [Beat 3: a final beat in the last second]\n\nDialogue (optional):\n[Keep lines short so they fit the clip length.]\n\nBackground sound:\n[One sentence: ambience + key SFX. Keep it simple.]\n\nConstraints:\nNo logos, no readable text, no subtitles/overlays."
+        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move + lens feel.]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"film crew brief\")",
         "description": "Use this when you need a very specific cinematic look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal. What should the viewer feel/understand?]\n\nSubject:\n[Who/what. Wardrobe/materials. 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors (specific nouns).]\n\nCinematography:\n- Framing: [wide / medium / close-up] + [angle]\n- Lens feel + depth of field: [e.g., 35mm natural, shallow DOF]\n- Camera movement: [ONE move: slow dolly-in / handheld / pan / tracking]\n- Composition: [centered / rule of thirds / negative space]\n- Look (optional): [clean digital / subtle film grain / soft bloom]\n\nLighting & color grade:\n- Key light: [soft window / golden hour / neon practicals / studio key]\n- Contrast: [low / medium / high]\n- Palette anchors: [3–5 anchors: \"warm sunrise, teal shadows, amber highlights\"]\n\nAction (timed beats):\n- Beat 1 (start): [visible action + camera behavior]\n- Beat 2 (middle): [visible action + camera behavior]\n- Beat 3 (end): [final action + end pose / reveal]\n\nSound (if supported):\n- Ambience: [one line]\n- SFX cues: [1–3 cues]\n- Music (optional): [genre + intensity]\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. No slow-motion. No jump cuts."
+        "copy": "Director brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet + continuity:\n[Location + anchors + time of day.]\n\nCinematography:\n[Framing + angle + one move + lens + composition.]\n\nLighting + grade:\n[Key light + contrast + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
       },
       {
         "id": "storyboard",
         "label": "Storyboard",
         "title": "Storyboard prompt (multi-shot / shot list)",
         "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
-        "copy": "Storyboard / shot list prompt\nDuration: [4/8/12s] • Aspect: [16:9 or 9:16]\n\nScene + continuity:\n[Same subject + same location + same wardrobe/props + same lighting throughout.]\n\nShot 1 (0–2s):\n[Framing + subject action + camera move]\n\nShot 2 (2–6s):\n[Framing + subject action + camera move]\n\nShot 3 (6–8/12s):\n[Framing + final action/reveal + camera move or settle]\n\nLighting + mood:\n[Golden hour / soft daylight / neon night… + 2–3 palette anchors]\n\nSound (if supported):\n[Ambience + 1–2 SFX cues + optional music vibe]\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. No jump cuts. No slow-motion."
+        "copy": "Shot list (same subject + setting)\nShot 1: [action + camera]\nShot 2: [action + camera]\nShot 3: [final action/reveal]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues]"
       }
     ],
     "promptingGuideLabel": "LTX",

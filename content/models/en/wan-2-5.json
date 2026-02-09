@@ -305,18 +305,18 @@
     "finalPara2": "Use native or uploaded audio, iterate cheap, and finish in HD when visuals and sound must land together.",
     "finalButton": "Open Generate",
     "promptingTitle": "How to Write a Great Wan 2.5 Prompt",
-    "promptingIntro": "Wan performs best with clear subject, action, and a single camera move.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingIntro": "Wan 2.5 works best with a single clear action and a short, concrete prompt.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, motion, camera, lighting, style, and optional sound. Prompt expansion helps short prompts.",
     "promptingGlobalPrinciples": [
-      "Describe the subject, composition, and lighting clearly.",
-      "Use visual anchors (specific nouns > vague adjectives).",
-      "Iterate: change one thing at a time."
+      "One subject, one action.",
+      "Specify camera move and lighting.",
+      "Use a short negative prompt to avoid artifacts."
     ],
     "tipsIntro": "Wan is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Keep prompts short and explicit to reduce drift.",
-      "Use concrete visual anchors to lock style.",
-      "Avoid too many beats per clip."
+      "Short prompts are expanded automatically.",
+      "Audio URL can sync timing; keep cues minimal.",
+      "Avoid multiple beats in one short clip."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -329,21 +329,21 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+        "copy": "[Subject] [action] in [scene], [camera move], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+        "copy": "Subject:\n[Who/what + one action.]\n\nScene:\n[Location + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
         "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + setting:\n[Key traits + location + anchors.]\n\nCamera:\n[Framing + angle + one move + lens feel.]\n\nLighting + color:\n[Key light + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
       }
     ],
     "promptingGuideLabel": "Wan AI",
