@@ -120,15 +120,15 @@
   "faqs": [
     {
       "q": "Is Nano Banana for images or video?",
-      "a": "Images. Use it to prep photoreal references, thumbnails, and keyframes before sending shots to video engines like Sora or Veo."
+      "a": "Images. Use it for photoreal references, thumbnails, and keyframes before sending shots to video engines."
     },
     {
       "q": "How many images per run?",
-      "a": "Set `num_images` to 1–8. Batch a few variants, then reuse a seed to stay consistent."
+      "a": "Generate multiple outputs per run (controlled by \"num images\" / num_images). Keep batches small for faster iteration."
     },
     {
       "q": "Does edit mode need masks?",
-      "a": "No masks needed. Upload a clean still and describe the transformation (cleanup, background swap, relight)."
+      "a": "No. Upload one or more images and describe the edit in plain language (what to change, what to keep)."
     }
   ],
   "pricingNotes": "Live pricing updates inside the workspace. Check the chip before you render.",
@@ -209,34 +209,45 @@
     "galleryAllCta": "View image examples →",
     "recreateLabel": "Recreate this still →",
     "tipsTitle": "Tips & limits",
+    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
     "strengths": [
-      "Fast photoreal stills for keyframes and thumbnails",
-      "Edit mode for cleanup, relight, and background swaps",
-      "Batch 1–8 outputs, reuse seeds for consistency"
+      "Fast photoreal stills for moodboards, thumbnails, and keyframes",
+      "Edit mode for cleanup, relight, and background swaps (no masking)",
+      "Multi-image blends when you assign roles to references",
+      "Short, readable text (headlines > paragraphs)"
     ],
     "boundaries": [
-      "Image-only; use video engines for motion",
-      "One prompt per batch; keep instructions concise",
-      "No audio or video inputs in this route"
+      "Image-only (no motion)",
+      "Edits require an input image (upload at least one reference)",
+      "Small on-screen text is hit-or-miss — overlay critical copy in post"
+    ],
+    "safetyTitle": "Safety & people / likeness",
+    "safetyRules": [
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness.",
+      "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
+      "Some prompts or reference images may be blocked by provider safety filters."
     ],
     "promptingTitle": "How to Write a Great Nano Banana Prompt",
-    "promptingIntro": "Gemini image models respond to clear subject, composition, and lighting; describe edits in plain language.",
-    "promptingTip": "Tip: resolution + aspect ratio are set in the UI - your prompt controls subject, composition, lighting, style, and edit instructions.",
+    "promptingIntro": "Nano Banana (Gemini 2.5 Flash Image) rewards short, literal briefs. Lead with composition, then lighting/style. For edits, say what to change and what must stay the same. For multi-image blends, assign each reference a role.",
+    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and edit instructions.",
     "promptingGlobalPrinciples": [
-      "Name the subject and composition first.",
-      "Specify lighting, lens, and style anchors.",
-      "For edits, say what to change and what to keep."
+      "Composition first. Style second.",
+      "Keep prompts short and specific; avoid long wish-lists.",
+      "For edits: \"Change X, keep Y\" beats re-describing the whole scene.",
+      "If text matters: keep it short, high-contrast, and quote it exactly."
     ],
-    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
     "promptingEngineWhy": [
-      "Fast iteration favors short, specific prompts.",
-      "Multi-image blends work best when you name each reference role.",
-      "Simple text prompts produce cleaner typography."
+      "Fast tier favors short prompts; long prompts can wander.",
+      "Multi-image works best when each image has a clear role (subject vs lighting vs background).",
+      "Tiny text and dense UI are unreliable — keep copy minimal and overlay critical text in post.",
+      "If an edit over-changes the image, tighten the \"keep\" list (framing, lighting, identity)."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
       "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = style control. Use for precise, repeatable looks."
+      "pro": "Pro = repeatability. Use for controlled batches."
     },
     "promptingTabs": [
       {
@@ -244,21 +255,21 @@
         "label": "Quick",
         "title": "Quick prompt (fast iteration)",
         "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] in [setting], [composition], [lighting], [style]."
+        "copy": "[Subject] in [setting]. [Composition]. [Lighting]. [Style anchor].\n\nIf editing:\nEdit: change [X]. Keep [Y] (framing, lighting, identity).\n\nIf using multiple images:\nRefs: Image1 = [main subject]. Image2 = [style/lighting]. (Optional) Image3 = [background/prop]."
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured prompt (best for reliable results)",
         "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + key traits.]\n\nComposition:\n[Framing + angle + background.]\n\nLighting:\n[Key light + mood.]\n\nStyle:\n[Photoreal / illustration / palette.]\n\nText (if needed):\n[Exact copy + placement.]\n\nEdit (if editing):\n[Change X, keep Y.]"
+        "copy": "Subject:\n[Who/what + 2–3 defining details.]\n\nComposition:\n[Framing + angle + background + what stays clean.]\n\nLighting:\n[Key light + mood + 2 palette anchors.]\n\nStyle:\n[Photoreal / illustration + texture/grain + one style reference.]\n\nText (optional):\n[Exact copy in quotes + placement + contrast.]\nExample: “SALE — 20% OFF” top-left, one line, high contrast.\n\nEdit (if editing):\nChange:\n- [list the changes]\nKeep:\n- framing, lighting, identity, logo-free, clean background\n\nReferences (if using multiple images):\nImage1 controls subject/identity\nImage2 controls lighting\nImage3 controls palette/background"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Brief:\n[Goal + use case.]\n\nSubject + materials:\n[Details + textures.]\n\nLayout:\n[Grid, spacing, background.]\n\nTypography:\n[Font vibe + hierarchy + exact copy.]\n\nReferences (optional):\n[Ref A controls style; Ref B controls product.]\n\nEdits (if needed):\n[Change list + keep list.]"
+        "description": "Use this when you need a very specific look or repeatable results across a set.",
+        "copy": "Brief:\n[Goal + output use case.]\n\nSubject + materials:\n[Details + textures + constraints.]\n\nLayout:\n[Grid + spacing + focal point + negative space.]\n\nLighting + grade:\n[Key light + contrast + palette anchors.]\n\nTypography (optional):\n[Font vibe + hierarchy + exact copy + placement.]\nKeep copy short. Avoid paragraphs.\n\nEdits (if needed):\nChange list:\n- [A]\n- [B]\nKeep list:\n- framing, lighting, identity, background, color palette"
       }
     ],
     "promptingGuideLabel": "Learn more"

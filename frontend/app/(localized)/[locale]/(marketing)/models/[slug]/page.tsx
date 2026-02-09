@@ -508,8 +508,11 @@ type EngineKeySpecsFile = {
   specs?: EngineKeySpecsEntry[];
 };
 type KeySpecKey =
+  | 'pricePerImage'
   | 'pricePerSecond'
   | 'releaseDate'
+  | 'textToImage'
+  | 'imageToImage'
   | 'textToVideo'
   | 'imageToVideo'
   | 'videoToVideo'
@@ -791,7 +794,7 @@ const DEFAULT_CHIPS_BY_ICON: Record<BestUseCaseIconKey, string[]> = {
   wind: ['Physics', 'Motion'],
   coins: ['Budget', 'Variants'],
 };
-const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
+const VIDEO_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'pricePerSecond', label: 'Price / second' },
   { key: 'textToVideo', label: 'Text-to-Video' },
   { key: 'imageToVideo', label: 'Image-to-Video' },
@@ -809,6 +812,16 @@ const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'lipSync', label: 'Lip sync' },
   { key: 'cameraMotionControls', label: 'Camera / motion controls' },
   { key: 'watermark', label: 'Watermark' },
+  { key: 'releaseDate', label: 'Release date' },
+];
+
+const IMAGE_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
+  { key: 'pricePerImage', label: 'Price / image' },
+  { key: 'textToImage', label: 'Text-to-Image' },
+  { key: 'imageToImage', label: 'Image-to-Image' },
+  { key: 'maxResolution', label: 'Resolution options' },
+  { key: 'aspectRatios', label: 'Aspect ratios' },
+  { key: 'outputFormats', label: 'Output format' },
   { key: 'releaseDate', label: 'Release date' },
 ];
 
@@ -1212,6 +1225,79 @@ async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLocale): 
   }
 }
 
+async function buildPricePerImageLabel(engine: EngineCaps, locale: AppLocale): Promise<string | null> {
+  const resolution = resolveDefaultResolution(engine);
+  if (!resolution) return null;
+  try {
+    const snapshot = await computePricingSnapshot({
+      engine,
+      durationSec: 1,
+      resolution,
+      membershipTier: 'member',
+    });
+    const currency = snapshot.currency ?? engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD';
+    return `${formatCurrency(locale, currency, snapshot.totalCents / 100)}/image`;
+  } catch {
+    return null;
+  }
+}
+
+async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale): Promise<KeySpecRow[]> {
+  const resolutions = resolvePricingResolutions(engineCaps);
+  if (!resolutions.length) return [];
+
+  const results = new Map<string, { label: string; cents: number }>();
+  for (const resolution of resolutions) {
+    try {
+      const snapshot = await computePricingSnapshot({
+        engine: engineCaps,
+        durationSec: 1,
+        resolution,
+        membershipTier: 'member',
+      });
+      const currency = snapshot.currency ?? engineCaps.pricingDetails?.currency ?? engineCaps.pricing?.currency ?? 'USD';
+      const amount = formatCurrency(locale, currency, snapshot.totalCents / 100);
+      results.set(resolution, { label: `${amount}/image`, cents: snapshot.totalCents });
+    } catch {
+      // ignore pricing failures for marketing surface
+    }
+  }
+
+  if (!results.size) return [];
+  const values = Array.from(results.values()).map((entry) => entry.label);
+  const same = new Set(values).size === 1;
+  if (same) {
+    return [
+      {
+        id: 'pricePerImage',
+        key: 'pricePerImage',
+        label: 'Price / image',
+        value: values[0],
+      },
+    ];
+  }
+
+  const lines = resolutions
+    .map((resolution) => {
+      const entry = results.get(resolution);
+      if (!entry) return null;
+      const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
+      return `${displayResolution} ${entry.label}`;
+    })
+    .filter((line): line is string => Boolean(line));
+
+  if (!lines.length) return [];
+  return [
+    {
+      id: 'pricePerImage',
+      key: 'pricePerImage',
+      label: 'Price / image',
+      value: lines[0],
+      valueLines: lines,
+    },
+  ];
+}
+
 async function buildQuickPricingItems(engine: EngineCaps, locale: AppLocale): Promise<string[]> {
   const durations = selectQuickDurations(engine);
   const resolution = resolveDefaultResolution(engine);
@@ -1315,13 +1401,22 @@ function resolveModeSupported(engineCaps: EngineCaps | undefined, mode: string) 
 
 function formatMaxResolution(engineCaps: EngineCaps | undefined) {
   const resolutions = engineCaps?.resolutions ?? [];
+  if (!resolutions.length) return 'Data pending';
+  if (resolutions.some((value) => /4k/i.test(String(value)))) return '4K';
+  if (resolutions.some((value) => /2k/i.test(String(value)))) return '2K';
   const numeric = resolutions
     .map((value) => {
-      const match = String(value).match(/(\d+)/);
-      return match ? Number(match[1]) : null;
+      const raw = String(value).toLowerCase();
+      if (raw.includes('square_hd') || raw.includes('portrait_hd') || raw.includes('landscape_hd')) {
+        return 720;
+      }
+      const matchK = raw.match(/(\d+)\s*k/);
+      if (matchK) return Number(matchK[1]) * 1000;
+      const matchP = raw.match(/(\d+)\s*p/);
+      return matchP ? Number(matchP[1]) : null;
     })
     .filter((value): value is number => value != null);
-  if (!numeric.length) return resolutions.join(', ') || 'Data pending';
+  if (!numeric.length) return resolutions.join(' / ');
   const max = Math.max(...numeric);
   return `${max}p`;
 }
@@ -1341,10 +1436,34 @@ function formatFps(engineCaps: EngineCaps | undefined) {
   return fps.length ? fps.join(' / ') : 'Data pending';
 }
 
+function formatImageResolutions(engineCaps: EngineCaps | undefined) {
+  const resolutions = engineCaps?.resolutions ?? [];
+  return resolutions.length ? resolutions.join(' / ') : 'Data pending';
+}
+
+function formatOutputFormats(engineCaps: EngineCaps | undefined) {
+  const formats = engineCaps?.inputSchema?.constraints?.supportedFormats ?? [];
+  return formats.length ? formats.join(' / ') : 'Data pending';
+}
+
 function getPricePerSecondCents(engineCaps: EngineCaps | undefined): number | null {
   const perSecond = engineCaps?.pricingDetails?.perSecondCents;
   const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
   const cents = perSecond?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
+  if (typeof cents === 'number') {
+    return cents;
+  }
+  const base = engineCaps?.pricing?.base;
+  if (typeof base === 'number') {
+    return Math.round(base * 100);
+  }
+  return null;
+}
+
+function getPricePerImageCents(engineCaps: EngineCaps | undefined): number | null {
+  const flat = engineCaps?.pricingDetails?.flatCents;
+  const byResolution = flat?.byResolution ? Object.values(flat.byResolution) : [];
+  const cents = flat?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
   if (typeof cents === 'number') {
     return cents;
   }
@@ -1363,30 +1482,50 @@ function formatPricePerSecond(engineCaps: EngineCaps | undefined): string {
   return 'Data pending';
 }
 
+function formatPricePerImage(engineCaps: EngineCaps | undefined): string {
+  const cents = getPricePerImageCents(engineCaps);
+  if (typeof cents === 'number') {
+    return `$${(cents / 100).toFixed(2)}/image`;
+  }
+  return 'Data pending';
+}
+
 function buildSpecValues(
   entry: FalEngineEntry,
   specs: Record<string, unknown> | undefined,
-  pricePerSecondOverride?: string | null
+  pricingOverrides?: { pricePerSecond?: string | null; pricePerImage?: string | null }
 ): KeySpecValues {
   const engineCaps = entry.engine;
+  const isImage = entry.type === 'image' || engineCaps.modes?.some((mode) => mode.endsWith('i'));
   return {
+    pricePerImage: resolveKeySpecValue(
+      specs,
+      'pricePerImage',
+      pricingOverrides?.pricePerImage ?? formatPricePerImage(engineCaps)
+    ),
     pricePerSecond: resolveKeySpecValue(
       specs,
       'pricePerSecond',
-      pricePerSecondOverride ?? formatPricePerSecond(engineCaps)
+      pricingOverrides?.pricePerSecond ?? formatPricePerSecond(engineCaps)
     ),
     releaseDate: resolveKeySpecValue(specs, 'releaseDate', 'Data pending'),
+    textToImage: resolveKeySpecValue(specs, 'textToImage', resolveModeSupported(engineCaps, 't2i')),
+    imageToImage: resolveKeySpecValue(specs, 'imageToImage', resolveModeSupported(engineCaps, 'i2i')),
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(engineCaps, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(engineCaps, 'i2v')),
     videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveModeSupported(engineCaps, 'v2v')),
     firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveStatus(engineCaps?.keyframes)),
     referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveModeSupported(engineCaps, 'r2v')),
     referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', 'Data pending'),
-    maxResolution: resolveKeySpecValue(specs, 'maxResolution', formatMaxResolution(engineCaps)),
+    maxResolution: resolveKeySpecValue(
+      specs,
+      'maxResolution',
+      isImage ? formatImageResolutions(engineCaps) : formatMaxResolution(engineCaps)
+    ),
     maxDuration: resolveKeySpecValue(specs, 'maxDuration', formatDuration(engineCaps)),
     aspectRatios: resolveKeySpecValue(specs, 'aspectRatios', formatAspectRatios(engineCaps)),
     fpsOptions: resolveKeySpecValue(specs, 'fpsOptions', formatFps(engineCaps)),
-    outputFormats: resolveKeySpecValue(specs, 'outputFormats', 'Data pending'),
+    outputFormats: resolveKeySpecValue(specs, 'outputFormats', formatOutputFormats(engineCaps)),
     audioOutput: resolveKeySpecValue(specs, 'audioOutput', resolveStatus(engineCaps?.audio)),
     nativeAudioGeneration: resolveKeySpecValue(specs, 'nativeAudioGeneration', resolveStatus(engineCaps?.audio)),
     lipSync: resolveKeySpecValue(specs, 'lipSync', 'Data pending'),
@@ -1413,6 +1552,7 @@ function isSupported(value: string) {
 }
 
 function normalizeMaxResolution(value: string) {
+  if (value.includes('/') || value.includes(',')) return value;
   const matchP = value.match(/(\d{3,4}p)/i);
   if (matchP) return matchP[1];
   const matchK = value.match(/(\d+)\s?k/i);
@@ -1434,6 +1574,8 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
   const duration = values.maxDuration && !isPending(values.maxDuration) ? values.maxDuration.replace(' max', '') : null;
   const aspect = values.aspectRatios && !isPending(values.aspectRatios) ? values.aspectRatios : null;
 
+  if (isSupported(values.textToImage)) add('Text→Image', 'textToVideo');
+  if (isSupported(values.imageToImage)) add('Image→Image', 'imageToVideo');
   if (isSupported(values.textToVideo)) add('Text→Video', 'textToVideo');
   if (isSupported(values.imageToVideo)) add('Image→Video', 'imageToVideo');
   if (resolution) add(resolution, 'resolution');
@@ -2346,19 +2488,39 @@ async function renderSoraModelPage({
     : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}`;
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
-  const showPricePerSecondInSpecs = true;
+  const showPriceInSpecs = true;
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
   const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
-  const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, pricePerSecondLabel);
-  const priceRows = showPricePerSecondInSpecs ? await buildPricePerSecondRows(pricingEngine, locale) : [];
-  const keySpecDefs = KEY_SPEC_ROW_DEFS.filter((row) => row.key !== 'pricePerSecond');
+  const pricePerImageLabel = await buildPricePerImageLabel(pricingEngine, locale);
+  const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, {
+    pricePerSecond: pricePerSecondLabel,
+    pricePerImage: pricePerImageLabel,
+  });
+  const priceRows = showPriceInSpecs
+    ? isImageEngine
+      ? await buildPricePerImageRows(pricingEngine, locale)
+      : await buildPricePerSecondRows(pricingEngine, locale)
+    : [];
+  const rowDefs = isImageEngine ? IMAGE_SPEC_ROW_DEFS : VIDEO_SPEC_ROW_DEFS;
+  const keySpecDefs = rowDefs.filter((row) => row.key !== (isImageEngine ? 'pricePerImage' : 'pricePerSecond'));
   const keySpecRows: KeySpecRow[] = keySpecValues
     ? [
         ...(priceRows.length
           ? priceRows
-          : keySpecValues.pricePerSecond && !isUnsupported(keySpecValues.pricePerSecond)
+          : isImageEngine
+            ? keySpecValues.pricePerImage && !isUnsupported(keySpecValues.pricePerImage)
+              ? [
+                  {
+                    id: 'pricePerImage',
+                    key: 'pricePerImage',
+                    label: 'Price / image',
+                    value: keySpecValues.pricePerImage,
+                  },
+                ]
+              : []
+            : keySpecValues.pricePerSecond && !isUnsupported(keySpecValues.pricePerSecond)
             ? [
                 {
                   id: 'pricePerSecond',
@@ -2373,7 +2535,10 @@ async function renderSoraModelPage({
             id: key,
             key,
             label,
-            value: key === 'maxResolution' ? normalizeMaxResolution(keySpecValues[key]) : keySpecValues[key],
+            value:
+              key === 'maxResolution' && !isImageEngine
+                ? normalizeMaxResolution(keySpecValues[key])
+                : keySpecValues[key],
           }))
           .filter((row) => !isPending(row.value) && !isUnsupported(row.value)),
       ]
@@ -2486,7 +2651,9 @@ function Sora2PageLayout({
   const specTitle = normalizeSpecTitle(copy.specTitle, providerName, heroTitle);
   const specNote = normalizeSpecNote(copy.specNote);
   const showHeroDescriptions = heroSpecChips.length === 0;
-  const heroPrice = keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? formatPricePerSecond(engine);
+  const heroPrice = isImageEngine
+    ? keySpecValues?.pricePerImage ?? formatPricePerImage(engine)
+    : keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? formatPricePerSecond(engine);
   const heroDuration =
     typeof heroMedia.durationSec === 'number'
       ? `${heroMedia.durationSec}s`
@@ -3156,7 +3323,19 @@ function Sora2PageLayout({
             {copy.tipsIntro ? (
               <p className="text-center text-base leading-relaxed text-text-secondary">{copy.tipsIntro}</p>
             ) : null}
-            <div className="grid grid-gap-sm lg:grid-cols-3">
+            {(() => {
+              const tipsCardCount =
+                (strengths.length ? 1 : 0) +
+                (troubleshootingItems.length ? 1 : 0) +
+                (boundaries.length ? 1 : 0);
+              const gridClass =
+                tipsCardCount === 1
+                  ? 'mx-auto grid w-full max-w-3xl grid-gap-sm'
+                  : tipsCardCount === 2
+                  ? 'mx-auto grid w-full max-w-4xl grid-gap-sm lg:grid-cols-2'
+                  : 'mx-auto grid w-full max-w-5xl grid-gap-sm lg:grid-cols-3';
+              return (
+                <div className={gridClass}>
               {strengths.length ? (
                 <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                   <h3 className="text-base font-semibold text-text-primary">What works best</h3>
@@ -3189,7 +3368,9 @@ function Sora2PageLayout({
                   </ul>
                 </div>
               ) : null}
-            </div>
+                </div>
+              );
+            })()}
           </section>
         ) : null}
 
