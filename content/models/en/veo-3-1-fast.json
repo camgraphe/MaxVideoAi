@@ -241,7 +241,7 @@
       "Promote the best to Veo 3.1 for higher fidelity and audio depth.",
       "Stay single-scene in Fast; use other Veo tiers for multi-beat control."
     ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Speed and price for A/B tests and explorations",
       "Strong for ambient, mood-driven scenes and clear product shots",
@@ -254,7 +254,6 @@
       "Slightly lower detail/realism than full Veo 3.1 (trade speed for fidelity)",
       "Tiny text or dense UI may be soft; overlay critical copy in post"
     ],
-    "tipsFooter": "Use Fast to explore, then escalate winning prompts to Veo 3.1 for final polish.",
     "safetyTitle": "Safety, People & Likeness",
     "safetyRules": [
       "Avoid real public figures, political content, explicit material or minors.",

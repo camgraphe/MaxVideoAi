@@ -155,7 +155,6 @@
       "Pas de seed : itérez en raffinant le prompt.",
       "Difficulté sur du texte minuscule ou très détaillé."
     ],
-    "tipsFooter": "En comprenant ces points et en écrivant des prompts adaptés, Sora 2 devient prévisible plutôt qu’aléatoire.",
     "safetyTitle": "Sécurité et ressemblances",
     "safetyRules": [
       "Ne pas générer de personnes réelles ou figures publiques.",

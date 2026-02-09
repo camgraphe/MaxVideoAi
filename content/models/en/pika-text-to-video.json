@@ -242,7 +242,7 @@
       "Use 5s for punchy moments; 10s for a bit of build-up/payoff",
       "Chain loops in your timeline for longer animations or carousels"
     ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Stylized animation (anime, illustration, pixel, comic, toon, stylized 3D)",
       "High-energy short clips for feeds and overlays",
@@ -255,7 +255,6 @@
       "Small text/UI may be soft; overlay critical copy in post",
       "No multi-image sequencing; for multi-beat mini-films, use Sora or Veo and keep Pika for stylized inserts"
     ],
-    "tipsFooter": "Pika 2.2 is your stylized, silent workhorse—perfect for fast loops and social-first visuals.",
     "safetyTitle": "Safety & People / Likeness",
     "safetyRules": [
       "Do not recreate real people, celebrities or politicians.",

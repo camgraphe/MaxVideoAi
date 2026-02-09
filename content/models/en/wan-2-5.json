@@ -243,7 +243,7 @@
       "Keep dialogue short and natural within 5–10 s",
       "Draft with native audio; upload polished tracks for finals"
     ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Short 5–10 s beats that feel complete",
       "Audio + video together for trailers, intros and reveals",
@@ -256,7 +256,6 @@
       "Tiny text/UI may be unreliable; keep critical copy as overlays",
       "Prompt expansion can change nuance; disable for literal control"
     ],
-    "tipsFooter": "Use Wan 2.5 when visuals and sound must land together—ideate cheap, finish in HD with your track.",
     "safetyTitle": "Safety & People / Likeness",
     "safetyRules": [
       "No explicit sexual content or sexualized minors",

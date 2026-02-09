@@ -162,7 +162,7 @@
       "Reuse key elements (same subject, same setting, consistent lighting).",
       "Avoid jumping through five different locations in 8 seconds—keep it focused."
     ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Short, vivid moments",
       "Clear subject and action",
@@ -177,7 +177,6 @@
       "No seeds; iterate by refining the prompt and re-running.",
       "Can struggle with very small or detailed text."
     ],
-    "tipsFooter": "When you understand this and write prompts accordingly, Sora 2 becomes a predictable tool instead of a slot machine.",
     "safetyTitle": "Safety & People / Likeness",
     "safetyRules": [
       "Do not generate real people or public figures (no celebrities, politicians, etc.).",

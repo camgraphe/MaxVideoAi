@@ -171,7 +171,6 @@
       "Sin seed: itera ajustando el prompt.",
       "Puede fallar con texto diminuto o hiper detallado."
     ],
-    "tipsFooter": "Si entiendes esto y redactas prompts en consecuencia, Sora 2 se vuelve predecible en lugar de aleatorio.",
     "safetyTitle": "Seguridad y parecido",
     "safetyRules": [
       "No generar personas reales o figuras públicas.",

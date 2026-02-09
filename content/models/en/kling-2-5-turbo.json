@@ -243,7 +243,7 @@
       "Use Beats 1/2/3 to plan a 10s arc (establish, tension, hero frame)",
       "Use Recreate-from-gallery to see pacing patterns"
     ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Top-tier cinematic motion and realism in short clips",
       "Default 1080p makes it hero-ready",
@@ -256,7 +256,6 @@
       "Very verbose prompts can wander; keep it tight",
       "Tiny on-screen text/UI is unreliable—overlay critical copy"
     ],
-    "tipsFooter": "Respect these constraints and Kling becomes a predictable 1080p workhorse.",
     "safetyTitle": "Safety & People / Likeness",
     "safetyRules": [
       "No real celebrities/politicians/public figures",

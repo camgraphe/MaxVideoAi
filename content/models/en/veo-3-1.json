@@ -243,7 +243,7 @@
       "Treat it as one scene with multiple angles rather than many locations.",
       "Extend strong shots to build 12–24s establishing sequences."
     ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Strong camera control via framing presets and motion cues",
       "Great for ads, explainers and campaigns that need consistency across variants",
@@ -256,7 +256,6 @@
       "Tiny text and detailed UI are hit-or-miss; overlay critical copy in post",
       "If it drifts, tighten subject and camera instructions and reduce actions"
     ],
-    "tipsFooter": "Lean into these constraints and Veo 3.1 becomes a repeatable, directable tool instead of a slot machine.",
     "safetyTitle": "Safety, People & Likeness",
     "safetyRules": [
       "Do not generate real public figures, politicians or celebrities.",

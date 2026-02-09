@@ -239,7 +239,7 @@
       "Beat 1: establish; Beat 2: motion/transition; Beat 3: hero frame",
       "Keep to one environment/style per clip"
     ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Strong physics/motion for short clips",
       "Good instruction following",
@@ -252,7 +252,6 @@
       "Always silent; add sound in post or via audio engines",
       "Tiny on-screen text/UI unreliable—overlay critical copy"
     ],
-    "tipsFooter": "Hailuo 02 is your fast, physics-savvy sketch engine—use it to explore motion before finalizing in higher-end models.",
     "safetyTitle": "Safety & People / Likeness",
     "safetyRules": [
       "No real public figures or celebrities",

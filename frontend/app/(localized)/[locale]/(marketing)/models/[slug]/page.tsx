@@ -1860,6 +1860,7 @@ function toGalleryCard(
     engineBrandId: brandId,
     priceLabel: formatPriceLabel(video.finalPriceCents ?? null, video.currency ?? null),
     prompt: promptExcerpt,
+    promptFull: video.prompt,
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
@@ -1870,11 +1871,12 @@ function toGalleryCard(
   };
 }
 
-function toFeaturedMedia(entry?: ExampleGalleryVideo | null): FeaturedMedia | null {
+function toFeaturedMedia(entry?: ExampleGalleryVideo | null, preferFullPrompt = false): FeaturedMedia | null {
   if (!entry) return null;
+  const prompt = preferFullPrompt && entry.promptFull ? entry.promptFull : entry.prompt;
   return {
     id: entry.id,
-    prompt: entry.prompt,
+    prompt,
     videoUrl: entry.videoUrl ?? null,
     posterUrl: entry.optimizedPosterUrl ?? entry.rawPosterUrl ?? null,
     durationSec: entry.durationSec,
@@ -1912,13 +1914,13 @@ function pickDemoMedia(
       ? cards.find((card) => card.id === preferredId && Boolean(card.videoUrl))
       : null;
   if (preferred) {
-    const resolved = toFeaturedMedia(preferred);
+    const resolved = toFeaturedMedia(preferred, true);
     if (resolved) return resolved;
   }
   const candidate =
     cards.find((card) => card.id !== heroId && Boolean(card.videoUrl) && isLandscape(card.aspectRatio)) ??
     cards.find((card) => card.id !== heroId);
-  const resolved = toFeaturedMedia(candidate);
+  const resolved = toFeaturedMedia(candidate, true);
   if (resolved) return resolved;
   if (fallback && (!heroId || fallback.id !== heroId)) {
     return fallback;
@@ -2892,7 +2894,7 @@ function Sora2PageLayout({
         {hasTipsSection ? (
           <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              {copy.tipsTitle ?? 'Tips & quick fixes'}
+              {copy.tipsTitle ?? 'Tips & Limitations'}
             </h2>
             {copy.tipsIntro ? (
               <p className="text-center text-base leading-relaxed text-text-secondary">{copy.tipsIntro}</p>
@@ -2931,7 +2933,6 @@ function Sora2PageLayout({
                 </div>
               ) : null}
             </div>
-            {copy.tipsFooter ? <p className="text-sm text-text-secondary">{copy.tipsFooter}</p> : null}
           </section>
         ) : null}
 
