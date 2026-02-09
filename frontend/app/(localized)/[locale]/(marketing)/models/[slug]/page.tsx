@@ -2724,38 +2724,11 @@ function Sora2PageLayout({
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
   const useDemoMediaPrompt = Boolean(demoMedia?.prompt?.trim());
   const focusVsConfig = resolveFocusVsConfig(engine.modelSlug);
-  const baseFaqList = faqEntries.map((entry) => ({
+  const faqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
   }));
-  const soraFaqList = [
-    {
-      question: 'Is Sora available in Europe / the UK?',
-      answer: 'Yes — you can generate from Europe, the UK, and most supported locations.',
-    },
-    {
-      question: 'Can Sora generate 1080p videos?',
-      answer: 'This tier outputs 720p. For 1080p, use Sora Pro.',
-    },
-    {
-      question: 'Does Sora support image-to-video?',
-      answer: 'Yes. Upload a single reference frame (up to ~50 MB) and prompt motion + timing.',
-    },
-    {
-      question: 'Can I remix or extend an existing video?',
-      answer: 'Not in this configuration. It’s text → video and image → video only. Generate multiple clips for longer edits.',
-    },
-    {
-      question: 'How do I keep outputs consistent (brand look)?',
-      answer: 'Use a reference image, name your palette and lighting, and reuse the same prompt structure across takes.',
-    },
-    {
-      question: 'Does Sora support audio and lip sync?',
-      answer: 'Audio is included. Lip sync works best with short lines (long speeches can drift).',
-    },
-  ];
-  const faqTitle = (isSoraPrompting ? 'FAQ' : copy.faqTitle) ?? 'FAQ';
-  const faqList = isSoraPrompting ? soraFaqList : baseFaqList;
+  const faqTitle = copy.faqTitle ?? 'FAQ';
   const faqJsonLdEntries = faqList.slice(0, 6);
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
@@ -2769,7 +2742,7 @@ function Sora2PageLayout({
   const hasTipsSection =
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
   const hasSafetySection = safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
-  const hasFaqSection = isSoraPrompting || faqList.length > 0;
+  const hasFaqSection = faqList.length > 0;
   const hasCompareGrid = !isImageEngine && (relatedItems.length > 0 || compareEngines.length > 0);
   const hasCompareSection = Boolean(focusVsConfig) || hasCompareGrid;
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
