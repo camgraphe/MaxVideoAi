@@ -682,6 +682,7 @@ const PRICING_SECTION_TITLES = {
   fr: 'Tarifs',
   es: 'Precios',
 } as const;
+const SPECS_DECISION_NOTE = 'Decision specs: what you’ll pay and what you’ll get.';
 
 const PRICING_SECTION_MATCH = new Set(['pricing', 'tarifs', 'precios']);
 const PRICING_EXTRA_MARKERS = ['exemples rapides', 'quick examples', 'ejemplos rápidos'];
@@ -1276,18 +1277,14 @@ function buildDefaultSpecTitle(providerName: string | null, heroTitle: string): 
   return `Real Specs — ${parts.join(' ')}`;
 }
 
-function normalizeSpecTitle(rawTitle: string | null, providerName: string | null, heroTitle: string): string {
-  if (!rawTitle) return buildDefaultSpecTitle(providerName, heroTitle);
-  const cleaned = stripMaxVideoAI(rawTitle);
-  if (!cleaned) return buildDefaultSpecTitle(providerName, heroTitle);
-  if (/^specs?$/i.test(cleaned)) return buildDefaultSpecTitle(providerName, heroTitle);
-  return cleaned;
+function normalizeSpecTitle(_rawTitle: string | null, providerName: string | null, heroTitle: string): string {
+  const cleanedProvider = providerName ? stripMaxVideoAI(providerName) : null;
+  const cleanedTitle = stripMaxVideoAI(heroTitle);
+  return buildDefaultSpecTitle(cleanedProvider, cleanedTitle);
 }
 
-function normalizeSpecNote(rawNote: string | null): string | null {
-  if (!rawNote) return null;
-  const cleaned = stripMaxVideoAI(rawNote);
-  return cleaned || null;
+function normalizeSpecNote(_rawNote: string | null): string | null {
+  return SPECS_DECISION_NOTE;
 }
 
 function inferBestUseCaseIcon(title: string): BestUseCaseIconKey {
