@@ -347,6 +347,21 @@
       }
     ],
     "promptingGuideLabel": "Wan AI",
-    "promptingGuideUrl": "https://www.wan-ai.com"
+    "promptingGuideUrl": "https://www.wan-ai.com",
+    "demoTitle": "Demo: a prompt for Wan 2.5",
+    "demoPromptLabel": "10s product story 9:16 synced to uploaded track",
+    "demoPrompt": [
+      "10s vertical shot of a fitness watch on a runner’s wrist, timed to an energetic electro track.",
+      "Start: close-up on the first beat with droplets on the glass.",
+      "Change beat: pull back showing the run in slow motion on a neon bridge.",
+      "Final beat: profile swing with visible breath, screen glowing.",
+      "Lighting: blue hour, strong highlights on metal.",
+      "Audio: uploaded music track + footsteps, rain, breath; no VO."
+    ],
+    "demoNotes": [
+      "Audio anchors the transitions.",
+      "Single subject/location, clear camera path.",
+      "Explicit cues for the hits."
+    ]
   }
 }

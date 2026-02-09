@@ -233,6 +233,20 @@
         "description": "Use this when you need continuity and polish across beats.",
         "copy": "Storyboard / shot list (same subject + same setting)\nDuration: [4/8/12s] • Aspect: [16:9 or 9:16]\n\nShot 1 (0-2s):\n[Framing + subject action + camera move]\n\nShot 2 (2-6s):\n[Framing + subject action + camera move]\n\nShot 3 (6-8/12s):\n[Final action/reveal + camera settle]\n\nContinuity:\n[Repeat anchors: wardrobe, props, lighting, background]\n\nAudio (optional):\n[Ambience + 1-2 SFX cues or a short line]\n\nConstraints:\nNo logos. No readable text. No overlays."
       }
+    ],
+    "demoTitle": "Demo: 12s high-res product film",
+    "demoPromptLabel": "Prompt – Wearable launch (16:9, audio on)",
+    "demoPrompt": [
+      "Scene 1 (4s): macro of a titanium smartwatch on a glossy turntable, soft studio light, VO: “Meet Aurum Pro.”",
+      "Scene 2 (4s): lifestyle shot of a runner checking the watch at blue hour on a rooftop, dolly-in, city ambience + light synth pulse.",
+      "Scene 3 (4s): close-up UI of the screen animating, hand interaction, match cut to product floating on black, audio swell then resolve.",
+      "Transitions: match cuts between scenes, subtle audio crossfades.",
+      "Audio: VO + ambience + light synth bed.",
+      "Format: 1792×1024, 16:9."
+    ],
+    "demoNotes": [
+      "Shows camera control, audio cues, and product + lifestyle + UI consistency.",
+      "Reuse the same structure for client formats: intro, context, hero close."
     ]
   },
   "bestUseCases": {

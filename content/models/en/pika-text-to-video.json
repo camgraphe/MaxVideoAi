@@ -345,6 +345,20 @@
       }
     ],
     "promptingGuideLabel": "Pika Labs",
-    "promptingGuideUrl": "https://pika.art"
+    "promptingGuideUrl": "https://pika.art",
+    "demoTitle": "Demo: a prompt for Pika 2.2",
+    "demoPromptLabel": "5s pixel-art loop (1:1, 1080p)",
+    "demoPrompt": [
+      "5s pixel-art loop of a little wizard stirring a glowing cauldron in a 1:1 interior.",
+      "Camera locked in a medium shot framing the table.",
+      "Repeating bubbles, floating books, slight parallax on shelves.",
+      "Warm light, retro pixels, 16-color palette, no text/logo/UI."
+    ],
+    "demoNotes": [
+      "Clear subject in a single environment.",
+      "Strong style direction (pixel-art, retro palette).",
+      "Simple, repeatable motion for a clean loop.",
+      "Avoid conflicting camera instructions or multiple locations."
+    ]
   }
 }

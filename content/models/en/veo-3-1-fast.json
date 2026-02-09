@@ -350,6 +350,19 @@
       }
     ],
     "promptingGuideLabel": "Google DeepMind",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/"
+    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
+    "demoTitle": "Demo: prompt pattern for Veo 3.1 Fast",
+    "demoPromptLabel": "6s vertical loop (9:16, 1080p)",
+    "demoPrompt": [
+      "6s 9:16 loop of a young woman working late at a minimalist desk in front of a large window, city lights blurred.",
+      "Camera: slow handheld drift left/right, centered on her face and laptop.",
+      "Lighting: cool blue outside + warm lamp on hands.",
+      "Audio: soft typing, city hum, no dialogue."
+    ],
+    "demoNotes": [
+      "One clear subject and one environment.",
+      "Simple movement that loops cleanly.",
+      "Audio supports the mood without adding complexity."
+    ]
   }
 }

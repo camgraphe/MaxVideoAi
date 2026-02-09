@@ -334,6 +334,17 @@
     "promptingGuideUrl": "https://www.wan-ai.com",
     "galleryTitle": "Wan 2.6 Example Gallery",
     "galleryAllCta": "View all Wan 2.6 examples →",
-    "recreateLabel": "Recreate this shot →"
+    "recreateLabel": "Recreate this shot →",
+    "demoTitle": "Render-ready example",
+    "demoPromptLabel": "Render-ready example (multi-shot, 15s, 16:9, 1080p)",
+    "demoPrompt": [
+      "Global look: sleek thriller, rainy night, soft neon, 35mm, fine grain, cinematic depth of field, smooth camera, blue/amber palette.",
+      "Shot 1 [0–4s]: slow push-in down a wet alley, reflections on the ground, a silhouette in the distance, misty atmosphere.",
+      "Shot 2 [4–10s]: cut to close-up of hands opening a sealed envelope on a wooden table, warm side light, very shallow focus.",
+      "Shot 3 [10–15s]: door opens into an overexposed white room, flash of light, fine dust in the beam, fade to black."
+    ],
+    "demoNotes": [
+      "Audio option: URL to a soft ambient bed 3–15s, low volume."
+    ]
   }
 }

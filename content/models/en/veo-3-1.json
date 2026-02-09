@@ -356,6 +356,21 @@
       }
     ],
     "promptingGuideLabel": "Google DeepMind",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/"
+    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
+    "demoTitle": "Demo: a sequenced prompt (with native audio)",
+    "demoPromptLabel": "8s cinematic product micro-story for wireless earbuds (16:9, 1080p)",
+    "demoPrompt": [
+      "Shot 1 (0–3s): macro of an earbud rotating on a wooden desk, shallow DOF, warm desk lamp.",
+      "Shot 2 (3–6s): medium shot of a young pro putting the earbuds on before stepping into a lively street, soft bokeh.",
+      "Shot 3 (6–8s): close-up of the case closing beside a laptop, soft reflections on the shell.",
+      "Camera: smooth dollies between shots, handheld feel but stable.",
+      "Lighting: evening, warm interior shifting to cool street light, light film grain.",
+      "Audio: low city ambience, soft electronic music, short VO: “Block the noise, keep the focus.” No subtitles.",
+      "Negative: no brands, no on-screen text, no ultra-wide angle."
+    ],
+    "demoNotes": [
+      "Clear 3-beat structure, consistent environment, and defined cinematography.",
+      "VO fits within 8s; explicit “no subtitles” prevents text overlays."
+    ]
   }
 }

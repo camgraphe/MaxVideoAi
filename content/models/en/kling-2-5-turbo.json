@@ -349,6 +349,19 @@
       }
     ],
     "promptingGuideLabel": "Kling by Kuaishou",
-    "promptingGuideUrl": "https://www.kuaishou.com/en"
+    "promptingGuideUrl": "https://www.kuaishou.com/en",
+    "demoTitle": "Demo – Founder portrait 5s (9:16)",
+    "demoPromptLabel": "Founder portrait 5s",
+    "demoPrompt": [
+      "5s vertical 9:16 clip of a founder in a modern office at golden hour.",
+      "Camera: slow handheld drift from torso to face, shallow DOF.",
+      "Soft city bokeh, realistic skin/fabric, gentle flares.",
+      "No text, no logos, no extras."
+    ],
+    "demoNotes": [
+      "Single subject, single location, clear camera path.",
+      "Room for VO/graphics in post.",
+      "Pro Image for best fidelity on a portrait."
+    ]
   }
 }

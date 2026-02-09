@@ -189,6 +189,12 @@
       "Voix en anglais et chinois uniquement ; coupez l’audio et doublez en post pour d’autres langues",
       "Max 10 s par rendu",
       "Une image de référence en I2V ; pas de multi-image ni de voix par personnage pour l’instant"
-    ]
+    ],
+    "demoTitle": "Démo : prompt Kling 2.6 Pro",
+    "demoPromptLabel": "Prompt",
+    "demoPrompt": [
+      "Deux amis marchent dans une ruelle néon trempée de pluie la nuit, caméra en tracking à hauteur d'épaule, flaques réfléchissantes, tonnerre doux, dialogue discret : « Tu as eu la prise ? » « Oui, Kling 2.6 l'a fait. »"
+    ],
+    "demoNotes": []
   }
 }

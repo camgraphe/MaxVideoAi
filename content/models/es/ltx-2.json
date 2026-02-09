@@ -196,6 +196,16 @@
       "Solo 16:9 en esta ruta",
       "Una imagen de referencia en I2V",
       "Mantén 6–10 s; encadena clips para más duración"
+    ],
+    "demoTitle": "Prompt demo – hero de producto premium",
+    "demoPromptLabel": "6s hero producto",
+    "demoPrompt": [
+      "Toma ultra cinematográfica de un frasco de perfume sobre mesa negra brillante, foco suave y partículas flotando, órbita de cámara 180°, poca profundidad de campo, 4K, 50 fps, banda sonora ambiental sutil."
+    ],
+    "demoNotes": [
+      "Un único sujeto hero",
+      "Movimiento de cámara e iluminación definidos",
+      "Audio incluido"
     ]
   }
 }

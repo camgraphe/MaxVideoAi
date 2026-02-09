@@ -345,6 +345,18 @@
       }
     ],
     "promptingGuideLabel": "MiniMax",
-    "promptingGuideUrl": "https://www.minimaxi.com"
+    "promptingGuideUrl": "https://www.minimaxi.com",
+    "demoTitle": "Demo – 10s city drift (9:16)",
+    "demoPromptLabel": "10s city drift",
+    "demoPrompt": [
+      "10s vertical shot on a neon street at night, stylized but grounded physics.",
+      "Camera floats above puddles, rippling reflections; passersby and umbrellas in soft blur.",
+      "Wind gusts move trash and steam; slightly painterly look, saturated colors, no text/logos."
+    ],
+    "demoNotes": [
+      "One environment with physical cues.",
+      "Easy to loop as a background.",
+      "Silent output ready for your soundtrack."
+    ]
   }
 }
