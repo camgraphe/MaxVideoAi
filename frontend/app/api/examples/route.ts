@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { listExamplesPage, type ExampleSort, type GalleryVideo } from '@/server/videos';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { listFalEngines } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
@@ -72,19 +73,23 @@ const ENGINE_LINK_ALIASES = (() => {
 })();
 
 const ENGINE_FILTER_GROUPS: Record<string, { id: string; label: string; brandId?: string }> = {
-  'sora-2': { id: 'sora-2', label: 'Sora 2', brandId: 'openai' },
+  sora: { id: 'sora', label: 'Sora 2', brandId: 'openai' },
+  'sora-2': { id: 'sora', label: 'Sora 2', brandId: 'openai' },
+  'sora-2-pro': { id: 'sora', label: 'Sora 2', brandId: 'openai' },
   veo: { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   pika: { id: 'pika', label: 'Pika', brandId: 'pika' },
   kling: { id: 'kling', label: 'Kling', brandId: 'kling' },
   wan: { id: 'wan', label: 'Wan', brandId: 'wan' },
+  seedance: { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
   hailuo: { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
   'ltx-2': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
 };
 
 const ENGINE_MODEL_LINKS: Record<string, string> = {
-  'sora-2': 'sora-2',
+  sora: 'sora-2-pro',
   veo: 'veo-3-1',
-  kling: 'kling-2-6-pro',
+  seedance: 'seedance-1-5-pro',
+  kling: 'kling-3-pro',
   wan: 'wan-2-6',
   pika: 'pika-text-to-video',
   hailuo: 'minimax-hailuo-02-text',
@@ -122,8 +127,8 @@ function resolveFilterDescriptor(
   if (!group) {
     if (normalized.startsWith('veo-3') || normalized.startsWith('veo3')) {
       group = ENGINE_FILTER_GROUPS['veo'];
-    } else if (normalized.startsWith('sora-2')) {
-      group = ENGINE_FILTER_GROUPS['sora-2'];
+    } else if (normalized.startsWith('sora-2') || normalized.startsWith('sora')) {
+      group = ENGINE_FILTER_GROUPS['sora'];
     } else if (normalized.startsWith('pika')) {
       group = ENGINE_FILTER_GROUPS['pika'];
     } else if (normalized.includes('hailuo')) {
@@ -132,6 +137,10 @@ function resolveFilterDescriptor(
       group = ENGINE_FILTER_GROUPS['kling'];
     } else if (normalized.startsWith('wan')) {
       group = ENGINE_FILTER_GROUPS['wan'];
+    } else if (normalized.startsWith('seedance')) {
+      group = ENGINE_FILTER_GROUPS['seedance'];
+    } else if (normalized.startsWith('ltx-2')) {
+      group = ENGINE_FILTER_GROUPS['ltx-2'];
     }
   }
 
@@ -214,22 +223,15 @@ export async function GET(req: NextRequest) {
     const sort = parseSort(url.searchParams.get('sort'));
     const limit = Math.min(120, Math.max(1, Number(url.searchParams.get('limit') ?? '60')));
     const offset = Math.max(0, Number(url.searchParams.get('offset') ?? '0'));
-    const engineFilter = (url.searchParams.get('engine') ?? '').trim().toLowerCase();
+    const engineFilterRaw = (url.searchParams.get('engine') ?? '').trim().toLowerCase();
+    const engineFilter = engineFilterRaw
+      ? resolveExampleCanonicalSlug(engineFilterRaw) ?? engineFilterRaw
+      : '';
     const localeParam = (url.searchParams.get('locale') ?? 'en') as AppLocale;
     const locale: AppLocale = localeParam === 'fr' || localeParam === 'es' ? localeParam : 'en';
 
-    const page = await listExamplesPage({ sort, limit, offset });
-    let items = page.items;
-    if (engineFilter) {
-      items = items.filter((video) => {
-        const canonicalEngineId = resolveEngineLinkId(video.engineId);
-        if (!canonicalEngineId) return false;
-        const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-        const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
-        if (!descriptor) return false;
-        return descriptor.id.toLowerCase() === engineFilter;
-      });
-    }
+    const page = await listExamplesPage({ sort, limit, offset, engineGroup: engineFilter || undefined });
+    const items = page.items;
     const cards = items.map((video) => toExampleCard(video, locale));
     return NextResponse.json({
       ok: true,

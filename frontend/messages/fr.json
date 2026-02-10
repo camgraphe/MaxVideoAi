@@ -58,8 +58,15 @@
       },
       "examples": {
         "items": {
+          "sora": "Sora 2 Pro",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
+          "kling": "Kling 3 Pro",
+          "veo": "Veo 3.1",
+          "wan": "Wan 2.6",
+          "seedance": "Seedance 1.5 Pro",
+          "pika": "Pika 2.2",
+          "hailuo": "MiniMax Hailuo 02",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
           "kling-3-pro": "Kling 3 Pro",

@@ -87,11 +87,11 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
-const PREFERRED_ENGINE_ORDER = ['sora-2', 'kling', 'veo', 'wan', 'seedance', 'ltx-2', 'pika', 'hailuo'];
+const PREFERRED_ENGINE_ORDER = ['sora', 'kling', 'veo', 'wan', 'seedance', 'ltx-2', 'pika', 'hailuo'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
-  'sora-2': { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
+  sora: { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
   veo: { bg: 'var(--engine-google-veo-bg)', text: 'var(--engine-google-veo-ink)' },
   pika: { bg: 'var(--engine-pika-bg)', text: 'var(--engine-pika-ink)' },
   hailuo: { bg: 'var(--engine-minimax-bg)', text: 'var(--engine-minimax-ink)' },
@@ -102,13 +102,24 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
 };
 
 const ENGINE_MODEL_LINKS: Record<string, string> = {
-  'sora-2': 'sora-2-pro',
+  sora: 'sora-2-pro',
   veo: 'veo-3-1',
   seedance: 'seedance-1-5-pro',
   kling: 'kling-3-pro',
   wan: 'wan-2-6',
   pika: 'pika-text-to-video',
   hailuo: 'minimax-hailuo-02-text',
+  'ltx-2': 'ltx-2',
+};
+
+const ENGINE_EXAMPLE_LINKS: Record<string, string> = {
+  sora: 'sora',
+  veo: 'veo',
+  kling: 'kling',
+  wan: 'wan',
+  seedance: 'seedance',
+  pika: 'pika',
+  hailuo: 'hailuo',
   'ltx-2': 'ltx-2',
 };
 
@@ -140,8 +151,9 @@ const ENGINE_FILTER_GROUPS: Record<
     brandId?: string;
   }
 > = {
-  'sora-2': { id: 'sora-2', label: 'Sora 2' },
-  'sora-2-pro': { id: 'sora-2', label: 'Sora 2' },
+  sora: { id: 'sora', label: 'Sora 2' },
+  'sora-2': { id: 'sora', label: 'Sora 2' },
+  'sora-2-pro': { id: 'sora', label: 'Sora 2' },
   'veo-3-1': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-first-last': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
@@ -254,12 +266,10 @@ function resolveExampleCanonicalSlug(engineId: string | null | undefined): strin
   const engineMeta = ENGINE_META.get(canonical.toLowerCase()) ?? null;
   const descriptor = resolveFilterDescriptor(canonical, engineMeta, canonical);
   const groupId = descriptor?.id?.toLowerCase() ?? canonical.toLowerCase();
-  if (groupId === 'kling') {
-    return EXAMPLE_MODEL_SLUG_SET.has('kling') ? 'kling' : null;
-  }
-  const modelSlug = ENGINE_MODEL_LINKS[groupId] ?? ENGINE_MODEL_LINKS[canonical.toLowerCase()];
-  if (!modelSlug) return null;
-  return EXAMPLE_MODEL_SLUG_SET.has(modelSlug) ? modelSlug : null;
+  const exampleSlug =
+    ENGINE_EXAMPLE_LINKS[groupId] ?? ENGINE_EXAMPLE_LINKS[canonical.toLowerCase()] ?? null;
+  if (!exampleSlug) return null;
+  return EXAMPLE_MODEL_SLUG_SET.has(exampleSlug) ? exampleSlug : null;
 }
 
 export async function generateMetadata({
@@ -397,8 +407,8 @@ function resolveFilterDescriptor(
   if (!group) {
     if (normalized.startsWith('veo-3') || normalized.startsWith('veo3')) {
       group = ENGINE_FILTER_GROUPS['veo'];
-    } else if (normalized.startsWith('sora-2')) {
-      group = ENGINE_FILTER_GROUPS['sora-2'];
+    } else if (normalized.startsWith('sora-2') || normalized.startsWith('sora')) {
+      group = ENGINE_FILTER_GROUPS['sora'];
     } else if (normalized.startsWith('pika')) {
       group = ENGINE_FILTER_GROUPS['pika'];
     } else if (normalized.includes('hailuo')) {
@@ -492,7 +502,12 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
   }
 
   const offset = (currentPage - 1) * EXAMPLES_PAGE_SIZE;
-  const pageResult = await listExamplesPage({ sort, limit: EXAMPLES_PAGE_SIZE, offset });
+  const pageResult = await listExamplesPage({
+    sort,
+    limit: EXAMPLES_PAGE_SIZE,
+    offset,
+    engineGroup: collapsedEngineParam || undefined,
+  });
   const allVideos = pageResult.items;
   const totalCount = pageResult.total;
   const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));

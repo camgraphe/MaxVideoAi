@@ -5,7 +5,6 @@ import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import engineCatalog from '@/config/engine-catalog.json';
-import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
@@ -17,7 +16,6 @@ export function MarketingFooter() {
   const labelFor = (key: string, fallback: string) => t(key, fallback) ?? fallback;
 
   const modelSlugSet = new Set(engineCatalog.map((entry) => entry.modelSlug));
-  const exampleSlugSet = new Set(MARKETING_EXAMPLE_SLUGS);
 
   const defaultPolicyLinks: PolicyLink[] = [
     { label: 'Blog', href: '/blog', locale: true },
@@ -95,9 +93,9 @@ export function MarketingFooter() {
     }));
 
   const exampleItems = [
-    { slug: 'sora-2', labelKey: 'footer.sections.examples.items.sora2', fallback: 'Sora 2 examples' },
+    { slug: 'sora', labelKey: 'footer.sections.examples.items.sora2', fallback: 'Sora 2 examples' },
     { slug: 'kling', labelKey: 'footer.sections.examples.items.kling', fallback: 'Kling examples' },
-    { slug: 'veo-3-1', labelKey: 'footer.sections.examples.items.veo3_1', fallback: 'Veo 3.1 examples' },
+    { slug: 'veo', labelKey: 'footer.sections.examples.items.veo3_1', fallback: 'Veo 3.1 examples' },
     { slug: null, labelKey: 'footer.sections.examples.items.all', fallback: 'All examples' },
   ];
   const exampleLinks: FooterLink[] = exampleItems.map((item) => ({

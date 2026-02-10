@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { normalizeEngineId } from '@/lib/engine-alias';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getIndexablePlaylistSlugs, removeVideosFromIndexablePlaylists } from '@/server/indexing';
 import type { PricingSnapshot } from '@/types/engines';
@@ -215,6 +216,7 @@ export type ListExamplesPageOptions = {
   sort: ExampleSort;
   limit?: number;
   offset?: number;
+  engineGroup?: string | null;
 };
 
 export type ListExamplesPageResult = {
@@ -224,6 +226,24 @@ export type ListExamplesPageResult = {
   offset: number;
   hasMore: boolean;
 };
+
+const ENGINE_GROUP_FETCH_MULTIPLIER = 4;
+const ENGINE_GROUP_FETCH_CAP = 400;
+
+function resolveExampleGroupId(engineId: string | null | undefined): string | null {
+  if (!engineId) return null;
+  const normalized = (normalizeEngineId(engineId) ?? engineId).trim().toLowerCase();
+  if (!normalized) return null;
+  if (normalized.startsWith('veo-3') || normalized.startsWith('veo3') || normalized === 'veo') return 'veo';
+  if (normalized.startsWith('sora-2') || normalized.startsWith('sora2') || normalized === 'sora') return 'sora';
+  if (normalized.startsWith('pika')) return 'pika';
+  if (normalized.includes('hailuo')) return 'hailuo';
+  if (normalized.startsWith('kling') || normalized.includes('kling-video')) return 'kling';
+  if (normalized.startsWith('wan') || normalized.includes('wan/')) return 'wan';
+  if (normalized.startsWith('seedance')) return 'seedance';
+  if (normalized.startsWith('ltx-2') || normalized.includes('ltx-2')) return 'ltx-2';
+  return normalized;
+}
 
 function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): GalleryVideo[] {
   if (sort === 'playlist') {
@@ -248,13 +268,17 @@ function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): Gall
 }
 
 export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
-  const { sort, limit = 150, offset = 0 } = options;
+  const { sort, limit = 150, offset = 0, engineGroup } = options;
   const slugs = getIndexablePlaylistSlugs();
   if (!slugs.length) {
     return { items: [], total: 0, limit, offset, hasMore: false };
   }
 
-  const playlistFetchLimit = Math.max(limit + Math.max(offset, 0), limit);
+  const normalizedGroup = engineGroup ? engineGroup.trim().toLowerCase() : null;
+  const baseFetchLimit = Math.max(limit + Math.max(offset, 0), limit);
+  const playlistFetchLimit = normalizedGroup
+    ? Math.min(baseFetchLimit * ENGINE_GROUP_FETCH_MULTIPLIER, ENGINE_GROUP_FETCH_CAP)
+    : baseFetchLimit;
 
   const playlistResults = await Promise.all(
     slugs.map(async (slug) => {
@@ -284,7 +308,10 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
     return { items: [], total: 0, limit, offset, hasMore: false };
   }
 
-  const sorted = sortVideosByPreference(aggregated, sort);
+  const candidates = normalizedGroup
+    ? aggregated.filter((video) => resolveExampleGroupId(video.engineId) === normalizedGroup)
+    : aggregated;
+  const sorted = sortVideosByPreference(candidates, sort);
   const total = sorted.length;
   const start = Math.max(0, offset);
   const items = sorted.slice(start, start + limit);
