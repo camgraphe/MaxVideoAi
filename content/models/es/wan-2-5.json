@@ -3,33 +3,52 @@
   "versionLabel": "2.5",
   "seo": {
     "title": "Wan 2.5 – Texto o imagen a video con audio opcional (480p–1080p, 5–10 s)",
-    "description": "Clips listos con audio de 5–10 s en 480p/720p/1080p. Entrada texto o imagen, carga WAV/MP3 opcional, audio nativo, expansión de prompt y pago por segundo en MaxVideoAI.",
+    "description": "Clips con audio de 5–10 s en 480p/720p/1080p. Entrada de texto o imagen, carga WAV/MP3 opcional, audio nativo, toggle de expansión de prompt y pago por segundo en MaxVideoAI.",
     "image": "/hero/wan-25.jpg"
   },
-  "overview": "Wan 2.5 en MaxVideoAI: clips cortos y con audio de 5–10 s desde texto o una imagen, en 480p/720p/1080p. Audio nativo si no subes pista, WAV/MP3 opcional si quieres sincronía exacta, expansión de prompt opcional y precio por segundo según resolución.",
+  "overview": "Wan 2.5 en MaxVideoAI: clips con audio de 5–10 s desde texto o una imagen única, en 480p/720p/1080p. Carga WAV/MP3 opcional, audio nativo si no subes pista, toggle de expansión de prompt y precio por segundo según resolución.",
   "hero": {
     "title": "Wan 2.5 – Texto o imagen a video con audio opcional en MaxVideoAI (480p–1080p, 5–10 s)",
-    "intro": "Wan 2.5 – Video IA con audio para beats cinemáticos de 5–10 s (480p/720p/1080p)",
-    "badge": "480p/720p/1080p · 5–10 s · Texto o imagen · Audio opcional",
+    "intro": "Beats cinematográficos con audio desde texto o un still — sincroniza con tu pista o deja que Wan genere el sonido.",
+    "badge": "480p/720p/1080p · 5–10 s · Entrada de texto o imagen · Audio opcional",
     "ctaPrimary": {
-      "label": "Empieza con Wan 2.5",
+      "label": "Generar con Wan 2.5",
       "href": "/app?engine=wan-2-5"
     },
     "secondaryLinks": [
       {
         "label": "Comparar Wan 2.5 vs Sora 2 →",
-        "href": "/modelos/sora-2"
+        "href": "/models/sora-2"
       }
     ]
   },
   "bestUseCases": {
     "title": "Casos de uso",
     "items": [
-      "Beats de 5 o 10 s con sonido sincronizado",
-      "Retratos, concept art o producto animados con audio",
-      "Look-dev barato a 480p antes de finales en 1080p",
-      "Prompts en inglés o chino con expansión opcional",
-      "Ideas guiadas por música/SFX/VO donde el timing importa"
+      {
+        "title": "Beats publicitarios hero (guiados por el sonido)",
+        "icon": "ads"
+      },
+      {
+        "title": "Revelaciones sincronizadas con música",
+        "icon": "music"
+      },
+      {
+        "title": "Hooks de voiceover y momentos de diálogo",
+        "icon": "mic"
+      },
+      {
+        "title": "Still de producto → motion",
+        "icon": "product"
+      },
+      {
+        "title": "Retratos y motion de concept art",
+        "icon": "ugc"
+      },
+      {
+        "title": "Look‑dev y exploración de estilo",
+        "icon": "wand2"
+      }
     ]
   },
   "technicalOverviewTitle": "Resumen técnico",
@@ -39,7 +58,7 @@
       "body": "5 s o 10 s por render"
     },
     {
-      "label": "Resolución",
+      "label": "Resoluciones",
       "body": "480p, 720p, 1080p a 24 fps"
     },
     {
@@ -48,15 +67,15 @@
     },
     {
       "label": "Entradas",
-      "body": "Texto → Video; Imagen → Video desde un solo still"
+      "body": "Texto → Video; Imagen → Video desde un still único"
     },
     {
       "label": "Audio",
-      "body": "Audio nativo si no subes pista; WAV/MP3 (3–30 s, ~15 MB) recortado o en loop a 5 o 10 s"
+      "body": "Audio nativo si no subes pista; carga WAV/MP3 (3–30 s, ~15 MB) recortada/loopeada a 5 o 10 s"
     },
     {
       "label": "Controles",
-      "body": "Expansión de prompt opcional; seed opcional; toggles de seguridad"
+      "body": "Toggle de expansión de prompt; seed opcional; toggles de seguridad"
     },
     {
       "label": "Precio",
@@ -64,12 +83,12 @@
     }
   ],
   "promptStructure": {
-    "title": "Texto→video con Wan 2.5",
-    "quote": "[Duración] segundos [relación] toma cinemática de [sujeto] en [entorno]. Cámara [movimiento] mientras [acción]. Luz [estilo], look [grade]. Audio: [ambiente + música/SFX], línea opcional: “[…]”.",
-    "description": "Redacta como descripción de plano + notas de sonido: sujeto/tono, entorno, cámara, timing, luz/look y audio.",
+    "title": "Texto a video con Wan 2.5",
+    "quote": "[Duración] segundos [relación] toma cinemática de [sujeto] en [entorno]. Cámara [movimiento] mientras ocurre [acción principal]. Luz [estilo], look [grade]. Audio: [ambiente + música/SFX], diálogo opcional: “[…]”.",
+    "description": "Escribe como descripción de plano + notas de sonido: sujeto/tono, entorno, cámara, timing, luz/look y audio.",
     "steps": [
       "Sujeto y tono emocional",
-      "Entorno (una escena)",
+      "Entorno (una sola escena)",
       "Lenguaje de cámara (dolly, pan, crane, POV, órbita)",
       "Timing en 5 o 10 segundos",
       "Luz y look (golden hour, moody, neón, etc.)",
@@ -79,236 +98,276 @@
   "tips": {
     "title": "Consejos y límites",
     "items": [
-      "Adjunta WAV/MP3 recortado a 5–10 s si quieres golpes a tiempo",
-      "Usa audio nativo (sin pista) para idear rápido",
-      "Expansión on para explorar, off si necesitas control literal",
-      "Itera barato en 480p y finaliza en 1080p",
-      "Pon el copy crítico como overlay; texto/UI pequeños pueden fallar"
+      "Adjunta un WAV/MP3 recortado a 5–10 s si necesitas sincronía con los beats",
+      "Usa audio nativo (sin carga) para idear rápido",
+      "Deja la expansión activada para explorar y desactívala para briefs precisos",
+      "Itera barato en 480p y finaliza en 1080p cuando esté aprobado",
+      "Mantén el texto como overlay; el micro‑texto/UI es poco fiable"
     ]
   },
   "compareLink": {
     "label": "Comparar Wan 2.5 vs Sora 2 →",
-    "href": "/modelos/sora-2"
+    "href": "/models/sora-2"
   },
   "prompts": [
     {
-      "title": "Coche concepto al ritmo (10s, 16:9)",
-      "prompt": "Toma 10s 16:9 de un coche concepto cromado emergiendo entre pulsos de luz y niebla al ritmo del synth. Wide a low-angle push, lluvia, rim azul, flares sutiles. Audio: pista subida como música principal + rumble, trueno, gotas; sin diálogo."
+      "title": "Coche concepto cromado en los downbeats (10 s, 16:9)",
+      "prompt": "Toma 10 s 16:9 de un coche concepto cromado emergiendo entre pulsos de luz y niebla al ritmo de downbeats synth. Wide a low‑angle push, lluvia, rim light azul, flares sutiles. Audio: pista subida como música principal, añade un rumble bajo, trueno, gotas de lluvia; sin diálogo."
     },
     {
-      "title": "Historia vertical de smartwatch (10s, 9:16)",
-      "prompt": "Toma 10s vertical de smartwatch en muñeca de runner sincronizada con electrónica energética: close-up en beat uno con gotas; pull back en el primer golpe mostrando sprint en slow-mo en puente neón; beat final swing a perfil con aliento visible y pantalla brillando. Audio: pista subida + pasos, lluvia, respiración; sin VO."
+      "title": "Story vertical de smartwatch (10 s, 9:16)",
+      "prompt": "Toma vertical 10 s de un smartwatch en la muñeca de una runner sincronizada con electrónica energética: close‑up en el primer beat con gotas; pull back en el primer hit mostrando sprint en slow‑mo sobre un puente neón; beat final swing a perfil con aliento visible y pantalla brillante. Audio: pista subida + pasos, lluvia, respiración; sin VO."
     }
   ],
   "faqs": [
     {
       "q": "¿Wan 2.5 siempre genera audio?",
-      "a": "Sí. Si no subes pista, genera audio nativo. Si subes WAV/MP3, esa pista se recorta/loopea a 5/10 s y es el audio principal."
+      "a": "Sí. Si no subes pista, Wan genera audio nativo. Si subes un WAV/MP3, se recorta/loopea a 5 o 10 s y se usa como audio principal."
     },
     {
-      "q": "¿Qué resolución y duración usar?",
-      "a": "480p/5s para look-dev rápido; 720p/5–10s para internos/social; 1080p/10s para beats hero y entregas a cliente."
+      "q": "¿Qué resoluciones y duraciones debo usar?",
+      "a": "480p/5s para pruebas más rápidas; 720p/5–10s para interno y social; 1080p/10s para beats hero y entregas a cliente."
     },
     {
-      "q": "¿Puede hacer vertical y cuadrado?",
-      "a": "Sí: 16:9, 9:16 o 1:1. 9:16 para mobile-first."
+      "q": "¿Wan 2.5 admite video vertical y cuadrado?",
+      "a": "Sí. Elige 16:9, 9:16 o 1:1 antes de renderizar; 9:16 es ideal para mobile‑first."
     },
     {
-      "q": "¿Soporta Imagen → Video?",
-      "a": "Sí. Sube un still y enfoca el prompt en movimiento, cámara y audio."
+      "q": "¿Wan 2.5 soporta Imagen → Video?",
+      "a": "Sí. Sube un still (retrato, producto, concept art) y enfoca el prompt en movimiento, cámara y audio."
     },
     {
-      "q": "¿Cómo se compara el precio?",
-      "a": "Precio por segundo por resolución (0.05/0.10/0.15 $/s); nivel medio vs motores premium o silenciosos ultra low-cost."
+      "q": "¿Cómo se compara el precio de Wan 2.5 frente a otros motores?",
+      "a": "Por segundo según resolución (0.05/0.10/0.15 $/s). Es un nivel medio: más barato que motores premium long‑form, más capaz que motores silenciosos ultra low‑cost."
     }
   ],
   "custom": {
-    "heroDesc1": "Wan 2.5 te deja planear beats cinemáticos con audio integrado: prompt o imagen, WAV/MP3 opcional, 5 o 10 s en 480p/720p/1080p.",
-    "heroDesc2": "Úsalo para beats y reveals donde música, ambiente o diálogo importan. Sube pista para sincronía fina o deja que Wan genere audio nativo.",
-    "whyTitle": "Por qué Wan 2.5 es potente en MaxVideoAI",
+    "heroDesc1": "Wan 2.5 te permite storyboardear beats cinematográficos con audio integrado: prompt o imagen, WAV/MP3 opcional, 5 o 10 s en 480p/720p/1080p.",
+    "heroDesc2": "Úsalo para beats y reveals donde música, ambiente o diálogo importan. Sube una pista para sincronía precisa o deja que Wan genere audio nativo.",
+    "heroSupportLine": "Ideal para reveals guiados por música, hooks de voiceover y beats hero contundentes que se sienten terminados.",
+    "whyTitle": "Por qué Wan 2.5 es potente",
     "heroHighlights": [
-      "Texto → Video e Imagen → Video en un motor",
-      "Audio opcional (WAV/MP3) para ajustar timing a música o VO",
-      "Audio nativo cuando no adjuntas pista",
-      "Tiers flexibles: 480p, 720p, 1080p",
-      "Beats de 5 o 10 s que se sienten terminados",
-      "Toggle de expansión para enriquecer briefs cortos",
-      "Pago por uso con tarifas claras por segundo",
-      "Disponible Europa/UK/global con el wallet MaxVideoAI",
-      "Convive con Sora, Veo, Pika, Kling, MiniMax Hailuo para comparar"
+      "Audio + visuales juntos||Diálogo, ambiente y SFX nativos en el mismo render.",
+      "Trae tu propia pista||Usa una URL/carga de audio para fijar el timing con música o VO.",
+      "Mejor seguimiento de prompt||Las cues de cámara + sonido se respetan más con dirección estructurada.",
+      "Estilo flexible||Funciona en realista o estilizado si los prompts son concretos."
     ],
     "bestUseCasesTitle": "Casos de uso",
     "bestUseCases": [
-      "Beats con sonido sincronizado",
-      "Retratos/concepts/producto animados con audio",
-      "Look-dev 480p, finales 1080p",
-      "Prompts EN/ZH con expansión opcional",
-      "Ideas guiadas por música/SFX/VO"
+      {
+        "title": "Beats publicitarios hero (guiados por el sonido)",
+        "icon": "ads"
+      },
+      {
+        "title": "Revelaciones sincronizadas con música",
+        "icon": "music"
+      },
+      {
+        "title": "Hooks de voiceover y momentos de diálogo",
+        "icon": "mic"
+      },
+      {
+        "title": "Still de producto → motion",
+        "icon": "product"
+      },
+      {
+        "title": "Retratos y motion de concept art",
+        "icon": "ugc"
+      },
+      {
+        "title": "Look‑dev y exploración de estilo",
+        "icon": "wand2"
+      }
     ],
-    "whatTitle": "Qué es Wan 2.5 en MaxVideoAI",
-    "whatIntro1": "Modelo texto/imagen→video para clips cortos con audio nativo.",
-    "whatIntro2": "En MaxVideoAI es un motor flexible y audio-ready con precios por resolución.",
-    "whatFlowTitle": "Flujo en app",
+    "whatTitle": "Qué es realmente Wan 2.5 en MaxVideoAI",
+    "whatIntro1": "Wan 2.5 es un modelo de texto e imagen a video diseñado para clips cinematográficos cortos con audio nativo.",
+    "whatIntro2": "En MaxVideoAI es un motor audio‑ready y flexible con pricing por resolución.",
+    "whatFlowTitle": "Flujo en la app",
     "whatFlowSteps": [
       "1. Elige Wan 2.5.",
-      "2. Texto → Video o Imagen → Video.",
+      "2. Elige Texto → Video o Imagen → Video.",
       "3. Ajusta duración (5/10 s), resolución (480p/720p/1080p) y relación.",
-      "4. (Opcional) Adjunta WAV/MP3.",
-      "5. Decide si dejas Expansión activa.",
-      "6. Pega un prompt cinemático con sujeto, cámara y audio.",
-      "7. Revisa precio en vivo y genera."
+      "4. (Opcional) Adjunta un WAV/MP3.",
+      "5. Decide si la expansión de prompt queda activada.",
+      "6. Pega un prompt claro y cinematográfico con sujeto, cámara y sonido.",
+      "7. Revisa el precio en vivo y renderiza."
     ],
-    "specTitle": "Specs reales – Wan 2.5 en MaxVideoAI (480p–1080p, 5–10 s)",
-    "specNote": "Specs tal como las usas hoy en MaxVideoAI.",
+    "specTitle": "Especificaciones reales — Wan 2.5 en MaxVideoAI (480p–1080p, 5–10 s)",
+    "specNote": "Estas specs describen Wan 2.5 exactamente como puedes usarlo hoy en MaxVideoAI.",
     "specSections": [
       {
-        "title": "Duración y salida",
+        "title": "Flujos guiados por audio",
+        "intro": "Diseñado para clips donde el timing manda. Úsalo para sincronizar visuales con música o voz.",
         "items": [
-          "Duraciones: 5 s y 10 s",
-          "Resoluciones: 480p, 720p, 1080p (24 fps)"
+          "Añade cues de música o VO en el prompt.",
+          "Usa una URL de audio para fijar el timing.",
+          "Mantén los visuales alineados al beat.",
+          "Ideal para reveals impulsados por música."
         ]
       },
       {
-        "title": "Relaciones",
+        "title": "Disciplina de prompt",
+        "intro": "La dirección estructurada ofrece resultados más fiables que la prosa larga. Mantén instrucciones claras y secuenciales.",
         "items": [
-          "16:9 – horizontal web/YouTube",
-          "9:16 – vertical para TikTok/Reels/Shorts",
-          "1:1 – cuadrado para feeds y perfiles"
-        ]
-      },
-      {
-        "title": "Entradas y archivos",
-        "items": [
-          "Prompts de texto (una escena o mini-secuencia corta)",
-          "Imagen → Video: un still (PNG/JPG/JPEG/WebP/GIF/AVIF), ~25 MB, animado a 5/10 s",
-          "Audio: WAV/MP3, 3–30 s, ~15 MB; recorte/loop para ajustar al clip"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Audio nativo si no subes pista",
-          "Si subes audio, se recorta/loopea y es la banda principal",
-          "Sube pista para timing preciso; usa nativo para drafts rápidos"
-        ]
-      },
-      {
-        "title": "Expansión de prompt",
-        "items": [
-          "Rewrite LLM opcional de prompts cortos",
-          "Enciende para explorar; apaga si necesitas literalidad"
-        ]
-      },
-      {
-        "title": "Precio",
-        "items": [
-          "$0.05/s (480p), $0.10/s (720p), $0.15/s (1080p)",
-          "Ejemplos: 5s @1080p ≈ $0.75; 10s ≈ $1.50",
-          "Se cobra desde el wallet compartido; tarifas live en la app"
+          "Escribe los beats en orden.",
+          "Indica la intención de cámara antes del estilo.",
+          "Mantén constante la redacción del sujeto.",
+          "Deja el estilo complejo para pases posteriores."
         ]
       }
     ],
     "specValueProp": "Wan 2.5 es el motor corto con audio para beats de 5–10 s donde imagen y sonido deben caer juntos.",
-    "galleryTitle": "Galería Wan 2.5",
-    "galleryIntro": "Clips generados con la misma config que tienes en MaxVideoAI.",
+    "galleryTitle": "Galería de ejemplos Wan 2.5",
+    "galleryIntro": "Clips generados con la configuración exacta disponible en MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos Wan 2.5 →",
     "recreateLabel": "Recrear esta toma →",
-    "imageTitle": "Imagen→video con Wan 2.5",
-    "imageIntro": "Anima un solo still en un beat con audio.",
+    "imageTitle": "Flujo Imagen → Video con Wan 2.5",
+    "imageIntro": "Anima un still en un beat con audio.",
     "imageFlow": [
-      "Sube un retrato, shot de producto o concept art.",
+      "Sube un retrato, un shot de producto o concept art.",
       "Elige Imagen → Video, duración, resolución y relación.",
       "Adjunta audio o deja que Wan lo genere.",
-      "Pide movimiento (cámara/sujeto) y cómo cerrar el beat en 5/10 s."
+      "Promptea el movimiento (cámara/sujeto) y cómo termina el beat en 5 o 10 s."
     ],
     "imageWhy": [
       "Intros animadas sutiles para retratos",
-      "Renders de producto que se sientan vivos",
+      "Renders de producto que se sienten vivos",
       "Concept art convertido en beats con audio"
     ],
-    "multishotTitle": "Beats guiados por audio",
-    "multishotIntro1": "Wan 2.5 puede ajustar el movimiento a una pista específica.",
+    "multishotTitle": "Beats guiados por audio y sincronía musical",
+    "multishotIntro1": "Wan 2.5 puede alinear el movimiento visual con una pista específica.",
     "multishotIntro2": "Usa downbeats y transiciones como anclas en el prompt.",
     "multishotTips": [
-      "Recorta audio a 5 o 10 s para colocar golpes con precisión",
+      "Recorta el audio a 5 o 10 s para colocar beats con precisión",
       "Indica cuándo deben caer los cambios visuales",
-      "Mantén diálogos cortos y naturales en 5–10 s",
-      "Boceta con audio nativo; sube pista pulida para finales"
+      "Mantén los diálogos cortos y naturales en 5–10 s",
+      "Boceta con audio nativo; sube pistas pulidas para finales"
     ],
-    "demoTitle": "Demo: un prompt para Wan 2.5",
-    "demoPromptLabel": "Historia de producto 10 s 9:16 sincronizada con pista",
-    "demoPrompt": [
-      "Toma vertical 10 s de smartwatch en muñeca de runner, al ritmo de electrónica energética.",
-      "Inicio: close-up en el primer beat con gotas sobre el cristal.",
-      "Cambio: pull back mostrando sprint en slow-mo en puente con neón.",
-      "Final: swing a perfil con aliento visible y pantalla brillante.",
-      "Luz: blue hour, highlights marcados en metal.",
-      "Audio: pista subida como música + pasos, lluvia, respiración; sin VO."
-    ],
-    "demoNotes": [
-      "El audio ancla las transiciones visuales.",
-      "Un sujeto/entorno con trayectoria de cámara clara.",
-      "Cues explícitos para los golpes."
-    ],
-    "tipsTitle": "Consejos y límites en claro",
+    "tipsTitle": "Consejos y límites",
     "strengths": [
-      "Beats cortos de 5–10 s que se sienten completos",
-      "Audio + video juntos para trailers, intros y reveals",
-      "Tiers de resolución para bocetar barato y finalizar en HD",
-      "Soporta realista o estilizado con prompts claros"
+      "Trátalo como un “hero beat” de 5–10 s: un sujeto, una acción clara, un movimiento de cámara.",
+      "Si el timing importa, usa una URL de audio y describe qué debe caer en los momentos clave (máx. 1–2 cues).",
+      "Mantén el diálogo corto (una línea). Ambiente + un cue SFX suele ser suficiente.",
+      "Para Imagen → Video, parte de un still limpio y promtea movimiento + cámara — no re‑describas toda la escena.",
+      "La expansión de prompt es ideal para prompts cortos; mantén tu input literal y estructurado para que se expanda en la dirección correcta."
     ],
     "boundaries": [
-      "Máx. 10 s por render; une clips para historias largas",
-      "Prevé un ligero polish de audio en edición para clientes",
-      "Texto/UI minúsculos pueden fallar; pon copy crítico como overlay",
-      "La expansión puede cambiar matices; desactívala para control literal"
+      "La duración es de 5 s o 10 s por render.",
+      "URL de audio: si el audio es más largo que el video, se recorta; si es más corto, el resto del clip queda en silencio.",
+      "Los prompts son cortos (máx. ~800 caracteres). Los prompts negativos también están limitados — mantenlos mínimos.",
+      "Los checks de seguridad pueden bloquear contenido borderline — mantén personas/semejanza y diálogos brand‑safe."
     ],
-    "safetyTitle": "Seguridad y semejanza",
+    "safetyTitle": "Seguridad y personas / semejanza",
     "safetyRules": [
-      "Sin contenido sexual explícito o menores sexualizados",
-      "Sin violencia gráfica/choque o glorificación",
-      "Evita odio, acoso o extremismo",
-      "No uses la imagen de personas reales sin consentimiento; evita figuras públicas",
-      "Prompts/imágenes/audio pueden bloquearse o modificarse por moderación"
+      "Nada de contenido sexual ni nada que involucre menores.",
+      "Nada de contenido de odio, acoso o violencia gráfica.",
+      "No suplantes a personas reales o figuras públicas; usa consentimiento para cualquier semejanza/voz.",
+      "No subas datos personales privados ni material con copyright sin derechos (incluido audio).",
+      "Algunos prompts, imágenes o audios pueden bloquearse por filtros de seguridad."
     ],
-    "safetyInterpretation": [
-      "Usa Wan 2.5 para contenido legal, ético y brand-safe"
-    ],
-    "safetyNote": "Wan 2.5 pasa por filtros del proveedor y de MaxVideoAI.",
-    "comparisonTitle": "Wan 2.5 vs Sora 2 – Resumen",
+    "safetyInterpretation": [],
+    "safetyNote": null,
+    "comparisonTitle": "Wan 2.5 vs Sora 2 — resumen rápido",
     "comparisonPoints": [
-      "Wan 2.5: beats de 5–10 s con audio nativo, pista opcional y tiers de resolución",
+      "Wan 2.5: beats 5–10 s con audio, carga de pista opcional y tiers de resolución flexibles",
       "Sora 2: 720p con audio nativo para tomas realistas tipo UGC/producto",
-      "Veo 3.1 / Kling / Pika: elige estos para presets de framing, realismo silencioso 1080p o animación estilizada"
+      "Veo 3.1 / Kling / Pika: elige estos para presets de encuadre, realismo 1080p silencioso o loops estilizados"
     ],
     "comparisonCta": "Comparar Wan 2.5 vs Sora 2 →",
     "faqTitle": "FAQ – Wan 2.5 en MaxVideoAI",
     "faqs": [
       {
         "q": "¿Wan 2.5 siempre genera audio?",
-        "a": "Sí. Audio nativo si no subes pista; si subes WAV/MP3 se recorta/loopea a 5/10 s y es la banda principal."
+        "a": "Sí. Audio nativo si no subes pista; una pista WAV/MP3 cargada se recorta o loopea a 5/10 s y es la banda principal."
       },
       {
-        "q": "¿Qué resolución/duración usar?",
-        "a": "480p/5s para pruebas rápidas; 720p/5–10s para interno/social; 1080p/10s para beats hero y entregas."
+        "q": "¿Qué resoluciones/duraciones debo usar?",
+        "a": "480p/5s para pruebas rápidas y baratas; 720p/5–10s para interno/social; 1080p/10s para beats hero y entregas a cliente."
       },
       {
-        "q": "¿Soporta vertical y cuadrado?",
-        "a": "Sí—16:9, 9:16 o 1:1. Usa 9:16 para mobile-first."
+        "q": "¿Wan 2.5 admite vertical y cuadrado?",
+        "a": "Sí — 16:9, 9:16 o 1:1. Elige 9:16 para placements mobile‑first."
       },
       {
-        "q": "¿Soporta Imagen → Video?",
+        "q": "¿Wan 2.5 soporta Imagen → Video?",
         "a": "Sí. Sube un still y enfoca el prompt en movimiento, cámara y audio."
       },
       {
-        "q": "¿Cómo se cobra frente a otros motores?",
-        "a": "Por segundo por resolución (0.05/0.10/0.15 $/s); nivel medio vs premium o motores mudos ultra baratos."
+        "q": "¿Cómo se cobra Wan 2.5 frente a otros motores?",
+        "a": "Por segundo según resolución (0.05/0.10/0.15 $/s); nivel medio entre premium long‑form y motores silenciosos ultra‑baratos."
       }
     ],
     "relatedTitle": "Explora otros modelos",
-    "relatedSubtitle": "Compara precio, latencia y salidas en el catálogo MaxVideoAI.",
+    "relatedSubtitle": "Compara precio, latencia y opciones de salida en el catálogo de MaxVideoAI.",
     "finalPara1": "Wan 2.5 en MaxVideoAI es tu motor corto con audio para beats de 5–10 s.",
     "finalPara2": "Usa audio nativo o sube tu pista, itera barato y finaliza en HD cuando imagen y sonido deban caer juntos.",
-    "finalButton": "Abrir Generate"
+    "finalButton": "Abrir Generate",
+    "promptingTitle": "Cómo escribir un gran prompt para Wan 2.5",
+    "promptingIntro": "Wan 2.5 funciona mejor con una sola acción clara y un prompt corto y concreto.",
+    "promptingTip": "Tip: duración + relación se configuran en la UI - tu prompt controla sujeto, movimiento, cámara, luz, estilo y sonido opcional. La expansión ayuda a prompts cortos.",
+    "promptingGlobalPrinciples": [
+      "Un sujeto, una acción.",
+      "Especifica movimiento de cámara y luz.",
+      "Añade un prompt negativo corto para evitar artefactos."
+    ],
+    "tipsIntro": "Wan 2.5 funciona mejor para beats cortos guiados por el sonido — mantén el brief visual simple y deja que el timing venga del audio.",
+    "promptingEngineWhy": [
+      "Los prompts cortos se expanden automáticamente.",
+      "Una URL de audio puede fijar el timing; mantén las cues mínimas.",
+      "Evita múltiples beats en un clip corto."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
+      "structured": "Structured = consistencia. Úsalo cuando necesites resultados fiables.",
+      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [acción] en [escena], [movimiento de cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEscena:\n[Lugar + momento + 2 anclas.]\n\nCámara:\n[Plano + ángulo + un movimiento.]\n\nLook:\n[Luz + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesites un look muy preciso o continuidad entre planos.",
+        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + entorno:\n[Rasgos clave + lugar + anclas.]\n\nCámara:\n[Encuadre + ángulo + un movimiento + sensación de lente.]\n\nLuz + color:\n[Key light + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
+      }
+    ],
+    "promptingGuideLabel": "Wan AI",
+    "promptingGuideUrl": "https://www.wan-ai.com",
+    "demoTitle": "Demo: un prompt para Wan 2.5",
+    "demoPromptLabel": "Historia de producto 10 s 9:16 sincronizada con pista",
+    "demoPrompt": [
+      "Toma vertical 10 s de un smartwatch en la muñeca de una runner, al ritmo de electrónica energética.",
+      "Inicio: close‑up en el primer beat con gotas sobre el cristal.",
+      "Cambio de beat: pull back mostrando el sprint en slow‑mo en un puente neón.",
+      "Beat final: swing a perfil con aliento visible y pantalla brillante.",
+      "Luz: blue hour, highlights marcados en metal.",
+      "Audio: pista subida como música + pasos, lluvia, respiración; sin VO."
+    ],
+    "demoNotes": [
+      "El audio ancla las transiciones.",
+      "Un sujeto/entorno, trayectoria de cámara clara.",
+      "Cues explícitos para los hits."
+    ],
+    "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
+    "troubleshootingItems": [
+      "El audio no cuadra → recuerda que el audio subido se recorta a los primeros 5/10 s; promptea sobre el segmento que realmente usas.",
+      "Demasiado pasando / movimiento confuso → reduce a una acción principal; elimina beats extra; simplifica el fondo.",
+      "Deriva / ignora detalles → mueve sujeto + acción + cámara a la primera línea; mantén restricciones positivas (“fondo limpio”, “sujeto centrado”).",
+      "Lip sync se desvía → acorta la línea y baja la velocidad; evita monólogos largos.",
+      "La expansión cambia la intención → desactívala para control literal, o acorta el prompt y elimina adjetivos ambiguos."
+    ]
   }
 }
