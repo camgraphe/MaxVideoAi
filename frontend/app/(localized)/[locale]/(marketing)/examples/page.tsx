@@ -250,7 +250,14 @@ function buildExamplesCanonical(baseCanonical: string, engineParam: string, page
 function resolveExampleCanonicalSlug(engineId: string | null | undefined): string | null {
   if (!engineId) return null;
   const normalized = engineId.trim().toLowerCase();
-  const modelSlug = ENGINE_MODEL_LINKS[normalized];
+  const canonical = normalizeEngineId(normalized) ?? normalized;
+  const engineMeta = ENGINE_META.get(canonical.toLowerCase()) ?? null;
+  const descriptor = resolveFilterDescriptor(canonical, engineMeta, canonical);
+  const groupId = descriptor?.id?.toLowerCase() ?? canonical.toLowerCase();
+  if (groupId === 'kling') {
+    return EXAMPLE_MODEL_SLUG_SET.has('kling') ? 'kling' : null;
+  }
+  const modelSlug = ENGINE_MODEL_LINKS[groupId] ?? ENGINE_MODEL_LINKS[canonical.toLowerCase()];
   if (!modelSlug) return null;
   return EXAMPLE_MODEL_SLUG_SET.has(modelSlug) ? modelSlug : null;
 }

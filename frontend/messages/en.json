@@ -127,6 +127,61 @@
         "label": "Spanish"
       }
     ],
+    "sections": {
+      "engines": {
+        "title": "AI Video Engines",
+        "items": {
+          "sora2": "Sora 2",
+          "kling3pro": "Kling 3 Pro",
+          "wan2_6": "Wan 2.6",
+          "veo3_1": "Veo 3.1",
+          "ltx2": "LTX-2",
+          "seedance1_5pro": "Seedance 1.5 Pro"
+        }
+      },
+      "comparisons": {
+        "title": "Popular comparisons",
+        "items": {
+          "kling3pro_vs_sora2": "Kling 3 Pro vs Sora 2",
+          "sora2_vs_veo3_1": "Sora 2 vs Veo 3.1",
+          "kling3pro_vs_wan2_6": "Kling 3 Pro vs Wan 2.6",
+          "ltx2_vs_veo3_1": "LTX-2 vs Veo 3.1",
+          "sora2_vs_wan2_6": "Sora 2 vs Wan 2.6",
+          "seedance1_5pro_vs_sora2": "Seedance 1.5 Pro vs Sora 2"
+        }
+      },
+      "examples": {
+        "title": "Real examples",
+        "items": {
+          "sora2": "Sora 2 examples",
+          "kling": "Kling examples",
+          "veo3_1": "Veo 3.1 examples",
+          "all": "All examples"
+        }
+      },
+      "product": {
+        "title": "Product",
+        "items": {
+          "generate": "Generate",
+          "pricing": "Pricing",
+          "workflows": "Workflows",
+          "docs": "Docs",
+          "models": "All models"
+        }
+      },
+      "company": {
+        "title": "Company",
+        "items": {
+          "blog": "Blog",
+          "about": "About",
+          "contact": "Contact",
+          "status": "Status"
+        }
+      },
+      "policies": {
+        "title": "Policies"
+      }
+    },
     "crawlerNote": "MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility."
   },
   "home": {

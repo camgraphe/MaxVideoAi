@@ -207,6 +207,61 @@
         "label": "Espagnol"
       }
     ],
+    "sections": {
+      "engines": {
+        "title": "Moteurs vidéo IA",
+        "items": {
+          "sora2": "Sora 2",
+          "kling3pro": "Kling 3 Pro",
+          "wan2_6": "Wan 2.6",
+          "veo3_1": "Veo 3.1",
+          "ltx2": "LTX-2",
+          "seedance1_5pro": "Seedance 1.5 Pro"
+        }
+      },
+      "comparisons": {
+        "title": "Comparaisons populaires",
+        "items": {
+          "kling3pro_vs_sora2": "Kling 3 Pro vs Sora 2",
+          "sora2_vs_veo3_1": "Sora 2 vs Veo 3.1",
+          "kling3pro_vs_wan2_6": "Kling 3 Pro vs Wan 2.6",
+          "ltx2_vs_veo3_1": "LTX-2 vs Veo 3.1",
+          "sora2_vs_wan2_6": "Sora 2 vs Wan 2.6",
+          "seedance1_5pro_vs_sora2": "Seedance 1.5 Pro vs Sora 2"
+        }
+      },
+      "examples": {
+        "title": "Exemples concrets",
+        "items": {
+          "sora2": "Exemples Sora 2",
+          "kling": "Exemples Kling",
+          "veo3_1": "Exemples Veo 3.1",
+          "all": "Tous les exemples"
+        }
+      },
+      "product": {
+        "title": "Produit",
+        "items": {
+          "generate": "Générer",
+          "pricing": "Tarifs",
+          "workflows": "Flux de travail",
+          "docs": "Documentation",
+          "models": "Tous les modèles"
+        }
+      },
+      "company": {
+        "title": "Entreprise",
+        "items": {
+          "blog": "Blog",
+          "about": "À propos",
+          "contact": "Contact",
+          "status": "Statut"
+        }
+      },
+      "policies": {
+        "title": "Politiques"
+      }
+    },
     "crawlerNote": "MaxVideoAI autorise les robots IA (GPTBot, OAI-SearchBot, Google-Extended et CCBot) à indexer les pages modèles publiques et la documentation à des fins éducatives et de recherche."
   },
   "home": {

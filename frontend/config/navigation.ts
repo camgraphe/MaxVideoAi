@@ -51,7 +51,7 @@ const EXAMPLES_MENU: LabeledSlug[] = [
   { slug: 'sora-2', label: 'Sora 2' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
   { slug: 'seedance-1-5-pro', label: 'Seedance 1.5 Pro' },
-  { slug: 'kling-3-standard', label: 'Kling 3 Standard' },
+  { slug: 'kling', label: 'Kling' },
   { slug: 'ltx-2', label: 'LTX-2' },
   { slug: 'ltx-2-fast', label: 'LTX-2 Fast' },
   { slug: 'pika-text-to-video', label: 'Pika Text-to-Video' },
@@ -60,7 +60,7 @@ const EXAMPLES_MENU: LabeledSlug[] = [
 ];
 
 export const MARKETING_MODEL_SLUGS = MODEL_MENU.map((item) => item.slug);
-export const MARKETING_EXAMPLE_SLUGS = EXAMPLES_MENU.map((item) => item.slug);
+export const MARKETING_EXAMPLE_SLUGS = [...EXAMPLES_MENU.map((item) => item.slug), 'kling-3-standard'];
 
 export const MARKETING_NAV_MODELS: MarketingNavItem[] = MODEL_MENU.map((item) => ({
   key: item.slug,

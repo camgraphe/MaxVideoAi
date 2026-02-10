@@ -207,6 +207,61 @@
         "label": "Español"
       }
     ],
+    "sections": {
+      "engines": {
+        "title": "Motores de video IA",
+        "items": {
+          "sora2": "Sora 2",
+          "kling3pro": "Kling 3 Pro",
+          "wan2_6": "Wan 2.6",
+          "veo3_1": "Veo 3.1",
+          "ltx2": "LTX-2",
+          "seedance1_5pro": "Seedance 1.5 Pro"
+        }
+      },
+      "comparisons": {
+        "title": "Comparaciones populares",
+        "items": {
+          "kling3pro_vs_sora2": "Kling 3 Pro vs Sora 2",
+          "sora2_vs_veo3_1": "Sora 2 vs Veo 3.1",
+          "kling3pro_vs_wan2_6": "Kling 3 Pro vs Wan 2.6",
+          "ltx2_vs_veo3_1": "LTX-2 vs Veo 3.1",
+          "sora2_vs_wan2_6": "Sora 2 vs Wan 2.6",
+          "seedance1_5pro_vs_sora2": "Seedance 1.5 Pro vs Sora 2"
+        }
+      },
+      "examples": {
+        "title": "Ejemplos reales",
+        "items": {
+          "sora2": "Ejemplos de Sora 2",
+          "kling": "Ejemplos de Kling",
+          "veo3_1": "Ejemplos de Veo 3.1",
+          "all": "Todos los ejemplos"
+        }
+      },
+      "product": {
+        "title": "Producto",
+        "items": {
+          "generate": "Generar",
+          "pricing": "Precios",
+          "workflows": "Flujos de trabajo",
+          "docs": "Documentación",
+          "models": "Todos los modelos"
+        }
+      },
+      "company": {
+        "title": "Empresa",
+        "items": {
+          "blog": "Blog",
+          "about": "Acerca de",
+          "contact": "Contacto",
+          "status": "Estado"
+        }
+      },
+      "policies": {
+        "title": "Políticas"
+      }
+    },
     "crawlerNote": "MaxVideoAI permite que los rastreadores de IA (GPTBot, OAI-SearchBot, Google-Extended y CCBot) indexen las páginas públicas de modelos y la documentación con fines educativos y de investigación."
   },
   "home": {
