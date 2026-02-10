@@ -100,13 +100,11 @@ export function MarketingFooter() {
     { slug: 'veo-3-1', labelKey: 'footer.sections.examples.items.veo3_1', fallback: 'Veo 3.1 examples' },
     { slug: null, labelKey: 'footer.sections.examples.items.all', fallback: 'All examples' },
   ];
-  const exampleLinks: FooterLink[] = exampleItems
-    .filter((item) => !item.slug || exampleSlugSet.has(item.slug))
-    .map((item) => ({
-      key: item.slug ?? 'all',
-      label: labelFor(item.labelKey, item.fallback),
-      href: item.slug ? { pathname: '/examples/[model]', params: { model: item.slug } } : { pathname: '/examples' },
-    }));
+  const exampleLinks: FooterLink[] = exampleItems.map((item) => ({
+    key: item.slug ?? 'all',
+    label: labelFor(item.labelKey, item.fallback),
+    href: item.slug ? { pathname: '/examples/[model]', params: { model: item.slug } } : { pathname: '/examples' },
+  }));
 
   const productLinks: FooterLink[] = [
     { key: 'generate', label: labelFor('footer.sections.product.items.generate', 'Generate'), href: '/app' },
@@ -130,14 +128,14 @@ export function MarketingFooter() {
   const productTitle = labelFor('footer.sections.product.title', 'Product');
   const companyTitle = labelFor('footer.sections.company.title', 'Company');
   const policiesTitle = labelFor('footer.sections.policies.title', 'Policies');
-  const sectionTitleClass = 'text-xs font-semibold uppercase tracking-micro text-text-muted';
+  const sectionTitleClass = 'text-xs font-semibold uppercase tracking-micro text-text-primary';
   const linkClass =
     'text-sm text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
 
   return (
     <footer className="border-t border-hairline bg-surface">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 text-sm text-text-muted md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center justify-between gap-4 text-sm text-text-muted">
           <Link
             href="/"
             className="inline-flex items-center gap-4 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
@@ -145,14 +143,14 @@ export function MarketingFooter() {
             <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} className="h-8 w-8" />
             <span>{brandLabel}</span>
           </Link>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <div className="flex items-center gap-1">
               <LanguageToggle variant="icon" />
             </div>
           </div>
         </div>
 
-        <div className="grid gap-8 text-text-secondary sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-text-secondary sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-5 lg:gap-x-8">
           <div>
             <p className={sectionTitleClass}>{enginesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={enginesTitle}>
