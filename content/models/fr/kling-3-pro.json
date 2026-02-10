@@ -3,7 +3,8 @@
   "versionLabel": "v3 Pro",
   "seo": {
     "title": "Kling 3 Pro – Text & Image to Video multi‑scènes | MaxVideoAI",
-    "description": "Générez des vidéos Kling 3 Pro multi‑shots avec prompts par scène, Elements et voice control optionnel. Clips 3–15 s en audio natif."
+    "description": "Générez des vidéos Kling 3 Pro multi‑shots avec prompts par scène, Elements et voice control optionnel. Clips 3–15 s en audio natif.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
   "overview": "Kling 3 Pro dans MaxVideoAI est conçu pour un contrôle type storyboard : prompts multi‑plans, Elements réutilisables, image de fin optionnelle et audio natif avec voice IDs. Créez des clips 3–15 s depuis texte ou image en 1080p, avec formats flexibles.",
   "pricingNotes": "Tarification par seconde : 0,336 $/s avec audio, 0,224 $/s audio off, 0,392 $/s avec voice control.",
@@ -102,6 +103,7 @@
       "Ajouter audio ou voice IDs"
     ]
   },
+  "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle le timing des plans, la caméra, la lumière, le style et les cues audio. Un seul geste par plan.",
   "tips": {
     "title": "Conseils & limites",
     "items": [
@@ -121,6 +123,7 @@
       "prompt": "Scène 1 (5 s) : macro du cadran d’une montre. Scène 2 (4 s) : rotation hero avec rim light. Scène 3 (4 s) : poignet sur modèle, ambiance douce."
     }
   ],
+  "faqTitle": "FAQ – Kling 3 Pro dans MaxVideoAI",
   "faqs": [
     {
       "q": "Qu’est‑ce que le multi‑prompt ?",
@@ -186,6 +189,12 @@
       "Image de fin : évitez d’introduire de nouvelles actions dans la dernière seconde ; décrivez clairement la pose/composition finale.",
       "shot_type : “intelligent” aide la couverture automatique ; “customize” est meilleur pour un contrôle strict."
     ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. À utiliser pour itérer vite.",
+      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
+      "pro": "Pro = contrôle. À utiliser pour des looks précis et répétables.",
+      "storyboard": "Storyboard = timing des plans. À utiliser pour des beats multi‑plans."
+    },
     "promptingTabs": [
       {
         "id": "quick",

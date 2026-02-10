@@ -3,7 +3,8 @@
   "versionLabel": "v1.5 Pro",
   "seo": {
     "title": "Seedance 1.5 Pro – Text & Image to Video cinématographique | MaxVideoAI",
-    "description": "Créez des clips cinématiques avec Seedance 1.5 Pro : camera_fixed, seed, image de fin optionnelle et audio natif. 4–12 s, formats flexibles."
+    "description": "Créez des clips cinématiques avec Seedance 1.5 Pro : camera_fixed, seed, image de fin optionnelle et audio natif. 4–12 s, formats flexibles.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a0297366-57f7-4ca8-b3b6-f02c7da4d7f2-job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab.jpg"
   },
   "overview": "Seedance 1.5 Pro dans MaxVideoAI offre un contrôle court‑format avec camera_fixed, seed pour la répétabilité, image de fin optionnelle et audio natif. Générez des clips 4–12 s depuis texte ou image, avec un motion plus stable et des variantes cohérentes quand vous en avez besoin.",
   "pricingNotes": "Tarification variable selon la résolution ; audio off coûte environ 50 % de moins que l’audio on.",
@@ -102,6 +103,7 @@
       "Cue audio ou audio off"
     ]
   },
+  "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle le sujet, la direction caméra (souvent camera_fixed), la lumière et les cues audio.",
   "tips": {
     "title": "Conseils & limites",
     "items": [
@@ -121,6 +123,7 @@
       "prompt": "Animez l’image de départ avec un léger push‑in, puis résolvez vers l’image de fin fournie, ambiance douce."
     }
   ],
+  "faqTitle": "FAQ – Seedance 1.5 Pro dans MaxVideoAI",
   "faqs": [
     {
       "q": "À quoi sert camera_fixed ?",
@@ -184,6 +187,12 @@
       "L’audio fonctionne mieux avec peu de cues ; les longs monologues peuvent dériver.",
       "Si le texte compte, prévoyez un overlay en post (le micro‑texte reste peu fiable)."
     ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. À utiliser pour itérer vite.",
+      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
+      "pro": "Pro = contrôle. À utiliser pour des looks précis et répétables.",
+      "storyboard": "Storyboard = timing des beats. À utiliser pour des clips courts séquencés."
+    },
     "promptingTabs": [
       {
         "id": "quick",

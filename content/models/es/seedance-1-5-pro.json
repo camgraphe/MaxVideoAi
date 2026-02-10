@@ -3,7 +3,8 @@
   "versionLabel": "v1.5 Pro",
   "seo": {
     "title": "Seedance 1.5 Pro – Texto e imagen a video cinematográfico | MaxVideoAI",
-    "description": "Crea clips cinematográficos con Seedance 1.5 Pro: camera_fixed, seed, frame final opcional y audio nativo. 4–12 s, relaciones flexibles."
+    "description": "Crea clips cinematográficos con Seedance 1.5 Pro: camera_fixed, seed, frame final opcional y audio nativo. 4–12 s, relaciones flexibles.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a0297366-57f7-4ca8-b3b6-f02c7da4d7f2-job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab.jpg"
   },
   "overview": "Seedance 1.5 Pro en MaxVideoAI ofrece control de formato corto con camera_fixed, seed para repetibilidad, frame final opcional y audio nativo. Genera clips de 4–12 s desde texto o imagen con movimiento más estable y variantes consistentes cuando lo necesitas.",
   "pricingNotes": "La tarificación varía por resolución; audio off cuesta aprox. 50% menos que audio on.",
@@ -102,6 +103,7 @@
       "Cue de audio o audio off"
     ]
   },
+  "promptingTip": "Tip: duración + formato se definen en la UI — tu prompt controla el sujeto, la dirección de cámara (a menudo camera_fixed), la luz y los cues de audio.",
   "tips": {
     "title": "Consejos y límites",
     "items": [
@@ -121,6 +123,7 @@
       "prompt": "Anima la imagen inicial con un push‑in suave y resuelve hacia el frame final proporcionado, ambiente suave."
     }
   ],
+  "faqTitle": "FAQ – Seedance 1.5 Pro en MaxVideoAI",
   "faqs": [
     {
       "q": "¿Qué hace camera_fixed?",
@@ -184,6 +187,12 @@
       "El audio va mejor con pocas cues; los monólogos largos pueden derivar.",
       "Si el texto importa, planea ponerlo en post (el texto pequeño no es fiable)."
     ],
+    "promptingTabNotes": {
+      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
+      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
+      "pro": "Pro = control. Úsalo para looks precisos y repetibles.",
+      "storyboard": "Storyboard = timing de beats. Úsalo para clips cortos secuenciados."
+    },
     "promptingTabs": [
       {
         "id": "quick",

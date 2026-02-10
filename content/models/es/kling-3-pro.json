@@ -3,7 +3,8 @@
   "versionLabel": "v3 Pro",
   "seo": {
     "title": "Kling 3 Pro – Texto e imagen a video multi‑escena | MaxVideoAI",
-    "description": "Genera videos Kling 3 Pro multi‑shot con prompts por escena, Elements y voice control opcional. Clips 3–15 s con audio nativo."
+    "description": "Genera videos Kling 3 Pro multi‑shot con prompts por escena, Elements y voice control opcional. Clips 3–15 s con audio nativo.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
   "overview": "Kling 3 Pro en MaxVideoAI está pensado para control tipo storyboard: prompts multi‑shot, Elements reutilizables, frame final opcional y audio nativo con voice IDs. Crea clips de 3–15 s desde texto o imagen en 1080p, con relaciones flexibles.",
   "pricingNotes": "Tarificación por segundo: 0,336 $/s con audio, 0,224 $/s audio off, 0,392 $/s con voice control.",
@@ -102,6 +103,7 @@
       "Añade audio o voice IDs"
     ]
   },
+  "promptingTip": "Tip: duración + formato se definen en la UI — tu prompt controla el timing de planos, la cámara, la luz, el estilo y los cues de audio. Una acción por plano.",
   "tips": {
     "title": "Consejos y límites",
     "items": [
@@ -121,6 +123,7 @@
       "prompt": "Escena 1 (5 s): macro de la esfera de un reloj. Escena 2 (4 s): toma hero girando con rim light. Escena 3 (4 s): muñeca en modelo, ambiente suave."
     }
   ],
+  "faqTitle": "FAQ – Kling 3 Pro en MaxVideoAI",
   "faqs": [
     {
       "q": "¿Qué es multi‑prompt?",
@@ -186,6 +189,12 @@
       "Frame final: evita introducir nuevas acciones en el último segundo; describe claramente la pose/composición final.",
       "shot_type: “intelligent” ayuda con cobertura automática; “customize” es mejor para control estricto."
     ],
+    "promptingTabNotes": {
+      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
+      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
+      "pro": "Pro = control. Úsalo para looks precisos y repetibles.",
+      "storyboard": "Storyboard = timing de planos. Úsalo para beats multi‑shot."
+    },
     "promptingTabs": [
       {
         "id": "quick",

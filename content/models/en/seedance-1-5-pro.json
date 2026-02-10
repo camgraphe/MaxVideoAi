@@ -3,7 +3,8 @@
   "versionLabel": "v1.5 Pro",
   "seo": {
     "title": "Seedance 1.5 Pro – Cinematic Text & Image to Video | MaxVideoAI",
-    "description": "Create cinematic, camera-locked clips with Seedance 1.5 Pro. Text or image to video up to 12s, flexible aspect ratios, and optional audio."
+    "description": "Create cinematic, camera-locked clips with Seedance 1.5 Pro. Text or image to video up to 12s, flexible aspect ratios, and optional audio.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a0297366-57f7-4ca8-b3b6-f02c7da4d7f2-job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab.jpg"
   },
   "overview": "Seedance 1.5 Pro in MaxVideoAI delivers short-form control with camera_fixed, seed repeatability, optional end frames, and native audio. Generate 4–12s clips from text or a single image, with steadier motion and consistent variants when you need them.",
   "pricingNotes": "Pricing varies by resolution; audio off costs about 50% less than audio on.",
@@ -102,6 +103,7 @@
       "Audio cue or disable audio"
     ]
   },
+  "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, camera direction (often camera_fixed), lighting, and audio cues.",
   "tips": {
     "title": "Tips & limits",
     "items": [
@@ -121,6 +123,7 @@
       "prompt": "Animate the start image with a slow push-in, then resolve into the provided end frame, gentle ambience."
     }
   ],
+  "faqTitle": "FAQ – Seedance 1.5 Pro in MaxVideoAI",
   "faqs": [
     {
       "q": "What does camera fixed do?",
@@ -184,6 +187,12 @@
       "Audio is best with minimal cues; long monologues can drift.",
       "If text matters, plan to overlay it in post (tiny text is unreliable)."
     ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = control. Use for precise, repeatable looks.",
+      "storyboard": "Storyboard = beat timing. Use for short sequenced clips."
+    },
     "promptingTabs": [
       {
         "id": "quick",
