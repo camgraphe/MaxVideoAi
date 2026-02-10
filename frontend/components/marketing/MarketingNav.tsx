@@ -331,6 +331,14 @@ export function MarketingNav() {
                   >
                     <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
                       <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
+                        <Link
+                          href={dropdown.allHref}
+                          className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          role="menuitem"
+                          onClick={() => closeDesktopDropdown(200)}
+                        >
+                          {allLabel}
+                        </Link>
                         {dropdown.items.map((entry) => (
                           <Link
                             key={entry.key}
@@ -343,15 +351,6 @@ export function MarketingNav() {
                           </Link>
                         ))}
                       </nav>
-                      <div className="mt-2 border-t border-hairline pt-2">
-                        <Link
-                          href={dropdown.allHref}
-                          className="flex items-center gap-2 rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          onClick={() => closeDesktopDropdown(200)}
-                        >
-                          {allLabel}
-                        </Link>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -559,6 +558,13 @@ export function MarketingNav() {
                     </button>
                     {isOpen ? (
                       <div id={panelId} className="mt-2 flex flex-col gap-1 text-sm font-medium text-text-secondary">
+                        <Link
+                          href={dropdown.allHref}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {allLabel}
+                        </Link>
                         {dropdown.items.map((entry) => (
                           <Link
                             key={entry.key}
@@ -569,13 +575,6 @@ export function MarketingNav() {
                             {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
                           </Link>
                         ))}
-                        <Link
-                          href={dropdown.allHref}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="mt-1 rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {allLabel}
-                        </Link>
                       </div>
                     ) : null}
                   </div>

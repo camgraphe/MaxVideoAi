@@ -44,25 +44,31 @@
       "models": {
         "items": {
           "sora-2": "Sora 2",
+          "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
+          "kling-3-pro": "Kling 3 Pro",
           "ltx-2": "LTX-2",
           "ltx-2-fast": "LTX-2 Fast",
-          "pika-text-to-video": "Pika Text-to-Video",
+          "pika-text-to-video": "Pika 2.2",
           "wan-2-6": "Wan 2.6",
+          "seedance-1-5-pro": "Seedance 1.5 Pro",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02"
         }
       },
       "examples": {
         "items": {
           "sora-2": "Sora 2",
+          "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
+          "kling-3-pro": "Kling 3 Pro",
           "ltx-2": "LTX-2",
-          "pika-text-to-video": "Pika Text-to-Video",
+          "pika-text-to-video": "Pika 2.2",
           "wan-2-6": "Wan 2.6",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02",
-          "ltx-2-fast": "LTX-2 Fast"
+          "ltx-2-fast": "LTX-2 Fast",
+          "seedance-1-5-pro": "Seedance 1.5 Pro"
         }
       },
       "workflows": {

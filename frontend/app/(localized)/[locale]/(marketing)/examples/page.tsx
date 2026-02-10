@@ -87,7 +87,7 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
-const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'seedance', 'kling', 'wan', 'pika', 'hailuo', 'ltx-2'];
+const PREFERRED_ENGINE_ORDER = ['sora-2', 'kling', 'veo', 'wan', 'seedance', 'ltx-2', 'pika', 'hailuo'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
@@ -102,10 +102,10 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
 };
 
 const ENGINE_MODEL_LINKS: Record<string, string> = {
-  'sora-2': 'sora-2',
+  'sora-2': 'sora-2-pro',
   veo: 'veo-3-1',
   seedance: 'seedance-1-5-pro',
-  kling: 'kling-3-standard',
+  kling: 'kling-3-pro',
   wan: 'wan-2-6',
   pika: 'pika-text-to-video',
   hailuo: 'minimax-hailuo-02-text',
