@@ -65,8 +65,15 @@ const SORA_ENGINE_IDS = ['sora-2', 'sora-2-pro'] as const;
 const SORA_ENGINE_SET = new Set<string>(SORA_ENGINE_IDS);
 const VEO_ENGINE_IDS = ['veo-3-1', 'veo-3-1-fast'] as const;
 const VEO_ENGINE_SET = new Set<string>(VEO_ENGINE_IDS);
+const KLING_3_ENGINE_IDS = ['kling-3-standard', 'kling-3-pro'] as const;
+const KLING_3_ENGINE_SET = new Set<string>(KLING_3_ENGINE_IDS);
 const MODE_VARIANT_ENGINE_IDS = ['veo-3-1-first-last'] as const;
 const MODE_VARIANT_ENGINE_SET = new Set<string>(MODE_VARIANT_ENGINE_IDS);
+
+const ENGINE_VARIANT_LABEL_OVERRIDES: Record<string, string> = {
+  'kling-3-standard': 'Standard',
+  'kling-3-pro': 'Pro',
+};
 const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
 const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'r2v'];
@@ -268,6 +275,9 @@ export function EngineSelect({
     if (VEO_ENGINE_SET.has(selectedEngine.id)) {
       return availableEngines.filter((entry) => VEO_ENGINE_SET.has(entry.id));
     }
+    if (KLING_3_ENGINE_SET.has(selectedEngine.id)) {
+      return availableEngines.filter((entry) => KLING_3_ENGINE_SET.has(entry.id));
+    }
     return [];
   }, [availableEngines, selectedEngine]);
 
@@ -280,6 +290,8 @@ export function EngineSelect({
 
   const getVariantLabel = useCallback(
     (entry: EngineCaps) => {
+      const override = ENGINE_VARIANT_LABEL_OVERRIDES[entry.id];
+      if (override) return override;
       const meta = registryMeta?.meta.get(entry.id);
       return meta?.cardTitle ?? meta?.marketingName ?? entry.label ?? entry.id;
     },
