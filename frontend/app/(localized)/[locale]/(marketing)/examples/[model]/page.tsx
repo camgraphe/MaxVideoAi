@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
@@ -123,7 +123,7 @@ export default async function ExamplesModelPage({
     notFound();
   }
   if (canonical !== normalized) {
-    redirect(buildExamplesHref(params.locale, canonical, searchParams));
+    permanentRedirect(buildExamplesHref(params.locale, canonical, searchParams));
   }
 
   const mergedSearchParams = { ...(searchParams ?? {}), engine: normalized };
