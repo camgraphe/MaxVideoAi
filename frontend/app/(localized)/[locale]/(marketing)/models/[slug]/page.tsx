@@ -206,13 +206,15 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
   },
 };
 
+type FocusVsCopy = { title: string; items: string[] };
+type FocusVsLocalizedCopy = Record<AppLocale, FocusVsCopy>;
 type FocusVsPair = {
   slugA: string;
   slugB: string;
   nameA: string;
   nameB: string;
-  copyA: { title: string; items: string[] };
-  copyB: { title: string; items: string[] };
+  copyA: FocusVsLocalizedCopy;
+  copyB: FocusVsLocalizedCopy;
   onlyFor?: string[];
 };
 
@@ -233,20 +235,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameA: 'Sora 2',
     nameB: 'Sora 2 Pro',
     copyA: {
-      title: 'Use Sora 2 when you want:',
-      items: [
-        'Fast idea → clip iteration',
-        'Storyboards, concepts, UGC-style beats, short ads',
-        'A quick first pass where 720p is enough',
-      ],
+      en: {
+        title: 'Use Sora 2 when you want:',
+        items: [
+          'Fast idea → clip iteration',
+          'Storyboards, concepts, UGC-style beats, short ads',
+          'A quick first pass where 720p is enough',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Sora 2 quand vous voulez :',
+        items: [
+          'Itération rapide d’idée → clip',
+          'Storyboards, concepts, beats UGC, pubs courtes',
+          'Un premier jet rapide où le 720p suffit',
+        ],
+      },
+      es: {
+        title: 'Usa Sora 2 cuando quieras:',
+        items: [
+          'Iteración rápida de idea → clip',
+          'Storyboards, conceptos, beats estilo UGC, anuncios cortos',
+          'Un primer borrador rápido cuando 720p es suficiente',
+        ],
+      },
     },
     copyB: {
-      title: 'Use Sora 2 Pro when you need:',
-      items: [
-        'Higher resolution output',
-        'More control for finals (including audio control in the UI)',
-        'Cleaner final takes after you’ve validated the idea',
-      ],
+      en: {
+        title: 'Use Sora 2 Pro when you need:',
+        items: [
+          'Higher resolution output',
+          'More control for finals (including audio control in the UI)',
+          'Cleaner final takes after you’ve validated the idea',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Sora 2 Pro quand vous avez besoin :',
+        items: [
+          'Sortie en plus haute résolution',
+          'Plus de contrôle pour les finals (y compris le contrôle audio dans l’UI)',
+          'Plans finaux plus propres après validation de l’idée',
+        ],
+      },
+      es: {
+        title: 'Usa Sora 2 Pro cuando necesites:',
+        items: [
+          'Salida de mayor resolución',
+          'Más control para finales (incluye control de audio en la UI)',
+          'Tomas finales más limpias tras validar la idea',
+        ],
+      },
     },
   },
   {
@@ -255,20 +293,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameA: 'Veo 3.1 Fast',
     nameB: 'Veo 3.1',
     copyA: {
-      title: 'Use Veo 3.1 Fast when you want:',
-      items: [
-        'Rapid concept testing and volume drafts',
-        'Cheaper A/B ad variants and social loops',
-        'Quick iteration before upgrading winners',
-      ],
+      en: {
+        title: 'Use Veo 3.1 Fast when you want:',
+        items: [
+          'Rapid concept testing and volume drafts',
+          'Cheaper A/B ad variants and social loops',
+          'Quick iteration before upgrading winners',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Veo 3.1 Fast quand vous voulez :',
+        items: [
+          'Tests de concepts rapides et drafts en volume',
+          'Variantes A/B moins chères et boucles social',
+          'Itération rapide avant de passer les meilleurs en version supérieure',
+        ],
+      },
+      es: {
+        title: 'Usa Veo 3.1 Fast cuando quieras:',
+        items: [
+          'Pruebas rápidas de concepto y borradores en volumen',
+          'Variantes A/B más baratas y loops sociales',
+          'Iteración rápida antes de pasar a los ganadores',
+        ],
+      },
     },
     copyB: {
-      title: 'Use Veo 3.1 when you need:',
-      items: [
-        'Higher-fidelity frames and polish',
-        'Sound in the same pass when you want it',
-        'More reliable follow-through on prompts',
-      ],
+      en: {
+        title: 'Use Veo 3.1 when you need:',
+        items: [
+          'Higher-fidelity frames and polish',
+          'Sound in the same pass when you want it',
+          'More reliable follow-through on prompts',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Veo 3.1 quand vous avez besoin :',
+        items: [
+          'Fidélité d’image plus élevée et finition',
+          'Son dans le même rendu quand vous en avez besoin',
+          'Suivi des prompts plus fiable',
+        ],
+      },
+      es: {
+        title: 'Usa Veo 3.1 cuando necesites:',
+        items: [
+          'Mayor fidelidad y pulido',
+          'Sonido en la misma pasada cuando lo necesitas',
+          'Seguimiento de prompts más fiable',
+        ],
+      },
     },
   },
   {
@@ -277,20 +351,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameA: 'Wan 2.5',
     nameB: 'Wan 2.6',
     copyA: {
-      title: 'Use Wan 2.5 when you want:',
-      items: [
-        'Native audio in the same render',
-        'Simple short beats at lower cost',
-        'Quick ideation with sound-led timing',
-      ],
+      en: {
+        title: 'Use Wan 2.5 when you want:',
+        items: [
+          'Native audio in the same render',
+          'Simple short beats at lower cost',
+          'Quick ideation with sound-led timing',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Wan 2.5 quand vous voulez :',
+        items: [
+          'Audio natif dans le même rendu',
+          'Beats courts simples à moindre coût',
+          'Idéation rapide avec timing guidé par le son',
+        ],
+      },
+      es: {
+        title: 'Usa Wan 2.5 cuando quieras:',
+        items: [
+          'Audio nativo en el mismo render',
+          'Beats cortos simples a menor coste',
+          'Ideación rápida con timing guiado por el audio',
+        ],
+      },
     },
     copyB: {
-      title: 'Use Wan 2.6 when you need:',
-      items: [
-        'Reference-to-video consistency',
-        'Timestamped multi-shot sequences',
-        'More aspect-ratio control and structure',
-      ],
+      en: {
+        title: 'Use Wan 2.6 when you need:',
+        items: [
+          'Reference-to-video consistency',
+          'Timestamped multi-shot sequences',
+          'More aspect-ratio control and structure',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Wan 2.6 quand vous avez besoin :',
+        items: [
+          'Cohérence en reference-to-video',
+          'Séquences multi-shots horodatées',
+          'Plus de contrôle de format et de structure',
+        ],
+      },
+      es: {
+        title: 'Usa Wan 2.6 cuando necesites:',
+        items: [
+          'Consistencia en reference-to-video',
+          'Secuencias multi-shot con timestamps',
+          'Más control de formato y estructura',
+        ],
+      },
     },
   },
   {
@@ -299,20 +409,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameA: 'Kling 2.5 Turbo',
     nameB: 'Kling 2.6 Pro',
     copyA: {
-      title: 'Use Kling 2.5 Turbo when you want:',
-      items: [
-        'Fast silent clips with strong motion',
-        'Budget B-roll loops for edits',
-        'Quick look-dev and drafts',
-      ],
+      en: {
+        title: 'Use Kling 2.5 Turbo when you want:',
+        items: [
+          'Fast silent clips with strong motion',
+          'Budget B-roll loops for edits',
+          'Quick look-dev and drafts',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 2.5 Turbo quand vous voulez :',
+        items: [
+          'Clips silencieux rapides avec forte motion',
+          'Boucles B-roll budget pour le montage',
+          'Look-dev rapide et drafts',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 2.5 Turbo cuando quieras:',
+        items: [
+          'Clips silenciosos rápidos con motion fuerte',
+          'Loops B-roll económicos para edición',
+          'Look-dev rápido y borradores',
+        ],
+      },
     },
     copyB: {
-      title: 'Use Kling 2.6 Pro when you need:',
-      items: [
-        'Native audio with dialogue and SFX',
-        'Polished ad/story beats',
-        'Stronger continuity on camera direction',
-      ],
+      en: {
+        title: 'Use Kling 2.6 Pro when you need:',
+        items: [
+          'Native audio with dialogue and SFX',
+          'Polished ad/story beats',
+          'Stronger continuity on camera direction',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 2.6 Pro quand vous avez besoin :',
+        items: [
+          'Audio natif avec dialogue et SFX',
+          'Beats pub/story plus polis',
+          'Continuité plus forte sur la direction caméra',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 2.6 Pro cuando necesites:',
+        items: [
+          'Audio nativo con diálogo y SFX',
+          'Beats publicitarios/story más pulidos',
+          'Continuidad más fuerte en la dirección de cámara',
+        ],
+      },
     },
   },
   {
@@ -321,20 +467,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameA: 'LTX-2 Fast',
     nameB: 'LTX-2 Pro',
     copyA: {
-      title: 'Use LTX-2 Fast when you want:',
-      items: [
-        'High-volume drafts and iteration speed',
-        'Quick concept testing and pacing checks',
-        'Rough cuts before finals',
-      ],
+      en: {
+        title: 'Use LTX-2 Fast when you want:',
+        items: [
+          'High-volume drafts and iteration speed',
+          'Quick concept testing and pacing checks',
+          'Rough cuts before finals',
+        ],
+      },
+      fr: {
+        title: 'Utilisez LTX-2 Fast quand vous voulez :',
+        items: [
+          'Brouillons en volume et vitesse d’itération',
+          'Tests de concepts rapides et vérification du pacing',
+          'Rough cuts avant les finals',
+        ],
+      },
+      es: {
+        title: 'Usa LTX-2 Fast cuando quieras:',
+        items: [
+          'Borradores en volumen y velocidad de iteración',
+          'Pruebas rápidas de concepto y pacing',
+          'Rough cuts antes de finales',
+        ],
+      },
     },
     copyB: {
-      title: 'Use LTX-2 Pro when you need:',
-      items: [
-        'Polished client-ready deliverables',
-        'Higher resolution and smoother motion',
-        'Audio-visual sync for finals',
-      ],
+      en: {
+        title: 'Use LTX-2 Pro when you need:',
+        items: [
+          'Polished client-ready deliverables',
+          'Higher resolution and smoother motion',
+          'Audio-visual sync for finals',
+        ],
+      },
+      fr: {
+        title: 'Utilisez LTX-2 Pro quand vous avez besoin :',
+        items: [
+          'Livrables clients plus soignés',
+          'Résolution plus élevée et mouvement plus fluide',
+          'Sync audio-visuelle pour les finals',
+        ],
+      },
+      es: {
+        title: 'Usa LTX-2 Pro cuando necesites:',
+        items: [
+          'Entregables más pulidos para cliente',
+          'Más resolución y motion más suave',
+          'Sincronía audio-visual para finales',
+        ],
+      },
     },
   },
   {
@@ -343,20 +525,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameA: 'Nano Banana',
     nameB: 'Nano Banana Pro',
     copyA: {
-      title: 'Use Nano Banana when you want:',
-      items: [
-        'Fast drafts and quick edits',
-        'Rapid concepting and exploration',
-        'Lightweight layout tests',
-      ],
+      en: {
+        title: 'Use Nano Banana when you want:',
+        items: [
+          'Fast drafts and quick edits',
+          'Rapid concepting and exploration',
+          'Lightweight layout tests',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Nano Banana quand vous voulez :',
+        items: [
+          'Drafts rapides et edits rapides',
+          'Concepting rapide et exploration',
+          'Tests de mise en page légers',
+        ],
+      },
+      es: {
+        title: 'Usa Nano Banana cuando quieras:',
+        items: [
+          'Borradores rápidos y ediciones rápidas',
+          'Concepting rápido y exploración',
+          'Pruebas de layout ligeras',
+        ],
+      },
     },
     copyB: {
-      title: 'Use Nano Banana Pro when you need:',
-      items: [
-        'Clean typography and layouts',
-        'Consistent product families',
-        'High-res finals for campaigns',
-      ],
+      en: {
+        title: 'Use Nano Banana Pro when you need:',
+        items: [
+          'Clean typography and layouts',
+          'Consistent product families',
+          'High-res finals for campaigns',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Nano Banana Pro quand vous avez besoin :',
+        items: [
+          'Typo et layouts propres',
+          'Familles produit cohérentes',
+          'Finals haute résolution pour campagnes',
+        ],
+      },
+      es: {
+        title: 'Usa Nano Banana Pro cuando necesites:',
+        items: [
+          'Tipografía y layouts limpios',
+          'Familias de producto consistentes',
+          'Finales en alta resolución para campañas',
+        ],
+      },
     },
   },
   {
@@ -365,20 +583,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameA: 'Veo 3.1 First/Last',
     nameB: 'Veo 3.1',
     copyA: {
-      title: 'Use Veo 3.1 First/Last when you want:',
-      items: [
-        'Two-frame control for start/end locked shots',
-        'Smooth transitions between keyframes',
-        'Continuity on layout and identity',
-      ],
+      en: {
+        title: 'Use Veo 3.1 First/Last when you want:',
+        items: [
+          'Two-frame control for start/end locked shots',
+          'Smooth transitions between keyframes',
+          'Continuity on layout and identity',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Veo 3.1 First/Last quand vous voulez :',
+        items: [
+          'Contrôle à deux frames pour plans start/end verrouillés',
+          'Transitions fluides entre keyframes',
+          'Continuité sur layout et identité',
+        ],
+      },
+      es: {
+        title: 'Usa Veo 3.1 First/Last cuando quieras:',
+        items: [
+          'Control de dos fotogramas para planos start/end bloqueados',
+          'Transiciones suaves entre keyframes',
+          'Continuidad en layout e identidad',
+        ],
+      },
     },
     copyB: {
-      title: 'Use Veo 3.1 when you need:',
-      items: [
-        'General-purpose cinematic clips',
-        'More flexible shot variation',
-        'Broader use cases beyond transitions',
-      ],
+      en: {
+        title: 'Use Veo 3.1 when you need:',
+        items: [
+          'General-purpose cinematic clips',
+          'More flexible shot variation',
+          'Broader use cases beyond transitions',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Veo 3.1 quand vous avez besoin :',
+        items: [
+          'Clips cinématographiques généralistes',
+          'Variation de plans plus flexible',
+          'Cas d’usage plus larges au-delà des transitions',
+        ],
+      },
+      es: {
+        title: 'Usa Veo 3.1 cuando necesites:',
+        items: [
+          'Clips cinematográficos de propósito general',
+          'Variación de planos más flexible',
+          'Casos de uso más amplios más allá de transiciones',
+        ],
+      },
     },
   },
   {
@@ -388,20 +642,56 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameB: 'Kling 2.5 Turbo',
     onlyFor: ['pika-text-to-video'],
     copyA: {
-      title: 'Use Pika 2.2 when you want:',
-      items: [
-        'Stylized, social-first motion',
-        'Fast loops and playful variants',
-        'Edit-friendly silent clips',
-      ],
+      en: {
+        title: 'Use Pika 2.2 when you want:',
+        items: [
+          'Stylized, social-first motion',
+          'Fast loops and playful variants',
+          'Edit-friendly silent clips',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Pika 2.2 quand vous voulez :',
+        items: [
+          'Motion stylisé, social-first',
+          'Boucles rapides et variantes ludiques',
+          'Clips silencieux faciles à monter',
+        ],
+      },
+      es: {
+        title: 'Usa Pika 2.2 cuando quieras:',
+        items: [
+          'Motion estilizado y social-first',
+          'Loops rápidos y variantes lúdicas',
+          'Clips silenciosos fáciles de editar',
+        ],
+      },
     },
     copyB: {
-      title: 'Use Kling 2.5 Turbo when you need:',
-      items: [
-        'More cinematic motion and physics',
-        'Camera-forward action beats',
-        'Cleaner realism for product shots',
-      ],
+      en: {
+        title: 'Use Kling 2.5 Turbo when you need:',
+        items: [
+          'More cinematic motion and physics',
+          'Camera-forward action beats',
+          'Cleaner realism for product shots',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 2.5 Turbo quand vous avez besoin :',
+        items: [
+          'Motion et physique plus cinématiques',
+          'Beats d’action camera-forward',
+          'Réalisme plus propre pour produits',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 2.5 Turbo cuando necesites:',
+        items: [
+          'Motion y física más cinematográficas',
+          'Beats de acción camera-forward',
+          'Realismo más limpio para productos',
+        ],
+      },
     },
   },
   {
@@ -411,25 +701,61 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     nameB: 'LTX-2 Fast',
     onlyFor: ['minimax-hailuo-02-text'],
     copyA: {
-      title: 'Use Hailuo 02 when you want:',
-      items: [
-        'Physics-heavy motion drafts',
-        'Fast visual iteration on a budget',
-        'Quick storyboard animatics',
-      ],
+      en: {
+        title: 'Use Hailuo 02 when you want:',
+        items: [
+          'Physics-heavy motion drafts',
+          'Fast visual iteration on a budget',
+          'Quick storyboard animatics',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Hailuo 02 quand vous voulez :',
+        items: [
+          'Drafts motion axés physique',
+          'Itération visuelle rapide à petit budget',
+          'Animatics storyboard rapides',
+        ],
+      },
+      es: {
+        title: 'Usa Hailuo 02 cuando quieras:',
+        items: [
+          'Borradores de motion con física',
+          'Iteración visual rápida con bajo presupuesto',
+          'Animatics de storyboard rápidos',
+        ],
+      },
     },
     copyB: {
-      title: 'Use LTX-2 Fast when you need:',
-      items: [
-        'More room per clip for pacing',
-        'Drafts that stay closer to camera intent',
-        'An easy upgrade path to Pro',
-      ],
+      en: {
+        title: 'Use LTX-2 Fast when you need:',
+        items: [
+          'More room per clip for pacing',
+          'Drafts that stay closer to camera intent',
+          'An easy upgrade path to Pro',
+        ],
+      },
+      fr: {
+        title: 'Utilisez LTX-2 Fast quand vous avez besoin :',
+        items: [
+          'Plus de durée par clip pour le pacing',
+          'Drafts plus proches de l’intention caméra',
+          'Chemin simple vers Pro',
+        ],
+      },
+      es: {
+        title: 'Usa LTX-2 Fast cuando necesites:',
+        items: [
+          'Más duración por clip para el pacing',
+          'Borradores más cercanos a la intención de cámara',
+          'Camino fácil hacia Pro',
+        ],
+      },
     },
   },
 ];
 
-function resolveFocusVsConfig(currentSlug: string): FocusVsConfig | null {
+function resolveFocusVsConfig(currentSlug: string, locale: AppLocale): FocusVsConfig | null {
   const entry = FOCUS_VS_PAIRS.find((pair) => {
     if (pair.onlyFor && !pair.onlyFor.includes(currentSlug)) {
       return false;
@@ -440,12 +766,17 @@ function resolveFocusVsConfig(currentSlug: string): FocusVsConfig | null {
   const isA = entry.slugA === currentSlug;
   const currentName = isA ? entry.nameA : entry.nameB;
   const otherName = isA ? entry.nameB : entry.nameA;
-  const currentCopy = isA ? entry.copyA : entry.copyB;
-  const otherCopy = isA ? entry.copyB : entry.copyA;
+  const currentCopy = (isA ? entry.copyA : entry.copyB)[locale] ?? (isA ? entry.copyA : entry.copyB).en;
+  const otherCopy = (isA ? entry.copyB : entry.copyA)[locale] ?? (isA ? entry.copyB : entry.copyA).en;
   const ctaSlug = isA ? entry.slugB : entry.slugA;
+  const ctaLabel = (() => {
+    if (locale === 'fr') return `Voir les détails ${otherName} →`;
+    if (locale === 'es') return `Ver detalles de ${otherName} →`;
+    return `View ${otherName} details →`;
+  })();
   return {
     title: `${currentName} vs ${otherName}`,
-    ctaLabel: `View ${otherName} details →`,
+    ctaLabel,
     ctaSlug,
     leftTitle: currentCopy.title,
     leftItems: currentCopy.items,
@@ -794,6 +1125,253 @@ const DEFAULT_CHIPS_BY_ICON: Record<BestUseCaseIconKey, string[]> = {
   wind: ['Physics', 'Motion'],
   coins: ['Budget', 'Variants'],
 };
+
+const SECTION_LABELS: Record<
+  AppLocale,
+  {
+    specs: string;
+    examples: string;
+    prompting: string;
+    tips: string;
+    compare: string;
+    safety: string;
+    faq: string;
+  }
+> = {
+  en: {
+    specs: 'Specs',
+    examples: 'Examples',
+    prompting: 'Prompting',
+    tips: 'Tips',
+    compare: 'Compare',
+    safety: 'Safety',
+    faq: 'FAQ',
+  },
+  fr: {
+    specs: 'Spécifications',
+    examples: 'Exemples',
+    prompting: 'Prompts',
+    tips: 'Conseils',
+    compare: 'Comparer',
+    safety: 'Sécurité',
+    faq: 'FAQ',
+  },
+  es: {
+    specs: 'Especificaciones',
+    examples: 'Ejemplos',
+    prompting: 'Prompts',
+    tips: 'Consejos',
+    compare: 'Comparar',
+    safety: 'Seguridad',
+    faq: 'FAQ',
+  },
+};
+
+const SPEC_TITLE_BASE: Record<AppLocale, string> = {
+  en: 'Real Specs',
+  fr: 'Spécifications réelles',
+  es: 'Especificaciones reales',
+};
+
+const SPECS_DECISION_NOTES: Record<AppLocale, string> = {
+  en: 'The limits that shape your renders.',
+  fr: 'Les limites qui structurent vos rendus.',
+  es: 'Los límites que definen tus renders.',
+};
+
+const SPEC_STATUS_LABELS: Record<AppLocale, { supported: string; notSupported: string; pending: string }> = {
+  en: { supported: 'Supported', notSupported: 'Not supported', pending: 'Data pending' },
+  fr: { supported: 'Pris en charge', notSupported: 'Non pris en charge', pending: 'Données en attente' },
+  es: { supported: 'Compatible', notSupported: 'No compatible', pending: 'Datos pendientes' },
+};
+
+const AUTO_SPEC_LABELS: Record<
+  AppLocale,
+  {
+    inputsTitle: string;
+    audioTitle: string;
+    textToVideo: string;
+    imageToVideo: string;
+    videoToVideo: string;
+    referenceImageStyle: string;
+    referenceVideo: string;
+    audioOutput: string;
+    nativeAudio: string;
+    lipSync: string;
+  }
+> = {
+  en: {
+    inputsTitle: 'Inputs & file types',
+    audioTitle: 'Audio',
+    textToVideo: 'Text → Video',
+    imageToVideo: 'Image → Video',
+    videoToVideo: 'Video → Video',
+    referenceImageStyle: 'Reference image / style',
+    referenceVideo: 'Reference video',
+    audioOutput: 'Audio output',
+    nativeAudio: 'Native audio',
+    lipSync: 'Lip sync',
+  },
+  fr: {
+    inputsTitle: 'Entrées & types de fichiers',
+    audioTitle: 'Audio',
+    textToVideo: 'Texte → Vidéo',
+    imageToVideo: 'Image → Vidéo',
+    videoToVideo: 'Vidéo → Vidéo',
+    referenceImageStyle: 'Image de référence / style',
+    referenceVideo: 'Vidéo de référence',
+    audioOutput: 'Sortie audio',
+    nativeAudio: 'Audio natif',
+    lipSync: 'Synchronisation labiale',
+  },
+  es: {
+    inputsTitle: 'Entradas y tipos de archivo',
+    audioTitle: 'Audio',
+    textToVideo: 'Texto → Video',
+    imageToVideo: 'Imagen → Video',
+    videoToVideo: 'Video → Video',
+    referenceImageStyle: 'Imagen de referencia / estilo',
+    referenceVideo: 'Video de referencia',
+    audioOutput: 'Salida de audio',
+    nativeAudio: 'Audio nativo',
+    lipSync: 'Sincronización labial',
+  },
+};
+
+const COMPARE_COPY_BY_LOCALE: Record<
+  AppLocale,
+  {
+    title: (model: string) => string;
+    introPrefix: (model: string) => string;
+    introStrong: string;
+    introSuffix: string;
+    subline: string;
+    ctaCompare: (model: string, other: string) => string;
+    ctaExplore: (other: string) => string;
+    cardDescription: (model: string, other: string) => string;
+  }
+> = {
+  en: {
+    title: (model) => `Compare ${model} vs other AI video models`,
+    introPrefix: (model) =>
+      `Not sure if ${model} is the best fit for your shot? These side-by-side comparisons break down the tradeoffs — `,
+    introStrong: 'price per second, resolution, audio, speed, and motion style',
+    introSuffix: ' — so you can pick the right engine fast.',
+    subline: 'Each page includes real outputs and practical best-use cases.',
+    ctaCompare: (model, other) => `Compare ${model} vs ${other} →`,
+    ctaExplore: (other) => `Explore ${other} →`,
+    cardDescription: (model, other) =>
+      `Compare ${model} vs ${other} on price, resolution, audio, speed, and motion style.`,
+  },
+  fr: {
+    title: (model) => `Comparer ${model} aux autres modèles vidéo IA`,
+    introPrefix: (model) =>
+      `Vous ne savez pas si ${model} est le meilleur choix pour votre plan ? Ces comparatifs côte à côte détaillent les compromis — `,
+    introStrong: 'prix par seconde, résolution, audio, vitesse et style de mouvement',
+    introSuffix: ' — pour choisir rapidement le bon moteur.',
+    subline: 'Chaque page inclut des rendus réels et des cas d’usage concrets.',
+    ctaCompare: (model, other) => `Comparer ${model} vs ${other} →`,
+    ctaExplore: (other) => `Voir ${other} →`,
+    cardDescription: (model, other) =>
+      `Comparez ${model} vs ${other} sur le prix, la résolution, l’audio, la vitesse et le style de mouvement.`,
+  },
+  es: {
+    title: (model) => `Comparar ${model} con otros modelos de video IA`,
+    introPrefix: (model) =>
+      `¿No estás seguro de si ${model} es la mejor opción para tu toma? Estas comparativas lado a lado muestran los compromisos — `,
+    introStrong: 'precio por segundo, resolución, audio, velocidad y estilo de movimiento',
+    introSuffix: ' — para elegir el motor adecuado rápidamente.',
+    subline: 'Cada página incluye renders reales y casos de uso prácticos.',
+    ctaCompare: (model, other) => `Comparar ${model} vs ${other} →`,
+    ctaExplore: (other) => `Ver ${other} →`,
+    cardDescription: (model, other) =>
+      `Compara ${model} vs ${other} en precio, resolución, audio, velocidad y estilo de movimiento.`,
+  },
+};
+
+const SPEC_ROW_LABEL_OVERRIDES: Record<
+  AppLocale,
+  { video: Partial<Record<KeySpecKey, string>>; image: Partial<Record<KeySpecKey, string>> }
+> = {
+  en: { video: {}, image: {} },
+  fr: {
+    video: {
+      pricePerSecond: 'Prix / seconde',
+      textToVideo: 'Texte→Vidéo',
+      imageToVideo: 'Image→Vidéo',
+      videoToVideo: 'Vidéo→Vidéo',
+      firstLastFrame: 'Première / dernière image',
+      referenceImageStyle: 'Image de référence / style',
+      referenceVideo: 'Vidéo de référence',
+      maxResolution: 'Résolution max',
+      maxDuration: 'Durée max',
+      aspectRatios: 'Formats',
+      fpsOptions: 'Options FPS',
+      outputFormats: 'Format de sortie',
+      audioOutput: 'Sortie audio',
+      nativeAudioGeneration: 'Audio natif',
+      lipSync: 'Synchronisation labiale',
+      cameraMotionControls: 'Contrôle caméra / mouvement',
+      watermark: 'Filigrane',
+      releaseDate: 'Date de sortie',
+    },
+    image: {
+      pricePerImage: 'Prix / image',
+      textToImage: 'Texte→Image',
+      imageToImage: 'Image→Image',
+      maxResolution: 'Options de résolution',
+      aspectRatios: 'Formats',
+      outputFormats: 'Format de sortie',
+      releaseDate: 'Date de sortie',
+    },
+  },
+  es: {
+    video: {
+      pricePerSecond: 'Precio / segundo',
+      textToVideo: 'Texto→Video',
+      imageToVideo: 'Imagen→Video',
+      videoToVideo: 'Video→Video',
+      firstLastFrame: 'Primer/último fotograma',
+      referenceImageStyle: 'Imagen de referencia / estilo',
+      referenceVideo: 'Video de referencia',
+      maxResolution: 'Resolución máx.',
+      maxDuration: 'Duración máx.',
+      aspectRatios: 'Formatos',
+      fpsOptions: 'Opciones de FPS',
+      outputFormats: 'Formato de salida',
+      audioOutput: 'Salida de audio',
+      nativeAudioGeneration: 'Audio nativo',
+      lipSync: 'Sincronización labial',
+      cameraMotionControls: 'Control de cámara / movimiento',
+      watermark: 'Marca de agua',
+      releaseDate: 'Fecha de lanzamiento',
+    },
+    image: {
+      pricePerImage: 'Precio / imagen',
+      textToImage: 'Texto→Imagen',
+      imageToImage: 'Imagen→Imagen',
+      maxResolution: 'Opciones de resolución',
+      aspectRatios: 'Formatos',
+      outputFormats: 'Formato de salida',
+      releaseDate: 'Fecha de lanzamiento',
+    },
+  },
+};
+
+const PRICE_AUDIO_LABELS: Record<AppLocale, { on: string; off: string }> = {
+  en: { on: 'Audio on', off: 'Audio off' },
+  fr: { on: 'Audio activé', off: 'Audio coupé' },
+  es: { on: 'Audio activado', off: 'Audio desactivado' },
+};
+
+const TIPS_CARD_LABELS: Record<
+  AppLocale,
+  { strengths: string; boundaries: string }
+> = {
+  en: { strengths: 'What works best', boundaries: 'Hard limits to keep in mind' },
+  fr: { strengths: 'Ce qui marche le mieux', boundaries: 'Limites à garder en tête' },
+  es: { strengths: 'Lo que funciona mejor', boundaries: 'Límites a tener en cuenta' },
+};
 const VIDEO_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'pricePerSecond', label: 'Price / second' },
   { key: 'textToVideo', label: 'Text-to-Video' },
@@ -938,7 +1516,6 @@ const PRICING_SECTION_TITLES = {
   fr: 'Tarifs',
   es: 'Precios',
 } as const;
-const SPECS_DECISION_NOTE = 'The limits that shape your renders.';
 
 const PRICING_SECTION_MATCH = new Set(['pricing', 'tarifs', 'precios']);
 const PRICING_EXTRA_MARKERS = ['exemples rapides', 'quick examples', 'ejemplos rápidos'];
@@ -1023,6 +1600,8 @@ async function buildPricePerSecondRows(engineCaps: EngineCaps, locale: AppLocale
   if (!resolutions.length) return [];
 
   const hasAudioOff = Boolean(engineCaps.pricingDetails?.addons?.audio_off);
+  const rowLabel = resolveSpecRowLabel(locale, 'pricePerSecond', false);
+  const audioLabels = resolveAudioPricingLabels(locale);
   const rows: KeySpecRow[] = [];
   const displayOn = new Map<string, string>();
   const displayOff = new Map<string, string>();
@@ -1055,8 +1634,8 @@ async function buildPricePerSecondRows(engineCaps: EngineCaps, locale: AppLocale
       rows.push({
         id: 'pricePerSecond',
         key: 'pricePerSecond',
-        label: 'Price / second',
-        value: `Audio on ${onLabel} · Audio off ${offLabel}`,
+        label: rowLabel,
+        value: `${audioLabels.on} ${onLabel} · ${audioLabels.off} ${offLabel}`,
       });
       return rows;
     }
@@ -1068,14 +1647,14 @@ async function buildPricePerSecondRows(engineCaps: EngineCaps, locale: AppLocale
           const offLabel = displayOff.get(resolution);
           if (!onLabel || !offLabel) return null;
           const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
-          return `${displayResolution}: Audio on ${onLabel} · Audio off ${offLabel}`;
+          return `${displayResolution}: ${audioLabels.on} ${onLabel} · ${audioLabels.off} ${offLabel}`;
         })
         .filter((line): line is string => Boolean(line));
       if (lines.length) {
         rows.push({
           id: 'pricePerSecond',
           key: 'pricePerSecond',
-          label: 'Price / second',
+          label: rowLabel,
           value: lines[0],
           valueLines: lines,
         });
@@ -1088,7 +1667,7 @@ async function buildPricePerSecondRows(engineCaps: EngineCaps, locale: AppLocale
     rows.push({
       id: 'pricePerSecond',
       key: 'pricePerSecond',
-      label: 'Price / second',
+      label: rowLabel,
       value: onValues[0],
     });
     return rows;
@@ -1106,7 +1685,7 @@ async function buildPricePerSecondRows(engineCaps: EngineCaps, locale: AppLocale
     rows.push({
       id: 'pricePerSecond',
       key: 'pricePerSecond',
-      label: 'Price / second',
+      label: rowLabel,
       value: lines[0],
       valueLines: lines,
     });
@@ -1246,6 +1825,7 @@ async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale)
   const resolutions = resolvePricingResolutions(engineCaps);
   if (!resolutions.length) return [];
 
+  const rowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
   const results = new Map<string, { label: string; cents: number }>();
   for (const resolution of resolutions) {
     try {
@@ -1271,7 +1851,7 @@ async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale)
       {
         id: 'pricePerImage',
         key: 'pricePerImage',
-        label: 'Price / image',
+        label: rowLabel,
         value: values[0],
       },
     ];
@@ -1291,7 +1871,7 @@ async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale)
     {
       id: 'pricePerImage',
       key: 'pricePerImage',
-      label: 'Price / image',
+      label: rowLabel,
       value: lines[0],
       valueLines: lines,
     },
@@ -1551,6 +2131,18 @@ function isSupported(value: string) {
   return value.trim().toLowerCase() === 'supported';
 }
 
+function resolveSpecStatusLabels(locale: AppLocale) {
+  return SPEC_STATUS_LABELS[locale] ?? SPEC_STATUS_LABELS.en;
+}
+
+function localizeSpecStatus(value: string, locale: AppLocale) {
+  const labels = resolveSpecStatusLabels(locale);
+  if (isSupported(value)) return labels.supported;
+  if (isUnsupported(value)) return labels.notSupported;
+  if (isPending(value)) return labels.pending;
+  return value;
+}
+
 function normalizeMaxResolution(value: string) {
   if (value.includes('/') || value.includes(',')) return value;
   const matchP = value.match(/(\d{3,4}p)/i);
@@ -1584,13 +2176,6 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
   if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add('Audio', 'audio');
 
   return chips.slice(0, 6);
-}
-
-function formatSupportLabel(value: string) {
-  if (isSupported(value)) return 'Supported';
-  if (isUnsupported(value)) return 'Not supported';
-  if (isPending(value)) return 'Data pending';
-  return value;
 }
 
 function normalizeHeroTitle(rawTitle: string, providerName: string | null): string {
@@ -1656,20 +2241,65 @@ function stripMaxVideoAI(text: string): string {
   return output.trim();
 }
 
-function buildDefaultSpecTitle(providerName: string | null, heroTitle: string): string {
+function buildDefaultSpecTitle(providerName: string | null, heroTitle: string, locale: AppLocale): string {
+  const base = SPEC_TITLE_BASE[locale] ?? SPEC_TITLE_BASE.en;
   const parts = [providerName, heroTitle].filter(Boolean);
-  if (!parts.length) return 'Real Specs';
-  return `Real Specs — ${parts.join(' ')}`;
+  if (!parts.length) return base;
+  return `${base} — ${parts.join(' ')}`;
 }
 
-function normalizeSpecTitle(_rawTitle: string | null, providerName: string | null, heroTitle: string): string {
+function normalizeSpecTitle(
+  _rawTitle: string | null,
+  providerName: string | null,
+  heroTitle: string,
+  locale: AppLocale
+): string {
   const cleanedProvider = providerName ? stripMaxVideoAI(providerName) : null;
   const cleanedTitle = stripMaxVideoAI(heroTitle);
-  return buildDefaultSpecTitle(cleanedProvider, cleanedTitle);
+  return buildDefaultSpecTitle(cleanedProvider, cleanedTitle, locale);
 }
 
-function normalizeSpecNote(_rawNote: string | null): string | null {
-  return SPECS_DECISION_NOTE;
+function normalizeSpecNote(_rawNote: string | null, locale: AppLocale): string | null {
+  return SPECS_DECISION_NOTES[locale] ?? SPECS_DECISION_NOTES.en;
+}
+
+function resolveSectionLabels(locale: AppLocale) {
+  return SECTION_LABELS[locale] ?? SECTION_LABELS.en;
+}
+
+function resolveSpecRowLabel(locale: AppLocale, key: KeySpecKey, isImageEngine: boolean): string {
+  const overrides =
+    (SPEC_ROW_LABEL_OVERRIDES[locale] ?? SPEC_ROW_LABEL_OVERRIDES.en)[isImageEngine ? 'image' : 'video'];
+  const override = overrides[key];
+  if (override) return override;
+  const base = isImageEngine ? IMAGE_SPEC_ROW_DEFS : VIDEO_SPEC_ROW_DEFS;
+  return base.find((row) => row.key === key)?.label ?? key;
+}
+
+function resolveSpecRowDefs(locale: AppLocale, isImageEngine: boolean) {
+  const base = isImageEngine ? IMAGE_SPEC_ROW_DEFS : VIDEO_SPEC_ROW_DEFS;
+  return base.map((row) => ({
+    ...row,
+    label: resolveSpecRowLabel(locale, row.key, isImageEngine),
+  }));
+}
+
+function resolveAudioPricingLabels(locale: AppLocale) {
+  return PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en;
+}
+
+function resolveCompareCopy(locale: AppLocale, heroTitle: string) {
+  const copy = COMPARE_COPY_BY_LOCALE[locale] ?? COMPARE_COPY_BY_LOCALE.en;
+  return {
+    title: copy.title(heroTitle),
+    introPrefix: copy.introPrefix(heroTitle),
+    introStrong: copy.introStrong,
+    introSuffix: copy.introSuffix,
+    subline: copy.subline,
+    ctaCompare: (other: string) => copy.ctaCompare(heroTitle, other),
+    ctaExplore: (other: string) => copy.ctaExplore(other),
+    cardDescription: (other: string) => copy.cardDescription(heroTitle, other),
+  };
 }
 
 function inferBestUseCaseIcon(title: string): BestUseCaseIconKey {
@@ -1733,24 +2363,25 @@ function normalizeSecondaryCta(label: string | null): string | null {
   return label.replace(/\(1080p\)/gi, '(higher resolution)').replace(/\b1080p\b/gi, 'higher resolution').trim();
 }
 
-function buildAutoSpecSections(values: KeySpecValues | null): SpecSection[] {
+function buildAutoSpecSections(values: KeySpecValues | null, locale: AppLocale): SpecSection[] {
   if (!values) return [];
+  const labels = AUTO_SPEC_LABELS[locale] ?? AUTO_SPEC_LABELS.en;
   const inputs: string[] = [];
   const audio: string[] = [];
 
-  inputs.push(`Text → Video: ${formatSupportLabel(values.textToVideo)}`);
-  inputs.push(`Image → Video: ${formatSupportLabel(values.imageToVideo)}`);
-  inputs.push(`Video → Video: ${formatSupportLabel(values.videoToVideo)}`);
-  inputs.push(`Reference image / style: ${formatSupportLabel(values.referenceImageStyle)}`);
-  inputs.push(`Reference video: ${formatSupportLabel(values.referenceVideo)}`);
+  inputs.push(`${labels.textToVideo}: ${localizeSpecStatus(values.textToVideo, locale)}`);
+  inputs.push(`${labels.imageToVideo}: ${localizeSpecStatus(values.imageToVideo, locale)}`);
+  inputs.push(`${labels.videoToVideo}: ${localizeSpecStatus(values.videoToVideo, locale)}`);
+  inputs.push(`${labels.referenceImageStyle}: ${localizeSpecStatus(values.referenceImageStyle, locale)}`);
+  inputs.push(`${labels.referenceVideo}: ${localizeSpecStatus(values.referenceVideo, locale)}`);
 
-  audio.push(`Audio output: ${formatSupportLabel(values.audioOutput)}`);
-  audio.push(`Native audio: ${formatSupportLabel(values.nativeAudioGeneration)}`);
-  audio.push(`Lip sync: ${formatSupportLabel(values.lipSync)}`);
+  audio.push(`${labels.audioOutput}: ${localizeSpecStatus(values.audioOutput, locale)}`);
+  audio.push(`${labels.nativeAudio}: ${localizeSpecStatus(values.nativeAudioGeneration, locale)}`);
+  audio.push(`${labels.lipSync}: ${localizeSpecStatus(values.lipSync, locale)}`);
 
   return [
-    { title: 'Inputs & file types', items: inputs },
-    { title: 'Audio', items: audio },
+    { title: labels.inputsTitle, items: inputs },
+    { title: labels.audioTitle, items: audio },
   ];
 }
 
@@ -1761,6 +2392,24 @@ const DEFAULT_VIDEO_TROUBLESHOOTING = [
   'Text looks wrong → avoid readable signage, tiny UI, micro labels. Keep text off-screen.',
   'Dialogue drifts → keep lines short and punchy; avoid long monologues.',
 ];
+
+const DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE: Record<AppLocale, string[]> = {
+  en: DEFAULT_VIDEO_TROUBLESHOOTING,
+  fr: [
+    'Résultat aléatoire / incohérent → simplifiez : sujet + action + caméra + lumière. Relancez 2–3 variantes.',
+    'Mouvement étrange → réduisez le mouvement : un seul move caméra, action plus lente, moins d’accessoires.',
+    'Le sujet dérive de la marque → partez d’une image de référence et verrouillez palette + lumière.',
+    'Texte incorrect → évitez la signalétique lisible, les micro‑labels, les petits UI. Gardez le texte hors champ.',
+    'Dialogue instable → gardez les répliques courtes et percutantes; évitez les longs monologues.',
+  ],
+  es: [
+    'Se siente aleatorio / inconsistente → simplifica: sujeto + acción + cámara + iluminación. Repite 2–3 tomas.',
+    'El movimiento se ve raro → reduce el movimiento: un solo movimiento de cámara, acción más lenta, menos props.',
+    'El sujeto se sale de la marca → empieza con una imagen de referencia y fija paleta + iluminación.',
+    'El texto sale mal → evita señalética legible, UI pequeño, micro‑labels. Mantén el texto fuera de plano.',
+    'El diálogo deriva → mantén líneas cortas y directas; evita monólogos largos.',
+  ],
+};
 
 const DEFAULT_VIDEO_SAFETY = [
   'Don’t generate real people or public figures (celebrities, politicians, etc.).',
@@ -1911,13 +2560,18 @@ function toAbsoluteUrl(url?: string | null): string {
 
 function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: AppLocale): SoraCopy {
   const custom = (localized.custom ?? {}) as Record<string, unknown>;
+  const getValue = (key: string): unknown => {
+    const customValue = custom[key];
+    if (customValue !== undefined) return customValue;
+    return (localized as Record<string, unknown>)[key];
+  };
   const getString = (key: string): string | null => {
-    const value = custom[key];
+    const value = getValue(key);
     return typeof value === 'string' && value.trim().length ? value : null;
   };
-  const getBoolean = (key: string): boolean => custom[key] === true;
+  const getBoolean = (key: string): boolean => getValue(key) === true;
   const getStringArray = (key: string): string[] => {
-    const value = custom[key];
+    const value = getValue(key);
     if (Array.isArray(value)) {
       return value.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean);
     }
@@ -2503,7 +3157,9 @@ async function renderSoraModelPage({
       ? await buildPricePerImageRows(pricingEngine, locale)
       : await buildPricePerSecondRows(pricingEngine, locale)
     : [];
-  const rowDefs = isImageEngine ? IMAGE_SPEC_ROW_DEFS : VIDEO_SPEC_ROW_DEFS;
+  const rowDefs = resolveSpecRowDefs(locale, isImageEngine);
+  const pricePerSecondRowLabel = resolveSpecRowLabel(locale, 'pricePerSecond', false);
+  const pricePerImageRowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
   const keySpecDefs = rowDefs.filter((row) => row.key !== (isImageEngine ? 'pricePerImage' : 'pricePerSecond'));
   const keySpecRows: KeySpecRow[] = keySpecValues
     ? [
@@ -2515,7 +3171,7 @@ async function renderSoraModelPage({
                   {
                     id: 'pricePerImage',
                     key: 'pricePerImage',
-                    label: 'Price / image',
+                    label: pricePerImageRowLabel,
                     value: keySpecValues.pricePerImage,
                   },
                 ]
@@ -2525,7 +3181,7 @@ async function renderSoraModelPage({
                 {
                   id: 'pricePerSecond',
                   key: 'pricePerSecond',
-                  label: 'Price / second',
+                  label: pricePerSecondRowLabel,
                   value: keySpecValues.pricePerSecond,
                 },
               ]
@@ -2648,8 +3304,8 @@ function Sora2PageLayout({
   const heroDesc2 = copy.heroDesc2;
   const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues);
   const heroTrustLine = locale === 'en' ? GENERIC_TRUST_LINE : copy.heroTrustLine;
-  const specTitle = normalizeSpecTitle(copy.specTitle, providerName, heroTitle);
-  const specNote = normalizeSpecNote(copy.specNote);
+  const specTitle = normalizeSpecTitle(copy.specTitle, providerName, heroTitle, locale);
+  const specNote = normalizeSpecNote(copy.specNote, locale);
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = isImageEngine
     ? keySpecValues?.pricePerImage ?? formatPricePerImage(engine)
@@ -2709,27 +3365,41 @@ function Sora2PageLayout({
   const specSections = copy.specSections.length
     ? copy.specSections
     : isVideoEngine
-      ? buildAutoSpecSections(keySpecValues)
+      ? buildAutoSpecSections(keySpecValues, locale)
       : copy.specSections;
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const quickPricingTitle = copy.quickPricingTitle;
   const strengths = copy.strengths;
   const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues) : [];
-  const troubleshootingTitle = copy.troubleshootingTitle ?? (isVideoEngine ? 'Common problems → fast fixes' : null);
+  const troubleshootingTitle = isVideoEngine
+    ? locale === 'fr'
+      ? 'Problèmes fréquents → solutions rapides'
+      : locale === 'es'
+        ? 'Problemas comunes → soluciones rápidas'
+        : 'Common problems → fast fixes'
+    : null;
   const troubleshootingItems =
-    copy.troubleshootingItems.length ? copy.troubleshootingItems : isVideoEngine ? DEFAULT_VIDEO_TROUBLESHOOTING : [];
+    copy.troubleshootingItems.length
+      ? copy.troubleshootingItems
+      : isVideoEngine
+        ? (DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING)
+        : [];
+  const tipsCardLabels = TIPS_CARD_LABELS[locale] ?? TIPS_CARD_LABELS.en;
   const safetyRules = copy.safetyRules.length ? copy.safetyRules : DEFAULT_GENERIC_SAFETY;
   const safetyInterpretation = copy.safetyInterpretation;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
   const useDemoMediaPrompt = Boolean(demoMedia?.prompt?.trim());
-  const focusVsConfig = resolveFocusVsConfig(engine.modelSlug);
+  const focusVsConfig = resolveFocusVsConfig(engine.modelSlug, locale);
   const faqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
   }));
   const faqTitle = copy.faqTitle ?? 'FAQ';
   const faqJsonLdEntries = faqList.slice(0, 6);
+  const sectionLabels = resolveSectionLabels(locale);
+  const compareCopy = resolveCompareCopy(locale, heroTitle);
+  const statusLabels = resolveSpecStatusLabels(locale);
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
@@ -2749,17 +3419,17 @@ function Sora2PageLayout({
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
   const compareAnchorId = 'compare';
   const tocItems = [
-    { id: 'specs', label: 'Specs', visible: hasSpecs },
-    { id: textAnchorId, label: 'Examples', visible: hasExamples },
-    { id: imageAnchorId, label: 'Prompting', visible: hasTextSection },
-    { id: 'tips', label: 'Tips', visible: hasTipsSection },
+    { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
+    { id: textAnchorId, label: sectionLabels.examples, visible: hasExamples },
+    { id: imageAnchorId, label: sectionLabels.prompting, visible: hasTextSection },
+    { id: 'tips', label: sectionLabels.tips, visible: hasTipsSection },
     {
       id: compareAnchorId,
-      label: 'Compare',
+      label: sectionLabels.compare,
       visible: hasCompareSection,
     },
-    { id: 'safety', label: 'Safety', visible: hasSafetySection },
-    { id: 'faq', label: 'FAQ', visible: hasFaqSection },
+    { id: 'safety', label: sectionLabels.safety, visible: hasSafetySection },
+    { id: 'faq', label: sectionLabels.faq, visible: hasFaqSection },
   ].filter((item) => item.visible);
   const productSchema = buildProductSchema({
     engine,
@@ -3077,16 +3747,16 @@ function Sora2PageLayout({
                         {row.valueLines?.length ? (
                           <span className="flex flex-col gap-1">
                             {row.valueLines.map((line) => (
-                              <span key={line}>{line}</span>
+                              <span key={line}>{localizeSpecStatus(line, locale)}</span>
                             ))}
                           </span>
                         ) : isSupported(row.value) ? (
                           <span className="inline-flex items-center gap-1 text-emerald-600">
                             <UIIcon icon={Check} size={14} className="text-emerald-600" />
-                            <span className="sr-only">Supported</span>
+                            <span className="sr-only">{statusLabels.supported}</span>
                           </span>
                         ) : (
-                          row.value
+                          localizeSpecStatus(row.value, locale)
                         )}
                       </span>
                     </div>
@@ -3311,7 +3981,7 @@ function Sora2PageLayout({
                 <div className={gridClass}>
               {strengths.length ? (
                 <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  <h3 className="text-base font-semibold text-text-primary">What works best</h3>
+                  <h3 className="text-base font-semibold text-text-primary">{tipsCardLabels.strengths}</h3>
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {strengths.map((item) => (
                       <li key={item}>{item}</li>
@@ -3333,7 +4003,7 @@ function Sora2PageLayout({
               ) : null}
               {boundaries.length ? (
                 <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                  <h3 className="text-base font-semibold text-text-primary">Hard limits to keep in mind</h3>
+                  <h3 className="text-base font-semibold text-text-primary">{tipsCardLabels.boundaries}</h3>
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {boundaries.map((item) => (
                       <li key={item}>{item}</li>
@@ -3387,14 +4057,14 @@ function Sora2PageLayout({
             {hasCompareGrid ? (
               <div className={focusVsConfig ? 'mt-10 stack-gap sm:mt-12' : 'stack-gap'}>
                 <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                  Compare {heroTitle} vs other AI video models
+                  {compareCopy.title}
                 </h2>
                 <p className="text-center text-base leading-relaxed text-text-secondary">
-                  Not sure if {heroTitle} is the best fit for your shot? These side-by-side comparisons break down the tradeoffs —
-                  <strong> price per second, resolution, audio, speed, and motion style</strong> — so you can pick the right
-                  engine fast.
+                  {compareCopy.introPrefix}
+                  <strong>{compareCopy.introStrong}</strong>
+                  {compareCopy.introSuffix}
                 </p>
-                <p className="text-center text-sm text-text-secondary">Each page includes real outputs and practical best-use cases.</p>
+                <p className="text-center text-sm text-text-secondary">{compareCopy.subline}</p>
                 <div className="grid grid-gap-sm md:grid-cols-3">
                   {(relatedItems.length
                     ? relatedItems
@@ -3414,10 +4084,10 @@ function Sora2PageLayout({
                       const compareHref = canCompare
                         ? localizeComparePath(compareSlug, engineSlug)
                         : localizeModelsPath(entry.modelSlug ?? '');
-                      const ctaLabel = canCompare ? `Compare ${heroTitle} vs ${label} →` : `Explore ${label} →`;
+                      const ctaLabel = canCompare ? compareCopy.ctaCompare(label) : compareCopy.ctaExplore(label);
                       const description =
                         entry.description ||
-                        `Compare ${heroTitle} vs ${label} on price, resolution, audio, speed, and motion style.`;
+                        compareCopy.cardDescription(label);
                       return (
                         <article
                           key={entry.modelSlug}
