@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-02-09",
+  "last_updated": "2026-02-10",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -391,6 +391,102 @@
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Sep 2025"
+      }
+    },
+    {
+      "modelSlug": "kling-3-pro",
+      "sources": [
+        "https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/v3/pro/image-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/lipsync/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "kling-3-standard",
+      "sources": [
+        "https://fal.ai/models/fal-ai/kling-video/v3/standard/text-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/v3/standard/text-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/lipsync/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "seedance-1-5-pro",
+      "sources": [
+        "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+        "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video/api",
+        "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p",
+        "maxDuration": "12s",
+        "aspectRatios": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
       }
     },
     {

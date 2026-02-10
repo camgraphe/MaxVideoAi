@@ -2,15 +2,15 @@
   "marketingName": "MiniMax Hailuo 02",
   "versionLabel": "02",
   "seo": {
-    "title": "Minimax Hailuo-02 texte→vidéo modèle IA – MaxVideoAI",
-    "description": "Générez des brouillons MiniMax Hailuo 02 à petit prix en 512p/768p à partir de texte ou d’images. Créez des clips silencieux de 6 à 10 secondes pour storyboards, boucles et tests de mouvement, puis passez les meilleurs en Veo, Kling, Wan ou Sora dans MaxVideoAI.",
+    "title": "Modèle texte→vidéo MiniMax Hailuo‑02 – MaxVideoAI",
+    "description": "Générez des brouillons MiniMax Hailuo 02 économiques et orientés physique en 512p/768p depuis texte ou image. Créez des clips silencieux de 6–10 s pour storyboards, boucles et tests de motion, puis passez les gagnants sur Veo, Kling, Wan ou Sora dans MaxVideoAI.",
     "image": "/hero/minimax-video01.jpg"
   },
-  "overview": "MiniMax Hailuo 02 dans MaxVideoAI : clips courts et économiques avec bonne physique en 512p/768p, 6 ou 10 s. Entrée texte ou image, frame final optionnel, sortie silencieuse, pricing wallet pour prototyper vite.",
+  "overview": "MiniMax Hailuo 02 dans MaxVideoAI : clips courts et économiques, orientés physique, en 512p/768p sur 6 ou 10 s. Entrée texte ou image, frame finale optionnelle, sortie silencieuse et pricing wallet pour des drafts rapides et des loops.",
   "hero": {
     "title": "MiniMax Hailuo 02 – Brouillons vidéo IA économiques avec forte physique",
-    "intro": "MiniMax Hailuo 02 – Drafts rapides et stylisés avec bonne physique (6–10 s, silencieux)",
-    "badge": "512p/768p · 6–10 s · Texte ou image · Sortie silencieuse",
+    "intro": "Clips draft orientés physique pour tests de mouvement, expérimentations caméra et itération visuelle rapide.",
+    "badge": "512p/768p · 6–10 s · Entrée texte ou image · Sortie silencieuse",
     "ctaPrimary": {
       "label": "Essayer MiniMax Hailuo 02",
       "href": "/app?engine=minimax-hailuo-02-text"
@@ -18,18 +18,37 @@
     "secondaryLinks": [
       {
         "label": "Comparer MiniMax vs Pika 2.2 →",
-        "href": "/modeles/pika-text-to-video"
+        "href": "/models/pika-text-to-video"
       }
     ]
   },
   "bestUseCases": {
-    "title": "Meilleurs usages",
+    "title": "Meilleurs cas d’usage",
     "items": [
-      "Esquisser du motion avant des finals Sora/Veo/Kling/Wan",
-      "Animer storyboards, renders ou styleframes en clips rapides",
-      "Tester transitions, caméra ou moments physiques (vent, tissu, particules)",
-      "Créer des loops expérimentales et fonds pour reels/openers",
-      "Campagnes multivariantes à bas coût avec des dizaines de clips"
+      {
+        "title": "Brouillons de motion",
+        "icon": "zap"
+      },
+      {
+        "title": "Physique & motion secondaire",
+        "icon": "wind"
+      },
+      {
+        "title": "Animatics de storyboard",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Tests de transitions & match cuts",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Plans guidés start/end frame",
+        "icon": "image"
+      },
+      {
+        "title": "Campagnes multi‑variantes budget",
+        "icon": "coins"
+      }
     ]
   },
   "technicalOverviewTitle": "Résumé technique",
@@ -43,257 +62,307 @@
       "body": "512p ou 768p"
     },
     {
-      "label": "Ratios",
+      "label": "Formats",
       "body": "16:9, 9:16, 1:1"
     },
     {
       "label": "Entrées",
-      "body": "Prompts texte; image de référence optionnelle; frame final optionnel"
+      "body": "Prompts texte ; image de référence optionnelle ; frame finale optionnelle"
     },
     {
       "label": "Modes",
-      "body": "Texte→vidéo et Image→vidéo"
+      "body": "Text‑to‑video et Image‑to‑video"
     },
     {
       "label": "Audio",
-      "body": "Sortie silencieuse (pas d’audio natif ou uploadé)"
+      "body": "Sortie silencieuse (pas d’audio natif ni upload)"
     },
     {
       "label": "Tarifs",
-      "body": "Économique; pricing live par wallet dans Generate"
+      "body": "Budget‑friendly ; prix live via wallet dans Generate"
     }
   ],
   "promptStructure": {
     "title": "Texte→vidéo avec MiniMax Hailuo 02",
-    "quote": "Clip [durée] [ratio] de [sujet] en mouvement dans [environnement]. Caméra [mouvement] pendant que [mouvement secondaire] réagit (vent/fur/debris). Style : [réaliste/stylisé]. Sans texte/logos.",
-    "description": "Prompts courts et axés motion : sujet en mouvement, décor, caméra, physique, style et prompt négatif.",
+    "quote": "Plan [durée] secondes [format] d’un [sujet] se déplaçant dans [environnement]. Caméra [mouvement] tandis que [motion secondaire] réagit naturellement (vent/fourrure/débris). Style : [réaliste/stylisé]. Pas de texte ni logos.",
+    "description": "Gardez les prompts courts et orientés motion : sujet en mouvement, décor, caméra, physique, style, et un prompt négatif.",
     "steps": [
       "Sujet en mouvement + style",
-      "Environnement & ambiance",
-      "Mouvement caméra (follow/orbit/pan/push/tilt/grue)",
-      "Physique/mouvement secondaire (vent, tissu, particules, fur)",
-      "Ratio/durée (6 ou 10 s) + prompt négatif"
+      "Environnement & atmosphère",
+      "Mouvement caméra (follow/orbit/pan/push/tilt/crane)",
+      "Physique/motion secondaire (vent, tissu, particules, fourrure)",
+      "Format & durée (6 ou 10 s) + prompt négatif"
     ]
   },
   "tips": {
     "title": "Conseils & limites",
     "items": [
-      "1–3 phrases; les prompts longs ajoutent des artefacts",
-      "Un sujet/décor/effet principal par clip pour la clarté",
-      "Uploadez référence + frame final pour verrouiller compo et fin",
-      "512p pour les drafts; 768p pour des sorties prêtes social",
+      "1–3 phrases ; des prompts trop longs peuvent créer des artefacts",
+      "Un sujet/environnement/effet principal par clip pour la clarté",
+      "Uploadez une référence + frame finale pour verrouiller la compo et l’atterrissage",
+      "512p pour les drafts les plus rapides/moins chers ; 768p pour des sorties prêtes social",
       "Ajoutez l’audio en post ou combinez avec Wan/Sora/Veo"
     ]
   },
   "compareLink": {
     "label": "Comparer MiniMax vs Pika 2.2 →",
-    "href": "/modeles/pika-text-to-video"
+    "href": "/models/pika-text-to-video"
   },
   "prompts": [
     {
-      "title": "Drift venté sur rooftop (10s, 16:9)",
-      "prompt": "10s 16:9 au-dessus d’un rooftop urbain stylisé de nuit; manteau/cheveux réagissent aux rafales, caméra flotte parmi les néons et flaques, pas de texte/logos/UI."
+      "title": "Dérive rooftop venteuse (10 s, 16:9)",
+      "prompt": "10 s 16:9, glisse sur un rooftop stylisé de nuit ; manteau et cheveux réagissent aux rafales, caméra flotte près des néons, reflets dans les flaques, pas de texte/logos/UI."
     },
     {
-      "title": "Sketch renard physique (6s, 16:9)",
-      "prompt": "6s 16:9 d’un renard roux courant dans une forêt dense et venteuse. Caméra basse derrière; feuilles/poussière tourbillonnent; fur réaliste; couleurs stylisées; pas de texte/logos."
+      "title": "Sprint de renard — sketch physique (6 s, 16:9)",
+      "prompt": "6 s 16:9, renard roux sprintant dans une forêt dense un jour venteux. Caméra suit bas derrière ; feuilles/poussière tourbillonnent ; mouvement de fourrure réaliste ; couleurs stylisées ; pas de texte/logos."
     }
   ],
   "faqs": [
     {
-      "q": "Pourquoi choisir MiniMax plutôt qu’un moteur premium ?",
-      "a": "Bonne motion/physique à moindre coût; idéal pour pubs volumineuses et tests."
+      "q": "Pourquoi MiniMax plutôt qu’un moteur premium ?",
+      "a": "Bonne physique/motion à coût par seconde plus bas ; idéal pour volumes, explainers et tests sans brûler le budget."
     },
     {
       "q": "Quel style de prompt marche le mieux ?",
-      "a": "Prompts courts centrés motion : sujet, décor, caméra, physique; une idée par clip."
+      "a": "2–3 phrases couvrant sujet, décor, caméra et physique ; une idée principale par clip."
     },
     {
-      "q": "Supporte-t-il le vertical ?",
-      "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI."
+      "q": "Supporte‑t‑il la vidéo verticale ?",
+      "a": "Oui — 16:9, 9:16, 1:1 sont disponibles dans MaxVideoAI."
     },
     {
-      "q": "Supporte-t-il l’audio ?",
-      "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio."
+      "q": "Supporte‑t‑il l’audio ?",
+      "a": "Non. Hailuo 02 sort en silencieux ; ajoutez le son en post ou via un moteur audio."
     },
     {
       "q": "Et si j’ai besoin de 1080p ?",
-      "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)."
+      "a": "Brouillonnez en Hailuo 02 (512p/768p), puis upscalez ou relancez dans un moteur plus haute résolution (Veo, Kling, Wan, Sora 2 Pro)."
     }
   ],
   "custom": {
-    "heroDesc1": "Générez des drafts rapides avec physique en 512p/768p depuis texte ou une image, frame final optionnel pour verrouiller la fin.",
-    "heroDesc2": "Choisissez 6 ou 10 s, 16:9/9:16/1:1, obtenez des clips silencieux prêts pour storyboards, loops et tests motion.",
-    "whyTitle": "Pourquoi MiniMax Hailuo 02 est puissant dans MaxVideoAI",
+    "heroDesc1": "Générez des drafts rapides orientés physique en 512p/768p depuis texte ou image, avec frame finale optionnelle pour verrouiller l’atterrissage.",
+    "heroDesc2": "Choisissez 6 ou 10 secondes, 16:9/9:16/1:1, et obtenez des clips silencieux prêts pour storyboards, loops et tests de motion.",
+    "heroSupportLine": "Parfait quand vous voulez explorer mouvement et transitions à bas coût avant de reconstruire les gagnants dans des moteurs premium.",
+    "whyTitle": "Pourquoi MiniMax Hailuo 02 est puissant",
     "heroHighlights": [
-      "Texte → Vidéo & Image → Vidéo dans un seul moteur",
-      "Clips 6 ou 10 s pour intros et tests motion",
-      "Sorties 512p/768p pour itérations rapides et peu coûteuses",
-      "Référence + frame final pour guider mouvement et atterrissage",
-      "Sortie silencieuse pour sonoriser dans votre stack",
-      "Optimisé pour physique, mouvement et contrôle caméra",
-      "Tier économique aux côtés de Pika 2.2 pour campagnes volumineuses"
+      "Cues de physique extrêmes||Vent, tissu, particules et inertie lisent très bien pour des tests rapides.",
+      "Contrôle end‑frame||Ajoutez une frame finale cible pour guider l’atterrissage du plan.",
+      "Pensé pour le volume||Idéal quand vous avez besoin de nombreuses variantes sans exploser le budget.",
+      "Drafts silencieux||Faciles à sonoriser en post (ou à combiner avec un moteur audio pour les finals)."
     ],
-    "bestUseCasesTitle": "Meilleurs usages",
+    "bestUseCasesTitle": "Meilleurs cas d’usage",
     "bestUseCases": [
-      "Drafts motion avant finals Sora/Veo/Kling/Wan",
-      "Animer storyboards/renders/styleframes",
-      "Tester transitions/caméra/physique (vent, tissu, particules)",
-      "Loops et fonds expérimentaux",
-      "Campagnes multivariantes à bas coût"
+      {
+        "title": "Brouillons de motion",
+        "icon": "zap"
+      },
+      {
+        "title": "Physique & motion secondaire",
+        "icon": "wind"
+      },
+      {
+        "title": "Animatics de storyboard",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Tests de transitions & match cuts",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Plans guidés start/end frame",
+        "icon": "image"
+      },
+      {
+        "title": "Campagnes multi‑variantes budget",
+        "icon": "coins"
+      }
     ],
-    "whatTitle": "Ce qu’est MiniMax Hailuo 02 dans MaxVideoAI",
-    "whatIntro1": "Modèle phare MiniMax pour séquences courtes avec bonne physique et respect du prompt.",
-    "whatIntro2": "Dans MaxVideoAI c’est un moteur rapide et silencieux en 512p/768p.",
+    "whatTitle": "Ce qu’est vraiment MiniMax Hailuo 02 dans MaxVideoAI",
+    "whatIntro1": "Le modèle phare MiniMax pour séquences courtes avec forte physique et bonne adhérence au prompt.",
+    "whatIntro2": "Dans MaxVideoAI, il est câblé comme moteur de brouillon rapide et silencieux en 512p/768p.",
     "whatFlowTitle": "Flux MaxVideoAI",
     "whatFlowSteps": [
-      "1. Choisir MiniMax Hailuo 02.",
-      "2. Texte → Vidéo ou Image → Vidéo.",
-      "3. Choisir 6/10 s, résolution (512p/768p) et ratio.",
-      "4. Optionnel : uploader image de référence et/ou frame final.",
-      "5. Coller un prompt court axé motion (mentionner la physique si besoin).",
-      "6. Vérifier le prix en direct avant rendu."
+      "1. Choisissez MiniMax Hailuo 02.",
+      "2. Sélectionnez Texte → Vidéo ou Image → Vidéo.",
+      "3. Choisissez 6 ou 10 s, la résolution (512p/768p) et le format.",
+      "4. Optionnel : uploadez une image de référence et/ou une frame finale.",
+      "5. Collez un prompt court orienté motion (ajoutez la physique si besoin).",
+      "6. Vérifiez le prix via wallet avant rendu."
     ],
-    "specTitle": "Specs réelles – MiniMax Hailuo 02 dans MaxVideoAI (512p/768p, 6–10 s)",
-    "specNote": "Specs telles qu’utilisées aujourd’hui.",
+    "specTitle": "Specs réelles — MiniMax Hailuo 02 dans MaxVideoAI (512p/768p, 6–10 s)",
+    "specNote": "Specs telles qu’utilisées aujourd’hui dans MaxVideoAI.",
     "specSections": [
       {
-        "title": "Durée & sortie",
+        "title": "Drafts orientés physique",
+        "intro": "Très bon sur le mouvement physique (vent, tissu, particules). Idéal pour tests de motion et transitions.",
         "items": [
-          "Durées : 6 s ou 10 s",
-          "Résolutions : 512p ou 768p",
-          "Routes optimisées pour vitesse/coût"
+          "Indiquez la direction du vent/force.",
+          "Scènes simples pour une motion lisible.",
+          "Testez plusieurs transitions rapidement.",
+          "Parfait pour animatics et previz."
         ]
       },
       {
-        "title": "Ratios",
+        "title": "Contrôle end‑frame",
+        "intro": "Vous pouvez guider l’atterrissage du plan en définissant une frame finale cible. Utile pour match cuts et fins propres.",
         "items": [
-          "16:9 – horizontal",
-          "9:16 – vertical",
-          "1:1 – carré"
-        ]
-      },
-      {
-        "title": "Entrées & fichiers",
-        "items": [
-          "Prompts texte (anglais, chinois, etc.)",
-          "Image de référence : PNG/JPG/JPEG/WebP/GIF/AVIF (~25 MB)",
-          "Frame final optionnel pour figer la compo"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Sortie uniquement visuelle et silencieuse",
-          "Ajoutez l’audio en post ou via moteurs audio"
-        ]
-      },
-      {
-        "title": "Tarifs",
-        "items": [
-          "Économique; prix par job visibles dans Generate",
-          "Comparez avec Pika, Veo Fast, Wan 2.5 avant de lancer"
+          "Spécifiez ce qui doit rester préservé.",
+          "Décrivez clairement la pose finale.",
+          "Servez‑vous‑en comme pont entre deux plans.",
+          "Associez avec un moteur premium pour les finals."
         ]
       }
     ],
-    "specValueProp": "MiniMax Hailuo 02 est le moteur rapide avec physique pour des tests motion silencieux à bas coût.",
-    "galleryTitle": "Galerie MiniMax Hailuo 02",
-    "galleryIntro": "Runs texte et image rendus avec la même config que la vôtre.",
+    "specValueProp": "MiniMax Hailuo 02 est un moteur draft rapide et orienté physique pour des tests de motion silencieux à bas coût.",
+    "galleryTitle": "Galerie d’exemples MiniMax Hailuo 02",
+    "galleryIntro": "Voyez des runs texte et image rendus avec la même configuration que vous avez.",
     "galleryAllCta": "Voir tous les exemples MiniMax Hailuo 02 →",
     "recreateLabel": "Recréer ce plan →",
-    "imageTitle": "Image→vidéo avec MiniMax Hailuo 02 (+ frame final)",
-    "imageIntro": "Animez boards/renders/concepts rapidement avec frame final optionnel.",
+    "imageTitle": "Image→Vidéo avec MiniMax Hailuo 02 (+ end frames)",
+    "imageIntro": "Animez rapidement boards/renders/concepts avec frame finale optionnelle.",
     "imageFlow": [
-      "Chargez un keyframe ou un render.",
-      "Option : uploadez un frame final.",
-      "Choisissez 6/10 s, 512p/768p et ratio.",
-      "Demandez caméra + physique; indiquez l’atterrissage sur le frame final."
+      "Uploadez un keyframe ou un render.",
+      "Optionnel : uploadez une frame finale.",
+      "Choisissez 6/10 s, 512p/768p et le format.",
+      "Promptez caméra + physique; décrivez l’atterrissage sur l’end frame."
     ],
     "imageWhy": [
-      "Boards UX/UI en explainers rapides",
-      "Posters concept en teasers",
-      "Fonds en loop pour streams ou sections hero"
+      "Boards UX/UI transformés en explainers rapides",
+      "Affiches concept en teasers",
+      "Arrière‑plans en boucle pour streams ou sections hero"
     ],
-    "multishotTitle": "Clips multi-beat & loops",
-    "multishotIntro1": "6s : 1–2 beats ; 10s : 2–3 beats max dans un décor.",
-    "multishotIntro2": "Focalisez-vous sur des transitions physiques dans une seule scène.",
+    "multishotTitle": "Clips multi‑beats & loops",
+    "multishotIntro1": "6 s : 1–2 beats ; 10 s : 2–3 beats max dans un même décor.",
+    "multishotIntro2": "Concentrez‑vous sur des transitions portées par la physique dans un seul environnement.",
     "multishotTips": [
-      "Beat 1 : établir ; Beat 2 : motion/transition ; Beat 3 : frame hero",
-      "Gardez un décor/style par clip"
+      "Beat 1 : mise en place ; Beat 2 : motion/transition ; Beat 3 : frame hero",
+      "Un seul décor/style par clip"
     ],
-    "demoTitle": "Démo – 10s city drift (9:16)",
-    "demoPromptLabel": "10s city drift",
-    "demoPrompt": [
-      "10s vertical dans une rue néon la nuit, stylisé mais physique réaliste.",
-      "Caméra flotte au-dessus des flaques, reflets ondulants; passants/parapluies en flou.",
-      "Rafales de vent déplacent déchets et vapeur; look légèrement pictural, couleurs saturées, sans texte/logos."
-    ],
-    "demoNotes": [
-      "Un décor avec indices physiques",
-      "Facile à looper en fond",
-      "Sortie silencieuse prête pour votre piste"
-    ],
-    "tipsTitle": "Conseils & limites en clair",
+    "tipsTitle": "Conseils & limites",
     "strengths": [
-      "Bonne physique/motion sur clips courts",
-      "Bon respect du prompt",
-      "Excellente ratio prix/qualité pour le volume",
-      "Support image + frame final pour verrouiller la compo"
+      "Prompts orientés physique : indiquez direction de force + réponse matière (vent/tissu/particules/inertie/contact) plutôt que de longues listes de style.",
+      "Utilisez des mouvements caméra entre crochets ([pan], [tilt], [push in]) et un seul move par clip.",
+      "Gardez des scènes simples pour une motion lisible (un sujet hero, une action claire).",
+      "Utilisez First/Last frame pour un atterrissage propre (match cuts, transformations, transitions start→end).",
+      "Générez plusieurs variantes rapidement; choisissez la meilleure motion, puis reconstruisez les finals dans un moteur plus fidèle."
     ],
     "boundaries": [
-      "512p/768p = tiers draft/social, pas du 1080p broadcast",
-      "6 ou 10 s max; assemblez pour plus long",
-      "Toujours silencieux; ajoutez l’audio en post ou via moteurs audio",
-      "Texte/UI minuscules peu fiables; overlay pour copy critique"
+      "Résolutions draft (512p / 768p), pas de 1080p final.",
+      "6 s ou 10 s par rendu dans ce routage.",
+      "Sortie silencieuse — ajoutez le son en post.",
+      "Le micro‑texte à l’écran est peu fiable — overlay en post."
     ],
-    "safetyTitle": "Sécurité & ressemblance",
+    "safetyTitle": "Sécurité & personnes / ressemblance",
     "safetyRules": [
-      "Pas de figures publiques/people réels",
-      "Pas de contenu sexuel explicite ni de mineurs sexualisés",
-      "Pas de haine, harcèlement ou extrémisme",
-      "Pas d’usurpation d’identité sans consentement",
-      "La modération fournisseur + MaxVideoAI peut bloquer/ajuster"
+      "Pas de contenu sexuel, et rien impliquant des mineurs.",
+      "Pas de contenu haineux, harcelant ou de violence graphique.",
+      "N’imitez pas de personnes réelles ou de figures publiques; utilisez le consentement pour toute ressemblance.",
+      "N’incluez pas de données personnelles privées (adresses, numéros, documents, visages non consentis).",
+      "Utilisez uniquement du contenu dont vous avez les droits (images/marques/IP) ; certains prompts/inputs peuvent être bloqués par les filtres de sécurité."
     ],
-    "safetyInterpretation": [
-      "Utilisez-le pour des histoires fictives et brand-safe"
-    ],
-    "safetyNote": "Respectez les garde-fous ; Hailuo est pour un usage pro et éthique.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "MiniMax Hailuo 02 vs Pika / Veo / Kling / Wan",
     "comparisonPoints": [
       "MiniMax Hailuo 02 : 6–10 s silencieux en 512p/768p, bonne physique, bas coût",
-      "Pika 2.2 : animation stylisée silencieuse 5–10 s en 720p/1080p",
+      "Pika 2.2 : stylisé, silencieux 5–10 s en 720p/1080p",
       "Veo 3.1 Fast : 4–8 s avec audio optionnel en 720p/1080p",
-      "Kling 2.5 Turbo : 1080p silencieux pour hero shots 5–10 s",
-      "Wan 2.5 : 5–10 s avec audio natif ou piste upload et multiples tiers"
+      "Kling 2.5 Turbo : hero shots silencieux 1080p, 5–10 s",
+      "Wan 2.5 : 5–10 s avec audio natif/upload et plusieurs tiers"
     ],
     "comparisonCta": "Comparer MiniMax vs Pika 2.2 →",
     "faqTitle": "FAQ – MiniMax Hailuo 02 dans MaxVideoAI",
     "faqs": [
       {
-        "q": "Pourquoi choisir MiniMax plutôt qu’un moteur premium ?",
-        "a": "Motion/physique solide à moindre coût; idéal pour pubs volumineuses et tests."
+        "q": "Pourquoi choisir MiniMax plutôt que des moteurs premium ?",
+        "a": "Bonne motion/physique à coût plus bas ; idéal pour tests volumineux et expérimentations."
       },
       {
-        "q": "Quel style de prompt marche le mieux ?",
-        "a": "Prompts courts orientés motion : sujet, décor, caméra, physique; une idée par clip."
+        "q": "Quel style de prompt fonctionne le mieux ?",
+        "a": "Court et orienté motion : sujet, décor, caméra, physique ; une idée par clip."
       },
       {
-        "q": "Peut-il faire du vertical ?",
-        "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI."
+        "q": "Peut‑il faire du vertical ?",
+        "a": "Oui — 16:9, 9:16, 1:1 disponibles dans MaxVideoAI."
       },
       {
-        "q": "Supporte-t-il l’audio ?",
-        "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio."
+        "q": "Supporte‑t‑il l’audio ?",
+        "a": "Non. Les sorties sont silencieuses ; ajoutez le son en post ou via un moteur audio."
       },
       {
         "q": "Et si j’ai besoin de 1080p ?",
-        "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)."
+        "a": "Brouillonnez en Hailuo 02 (512p/768p), puis upscalez ou relancez dans un moteur plus haute résolution (Veo/Kling/Wan/Sora 2 Pro)."
       }
     ],
     "relatedTitle": "Explorer d’autres modèles",
-    "relatedSubtitle": "Comparez prix, latence et sorties dans le catalogue MaxVideoAI.",
-    "finalPara1": "MiniMax Hailuo 02 dans MaxVideoAI est votre moteur rapide avec physique pour tester motion et transitions à bas coût.",
-    "finalPara2": "Servez-vous-en pour explorer, puis promouvez les gagnants vers des modèles haut de gamme pour l’audio et les finals 1080p.",
-    "finalButton": "Ouvrir Generate"
+    "relatedSubtitle": "Comparez prix, latence et options de sortie sur MaxVideoAI.",
+    "finalPara1": "MiniMax Hailuo 02 est votre moteur rapide et orienté physique pour tester motion et transitions à bas coût.",
+    "finalPara2": "Utilisez‑le pour explorer, puis passez les gagnants sur des modèles plus premium pour l’audio et la haute résolution.",
+    "finalButton": "Ouvrir Generate",
+    "promptingTitle": "Comment écrire un excellent prompt Hailuo 02",
+    "promptingIntro": "Hailuo 02 fonctionne mieux avec des prompts courts et des cues de motion explicites.",
+    "promptingTip": "Astuce : durée + format se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière et style. Utilisez des mouvements caméra entre crochets comme [pan], [tilt], [zoom].",
+    "promptingGlobalPrinciples": [
+      "Gardez les prompts courts et concrets.",
+      "Utilisez des cues de caméra/motion entre crochets.",
+      "Utilisez une end frame (optionnelle) pour verrouiller la transition."
+    ],
+    "tipsIntro": "Hailuo 02 est un moteur draft orienté physique : utilisez‑le pour tests de motion, transitions et atterrissages propres.",
+    "promptingEngineWhy": [
+      "Le prompt optimizer peut étendre des prompts courts.",
+      "Les crochets caméra aident à guider le mouvement.",
+      "L’end frame améliore l’atterrissage et les match cuts."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. À utiliser pour itérer vite.",
+      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
+      "pro": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Sujet] [action] dans [scène], [mouvement caméra entre crochets], [lumière/style]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nScène :\n[Lieu + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + mouvement entre crochets, ex. [pan left], [zoom in].]\n\nLook :\n[Lumière + palette + style.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
+        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + décor :\n[Traits clés + lieu + ancrages.]\n\nCaméra + motion :\n[Cadrage + cue de mouvement entre crochets.]\n\nEnd frame optionnelle :\n[Décrivez la frame finale cible si vous en utilisez une.]\n\nLumière + style :\n[Key light + palette.]"
+      }
+    ],
+    "promptingGuideLabel": "MiniMax",
+    "promptingGuideUrl": "https://www.minimaxi.com",
+    "demoTitle": "Démo — dérive urbaine 10 s (9:16)",
+    "demoPromptLabel": "Dérive urbaine 10 s",
+    "demoPrompt": [
+      "Plan vertical 10 s dans une rue néon de nuit, physique stylisée mais ancrée.",
+      "La caméra flotte au‑dessus des flaques, reflets ondulants ; passants et parapluies en flou doux.",
+      "Rafales de vent qui déplacent détritus et vapeur ; look légèrement painterly, couleurs saturées, pas de texte/logos."
+    ],
+    "demoNotes": [
+      "Un seul environnement avec cues physiques.",
+      "Facile à boucler en background.",
+      "Sortie silencieuse prête pour votre bande‑son."
+    ],
+    "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
+    "troubleshootingItems": [
+      "Motion trop flottant → ajoutez des cues de poids/contact (“ancré”, “friction”, “objets qui ne glissent pas”), ralentissez l’action, réduisez le shake caméra.",
+      "Drift / changements en cours de clip → réduisez props et personnages secondaires; répétez les mêmes ancrages sujet + tenue + lumière.",
+      "End frame qui ne tombe pas → décrivez explicitement la pose/compo finale; retirez les actions en fin de clip.",
+      "Caméra jittery → spécifiez “tripod‑stable” ou “smooth track”; évitez “dynamic”.",
+      "Texte/logos aléatoires → ajoutez un négatif court (“no text, no logos, no UI”) et gardez la signalétique hors champ."
+    ]
   }
 }

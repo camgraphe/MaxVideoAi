@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-01-27",
+  "last_updated": "2026-02-10",
   "method": "manual-v1-placeholder",
   "scores": [
     {
@@ -47,6 +47,51 @@
       "controllability": 8.0,
       "speedStability": 6.8,
       "pricing": 9.2
+    },
+    {
+      "modelSlug": "kling-3-pro",
+      "fidelity": 8.4,
+      "visualQuality": 8.1,
+      "motion": 8.2,
+      "consistency": 7.6,
+      "anatomy": 7.8,
+      "textRendering": 6.6,
+      "lipsyncQuality": 8.4,
+      "sequencingQuality": 7.5,
+      "controllability": 8.5,
+      "speedStability": 6.7,
+      "pricing": 7.2,
+      "last_updated": "2026-02-10"
+    },
+    {
+      "modelSlug": "kling-3-standard",
+      "fidelity": 8.0,
+      "visualQuality": 7.7,
+      "motion": 8.0,
+      "consistency": 7.3,
+      "anatomy": 7.5,
+      "textRendering": 6.5,
+      "lipsyncQuality": 8.2,
+      "sequencingQuality": 7.2,
+      "controllability": 8.2,
+      "speedStability": 6.9,
+      "pricing": 7.8,
+      "last_updated": "2026-02-10"
+    },
+    {
+      "modelSlug": "seedance-1-5-pro",
+      "fidelity": 8.3,
+      "visualQuality": 8.5,
+      "motion": 8.3,
+      "consistency": 7.9,
+      "anatomy": 7.9,
+      "textRendering": 6.9,
+      "lipsyncQuality": 8.8,
+      "sequencingQuality": 7.8,
+      "controllability": 8.2,
+      "speedStability": 7.6,
+      "pricing": 8.5,
+      "last_updated": "2026-02-10"
     },
     {
       "modelSlug": "wan-2-6",
