@@ -943,6 +943,7 @@
         ],
         "compareLabel": "Activer le mode Compare"
       },
+      "legacyToggleLabel": "Afficher les anciens modèles",
       "grid": {
         "srTitle": "Modèles vidéo et image IA que vous pouvez comparer sur MaxVideoAI",
         "bridgeText": "Comparez les moteurs vidéo et image IA côte à côte avec prix en direct, limites réelles et exemples clonables."
@@ -1107,6 +1108,14 @@
             "cheap": "$",
             "mid": "$$",
             "premium": "$$$"
+          }
+        },
+        "age": {
+          "label": "Modèles",
+          "options": {
+            "latest": "Récents",
+            "legacy": "Anciens",
+            "all": "Tous"
           }
         },
         "clear": "Effacer les filtres"
@@ -2044,6 +2053,7 @@
           "modeAll": "Mode : Tous",
           "modeValue": "Mode : {value}",
           "resolutionAll": "Résolution : Toutes",
+          "legacyToggleLabel": "Modèles legacy",
           "viewModel": "Voir la page du modèle",
           "viewExamples": "Voir les exemples",
           "empty": "Aucun moteur ne correspond encore à vos filtres. Ajustez-les ou effacez la recherche pour explorer tout le catalogue.",

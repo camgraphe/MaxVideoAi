@@ -727,6 +727,7 @@ export default async function ModelsPage() {
         priceFrom: (() => {
           return typeof priceFromCents === 'number' ? priceFromCents / 100 : null;
         })(),
+        legacy: Boolean(engine.isLegacy),
       },
     };
   });
@@ -882,7 +883,11 @@ export default async function ModelsPage() {
           <h2 className="sr-only">
             {listingCopy.grid?.srTitle ?? 'AI video and image models you can compare on MaxVideoAI'}
           </h2>
-          <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} copy={content.gallery} />
+          <ModelsGallery
+            cards={modelCards}
+            ctaLabel={cardCtaLabel}
+            copy={content.gallery}
+          />
         </section>
         <p className="text-sm text-text-secondary text-center">
           {listingCopy.grid?.bridgeText ??

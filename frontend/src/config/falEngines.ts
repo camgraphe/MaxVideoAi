@@ -78,6 +78,7 @@ export interface FalEngineEntry {
   versionLabel?: string;
   availability: EngineAvailability;
   logoPolicy: EngineLogoPolicy;
+  isLegacy?: boolean;
   billingNote?: string;
   engine: EngineCaps;
   modes: FalEngineModeConfig[];
@@ -2778,6 +2779,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: '2.5 Turbo',
     availability: 'available',
     logoPolicy: 'textOnly',
+    isLegacy: true,
     engine: KLING_2_5_TURBO_ENGINE,
     modes: [
       {
@@ -2894,6 +2896,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: 'v2.6 Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
+    isLegacy: true,
     engine: KLING_2_6_PRO_ENGINE,
     modes: [
       {
@@ -3264,6 +3267,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: 'Preview',
     availability: 'available',
     logoPolicy: 'textOnly',
+    isLegacy: true,
     engine: WAN_2_5_ENGINE,
     modes: [
       {

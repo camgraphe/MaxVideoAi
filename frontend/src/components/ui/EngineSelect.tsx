@@ -67,6 +67,7 @@ const VEO_ENGINE_IDS = ['veo-3-1', 'veo-3-1-fast'] as const;
 const VEO_ENGINE_SET = new Set<string>(VEO_ENGINE_IDS);
 const MODE_VARIANT_ENGINE_IDS = ['veo-3-1-first-last'] as const;
 const MODE_VARIANT_ENGINE_SET = new Set<string>(MODE_VARIANT_ENGINE_IDS);
+const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
 const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'r2v'];
 
@@ -150,6 +151,7 @@ const DEFAULT_ENGINE_SELECT_COPY = {
     modeAll: 'Mode: All',
     modeValue: 'Mode: {value}',
     resolutionAll: 'Resolution: All',
+    legacyToggleLabel: 'Legacy models',
     viewModel: 'View model page',
     viewExamples: 'View examples',
     empty:
@@ -193,6 +195,8 @@ export function EngineSelect({
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const [portalElement, setPortalElement] = useState<HTMLDivElement | null>(null);
   const [browseOpen, setBrowseOpen] = useState(false);
+  const [showLegacy, setShowLegacy] = useState(false);
+  const [legacyHydrated, setLegacyHydrated] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -200,6 +204,29 @@ export function EngineSelect({
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const triggerId = useId();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = window.localStorage.getItem(ENGINE_LEGACY_STORAGE_KEY);
+      if (stored === 'true') {
+        setShowLegacy(true);
+      }
+    } catch {
+      // ignore storage failures
+    } finally {
+      setLegacyHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!legacyHydrated) return;
+    try {
+      window.localStorage.setItem(ENGINE_LEGACY_STORAGE_KEY, showLegacy ? 'true' : 'false');
+    } catch {
+      // ignore storage failures
+    }
+  }, [legacyHydrated, showLegacy]);
 
   const availableEngines = useMemo(() => {
     const sorted = engines.slice();
@@ -224,7 +251,14 @@ export function EngineSelect({
     [registryMeta, selectedEngine]
   );
 
-  const visibleEngines = availableEngines;
+  const visibleEngines = useMemo(() => {
+    return availableEngines.filter((engine) => {
+      const meta = registryMeta?.meta.get(engine.id);
+      if (!meta?.isLegacy) return true;
+      if (showLegacy) return true;
+      return engine.id === selectedEngine?.id;
+    });
+  }, [availableEngines, registryMeta, selectedEngine, showLegacy]);
 
   const variantEngines = useMemo(() => {
     if (!selectedEngine) return [];
@@ -772,6 +806,8 @@ export function EngineSelect({
           copy={copy}
           modeLabelOverrides={modeLabelOverrides}
           engineMeta={registryMeta?.meta}
+          showLegacy={showLegacy}
+          onToggleLegacy={() => setShowLegacy((previous) => !previous)}
         />
       )}
     </>
@@ -800,6 +836,8 @@ interface BrowseEnginesModalProps {
   copy: EngineSelectCopy;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
   engineMeta?: Map<string, FalEngineEntry>;
+  showLegacy: boolean;
+  onToggleLegacy: () => void;
 }
 
 type ModeFilter = 'all' | Mode;
@@ -812,10 +850,14 @@ function BrowseEnginesModal({
   copy,
   modeLabelOverrides,
   engineMeta,
+  showLegacy,
+  onToggleLegacy,
 }: BrowseEnginesModalProps) {
   const modalCopy = copy.modal;
   const viewModelLabel = modalCopy.viewModel ?? DEFAULT_ENGINE_SELECT_COPY.modal.viewModel;
   const viewExamplesLabel = modalCopy.viewExamples ?? DEFAULT_ENGINE_SELECT_COPY.modal.viewExamples;
+  const legacyToggleLabel =
+    modalCopy.legacyToggleLabel ?? DEFAULT_ENGINE_SELECT_COPY.modal.legacyToggleLabel;
   const [portalElement, setPortalElement] = useState<HTMLDivElement | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [modeFilter, setModeFilter] = useState<ModeFilter>('all');
@@ -841,6 +883,14 @@ function BrowseEnginesModal({
     };
   }, []);
 
+  const legacyFilteredEngines = useMemo(() => {
+    return engines.filter((engine) => {
+      const meta = engineMeta?.get(engine.id);
+      if (!meta?.isLegacy) return true;
+      if (showLegacy) return true;
+      return engine.id === selectedEngineId;
+    });
+  }, [engines, engineMeta, selectedEngineId, showLegacy]);
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
@@ -854,7 +904,7 @@ function BrowseEnginesModal({
 
   const resolutions = useMemo<Resolution[]>(() => {
     const set = new Set<Resolution>();
-    engines.forEach((engine) => {
+    legacyFilteredEngines.forEach((engine) => {
       engine.resolutions?.forEach((resolution) => set.add(resolution));
     });
 
@@ -885,7 +935,7 @@ function BrowseEnginesModal({
       if (aRank !== bRank) return bRank - aRank;
       return a.localeCompare(b);
     });
-  }, [engines]);
+  }, [legacyFilteredEngines]);
 
   const searchValue = searchTerm.trim().toLowerCase();
 
@@ -900,7 +950,7 @@ function BrowseEnginesModal({
       'minimax-hailuo-02-text',
     ];
     const priorityIndex = new Map(priorityOrder.map((id, index) => [id, index]));
-    const ranked = engines
+    const ranked = legacyFilteredEngines
       .slice()
       .filter((engine) => {
         if (modeFilter !== 'all' && !engine.modes.includes(modeFilter)) return false;
@@ -935,7 +985,7 @@ function BrowseEnginesModal({
         return a.isLab ? 1 : -1;
       });
     return ranked;
-  }, [engines, modeFilter, resolutionFilter, searchValue, copy, engineMeta]);
+  }, [legacyFilteredEngines, modeFilter, resolutionFilter, searchValue, copy, engineMeta]);
 
   const handleBackdropClick = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -1039,6 +1089,11 @@ function BrowseEnginesModal({
                   {resolution}
                 </FilterChip>
               ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <FilterChip active={showLegacy} onClick={onToggleLegacy}>
+                {legacyToggleLabel}
+              </FilterChip>
             </div>
           </div>
         </header>

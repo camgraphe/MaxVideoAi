@@ -859,6 +859,7 @@
         ],
         "compareLabel": "Enter Compare Mode"
       },
+      "legacyToggleLabel": "Show legacy models",
       "grid": {
         "srTitle": "AI video and image models you can compare on MaxVideoAI",
         "bridgeText": "Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone."
@@ -1023,6 +1024,14 @@
             "cheap": "$",
             "mid": "$$",
             "premium": "$$$"
+          }
+        },
+        "age": {
+          "label": "Models",
+          "options": {
+            "latest": "Latest",
+            "legacy": "Legacy",
+            "all": "All"
           }
         },
         "clear": "Clear filters"
@@ -2033,6 +2042,7 @@
           "modeAll": "Mode: All",
           "modeValue": "Mode: {value}",
           "resolutionAll": "Resolution: All",
+          "legacyToggleLabel": "Legacy models",
           "viewModel": "View model page",
           "viewExamples": "View examples",
           "empty": "No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.",
