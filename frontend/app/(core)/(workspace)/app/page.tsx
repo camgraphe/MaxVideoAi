@@ -4907,7 +4907,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
   }, [
     form,
-    prompt,
     effectivePrompt,
     effectiveDurationSec,
     negativePrompt,

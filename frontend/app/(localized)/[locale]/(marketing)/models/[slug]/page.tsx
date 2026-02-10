@@ -1699,15 +1699,6 @@ function buildDetailSlugMap(slug: string) {
   }, {} as Record<AppLocale, string>);
 }
 
-const PRICING_SECTION_TITLES = {
-  en: 'Pricing',
-  fr: 'Tarifs',
-  es: 'Precios',
-} as const;
-
-const PRICING_SECTION_MATCH = new Set(['pricing', 'tarifs', 'precios']);
-const PRICING_EXTRA_MARKERS = ['exemples rapides', 'quick examples', 'ejemplos rápidos'];
-
 function formatPerSecond(locale: AppLocale, currency: string, amount: number) {
   const region = localeRegions[locale] ?? 'en-US';
   return new Intl.NumberFormat(region, {
@@ -1726,25 +1717,6 @@ function formatCurrency(locale: AppLocale, currency: string, amount: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
-}
-
-function formatPricingLine(locale: AppLocale, amountLabel: string, resolution: string, engineId: string) {
-  const spacer = locale === 'en' ? 'at' : 'en';
-  return `${amountLabel}/s ${spacer} ${formatResolutionLabel(engineId, resolution)}`;
-}
-
-function selectPricingResolutions(resolutions: string[]): string[] {
-  const preferred = ['720p', '1080p', '4k', '1440p', '768p', '512p'];
-  const byKey = new Map(resolutions.map((value) => [value.toLowerCase(), value]));
-  const ordered: string[] = [];
-  preferred.forEach((key) => {
-    const match = byKey.get(key);
-    if (match) ordered.push(match);
-  });
-  resolutions.forEach((value) => {
-    if (!ordered.includes(value)) ordered.push(value);
-  });
-  return ordered.slice(0, 3);
 }
 
 function formatPerSecondLabel(locale: AppLocale, currency: string, perSecond: number): string {
@@ -1941,36 +1913,6 @@ function resolveDefaultResolution(engine: EngineCaps): string | null {
   return fallback ?? null;
 }
 
-async function buildPricingItems(engine: EngineCaps, locale: AppLocale): Promise<string[]> {
-  const hasVideoMode = engine.modes?.some((mode) => ['t2v', 'i2v', 'r2v'].includes(mode));
-  if (!hasVideoMode) return [];
-  const resolutions = (engine.resolutions ?? []).filter((value) => value && value !== 'auto');
-  if (!resolutions.length) return [];
-
-  const targetResolutions = selectPricingResolutions(resolutions);
-  const requestedDuration = 5;
-  const items: string[] = [];
-
-  for (const resolution of targetResolutions) {
-    try {
-      const snapshot = await computePricingSnapshot({
-        engine,
-        durationSec: requestedDuration,
-        resolution,
-        membershipTier: 'member',
-      });
-      const seconds = typeof snapshot.base.seconds === 'number' ? snapshot.base.seconds : requestedDuration;
-      const perSecond = seconds > 0 ? snapshot.totalCents / seconds / 100 : snapshot.totalCents / 100;
-      const amountLabel = formatPerSecond(locale, snapshot.currency ?? 'USD', perSecond);
-      items.push(formatPricingLine(locale, amountLabel, resolution, engine.id));
-    } catch {
-      // ignore pricing failures for marketing surface
-    }
-  }
-
-  return items;
-}
-
 async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLocale): Promise<string | null> {
   const resolution = resolveDefaultResolution(engine);
   if (!resolution) return null;
@@ -2064,54 +2006,6 @@ async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale)
       valueLines: lines,
     },
   ];
-}
-
-async function buildQuickPricingItems(engine: EngineCaps, locale: AppLocale): Promise<string[]> {
-  const durations = selectQuickDurations(engine);
-  const resolution = resolveDefaultResolution(engine);
-  if (!durations.length || !resolution) return [];
-  const items: string[] = [];
-
-  for (const durationSec of durations) {
-    try {
-      const snapshot = await computePricingSnapshot({
-        engine,
-        durationSec,
-        resolution,
-        membershipTier: 'member',
-      });
-      const amountLabel = formatCurrency(locale, snapshot.currency ?? 'USD', snapshot.totalCents / 100);
-      items.push(`${durationSec}s: ${amountLabel}`);
-    } catch {
-      // ignore pricing failures for marketing surface
-    }
-  }
-
-  return items;
-}
-
-function extractPricingExtras(items: string[]): string[] {
-  const index = items.findIndex((item) => {
-    const normalized = item.trim().toLowerCase();
-    return PRICING_EXTRA_MARKERS.some((marker) => normalized.startsWith(marker));
-  });
-  if (index < 0) return [];
-  return items.slice(index);
-}
-
-function applyPricingSection(sections: SpecSection[], locale: AppLocale, pricingItems: string[]): SpecSection[] {
-  if (!pricingItems.length) return sections;
-  const title = PRICING_SECTION_TITLES[locale] ?? PRICING_SECTION_TITLES.en;
-  const index = sections.findIndex((section) =>
-    PRICING_SECTION_MATCH.has(section.title.trim().toLowerCase())
-  );
-  if (index < 0) {
-    return [...sections, { title, items: pricingItems }];
-  }
-  const next = [...sections];
-  const extras = extractPricingExtras(next[index].items);
-  next[index] = { ...next[index], items: extras.length ? [...pricingItems, ...extras] : pricingItems };
-  return next;
 }
 
 async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEntry>> {
@@ -3217,9 +3111,6 @@ async function renderSoraModelPage({
     engine.engine,
     enginePricingOverrides[engine.engine.id]
   );
-  const pricingItems = await buildPricingItems(pricingEngine, locale);
-  const computedQuickPricingItems = await buildQuickPricingItems(pricingEngine, locale);
-  const quickPricingItems = computedQuickPricingItems.length ? computedQuickPricingItems : copy.quickPricingItems;
   const backPath = (() => {
     try {
       const url = new URL(canonicalUrl);
@@ -3388,7 +3279,6 @@ async function renderSoraModelPage({
   return (
     <Sora2PageLayout
       backLabel={detailCopy.backLabel}
-      examplesLinkLabel={detailCopy.examplesLinkLabel}
       pricingLinkLabel={detailCopy.pricingLinkLabel}
       localizedContent={localizedContent}
       copy={copy}
@@ -3410,8 +3300,6 @@ async function renderSoraModelPage({
       canonicalUrl={canonicalUrl}
       localizedCanonicalUrl={localizedCanonicalUrl}
       breadcrumb={detailCopy.breadcrumb}
-      pricingItems={pricingItems}
-      quickPricingItems={quickPricingItems}
     />
   );
 }
@@ -3419,7 +3307,6 @@ async function renderSoraModelPage({
 function Sora2PageLayout({
   engine,
   backLabel,
-  examplesLinkLabel,
   pricingLinkLabel,
   localizedContent,
   copy,
@@ -3440,12 +3327,9 @@ function Sora2PageLayout({
   canonicalUrl,
   localizedCanonicalUrl,
   breadcrumb,
-  pricingItems,
-  quickPricingItems,
 }: {
   engine: FalEngineEntry;
   backLabel: string;
-  examplesLinkLabel: string;
   pricingLinkLabel: string;
   localizedContent: EngineLocalizedContent;
   copy: SoraCopy;
@@ -3466,8 +3350,6 @@ function Sora2PageLayout({
   canonicalUrl: string;
   localizedCanonicalUrl: string;
   breadcrumb: DetailCopy['breadcrumb'];
-  pricingItems: string[];
-  quickPricingItems: string[];
 }) {
   const inLanguage = localeRegions[locale] ?? 'en-US';
   const resolvedBreadcrumb = breadcrumb ?? DEFAULT_DETAIL_COPY.breadcrumb;
@@ -3556,7 +3438,6 @@ function Sora2PageLayout({
       ? buildAutoSpecSections(keySpecValues, locale)
       : copy.specSections;
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
-  const quickPricingTitle = copy.quickPricingTitle;
   const strengths = copy.strengths;
   const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues) : [];
   const troubleshootingTitle = isVideoEngine

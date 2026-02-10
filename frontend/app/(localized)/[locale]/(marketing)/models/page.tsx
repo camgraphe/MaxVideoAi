@@ -200,14 +200,6 @@ function getMinPricePerSecond(entry?: EngineCatalogEntry | null) {
   return Math.min(...candidates);
 }
 
-function formatPriceFrom(entry?: EngineCatalogEntry | null) {
-  const cents = getMinPricePerSecond(entry);
-  if (typeof cents === 'number') {
-    return `$${(cents / 100).toFixed(2)}/s`;
-  }
-  return 'Data pending';
-}
-
 const SCORE_LABELS: Array<{ key: keyof EngineScore; label: string }> = [
   { key: 'fidelity', label: 'Prompt Adherence' },
   { key: 'visualQuality', label: 'Visual Quality' },
