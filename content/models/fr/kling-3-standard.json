@@ -1,0 +1,95 @@
+{
+  "marketingName": "Kling 3 Standard",
+  "versionLabel": "v3 Standard",
+  "seo": {
+    "title": "Kling 3 Standard – Text & Image to Video multi‑scènes | MaxVideoAI",
+    "description": "Créez des clips Kling 3 Standard multi‑scènes avec prompts par scène, éléments et voice control optionnel. 3–15 s, 1080p, audio natif."
+  },
+  "overview": "Kling 3 Standard propose les prompts par scène, les éléments et un voice control optionnel à un coût plus bas. Générez des clips 3–15 s depuis texte ou image, avec audio natif et formats flexibles.",
+  "pricingNotes": "Tarification par seconde : 0,252 $/s avec audio, 0,168 $/s audio off, 0,308 $/s avec voice control.",
+  "hero": {
+    "title": "Kling 3 Standard – Storytelling multi‑scènes à moindre coût",
+    "intro": "Prompts par scène, éléments et audio dans un tier plus économique.",
+    "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
+    "ctaPrimary": {
+      "label": "Générer avec Kling 3 Standard",
+      "href": "/app?engine=kling-3-standard"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir des exemples Kling",
+        "href": "/examples?engine=kling-3-standard"
+      },
+      {
+        "label": "Comparer les modèles Kling",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d’usage",
+    "items": [
+      { "title": "Tests et itérations multi‑scènes", "icon": "sparkles" },
+      { "title": "Pubs sociales et promos", "icon": "smartphone" },
+      { "title": "Storyboard par plans", "icon": "storyboard" },
+      { "title": "Cohérence personnages/props", "icon": "layers" },
+      { "title": "Préviews produit", "icon": "product" },
+      { "title": "Montages verticaux ou carrés", "icon": "cinematic" }
+    ]
+  },
+  "technicalOverviewTitle": "Aperçu technique",
+  "technicalOverview": [
+    { "label": "Durée", "body": "3–15 s par rendu" },
+    { "label": "Résolution", "body": "1080p" },
+    { "label": "Format", "body": "16:9, 9:16, 1:1" },
+    { "label": "Fréquence d’images", "body": "24 fps" },
+    { "label": "Entrées", "body": "Texte → Vidéo; Image → Vidéo (PNG/JPG/WebP), image de fin optionnelle" },
+    { "label": "Contrôles", "body": "Multi‑prompt par scène, éléments, shot type, voice IDs" },
+    { "label": "Audio", "body": "Audio natif activé par défaut; audio off ou voice control" }
+  ],
+  "promptStructure": {
+    "title": "Prompter Kling 3 Standard",
+    "quote": "Scène 1 : [plan]. Scène 2 : [plan]. Scène 3 : [plan]. Fixez une durée pour chaque scène.",
+    "description": "Découpez le clip en scènes, puis ancrez la continuité avec les éléments et une image de fin.",
+    "steps": [
+      "Découper en scènes",
+      "Attribuer des durées",
+      "Utiliser les éléments pour la cohérence",
+      "Ajouter caméra et lumière",
+      "Choisir audio ou voice IDs"
+    ]
+  },
+  "tips": {
+    "title": "Conseils & limites",
+    "items": [
+      "La durée totale doit rester entre 3 et 15 s.",
+      "Les éléments maintiennent style et personnages.",
+      "Le voice control est optionnel et ajoute un petit surcoût.",
+      "L’image de fin aide la continuité I2V."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Voyage en trois scènes",
+      "prompt": "Scène 1 (4 s) : lever de soleil sur une crête brumeuse. Scène 2 (6 s) : randonneurs sur un pont suspendu. Scène 3 (4 s) : gros plan d’un appareil photo au golden hour."
+    },
+    {
+      "title": "Beats produit hero",
+      "prompt": "Scène 1 (5 s) : macro d’une montre de luxe. Scène 2 (4 s) : rotation hero avec rim light. Scène 3 (4 s) : poignet sur modèle, ambiance douce."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Standard inclut‑il le multi‑prompt ?",
+      "a": "Oui. Vous pouvez découper un clip en plusieurs scènes avec prompts distincts."
+    },
+    {
+      "q": "Quelle différence avec Pro ?",
+      "a": "Standard offre les mêmes contrôles multi‑prompt et éléments à un coût inférieur; Pro priorise la fidélité premium."
+    },
+    {
+      "q": "Supporte‑t‑il l’image‑vers‑vidéo ?",
+      "a": "Oui, avec image de départ et image de fin optionnelle."
+    }
+  ]
+}

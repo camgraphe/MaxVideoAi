@@ -1,0 +1,95 @@
+{
+  "marketingName": "Kling 3 Pro",
+  "versionLabel": "v3 Pro",
+  "seo": {
+    "title": "Kling 3 Pro – Multi-shot Text & Image to Video | MaxVideoAI",
+    "description": "Generate longer, multi-shot Kling 3 Pro videos with scene-level prompts, elements, and optional voice control. 3–15s clips with native audio."
+  },
+  "overview": "Kling 3 Pro in MaxVideoAI unlocks multi-shot storytelling with scene-level prompts, reference elements, and optional voice control. Create 3–15s clips from text or image inputs with native audio and flexible aspect ratios.",
+  "pricingNotes": "Pricing is per second: $0.336/s with audio, $0.224/s audio off, $0.392/s with voice control.",
+  "hero": {
+    "title": "Kling 3 Pro – Multi-shot cinematic control",
+    "intro": "Scene-level prompts, reference elements, and voice control for premium cinematic beats.",
+    "badge": "1080p · 3–15s · Multi-prompt · Audio on/off",
+    "ctaPrimary": {
+      "label": "Start generating with Kling 3 Pro",
+      "href": "/app?engine=kling-3-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "View Kling examples",
+        "href": "/examples?engine=kling-3-pro"
+      },
+      {
+        "label": "Compare Kling models",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      { "title": "Multi-shot ads and trailers", "icon": "cinematic" },
+      { "title": "Story beats with scene control", "icon": "storyboard" },
+      { "title": "Character consistency via elements", "icon": "layers" },
+      { "title": "Voice-led promos and hooks", "icon": "mic" },
+      { "title": "Product hero sequences", "icon": "product" },
+      { "title": "Vertical social cuts", "icon": "smartphone" }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Duration", "body": "3–15 s per render" },
+    { "label": "Resolution", "body": "1080p" },
+    { "label": "Aspect ratio", "body": "16:9, 9:16, 1:1" },
+    { "label": "Frame rate", "body": "24 fps" },
+    { "label": "Inputs", "body": "Text → Video; Image → Video (PNG/JPG/WebP), optional end frame" },
+    { "label": "Controls", "body": "Multi-prompt scenes, elements, shot type, voice IDs" },
+    { "label": "Audio", "body": "Native audio on by default; toggle off or enable voice control" }
+  ],
+  "promptStructure": {
+    "title": "Prompting Kling 3 Pro",
+    "quote": "Scene 1: [shot]. Scene 2: [shot]. Scene 3: [shot]. Add durations for each scene and include audio or dialogue cues.",
+    "description": "Use multi-prompt to break a clip into scenes and keep continuity with elements and an end frame.",
+    "steps": [
+      "Break the clip into 2–4 scenes",
+      "Assign a duration to each scene",
+      "Reference consistent elements",
+      "Add camera and lighting notes",
+      "Specify audio or voice IDs"
+    ]
+  },
+  "tips": {
+    "title": "Tips & limits",
+    "items": [
+      "Total duration across scenes must be 3–15s.",
+      "Use elements to keep characters and objects consistent.",
+      "Voice control is optional and adds a small fee.",
+      "Add an end frame for smoother I2V continuity."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Multi-scene city montage",
+      "prompt": "Scene 1 (4s): wide skyline at dusk, slow dolly. Scene 2 (5s): close-up neon reflections in rain, shallow depth. Scene 3 (4s): hero walk-through alley, ambient audio."
+    },
+    {
+      "title": "Product hero sequence",
+      "prompt": "Scene 1 (5s): macro watch face, crisp reflections. Scene 2 (4s): rotating hero shot with rim light. Scene 3 (4s): wrist-on model, soft ambience."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What is multi-prompt?",
+      "a": "It lets you split a clip into multiple scenes with independent prompts and durations."
+    },
+    {
+      "q": "Can I control voices?",
+      "a": "Yes. Provide voice IDs to enable voice control (adds a small per-second fee)."
+    },
+    {
+      "q": "Does Kling 3 Pro support image-to-video?",
+      "a": "Yes. Use a start image and optionally an end frame for smoother transitions."
+    }
+  ]
+}

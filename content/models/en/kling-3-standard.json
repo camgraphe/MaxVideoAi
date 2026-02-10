@@ -1,0 +1,95 @@
+{
+  "marketingName": "Kling 3 Standard",
+  "versionLabel": "v3 Standard",
+  "seo": {
+    "title": "Kling 3 Standard – Multi-shot Text & Image to Video | MaxVideoAI",
+    "description": "Create multi-shot Kling 3 Standard clips with scene prompts, elements, and optional voice control. 3–15s, 1080p, with native audio."
+  },
+  "overview": "Kling 3 Standard delivers scene-level prompting, elements, and optional voice control at a lower price point. Generate 3–15s clips from text or image inputs with native audio and flexible aspect ratios.",
+  "pricingNotes": "Pricing is per second: $0.252/s with audio, $0.168/s audio off, $0.308/s with voice control.",
+  "hero": {
+    "title": "Kling 3 Standard – Multi-shot storytelling at lower cost",
+    "intro": "Scene prompts, elements, and audio in a more cost-effective tier.",
+    "badge": "1080p · 3–15s · Multi-prompt · Audio on/off",
+    "ctaPrimary": {
+      "label": "Start generating with Kling 3 Standard",
+      "href": "/app?engine=kling-3-standard"
+    },
+    "secondaryLinks": [
+      {
+        "label": "View Kling examples",
+        "href": "/examples?engine=kling-3-standard"
+      },
+      {
+        "label": "Compare Kling models",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      { "title": "Multi-shot testing and iterating", "icon": "sparkles" },
+      { "title": "Social ads and promos", "icon": "smartphone" },
+      { "title": "Storyboard beats with elements", "icon": "storyboard" },
+      { "title": "Consistent characters and props", "icon": "layers" },
+      { "title": "Product previews", "icon": "product" },
+      { "title": "Vertical or square edits", "icon": "cinematic" }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Duration", "body": "3–15 s per render" },
+    { "label": "Resolution", "body": "1080p" },
+    { "label": "Aspect ratio", "body": "16:9, 9:16, 1:1" },
+    { "label": "Frame rate", "body": "24 fps" },
+    { "label": "Inputs", "body": "Text → Video; Image → Video (PNG/JPG/WebP), optional end frame" },
+    { "label": "Controls", "body": "Multi-prompt scenes, elements, shot type, voice IDs" },
+    { "label": "Audio", "body": "Native audio on by default; toggle off or enable voice control" }
+  ],
+  "promptStructure": {
+    "title": "Prompting Kling 3 Standard",
+    "quote": "Scene 1: [shot]. Scene 2: [shot]. Scene 3: [shot]. Set a duration for each scene.",
+    "description": "Break a clip into scenes, then anchor continuity with elements and an end frame.",
+    "steps": [
+      "Split the clip into scenes",
+      "Assign durations",
+      "Use elements for consistency",
+      "Add camera and lighting notes",
+      "Decide on audio or voice IDs"
+    ]
+  },
+  "tips": {
+    "title": "Tips & limits",
+    "items": [
+      "Total scene duration must be 3–15s.",
+      "Use elements to keep style and characters aligned.",
+      "Voice control is optional and adds a small fee.",
+      "End frames help I2V continuity."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Travel cut with three scenes",
+      "prompt": "Scene 1 (4s): sunrise over a foggy ridge. Scene 2 (6s): hikers crossing a suspension bridge. Scene 3 (4s): close-up of a camera capturing golden hour portraits."
+    },
+    {
+      "title": "Product hero beats",
+      "prompt": "Scene 1 (5s): macro of a luxury watch face. Scene 2 (4s): rotating hero shot with rim light. Scene 3 (4s): wrist-on model, soft ambience."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Does Standard include multi-prompt?",
+      "a": "Yes. You can split a clip into multiple scenes with separate prompts."
+    },
+    {
+      "q": "What is the difference vs Pro?",
+      "a": "Standard offers the same multi-prompt and element controls at a lower price; Pro prioritizes premium fidelity."
+    },
+    {
+      "q": "Does it support image-to-video?",
+      "a": "Yes. Use a start image and optional end frame."
+    }
+  ]
+}

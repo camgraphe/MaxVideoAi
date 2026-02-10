@@ -1,0 +1,95 @@
+{
+  "marketingName": "Kling 3 Pro",
+  "versionLabel": "v3 Pro",
+  "seo": {
+    "title": "Kling 3 Pro – Texto e imagen a video multi‑escena | MaxVideoAI",
+    "description": "Genera videos Kling 3 Pro multi‑escena con prompts por escena, elementos y control de voz opcional. Clips de 3–15 s con audio nativo."
+  },
+  "overview": "Kling 3 Pro en MaxVideoAI permite storytelling multi‑escena con prompts por escena, elementos de referencia y control de voz opcional. Crea clips de 3–15 s desde texto o imagen con audio nativo y formatos flexibles.",
+  "pricingNotes": "Precio por segundo: 0,336 $/s con audio, 0,224 $/s sin audio, 0,392 $/s con control de voz.",
+  "hero": {
+    "title": "Kling 3 Pro – Control cinematográfico multi‑escena",
+    "intro": "Prompts por escena, elementos de referencia y control de voz para beats premium.",
+    "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
+    "ctaPrimary": {
+      "label": "Generar con Kling 3 Pro",
+      "href": "/app?engine=kling-3-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ver ejemplos de Kling",
+        "href": "/examples?engine=kling-3-pro"
+      },
+      {
+        "label": "Comparar modelos Kling",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores usos",
+    "items": [
+      { "title": "Anuncios y trailers multi‑plano", "icon": "cinematic" },
+      { "title": "Beats narrativos por escena", "icon": "storyboard" },
+      { "title": "Consistencia de personajes con elementos", "icon": "layers" },
+      { "title": "Promos con voz y hooks", "icon": "mic" },
+      { "title": "Secuencias hero de producto", "icon": "product" },
+      { "title": "Cortes verticales para social", "icon": "smartphone" }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    { "label": "Duración", "body": "3–15 s por render" },
+    { "label": "Resolución", "body": "1080p" },
+    { "label": "Formato", "body": "16:9, 9:16, 1:1" },
+    { "label": "FPS", "body": "24 fps" },
+    { "label": "Entradas", "body": "Texto → Video; Imagen → Video (PNG/JPG/WebP), fotograma final opcional" },
+    { "label": "Controles", "body": "Multi‑prompt por escena, elementos, shot type, voice IDs" },
+    { "label": "Audio", "body": "Audio nativo activo por defecto; audio off o control de voz" }
+  ],
+  "promptStructure": {
+    "title": "Promptear Kling 3 Pro",
+    "quote": "Escena 1: [toma]. Escena 2: [toma]. Escena 3: [toma]. Añade duración por escena e indicaciones de audio.",
+    "description": "Usa multi‑prompt para estructurar escenas y mantener continuidad con elementos y un fotograma final.",
+    "steps": [
+      "Dividir el clip en 2–4 escenas",
+      "Asignar duración a cada escena",
+      "Usar elementos de referencia",
+      "Indicar cámara y luz",
+      "Añadir audio o voice IDs"
+    ]
+  },
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "La duración total debe estar entre 3 y 15 s.",
+      "Usa elementos para mantener personajes y objetos coherentes.",
+      "El control de voz es opcional y añade un pequeño coste.",
+      "Añade un fotograma final para mejor continuidad I2V."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Montaje urbano multi‑escena",
+      "prompt": "Escena 1 (4 s): skyline al atardecer, dolly lento. Escena 2 (5 s): primer plano de neones en lluvia, poca profundidad. Escena 3 (4 s): caminata heroica por un callejón, audio ambiental."
+    },
+    {
+      "title": "Secuencia hero de producto",
+      "prompt": "Escena 1 (5 s): macro de la esfera de un reloj. Escena 2 (4 s): rotación hero con rim light. Escena 3 (4 s): reloj en muñeca, ambiente suave."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué es multi‑prompt?",
+      "a": "Permite dividir un clip en varias escenas con prompts y duraciones distintas."
+    },
+    {
+      "q": "¿Puedo controlar voces?",
+      "a": "Sí, usando voice IDs para activar el control de voz."
+    },
+    {
+      "q": "¿Kling 3 Pro soporta imagen a video?",
+      "a": "Sí, con imagen inicial y fotograma final opcional."
+    }
+  ]
+}

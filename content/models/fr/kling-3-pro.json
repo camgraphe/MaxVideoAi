@@ -1,0 +1,95 @@
+{
+  "marketingName": "Kling 3 Pro",
+  "versionLabel": "v3 Pro",
+  "seo": {
+    "title": "Kling 3 Pro – Text & Image to Video multi‑scènes | MaxVideoAI",
+    "description": "Générez des vidéos Kling 3 Pro multi‑scènes avec prompts par scène, éléments et contrôle vocal optionnel. Clips 3–15 s en audio natif."
+  },
+  "overview": "Kling 3 Pro dans MaxVideoAI débloque le storytelling multi‑scènes avec prompts par scène, éléments de référence et contrôle vocal optionnel. Créez des clips 3–15 s depuis texte ou image, avec audio natif et formats flexibles.",
+  "pricingNotes": "Tarification par seconde : 0,336 $/s avec audio, 0,224 $/s audio off, 0,392 $/s avec voice control.",
+  "hero": {
+    "title": "Kling 3 Pro – Contrôle cinématique multi‑scènes",
+    "intro": "Prompts par scène, éléments de référence et contrôle vocal pour des beats premium.",
+    "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
+    "ctaPrimary": {
+      "label": "Générer avec Kling 3 Pro",
+      "href": "/app?engine=kling-3-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir des exemples Kling",
+        "href": "/examples?engine=kling-3-pro"
+      },
+      {
+        "label": "Comparer les modèles Kling",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d’usage",
+    "items": [
+      { "title": "Pubs et trailers multi‑plans", "icon": "cinematic" },
+      { "title": "Beats narratifs par scène", "icon": "storyboard" },
+      { "title": "Cohérence des personnages via éléments", "icon": "layers" },
+      { "title": "Promos avec voix et hooks", "icon": "mic" },
+      { "title": "Séquences produit hero", "icon": "product" },
+      { "title": "Cuts verticaux pour social", "icon": "smartphone" }
+    ]
+  },
+  "technicalOverviewTitle": "Aperçu technique",
+  "technicalOverview": [
+    { "label": "Durée", "body": "3–15 s par rendu" },
+    { "label": "Résolution", "body": "1080p" },
+    { "label": "Format", "body": "16:9, 9:16, 1:1" },
+    { "label": "Fréquence d’images", "body": "24 fps" },
+    { "label": "Entrées", "body": "Texte → Vidéo; Image → Vidéo (PNG/JPG/WebP), image de fin optionnelle" },
+    { "label": "Contrôles", "body": "Multi‑prompt par scène, éléments, shot type, voice IDs" },
+    { "label": "Audio", "body": "Audio natif activé par défaut; audio off ou voice control" }
+  ],
+  "promptStructure": {
+    "title": "Prompter Kling 3 Pro",
+    "quote": "Scène 1 : [plan]. Scène 2 : [plan]. Scène 3 : [plan]. Ajoutez une durée par scène et des indications audio.",
+    "description": "Utilisez le multi‑prompt pour structurer vos scènes et gardez la cohérence avec les éléments et une image de fin.",
+    "steps": [
+      "Découper le clip en 2–4 scènes",
+      "Attribuer une durée à chaque scène",
+      "Utiliser les éléments de référence",
+      "Préciser caméra et lumière",
+      "Ajouter audio ou voice IDs"
+    ]
+  },
+  "tips": {
+    "title": "Conseils & limites",
+    "items": [
+      "La durée totale des scènes doit être comprise entre 3 et 15 s.",
+      "Utilisez les éléments pour garder personnages et objets cohérents.",
+      "Le voice control est optionnel et ajoute un petit surcoût.",
+      "Ajoutez une image de fin pour une meilleure continuité en I2V."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Montage urbain multi‑scènes",
+      "prompt": "Scène 1 (4 s) : skyline au crépuscule, dolly lent. Scène 2 (5 s) : gros plan sur néons sous la pluie, faible profondeur. Scène 3 (4 s) : marche héroïque dans une ruelle, ambiance sonore."
+    },
+    {
+      "title": "Séquence produit hero",
+      "prompt": "Scène 1 (5 s) : macro du cadran d’une montre. Scène 2 (4 s) : rotation hero avec rim light. Scène 3 (4 s) : poignet sur modèle, ambiance douce."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Qu’est‑ce que le multi‑prompt ?",
+      "a": "Il permet de découper un clip en plusieurs scènes avec prompts et durées distincts."
+    },
+    {
+      "q": "Puis‑je contrôler les voix ?",
+      "a": "Oui, en fournissant des voice IDs pour activer le voice control."
+    },
+    {
+      "q": "Kling 3 Pro supporte‑t‑il l’image‑vers‑vidéo ?",
+      "a": "Oui, avec une image de départ et une image de fin optionnelle."
+    }
+  ]
+}
