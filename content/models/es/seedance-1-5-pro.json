@@ -1,0 +1,134 @@
+{
+  "marketingName": "Seedance 1.5 Pro",
+  "versionLabel": "v1.5 Pro",
+  "seo": {
+    "title": "Seedance 1.5 Pro – Texto e imagen a video cinematográfico | MaxVideoAI",
+    "description": "Crea clips cinematográficos con cámara bloqueada gracias a Seedance 1.5 Pro. Texto o imagen a video hasta 12 s, formatos flexibles y audio opcional."
+  },
+  "overview": "Seedance 1.5 Pro en MaxVideoAI ofrece movimiento cinematográfico con cámara bloqueada, control de seed y audio nativo. Genera clips de 4–12 s desde texto o una sola imagen, con fotograma final opcional para una continuidad más fluida.",
+  "pricingNotes": "El precio varía según la resolución; sin audio cuesta aproximadamente 50 % menos.",
+  "hero": {
+    "title": "Seedance 1.5 Pro – Control cinematográfico del movimiento",
+    "intro": "Movimiento con cámara bloqueada, control de seed y renders con audio desde texto o una imagen.",
+    "badge": "480p–1080p · 4–12 s · Audio on/off",
+    "ctaPrimary": {
+      "label": "Generar con Seedance 1.5 Pro",
+      "href": "/app?engine=seedance-1-5-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ver ejemplos de Seedance",
+        "href": "/examples?engine=seedance-1-5-pro"
+      },
+      {
+        "label": "Comparar motores de video",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores usos",
+    "items": [
+      {
+        "title": "Escenas urbanas con cámara fija",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Planos de producto con movimiento controlado",
+        "icon": "product"
+      },
+      {
+        "title": "Continuidad suave con fotograma final",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Looks repetibles con seed",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Anuncios cortos y clips sociales",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Mood boards para ediciones largas",
+        "icon": "layers"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Duración",
+      "body": "4–12 s por render"
+    },
+    {
+      "label": "Resolución",
+      "body": "480p/720p (T2V), 480p/720p/1080p (I2V)"
+    },
+    {
+      "label": "Formato",
+      "body": "21:9, 16:9, 4:3, 1:1, 3:4, 9:16"
+    },
+    {
+      "label": "FPS",
+      "body": "24 fps"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Video; Imagen → Video con fotograma final opcional (PNG/JPG/WebP)"
+    },
+    {
+      "label": "Controles",
+      "body": "Seed (-1 aleatorio), cámara fija, safety checker"
+    },
+    {
+      "label": "Audio",
+      "body": "Activado por defecto; se puede desactivar para ahorrar"
+    }
+  ],
+  "promptStructure": {
+    "title": "Promptear Seedance 1.5 Pro",
+    "quote": "Cinemático [sujeto] en [escena], cámara fija, [luz], [movimiento], [duración], formato [ratio], audio opcional.",
+    "description": "Mantén el prompt a nivel de plano y especifica cámara fija cuando quieras estabilidad.",
+    "steps": [
+      "Sujeto y acción",
+      "Cámara fija o movimiento",
+      "Luz y atmósfera",
+      "Duración y ratio",
+      "Audio o audio off"
+    ]
+  },
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "Usa cámara fija para planos más estables.",
+      "Añade un fotograma final para mejores cierres en I2V.",
+      "Reutiliza un seed para variaciones coherentes.",
+      "Mantén los clips cortos (4–12 s)."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Callejón neón con cámara fija",
+      "prompt": "Callejón neón 16:9 con lluvia ligera, cámara fija, reflejos en charcos, ambiente suave, audio sutil."
+    },
+    {
+      "title": "Imagen a video con fotograma final",
+      "prompt": "Anima la imagen inicial con un lento avance y termina en el fotograma final proporcionado, ambiente suave."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué hace cámara fija?",
+      "a": "Bloquea la cámara para un movimiento más estable y continuidad más sólida."
+    },
+    {
+      "q": "¿Se puede desactivar el audio?",
+      "a": "Sí. El audio está activado por defecto, pero puedes desactivarlo para reducir el coste."
+    },
+    {
+      "q": "¿Qué resoluciones soporta?",
+      "a": "T2V: 480p y 720p. I2V: 480p, 720p y 1080p."
+    }
+  ]
+}

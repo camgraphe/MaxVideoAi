@@ -1,0 +1,134 @@
+{
+  "marketingName": "Seedance 1.5 Pro",
+  "versionLabel": "v1.5 Pro",
+  "seo": {
+    "title": "Seedance 1.5 Pro – Cinematic Text & Image to Video | MaxVideoAI",
+    "description": "Create cinematic, camera-locked clips with Seedance 1.5 Pro. Text or image to video up to 12s, flexible aspect ratios, and optional audio."
+  },
+  "overview": "Seedance 1.5 Pro in MaxVideoAI delivers cinematic motion with camera lock, seed control, and native audio. Generate 4–12s clips from text or a single image, with optional end frames for smoother continuity.",
+  "pricingNotes": "Pricing varies by resolution; audio off costs about 50% less than audio on.",
+  "hero": {
+    "title": "Seedance 1.5 Pro – Cinematic Motion Control",
+    "intro": "Camera-locked motion, seed control, and audio-ready renders from text or a single frame.",
+    "badge": "480p–1080p · 4–12s · Audio on/off",
+    "ctaPrimary": {
+      "label": "Start generating with Seedance 1.5 Pro",
+      "href": "/app?engine=seedance-1-5-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "View Seedance examples",
+        "href": "/examples?engine=seedance-1-5-pro"
+      },
+      {
+        "label": "Compare video engines",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      {
+        "title": "Locked camera city scenes",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Product shots with controlled motion",
+        "icon": "product"
+      },
+      {
+        "title": "Smooth continuity with end frames",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Repeatable looks with seed control",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Short ads and social clips",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Mood boards for longer edits",
+        "icon": "layers"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Duration",
+      "body": "4–12 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "480p/720p (T2V), 480p/720p/1080p (I2V)"
+    },
+    {
+      "label": "Aspect ratio",
+      "body": "21:9, 16:9, 4:3, 1:1, 3:4, 9:16"
+    },
+    {
+      "label": "Frame rate",
+      "body": "24 fps"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text → Video; Image → Video with optional end frame (PNG/JPG/WebP)"
+    },
+    {
+      "label": "Controls",
+      "body": "Seed (-1 for random), camera fixed, safety checker"
+    },
+    {
+      "label": "Audio",
+      "body": "On by default; toggle off for lower cost"
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompting Seedance 1.5 Pro",
+    "quote": "Cinematic [subject] in [setting], camera fixed, [lighting], [motion], [duration], aspect [ratio], optional audio.",
+    "description": "Keep prompts shot-level and specify camera lock when you want stability.",
+    "steps": [
+      "Subject and action",
+      "Camera lock or motion note",
+      "Lighting and mood",
+      "Duration and aspect ratio",
+      "Audio cue or disable audio"
+    ]
+  },
+  "tips": {
+    "title": "Tips & limits",
+    "items": [
+      "Use camera fixed for locked-off shots and steadier motion.",
+      "Add an end frame for smoother I2V resolves.",
+      "Reuse a seed for repeatable variations.",
+      "Keep clips short (4–12s) for best coherence."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Locked camera neon alley",
+      "prompt": "A moody 16:9 neon alley in light rain, camera locked, reflective puddles, subtle ambience, soft audio bed."
+    },
+    {
+      "title": "Image to video with end frame",
+      "prompt": "Animate the start image with a slow push-in, then resolve into the provided end frame, gentle ambience."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What does camera fixed do?",
+      "a": "It locks the camera for steadier motion and stronger continuity between frames."
+    },
+    {
+      "q": "Can I disable audio?",
+      "a": "Yes. Audio is on by default but you can toggle it off for lower cost."
+    },
+    {
+      "q": "What resolutions are supported?",
+      "a": "T2V supports 480p and 720p. I2V supports 480p, 720p, and 1080p."
+    }
+  ]
+}

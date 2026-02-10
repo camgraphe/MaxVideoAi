@@ -1,0 +1,134 @@
+{
+  "marketingName": "Seedance 1.5 Pro",
+  "versionLabel": "v1.5 Pro",
+  "seo": {
+    "title": "Seedance 1.5 Pro – Text & Image to Video cinématographique | MaxVideoAI",
+    "description": "Créez des clips cinématographiques avec caméra verrouillée grâce à Seedance 1.5 Pro. Texte ou image → vidéo jusqu’à 12 s, formats flexibles et audio optionnel."
+  },
+  "overview": "Seedance 1.5 Pro dans MaxVideoAI offre un mouvement cinématique avec caméra verrouillée, contrôle du seed et audio natif. Générez des clips de 4–12 s à partir d’un texte ou d’une image, avec image de fin optionnelle pour une continuité plus fluide.",
+  "pricingNotes": "Le prix varie selon la résolution; l’audio off coûte environ 50 % de moins.",
+  "hero": {
+    "title": "Seedance 1.5 Pro – Contrôle cinématique du mouvement",
+    "intro": "Mouvement caméra verrouillée, contrôle du seed et rendus audio‑ready depuis un texte ou une image.",
+    "badge": "480p–1080p · 4–12 s · Audio on/off",
+    "ctaPrimary": {
+      "label": "Générer avec Seedance 1.5 Pro",
+      "href": "/app?engine=seedance-1-5-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir des exemples Seedance",
+        "href": "/examples?engine=seedance-1-5-pro"
+      },
+      {
+        "label": "Comparer les moteurs vidéo",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d’usage",
+    "items": [
+      {
+        "title": "Scènes urbaines caméra verrouillée",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Plans produit au mouvement contrôlé",
+        "icon": "product"
+      },
+      {
+        "title": "Continuité fluide avec image de fin",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Looks reproductibles via seed",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Courtes pubs et clips sociaux",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Mood boards pour montages plus longs",
+        "icon": "layers"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Aperçu technique",
+  "technicalOverview": [
+    {
+      "label": "Durée",
+      "body": "4–12 s par rendu"
+    },
+    {
+      "label": "Résolution",
+      "body": "480p/720p (T2V), 480p/720p/1080p (I2V)"
+    },
+    {
+      "label": "Format",
+      "body": "21:9, 16:9, 4:3, 1:1, 3:4, 9:16"
+    },
+    {
+      "label": "Fréquence d’images",
+      "body": "24 fps"
+    },
+    {
+      "label": "Entrées",
+      "body": "Texte → Vidéo; Image → Vidéo avec image de fin optionnelle (PNG/JPG/WebP)"
+    },
+    {
+      "label": "Contrôles",
+      "body": "Seed (-1 aléatoire), caméra verrouillée, safety checker"
+    },
+    {
+      "label": "Audio",
+      "body": "Activé par défaut; désactivable pour réduire le coût"
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompter Seedance 1.5 Pro",
+    "quote": "Cinématique [sujet] dans [décor], caméra verrouillée, [lumière], [mouvement], [durée], format [ratio], audio optionnel.",
+    "description": "Restez au niveau plan et indiquez la caméra verrouillée quand vous voulez de la stabilité.",
+    "steps": [
+      "Sujet et action",
+      "Caméra verrouillée ou mouvement",
+      "Lumière et ambiance",
+      "Durée et ratio",
+      "Audio ou audio off"
+    ]
+  },
+  "tips": {
+    "title": "Conseils & limites",
+    "items": [
+      "Utilisez caméra verrouillée pour des plans fixes et stables.",
+      "Ajoutez une image de fin pour une transition I2V plus propre.",
+      "Réutilisez un seed pour des variations cohérentes.",
+      "Restez sur des clips courts (4–12 s)."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Ruelle néon caméra verrouillée",
+      "prompt": "Ruelle néon 16:9 sous une pluie légère, caméra verrouillée, reflets dans les flaques, ambiance douce, audio subtil."
+    },
+    {
+      "title": "Image → vidéo avec image de fin",
+      "prompt": "Anime l’image de départ avec un léger travelling avant, puis termine sur l’image de fin fournie, ambiance douce."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Que fait caméra verrouillée ?",
+      "a": "Elle verrouille la caméra pour un mouvement plus stable et une meilleure continuité."
+    },
+    {
+      "q": "Peut‑on désactiver l’audio ?",
+      "a": "Oui. L’audio est activé par défaut mais vous pouvez le couper pour réduire le coût."
+    },
+    {
+      "q": "Quelles résolutions sont supportées ?",
+      "a": "T2V : 480p et 720p. I2V : 480p, 720p et 1080p."
+    }
+  ]
+}
