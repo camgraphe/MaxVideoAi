@@ -29,12 +29,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      { "title": "Multi-shot ads and trailers (up to 15s)", "icon": "cinematic" },
-      { "title": "Story beats with scene-level control", "icon": "storyboard" },
-      { "title": "Character + prop consistency across shots (Elements)", "icon": "layers" },
-      { "title": "Voice-led promos and hooks (voice IDs)", "icon": "mic" },
-      { "title": "Product hero sequences with clean landings (end frame)", "icon": "product" },
-      { "title": "Vertical social cutdowns (9:16 / 1:1 variants)", "icon": "smartphone" }
+      {
+        "title": "Multi-shot ads and trailers (up to 15s)",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Story beats with scene-level control",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Character + prop consistency across shots (Elements)",
+        "icon": "layers"
+      },
+      {
+        "title": "Voice-led promos and hooks (voice IDs)",
+        "icon": "mic"
+      },
+      {
+        "title": "Product hero sequences with clean landings (end frame)",
+        "icon": "product"
+      },
+      {
+        "title": "Vertical social cutdowns (9:16 / 1:1 variants)",
+        "icon": "smartphone"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -43,13 +61,34 @@
       "label": "Details",
       "body": "Kling 3 Pro is built for structured generation: multi-shot prompting (multi_prompt), reusable Elements (@Element1...), optional end frame, and native audio with optional voice IDs. Treat it like a storyboard pass: label shots, keep each shot to one clear action, and reuse the same anchors (subject, wardrobe/props, lighting) across shots."
     },
-    { "label": "Duration", "body": "3–15 s per render" },
-    { "label": "Resolution", "body": "1080p" },
-    { "label": "Aspect ratio", "body": "16:9, 9:16, 1:1" },
-    { "label": "Frame rate", "body": "24 fps" },
-    { "label": "Inputs", "body": "Text → Video; Image → Video (PNG/JPG/WebP), optional end frame" },
-    { "label": "Controls", "body": "Multi-prompt scenes, elements, shot type, voice IDs" },
-    { "label": "Audio", "body": "Native audio on by default; toggle off or enable voice control" }
+    {
+      "label": "Duration",
+      "body": "3–15 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "1080p"
+    },
+    {
+      "label": "Aspect ratio",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Frame rate",
+      "body": "24 fps"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text → Video; Image → Video (PNG/JPG/WebP), optional end frame"
+    },
+    {
+      "label": "Controls",
+      "body": "Multi-prompt scenes, elements, shot type, voice IDs"
+    },
+    {
+      "label": "Audio",
+      "body": "Native audio on by default; toggle off or enable voice control"
+    }
   ],
   "promptStructure": {
     "title": "Prompting Kling 3 Pro",
@@ -104,6 +143,30 @@
       "Voice control when audio matters||Optional voice IDs let you keep the same voice across takes; reference them as <<<voice_1>>> / <<<voice_2>>> (max 2)",
       "End frame for cleaner finishes||Use an optional end frame to land transitions, match cuts, and product reveals more predictably",
       "Shot type for faster coverage||Choose shot_type depending on intent: \"intelligent\" for automatic coverage, \"customize\" for strict shot control"
+    ],
+    "specTitle": "Real Specs – Kling 3 Pro in MaxVideoAI",
+    "specNote": "Specs reflect the live Fal routing today.",
+    "specSections": [
+      {
+        "title": "Multi-shot control",
+        "intro": "Break a clip into timed shots for storyboard-level direction up to 15s.",
+        "items": [
+          "Use 2–4 shots for the cleanest continuity.",
+          "Keep one clear action per shot.",
+          "Call out framing + one camera move per shot.",
+          "Total duration stays within 3–15s."
+        ]
+      },
+      {
+        "title": "Continuity + audio",
+        "intro": "Elements, voice IDs, and end frame help stabilize characters, props, and sound.",
+        "items": [
+          "Define @Element1/@Element2 once, then reuse.",
+          "Reference voices as <<<voice_1>>> / <<<voice_2>>>.",
+          "Optional end frame for clean landings.",
+          "Native audio on/off in the same render."
+        ]
+      }
     ],
     "promptingTitle": "How to Write a Great Kling 3 Pro Prompt",
     "promptingGuideLabel": "Kling 3.0 Prompting Guide",
@@ -173,6 +236,12 @@
       "1080p tier in this routing.",
       "Voice IDs are limited (max 2) and audio language behavior depends on routing.",
       "End frame is optional and works best when the final composition is clearly described."
-    ]
+    ],
+    "galleryTitle": "Kling 3 Pro examples",
+    "galleryIntro": "Recent Kling 3 Pro renders with multi-shot prompts, Elements, and voice control.",
+    "galleryAllCta": "View all Kling 3 Pro examples →",
+    "recreateLabel": "Recreate this shot →",
+    "demoTitle": "Demo prompt — Kling 3 Pro",
+    "demoPromptLabel": "Prompt"
   }
 }

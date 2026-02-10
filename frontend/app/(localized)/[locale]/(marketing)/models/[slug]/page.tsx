@@ -204,6 +204,18 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: null,
     demo: 'job_b8db408a-7b09-4268-ad10-48e9cb8fc4a7',
   },
+  'kling-3-pro': {
+    hero: 'job_665a317f-f4dc-41c8-ade4-4a0a891627c8',
+    demo: 'job_3092cc94-f948-42e8-abd0-744534f5b38e',
+  },
+  'kling-3-standard': {
+    hero: 'job_99e0f0fa-6092-4b8a-8c08-e329c579d0f2',
+    demo: 'job_6e7885fd-e180-46b2-9bf0-f84d3a92ca28',
+  },
+  'seedance-1-5-pro': {
+    hero: 'job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab',
+    demo: 'job_b748b50c-30bc-42ba-a83b-208abbd4fb7f',
+  },
 };
 
 type FocusVsCopy = { title: string; items: string[] };
@@ -515,6 +527,124 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
           'Secuencias multi-prompt por escena',
           'Referencias de elementos para mayor continuidad',
           'Voice IDs y control de shot type hasta 15s',
+        ],
+      },
+    },
+  },
+  {
+    slugA: 'kling-3-standard',
+    slugB: 'kling-3-pro',
+    nameA: 'Kling 3 Standard',
+    nameB: 'Kling 3 Pro',
+    onlyFor: ['kling-3-standard'],
+    copyA: {
+      en: {
+        title: 'Use Kling 3 Standard when you want:',
+        items: [
+          'Multi-shot control at a lower cost',
+          'Quick ad variants and social promos',
+          'Elements + end frame for consistency',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 3 Standard quand vous voulez :',
+        items: [
+          'Contrôle multi‑shot à moindre coût',
+          'Variantes rapides d’ads et promos social',
+          'Elements + image de fin pour la cohérence',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 3 Standard cuando quieras:',
+        items: [
+          'Control multi‑shot a menor costo',
+          'Variantes rápidas de anuncios y promos sociales',
+          'Elements + end frame para consistencia',
+        ],
+      },
+    },
+    copyB: {
+      en: {
+        title: 'Use Kling 3 Pro when you need:',
+        items: [
+          'Shot type control + voice IDs',
+          'More precise coverage for storyboards',
+          'Premium takes and iteration depth',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 3 Pro quand vous avez besoin :',
+        items: [
+          'Shot type + voice IDs',
+          'Couverture plus précise pour storyboard',
+          'Takes premium et itérations plus poussées',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 3 Pro cuando necesites:',
+        items: [
+          'Shot type + voice IDs',
+          'Cobertura más precisa para storyboards',
+          'Tomas premium y más iteración',
+        ],
+      },
+    },
+  },
+  {
+    slugA: 'seedance-1-5-pro',
+    slugB: 'kling-3-standard',
+    nameA: 'Seedance 1.5 Pro',
+    nameB: 'Kling 3 Standard',
+    onlyFor: ['seedance-1-5-pro'],
+    copyA: {
+      en: {
+        title: 'Use Seedance 1.5 Pro when you want:',
+        items: [
+          'Camera-fixed stability and repeatable takes',
+          'Seed control for variants',
+          'Short 4–12s clips with audio on/off',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Seedance 1.5 Pro quand vous voulez :',
+        items: [
+          'Stabilité camera_fixed et prises répétables',
+          'Seed control pour variantes',
+          'Clips courts 4–12 s avec audio on/off',
+        ],
+      },
+      es: {
+        title: 'Usa Seedance 1.5 Pro cuando quieras:',
+        items: [
+          'Estabilidad camera_fixed y tomas repetibles',
+          'Seed control para variantes',
+          'Clips cortos 4–12 s con audio on/off',
+        ],
+      },
+    },
+    copyB: {
+      en: {
+        title: 'Use Kling 3 Standard when you need:',
+        items: [
+          'Multi-shot storyboards up to 15s',
+          'Elements for consistent characters/props',
+          'Voice IDs + optional end frame',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 3 Standard quand vous avez besoin :',
+        items: [
+          'Storyboards multi‑shot jusqu’à 15 s',
+          'Elements pour personnages/props cohérents',
+          'Voice IDs + image de fin optionnelle',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 3 Standard cuando necesites:',
+        items: [
+          'Storyboards multi‑shot hasta 15 s',
+          'Elements para personajes/props consistentes',
+          'Voice IDs + end frame opcional',
         ],
       },
     },

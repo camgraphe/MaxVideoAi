@@ -3,13 +3,13 @@
   "versionLabel": "v1.5 Pro",
   "seo": {
     "title": "Seedance 1.5 Pro – Texto e imagen a video cinematográfico | MaxVideoAI",
-    "description": "Crea clips cinematográficos con cámara bloqueada gracias a Seedance 1.5 Pro. Texto o imagen a video hasta 12 s, formatos flexibles y audio opcional."
+    "description": "Crea clips cinematográficos con Seedance 1.5 Pro: camera_fixed, seed, frame final opcional y audio nativo. 4–12 s, relaciones flexibles."
   },
-  "overview": "Seedance 1.5 Pro en MaxVideoAI ofrece movimiento cinematográfico con cámara bloqueada, control de seed y audio nativo. Genera clips de 4–12 s desde texto o una sola imagen, con fotograma final opcional para una continuidad más fluida.",
-  "pricingNotes": "El precio varía según la resolución; sin audio cuesta aproximadamente 50 % menos.",
+  "overview": "Seedance 1.5 Pro en MaxVideoAI ofrece control de formato corto con camera_fixed, seed para repetibilidad, frame final opcional y audio nativo. Genera clips de 4–12 s desde texto o imagen con movimiento más estable y variantes consistentes cuando lo necesitas.",
+  "pricingNotes": "La tarificación varía por resolución; audio off cuesta aprox. 50% menos que audio on.",
   "hero": {
-    "title": "Seedance 1.5 Pro – Control cinematográfico del movimiento",
-    "intro": "Movimiento con cámara bloqueada, control de seed y renders con audio desde texto o una imagen.",
+    "title": "Seedance 1.5 Pro – Control de movimiento cinematográfico",
+    "intro": "Movimiento camera‑fixed, control de seed y renders audio‑ready desde texto o una sola imagen.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Seedance 1.5 Pro",
@@ -17,7 +17,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver ejemplos de Seedance",
+        "label": "Ver ejemplos Seedance",
         "href": "/examples?engine=seedance-1-5-pro"
       },
       {
@@ -27,36 +27,40 @@
     ]
   },
   "bestUseCases": {
-    "title": "Mejores usos",
+    "title": "Mejores casos de uso",
     "items": [
       {
-        "title": "Escenas urbanas con cámara fija",
-        "icon": "cinematic"
+        "title": "Escenas urbanas con cámara fija (camera_fixed)",
+        "icon": "camera"
       },
       {
-        "title": "Planos de producto con movimiento controlado",
+        "title": "Tomas de producto con motion controlado (tomas limpias y repetibles)",
         "icon": "product"
       },
       {
-        "title": "Continuidad suave con fotograma final",
+        "title": "Continuidad suave con frame final (I2V, match landings)",
         "icon": "storyboard"
       },
       {
-        "title": "Looks repetibles con seed",
-        "icon": "sparkles"
+        "title": "Looks repetibles con seed control (tests de variantes)",
+        "icon": "repeat2"
       },
       {
-        "title": "Anuncios cortos y clips sociales",
+        "title": "Anuncios cortos y clips sociales con audio on/off",
         "icon": "smartphone"
       },
       {
-        "title": "Mood boards para ediciones largas",
+        "title": "Moodboards / beats clave antes de ediciones largas",
         "icon": "layers"
       }
     ]
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
+    {
+      "label": "Detalles",
+      "body": "Seedance 1.5 Pro es un modelo audio‑video de formato corto con controles sólidos: camera_fixed para planos bloqueados, seed para iteraciones repetibles y frame final opcional para aterrizajes I2V más limpios. Úsalo cuando quieras movimiento más estable, variantes consistentes y borradores audio‑ready en 4–12 s."
+    },
     {
       "label": "Duración",
       "body": "4–12 s por render"
@@ -66,7 +70,7 @@
       "body": "480p/720p (T2V), 480p/720p/1080p (I2V)"
     },
     {
-      "label": "Formato",
+      "label": "Relación",
       "body": "21:9, 16:9, 4:3, 1:1, 3:4, 9:16"
     },
     {
@@ -75,60 +79,166 @@
     },
     {
       "label": "Entradas",
-      "body": "Texto → Video; Imagen → Video con fotograma final opcional (PNG/JPG/WebP)"
+      "body": "Texto → Video; Imagen → Video con frame final opcional (PNG/JPG/WebP)"
     },
     {
       "label": "Controles",
-      "body": "Seed (-1 aleatorio), cámara fija, safety checker"
+      "body": "Seed (-1 random), camera_fixed, safety checker"
     },
     {
       "label": "Audio",
-      "body": "Activado por defecto; se puede desactivar para ahorrar"
+      "body": "Activado por defecto; audio off para menor costo"
     }
   ],
   "promptStructure": {
     "title": "Promptear Seedance 1.5 Pro",
-    "quote": "Cinemático [sujeto] en [escena], cámara fija, [luz], [movimiento], [duración], formato [ratio], audio opcional.",
-    "description": "Mantén el prompt a nivel de plano y especifica cámara fija cuando quieras estabilidad.",
+    "quote": "[Sujeto] [una acción clara] en [entorno], camera_fixed, [luz/estilo], [duración], audio opcional.",
+    "description": "Mantén el prompt a nivel de plano, prioriza camera_fixed para estabilidad y añade notas de audio concisas si está activo.",
     "steps": [
       "Sujeto y acción",
-      "Cámara fija o movimiento",
-      "Luz y atmósfera",
-      "Duración y ratio",
-      "Audio o audio off"
+      "Camera lock o nota de movimiento",
+      "Luz y mood",
+      "Duración y relación",
+      "Cue de audio o audio off"
     ]
   },
   "tips": {
     "title": "Consejos y límites",
     "items": [
-      "Usa cámara fija para planos más estables.",
-      "Añade un fotograma final para mejores cierres en I2V.",
-      "Reutiliza un seed para variaciones coherentes.",
-      "Mantén los clips cortos (4–12 s)."
+      "Usa camera_fixed para planos bloqueados y movimiento más estable.",
+      "Añade un frame final para mejores resolves I2V.",
+      "Reutiliza un seed para variaciones repetibles.",
+      "Mantén los clips cortos (4–12 s) para mejor coherencia."
     ]
   },
   "prompts": [
     {
       "title": "Callejón neón con cámara fija",
-      "prompt": "Callejón neón 16:9 con lluvia ligera, cámara fija, reflejos en charcos, ambiente suave, audio sutil."
+      "prompt": "Callejón neón 16:9 bajo lluvia ligera, cámara fija, charcos reflectantes, ambiente sutil, base sonora suave."
     },
     {
-      "title": "Imagen a video con fotograma final",
-      "prompt": "Anima la imagen inicial con un lento avance y termina en el fotograma final proporcionado, ambiente suave."
+      "title": "Imagen‑a‑video con frame final",
+      "prompt": "Anima la imagen inicial con un push‑in suave y resuelve hacia el frame final proporcionado, ambiente suave."
     }
   ],
   "faqs": [
     {
-      "q": "¿Qué hace cámara fija?",
-      "a": "Bloquea la cámara para un movimiento más estable y continuidad más sólida."
+      "q": "¿Qué hace camera_fixed?",
+      "a": "Bloquea la cámara para un movimiento más estable y mayor continuidad entre frames."
     },
     {
-      "q": "¿Se puede desactivar el audio?",
-      "a": "Sí. El audio está activado por defecto, pero puedes desactivarlo para reducir el coste."
+      "q": "¿Puedo desactivar el audio?",
+      "a": "Sí. El audio está activo por defecto, pero puedes apagarlo para un menor costo."
     },
     {
-      "q": "¿Qué resoluciones soporta?",
-      "a": "T2V: 480p y 720p. I2V: 480p, 720p y 1080p."
+      "q": "¿Qué resoluciones se soportan?",
+      "a": "T2V soporta 480p y 720p. I2V soporta 480p, 720p y 1080p."
     }
-  ]
+  ],
+  "custom": {
+    "whyTitle": "Por qué Seedance 1.5 Pro es potente",
+    "heroHighlights": [
+      "Estabilidad camera‑fixed||Bloquea la cámara para un movimiento más estable y resultados más limpios en escenas urbanas/producto",
+      "Seed control para repetibilidad||Reutiliza un seed para iterar sin drift — ideal para variantes de campaña y A/B hooks",
+      "Control de frame inicial + final (I2V)||Añade un frame final opcional para guiar el aterrizaje (transiciones, match cuts, finales limpios)",
+      "Audio nativo en el mismo render||Genera diálogo, ambiente y SFX en una pasada — o apaga el audio para borradores silenciosos y post"
+    ],
+    "specTitle": "Especificaciones reales — Seedance 1.5 Pro en MaxVideoAI",
+    "specNote": "Las specs reflejan el routing de Fal en producción.",
+    "specSections": [
+      {
+        "title": "Estabilidad con camera_fixed",
+        "intro": "camera_fixed bloquea la toma para un movimiento más estable en clips cortos.",
+        "items": [
+          "Activa camera_fixed para planos fijos.",
+          "Beats simples en 4–12 s.",
+          "Una acción clara por beat.",
+          "Salida 24 fps."
+        ]
+      },
+      {
+        "title": "Repetibilidad + control",
+        "intro": "El seed y el end frame ayudan a iterar y cerrar transiciones.",
+        "items": [
+          "Reutiliza un seed para comparar variantes.",
+          "End frame opcional para cierres I2V.",
+          "Audio on/off en el mismo render.",
+          "Varios formatos hasta 1080p."
+        ]
+      }
+    ],
+    "promptingTitle": "Cómo escribir un gran prompt de Seedance 1.5 Pro",
+    "promptingGuideLabel": "Docs Seedance 1.5 Pro",
+    "promptingGuideUrl": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api",
+    "promptingIntro": "Seedance 1.5 Pro rinde mejor con sujeto/acción claros, dirección de cámara controlada (a menudo camera‑fixed) y notas de audio concisas cuando el audio está activo.",
+    "promptingGlobalPrinciples": [
+      "Prefiere planos camera‑fixed cuando quieras movimiento más estable y menos artefactos.",
+      "Mantén una acción legible por clip (o por beat).",
+      "Usa un seed al iterar: cambia una sola variable a la vez.",
+      "Si el audio está activo: mantén el diálogo corto y añade solo 1–2 cues de sonido."
+    ],
+    "promptingEngineWhy": [
+      "camera_fixed es una fortaleza: úsalo para realismo de cámara bloqueada y tomas de producto.",
+      "Seedance es formato corto: mantén los beats simples y evita amontonar acciones.",
+      "El frame final (I2V) ayuda a aterrizar transiciones; no introduzcas nuevas acciones en el último segundo.",
+      "El audio va mejor con pocas cues; los monólogos largos pueden derivar.",
+      "Si el texto importa, planea ponerlo en post (el texto pequeño no es fiable)."
+    ],
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [una acción clara] en [entorno], [encuadre], [luz/estilo].\nAudio (opcional): [ambiente + 1 SFX clave O una línea corta].\nNegativo: sin texto, sin logos, sin subtítulos/overlays."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + 2–3 detalles definitorios.]\n\nEntorno:\n[Dónde + momento + 2 anclas.]\n\nCámara:\n[Encuadre + (camera_fixed recomendado) O un movimiento simple.]\n\nLook:\n[Luz + anclas de paleta.]\n\nAudio (opcional):\nDiálogo: “Línea corta.”\nAmbiente + 1–2 cues SFX.\n\nNegativo:\n[Texto, logos, personas extra, blur.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “equipo de rodaje” ultra‑específico)",
+        "description": "Úsalo cuando necesites un look cinematográfico muy preciso o continuidad estricta.",
+        "copy": "Brief de dirección:\n[Objetivo + vibe.]\n\nAnclas de continuidad:\n- Identidad del sujeto + vestuario/props\n- Ubicación + momento + 3 anclas visuales\n- Luz + anclas de paleta\n\nCámara:\n- Encuadre + ángulo\n- Preferir camera_fixed para estabilidad (o un movimiento simple)\n\nAudio (si está activo):\n- Diálogo: “Línea corta.”\n- Ambiente + 1–2 cues SFX (manténlo minimal)\n\nSeed (recomendado para iteraciones):\nReutiliza el mismo seed al generar variantes."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (beats secuenciados)",
+        "description": "Úsalo cuando quieras una mini‑story en un solo clip. Un prompt storyboard (beats secuenciados) da timing, dirección de cámara y continuidad.",
+        "copy": "Duración: [4–12 s] • Relación: [21:9 / 16:9 / 4:3 / 1:1 / 3:4 / 9:16] • Audio: [on/off]\n\nBeat 1 (0–4 s):\n[Encuadre + acción + dirección de cámara]\n\nBeat 2 (4–8 s):\n[Encuadre + acción + dirección de cámara]\n\nBeat 3 (8–12 s):\n[Acción final/reveal + settle]\nFrame final (opcional, I2V): [describe el frame final que quieres]\n\nAudio (si está activo):\nDiálogo: “Línea corta.”\nAmbiente + 1–2 cues SFX.\n\nRestricciones:\nSin logos. Sin texto legible. Sin subtítulos/overlays."
+      }
+    ],
+    "tipsTitle": "Consejos y límites",
+    "strengths": [
+      "Usa camera_fixed para planos bloqueados y movimiento más estable.",
+      "Reutiliza un seed para variaciones repetibles.",
+      "Añade un frame final para resolves I2V más suaves y aterrizajes limpios.",
+      "Mantén los clips cortos (4–12 s) y las acciones simples para mejor coherencia.",
+      "Usa el audio con moderación: una línea corta + ambiente + 1 SFX clave."
+    ],
+    "troubleshootingItems": [
+      "El movimiento se ve desordenado → activa camera_fixed; reduce la velocidad de acción; simplifica el fondo.",
+      "Drift entre tomas → bloquea un seed; mantén la misma estructura de prompt; cambia una variable a la vez.",
+      "Audio/lip sync deriva → acorta líneas; evita giros rápidos de cabeza; mantén el plano más calmado.",
+      "Texto/logos aleatorios → refuerza el negativo (“no text, no logos, no UI”) y mantén la señalética fuera de plano."
+    ],
+    "boundaries": [
+      "Formato corto únicamente (4–12 s).",
+      "24 fps.",
+      "Resolución y precio varían por tier; revisa las spec chips antes de renderizar.",
+      "No hay texto pequeño fiable — superpone texto crítico en post."
+    ],
+    "galleryTitle": "Galería de ejemplos Seedance 1.5 Pro",
+    "galleryIntro": "Renders recientes de Seedance 1.5 Pro con camera_fixed, seed control y end frames.",
+    "galleryAllCta": "Ver todos los ejemplos Seedance 1.5 Pro →",
+    "recreateLabel": "Recrear esta toma →",
+    "demoTitle": "Prompt demo — Seedance 1.5 Pro",
+    "demoPromptLabel": "Prompt"
+  }
 }

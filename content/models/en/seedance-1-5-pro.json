@@ -143,6 +143,30 @@
       "Start + end frame control (I2V)||Provide an optional end frame to guide how the shot lands (transitions, match cuts, clean finishes)",
       "Native audio in the same render||Generate dialogue, ambience, and SFX in one pass — or toggle audio off for silent drafts and post finishing"
     ],
+    "specTitle": "Real Specs – Seedance 1.5 Pro in MaxVideoAI",
+    "specNote": "Specs reflect the live Fal routing today.",
+    "specSections": [
+      {
+        "title": "Camera-fixed stability",
+        "intro": "camera_fixed locks the shot for steadier motion in short-form clips.",
+        "items": [
+          "Enable camera_fixed for locked-off scenes.",
+          "Keep beats simple in 4–12s.",
+          "One clear action per beat.",
+          "24 fps output."
+        ]
+      },
+      {
+        "title": "Repeatability + control",
+        "intro": "Seed control and end frames help you iterate and land transitions cleanly.",
+        "items": [
+          "Reuse seeds to compare variants.",
+          "Optional end frame for I2V landings.",
+          "Audio on/off in the same render.",
+          "Multiple aspect ratios up to 1080p."
+        ]
+      }
+    ],
     "promptingTitle": "How to Write a Great Seedance 1.5 Pro Prompt",
     "promptingGuideLabel": "Seedance 1.5 Pro API Docs",
     "promptingGuideUrl": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api",
@@ -209,6 +233,12 @@
       "24 fps.",
       "Resolution and pricing vary by tier; check the live spec chips before rendering.",
       "Still no reliable tiny on-screen text — overlay critical copy in post."
-    ]
+    ],
+    "galleryTitle": "Seedance 1.5 Pro examples",
+    "galleryIntro": "Recent Seedance 1.5 Pro renders using camera_fixed, seed control, and end frames.",
+    "galleryAllCta": "View all Seedance 1.5 Pro examples →",
+    "recreateLabel": "Recreate this shot →",
+    "demoTitle": "Demo prompt — Seedance 1.5 Pro",
+    "demoPromptLabel": "Prompt"
   }
 }
