@@ -1,4 +1,4 @@
-type HrefLike = string | { pathname?: string } | null | undefined;
+type HrefLike = string | { pathname?: string | null } | null | undefined;
 
 const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z0-9+\-.]*:|\/\/)/i;
 const NOFOLLOW_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/connect'];

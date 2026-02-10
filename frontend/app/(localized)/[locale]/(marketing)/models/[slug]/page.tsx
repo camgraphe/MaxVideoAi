@@ -17,7 +17,7 @@ import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i1
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
-import type { EngineCaps } from '@/types/engines';
+import type { EngineCaps, Mode } from '@/types/engines';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listPlaylistVideos, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -2161,10 +2161,10 @@ function resolveStatus(value?: boolean | null) {
   return 'Data pending';
 }
 
-function resolveModeSupported(engineCaps: EngineCaps | undefined, mode: string) {
+function resolveModeSupported(engineCaps: EngineCaps | undefined, mode: Mode | 'v2v') {
   const modes = engineCaps?.modes ?? [];
   if (!modes.length) return 'Data pending';
-  return modes.includes(mode) ? 'Supported' : 'Not supported';
+  return modes.includes(mode as Mode) ? 'Supported' : 'Not supported';
 }
 
 function formatMaxResolution(engineCaps: EngineCaps | undefined) {
@@ -2510,40 +2510,41 @@ function normalizeChips(rawChips: unknown, icon: BestUseCaseIconKey, locale?: Ap
 
 function normalizeBestUseCaseItems(value: unknown, locale?: AppLocale): BestUseCaseItem[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .map((entry) => {
-      if (typeof entry === 'string') {
-        const title = entry.trim();
-        if (!title) return null;
-        const icon = inferBestUseCaseIcon(title);
-        return {
-          title,
-          icon,
-          chips: normalizeChips(null, icon, locale),
-        };
-      }
-      if (!entry || typeof entry !== 'object') return null;
-      const obj = entry as Record<string, unknown>;
-      const title =
-        typeof obj.title === 'string'
-          ? obj.title.trim()
-          : typeof obj.label === 'string'
-            ? obj.label.trim()
-            : '';
-      if (!title) return null;
-      const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
-      const icon =
-        (rawIcon && BEST_USE_CASE_ICON_KEYS.includes(rawIcon as BestUseCaseIconKey)
-          ? rawIcon
-          : inferBestUseCaseIcon(title)) as BestUseCaseIconKey;
-      const chips = normalizeChips(obj.chips, icon, locale);
-      return {
+  const items: BestUseCaseItem[] = [];
+  for (const entry of value) {
+    if (typeof entry === 'string') {
+      const title = entry.trim();
+      if (!title) continue;
+      const icon = inferBestUseCaseIcon(title);
+      items.push({
         title,
         icon,
-        chips,
-      };
-    })
-    .filter((item): item is BestUseCaseItem => Boolean(item));
+        chips: normalizeChips(null, icon, locale),
+      });
+      continue;
+    }
+    if (!entry || typeof entry !== 'object') continue;
+    const obj = entry as Record<string, unknown>;
+    const title =
+      typeof obj.title === 'string'
+        ? obj.title.trim()
+        : typeof obj.label === 'string'
+          ? obj.label.trim()
+          : '';
+    if (!title) continue;
+    const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
+    const icon =
+      (rawIcon && BEST_USE_CASE_ICON_KEYS.includes(rawIcon as BestUseCaseIconKey)
+        ? rawIcon
+        : inferBestUseCaseIcon(title)) as BestUseCaseIconKey;
+    const chips = normalizeChips(obj.chips, icon, locale);
+    items.push({
+      title,
+      icon,
+      chips,
+    });
+  }
+  return items;
 }
 
 function normalizeSecondaryCta(label: string | null): string | null {
@@ -2746,6 +2747,18 @@ function toAbsoluteUrl(url?: string | null): string {
   return `${SITE}/${url}`;
 }
 
+type FeaturedMedia = {
+  id: string | null;
+  prompt: string | null;
+  videoUrl: string | null;
+  posterUrl: string | null;
+  durationSec?: number | null;
+  hasAudio?: boolean;
+  href?: string | null;
+  label?: string | null;
+  aspectRatio?: string | null;
+};
+
 function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: AppLocale): SoraCopy {
   const custom = (localized.custom ?? {}) as Record<string, unknown>;
   const getValue = (key: string): unknown => {
@@ -2782,20 +2795,20 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
   const getSpecSections = (): SpecSection[] => {
     const value = custom['specSections'];
     if (!Array.isArray(value)) return [];
-    return value
-      .map((entry) => {
-        if (!entry || typeof entry !== 'object') return null;
-        const obj = entry as Record<string, unknown>;
-        const title = typeof obj.title === 'string' ? obj.title : null;
-        const intro = typeof obj.intro === 'string' ? obj.intro : null;
-        const itemsRaw = obj.items;
-        const items = Array.isArray(itemsRaw)
-          ? itemsRaw.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean)
-          : [];
-        if (!title || !items.length) return null;
-        return { title, items, intro };
-      })
-      .filter((section): section is SpecSection => Boolean(section));
+    const sections: SpecSection[] = [];
+    for (const entry of value) {
+      if (!entry || typeof entry !== 'object') continue;
+      const obj = entry as Record<string, unknown>;
+      const title = typeof obj.title === 'string' ? obj.title : null;
+      const intro = typeof obj.intro === 'string' ? obj.intro : null;
+      const itemsRaw = obj.items;
+      const items = Array.isArray(itemsRaw)
+        ? itemsRaw.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean)
+        : [];
+      if (!title || !items.length) continue;
+      sections.push({ title, items, intro });
+    }
+    return sections;
   };
   const getPromptingTabNotes = (): SoraCopy['promptingTabNotes'] => {
     const value = custom['promptingTabNotes'];
@@ -2983,6 +2996,9 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
     promptingGuideLabel,
     promptingGuideUrl,
     promptingTabs,
+    promptingGlobalPrinciples,
+    promptingEngineWhy,
+    promptingTabNotes,
     imageTitle: getString('imageTitle'),
     imageIntro: getString('imageIntro'),
     imageFlow: getStringArray('imageFlow'),
@@ -3021,14 +3037,6 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
     finalButton: getString('finalButton'),
     faqTitle: getString('faqTitle'),
     faqs: getFaqs(),
-    promptingTitle,
-    promptingIntro,
-    promptingTip,
-    promptingGuideLabel,
-    promptingGuideUrl,
-    promptingGlobalPrinciples,
-    promptingEngineWhy,
-    promptingTabNotes,
   };
 }
 
@@ -3068,18 +3076,6 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     },
   });
 }
-
-type FeaturedMedia = {
-  id: string | null;
-  prompt: string | null;
-  videoUrl: string | null;
-  posterUrl: string | null;
-  durationSec?: number | null;
-  hasAudio?: boolean;
-  href?: string | null;
-  label?: string | null;
-  aspectRatio?: string | null;
-};
 
 function formatPriceLabel(priceCents: number | null | undefined, currency: string | null | undefined): string | null {
   if (typeof priceCents !== 'number' || Number.isNaN(priceCents)) {
@@ -3349,31 +3345,32 @@ async function renderSoraModelPage({
   const pricePerSecondRowLabel = resolveSpecRowLabel(locale, 'pricePerSecond', false);
   const pricePerImageRowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
   const keySpecDefs = rowDefs.filter((row) => row.key !== (isImageEngine ? 'pricePerImage' : 'pricePerSecond'));
+  const fallbackPriceRows: KeySpecRow[] = priceRows.length
+    ? []
+    : isImageEngine
+      ? keySpecValues?.pricePerImage && !isUnsupported(keySpecValues.pricePerImage)
+        ? [
+            {
+              id: 'pricePerImage',
+              key: 'pricePerImage',
+              label: pricePerImageRowLabel,
+              value: keySpecValues.pricePerImage,
+            },
+          ]
+        : []
+      : keySpecValues?.pricePerSecond && !isUnsupported(keySpecValues.pricePerSecond)
+      ? [
+          {
+            id: 'pricePerSecond',
+            key: 'pricePerSecond',
+            label: pricePerSecondRowLabel,
+            value: keySpecValues.pricePerSecond,
+          },
+        ]
+      : [];
   const keySpecRows: KeySpecRow[] = keySpecValues
     ? [
-        ...(priceRows.length
-          ? priceRows
-          : isImageEngine
-            ? keySpecValues.pricePerImage && !isUnsupported(keySpecValues.pricePerImage)
-              ? [
-                  {
-                    id: 'pricePerImage',
-                    key: 'pricePerImage',
-                    label: pricePerImageRowLabel,
-                    value: keySpecValues.pricePerImage,
-                  },
-                ]
-              : []
-            : keySpecValues.pricePerSecond && !isUnsupported(keySpecValues.pricePerSecond)
-            ? [
-                {
-                  id: 'pricePerSecond',
-                  key: 'pricePerSecond',
-                  label: pricePerSecondRowLabel,
-                  value: keySpecValues.pricePerSecond,
-                },
-              ]
-            : []),
+        ...(priceRows.length ? priceRows : fallbackPriceRows),
         ...keySpecDefs
           .map(({ key, label }) => ({
             id: key,
@@ -3406,6 +3403,7 @@ async function renderSoraModelPage({
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}
       keySpecValues={keySpecValues}
+      pricePerImageLabel={pricePerImageLabel}
       pricePerSecondLabel={pricePerSecondLabel}
       engineSlug={engine.modelSlug}
       locale={locale}
@@ -3435,6 +3433,7 @@ function Sora2PageLayout({
   faqEntries,
   keySpecRows,
   keySpecValues,
+  pricePerImageLabel,
   pricePerSecondLabel,
   engineSlug,
   locale,
@@ -3460,6 +3459,7 @@ function Sora2PageLayout({
   faqEntries: LocalizedFaqEntry[];
   keySpecRows: KeySpecRow[];
   keySpecValues: KeySpecValues | null;
+  pricePerImageLabel: string | null;
   pricePerSecondLabel: string | null;
   engineSlug: string;
   locale: AppLocale;
@@ -3496,8 +3496,8 @@ function Sora2PageLayout({
   const specNote = normalizeSpecNote(copy.specNote, locale);
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = isImageEngine
-    ? keySpecValues?.pricePerImage ?? formatPricePerImage(engine)
-    : keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? formatPricePerSecond(engine);
+    ? keySpecValues?.pricePerImage ?? pricePerImageLabel ?? 'Data pending'
+    : keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? 'Data pending';
   const heroDuration =
     typeof heroMedia.durationSec === 'number'
       ? `${heroMedia.durationSec}s`

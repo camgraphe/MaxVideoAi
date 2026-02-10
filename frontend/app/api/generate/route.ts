@@ -469,7 +469,7 @@ export async function POST(req: NextRequest) {
   const multiPromptRaw = Array.isArray(body.multiPrompt) ? body.multiPrompt : null;
   const multiPrompt = multiPromptRaw
     ? multiPromptRaw
-        .map((entry) => {
+        .map((entry: unknown) => {
           if (!entry || typeof entry !== 'object') return null;
           const record = entry as Record<string, unknown>;
           const promptValue = typeof record.prompt === 'string' ? record.prompt.trim() : '';
@@ -482,9 +482,17 @@ export async function POST(req: NextRequest) {
           if (!promptValue) return null;
           return { prompt: promptValue, duration: durationValue };
         })
-        .filter((entry): entry is { prompt: string; duration: number } => Boolean(entry))
+        .filter(
+          (entry: { prompt: string; duration: number } | null): entry is { prompt: string; duration: number } =>
+            Boolean(entry)
+        )
     : null;
-  const multiPromptTotalSec = multiPrompt ? multiPrompt.reduce((sum, entry) => sum + (entry.duration || 0), 0) : 0;
+  const multiPromptTotalSec = multiPrompt
+    ? multiPrompt.reduce(
+        (sum: number, entry: { prompt: string; duration: number }) => sum + (entry.duration || 0),
+        0
+      )
+    : 0;
   let audioEnabled =
     typeof body.audio === 'boolean'
       ? body.audio
@@ -530,7 +538,7 @@ export async function POST(req: NextRequest) {
   const voiceIds = voiceIdsRaw
     ? voiceIdsRaw
         .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
-        .filter((value): value is string => value.length > 0)
+        .filter((value: string): value is string => value.length > 0)
     : [];
   const voiceControl = Boolean(body.voiceControl) || voiceIds.length > 0;
   if (voiceControl) {
@@ -539,7 +547,7 @@ export async function POST(req: NextRequest) {
   const elementsRaw = Array.isArray(body.elements) ? body.elements : null;
   const elements = elementsRaw
     ? elementsRaw
-        .map((entry) => {
+        .map((entry: unknown) => {
           if (!entry || typeof entry !== 'object') return null;
           const record = entry as Record<string, unknown>;
           const frontalImageUrl =
@@ -549,7 +557,7 @@ export async function POST(req: NextRequest) {
           const referenceImageUrls = Array.isArray(record.referenceImageUrls)
             ? record.referenceImageUrls
                 .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
-                .filter((value): value is string => value.length > 0)
+                .filter((value: string): value is string => value.length > 0)
             : [];
           const videoUrl =
             typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
@@ -561,7 +569,9 @@ export async function POST(req: NextRequest) {
           };
         })
         .filter(
-          (entry): entry is { frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string } => Boolean(entry)
+          (
+            entry: { frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string } | null
+          ): entry is { frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string } => Boolean(entry)
         )
     : null;
   const endImageUrl =

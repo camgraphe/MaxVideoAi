@@ -2748,7 +2748,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     (elementId: string, slot: 'frontal' | 'reference' | 'video', file: File, index?: number) => {
       const assetId = createLocalId('element_asset');
       const previewUrl = URL.createObjectURL(file);
-      const baseAsset = {
+      const baseAsset: KlingElementAsset = {
         id: assetId,
         previewUrl,
         name: file.name,
