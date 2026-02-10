@@ -5,6 +5,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { getExamplesHref } from '@/lib/examples-links';
 import { getTranslations } from 'next-intl/server';
 
 const WORKFLOWS_SLUG_MAP = buildSlugMap('workflows');
@@ -225,10 +226,11 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {exampleEntries.map((entry) => {
                 const accentId = entry.brandId || 'google';
+                const exampleHref = getExamplesHref(entry.slug) ?? { pathname: '/examples' };
                 return (
                 <Link
                   key={entry.slug}
-                  href={{ pathname: '/examples/[model]', params: { model: entry.slug } }}
+                  href={exampleHref}
                   className="group flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left transition hover:bg-surface-2 hover:shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   <span className="flex items-center gap-2 text-sm font-semibold text-text-primary">

@@ -193,6 +193,21 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/examples/ltx-2-fast',
+        destination: '/examples/ltx-2',
+        permanent: true,
+      },
+      {
+        source: '/fr/galerie/ltx-2-fast',
+        destination: '/fr/galerie/ltx-2',
+        permanent: true,
+      },
+      {
+        source: '/es/galeria/ltx-2-fast',
+        destination: '/es/galeria/ltx-2',
+        permanent: true,
+      },
+      {
         source: '/models/luma-dream-machine',
         destination: '/models',
         permanent: true,
