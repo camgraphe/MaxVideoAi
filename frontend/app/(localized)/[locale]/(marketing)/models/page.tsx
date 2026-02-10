@@ -886,7 +886,7 @@ export default async function ModelsPage() {
             'Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone.'}
         </p>
         <div className="stack-gap-xl py-4 sm:py-10">
-          <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
+          <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
                 {listingCopy.quickCompare?.title ?? 'Quick compare shortcuts'}
@@ -933,7 +933,7 @@ export default async function ModelsPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
+          <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
                 {listingCopy.chooseOutcome?.title ?? 'Choose by outcome'}
@@ -981,7 +981,7 @@ export default async function ModelsPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
+          <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
                 {listingCopy.reliability?.title ?? 'How MaxVideoAI stays reliable'}
@@ -1020,7 +1020,7 @@ export default async function ModelsPage() {
             </div>
           </section>
 
-          <section className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white/60 p-6 shadow-card dark:border-white/10 dark:bg-white/5 sm:p-8">
+          <section className="content-visibility-auto relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white/60 p-6 shadow-card dark:border-white/10 dark:bg-white/5 sm:p-8">
             <span className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-purple-400/20 blur-3xl" />
             <span className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-sky-400/20 blur-3xl" />
             <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

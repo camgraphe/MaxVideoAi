@@ -33,6 +33,7 @@ import { BackLink } from '@/components/video/BackLink';
 import { SoraPromptingTabs } from '@/components/marketing/SoraPromptingTabs.client';
 import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import { SpecDetailsGrid, type SpecDetailsSection } from '@/components/marketing/SpecDetailsGrid.client';
+import { ModelHeroMedia } from '@/components/marketing/ModelHeroMedia.client';
 import { getExamplesHref } from '@/lib/examples-links';
 import {
   Box,
@@ -3191,7 +3192,10 @@ async function renderSoraModelPage({
         ? `${localizedContent.marketingName ?? engine.marketingName} demo still from MaxVideoAI`
         : `${localizedContent.marketingName ?? engine.marketingName} demo clip from MaxVideoAI`,
     videoUrl: engine.type === 'image' ? null : engine.media?.videoUrl ?? engine.demoUrl ?? null,
-    posterUrl: buildOptimizedPosterUrl(engine.media?.imagePath) ?? engine.media?.imagePath ?? null,
+    posterUrl:
+      buildOptimizedPosterUrl(engine.media?.imagePath, { width: 1200, quality: 75 }) ??
+      engine.media?.imagePath ??
+      null,
     durationSec: null,
     hasAudio: engine.type === 'image' ? false : true,
     href: null,
@@ -3420,7 +3424,9 @@ function Sora2PageLayout({
   };
   const normalizedPrimaryCtaHref = normalizeCtaHref(primaryCtaHref) ?? primaryCtaHref;
   const localizedSecondaryCtaHref = normalizeCtaHref(secondaryCtaHref);
-  const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
+  const heroPosterPreload = heroMedia.posterUrl
+    ? buildOptimizedPosterUrl(heroMedia.posterUrl, { width: 1200, quality: 75 }) ?? heroMedia.posterUrl
+    : null;
 
   const heroHighlights = copy.heroHighlights;
   const bestUseCaseItems = copy.bestUseCaseItems.length
@@ -3695,6 +3701,8 @@ function Sora2PageLayout({
                     hideLabel
                     hidePrompt
                     metaLines={heroMetaLines}
+                    priority
+                    fetchPriority="high"
                   />
                 </div>
               </div>
@@ -3786,7 +3794,7 @@ function Sora2PageLayout({
         {hasSpecs ? (
           <section
             id="specs"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
           >
             {specTitle ? (
               <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
@@ -3875,7 +3883,7 @@ function Sora2PageLayout({
         {!hideExamplesSection ? (
           <section
             id={textAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN}`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto`}
           >
             <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
               {copy.galleryTitle ? (
@@ -3967,7 +3975,7 @@ function Sora2PageLayout({
 
         <section
           id={imageAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
         >
           {isVideoEngine ? (
             <div className="stack-gap-lg">
@@ -4028,7 +4036,7 @@ function Sora2PageLayout({
 
 
         {hasTipsSection ? (
-          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
+          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               {copy.tipsTitle ?? 'Tips & Limitations'}
             </h2>
@@ -4089,7 +4097,7 @@ function Sora2PageLayout({
         {hasCompareSection ? (
           <section
             id={compareAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap-lg`}
           >
             {focusVsConfig ? (
               <>
@@ -4192,7 +4200,7 @@ function Sora2PageLayout({
         {copy.safetyTitle || safetyRules.length || safetyInterpretation.length ? (
           <section
             id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
           >
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               {copy.safetyTitle ?? 'Safety & people / likeness'}
@@ -4221,7 +4229,7 @@ function Sora2PageLayout({
         {faqList.length ? (
           <section
             id="faq"
-            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
           >
             {faqTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2>
@@ -4256,6 +4264,8 @@ function MediaPreview({
   hideLabel = false,
   hidePrompt = false,
   metaLines = [],
+  priority = false,
+  fetchPriority = 'auto',
 }: {
   media: FeaturedMedia;
   label: string;
@@ -4264,6 +4274,8 @@ function MediaPreview({
   hideLabel?: boolean;
   hidePrompt?: boolean;
   metaLines?: Array<{ label: string; value: string }>;
+  priority?: boolean;
+  fetchPriority?: 'high' | 'low' | 'auto';
 }) {
   const posterSrc = media.posterUrl ?? null;
   const aspect = media.aspectRatio ?? '16:9';
@@ -4273,6 +4285,7 @@ function MediaPreview({
   const isVertical = isValidAspect ? w < h : false;
   const normalizedPromptLabel = promptLabel?.trim() ?? '';
   const displayPromptLabel = /^prompt\b/i.test(normalizedPromptLabel) ? 'Prompt' : normalizedPromptLabel;
+  const altText = media.prompt ? `Sora 2 preview – ${media.prompt}` : label;
   const figureClassName = [
     'group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card',
     isVertical ? 'mx-auto max-w-sm' : '',
@@ -4285,27 +4298,28 @@ function MediaPreview({
         <div className="relative w-full" style={{ paddingBottom }}>
           <div className="absolute inset-0">
             {media.videoUrl ? (
-              <video
-                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                poster={posterSrc ?? undefined}
-              >
-                <source src={media.videoUrl} type="video/mp4" />
-              </video>
+              <ModelHeroMedia
+                posterSrc={posterSrc}
+                videoSrc={media.videoUrl}
+                alt={altText}
+                sizes="(max-width: 768px) 100vw, 720px"
+                priority={priority}
+                fetchPriority={fetchPriority}
+                quality={80}
+                className="absolute inset-0"
+                objectClassName="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+              />
             ) : posterSrc ? (
               <Image
                 src={posterSrc}
-                alt={media.prompt ? `Sora 2 preview – ${media.prompt}` : label}
+                alt={altText}
                 fill
                 className="h-full w-full object-cover"
                 sizes="(max-width: 768px) 100vw, 720px"
                 quality={80}
-                loading="eager"
-                fetchPriority="high"
+                priority={priority}
+                fetchPriority={fetchPriority}
+                loading={priority ? 'eager' : 'lazy'}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-surface-2 text-sm font-semibold text-text-muted">
@@ -4571,7 +4585,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const pricingLinkHref = { pathname: '/pricing' };
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
-  const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc) ?? heroPosterSrc : null;
+  const heroPosterPreload = heroPosterSrc
+    ? buildOptimizedPosterUrl(heroPosterSrc, { width: 1200, quality: 75 }) ?? heroPosterSrc
+    : null;
   const heroPosterAbsolute = toAbsoluteUrl(heroPosterSrc);
   const heroTitle = heroContent?.title ?? marketingName ?? slug;
   const pageDescription = introText ?? seoDescription ?? heroTitle;

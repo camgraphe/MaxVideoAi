@@ -81,6 +81,11 @@ main {
   box-shadow: theme('boxShadow.float');
 }
 
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1000px;
+}
+
 .focus-ring {
   @apply ring-2 ring-offset-2 ring-offset-bg ring-ring;
 }
