@@ -33,6 +33,12 @@ type EngineAverageRow = {
   avg_duration_ms: string | number | null;
 };
 
+type EngineJobAverageRow = {
+  engine_id: string;
+  completed_count: string | number | null;
+  avg_duration_ms: string | number | null;
+};
+
 export type EnginePerformanceMetric = {
   engineId: string;
   engineLabel: string;
@@ -170,9 +176,63 @@ export async function fetchEngineAverageDurations(days = 30): Promise<EngineAver
     [String(days)]
   );
 
-  return rows.map((row) => ({
-    engineId: row.engine_id,
-    completedCount: coerceNumber(row.completed_count),
-    averageDurationMs: coerceNullableNumber(row.avg_duration_ms),
-  }));
+  const jobRows = await query<EngineJobAverageRow>(
+    `
+      SELECT
+        engine_id,
+        COUNT(*) AS completed_count,
+        AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) * 1000) AS avg_duration_ms
+      FROM app_jobs
+      WHERE status = 'completed'
+        AND updated_at IS NOT NULL
+        AND created_at IS NOT NULL
+        AND updated_at > created_at
+        AND created_at >= NOW() - ($1::text || ' days')::interval
+      GROUP BY engine_id
+      ORDER BY engine_id ASC
+    `,
+    [String(days)]
+  );
+
+  const metricsMap = new Map(
+    rows.map((row) => [
+      row.engine_id,
+      {
+        completedCount: coerceNumber(row.completed_count),
+        averageDurationMs: coerceNullableNumber(row.avg_duration_ms),
+      },
+    ])
+  );
+  const jobsMap = new Map(
+    jobRows.map((row) => [
+      row.engine_id,
+      {
+        completedCount: coerceNumber(row.completed_count),
+        averageDurationMs: coerceNullableNumber(row.avg_duration_ms),
+      },
+    ])
+  );
+
+  const engineIds = new Set<string>([...metricsMap.keys(), ...jobsMap.keys()]);
+  const merged: EngineAverageDuration[] = [];
+
+  engineIds.forEach((engineId) => {
+    const metric = metricsMap.get(engineId);
+    const job = jobsMap.get(engineId);
+    const metricCount = metric?.completedCount ?? 0;
+    const metricAvg = metric?.averageDurationMs ?? null;
+    if (metricCount > 0 && metricAvg != null) {
+      merged.push({ engineId, completedCount: metricCount, averageDurationMs: metricAvg });
+      return;
+    }
+    const jobCount = job?.completedCount ?? 0;
+    const jobAvg = job?.averageDurationMs ?? null;
+    if (jobCount > 0 && jobAvg != null) {
+      merged.push({ engineId, completedCount: jobCount, averageDurationMs: jobAvg });
+      return;
+    }
+    merged.push({ engineId, completedCount: metricCount, averageDurationMs: metricAvg });
+  });
+
+  return merged;
 }
