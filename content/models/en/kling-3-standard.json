@@ -5,11 +5,11 @@
     "title": "Kling 3 Standard – Multi-shot Text & Image to Video | MaxVideoAI",
     "description": "Create multi-shot Kling 3 Standard clips with scene prompts, elements, and optional voice control. 3–15s, 1080p, with native audio."
   },
-  "overview": "Kling 3 Standard delivers scene-level prompting, elements, and optional voice control at a lower price point. Generate 3–15s clips from text or image inputs with native audio and flexible aspect ratios.",
+  "overview": "Kling 3 Standard delivers multi-shot prompts, reusable Elements, optional end frames, and native audio with voice IDs at a cost-effective tier. Generate 3–15s clips from text or image inputs with 1080p output and flexible aspect ratios.",
   "pricingNotes": "Pricing is per second: $0.252/s with audio, $0.168/s audio off, $0.308/s with voice control.",
   "hero": {
     "title": "Kling 3 Standard – Multi-shot storytelling at lower cost",
-    "intro": "Scene prompts, elements, and audio in a more cost-effective tier.",
+    "intro": "Multi-shot prompts, reusable Elements, optional voice IDs, and end-frame control in a more cost-effective tier.",
     "badge": "1080p · 3–15s · Multi-prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 3 Standard",
@@ -29,16 +29,20 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      { "title": "Multi-shot testing and iterating", "icon": "sparkles" },
-      { "title": "Social ads and promos", "icon": "smartphone" },
-      { "title": "Storyboard beats with elements", "icon": "storyboard" },
-      { "title": "Consistent characters and props", "icon": "layers" },
-      { "title": "Product previews", "icon": "product" },
-      { "title": "Vertical or square edits", "icon": "cinematic" }
+      { "title": "Multi-shot storyboard beats (up to 15s)", "icon": "storyboard" },
+      { "title": "Social ads & promos with optional dialogue", "icon": "ads" },
+      { "title": "Consistent characters / props across shots (Elements)", "icon": "layers" },
+      { "title": "Product previews with clean landings (end frame)", "icon": "product" },
+      { "title": "Campaign variant testing (same shot recipe, different hooks)", "icon": "repeat2" },
+      { "title": "Pre-viz for edits (sound-on drafts or silent for post)", "icon": "scissors" }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
+    {
+      "label": "Details",
+      "body": "Kling 3 Standard is built for structured generation: multi-shot prompts, reusable Elements (@Element1…), optional end frame, and native audio with optional voice IDs. Use it when you want storyboard-style control and lots of variants at a more cost-effective tier."
+    },
     { "label": "Duration", "body": "3–15 s per render" },
     { "label": "Resolution", "body": "1080p" },
     { "label": "Aspect ratio", "body": "16:9, 9:16, 1:1" },
@@ -91,5 +95,81 @@
       "q": "Does it support image-to-video?",
       "a": "Yes. Use a start image and optional end frame."
     }
-  ]
+  ],
+  "custom": {
+    "whyTitle": "Why Kling 3 Standard is powerful",
+    "heroHighlights": [
+      "Structured multi-shot generation||Break one clip into multiple prompts and timing beats for storyboard-first control",
+      "Reusable Elements for consistency||Define characters/props once, then reference them as @Element1 / @Element2 to reduce drift across shots",
+      "Native audio when you want it||Generate dialogue + ambience + SFX in the same pass, or toggle audio off for silent drafts",
+      "End-frame control for cleaner finishes||Use an optional end frame to land transitions, match cuts, and product reveals more predictably"
+    ],
+    "promptingTitle": "How to Write a Great Kling 3 Standard Prompt",
+    "promptingGuideLabel": "Kling 3.0 Prompting Guide",
+    "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
+    "promptingIntro": "Kling 3 Standard performs best with shot-based direction: clear framing, one action per shot, explicit motion, and (if audio is on) short dialogue plus minimal sound cues.",
+    "promptingGlobalPrinciples": [
+      "Think in shots, not clips: one action per shot is easier to execute cleanly.",
+      "Anchor your subjects early (and reuse the same wording) to reduce drift across shots.",
+      "Put framing + camera movement before style adjectives.",
+      "If audio is on: keep dialogue short and add only 1–2 sound cues."
+    ],
+    "promptingEngineWhy": [
+      "Multi-shot works best with 2–4 shots; keep each shot to one readable action.",
+      "Elements improve continuity: reference @Element1/@Element2 consistently across the prompt.",
+      "Voice IDs: reference voices in the prompt as <<<voice_1>>> and <<<voice_2>>> (max 2 voices).",
+      "Audio output supports English and Chinese; other languages may be auto-translated to English when audio is enabled.",
+      "End frame helps land transitions; avoid adding new actions in the final second."
+    ],
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[One subject] [one visible action] in [setting], [framing + one camera move], [lighting/style].\nAudio (optional): [ambience + 1 SFX cue OR one short line].\nNegative: no text, no logos, no subtitles/overlays."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Scene anchors:\n[Subject + wardrobe/props + 2–3 environment anchors.]\n\nShots (multi-shot):\nShot 1 (0–5s): [framing + action + one camera move]\nShot 2 (5–10s): [framing + action + one camera move]\nShot 3 (10–15s): [final action/reveal + settle or end frame]\n\nElements (optional):\n@Element1 = [main character]\n@Element2 = [prop/product]\n\nAudio (optional):\nDialogue: <<<voice_1>>> “Short line.”\nAmbience + 1–2 SFX cues. Keep it minimal.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"film crew brief\")",
+        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
+        "copy": "Director brief:\n[Goal + vibe + intended audience.]\n\nContinuity (repeat across shots):\n- Subject identity + wardrobe/props\n- Location + time + 3 visual anchors\n- Lighting + palette anchors\n- Lens feel + one camera move per shot\n\nMulti-shot plan (up to 15s total):\nShot 1: [framing + action + camera]\nShot 2: [framing + action + camera]\nShot 3: [framing + action + camera]\n(optional) Shot 4–6: [only if needed]\n\nElements:\n@Element1 = [character]\n@Element2 = [product/prop]\n\nAudio (if on):\nDialogue: <<<voice_1>>> “One short line.”\nAmbience + 1–2 SFX cues + optional music vibe.\n\nNegative:\nNo text, no logos, no subtitles/overlays, no jump cuts."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (multi-shot / shot list)",
+        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
+        "copy": "Duration: [3–15s] • Aspect: [16:9 / 9:16 / 1:1] • Audio: [on/off]\n\nElements (optional):\n@Element1 = [main character/subject]\n@Element2 = [prop/product]\n\nShot 1 (0–3s):\n[Framing + action + camera move]\n\nShot 2 (3–8s):\n[Framing + action + camera move]\n\nShot 3 (8–15s):\n[Final action/reveal + camera settle]\nEnd frame (optional): [describe the final frame you want to land on]\n\nAudio (if on):\nDialogue: <<<voice_1>>> “Short line.”\nAmbience + 1–2 SFX cues.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. Keep it to one action per shot."
+      }
+    ],
+    "tipsTitle": "Tips & Limitations",
+    "tipsIntro": "Kling 3 Standard is most predictable when you plan it like a storyboard: simple shots, consistent elements, and short dialogue.",
+    "strengths": [
+      "3–15s clips with 2–4 shots and clear timestamps/shot labels.",
+      "Use Elements for characters/props you want to keep stable.",
+      "For audio: one short line + ambience + 1 key SFX (keep it minimal).",
+      "Use an end frame when you need a clean landing or match cut."
+    ],
+    "troubleshootingItems": [
+      "Drift across shots → repeat anchors + use @Element references; simplify each shot to one action.",
+      "Camera feels chaotic → one move per shot; avoid “dynamic” wording; specify “smooth track” or “tripod-stable”.",
+      "Dialogue/lip sync drifts → shorten lines; reduce fast head turns; keep the shot calmer.",
+      "Random text/logos → strengthen negative (“no text, no logos, no UI”) and keep signage out of frame."
+    ],
+    "boundaries": [
+      "Short-form only (up to 15s); stitch for longer narratives.",
+      "1080p tier in this routing.",
+      "Voice IDs are limited (max 2) and audio language behavior depends on routing.",
+      "End frame is optional and works best when the final composition is clearly described."
+    ]
+  }
 }

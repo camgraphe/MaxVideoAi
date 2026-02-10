@@ -5,11 +5,11 @@
     "title": "Seedance 1.5 Pro – Cinematic Text & Image to Video | MaxVideoAI",
     "description": "Create cinematic, camera-locked clips with Seedance 1.5 Pro. Text or image to video up to 12s, flexible aspect ratios, and optional audio."
   },
-  "overview": "Seedance 1.5 Pro in MaxVideoAI delivers cinematic motion with camera lock, seed control, and native audio. Generate 4–12s clips from text or a single image, with optional end frames for smoother continuity.",
+  "overview": "Seedance 1.5 Pro in MaxVideoAI delivers short-form control with camera_fixed, seed repeatability, optional end frames, and native audio. Generate 4–12s clips from text or a single image, with steadier motion and consistent variants when you need them.",
   "pricingNotes": "Pricing varies by resolution; audio off costs about 50% less than audio on.",
   "hero": {
     "title": "Seedance 1.5 Pro – Cinematic Motion Control",
-    "intro": "Camera-locked motion, seed control, and audio-ready renders from text or a single frame.",
+    "intro": "Camera-fixed motion, seed control, and audio-ready renders from text or a single frame.",
     "badge": "480p–1080p · 4–12s · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Seedance 1.5 Pro",
@@ -30,33 +30,37 @@
     "title": "Best use cases",
     "items": [
       {
-        "title": "Locked camera city scenes",
-        "icon": "cinematic"
+        "title": "Locked camera city scenes (camera_fixed)",
+        "icon": "camera"
       },
       {
-        "title": "Product shots with controlled motion",
+        "title": "Product shots with controlled motion (clean, repeatable takes)",
         "icon": "product"
       },
       {
-        "title": "Smooth continuity with end frames",
+        "title": "Smooth continuity with end frames (I2V resolves / match landings)",
         "icon": "storyboard"
       },
       {
-        "title": "Repeatable looks with seed control",
-        "icon": "sparkles"
+        "title": "Repeatable looks with seed control (variant testing)",
+        "icon": "repeat2"
       },
       {
-        "title": "Short ads and social clips",
+        "title": "Short ads and social clips with audio on/off",
         "icon": "smartphone"
       },
       {
-        "title": "Mood boards for longer edits",
+        "title": "Moodboards / key beats before longer edits",
         "icon": "layers"
       }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
+    {
+      "label": "Details",
+      "body": "Seedance 1.5 Pro is a short-form audio-video model with strong control knobs: camera_fixed for locked-off shots, seed for repeatable iterations, and optional end frame for smoother I2V landings. Use it when you want steadier motion, consistent variants, and audio-ready drafts in 4–12 second clips."
+    },
     {
       "label": "Duration",
       "body": "4–12 s per render"
@@ -88,8 +92,8 @@
   ],
   "promptStructure": {
     "title": "Prompting Seedance 1.5 Pro",
-    "quote": "Cinematic [subject] in [setting], camera fixed, [lighting], [motion], [duration], aspect [ratio], optional audio.",
-    "description": "Keep prompts shot-level and specify camera lock when you want stability.",
+    "quote": "[Subject] [one clear action] in [setting], camera_fixed, [lighting/style], [duration], optional audio.",
+    "description": "Keep prompts shot-level, favor camera_fixed for steadier motion, and add concise audio notes if enabled.",
     "steps": [
       "Subject and action",
       "Camera lock or motion note",
@@ -101,7 +105,7 @@
   "tips": {
     "title": "Tips & limits",
     "items": [
-      "Use camera fixed for locked-off shots and steadier motion.",
+      "Use camera_fixed for locked-off shots and steadier motion.",
       "Add an end frame for smoother I2V resolves.",
       "Reuse a seed for repeatable variations.",
       "Keep clips short (4–12s) for best coherence."
@@ -130,5 +134,81 @@
       "q": "What resolutions are supported?",
       "a": "T2V supports 480p and 720p. I2V supports 480p, 720p, and 1080p."
     }
-  ]
+  ],
+  "custom": {
+    "whyTitle": "Why Seedance 1.5 Pro is powerful",
+    "heroHighlights": [
+      "Camera-fixed stability||Lock the camera for steadier motion and cleaner results in city/product scenes",
+      "Seed control for repeatability||Reuse a seed to iterate without the look drifting — great for campaign variants and A/B hooks",
+      "Start + end frame control (I2V)||Provide an optional end frame to guide how the shot lands (transitions, match cuts, clean finishes)",
+      "Native audio in the same render||Generate dialogue, ambience, and SFX in one pass — or toggle audio off for silent drafts and post finishing"
+    ],
+    "promptingTitle": "How to Write a Great Seedance 1.5 Pro Prompt",
+    "promptingGuideLabel": "Seedance 1.5 Pro API Docs",
+    "promptingGuideUrl": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api",
+    "promptingIntro": "Seedance 1.5 Pro performs best with clear subject/action, controlled camera direction (often camera-fixed), and concise audio notes when audio is enabled.",
+    "promptingGlobalPrinciples": [
+      "Prefer camera-fixed shots when you want steadier motion and fewer artifacts.",
+      "Keep one readable action per clip (or per beat).",
+      "Use a seed when iterating — change one variable at a time.",
+      "If audio is on: keep dialogue short and add only 1–2 sound cues."
+    ],
+    "promptingEngineWhy": [
+      "camera_fixed is a strength: use it for locked camera realism and product shots.",
+      "Seedance is short-form: keep beats simple and avoid cramming multiple actions.",
+      "End frame (I2V) helps land transitions; don’t introduce new actions in the last second.",
+      "Audio is best with minimal cues; long monologues can drift.",
+      "If text matters, plan to overlay it in post (tiny text is unreliable)."
+    ],
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject] [one clear action] in [setting], [framing], [lighting/style].\nAudio (optional): [ambience + 1 key SFX OR one short line].\nNegative: no text, no logos, no subtitles/overlays."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 2–3 defining details.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Framing + (camera_fixed recommended) OR one simple move.]\n\nLook:\n[Lighting + palette anchors.]\n\nAudio (optional):\nDialogue: “Short line.”\nAmbience + 1–2 SFX cues.\n\nNegative:\n[Text, logos, extra people, blur.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"film crew brief\")",
+        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
+        "copy": "Director brief:\n[Goal + vibe.]\n\nContinuity anchors:\n- Subject identity + wardrobe/props\n- Location + time + 3 visual anchors\n- Lighting + palette anchors\n\nCamera:\n- Framing + angle\n- Prefer camera_fixed for steadiness (or one simple move)\n\nAudio (if on):\n- Dialogue: “One short line.”\n- Ambience + 1–2 SFX cues (keep it minimal)\n\nSeed (recommended for iterations):\nReuse the same seed when generating variants."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (sequenced beats)",
+        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka sequenced beats) gives clear timing, camera direction, and continuity.",
+        "copy": "Duration: [4–12s] • Aspect: [21:9 / 16:9 / 4:3 / 1:1 / 3:4 / 9:16] • Audio: [on/off]\n\nBeat 1 (0–4s):\n[Framing + action + camera direction]\n\nBeat 2 (4–8s):\n[Framing + action + camera direction]\n\nBeat 3 (8–12s):\n[Final action/reveal + settle]\nEnd frame (optional, I2V): [describe the final frame you want to land on]\n\nAudio (if on):\nDialogue: “Short line.”\nAmbience + 1–2 SFX cues.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays."
+      }
+    ],
+    "tipsTitle": "Tips & Limitations",
+    "strengths": [
+      "Use camera_fixed for locked-off shots and steadier motion.",
+      "Reuse a seed for repeatable variations.",
+      "Add an end frame for smoother I2V resolves and cleaner landings.",
+      "Keep clips short (4–12s) and actions simple for best coherence.",
+      "Use audio sparingly: one short line + ambience + 1 key SFX."
+    ],
+    "troubleshootingItems": [
+      "Motion feels messy → enable camera_fixed; reduce action speed; simplify background.",
+      "Drift across takes → lock a seed; keep the same prompt structure; change one variable.",
+      "Audio/lip sync drifts → shorten lines; avoid fast head turns; keep the shot calmer.",
+      "Random text/logos → strengthen negative (\"no text, no logos, no UI\") and keep signage out of frame."
+    ],
+    "boundaries": [
+      "Short-form only (4–12s).",
+      "24 fps.",
+      "Resolution and pricing vary by tier; check the live spec chips before rendering.",
+      "Still no reliable tiny on-screen text — overlay critical copy in post."
+    ]
+  }
 }
