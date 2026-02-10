@@ -1,16 +1,19 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
-import { locales, type AppLocale } from '@/i18n/locales';
+import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
+import { buildSlugMap } from '@/lib/i18nSlugs';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { listExamples } from '@/server/videos';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import ExamplesPage, { resolveEngineLabel } from '../page';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS.map((slug) => slug.toLowerCase()));
 const DEFAULT_SORT = 'playlist';
+const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -31,6 +34,31 @@ function toAbsoluteUrl(url?: string | null): string | null {
   if (url.startsWith('//')) return `https:${url}`;
   if (url.startsWith('/')) return `${SITE}${url}`;
   return `${SITE}/${url}`;
+}
+
+function buildExamplesHref(
+  locale: AppLocale,
+  slug: string,
+  searchParams?: Record<string, string | string[] | undefined>
+): string {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const segment = GALLERY_SLUG_MAP[locale] ?? GALLERY_SLUG_MAP.en ?? 'examples';
+  const basePath = `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
+  if (!searchParams) return basePath;
+  const params = new URLSearchParams();
+  Object.entries(searchParams).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((entry) => {
+        if (typeof entry === 'string' && entry.length) params.append(key, entry);
+      });
+      return;
+    }
+    if (typeof value === 'string' && value.length) {
+      params.set(key, value);
+    }
+  });
+  const suffix = params.toString();
+  return suffix ? `${basePath}?${suffix}` : basePath;
 }
 
 function shouldNoindex(searchParams: Record<string, string | string[] | undefined>): boolean {
@@ -54,6 +82,7 @@ export async function generateMetadata({
   if (!EXAMPLE_MODEL_SLUG_SET.has(normalized)) {
     notFound();
   }
+  const canonical = resolveExampleCanonicalSlug(normalized) ?? normalized;
 
   const t = await getTranslations({ locale: params.locale, namespace: 'gallery.meta' });
   const engineLabel = resolveEngineLabel(normalized);
@@ -68,7 +97,7 @@ export async function generateMetadata({
     locale: params.locale,
     title,
     description,
-    englishPath: `/examples/${normalized}`,
+    englishPath: `/examples/${canonical}`,
     image: ogImage,
     imageAlt: 'MaxVideo AI — Examples gallery preview',
     robots: {
@@ -88,6 +117,13 @@ export default async function ExamplesModelPage({
   const normalized = normalizeExampleSlug(params.model);
   if (!EXAMPLE_MODEL_SLUG_SET.has(normalized)) {
     notFound();
+  }
+  const canonical = resolveExampleCanonicalSlug(normalized);
+  if (!canonical) {
+    notFound();
+  }
+  if (canonical !== normalized) {
+    permanentRedirect(buildExamplesHref(params.locale, canonical, searchParams));
   }
 
   const mergedSearchParams = { ...(searchParams ?? {}), engine: normalized };

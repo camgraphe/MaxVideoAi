@@ -19,7 +19,7 @@ import {
   normaliseLumaRay2Loop,
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
-import { applyEngineVariantPricing, buildAudioAddonInput } from '@/lib/pricing-addons';
+import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -244,7 +244,10 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   const memberTier = normalizeMemberTier(request.user?.memberTier);
   const loop = isLumaRay2 ? normaliseLumaRay2Loop(request.loop) : undefined;
   const audioEnabled = typeof request.audio === 'boolean' ? request.audio : undefined;
-  const addons = buildAudioAddonInput(pricingEngine, audioEnabled);
+  const addons = buildEngineAddonInput(pricingEngine, {
+    audioEnabled,
+    voiceControl: request.voiceControl,
+  });
   let snapshot: PricingSnapshot;
   try {
     snapshot = await computePricingSnapshot({

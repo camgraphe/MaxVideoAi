@@ -72,6 +72,21 @@
   "showdownOverrides": {
     "sora-2-pro": {
       "motion-physics": "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"
+    },
+    "kling-3-pro": {
+      "motion-physics": "job_82be9d73-885f-48ca-9ded-347cd069730c",
+      "ugc-lipsync": "job_0a9ee690-d91d-499d-817e-dccec23d8c9e",
+      "hands-text": "job_ae925c1a-935f-4511-ba1d-346ee2f15d8a"
+    },
+    "kling-3-standard": {
+      "motion-physics": "job_56c0b733-193b-49c6-adc8-1f87bd8b93c9",
+      "ugc-lipsync": "job_31530d04-db12-4a42-b593-dda7574f5338",
+      "hands-text": "job_61bbdb63-4a12-4847-bd1a-20dfe868bfe6"
+    },
+    "seedance-1-5-pro": {
+      "motion-physics": "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c",
+      "ugc-lipsync": "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3",
+      "hands-text": "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"
     }
   },
   "showdowns": {

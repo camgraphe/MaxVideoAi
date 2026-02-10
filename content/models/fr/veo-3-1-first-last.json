@@ -2,208 +2,264 @@
   "marketingName": "Google Veo 3.1 First/Last",
   "versionLabel": "3.1 First/Last",
   "seo": {
-    "title": "Veo 3.1 First/Last – First & Last Frame vers Vidéo (720p/1080p, jusqu’à 8s)",
-    "description": "Reliez deux frames avec Veo 3.1 First/Last. Uploadez début + fin, ajoutez un prompt, choisissez 4/6/8 s en 720p ou 1080p, audio natif en option. Parfait pour transitions et before/after dans MaxVideoAI.",
+    "title": "Veo 3.1 First/Last – Images début/fin → vidéo (720p/1080p, jusqu’à 8 s)",
+    "description": "Reliez deux images avec Veo 3.1 First/Last. Importez l’image de départ et l’image finale, ajoutez un prompt, choisissez 4/6/8 s en 720p ou 1080p, audio natif optionnel. Idéal pour transitions fluides et avant/après dans MaxVideoAI.",
     "image": "/hero/veo3.jpg"
   },
-  "overview": "Veo 3.1 First/Last dans MaxVideoAI fait une transition cinématographique entre deux images. Vous fournissez un frame de début, un frame de fin et un prompt concis; Veo génère un clip fluide de 4/6/8 s en 720p ou 1080p, avec audio optionnel.",
+  "overview": "Veo 3.1 First/Last dans MaxVideoAI relie deux images via une transition cinématique dirigée. Vous fournissez un premier frame, un dernier frame et un prompt court; Veo génère un clip fluide de 4/6/8 secondes en 720p ou 1080p, avec audio natif optionnel.",
   "hero": {
-    "title": "Veo 3.1 First/Last – First & Last Frame vers Vidéo dans MaxVideoAI (720p/1080p, jusqu’à 8s)",
-    "intro": "Veo 3.1 First/Last – Transitions fluides entre deux frames, avec audio natif",
-    "badge": "720p/1080p · jusqu’à 8 s · First & last frame + prompt texte",
+    "title": "Veo 3.1 First/Last – Images début/fin → vidéo dans MaxVideoAI (720p/1080p, jusqu’à 8 s)",
+    "intro": "Transformez deux keyframes en une transition cinématique fluide.",
+    "badge": "720p/1080p · jusqu’à 8 s · Première + dernière image + prompt texte",
     "ctaPrimary": {
-      "label": "Commencer avec Veo 3.1 First/Last",
+      "label": "Générer avec Veo 3.1 First/Last",
       "href": "/app?engine=veo-3-1-first-last"
     },
     "secondaryLinks": [
       {
         "label": "Comparer Veo 3.1 First/Last vs Veo 3.1 / Veo 3.1 Fast →",
-        "href": "/modeles/veo-3-1"
+        "href": "/models/veo-3-1"
       }
     ]
   },
   "bestUseCases": {
-    "title": "Meilleurs usages",
+    "title": "Meilleurs cas d’usage",
     "items": [
-      "Transitions before/after : upgrade produit, changement d’environnement",
-      "Ponts de scène dans pubs, films courts, explainers",
-      "Transitions logo ou brand avec keyframes conçus",
-      "Morphs stylisés entre deux designs (personnage, décor, layout)",
-      "Mouvements de caméra d’un layout à un autre sans coupe"
+      {
+        "title": "Transformations avant/après",
+        "icon": "arrowLeftRight"
+      },
+      {
+        "title": "Ponts de scène",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Morphs logo & marque",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Transitions UI & layout",
+        "icon": "layout"
+      },
+      {
+        "title": "Croquis → rendu final",
+        "icon": "pen"
+      },
+      {
+        "title": "Transitions de trajectoire caméra",
+        "icon": "camera"
+      }
     ]
   },
   "compareLink": {
     "label": "Comparer Veo 3.1 First/Last vs Veo 3.1 / Veo 3.1 Fast →",
-    "href": "/modeles/veo-3-1"
+    "href": "/models/veo-3-1"
   },
   "prompts": [
     {
-      "title": "Bureau → Rooftop (6s, 16:9)",
-      "prompt": "Transition 6s 16:9 d’un bureau lumineux vers un rooftop de nuit avec la même personne. Dolly lent qui devient arc quand le rooftop apparaît; lumière jour → bleu/neon; audio passe de l’ambiance bureau au trafic et vent, pas de dialogue."
+      "title": "Pont bureau → rooftop (6 s, 16:9)",
+      "prompt": "Animez une transition cinématique 6 s en 16:9 d’un bureau lumineux vers un rooftop de nuit avec la même personne. Dolly avant lent qui se transforme en arc doux; la lumière du jour devient un bleu néon; l’audio passe de l’ambiance bureau à trafic lointain et vent, sans dialogue."
     }
   ],
-  "faqTitle": "FAQ – Veo 3.1 First/Last dans MaxVideoAI",
+  "faqTitle": "FAQ – Veo 3.1 First/Last",
   "faqs": [
     {
-      "q": "Faut-il fournir début et fin ?",
-      "a": "Oui. First/Last relie deux images; les deux sont requises. Utilisez Veo 3.1 standard pour text/image→video."
+      "q": "Dois‑je fournir un premier et un dernier frame ?",
+      "a": "Oui. First/Last est conçu pour faire la transition entre deux images; les deux sont requises. Utilisez Veo 3.1 standard pour des runs texte/image → vidéo classiques."
     },
     {
-      "q": "Durée maximale ?",
-      "a": "Jusqu’à ~8 s dans les APIs. MaxVideoAI propose 4/6/8 s pour garder des prompts prévisibles."
+      "q": "Quelle durée maximale ?",
+      "a": "Jusqu’à ~8 secondes dans les API sous‑jacentes. MaxVideoAI propose des presets 4/6/8 s pour garder les prompts prévisibles."
     },
     {
-      "q": "Génère-t-il toujours l’audio ?",
-      "a": "Vous choisissez audio on/off par rendu. Avec audio : ambiance/SFX/VO; sans audio : moins cher et prêt pour votre mix."
+      "q": "L’audio est‑il toujours généré ?",
+      "a": "Vous choisissez audio on/off par rendu. Audio on donne ambiance/SFX/VO natifs; audio off est moins cher et prêt pour votre propre bande‑son."
     },
     {
-      "q": "Pour logos ou UI ?",
-      "a": "Oui. Idéal pour animer un logo ou un layout UI du design initial au final. Le texte minuscule peut se déformer; gardez-le en post."
+      "q": "Puis‑je l’utiliser pour des transitions logo ou UI ?",
+      "a": "Oui. C’est idéal pour animer un logo ou un layout UI d’un design initial vers un final. Gardez le texte critique en post‑prod."
     },
     {
-      "q": "Quand utiliser le Veo normal ?",
-      "a": "Utilisez Veo 3.1 / Veo Fast si vous n’avez pas de frames fixes ou si vous voulez des clips multi-beats depuis texte/image."
+      "q": "Quand utiliser Veo standard ?",
+      "a": "Utilisez Veo 3.1 / Veo Fast quand vous n’avez pas de frames de départ/fin fixes ou que vous avez besoin de clips multi‑beats depuis texte/image."
     }
   ],
   "custom": {
-    "heroDesc1": "Reliez deux frames avec Veo 3.1 First/Last : uploadez début/fin, ajoutez un prompt, obtenez une transition fluide 4/6/8s en 720p ou 1080p avec audio optionnel.",
-    "heroDesc2": "Servez-vous-en pour ponts de scène, before/after, morphs logo/UI et transitions dirigées où début et fin sont connus.",
-    "whyTitle": "Pourquoi Veo 3.1 First/Last est puissant dans MaxVideoAI",
+    "heroDesc1": "Reliez deux frames avec Veo 3.1 First/Last : importez l’image de départ et l’image finale, ajoutez un prompt, et obtenez une transition fluide de 4/6/8 s en 720p ou 1080p avec audio natif optionnel.",
+    "heroDesc2": "Parfait pour les ponts de scène, avant/après, morphs logo/UI et transitions designées où vous connaissez déjà le début et la fin.",
+    "heroSupportLine": "Idéal quand vous connaissez déjà le début et la fin — laissez Veo gérer tout l’entre‑deux.",
+    "whyTitle": "Pourquoi Veo 3.1 First/Last est puissant",
     "heroHighlights": [
-      "Relie deux images en une transition ciné continue",
-      "Supporte l’audio natif quand activé",
-      "720p ou 1080p, jusqu’à ~8 s",
-      "Direction via prompt pour contrôler motion et rythme",
-      "Toggle audio et pricing au second (comme Veo 3.1)",
-      "Aux côtés de Veo 3.1 et Veo 3.1 Fast dans la même UI"
+      "Contrôle sur deux frames||Verrouillez le départ et l’arrivée; générez le pont entre les deux.",
+      "Trajectoire de mouvement pilotable||Dirigez la caméra, le rythme et ce qui change en cours de route.",
+      "Continuité par design||Parfait pour garder layout et identité stables dans le plan.",
+      "Transitions sensibles au son||Ajoutez 1–2 cues d’ambiance/SFX pour vendre le changement (ou restez silencieux)."
     ],
-    "bestUseCasesTitle": "Meilleurs usages",
+    "bestUseCasesTitle": "Meilleurs cas d’usage",
     "bestUseCases": [
-      "Transitions before/after et changements de décor",
-      "Ponts de scène pour pubs ou explainers",
-      "Transitions logo/UI avec keyframes",
-      "Morphs stylisés entre designs",
-      "Caméra d’un layout à un autre sans coupe"
+      {
+        "title": "Transformations avant/après",
+        "icon": "arrowLeftRight"
+      },
+      {
+        "title": "Ponts de scène",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Morphs logo & marque",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Transitions UI & layout",
+        "icon": "layout"
+      },
+      {
+        "title": "Croquis → rendu final",
+        "icon": "pen"
+      },
+      {
+        "title": "Transitions de trajectoire caméra",
+        "icon": "camera"
+      }
     ],
-    "whatTitle": "Ce qu’est Veo 3.1 First/Last dans MaxVideoAI",
-    "whatIntro1": "Mode “first and last frame” / “Frames to Video” de Veo 3.1 qui interpole entre deux images avec audio optionnel.",
-    "whatIntro2": "Dans MaxVideoAI : 4/6/8 s, 16:9/9:16/1:1, 720p ou 1080p, frames début/fin, audio on/off, et Veo gère la transition.",
-    "whatFlowTitle": "Flux in-app",
+    "whatTitle": "Ce que Veo 3.1 First/Last est réellement dans MaxVideoAI",
+    "whatIntro1": "Le mode Veo 3.1 “first and last frame” / “Frames to Video” qui interpole entre deux images avec audio optionnel.",
+    "whatIntro2": "Dans MaxVideoAI, vous choisissez 4/6/8 s, 16:9/9:16/1:1, 720p ou 1080p, importez les frames Début + Fin, activez l’audio, et laissez Veo faire la transition.",
+    "whatFlowTitle": "Flux in‑app dans MaxVideoAI",
     "whatFlowSteps": [
-      "1. Choisir Veo 3.1 First/Last.",
-      "2. Uploader frame début et frame fin.",
-      "3. Choisir durée (4/6/8 s), ratio (16:9 / 9:16 / 1:1), résolution (720p ou 1080p).",
-      "4. Activer/désactiver l’audio.",
-      "5. Décrire comment passer de A à B (caméra, sujet, rythme, style, audio).",
-      "6. Vérifier le prix/seconde puis générer."
+      "1. Sélectionnez Veo 3.1 First/Last.",
+      "2. Importez la première image et la dernière image.",
+      "3. Choisissez durée (4/6/8 s), format (16:9 / 9:16 / 1:1) et résolution (720p ou 1080p).",
+      "4. Activez/désactivez l’audio.",
+      "5. Écrivez un prompt qui décrit comment passer de A à B (caméra, sujet, rythme, style, audio).",
+      "6. Prévisualisez le prix par seconde, puis générez."
     ],
-    "specTitle": "Specs réelles – Veo 3.1 First/Last dans MaxVideoAI",
-    "specNote": "Décrit la route first/last actuelle dans MaxVideoAI.",
+    "specTitle": "Specs réelles — Veo 3.1 First/Last dans MaxVideoAI",
+    "specNote": "Reflète la route first/last actuelle dans MaxVideoAI.",
     "specSections": [
       {
-        "title": "Durée & sortie",
+        "title": "Pont de keyframes",
+        "intro": "Conçu pour des transitions début‑fin où les endpoints sont verrouillés. Le modèle remplit le mouvement entre les deux.",
         "items": [
-          "Options UI : 4 s, 6 s, 8 s",
-          "Limite modèle : ~8 s en first/last",
-          "720p (1280×720) ou 1080p (1920×1080)",
-          "24 fps"
+          "Choisissez des frames de départ et de fin distincts.",
+          "Décrivez clairement la trajectoire de mouvement.",
+          "Gardez les éléments de fond stables.",
+          "Idéal pour UI, logos et avant/après."
         ]
       },
       {
-        "title": "Ratios",
+        "title": "Contrôle de continuité",
+        "intro": "Des endpoints fixes gardent le layout et l’identité cohérents. Parfait pour des reveals contrôlés et des morphs propres.",
         "items": [
-          "16:9 – horizontal",
-          "9:16 – vertical",
-          "1:1 – carré"
-        ]
-      },
-      {
-        "title": "Entrées & fichiers",
-        "items": [
-          "First frame (obligatoire) : PNG/JPG/JPEG/WebP/GIF/AVIF",
-          "Last frame (obligatoire) : mêmes formats",
-          "Prompt : comment animer entre les frames; inclure action, style, caméra, rythme, audio"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Audio ON : ambiance/SFX/VO natifs",
-          "Audio OFF : rendu silencieux et moins cher"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Suit la config au second de Veo 3.1 (~$0.20/s sans audio, ~$0.40/s avec audio)",
-          "Exemples : 4 s ≈ $0.80–$1.60, 6 s ≈ $1.20–$2.40, 8 s ≈ $1.60–$3.20",
-          "Le chip prix affiche le montant exact — vérifiez le chip live dans Generate avant de lancer."
+          "Indiquez ce qui doit rester inchangé.",
+          "Précisez ce qui doit se transformer.",
+          "Utilisez un mouvement caméra subtil.",
+          "Ajoutez des cues d’ambiance optionnels si besoin."
         ]
       }
     ],
-    "specValueProp": "Moteur de transition start–end avec audio optionnel, prix/seconde comme Veo 3.1.",
-    "galleryTitle": "Galerie Veo 3.1 First/Last",
-    "galleryIntro": "Transitions réelles : croquis → rendu final, bureau → rooftop, wireframe UI → UI finale.",
-    "gallerySceneCta": "Ouvrir cette scène et remplacer vos frames →",
+    "specValueProp": "Un moteur de transition start‑end dirigé avec audio natif optionnel, facturé à la seconde comme Veo 3.1.",
+    "galleryTitle": "Galerie d’exemples : Veo 3.1 First/Last",
+    "galleryIntro": "Transitions réelles : croquis → rendu final, bureau → rooftop, UI wireframe → UI haute fidélité.",
     "galleryAllCta": "Voir tous les exemples Veo 3.1 First/Last →",
     "recreateLabel": "Recréer ce plan →",
-    "promptTitle": "Comment prompt Veo 3.1 First/Last",
-    "promptIntro": "Dirigez ce qui se passe entre deux images : définissez début, fin, chemin, caméra, rythme et audio.",
-    "promptPatternSteps": [
-      "Décrire le first frame.",
-      "Décrire le last frame.",
-      "Chemin caméra : dolly, orbit, pan, etc.",
-      "Changements intermédiaires : lumière, heure, pose, style.",
-      "Rythme : doux, rapide, dramatique; événements intermédiaires.",
-      "Audio : ambiance/musique/VO courte ou “sans dialogue”."
-    ],
-    "promptSkeleton": "Animer en douceur du first frame au last frame en [durée] secondes et [ratio]. Commencer par [sujet/environnement du first frame], puis [changer/mouvoir/transformer] jusqu’à [sujet/environnement du last frame]. Caméra : [mouvement]. Lumière/style : [description]. Audio : [ambiance/musique/VO courte ou “sans dialogue”].",
-    "promptSkeletonNote": "Focalisez-vous sur le trajet A → B; mentionnez caméra et rythme.",
-    "demoTitle": "Démo – “Bureau vers rooftop” (6s, 16:9)",
-    "demoPromptLabel": "6s bureau → rooftop",
+    "demoTitle": "Prompt démo – « Bureau vers Rooftop » (6 s, 16:9)",
+    "demoPromptLabel": "6 s bureau → rooftop",
     "demoPrompt": [
-      "Transition 6s 16:9 d’un bureau lumineux vers un rooftop de nuit avec la même personne.",
-      "Lumière : jour chaud → bleu/neon.",
-      "Audio : bureau → trafic lointain, vent et musique électronique douce, pas de dialogue."
+      "Animez une transition cinématique 6 s en 16:9 d’un bureau lumineux vers un rooftop de nuit avec la même personne.",
+      "Caméra : dolly continu vers l’avant qui devient un arc doux autour du personnage.",
+      "Lumière : lumière du jour chaude qui se mélange à des highlights bleu néon.",
+      "Audio : ambiance bureau qui se fond vers trafic lointain, vent et musique électronique subtile, sans dialogue."
     ],
     "demoNotes": [
-      "Frames de début et fin clairs",
-      "Mouvement de caméra et rythme définis",
-      "Audio simple"
+      "Frames de départ et de fin clairs",
+      "Mouvement caméra et rythme définis",
+      "Histoire audio simple"
     ],
     "tipsTitle": "Conseils & limites",
     "strengths": [
-      "Idéal pour transitions avec layouts définis",
-      "Parfait pour before/after, logo/UI et ponts de scène",
-      "Audio natif qui suit les changements progressifs"
+      "Excellent pour les transitions quand vous connaissez déjà les layouts de départ et de fin",
+      "Parfait pour avant/après, morphs logo/UI et ponts de scène",
+      "L’audio natif colle étonnamment bien aux changements graduels"
     ],
     "boundaries": [
-      "Durée max ~8s; chaînez pour plus long",
-      "Nécessite deux images; pas pour prompts texte seul",
-      "Texte/logo minuscule peut se déformer; garder en post",
-      "Si frames très différentes, la transition peut sembler surréaliste"
+      "Durée max ~8 s; enchaînez des clips pour plus long",
+      "Requiert deux images; pas pour des shots purement texte",
+      "Le texte/logo minuscule peut se déformer; gardez le copy critique en post",
+      "Si les frames départ/fin sont trop différents, la transition peut paraître surréaliste — donnez de la continuité à Veo"
     ],
-    "tipsFooter": "Utilisez Veo 3.1 First/Last lorsque vous avez des frames début/fin solides et laissez Veo gérer l’entre-deux.",
-    "safetyTitle": "Sécurité & ressemblance",
+    "safetyTitle": "Sécurité & personnes / ressemblance",
     "safetyRules": [
-      "Pas de figures publiques réelles",
-      "Pas d’usurpation sans consentement",
-      "Pas de contenu sexuel explicite ou de mineurs sexualisés",
-      "Pas de contenu haineux, harcelant ou extrémiste",
-      "Certaines entrées peuvent être bloquées/ajustées par la modération"
+      "N’utilisez pas de frames de figures publiques (politiques, célébrités, influenceurs).",
+      "N’imitez pas de personnes privées sans consentement.",
+      "Pas de contenu sexuel explicite ni de mineurs sexualisés.",
+      "Évitez les contenus haineux, harcelants ou extrémistes.",
+      "Certains prompts ou images peuvent être bloqués/ajustés par les filtres du fournisseur et de MaxVideoAI."
     ],
-    "safetyNote": "Utilisez-le pour personnages fictifs, assets de marque et produits, pas de deepfakes.",
+    "safetyNote": "Utilisez First/Last pour des personnages fictifs, assets de marque et imagerie produit — pas pour du deepfake.",
     "comparisonTitle": "Veo 3.1 First/Last vs Veo 3.1 vs Veo 3.1 Fast",
     "comparisonPoints": [
-      "Veo 3.1 : text/image→video général avec ingredients et extend; idéal pour plans classiques.",
-      "Veo 3.1 First/Last : spécialisé pour transitions start/end avec audio; parfait pour changements de scène et before/after.",
-      "Veo 3.1 Fast : variante plus rapide/économique; certains fournisseurs offrent Fast First/Last pour prototypage."
+      "Veo 3.1 : texte/image→vidéo généraliste avec Extend; idéal pour les plans classiques.",
+      "Veo 3.1 First/Last : spécialisé pour transitions start/end avec audio; parfait pour changements de scène et avant/après.",
+      "Veo 3.1 Fast : variante plus rapide et moins chère; certains providers exposent un Fast First/Last — idéal pour prototyper des transitions."
     ],
     "comparisonCta": "Comparer Veo 3.1 First/Last vs Veo 3.1 / Veo 3.1 Fast →",
     "relatedTitle": "Explorer d’autres modèles",
-    "relatedSubtitle": "Comparez prix, latence et contrôles dans le catalogue.",
-    "finalPara1": "Veo 3.1 First/Last dans MaxVideoAI est votre moteur de transition start–end quand vous connaissez déjà les frames de début et fin.",
-    "finalPara2": "Servez-vous-en pour relier scènes, logos ou UI avec audio optionnel, puis assemblez tout dans un seul flux.",
-    "finalButton": "Ouvrir Generate"
+    "relatedSubtitle": "Comparez prix, latence et niveaux de contrôle sur le catalogue MaxVideoAI.",
+    "finalPara1": "Veo 3.1 First/Last dans MaxVideoAI est votre moteur de transition start‑end — pensé pour les moments où vous connaissez déjà la première et la dernière image.",
+    "finalPara2": "Utilisez‑le pour relier des scènes, logos, layouts UI ou beats avant/après avec audio natif optionnel, puis assemblez le tout dans un seul workflow.",
+    "finalButton": "Ouvrir Generate",
+    "promptingTitle": "Comment écrire un excellent prompt Veo 3.1 First/Last",
+    "promptingIntro": "Décrivez le frame de départ, le frame d’arrivée et la trajectoire de transition entre les deux.",
+    "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle la transition, la trajectoire caméra, la lumière, le style et les cues sonores.",
+    "promptingGlobalPrinciples": [
+      "Verrouillez les frames départ/fin; gardez le sujet cohérent.",
+      "Décrivez la trajectoire de transition (caméra + mouvement).",
+      "Gardez l’action simple pour éviter les dérives."
+    ],
+    "tipsIntro": "Le mode First/Last est plus prévisible quand le plan reste simple et que la transition est explicite.",
+    "promptingEngineWhy": [
+      "Meilleurs résultats quand les deux frames partagent le même sujet et décor.",
+      "Utilisez un seul mouvement caméra propre entre les frames.",
+      "Indiquez ce qui change et ce qui reste fixe."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. À utiliser pour itérer vite.",
+      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
+      "pro": "Pro = continuité. À utiliser pour des looks précis et répétables.",
+      "storyboard": "Storyboard = timing des beats. À utiliser pour des mini‑histoires en un clip."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Frame départ] -> [Frame fin] transition, [trajectoire caméra], [style/lumière], [cue sonore optionnel]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Frame de départ :\n[Ce qui est verrouillé : sujet, pose, cadrage.]\n\nFrame de fin :\n[Frame d’arrivée : pose, cadrage, layout.]\n\nTransition :\n[Ce qui change + comment ça bouge; trajectoire caméra.]\n\nLook :\n[Lumière + style + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief d’équipe de tournage ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité stricte.",
+        "copy": "Brief réalisateur :\n[Objectif de la transition.]\n\nFrame de départ :\n[Sujet + décor + composition.]\n\nFrame de fin :\n[Sujet + décor + composition finale.]\n\nTrajectoire :\n[Mouvement caméra + mouvement sujet + rythme.]\n\nContinuité :\n[Ce qui doit rester constant : tenue, lumière, palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues SFX.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (beats de transition)",
+        "description": "À utiliser quand vous reliez deux frames verrouillés.",
+        "copy": "Beats de transition (même sujet + même décor)\nDurée : [4/6/8s]\n\nBeat 1 (0–2s):\n[Frame de départ + début du mouvement caméra]\n\nBeat 2 (2–5s):\n[Mi‑transition + changement clé]\n\nBeat 3 (5–8s):\n[Frame de fin + caméra qui se pose]\n\nContinuité :\n[Ce qui doit rester constant : tenue, lumière, palette]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues]"
+      }
+    ],
+    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideUrl": "https://deepmind.google/technologies/veo/"
   }
 }

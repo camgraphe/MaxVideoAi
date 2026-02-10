@@ -640,7 +640,7 @@ const en: Dictionary = {
       },
       'sora-2-pro': {
         displayName: 'OpenAI Sora 2 Pro',
-        description: 'Cinematic lip-sync with 1080p output and image-to-video control for premium teams.',
+        description: 'Cinematic lip-sync with 1792×1024 output and image-to-video control for premium teams.',
         priceBefore: 'Live pricing updates inside the Generate workspace.',
         versionLabel: 'Pro',
       },

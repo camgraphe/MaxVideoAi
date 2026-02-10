@@ -14,6 +14,7 @@ export interface RoundingRule {
 
 export interface PricingAddonRule {
   perSecondCents?: number;
+  perSecondCentsByResolution?: Record<string, number>;
   flatCents?: number;
 }
 

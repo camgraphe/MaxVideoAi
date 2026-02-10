@@ -9,7 +9,7 @@ import type {
   Resolution,
 } from '@/types/engines';
 import type { MemberTier, PricingSnapshot } from '@maxvideoai/pricing';
-import { applyEngineVariantPricing, buildAudioAddonInput } from '@/lib/pricing-addons';
+import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 
 export type EngineCategory = 'video' | 'image' | 'all';
 
@@ -177,7 +177,10 @@ export async function computePreflight(request: PreflightRequest): Promise<Prefl
   const memberTier = normalizeMemberTier(request.user?.memberTier);
   const pricingEngine = applyEngineVariantPricing(engine, request.mode);
   const audioEnabled = typeof request.audio === 'boolean' ? request.audio : undefined;
-  const addons = buildAudioAddonInput(pricingEngine, audioEnabled);
+  const addons = buildEngineAddonInput(pricingEngine, {
+    audioEnabled,
+    voiceControl: request.voiceControl,
+  });
   let snapshot: PricingSnapshot;
   try {
     const quote = kernel.quote({

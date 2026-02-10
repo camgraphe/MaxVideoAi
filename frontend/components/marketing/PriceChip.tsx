@@ -8,6 +8,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
+import { formatResolutionLabel } from '@/lib/resolution-labels';
 import { Button } from '@/components/ui/Button';
 
 interface PriceChipProps {
@@ -86,6 +87,7 @@ export function PriceChip({
   const localizedMeta = slug ? localizedMetaMap[slug] : undefined;
   const engineLabel = localizedMeta?.displayName ?? rosterEntry?.marketingName ?? definition.label ?? canonicalId;
   const engineVersion = localizedMeta?.versionLabel ?? rosterEntry?.versionLabel ?? (definition.version ? `v${definition.version}` : undefined);
+  const displayResolution = formatResolutionLabel(canonicalId, resolution);
   const formattedTotal = formatCurrency(snapshot.currency, snapshot.totalCents);
   const formattedDiscount = snapshot.discount
     ? `${formatPercentage(snapshot.discount.percentApplied)} · -${formatCurrency(snapshot.currency, snapshot.discount.amountCents)}`
@@ -132,7 +134,7 @@ export function PriceChip({
                 {t('pricing.durationResolution', 'Duration × Resolution')}
               </span>
               <p className="text-sm font-medium text-text-primary">
-                {snapshot.base.seconds}s · {resolution.toUpperCase()}
+                {snapshot.base.seconds}s · {displayResolution.toUpperCase()}
               </p>
             </div>
             <div>

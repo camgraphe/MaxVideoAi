@@ -7,6 +7,7 @@ import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
+import { formatResolutionLabel } from '@/lib/resolution-labels';
 
 interface CoreSettingsBarProps {
   engine: EngineCaps;
@@ -26,9 +27,13 @@ interface CoreSettingsBarProps {
   showAudioControl?: boolean;
   audioEnabled?: boolean;
   onAudioChange?: (value: boolean) => void;
+  audioControlDisabled?: boolean;
+  audioControlNote?: string;
   showLoopControl?: boolean;
   loopEnabled?: boolean;
   onLoopChange?: (value: boolean) => void;
+  durationManaged?: boolean;
+  durationManagedLabel?: string;
 }
 
 type DurationOptionMeta = {
@@ -111,9 +116,13 @@ export function CoreSettingsBar({
   showAudioControl = false,
   audioEnabled,
   onAudioChange,
+  audioControlDisabled = false,
+  audioControlNote,
   showLoopControl = false,
   loopEnabled,
   onLoopChange,
+  durationManaged = false,
+  durationManagedLabel,
 }: CoreSettingsBarProps) {
   const { t } = useI18n();
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
@@ -156,6 +165,7 @@ export function CoreSettingsBar({
   const iterationsLabel = controlsCopy.iterationsLabel ?? 'Iterations';
   const audioLabel = controlsCopy.audio.label ?? 'Audio';
   const loopLabel = controlsCopy.loop.label ?? 'Loop';
+  const resolvedDurationManagedLabel = durationManagedLabel ?? controlsCopy.duration.managed;
 
   const durationOptions =
     frameOptions && frameOptions.length
@@ -186,7 +196,11 @@ export function CoreSettingsBar({
       '4k': `4K ${resolutionCopy.ultraHd}`,
       auto: resolutionCopy.auto,
     };
+    const formattedResolution = formatResolutionLabel(engine.id, optionKey);
     let label = baseMap[optionKey] ?? optionKey;
+    if (formattedResolution !== optionKey) {
+      label = formattedResolution;
+    }
     if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
       label = `${label} ${resolutionCopy.proSuffix}`;
     }
@@ -205,6 +219,7 @@ export function CoreSettingsBar({
   const showResolutionControl = resolutionOptions.length > 0 && !caps?.resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl;
+  const audioNotice = audioControlNote ?? (audioIncluded ? controlsCopy.core.audioIncluded : null);
   const durationRangeOptions = durationRange
     ? Array.from({ length: engine.maxDurationSec - durationRange.min + 1 }, (_, index) => {
         const value = durationRange.min + index;
@@ -215,7 +230,13 @@ export function CoreSettingsBar({
   return (
     <div className="min-w-0 flex-1">
       <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {frameOptions || (enumeratedDurationOptions && enumeratedDurationOptions.length) ? (
+        {durationManaged ? (
+          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5">
+            <div className="rounded-input border border-dashed border-border bg-surface-glass-60 px-3 py-2 text-[11px] uppercase tracking-micro text-text-muted">
+              {resolvedDurationManagedLabel}
+            </div>
+          </div>
+        ) : frameOptions || (enumeratedDurationOptions && enumeratedDurationOptions.length) ? (
           <SelectGroup
             label={frameOptions ? framesLabel : durationLabel}
             options={durationOptions}
@@ -273,6 +294,7 @@ export function CoreSettingsBar({
             ]}
             value={audioEnabled}
             onChange={(value) => onAudioChange(Boolean(value))}
+            disabled={audioControlDisabled}
           />
         )}
 
@@ -287,10 +309,10 @@ export function CoreSettingsBar({
             onChange={(value) => onLoopChange(Boolean(value))}
           />
         )}
-        {audioIncluded && controlsCopy.core.audioIncluded && (
+        {audioNotice && (
           <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5">
             <span className="inline-flex items-center rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[10px] font-semibold uppercase tracking-micro text-text-secondary">
-              {controlsCopy.core.audioIncluded}
+              {audioNotice}
             </span>
           </div>
         )}

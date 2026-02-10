@@ -1,0 +1,256 @@
+{
+  "marketingName": "Kling 3 Pro",
+  "versionLabel": "v3 Pro",
+  "seo": {
+    "title": "Kling 3 Pro – Texto e imagen a video multi‑escena | MaxVideoAI",
+    "description": "Genera videos Kling 3 Pro multi‑shot con prompts por escena, Elements y voice control opcional. Clips 3–15 s con audio nativo.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
+  },
+  "overview": "Kling 3 Pro en MaxVideoAI está pensado para control tipo storyboard: prompts multi‑shot, Elements reutilizables, frame final opcional y audio nativo con voice IDs. Crea clips de 3–15 s desde texto o imagen en 1080p, con relaciones flexibles.",
+  "pricingNotes": "Tarificación por segundo: 0,336 $/s con audio, 0,224 $/s audio off, 0,392 $/s con voice control.",
+  "hero": {
+    "title": "Kling 3 Pro – Control cinematográfico multi‑shot",
+    "intro": "Prompts por escena, Elements, voice IDs y control de frame final para beats premium.",
+    "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
+    "ctaPrimary": {
+      "label": "Generar con Kling 3 Pro",
+      "href": "/app?engine=kling-3-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ver ejemplos Kling",
+        "href": "/examples?engine=kling-3-pro"
+      },
+      {
+        "label": "Comparar modelos Kling",
+        "href": "/models"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      {
+        "title": "Anuncios y trailers multi‑shot (hasta 15 s)",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Beats narrativos con control por escena",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Consistencia de personajes + props entre planos (Elements)",
+        "icon": "layers"
+      },
+      {
+        "title": "Promos guiadas por voz y hooks (voice IDs)",
+        "icon": "mic"
+      },
+      {
+        "title": "Secuencias hero de producto con aterrizajes limpios (frame final)",
+        "icon": "product"
+      },
+      {
+        "title": "Cutdowns sociales verticales (variantes 9:16 / 1:1)",
+        "icon": "smartphone"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Detalles",
+      "body": "Kling 3 Pro está pensado para generación estructurada: multi‑shot prompting (multi_prompt), Elements reutilizables (@Element1…), frame final opcional y audio nativo con voice IDs. Trátalo como un storyboard: etiqueta los planos, mantén una acción clara por plano y reutiliza los mismos anclajes (sujeto, vestuario/props, luz) a lo largo de los planos."
+    },
+    {
+      "label": "Duración",
+      "body": "3–15 s por render"
+    },
+    {
+      "label": "Resolución",
+      "body": "1080p"
+    },
+    {
+      "label": "Relación",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "FPS",
+      "body": "24 fps"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Video; Imagen → Video (PNG/JPG/WebP), frame final opcional"
+    },
+    {
+      "label": "Controles",
+      "body": "Multi‑prompt por escena, elements, shot type, voice IDs"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo activado por defecto; audio off o voice control"
+    }
+  ],
+  "promptStructure": {
+    "title": "Promptear Kling 3 Pro",
+    "quote": "Escena 1: [plano]. Escena 2: [plano]. Escena 3: [plano]. Añade duración por escena e indicaciones de audio.",
+    "description": "Usa multi‑prompt para estructurar escenas y mantén continuidad con Elements y un frame final.",
+    "steps": [
+      "Divide el clip en 2–4 escenas",
+      "Asigna una duración por escena",
+      "Usa Elements de referencia",
+      "Especifica cámara e iluminación",
+      "Añade audio o voice IDs"
+    ]
+  },
+  "promptingTip": "Tip: duración + formato se definen en la UI — tu prompt controla el timing de planos, la cámara, la luz, el estilo y los cues de audio. Una acción por plano.",
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "La duración total de escenas debe estar entre 3 y 15 s.",
+      "Usa Elements para mantener personajes y objetos consistentes.",
+      "El voice control es opcional y añade un pequeño coste.",
+      "Añade un frame final para mejor continuidad I2V."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Montaje urbano multi‑shot",
+      "prompt": "Escena 1 (4 s): skyline al atardecer, dolly lento. Escena 2 (5 s): primer plano de neón bajo lluvia, poca profundidad. Escena 3 (4 s): caminata heroica en un callejón, ambiente sonoro."
+    },
+    {
+      "title": "Secuencia hero de producto",
+      "prompt": "Escena 1 (5 s): macro de la esfera de un reloj. Escena 2 (4 s): toma hero girando con rim light. Escena 3 (4 s): muñeca en modelo, ambiente suave."
+    }
+  ],
+  "faqTitle": "FAQ – Kling 3 Pro en MaxVideoAI",
+  "faqs": [
+    {
+      "q": "¿Qué es multi‑prompt?",
+      "a": "Permite dividir un clip en varias escenas con prompts y duraciones distintas."
+    },
+    {
+      "q": "¿Puedo controlar las voces?",
+      "a": "Sí, proporcionando voice IDs para activar voice control."
+    },
+    {
+      "q": "¿Kling 3 Pro soporta imagen‑a‑video?",
+      "a": "Sí, con una imagen inicial y un frame final opcional."
+    }
+  ],
+  "custom": {
+    "whyTitle": "Por qué Kling 3 Pro es potente",
+    "heroHighlights": [
+      "Storyboards multi‑shot en un render||Dirige un clip plano por plano (hasta ~6 planos) en lugar de meter todo en un párrafo",
+      "Elements para personajes y props estables||Define personajes/objetos una vez y referencia @Element1 / @Element2 para reducir el drift",
+      "Voice control cuando el audio importa||Voice IDs opcionales para mantener la misma voz entre tomas; referencia <<<voice_1>>> / <<<voice_2>>> (máx 2)",
+      "Frame final para cierres más limpios||Usa un frame final opcional para aterrizar transiciones, match cuts y reveals de producto",
+      "Shot type para cobertura más rápida||Elige shot_type según la intención: “intelligent” para cobertura automática, “customize” para control estricto"
+    ],
+    "specTitle": "Especificaciones reales — Kling 3 Pro en MaxVideoAI",
+    "specNote": "Las specs reflejan el routing de Fal en producción.",
+    "specSections": [
+      {
+        "title": "Control multi‑shot",
+        "intro": "Divide un clip en tomas con tiempos para control tipo storyboard hasta 15 s.",
+        "items": [
+          "Usa 2–4 tomas para mejor continuidad.",
+          "Una acción clara por toma.",
+          "Encuadre + un movimiento de cámara por toma.",
+          "Duración total entre 3–15 s."
+        ]
+      },
+      {
+        "title": "Continuidad + audio",
+        "intro": "Elements, voice IDs y end frame estabilizan personajes, objetos y sonido.",
+        "items": [
+          "Define @Element1/@Element2 una vez y reutiliza.",
+          "Referencia voces <<<voice_1>>> / <<<voice_2>>>.",
+          "End frame opcional para cierres limpios.",
+          "Audio nativo on/off en el mismo render."
+        ]
+      }
+    ],
+    "promptingTitle": "Cómo escribir un gran prompt de Kling 3 Pro",
+    "promptingGuideLabel": "Guía de prompting Kling 3.0",
+    "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
+    "promptingIntro": "Kling 3 Pro rinde mejor con dirección por planos: encuadre claro, una acción por plano, movimiento de cámara explícito y (si el audio está activo) diálogo corto + pocas pistas de sonido.",
+    "promptingGlobalPrinciples": [
+      "Piensa en planos, no en clips: una acción legible por plano.",
+      "Pon encuadre + movimiento de cámara antes de los adjetivos de estilo.",
+      "Ancla los sujetos pronto (y reutiliza el mismo wording) para reducir el drift entre planos.",
+      "Si el audio está activo: mantén el diálogo corto y añade solo 1–2 cues de sonido."
+    ],
+    "promptingEngineWhy": [
+      "multi_prompt: usa 2–4 planos para mejor consistencia; mantén la duración total ≤ 15 s.",
+      "Elements: referencia @Element1/@Element2 de forma consistente para estabilizar identidad/props.",
+      "Voice IDs: referencia las voces como <<<voice_1>>> / <<<voice_2>>> (máx 2).",
+      "Audio: el audio nativo soporta inglés y chino; otros idiomas pueden auto‑traducirse al inglés si el audio está activo.",
+      "Frame final: evita introducir nuevas acciones en el último segundo; describe claramente la pose/composición final.",
+      "shot_type: “intelligent” ayuda con cobertura automática; “customize” es mejor para control estricto."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
+      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
+      "pro": "Pro = control. Úsalo para looks precisos y repetibles.",
+      "storyboard": "Storyboard = timing de planos. Úsalo para beats multi‑shot."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Un sujeto] [una acción visible] en [entorno], [encuadre + un movimiento de cámara], [luz/estilo].\nAudio (opcional): [ambiente + 1 SFX clave O una línea corta].\nNegativo: sin texto, sin logos, sin subtítulos/overlays."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Anclas de escena:\n[Sujeto + vestuario/props + 2–3 anclas de entorno.]\n\nPlan multi‑shot (3–15 s total):\nPlano 1 (0–4 s): [encuadre + acción + un movimiento de cámara]\nPlano 2 (4–10 s): [encuadre + acción + un movimiento de cámara]\nPlano 3 (10–15 s): [acción final/reveal + settle]\n\nElements (opcional):\n@Element1 = [personaje/sujeto principal]\n@Element2 = [prop/producto]\n\nAudio (opcional):\nDiálogo: <<<voice_1>>> “Línea corta.”\nAmbiente + 1–2 cues SFX. Manténlo minimal.\n\nRestricciones:\nSin logos. Sin texto legible. Sin subtítulos/overlays."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “equipo de rodaje” ultra‑específico)",
+        "description": "Úsalo cuando necesites un look cinematográfico muy preciso o continuidad entre planos.",
+        "copy": "Brief de dirección:\n[Objetivo + vibe + audiencia.]\n\nContinuidad (repetir en cada plano):\n- Identidad del sujeto + vestuario/props\n- Ubicación + momento + 3 anclas visuales\n- Luz + anclas de paleta\n- Sensación de lente + un movimiento de cámara por plano\n\nShot type:\n[customize | intelligent]\n\nPlan multi‑shot (hasta 15 s total, hasta ~6 planos):\nPlano 1: [encuadre + acción + cámara]\nPlano 2: [encuadre + acción + cámara]\nPlano 3: [encuadre + acción + cámara]\n(opcional) Plano 4–6: [solo si hace falta]\n\nElements:\n@Element1 = [personaje]\n@Element2 = [producto/prop]\n\nAudio (si está activo):\nDiálogo: <<<voice_1>>> “Línea corta.”\nAmbiente + 1–2 cues SFX + vibe musical opcional.\n\nFrame final (opcional):\n[Describe el frame final que quieres.]\n\nNegativo:\nSin texto, sin logos, sin subtítulos/overlays, sin jump cuts."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (multi‑shot / lista de planos)",
+        "description": "Úsalo cuando quieras una mini‑story en un solo clip. Un prompt storyboard (multi‑shot / shot list) da timing claro, dirección de cámara y continuidad.",
+        "copy": "Duración: [3–15 s] • Relación: [16:9 / 9:16 / 1:1] • Audio: [on/off] • shot_type: [customize | intelligent]\n\nElements (opcional):\n@Element1 = [personaje/sujeto principal]\n@Element2 = [prop/producto]\n\nPlano 1 (0–3 s):\n[Encuadre + acción + movimiento de cámara]\n\nPlano 2 (3–8 s):\n[Encuadre + acción + movimiento de cámara]\n\nPlano 3 (8–15 s):\n[Acción final/reveal + settle de cámara]\nFrame final (opcional): [describe el frame final que quieres]\n\nAudio (si está activo):\nDiálogo: <<<voice_1>>> “Línea corta.”\nAmbiente + 1–2 cues SFX.\n\nRestricciones:\nSin logos. Sin texto legible. Sin subtítulos/overlays. Una acción por plano."
+      }
+    ],
+    "tipsTitle": "Consejos y límites",
+    "tipsIntro": "Kling 3 Pro es más predecible cuando lo planeas como storyboard: planos simples, Elements consistentes y diálogo corto.",
+    "strengths": [
+      "Clips 3–15 s con 2–4 planos y labels claros.",
+      "Usa Elements para personajes/props que quieres mantener estables.",
+      "Para audio: una línea corta + ambiente + 1 SFX clave (manténlo minimal).",
+      "Usa un frame final cuando necesites un aterrizaje limpio o un match cut.",
+      "Elige shot_type según la intención (intelligent para cobertura, customize para control estricto)."
+    ],
+    "troubleshootingItems": [
+      "Drift entre planos → repite anclas + usa @Element; simplifica cada plano a una acción.",
+      "La cámara se siente caótica → un solo movimiento por plano; evita “dynamic”; especifica “smooth track” o “tripod‑stable”.",
+      "Diálogo/lip sync deriva → acorta líneas; reduce giros rápidos de cabeza; mantén el plano más calmado.",
+      "Texto/logos aleatorios → refuerza el negativo (“no text, no logos, no UI”) y mantén la señalética fuera de plano."
+    ],
+    "boundaries": [
+      "Formato corto únicamente (hasta 15 s); encadena para narrativas más largas.",
+      "Tier 1080p en este routing.",
+      "Voice IDs limitadas (máx 2) y el comportamiento de idioma de audio depende del routing.",
+      "El frame final es opcional y funciona mejor si la composición final está claramente descrita."
+    ],
+    "galleryTitle": "Galería de ejemplos Kling 3 Pro",
+    "galleryIntro": "Renders recientes de Kling 3 Pro con multi‑shot, Elements y voice control.",
+    "galleryAllCta": "Ver todos los ejemplos Kling 3 Pro →",
+    "recreateLabel": "Recrear esta toma →",
+    "demoTitle": "Prompt demo — Kling 3 Pro",
+    "demoPromptLabel": "Prompt"
+  }
+}

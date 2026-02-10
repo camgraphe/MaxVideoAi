@@ -71,6 +71,12 @@ type GeneratePayload = {
   allowIndex?: boolean;
   indexable?: boolean;
   loop?: boolean;
+  multiPrompt?: Array<{ prompt: string; duration: number }>;
+  shotType?: 'customize' | 'intelligent';
+  voiceIds?: string[];
+  voiceControl?: boolean;
+  elements?: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>;
+  endImageUrl?: string;
 };
 
 type GenerateOptions = {

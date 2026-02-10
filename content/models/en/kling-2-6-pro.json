@@ -9,7 +9,7 @@
   "overview": "Kling 2.6 Pro in MaxVideoAI: short-form cinematic clips with native audio, text or image input, 1080p output, 5–10s runs, and audio on/off toggle.",
   "hero": {
     "title": "Kling 2.6 Pro – Cinematic AI Video with Native Audio",
-    "intro": "Emotionally rich, cinematic AI video with realistic dialogue and sound for ads, VFX and storytelling.",
+    "intro": "Dialogue-ready cinematic clips from text or a single frame — with native audio that matches the scene.",
     "badge": "1080p · 5–10s · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 2.6 Pro",
@@ -29,21 +29,62 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Product ads with dialogue and ambience baked in",
-      "Emotional storytelling in short, cinematic beats",
-      "Social-first clips needing polished motion and sound",
-      "Previsualization for VFX and motion design"
+      {
+        "title": "Product ads with dialogue + ambience",
+        "icon": "ads"
+      },
+      {
+        "title": "Emotional storytelling beats",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Voiceover hooks & character lines",
+        "icon": "mic"
+      },
+      {
+        "title": "Social promos with polished motion + sound",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Trailer-style beats (music/SFX mood)",
+        "icon": "storyboard"
+      },
+      {
+        "title": "VFX / motion design previs with synced audio",
+        "icon": "sparkles"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "5–10 s per render" },
-    { "label": "Resolution", "body": "1080p" },
-    { "label": "Aspect ratio", "body": "16:9, 9:16, 1:1" },
-    { "label": "Frame rate", "body": "24 fps (per Fal defaults)" },
-    { "label": "Inputs", "body": "Text → Video; Image → Video (PNG/JPG/WebP), prompt + negative + seed" },
-    { "label": "Audio", "body": "Native audio on by default; toggle off for silent runs" },
-    { "label": "Pricing", "body": "Per-second; example: $0.14/s audio on, $0.07/s audio off" }
+    {
+      "label": "Duration",
+      "body": "5–10 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "1080p"
+    },
+    {
+      "label": "Aspect ratio",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Frame rate",
+      "body": "24 fps (per Fal defaults)"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text → Video; Image → Video (PNG/JPG/WebP), prompt + negative + seed"
+    },
+    {
+      "label": "Audio",
+      "body": "Native audio on by default; toggle off for silent runs"
+    },
+    {
+      "label": "Pricing",
+      "body": "Per-second; example: $0.14/s audio on, $0.07/s audio off"
+    }
   ],
   "promptStructure": {
     "title": "Prompting Kling 2.6 Pro",
@@ -77,60 +118,51 @@
     }
   ],
   "faqs": [
-    { "q": "Does Kling 2.6 Pro include audio?", "a": "Yes, native audio is on by default. You can toggle it off for silent exports." },
-    { "q": "Which modes are supported?", "a": "Text → Video and Image → Video in a single card. No first/last frame in this routing." },
-    { "q": "What durations work best?", "a": "Stay within 5–10s for strong beats. Stitch multiple renders for longer narratives." }
+    {
+      "q": "Does Kling 2.6 Pro include audio?",
+      "a": "Yes, native audio is on by default. You can toggle it off for silent exports."
+    },
+    {
+      "q": "Which modes are supported?",
+      "a": "Text → Video and Image → Video in a single card. No first/last frame in this routing."
+    },
+    {
+      "q": "What durations work best?",
+      "a": "Stay within 5–10s for strong beats. Stitch multiple renders for longer narratives."
+    }
   ],
   "custom": {
-    "whyTitle": "Why Kling 2.6 Pro inside MaxVideoAI",
+    "heroSupportLine": "Best for short ads, mini-stories, and VFX beats where emotion + sound matter.",
+    "whyTitle": "Why Kling 2.6 Pro is powerful",
     "heroDesc1": "Cinematic 5–10s clips where video, dialogue, ambience, sound effects, and music are generated together in one pass at 1080p. Text or image input in a single card, with native audio in English and Chinese built in.",
     "heroDesc2": "Use Kling 2.6 Pro when you need emotionally rich motion with fully synced sound; toggle audio off for silent drafts or manual sound design.",
     "heroHighlights": [
-      "Text → Video and Image → Video in one card",
-      "End-to-end audio: dialogue/narration, SFX, ambience, music in one pass",
-      "5–10s cinematic clips at 1080p with strong prompt adherence",
-      "Audio toggle for previs or sound-on renders",
-      "Native speech in English and Chinese",
-      "Per-second pricing through your MaxVideoAI wallet"
+      "Native audio in one pass||Dialogue, ambience, and SFX land in sync with the visuals.",
+      "Speech-ready outputs||Built-in voice support for English and Chinese lines.",
+      "Cinematic intent holds up||Clear camera direction and beats translate with less drift.",
+      "Flexible for post||Keep audio on for drafts, or mute and finish sound in your editor."
     ],
     "specTitle": "Real Specs – Kling 2.6 Pro in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",
     "specSections": [
       {
-        "title": "Duration & Output",
+        "title": "Audio-ready cinematics",
+        "intro": "Generates dialogue, ambience, and SFX in sync with the visuals. Best for emotional beats and mini-stories.",
         "items": [
-          "Durations: 5 or 10 seconds",
-          "Resolution: 1080p"
+          "Call out dialogue lines explicitly.",
+          "Add ambience cues for mood.",
+          "Use clear camera language.",
+          "Keep beats short for tight sync."
         ]
       },
       {
-        "title": "Aspect Ratios",
+        "title": "Speech & post flexibility",
+        "intro": "Built-in speech support helps for character lines, while you can still mute and finish in post. Use it when sound is part of the story.",
         "items": [
-          "16:9 — cinematic landscape",
-          "9:16 — vertical for social",
-          "1:1 — square feed placements"
-        ]
-      },
-      {
-        "title": "Inputs",
-        "items": [
-          "Text prompts with concise scene direction",
-          "Image → Video: single still (PNG/JPG/WebP)"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Native audio on by default – dialogue/narration, SFX, ambience and a music bed generated together with the visuals",
-          "Toggle audio off when adding your own mix or for silent previs renders",
-          "Languages: English and Chinese speech supported in this routing"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "~$0.07/s audio off; ~$0.14/s audio on",
-          "Wallet-based pay-as-you-go"
+          "Indicate language for spoken lines.",
+          "Leave room for a music bed if needed.",
+          "Generate multiple takes for timing.",
+          "Mute if you plan a full mix."
         ]
       }
     ],
@@ -149,27 +181,95 @@
     "galleryIntro": "Recent Kling 2.6 Pro renders with native audio for dialogue, ambience, and emotional storytelling.",
     "galleryAllCta": "View all Kling 2.6 examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Prompt ideas for Kling 2.6 Pro",
-    "promptIntro": "Stay concise but write for both picture and sound: subject, action, camera, lighting, 5–10s, aspect, then a clear audio note.",
-    "promptPatternSteps": [
-      "Subject & action (1–2 beats you can see and hear)",
-      "Camera move and pacing",
-      "Lighting/grade and mood",
-      "Aspect (16:9/9:16/1:1) and duration 5–10s",
-      "Audio note: short dialogue line + ambience/SFX/music, or “mute”"
-    ],
-    "promptSkeleton": "Cinematic [subject] in [setting], [camera move], [lighting/grade], [duration 5–10s], [aspect], audio [on/off] with [short dialogue line + ambience/SFX/music].",
-    "promptSkeletonNote": "Keep dialogue short and clear; negatives help avoid extra subjects.",
     "tipsTitle": "Tips & limits",
     "strengths": [
-      "Native audio for dialogue, ambience, SFX and a light music bed",
-      "Best results between 5–10s with 1–2 clear actions; chain clips for longer arcs",
-      "1080p-only in this routing; use Kling 2.5, Wan or Veo for 4K"
+      "Write camera-first: framing + angle + a single move (dolly / pan / slow handheld drift), then style.",
+      "Keep the visual beat simple (one subject, one clear action). Short beats sync best with audio.",
+      "If audio is on: add minimal cues (ambience + 1 key SFX) and keep dialogue to one short line.",
+      "State the spoken line explicitly, then leave room for sound (don’t over-direct the mix).",
+      "Generate 2–3 takes for timing; pick the one where lip sync and pacing land."
     ],
     "boundaries": [
-      "English and Chinese speech only; disable audio and dub in post for other languages",
-      "Max 10s per render",
-      "One reference still for I2V; no multi-image or per-character voice control yet"
-    ]
+      "5s or 10s per render.",
+      "1080p max, 24 fps.",
+      "Speech output is English/Chinese (other languages may be auto-translated to English when audio is enabled).",
+      "Image→Video uses a single reference image; tiny on-screen text remains unreliable (overlay in post)."
+    ],
+    "promptingTitle": "How to Write a Great Kling 2.6 Pro Prompt",
+    "promptingIntro": "Kling 2.6 Pro prefers clear subject, action, and camera direction; add sound cues if audio is on.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and optional sound. Use Negative prompt to block artifacts.",
+    "promptingGlobalPrinciples": [
+      "One subject, one action, one camera move.",
+      "Call out lighting and lens feel.",
+      "Add short sound cues or dialogue if audio is on."
+    ],
+    "tipsIntro": "Kling 2.6 Pro is easiest to steer when you write a tight shot brief and treat audio as part of the scene (not an afterthought).",
+    "promptingEngineWhy": [
+      "Audio mode supports simple ambience and short lines.",
+      "Camera language improves consistency.",
+      "Negative prompts help remove text/logos/extra characters."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = continuity. Use for precise, repeatable looks.",
+      "storyboard": "Storyboard = beat timing. Use for mini-stories in one clip."
+    },
+    "demoTitle": "Demo prompt: Kling 2.6 Pro",
+    "demoPromptLabel": "Prompt",
+    "demoPrompt": [
+      "Two friends walk through a rain-soaked neon alley at night, camera tracks at shoulder height, reflective puddles, soft thunder, quiet dialogue: “Did you get the shot?” “Yeah, Kling 2.6 nailed it.”"
+    ],
+    "demoNotes": [],
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "Prompt: [Subject + action] in [setting], [camera move], [lighting/style], [sound cue].\nNegative: [text, logos, extra limbs, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move + lens feel.]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 SFX cues or a short line.]\n\nNegative:\n[What to avoid.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"film crew brief\")",
+        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Traits + materials.]\n\nSet:\n[Location + 3 anchors.]\n\nCinematography:\n[Framing + angle + one move + lens.]\n\nLighting + grade:\n[Key light + contrast + palette.]\n\nSound (optional):\n[Ambience + SFX + short dialogue.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (multi-shot / shot list)",
+        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
+        "copy": "Storyboard / shot list prompt\nDuration: [5/10s] • Aspect: [16:9 or 9:16]\n\nScene + continuity:\n[Same subject + same location + same wardrobe/props + same lighting throughout.]\n\nShot 1 (0–2s):\n[Framing + subject action + camera move]\n\nShot 2 (2–6s):\n[Framing + subject action + camera move]\n\nShot 3 (6–10s):\n[Framing + final action/reveal + camera move or settle]\n\nLighting + mood:\n[Golden hour / soft daylight / neon night… + 2–3 palette anchors]\n\nSound (if supported):\n[Ambience + 1–2 SFX cues + optional music vibe]\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. No jump cuts. No slow-motion."
+      }
+    ],
+    "promptingGuideLabel": "Kling by Kuaishou",
+    "promptingGuideUrl": "https://www.kuaishou.com/en",
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Dialogue/lip sync drifts → shorten the line, slow delivery, avoid long monologues; reduce head turns and fast facial performance.",
+      "Audio language mismatch → speech output is English/Chinese; if you need another language, turn audio off and dub in post.",
+      "Motion feels messy → one camera move only, slower action, simpler background.",
+      "Subject/identity drifts → start from Image→Video, keep wardrobe + lighting + palette constant, reuse the same wording across takes.",
+      "Random text/logos appear → add a short negative prompt (“no text, no logos, no UI”) and keep signage out of frame."
+    ],
+    "safetyTitle": "Safety & people / likeness",
+    "safetyRules": [
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t include private personal data (addresses, phone numbers, documents, non-consenting faces).",
+      "Use only content you have rights to; some prompts/inputs may be blocked by provider safety filters."
+    ],
+    "safetyInterpretation": [],
+    "safetyNote": null
   }
 }

@@ -14,6 +14,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { isDatabaseConfigured } from '@/lib/db';
 import compareConfig from '@/config/compare-config.json';
 import { COMPARE_SHOWDOWNS } from '@/config/compare-showdowns';
+import { listFalEngines } from '@/config/falEngines';
 import engineCatalog from '@/config/engine-catalog.json';
 import { ButtonLink } from '@/components/ui/Button';
 import { CompareEngineSelector } from './CompareEngineSelector.client';
@@ -21,6 +22,8 @@ import { CompareScoreboard } from './CompareScoreboard.client';
 import { CopyPromptButton } from './CopyPromptButton.client';
 import { getLatestVideoByPromptAndEngine, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { fetchEngineAverageDurations } from '@/server/generate-metrics';
+import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import type { EngineCaps } from '@/types/engines';
 
 const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL ?? 'https://maxvideoai.com').replace(
   /\/+$/,
@@ -146,6 +149,9 @@ const ENGINE_OPTIONS = [...CATALOG]
   .filter((entry) => !EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug))
   .map((entry) => ({ value: entry.modelSlug, label: entry.marketingName }))
   .sort((a, b) => a.label.localeCompare(b.label, 'en'));
+const PRICING_ENGINES = new Map<string, EngineCaps>(
+  listFalEngines().map((entry) => [entry.modelSlug, entry.engine])
+);
 
 function reverseCompareSlug(slug: string) {
   const parts = slug.split('-vs-');
@@ -518,7 +524,20 @@ function formatPriceLine(label: string | null, cents: number) {
   return label ? `${label}: ${value}` : value;
 }
 
-function resolvePricingDisplay(entry: EngineCatalogEntry) {
+async function resolvePricingDisplay(entry: EngineCatalogEntry, pricingEngine?: EngineCaps | null) {
+  if (pricingEngine) {
+    const range = await computeMarketingPriceRange(pricingEngine, { durationSec: 5, memberTier: 'member' });
+    if (range) {
+      const headline = formatPriceLine(range.min.resolution, range.min.cents);
+      const prices = [range.min.cents / 100];
+      let subline: string | null = null;
+      if (range.max.cents !== range.min.cents || range.max.resolution !== range.min.resolution) {
+        subline = formatPriceLine(range.max.resolution, range.max.cents);
+        prices.push(range.max.cents / 100);
+      }
+      return { headline, subline, prices };
+    }
+  }
   const perSecond = entry.engine?.pricingDetails?.perSecondCents;
   const byResolution = perSecond?.byResolution ?? {};
   const resolutionEntries = Object.entries(byResolution)
@@ -1000,8 +1019,10 @@ export default async function CompareDetailPage({
     keySpecs.get(right.modelSlug)?.keySpecs ?? keySpecs.get(right.engineId)?.keySpecs ?? undefined;
   const leftSpecs = buildSpecValues(left, leftKeySpecs);
   const rightSpecs = buildSpecValues(right, rightKeySpecs);
-  const leftPricingDisplay = resolvePricingDisplay(left);
-  const rightPricingDisplay = resolvePricingDisplay(right);
+  const [leftPricingDisplay, rightPricingDisplay] = await Promise.all([
+    resolvePricingDisplay(left, PRICING_ENGINES.get(left.modelSlug)),
+    resolvePricingDisplay(right, PRICING_ENGINES.get(right.modelSlug)),
+  ]);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
   const overallTone = resolveOverallTone(leftOverall, rightOverall);

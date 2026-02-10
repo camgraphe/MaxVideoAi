@@ -16,7 +16,7 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   'sora-2-pro': {
     description:
       'Sora 2 Pro unlocks higher resolutions, synced dialogue, and image-to-video control for top-tier productions.',
-    badges: ['1080p', 'Audio native', 'Lip-sync'],
+    badges: ['1792×1024', 'Audio native', 'Lip-sync'],
   },
   'veo-3-1': {
     description:
@@ -42,6 +42,21 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
     description:
       'Kling 2.5 Turbo lives in one card with Pro text, Pro image, and Standard image-to-video modes for cinematic shots or budget loops.',
     badges: ['Text prompts', 'Image-to-video', 'Standard tier'],
+  },
+  'kling-3-pro': {
+    description:
+      'Kling 3 Pro adds multi-prompt sequencing, element references, and voice controls for long-form cinematic shots.',
+    badges: ['Multi-prompt', 'Element references', 'Audio native'],
+  },
+  'kling-3-standard': {
+    description:
+      'Kling 3 Standard brings multi-prompt sequencing and element references at a lower per-second rate.',
+    badges: ['Multi-prompt', 'Element references', 'Audio native'],
+  },
+  'seedance-1-5-pro': {
+    description:
+      'Seedance 1.5 Pro delivers cinematic motion with camera lock, flexible aspect ratios, and native audio.',
+    badges: ['Camera lock', 'Audio native', 'Aspect ratio control'],
   },
   'wan-2-5': {
     description:

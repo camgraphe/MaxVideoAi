@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-01-27",
+  "last_updated": "2026-02-10",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -34,7 +34,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
       }
     },
     {
@@ -43,7 +44,9 @@
         "https://maxvideoai.com/models/sora-2-pro",
         "https://openai.com/index/sora-2-pro/",
         "https://openai.com/index/launching-sora-responsibly/",
-        "https://fal.ai/models/fal-ai/sora/v2.0/pro/text-to-video/api"
+        "https://fal.ai/models/fal-ai/sora/v2.0/pro/text-to-video/api",
+        "https://platform.openai.com/docs/models/sora-2-pro",
+        "https://cookbook.openai.com/examples/sora/sora2_prompting_guide"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
@@ -52,7 +55,7 @@
         "firstLastFrame": "Not supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Not supported",
-        "maxResolution": "1080p (1920×1080) or 720p",
+        "maxResolution": "1792×1024",
         "maxDuration": "12s",
         "aspectRatios": [
           "16:9",
@@ -68,7 +71,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
       }
     },
     {
@@ -104,7 +108,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -139,7 +144,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -173,7 +179,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -208,7 +215,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -241,7 +249,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -275,7 +284,8 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Dec 2025"
       }
     },
     {
@@ -308,7 +318,8 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
       }
     },
     {
@@ -343,7 +354,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Dec 2025"
       }
     },
     {
@@ -376,6 +388,103 @@
         "audioOutput": "Not supported",
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
+      }
+    },
+    {
+      "modelSlug": "kling-3-pro",
+      "sources": [
+        "https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/v3/pro/image-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/lipsync/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "kling-3-standard",
+      "sources": [
+        "https://fal.ai/models/fal-ai/kling-video/v3/standard/text-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/v3/standard/text-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/lipsync/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "seedance-1-5-pro",
+      "sources": [
+        "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+        "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video/api",
+        "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p",
+        "maxDuration": "12s",
+        "aspectRatios": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)"
       }
@@ -413,7 +522,8 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Feb 2025"
       }
     },
     {
@@ -449,7 +559,27 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Jun 2025"
+      }
+    },
+    {
+      "modelSlug": "nano-banana",
+      "sources": [
+        "https://developers.googleblog.com/introducing-gemini-2-5-flash-image/",
+        "https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash-image"
+      ],
+      "keySpecs": {
+        "releaseDate": "Aug 2025"
+      }
+    },
+    {
+      "modelSlug": "nano-banana-pro",
+      "sources": [
+        "https://blog.google/innovation-and-ai/products/google-ai-updates-november-2025/"
+      ],
+      "keySpecs": {
+        "releaseDate": "Nov 2025"
       }
     }
   ]

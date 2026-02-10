@@ -65,7 +65,8 @@ const FALLBACK_FEATURES: WorkflowFeature[] = [
 const FALLBACK_EXAMPLES: WorkflowExampleEntry[] = [
   { label: 'Sora 2', slug: 'sora-2', brandId: 'openai' },
   { label: 'Veo 3.1', slug: 'veo-3-1', brandId: 'google-veo' },
-  { label: 'Kling 2.6 Pro', slug: 'kling-2-6-pro', brandId: 'kling' },
+  { label: 'Kling 3 Standard', slug: 'kling-3-standard', brandId: 'kling' },
+  { label: 'Seedance 1.5 Pro', slug: 'seedance-1-5-pro', brandId: 'bytedance' },
   { label: 'Pika Text-to-Video', slug: 'pika-text-to-video', brandId: 'pika' },
   { label: 'Wan 2.6', slug: 'wan-2-6', brandId: 'wan' },
   { label: 'LTX-2', slug: 'ltx-2', brandId: 'lightricks' },
@@ -161,7 +162,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
               'Your repeatable AI video workflow: pick an engine, set the shot, preview price, and generate variants you can reuse.'}
           </p>
           <div className="flex flex-wrap gap-3">
-            <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
+            <ButtonLink href="/app" prefetch={false} size="lg" className="shadow-card" linkComponent={Link}>
               {content.hero?.primaryCta ?? 'Generate now'}
             </ButtonLink>
             <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>
@@ -278,7 +279,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
+              <ButtonLink href="/app" prefetch={false} size="lg" className="shadow-card" linkComponent={Link}>
                 {content.cta?.primaryCta ?? 'Generate now'}
               </ButtonLink>
               <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>

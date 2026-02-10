@@ -3,16 +3,16 @@
   "versionLabel": "2.6",
   "seo": {
     "title": "Wan 2.6 – Generador de video IA (Texto, Imagen y Referencia) | MaxVideoAI",
-    "description": "Genera clips cinematográficos de 5–15 s (Texto/Imagen) con Wan 2.6 en MaxVideoAI. Prompts multi-shot, animación de un still, o consistencia de sujeto con 1–3 videos de referencia (5–10 s). 720p/1080p, precio por segundo.",
+    "description": "Genera clips cinematográficos de 5–15 s (Texto/Imagen) con Wan 2.6 en MaxVideoAI. Usa prompts multi‑shot, anima un still, o mantén la consistencia del sujeto con 1–3 videos de referencia (5–10 s). 720p/1080p, precio por segundo.",
     "image": "/hero/wan-26.jpg"
   },
-  "overview": "Wan 2.6 en MaxVideoAI: clips cortos multi-shot de 5–15 s desde texto o imagen, más modo referencia (5–10 s) para consistencia de sujeto. Salida 720p/1080p, audio opcional en T2V/I2V, pago por uso.",
+  "overview": "Wan 2.6 en MaxVideoAI: clips multi‑shot de 5–15 s desde texto o una imagen fija, más referencia‑a‑video (5–10 s) para consistencia del sujeto entre variantes. Salida 720p/1080p, audio opcional en T2V/I2V, pago por uso.",
   "hero": {
-    "title": "Wan 2.6 – Video IA multi-shot (Texto/Imagen 5–15 s, Referencia 5–10 s, 720p/1080p)",
-    "intro": "Clips cortos cinematográficos pensados para prompts estructurados, transiciones limpias y sujetos coherentes.",
+    "title": "Wan 2.6 – Video IA multi‑shot (Texto/Imagen 5–15 s, Referencia 5–10 s, 720p/1080p)",
+    "intro": "Clips estructurados multi‑shot con mayor consistencia del sujeto — sobre todo cuando partes de referencias.",
     "badge": "720p/1080p · Texto/Imagen 5–15 s · Referencia 5–10 s · Audio opcional (T2V/I2V)",
     "ctaPrimary": {
-      "label": "Empezar con Wan 2.6",
+      "label": "Generar con Wan 2.6",
       "href": "/app?engine=wan-2-6"
     },
     "secondaryLinks": [
@@ -25,171 +25,200 @@
   "bestUseCases": {
     "title": "Casos de uso",
     "items": [
-      "Storyboards cinemáticos y mini trailers (multi-shot, 10–15 s)",
-      "Motion de producto desde un key visual (I2V)",
-      "Consistencia de sujeto con 1–3 videos de referencia (R2V)",
-      "Entregables sociales en múltiples formatos"
+      {
+        "title": "Mini‑trailers y storyboards",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Motion hero de producto (desde un still)",
+        "icon": "product"
+      },
+      {
+        "title": "Consistencia del sujeto (video de referencia)",
+        "icon": "users"
+      },
+      {
+        "title": "Secuencias multi‑shot (beats con timestamps)",
+        "icon": "layers"
+      },
+      {
+        "title": "Match cuts y transiciones limpias",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Sound beds vía URL de audio (T2V/I2V)",
+        "icon": "volume2"
+      }
     ]
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    { "label": "Duración", "body": "Texto/Imagen: 5, 10, 15 s · Referencia: 5 o 10 s" },
-    { "label": "Resolución", "body": "720p o 1080p" },
-    { "label": "Ratios", "body": "T2V/R2V: 16:9, 9:16, 1:1, 4:3, 3:4 · I2V: auto desde la imagen" },
-    { "label": "Entradas", "body": "Prompts de texto, un still, o 1–3 videos de referencia" },
-    { "label": "Audio", "body": "URL de audio opcional en T2V/I2V; desactivado en R2V" },
-    { "label": "Precios", "body": "0,13 $/s (720p), 0,20 $/s (1080p)" }
+    {
+      "label": "Duración",
+      "body": "Texto/Imagen: 5, 10, 15 s · Referencia: 5 o 10 s"
+    },
+    {
+      "label": "Resolución",
+      "body": "720p o 1080p"
+    },
+    {
+      "label": "Relaciones",
+      "body": "T2V/R2V: 16:9, 9:16, 1:1, 4:3, 3:4 · I2V: auto desde la imagen"
+    },
+    {
+      "label": "Entradas",
+      "body": "Prompts de texto, una imagen fija, o 1–3 videos de referencia"
+    },
+    {
+      "label": "Audio",
+      "body": "URL de audio opcional en modos Texto/Imagen; desactivado en modo Referencia"
+    },
+    {
+      "label": "Precio",
+      "body": "$0.13/s (720p), $0.20/s (1080p)"
+    }
   ],
   "promptStructure": {
     "title": "Promptear Wan 2.6",
-    "quote": "Prompt multi-shot con timestamps: [0-3s] plano... [3-8s] transición... [8-15s] beat final.",
+    "quote": "Prompt multi‑shot con timestamps: [0–3s] plano… [3–8s] transición… [8–15s] beat final.",
     "description": "Escribe prompts por plano con timestamps y describe cámara, movimiento y luz.",
     "steps": [
       "Look global y sujeto",
-      "Planos con timestamps ([0-3s], [3-8s], etc.)",
+      "Planos con timestamps ([0–3s], [3–8s], etc.)",
       "Lenguaje de cámara y ritmo",
       "Luz y grade",
       "Notas de audio opcionales (T2V/I2V)"
     ]
   },
   "tips": {
-    "title": "Consejos y limites",
+    "title": "Consejos y límites",
     "items": [
-      "Usa timestamps para mini narrativas con transiciones limpias.",
-      "En I2V, describe movimiento y cámara en lugar de re-describir la imagen.",
-      "En R2V, etiqueta referencias como @Video1/@Video2/@Video3.",
-      "R2V está limitado a 5–10 s: divide historias largas."
+      "Usa planos con timestamps para mini narrativas y transiciones limpias.",
+      "En I2V, describe movimiento y cámara en lugar de re‑describir la imagen.",
+      "En R2V, etiqueta las referencias como @Video1/@Video2/@Video3.",
+      "R2V soporta 5–10 s; divide historias largas en varios clips."
     ]
   },
   "prompts": [
     {
-      "title": "Mini trailer vertical (T2V)",
-      "prompt": "Vertical 9:16, anuncio social premium. Plano 1 [0-3s] macro de un producto sobre superficie negra mojada, push-in lento, reflejos especulares. Plano 2 [3-8s] whip pan a una mano que lo toma, rim light suave, bokeh de ciudad nocturna. Plano 3 [8-15s] hero shot limpio, rotación sutil, sin texto, sin watermark."
+      "title": "Mini‑trailer vertical (T2V)",
+      "prompt": "Vertical 9:16, anuncio social premium. Plano 1 [0–3s] macro de un producto sobre superficie negra mojada, push‑in lento, reflejos especulares. Plano 2 [3–8s] whip pan a una mano que lo toma, rim light suave, bokeh de ciudad nocturna. Plano 3 [8–15s] hero shot limpio, rotación sutil, sin texto, sin watermark."
     },
     {
       "title": "Packshot animado (I2V)",
-      "prompt": "Continuar desde el primer frame. Dolly-in lento, parallax suave, barrido de luz sobre la etiqueta, partículas finas, look de estudio premium, sin texto."
+      "prompt": "Continuar desde el primer frame. Dolly‑in lento, parallax suave, barrido de luz sobre la etiqueta, partículas finas, look de estudio premium, sin texto."
     },
     {
       "title": "Batalla de baile (R2V)",
-      "prompt": "Batalla de baile entre @Video1 y @Video2 en un hall de museo vacío. @Video1 inicia centro-izquierda, @Video2 entra desde la derecha. Órbita de cámara dinámica, iluminación dramática."
+      "prompt": "Batalla de baile entre @Video1 y @Video2 en un hall de museo vacío. @Video1 inicia centro‑izquierda, @Video2 entra desde la derecha. Órbita de cámara dinámica, iluminación dramática."
     }
   ],
   "faqs": [
-    { "q": "¿Wan 2.6 soporta audio?", "a": "URL de audio opcional en modos Texto e Imagen. El modo Referencia no soporta audio subido." },
-    { "q": "¿Cuántos videos de referencia puedo subir?", "a": "1–3 videos MP4/MOV. Etiquétalos como @Video1, @Video2 y @Video3." },
-    { "q": "¿Qué duraciones están disponibles?", "a": "Texto e Imagen: 5, 10 o 15 s. Referencia: 5 o 10 s." }
+    {
+      "q": "¿Wan 2.6 soporta audio?",
+      "a": "Las URL de audio son opcionales en modos Texto e Imagen. El modo Referencia no soporta audio subido."
+    },
+    {
+      "q": "¿Cuántos videos de referencia puedo subir?",
+      "a": "1–3 referencias MP4/MOV. Etiquétalas en el prompt como @Video1, @Video2 y @Video3."
+    },
+    {
+      "q": "¿Qué duraciones están disponibles?",
+      "a": "Texto e Imagen: 5, 10 o 15 segundos. Referencia: 5 o 10 segundos."
+    }
   ],
   "custom": {
-    "whyTitle": "Por qué Wan 2.6 es potente en MaxVideoAI",
-    "heroDesc1": "Wan 2.6 unifica entradas de Texto, Imagen y Referencia en una sola tarjeta para iterar rápido en beats cinemáticos.",
-    "heroDesc2": "Usa prompts multi-shot para mini trailers, anima un still o bloquea la identidad con 1–3 videos de referencia.",
+    "heroSupportLine": "Ideal para storyboards, mini‑trailers y motion de producto cuando las transiciones deben ser limpias.",
+    "whyTitle": "Por qué Wan 2.6 es potente",
+    "heroDesc1": "Wan 2.6 unifica entradas de Texto, Imagen y Referencia en una sola tarjeta, para iterar beats cinemáticos sin cambiar de modelo.",
+    "heroDesc2": "Usa prompts multi‑shot para mini‑trailers, anima un still o fija la consistencia del sujeto con 1–3 videos de referencia.",
     "heroHighlights": [
-      "Texto → Video, Imagen → Video y Referencia → Video en una sola tarjeta",
-      "Prompts multi-shot con timestamps para mini narrativas",
-      "Audio opcional vía URL en T2V/I2V (desactivado en R2V)",
-      "Ratios ampliados para redes sociales",
-      "Precio transparente por segundo en el wallet MaxVideoAI"
+      "Tres modos, un flujo||Elige texto, imagen o referencia según el control que necesites.",
+      "Listas de planos con timestamps||Los prompts beat‑a‑beat controlan ritmo y transiciones con menos drift.",
+      "Anclaje por referencia||Etiqueta @Video1/@Video2/@Video3 para mantener el mismo sujeto entre variantes.",
+      "Sound bed opcional||Añade una pista de fondo en Texto/Imagen; mantén Referencia enfocada en lo visual."
     ],
     "bestUseCasesTitle": "Casos de uso",
     "bestUseCases": [
-      "Storyboards cinemáticos y mini trailers",
-      "Motion de producto desde un still",
-      "Consistencia de sujeto con videos de referencia",
-      "Salidas sociales multi-formato"
+      {
+        "title": "Mini‑trailers y storyboards",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Motion hero de producto (desde un still)",
+        "icon": "product"
+      },
+      {
+        "title": "Consistencia del sujeto (video de referencia)",
+        "icon": "users"
+      },
+      {
+        "title": "Secuencias multi‑shot (beats con timestamps)",
+        "icon": "layers"
+      },
+      {
+        "title": "Match cuts y transiciones limpias",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Sound beds vía URL de audio (T2V/I2V)",
+        "icon": "volume2"
+      }
     ],
     "whatTitle": "Cómo funciona Wan 2.6 en MaxVideoAI",
-    "whatIntro1": "Elige modo Texto, Imagen o Referencia, define duración y resolución, y redacta el prompt.",
-    "whatIntro2": "El modo Referencia mantiene la identidad usando videos reales.",
-    "whatFlowTitle": "In-app flow",
+    "whatIntro1": "Elige modo Texto, Imagen o Referencia, define duración y resolución, y luego escribe el prompt.",
+    "whatIntro2": "El modo Referencia mantiene la identidad del sujeto anclando el modelo a metraje real.",
+    "whatFlowTitle": "Flujo en la app",
     "whatFlowSteps": [
       "1. Elige Wan 2.6.",
       "2. Selecciona Texto → Video, Imagen → Video o Referencia → Video.",
-      "3. Ajusta duración, resolución y ratio (T2V/R2V).",
+      "3. Ajusta duración, resolución y relación (T2V/R2V).",
       "4. Opcional: seed.",
-      "5. Opcional: audio de fondo (T2V/I2V).",
-      "6. Ve el precio final antes de renderizar."
+      "5. Opcional: audio de fondo (solo T2V/I2V).",
+      "6. Revisa el precio final antes de renderizar."
     ],
-    "specTitle": "Specs reales – Wan 2.6 en MaxVideoAI",
-    "specNote": "Specs basadas en el routing Fal actual.",
+    "specTitle": "Especificaciones reales — Wan 2.6 en MaxVideoAI",
+    "specNote": "Estas specs reflejan el routing de Fal hoy.",
     "specSections": [
       {
-        "title": "Texto → Video",
+        "title": "Consistencia con referencias",
+        "intro": "Admite flujos de texto, imagen y referencia de video para mayor continuidad del sujeto. Pensado para secuencias multi‑shot.",
         "items": [
-          "Duración: 5 / 10 s",
-          "Resolución: 720p / 1080p",
-          "Ratios: 16:9, 9:16, 1:1, 4:3, 3:4",
-          "URL de audio opcional (WAV/MP3, 3–30 s, <=15MB)"
+          "Usa video de referencia para anclar un personaje.",
+          "Mantén vestuario y luz constantes.",
+          "Especifica transiciones entre beats.",
+          "Ideal para storyboards y mini‑trailers."
         ]
       },
       {
-        "title": "Imagen → Video",
+        "title": "Control con timestamps",
+        "intro": "Las listas de planos con timestamps controlan el ritmo y las transiciones. Los beats claros funcionan mejor que los adjetivos.",
         "items": [
-          "Entrada: 1 still obligatorio",
-          "Duración: 5 / 10 s",
-          "Resolución: 720p / 1080p",
-          "Ratio automático desde la imagen",
-          "URL de audio opcional (WAV/MP3)"
-        ]
-      },
-      {
-        "title": "Referencia → Video",
-        "items": [
-          "Entrada: 1–3 videos de referencia (MP4/MOV)",
-          "Prompt: etiqueta @Video1/@Video2/@Video3",
-          "Duración: 5 / 10 / 15 s",
-          "Resolución: 720p / 1080p",
-          "Audio subido no soportado"
-        ]
-      },
-      {
-        "title": "Precios",
-        "items": [
-          "0,13 $/s en 720p",
-          "0,20 $/s en 1080p",
-          "Ejemplos rápidos",
-          "720p: 0,13 $/s → 5 s = 0,65 $ · 10 s = 1,30 $ · 15 s = 1,95 $",
-          "1080p: 0,20 $/s → 5 s = 1,00 $ · 10 s = 2,00 $ · 15 s = 3,00 $"
+          "Numera los beats en orden.",
+          "Indica cortes o match‑moves.",
+          "Limita cada beat a una acción principal.",
+          "Añade un sound bed opcional cuando haga falta."
         ]
       }
     ],
-    "promptTitle": "Ideas de prompt para Wan 2.6",
-    "promptIntro": "Empieza con el look global y luego planos con timestamps.",
-    "promptPatternSteps": [
-      "Look global y sujeto",
-      "Plano 1 con timestamp",
-      "Plano 2 con timestamp",
-      "Beat final y cierre",
-      "Notas de audio opcionales (T2V/I2V)"
-    ],
-    "promptSkeleton": "Plano 1 [0-3s] ... Plano 2 [3-8s] ... Plano 3 [8-15s] ... luz, cámara, movimiento.",
-    "promptSkeletonNote": "En R2V, coloca @Video1/@Video2/@Video3 para anclar los sujetos.",
-    "demoTitle": "Ejemplo listo para renderizar",
-    "demoPromptLabel": "Ejemplo listo para renderizar (multi-shot, 15 s, 16:9, 1080p)",
-    "demoPrompt": [
-      "Look global: thriller elegante, noche lluviosa, neón suave, 35mm, grano fino, profundidad de campo cinemática, cámara fluida, paleta azul/ámbar.",
-      "Plano 1 [0–4s]: travelling lento por un callejón mojado, reflejos en el suelo, una silueta al fondo, atmósfera brumosa.",
-      "Plano 2 [4–10s]: corte a primer plano de manos abriendo un sobre sellado sobre una mesa de madera, luz cálida lateral, foco muy corto.",
-      "Plano 3 [10–15s]: una puerta se abre a una sala blanca sobreexpuesta, destello de luz, polvo fino en el haz, fundido a negro."
-    ],
-    "demoNotes": [
-      "Opción de audio: URL de una capa ambient suave (3–15 s), volumen bajo."
-    ],
-    "tipsTitle": "Consejos y limitaciones",
+    "tipsTitle": "Consejos y límites",
     "strengths": [
-      "Control multi-shot para mini narrativas",
-      "Videos de referencia para consistencia de identidad",
-      "Ratios flexibles para social"
+      "Usa beats con timestamps para el ritmo (máx. 2–3 beats). Una acción clara por beat.",
+      "Repite los mismos anclajes entre beats (sujeto, vestuario/props, lugar, luz, sensación de lente) para reducir el drift.",
+      "Para consistencia, usa modo Referencia y etiqueta los clips en el prompt (@Video1 / @Video2 / @Video3).",
+      "Nombra la transición (match cut, whip pan, cut on action) en lugar de “dynamic”.",
+      "Añade un sound bed solo en modos Texto/Imagen; mantén Referencia centrada en lo visual."
     ],
     "boundaries": [
-      "El modo Referencia está limitado a 5–10 s",
-      "Audio subido desactivado en Referencia",
-      "Prompts cortos y claros para evitar drift"
+      "Referencia → Video solo soporta 5 s o 10 s (no 15 s).",
+      "El modo Referencia usa 1–3 videos y espera etiquetas @Video1/@Video2/@Video3.",
+      "Los prompts son cortos (800 caracteres); pon los “must‑have” al inicio.",
+      "La URL de audio / sound bed no aplica a Referencia → Video en este flujo."
     ],
-    "comparisonTitle": "Wan 2.6 vs Wan 2.5 – Resumen",
+    "comparisonTitle": "Wan 2.6 vs Wan 2.5 — resumen rápido",
     "comparisonPoints": [
-      "Wan 2.6 añade Referencia → Video para consistencia",
-      "Wan 2.6 soporta multi-shot y más ratios",
+      "Wan 2.6 añade Referencia → Video para consistencia del sujeto",
+      "Wan 2.6 soporta prompts multi‑shot y más relaciones",
       "Wan 2.5 incluye opción 480p y audio nativo"
     ],
     "comparisonCta": "Comparar Wan 2.6 vs Wan 2.5 →",
@@ -197,25 +226,34 @@
     "relatedCtaSora2Pro": "Comparar Wan 2.6 vs Sora 2 Pro →",
     "faqTitle": "FAQ – Wan 2.6 en MaxVideoAI",
     "faqs": [
-      { "q": "¿Wan 2.6 soporta audio?", "a": "URL de audio opcional en modos Texto e Imagen. El modo Referencia no soporta audio subido." },
-      { "q": "¿Cuántos videos de referencia puedo subir?", "a": "1–3 videos MP4/MOV. Etiquétalos como @Video1, @Video2 y @Video3." },
-      { "q": "¿Qué duraciones están disponibles?", "a": "Texto e Imagen: 5, 10 o 15 s. Referencia: 5 o 10 s." }
+      {
+        "q": "¿Wan 2.6 soporta audio?",
+        "a": "Las URL de audio son opcionales en modos Texto e Imagen. El modo Referencia no soporta audio subido."
+      },
+      {
+        "q": "¿Cuántos videos de referencia puedo subir?",
+        "a": "1–3 referencias MP4/MOV. Etiquétalas como @Video1, @Video2 y @Video3 en el prompt."
+      },
+      {
+        "q": "¿Qué duraciones están disponibles?",
+        "a": "Texto e Imagen: 5, 10 o 15 segundos. Referencia: 5 o 10 segundos."
+      }
     ],
     "relatedTitle": "Explora otros modelos",
-    "relatedSubtitle": "Compara precio, latencia y opciones de salida en el catálogo MaxVideoAI.",
-    "finalPara1": "Wan 2.6 está diseñado para secuencias cortas con control multi-shot.",
-    "finalPara2": "Empieza con texto o imagen y luego pasa a referencia para consistencia.",
+    "relatedSubtitle": "Compara precio, latencia y opciones de salida en el catálogo de MaxVideoAI.",
+    "finalPara1": "Wan 2.6 está diseñado para secuencias cinematográficas cortas con control multi‑shot.",
+    "finalPara2": "Empieza con texto o imagen y luego pasa a referencia de video para consistencia.",
     "finalButton": "Abrir Wan 2.6 en Generate →",
-    "galleryIntro": "Los ejemplos de Wan 2.6 llegarán pronto.",
+    "galleryIntro": "Renders recientes de Wan 2.6 en flujos de texto, imagen y referencia.",
     "quickStartTitle": "Inicio rápido (1 minuto)",
     "quickStartBlocks": [
       {
         "title": "Texto → Video (T2V)",
         "subtitle": "la forma más rápida de testear una idea",
         "steps": [
-          "Elige 10 s, 720p, ratio 16:9 (seguro)",
+          "Elige 10 s, 720p, 16:9 (seguro)",
           "Describe: sujeto + lugar + luz + estilo de cámara",
-          "Añade 2–3 beats con timestamps si quieres multi-shot",
+          "Añade 2–3 beats con timestamps si quieres multi‑shot",
           "Si el mood está bien → relanza en 1080p"
         ]
       },
@@ -224,27 +262,103 @@
         "subtitle": "perfecto para animar un key visual",
         "steps": [
           "Sube la imagen (el ratio se adapta automáticamente)",
-          "Indica sobre todo el movimiento (cámara + sujeto) y microdetalles (viento, reflejos, polvo…)",
+          "Enfócate en movimiento (cámara + sujeto) y microdetalles (viento, reflejos, polvo…)",
           "10–15 s = sensación más premium (más respiración)"
         ]
       },
       {
         "title": "Referencia → Video (R2V)",
-        "subtitle": "para bloquear identidad / coherencia",
+        "subtitle": "bloquea identidad / consistencia",
         "steps": [
           "Sube 1–3 videos (ángulos variados, mismo sujeto)",
           "En el prompt, etiqueta @Video1 / @Video2 / @Video3",
           "Pide un plano simple (no una película completa)",
-          "Empieza en 5–10 s (máx. 10 s) para maximizar coherencia"
+          "Empieza en 5–10 s (máx. 10 s) para maximizar consistencia"
         ]
       }
     ],
-    "troubleshootingTitle": "Problemas frecuentes (fix rápido)",
+    "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
-      "El sujeto cambia / drift → prompts más cortos + menos beats + pasa a Referencia con 2 videos mejor encuadrados",
-      "Cámara demasiado nerviosa → cambia \"dynamic\" por \"slow, smooth, controlled\" + especifica \"plano único\"",
-      "Planos incoherentes entre beats → repite las mismas anclas (óptica, lugar, hora, vestuario) en cada beat",
-      "Look demasiado distinto del key visual (I2V) → describe \"misma escena / mismo sujeto\" y solo pide el movimiento"
-    ]
+      "El sujeto cambia / drift → reduce beats, repite anclajes en cada beat y pasa a Referencia con videos más limpios y cerrados.",
+      "Cámara demasiado nerviosa → cambia “dynamic” por “slow, smooth, controlled”; especifica “tripod‑stable” o “smooth track”.",
+      "Beats inconsistentes → añade timestamps ([0–5s], [5–10s]) y haz que cada beat sea una sola acción legible.",
+      "El look se desvía del key visual → empieza desde Imagen→Video (hero frame) y pide solo movimiento; mantén la receta de estilo idéntica.",
+      "Transiciones bruscas → nombra la transición explícitamente y mantén el movimiento de cámara continuo entre beats."
+    ],
+    "promptingTitle": "Cómo escribir un gran prompt para Wan 2.6",
+    "promptingIntro": "Wan 2.6 sigue prompts cortos con sujeto, escena y movimiento claros; usa una shot list simple para multi‑shot.",
+    "promptingTip": "Tip: duración + relación se configuran en la UI — tu prompt controla sujeto, movimiento, cámara, estilo y sonido opcional. Mantén los prompts concisos; la expansión ayuda.",
+    "promptingGlobalPrinciples": [
+      "Sujeto + escena + movimiento en una frase clara.",
+      "Para multi‑shot, limítalo a 2–3 beats.",
+      "Añade un prompt negativo corto para evitar artefactos."
+    ],
+    "tipsIntro": "Wan 2.6 es más fácil de dirigir con beats cortos, transiciones explícitas y anclaje por referencia cuando la identidad debe mantenerse estable.",
+    "promptingEngineWhy": [
+      "La expansión de prompt maneja bien prompts cortos y concretos.",
+      "El modo Referencia funciona mejor cuando especificas lo que debe permanecer constante.",
+      "Las cues de audio ayudan al ritmo; mantenlas mínimas."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
+      "structured": "Structured = consistencia. Úsalo cuando necesites resultados fiables.",
+      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [movimiento] en [escena], [cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + rasgos clave.]\n\nEscena:\n[Lugar + momento + 2 anclas.]\n\nMovimiento:\n[Una acción clara + movimiento de cámara.]\n\nLook:\n[Luz + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesites un look muy preciso o continuidad entre planos.",
+        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nPlano 1: [acción + cámara]\nPlano 2: [acción + cámara]\nPlano 3: [acción final/reveal]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Texto/logos/personajes extra.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (beats con timestamps)",
+        "description": "Ideal para secuencias multi‑shot en un solo clip.",
+        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nDuración: [5/10/15s]\n\nBeat 1 (0–3s):\n[Encuadre + acción + movimiento de cámara]\n\nBeat 2 (3–7s):\n[Encuadre + acción + movimiento de cámara]\n\nBeat 3 (7–10/15s):\n[Acción final/reveal + cámara se asienta]\n\nContinuidad:\n[Repite anclas: vestuario, props, luz, fondo]\n[Si usas referencias: etiqueta @Video1/@Video2/@Video3]\n\nSonido (opcional):\n[Ambiente + 1–2 cues]\n\nNegativo:\n[Texto, logos, personajes extra, blur]"
+      }
+    ],
+    "promptingGuideLabel": "Wan AI",
+    "promptingGuideUrl": "https://www.wan-ai.com",
+    "galleryTitle": "Galería de ejemplos Wan 2.6",
+    "galleryAllCta": "Ver todos los ejemplos Wan 2.6 →",
+    "recreateLabel": "Recrear esta toma →",
+    "demoTitle": "Ejemplo listo para renderizar",
+    "demoPromptLabel": "Ejemplo listo para renderizar (multi‑shot, 15 s, 16:9, 1080p)",
+    "demoPrompt": [
+      "Look global: thriller elegante, noche lluviosa, neón suave, 35mm, grano fino, profundidad de campo cinemática, cámara fluida, paleta azul/ámbar.",
+      "Plano 1 [0–4s]: travelling lento por un callejón mojado, reflejos en el suelo, una silueta al fondo, atmósfera brumosa.",
+      "Plano 2 [4–10s]: corte a primer plano de manos abriendo un sobre sellado sobre una mesa de madera, luz cálida lateral, foco muy corto.",
+      "Plano 3 [10–15s]: una puerta se abre a una sala blanca sobreexpuesta, destello de luz, polvo fino en el haz, fundido a negro."
+    ],
+    "demoNotes": [
+      "Opción de audio: URL de una cama ambient suave 3–15 s, volumen bajo."
+    ],
+    "safetyTitle": "Seguridad y personas / semejanza",
+    "safetyRules": [
+      "Nada de contenido sexual, ni nada que involucre menores.",
+      "Nada de contenido de odio, acoso o violencia gráfica.",
+      "No suplantes a personas reales o figuras públicas; usa consentimiento para cualquier semejanza/voz.",
+      "No incluyas datos personales privados (direcciones, teléfonos, documentos, rostros sin consentimiento).",
+      "Algunos prompts o videos de referencia pueden bloquearse por filtros del proveedor."
+    ],
+    "safetyInterpretation": [],
+    "safetyNote": null
   }
 }

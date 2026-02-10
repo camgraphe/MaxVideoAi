@@ -3,14 +3,14 @@
   "versionLabel": "Pro",
   "seo": {
     "title": "Nano Banana Pro – 4K Text-to-Image & Editing | MaxVideoAI",
-    "description": "Generate 1K, 2K, and 4K stills with Nano Banana Pro. Google Gemini 3-based fidelity, multi-image references, and commercial licensing directly in MaxVideoAI.",
+    "description": "Generate 2K and 4K stills with Nano Banana Pro. Google Gemini 3-based fidelity, multi-image references, and commercial licensing directly in MaxVideoAI.",
     "image": "https://v3b.fal.media/files/b/0a851821/XWMX6UdfAGFISJGdOLus4.png"
   },
-  "overview": "Nano Banana Pro is the Gemini 3-powered upgrade for brands that need legible text, consistent characters, and export-ready stills. Draft 1K/2K explorations, then flip to 4K when the frame is locked—all inside the MaxVideoAI image lab.",
+  "overview": "Nano Banana Pro is the Gemini 3-powered upgrade for brands that need legible text, consistent characters, and export-ready stills. Draft 2K explorations, then flip to 4K when the frame is locked—all inside the MaxVideoAI image lab.",
   "hero": {
     "title": "Nano Banana Pro – 4K Text-to-Image & Editing",
-    "intro": "Studio-quality stills with 1K/2K/4K outputs, precise typography, and multi-image edits. Built for campaign work, product launches, and high-end references.",
-    "badge": "Text → Image · Image → Image · 1K / 2K / 4K",
+    "intro": "Studio-grade still generation and semantic edits — built for campaign assets and clean typography.",
+    "badge": "Text → Image · Image → Image · 2K / 4K",
     "ctaPrimary": {
       "label": "Launch Nano Banana Pro",
       "href": "/app/image?engine=nano-banana-pro"
@@ -33,30 +33,32 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "4K campaign stills with readable typography",
-      "Multi-image edits for consistent product families",
-      "Reference boards before you animate in Veo, Sora, Kling, or Wan"
+      {
+        "title": "Posters & ads with readable copy",
+        "icon": "type"
+      },
+      {
+        "title": "Product shots & packaging mockups",
+        "icon": "product"
+      },
+      {
+        "title": "Consistent product families (variants & SKUs)",
+        "icon": "layers"
+      },
+      {
+        "title": "No-mask edits (relight / restyle / swap details)",
+        "icon": "wand2"
+      },
+      {
+        "title": "Slides, UI mockups & diagram visuals",
+        "icon": "layout"
+      },
+      {
+        "title": "Keyframes & reference boards before video animation",
+        "icon": "storyboard"
+      }
     ]
   },
-  "technicalOverviewTitle": "Technical overview",
-  "technicalOverview": [
-    {
-      "label": "Input types",
-      "body": "Text prompts, up to 4 reference images in the UI (Fal accepts up to 14), JPG/PNG/WebP uploads, and edit instructions—no masks required."
-    },
-    {
-      "label": "Outputs",
-      "body": "1K, 2K, or 4K still images with Gemini 3-level detail, clean typography, and accurate brand color."
-    },
-    {
-      "label": "Modes",
-      "body": "Text-to-image for fresh renders; image-to-image for restyles, relights, and product swaps."
-    },
-    {
-      "label": "Pricing",
-      "body": "$0.15 per 1K/2K image, $0.30 at 4K. Batch up to 8 shots per run with the same prompt lab and wallet as your video engines."
-    }
-  ],
   "promptStructure": {
     "title": "Prompt mini-guide",
     "quote": "4K [subject] in [environment], [lighting/lens], include text \"[copy]\" in [font mood], brand palette [colors].",
@@ -73,7 +75,7 @@
   "tips": {
     "title": "Tips & limits",
     "items": [
-      "Draft at 1K/2K for speed, rerun final approvals at 4K.",
+      "Draft at 2K for speed, rerun final approvals at 4K.",
       "Use seeds to lock framing, especially across multi-image campaigns.",
       "Upload 1–4 references when you need on-brand wardrobe, props, or faces.",
       "For signage, include exact copy plus notes on casing and alignment."
@@ -100,31 +102,67 @@
   "faqs": [
     {
       "q": "Can Nano Banana Pro render 4K?",
-      "a": "Yes. Pick 4K when you need export-ready stills. It costs 2× a 1K/2K run, so iterate at lower resolution before locking finals."
+      "a": "Yes. You can generate up to 4K (up to 4096px). 4K is $0.39/image (2K is $0.20/image)."
     },
     {
-      "q": "How many references can I upload?",
-      "a": "Upload up to 4 images directly in the UI. The Fal endpoint supports up to 14 references via API for complex scenes or product families."
+      "q": "How is pricing calculated?",
+      "a": "Pricing is per image: $0.20 at 2K, $0.39 at 4K."
+    },
+    {
+      "q": "How many images can I generate per run?",
+      "a": "Up to 1–8 images per run (batch)."
+    },
+    {
+      "q": "How many reference images can I use?",
+      "a": "In the UI: keep it lightweight for control. fal endpoints can support higher multi-image counts (up to 14) depending on the route."
+    },
+    {
+      "q": "Does it support no-mask edits?",
+      "a": "Yes. Nano Banana Pro supports natural-language image editing without manual masks, and editing is priced per edit."
     },
     {
       "q": "Is it cleared for commercial work?",
-      "a": "Yes. All Nano Banana Pro jobs run through Fal with commercial licensing, so campaign stills, packaging renders, and thumbnails are cleared for client use."
+      "a": "fal lists commercial use via partnership for this model family."
     }
   ],
-  "pricingNotes": "$0.15 per 1K/2K image, $0.30 at 4K. Pricing shown live inside the workspace before you render.",
+  "pricingNotes": "$0.20 per 2K image, $0.39 at 4K. Pricing shown live inside the workspace before you render.",
   "custom": {
-    "whyTitle": "Why Nano Banana Pro inside MaxVideoAI",
-    "heroDesc1": "Generate 1K, 2K, or 4K stills with laser-sharp text and tone, right next to your video engines.",
+    "heroEyebrow": "Google — Gemini 3 Pro Image",
+    "heroSupportLine": "Best for brand-ready stills, product family consistency, and reference boards before you animate in video engines.",
+    "heroSpecChips": [
+      {
+        "label": "Text→Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image→Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "No-mask edits"
+      },
+      {
+        "label": "Multi-image references"
+      },
+      {
+        "label": "Typography"
+      },
+      {
+        "label": "Up to 4K",
+        "icon": "resolution"
+      }
+    ],
+    "whyTitle": "Why Nano Banana Pro is powerful",
+    "heroDesc1": "Generate 2K or 4K stills with laser-sharp text and tone, right next to your video engines.",
     "heroDesc2": "One wallet, one prompt lab, and full logging—no separate Fal account needed.",
     "heroHighlights": [
-      "Studio-quality text-to-image and image-to-image",
-      "1K/2K drafts plus export-ready 4K finals",
-      "Legible typography and signage powered by Gemini 3",
-      "Upload references for consistent people, wardrobe, and products",
-      "Commercial licensing handled via MaxVideoAI credits"
+      "Readable text and layouts||Built for marketing assets where typography actually needs to hold up.",
+      "Semantic edits without masks||Describe the change; keep the rest consistent (composition, lighting, identity).",
+      "Reference-driven consistency||Great for keeping a product/character “on model” across a full set.",
+      "Follows detailed briefs better||Handles multi-part art direction with fewer random surprises."
     ],
     "whatTitle": "How Nano Banana Pro works here",
-    "whatIntro1": "Choose Generate or Edit, set num_images (1–8), pick your aspect ratio, and decide whether you need 1K/2K or 4K outputs.",
+    "whatIntro1": "Choose Generate or Edit, set num_images (1–8), pick your aspect ratio, and decide whether you need 2K or 4K outputs.",
     "whatIntro2": "Lock your prompt structure, add references if needed, preview the live price chip, and hit Generate.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
@@ -132,33 +170,76 @@
       "Pick Text → Image or Image → Image",
       "Set batch size and (optionally) seed for consistency",
       "Add references or upload brand stills if you’re editing",
-      "Review the price chip ($0.15 per image, $0.30 at 4K) and run"
+      "Review the price chip ($0.20 per image, $0.39 at 4K) and run"
     ],
     "galleryTitle": "Nano Banana Pro examples",
     "galleryIntro": "Recent 2K/4K stills and edits crafted for campaign boards and product reveals.",
     "galleryAllCta": "View image examples →",
     "recreateLabel": "Recreate this still →",
-    "promptTitle": "Prompt ideas for Nano Banana Pro",
-    "promptIntro": "Describe subject, lighting, typography, and output intent. Mention 4K when you need it.",
-    "promptPatternSteps": [
-      "Subject + hero focus",
-      "Environment + lighting cues",
-      "Lens/look + finishing details",
-      "Typography or copy requirements",
-      "Resolution + intent (draft vs final)"
-    ],
-    "promptSkeleton": "[Resolution] [subject] in [environment], lit by [lighting], shot on [lens/look], include text \"[copy]\" in [style], final still for [use case].",
-    "promptSkeletonNote": "For edits: \"Remix this still by [change] while keeping [elements] consistent.\"",
     "tipsTitle": "Tips & limits",
+    "tipsIntro": "Nano Banana Pro is most predictable when you treat the image like a layout: composition first, then lighting/style, then typography (if any).",
     "strengths": [
-      "Legible typography and UI elements",
-      "Consistent characters across batches with references",
-      "Direct 4K output for print and packaging"
+      "Start with composition and hierarchy (where the subject sits, what’s the focal point, what stays clean).",
+      "For typography: provide the exact copy and placement (“headline top-left, 2 lines, high contrast”). Keep text short.",
+      "For consistency: use references with roles (“Ref A = product shape, Ref B = lighting, Ref C = palette”).",
+      "For edits: write “Change X, keep Y” (keep framing, lighting, identity; change only the requested element).",
+      "Iterate at 2K, then switch to 4K for finals."
     ],
     "boundaries": [
-      "Image-only—use video engines for motion",
-      "4K costs more; draft lower before final",
-      "Reference upload capped at 4 images in the UI"
-    ]
+      "Still images only (no motion).",
+      "4K outputs are $0.39/image (2K is $0.20/image).",
+      "Batch runs are 1–8 images at a time.",
+      "Reference/image limits depend on the route: the UI is intentionally capped, while fal endpoints can support higher multi-image counts in advanced workflows."
+    ],
+    "safetyTitle": "Safety & people / likeness",
+    "safetyRules": [
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness.",
+      "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
+      "Some prompts or reference images may be blocked by provider safety filters."
+    ],
+    "promptingTitle": "How to Write a Great Nano Banana Pro Prompt",
+    "promptingIntro": "Gemini 3 Pro Image rewards structured briefs with clear composition, typography, and edit intent.",
+    "promptingTip": "Tip: resolution + aspect ratio are set in the UI - your prompt controls subject, composition, lighting, style, and edit instructions.",
+    "promptingGlobalPrinciples": [
+      "Name the subject and composition first.",
+      "Specify lighting, lens, and style anchors.",
+      "For edits, say what to change and what to keep."
+    ],
+    "promptingEngineWhy": [
+      "Structured briefs yield cleaner text and layout.",
+      "No-mask edits work best when you specify what to change and what to keep.",
+      "Multi-image references help keep products on-model."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = style control. Use for precise, repeatable looks."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject] in [setting], [composition], [lighting], [style], [text if needed]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + key traits.]\n\nComposition:\n[Framing + angle + background.]\n\nLighting:\n[Key light + mood.]\n\nStyle:\n[Photoreal / illustration / palette.]\n\nTypography (if needed):\n[Exact copy + placement.]\n\nEdit (if editing):\n[Change X, keep Y.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Brand brief:\n[Goal + audience + format.]\n\nSubject + materials:\n[Details + textures.]\n\nLayout + hierarchy:\n[Grid, spacing, focal point.]\n\nTypography:\n[Font vibe + hierarchy + exact copy.]\n\nReferences (optional):\n[Ref A controls style; Ref B controls product.]\n\nEdits (if needed):\n[Change list + keep list.]"
+      }
+    ],
+    "promptingGuideLabel": "Learn more"
   }
 }

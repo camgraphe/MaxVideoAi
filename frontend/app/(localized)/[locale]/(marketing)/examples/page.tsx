@@ -87,26 +87,39 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
-const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo', 'ltx-2'];
+const PREFERRED_ENGINE_ORDER = ['sora', 'kling', 'veo', 'wan', 'seedance', 'ltx-2', 'pika', 'hailuo'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
-  'sora-2': { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
+  sora: { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
   veo: { bg: 'var(--engine-google-veo-bg)', text: 'var(--engine-google-veo-ink)' },
   pika: { bg: 'var(--engine-pika-bg)', text: 'var(--engine-pika-ink)' },
   hailuo: { bg: 'var(--engine-minimax-bg)', text: 'var(--engine-minimax-ink)' },
+  seedance: { bg: 'var(--engine-bytedance-bg)', text: 'var(--engine-bytedance-ink)' },
   kling: { bg: 'var(--engine-kling-bg)', text: 'var(--engine-kling-ink)' },
   wan: { bg: 'var(--engine-wan-bg)', text: 'var(--engine-wan-ink)' },
   'ltx-2': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
 };
 
 const ENGINE_MODEL_LINKS: Record<string, string> = {
-  'sora-2': 'sora-2',
+  sora: 'sora-2-pro',
   veo: 'veo-3-1',
-  kling: 'kling-2-6-pro',
+  seedance: 'seedance-1-5-pro',
+  kling: 'kling-3-pro',
   wan: 'wan-2-6',
   pika: 'pika-text-to-video',
   hailuo: 'minimax-hailuo-02-text',
+  'ltx-2': 'ltx-2',
+};
+
+const ENGINE_EXAMPLE_LINKS: Record<string, string> = {
+  sora: 'sora',
+  veo: 'veo',
+  kling: 'kling',
+  wan: 'wan',
+  seedance: 'seedance',
+  pika: 'pika',
+  hailuo: 'hailuo',
   'ltx-2': 'ltx-2',
 };
 
@@ -138,8 +151,9 @@ const ENGINE_FILTER_GROUPS: Record<
     brandId?: string;
   }
 > = {
-  'sora-2': { id: 'sora-2', label: 'Sora 2' },
-  'sora-2-pro': { id: 'sora-2', label: 'Sora 2' },
+  sora: { id: 'sora', label: 'Sora 2' },
+  'sora-2': { id: 'sora', label: 'Sora 2' },
+  'sora-2-pro': { id: 'sora', label: 'Sora 2' },
   'veo-3-1': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-first-last': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
@@ -157,6 +171,10 @@ const ENGINE_FILTER_GROUPS: Record<
   pika: { id: 'pika', label: 'Pika', brandId: 'pika' },
   'kling-2-5-turbo': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'kling-2-6-pro': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'kling-3-standard': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'kling-3-pro': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'seedance-1-5-pro': { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
+  seedance: { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
   kling: { id: 'kling', label: 'Kling', brandId: 'kling' },
   'kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'fal-ai/kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
@@ -164,6 +182,20 @@ const ENGINE_FILTER_GROUPS: Record<
   'fal-ai/kling-video/v2.5-turbo/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'fal-ai/kling-video/v2.6/pro/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'fal-ai/kling-video/v2.6/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v3/pro/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v3/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v3/standard/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v3/standard/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/bytedance/seedance/v1.5/pro/text-to-video': {
+    id: 'seedance',
+    label: 'Seedance',
+    brandId: 'bytedance',
+  },
+  'fal-ai/bytedance/seedance/v1.5/pro/image-to-video': {
+    id: 'seedance',
+    label: 'Seedance',
+    brandId: 'bytedance',
+  },
   'ltx-2-fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'ltx-2': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'fal-ai/ltx-2/text-to-video': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
@@ -230,9 +262,14 @@ function buildExamplesCanonical(baseCanonical: string, engineParam: string, page
 function resolveExampleCanonicalSlug(engineId: string | null | undefined): string | null {
   if (!engineId) return null;
   const normalized = engineId.trim().toLowerCase();
-  const modelSlug = ENGINE_MODEL_LINKS[normalized];
-  if (!modelSlug) return null;
-  return EXAMPLE_MODEL_SLUG_SET.has(modelSlug) ? modelSlug : null;
+  const canonical = normalizeEngineId(normalized) ?? normalized;
+  const engineMeta = ENGINE_META.get(canonical.toLowerCase()) ?? null;
+  const descriptor = resolveFilterDescriptor(canonical, engineMeta, canonical);
+  const groupId = descriptor?.id?.toLowerCase() ?? canonical.toLowerCase();
+  const exampleSlug =
+    ENGINE_EXAMPLE_LINKS[groupId] ?? ENGINE_EXAMPLE_LINKS[canonical.toLowerCase()] ?? null;
+  if (!exampleSlug) return null;
+  return EXAMPLE_MODEL_SLUG_SET.has(exampleSlug) ? exampleSlug : null;
 }
 
 export async function generateMetadata({
@@ -370,8 +407,8 @@ function resolveFilterDescriptor(
   if (!group) {
     if (normalized.startsWith('veo-3') || normalized.startsWith('veo3')) {
       group = ENGINE_FILTER_GROUPS['veo'];
-    } else if (normalized.startsWith('sora-2')) {
-      group = ENGINE_FILTER_GROUPS['sora-2'];
+    } else if (normalized.startsWith('sora-2') || normalized.startsWith('sora')) {
+      group = ENGINE_FILTER_GROUPS['sora'];
     } else if (normalized.startsWith('pika')) {
       group = ENGINE_FILTER_GROUPS['pika'];
     } else if (normalized.includes('hailuo')) {
@@ -465,7 +502,12 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
   }
 
   const offset = (currentPage - 1) * EXAMPLES_PAGE_SIZE;
-  const pageResult = await listExamplesPage({ sort, limit: EXAMPLES_PAGE_SIZE, offset });
+  const pageResult = await listExamplesPage({
+    sort,
+    limit: EXAMPLES_PAGE_SIZE,
+    offset,
+    engineGroup: collapsedEngineParam || undefined,
+  });
   const allVideos = pageResult.items;
   const totalCount = pageResult.total;
   const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));

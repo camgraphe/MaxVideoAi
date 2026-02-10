@@ -101,6 +101,14 @@ export type GeneratePayload = {
   localKey?: string | null;
   loop?: boolean;
   cfgScale?: number | null;
+  multiPrompt?: Array<{ prompt: string; duration: number }>;
+  shotType?: 'customize' | 'intelligent';
+  seed?: number;
+  cameraFixed?: boolean;
+  safetyChecker?: boolean;
+  voiceIds?: string[];
+  elements?: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>;
+  endImageUrl?: string;
 };
 
 export type GenerateResult = {
@@ -355,6 +363,40 @@ async function generateViaFal(
     }
   }
 
+  if (payload.multiPrompt && payload.multiPrompt.length) {
+    requestBody.multi_prompt = payload.multiPrompt
+      .filter((entry) => entry && typeof entry.prompt === 'string' && entry.prompt.trim().length)
+      .map((entry) => ({
+        prompt: entry.prompt,
+        duration: String(Math.round(entry.duration || 0)),
+      }));
+  }
+  if (payload.shotType) {
+    requestBody.shot_type = payload.shotType;
+  }
+  if (typeof payload.seed === 'number' && Number.isFinite(payload.seed)) {
+    requestBody.seed = Math.trunc(payload.seed);
+  }
+  if (typeof payload.cameraFixed === 'boolean') {
+    requestBody.camera_fixed = payload.cameraFixed;
+  }
+  if (typeof payload.safetyChecker === 'boolean') {
+    requestBody.enable_safety_checker = payload.safetyChecker;
+  }
+  if (payload.voiceIds && payload.voiceIds.length) {
+    requestBody.voice_ids = payload.voiceIds;
+  }
+  if (payload.elements && payload.elements.length) {
+    requestBody.elements = payload.elements.map((entry) => ({
+      frontal_image_url: entry.frontalImageUrl,
+      reference_image_urls: entry.referenceImageUrls,
+      video_url: entry.videoUrl,
+    }));
+  }
+  if (payload.endImageUrl) {
+    requestBody.end_image_url = payload.endImageUrl;
+  }
+
   if (payload.engineId === 'lumaRay2') {
     const durationInfo = getLumaRay2DurationInfo(payload.durationOption ?? payload.durationSec);
     const durationLabel = durationInfo?.label ?? toLumaRay2DurationLabel(payload.durationSec) ?? '5s';
@@ -408,7 +450,7 @@ async function generateViaFal(
       requestBody[slotId] = urlCandidate;
       continue;
     }
-    if (slotId === 'first_frame_url' || slotId === 'last_frame_url') {
+    if (slotId === 'first_frame_url' || slotId === 'last_frame_url' || slotId === 'end_image_url') {
       requestBody[slotId] = urlCandidate;
       continue;
     }
@@ -440,6 +482,16 @@ async function generateViaFal(
   }
   if (!requestBody.input_image && primaryImageUrl && payload.engineId.startsWith('sora-2')) {
     requestBody.input_image = primaryImageUrl;
+  }
+
+  if (payload.engineId.startsWith('kling-3') && requestBody.image_url && !requestBody.start_image_url) {
+    requestBody.start_image_url = requestBody.image_url;
+    delete requestBody.image_url;
+  }
+
+  if (payload.engineId.startsWith('kling-3') && requestBody.multi_prompt && requestBody.prompt) {
+    // Kling v3 expects prompt or multi_prompt, not both.
+    delete requestBody.prompt;
   }
 
   const metadataPayload: Record<string, unknown> = {};

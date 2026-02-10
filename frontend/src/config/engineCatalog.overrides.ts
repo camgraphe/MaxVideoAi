@@ -28,6 +28,15 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     'kling-2-6-pro': {
       bestFor: 'Cinematic dialogue',
     },
+    'kling-3-pro': {
+      bestFor: 'Multi-shot cinematic control',
+    },
+    'kling-3-standard': {
+      bestFor: 'Multi-shot testing at lower cost',
+    },
+    'seedance-1-5-pro': {
+      bestFor: 'Cinematic motion with camera lock',
+    },
     'wan-2-6': {
       bestFor: 'General purpose video',
     },

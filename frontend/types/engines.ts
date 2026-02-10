@@ -153,6 +153,7 @@ export interface PreflightRequest {
   seedLocked?: boolean;
   loop?: boolean;
   audio?: boolean;
+  voiceControl?: boolean;
   user?: {
     memberTier?: string;
   };
@@ -203,9 +204,11 @@ export interface EnginePricingDetails {
     byResolution?: Record<string, number>;
   };
   addons?: {
-    audio?: { perSecondCents?: number; flatCents?: number };
-    upscale4k?: { perSecondCents?: number; flatCents?: number };
-    [key: string]: { perSecondCents?: number; flatCents?: number } | undefined;
+    audio?: { perSecondCents?: number; perSecondCentsByResolution?: Record<string, number>; flatCents?: number };
+    upscale4k?: { perSecondCents?: number; perSecondCentsByResolution?: Record<string, number>; flatCents?: number };
+    [key: string]:
+      | { perSecondCents?: number; perSecondCentsByResolution?: Record<string, number>; flatCents?: number }
+      | undefined;
   };
   maxDurationSec?: number;
 }

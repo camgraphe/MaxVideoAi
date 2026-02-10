@@ -9,7 +9,7 @@
   "overview": "Veo 3.1 First/Last in MaxVideoAI bridges two images with a directed, cinematic transition. You provide a first frame, a last frame, and a short prompt; Veo generates a smooth 4/6/8 second clip at 720p or 1080p, with optional native audio.",
   "hero": {
     "title": "Veo 3.1 First/Last – First & Last Frame to Video in MaxVideoAI (720p/1080p, up to 8s)",
-    "intro": "Veo 3.1 First/Last – Seamless transitions between two frames, with native audio",
+    "intro": "Turn two keyframes into one smooth, cinematic transition.",
     "badge": "720p/1080p · up to 8 s · First & last frame + text prompt",
     "ctaPrimary": {
       "label": "Start generating with Veo 3.1 First/Last",
@@ -25,11 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Before/after transitions: product upgrades, glow-ups, environmental changes",
-      "Scene bridges in short films, ads or explainers",
-      "Logo or brand transitions using designed first and last keyframes",
-      "Stylized morphs between two character designs or environments",
-      "Camera moves from one layout to another without cutting"
+      {
+        "title": "Before/after transformations",
+        "icon": "arrowLeftRight"
+      },
+      {
+        "title": "Scene bridges",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Logo & brand morphs",
+        "icon": "sparkles"
+      },
+      {
+        "title": "UI & layout transitions",
+        "icon": "layout"
+      },
+      {
+        "title": "Sketch → final reveals",
+        "icon": "pen"
+      },
+      {
+        "title": "Camera-path transitions",
+        "icon": "camera"
+      }
     ]
   },
   "compareLink": {
@@ -68,22 +87,40 @@
   "custom": {
     "heroDesc1": "Bridge two frames with Veo 3.1 First/Last: upload start and end images, add a prompt, and get a smooth 4/6/8s transition at 720p or 1080p with optional native audio.",
     "heroDesc2": "Use it for scene bridges, before/after stories, logo/UI morphs, and designed transitions where you already know the start and end composition.",
-    "whyTitle": "Why Veo 3.1 First/Last is powerful inside MaxVideoAI",
+    "heroSupportLine": "Perfect when you already know the start and end layout — let Veo handle everything in between.",
+    "whyTitle": "Why Veo 3.1 First/Last is powerful",
     "heroHighlights": [
-      "Bridges two stills into a continuous, cinematic transition",
-      "Native audio support when enabled",
-      "720p or 1080p, up to ~8 seconds",
-      "Direction via text prompt to control motion and pacing",
-      "Audio toggle and pay-per-second pricing (same logic as Veo 3.1)",
-      "Lives alongside Veo 3.1 and Veo 3.1 Fast in the same UI"
+      "Two-frame control||Lock the start and the destination; generate the bridge between them.",
+      "Promptable motion path||Direct camera movement, pacing, and what changes along the way.",
+      "Continuity by design||Great for keeping layout and identity stable across the shot.",
+      "Sound-aware transitions||Add a couple of ambience/SFX cues to sell the change (or keep it silent)."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Before/after transitions and environmental changes",
-      "Scene bridges in ads, explainers or short films",
-      "Logo / brand transitions with designed keyframes",
-      "Stylized morphs between character or layout designs",
-      "Camera moves from one layout to another without cuts"
+      {
+        "title": "Before/after transformations",
+        "icon": "arrowLeftRight"
+      },
+      {
+        "title": "Scene bridges",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Logo & brand morphs",
+        "icon": "sparkles"
+      },
+      {
+        "title": "UI & layout transitions",
+        "icon": "layout"
+      },
+      {
+        "title": "Sketch → final reveals",
+        "icon": "pen"
+      },
+      {
+        "title": "Camera-path transitions",
+        "icon": "camera"
+      }
     ],
     "whatTitle": "What Veo 3.1 First/Last actually is in MaxVideoAI",
     "whatIntro1": "Google’s Veo 3.1 “first and last frame” / “Frames to Video” mode that interpolates between two images with optional audio.",
@@ -101,64 +138,31 @@
     "specNote": "Reflects the current first/last-frame route in MaxVideoAI.",
     "specSections": [
       {
-        "title": "Duration & Output",
+        "title": "Keyframe bridge",
+        "intro": "Designed for start-to-finish transitions where you lock the endpoints. The model fills the motion in between.",
         "items": [
-          "UI options: 4 s, 6 s, 8 s",
-          "Model limit: ~8 s for first/last image-to-video",
-          "720p (1280×720) or 1080p (1920×1080)",
-          "24 fps cinematic cadence"
+          "Choose distinct start and end frames.",
+          "Describe the motion path clearly.",
+          "Keep background elements stable.",
+          "Great for UI, logos, and before/after."
         ]
       },
       {
-        "title": "Aspect Ratios",
+        "title": "Continuity control",
+        "intro": "Fixed endpoints keep layout and identity consistent. Use it for controlled reveals and clean morphs.",
         "items": [
-          "16:9 – landscape",
-          "9:16 – vertical (Reels, TikTok, Shorts)",
-          "1:1 – square"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "First frame (required): PNG/JPG/JPEG/WebP/GIF/AVIF",
-          "Last frame (required): same formats",
-          "Prompt: describe how to animate between the frames; include action, style, camera, pacing, audio"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Audio ON: native ambience/SFX/dialogue across the transition",
-          "Audio OFF: silent renders, cheaper and ready for your own mix"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Follows Veo 3.1 per-second config (e.g., ~ $0.20/s audio off, ~$0.40/s audio on)",
-          "Examples: 4 s ≈ $0.80–$1.60, 6 s ≈ $1.20–$2.40, 8 s ≈ $1.60–$3.20",
-          "Live wallet chip shows exact price before render — always check the live price chip in Generate for the current rate."
+          "State what must stay unchanged.",
+          "Call out what should transform.",
+          "Use subtle camera movement.",
+          "Add optional ambience cues if desired."
         ]
       }
     ],
     "specValueProp": "A directed start–end transition engine with optional native audio, priced per second like Veo 3.1.",
     "galleryTitle": "Example Gallery: Veo 3.1 First/Last",
     "galleryIntro": "Real transitions: sketch → final render, office → rooftop, wireframe UI → high-fidelity UI.",
-    "gallerySceneCta": "Open this scene in Generate and swap your own first & last frames →",
     "galleryAllCta": "View all Veo 3.1 First/Last examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "How to prompt Veo 3.1 First/Last",
-    "promptIntro": "Direct what happens between two images: define the start, the end, the journey, camera, pacing and audio.",
-    "promptPatternSteps": [
-      "Describe the first frame: subject/environment.",
-      "Describe the last frame: destination or transformation.",
-      "Camera path: dolly, orbit, pan, crane, POV or static morph.",
-      "Changes along the way: lighting, time of day, pose, style.",
-      "Pacing: gentle, brisk, dramatic; mid-point events.",
-      "Audio: ambience/music/short VO or “no dialogue”."
-    ],
-    "promptSkeleton": "Animate smoothly from the first frame to the last frame over [duration] seconds in [aspect ratio]. Start with [subject/environment in first frame], then gradually [change/move/transform] until we reach [subject/environment in last frame]. Camera: [movement]. Lighting/style: [description]. Audio: [ambience/music/short VO, or “no dialogue”].",
-    "promptSkeletonNote": "Keep it focused on the journey from A → B; mention camera and pacing.",
     "demoTitle": "Demo prompt – “Office to Rooftop” (6s, 16:9)",
     "demoPromptLabel": "6s office → rooftop",
     "demoPrompt": [
@@ -184,7 +188,6 @@
       "Tiny text or logos may warp; keep critical copy as post graphics",
       "If start/end frames are radically different, transitions may feel surreal—give Veo some continuity"
     ],
-    "tipsFooter": "Use Veo 3.1 First/Last when you have strong start/end frames and need Veo to handle everything in between.",
     "safetyTitle": "Safety, people & likeness",
     "safetyRules": [
       "Don’t use frames of real public figures (politicians, celebrities, influencers)",
@@ -205,6 +208,58 @@
     "relatedSubtitle": "Compare pricing, latency and control surfaces across the MaxVideoAI catalog.",
     "finalPara1": "Veo 3.1 First/Last in MaxVideoAI is your start–end transition engine—built for moments where you already know the first and last frame.",
     "finalPara2": "Use it to bridge scenes, logos, UI layouts or before/after beats with optional native audio, then stitch everything in one workflow.",
-    "finalButton": "Open Generate"
+    "finalButton": "Open Generate",
+    "promptingTitle": "How to Write a Great Veo 3.1 First/Last Prompt",
+    "promptingIntro": "Describe the start frame, the end frame, and the motion path between them.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls transition, camera path, lighting, style, and sound cues.",
+    "promptingGlobalPrinciples": [
+      "Lock start and end frames; keep subject consistent.",
+      "Describe the transition path (camera + motion).",
+      "Keep the action simple to avoid drift."
+    ],
+    "tipsIntro": "First/Last mode is most predictable when you keep the shot simple and the transition explicit.",
+    "promptingEngineWhy": [
+      "Best results when both frames share the same subject and setting.",
+      "Use one clean camera move between frames.",
+      "Call out what changes and what stays fixed."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = continuity. Use for precise, repeatable looks.",
+      "storyboard": "Storyboard = beat timing. Use for mini-stories in one clip."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Start frame] -> [End frame] transition, [camera path], [style/lighting], [optional sound cue]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Start frame:\n[What is locked: subject, pose, framing.]\n\nEnd frame:\n[Destination frame: pose, framing, layout.]\n\nTransition:\n[What changes + how it moves; camera path.]\n\nLook:\n[Lighting + style + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"film crew brief\")",
+        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
+        "copy": "Director brief:\n[Goal of the transition.]\n\nStart frame:\n[Subject + setting + composition.]\n\nEnd frame:\n[Subject + setting + final composition.]\n\nMotion path:\n[Camera move + subject motion + pacing.]\n\nContinuity:\n[What must stay consistent: wardrobe, lighting, palette.]\n\nSound (optional):\n[Ambience + 1-2 SFX cues.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (transition beats)",
+        "description": "Use when you're bridging two locked frames.",
+        "copy": "Transition beats (same subject + same setting)\nDuration: [4/6/8s]\n\nBeat 1 (0-2s):\n[Start frame + camera move begins]\n\nBeat 2 (2-5s):\n[Mid-transition + key change]\n\nBeat 3 (5-8s):\n[End frame + camera settles]\n\nContinuity:\n[What must stay consistent: wardrobe, lighting, palette]\n\nSound (optional):\n[Ambience + 1-2 cues]"
+      }
+    ],
+    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideUrl": "https://deepmind.google/technologies/veo/"
   }
 }

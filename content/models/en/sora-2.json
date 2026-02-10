@@ -7,38 +7,121 @@
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
-    "title": "Sora 2 – AI Text-to-Video & Image-to-Video in MaxVideoAI (720p, 4–12s)",
-    "intro": "Sora 2 – Cinematic AI Video, Directly in MaxVideoAI (4–12s, 720p)",
-    "badge": "720p · 4–12s · Text or Image input",
+    "title": "Sora 2",
+    "intro": "Cinematic clips from text or a single frame — with native sound.",
+    "badge": "720p · 4/8/12s · Text→Video · Image→Video · 16:9/9:16 · Audio included",
     "ctaPrimary": {
-      "label": "Start generating with Sora 2",
+      "label": "Generate with Sora 2",
       "href": "/app?engine=sora-2"
     },
     "secondaryLinks": [
       {
-        "label": "Compare Sora 2 vs Sora 2 Pro (1080p) →",
+        "label": "Compare with Sora 2 Pro",
         "href": "/models/sora-2-pro"
       }
     ]
   },
+  "faqTitle": "FAQ – Sora 2",
+  "faqs": [
+    {
+      "q": "Is Sora 2 available in Europe / the UK?",
+      "a": "Yes. Use Sora 2 from Europe, the UK and most locations where our service is available—no direct OpenAI invite needed."
+    },
+    {
+      "q": "Can Sora 2 generate 1080p videos?",
+      "a": "This tier outputs 720p. For higher resolution (up to 1792×1024), use Sora 2 Pro."
+    },
+    {
+      "q": "Does Sora 2 support image-to-video?",
+      "a": "Yes. Upload a PNG/JPG/WEBP/GIF/AVIF frame (up to ~50 MB) and Sora 2 will animate it based on your motion-focused prompt."
+    },
+    {
+      "q": "Can I remix or extend existing videos with Sora 2?",
+      "a": "This configuration is for text→video and image→video only. Combine multiple clips for longer edits."
+    },
+    {
+      "q": "How do I keep Sora 2 on-brand?",
+      "a": "Use image references from Nano Banana or your own design system, mention brand colors, and keep mood consistent across prompts."
+    }
+  ],
   "custom": {
+    "heroEyebrow": "OpenAI model",
+    "heroSupportLine": "Fast, polished clips for ads, UGC-style shots, and storyboards",
+    "heroSpecChips": [
+      {
+        "label": "720p",
+        "icon": "resolution"
+      },
+      {
+        "label": "4/8/12s",
+        "icon": "duration"
+      },
+      {
+        "label": "Text→Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image→Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "16:9/9:16",
+        "icon": "aspectRatio"
+      },
+      {
+        "label": "Audio included",
+        "icon": "audio"
+      }
+    ],
+    "heroTrustLine": "Pay-as-you-go · Price shown before you generate",
     "heroDesc1": "Create short, cinematic videos with Sora 2 straight from your browser. MaxVideoAI gives you instant access to Sora 2 text-to-video and image-to-video, with transparent per-second pricing and a workspace built for testing, prototyping and producing social-ready clips.",
     "heroDesc2": "Describe your scene, choose a duration (4, 8 or 12 seconds), pick 16:9 or 9:16, and let Sora 2 generate polished footage you can use in ads, content or client work.",
-    "secondaryCta": "Compare Sora 2 vs Sora 2 Pro (1080p) →",
-    "whyTitle": "Why Sora 2 is powerful inside MaxVideoAI:",
+    "hideQuickPricing": true,
+    "showPricePerSecondInSpecs": true,
+    "hidePricingSection": false,
+    "secondaryCta": "Compare with Sora 2 Pro",
+    "whyTitle": "Why Sora 2 is powerful",
     "heroHighlights": [
-      "Text → Video and Image → Video in one place",
-      "Multi-shot / sequenced prompts for mini-stories in a single clip",
-      "Pay-as-you-go pricing – you only pay for the seconds you generate",
-      "Available in Europe, UK and worldwide, no invite required",
-      "Designed to sit alongside Veo, Pika, Kling, Wan, MiniMax Hailuo, etc."
+      "Cinematic camera behavior in seconds||best in short 4–12s beats",
+      "Text→Video + Image→Video||speed or consistency, depending on your starting point",
+      "Multi-beat clips||Shot 1/2/3 prompts work surprisingly well",
+      "Rewards structured prompts||shot list > adjective soup",
+      "Perfect for rapid iteration||test ideas, pacing, and mood fast"
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Short cinematic ads",
-      "UGC-style lifestyle clips",
-      "Product hero visuals",
-      "Storyboards & concept tests"
+      {
+        "title": "Short cinematic ads",
+        "icon": "ads",
+        "chips": [
+          "Fast iteration",
+          "Audio"
+        ]
+      },
+      {
+        "title": "UGC-style lifestyle clips",
+        "icon": "ugc",
+        "chips": [
+          "Vertical",
+          "Natural motion"
+        ]
+      },
+      {
+        "title": "Product hero visuals",
+        "icon": "product",
+        "chips": [
+          "Clean detail",
+          "Lighting"
+        ]
+      },
+      {
+        "title": "Storyboards & concept tests",
+        "icon": "storyboard",
+        "chips": [
+          "Shot list",
+          "4–12s"
+        ]
+      }
     ],
     "whatTitle": "What Sora 2 Actually Is in MaxVideoAI",
     "whatIntro1": "On paper, OpenAI Sora 2 is OpenAI’s short-form text-to-video engine. In practice, the way it behaves for you depends on how it’s integrated.",
@@ -52,69 +135,34 @@
       "5. See the final price per clip before you generate.",
       "6. Compare against other engines in the same GUI."
     ],
-    "specTitle": "Real Specs – Sora 2 in MaxVideoAI (720p, 4–12s)",
-    "specNote": "These specs describe Sora 2 exactly as you can use it today via MaxVideoAI – not theoretical capabilities.",
+    "specTitle": "Real Specs — OpenAI Sora 2",
+    "specNote": "Real-world specs (as available in MaxVideoAI today)",
     "specSections": [
       {
-        "title": "Duration & Output",
+        "title": "Prompting & shot language",
+        "intro": "This tier responds best to director-style prompts with clear beats and camera intent. Think actions and framing before style adjectives.",
         "items": [
-          "Durations: 4 s, 8 s, 12 s (you choose)",
-          "Output resolution: 720p (1280×720)",
-          "Need 1080p? Switch to Sora 2 Pro in the same interface."
+          "Lead with subject + action + camera move.",
+          "Name lighting and lens mood for consistency.",
+          "Keep each clip to one main beat.",
+          "Start from a single frame when you need a stable look."
         ]
       },
       {
-        "title": "Aspect Ratios",
+        "title": "Audio & iteration",
+        "intro": "Audio is generated alongside the visuals, so rhythm can be shaped in the same prompt. Use quick variations to lock pacing before scaling.",
         "items": [
-          "16:9 – classic horizontal / YouTube / web video",
-          "9:16 – vertical / TikTok / Reels / Shorts",
-          "Both are supported in Text→Video and Image→Video."
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts – short, cinematic descriptions in one to three sentences",
-          "Reference images – PNG, JPG, WebP, GIF, AVIF up to ~50 MB",
-          "No video input in this configuration: you start either from text or from a still image."
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Sora 2 returns a video with audio – useful if you want a self-contained clip straight out of the engine.",
-          "If you want to control or replace the sound: mute or swap the track in your editor, or use Sora 2 Pro, which exposes an audio toggle in the UI."
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Sora 2 uses a simple per-second pricing model:",
-          "Internal config: perSecondCents = 12",
-          "That’s $0.12 per second of video: 4s ≈ $0.48; 8s ≈ $0.96; 12s ≈ $1.44",
-          "No monthly subscription: top up a wallet and only pay for what you generate."
+          "Add one or two key sound cues.",
+          "Keep dialogue short and punchy.",
+          "Save winning prompts as templates.",
+          "Regenerate small changes to test hooks."
         ]
       }
     ],
-    "specValueProp": "Key value proposition: Sora 2 in MaxVideoAI is the fastest way to test ideas, prototypes and social concepts – you get studio-style motion & sound at a predictable cost per second.",
-    "microCta": "Start generating with Sora 2 →",
     "galleryTitle": "Example Gallery: Real Sora 2 Outputs",
     "galleryIntro": "See a handful of live Sora 2 renders powered by the same settings you have in MaxVideoAI.",
-    "gallerySceneCta": "Open this scene in Generate and adapt it with your own brand →",
     "galleryAllCta": "View all Sora 2 examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "How to Write a Good Sora 2 Prompt",
-    "promptIntro": "Sora 2 works best when you treat your prompt like a concise shot list rather than a random wishlist of adjectives.",
-    "promptPatternSteps": [
-      "Subject and action – who/what and what they’re doing",
-      "Environment – where it happens (office, street, café, studio…)",
-      "Camera – how we see it (wide shot, medium shot, close-up, over-the-shoulder…)",
-      "Movement – how the camera moves (slow dolly-in, handheld, pan, drone-like…)",
-      "Light & mood – golden hour, soft daylight, neon night, high contrast, moody…",
-      "Format & duration – mention 16:9 or 9:16 and whether it’s a 4, 8 or 12 second moment"
-    ],
-    "promptSkeleton": "Wide shot of [subject] in [environment], lit by [lighting], camera [movement], 8 seconds, 16:9, cinematic, natural colors.",
-    "promptSkeletonNote": "Drop that into MaxVideoAI, choose Sora 2, and you’re off.",
     "imageTitle": "Image-to-Video Workflow with Sora 2 (+ Nano Banana)",
     "imageIntro": "One advantage of Sora in MaxVideoAI is pairing it with an image engine like Nano Banana.",
     "imageFlow": [
@@ -137,23 +185,7 @@
       "Reuse key elements (same subject, same setting, consistent lighting).",
       "Avoid jumping through five different locations in 8 seconds—keep it focused."
     ],
-    "demoTitle": "Demo: One Sequenced Prompt",
-    "demoPromptLabel": "Prompt – 8 second cinematic lifestyle commercial (16:9)",
-    "demoPrompt": [
-      "8 second cinematic lifestyle commercial of a man in his 30s using a sleek smartwatch while jogging at sunrise in an urban park.",
-      "Shot 1 (2 s): close-up of the watch on his wrist, sunlight reflecting off the glass as he adjusts the strap.",
-      "Shot 2 (4 s): side-angle tracking shot as he runs along the path, warm light flaring behind skyscrapers.",
-      "Shot 3 (2 s): close-up of him glancing at the screen, subtle smile, breath visible in cool morning air.",
-      "Lighting: golden hour, cinematic natural tones.",
-      "Audio: rhythmic ambient footsteps + faint upbeat music.",
-      "Camera: dynamic handheld tracking, 50 mm lens look.",
-      "Negative: no logos, no slow-motion, no text overlays."
-    ],
-    "demoNotes": [
-      "Shows shot transitions, consistent environment and props, clear camera motion in each segment, and a complete story beat in under 10 seconds.",
-      "Use the same 3-beat structure for skincare, SaaS, fitness, or any micro-story."
-    ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Short, vivid moments",
       "Clear subject and action",
@@ -162,59 +194,127 @@
       "Great for UGC-feeling footage and cinematic inserts"
     ],
     "boundaries": [
-      "Outputs are 720p, not 1080p – Sora 2 Pro covers higher resolution.",
+      "Outputs are 720p — Sora 2 Pro covers higher resolution (up to 1792×1024).",
       "It’s 4–12 seconds, not long-form. Stitch multiple clips for longer edits.",
       "No video input; start from text or image.",
       "No seeds; iterate by refining the prompt and re-running.",
       "Can struggle with very small or detailed text."
     ],
-    "tipsFooter": "When you understand this and write prompts accordingly, Sora 2 becomes a predictable tool instead of a slot machine.",
     "safetyTitle": "Safety & People / Likeness",
     "safetyRules": [
       "Do not generate real people or public figures (no celebrities, politicians, etc.).",
       "No minors, sexual content, hateful content or graphic violence.",
       "Don’t use another person’s likeness without consent.",
-      "Some prompts and input images will be blocked if they violate these principles."
-    ],
-    "safetyInterpretation": [
+      "Some prompts and input images will be blocked if they violate these principles.",
       "Generic characters and scenes are fine.",
-      "Famous people or sensitive prompts may be blocked."
+      "Famous people or sensitive prompts may be blocked.",
+      "This is how both MaxVideoAI and Sora 2 stay usable and safe for professionals."
     ],
-    "safetyNote": "This is how both MaxVideoAI and Sora 2 stay usable and safe for professionals.",
+    "safetyNote": null,
     "comparisonTitle": "Sora 2 vs Sora 2 Pro – Quick Overview",
     "comparisonPoints": [
       "Sora 2 is your fast 720p idea machine.",
       "Sora 2 Pro is your higher-resolution, more controllable sibling.",
-      "Storyboard with Sora 2, then regenerate finals in Sora 2 Pro with 1080p and audio control."
+      "Storyboard with Sora 2, then regenerate finals in Sora 2 Pro with high-res (up to 1792×1024) and audio control."
     ],
-    "comparisonCta": "Start with Sora 2, move to Sora 2 Pro when you’re ready for 1080p →",
-    "faqTitle": "FAQ – Sora 2 in MaxVideoAI",
-    "faqs": [
-      {
-        "q": "Is Sora 2 available in Europe / the UK?",
-        "a": "Yes. Use Sora 2 from Europe, the UK and most locations where our service is available—no direct OpenAI invite needed."
-      },
-      {
-        "q": "Can Sora 2 generate 1080p videos?",
-        "a": "This tier outputs 720p. For 1080p, use Sora 2 Pro."
-      },
-      {
-        "q": "Does Sora 2 support image-to-video?",
-        "a": "Yes. Upload a PNG/JPG/WEBP/GIF/AVIF frame (up to ~50 MB) and Sora 2 will animate it based on your motion-focused prompt."
-      },
-      {
-        "q": "Can I remix or extend existing videos with Sora 2?",
-        "a": "This configuration is for text→video and image→video only. Combine multiple clips for longer edits."
-      },
-      {
-        "q": "How do I keep Sora 2 on-brand?",
-        "a": "Use image references from Nano Banana or your own design system, mention brand colors, and keep mood consistent across prompts."
-      }
-    ],
+    "comparisonCta": "Start with Sora 2, move to Sora 2 Pro when you’re ready for higher resolution →",
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare pricing, latency, and output options across other engines available in MaxVideoAI.",
+    "relatedItems": [
+      {
+        "brand": "openai",
+        "title": "OpenAI Sora 2 Pro",
+        "description": "Create longer, more immersive AI videos from text or images using Sora 2 Pro. Native voice, ambient sound, prompt chaining, and advanced control via MaxVideoAI.",
+        "modelSlug": "sora-2-pro",
+        "ctaLabel": "Compare OpenAI Sora 2 vs OpenAI Sora 2 Pro →"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1",
+        "description": "Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing from $0.52/s.",
+        "modelSlug": "veo-3-1",
+        "ctaLabel": "Compare OpenAI Sora 2 vs Google Veo 3.1 →"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1 Fast",
+        "description": "Use Veo 3.1 Fast for affordable, fast AI video generation. Up to 8-second clips with optional native audio—ideal for social formats and iterative testing.",
+        "modelSlug": "veo-3-1-fast",
+        "ctaLabel": "Compare OpenAI Sora 2 vs Google Veo 3.1 Fast →"
+      }
+    ],
     "finalPara1": "Sora 2 in MaxVideoAI gives you a direct, pay-as-you-go way to use one of the most impressive short-form video models available – without infrastructure setup or guesswork.",
     "finalPara2": "Use it to explore ideas, build mini-sequences, and test creative directions fast. When you need more resolution or control, you can always step up to Sora 2 Pro.",
-    "finalButton": "Start generating with Sora 2 now →"
+    "finalButton": "Start generating with Sora 2 now →",
+    "promptingGlobalPrinciples": [
+      "1 shot = 1 camera move + 1 subject action",
+      "Use visual anchors (specific nouns > vague adjectives)",
+      "Keep characters consistent across shots",
+      "Start from an image for maximum control",
+      "Iterate: change one thing at a time"
+    ],
+    "promptingEngineWhy": [
+      "Too many beats can cause drift — keep each clip to 2–3 clear actions.",
+      "Image-to-video locks the first frame composition; prompt controls motion and timing.",
+      "Reference image rules are strict — clean stills, no logos, no readable text.",
+      "Audio cues help pacing; describe 1–2 key sounds for rhythm."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = continuity. Use for precise, repeatable looks."
+    },
+    "promptingTitle": "How to Write a Great Sora 2 Prompt",
+    "promptingIntro": "Sora 2 works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingGuideLabel": "OpenAI Developers",
+    "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
+    "tipsIntro": "Sora is most predictable when you keep the shot simple, readable, and physical.",
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (sequenced shot list)",
+        "description": "Use this when you need multi-beat continuity in a single clip.",
+        "copy": "Storyboard / shot list (same subject + same setting)\nDuration: [4/8/12s] • Aspect: [16:9 or 9:16]\n\nShot 1 (0-2s):\n[Framing + subject action + camera move]\n\nShot 2 (2-6s):\n[Framing + subject action + camera move]\n\nShot 3 (6-8/12s):\n[Final action/reveal + camera settle]\n\nContinuity:\n[Repeat anchors: wardrobe, props, lighting, background]\n\nAudio (optional):\n[Ambience + 1-2 SFX cues]\n\nConstraints:\nNo logos. No readable text. No overlays."
+      }
+    ],
+    "demoTitle": "Demo: a sequenced prompt",
+    "demoPromptLabel": "Prompt – 8s lifestyle spot (16:9)",
+    "demoPrompt": [
+      "8-second lifestyle spot: a 30-year-old runner with a smartwatch at sunrise in an urban park.",
+      "Shot 1 (2s): close-up on the watch as he tightens the strap, sun flare on the glass.",
+      "Shot 2 (4s): side tracking shot as he runs, warm light behind buildings.",
+      "Shot 3 (2s): close-up on his face glancing at the screen, slight smile, visible breath in cool air.",
+      "Lighting: golden hour, natural cinematic tones.",
+      "Audio: rhythmic footsteps + soft optimistic music.",
+      "Camera: dynamic handheld, 50mm feel.",
+      "Negative: no logos, no slow motion, no on-screen text."
+    ],
+    "demoNotes": [
+      "Shows transitions, location/subject continuity, clear motion, and a complete mini-story under 10s.",
+      "Reuse this structure for skincare, SaaS, fitness, or any 3-beat micro-story."
+    ]
   }
 }

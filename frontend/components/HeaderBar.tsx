@@ -458,6 +458,14 @@ export function HeaderBar() {
                   >
                     <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
                       <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
+                        <Link
+                          href={resolveLocalizedHref(dropdown.allHref)}
+                          className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          role="menuitem"
+                          onClick={() => closeDesktopDropdown(200)}
+                        >
+                          {allLabel}
+                        </Link>
                         {dropdown.items.map((entry) => {
                           const href = resolveLocalizedHref(entry.href);
                           return (
@@ -473,15 +481,6 @@ export function HeaderBar() {
                           );
                         })}
                       </nav>
-                      <div className="mt-2 border-t border-hairline pt-2">
-                        <Link
-                          href={resolveLocalizedHref(dropdown.allHref)}
-                          className="flex items-center gap-2 rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          onClick={() => closeDesktopDropdown(200)}
-                        >
-                          {allLabel}
-                        </Link>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -731,6 +730,13 @@ export function HeaderBar() {
                     </button>
                     {isOpen ? (
                       <div id={panelId} className="mt-2 flex flex-col gap-1 text-sm font-medium text-text-secondary">
+                        <Link
+                          href={resolveLocalizedHref(dropdown.allHref)}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {allLabel}
+                        </Link>
                         {dropdown.items.map((entry) => {
                           const href = resolveLocalizedHref(entry.href);
                           return (
@@ -744,13 +750,6 @@ export function HeaderBar() {
                             </Link>
                           );
                         })}
-                        <Link
-                          href={resolveLocalizedHref(dropdown.allHref)}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="mt-1 rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {allLabel}
-                        </Link>
                       </div>
                     ) : null}
                   </div>

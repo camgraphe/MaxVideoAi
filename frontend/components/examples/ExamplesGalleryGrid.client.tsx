@@ -17,6 +17,7 @@ export type ExampleGalleryVideo = {
   engineBrandId?: string;
   priceLabel: string | null;
   prompt: string;
+  promptFull?: string | null;
   aspectRatio: string | null;
   durationSec: number;
   hasAudio: boolean;

@@ -42,6 +42,7 @@ export type ModelGalleryCard = {
     maxResolution?: number | null;
     maxDuration?: number | null;
     priceFrom?: number | null;
+    legacy?: boolean;
   };
 };
 
@@ -70,6 +71,7 @@ type ModelsGalleryCopy = {
     format?: { label?: string; options?: Record<string, string> };
     duration?: { label?: string; options?: Record<string, string> };
     price?: { label?: string; options?: Record<string, string> };
+    age?: { label?: string; options?: Record<string, string> };
     clear?: string;
   };
   compareBar?: {
@@ -148,6 +150,14 @@ const DEFAULT_COPY: Required<ModelsGalleryCopy> = {
         premium: '$$$',
       },
     },
+    age: {
+      label: 'Models',
+      options: {
+        latest: 'Latest',
+        legacy: 'Legacy',
+        all: 'All',
+      },
+    },
     clear: 'Clear filters',
   },
   compareBar: {
@@ -192,6 +202,7 @@ export function ModelsGallery({
   const formatBase = DEFAULT_COPY.filters.format ?? { options: {} };
   const durationBase = DEFAULT_COPY.filters.duration ?? { options: {} };
   const priceBase = DEFAULT_COPY.filters.price ?? { options: {} };
+  const ageBase = DEFAULT_COPY.filters.age ?? { options: {} };
   const sortCopy = {
     ...sortBase,
     ...filtersCopy.sort,
@@ -216,6 +227,11 @@ export function ModelsGallery({
     ...priceBase,
     ...filtersCopy.price,
     options: { ...(priceBase.options ?? {}), ...(filtersCopy.price?.options ?? {}) },
+  };
+  const ageCopy = {
+    ...ageBase,
+    ...filtersCopy.age,
+    options: { ...(ageBase.options ?? {}), ...(filtersCopy.age?.options ?? {}) },
   };
   const compareLabel = copy?.compareLabel ?? DEFAULT_COPY.compareLabel;
   const compareTooltip = copy?.compareTooltip ?? DEFAULT_COPY.compareTooltip;
@@ -289,6 +305,12 @@ export function ModelsGallery({
     { value: 'premium', label: `${priceCopy.label}: ${priceCopy.options.premium}` },
   ];
 
+  const AGE_OPTIONS: SelectOption[] = [
+    { value: 'latest', label: `${ageCopy.label}: ${ageCopy.options.latest}` },
+    { value: 'legacy', label: `${ageCopy.label}: ${ageCopy.options.legacy}` },
+    { value: 'all', label: `${ageCopy.label}: ${ageCopy.options.all}` },
+  ];
+
   const SORT_OPTIONS: SelectOption[] = [
     { value: 'featured', label: `${sortCopy.label}: ${sortCopy.options.featured}` },
     { value: 'score', label: `${sortCopy.label}: ${sortCopy.options.score}` },
@@ -309,6 +331,7 @@ export function ModelsGallery({
   const [selectedDuration, setSelectedDuration] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [selectedSort, setSelectedSort] = useState('featured');
+  const [selectedAge, setSelectedAge] = useState('latest');
 
   const appendCards = useCallback(
     (maxCount: number) => {
@@ -382,13 +405,15 @@ export function ModelsGallery({
     setSelectedFormat('all');
     setSelectedDuration('all');
     setSelectedPrice('all');
+    setSelectedAge('latest');
   };
 
   const hasActiveFilters =
     selectedMode !== 'all' ||
     selectedFormat !== 'all' ||
     selectedDuration !== 'all' ||
-    selectedPrice !== 'all';
+    selectedPrice !== 'all' ||
+    selectedAge !== 'latest';
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
@@ -418,9 +443,14 @@ export function ModelsGallery({
         if (selectedPrice === 'mid' && !(meta.priceFrom > 0.08 && meta.priceFrom <= 0.2)) return false;
         if (selectedPrice === 'premium' && meta.priceFrom <= 0.2) return false;
       }
+      if (selectedAge !== 'all') {
+        const isLegacy = Boolean(meta.legacy);
+        if (selectedAge === 'latest' && isLegacy) return false;
+        if (selectedAge === 'legacy' && !isLegacy) return false;
+      }
       return true;
     });
-  }, [cards, hasActiveFilters, selectedMode, selectedFormat, selectedDuration, selectedPrice]);
+  }, [cards, hasActiveFilters, selectedMode, selectedFormat, selectedDuration, selectedPrice, selectedAge]);
 
   const sortedCards = useMemo(() => {
     const sortable = [...filteredCards];
@@ -532,6 +562,12 @@ export function ModelsGallery({
           options={PRICE_OPTIONS}
           value={selectedPrice}
           onChange={(value) => setSelectedPrice(String(value))}
+          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+        />
+        <SelectMenu
+          options={AGE_OPTIONS}
+          value={selectedAge}
+          onChange={(value) => setSelectedAge(String(value))}
           buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
         />
         {hasActiveFilters ? (

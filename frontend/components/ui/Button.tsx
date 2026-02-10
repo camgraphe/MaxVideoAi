@@ -3,6 +3,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ElementType, ReactNode
 import Link from 'next/link';
 import clsx from 'clsx';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
+import { applyNofollowRel } from '@/lib/seo/nofollow';
 
 type ButtonVariant = 'primary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -59,11 +60,13 @@ export function ButtonLink({
   linkComponent: LinkComponent = Link,
   ...props
 }: ButtonLinkProps) {
+  const resolvedRel = applyNofollowRel(props.rel, href);
   return (
     <LinkComponent
       href={href}
       className={clsx(baseClasses, variantClasses[variant], sizeClasses[size], className)}
       {...props}
+      rel={resolvedRel}
     >
       {children}
     </LinkComponent>

@@ -20,12 +20,16 @@ function computeAddonAmount(
   addonKey: string,
   enabledValue: boolean | number | undefined,
   definition: PricingEngineDefinition,
-  duration: number
+  duration: number,
+  resolution: string
 ): PricingAddonLine | null {
   if (!enabledValue) return null;
   const rule = definition.addons?.[addonKey];
   if (!rule) return null;
-  const perSecondCents = rule.perSecondCents ?? 0;
+  const perSecondCents =
+    (rule.perSecondCentsByResolution && rule.perSecondCentsByResolution[resolution]) ??
+    rule.perSecondCents ??
+    0;
   const flatCents = rule.flatCents ?? 0;
   const total = normaliseCents(perSecondCents * duration + flatCents);
   if (total === 0) return null;
@@ -49,7 +53,7 @@ export function computePricingSnapshot(
   const addons: PricingAddonLine[] = [];
   if (definition.addons) {
     for (const key of Object.keys(definition.addons)) {
-      const addonLine = computeAddonAmount(key, input.addons?.[key], definition, duration);
+      const addonLine = computeAddonAmount(key, input.addons?.[key], definition, duration, input.resolution);
       if (addonLine) {
         addons.push(addonLine);
       }

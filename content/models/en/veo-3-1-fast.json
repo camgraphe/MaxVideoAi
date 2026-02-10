@@ -9,7 +9,7 @@
   "overview": "Veo 3.1 Fast is the speed-and-cost tier of the Veo family: 4–8s clips, 720p/1080p, text or image input, framing/tone presets, optional native audio, and per-second pricing for rapid testing.",
   "hero": {
     "title": "Veo 3.1 Fast – High-Speed AI Video with Optional Audio",
-    "intro": "Veo 3.1 Fast – High-Speed AI Video with Optional Audio (4–8s, 720p/1080p)",
+    "intro": "Draft-tier Veo for quick volume testing — with the same cinematic language.",
     "badge": "720p/1080p · 4–8s · Text or Image input",
     "ctaPrimary": {
       "label": "Try Veo 3.1 Fast",
@@ -25,24 +25,62 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Fast concept testing before full Veo 3.1 or Sora 2 Pro renders",
-      "Short 9:16 or 16:9 clips for TikTok, Reels, Shorts, YouTube intros",
-      "Mood-driven B-roll and loops for landing pages and product sections",
-      "Lightweight internal comms, announcements and training snippets"
+      {
+        "title": "Rapid concept testing",
+        "icon": "zap"
+      },
+      {
+        "title": "Ad variants & A/B tests",
+        "icon": "ads"
+      },
+      {
+        "title": "Social drafts & loops",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Quick product takes",
+        "icon": "product"
+      },
+      {
+        "title": "Pre-viz & story beats",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Style exploration (many variants)",
+        "icon": "wand2"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "4 s, 6 s, 8 s per render" },
-    { "label": "Resolution", "body": "720p or 1080p at 24 fps" },
-    { "label": "Formats", "body": "16:9 and 9:16 (no 1:1 in this tier)" },
-    { "label": "Inputs", "body": "Text → Video; Image → Video from a single still" },
-    { "label": "Audio", "body": "Optional native audio (VO, ambience, SFX) via per-job toggle" },
+    {
+      "label": "Duration",
+      "body": "4 s, 6 s, 8 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "720p or 1080p at 24 fps"
+    },
+    {
+      "label": "Formats",
+      "body": "16:9 and 9:16 (no 1:1 in this tier)"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text → Video; Image → Video from a single still"
+    },
+    {
+      "label": "Audio",
+      "body": "Optional native audio (VO, ambience, SFX) via per-job toggle"
+    },
     {
       "label": "Pricing",
       "body": "Per-second; example: audio on ≈$0.15/s, audio off ≈$0.10/s; pay-as-you-go wallet"
     },
-    { "label": "Render timing", "body": "Short queue times; live estimates shown in the jobs rail" }
+    {
+      "label": "Render timing",
+      "body": "Short queue times; live estimates shown in the jobs rail"
+    }
   ],
   "promptStructure": {
     "title": "Text-to-Video with Veo 3.1 Fast",
@@ -106,22 +144,40 @@
   "custom": {
     "heroDesc1": "Veo 3.1 Fast brings DeepMind’s cinematic engine to a lower price point and faster turnaround—perfect for rapid testing and social loops.",
     "heroDesc2": "Start from a short text brief or a single reference image, pick 4/6/8 seconds, choose 16:9 or 9:16, toggle audio, and generate clips fast enough to A/B multiple ideas in one session.",
-    "whyTitle": "Why Veo 3.1 Fast is powerful inside MaxVideoAI:",
+    "heroSupportLine": "Best for exploring hooks, angles, and pacing fast before you regenerate winners in Veo 3.1.",
+    "whyTitle": "Why Veo 3.1 Fast is powerful",
     "heroHighlights": [
-      "Fast, affordable 4–8s clips for social and experimentation",
-      "Text → Video and Image → Video from a single composer",
-      "Cinematic Controls (framing, tone, camera hints) shared with Veo 3.1",
-      "Audio toggle – native audio when you need it, silent when you don’t",
-      "Pay-as-you-go pricing for iteration and client reviews",
-      "Available in Europe, UK and worldwide via the same MaxVideoAI wallet",
-      "Works alongside Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax Hailuo, Nano Banana for easy A/B tests"
+      "Optimized for speed + business workflows||Built for programmatic ad generation and rapid creative testing at scale.",
+      "Keeps Veo’s cinematic intent||Clear camera language + style cues translate well into consistent variants.",
+      "Sound-ready drafts||Great for rough timing and vibe; polish the final take in the premium tier.",
+      "Simple upgrade path||Draft in Fast, then regenerate the keepers in Veo 3.1 for higher-fidelity finals."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "Fast concept testing before a full Veo 3.1 or Sora 2 Pro render",
-      "Short 9:16 or 16:9 clips for TikTok, Reels, Shorts, YouTube intros",
-      "Mood-driven B-roll and loops for landing pages and product sections",
-      "Lightweight internal comms, announcements and training snippets"
+      {
+        "title": "Rapid concept testing",
+        "icon": "zap"
+      },
+      {
+        "title": "Ad variants & A/B tests",
+        "icon": "ads"
+      },
+      {
+        "title": "Social drafts & loops",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Quick product takes",
+        "icon": "product"
+      },
+      {
+        "title": "Pre-viz & story beats",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Style exploration (many variants)",
+        "icon": "wand2"
+      }
     ],
     "whatTitle": "What Veo 3.1 Fast Actually Is in MaxVideoAI",
     "whatIntro1": "Veo 3.1 Fast is tuned for speed and efficiency within the Veo family.",
@@ -139,68 +195,31 @@
     "specNote": "These specs describe Veo 3.1 Fast exactly as you can use it today via MaxVideoAI.",
     "specSections": [
       {
-        "title": "Duration & Output",
+        "title": "Draft-speed exploration",
+        "intro": "Built for rapid testing and volume when you need ideas fast. Use it to explore hooks, angles, and pacing.",
         "items": [
-          "Durations: 4 s, 6 s, 8 s",
-          "Output resolution: 720p or 1080p",
-          "Frame rate: 24 fps"
+          "Keep prompts short and action-driven.",
+          "Generate many small variants.",
+          "Test multiple openings quickly.",
+          "Promote winners to the full tier."
         ]
       },
       {
-        "title": "Aspect Ratios",
+        "title": "Upgrade path",
+        "intro": "The same prompt structure upgrades cleanly to the premium tier. Treat Fast as your draft layer.",
         "items": [
-          "16:9 – horizontal clips for web and video inserts",
-          "9:16 – vertical clips for feeds, stories and paid social"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts: single-scene, sensory descriptions (tight wording)",
-          "Reference image: PNG/JPG/WebP; ~10 MB; one image animated into a short clip",
-          "No multi-image reference or first/last frame chaining in this tier"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Audio on: ambient sound, light SFX and short dialogue lines",
-          "Audio off: cheaper silent clips when you’ll add sound later",
-          "Treat audio as a rough mix suitable for social-ready clips"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Per-second; example config: audio on ≈$0.15/s; audio off ≈$0.10/s",
-          "No subscription: use the MaxVideoAI wallet and live price chip to compare tiers"
-        ]
-      },
-      {
-        "title": "Render timing",
-        "items": [
-          "Fast queue targets; live estimates shown in the jobs rail so you can A/B quickly"
+          "Reuse shot language for finals.",
+          "Swap in stronger references later.",
+          "Use Fast for social drafts and loops.",
+          "Save templates to scale campaigns."
         ]
       }
     ],
     "specValueProp": "Veo 3.1 Fast is your rapid-fire test bench: same cinematic language as Veo 3.1, lower cost, faster turnaround.",
     "galleryTitle": "Example Gallery: Real Veo 3.1 Fast Outputs",
     "galleryIntro": "Explore clips generated with Veo 3.1 Fast using the same presets you have.",
-    "gallerySceneCta": "Open this scene in Generate and adapt it with your own script →",
     "galleryAllCta": "View all Veo 3.1 Fast examples →",
     "recreateLabel": "Recreate this shot →",
-    "promptTitle": "Text-to-Video with Veo 3.1 Fast",
-    "promptIntro": "Fast mode is for quick A/B tests. Keep prompts focused, single-scene, and easy to tweak.",
-    "promptPatternSteps": [
-      "Subject + focal point for the whole clip",
-      "One environment",
-      "Camera motion over 4–8 seconds",
-      "Light and mood",
-      "Optional audio: ambience + short VO, or specify no dialogue",
-      "Format and duration (16:9 or 9:16; 4/6/8 s)"
-    ],
-    "promptSkeleton": "Misty forest at dawn, medium shot on a mossy rock, slow push forward as light rays appear, 6 seconds, 16:9 at 1080p. Audio: gentle birds and wind, no dialogue.",
-    "promptSkeletonNote": "Use consistent wording across variants so you can see exactly what changes.",
     "imageTitle": "Image-to-Video Flow with Veo 3.1 Fast",
     "imageIntro": "Animate a single still into a quick loop or hero shot.",
     "imageFlow": [
@@ -222,43 +241,29 @@
       "Promote the best to Veo 3.1 for higher fidelity and audio depth.",
       "Stay single-scene in Fast; use other Veo tiers for multi-beat control."
     ],
-    "demoTitle": "Demo: One Prompt Pattern for Veo 3.1 Fast",
-    "demoPromptLabel": "6 second vertical mood loop (9:16, 1080p)",
-    "demoPrompt": [
-      "6 second vertical loop of a young woman working late at a minimalist desk in front of a big window, city lights blurred in the background.",
-      "Camera: slow handheld drift left and right, staying on her face and laptop.",
-      "Lighting: cool blue from outside, warm desk lamp on her hands.",
-      "Audio: quiet typing, distant city hum, no dialogue."
-    ],
-    "demoNotes": [
-      "One clear subject and single environment.",
-      "Simple camera motion that loops cleanly.",
-      "Audio supports the mood without complicating the scene."
-    ],
-    "tipsTitle": "Tips & Limitations in Plain English",
+    "tipsTitle": "Tips & Limitations",
     "strengths": [
-      "Speed and price for A/B tests and explorations",
-      "Strong for ambient, mood-driven scenes and clear product shots",
-      "Audio toggle for rough mixes or silent drafts",
-      "Ideal for social formats where 4–8 seconds is the whole story"
+      "Lead with framing + camera move (wide/medium/close + dolly/pan/handheld) before style.",
+      "Keep one hero subject and one readable action per clip.",
+      "Use 2–3 concrete anchors (time of day, weather, 1–2 set details) instead of long lists.",
+      "For continuity, reuse the same “shot recipe” (palette, lighting, lens feel) and change one variable per take.",
+      "Audio is best with minimal cues: ambience + 1 key sound, or one short VO line."
     ],
     "boundaries": [
-      "Single-scene focus; not for multi-location narratives",
-      "No multi-image reference or first/last frame chaining in this tier",
-      "Slightly lower detail/realism than full Veo 3.1 (trade speed for fidelity)",
-      "Tiny text or dense UI may be soft; overlay critical copy in post"
+      "Single-scene focus works best; multi-location narratives tend to drift.",
+      "This tier is draft-first (slightly less detail/fidelity than full Veo 3.1).",
+      "Tiny UI text and small lettering are unreliable — add in post."
     ],
-    "tipsFooter": "Use Fast to explore, then escalate winning prompts to Veo 3.1 for final polish.",
-    "safetyTitle": "Safety, People & Likeness",
+    "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
-      "Avoid real public figures, political content, explicit material or minors.",
-      "Some generations may be blocked or adjusted per provider policies.",
-      "Outputs carry AI provenance markers (SynthID-style watermarking)."
+      "No sexual content, and nothing involving minors.",
+      "No hateful, harassing, or graphic-violence content.",
+      "Don’t impersonate real people or public figures; use consent for any likeness/voice.",
+      "Don’t include private personal data (addresses, phone numbers, documents, non-consenting faces).",
+      "Some prompts or references may be blocked by provider safety filters."
     ],
-    "safetyInterpretation": [
-      "Provider safety applies; MaxVideoAI layers additional checks for pro use."
-    ],
-    "safetyNote": "These safeguards keep Veo 3.1 Fast appropriate for professional environments.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "Veo 3.1 Fast vs Veo 3.1 – Quick Overview",
     "comparisonPoints": [
       "Veo 3.1 Fast: cheaper, faster; best for tests, social loops, internal reviews.",
@@ -293,6 +298,78 @@
     "relatedSubtitle": "Compare price tiers, latency, and prompt presets across the rest of the catalog.",
     "finalPara1": "Veo 3.1 Fast in MaxVideoAI is your rapid-fire test bench for Veo prompts.",
     "finalPara2": "Same cinematic language, lower stakes, and quality that’s ready for social delivery.",
-    "finalButton": "Open Generate"
+    "finalButton": "Open Generate",
+    "promptingTitle": "How to Write a Great Veo 3.1 Fast Prompt",
+    "promptingIntro": "Veo Fast prefers short, concrete prompts and one clear action.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and sound cues.",
+    "promptingGlobalPrinciples": [
+      "One subject, one action.",
+      "Call out framing and camera move.",
+      "Use 2-3 visual anchors, not long lists."
+    ],
+    "tipsIntro": "Veo 3.1 Fast is most reliable when you write a short shot brief: one subject, one action, clear framing, and one camera move.",
+    "promptingEngineWhy": [
+      "Fast favors simple beats and short prompts.",
+      "Camera language improves consistency.",
+      "Use style anchors to keep the look stable."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = style control. Use for precise, repeatable looks."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject] [action] in [context], [camera move], [lighting/style], [optional sound cue]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nContext:\n[Location + time + 2 visual anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1 cue.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject:\n[Key traits + wardrobe/props.]\n\nCamera:\n[Framing + one move + lens feel.]\n\nLighting + color:\n[Key light + palette anchors.]\n\nConstraints:\nKeep it simple; avoid extra actions."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (short shot list)",
+        "description": "Keep it minimal for faster, cleaner drafts.",
+        "copy": "Shot list (same subject + same setting)\nDuration: [4/6/8s]\n\nShot 1 (0-2s):\n[Framing + action + camera move]\n\nShot 2 (2-6/8s):\n[Framing + action + camera move]\n\nLook + mood:\n[Lighting + palette]\n\nSound (optional):\n[Ambience + 1 cue]"
+      }
+    ],
+    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
+    "demoTitle": "Demo: prompt pattern for Veo 3.1 Fast",
+    "demoPromptLabel": "6s vertical loop (9:16, 1080p)",
+    "demoPrompt": [
+      "6s 9:16 loop of a young woman working late at a minimalist desk in front of a large window, city lights blurred.",
+      "Camera: slow handheld drift left/right, centered on her face and laptop.",
+      "Lighting: cool blue outside + warm lamp on hands.",
+      "Audio: soft typing, city hum, no dialogue."
+    ],
+    "demoNotes": [
+      "One clear subject and one environment.",
+      "Simple movement that loops cleanly.",
+      "Audio supports the mood without adding complexity."
+    ],
+    "troubleshootingTitle": "Common problems → fast fixes",
+    "troubleshootingItems": [
+      "Drift / ignores details → move subject + action + framing to the first line; remove extra beats; keep constraints positive (“clean background”, “centered subject”).",
+      "Motion feels messy → one camera move only; slow the action; simplify the background.",
+      "Off-brand look → lock palette + lighting; reuse the same wording; add a reference frame when you can.",
+      "Text/signage breaks → keep readable text off-screen; overlay critical copy in post.",
+      "VO / lip sync feels off → shorten lines; avoid fast speech and long monologues."
+    ]
   }
 }

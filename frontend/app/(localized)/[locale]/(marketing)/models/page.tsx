@@ -17,6 +17,7 @@ import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { ModelsCompareHeroToggle } from '@/components/marketing/ModelsCompareHeroToggle';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
+import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
 import engineCatalog from '@/config/engine-catalog.json';
 const MODELS_SLUG_MAP = buildSlugMap('models');
 
@@ -122,11 +123,24 @@ function resolveSupported(value: unknown) {
 function extractMaxResolution(value?: string | null, fallback?: string[]) {
   const candidates = [value ?? '', ...(fallback ?? [])];
   let explicitMax = 0;
+  let explicitLabel: string | null = null;
   let fallbackMax = 0;
   candidates.forEach((entry) => {
     const normalized = entry.toLowerCase();
     if (normalized.includes('4k')) {
       explicitMax = Math.max(explicitMax, 2160);
+      if (!explicitLabel) explicitLabel = '4K';
+      return;
+    }
+    const dimensionMatch = entry.trim().match(/^(\d{3,4})\s*[x×]\s*(\d{3,4})$/);
+    if (dimensionMatch) {
+      const width = Number(dimensionMatch[1]);
+      const height = Number(dimensionMatch[2]);
+      const max = Math.max(width, height);
+      if (!Number.isNaN(max) && max > explicitMax) {
+        explicitMax = max;
+        explicitLabel = `${dimensionMatch[1]}×${dimensionMatch[2]}`;
+      }
       return;
     }
     const pMatches = normalized.match(/(\d{3,4})p/g) ?? [];
@@ -145,6 +159,7 @@ function extractMaxResolution(value?: string | null, fallback?: string[]) {
   });
   const max = explicitMax || fallbackMax;
   if (!max) return { label: 'Data pending', value: null };
+  if (explicitLabel) return { label: explicitLabel, value: max };
   return { label: `${max}p`, value: max };
 }
 
@@ -251,6 +266,7 @@ const PROVIDER_LABEL_OVERRIDES: Record<string, string> = {
   openai: 'OpenAI',
   minimax: 'MiniMax',
   lightricks: 'Lightricks',
+  bytedance: 'ByteDance',
   pika: 'Pika',
   kling: 'Kling',
   wan: 'Wan',
@@ -287,7 +303,10 @@ const USE_CASE_MAP: Record<string, string> = {
   'veo-3-1': 'ad-ready shots and precise framing control',
   'veo-3-1-fast': 'fast ad cuts and rapid iteration',
   'veo-3-1-first-last': 'storyboard-driven shots with fixed frames',
+  'seedance-1-5-pro': 'cinematic motion with camera lock',
   'kling-2-6-pro': 'motion-realistic cinematic clips',
+  'kling-3-standard': 'multi-shot cinematic sequences with voice control',
+  'kling-3-pro': 'multi-shot cinematic sequences with voice control',
   'kling-2-5-turbo': 'fast iterations with stable prompt adherence',
   'wan-2-6': 'structured prompts with clean transitions',
   'wan-2-5': 'budget-friendly prompt testing',
@@ -531,13 +550,16 @@ export default async function ModelsPage() {
     'sora-2',
     'sora-2-pro',
     'veo-3-1',
+    'seedance-1-5-pro',
     'veo-3-1-fast',
     'veo-3-1-first-last',
     'pika-text-to-video',
     'wan-2-6',
     'wan-2-5',
-    'kling-2-5-turbo',
+    'kling-3-standard',
+    'kling-3-pro',
     'kling-2-6-pro',
+    'kling-2-5-turbo',
     'ltx-2-fast',
     'ltx-2',
     'minimax-hailuo-02-text',
@@ -559,6 +581,14 @@ export default async function ModelsPage() {
       engines.map(async (engine) => {
         const localized = await getEngineLocalized(engine.modelSlug, activeLocale);
         return [engine.modelSlug, localized] as const;
+      })
+    )
+  );
+  const pricingRangeMap = new Map(
+    await Promise.all(
+      engines.map(async (engine) => {
+        const range = await computeMarketingPriceRange(engine.engine, { durationSec: 5, memberTier: 'member' });
+        return [engine.modelSlug, range] as const;
       })
     )
   );
@@ -623,7 +653,9 @@ export default async function ModelsPage() {
       (keySpecs as Record<string, string>).maxDuration,
       catalogEntry?.engine?.maxDurationSec ?? null
     );
-    const priceFrom = formatPriceFrom(catalogEntry);
+    const pricingRange = pricingRangeMap.get(engine.modelSlug) ?? null;
+    const priceFromCents = pricingRange?.min.cents ?? getMinPricePerSecond(catalogEntry);
+    const priceFrom = typeof priceFromCents === 'number' ? `$${(priceFromCents / 100).toFixed(2)}/s` : 'Data pending';
     const capabilityKeywordsList = [
       t2v ? 'T2V' : null,
       i2v ? 'I2V' : null,
@@ -693,9 +725,9 @@ export default async function ModelsPage() {
         maxResolution: maxResolution.value,
         maxDuration: maxDuration.value,
         priceFrom: (() => {
-          const cents = getMinPricePerSecond(catalogEntry);
-          return typeof cents === 'number' ? cents / 100 : null;
+          return typeof priceFromCents === 'number' ? priceFromCents / 100 : null;
         })(),
+        legacy: Boolean(engine.isLegacy),
       },
     };
   });
@@ -710,11 +742,11 @@ export default async function ModelsPage() {
   const quickCompareMicroLabels = listingCopy.quickCompare?.shortcuts ?? [];
   const quickCompareShortcuts = [
     { a: 'sora-2', b: 'veo-3-1', micro: quickCompareMicroLabels[0] ?? 'cinematic vs ad-ready' },
-    { a: 'sora-2', b: 'kling-2-6-pro', micro: quickCompareMicroLabels[1] ?? 'cinematic vs control' },
-    { a: 'veo-3-1', b: 'kling-2-6-pro', micro: quickCompareMicroLabels[2] ?? 'ads vs motion' },
+    { a: 'sora-2', b: 'kling-3-standard', micro: quickCompareMicroLabels[1] ?? 'cinematic vs multi-shot' },
+    { a: 'veo-3-1', b: 'kling-3-standard', micro: quickCompareMicroLabels[2] ?? 'ads vs story' },
     { a: 'sora-2', b: 'wan-2-6', micro: quickCompareMicroLabels[3] ?? 'premium vs fast' },
     { a: 'veo-3-1', b: 'wan-2-6', micro: quickCompareMicroLabels[4] ?? 'ads vs budget' },
-    { a: 'kling-2-6-pro', b: 'wan-2-6', micro: quickCompareMicroLabels[5] ?? 'motion vs speed' },
+    { a: 'kling-3-standard', b: 'wan-2-6', micro: quickCompareMicroLabels[5] ?? 'control vs speed' },
   ];
 
   const outcomeCopy = listingCopy.chooseOutcome?.tiles ?? [];
@@ -722,7 +754,7 @@ export default async function ModelsPage() {
     {
       title: outcomeCopy[0]?.title ?? 'Cinematic / hero shots',
       description: outcomeCopy[0]?.description ?? 'Character continuity, cinematic physics, premium look.',
-      engines: ['sora-2', 'sora-2-pro', 'kling-2-6-pro'],
+      engines: ['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'kling-3-standard', 'kling-3-pro', 'kling-2-6-pro'],
       icon: Film,
     },
     {
@@ -851,7 +883,11 @@ export default async function ModelsPage() {
           <h2 className="sr-only">
             {listingCopy.grid?.srTitle ?? 'AI video and image models you can compare on MaxVideoAI'}
           </h2>
-          <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} copy={content.gallery} />
+          <ModelsGallery
+            cards={modelCards}
+            ctaLabel={cardCtaLabel}
+            copy={content.gallery}
+          />
         </section>
         <p className="text-sm text-text-secondary text-center">
           {listingCopy.grid?.bridgeText ??
@@ -1022,6 +1058,7 @@ export default async function ModelsPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/app"
+                  prefetch={false}
                   className="inline-flex items-center rounded-full bg-text-primary px-5 py-3 text-xs font-semibold uppercase tracking-micro text-bg transition hover:opacity-90"
                   aria-label="Generate now (opens workspace)"
                 >

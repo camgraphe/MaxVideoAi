@@ -34,9 +34,18 @@ type OverlayHero = {
   badge?: string;
 };
 
+type OverlayBestUseCasesItem =
+  | string
+  | {
+      title?: string;
+      label?: string;
+      icon?: string;
+      chips?: string[];
+    };
+
 type OverlayBestUseCases = {
   title?: string;
-  items?: string[];
+  items?: OverlayBestUseCasesItem[];
 };
 
 type OverlayTechnicalOverviewEntry = {

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Create and edit high-fidelity images with Nano Banana and upcoming Fal image engines directly inside the MaxVideoAI workspace.',
   robots: {
     index: false,
-    follow: false,
+    follow: true,
   },
 };
 

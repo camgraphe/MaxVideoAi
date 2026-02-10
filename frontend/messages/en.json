@@ -44,22 +44,35 @@
       "models": {
         "items": {
           "sora-2": "Sora 2",
+          "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
+          "kling-3-pro": "Kling 3 Pro",
+          "seedance-1-5-pro": "Seedance 1.5 Pro",
           "ltx-2": "LTX-2",
           "ltx-2-fast": "LTX-2 Fast",
-          "pika-text-to-video": "Pika Text-to-Video",
+          "pika-text-to-video": "Pika 2.2",
           "wan-2-6": "Wan 2.6",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02"
         }
       },
       "examples": {
         "items": {
+          "sora": "Sora 2 Pro",
           "sora-2": "Sora 2",
+          "sora-2-pro": "Sora 2 Pro",
+          "kling": "Kling 3 Pro",
+          "veo": "Veo 3.1",
+          "wan": "Wan 2.6",
+          "seedance": "Seedance 1.5 Pro",
+          "pika": "Pika 2.2",
+          "hailuo": "MiniMax Hailuo 02",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
+          "kling-3-pro": "Kling 3 Pro",
+          "seedance-1-5-pro": "Seedance 1.5 Pro",
           "ltx-2": "LTX-2",
-          "pika-text-to-video": "Pika Text-to-Video",
+          "pika-text-to-video": "Pika 2.2",
           "wan-2-6": "Wan 2.6",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02",
           "ltx-2-fast": "LTX-2 Fast"
@@ -127,6 +140,61 @@
         "label": "Spanish"
       }
     ],
+    "sections": {
+      "engines": {
+        "title": "AI Video Engines",
+        "items": {
+          "sora2": "Sora 2",
+          "kling3pro": "Kling 3 Pro",
+          "wan2_6": "Wan 2.6",
+          "veo3_1": "Veo 3.1",
+          "ltx2": "LTX-2",
+          "seedance1_5pro": "Seedance 1.5 Pro"
+        }
+      },
+      "comparisons": {
+        "title": "Popular comparisons",
+        "items": {
+          "kling3pro_vs_sora2": "Kling 3 Pro vs Sora 2",
+          "sora2_vs_veo3_1": "Sora 2 vs Veo 3.1",
+          "kling3pro_vs_wan2_6": "Kling 3 Pro vs Wan 2.6",
+          "ltx2_vs_veo3_1": "LTX-2 vs Veo 3.1",
+          "sora2_vs_wan2_6": "Sora 2 vs Wan 2.6",
+          "seedance1_5pro_vs_sora2": "Seedance 1.5 Pro vs Sora 2"
+        }
+      },
+      "examples": {
+        "title": "Real examples",
+        "items": {
+          "sora2": "Sora 2 examples",
+          "kling": "Kling examples",
+          "veo3_1": "Veo 3.1 examples",
+          "all": "All examples"
+        }
+      },
+      "product": {
+        "title": "Product",
+        "items": {
+          "generate": "Generate",
+          "pricing": "Pricing",
+          "workflows": "Workflows",
+          "docs": "Docs",
+          "models": "All models"
+        }
+      },
+      "company": {
+        "title": "Company",
+        "items": {
+          "blog": "Blog",
+          "about": "About",
+          "contact": "Contact",
+          "status": "Status"
+        }
+      },
+      "policies": {
+        "title": "Policies"
+      }
+    },
     "crawlerNote": "MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility."
   },
   "home": {
@@ -766,7 +834,7 @@
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
-        "description": "Cinematic lip-sync with 1080p output and image-to-video control for premium teams.",
+        "description": "Cinematic lip-sync with 1792×1024 output and image-to-video control for premium teams.",
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Pro"
       },
@@ -818,7 +886,7 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-    "title": "AI Video Models: Pricing & Limits | MaxVideoAI",
+      "title": "AI Video Models: Pricing & Limits | MaxVideoAI",
       "description": "Compare AI video models with live pricing and real limits, then select two engines to open a side-by-side page with specs, prompts, and cloneable examples."
     },
     "note": "",
@@ -859,6 +927,7 @@
         ],
         "compareLabel": "Enter Compare Mode"
       },
+      "legacyToggleLabel": "Show legacy models",
       "grid": {
         "srTitle": "AI video and image models you can compare on MaxVideoAI",
         "bridgeText": "Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone."
@@ -1023,6 +1092,14 @@
             "cheap": "$",
             "mid": "$$",
             "premium": "$$$"
+          }
+        },
+        "age": {
+          "label": "Models",
+          "options": {
+            "latest": "Latest",
+            "legacy": "Legacy",
+            "all": "All"
           }
         },
         "clear": "Clear filters"
@@ -2033,6 +2110,7 @@
           "modeAll": "Mode: All",
           "modeValue": "Mode: {value}",
           "resolutionAll": "Resolution: All",
+          "legacyToggleLabel": "Legacy models",
           "viewModel": "View model page",
           "viewExamples": "View examples",
           "empty": "No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.",
@@ -2059,7 +2137,7 @@
           "sora-2-pro": {
             "description": "Sora 2 Pro unlocks higher resolutions, synced dialogue, and image-to-video control for top-tier productions.",
             "badges": [
-              "1080p",
+              "1792×1024",
               "Audio native",
               "Lip-sync"
             ]
