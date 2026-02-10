@@ -48,6 +48,11 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'Kling 3 Pro adds multi-prompt sequencing, element references, and voice controls for long-form cinematic shots.',
     badges: ['Multi-prompt', 'Element references', 'Audio native'],
   },
+  'kling-3-standard': {
+    description:
+      'Kling 3 Standard brings multi-prompt sequencing and element references at a lower per-second rate.',
+    badges: ['Multi-prompt', 'Element references', 'Audio native'],
+  },
   'wan-2-5': {
     description:
       'Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.',

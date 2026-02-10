@@ -162,7 +162,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     { href: { pathname: '/examples' }, label: exploreExamplesLabel },
     { href: { pathname: '/models/[slug]', params: { slug: 'sora-2' } }, label: 'Sora 2' },
     { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1' } }, label: 'Veo 3.1' },
-    { href: { pathname: '/models/[slug]', params: { slug: 'kling-3-pro' } }, label: 'Kling' },
+    { href: { pathname: '/models/[slug]', params: { slug: 'kling-3-standard' } }, label: 'Kling' },
     { href: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } }, label: 'Pika' },
   ];
   const breadcrumbJsonLd = {

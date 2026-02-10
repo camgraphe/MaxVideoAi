@@ -31,6 +31,9 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     'kling-3-pro': {
       bestFor: 'Multi-shot cinematic control',
     },
+    'kling-3-standard': {
+      bestFor: 'Multi-shot testing at lower cost',
+    },
     'wan-2-6': {
       bestFor: 'General purpose video',
     },

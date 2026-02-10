@@ -3092,12 +3092,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     return engines[0];
   }, [engines, form, engineOverride]);
 
-  const isKlingV3Pro = selectedEngine?.id === 'kling-3-pro';
+  const isKlingV3 =
+    selectedEngine?.id === 'kling-3-pro' || selectedEngine?.id === 'kling-3-standard';
   const multiPromptTotalSec = useMemo(
     () => multiPromptScenes.reduce((sum, scene) => sum + (scene.duration || 0), 0),
     [multiPromptScenes]
   );
-  const multiPromptActive = Boolean(isKlingV3Pro && multiPromptEnabled);
+  const multiPromptActive = Boolean(isKlingV3 && multiPromptEnabled);
   const multiPromptInvalid = multiPromptActive
     ? multiPromptScenes.length === 0 ||
       multiPromptScenes.some((scene) => !scene.prompt.trim()) ||
@@ -3112,7 +3113,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         .filter((value) => value.length > 0),
     [voiceIdsInput]
   );
-  const voiceControlEnabled = Boolean(isKlingV3Pro && voiceIds.length);
+  const voiceControlEnabled = Boolean(isKlingV3 && voiceIds.length);
   const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
   const effectiveDurationSec = useMemo(
     () => (multiPromptActive ? multiPromptTotalSec : form?.durationSec ?? 0),
@@ -3123,10 +3124,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     : null;
 
   useEffect(() => {
-    if (!isKlingV3Pro && multiPromptEnabled) {
+    if (!isKlingV3 && multiPromptEnabled) {
       setMultiPromptEnabled(false);
     }
-  }, [isKlingV3Pro, multiPromptEnabled]);
+  }, [isKlingV3, multiPromptEnabled]);
 
   useEffect(() => {
     if (form?.engineId === 'pika-image-to-video') {
@@ -3643,12 +3644,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const activeMode: Mode = form?.mode ?? (selectedEngine ? getPreferredEngineMode(selectedEngine) : 't2v');
 
   useEffect(() => {
-    if (!isKlingV3Pro) return;
+    if (!isKlingV3) return;
     if (activeMode !== 'i2v') return;
     if (shotType !== 'customize') {
       setShotType('customize');
     }
-  }, [activeMode, isKlingV3Pro, shotType]);
+  }, [activeMode, isKlingV3, shotType]);
 
   const capability = useMemo(() => {
     if (!selectedEngine) return undefined;
@@ -4236,7 +4237,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     let klingElementsPayload:
       | Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>
       | undefined;
-    if (isKlingV3Pro && form.mode === 'i2v') {
+    if (isKlingV3 && form.mode === 'i2v') {
       let videoCount = 0;
       const collected: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }> = [];
       for (const element of klingElements) {
@@ -4498,7 +4499,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
           ...(endImageUrl ? { endImageUrl } : {}),
           ...(multiPromptPayload && multiPromptPayload.length ? { multiPrompt: multiPromptPayload } : {}),
-          ...(isKlingV3Pro
+          ...(isKlingV3
             ? {
                 shotType: form.mode === 'i2v' ? 'customize' : shotType,
                 ...(voiceIds.length ? { voiceIds } : {}),
@@ -4819,7 +4820,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     multiPromptInvalid,
     multiPromptError,
     multiPromptScenes,
-    isKlingV3Pro,
+    isKlingV3,
     voiceIds,
     voiceControlEnabled,
     shotType,
@@ -5308,7 +5309,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 onNotice={showNotice}
                 onOpenLibrary={handleOpenAssetLibrary}
                 multiPrompt={
-                  isKlingV3Pro
+                  isKlingV3
                     ? {
                         enabled: multiPromptEnabled,
                         scenes: multiPromptScenes,
@@ -5325,7 +5326,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 }
                 disableGenerate={multiPromptInvalid}
                 extraFields={
-                  isKlingV3Pro && activeMode === 'i2v' ? (
+                  isKlingV3 && activeMode === 'i2v' ? (
                     <KlingElementsBuilder
                       elements={klingElements}
                       onAddElement={handleKlingElementAdd}
@@ -5409,7 +5410,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 onCfgScaleChange={(value) => setCfgScale(value)}
                 durationManaged={multiPromptActive}
                 durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
-                showKlingV3Controls={isKlingV3Pro}
+                showKlingV3Controls={isKlingV3}
                 klingShotType={shotType}
                 onKlingShotTypeChange={(value) => setShotType(value)}
                 voiceIdsValue={voiceIdsInput}

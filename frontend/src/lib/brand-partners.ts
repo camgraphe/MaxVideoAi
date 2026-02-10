@@ -192,9 +192,13 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       'kling-2-5-turbo',
       'kling-2-6-pro',
       'kling-3-pro',
+      'kling-3-standard',
       'kling3',
       'kling-3',
       'kling-v3-pro',
+      'kling-3-std',
+      'kling3-standard',
+      'kling-v3-standard',
     ],
   },
   {

@@ -142,5 +142,14 @@
     "versionLabel": "v3 Pro",
     "availability": "available",
     "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling-3-standard",
+    "marketingName": "Kling 3 Standard",
+    "brandId": "kling",
+    "modelSlug": "kling-3-standard",
+    "versionLabel": "v3 Standard",
+    "availability": "available",
+    "logoPolicy": "textOnly"
   }
 ]

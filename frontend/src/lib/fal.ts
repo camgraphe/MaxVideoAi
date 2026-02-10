@@ -472,9 +472,14 @@ async function generateViaFal(
     requestBody.input_image = primaryImageUrl;
   }
 
-  if (payload.engineId === 'kling-3-pro' && requestBody.image_url && !requestBody.start_image_url) {
+  if (payload.engineId.startsWith('kling-3') && requestBody.image_url && !requestBody.start_image_url) {
     requestBody.start_image_url = requestBody.image_url;
     delete requestBody.image_url;
+  }
+
+  if (payload.engineId.startsWith('kling-3') && requestBody.multi_prompt && requestBody.prompt) {
+    // Kling v3 expects prompt or multi_prompt, not both.
+    delete requestBody.prompt;
   }
 
   const metadataPayload: Record<string, unknown> = {};

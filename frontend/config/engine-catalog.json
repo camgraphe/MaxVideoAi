@@ -2254,6 +2254,290 @@
     "bestFor": "Multi-shot cinematic control"
   },
   {
+    "engineId": "kling-3-standard",
+    "modelSlug": "kling-3-standard",
+    "marketingName": "Kling 3 Standard",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "versionLabel": "v3 Standard",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "engine": {
+      "id": "kling-3-standard",
+      "label": "Kling 3 Standard",
+      "provider": "Kling by Kuaishou",
+      "version": "3 Standard",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {
+        "cfg_scale": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 25
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "default": "blur, distort, and low quality"
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Audio",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true"
+          },
+          {
+            "id": "cfg_scale",
+            "type": "number",
+            "label": "CFG scale",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "default": 0.5
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End frame (optional)",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 25
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 25.2
+        },
+        "addons": {
+          "audio_off": {
+            "perSecondCents": -8.4
+          },
+          "voice_control": {
+            "perSecondCents": 5.6
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.252,
+        "currency": "USD",
+        "notes": "$0.168/s audio off, $0.252/s audio on, $0.308/s voice control"
+      },
+      "updatedAt": "2026-02-09T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "fal-ai/kling-video/v3/standard/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "kling"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/kling-video/v3/standard/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Multi-prompt sequencing supported at Standard rates."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/kling-video/v3/standard/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 25,
+          "audioToggle": true,
+          "notes": "Add end frames or elements for tighter motion control."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Multi-shot testing at lower cost"
+  },
+  {
     "engineId": "wan-2-5",
     "modelSlug": "wan-2-5",
     "marketingName": "Wan 2.5 Text & Image to Video",
