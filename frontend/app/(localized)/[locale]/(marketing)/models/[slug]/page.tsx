@@ -4378,6 +4378,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'ltx-2-fast' ||
     slug === 'kling-2-6-pro' ||
     slug === 'kling-3-standard' ||
+    slug === 'seedance-1-5-pro' ||
     slug === 'kling-3-pro' ||
     slug === 'nano-banana' ||
     slug === 'nano-banana-pro'

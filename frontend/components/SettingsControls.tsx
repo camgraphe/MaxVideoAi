@@ -53,6 +53,13 @@ interface Props {
   voiceIdsValue?: string;
   onVoiceIdsChange?: (value: string) => void;
   voiceControlActive?: boolean;
+  showSeedanceControls?: boolean;
+  seedValue?: string;
+  onSeedChange?: (value: string) => void;
+  cameraFixed?: boolean;
+  onCameraFixedChange?: (value: boolean) => void;
+  safetyChecker?: boolean;
+  onSafetyCheckerChange?: (value: boolean) => void;
   variant?: 'full' | 'advanced';
 }
 
@@ -183,6 +190,13 @@ export function SettingsControls({
   voiceIdsValue = '',
   onVoiceIdsChange,
   voiceControlActive = false,
+  showSeedanceControls = false,
+  seedValue = '',
+  onSeedChange,
+  cameraFixed = false,
+  onCameraFixedChange,
+  safetyChecker = true,
+  onSafetyCheckerChange,
   variant = 'full',
 }: Props) {
   const { t } = useI18n();
@@ -573,24 +587,28 @@ export function SettingsControls({
         </Button>
         {isAdvancedOpen && (
           <div className="stack-gap-sm border-t border-border px-3 pb-3 pt-2">
-            <label className="flex flex-col gap-2 text-sm text-text-secondary">
-              <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
-              <input
-                type="number"
-                placeholder={controlsCopy.seed.placeholder}
-                value={seed}
-                onChange={(e) => setSeed(e.currentTarget.value)}
-                className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </label>
-            <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
-              <input
-                type="checkbox"
-                checked={Boolean(seedLocked)}
-                onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
-              />
-              <span>{controlsCopy.seed.lock}</span>
-            </label>
+            {!showSeedanceControls && (
+              <>
+                <label className="flex flex-col gap-2 text-sm text-text-secondary">
+                  <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
+                  <input
+                    type="number"
+                    placeholder={controlsCopy.seed.placeholder}
+                    value={seed}
+                    onChange={(e) => setSeed(e.currentTarget.value)}
+                    className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </label>
+                <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(seedLocked)}
+                    onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
+                  />
+                  <span>{controlsCopy.seed.lock}</span>
+                </label>
+              </>
+            )}
 
             {engine.fps.length > 1 && (
               <div className="flex flex-wrap gap-2">
@@ -720,6 +738,69 @@ export function SettingsControls({
                     {voiceControlActive && (
                       <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
                     )}
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {showSeedanceControls && (
+              <div className="space-y-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">Seedance advanced</span>
+                <div className="space-y-3 rounded-input border border-border bg-surface p-3">
+                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
+                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Seed</span>
+                    <input
+                      type="number"
+                      placeholder="-1 for random"
+                      value={seedValue}
+                      onChange={(e) => onSeedChange?.(e.currentTarget.value)}
+                      className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <span className="text-[11px] text-text-muted">Use -1 for random.</span>
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
+                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Camera fixed</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[true, false].map((option) => (
+                        <Button
+                          key={option ? 'on' : 'off'}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onCameraFixedChange?.(option)}
+                          className={clsx(
+                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+                            option === cameraFixed
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option ? 'On' : 'Off'}
+                        </Button>
+                      ))}
+                    </div>
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
+                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Safety checker</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[true, false].map((option) => (
+                        <Button
+                          key={option ? 'on' : 'off'}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onSafetyCheckerChange?.(option)}
+                          className={clsx(
+                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+                            option === safetyChecker
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option ? 'On' : 'Off'}
+                        </Button>
+                      ))}
+                    </div>
                   </label>
                 </div>
               </div>

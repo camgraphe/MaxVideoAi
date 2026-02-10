@@ -535,23 +535,50 @@ function parseBooleanInput(value: unknown): boolean | null {
   return null;
 }
 
-function findGenerateAudioField(engine: EngineCaps, mode: Mode): EngineInputField | null {
+function findInputFieldById(engine: EngineCaps, mode: Mode, fieldId: string): EngineInputField | null {
   const schema = engine.inputSchema;
   if (!schema) return null;
+  const normalizedTarget = normalizeFieldId(fieldId);
   const fields = [...(schema.required ?? []), ...(schema.optional ?? [])];
   return (
     fields.find((field) => {
       const id = normalizeFieldId(field.id);
-      if (id !== 'generateaudio') return false;
+      if (id !== normalizedTarget) return false;
       return !field.modes || field.modes.includes(mode);
     }) ?? null
   );
+}
+
+function findGenerateAudioField(engine: EngineCaps, mode: Mode): EngineInputField | null {
+  return findInputFieldById(engine, mode, 'generate_audio');
 }
 
 function resolveAudioDefault(engine: EngineCaps, mode: Mode): boolean {
   const field = findGenerateAudioField(engine, mode);
   const parsed = parseBooleanInput(field?.default);
   return parsed ?? true;
+}
+
+function resolveBooleanFieldDefault(
+  engine: EngineCaps,
+  mode: Mode,
+  fieldId: string,
+  fallback: boolean
+): boolean {
+  const field = findInputFieldById(engine, mode, fieldId);
+  const parsed = parseBooleanInput(field?.default);
+  return parsed ?? fallback;
+}
+
+function resolveNumberFieldDefault(engine: EngineCaps, mode: Mode, fieldId: string): number | null {
+  const field = findInputFieldById(engine, mode, fieldId);
+  const raw = field?.default;
+  if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+  if (typeof raw === 'string' && raw.trim().length) {
+    const parsed = Number(raw);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
 }
 
 function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
@@ -683,6 +710,21 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     if (previousAudio !== null) return previousAudio;
     return resolveAudioDefault(engine, mode);
   })();
+  const seed = (() => {
+    const previousSeed = typeof previous?.seed === 'number' && Number.isFinite(previous.seed) ? previous.seed : null;
+    if (previousSeed !== null) return previousSeed;
+    return resolveNumberFieldDefault(engine, mode, 'seed');
+  })();
+  const cameraFixed = (() => {
+    const previousValue = typeof previous?.cameraFixed === 'boolean' ? previous.cameraFixed : null;
+    if (previousValue !== null) return previousValue;
+    return resolveBooleanFieldDefault(engine, mode, 'camera_fixed', false);
+  })();
+  const safetyChecker = (() => {
+    const previousValue = typeof previous?.safetyChecker === 'boolean' ? previous.safetyChecker : null;
+    if (previousValue !== null) return previousValue;
+    return resolveBooleanFieldDefault(engine, mode, 'enable_safety_checker', true);
+  })();
 
   return {
     engineId: engine.id,
@@ -697,6 +739,9 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     seedLocked: previous?.seedLocked ?? false,
     loop,
     audio,
+    seed,
+    cameraFixed,
+    safetyChecker,
   };
 }
 
@@ -742,6 +787,9 @@ interface FormState {
   seedLocked?: boolean;
   loop?: boolean;
   audio: boolean;
+  seed?: number | null;
+  cameraFixed?: boolean;
+  safetyChecker?: boolean;
 }
 
 const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
@@ -778,6 +826,9 @@ function parseStoredForm(value: string): StoredFormState | null {
       seedLocked,
       loop,
       audio,
+      seed,
+      cameraFixed,
+      safetyChecker,
       updatedAt,
     } = raw;
 
@@ -802,6 +853,9 @@ function parseStoredForm(value: string): StoredFormState | null {
       seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
       loop: typeof loop === 'boolean' ? loop : undefined,
       audio: typeof audio === 'boolean' ? audio : undefined,
+      seed: typeof seed === 'number' && Number.isFinite(seed) ? Math.trunc(seed) : undefined,
+      cameraFixed: typeof cameraFixed === 'boolean' ? cameraFixed : undefined,
+      safetyChecker: typeof safetyChecker === 'boolean' ? safetyChecker : undefined,
       updatedAt: typeof updatedAt === 'number' && Number.isFinite(updatedAt) ? updatedAt : undefined,
     };
   } catch {
@@ -1518,6 +1572,13 @@ useEffect(() => {
             seedLocked: typeof storedFormRaw.seedLocked === 'boolean' ? storedFormRaw.seedLocked : base.seedLocked,
             loop: typeof storedFormRaw.loop === 'boolean' ? storedFormRaw.loop : base.loop,
             audio: typeof storedFormRaw.audio === 'boolean' ? storedFormRaw.audio : base.audio,
+            seed: typeof storedFormRaw.seed === 'number' ? storedFormRaw.seed : base.seed,
+            cameraFixed:
+              typeof storedFormRaw.cameraFixed === 'boolean' ? storedFormRaw.cameraFixed : base.cameraFixed,
+            safetyChecker:
+              typeof storedFormRaw.safetyChecker === 'boolean'
+                ? storedFormRaw.safetyChecker
+                : base.safetyChecker,
           };
           nextForm = coerceFormState(engine, mode, candidate);
         }
@@ -1540,6 +1601,9 @@ useEffect(() => {
             iterations: 1,
             seedLocked: false,
             audio: true,
+            seed: null,
+            cameraFixed: false,
+            safetyChecker: true,
           };
           nextForm = base;
           if (process.env.NODE_ENV !== 'production') {
@@ -2623,6 +2687,27 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     []
   );
 
+  const handleSeedChange = useCallback((value: string) => {
+    setForm((current) => {
+      if (!current) return current;
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return { ...current, seed: null };
+      }
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed)) return current;
+      return { ...current, seed: Math.trunc(parsed) };
+    });
+  }, []);
+
+  const handleCameraFixedChange = useCallback((value: boolean) => {
+    setForm((current) => (current ? { ...current, cameraFixed: value } : current));
+  }, []);
+
+  const handleSafetyCheckerChange = useCallback((value: boolean) => {
+    setForm((current) => (current ? { ...current, safetyChecker: value } : current));
+  }, []);
+
   const handleKlingElementAdd = useCallback(() => {
     setKlingElements((previous) => [...previous, createKlingElement()]);
   }, []);
@@ -3094,6 +3179,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const isKlingV3 =
     selectedEngine?.id === 'kling-3-pro' || selectedEngine?.id === 'kling-3-standard';
+  const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
   const multiPromptTotalSec = useMemo(
     () => multiPromptScenes.reduce((sum, scene) => sum + (scene.duration || 0), 0),
     [multiPromptScenes]
@@ -3114,6 +3200,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     [voiceIdsInput]
   );
   const voiceControlEnabled = Boolean(isKlingV3 && voiceIds.length);
+  const seedValue =
+    typeof form?.seed === 'number' && Number.isFinite(form.seed) ? String(form.seed) : '';
+  const cameraFixedValue = typeof form?.cameraFixed === 'boolean' ? form.cameraFixed : false;
+  const safetyCheckerValue = typeof form?.safetyChecker === 'boolean' ? form.safetyChecker : true;
   const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
   const effectiveDurationSec = useMemo(
     () => (multiPromptActive ? multiPromptTotalSec : form?.durationSec ?? 0),
@@ -3235,6 +3325,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           setCfgScale(cfgScaleValue);
         }
         const loopValue = typeof advanced.loop === 'boolean' ? advanced.loop : undefined;
+        const seedValue =
+          typeof advanced.seed === 'number' && Number.isFinite(advanced.seed) ? Math.trunc(advanced.seed) : null;
+        const cameraFixedValue = typeof advanced.cameraFixed === 'boolean' ? advanced.cameraFixed : undefined;
+        const safetyCheckerValue = typeof advanced.safetyChecker === 'boolean' ? advanced.safetyChecker : undefined;
         const shotTypeRaw = typeof advanced.shotType === 'string' ? advanced.shotType.trim().toLowerCase() : '';
         if (shotTypeRaw === 'customize' || shotTypeRaw === 'intelligent') {
           setShotType(shotTypeRaw);
@@ -3298,6 +3392,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             seedLocked: previous?.seedLocked ?? false,
             loop: typeof loopValue === 'boolean' ? loopValue : previous?.loop,
             audio: typeof audio === 'boolean' ? audio : previous?.audio ?? resolveAudioDefault(engine, mode),
+            seed: seedValue ?? previous?.seed ?? null,
+            cameraFixed:
+              typeof cameraFixedValue === 'boolean'
+                ? cameraFixedValue
+                : previous?.cameraFixed ?? resolveBooleanFieldDefault(engine, mode, 'camera_fixed', false),
+            safetyChecker:
+              typeof safetyCheckerValue === 'boolean'
+                ? safetyCheckerValue
+                : previous?.safetyChecker ?? resolveBooleanFieldDefault(engine, mode, 'enable_safety_checker', true),
           };
           return coerceFormState(engine, mode, candidate);
         });
@@ -4475,6 +4578,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               durationOptionLabel ??
               effectiveDurationSec;
         const resolvedResolution = isLumaRay2 && lumaResolution ? lumaResolution.value : form.resolution;
+        const seedNumber =
+          typeof form.seed === 'number' && Number.isFinite(form.seed) ? Math.trunc(form.seed) : undefined;
+        const cameraFixed =
+          typeof form.cameraFixed === 'boolean' ? form.cameraFixed : undefined;
+        const safetyChecker =
+          typeof form.safetyChecker === 'boolean' ? form.safetyChecker : undefined;
 
         const generatePayload = {
           engineId: selectedEngine.id,
@@ -4505,6 +4614,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 ...(voiceIds.length ? { voiceIds } : {}),
                 ...(voiceControlEnabled ? { voiceControl: true } : {}),
                 ...(klingElementsPayload ? { elements: klingElementsPayload } : {}),
+              }
+            : {}),
+          ...(isSeedance
+            ? {
+                ...(typeof seedNumber === 'number' ? { seed: seedNumber } : {}),
+                ...(typeof cameraFixed === 'boolean' ? { cameraFixed } : {}),
+                ...(typeof safetyChecker === 'boolean' ? { safetyChecker } : {}),
               }
             : {}),
           idempotencyKey: id,
@@ -4821,6 +4937,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     multiPromptError,
     multiPromptScenes,
     isKlingV3,
+    isSeedance,
     voiceIds,
     voiceControlEnabled,
     shotType,
@@ -4848,7 +4965,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           candidate.iterations !== nextState.iterations ||
           candidate.seedLocked !== nextState.seedLocked ||
           candidate.loop !== nextState.loop ||
-          candidate.audio !== nextState.audio;
+          candidate.audio !== nextState.audio ||
+          candidate.seed !== nextState.seed ||
+          candidate.cameraFixed !== nextState.cameraFixed ||
+          candidate.safetyChecker !== nextState.safetyChecker;
         return hasChanged ? nextState : candidate;
       }
       return nextState;
@@ -5416,6 +5536,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 voiceIdsValue={voiceIdsInput}
                 onVoiceIdsChange={(value) => setVoiceIdsInput(value)}
                 voiceControlActive={voiceControlEnabled}
+                showSeedanceControls={isSeedance}
+                seedValue={seedValue}
+                onSeedChange={handleSeedChange}
+                cameraFixed={cameraFixedValue}
+                onCameraFixedChange={handleCameraFixedChange}
+                safetyChecker={safetyCheckerValue}
+                onSafetyCheckerChange={handleSafetyCheckerChange}
                 variant="advanced"
               />
             </div>

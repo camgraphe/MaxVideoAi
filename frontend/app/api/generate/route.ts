@@ -511,6 +511,17 @@ export async function POST(req: NextRequest) {
   }
   const shotTypeRaw = typeof body.shotType === 'string' ? body.shotType.trim().toLowerCase() : '';
   const shotType = shotTypeRaw === 'intelligent' ? 'intelligent' : shotTypeRaw === 'customize' ? 'customize' : null;
+  const seedRaw = body.seed;
+  const seed =
+    typeof seedRaw === 'number' && Number.isFinite(seedRaw)
+      ? Math.trunc(seedRaw)
+      : typeof seedRaw === 'string' && seedRaw.trim().length
+        ? Number.isFinite(Number(seedRaw))
+          ? Math.trunc(Number(seedRaw))
+          : null
+        : null;
+  const cameraFixed = typeof body.cameraFixed === 'boolean' ? body.cameraFixed : null;
+  const safetyChecker = typeof body.safetyChecker === 'boolean' ? body.safetyChecker : null;
   const voiceIdsRaw = Array.isArray(body.voiceIds)
     ? body.voiceIds
     : typeof body.voiceIds === 'string'
@@ -1468,6 +1479,9 @@ async function rollbackPendingPayment(params: {
     loop: isLumaRay2 ? loop : undefined,
     multiPrompt: multiPrompt ?? undefined,
     shotType: mode === 'i2v' ? 'customize' : shotType ?? undefined,
+    seed: typeof seed === 'number' ? seed : undefined,
+    cameraFixed: typeof cameraFixed === 'boolean' ? cameraFixed : undefined,
+    safetyChecker: typeof safetyChecker === 'boolean' ? safetyChecker : undefined,
     voiceIds: voiceIds.length ? voiceIds : undefined,
     elements: elements ?? undefined,
     endImageUrl: endImageUrl ?? undefined,
@@ -1508,6 +1522,9 @@ async function rollbackPendingPayment(params: {
       cfgScale: typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale) ? body.cfgScale : null,
       loop: isLumaRay2 ? Boolean(loop) : null,
       shotType: shotType ?? null,
+      seed: typeof seed === 'number' ? seed : null,
+      cameraFixed: typeof cameraFixed === 'boolean' ? cameraFixed : null,
+      safetyChecker: typeof safetyChecker === 'boolean' ? safetyChecker : null,
       voiceIds: voiceIds.length ? voiceIds : null,
       voiceControl: voiceControl ? true : null,
       multiPrompt: multiPrompt ?? null,

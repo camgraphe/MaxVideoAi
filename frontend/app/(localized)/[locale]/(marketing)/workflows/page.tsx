@@ -66,6 +66,7 @@ const FALLBACK_EXAMPLES: WorkflowExampleEntry[] = [
   { label: 'Sora 2', slug: 'sora-2', brandId: 'openai' },
   { label: 'Veo 3.1', slug: 'veo-3-1', brandId: 'google-veo' },
   { label: 'Kling 3 Standard', slug: 'kling-3-standard', brandId: 'kling' },
+  { label: 'Seedance 1.5 Pro', slug: 'seedance-1-5-pro', brandId: 'bytedance' },
   { label: 'Pika Text-to-Video', slug: 'pika-text-to-video', brandId: 'pika' },
   { label: 'Wan 2.6', slug: 'wan-2-6', brandId: 'wan' },
   { label: 'LTX-2', slug: 'ltx-2', brandId: 'lightricks' },

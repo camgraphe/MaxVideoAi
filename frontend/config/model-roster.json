@@ -151,5 +151,14 @@
     "versionLabel": "v3 Standard",
     "availability": "available",
     "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "seedance-1-5-pro",
+    "marketingName": "Seedance 1.5 Pro",
+    "brandId": "bytedance",
+    "modelSlug": "seedance-1-5-pro",
+    "versionLabel": "v1.5 Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
   }
 ]

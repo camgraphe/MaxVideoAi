@@ -53,6 +53,11 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'Kling 3 Standard brings multi-prompt sequencing and element references at a lower per-second rate.',
     badges: ['Multi-prompt', 'Element references', 'Audio native'],
   },
+  'seedance-1-5-pro': {
+    description:
+      'Seedance 1.5 Pro delivers cinematic motion with camera lock, flexible aspect ratios, and native audio.',
+    badges: ['Camera lock', 'Audio native', 'Aspect ratio control'],
+  },
   'wan-2-5': {
     description:
       'Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.',

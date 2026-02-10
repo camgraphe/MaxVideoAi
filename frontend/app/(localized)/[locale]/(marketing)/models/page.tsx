@@ -266,6 +266,7 @@ const PROVIDER_LABEL_OVERRIDES: Record<string, string> = {
   openai: 'OpenAI',
   minimax: 'MiniMax',
   lightricks: 'Lightricks',
+  bytedance: 'ByteDance',
   pika: 'Pika',
   kling: 'Kling',
   wan: 'Wan',
@@ -302,6 +303,7 @@ const USE_CASE_MAP: Record<string, string> = {
   'veo-3-1': 'ad-ready shots and precise framing control',
   'veo-3-1-fast': 'fast ad cuts and rapid iteration',
   'veo-3-1-first-last': 'storyboard-driven shots with fixed frames',
+  'seedance-1-5-pro': 'cinematic motion with camera lock',
   'kling-2-6-pro': 'motion-realistic cinematic clips',
   'kling-3-standard': 'multi-shot cinematic sequences with voice control',
   'kling-3-pro': 'multi-shot cinematic sequences with voice control',
@@ -548,6 +550,7 @@ export default async function ModelsPage() {
     'sora-2',
     'sora-2-pro',
     'veo-3-1',
+    'seedance-1-5-pro',
     'veo-3-1-fast',
     'veo-3-1-first-last',
     'pika-text-to-video',
@@ -750,7 +753,7 @@ export default async function ModelsPage() {
     {
       title: outcomeCopy[0]?.title ?? 'Cinematic / hero shots',
       description: outcomeCopy[0]?.description ?? 'Character continuity, cinematic physics, premium look.',
-      engines: ['sora-2', 'sora-2-pro', 'kling-3-standard', 'kling-3-pro', 'kling-2-6-pro'],
+      engines: ['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'kling-3-standard', 'kling-3-pro', 'kling-2-6-pro'],
       icon: Film,
     },
     {

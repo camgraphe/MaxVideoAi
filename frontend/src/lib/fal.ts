@@ -103,6 +103,9 @@ export type GeneratePayload = {
   cfgScale?: number | null;
   multiPrompt?: Array<{ prompt: string; duration: number }>;
   shotType?: 'customize' | 'intelligent';
+  seed?: number;
+  cameraFixed?: boolean;
+  safetyChecker?: boolean;
   voiceIds?: string[];
   elements?: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>;
   endImageUrl?: string;
@@ -370,6 +373,15 @@ async function generateViaFal(
   }
   if (payload.shotType) {
     requestBody.shot_type = payload.shotType;
+  }
+  if (typeof payload.seed === 'number' && Number.isFinite(payload.seed)) {
+    requestBody.seed = Math.trunc(payload.seed);
+  }
+  if (typeof payload.cameraFixed === 'boolean') {
+    requestBody.camera_fixed = payload.cameraFixed;
+  }
+  if (typeof payload.safetyChecker === 'boolean') {
+    requestBody.enable_safety_checker = payload.safetyChecker;
   }
   if (payload.voiceIds && payload.voiceIds.length) {
     requestBody.voice_ids = payload.voiceIds;

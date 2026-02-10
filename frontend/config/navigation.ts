@@ -38,6 +38,7 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 const MODEL_MENU: LabeledSlug[] = [
   { slug: 'sora-2', label: 'Sora 2' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
+  { slug: 'seedance-1-5-pro', label: 'Seedance 1.5 Pro' },
   { slug: 'kling-3-standard', label: 'Kling 3 Standard' },
   { slug: 'ltx-2', label: 'LTX-2' },
   { slug: 'ltx-2-fast', label: 'LTX-2 Fast' },
@@ -49,6 +50,7 @@ const MODEL_MENU: LabeledSlug[] = [
 const EXAMPLES_MENU: LabeledSlug[] = [
   { slug: 'sora-2', label: 'Sora 2' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
+  { slug: 'seedance-1-5-pro', label: 'Seedance 1.5 Pro' },
   { slug: 'kling-3-standard', label: 'Kling 3 Standard' },
   { slug: 'ltx-2', label: 'LTX-2' },
   { slug: 'ltx-2-fast', label: 'LTX-2 Fast' },

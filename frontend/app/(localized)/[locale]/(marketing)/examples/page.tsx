@@ -87,7 +87,7 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
-const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo', 'ltx-2'];
+const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'seedance', 'kling', 'wan', 'pika', 'hailuo', 'ltx-2'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
@@ -95,6 +95,7 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
   veo: { bg: 'var(--engine-google-veo-bg)', text: 'var(--engine-google-veo-ink)' },
   pika: { bg: 'var(--engine-pika-bg)', text: 'var(--engine-pika-ink)' },
   hailuo: { bg: 'var(--engine-minimax-bg)', text: 'var(--engine-minimax-ink)' },
+  seedance: { bg: 'var(--engine-bytedance-bg)', text: 'var(--engine-bytedance-ink)' },
   kling: { bg: 'var(--engine-kling-bg)', text: 'var(--engine-kling-ink)' },
   wan: { bg: 'var(--engine-wan-bg)', text: 'var(--engine-wan-ink)' },
   'ltx-2': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
@@ -103,6 +104,7 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
 const ENGINE_MODEL_LINKS: Record<string, string> = {
   'sora-2': 'sora-2',
   veo: 'veo-3-1',
+  seedance: 'seedance-1-5-pro',
   kling: 'kling-3-standard',
   wan: 'wan-2-6',
   pika: 'pika-text-to-video',
@@ -159,6 +161,8 @@ const ENGINE_FILTER_GROUPS: Record<
   'kling-2-6-pro': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'kling-3-standard': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'kling-3-pro': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'seedance-1-5-pro': { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
+  seedance: { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
   kling: { id: 'kling', label: 'Kling', brandId: 'kling' },
   'kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'fal-ai/kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
@@ -170,6 +174,16 @@ const ENGINE_FILTER_GROUPS: Record<
   'fal-ai/kling-video/v3/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'fal-ai/kling-video/v3/standard/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
   'fal-ai/kling-video/v3/standard/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/bytedance/seedance/v1.5/pro/text-to-video': {
+    id: 'seedance',
+    label: 'Seedance',
+    brandId: 'bytedance',
+  },
+  'fal-ai/bytedance/seedance/v1.5/pro/image-to-video': {
+    id: 'seedance',
+    label: 'Seedance',
+    brandId: 'bytedance',
+  },
   'ltx-2-fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'ltx-2': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'fal-ai/ltx-2/text-to-video': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },

@@ -63,6 +63,8 @@
   --engine-pika-ink: #1F2633;
   --engine-minimax-bg: #FFE7F0;
   --engine-minimax-ink: #1F2633;
+  --engine-bytedance-bg: #DFF4FF;
+  --engine-bytedance-ink: #1F2633;
   --engine-kling-bg: #E6F5EB;
   --engine-kling-ink: #1F2633;
   --engine-wan-bg: #E2F7F4;
@@ -246,6 +248,8 @@
   --engine-pika-ink: #FFE6F1;
   --engine-minimax-bg: #4A2734;
   --engine-minimax-ink: #FFE6F1;
+  --engine-bytedance-bg: #1C3946;
+  --engine-bytedance-ink: #D9F6FF;
   --engine-kling-bg: #203B2F;
   --engine-kling-ink: #E4F5EA;
   --engine-wan-bg: #1E3D38;
