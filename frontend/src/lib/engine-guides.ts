@@ -43,6 +43,11 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'Kling 2.5 Turbo lives in one card with Pro text, Pro image, and Standard image-to-video modes for cinematic shots or budget loops.',
     badges: ['Text prompts', 'Image-to-video', 'Standard tier'],
   },
+  'kling-3-pro': {
+    description:
+      'Kling 3 Pro adds multi-prompt sequencing, element references, and voice controls for long-form cinematic shots.',
+    badges: ['Multi-prompt', 'Element references', 'Audio native'],
+  },
   'wan-2-5': {
     description:
       'Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.',

@@ -462,6 +462,64 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     },
   },
   {
+    slugA: 'kling-2-6-pro',
+    slugB: 'kling-3-pro',
+    nameA: 'Kling 2.6 Pro',
+    nameB: 'Kling 3 Pro',
+    copyA: {
+      en: {
+        title: 'Use Kling 2.6 Pro when you want:',
+        items: [
+          'Native audio with dialogue and SFX',
+          'Short cinematic beats without extra setup',
+          'Solid results for 5–10s clips',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 2.6 Pro quand vous voulez :',
+        items: [
+          'Audio natif avec dialogue et SFX',
+          'Beats ciné courts sans setup complexe',
+          'Résultats solides sur 5–10s',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 2.6 Pro cuando quieras:',
+        items: [
+          'Audio nativo con diálogo y SFX',
+          'Beats cinemáticos cortos sin setup extra',
+          'Resultados sólidos en clips de 5–10s',
+        ],
+      },
+    },
+    copyB: {
+      en: {
+        title: 'Use Kling 3 Pro when you need:',
+        items: [
+          'Multi-prompt sequencing across scenes',
+          'Element references for stronger continuity',
+          'Voice IDs and shot-type control up to 15s',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Kling 3 Pro quand vous avez besoin :',
+        items: [
+          'Séquençage multi-prompts par scène',
+          'Éléments de référence pour plus de continuité',
+          'Voice IDs et shot-type jusqu’à 15s',
+        ],
+      },
+      es: {
+        title: 'Usa Kling 3 Pro cuando necesites:',
+        items: [
+          'Secuencias multi-prompt por escena',
+          'Referencias de elementos para mayor continuidad',
+          'Voice IDs y control de shot type hasta 15s',
+        ],
+      },
+    },
+  },
+  {
     slugA: 'ltx-2-fast',
     slugB: 'ltx-2',
     nameA: 'LTX-2 Fast',
@@ -4066,15 +4124,18 @@ function Sora2PageLayout({
                 </p>
                 <p className="text-center text-sm text-text-secondary">{compareCopy.subline}</p>
                 <div className="grid grid-gap-sm md:grid-cols-3">
-                  {(relatedItems.length
-                    ? relatedItems
-                    : compareEngines.map((entry) => ({
+                  {(() => {
+                    const hasRelatedItems = relatedItems.length > 0;
+                    const compareCards = hasRelatedItems
+                      ? relatedItems
+                      : compareEngines.map((entry) => ({
                         brand: entry.brandId,
                         title: entry.marketingName ?? entry.engine.label,
                         modelSlug: entry.modelSlug,
                         description: entry.seo?.description ?? '',
-                      }))
-                  )
+                      }));
+                    return compareCards;
+                  })()
                     .filter((entry) => Boolean(entry.modelSlug))
                     .map((entry) => {
                       const label = entry.title ?? '';
@@ -4086,8 +4147,11 @@ function Sora2PageLayout({
                         : localizeModelsPath(entry.modelSlug ?? '');
                       const ctaLabel = canCompare ? compareCopy.ctaCompare(label) : compareCopy.ctaExplore(label);
                       const description =
-                        entry.description ||
-                        compareCopy.cardDescription(label);
+                        relatedItems.length > 0
+                          ? entry.description || compareCopy.cardDescription(label)
+                          : locale === 'en'
+                            ? entry.description || compareCopy.cardDescription(label)
+                            : compareCopy.cardDescription(label);
                       return (
                         <article
                           key={entry.modelSlug}
@@ -4313,6 +4377,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'ltx-2' ||
     slug === 'ltx-2-fast' ||
     slug === 'kling-2-6-pro' ||
+    slug === 'kling-3-pro' ||
     slug === 'nano-banana' ||
     slug === 'nano-banana-pro'
   ) {

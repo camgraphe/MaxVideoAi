@@ -153,6 +153,7 @@ export interface PreflightRequest {
   seedLocked?: boolean;
   loop?: boolean;
   audio?: boolean;
+  voiceControl?: boolean;
   user?: {
     memberTier?: string;
   };

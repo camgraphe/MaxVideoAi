@@ -32,7 +32,7 @@ import {
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
-import { applyEngineVariantPricing, buildAudioAddonInput } from '@/lib/pricing-addons';
+import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { recordGenerateMetric } from '@/server/generate-metrics';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 
@@ -466,7 +466,26 @@ export async function POST(req: NextRequest) {
   metricState.mode = mode;
 
   const prompt = String(body.prompt || '');
-  const audioEnabled =
+  const multiPromptRaw = Array.isArray(body.multiPrompt) ? body.multiPrompt : null;
+  const multiPrompt = multiPromptRaw
+    ? multiPromptRaw
+        .map((entry) => {
+          if (!entry || typeof entry !== 'object') return null;
+          const record = entry as Record<string, unknown>;
+          const promptValue = typeof record.prompt === 'string' ? record.prompt.trim() : '';
+          const durationValue =
+            typeof record.duration === 'number'
+              ? Math.round(record.duration)
+              : typeof record.duration === 'string'
+                ? Math.round(Number(record.duration.replace(/[^\d.]/g, '')))
+                : 0;
+          if (!promptValue) return null;
+          return { prompt: promptValue, duration: durationValue };
+        })
+        .filter((entry): entry is { prompt: string; duration: number } => Boolean(entry))
+    : null;
+  const multiPromptTotalSec = multiPrompt ? multiPrompt.reduce((sum, entry) => sum + (entry.duration || 0), 0) : 0;
+  let audioEnabled =
     typeof body.audio === 'boolean'
       ? body.audio
       : typeof body.generate_audio === 'boolean'
@@ -476,6 +495,9 @@ export async function POST(req: NextRequest) {
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
   let durationSec = Number(body.durationSec || 4);
+  if (multiPromptTotalSec > 0) {
+    durationSec = multiPromptTotalSec;
+  }
   const lumaDurationInfo = isLumaRay2 ? getLumaRay2DurationInfo(rawDurationOption ?? durationSec) : null;
   if (isLumaRay2 && !lumaDurationInfo) {
     logMetric('rejected', {
@@ -487,6 +509,52 @@ export async function POST(req: NextRequest) {
   if (lumaDurationInfo) {
     durationSec = lumaDurationInfo.seconds;
   }
+  const shotTypeRaw = typeof body.shotType === 'string' ? body.shotType.trim().toLowerCase() : '';
+  const shotType = shotTypeRaw === 'intelligent' ? 'intelligent' : shotTypeRaw === 'customize' ? 'customize' : null;
+  const voiceIdsRaw = Array.isArray(body.voiceIds)
+    ? body.voiceIds
+    : typeof body.voiceIds === 'string'
+      ? body.voiceIds.split(',')
+      : null;
+  const voiceIds = voiceIdsRaw
+    ? voiceIdsRaw
+        .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
+        .filter((value): value is string => value.length > 0)
+    : [];
+  const voiceControl = Boolean(body.voiceControl) || voiceIds.length > 0;
+  if (voiceControl) {
+    audioEnabled = true;
+  }
+  const elementsRaw = Array.isArray(body.elements) ? body.elements : null;
+  const elements = elementsRaw
+    ? elementsRaw
+        .map((entry) => {
+          if (!entry || typeof entry !== 'object') return null;
+          const record = entry as Record<string, unknown>;
+          const frontalImageUrl =
+            typeof record.frontalImageUrl === 'string' && record.frontalImageUrl.trim().length
+              ? record.frontalImageUrl.trim()
+              : null;
+          const referenceImageUrls = Array.isArray(record.referenceImageUrls)
+            ? record.referenceImageUrls
+                .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
+                .filter((value): value is string => value.length > 0)
+            : [];
+          const videoUrl =
+            typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
+          if (!frontalImageUrl && referenceImageUrls.length === 0 && !videoUrl) return null;
+          return {
+            frontalImageUrl: frontalImageUrl ?? undefined,
+            referenceImageUrls: referenceImageUrls.length ? referenceImageUrls : undefined,
+            videoUrl: videoUrl ?? undefined,
+          };
+        })
+        .filter(
+          (entry): entry is { frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string } => Boolean(entry)
+        )
+    : null;
+  const endImageUrl =
+    typeof body.endImageUrl === 'string' && body.endImageUrl.trim().length ? body.endImageUrl.trim() : null;
   const capability = getEngineCaps(engine.id, mode);
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawAspectRatio =
@@ -716,7 +784,10 @@ export async function POST(req: NextRequest) {
   const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
 
   const pricingEngine = applyEngineVariantPricing(engine, mode);
-  const pricingAddons = buildAudioAddonInput(pricingEngine, audioEnabled);
+  const pricingAddons = buildEngineAddonInput(pricingEngine, {
+    audioEnabled,
+    voiceControl,
+  });
   const pricing = await computePricingSnapshot({
     engine: pricingEngine,
     durationSec,
@@ -1379,7 +1450,7 @@ async function rollbackPendingPayment(params: {
   }
   const falPayload: Parameters<typeof generateVideo>[0] = {
     engineId: engine.id,
-    prompt,
+    prompt: prompt,
     durationSec,
     durationOption: falDurationOption,
     numFrames,
@@ -1395,6 +1466,11 @@ async function rollbackPendingPayment(params: {
     jobId,
     localKey,
     loop: isLumaRay2 ? loop : undefined,
+    multiPrompt: multiPrompt ?? undefined,
+    shotType: mode === 'i2v' ? 'customize' : shotType ?? undefined,
+    voiceIds: voiceIds.length ? voiceIds : undefined,
+    elements: elements ?? undefined,
+    endImageUrl: endImageUrl ?? undefined,
   };
   if (typeof audioEnabled === 'boolean') {
     falPayload.audio = audioEnabled;
@@ -1431,6 +1507,10 @@ async function rollbackPendingPayment(params: {
     advanced: {
       cfgScale: typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale) ? body.cfgScale : null,
       loop: isLumaRay2 ? Boolean(loop) : null,
+      shotType: shotType ?? null,
+      voiceIds: voiceIds.length ? voiceIds : null,
+      voiceControl: voiceControl ? true : null,
+      multiPrompt: multiPrompt ?? null,
     },
     refs: {
       imageUrl: initialImageUrl ?? null,
@@ -1438,6 +1518,8 @@ async function rollbackPendingPayment(params: {
       videoUrls: videoUrls.length ? videoUrls : null,
       firstFrameUrl: firstFrameUrl ?? null,
       lastFrameUrl: lastFrameUrl ?? null,
+      endImageUrl: endImageUrl ?? null,
+      elements: elements ?? null,
       inputs: falInputs ?? null,
     },
     meta: {

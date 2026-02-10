@@ -133,5 +133,14 @@
     "versionLabel": "v2.6 Pro",
     "availability": "available",
     "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling-3-pro",
+    "marketingName": "Kling 3 Pro",
+    "brandId": "kling",
+    "modelSlug": "kling-3-pro",
+    "versionLabel": "v3 Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
   }
 ]

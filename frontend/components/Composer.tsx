@@ -33,6 +33,12 @@ export type AssetFieldConfig = {
   role?: AssetFieldRole;
 };
 
+export type MultiPromptScene = {
+  id: string;
+  prompt: string;
+  duration: number;
+};
+
 interface Props {
   engine: EngineCaps;
   caps?: CapabilityCaps;
@@ -60,6 +66,20 @@ interface Props {
   onNotice?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
   settingsBar?: ReactNode;
+  multiPrompt?: {
+    enabled: boolean;
+    scenes: MultiPromptScene[];
+    totalDurationSec: number;
+    minDurationSec: number;
+    maxDurationSec: number;
+    onToggle: (enabled: boolean) => void;
+    onAddScene: () => void;
+    onRemoveScene: (id: string) => void;
+    onUpdateScene: (id: string, patch: Partial<Pick<MultiPromptScene, 'prompt' | 'duration'>>) => void;
+    error?: string | null;
+  } | null;
+  extraFields?: ReactNode;
+  disableGenerate?: boolean;
 }
 
 const DEFAULT_COMPOSER_COPY = {
@@ -130,6 +150,9 @@ export function Composer({
   onNotice,
   onOpenLibrary,
   settingsBar,
+  multiPrompt,
+  extraFields,
+  disableGenerate,
 }: Props) {
   const { t } = useI18n();
   const composerCopy = useMemo<ComposerCopy>(() => {
@@ -189,9 +212,12 @@ export function Composer({
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
-  const disableGenerate =
+  const multiPromptEnabled = Boolean(multiPrompt?.enabled);
+  const promptValueReady = multiPromptEnabled ? true : Boolean(prompt.trim());
+  const isGenerateDisabled =
+    Boolean(disableGenerate) ||
     isLoading ||
-    (promptRequired && !prompt.trim()) ||
+    (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue);
   const showSoraImageWarning = engine.id.startsWith('sora-2') && assetFields.some((entry) => entry.field.type === 'image');
   const hasReferenceImage = useMemo(() => {
@@ -219,10 +245,10 @@ export function Composer({
   }, []);
 
   const handleGenerateClick = useCallback(() => {
-    if (disableGenerate) return;
+    if (isGenerateDisabled) return;
     triggerButtonAnimation();
     onGenerate?.();
-  }, [disableGenerate, onGenerate, triggerButtonAnimation]);
+  }, [isGenerateDisabled, onGenerate, triggerButtonAnimation]);
 
   useEffect(() => {
     return () => {
@@ -245,6 +271,17 @@ export function Composer({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
             <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+              {multiPrompt && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={multiPromptEnabled ? 'primary' : 'outline'}
+                  onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
+                  className="min-h-0 h-auto px-3 py-1.5 text-[11px] uppercase tracking-micro"
+                >
+                  {multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'}
+                </Button>
+              )}
               {formattedPrice && (
                 <Chip
                   variant="outline"
@@ -266,16 +303,83 @@ export function Composer({
           {promptDescription && (
             <p className="text-[12px] text-text-muted">{promptDescription}</p>
           )}
-          <div className="relative">
-            <textarea
-              value={prompt}
-              onChange={(event) => onPromptChange(event.currentTarget.value)}
-              placeholder={promptPlaceholder}
-              rows={6}
-              className="w-full rounded-input border border-border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              ref={textareaRef}
-            />
-          </div>
+          {multiPromptEnabled && multiPrompt ? (
+            <div className="space-y-3">
+              {multiPrompt.scenes.map((scene, index) => (
+                <div
+                  key={scene.id}
+                  className="rounded-input border border-border bg-surface p-3 text-sm text-text-secondary"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Scene {index + 1}</span>
+                    {multiPrompt.scenes.length > 1 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => multiPrompt.onRemoveScene(scene.id)}
+                        className="min-h-0 h-auto px-2 py-1 text-[11px]"
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <textarea
+                    value={scene.prompt}
+                    onChange={(event) => multiPrompt.onUpdateScene(scene.id, { prompt: event.currentTarget.value })}
+                    placeholder={`Scene ${index + 1} prompt`}
+                    rows={3}
+                    className="mt-2 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <div className="mt-2 flex items-center gap-2 text-[12px] text-text-muted">
+                    <span>Duration (s)</span>
+                    <input
+                      type="number"
+                      min={multiPrompt.minDurationSec}
+                      max={multiPrompt.maxDurationSec}
+                      value={scene.duration}
+                      onChange={(event) =>
+                        multiPrompt.onUpdateScene(scene.id, {
+                          duration: Math.max(0, Math.round(Number(event.currentTarget.value))),
+                        })
+                      }
+                      className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-xs text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+                </div>
+              ))}
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-text-muted">
+                <span>
+                  Total: {multiPrompt.totalDurationSec}s · Min {multiPrompt.minDurationSec}s · Max {multiPrompt.maxDurationSec}s
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={multiPrompt.onAddScene}
+                  className="min-h-0 h-auto px-3 py-1.5 text-[11px] uppercase tracking-micro"
+                >
+                  + Scene
+                </Button>
+              </div>
+              {multiPrompt.error && (
+                <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[12px] text-error">
+                  {multiPrompt.error}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="relative">
+              <textarea
+                value={prompt}
+                onChange={(event) => onPromptChange(event.currentTarget.value)}
+                placeholder={promptPlaceholder}
+                rows={6}
+                className="w-full rounded-input border border-border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                ref={textareaRef}
+              />
+            </div>
+          )}
         </div>
 
         {(settingsBar || onGenerate) && (
@@ -285,14 +389,14 @@ export function Composer({
               <Button
                 type="button"
                 size="md"
-                disabled={disableGenerate}
+                disabled={isGenerateDisabled}
                 className={clsx(
                   'relative w-full shrink-0 px-5 py-3 uppercase tracking-micro sm:w-auto',
                   'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
                   'border border-brand shadow-card',
                   'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                  isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
-                  disableGenerate ? '' : 'active:scale-[0.97]'
+                  isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
+                  isGenerateDisabled ? '' : 'active:scale-[0.97]'
                 )}
                 onClick={handleGenerateClick}
               >
@@ -301,7 +405,7 @@ export function Composer({
                   aria-hidden
                   className={clsx(
                     'pointer-events-none absolute inset-0 rounded-input bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
-                    isPulseVisible && !disableGenerate ? 'opacity-100' : ''
+                    isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
                   )}
                 />
               </Button>
@@ -335,6 +439,8 @@ export function Composer({
             )}
           </div>
         )}
+
+        {extraFields ? <div className="space-y-2">{extraFields}</div> : null}
 
         {assetFields.length > 0 && (
           <div className="space-y-2">

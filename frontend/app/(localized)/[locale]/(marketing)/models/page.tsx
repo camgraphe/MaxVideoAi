@@ -303,6 +303,7 @@ const USE_CASE_MAP: Record<string, string> = {
   'veo-3-1-fast': 'fast ad cuts and rapid iteration',
   'veo-3-1-first-last': 'storyboard-driven shots with fixed frames',
   'kling-2-6-pro': 'motion-realistic cinematic clips',
+  'kling-3-pro': 'multi-shot cinematic sequences with voice control',
   'kling-2-5-turbo': 'fast iterations with stable prompt adherence',
   'wan-2-6': 'structured prompts with clean transitions',
   'wan-2-5': 'budget-friendly prompt testing',
@@ -551,8 +552,9 @@ export default async function ModelsPage() {
     'pika-text-to-video',
     'wan-2-6',
     'wan-2-5',
-    'kling-2-5-turbo',
+    'kling-3-pro',
     'kling-2-6-pro',
+    'kling-2-5-turbo',
     'ltx-2-fast',
     'ltx-2',
     'minimax-hailuo-02-text',
@@ -734,11 +736,11 @@ export default async function ModelsPage() {
   const quickCompareMicroLabels = listingCopy.quickCompare?.shortcuts ?? [];
   const quickCompareShortcuts = [
     { a: 'sora-2', b: 'veo-3-1', micro: quickCompareMicroLabels[0] ?? 'cinematic vs ad-ready' },
-    { a: 'sora-2', b: 'kling-2-6-pro', micro: quickCompareMicroLabels[1] ?? 'cinematic vs control' },
-    { a: 'veo-3-1', b: 'kling-2-6-pro', micro: quickCompareMicroLabels[2] ?? 'ads vs motion' },
+    { a: 'sora-2', b: 'kling-3-pro', micro: quickCompareMicroLabels[1] ?? 'cinematic vs multi-shot' },
+    { a: 'veo-3-1', b: 'kling-3-pro', micro: quickCompareMicroLabels[2] ?? 'ads vs story' },
     { a: 'sora-2', b: 'wan-2-6', micro: quickCompareMicroLabels[3] ?? 'premium vs fast' },
     { a: 'veo-3-1', b: 'wan-2-6', micro: quickCompareMicroLabels[4] ?? 'ads vs budget' },
-    { a: 'kling-2-6-pro', b: 'wan-2-6', micro: quickCompareMicroLabels[5] ?? 'motion vs speed' },
+    { a: 'kling-3-pro', b: 'wan-2-6', micro: quickCompareMicroLabels[5] ?? 'control vs speed' },
   ];
 
   const outcomeCopy = listingCopy.chooseOutcome?.tiles ?? [];
@@ -746,7 +748,7 @@ export default async function ModelsPage() {
     {
       title: outcomeCopy[0]?.title ?? 'Cinematic / hero shots',
       description: outcomeCopy[0]?.description ?? 'Character continuity, cinematic physics, premium look.',
-      engines: ['sora-2', 'sora-2-pro', 'kling-2-6-pro'],
+      engines: ['sora-2', 'sora-2-pro', 'kling-3-pro', 'kling-2-6-pro'],
       icon: Film,
     },
     {

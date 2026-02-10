@@ -36,6 +36,8 @@ interface Props {
   showAudioControl?: boolean;
   audioEnabled?: boolean;
   onAudioChange?: (value: boolean) => void;
+  audioControlDisabled?: boolean;
+  audioControlNote?: string;
   focusRefs?: {
     duration?: Ref<HTMLElement>;
     resolution?: Ref<HTMLDivElement>;
@@ -43,6 +45,14 @@ interface Props {
   showExtendControl?: boolean;
   cfgScale?: number | null;
   onCfgScaleChange?: (value: number) => void;
+  durationManaged?: boolean;
+  durationManagedLabel?: string;
+  showKlingV3Controls?: boolean;
+  klingShotType?: 'customize' | 'intelligent';
+  onKlingShotTypeChange?: (value: 'customize' | 'intelligent') => void;
+  voiceIdsValue?: string;
+  onVoiceIdsChange?: (value: string) => void;
+  voiceControlActive?: boolean;
   variant?: 'full' | 'advanced';
 }
 
@@ -159,10 +169,20 @@ export function SettingsControls({
   showAudioControl = false,
   audioEnabled,
   onAudioChange,
+  audioControlDisabled = false,
+  audioControlNote,
   focusRefs,
   showExtendControl = true,
   cfgScale,
   onCfgScaleChange,
+  durationManaged = false,
+  durationManagedLabel,
+  showKlingV3Controls = false,
+  klingShotType = 'customize',
+  onKlingShotTypeChange,
+  voiceIdsValue = '',
+  onVoiceIdsChange,
+  voiceControlActive = false,
   variant = 'full',
 }: Props) {
   const { t } = useI18n();
@@ -261,12 +281,16 @@ export function SettingsControls({
   const resolutionLocked = Boolean(caps?.resolutionLocked);
   const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
-  const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean' && onAudioChange);
+  const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean');
+  const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle;
+  const resolvedDurationManagedLabel = durationManagedLabel ?? controlsCopy.duration.managed;
   const effectiveCfgScale =
     typeof cfgScale === 'number'
       ? cfgScale
       : internalCfgScale ?? engine.params.cfg_scale?.default ?? 0.5;
+
+  const audioNotice = audioControlNote ?? (audioIncluded ? controlsCopy.core.audioIncluded : null);
 
   return (
     <Card className="space-y-4 p-4">
@@ -278,10 +302,10 @@ export function SettingsControls({
                 {controlsCopy.core.title}
               </h2>
               <p className="text-[12px] text-text-muted">{controlsCopy.core.subtitle}</p>
-              {audioIncluded && controlsCopy.core.audioIncluded && (
+              {audioNotice && (
                 <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[11px] font-semibold text-text-secondary">
                   <span className="text-[9px] text-text-muted">●</span>
-                  <span>{controlsCopy.core.audioIncluded}</span>
+                  <span>{audioNotice}</span>
                 </div>
               )}
             </div>
@@ -321,6 +345,10 @@ export function SettingsControls({
                   })}
                 </div>
                 <span className="text-[11px] text-text-muted">{controlsCopy.frames.hint}</span>
+              </div>
+            ) : durationManaged ? (
+              <div className="rounded-input border border-dashed border-border bg-surface-glass-60 p-3 text-[12px] text-text-muted">
+                {resolvedDurationManagedLabel}
               </div>
             ) : enumeratedDurationOptions && enumeratedDurationOptions.length ? (
               <div className="flex flex-col gap-2 text-sm text-text-secondary">
@@ -481,9 +509,14 @@ export function SettingsControls({
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => onAudioChange?.(!audioEnabled)}
+                onClick={() => {
+                  if (!canToggleAudio) return;
+                  onAudioChange?.(!audioEnabled);
+                }}
+                disabled={!canToggleAudio}
                 className={clsx(
                   'min-h-0 h-auto px-2.5 py-1 text-[12px] font-medium',
+                  !canToggleAudio && 'cursor-not-allowed opacity-60',
                   audioEnabled
                     ? 'border-brand bg-brand text-on-brand'
                     : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
@@ -637,6 +670,59 @@ export function SettingsControls({
 
             {engine.keyframes && (
               <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div>
+            )}
+
+            {showKlingV3Controls && (
+              <div className="space-y-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">Kling v3 controls</span>
+                <div className="space-y-2 rounded-input border border-border bg-surface p-3">
+                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
+                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Shot type</span>
+                    <div className="flex flex-wrap gap-2">
+                      {(['customize', 'intelligent'] as const).map((option) => (
+                        <Button
+                          key={option}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={mode === 'i2v'}
+                          onClick={() => {
+                            if (mode === 'i2v') return;
+                            onKlingShotTypeChange?.(option);
+                          }}
+                          className={clsx(
+                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+                            option === klingShotType
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option}
+                        </Button>
+                      ))}
+                    </div>
+                    {mode === 'i2v' && (
+                      <span className="text-[11px] text-text-muted">
+                        Shot type is locked to customize for image-to-video.
+                      </span>
+                    )}
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
+                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
+                    <input
+                      type="text"
+                      placeholder="voice_1, voice_2"
+                      value={voiceIdsValue}
+                      onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
+                      className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
+                    {voiceControlActive && (
+                      <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
+                    )}
+                  </label>
+                </div>
+              </div>
             )}
 
             {engine.params.cfg_scale && (

@@ -16,7 +16,14 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { SettingsControls } from '@/components/SettingsControls';
 import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
-import { Composer, type ComposerAttachment, type AssetFieldConfig, type AssetFieldRole } from '@/components/Composer';
+import {
+  Composer,
+  type ComposerAttachment,
+  type AssetFieldConfig,
+  type AssetFieldRole,
+  type MultiPromptScene,
+} from '@/components/Composer';
+import { KlingElementsBuilder, type KlingElementState, type KlingElementAsset } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
 import { GalleryRail } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
@@ -81,6 +88,40 @@ function coerceNumber(value: unknown): number | null {
     return Number.isFinite(parsed) ? parsed : null;
   }
   return null;
+}
+
+const MULTI_PROMPT_MIN_SEC = 3;
+const MULTI_PROMPT_MAX_SEC = 15;
+
+function createLocalId(prefix: string): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createMultiPromptScene(): MultiPromptScene {
+  return {
+    id: createLocalId('scene'),
+    prompt: '',
+    duration: 5,
+  };
+}
+
+function buildMultiPromptSummary(scenes: MultiPromptScene[]): string {
+  return scenes
+    .filter((scene) => scene.prompt.trim().length)
+    .map((scene, index) => `Scene ${index + 1}: ${scene.prompt.trim()}`)
+    .join(' | ');
+}
+
+function createKlingElement(): KlingElementState {
+  return {
+    id: createLocalId('element'),
+    frontal: null,
+    references: Array.from({ length: 3 }, () => null),
+    video: null,
+  };
 }
 
 function normalizeSharedVideoPayload(raw: SharedVideoPayload): SharedVideoPayload {
@@ -711,6 +752,10 @@ const STORAGE_KEYS = {
   memberTier: 'maxvideoai.generate.memberTier.v1',
   pendingRenders: 'maxvideoai.generate.pendingRenders.v1',
   previewJobId: 'maxvideoai.generate.previewJobId.v1',
+  multiPromptEnabled: 'maxvideoai.generate.multiPromptEnabled.v1',
+  multiPromptScenes: 'maxvideoai.generate.multiPromptScenes.v1',
+  shotType: 'maxvideoai.generate.shotType.v1',
+  voiceIds: 'maxvideoai.generate.voiceIds.v1',
 } as const;
 
 type StoredFormState = Partial<FormState> & { engineId: string; mode: Mode; updatedAt?: number };
@@ -1023,6 +1068,11 @@ export default function Page() {
   const [form, setForm] = useState<FormState | null>(null);
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
   const [negativePrompt, setNegativePrompt] = useState<string>('');
+  const [multiPromptEnabled, setMultiPromptEnabled] = useState(false);
+  const [multiPromptScenes, setMultiPromptScenes] = useState<MultiPromptScene[]>(() => [createMultiPromptScene()]);
+  const [shotType, setShotType] = useState<'customize' | 'intelligent'>('customize');
+  const [voiceIdsInput, setVoiceIdsInput] = useState<string>('');
+  const [klingElements, setKlingElements] = useState<KlingElementState[]>(() => [createKlingElement()]);
   const [cfgScale, setCfgScale] = useState<number | null>(null);
   const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
   const [preflightError, setPreflightError] = useState<string | undefined>();
@@ -1376,6 +1426,39 @@ useEffect(() => {
 
       const negativeValue = readStorage(STORAGE_KEYS.negativePrompt);
       setNegativePrompt(negativeValue ?? '');
+
+      const storedMultiPromptEnabled = readStorage(STORAGE_KEYS.multiPromptEnabled);
+      setMultiPromptEnabled(storedMultiPromptEnabled === 'true');
+      const storedMultiPromptScenes = readStorage(STORAGE_KEYS.multiPromptScenes);
+      if (storedMultiPromptScenes) {
+        try {
+          const parsed = JSON.parse(storedMultiPromptScenes) as MultiPromptScene[];
+          if (Array.isArray(parsed) && parsed.length) {
+            const sanitized = parsed
+              .map((scene) => ({
+                id: typeof scene.id === 'string' ? scene.id : createLocalId('scene'),
+                prompt: typeof scene.prompt === 'string' ? scene.prompt : '',
+                duration:
+                  typeof scene.duration === 'number' && Number.isFinite(scene.duration)
+                    ? Math.round(scene.duration)
+                    : 5,
+              }))
+              .filter((scene) => scene.prompt.length || scene.duration);
+            setMultiPromptScenes(sanitized.length ? sanitized : [createMultiPromptScene()]);
+          }
+        } catch {
+          setMultiPromptScenes([createMultiPromptScene()]);
+        }
+      }
+
+      const storedShotType = readStorage(STORAGE_KEYS.shotType);
+      if (storedShotType === 'customize' || storedShotType === 'intelligent') {
+        setShotType(storedShotType);
+      }
+      const storedVoiceIds = readStorage(STORAGE_KEYS.voiceIds);
+      if (typeof storedVoiceIds === 'string') {
+        setVoiceIdsInput(storedVoiceIds);
+      }
 
       const formValue = readStorage(STORAGE_KEYS.form);
       const storedFormRaw = (() => {
@@ -2081,6 +2164,46 @@ useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
     try {
+      writeStorage(STORAGE_KEYS.multiPromptEnabled, multiPromptEnabled ? 'true' : 'false');
+    } catch {
+      // noop
+    }
+  }, [multiPromptEnabled, hydratedForScope, storageScope, writeStorage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hydratedForScope !== storageScope) return;
+    try {
+      writeStorage(STORAGE_KEYS.multiPromptScenes, JSON.stringify(multiPromptScenes));
+    } catch {
+      // noop
+    }
+  }, [multiPromptScenes, hydratedForScope, storageScope, writeStorage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hydratedForScope !== storageScope) return;
+    try {
+      writeStorage(STORAGE_KEYS.shotType, shotType);
+    } catch {
+      // noop
+    }
+  }, [shotType, hydratedForScope, storageScope, writeStorage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hydratedForScope !== storageScope) return;
+    try {
+      writeStorage(STORAGE_KEYS.voiceIds, voiceIdsInput);
+    } catch {
+      // noop
+    }
+  }, [voiceIdsInput, hydratedForScope, storageScope, writeStorage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hydratedForScope !== storageScope) return;
+    try {
       writeStorage(STORAGE_KEYS.memberTier, memberTier);
     } catch {
       // noop
@@ -2100,10 +2223,18 @@ useEffect(() => {
   const [assetDeletePendingId, setAssetDeletePendingId] = useState<string | null>(null);
 
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
+  const klingElementsRef = useRef<KlingElementState[]>([]);
 
 const revokeAssetPreview = (asset: ReferenceAsset | null | undefined) => {
   if (!asset) return;
   if (asset.previewUrl.startsWith('blob:')) {
+    URL.revokeObjectURL(asset.previewUrl);
+  }
+};
+
+const revokeKlingAssetPreview = (asset: { previewUrl: string } | null | undefined) => {
+  if (!asset) return;
+  if (asset.previewUrl && asset.previewUrl.startsWith('blob:')) {
     URL.revokeObjectURL(asset.previewUrl);
   }
 };
@@ -2118,6 +2249,20 @@ useEffect(() => {
       entries.forEach((asset) => {
         revokeAssetPreview(asset);
       });
+    });
+  };
+}, []);
+
+useEffect(() => {
+  klingElementsRef.current = klingElements;
+}, [klingElements]);
+
+useEffect(() => {
+  return () => {
+    klingElementsRef.current.forEach((element) => {
+      revokeKlingAssetPreview(element.frontal);
+      element.references.forEach((asset) => revokeKlingAssetPreview(asset));
+      revokeKlingAssetPreview(element.video);
     });
   };
 }, []);
@@ -2458,6 +2603,167 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, []);
 
+  const handleMultiPromptAddScene = useCallback(() => {
+    setMultiPromptScenes((previous) => [...previous, createMultiPromptScene()]);
+  }, []);
+
+  const handleMultiPromptRemoveScene = useCallback((id: string) => {
+    setMultiPromptScenes((previous) => {
+      const next = previous.filter((scene) => scene.id !== id);
+      return next.length ? next : [createMultiPromptScene()];
+    });
+  }, []);
+
+  const handleMultiPromptUpdateScene = useCallback(
+    (id: string, patch: Partial<Pick<MultiPromptScene, 'prompt' | 'duration'>>) => {
+      setMultiPromptScenes((previous) =>
+        previous.map((scene) => (scene.id === id ? { ...scene, ...patch } : scene))
+      );
+    },
+    []
+  );
+
+  const handleKlingElementAdd = useCallback(() => {
+    setKlingElements((previous) => [...previous, createKlingElement()]);
+  }, []);
+
+  const handleKlingElementRemove = useCallback((id: string) => {
+    setKlingElements((previous) => {
+      const next = previous.filter((element) => element.id !== id);
+      return next.length ? next : [createKlingElement()];
+    });
+  }, []);
+
+  const handleKlingElementAssetRemove = useCallback(
+    (elementId: string, slot: 'frontal' | 'reference' | 'video', index?: number) => {
+      setKlingElements((previous) =>
+        previous.map((element) => {
+          if (element.id !== elementId) return element;
+          if (slot === 'frontal') {
+            revokeKlingAssetPreview(element.frontal);
+            return { ...element, frontal: null };
+          }
+          if (slot === 'video') {
+            revokeKlingAssetPreview(element.video);
+            return { ...element, video: null };
+          }
+          const references = [...element.references];
+          if (typeof index === 'number' && index >= 0 && index < references.length) {
+            revokeKlingAssetPreview(references[index]);
+            references[index] = null;
+          }
+          return { ...element, references };
+        })
+      );
+    },
+    []
+  );
+
+  const handleKlingElementAssetAdd = useCallback(
+    (elementId: string, slot: 'frontal' | 'reference' | 'video', file: File, index?: number) => {
+      const assetId = createLocalId('element_asset');
+      const previewUrl = URL.createObjectURL(file);
+      const baseAsset = {
+        id: assetId,
+        previewUrl,
+        name: file.name,
+        kind: slot === 'video' ? 'video' : 'image',
+        status: 'uploading' as const,
+        url: undefined as string | undefined,
+      };
+
+      setKlingElements((previous) =>
+        previous.map((element) => {
+          if (element.id !== elementId) return element;
+          if (slot === 'frontal') {
+            revokeKlingAssetPreview(element.frontal);
+            return { ...element, frontal: baseAsset };
+          }
+          if (slot === 'video') {
+            revokeKlingAssetPreview(element.video);
+            return { ...element, video: baseAsset };
+          }
+          const references = [...element.references];
+          let targetIndex = typeof index === 'number' ? index : references.findIndex((entry) => entry === null);
+          if (targetIndex < 0) {
+            targetIndex = references.length;
+          }
+          if (targetIndex >= references.length) {
+            return element;
+          }
+          revokeKlingAssetPreview(references[targetIndex]);
+          references[targetIndex] = baseAsset;
+          return { ...element, references };
+        })
+      );
+
+      const upload = async () => {
+        try {
+          const formData = new FormData();
+          formData.append('file', file, file.name);
+          const uploadEndpoint = slot === 'video' ? '/api/uploads/video' : '/api/uploads/image';
+          const response = await authFetch(uploadEndpoint, {
+            method: 'POST',
+            body: formData,
+          });
+          const payload = await response.json().catch(() => null);
+          if (!response.ok || !payload?.ok) {
+            throw new Error(typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED');
+          }
+          const assetResponse = payload.asset as {
+            id: string;
+            url: string;
+            name?: string;
+          };
+          setKlingElements((previous) =>
+            previous.map((element) => {
+              if (element.id !== elementId) return element;
+              const updateAsset = (asset: typeof baseAsset | null) => {
+                if (!asset || asset.id !== assetId) return asset;
+                if (asset.previewUrl.startsWith('blob:')) {
+                  URL.revokeObjectURL(asset.previewUrl);
+                }
+                return {
+                  ...asset,
+                  status: 'ready' as const,
+                  url: assetResponse.url,
+                  previewUrl: assetResponse.url || asset.previewUrl,
+                  name: assetResponse.name ?? asset.name,
+                };
+              };
+              if (slot === 'frontal') {
+                return { ...element, frontal: updateAsset(element.frontal) };
+              }
+              if (slot === 'video') {
+                return { ...element, video: updateAsset(element.video) };
+              }
+              const references = element.references.map((asset) => updateAsset(asset));
+              return { ...element, references };
+            })
+          );
+        } catch (error) {
+          setKlingElements((previous) =>
+            previous.map((element) => {
+              if (element.id !== elementId) return element;
+              const markError = (asset: typeof baseAsset | null) => {
+                if (!asset || asset.id !== assetId) return asset;
+                return { ...asset, status: 'error' as const };
+              };
+              if (slot === 'frontal') return { ...element, frontal: markError(element.frontal) };
+              if (slot === 'video') return { ...element, video: markError(element.video) };
+              const references = element.references.map((asset) => markError(asset));
+              return { ...element, references };
+            })
+          );
+          showNotice?.(error instanceof Error ? error.message : 'Upload failed.');
+        }
+      };
+
+      void upload();
+    },
+    [showNotice]
+  );
+
   const handleSelectPresetAmount = useCallback((value: number) => {
     setTopUpAmount(value);
   }, []);
@@ -2786,6 +3092,42 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     return engines[0];
   }, [engines, form, engineOverride]);
 
+  const isKlingV3Pro = selectedEngine?.id === 'kling-3-pro';
+  const multiPromptTotalSec = useMemo(
+    () => multiPromptScenes.reduce((sum, scene) => sum + (scene.duration || 0), 0),
+    [multiPromptScenes]
+  );
+  const multiPromptActive = Boolean(isKlingV3Pro && multiPromptEnabled);
+  const multiPromptInvalid = multiPromptActive
+    ? multiPromptScenes.length === 0 ||
+      multiPromptScenes.some((scene) => !scene.prompt.trim()) ||
+      multiPromptTotalSec < MULTI_PROMPT_MIN_SEC ||
+      multiPromptTotalSec > MULTI_PROMPT_MAX_SEC
+    : false;
+  const voiceIds = useMemo(
+    () =>
+      voiceIdsInput
+        .split(',')
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    [voiceIdsInput]
+  );
+  const voiceControlEnabled = Boolean(isKlingV3Pro && voiceIds.length);
+  const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
+  const effectiveDurationSec = useMemo(
+    () => (multiPromptActive ? multiPromptTotalSec : form?.durationSec ?? 0),
+    [multiPromptActive, multiPromptTotalSec, form?.durationSec]
+  );
+  const multiPromptError = multiPromptInvalid
+    ? `Multi-prompt requires a prompt per scene and total duration between ${MULTI_PROMPT_MIN_SEC}s and ${MULTI_PROMPT_MAX_SEC}s.`
+    : null;
+
+  useEffect(() => {
+    if (!isKlingV3Pro && multiPromptEnabled) {
+      setMultiPromptEnabled(false);
+    }
+  }, [isKlingV3Pro, multiPromptEnabled]);
+
   useEffect(() => {
     if (form?.engineId === 'pika-image-to-video') {
       setForm((current) => {
@@ -2892,6 +3234,53 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           setCfgScale(cfgScaleValue);
         }
         const loopValue = typeof advanced.loop === 'boolean' ? advanced.loop : undefined;
+        const shotTypeRaw = typeof advanced.shotType === 'string' ? advanced.shotType.trim().toLowerCase() : '';
+        if (shotTypeRaw === 'customize' || shotTypeRaw === 'intelligent') {
+          setShotType(shotTypeRaw);
+        }
+
+        const voiceIdsRaw = advanced.voiceIds;
+        const voiceIdsList = Array.isArray(voiceIdsRaw)
+          ? voiceIdsRaw
+              .map((value) => (typeof value === 'string' ? value.trim() : ''))
+              .filter((value): value is string => value.length > 0)
+          : typeof voiceIdsRaw === 'string'
+            ? voiceIdsRaw
+                .split(',')
+                .map((value) => value.trim())
+                .filter((value) => value.length > 0)
+            : [];
+        setVoiceIdsInput(voiceIdsList.join(', '));
+
+        const multiPromptRaw = Array.isArray(advanced.multiPrompt) ? advanced.multiPrompt : null;
+        const multiPromptScenesValue = multiPromptRaw
+          ? multiPromptRaw
+              .map((entry) => {
+                if (!entry || typeof entry !== 'object') return null;
+                const record = entry as Record<string, unknown>;
+                const scenePrompt = typeof record.prompt === 'string' ? record.prompt : '';
+                const sceneDuration =
+                  typeof record.duration === 'number'
+                    ? Math.round(record.duration)
+                    : typeof record.duration === 'string'
+                      ? Math.round(Number(record.duration.replace(/[^\d.]/g, '')))
+                      : 0;
+                if (!scenePrompt.trim()) return null;
+                return {
+                  id: createLocalId('scene'),
+                  prompt: scenePrompt,
+                  duration: sceneDuration || MULTI_PROMPT_MIN_SEC,
+                };
+              })
+              .filter((scene): scene is MultiPromptScene => Boolean(scene))
+          : null;
+        if (multiPromptScenesValue && multiPromptScenesValue.length) {
+          setMultiPromptEnabled(true);
+          setMultiPromptScenes(multiPromptScenesValue);
+        } else {
+          setMultiPromptEnabled(false);
+          setMultiPromptScenes([createMultiPromptScene()]);
+        }
 
         setForm((current) => {
           const previous = current ?? null;
@@ -2956,6 +3345,57 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               });
             }
             return next;
+          });
+        }
+
+        const elementsRaw = refs.elements;
+        if (elementsRaw === null || Array.isArray(elementsRaw)) {
+          const buildKlingAssetFromUrl = (url: string, kind: 'image' | 'video', index: number): KlingElementAsset => ({
+            id: createLocalId(`kling_${kind}`),
+            previewUrl: url,
+            name: url.split('/').pop() ?? `${kind}-${index + 1}`,
+            kind,
+            status: 'ready',
+            url,
+          });
+          const parsedElements = Array.isArray(elementsRaw)
+            ? elementsRaw
+                .map((entry, elementIndex) => {
+                  if (!entry || typeof entry !== 'object') return null;
+                  const record = entry as Record<string, unknown>;
+                  const frontalUrl =
+                    typeof record.frontalImageUrl === 'string' && record.frontalImageUrl.trim().length
+                      ? record.frontalImageUrl.trim()
+                      : null;
+                  const referenceUrls = Array.isArray(record.referenceImageUrls)
+                    ? record.referenceImageUrls
+                        .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
+                        .filter((value): value is string => value.length > 0)
+                        .slice(0, 3)
+                    : [];
+                  const videoUrl =
+                    typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
+                  if (!frontalUrl && referenceUrls.length === 0 && !videoUrl) return null;
+                  const references = Array.from({ length: 3 }, (_, index) =>
+                    referenceUrls[index] ? buildKlingAssetFromUrl(referenceUrls[index], 'image', index) : null
+                  );
+                  return {
+                    id: createLocalId(`element_${elementIndex}`),
+                    frontal: frontalUrl ? buildKlingAssetFromUrl(frontalUrl, 'image', 0) : null,
+                    references,
+                    video: videoUrl ? buildKlingAssetFromUrl(videoUrl, 'video', 0) : null,
+                  } as KlingElementState;
+                })
+                .filter((element): element is KlingElementState => Boolean(element))
+            : [];
+          const nextElements = parsedElements.length ? parsedElements : [createKlingElement()];
+          setKlingElements((previous) => {
+            previous.forEach((element) => {
+              revokeKlingAssetPreview(element.frontal);
+              element.references.forEach((asset) => revokeKlingAssetPreview(asset));
+              revokeKlingAssetPreview(element.video);
+            });
+            return nextElements;
           });
         }
 
@@ -3202,6 +3642,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const activeMode: Mode = form?.mode ?? (selectedEngine ? getPreferredEngineMode(selectedEngine) : 't2v');
 
+  useEffect(() => {
+    if (!isKlingV3Pro) return;
+    if (activeMode !== 'i2v') return;
+    if (shotType !== 'customize') {
+      setShotType('customize');
+    }
+  }, [activeMode, isKlingV3Pro, shotType]);
+
   const capability = useMemo(() => {
     if (!selectedEngine) return undefined;
     return getEngineCaps(selectedEngine.id, activeMode) ?? undefined;
@@ -3214,6 +3662,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const supportsAudioToggle =
     Boolean(selectedEngine && capability?.audioToggle && generateAudioField && supportsAudioPricingToggle(selectedEngine));
+
+  useEffect(() => {
+    if (!voiceControlEnabled) return;
+    setForm((current) => {
+      if (!current || current.audio) return current;
+      return { ...current, audio: true };
+    });
+  }, [voiceControlEnabled]);
 
   const handleEngineChange = useCallback(
     (engineId: string) => {
@@ -3275,19 +3731,23 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     [selectedEngine]
   );
 
-  const handleDurationChange = useCallback((raw: number | string) => {
-    setForm((current) => {
-      if (!current) return current;
-      const numeric = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^\d.]/g, ''));
-      const durationSec = Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
-      return {
-        ...current,
-        durationSec,
-        durationOption: raw,
-        numFrames: null,
-      };
-    });
-  }, []);
+  const handleDurationChange = useCallback(
+    (raw: number | string) => {
+      if (multiPromptActive) return;
+      setForm((current) => {
+        if (!current) return current;
+        const numeric = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^\d.]/g, ''));
+        const durationSec = Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
+        return {
+          ...current,
+          durationSec,
+          durationOption: raw,
+          numFrames: null,
+        };
+      });
+    },
+    [multiPromptActive]
+  );
 
   const handleFramesChange = useCallback((value: number) => {
     setForm((current) => {
@@ -3351,7 +3811,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const resolveAssetFieldRole = (field: EngineInputField, required: boolean): AssetFieldRole => {
     const id = (field.id ?? '').toLowerCase();
-    if (id.includes('first_frame') || id.includes('last_frame')) return 'frame';
+    if (id.includes('first_frame') || id.includes('last_frame') || id.includes('end_image')) return 'frame';
     if (id.includes('reference')) return 'reference';
     if (id === 'image_url' || id === 'input_image') return 'primary';
     if (required && field.type === 'image') return 'primary';
@@ -3542,7 +4002,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine || !authChecked) return;
-    const trimmedPrompt = prompt.trim();
+    const trimmedPrompt = effectivePrompt.trim();
     const trimmedNegativePrompt = negativePrompt.trim();
     const supportsNegativePrompt = Boolean(inputSchemaSummary.negativePromptField);
     const isLumaRay2 = selectedEngine.id === 'lumaRay2';
@@ -3551,6 +4011,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       : null;
     const lumaResolution = isLumaRay2 ? getLumaRay2ResolutionInfo(form.resolution) : null;
     const lumaAspectOk = !isLumaRay2 || isLumaRay2AspectRatio(form.aspectRatio);
+
+    if (multiPromptActive && multiPromptInvalid) {
+      showNotice(multiPromptError ?? 'Multi-prompt requires a prompt per scene and a valid total duration.');
+      return;
+    }
 
     if (inputSchemaSummary.promptRequired && !trimmedPrompt) {
       showNotice('A prompt is required for this engine and mode.');
@@ -3764,6 +4229,69 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       : [];
 
     const primaryImageUrl = primaryAttachment?.url ?? referenceImageUrls[0];
+    const endImageUrl =
+      inputsPayload?.find((attachment) => attachment.slotId === 'end_image_url' && typeof attachment.url === 'string')
+        ?.url ?? undefined;
+
+    let klingElementsPayload:
+      | Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>
+      | undefined;
+    if (isKlingV3Pro && form.mode === 'i2v') {
+      let videoCount = 0;
+      const collected: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }> = [];
+      for (const element of klingElements) {
+        const frontal = element.frontal;
+        const references = element.references.filter((asset): asset is KlingElementAsset => Boolean(asset));
+        const video = element.video;
+        const hasAnyAsset = Boolean(frontal || references.length || video);
+        if (!hasAnyAsset) {
+          continue;
+        }
+
+        const assetsToCheck = [frontal, ...references, video].filter(Boolean) as KlingElementAsset[];
+        for (const asset of assetsToCheck) {
+          if (asset.status === 'uploading') {
+            showNotice('Please wait for element uploads to finish before generating.');
+            return;
+          }
+          if (asset.status === 'error' || !asset.url) {
+            showNotice('One of your element assets failed to upload. Remove it and try again.');
+            return;
+          }
+        }
+
+        const frontalUrl = frontal?.url;
+        const referenceUrls = references
+          .map((asset) => asset.url)
+          .filter((url): url is string => Boolean(url));
+        const videoUrl = video?.url;
+        if (videoUrl) {
+          videoCount += 1;
+        }
+        if (!frontalUrl && referenceUrls.length === 0) {
+          showNotice('Each Kling element needs at least one image before generating.');
+          return;
+        }
+        collected.push({
+          frontalImageUrl: frontalUrl,
+          referenceImageUrls: referenceUrls.length ? referenceUrls : undefined,
+          videoUrl,
+        });
+      }
+      if (videoCount > 1) {
+        showNotice('Only one Kling element can include a video reference.');
+        return;
+      }
+      if (collected.length) {
+        klingElementsPayload = collected;
+      }
+    }
+
+    const multiPromptPayload = multiPromptActive
+      ? multiPromptScenes
+          .filter((scene) => scene.prompt.trim().length)
+          .map((scene) => ({ prompt: scene.prompt.trim(), duration: Math.round(scene.duration || 0) }))
+      : undefined;
 
     const allowIndex = defaultAllowIndex ?? true;
     const visibilityPreference: 'public' | 'private' = allowIndex ? 'public' : 'private';
@@ -3817,7 +4345,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ? '/assets/frames/thumb-1x1.svg'
           : '/assets/frames/thumb-16x9.svg';
 
-      const { seconds: etaSeconds, label: etaLabel } = getRenderEta(selectedEngine, form.durationSec);
+      const { seconds: etaSeconds, label: etaLabel } = getRenderEta(selectedEngine, effectiveDurationSec);
       const friendlyMessage =
         iterationCount > 1 ? formatTakeLabel(iterationIndex + 1, iterationCount) : '';
       const startedAt = Date.now();
@@ -3882,8 +4410,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         engineLabel: selectedEngine.label,
         createdAt: new Date().toISOString(),
         aspectRatio: form.aspectRatio,
-        durationSec: form.durationSec,
-        prompt,
+        durationSec: effectiveDurationSec,
+        prompt: effectivePrompt,
         progress: 5,
         message: friendlyMessage,
         status: 'pending',
@@ -3926,7 +4454,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         currency: initial.currency,
         etaSeconds,
         etaLabel,
-        prompt,
+        prompt: effectivePrompt,
         status: initial.status,
       });
 
@@ -3934,7 +4462,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       try {
         const shouldSendAspectRatio = !capability || (capability.aspectRatio?.length ?? 0) > 0;
-        const resolvedDurationSeconds = isLumaRay2 && lumaDuration ? lumaDuration.seconds : form.durationSec;
+        const resolvedDurationSeconds = isLumaRay2 && lumaDuration ? lumaDuration.seconds : effectiveDurationSec;
         const durationOptionLabel: LumaRay2DurationLabel | undefined =
           typeof form.durationOption === 'string'
             ? (['5s', '9s'].includes(form.durationOption) ? (form.durationOption as LumaRay2DurationLabel) : undefined)
@@ -3942,7 +4470,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const resolvedDurationLabel =
           isLumaRay2 && lumaDuration
             ? lumaDuration.label
-            : toLumaRay2DurationLabel(form.durationSec, durationOptionLabel) ?? durationOptionLabel ?? form.durationSec;
+            : toLumaRay2DurationLabel(effectiveDurationSec, durationOptionLabel) ??
+              durationOptionLabel ??
+              effectiveDurationSec;
         const resolvedResolution = isLumaRay2 && lumaResolution ? lumaResolution.value : form.resolution;
 
         const generatePayload = {
@@ -3966,6 +4496,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ...(inputsPayload ? { inputs: inputsPayload } : {}),
           ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
           ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
+          ...(endImageUrl ? { endImageUrl } : {}),
+          ...(multiPromptPayload && multiPromptPayload.length ? { multiPrompt: multiPromptPayload } : {}),
+          ...(isKlingV3Pro
+            ? {
+                shotType: form.mode === 'i2v' ? 'customize' : shotType,
+                ...(voiceIds.length ? { voiceIds } : {}),
+                ...(voiceControlEnabled ? { voiceControl: true } : {}),
+                ...(klingElementsPayload ? { elements: klingElementsPayload } : {}),
+              }
+            : {}),
           idempotencyKey: id,
           batchId,
           groupId: batchId,
@@ -4251,6 +4791,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, [
     form,
     prompt,
+    effectivePrompt,
+    effectiveDurationSec,
     negativePrompt,
     selectedEngine,
     preflight,
@@ -4273,6 +4815,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     genericImageFieldIds,
     frameAssetFieldIds,
     supportsAudioToggle,
+    multiPromptActive,
+    multiPromptInvalid,
+    multiPromptError,
+    multiPromptScenes,
+    isKlingV3Pro,
+    voiceIds,
+    voiceControlEnabled,
+    shotType,
+    klingElements,
   ]);
 
   useEffect(() => {
@@ -4310,13 +4861,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const payload: PreflightRequest = {
       engine: form.engineId,
       mode: form.mode,
-      durationSec: form.durationSec,
+      durationSec: effectiveDurationSec,
       resolution: form.resolution as PreflightRequest['resolution'],
       aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'],
       fps: form.fps,
       seedLocked: Boolean(form.seedLocked),
       loop: form.loop,
       ...(supportsAudioToggle ? { audio: form.audio } : {}),
+      ...(voiceControlEnabled ? { voiceControl: true } : {}),
       user: { memberTier },
     };
     setPricing(true);
@@ -4345,7 +4897,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       canceled = true;
       clearTimeout(timeout);
     };
-  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle]);
+  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle, effectiveDurationSec, voiceControlEnabled]);
 
   const handleQuadTileAction = useCallback(
     (action: QuadTileAction, tile: QuadPreviewTile) => {
@@ -4755,12 +5307,40 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 onAssetRemove={handleAssetRemove}
                 onNotice={showNotice}
                 onOpenLibrary={handleOpenAssetLibrary}
+                multiPrompt={
+                  isKlingV3Pro
+                    ? {
+                        enabled: multiPromptEnabled,
+                        scenes: multiPromptScenes,
+                        totalDurationSec: multiPromptTotalSec,
+                        minDurationSec: MULTI_PROMPT_MIN_SEC,
+                        maxDurationSec: MULTI_PROMPT_MAX_SEC,
+                        onToggle: setMultiPromptEnabled,
+                        onAddScene: handleMultiPromptAddScene,
+                        onRemoveScene: handleMultiPromptRemoveScene,
+                        onUpdateScene: handleMultiPromptUpdateScene,
+                        error: multiPromptError,
+                      }
+                    : null
+                }
+                disableGenerate={multiPromptInvalid}
+                extraFields={
+                  isKlingV3Pro && activeMode === 'i2v' ? (
+                    <KlingElementsBuilder
+                      elements={klingElements}
+                      onAddElement={handleKlingElementAdd}
+                      onRemoveElement={handleKlingElementRemove}
+                      onAddAsset={handleKlingElementAssetAdd}
+                      onRemoveAsset={handleKlingElementAssetRemove}
+                    />
+                  ) : null
+                }
                 settingsBar={
                   <CoreSettingsBar
                     engine={selectedEngine}
                     mode={activeMode}
                     caps={capability}
-                    durationSec={form.durationSec}
+                    durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
                     durationOption={form.durationOption ?? null}
                     onDurationChange={handleDurationChange}
                     numFrames={form.numFrames ?? undefined}
@@ -4781,19 +5361,23 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     }
                     showAudioControl={supportsAudioToggle}
                     audioEnabled={form.audio}
+                    audioControlDisabled={voiceControlEnabled}
+                    audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
                     onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
                     showLoopControl={selectedEngine.id === 'lumaRay2'}
                     loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
                     onLoopChange={(next) =>
                       setForm((current) => (current ? { ...current, loop: next } : current))
                     }
+                    durationManaged={multiPromptActive}
+                    durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
                   />
                 }
               />
               <SettingsControls
                 engine={selectedEngine}
                 caps={capability}
-                durationSec={form.durationSec}
+                durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
                 durationOption={form.durationOption ?? null}
                 onDurationChange={handleDurationChange}
                 numFrames={form.numFrames ?? undefined}
@@ -4808,6 +5392,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 iterations={form.iterations}
                 showAudioControl={supportsAudioToggle}
                 audioEnabled={form.audio}
+                audioControlDisabled={voiceControlEnabled}
+                audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
                 onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
                 showLoopControl={selectedEngine.id === 'lumaRay2'}
                 loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
@@ -4821,6 +5407,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 }
                 cfgScale={cfgScale}
                 onCfgScaleChange={(value) => setCfgScale(value)}
+                durationManaged={multiPromptActive}
+                durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
+                showKlingV3Controls={isKlingV3Pro}
+                klingShotType={shotType}
+                onKlingShotTypeChange={(value) => setShotType(value)}
+                voiceIdsValue={voiceIdsInput}
+                onVoiceIdsChange={(value) => setVoiceIdsInput(value)}
+                voiceControlActive={voiceControlEnabled}
                 variant="advanced"
               />
             </div>
