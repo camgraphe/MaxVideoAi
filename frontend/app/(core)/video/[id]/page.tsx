@@ -359,7 +359,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${copy.unavailable.title} — MaxVideoAI`,
       description: copy.unavailable.message,
-      robots: { index: false, follow: false },
+      robots: { index: false, follow: true },
       alternates: { canonical },
     };
   }
@@ -376,11 +376,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
   const thumbnail = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? canonical;
-  const isJobId = params.id.toLowerCase().startsWith('job_');
-
   const metadata: Metadata = {
     title: metaTitle,
     description,
+    robots: { index: false, follow: true },
     alternates: { canonical },
     openGraph: {
       type: 'video.other',
@@ -408,9 +407,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       creator: '@MaxVideoAI',
     },
   };
-  if (isJobId) {
-    metadata.robots = { index: false, follow: true };
-  }
   return metadata;
 }
 

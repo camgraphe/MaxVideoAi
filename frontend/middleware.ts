@@ -618,7 +618,7 @@ function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, isAdminRo
 
 function shouldMarkAppNoindex(pathname: string): boolean {
   const normalized = pathname.toLowerCase();
-  if (normalized.startsWith('/video/job_')) {
+  if (normalized.startsWith('/video/')) {
     return true;
   }
   return APP_NOINDEX_PREFIXES.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`));
