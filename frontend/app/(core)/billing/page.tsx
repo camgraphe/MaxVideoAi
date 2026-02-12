@@ -260,6 +260,75 @@ export default function BillingPage() {
     dispatch(0);
   }, []);
 
+  const dispatchGaEvent = useCallback((eventName: string, payload: Record<string, unknown>) => {
+    if (typeof window === 'undefined') return;
+    const send = (attempt: number) => {
+      const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+      if (typeof gtag === 'function') {
+        gtag('event', eventName, payload);
+        return;
+      }
+      if (attempt >= 20) return;
+      window.setTimeout(() => send(attempt + 1), 200);
+    };
+    send(0);
+  }, []);
+
+  const buildTopupAnalyticsPayload = useCallback(
+    (amountCents: number | null | undefined, chargeCurrency: string): Record<string, unknown> => {
+      const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
+      const payload: Record<string, unknown> = {
+        payment_provider: 'stripe',
+        payment_flow: 'checkout',
+        charge_currency: normalizedChargeCurrency,
+      };
+      const normalizedAmount = Number.isFinite(amountCents) ? Math.max(0, Math.round(Number(amountCents))) : 0;
+      if (normalizedAmount <= 0) {
+        return payload;
+      }
+      const tier = USD_TOPUP_TIERS.find((entry) => entry.amountCents === normalizedAmount);
+      const quote = topupQuotes[normalizedAmount];
+      payload.value = normalizedAmount / 100;
+      payload.currency = 'USD';
+      payload.topup_amount_usd = normalizedAmount / 100;
+      payload.topup_amount_cents = normalizedAmount;
+      payload.topup_tier_id = tier?.id ?? 'custom';
+      payload.topup_tier_label = tier?.label ?? 'Custom';
+      payload.settlement_currency = quote?.currency ?? normalizedChargeCurrency;
+      payload.settlement_amount_minor = quote?.amountMinor ?? undefined;
+      return payload;
+    },
+    [topupQuotes]
+  );
+
+  const triggerTopupStarted = useCallback(
+    (amountCents: number, chargeCurrency: string) => {
+      const payload = buildTopupAnalyticsPayload(amountCents, chargeCurrency);
+      dispatchGaEvent('topup_started', payload);
+      dispatchGaEvent('topup_checkout_opened', payload);
+    },
+    [buildTopupAnalyticsPayload, dispatchGaEvent]
+  );
+
+  const triggerTopupFailed = useCallback(
+    (amountCents: number | null | undefined, chargeCurrency: string, reason?: string) => {
+      const payload = buildTopupAnalyticsPayload(amountCents, chargeCurrency);
+      if (reason) {
+        payload.error_message = String(reason).slice(0, 120);
+      }
+      dispatchGaEvent('topup_failed', payload);
+    },
+    [buildTopupAnalyticsPayload, dispatchGaEvent]
+  );
+
+  const triggerTopupCancelled = useCallback(
+    (amountCents: number | null | undefined, chargeCurrency: string) => {
+      const payload = buildTopupAnalyticsPayload(amountCents, chargeCurrency);
+      dispatchGaEvent('topup_cancelled', payload);
+    },
+    [buildTopupAnalyticsPayload, dispatchGaEvent]
+  );
+
   useEffect(() => {
     if (authLoading || !session) return;
 
@@ -439,7 +508,14 @@ export default function BillingPage() {
     const url = new URL(window.location.href);
     const status = url.searchParams.get('status');
     const amountParam = url.searchParams.get('amount');
+    const amountCentsParam = url.searchParams.get('amountCents');
     const currencyParam = url.searchParams.get('currency');
+    const parsedAmountCents = amountCentsParam
+      ? Math.max(0, Math.round(Number(amountCentsParam)))
+      : amountParam
+        ? Math.max(0, Math.round(Number(amountParam) * 100))
+        : null;
+    const parsedCurrency = String(currencyParam ?? 'USD').toUpperCase();
     if (!status) return undefined;
     const message =
       status === 'success'
@@ -454,16 +530,22 @@ export default function BillingPage() {
         const value = amountParam ? Number(amountParam) : undefined;
         triggerGoogleAdsConversion(value, currencyParam ?? undefined);
       }
+      if (status === 'cancelled') {
+        triggerTopupCancelled(parsedAmountCents, parsedCurrency);
+      }
       if (status) {
         url.searchParams.delete('status');
         if (amountParam) url.searchParams.delete('amount');
+        if (amountCentsParam) url.searchParams.delete('amountCents');
         if (currencyParam) url.searchParams.delete('currency');
+        url.searchParams.delete('settlementCurrency');
+        url.searchParams.delete('topupTier');
         window.history.replaceState({}, '', url.toString());
       }
       return () => window.clearTimeout(timeout);
     }
     return undefined;
-  }, [copy.toasts.success, copy.toasts.cancelled, triggerGoogleAdsConversion]);
+  }, [copy.toasts.success, copy.toasts.cancelled, triggerGoogleAdsConversion, triggerTopupCancelled]);
 
   const handleCurrencyChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const next = String(event.target.value || 'USD').toUpperCase();
@@ -488,6 +570,11 @@ export default function BillingPage() {
         throw new Error(payload?.error ?? 'checkout_session_failed');
       }
       const checkoutUrl = typeof payload?.url === 'string' ? payload.url : null;
+      const hasCheckoutTarget = Boolean(checkoutUrl || payload?.id);
+      if (!hasCheckoutTarget) {
+        throw new Error('missing_checkout_target');
+      }
+      triggerTopupStarted(amountCents, normalizedChargeCurrency);
       if (checkoutUrl) {
         window.location.href = checkoutUrl;
         return;
@@ -503,6 +590,8 @@ export default function BillingPage() {
       throw new Error('missing_checkout_target');
     } catch (error) {
       console.error('[billing] top-up failed', error);
+      const reason = error instanceof Error ? error.message : 'topup_failed';
+      triggerTopupFailed(amountCents, normalizedChargeCurrency, reason);
       setToast(copy.errors.topupStart);
     }
   }

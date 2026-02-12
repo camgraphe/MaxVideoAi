@@ -5,6 +5,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { recordMockWalletTopUp } from '@/lib/wallet';
 import { ensureUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
+import { extractGaClientId, sendGa4Event } from '@/server/ga4';
 
 const stripeSecret = ENV.STRIPE_SECRET_KEY;
 const webhookSecret = ENV.STRIPE_WEBHOOK_SECRET;
@@ -16,7 +17,7 @@ const stripe = stripeSecret
 export const runtime = 'nodejs';
 const connectMode = isConnectPayments();
 const receiptsPriceOnly = receiptsPriceOnlyEnabled();
-const HANDLED_EVENT_TYPES = new Set(['checkout.session.completed', 'payment_intent.succeeded']);
+const HANDLED_EVENT_TYPES = new Set(['checkout.session.completed', 'payment_intent.succeeded', 'charge.refunded']);
 
 export async function POST(request: NextRequest) {
   if (!stripe || !webhookSecret) {
@@ -60,6 +61,10 @@ export async function POST(request: NextRequest) {
         await handlePaymentIntent(intent);
         break;
       }
+      case 'charge.refunded': {
+        await handleChargeRefunded(event);
+        break;
+      }
     }
 
     await markStripeEventProcessed(event.id);
@@ -97,6 +102,108 @@ async function beginStripeEvent(event: Stripe.Event): Promise<boolean> {
     console.warn('[stripe-webhook] Failed to record event id', { eventId: event.id, error });
     return true;
   }
+}
+
+type TopupTrackingMetadata = {
+  kind: string | null;
+  userId: string | null;
+  analyticsConsentGranted: boolean;
+  gaClientId: string | null;
+  topupTierId: string | null;
+  topupTierLabel: string | null;
+  walletCurrency: string | null;
+};
+
+function readMetadataString(metadata: Stripe.Metadata | null | undefined, key: string): string | null {
+  const value = metadata?.[key];
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function parseTopupTrackingMetadata(metadata: Stripe.Metadata | null | undefined): TopupTrackingMetadata {
+  const consentValue = readMetadataString(metadata, 'analytics_consent') ?? '';
+  return {
+    kind: readMetadataString(metadata, 'kind'),
+    userId: readMetadataString(metadata, 'user_id'),
+    analyticsConsentGranted: consentValue.toLowerCase() === 'granted',
+    gaClientId: extractGaClientId(readMetadataString(metadata, 'ga_client_id')),
+    topupTierId: readMetadataString(metadata, 'topup_tier_id'),
+    topupTierLabel: readMetadataString(metadata, 'topup_tier_label'),
+    walletCurrency: readMetadataString(metadata, 'wallet_currency'),
+  };
+}
+
+async function resolveTopupTrackingMetadataFromCharge(charge: Stripe.Charge): Promise<TopupTrackingMetadata> {
+  const fromCharge = parseTopupTrackingMetadata(charge.metadata);
+  if (fromCharge.kind === 'topup') {
+    return fromCharge;
+  }
+  const paymentIntentId =
+    typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id ?? null;
+  if (!paymentIntentId || !stripe) {
+    return fromCharge;
+  }
+  try {
+    const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const fromIntent = parseTopupTrackingMetadata(intent.metadata);
+    return fromIntent.kind === 'topup' ? fromIntent : fromCharge;
+  } catch (error) {
+    console.warn('[stripe-webhook] failed to resolve refund metadata from payment intent', {
+      paymentIntentId,
+      error: error instanceof Error ? error.message : error,
+    });
+    return fromCharge;
+  }
+}
+
+async function handleChargeRefunded(event: Stripe.Event) {
+  const charge = event.data.object as Stripe.Charge;
+  const metadata = await resolveTopupTrackingMetadataFromCharge(charge);
+  if (metadata.kind !== 'topup') {
+    return;
+  }
+  if (!metadata.analyticsConsentGranted || !metadata.userId) {
+    return;
+  }
+
+  const previous = (event.data.previous_attributes ?? {}) as { amount_refunded?: number };
+  const previousAmountRefunded =
+    typeof previous.amount_refunded === 'number' && Number.isFinite(previous.amount_refunded)
+      ? previous.amount_refunded
+      : null;
+  const currentAmountRefunded =
+    typeof charge.amount_refunded === 'number' && Number.isFinite(charge.amount_refunded)
+      ? charge.amount_refunded
+      : 0;
+  const refundDeltaCents =
+    previousAmountRefunded === null
+      ? currentAmountRefunded
+      : Math.max(0, currentAmountRefunded - previousAmountRefunded);
+
+  if (refundDeltaCents <= 0) {
+    return;
+  }
+
+  const currency = (metadata.walletCurrency ?? charge.currency ?? 'usd').toUpperCase();
+  await sendGa4Event({
+    name: 'topup_refunded',
+    clientId: metadata.gaClientId,
+    userId: metadata.userId,
+    params: {
+      value: refundDeltaCents / 100,
+      currency,
+      refund_amount_usd: refundDeltaCents / 100,
+      refund_amount_cents: refundDeltaCents,
+      refunded_total_cents: currentAmountRefunded,
+      payment_provider: 'stripe',
+      stripe_charge_id: charge.id,
+      stripe_payment_intent_id:
+        typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id ?? undefined,
+      topup_tier_id: metadata.topupTierId ?? undefined,
+      topup_tier_label: metadata.topupTierLabel ?? undefined,
+    },
+  });
 }
 
 async function markStripeEventProcessed(eventId: string) {
@@ -182,6 +289,10 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
       source: 'checkout.session.completed',
       fx_rate: session.metadata.fx_rate ?? null,
       fx_source: session.metadata.fx_source ?? null,
+      topup_tier_id: session.metadata.topup_tier_id ?? null,
+      topup_tier_label: session.metadata.topup_tier_label ?? null,
+      analytics_consent: session.metadata.analytics_consent ?? null,
+      ga_client_id: session.metadata.ga_client_id ?? null,
     },
     originalAmountCents: settlementAmountCents ?? amountCents,
     originalCurrency: settlementCurrency,
@@ -255,6 +366,10 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
         source: 'payment_intent.succeeded',
         fx_rate: intent.metadata?.fx_rate ?? null,
         fx_source: intent.metadata?.fx_source ?? null,
+        topup_tier_id: intent.metadata?.topup_tier_id ?? null,
+        topup_tier_label: intent.metadata?.topup_tier_label ?? null,
+        analytics_consent: intent.metadata?.analytics_consent ?? null,
+        ga_client_id: intent.metadata?.ga_client_id ?? null,
       },
       originalAmountCents: settlementAmountCents ?? amountCents,
       originalCurrency,
@@ -401,6 +516,56 @@ async function recordTopup({
     const resolvedCurrency = normalizeCurrencyCode(walletCurrencyUpper.toLowerCase());
     if (resolvedCurrency) {
       await ensureUserPreferredCurrency(userId, resolvedCurrency);
+    }
+
+    const metadataRecord = combinedMetadata as Record<string, unknown>;
+    const consentValue = typeof metadataRecord.analytics_consent === 'string' ? metadataRecord.analytics_consent : '';
+    const analyticsConsentGranted = consentValue.toLowerCase() === 'granted';
+    if (analyticsConsentGranted) {
+      const gaClientId = extractGaClientId(
+        typeof metadataRecord.ga_client_id === 'string' ? metadataRecord.ga_client_id : null
+      );
+      const sourceEvent = typeof metadataRecord.source === 'string' ? metadataRecord.source : null;
+      const topupTierId = typeof metadataRecord.topup_tier_id === 'string' ? metadataRecord.topup_tier_id : null;
+      const topupTierLabel =
+        typeof metadataRecord.topup_tier_label === 'string' ? metadataRecord.topup_tier_label : null;
+      const fxSource = typeof metadataRecord.fx_source === 'string' ? metadataRecord.fx_source : null;
+      const transactionId = paymentIntentId ?? chargeId ?? `topup_${rows[0].id}`;
+      const commonParams = {
+        value: normalizedWalletAmount / 100,
+        currency: walletCurrencyUpper,
+        topup_amount_usd: normalizedWalletAmount / 100,
+        topup_amount_cents: normalizedWalletAmount,
+        settlement_amount_minor: normalizedSettlementAmount ?? normalizedWalletAmount,
+        settlement_currency: settlementCurrencyUpper,
+        payment_provider: 'stripe',
+        payment_flow: 'checkout',
+        source_event: sourceEvent ?? undefined,
+        stripe_payment_intent_id: paymentIntentId ?? undefined,
+        stripe_charge_id: chargeId ?? undefined,
+        topup_tier_id: topupTierId ?? undefined,
+        topup_tier_label: topupTierLabel ?? undefined,
+        fx_source: fxSource ?? undefined,
+        transaction_id: transactionId,
+      };
+
+      await Promise.allSettled([
+        sendGa4Event({
+          name: 'topup_completed',
+          clientId: gaClientId,
+          userId,
+          params: commonParams,
+        }),
+        sendGa4Event({
+          name: 'purchase',
+          clientId: gaClientId,
+          userId,
+          params: {
+            ...commonParams,
+            item_category: 'wallet_topup',
+          },
+        }),
+      ]);
     }
 
     console.log('[stripe-webhook] Recorded wallet top-up', {

@@ -120,6 +120,8 @@ The application expects the following environment variables (scoped per Vercel e
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Public | Stripe publishable key. |
 | `STRIPE_SECRET_KEY` | Server | Stripe secret key for server-side operations. |
 | `STRIPE_WEBHOOK_SECRET` | Server (optional) | Stripe webhook signing secret. |
+| `GA4_MEASUREMENT_ID` | Server (optional) | GA4 Measurement ID used for server-side Measurement Protocol events. |
+| `GA4_API_SECRET` | Server (optional) | GA4 Measurement Protocol API secret for top-up completion tracking. |
 | `SLACK_BOT_TOKEN` / `SLACK_SIGNING_SECRET` / `SLACK_WEBHOOK_URL` | Server (optional) | Slack integration secrets if hooks/bots are enabled. |
 
 ### Health Endpoints
@@ -176,6 +178,8 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
 
 - Microsoft Clarity loads through `frontend/components/analytics/Clarity.tsx`, which is mounted from the root layout once analytics consent (`mv-consent` cookie) is granted. The loader enforces production-only execution, honours `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`, and registers SPA route changes via `clarity('set','page', ...)`.
 - Consent is persisted by the client CMP banner (`frontend/components/legal/CookieBanner.tsx`) and broadcast with a `consent:updated` custom event so analytics scripts remain gated behind `ConsentScriptGate`.
+- Wallet top-ups emit funnel events from `frontend/app/(core)/billing/page.tsx` (`topup_started`, `topup_checkout_opened`, `topup_failed`, `topup_cancelled`) and server events from `frontend/app/api/stripe/webhook/route.ts` (`topup_completed`, `purchase`, `topup_refunded`) via GA4 Measurement Protocol when analytics consent is granted and `GA4_MEASUREMENT_ID` + `GA4_API_SECRET` are configured.
+- For GA4 production setup (conversions, custom dimensions, unwanted Stripe referrals), follow [`docs/analytics/ga4-topups.md`](docs/analytics/ga4-topups.md).
 - A first-party visitor cookie (`mv-clarity-id`) keeps sessions stitched across SPA navigation. Authenticated sessions tag additional context from `frontend/src/hooks/useRequireAuth.ts` (Supabase UUID, plan/role/currency flags) while internal staff accounts (`@maxvideoai.com` / `@maxvideoai.ai`) are labelled for exclusion.
 - Enable/disable Clarity via `NEXT_PUBLIC_ENABLE_CLARITY`, `NEXT_PUBLIC_CLARITY_ID`, and `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`. Optional dev logging is available with `NEXT_PUBLIC_CLARITY_DEBUG=true` (shows `_clck`/`_clsk` in the console).
 

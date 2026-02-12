@@ -19,6 +19,9 @@ import type { Currency } from '@/lib/currency';
 import type { Mode } from '@/types/engines';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
+import { findTopupTier } from '@/config/topupTiers';
+import { extractGaClientId } from '@/server/ga4';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -30,6 +33,21 @@ function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
   const response = NextResponse.json(body, init);
   response.headers.set('Cache-Control', 'private, no-store');
   return response;
+}
+
+function decodeCookieValue(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function hasAnalyticsConsent(req: NextRequest): boolean {
+  const consentRaw = decodeCookieValue(req.cookies.get(CONSENT_COOKIE_NAME)?.value ?? null);
+  const consent = parseConsent(consentRaw);
+  return Boolean(consent?.categories.analytics);
 }
 
 async function resolveAuthenticatedUser(): Promise<string | null> {
@@ -387,6 +405,19 @@ export async function POST(req: NextRequest) {
       currency: resolvedCurrencyUpper,
       currency_source: currencyResolution.source,
     };
+    const tier = findTopupTier({ usdAmountCents: amountCents });
+    sessionMetadata.topup_tier_id = tier?.id ?? 'custom';
+    if (tier?.label) {
+      sessionMetadata.topup_tier_label = tier.label;
+    }
+    const analyticsConsentGranted = hasAnalyticsConsent(req);
+    sessionMetadata.analytics_consent = analyticsConsentGranted ? 'granted' : 'denied';
+    if (analyticsConsentGranted) {
+      const gaClientId = extractGaClientId(req.cookies.get('_ga')?.value ?? null);
+      if (gaClientId) {
+        sessionMetadata.ga_client_id = gaClientId;
+      }
+    }
     if (currencyResolution.country) {
       sessionMetadata.currency_country = currencyResolution.country;
     }
@@ -417,14 +448,24 @@ export async function POST(req: NextRequest) {
       sessionMetadata.vendor_share_cents_usd = String(vendorShareCentsUsd);
     }
 
+    const topupRedirectParams = new URLSearchParams({
+      amount: (amountCents / 100).toFixed(2),
+      amountCents: String(amountCents),
+      currency: WALLET_DISPLAY_CURRENCY,
+      settlementCurrency: resolvedCurrencyUpper,
+      topupTier: sessionMetadata.topup_tier_id ?? 'custom',
+    });
+    const successUrl = `${origin}/billing?status=success&${topupRedirectParams.toString()}`;
+    const cancelUrl = `${origin}/billing?status=cancelled&${topupRedirectParams.toString()}`;
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
       billing_address_collection: 'required',
       automatic_tax: { enabled: true },
       tax_id_collection: { enabled: true },
-      success_url: `${origin}/billing?status=success`,
-      cancel_url: `${origin}/billing?status=cancelled`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       line_items: [
         {
           price_data: {
