@@ -786,7 +786,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
             '@type': 'Organization',
             name: 'MaxVideo AI',
             url: 'https://maxvideoai.com',
-            logo: 'https://maxvideoai.com/logo-wordmark.svg',
+            logo: 'https://maxvideoai.com/favicon-512.png',
             sameAs: [],
             description:
               'Independent hub for AI video generation. Price before you generate. Works with Sora, Veo, LTX-2, Kling, Pika, MiniMax, Wan, Nano Banana.',

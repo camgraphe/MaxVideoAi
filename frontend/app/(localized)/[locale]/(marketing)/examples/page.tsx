@@ -9,7 +9,7 @@ import { listExamples, listExamplesPage, type ExampleSort } from '@/server/video
 import { listFalEngines } from '@/config/falEngines';
 import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
+import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -376,16 +376,6 @@ function formatPrice(priceCents: number | null | undefined, currency: string | n
   }
 }
 
-function toISODuration(seconds?: number) {
-  const s = Math.max(1, Math.round(Number(seconds || 0) || 6));
-  return `PT${s}S`;
-}
-
-function toISODate(input?: Date | string) {
-  const d = input ? new Date(input) : new Date();
-  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
-}
-
 type EngineFilterOption = {
   id: string;
   key: string;
@@ -647,47 +637,20 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
     return Object.keys(query).length ? query : undefined;
   };
 
-  const itemListElements = videos
-    .filter((video) => Boolean(video.thumbUrl))
-    .map((video, index) => {
+  const itemListElements = videos.map((video, index) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
       const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
       const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
       const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
       const detailPath = `/video/${encodeURIComponent(video.id)}`;
       const absoluteUrl = `${SITE}${detailPath}`;
-      const embedUrl = absoluteUrl;
-      const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? video.thumbUrl!;
-      const contentUrl = video.videoUrl ? toAbsoluteUrl(video.videoUrl) ?? video.videoUrl : undefined;
       const fallbackLabel = `MaxVideoAI example ${video.id}`;
-      const name = video.promptExcerpt || video.prompt || engineLabel || fallbackLabel;
-      const description =
-        video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideoAI.`;
-      const videoObject = {
-        '@type': 'VideoObject',
-        name: name || fallbackLabel,
-        description,
-        thumbnailUrl: thumbnailUrl ? [thumbnailUrl] : undefined,
-        url: absoluteUrl,
-        embedUrl,
-        contentUrl,
-        uploadDate: toISODate(video.createdAt),
-        duration: toISODuration(video.durationSec),
-        inLanguage: localeRegions[locale as AppLocale] ?? 'en-US',
-        publisher: {
-          '@type': 'Organization',
-          name: 'MaxVideo AI',
-          url: SITE,
-          logo: `${SITE}/favicon-512.png`,
-        },
-      };
+      const name = video.promptExcerpt || video.prompt || `${engineLabel} video example` || fallbackLabel;
       return {
         '@type': 'ListItem',
         position: index + 1,
         url: absoluteUrl,
         name: name || fallbackLabel,
-        description,
-        item: videoObject,
       };
     });
 
@@ -736,6 +699,11 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       ? {
           '@context': 'https://schema.org',
           '@type': 'ItemList',
+          name: engineLabel
+            ? `AI video examples for ${engineLabel} on MaxVideoAI`
+            : 'AI video examples on MaxVideoAI',
+          numberOfItems: itemListElements.length,
+          itemListOrder: 'https://schema.org/ItemListOrderAscending',
           url: canonicalUrl,
           itemListElement: itemListElements,
         }

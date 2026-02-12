@@ -33,7 +33,7 @@ export function buildModelServiceJsonLd(slug: string) {
       '@type': 'Organization',
       name: 'MaxVideoAI',
       url: 'https://maxvideoai.com',
-      logo: 'https://maxvideoai.com/icon.png',
+      logo: 'https://maxvideoai.com/favicon-512.png',
     },
     areaServed: 'Worldwide',
     url,
