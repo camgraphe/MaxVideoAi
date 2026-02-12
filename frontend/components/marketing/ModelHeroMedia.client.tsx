@@ -8,6 +8,9 @@ type ModelHeroMediaProps = {
   videoSrc?: string | null;
   alt: string;
   sizes: string;
+  autoPlayDelayMs?: number;
+  waitForLcp?: boolean;
+  showPlayButton?: boolean;
   priority?: boolean;
   fetchPriority?: 'high' | 'low' | 'auto';
   quality?: number;
@@ -15,7 +18,7 @@ type ModelHeroMediaProps = {
   objectClassName?: string;
 };
 
-function shouldDisableVideo(): boolean {
+function shouldDisableAutoPlay(): boolean {
   if (typeof window === 'undefined') return true;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return true;
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
@@ -27,46 +30,152 @@ export function ModelHeroMedia({
   videoSrc,
   alt,
   sizes,
+  autoPlayDelayMs,
+  waitForLcp = false,
+  showPlayButton = true,
   priority = false,
   fetchPriority = 'auto',
   quality = 80,
   className,
   objectClassName,
 }: ModelHeroMediaProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const idleIdRef = useRef<number | null>(null);
+  const timerIdRef = useRef<number | null>(null);
+  const lcpQuietTimerRef = useRef<number | null>(null);
+  const lcpHardTimeoutRef = useRef<number | null>(null);
+  const lcpReadyRef = useRef(false);
+  const lcpObserverRef = useRef<PerformanceObserver | null>(null);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
 
-  const scheduleLoad = useCallback(() => {
+  const clearScheduledLoad = useCallback(() => {
+    if (idleIdRef.current != null) {
+      window.cancelIdleCallback?.(idleIdRef.current);
+      idleIdRef.current = null;
+    }
+    if (timerIdRef.current != null) {
+      window.clearTimeout(timerIdRef.current);
+      timerIdRef.current = null;
+    }
+    if (lcpQuietTimerRef.current != null) {
+      window.clearTimeout(lcpQuietTimerRef.current);
+      lcpQuietTimerRef.current = null;
+    }
+    if (lcpHardTimeoutRef.current != null) {
+      window.clearTimeout(lcpHardTimeoutRef.current);
+      lcpHardTimeoutRef.current = null;
+    }
+    lcpObserverRef.current?.disconnect();
+    lcpObserverRef.current = null;
+    lcpReadyRef.current = false;
+  }, []);
+
+  const scheduleLoad = useCallback((immediate = false) => {
     if (!videoSrc) return;
     if (shouldLoadVideo) return;
-    if (shouldDisableVideo()) return;
+    clearScheduledLoad();
     const load = () => setShouldLoadVideo(true);
+    if (immediate) {
+      load();
+      return;
+    }
     if ('requestIdleCallback' in window) {
       idleIdRef.current = window.requestIdleCallback(load, { timeout: 1000 });
     } else {
       load();
     }
-  }, [shouldLoadVideo, videoSrc]);
+  }, [clearScheduledLoad, shouldLoadVideo, videoSrc]);
 
   useEffect(() => {
-    return () => {
-      if (idleIdRef.current != null) {
-        window.cancelIdleCallback?.(idleIdRef.current);
-      }
-    };
-  }, []);
+    if (!videoSrc) return;
+    if (!autoPlayDelayMs || autoPlayDelayMs <= 0) return;
+    if (shouldLoadVideo) return;
+    if (shouldDisableAutoPlay()) return;
+    if (timerIdRef.current != null) return;
+    lcpReadyRef.current = false;
 
-  const isClickable = Boolean(videoSrc) && !shouldLoadVideo;
-  const rootClassName = [className, isClickable ? 'cursor-pointer' : null].filter(Boolean).join(' ');
+    const startDelayedLoad = () => {
+      if (timerIdRef.current != null) return;
+      timerIdRef.current = window.setTimeout(() => {
+        timerIdRef.current = null;
+        scheduleLoad();
+      }, autoPlayDelayMs);
+    };
+
+    if (!waitForLcp) {
+      startDelayedLoad();
+      return clearScheduledLoad;
+    }
+
+    const settleLcp = () => {
+      if (lcpReadyRef.current) return;
+      lcpReadyRef.current = true;
+      if (lcpQuietTimerRef.current != null) {
+        window.clearTimeout(lcpQuietTimerRef.current);
+        lcpQuietTimerRef.current = null;
+      }
+      if (lcpHardTimeoutRef.current != null) {
+        window.clearTimeout(lcpHardTimeoutRef.current);
+        lcpHardTimeoutRef.current = null;
+      }
+      lcpObserverRef.current?.disconnect();
+      lcpObserverRef.current = null;
+      startDelayedLoad();
+    };
+
+    const resetQuietTimer = () => {
+      if (lcpQuietTimerRef.current != null) {
+        window.clearTimeout(lcpQuietTimerRef.current);
+      }
+      lcpQuietTimerRef.current = window.setTimeout(settleLcp, 900);
+    };
+
+    lcpHardTimeoutRef.current = window.setTimeout(settleLcp, 3500);
+    resetQuietTimer();
+
+    if ('PerformanceObserver' in window && PerformanceObserver.supportedEntryTypes?.includes('largest-contentful-paint')) {
+      try {
+        lcpObserverRef.current = new PerformanceObserver(() => {
+          resetQuietTimer();
+        });
+        lcpObserverRef.current.observe({ type: 'largest-contentful-paint', buffered: true });
+      } catch {
+        // Ignore observer setup issues and rely on timers.
+      }
+    }
+
+    return clearScheduledLoad;
+  }, [autoPlayDelayMs, clearScheduledLoad, scheduleLoad, shouldLoadVideo, videoSrc, waitForLcp]);
+
+  useEffect(() => {
+    if (!shouldLoadVideo) return;
+    const node = videoRef.current;
+    if (!node) return;
+    const tryPlay = () => {
+      void node.play().catch(() => {});
+    };
+    if (node.readyState >= 2) {
+      tryPlay();
+      return;
+    }
+    node.addEventListener('loadeddata', tryPlay, { once: true });
+    return () => node.removeEventListener('loadeddata', tryPlay);
+  }, [shouldLoadVideo]);
+
+  useEffect(() => {
+    return clearScheduledLoad;
+  }, [clearScheduledLoad]);
+
+  const mediaClassName = ['absolute inset-0 h-full w-full object-cover', objectClassName].filter(Boolean).join(' ');
 
   return (
-    <div className={rootClassName}>
+    <div className={className}>
       {posterSrc ? (
         <Image
           src={posterSrc}
           alt={alt}
           fill
-          className={objectClassName ?? 'absolute inset-0 h-full w-full object-cover'}
+          className={mediaClassName}
           sizes={sizes}
           quality={quality}
           priority={priority}
@@ -79,7 +188,8 @@ export function ModelHeroMedia({
       )}
       {videoSrc && shouldLoadVideo ? (
         <video
-          className={objectClassName ?? 'absolute inset-0 h-full w-full object-cover'}
+          ref={videoRef}
+          className={mediaClassName}
           autoPlay
           muted
           loop
@@ -90,11 +200,11 @@ export function ModelHeroMedia({
           <source src={videoSrc} type="video/mp4" />
         </video>
       ) : null}
-      {videoSrc && !shouldLoadVideo ? (
+      {videoSrc && !shouldLoadVideo && showPlayButton ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <button
             type="button"
-            onClick={scheduleLoad}
+            onClick={() => scheduleLoad(true)}
             aria-label="Play preview"
             className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-hairline bg-surface/90 text-text-primary shadow-card backdrop-blur-sm transition hover:-translate-y-0.5"
           >

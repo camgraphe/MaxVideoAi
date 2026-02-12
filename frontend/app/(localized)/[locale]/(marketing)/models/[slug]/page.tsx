@@ -1215,6 +1215,8 @@ const BEST_USE_CASE_ICON_MAP = {
   wind: Wind,
   coins: Coins,
 } as const;
+// Keep full-bleed sections out of content-visibility containers, otherwise
+// paint containment clips 100vw/negative-margin visuals on the sides.
 const FULL_BLEED_SECTION =
   "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-[2] after:absolute after:inset-y-0 after:left-1/2 after:right-1/2 after:-ml-[50vw] after:-mr-[50vw] after:content-[''] after:-z-[1]";
 const SECTION_BG_A =
@@ -1226,6 +1228,7 @@ const HERO_BG =
 const SECTION_PAD = 'px-6 py-9 sm:px-8 sm:py-12';
 const SECTION_SCROLL_MARGIN = 'scroll-mt-[calc(var(--header-height)+64px)]';
 const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
+const HERO_AUTOPLAY_DELAY_MS = 1800;
 const GENERIC_TRUST_LINE = 'Pay-as-you-go · Price shown before you generate';
 const BEST_USE_CASE_ICON_KEYS: BestUseCaseIconKey[] = [
   'ads',
@@ -3701,6 +3704,9 @@ function Sora2PageLayout({
                     hideLabel
                     hidePrompt
                     metaLines={heroMetaLines}
+                    autoPlayDelayMs={HERO_AUTOPLAY_DELAY_MS}
+                    waitForLcp
+                    showPlayButton={false}
                     priority
                     fetchPriority="high"
                   />
@@ -3794,7 +3800,7 @@ function Sora2PageLayout({
         {hasSpecs ? (
           <section
             id="specs"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             {specTitle ? (
               <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
@@ -3883,7 +3889,7 @@ function Sora2PageLayout({
         {!hideExamplesSection ? (
           <section
             id={textAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN}`}
           >
             <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
               {copy.galleryTitle ? (
@@ -3975,7 +3981,7 @@ function Sora2PageLayout({
 
         <section
           id={imageAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
         >
           {isVideoEngine ? (
             <div className="stack-gap-lg">
@@ -4036,7 +4042,7 @@ function Sora2PageLayout({
 
 
         {hasTipsSection ? (
-          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap-lg`}>
+          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               {copy.tipsTitle ?? 'Tips & Limitations'}
             </h2>
@@ -4097,7 +4103,7 @@ function Sora2PageLayout({
         {hasCompareSection ? (
           <section
             id={compareAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap-lg`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}
           >
             {focusVsConfig ? (
               <>
@@ -4200,7 +4206,7 @@ function Sora2PageLayout({
         {copy.safetyTitle || safetyRules.length || safetyInterpretation.length ? (
           <section
             id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               {copy.safetyTitle ?? 'Safety & people / likeness'}
@@ -4229,7 +4235,7 @@ function Sora2PageLayout({
         {faqList.length ? (
           <section
             id="faq"
-            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} content-visibility-auto stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             {faqTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2>
@@ -4264,6 +4270,9 @@ function MediaPreview({
   hideLabel = false,
   hidePrompt = false,
   metaLines = [],
+  autoPlayDelayMs,
+  waitForLcp = false,
+  showPlayButton = true,
   priority = false,
   fetchPriority = 'auto',
 }: {
@@ -4274,6 +4283,9 @@ function MediaPreview({
   hideLabel?: boolean;
   hidePrompt?: boolean;
   metaLines?: Array<{ label: string; value: string }>;
+  autoPlayDelayMs?: number;
+  waitForLcp?: boolean;
+  showPlayButton?: boolean;
   priority?: boolean;
   fetchPriority?: 'high' | 'low' | 'auto';
 }) {
@@ -4303,6 +4315,9 @@ function MediaPreview({
                 videoSrc={media.videoUrl}
                 alt={altText}
                 sizes="(max-width: 768px) 100vw, 720px"
+                autoPlayDelayMs={autoPlayDelayMs}
+                waitForLcp={waitForLcp}
+                showPlayButton={showPlayButton}
                 priority={priority}
                 fetchPriority={fetchPriority}
                 quality={80}
