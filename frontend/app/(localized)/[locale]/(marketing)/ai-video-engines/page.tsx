@@ -1,171 +1,481 @@
 import type { Metadata } from 'next';
-import type { AppLocale } from '@/i18n/locales';
-import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
+import type { AppLocale } from '@/i18n/locales';
 import { FAQSchema } from '@/components/seo/FAQSchema';
-import { ButtonLink } from '@/components/ui/Button';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
-import compareConfig from '@/config/compare-config.json';
-import { listFalEngines } from '@/config/falEngines';
+import {
+  buildCanonicalCompareSlug,
+  getHubEngines,
+  getPopularComparisons,
+  getRankedComparisonPairs,
+  getSuggestedOpponents,
+  getUseCaseBuckets,
+} from '@/lib/compare-hub/data';
+import { CompareNowWidget } from './CompareNowWidget.client';
+import { UseCaseExplorer } from './UseCaseExplorer.client';
+import { EnginesCatalog, type EngineCatalogCard } from './EnginesCatalog.client';
+import { ComparisonsDirectory } from './ComparisonsDirectory.client';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
-const DEFAULT_COMPARE_SLUG =
-  (compareConfig.trophyComparisons as string[] | undefined)?.[0] ?? 'sora-2-vs-veo-3-1';
-const EXCLUDED_COMPARE_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
 
-const LINK_TARGETS = {
-  article: { href: { pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } } },
-  sora: { href: { pathname: '/models/[slug]', params: { slug: 'sora-2' } } },
-  veo: { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1' } } },
-  pika: { href: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } } },
-  veoFast: { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } } },
-  hailuo: { href: { pathname: '/models/[slug]', params: { slug: 'minimax-hailuo-02-text' } } },
-  models: { href: '/models' },
-  pricing: { href: '/pricing' },
-  blog: { href: '/blog' },
-} as const;
-
-type RichKey = keyof typeof LINK_TARGETS;
-
-type SectionCopy = {
-  title: string;
-  body: string;
+type HubFaqEntry = {
+  question: string;
+  answer: string;
 };
 
-type ComparisonCard = {
-  label: string;
-  title: string;
-  points: string[];
-};
-
-const DEFAULT_CONTENT = {
+type HubCopy = {
   hero: {
-    title: 'Run AI Video Generators in Europe — Sora 2, Veo 3, Pika & More',
-    intro:
-      'MaxVideoAI keeps cinematic text-to-video engines compliant, monitored, and production-ready for European teams. Use this hub to understand availability, compare creative trade-offs, and launch projects with the right guardrails from day one.',
-    secondary: 'Not sure which model to pick? Read our {{article:comparison article}}.',
-  },
-  sections: [
-    {
-      title: 'Sora 2 availability and alternatives',
-      body:
-        'Sora 2 remains a staged rollout, so MaxVideoAI handles the verification trail, regional compliance, and predictive routing when capacity spikes. Producers can benchmark storyboards against {{sora:Sora 2 reference projects}} and switch to Sora 2 Pro presets or Veo 3 sequences when turnaround speed matters more than frontier fidelity. We document prompt structures, footage approvals, and post-production best practices so every brief stays aligned with OpenAI review criteria while still shipping on time. Regional producers also receive weekly availability notes covering audio support, frame length, and compliance traceability for regulated sectors.',
-    },
-    {
-      title: 'Veo 3: cinematic text-to-video for creators',
-      body:
-        'Veo 3.1 bridges the gap between storyboard accuracy and polished motion, especially when social or advertising deliverables need voice-over sync. Our routing keeps latency predictable and lets directors compare the fast preset with the longer-run tier before booking studio time. Review the latest guardrails, aspect ratios, and narration-ready examples on the {{veo:Veo 3.1 overview}} or tap the Fast variant when iteration speed outranks audio or frame count. We also surface a change log inside the workspace so editors can see when motion controls, audio fidelity, or policy notes adjust between releases.',
-    },
-    {
-      title: 'Pika 2.2 for fast social content',
-      body:
-        'When teams need playful loops or short-form edits, Pika 2.2 delivers multi-aspect outputs at a fraction of the budget. MaxVideoAI exposes curated presets so editors can jump from vertical reels to square product shots without leaving the workspace. Compare text-to-video and image-to-video modes side-by-side on our {{pika:Pika quickstart guide}} and reuse prompt banks that have already been cleared for brand-safe campaigns. Daily QA passes flag style drift or artefacts so you know when to regenerate, upscale, or hand off to animators for refinement.',
-    },
-    {
-      title: 'How MaxVideoAI routes Fal.ai engines',
-      body:
-        'Fal.ai powers the multi-engine routing backbone behind MaxVideoAI, letting us burst to capacity while surfacing a consistent interface to creative leads. Our orchestration layer keeps prompts portable, logs every render, and exposes diagnostics so you know when to retry or hand off to another engine like {{veoFast:Veo 3.1 Fast}} or {{hailuo:MiniMax Hailuo}} for stylised outputs. Teams also gain access to rate cards, audit trails, and regional compliance notes in one workspace, and automated playbooks explain how to escalate priority or swap render regions when demand peaks.',
-    },
-  ] as SectionCopy[],
-  comparison: {
-    title: 'Compare the top video generators',
-    intro:
-      'Whether you need frontier fidelity or budget-friendly loops, MaxVideoAI keeps each engine ready for production workloads.',
-    ctaLabel: 'Open the live comparison',
-    ctaDescription: 'See the side-by-side comparator for the most requested matchup.',
-    cards: [
-      {
-        label: 'Sora 2',
-        title: 'Fidelity-first',
-        points: [
-          'Frontier video model with native audio',
-          'Strict review loop, longer queue times',
-          'Ideal for hero campaigns and cinematic briefs',
-        ],
-      },
-      {
-        label: 'Veo 3.1',
-        title: 'Cinematic speed',
-        points: [
-          'Bridges storyboard fidelity with fast iteration',
-          'Switch between standard and fast queues',
-          'Audio-ready for interviews, ads, and explainers',
-        ],
-      },
-      {
-        label: 'Pika 2.2',
-        title: 'Rapid social loops',
-        points: [
-          'Fast text or image to video renders',
-          'Ideal for reels, teasers, and playful concepts',
-          'Budget-friendly credits for experimentation',
-        ],
-      },
-    ] as ComparisonCard[],
-  },
-  faqTitle: 'AI video routing FAQ',
-  faq: [
-    {
-      question: 'Does MaxVideoAI support European billing for Fal.ai engines?',
-      answer:
-        'Yes. We process invoices in EUR or GBP and map them to Fal.ai usage so finance teams can reconcile spend without US subsidiaries or prepaid card workarounds.',
-    },
-    {
-      question: 'How quickly can teams launch a Sora 2 project?',
-      answer:
-        'Most creative teams start prompting within two business days. We keep onboarding templates ready and provide fallback Veo or Pika presets while Sora access is finalised.',
-    },
-    {
-      question: 'Can I monitor model changes without refreshing documentation?',
-      answer:
-        'The MaxVideoAI workspace highlights latency, output limits, and policy updates in real time, so producers know when to retry or pivot to alternative engines.',
-    },
-  ],
-  cta: {
-    body: 'Looking for sequenced prompt recipes? Read the latest guides on the {{blog:MaxVideoAI blog}} for branded storytelling walkthroughs and engine updates.',
-  },
-} as const;
+    title: string;
+    intro: string;
+    compareNow: {
+      left: string;
+      right: string;
+      swap: string;
+      compare: string;
+      searchPlaceholder: string;
+      noResults: string;
+    };
+  };
+  sections: {
+    popularTitle: string;
+    popularIntro: string;
+    useCasesTitle: string;
+    useCasesIntro: string;
+    enginesTitle: string;
+    enginesIntro: string;
+    enginesToggle: string;
+    enginesToggleHintClosed: string;
+    enginesToggleHintOpen: string;
+    allComparisonsTitle: string;
+    allComparisonsIntro: string;
+    faqTitle: string;
+    complianceLabel: string;
+    quickStartLabel: string;
+    useCasesFallback: string;
+  };
+  tagLabels: Record<string, string>;
+  useCaseLabels: Record<string, string>;
+  popularCompareLabel: string;
+  catalogLabels: Parameters<typeof EnginesCatalog>[0]['labels'];
+  listLabels: Parameters<typeof ComparisonsDirectory>[0]['labels'];
+  faq: HubFaqEntry[];
+};
 
-function renderRichText(text: string | undefined, keyPrefix: string): ReactNode {
-  if (!text) return null;
-  const nodes: ReactNode[] = [];
-  const regex = /\{\{([a-zA-Z0-9_-]+):([^}]+)\}\}/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  let segment = 0;
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      nodes.push(
-        <span key={`${keyPrefix}-text-${segment++}`}>{text.slice(lastIndex, match.index)}</span>
-      );
-    }
-    const token = match[1] as RichKey;
-    const label = match[2];
-    const target = LINK_TARGETS[token];
-    if (target) {
-      nodes.push(
-        <Link
-          key={`${keyPrefix}-link-${segment++}`}
-          href={target.href}
-          className="font-semibold text-brand hover:text-brandHover"
-        >
-          {label}
-        </Link>
-      );
-    } else {
-      nodes.push(<span key={`${keyPrefix}-text-${segment++}`}>{label}</span>);
-    }
-    lastIndex = regex.lastIndex;
-  }
-  if (lastIndex < text.length) {
-    nodes.push(
-      <span key={`${keyPrefix}-text-${segment++}`}>{text.slice(lastIndex)}</span>
-    );
-  }
-  return nodes;
+const HUB_COPY: Record<AppLocale, HubCopy> = {
+  en: {
+    hero: {
+      title: 'Compare AI video engines',
+      intro:
+        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter engines by core limits, and jump into direct tests quickly. Check audio support, duration, resolution, motion consistency, and pricing before you render.',
+      compareNow: {
+        left: 'Engine A',
+        right: 'Engine B',
+        swap: 'Swap engines',
+        compare: 'Compare',
+        searchPlaceholder: 'Search engine...',
+        noResults: 'No results',
+      },
+    },
+    sections: {
+      popularTitle: 'Popular comparisons',
+      popularIntro: 'A balanced shortlist of frequently requested matchups across the main engine families.',
+      useCasesTitle: 'Compare by use case',
+      useCasesIntro: 'Pick a goal and open one of the recommended matchups.',
+      enginesTitle: 'Pick an engine to compare',
+      enginesIntro: 'Compare-focused specs only. Full model guidance stays on each model page.',
+      enginesToggle: 'Show engine catalog ({count})',
+      enginesToggleHintClosed: 'Click to expand',
+      enginesToggleHintOpen: 'Click to collapse',
+      allComparisonsTitle: 'All comparisons',
+      allComparisonsIntro:
+        'Browse strategic matchups first, then search the full canonical catalog. Need policy details? Read our compliance notes.',
+      faqTitle: 'AI video engine comparison FAQ',
+      complianceLabel: 'Read compliance details',
+      quickStartLabel: 'Quick start',
+      useCasesFallback: 'Interactive chips refine recommendations instantly. All links remain crawlable and available in plain HTML.',
+    },
+    tagLabels: {
+      audio: 'Audio',
+      cinematic: 'Cinematic',
+      quality: 'Best quality',
+      long: 'Long duration',
+      ads: 'Ads',
+      product: 'Product',
+      value: 'Best value',
+      general: 'General use',
+      i2v: 'Image-to-video',
+      social: 'Social',
+      fast: 'Fast',
+      storyboards: 'Storyboards',
+    },
+    useCaseLabels: {
+      cinematic: 'Cinematic',
+      ads: 'Ads',
+      social: 'Social',
+      product: 'Product',
+      storyboards: 'Storyboards',
+      audio: 'Audio',
+      'no-audio': 'No audio',
+      'best-value': 'Best value',
+      'best-quality': 'Best quality',
+      'text-to-video': 'Text-to-video',
+      'image-to-video': 'Image-to-video',
+      'video-to-video': 'Video-to-video',
+    },
+    popularCompareLabel: 'Compare',
+    catalogLabels: {
+      sortAll: 'All',
+      filters: {
+        mode: 'Mode',
+        audio: 'Audio',
+        duration: 'Duration',
+        resolution: 'Resolution',
+        status: 'Status',
+        provider: 'Provider',
+        clear: 'Clear filters',
+      },
+      options: {
+        all: 'All',
+        modeT2v: 'Text-to-video',
+        modeI2v: 'Image-to-video',
+        modeV2v: 'Video-to-video',
+        audioOn: 'Audio',
+        audioOff: 'No audio',
+        durationShort: '< 8s',
+        durationMedium: '8-11s',
+        durationLong: '12s+',
+        resolution720: '720p+',
+        resolution1080: '1080p+',
+        resolution4k: '4K',
+        statusLive: 'Live',
+        statusEarly: 'Early access',
+      },
+      specs: {
+        modes: 'Modes',
+        audio: 'Audio',
+        status: 'Status',
+        duration: 'Max duration',
+        resolution: 'Max resolution',
+        yes: 'Yes',
+        no: 'No',
+        unknown: 'Unknown',
+        secondsSuffix: 's',
+        statusLive: 'Live',
+        statusEarly: 'Early access',
+      },
+      ctas: {
+        model: 'Model page',
+        compare: 'Compare vs',
+      },
+      empty: 'No engines match these filters.',
+    },
+    listLabels: {
+      searchPlaceholder: 'Search comparisons...',
+      loadMore: 'Load more',
+      empty: 'No comparisons match this search.',
+    },
+    faq: [
+      {
+        question: 'How do I compare two AI video engines quickly?',
+        answer:
+          'Use the Compare Now widget at the top of the page, choose Engine A and Engine B, then click Compare to open the canonical matchup page.',
+      },
+      {
+        question: 'Why do some comparisons show different strengths?',
+        answer:
+          'Each model trades off speed, prompt fidelity, motion realism, duration, and audio support differently. The best choice depends on the specific shot and deadline.',
+      },
+      {
+        question: 'Can I compare text-to-video and image-to-video engines together?',
+        answer:
+          'Yes. The hub includes mixed-mode matchups so you can compare engines that prioritize text prompts, image inputs, or both.',
+      },
+      {
+        question: 'How should I choose between two close engines?',
+        answer:
+          'Start with the use case chips, then validate with a direct side-by-side test. For tie-breaks, prioritize prompt fidelity, motion consistency, and turnaround speed for your delivery format.',
+      },
+    ],
+  },
+  fr: {
+    hero: {
+      title: 'Comparer les moteurs vidéo IA',
+      intro:
+        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Ce hub permet de repérer rapidement les matchups utiles, de filtrer les moteurs sur les limites clés et de tester sans friction. Vérifiez audio, durée, résolution, régularité du mouvement et niveau de prix avant de lancer un rendu.',
+      compareNow: {
+        left: 'Moteur A',
+        right: 'Moteur B',
+        swap: 'Inverser les moteurs',
+        compare: 'Comparer',
+        searchPlaceholder: 'Rechercher un moteur...',
+        noResults: 'Aucun résultat',
+      },
+    },
+    sections: {
+      popularTitle: 'Comparatifs populaires',
+      popularIntro: 'Une sélection équilibrée des matchups les plus demandés entre familles de moteurs.',
+      useCasesTitle: 'Comparer par cas d’usage',
+      useCasesIntro: 'Choisissez un objectif, puis ouvrez un comparatif recommandé.',
+      enginesTitle: 'Choisir un moteur à comparer',
+      enginesIntro: 'Spécifications orientées comparaison uniquement. Le détail éditorial reste sur les pages modèles.',
+      enginesToggle: 'Afficher le catalogue moteurs ({count})',
+      enginesToggleHintClosed: 'Cliquer pour déplier',
+      enginesToggleHintOpen: 'Cliquer pour replier',
+      allComparisonsTitle: 'Tous les comparatifs',
+      allComparisonsIntro:
+        'Parcourez d’abord les comparatifs prioritaires, puis cherchez dans le catalogue canonique complet. Besoin de conformité? Consultez nos notes dédiées.',
+      faqTitle: 'FAQ comparatif des moteurs vidéo IA',
+      complianceLabel: 'Voir les notes de conformité',
+      quickStartLabel: 'Accès rapide',
+      useCasesFallback:
+        'Les puces interactives affinent les recommandations instantanément. Tous les liens restent crawlables et présents en HTML standard.',
+    },
+    tagLabels: {
+      audio: 'Audio',
+      cinematic: 'Cinématique',
+      quality: 'Qualité',
+      long: 'Longue durée',
+      ads: 'Publicité',
+      product: 'Produit',
+      value: 'Meilleur coût',
+      general: 'Généraliste',
+      i2v: 'Image-vers-vidéo',
+      social: 'Social',
+      fast: 'Rapide',
+      storyboards: 'Storyboards',
+    },
+    useCaseLabels: {
+      cinematic: 'Cinématique',
+      ads: 'Publicité',
+      social: 'Social',
+      product: 'Produit',
+      storyboards: 'Storyboards',
+      audio: 'Audio',
+      'no-audio': 'Sans audio',
+      'best-value': 'Meilleur coût',
+      'best-quality': 'Meilleure qualité',
+      'text-to-video': 'Texte-vers-vidéo',
+      'image-to-video': 'Image-vers-vidéo',
+      'video-to-video': 'Vidéo-vers-vidéo',
+    },
+    popularCompareLabel: 'Comparer',
+    catalogLabels: {
+      sortAll: 'Tous',
+      filters: {
+        mode: 'Mode',
+        audio: 'Audio',
+        duration: 'Durée',
+        resolution: 'Résolution',
+        status: 'Statut',
+        provider: 'Fournisseur',
+        clear: 'Effacer les filtres',
+      },
+      options: {
+        all: 'Tous',
+        modeT2v: 'Texte-vers-vidéo',
+        modeI2v: 'Image-vers-vidéo',
+        modeV2v: 'Vidéo-vers-vidéo',
+        audioOn: 'Audio',
+        audioOff: 'Sans audio',
+        durationShort: '< 8s',
+        durationMedium: '8-11s',
+        durationLong: '12s+',
+        resolution720: '720p+',
+        resolution1080: '1080p+',
+        resolution4k: '4K',
+        statusLive: 'Live',
+        statusEarly: 'Accès anticipé',
+      },
+      specs: {
+        modes: 'Modes',
+        audio: 'Audio',
+        status: 'Statut',
+        duration: 'Durée max',
+        resolution: 'Résolution max',
+        yes: 'Oui',
+        no: 'Non',
+        unknown: 'Inconnu',
+        secondsSuffix: 's',
+        statusLive: 'Live',
+        statusEarly: 'Accès anticipé',
+      },
+      ctas: {
+        model: 'Page modèle',
+        compare: 'Comparer vs',
+      },
+      empty: 'Aucun moteur ne correspond à ces filtres.',
+    },
+    listLabels: {
+      searchPlaceholder: 'Rechercher un comparatif...',
+      loadMore: 'Voir plus',
+      empty: 'Aucun comparatif ne correspond à la recherche.',
+    },
+    faq: [
+      {
+        question: 'Comment comparer deux moteurs rapidement ?',
+        answer:
+          'Utilisez le module Comparer en haut de page, choisissez Moteur A et Moteur B, puis cliquez sur Comparer pour ouvrir la page canonique.',
+      },
+      {
+        question: 'Pourquoi les points forts changent selon les comparatifs ?',
+        answer:
+          'Chaque modèle fait des compromis différents sur vitesse, fidélité au prompt, réalisme du mouvement, durée et audio.',
+      },
+      {
+        question: 'Peut-on comparer des moteurs texte-vers-vidéo et image-vers-vidéo ?',
+        answer:
+          'Oui. Le hub inclut des matchups mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides.',
+      },
+      {
+        question: 'Comment trancher entre deux moteurs proches ?',
+        answer:
+          'Commencez par les puces de cas d’usage, puis validez avec un test côte à côte. En cas d’hésitation, priorisez la fidélité au prompt, la régularité du mouvement et la vitesse de livraison.',
+      },
+    ],
+  },
+  es: {
+    hero: {
+      title: 'Comparar motores de video con IA',
+      intro:
+        'Elige dos motores y abre una comparativa lado a lado con un clic. Este hub te ayuda a ver matchups clave, filtrar por límites importantes y pasar rápido a pruebas reales. Revisa audio, duración, resolución, consistencia de movimiento y precio antes de generar.',
+      compareNow: {
+        left: 'Motor A',
+        right: 'Motor B',
+        swap: 'Intercambiar motores',
+        compare: 'Comparar',
+        searchPlaceholder: 'Buscar motor...',
+        noResults: 'Sin resultados',
+      },
+    },
+    sections: {
+      popularTitle: 'Comparativas populares',
+      popularIntro: 'Selección balanceada de matchups solicitados entre las principales familias de motores.',
+      useCasesTitle: 'Comparar por caso de uso',
+      useCasesIntro: 'Elige un objetivo y abre una comparativa recomendada.',
+      enginesTitle: 'Elegir motores para comparar',
+      enginesIntro: 'Solo especificaciones útiles para comparar. El detalle completo queda en cada página de modelo.',
+      enginesToggle: 'Mostrar catálogo de motores ({count})',
+      enginesToggleHintClosed: 'Haz clic para desplegar',
+      enginesToggleHintOpen: 'Haz clic para plegar',
+      allComparisonsTitle: 'Todas las comparativas',
+      allComparisonsIntro:
+        'Primero verás comparativas estratégicas, luego podrás buscar en el catálogo canónico completo. ¿Necesitas cumplimiento? Revisa nuestras notas.',
+      faqTitle: 'FAQ de comparativas de motores de video con IA',
+      complianceLabel: 'Ver notas de cumplimiento',
+      quickStartLabel: 'Acceso rápido',
+      useCasesFallback:
+        'Los chips interactivos ajustan recomendaciones al instante. Todos los enlaces siguen siendo rastreables y visibles en HTML estándar.',
+    },
+    tagLabels: {
+      audio: 'Audio',
+      cinematic: 'Cinemático',
+      quality: 'Mejor calidad',
+      long: 'Larga duración',
+      ads: 'Ads',
+      product: 'Producto',
+      value: 'Mejor costo',
+      general: 'General',
+      i2v: 'Imagen a video',
+      social: 'Social',
+      fast: 'Rápido',
+      storyboards: 'Storyboards',
+    },
+    useCaseLabels: {
+      cinematic: 'Cinemático',
+      ads: 'Ads',
+      social: 'Social',
+      product: 'Producto',
+      storyboards: 'Storyboards',
+      audio: 'Audio',
+      'no-audio': 'Sin audio',
+      'best-value': 'Mejor costo',
+      'best-quality': 'Mejor calidad',
+      'text-to-video': 'Texto a video',
+      'image-to-video': 'Imagen a video',
+      'video-to-video': 'Video a video',
+    },
+    popularCompareLabel: 'Comparar',
+    catalogLabels: {
+      sortAll: 'Todos',
+      filters: {
+        mode: 'Modo',
+        audio: 'Audio',
+        duration: 'Duración',
+        resolution: 'Resolución',
+        status: 'Estado',
+        provider: 'Proveedor',
+        clear: 'Limpiar filtros',
+      },
+      options: {
+        all: 'Todos',
+        modeT2v: 'Texto a video',
+        modeI2v: 'Imagen a video',
+        modeV2v: 'Video a video',
+        audioOn: 'Audio',
+        audioOff: 'Sin audio',
+        durationShort: '< 8s',
+        durationMedium: '8-11s',
+        durationLong: '12s+',
+        resolution720: '720p+',
+        resolution1080: '1080p+',
+        resolution4k: '4K',
+        statusLive: 'Live',
+        statusEarly: 'Acceso anticipado',
+      },
+      specs: {
+        modes: 'Modos',
+        audio: 'Audio',
+        status: 'Estado',
+        duration: 'Duración máx',
+        resolution: 'Resolución máx',
+        yes: 'Sí',
+        no: 'No',
+        unknown: 'Sin dato',
+        secondsSuffix: 's',
+        statusLive: 'Live',
+        statusEarly: 'Acceso anticipado',
+      },
+      ctas: {
+        model: 'Página del modelo',
+        compare: 'Comparar vs',
+      },
+      empty: 'No hay motores para estos filtros.',
+    },
+    listLabels: {
+      searchPlaceholder: 'Buscar comparativas...',
+      loadMore: 'Ver más',
+      empty: 'No hay comparativas para esta búsqueda.',
+    },
+    faq: [
+      {
+        question: '¿Cómo comparo dos motores rápidamente?',
+        answer:
+          'Usa el widget Comparar de la parte superior, elige Motor A y Motor B, y haz clic en Comparar para abrir la página canónica.',
+      },
+      {
+        question: '¿Por qué cambian las fortalezas entre comparativas?',
+        answer:
+          'Cada modelo equilibra distinto velocidad, fidelidad al prompt, realismo de movimiento, duración y audio.',
+      },
+      {
+        question: '¿Se pueden comparar motores de texto a video e imagen a video?',
+        answer:
+          'Sí. El hub incluye matchups mixtos para comparar motores orientados a texto, imagen o ambos.',
+      },
+      {
+        question: '¿Cómo elegir entre dos motores muy parecidos?',
+        answer:
+          'Empieza con los chips de caso de uso y valida con una prueba lado a lado. Si hay empate, prioriza fidelidad al prompt, consistencia de movimiento y velocidad de entrega.',
+      },
+    ],
+  },
+};
+
+function getCopy(locale: AppLocale): HubCopy {
+  return HUB_COPY[locale] ?? HUB_COPY.en;
 }
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
@@ -179,127 +489,158 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     hreflangGroup: 'compare',
     slugMap: COMPARE_SLUG_MAP,
     imageAlt: t('title'),
-    ogType: 'article',
-    keywords: ['AI video generator', 'Sora 2', 'Veo 3', 'Pika 2.2', 'text-to-video Europe', 'Fal.ai', 'MaxVideoAI'],
-    other: { 'og:topic': 'AI video generator comparison' },
+    ogType: 'website',
+    keywords: ['AI video engines', 'AI video models', 'compare AI video generators', 'Sora vs Veo', 'MaxVideoAI'],
   });
 }
 
 export default async function AiVideoEnginesPage() {
-  const { dictionary } = await resolveDictionary();
-  const content = dictionary.aiVideoEngines ?? DEFAULT_CONTENT;
-  const hero = content.hero ?? DEFAULT_CONTENT.hero;
-  const sections: SectionCopy[] = Array.isArray(content.sections) && content.sections.length ? content.sections : DEFAULT_CONTENT.sections;
-  const comparison = (content.comparison ?? DEFAULT_CONTENT.comparison) as typeof DEFAULT_CONTENT.comparison;
-  const faqItems = Array.isArray(content.faq) && content.faq.length ? content.faq : DEFAULT_CONTENT.faq;
-  const faqTitle = content.faqTitle ?? DEFAULT_CONTENT.faqTitle;
-  const cta = content.cta ?? DEFAULT_CONTENT.cta;
-  const faqJsonLdEntries = faqItems.slice(0, 6);
-  const compareEngines = listFalEngines()
-    .filter((engine) => engine.modelSlug && !EXCLUDED_COMPARE_SLUGS.has(engine.modelSlug))
-    .filter((engine) => engine.category !== 'image');
-  const compareLabelBySlug = new Map(
-    compareEngines.map((engine) => [engine.modelSlug, engine.marketingName ?? engine.engine.label])
-  );
-  const comparePairs = compareEngines
-    .map((engine) => engine.modelSlug)
-    .filter((slug): slug is string => Boolean(slug))
-    .sort()
-    .flatMap((leftSlug, index, slugs) =>
-      slugs.slice(index + 1).map((rightSlug) => {
-        const labelLeft = compareLabelBySlug.get(leftSlug) ?? leftSlug;
-        const labelRight = compareLabelBySlug.get(rightSlug) ?? rightSlug;
-        return {
-          slug: `${leftSlug}-vs-${rightSlug}`,
-          label: `${labelLeft} vs ${labelRight}`,
-        };
-      })
-    );
+  const { locale } = await resolveDictionary();
+  const copy = getCopy(locale);
+  const engines = getHubEngines();
+
+  const engineOptions = engines.map((engine) => ({ value: engine.modelSlug, label: engine.marketingName }));
+  const popularComparisons = getPopularComparisons(engines).slice(0, 12);
+  const useCaseBuckets = getUseCaseBuckets(engines).map((bucket) => ({
+    id: bucket.id,
+    label: copy.useCaseLabels[bucket.id] ?? bucket.id,
+    pairs: bucket.pairs,
+  }));
+
+  const engineCards: EngineCatalogCard[] = engines.map((engine) => {
+    const compareActions = getSuggestedOpponents(engine.modelSlug, engines, 3).map((opponent) => {
+      return {
+        slug: buildCanonicalCompareSlug(engine.modelSlug, opponent.modelSlug),
+        label: opponent.marketingName,
+      };
+    });
+
+    return {
+      ...engine,
+      compareActions,
+    };
+  });
+
+  const allComparisonEntries = getRankedComparisonPairs(engines).map((pair) => ({
+    slug: pair.slug,
+    label: pair.label,
+  }));
+  const defaultComparison = allComparisonEntries[0];
+  const enginesToggleLabel = copy.sections.enginesToggle.replace('{count}', String(engineCards.length));
+
+  const faqJsonLdEntries = copy.faq.slice(0, 5).map((entry) => ({
+    question: entry.question,
+    answer: entry.answer,
+  }));
 
   return (
-    <div className="container-page max-w-4xl section">
+    <div className="container-page max-w-6xl section">
       <div className="stack-gap-lg">
         <header className="stack-gap-sm">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{hero.title}</h1>
-          {hero.intro ? (
-            <p className="text-base leading-relaxed text-text-secondary">{renderRichText(hero.intro, 'hero-intro')}</p>
-          ) : null}
-          {hero.secondary ? (
-            <p className="text-base leading-relaxed text-text-secondary">
-              {renderRichText(hero.secondary, 'hero-secondary')}
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{copy.hero.title}</h1>
+          <p className="max-w-4xl text-base leading-relaxed text-text-secondary">{copy.hero.intro}</p>
+          <CompareNowWidget
+            options={engineOptions}
+            defaultLeft="sora-2"
+            defaultRight="veo-3-1"
+            labels={copy.hero.compareNow}
+          />
+          {defaultComparison ? (
+            <p className="text-xs text-text-muted">
+              {copy.sections.quickStartLabel}:{' '}
+              <Link
+                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: defaultComparison.slug } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
+                {defaultComparison.label}
+              </Link>
+              .
             </p>
           ) : null}
         </header>
 
-        <section className="stack-gap-lg">
-          {sections.map((section, index) => (
-            <div key={section.title ?? `section-${index}`} className="stack-gap">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{section.title}</h2>
-              {section.body ? (
-                <p className="text-base leading-relaxed text-text-secondary">
-                  {renderRichText(section.body, `section-${index}`)}
-                </p>
-              ) : null}
-            </div>
-          ))}
-        </section>
-
-        <section className="stack-gap-lg">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{comparison.title}</h2>
-          <p className="text-base leading-relaxed text-text-secondary">
-            {renderRichText(comparison.intro, 'comparison-intro')}
-          </p>
-          <div className="grid grid-gap sm:grid-cols-2">
-            {comparison.cards.map((card) => (
-              <article key={card.label} className="stack-gap-sm rounded-card border border-hairline bg-surface p-5 shadow-card">
-                <div className="text-sm font-semibold uppercase tracking-micro text-text-muted">{card.label}</div>
-                <p className="text-base text-text-primary">{card.title}</p>
-                <ul className="list-disc pl-6 text-sm text-text-secondary">
-                  {card.points.map((point) => (
-                    <li key={point}>{point}</li>
+        <section className="stack-gap">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.popularTitle}</h2>
+          <p className="text-sm text-text-secondary">{copy.sections.popularIntro}</p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {popularComparisons.map((comparison) => (
+              <article key={comparison.slug} className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
+                <h3 className="text-base font-semibold text-text-primary">{comparison.label}</h3>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {comparison.tags.map((tag) => (
+                    <span
+                      key={`${comparison.slug}-${tag}`}
+                      className="rounded-full border border-hairline bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-muted"
+                    >
+                      {copy.tagLabels[tag] ?? tag}
+                    </span>
                   ))}
-                </ul>
+                </div>
+                <Link
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: comparison.slug } }}
+                  prefetch={false}
+                  className="mt-3 inline-flex text-sm font-semibold text-brand hover:text-brandHover"
+                >
+                  {copy.popularCompareLabel}
+                </Link>
               </article>
             ))}
           </div>
-          <div className="stack-gap-sm rounded-card border border-hairline bg-surface/90 p-5 text-sm text-text-secondary shadow-card">
-            {comparison.ctaDescription ? (
-              <p className="text-sm text-text-secondary">{comparison.ctaDescription}</p>
-            ) : null}
-            <ButtonLink
-              href={{ pathname: '/ai-video-engines/[slug]', params: { slug: DEFAULT_COMPARE_SLUG } }}
-              size="sm"
-              linkComponent={Link}
-            >
-              {comparison.ctaLabel ?? 'Open the live comparison'}
-            </ButtonLink>
-          </div>
         </section>
 
-        {comparePairs.length ? (
-          <section className="stack-gap-sm">
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Browse all comparisons</h2>
-            <p className="text-sm text-text-secondary">
-              Open any canonical matchup without changing the display order.
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {comparePairs.map((pair) => (
-                <Link
-                  key={pair.slug}
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pair.slug } }}
-                  className="rounded-card border border-hairline bg-surface px-3 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted"
-                >
-                  {pair.label}
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <section className="stack-gap">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.useCasesTitle}</h2>
+          <p className="text-sm text-text-secondary">{copy.sections.useCasesIntro}</p>
+          <p className="text-xs text-text-muted">{copy.sections.useCasesFallback}</p>
+          <UseCaseExplorer buckets={useCaseBuckets} compareLabel={copy.popularCompareLabel} />
+        </section>
 
         <section className="stack-gap">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faqTitle}</h2>
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.enginesTitle}</h2>
+          <p className="text-sm text-text-secondary">{copy.sections.enginesIntro}</p>
+          <details className="group rounded-2xl border border-hairline bg-surface p-4 shadow-card">
+            <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-hairline bg-bg px-4 py-3 text-left transition hover:border-text-muted">
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-text-primary">{enginesToggleLabel}</span>
+                <span className="block text-xs text-text-muted group-open:hidden">
+                  {copy.sections.enginesToggleHintClosed}
+                </span>
+                <span className="hidden text-xs text-text-muted group-open:block">
+                  {copy.sections.enginesToggleHintOpen}
+                </span>
+              </span>
+              <span
+                aria-hidden
+                className="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-hairline text-text-secondary transition group-open:rotate-180"
+              >
+                ▼
+              </span>
+            </summary>
+            <div className="mt-4">
+              <EnginesCatalog cards={engineCards} labels={copy.catalogLabels} />
+            </div>
+          </details>
+        </section>
+
+        <section className="stack-gap">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.allComparisonsTitle}</h2>
+          <p className="text-sm text-text-secondary">
+            {copy.sections.allComparisonsIntro}{' '}
+            <Link
+              href={{ pathname: '/docs/[slug]', params: { slug: 'brand-safety' } }}
+              className="font-semibold text-brand hover:text-brandHover"
+            >
+              {copy.sections.complianceLabel}
+            </Link>
+            .
+          </p>
+          <ComparisonsDirectory entries={allComparisonEntries} labels={copy.listLabels} />
+        </section>
+
+        <section className="stack-gap">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.faqTitle}</h2>
           <div className="stack-gap-sm text-base leading-relaxed text-text-secondary">
-            {faqItems.map((item) => (
+            {copy.faq.map((item) => (
               <article key={item.question} className="rounded-card border border-hairline bg-surface p-5 shadow-card">
                 <h3 className="text-lg font-semibold text-text-primary">{item.question}</h3>
                 <p className="mt-2 text-sm text-text-secondary">{item.answer}</p>
@@ -309,12 +650,6 @@ export default async function AiVideoEnginesPage() {
         </section>
 
         <FAQSchema questions={faqJsonLdEntries} />
-
-        {cta?.body ? (
-          <div className="rounded-card border border-hairline bg-surface/90 p-6 text-sm leading-relaxed text-text-secondary shadow-card">
-            {renderRichText(cta.body, 'cta')}
-          </div>
-        ) : null}
       </div>
     </div>
   );

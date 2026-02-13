@@ -28,7 +28,7 @@
       }
     ],
     "login": "Se connecter",
-    "cta": "Démarrer un rendu",
+    "cta": "Lancer un rendu",
     "linkLabels": {
       "models": "Modèles",
       "examples": "Exemples",
@@ -103,8 +103,8 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "Comparatif des moteurs vidéo IA — Sora, Veo, Pika | MaxVideoAI",
-      "description": "Comparez disponibilité, latence et conformité pour Sora 2, Veo 3, Pika et MiniMax en Europe."
+      "title": "Comparer les moteurs et modèles vidéo IA | MaxVideoAI",
+      "description": "Choisissez deux moteurs vidéo IA, comparez capacités et limites, puis ouvrez le comparatif canonique en un clic."
     },
     "hero": {
       "title": "Déployer des générateurs vidéo IA en Europe — Sora 2, Veo 3, Pika & autres",
@@ -279,15 +279,16 @@
   },
   "home": {
     "badges": [
-      "Paiement à l’usage",
-      "Prix avant génération",
-      "Toujours à jour"
+      "Tarifs à l’usage",
+      "Prix affiché avant de générer",
+      "Moteurs mis à jour en continu"
     ],
     "hero": {
-      "title": "Le moteur adapté à chaque plan.",
-      "subtitle": "Vidéo IA professionnelle, sans les tracas. Prix affiché avant génération. Un hub pour votre travail.",
-      "primaryCta": "Démarrer un rendu",
-      "secondaryCta": "Voir des exemples"
+      "title": "Le bon moteur pour chaque plan.",
+      "subtitle": "De la vidéo IA pro, sans prise de tête. Vous voyez le prix avant de lancer, et vous gardez tout au même endroit.",
+      "primaryCta": "Lancer un rendu",
+      "secondaryCta": "Voir des exemples",
+      "workspaceCta": "Ouvrir l’espace de travail"
     },
     "worksWith": {
       "label": "Fonctionne avec",
@@ -303,46 +304,47 @@
         "Wan 2.5",
         "Nano Banana"
       ],
-      "caption": "Centre indépendant. Les marques appartiennent à leurs propriétaires.",
-      "availabilityNotice": "La disponibilité peut varier selon le fournisseur ; les pastilles de prix se rafraîchissent automatiquement."
+      "caption": "Les marques appartiennent à leurs propriétaires.",
+      "availabilityNotice": "La disponibilité peut varier selon le fournisseur ; les pastilles de prix se rafraîchissent automatiquement.",
+      "moreLabel": "et d'autres moteurs"
     },
     "heroScreenshot": {
-      "title": "Tous les contrôles en une vue.",
-      "body": "Le compositeur, le prix en direct, la galerie et le flux de tâches restent réunis pour que vous puissiez ajuster les instructions, examiner les résultats et surveiller la file d'attente sans quitter l'écran.",
+      "title": "Tout sous les yeux.",
+      "body": "Le Composer, le prix en direct, la galerie et la file d’attente restent au même endroit : vous ajustez la consigne, comparez les sorties, et suivez les rendus sans quitter l’écran.",
       "alt": "Espace de travail MaxVideo AI montrant le compositeur, la pastille de prix en direct et l'aperçu de la galerie dans un seul tableau de bord."
     },
     "proofTabs": [
       {
         "id": "workspace",
         "label": "Espace de travail",
-        "heading": "Démarrez dans le même espace de travail que nous utilisons chaque jour.",
+        "heading": "Accédez à l’espace de travail complet, prêt à l’emploi.",
         "body": "Choisissez un moteur, définissez durée et résolution et le compositeur révèle les champs attendus. Pas de liste d'attente, pas de maquettes."
       },
       {
         "id": "price",
         "label": "Tarif",
-        "heading": "La tarification du wallet se met à jour avant même d'appuyer sur Générer.",
+        "heading": "Le coût estimé se met à jour avant même d'appuyer sur Générer.",
         "body": "Ajustez les réglages et observez la pastille « Ce rendu » en direct avant de valider. Les fonds ne bougent que si le rendu réussit."
       },
       {
         "id": "tracking",
         "label": "Suivi",
-        "heading": "Le flux de jobs trace chaque sortie automatiquement.",
+        "heading": "La liste des rendus suit chaque sortie automatiquement.",
         "body": "Relisez les rendus, comparez les prises et téléchargez-les depuis la galerie dès qu'ils terminent."
       }
     ],
     "whyCards": [
       {
-        "title": "Produit live, pas une roadmap.",
-        "body": "Connectez-vous et utilisez le même workspace que nous exploitons en interne : tarifs, compositeur, wallet et historique sont actifs aujourd'hui."
+        "title": "Du concret, pas des promesses.",
+        "body": "Tarifs, Composer, crédits et historique : tout est disponible dès maintenant — sans liste d’attente, sans maquette."
       },
       {
-        "title": "Facturation centrée sur le wallet.",
-        "body": "Rechargez une fois, surveillez la dépense depuis l'en-tête et recevez des remboursements automatiques si un rendu échoue."
+        "title": "Crédits prépayés : vous gardez le contrôle.",
+        "body": "Rechargez une fois, suivez la dépense depuis l’en-tête et profitez de remboursements automatiques quand un rendu échoue."
       },
       {
         "title": "Tous vos moteurs au même endroit.",
-        "body": "Basculez entre Sora, Veo, Pika, MiniMax et Hunyuan sans jongler avec les dashboards ni les clés API."
+        "body": "Basculez entre Sora, Veo, Pika, MiniMax et Hunyuan sans jongler entre plusieurs tableaux de bord ni clés API."
       }
     ],
     "ways": [
@@ -357,10 +359,10 @@
       },
       {
         "title": "Valider & livrer",
-        "description": "Figez la meilleure prise, récupérez les fichiers et partagez les jobs sans quitter l’espace de travail.",
+        "description": "Figez la meilleure prise, récupérez les fichiers et partagez les rendus sans quitter l’espace de travail.",
         "bullets": [
           "La galerie aligne chaque rendu pour comparer en un coup d’œil.",
-          "Le flux de jobs regroupe notes, itérations et statuts au même endroit.",
+          "La liste des rendus regroupe notes, itérations et statuts au même endroit.",
           "Téléchargez rendus, miniatures et métadonnées instantanément."
         ]
       }
@@ -368,7 +370,7 @@
     "waysSection": {
       "eyebrow": "Espace de travail",
       "title": "Tout se trouve dans l'espace de travail.",
-      "subtitle": "compositeur, portefeuille, historique des tâches et galerie restent côte à côte pour maintenir l'alignement de votre équipe."
+      "subtitle": "Composer, crédits, liste des rendus et galerie restent côte à côte pour garder votre équipe alignée."
     },
     "examplesCallout": {
       "eyebrow": "Galerie en direct",
@@ -473,18 +475,18 @@
         },
         {
           "q": "Comment fonctionne la tarification ?",
-          "a": "Vous voyez la pastille « Ce rendu » avant de lancer. Chargez 10 $ pour démarrer et rechargez lorsque vous avez besoin de nouveaux essais. Chaque job inclut un reçu détaillé."
+          "a": "Vous voyez la pastille « Ce rendu » avant de lancer. Chargez 10 $ pour démarrer et rechargez lorsque vous avez besoin de nouveaux essais. Chaque rendu inclut un reçu détaillé."
         },
         {
           "q": "Quelle est la politique de remboursement ?",
-          "a": "Les rendus en échec sont remboursés automatiquement sur votre wallet avec un reçu détaillé. Vous gardez un contrôle total des dépenses."
+          "a": "Les rendus en échec sont remboursés automatiquement sur votre solde avec un reçu détaillé. Vous gardez un contrôle total des dépenses."
         }
       ]
     },
     "priceChipSuffix": "Sans abonnement. Paiement à l’usage.",
     "meta": {
-      "title": "Tarifs – Crédits pay-as-you-go pour Sora, Veo, Pika & Kling | MaxVideoAI",
-      "description": "Créez des vidéos IA avec Sora 2, Veo 3.1 et Kling depuis un seul espace de travail. Comparez les moteurs côte à côte avec le même prompt, puis générez instantanément."
+      "title": "Générateur de vidéos IA multi-moteurs — Tarifs à l’usage | MaxVideoAI",
+      "description": "Comparez Sora, Veo, Kling... puis générez en texte-vers-vidéo, image-vers-vidéo ou vidéo-vers-vidéo. Prix affiché avant de lancer. Tarifs à l’usage."
     },
     "compare": {
       "title": "Comparer les moteurs en un coup d’œil",
@@ -497,6 +499,106 @@
         "max": "Durée max",
         "audio": "Audio",
         "bestFor": "Usage clé"
+      },
+      "cardLabels": {
+        "avg": "Moy.",
+        "modes": "Modes",
+        "max": "Max",
+        "res": "Rés."
+      },
+      "modeLabels": {
+        "t2v": "Texte -> Vidéo",
+        "i2v": "Image -> Vidéo",
+        "r2v": "Référence -> Vidéo",
+        "t2i": "Texte -> Image",
+        "i2i": "Image -> Image"
+      }
+    },
+    "pricingPreviewLabel": "Prévisualiser les tarifs",
+    "partners": {
+      "eyebrow": "Partenaires",
+      "featuredOn": "Vu sur"
+    },
+    "seoContent": {
+      "heroParagraph": "MaxVideoAI est un générateur de vidéos IA multi-moteurs : comparez les modèles, puis générez à partir d’une consigne (prompt), d’une image ou d’une vidéo existante. Le coût est affiché avant le rendu, pour choisir le bon moteur en toute confiance.",
+      "heroPoints": [
+        "Texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo",
+        "Comparez les résultats entre plusieurs moteurs vidéo IA",
+        "Coût affiché avant de générer (crédits à l’usage)"
+      ],
+      "definition": {
+        "title": "Qu’est-ce qu’un générateur de vidéos IA ?",
+        "body": "Un générateur de vidéos IA crée des clips grâce à l’intelligence artificielle : soit à partir d’une consigne écrite (texte-vers-vidéo), soit en animant une image (image-vers-vidéo), soit en transformant une vidéo existante (vidéo-vers-vidéo). Comme chaque modèle fait des compromis différents (qualité du mouvement, vitesse, cohérence), comparer avant de lancer le rendu aide à obtenir un meilleur résultat… et à mieux maîtriser le coût."
+      },
+      "generateWays": {
+        "title": "Générez des vidéos à votre façon",
+        "items": [
+          {
+            "title": "Texte-vers-vidéo",
+            "body": "Rédigez une consigne (prompt), choisissez un modèle, et générez des vidéos en style cinématique, produit, social ou explicatif. Le texte-vers-vidéo est parfait pour prototyper vite, préparer un storyboard, ou produire en série quand la rapidité compte. Vous pouvez tester plusieurs variantes et comparer la fidélité aux consignes selon les moteurs."
+          },
+          {
+            "title": "Image-vers-vidéo",
+            "body": "Partez d’une image et donnez-lui vie avec du mouvement, des déplacements de caméra et une animation subtile, tout en conservant la composition d’origine. L’image-vers-vidéo est idéale pour garder des personnages cohérents, des visuels produit stables et une direction artistique maîtrisée (motion design compris)."
+          },
+          {
+            "title": "Vidéo-vers-vidéo",
+            "body": "Importez une vidéo et transformez-la (style, rythme, mouvement) tout en conservant la structure de base. Le vidéo-vers-vidéo est utile pour itérer rapidement, faire des variantes côte à côte et livrer plusieurs options sans devoir tout refilmer."
+          }
+        ]
+      },
+      "compare": {
+        "title": "Comparez les moteurs vidéo IA avant de lancer le rendu",
+        "body": "MaxVideoAI vous permet de tester plusieurs moteurs dans un seul espace. Chaque modèle a ses points forts (vitesse, précision des consignes, mouvement, réalisme, style). Comparez les résultats côte à côte, choisissez le bon moteur pour chaque plan, et gardez le coût visible avant de générer.",
+        "worksWith": "Compatible avec Sora 2, Veo 3.1, Kling 3, LTX-2, Wan 2.6, Seedance 1.5, Pika 2.2, Hailuo 02... et d’autres.",
+        "popularLinks": [
+          {
+            "label": "Comparatif Sora 2 vs Veo 3.1",
+            "slug": "sora-2-vs-veo-3-1"
+          },
+          {
+            "label": "Comparatif Kling 3 vs Sora 2",
+            "slug": "kling-3-pro-vs-sora-2"
+          },
+          {
+            "label": "Comparatif Veo 3.1 vs Kling 3",
+            "slug": "kling-3-pro-vs-veo-3-1"
+          },
+          {
+            "label": "Comparatif LTX-2 vs Veo 3.1",
+            "slug": "ltx-2-vs-veo-3-1"
+          }
+        ],
+        "seeAllLabel": "Voir tous les comparatifs de moteurs vidéo IA",
+        "imageAlt": "Capture d’écran d’une page de comparaison MaxVideoAI avec deux moteurs vidéo IA côte à côte.",
+        "carouselIntro": "Comparez les moteurs vidéo IA par capacités, limites et usages, ou",
+        "carouselLinkLabel": "voir tous les comparatifs de moteurs vidéo IA"
+      },
+      "faq": {
+        "title": "FAQ du générateur de vidéos IA",
+        "description": "Réponses courtes aux questions fréquentes sur la génération vidéo IA.",
+        "items": [
+          {
+            "q": "Quel est le meilleur générateur de vidéos IA ?",
+            "a": "Cela dépend de ce que vous créez. Certains modèles excellent en mouvement cinématique, d’autres en vitesse, en précision de prompt ou en cohérence. MaxVideoAI vous aide à comparer plusieurs modèles vidéo IA pour choisir le plus adapté à chaque projet."
+          },
+          {
+            "q": "Puis-je générer des vidéos à partir de prompts texte ?",
+            "a": "Oui. Le texte-vers-vidéo permet de créer des clips directement depuis une consigne écrite, puis d’itérer rapidement en ajustant le prompt, le style et le modèle."
+          },
+          {
+            "q": "Quelle différence entre texte-vers-vidéo et image-vers-vidéo ?",
+            "a": "Le texte-vers-vidéo part d’une consigne ; l’image-vers-vidéo part d’une image fixe et ajoute du mouvement en conservant la composition."
+          },
+          {
+            "q": "Faut-il des compétences de montage pour utiliser un générateur vidéo IA ?",
+            "a": "Non. Vous pouvez générer des clips avec des prompts et des réglages simples. Pour des workflows avancés, vous pouvez toujours remixer et itérer avec des variantes."
+          },
+          {
+            "q": "MaxVideoAI est-il gratuit ?",
+            "a": "MaxVideoAI fonctionne avec des crédits à l’usage, avec coût affiché avant génération."
+          }
+        ]
       }
     }
   },
@@ -1154,19 +1256,19 @@
         "format": {
           "label": "Format",
           "options": {
-            "all": "Tous",
             "720": "720p+",
             "1080": "1080p+",
-            "2160": "4K"
+            "2160": "4K",
+            "all": "Tous"
           }
         },
         "duration": {
           "label": "Durée",
           "options": {
-            "all": "Toutes",
             "8": "≤8s",
-            "10-15": "10–15s",
-            "20": "20s+"
+            "20": "20s+",
+            "all": "Toutes",
+            "10-15": "10–15s"
           }
         },
         "price": {

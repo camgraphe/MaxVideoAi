@@ -13,6 +13,7 @@ import {
 import { getContentEntries } from '@/lib/content/markdown';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import compareConfig from '@/config/compare-config.json';
+import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 
 export type SitemapEntry = {
   url: string;
@@ -694,9 +695,7 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
         locales: LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)),
       })),
   '/ai-video-engines/[slug]': async () =>
-    Array.from(
-      new Set((compareConfig.trophyComparisons ?? []).map((slug) => canonicalizeCompareSlug(slug)))
-    ).map((slug) => ({
+    Array.from(new Set(getHubComparisonSlugsForSitemap().map((slug) => canonicalizeCompareSlug(slug)))).map((slug) => ({
       englishPath: `/ai-video-engines/${slug}`,
       locales: LOCALES,
     })),

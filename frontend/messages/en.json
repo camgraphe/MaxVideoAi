@@ -207,7 +207,8 @@
       "title": "The right engine for every shot.",
       "subtitle": "Professional AI video, minus the hassle. Price before you generate. One hub for your work.",
       "primaryCta": "Start a render",
-      "secondaryCta": "See examples"
+      "secondaryCta": "See examples",
+      "workspaceCta": "Open the workspace"
     },
     "worksWith": {
       "label": "Works with",
@@ -223,8 +224,9 @@
         "Wan 2.5",
         "Nano Banana"
       ],
-      "caption": "Independent hub. Trademarks belong to their owners.",
-      "availabilityNotice": "Availability may vary by provider; pricing chips refresh automatically."
+      "caption": "Trademarks belong to their owners.",
+      "availabilityNotice": "Availability may vary by provider; pricing chips refresh automatically.",
+      "moreLabel": "and more engines"
     },
     "heroScreenshot": {
       "title": "Every control in one view.",
@@ -235,7 +237,7 @@
       {
         "id": "workspace",
         "label": "Workspace",
-        "heading": "Start in the same workspace we use every day.",
+        "heading": "Start with the full workspace — ready now.",
         "body": "Pick an engine, set duration and resolution, and the composer reveals the fields that engine expects. No waitlist, no mockups."
       },
       {
@@ -253,8 +255,8 @@
     ],
     "whyCards": [
       {
-        "title": "Live product, not a roadmap.",
-        "body": "Log in and use the same workspace we run internally — pricing, composer, wallet, and job history are active today."
+        "title": "A live product, not a roadmap.",
+        "body": "Pricing, Composer, wallet, and job history are available today — no waitlist, no mockups."
       },
       {
         "title": "Wallet-first billing.",
@@ -407,8 +409,8 @@
       "description": "Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly."
     },
     "compare": {
-      "title": "Compare engines at a glance",
-      "subtitle": "Max duration · Audio · Best for",
+      "title": "AI video engines in one view",
+      "subtitle": "Capabilities · Limits · Best for",
       "ariaPrev": "Scroll to previous engine card",
       "ariaNext": "Scroll to next engine card",
       "ariaPrefix": "See presets for",
@@ -417,6 +419,106 @@
         "max": "Max",
         "audio": "Audio",
         "bestFor": "Best for"
+      },
+      "cardLabels": {
+        "avg": "Avg",
+        "modes": "Modes",
+        "max": "Max",
+        "res": "Res"
+      },
+      "modeLabels": {
+        "t2v": "Text -> Video",
+        "i2v": "Image -> Video",
+        "r2v": "Reference -> Video",
+        "t2i": "Text -> Image",
+        "i2i": "Image -> Image"
+      }
+    },
+    "pricingPreviewLabel": "Preview pricing",
+    "partners": {
+      "eyebrow": "Partners",
+      "featuredOn": "Featured on"
+    },
+    "seoContent": {
+      "heroParagraph": "MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every render so you can pick the right engine with confidence.",
+      "heroPoints": [
+        "Text-to-video, image-to-video, and video-to-video workflows",
+        "Compare results across multiple AI video models",
+        "Pay-as-you-go pricing with cost shown before you generate"
+      ],
+      "definition": {
+        "title": "What is an AI video generator?",
+        "body": "An AI video generator creates clips with artificial intelligence. You can turn text prompts into video, animate still images (image-to-video), or transform existing footage (video-to-video). Because each model balances quality, speed, and consistency differently, comparing models before you render helps you pick the right one for each shot."
+      },
+      "generateWays": {
+        "title": "Generate videos your way",
+        "items": [
+          {
+            "title": "Text-to-Video AI",
+            "body": "Write a clear prompt, choose a model, and generate videos in cinematic, product, social, or explainer styles without rebuilding your process each time. Text-to-video works well for rapid ideation, storyboard drafts, and high-velocity content creation when speed matters. Teams can test variations quickly, compare prompt fidelity across engines, and move from concept to usable clips faster than traditional production timelines."
+          },
+          {
+            "title": "Image-to-Video AI",
+            "body": "Start from a still image and bring it to life with motion, camera movement, and subtle animation while keeping your original composition intact. Image-to-video is useful for consistent characters, product visuals, and brand scenes where control over layout is important. It is also a practical bridge between design and motion, letting you keep visual direction steady while generating multiple creative variants for review."
+          },
+          {
+            "title": "Video-to-Video AI",
+            "body": "Upload existing footage and transform it with a new look, pacing, or motion behavior while preserving your base scene structure. Video-to-video is effective for stylization, iterative versions, and fast creative exploration when you need multiple outputs from one source clip. It helps teams test directions side by side, keep production agile, and deliver alternatives without re-shooting every sequence from scratch."
+          }
+        ]
+      },
+      "compare": {
+        "title": "Compare AI video models - before you render",
+        "body": "MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every render.",
+        "worksWith": "Works with Sora 2, Veo 3.1, LTX-2, Kling 3, Wan 2.6, Seedance 1.5, Pika 2.2, Hailuo 02, Nano Banana, and more.",
+        "popularLinks": [
+          {
+            "label": "Sora 2 vs Veo 3.1 comparison",
+            "slug": "sora-2-vs-veo-3-1"
+          },
+          {
+            "label": "Kling 3 vs Sora 2 comparison",
+            "slug": "kling-3-pro-vs-sora-2"
+          },
+          {
+            "label": "Veo 3.1 vs Kling 3 comparison",
+            "slug": "kling-3-pro-vs-veo-3-1"
+          },
+          {
+            "label": "LTX-2 vs Veo 3.1 comparison",
+            "slug": "ltx-2-vs-veo-3-1"
+          }
+        ],
+        "seeAllLabel": "See all AI video engine comparisons",
+        "imageAlt": "MaxVideoAI comparison page screenshot showing two AI engines side by side.",
+        "carouselIntro": "Compare AI video models by capabilities, limits, and best-fit use cases, or",
+        "carouselLinkLabel": "browse all AI video engine comparisons"
+      },
+      "faq": {
+        "title": "AI video generator FAQ",
+        "description": "Short answers for common AI video generation questions.",
+        "items": [
+          {
+            "q": "What's the best AI video generator?",
+            "a": "It depends on what you are making. Some models are better for cinematic motion, others for speed, prompt accuracy, or consistency. MaxVideoAI helps you compare multiple AI video models so you can choose the best option for each project."
+          },
+          {
+            "q": "Can I generate videos from text prompts?",
+            "a": "Yes. Text-to-video lets you create clips directly from a written prompt, then iterate quickly by adjusting prompt, style, and model choice."
+          },
+          {
+            "q": "What's the difference between text-to-video and image-to-video?",
+            "a": "Text-to-video starts from a prompt, while image-to-video starts from a still image and adds motion while preserving the original composition."
+          },
+          {
+            "q": "Do I need editing skills to use an AI video generator?",
+            "a": "No. You can generate clips with prompts and simple settings. For advanced workflows, you can still remix and iterate with variations."
+          },
+          {
+            "q": "Is MaxVideoAI free?",
+            "a": "MaxVideoAI uses pay-as-you-go credits with pricing shown before you generate."
+          }
+        ]
       }
     }
   },
@@ -1070,19 +1172,19 @@
         "format": {
           "label": "Format",
           "options": {
-            "all": "All",
             "720": "720p+",
             "1080": "1080p+",
-            "2160": "4K"
+            "2160": "4K",
+            "all": "All"
           }
         },
         "duration": {
           "label": "Duration",
           "options": {
-            "all": "All",
             "8": "≤8s",
-            "10-15": "10–15s",
-            "20": "20s+"
+            "20": "20s+",
+            "all": "All",
+            "10-15": "10–15s"
           }
         },
         "price": {
@@ -1166,8 +1268,8 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "AI Video Engines — Compare Sora, Veo, Pika | MaxVideoAI",
-      "description": "Compare availability, latency, and compliance routes for Sora 2, Veo 3, Pika, and MiniMax engines in Europe."
+      "title": "Compare AI Video Engines and Models | MaxVideoAI",
+      "description": "Pick two AI video engines, compare capabilities and limits, then open the canonical side-by-side matchup in one click."
     },
     "hero": {
       "title": "Run AI Video Generators in Europe — Sora 2, Veo 3, Pika & More",

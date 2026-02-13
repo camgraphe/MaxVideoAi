@@ -19,6 +19,10 @@ interface SelectMenuProps {
   className?: string;
   hideChevron?: boolean;
   buttonClassName?: string;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  filterText?: (option: SelectOption) => string;
+  noResultsLabel?: string;
 }
 
 const BUTTON_BASE =
@@ -46,8 +50,13 @@ export function SelectMenu({
   className,
   hideChevron = false,
   buttonClassName,
+  searchable = false,
+  searchPlaceholder = 'Search...',
+  filterText,
+  noResultsLabel = 'No results',
 }: SelectMenuProps) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -58,12 +67,34 @@ export function SelectMenu({
   );
   const selectedOption = options[selectedIndex] ?? options[0];
   const selectedLabel = selectedOption?.label ?? String(value);
+  const filteredOptions = useMemo(() => {
+    if (!searchable) return options;
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return options;
+    return options.filter((option) => {
+      const haystack = filterText
+        ? filterText(option)
+        : typeof option.label === 'string'
+          ? option.label
+          : String(option.value);
+      return haystack.toLowerCase().includes(normalizedQuery);
+    });
+  }, [filterText, options, query, searchable]);
+  const selectedFilteredIndex = useMemo(
+    () => filteredOptions.findIndex((option) => String(option.value) === String(value)),
+    [filteredOptions, value]
+  );
 
   useEffect(() => {
     if (!open) return;
-    const nextIndex = selectedIndex >= 0 ? selectedIndex : findFirstEnabled(options);
+    const nextIndex = selectedFilteredIndex >= 0 ? selectedFilteredIndex : findFirstEnabled(filteredOptions);
     setHighlightedIndex(nextIndex);
-  }, [open, options, selectedIndex]);
+  }, [filteredOptions, open, selectedFilteredIndex]);
+
+  useEffect(() => {
+    if (!open || !searchable) return;
+    setQuery('');
+  }, [open, searchable]);
 
   const previousValueRef = useRef(value);
   useEffect(() => {
@@ -83,31 +114,36 @@ export function SelectMenu({
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
+      const targetTag = (event.target as HTMLElement | null)?.tagName;
+      const isTypingTarget = targetTag === 'INPUT' || targetTag === 'TEXTAREA';
       if (event.key === 'Escape') {
         event.preventDefault();
         setOpen(false);
         return;
       }
+      if (isTypingTarget && event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+        return;
+      }
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         setHighlightedIndex((current) => {
-          const base = current >= 0 ? current : selectedIndex;
-          return findNextEnabled(options, base, 1);
+          const base = current >= 0 ? current : selectedFilteredIndex;
+          return findNextEnabled(filteredOptions, base, 1);
         });
         return;
       }
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         setHighlightedIndex((current) => {
-          const base = current >= 0 ? current : selectedIndex;
-          return findNextEnabled(options, base, -1);
+          const base = current >= 0 ? current : selectedFilteredIndex;
+          return findNextEnabled(filteredOptions, base, -1);
         });
         return;
       }
       if (event.key === 'Enter' || event.key === ' ') {
-        if (highlightedIndex < 0 || highlightedIndex >= options.length) return;
+        if (highlightedIndex < 0 || highlightedIndex >= filteredOptions.length) return;
         event.preventDefault();
-        const option = options[highlightedIndex];
+        const option = filteredOptions[highlightedIndex];
         if (option?.disabled) return;
         onChange(option.value);
         setOpen(false);
@@ -119,7 +155,14 @@ export function SelectMenu({
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [highlightedIndex, onChange, open, options, selectedIndex]);
+  }, [filteredOptions, highlightedIndex, onChange, open, selectedFilteredIndex]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!searchable) return;
+    const nextIndex = selectedFilteredIndex >= 0 ? selectedFilteredIndex : findFirstEnabled(filteredOptions);
+    setHighlightedIndex(nextIndex);
+  }, [filteredOptions, open, searchable, selectedFilteredIndex]);
 
   useEffect(() => {
     if (!open) return;
@@ -176,8 +219,19 @@ export function SelectMenu({
       </Button>
       {open ? (
         <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur">
+          {searchable ? (
+            <div className="px-1 pb-1">
+              <input
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={searchPlaceholder}
+                className="w-full rounded-input border border-hairline bg-bg px-2 py-1 text-[12px] text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+          ) : null}
           <ul role="listbox" className="space-y-1 text-[12px]">
-            {options.map((option, index) => {
+            {filteredOptions.map((option, index) => {
               const isSelected = String(option.value) === String(value);
               const isHighlighted = index === highlightedIndex;
               return (
@@ -219,6 +273,9 @@ export function SelectMenu({
               );
             })}
           </ul>
+          {searchable && filteredOptions.length === 0 ? (
+            <div className="px-3 py-2 text-[12px] text-text-muted">{noResultsLabel}</div>
+          ) : null}
         </div>
       ) : null}
     </div>

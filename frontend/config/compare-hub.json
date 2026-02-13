@@ -1,0 +1,120 @@
+{
+  "popularComparisons": [
+    { "left": "sora-2", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
+    { "left": "kling-3-pro", "right": "sora-2", "tags": ["cinematic", "quality", "long"] },
+    { "left": "veo-3-1", "right": "kling-3-pro", "tags": ["audio", "ads", "quality"] },
+    { "left": "ltx-2", "right": "veo-3-1", "tags": ["product", "quality", "audio"] },
+    { "left": "wan-2-6", "right": "sora-2", "tags": ["value", "general", "i2v"] },
+    { "left": "seedance-1-5-pro", "right": "kling-3-pro", "tags": ["cinematic", "storyboards", "quality"] },
+    { "left": "pika-text-to-video", "right": "minimax-hailuo-02-text", "tags": ["social", "fast", "value"] },
+    { "left": "ltx-2-fast", "right": "veo-3-1-fast", "tags": ["fast", "value", "ads"] },
+    { "left": "wan-2-5", "right": "ltx-2-fast", "tags": ["fast", "social", "value"] },
+    { "left": "kling-2-6-pro", "right": "veo-3-1", "tags": ["audio", "cinematic", "ads"] }
+  ],
+  "useCaseBuckets": [
+    {
+      "id": "cinematic",
+      "pairs": [
+        { "left": "sora-2", "right": "veo-3-1" },
+        { "left": "kling-3-pro", "right": "sora-2" },
+        { "left": "seedance-1-5-pro", "right": "kling-3-pro" }
+      ]
+    },
+    {
+      "id": "ads",
+      "pairs": [
+        { "left": "veo-3-1", "right": "ltx-2" },
+        { "left": "veo-3-1", "right": "kling-2-6-pro" },
+        { "left": "sora-2", "right": "veo-3-1" }
+      ]
+    },
+    {
+      "id": "social",
+      "pairs": [
+        { "left": "pika-text-to-video", "right": "ltx-2-fast" },
+        { "left": "wan-2-5", "right": "ltx-2-fast" },
+        { "left": "minimax-hailuo-02-text", "right": "pika-text-to-video" }
+      ]
+    },
+    {
+      "id": "product",
+      "pairs": [
+        { "left": "ltx-2", "right": "veo-3-1" },
+        { "left": "sora-2", "right": "ltx-2" },
+        { "left": "kling-3-standard", "right": "ltx-2" }
+      ]
+    },
+    {
+      "id": "storyboards",
+      "pairs": [
+        { "left": "veo-3-1-fast", "right": "ltx-2-fast" },
+        { "left": "kling-3-standard", "right": "wan-2-5" },
+        { "left": "sora-2", "right": "kling-3-standard" }
+      ]
+    },
+    {
+      "id": "audio",
+      "pairs": [
+        { "left": "sora-2", "right": "veo-3-1" },
+        { "left": "veo-3-1", "right": "kling-3-pro" },
+        { "left": "kling-2-6-pro", "right": "veo-3-1" }
+      ]
+    },
+    {
+      "id": "no-audio",
+      "pairs": [
+        { "left": "ltx-2", "right": "seedance-1-5-pro" },
+        { "left": "wan-2-6", "right": "kling-3-standard" },
+        { "left": "pika-text-to-video", "right": "ltx-2-fast" }
+      ]
+    },
+    {
+      "id": "best-value",
+      "pairs": [
+        { "left": "ltx-2-fast", "right": "wan-2-5" },
+        { "left": "pika-text-to-video", "right": "minimax-hailuo-02-text" },
+        { "left": "wan-2-6", "right": "ltx-2-fast" }
+      ]
+    },
+    {
+      "id": "best-quality",
+      "pairs": [
+        { "left": "sora-2-pro", "right": "kling-3-pro" },
+        { "left": "sora-2", "right": "veo-3-1" },
+        { "left": "kling-3-pro", "right": "veo-3-1" }
+      ]
+    },
+    {
+      "id": "text-to-video",
+      "pairs": [
+        { "left": "sora-2", "right": "kling-3-pro" },
+        { "left": "veo-3-1", "right": "ltx-2" },
+        { "left": "wan-2-6", "right": "kling-2-6-pro" }
+      ]
+    },
+    {
+      "id": "image-to-video",
+      "pairs": [
+        { "left": "sora-2", "right": "veo-3-1-first-last" },
+        { "left": "wan-2-6", "right": "veo-3-1" },
+        { "left": "ltx-2", "right": "minimax-hailuo-02-text" }
+      ]
+    },
+    {
+      "id": "video-to-video",
+      "pairs": [
+        { "left": "wan-2-6", "right": "veo-3-1" },
+        { "left": "wan-2-6", "right": "kling-3-standard" },
+        { "left": "wan-2-6", "right": "ltx-2" }
+      ]
+    }
+  ],
+  "opponentOverrides": {
+    "sora-2": ["veo-3-1", "kling-3-pro", "wan-2-6"],
+    "veo-3-1": ["sora-2", "kling-3-pro", "ltx-2"],
+    "kling-3-pro": ["sora-2", "veo-3-1", "seedance-1-5-pro"],
+    "wan-2-6": ["sora-2", "veo-3-1", "ltx-2-fast"],
+    "ltx-2": ["veo-3-1", "sora-2", "kling-3-standard"],
+    "pika-text-to-video": ["minimax-hailuo-02-text", "ltx-2-fast", "wan-2-5"]
+  }
+}

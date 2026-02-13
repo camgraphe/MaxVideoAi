@@ -16,6 +16,9 @@ type CompareEngineSelectorProps = {
 export function CompareEngineSelector({ options, value, otherValue, side }: CompareEngineSelectorProps) {
   const router = useRouter();
   const locale = useLocale();
+  const searchPlaceholder =
+    locale === 'fr' ? 'Rechercher un moteur...' : locale === 'es' ? 'Buscar motor...' : 'Search engine...';
+  const noResultsLabel = locale === 'fr' ? 'Aucun résultat' : locale === 'es' ? 'Sin resultados' : 'No results';
   const brandBySlug = useMemo(() => {
     const catalog = engineCatalog as Array<{ modelSlug: string; brandId?: string | null; marketingName?: string }>;
     return new Map(catalog.map((entry) => [entry.modelSlug, entry.brandId ?? null]));
@@ -63,6 +66,14 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
     <SelectMenu
       options={resolvedOptions}
       value={value}
+      searchable
+      searchPlaceholder={searchPlaceholder}
+      noResultsLabel={noResultsLabel}
+      filterText={(option) => {
+        const raw = options.find((entry) => String(entry.value) === String(option.value));
+        if (!raw) return String(option.value);
+        return typeof raw.label === 'string' ? raw.label : String(raw.value);
+      }}
       hideChevron
       buttonClassName="w-full max-w-[220px] min-w-0 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[12px] font-semibold text-text-primary shadow-none transition hover:bg-surface-2/80 sm:max-w-none sm:min-w-[280px] md:min-w-[320px]"
       onChange={(next) => {
