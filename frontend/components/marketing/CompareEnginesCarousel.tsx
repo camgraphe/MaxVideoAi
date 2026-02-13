@@ -20,6 +20,13 @@ type CompareCopy = {
   ariaNext?: string;
   viewModel?: string;
   viewExamples?: string;
+  cardLabels?: {
+    avg?: string;
+    modes?: string;
+    max?: string;
+    res?: string;
+  };
+  modeLabels?: Partial<Record<Mode, string>>;
 };
 
 type CompareEngineMeta = {
@@ -67,9 +74,9 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
   },
 };
 
-function getModeLabel(engineId: string | undefined, value: Mode): string {
+function getModeLabel(engineId: string | undefined, value: Mode, labels: Record<Mode, string>): string {
   const override = engineId ? ENGINE_MODE_LABEL_OVERRIDES[engineId]?.[value] : undefined;
-  return override ?? MODE_LABELS[value] ?? value.toUpperCase();
+  return override ?? labels[value] ?? value.toUpperCase();
 }
 
 function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
@@ -95,12 +102,21 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
   const [thumbWidth, setThumbWidth] = useState(32);
   const [thumbOffset, setThumbOffset] = useState(0);
   const [showScrollbar, setShowScrollbar] = useState(false);
-  const title = copy?.title ?? 'Compare engines at a glance';
-  const subtitle = copy?.subtitle ?? 'Max duration · Audio · Best for';
+  const title = copy?.title ?? 'AI video engines in one view';
+  const subtitle = copy?.subtitle ?? 'Capabilities · Limits · Best for';
   const ariaPrev = copy?.ariaPrev ?? 'Scroll to previous engine card';
   const ariaNext = copy?.ariaNext ?? 'Scroll to next engine card';
   const viewModelLabel = copy?.viewModel ?? 'View model page';
   const viewExamplesLabel = copy?.viewExamples ?? 'View examples';
+  const cardLabels = copy?.cardLabels ?? {};
+  const avgLabel = cardLabels.avg ?? 'Avg';
+  const modesLabel = cardLabels.modes ?? 'Modes';
+  const maxLabel = cardLabels.max ?? 'Max';
+  const resLabel = cardLabels.res ?? 'Res';
+  const modeLabels: Record<Mode, string> = {
+    ...MODE_LABELS,
+    ...(copy?.modeLabels ?? {}),
+  };
 
   const scrollByCard = (direction: number) => {
     const el = containerRef.current;
@@ -233,13 +249,13 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
           const guide = DEFAULT_ENGINE_GUIDE[engine.id];
           const name = engine.cardTitle ?? engine.marketingName ?? engine.engine.label;
           const versionLabel = engine.versionLabel ?? engine.engine.version ?? '-';
-          const description = guide?.description ?? entry.meta?.bestFor ?? engine.seo.description ?? '';
+          const description = entry.meta?.bestFor ?? guide?.description ?? engine.seo.description ?? '';
           const avgDurationLabel = formatAvgDuration(engine.engine.avgDurationMs);
           const badges = guide?.badges ?? [];
           const labsBadgeNeeded = engine.engine.isLab && !badges.some((badge) => badge === 'Labs');
           const combinedBadges = labsBadgeNeeded ? [...badges, 'Labs'] : badges;
           const modes = getModeDisplayOrder(engine.id, engine.engine.modes)
-            .map((mode) => getModeLabel(engine.id, mode))
+            .map((mode) => getModeLabel(engine.id, mode, modeLabels))
             .join(' / ');
           const modelHref = { pathname: '/models/[slug]', params: { slug: engine.modelSlug } };
           const allowExamples = engine.category !== 'image' && engine.type !== 'image';
@@ -274,7 +290,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
                   <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
                     {avgDurationLabel && (
                       <span className="rounded-input border border-border px-2 py-0.5">
-                        Avg {avgDurationLabel}
+                        {avgLabel} {avgDurationLabel}
                       </span>
                     )}
                     {engine.engine.status && (
@@ -298,9 +314,9 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
-                  <span>Modes: {modes}</span>
+                  <span>{modesLabel}: {modes}</span>
                   <span>
-                    Max {engine.engine.maxDurationSec}s / Res {formatResolutionList(engine.engine.id, engine.engine.resolutions).join(' / ')}
+                    {maxLabel} {engine.engine.maxDurationSec}s / {resLabel} {formatResolutionList(engine.engine.id, engine.engine.resolutions).join(' / ')}
                   </span>
                 </div>
               </div>

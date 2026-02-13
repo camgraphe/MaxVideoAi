@@ -2,25 +2,9 @@ import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import type { AppLocale } from '@/i18n/locales';
 import { defaultLocale, localePathnames, localeRegions, locales } from '@/i18n/locales';
 import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 
-function resolveSiteBaseUrl() {
-  const configured =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.SITE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ??
-    'https://maxvideoai.com';
-  try {
-    const normalized = new URL(configured);
-    normalized.pathname = '/';
-    normalized.search = '';
-    normalized.hash = '';
-    return normalized.origin;
-  } catch {
-    return 'https://maxvideoai.com';
-  }
-}
-
-export const SITE_BASE_URL = resolveSiteBaseUrl();
+export const SITE_BASE_URL = SITE_ORIGIN;
 
 export type LocaleSlugMap = Partial<Record<AppLocale, string>>;
 

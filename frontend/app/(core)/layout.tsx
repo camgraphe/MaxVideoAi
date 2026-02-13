@@ -11,11 +11,8 @@ import { SWRProvider } from '@/components/swr/SWRProvider';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { LocaleSync } from '@/components/i18n/LocaleSync';
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://maxvideoai.com');
-const NORMALIZED_SITE_URL = SITE_URL.replace(/\/+$/, '') || 'https://maxvideoai.com';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
+const NORMALIZED_SITE_URL = SITE_ORIGIN;
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${NORMALIZED_SITE_URL}/`),

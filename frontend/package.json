@@ -19,6 +19,7 @@
     "i18n:models": "tsx scripts/translate-models.ts",
     "sitemap:ping": "tsx scripts/ping-sitemaps.ts",
     "qa:hreflang": "tsx scripts/qa/hreflang-check.ts",
+    "qa:canonical-host": "tsx scripts/qa/canonical-host-guard.ts",
     "qa:compare-en": "tsx scripts/qa/compare-en-prod.ts",
     "lighthouse:home": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/home && lhci collect --url=https://maxvideoai.com/?nolocale=1 --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/home && cp -R .lighthouseci/* ./lighthouse-reports/home/ && rm -rf .lighthouseci",
     "lighthouse:examples": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/examples && lhci collect --url=https://maxvideoai.com/examples?nolocale=1 --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/examples && cp -R .lighthouseci/* ./lighthouse-reports/examples/ && rm -rf .lighthouseci",

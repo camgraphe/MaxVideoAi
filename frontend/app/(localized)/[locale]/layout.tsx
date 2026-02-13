@@ -11,6 +11,7 @@ import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { defaultLocale, localeRegions, locales, type AppLocale } from '@/i18n/locales';
 import { deserializeMessages } from '@/lib/i18n/server';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 type LocaleLayoutProps = {
   children: ReactNode;
   params: { locale: string };
@@ -20,11 +21,7 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://maxvideoai.com');
-const NORMALIZED_SITE_URL = SITE_URL.replace(/\/+$/, '') || 'https://maxvideoai.com';
+const NORMALIZED_SITE_URL = SITE_ORIGIN;
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${NORMALIZED_SITE_URL}/`),

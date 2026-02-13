@@ -14,6 +14,7 @@ interface HeroMediaTileProps {
   videoPosterSrc?: string;
   alt: string;
   showAudioIcon?: boolean;
+  audioBadgeLabel?: string;
   badge?: string;
   priority?: boolean;
   authenticatedHref?: string;
@@ -28,6 +29,15 @@ interface HeroMediaTileProps {
     engineLabel?: string | null;
     durationSec?: number | null;
   } | null;
+  lightboxCopy?: {
+    openPreviewAria?: string;
+    openGeneratorAria?: string;
+    dialogAria?: string;
+    modelPage?: string;
+    generateLikeThis?: string;
+    viewDetails?: string;
+    closePreview?: string;
+  };
 }
 
 export function HeroMediaTile({
@@ -38,6 +48,7 @@ export function HeroMediaTile({
   videoPosterSrc,
   alt,
   showAudioIcon,
+  audioBadgeLabel,
   badge,
   priority,
   authenticatedHref,
@@ -48,6 +59,7 @@ export function HeroMediaTile({
   generateHref,
   modelHref,
   detailMeta,
+  lightboxCopy,
 }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
@@ -122,7 +134,7 @@ export function HeroMediaTile({
     <figure className="group relative w-full overflow-hidden rounded-[28px] border border-preview-outline-idle bg-surface shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
-          <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
+          <AudioEqualizerBadge tone="light" size="sm" label={audioBadgeLabel ?? 'Audio enabled'} />
         ) : null}
         <Image
           src={posterSrc}
@@ -132,7 +144,7 @@ export function HeroMediaTile({
           fetchPriority={priority ? 'high' : undefined}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
-          quality={80}
+          quality={72}
           sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
           className="object-cover"
         />
@@ -153,17 +165,17 @@ export function HeroMediaTile({
             <source src={videoSrc} type="video/mp4" />
           </video>
         ) : null}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-on-inverse">
-          {badge ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-black/65 via-black/25 to-transparent p-4 text-left text-on-inverse">
+          <p className="text-2xl font-semibold leading-tight sm:text-3xl">{label}</p>
+          <p className="mt-0.5 text-xs font-medium leading-none text-on-media-80 sm:text-sm">{priceLabel}</p>
+        </div>
+        {badge ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-on-inverse">
             <span className="inline-flex h-6 items-center rounded-pill border border-surface-on-media-50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-on-inverse">
               {badge}
             </span>
-          ) : null}
-          <figcaption className="space-y-1">
-            <p className="text-2xl font-semibold sm:text-3xl">{label}</p>
-            <p className="text-sm font-medium text-on-media-80">{priceLabel}</p>
-          </figcaption>
-        </div>
+          </div>
+        ) : null}
       </div>
       <span className="sr-only">{alt}</span>
     </figure>
@@ -190,7 +202,7 @@ export function HeroMediaTile({
       variant="ghost"
       onClick={() => setLightboxOpen(true)}
       className="min-h-0 h-auto w-full items-stretch justify-start rounded-[28px] p-0 text-left font-normal"
-      aria-label={`Preview ${label}`}
+      aria-label={(lightboxCopy?.openPreviewAria ?? 'Preview {label}').replace('{label}', label)}
     >
       {content}
     </Button>
@@ -199,7 +211,7 @@ export function HeroMediaTile({
       href={cardHref}
       prefetch={false}
       className="block rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-      aria-label={`Open ${label} generator`}
+      aria-label={(lightboxCopy?.openGeneratorAria ?? 'Open {label} generator').replace('{label}', label)}
     >
       {content}
     </Link>
@@ -216,7 +228,7 @@ export function HeroMediaTile({
           className="fixed inset-0 z-[180] flex items-center justify-center bg-surface-on-media-dark-80 px-4 py-8"
           role="dialog"
           aria-modal="true"
-          aria-label={`${label} preview`}
+          aria-label={(lightboxCopy?.dialogAria ?? '{label} preview').replace('{label}', label)}
           onClick={(event) => {
             if (event.target === event.currentTarget) {
               setLightboxOpen(false);
@@ -236,7 +248,7 @@ export function HeroMediaTile({
                       href={modelHref}
                       className="inline-flex items-center gap-1 rounded-full bg-surface-glass-90 px-2 py-0.5 text-[11px] font-semibold text-brand shadow-sm transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <span>Model page</span>
+                      <span>{lightboxCopy?.modelPage ?? 'Model page'}</span>
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
                         <path
                           d="M4 12L12 4M5 4h7v7"
@@ -265,14 +277,14 @@ export function HeroMediaTile({
                     prefetch={false}
                     className="inline-flex rounded-pill bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-micro text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    Generate like this
+                    {lightboxCopy?.generateLikeThis ?? 'Generate like this'}
                   </Link>
                 ) : null}
                 <Link
                   href={detailHref}
                   className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  View details
+                  {lightboxCopy?.viewDetails ?? 'View details'}
                 </Link>
               </div>
             </div>
@@ -296,7 +308,7 @@ export function HeroMediaTile({
               variant="ghost"
               onClick={() => setLightboxOpen(false)}
               className="absolute right-4 top-4 h-11 w-11 min-h-0 rounded-full bg-surface-glass-95 p-0 text-text-primary shadow-lg ring-1 ring-border hover:bg-surface"
-              aria-label="Close preview"
+              aria-label={lightboxCopy?.closePreview ?? 'Close preview'}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path

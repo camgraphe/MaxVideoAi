@@ -44,9 +44,7 @@ const CompareEnginesCarousel = dynamic(
     })),
   {
     ssr: false,
-    loading: () => (
-      <div className="mx-auto mt-10 h-64 w-full max-w-6xl animate-pulse rounded-card bg-surface/40" aria-hidden />
-    ),
+    loading: () => <div className="mx-auto mt-10 h-64 w-full max-w-6xl animate-pulse rounded-card bg-surface/40" aria-hidden />,
   }
 );
 
@@ -141,7 +139,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
 
 const HERO_POSTER_WIDTH = 1200;
 const HERO_POSTER_HEIGHT = 675;
-const HERO_POSTER_QUALITY = 80;
+const HERO_POSTER_QUALITY = 72;
 
 function buildOptimizedPoster(src: string): string {
   if (!src) return src;
@@ -159,20 +157,21 @@ function buildOptimizedPoster(src: string): string {
   return props.src;
 }
 
-const WORKS_WITH_BRANDS = [
-  'Sora 2',
-  'Veo 3.1',
-  'LTX-2 Fast',
-  'LTX-2 Pro',
-  'Kling 2.6 Pro',
-  'Kling 3 Standard',
-  'Kling 3 Pro',
-  'Seedance 1.5 Pro',
-  'Pika 2.2',
-  'MiniMax Hailuo 02',
-  'Kling 2.5',
-  'Wan 2.5',
-  'Nano Banana',
+type WorksWithBrandItem = {
+  label: string;
+  slug?: string;
+};
+
+const WORKS_WITH_BRAND_LINKS: readonly WorksWithBrandItem[] = [
+  { label: 'Sora 2', slug: 'sora-2' },
+  { label: 'Veo 3.1', slug: 'veo-3-1' },
+  { label: 'LTX-2', slug: 'ltx-2' },
+  { label: 'Kling 3', slug: 'kling-3-pro' },
+  { label: 'Wan 2.6', slug: 'wan-2-6' },
+  { label: 'Seedance 1.5', slug: 'seedance-1-5-pro' },
+  { label: 'Pika 2.2', slug: 'pika-text-to-video' },
+  { label: 'Hailuo 02', slug: 'minimax-hailuo-02-text' },
+  { label: 'Nano Banana', slug: 'nano-banana' },
 ] as const;
 
 const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
@@ -223,6 +222,113 @@ const COMPARE_ENGINE_META: Record<
   'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'No', bestFor: 'Stylised text/image motion' },
 };
 
+const PRICE_PREFIX_BY_LOCALE: Record<AppLocale, string> = {
+  en: 'from',
+  fr: 'à partir de',
+  es: 'desde',
+};
+
+function localizePricePrefix(label: string, locale: AppLocale): string {
+  const targetPrefix = PRICE_PREFIX_BY_LOCALE[locale] ?? PRICE_PREFIX_BY_LOCALE.en;
+  return label.replace(/^from\s+/i, `${targetPrefix} `);
+}
+
+const HERO_AUDIO_BADGE_BY_LOCALE: Record<AppLocale, string> = {
+  en: 'Audio enabled',
+  fr: 'Audio activé',
+  es: 'Audio activado',
+};
+
+const HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE: Record<AppLocale, string> = {
+  en: 'Generate with {engine} settings',
+  fr: 'Générer avec les réglages {engine}',
+  es: 'Generar con ajustes de {engine}',
+};
+
+const HERO_ALT_TEMPLATE_BY_LOCALE: Record<AppLocale, string> = {
+  en: '{engine} AI video preview',
+  fr: 'Aperçu vidéo IA de {engine}',
+  es: 'Vista previa de video IA de {engine}',
+};
+
+const HERO_LIGHTBOX_COPY_BY_LOCALE: Record<
+  AppLocale,
+  {
+    openPreviewAria: string;
+    openGeneratorAria: string;
+    dialogAria: string;
+    modelPage: string;
+    generateLikeThis: string;
+    viewDetails: string;
+    closePreview: string;
+  }
+> = {
+  en: {
+    openPreviewAria: 'Preview {label}',
+    openGeneratorAria: 'Open {label} generator',
+    dialogAria: '{label} preview',
+    modelPage: 'Model page',
+    generateLikeThis: 'Generate like this',
+    viewDetails: 'View details',
+    closePreview: 'Close preview',
+  },
+  fr: {
+    openPreviewAria: 'Prévisualiser {label}',
+    openGeneratorAria: 'Ouvrir le générateur {label}',
+    dialogAria: 'Prévisualisation de {label}',
+    modelPage: 'Page modèle',
+    generateLikeThis: 'Générer comme ceci',
+    viewDetails: 'Voir les détails',
+    closePreview: 'Fermer la prévisualisation',
+  },
+  es: {
+    openPreviewAria: 'Previsualizar {label}',
+    openGeneratorAria: 'Abrir generador de {label}',
+    dialogAria: 'Previsualización de {label}',
+    modelPage: 'Página del modelo',
+    generateLikeThis: 'Generar así',
+    viewDetails: 'Ver detalles',
+    closePreview: 'Cerrar previsualización',
+  },
+};
+
+const COMPARE_BEST_FOR_BY_LOCALE: Partial<Record<AppLocale, Record<string, string>>> = {
+  fr: {
+    'sora-2': 'Plans cinématiques',
+    'sora-2-pro': 'Rendus Sora qualité studio',
+    'veo-3-1': 'Ads et B-roll',
+    'veo-3-1-fast': 'Transitions frame-to-frame',
+    'ltx-2-fast': 'Clips sociaux rapides',
+    'ltx-2': 'Histoires produit premium',
+    'kling-3-standard': 'Séquences ciné multi-plans',
+    'kling-3-pro': 'Contrôle ciné multi-plans',
+    'seedance-1-5-pro': 'Plans ciné à caméra verrouillée',
+    'kling-2-6-pro': 'Dialogue cinématique',
+    'pika-text-to-video': 'Prompts et boucles image',
+    'minimax-hailuo-02-text': 'Motion stylisé texte/image',
+  },
+  es: {
+    'sora-2': 'Tomas cinematográficas',
+    'sora-2-pro': 'Renders Sora de calidad estudio',
+    'veo-3-1': 'Anuncios y planos de apoyo',
+    'veo-3-1-fast': 'Transiciones entre fotogramas',
+    'ltx-2-fast': 'Clips sociales rápidos',
+    'ltx-2': 'Historias de producto premium',
+    'kling-3-standard': 'Secuencias cinemáticas multi-toma',
+    'kling-3-pro': 'Control cinemático multi-toma',
+    'seedance-1-5-pro': 'Tomas cinemáticas con cámara bloqueada',
+    'kling-2-6-pro': 'Diálogo cinematográfico',
+    'pika-text-to-video': 'Prompts y bucles desde imagen',
+    'minimax-hailuo-02-text': 'Animación estilizada desde texto o imagen',
+  },
+};
+
+const AUDIO_VALUE_BY_LOCALE: Record<AppLocale, { yes: string; no: string }> = {
+  en: { yes: 'Yes', no: 'No' },
+  fr: { yes: 'Oui', no: 'Non' },
+  es: { yes: 'Sí', no: 'No' },
+};
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'home.meta' });
@@ -242,6 +348,40 @@ type MiniFaqProps = {
     items?: Array<{ q: string; a: string }>;
   } | null;
 };
+
+const HERO_SEO_PARAGRAPH =
+  'MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every render so you can pick the right engine with confidence.';
+
+const HERO_MICRO_POINTS = [
+  'Text-to-video, image-to-video, and video-to-video workflows',
+  'Compare results across multiple AI video models',
+  'Pay-as-you-go pricing with cost shown before you generate',
+] as const;
+
+const DEFINITION_BLOCK_COPY =
+  'An AI video generator creates clips with artificial intelligence. You can turn text prompts into video, animate still images (image-to-video), or transform existing footage (video-to-video). Because each model balances quality, speed, and consistency differently, comparing models before you render helps you pick the right one for each shot.';
+
+const GENERATE_WAYS_COPY = [
+  {
+    title: 'Text-to-Video AI',
+    body: 'Write a clear prompt, choose a model, and generate videos in cinematic, product, social, or explainer styles without rebuilding your process each time. Text-to-video works well for rapid ideation, storyboard drafts, and high-velocity content creation when speed matters. Teams can test variations quickly, compare prompt fidelity across engines, and move from concept to usable clips faster than traditional production timelines.',
+  },
+  {
+    title: 'Image-to-Video AI',
+    body: 'Start from a still image and bring it to life with motion, camera movement, and subtle animation while keeping your original composition intact. Image-to-video is useful for consistent characters, product visuals, and brand scenes where control over layout is important. It is also a practical bridge between design and motion, letting you keep visual direction steady while generating multiple creative variants for review.',
+  },
+  {
+    title: 'Video-to-Video AI',
+    body: 'Upload existing footage and transform it with a new look, pacing, or motion behavior while preserving your base scene structure. Video-to-video is effective for stylization, iterative versions, and fast creative exploration when you need multiple outputs from one source clip. It helps teams test directions side by side, keep production agile, and deliver alternatives without re-shooting every sequence from scratch.',
+  },
+] as const;
+
+const POPULAR_COMPARISON_LINKS = [
+  { label: 'Sora 2 vs Veo 3.1 comparison', slug: 'sora-2-vs-veo-3-1' },
+  { label: 'Kling 3 vs Sora 2 comparison', slug: 'kling-3-pro-vs-sora-2' },
+  { label: 'Veo 3.1 vs Kling 3 comparison', slug: 'kling-3-pro-vs-veo-3-1' },
+  { label: 'LTX-2 vs Veo 3.1 comparison', slug: 'ltx-2-vs-veo-3-1' },
+] as const;
 
 function MiniFAQ({ faq }: MiniFaqProps) {
   const fallback = {
@@ -316,12 +456,24 @@ function pickResolution(resolutions: string[] | undefined, requested: string | u
   return nonAuto ?? requested ?? '1080p';
 }
 
-async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
+function truncateText(value: string | null | undefined, maxChars = 140): string | null {
+  if (!value) return null;
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (!normalized) return null;
+  if (normalized.length <= maxChars) return normalized;
+  return `${normalized.slice(0, maxChars).trimEnd()}...`;
+}
+
+async function resolveHeroTilePrices(
+  tiles: HeroTilePricingInput[],
+  options?: { pricePrefix?: string }
+) {
   const engineIndex = new Map<string, EngineCaps>(
     listFalEngines().map((entry) => [entry.engine.id, entry.engine])
   );
+  const prefix = options?.pricePrefix ?? 'from';
   const formatPriceLabel = (cents: number, currency: string) =>
-    `from ${new Intl.NumberFormat(CURRENCY_LOCALE, {
+    `${prefix} ${new Intl.NumberFormat(CURRENCY_LOCALE, {
       style: 'currency',
       currency,
       minimumFractionDigits: 2,
@@ -368,6 +520,7 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 }
 
 export default async function HomePage({ params }: { params: { locale: AppLocale } }) {
+  const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const home = dictionary.home;
   const pricingRules = await listPricingRules();
@@ -382,12 +535,63 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const seoDescription =
     home.meta?.description ??
     'Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly.';
-  const defaultBadges = ['PAY-AS-YOU-GO', 'PRICE-BEFORE', 'ALWAYS-CURRENT'];
-  const badges = Array.isArray(home.badges) && home.badges.length ? home.badges : defaultBadges;
+  const defaultBadges = ['Pay-as-you-go pricing', 'Price before you generate', 'Always-current engines'];
+  const badgeLabelMap: Record<string, string> = {
+    'PAY-AS-YOU-GO': 'Pay-as-you-go pricing',
+    'PRICE-BEFORE': 'Price before you generate',
+    'ALWAYS-CURRENT': 'Always-current engines',
+  };
+  const rawBadges = Array.isArray(home.badges) && home.badges.length ? home.badges : defaultBadges;
+  const badges = rawBadges.map((badge) => badgeLabelMap[badge] ?? badge);
   const hero = home.hero;
+  const workspaceCtaLabel = home.hero?.workspaceCta ?? hero.primaryCta;
   const worksWith = home.worksWith;
-  const worksWithBrands = Array.isArray(worksWith.brands) && worksWith.brands.length ? worksWith.brands : WORKS_WITH_BRANDS;
+  const worksWithBrandItems: readonly WorksWithBrandItem[] = WORKS_WITH_BRAND_LINKS;
+  const worksWithCaption = worksWith.caption;
+  const worksWithSuffix = home.worksWith?.moreLabel ?? null;
   const heroScreenshot = home.heroScreenshot;
+  const pricingPreviewLabel = home.pricingPreviewLabel ?? 'Preview pricing';
+  const partnerEyebrow = home.partners?.eyebrow ?? 'Partners';
+  const featuredOnTitle = home.partners?.featuredOn ?? 'Featured on';
+  const seoContent = home.seoContent ?? {};
+  const heroSeoParagraph = seoContent.heroParagraph ?? HERO_SEO_PARAGRAPH;
+  const heroMicroPoints =
+    Array.isArray(seoContent.heroPoints) && seoContent.heroPoints.length
+      ? seoContent.heroPoints
+      : HERO_MICRO_POINTS;
+  const definitionTitle = seoContent.definition?.title ?? 'What is an AI video generator?';
+  const definitionBody = seoContent.definition?.body ?? DEFINITION_BLOCK_COPY;
+  const generateWaysTitle = seoContent.generateWays?.title ?? 'Generate videos your way';
+  const generateWaysItems =
+    Array.isArray(seoContent.generateWays?.items) && seoContent.generateWays.items.length
+      ? seoContent.generateWays.items
+      : GENERATE_WAYS_COPY;
+  const compareSeo = seoContent.compare ?? {};
+  const compareSeoTitle = compareSeo.title ?? 'Compare AI video models - before you render';
+  const compareSeoBody =
+    compareSeo.body ??
+    'MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every render.';
+  const compareSeoWorksWith =
+    compareSeo.worksWith ??
+    'Works with Sora 2, Veo 3.1, LTX-2, Kling 3, Wan 2.6, Seedance 1.5, Pika 2.2, Hailuo 02, Nano Banana, and more.';
+  const compareSeoLinks =
+    Array.isArray(compareSeo.popularLinks) && compareSeo.popularLinks.length
+      ? compareSeo.popularLinks.filter((item): item is { label: string; slug: string } => {
+          return typeof item?.label === 'string' && typeof item?.slug === 'string';
+        })
+      : POPULAR_COMPARISON_LINKS;
+  const compareSeoAllLabel = compareSeo.seeAllLabel ?? 'See all AI video engine comparisons';
+  const compareSeoImageAlt =
+    compareSeo.imageAlt ?? 'MaxVideoAI comparison page screenshot showing two AI engines side by side.';
+  const compareCarouselIntro =
+    compareSeo.carouselIntro ??
+    'Compare AI video models by capabilities, limits, and best-fit use cases, or';
+  const compareCarouselLinkLabel = compareSeo.carouselLinkLabel ?? 'browse all AI video engine comparisons';
+  const faqSeo = seoContent.faq;
+  const localizedFaq =
+    faqSeo && Array.isArray(faqSeo.items) && faqSeo.items.length
+      ? faqSeo
+      : home.faq;
   const defaultWhyCards = [
     { title: 'Live product, not a roadmap.', body: 'Log in and use the same workspace we run internally today.' },
     { title: 'Wallet-first billing.', body: 'Top up once, monitor spend, and get automatic refunds on failed renders.' },
@@ -407,14 +611,24 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const homepageSlots = await getHomepageSlotsCached();
   const falEngines = listFalEngines();
   const compareEngineIndex = new Map(falEngines.map((entry) => [entry.modelSlug, entry]));
+  const compareBestForMap = COMPARE_BEST_FOR_BY_LOCALE[locale] ?? {};
+  const audioValues = AUDIO_VALUE_BY_LOCALE[locale] ?? AUDIO_VALUE_BY_LOCALE.en;
+  const heroLightboxCopy = HERO_LIGHTBOX_COPY_BY_LOCALE[locale] ?? HERO_LIGHTBOX_COPY_BY_LOCALE.en;
   const compareEngines = COMPARE_ENGINE_PRIORITY.map((slug) => {
     const entry = compareEngineIndex.get(slug);
     if (!entry) {
       return null;
     }
+    const baseMeta = COMPARE_ENGINE_META[slug] ?? null;
     return {
       engine: entry,
-      meta: COMPARE_ENGINE_META[slug] ?? null,
+      meta: baseMeta
+        ? {
+            ...baseMeta,
+            audio: baseMeta.audio === 'Yes' ? audioValues.yes : audioValues.no,
+            bestFor: compareBestForMap[slug] ?? baseMeta.bestFor,
+          }
+        : null,
     };
   })
     .filter(Boolean)
@@ -428,8 +642,10 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     const videoSrc = video?.videoUrl ?? fallback.videoSrc;
     const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
     const videoPosterSrc = buildOptimizedPoster(posterSrc);
-    const adminPriceLabel = slot?.subtitle?.trim() || null;
-    const alt = video?.promptExcerpt || fallback.alt;
+    const rawAdminPriceLabel = slot?.subtitle?.trim() || null;
+    const adminPriceLabel = rawAdminPriceLabel ? localizePricePrefix(rawAdminPriceLabel, locale) : null;
+    const altTemplate = HERO_ALT_TEMPLATE_BY_LOCALE[locale] ?? HERO_ALT_TEMPLATE_BY_LOCALE.en;
+    const alt = altTemplate.replace('{engine}', label);
     const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
     const durationSec = video?.durationSec ?? fallback.durationSec;
     const resolution = fallback.resolution;
@@ -443,7 +659,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     const modelHref = canonicalSlug ? `/models/${encodeURIComponent(canonicalSlug)}` : null;
     const detailMeta = video
       ? {
-          prompt: video.promptExcerpt ?? video.prompt ?? null,
+          prompt: truncateText(video.promptExcerpt ?? video.prompt ?? null, 140),
           engineLabel: video.engineLabel ?? label,
           durationSec: video.durationSec ?? null,
         }
@@ -485,7 +701,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               fallbackPriceLabel: tile.fallbackPriceLabel,
               minPriceCents: tile.minPriceCents,
               minPriceCurrency: tile.minPriceCurrency,
-            }))
+            })),
+          { pricePrefix: PRICE_PREFIX_BY_LOCALE[locale] ?? PRICE_PREFIX_BY_LOCALE.en }
         )
       : {};
 
@@ -560,7 +777,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   };
   return (
     <div>
-      <section className="container-page section max-w-6xl stack-gap-lg items-center pt-10 pb-10 text-center sm:pt-12 sm:pb-12 lg:pt-14 lg:pb-14 halo-hero">
+      <section className="container-page section max-w-6xl stack-gap-lg items-center pt-8 pb-10 text-center sm:pt-10 sm:pb-12 lg:pt-12 lg:pb-14 halo-hero">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
@@ -569,9 +786,12 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
           ))}
         </div>
         <div className="stack-gap-lg">
-          <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{hero.title}</h1>
-          <p className="mx-auto sm:max-w-[62ch] text-lg leading-relaxed text-text-secondary">
+          <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">{hero.title}</h1>
+          <p className="mx-auto sm:max-w-[62ch] text-base leading-relaxed text-text-secondary sm:text-lg">
             {hero.subtitle}
+          </p>
+          <p className="mx-auto -mt-1 sm:max-w-[72ch] text-xs leading-relaxed text-text-secondary sm:-mt-2 sm:text-sm">
+            {heroSeoParagraph}
           </p>
         </div>
         <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -607,12 +827,25 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               authenticatedHref="/generate"
               guestHref="/login?next=/generate"
               overlayHref={tile.generateHref ?? undefined}
+              audioBadgeLabel={HERO_AUDIO_BADGE_BY_LOCALE[locale] ?? HERO_AUDIO_BADGE_BY_LOCALE.en}
+              overlayLabel={(HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE[locale] ?? HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE.en).replace(
+                '{engine}',
+                tile.label
+              )}
+              lightboxCopy={heroLightboxCopy}
             />
+          ))}
+        </div>
+        <div className="grid w-full gap-3 text-left sm:grid-cols-2 lg:grid-cols-3">
+          {heroMicroPoints.map((point) => (
+            <div key={point} className="rounded-card border border-hairline bg-surface/70 p-4 shadow-card">
+              <p className="text-sm font-medium leading-relaxed text-text-primary">{point}</p>
+            </div>
           ))}
         </div>
         <p className="text-center text-sm text-muted-foreground">
           <Link href={{ pathname: '/pricing' }} className="underline underline-offset-2">
-            Preview pricing
+            {pricingPreviewLabel}
           </Link>
         </p>
       </section>
@@ -623,21 +856,69 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
             {worksWith.label}
           </span>
           <div className="flex flex-wrap items-center justify-center gap-6 text-2xl font-semibold text-text-primary sm:text-3xl">
-            {worksWithBrands.map((brand) => (
-              <span key={brand}>{brand}</span>
+            {worksWithBrandItems.map((item) => (
+              item.slug ? (
+                <Link
+                  key={item.label}
+                  href={{ pathname: '/models/[slug]', params: { slug: item.slug } }}
+                  className="transition hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span key={item.label}>{item.label}</span>
+              )
             ))}
           </div>
-          <p className="text-xs text-text-muted">{worksWith.caption}</p>
+          {worksWithSuffix ? (
+            <Link
+              href={{ pathname: '/models' }}
+              className="text-sm font-medium text-text-muted underline decoration-transparent underline-offset-4 transition hover:text-text-primary hover:decoration-current"
+            >
+              {worksWithSuffix}
+            </Link>
+          ) : null}
+          <p className="text-xs text-text-muted">{worksWithCaption}</p>
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg section pt-10 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-0 halo-workspace-left">
-        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-stretch">
+      <section className="border-t border-hairline bg-bg section-compact">
+        <div className="container-page max-w-6xl stack-gap">
+          <article className="rounded-2xl border border-hairline bg-transparent p-4 sm:p-5 stack-gap-sm">
+            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">{definitionTitle}</h2>
+            <p className="text-sm leading-relaxed text-text-secondary">{definitionBody}</p>
+          </article>
+
+          <article className="stack-gap-sm">
+            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">{generateWaysTitle}</h2>
+            <div className="grid grid-gap lg:grid-cols-3">
+              {generateWaysItems.map((item) => (
+                <div key={item.title} className="rounded-xl border border-hairline bg-transparent p-4">
+                  <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section className="border-t border-hairline bg-surface section pt-10 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-0 halo-workspace-left">
+        <div className="container-page flex max-w-7xl flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-stretch">
           <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
+            <ButtonLink
+              href="/app"
+              prefetch={false}
+              size="md"
+              className="w-fit"
+              linkComponent={Link}
+            >
+              {workspaceCtaLabel}
+            </ButtonLink>
           </div>
-          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end mt-2 sm:mt-4 lg:mt-6">
+          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end">
             <div className="overflow-hidden rounded-t-[16px] shadow-float">
               <Image
                 src="/assets/marketing/app-dashboard.webp"
@@ -646,6 +927,45 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               height={2170}
                 sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
                 priority
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-hairline bg-bg section pt-10 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-0">
+        <div className="container-page flex max-w-7xl flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row-reverse lg:items-stretch">
+          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{compareSeoTitle}</h2>
+            <p className="text-sm leading-relaxed text-text-secondary sm:text-base">{compareSeoBody}</p>
+            <p className="text-sm text-text-secondary">{compareSeoWorksWith}</p>
+            <div className="flex flex-wrap gap-3 text-sm">
+              {compareSeoLinks.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: item.slug } }}
+                  className="inline-flex items-center rounded-pill border border-brand/30 bg-brand/5 px-3 py-1.5 font-medium text-brand transition hover:border-brand/50 hover:bg-brand/10 hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 dark:border-hairline dark:bg-surface-2 dark:text-text-primary dark:hover:border-brand/40 dark:hover:bg-surface"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                href={{ pathname: '/ai-video-engines' }}
+                className="inline-flex items-center rounded-pill border border-brand/40 bg-brand px-3 py-1.5 font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 dark:border-brand/30"
+              >
+                {compareSeoAllLabel}
+              </Link>
+            </div>
+          </div>
+          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end">
+            <div className="overflow-hidden rounded-t-[16px]">
+              <Image
+                src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
+                alt={compareSeoImageAlt}
+                width={2278}
+                height={1928}
+                sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
                 className="w-full h-auto"
               />
             </div>
@@ -682,6 +1002,15 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       </section>
 
       <section className="border-t border-hairline bg-surface section">
+        <div className="container-page mb-4 max-w-6xl text-center">
+          <p className="text-sm text-text-secondary">
+            {compareCarouselIntro}{' '}
+            <Link href={{ pathname: '/ai-video-engines' }} className="underline underline-offset-2">
+              {compareCarouselLinkLabel}
+            </Link>
+            .
+          </p>
+        </div>
         <CompareEnginesCarousel engines={compareEngines} copy={compareCarouselCopy} />
       </section>
 
@@ -761,15 +1090,21 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       <section className="border-t border-hairline bg-surface section">
         <div className="container-page max-w-6xl">
           <div className="rounded-card border border-hairline bg-surface/70 p-6 text-center shadow-card">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
-            <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+              {partnerEyebrow}
+            </p>
+            <h2 className="mt-2 text-lg font-semibold text-text-primary">
+              {featuredOnTitle}
+            </h2>
             <div className="mt-4 flex justify-center">
               <PartnerBadges className="justify-center opacity-90 transition hover:opacity-100" />
             </div>
           </div>
         </div>
       </section>
-      <MiniFAQ faq={home.faq} />
+      <section className="border-t border-hairline bg-bg">
+        <MiniFAQ faq={localizedFaq} />
+      </section>
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>
@@ -824,54 +1159,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
           }),
         }}
       />
-      <Script
-        id="home-faq-jsonld"
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: [
-              {
-                '@type': 'Question',
-                name: 'Is Sora 2 available in the EU?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text:
-                    'Sora 2 availability is limited. MaxVideoAI routes your brief to supported engines today and keeps Sora-ready presets for later.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: 'Can I add audio?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text:
-                    'Yes. Engines surfaced on the homepage support audio toggles in the composer. The live price updates when you enable audio.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: 'How does pricing work?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text:
-                    'You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: "What’s the refund policy?",
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text:
-                    'Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend.',
-                },
-              },
-            ],
-          }),
-        }}
-      />    </div>
+      </div>
   );
 }
