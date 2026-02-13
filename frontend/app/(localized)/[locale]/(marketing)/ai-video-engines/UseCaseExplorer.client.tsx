@@ -52,7 +52,15 @@ export function UseCaseExplorer({ buckets, compareLabel }: UseCaseExplorerProps)
       <div className="grid gap-3 sm:grid-cols-3">
         {activeBucket.pairs.map((pair) => (
           <article key={`${activeBucket.id}-${pair.slug}`} className="rounded-xl border border-hairline bg-bg p-4">
-            <h3 className="text-sm font-semibold text-text-primary">{pair.label}</h3>
+            <h3 className="text-sm font-semibold text-text-primary">
+              <Link
+                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pair.slug } }}
+                prefetch={false}
+                className="hover:text-brandHover"
+              >
+                {pair.label}
+              </Link>
+            </h3>
             <Link
               href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pair.slug } }}
               prefetch={false}

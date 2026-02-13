@@ -69,7 +69,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     hero: {
       title: 'Compare AI video engines',
       intro:
-        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter engines by core limits, and jump into direct tests quickly. Check audio support, duration, resolution, motion consistency, and pricing before you render.',
+        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter engines by core limits, and jump into direct tests quickly. Check audio support, duration, resolution, motion consistency, and pricing before you render. This hub is a comparison tool for AI models used in AI video generation - text-to-video, image-to-video, and video-to-video. MaxVideoAI is an online AI video generator platform: compare each video model here, then generate videos from simple text prompts or a reference image with the best engine for your shot.',
       compareNow: {
         left: 'Engine A',
         right: 'Engine B',
@@ -181,22 +181,22 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       {
         question: 'How do I compare two AI video engines quickly?',
         answer:
-          'Use the Compare Now widget at the top of the page, choose Engine A and Engine B, then click Compare to open the canonical matchup page.',
+          'Use the Compare Now widget at the top of the page, choose Engine A and Engine B, then click Compare to open the canonical matchup page. Use the same prompt (or simple text prompt) across both AI models to compare motion consistency and prompt fidelity before you generate.',
       },
       {
         question: 'Why do some comparisons show different strengths?',
         answer:
-          'Each model trades off speed, prompt fidelity, motion realism, duration, and audio support differently. The best choice depends on the specific shot and deadline.',
+          'Each model trades off speed, prompt fidelity, motion realism, duration, and audio support differently. The best choice depends on the specific shot and deadline. These tradeoffs are why comparing the AI video model before you generate videos saves time and cost.',
       },
       {
         question: 'Can I compare text-to-video and image-to-video engines together?',
         answer:
-          'Yes. The hub includes mixed-mode matchups so you can compare engines that prioritize text prompts, image inputs, or both.',
+          'Yes. The hub includes mixed-mode matchups so you can compare engines that prioritize text prompts, image inputs, or both. Yes - you can also include video-to-video engines when available.',
       },
       {
         question: 'How should I choose between two close engines?',
         answer:
-          'Start with the use case chips, then validate with a direct side-by-side test. For tie-breaks, prioritize prompt fidelity, motion consistency, and turnaround speed for your delivery format.',
+          'Start with the use case chips, then validate with a direct side-by-side test. For tie-breaks, run the same simple text prompt (or reference image) and prioritize prompt fidelity, motion consistency, and turnaround speed for your delivery format.',
       },
     ],
   },
@@ -204,7 +204,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     hero: {
       title: 'Comparer les moteurs vidéo IA',
       intro:
-        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Ce hub permet de repérer rapidement les matchups utiles, de filtrer les moteurs sur les limites clés et de tester sans friction. Vérifiez audio, durée, résolution, régularité du mouvement et niveau de prix avant de lancer un rendu.',
+        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Ce hub permet de repérer rapidement les matchups utiles, de filtrer les moteurs sur les limites clés et de tester sans friction. Vérifiez audio, durée, résolution, régularité du mouvement et niveau de prix avant de lancer un rendu. Ce hub est un outil de comparaison des modèles IA pour la génération vidéo IA - texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo. MaxVideoAI est une plateforme en ligne de génération vidéo IA : comparez chaque modèle vidéo ici, puis générez des vidéos à partir de prompts texte simples ou d’une image de référence avec le moteur le plus adapté à votre plan.',
       compareNow: {
         left: 'Moteur A',
         right: 'Moteur B',
@@ -317,22 +317,22 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       {
         question: 'Comment comparer deux moteurs rapidement ?',
         answer:
-          'Utilisez le module Comparer en haut de page, choisissez Moteur A et Moteur B, puis cliquez sur Comparer pour ouvrir la page canonique.',
+          'Utilisez le module Comparer en haut de page, choisissez Moteur A et Moteur B, puis cliquez sur Comparer pour ouvrir la page canonique. Utilisez le même prompt (ou un prompt texte simple) sur les deux modèles IA pour comparer la régularité du mouvement et la fidélité au prompt avant de générer.',
       },
       {
         question: 'Pourquoi les points forts changent selon les comparatifs ?',
         answer:
-          'Chaque modèle fait des compromis différents sur vitesse, fidélité au prompt, réalisme du mouvement, durée et audio.',
+          'Chaque modèle fait des compromis différents sur vitesse, fidélité au prompt, réalisme du mouvement, durée et audio. Ces compromis expliquent pourquoi comparer le modèle vidéo IA avant de générer des vidéos fait gagner du temps et du budget.',
       },
       {
         question: 'Peut-on comparer des moteurs texte-vers-vidéo et image-vers-vidéo ?',
         answer:
-          'Oui. Le hub inclut des matchups mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides.',
+          'Oui. Le hub inclut des matchups mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides. Oui - vous pouvez aussi inclure les moteurs vidéo-vers-vidéo quand ils sont disponibles.',
       },
       {
         question: 'Comment trancher entre deux moteurs proches ?',
         answer:
-          'Commencez par les puces de cas d’usage, puis validez avec un test côte à côte. En cas d’hésitation, priorisez la fidélité au prompt, la régularité du mouvement et la vitesse de livraison.',
+          'Commencez par les puces de cas d’usage, puis validez avec un test côte à côte. En cas d’égalité, lancez le même prompt texte simple (ou la même image de référence) et priorisez la fidélité au prompt, la régularité du mouvement et la vitesse de livraison selon votre format.',
       },
     ],
   },
@@ -340,7 +340,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     hero: {
       title: 'Comparar motores de video con IA',
       intro:
-        'Elige dos motores y abre una comparativa lado a lado con un clic. Este hub te ayuda a ver matchups clave, filtrar por límites importantes y pasar rápido a pruebas reales. Revisa audio, duración, resolución, consistencia de movimiento y precio antes de generar.',
+        'Elige dos motores y abre una comparativa lado a lado con un clic. Este hub te ayuda a ver matchups clave, filtrar por límites importantes y pasar rápido a pruebas reales. Revisa audio, duración, resolución, consistencia de movimiento y precio antes de generar. Este hub es una herramienta de comparación de modelos de IA para generación de video con IA: texto a video, imagen a video y video a video. MaxVideoAI es una plataforma online para generar video con IA: compara cada modelo de video aquí y luego genera videos desde prompts de texto simples o una imagen de referencia con el motor ideal para tu toma.',
       compareNow: {
         left: 'Motor A',
         right: 'Motor B',
@@ -453,22 +453,22 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       {
         question: '¿Cómo comparo dos motores rápidamente?',
         answer:
-          'Usa el widget Comparar de la parte superior, elige Motor A y Motor B, y haz clic en Comparar para abrir la página canónica.',
+          'Usa el widget Comparar de la parte superior, elige Motor A y Motor B, y haz clic en Comparar para abrir la página canónica. Usa el mismo prompt (o un prompt de texto simple) en ambos modelos de IA para comparar consistencia de movimiento y fidelidad al prompt antes de generar.',
       },
       {
         question: '¿Por qué cambian las fortalezas entre comparativas?',
         answer:
-          'Cada modelo equilibra distinto velocidad, fidelidad al prompt, realismo de movimiento, duración y audio.',
+          'Cada modelo equilibra distinto velocidad, fidelidad al prompt, realismo de movimiento, duración y audio. Estas compensaciones explican por qué comparar el modelo de video con IA antes de generar videos ahorra tiempo y costo.',
       },
       {
         question: '¿Se pueden comparar motores de texto a video e imagen a video?',
         answer:
-          'Sí. El hub incluye matchups mixtos para comparar motores orientados a texto, imagen o ambos.',
+          'Sí. El hub incluye matchups mixtos para comparar motores orientados a texto, imagen o ambos. Sí - también puedes incluir motores de video a video cuando estén disponibles.',
       },
       {
         question: '¿Cómo elegir entre dos motores muy parecidos?',
         answer:
-          'Empieza con los chips de caso de uso y valida con una prueba lado a lado. Si hay empate, prioriza fidelidad al prompt, consistencia de movimiento y velocidad de entrega.',
+          'Empieza con los chips de caso de uso y valida con una prueba lado a lado. Si hay empate, ejecuta el mismo prompt de texto simple (o la misma imagen de referencia) y prioriza fidelidad al prompt, consistencia de movimiento y velocidad de entrega para tu formato final.',
       },
     ],
   },
@@ -565,7 +565,15 @@ export default async function AiVideoEnginesPage() {
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {popularComparisons.map((comparison) => (
               <article key={comparison.slug} className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">{comparison.label}</h3>
+                <h3 className="text-base font-semibold text-text-primary">
+                  <Link
+                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: comparison.slug } }}
+                    prefetch={false}
+                    className="hover:text-brandHover"
+                  >
+                    {comparison.label}
+                  </Link>
+                </h3>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {comparison.tags.map((tag) => (
                     <span
