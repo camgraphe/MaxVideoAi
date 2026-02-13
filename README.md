@@ -162,11 +162,18 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
 
 - Cron definitions live in `vercel.json`. Vercel reads this file on deploy, so any change requires a redeploy to propagate. 【vercel.json†L14-L19】
 - `/api/cron/fal-poll` is the scheduled entry-point. It proxies the call to `/api/fal/poll`, injects `X-Fal-Poll-Token` from `FAL_POLL_TOKEN`, et accepte uniquement les requêtes provenant du runtime Cron Vercel (en vérifiant `x-vercel-cron` ou le user-agent Vercel, plus l’ID de déploiement quand disponible).
-- Pour vérifier manuellement :
+- IndexNow notifications are **change-based** (not periodic): GitHub Actions workflow `.github/workflows/indexnow.yml` runs on `main` push only when SEO/marketing files change, then submits sitemap URLs via `POST https://maxvideoai.com/api/indexnow`.
+- IndexNow rhythm: **one submission batch per qualifying push** (no 6-hour cron loop).
+- Vérification manuelle Fal poll :
   ```bash
   curl -H "X-Fal-Poll-Token: $FAL_POLL_TOKEN" https://<ton-domaine>/api/fal/poll
   ```
   Sans l’en-tête ou avec une valeur invalide, la route renvoie `401`. Avec le jeton correct, la réponse contient `{ ok: true, ... }`.
+- Rattrapage manuel IndexNow :
+  ```bash
+  pnpm --dir frontend run sitemap:ping -- --sitemaps
+  ```
+  Cette commande soumet les sitemaps à `/api/indexnow` (utile en rattrapage manuel).
 
 ## 7. Known Limitations
 
