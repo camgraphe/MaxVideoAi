@@ -88,7 +88,7 @@
     "@types/react-dom": "^18.2.19",
     "autoprefixer": "^10.4.17",
     "baseline-browser-mapping": "^2.9.19",
-    "eslint": "8.57.1",
+    "eslint": "10.0.0",
     "eslint-config-next": "15.5.4",
     "lint-staged": "^15.2.7",
     "next-sitemap": "^4.2.3",
