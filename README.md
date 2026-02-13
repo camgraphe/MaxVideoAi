@@ -182,7 +182,7 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
   - `.github/workflows/lighthouse.yml` runs Lighthouse checks on `main`.
   - `.github/workflows/indexnow.yml` submits sitemap URLs to IndexNow on SEO/marketing-related pushes.
 - Dependency maintenance:
-  - `.github/dependabot.yml` enables weekly updates for root npm deps, `frontend` npm deps, and GitHub Actions.
+  - Dependabot security updates are enabled from repository settings (security fixes only, no bulk version-bump PR waves).
 - Branch safety policy (configured on `main`):
   - Protect `main` with PRs + at least 1 approval.
   - Require `Quality CI` to pass before merge.
