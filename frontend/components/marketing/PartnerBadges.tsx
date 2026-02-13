@@ -45,12 +45,12 @@ export function PartnerBadges({ className }: PartnerBadgesProps) {
         ))}
       </div>
       <a
-        href="https://startupfa.me"
+        href="https://startupfa.me/"
         target="_blank"
         rel="noopener noreferrer"
         className="text-xs font-medium text-text-muted underline underline-offset-2 transition hover:text-text-primary"
       >
-        Listed on Startup Fame
+        Startup Fame
       </a>
     </div>
   );

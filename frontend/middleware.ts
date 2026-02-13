@@ -592,7 +592,8 @@ function isTrackingParam(key: string): boolean {
     normalized.startsWith('utm_') ||
     normalized === 'gclid' ||
     normalized === 'fbclid' ||
-    normalized === 'nolocale'
+    normalized === 'nolocale' ||
+    normalized === 'nxtplocale'
   );
 }
 
@@ -607,6 +608,10 @@ function hasTrackingParams(params: URLSearchParams): boolean {
 
 function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, isAdminRoute: boolean): boolean {
   if (isAdminRoute) {
+    return false;
+  }
+  const trackingSource = req.nextUrl.searchParams.get('utm_source')?.toLowerCase();
+  if (trackingSource === 'startupfa.me') {
     return false;
   }
   if (!hasTrackingParams(req.nextUrl.searchParams)) {
