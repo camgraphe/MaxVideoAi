@@ -848,16 +848,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
             {pricingPreviewLabel}
           </Link>
         </p>
-        <p className="text-center text-xs text-text-muted">
-          <a
-            href="https://startupfa.me/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 transition hover:text-text-primary"
-          >
-            Startup Fame
-          </a>
-        </p>
       </section>
 
       <section className="border-t border-hairline bg-surface text-text-secondary section-compact">
