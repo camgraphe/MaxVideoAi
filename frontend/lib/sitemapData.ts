@@ -91,7 +91,7 @@ const APP_PATHS_MANIFEST_PATH = findAppPathsManifestPath();
 const SOURCE_APP_ROOT = resolveSourceAppRoot();
 const LOCALIZED_SOURCE_APP_ROOT = SOURCE_APP_ROOT ? path.join(SOURCE_APP_ROOT, '(localized)', '[locale]') : null;
 const PAGE_FILE_PATTERN = /^page\.(?:mdx|tsx?|ts|jsx?|js)$/i;
-const IGNORED_ROUTE_TEMPLATES = new Set(['/404', '/video/[videoId]', '/v/[videoId]']);
+const IGNORED_ROUTE_TEMPLATES = new Set(['/404', '/video/[videoId]', '/v/[videoId]', '/legal/cookies']);
 const MANUAL_ROUTE_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.routes ?? {}));
 const MANUAL_SITEMAP_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.sitemaps ?? {}));
 const GIT_LASTMOD_CACHE = new Map<string, string | null>();
@@ -122,7 +122,6 @@ const FAIL_ON_LOCALE_MISMATCH = process.env.SITEMAP_LOCALE_FAIL_ON_MISMATCH === 
 let canonicalEntryPromise: Promise<CanonicalPathEntry[]> | null = null;
 
 const EXTRA_CANONICAL_PATHS: CanonicalPathEntry[] = [
-  { englishPath: '/legal/cookies', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/cookies-list', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/mentions', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/subprocessors', locales: ['en', 'fr', 'es'] },

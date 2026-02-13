@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { CONSENT_COOKIE_NAME, createDefaultConsent, mergeConsent, parseConsent, serializeConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
 import { setAnalyticsConsentCookie, setClarityConsent } from '@/lib/clarity-client';
 import { Button } from '@/components/ui/Button';
@@ -125,11 +125,29 @@ export function CookieBanner() {
   const [fetchState, setFetchState] = useState<FetchState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<ConsentCategory, boolean>>(DEFAULT_CHOICES);
+  const manageChoicesButtonRef = useRef<HTMLButtonElement>(null);
+  const preferencesPanelId = useId();
+  const preferencesTitleId = useId();
+  const analyticsLabelId = useId();
+  const adsLabelId = useId();
 
   const consent = state.ready ? state.consent : null;
   const version = state.ready ? state.version : null;
 
   const hasMadeChoice = state.ready && consent !== null && consent.version === version;
+
+  const closePreferences = useCallback(
+    (restoreFocus = false) => {
+      setShowPreferences(false);
+      setDraft(consent ? { ...consent.categories } : { ...DEFAULT_CHOICES });
+      if (restoreFocus) {
+        requestAnimationFrame(() => {
+          manageChoicesButtonRef.current?.focus();
+        });
+      }
+    },
+    [consent]
+  );
 
   const bootstrap = useCallback(async () => {
     try {
@@ -177,6 +195,17 @@ export function CookieBanner() {
     if (!showPreferences) return;
     setDraft(consent ? { ...consent.categories } : { ...DEFAULT_CHOICES });
   }, [consent, showPreferences, state.ready]);
+
+  useEffect(() => {
+    if (!showPreferences) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      closePreferences(true);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [closePreferences, showPreferences]);
 
   const applyConsent = useCallback(
     async (categories: Record<ConsentCategory, boolean>, source: ConsentRecord['source']) => {
@@ -228,8 +257,104 @@ export function CookieBanner() {
     }));
   };
 
-  if (!state.ready || hasMadeChoice) {
+  const handleManageChoicesToggle = () => {
+    if (showPreferences) {
+      closePreferences();
+      return;
+    }
+    setShowPreferences(true);
+  };
+
+  const preferencesPanel = (
+    <div
+      id={preferencesPanelId}
+      role="region"
+      aria-labelledby={preferencesTitleId}
+      className="w-full max-w-xs rounded-input border border-border bg-surface-2 p-4"
+    >
+      <p id={preferencesTitleId} className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">
+        Preferences
+      </p>
+      <div className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
+        <span id={analyticsLabelId}>
+          Analytics cookies
+          <span className="block text-xs text-text-muted">Help us measure usage and improve features.</span>
+        </span>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => toggleCategory('analytics')}
+          className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
+          role="switch"
+          aria-checked={draft.analytics}
+          aria-labelledby={analyticsLabelId}
+        >
+          <span
+            className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.analytics ? 'translate-x-4' : 'translate-x-0.5'}`}
+          />
+        </Button>
+      </div>
+      <div className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
+        <span id={adsLabelId}>
+          Advertising cookies
+          <span className="block text-xs text-text-muted">Measure campaigns and improve relevance.</span>
+        </span>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => toggleCategory('ads')}
+          className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
+          role="switch"
+          aria-checked={draft.ads}
+          aria-labelledby={adsLabelId}
+        >
+          <span
+            className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.ads ? 'translate-x-4' : 'translate-x-0.5'}`}
+          />
+        </Button>
+      </div>
+      <Button
+        type="button"
+        size="sm"
+        onClick={handleSavePreferences}
+        disabled={fetchState === 'saving'}
+        className="w-full px-3 py-2 text-sm"
+      >
+        {fetchState === 'saving' ? 'Saving…' : 'Save preferences'}
+      </Button>
+    </div>
+  );
+
+  if (!state.ready) {
     return null;
+  }
+
+  if (hasMadeChoice) {
+    return (
+      <>
+        <div className="pointer-events-auto fixed bottom-4 left-4 z-[1090]">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={handleManageChoicesToggle}
+            ref={manageChoicesButtonRef}
+            aria-expanded={showPreferences}
+            aria-controls={preferencesPanelId}
+            className="border-border bg-surface/95 px-3 py-2 text-xs text-text-primary shadow-card backdrop-blur"
+          >
+            {showPreferences ? 'Hide cookie settings' : 'Manage cookies'}
+          </Button>
+        </div>
+        {showPreferences ? (
+          <div className="pointer-events-auto fixed bottom-16 left-4 right-4 z-[1095] sm:right-auto sm:w-[22rem]">
+            {preferencesPanel}
+          </div>
+        ) : null}
+      </>
+    );
   }
 
   return (
@@ -266,79 +391,18 @@ export function CookieBanner() {
                 type="button"
                 size="sm"
                 variant="ghost"
-                onClick={() => {
-                  setShowPreferences((prev) => {
-                    const next = !prev;
-                    if (!next) {
-                      setDraft(consent ? { ...consent.categories } : { ...DEFAULT_CHOICES });
-                    }
-                    return next;
-                  });
-                }}
+                onClick={handleManageChoicesToggle}
+                ref={manageChoicesButtonRef}
+                aria-expanded={showPreferences}
+                aria-controls={preferencesPanelId}
                 className="min-h-0 h-auto p-0 text-sm font-semibold text-brand underline underline-offset-4 hover:text-brandHover"
               >
                 {showPreferences ? 'Hide choices' : 'Manage choices'}
               </Button>
             </div>
             {error ? <p className="text-xs text-[var(--warning)]">{error}</p> : null}
-            <p className="text-xs text-text-muted">
-              View our{' '}
-              <a href="/legal/cookies" target="_blank" rel="noopener noreferrer" className="text-brand underline hover:text-brandHover">
-                Cookie Policy
-              </a>
-              .
-            </p>
           </div>
-          {showPreferences ? (
-            <div className="w-full max-w-xs rounded-input border border-border bg-surface-2 p-4">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">Preferences</p>
-              <label className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
-                <span>
-                  Analytics cookies
-                  <span className="block text-xs text-text-muted">Help us measure usage and improve features.</span>
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => toggleCategory('analytics')}
-                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
-                  aria-pressed={draft.analytics}
-                >
-                  <span
-                    className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.analytics ? 'translate-x-4' : 'translate-x-0.5'}`}
-                  />
-                </Button>
-              </label>
-              <label className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
-                <span>
-                  Advertising cookies
-                  <span className="block text-xs text-text-muted">Measure campaigns and improve relevance.</span>
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => toggleCategory('ads')}
-                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
-                  aria-pressed={draft.ads}
-                >
-                  <span
-                    className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.ads ? 'translate-x-4' : 'translate-x-0.5'}`}
-                  />
-                </Button>
-              </label>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSavePreferences}
-                disabled={fetchState === 'saving'}
-                className="w-full px-3 py-2 text-sm"
-              >
-                {fetchState === 'saving' ? 'Saving…' : 'Save preferences'}
-              </Button>
-            </div>
-          ) : null}
+          {showPreferences ? preferencesPanel : null}
         </div>
       </div>
     </div>

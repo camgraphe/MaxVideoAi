@@ -18,6 +18,10 @@ export async function generateMetadata(): Promise<Metadata> {
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',
     imageAlt: 'Cookie Policy',
+    robots: {
+      index: false,
+      follow: true,
+    },
   });
 }
 
