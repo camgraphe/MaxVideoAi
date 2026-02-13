@@ -162,7 +162,6 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
 
 - Cron definitions live in `vercel.json`. Vercel reads this file on deploy, so any change requires a redeploy to propagate. 【vercel.json†L14-L19】
 - `/api/cron/fal-poll` is the scheduled entry-point. It proxies the call to `/api/fal/poll`, injects `X-Fal-Poll-Token` from `FAL_POLL_TOKEN`, et accepte uniquement les requêtes provenant du runtime Cron Vercel (en vérifiant `x-vercel-cron` ou le user-agent Vercel, plus l’ID de déploiement quand disponible).
-- `/api/cron/indexnow` soumet automatiquement les URLs marketing clés et les sitemaps à IndexNow toutes les 6 heures. La route accepte aussi un déclenchement manuel protégé via `Authorization: Bearer $INDEXNOW_CRON_TOKEN` (ou `X-IndexNow-Cron-Token`) quand `INDEXNOW_CRON_TOKEN` est défini.
 - Pour vérifier manuellement :
   ```bash
   curl -H "X-Fal-Poll-Token: $FAL_POLL_TOKEN" https://<ton-domaine>/api/fal/poll

@@ -1,0 +1,33 @@
+name: IndexNow Notify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/app/**'
+      - 'frontend/messages/**'
+      - 'frontend/lib/sitemapData.ts'
+      - 'frontend/lib/compare-hub/**'
+      - 'frontend/config/**'
+      - 'frontend/public/robots.txt'
+      - 'content/**'
+      - 'vercel.json'
+      - '.github/workflows/indexnow.yml'
+
+jobs:
+  indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit sitemap URLs to IndexNow proxy
+        env:
+          SITE: https://maxvideoai.com
+        run: |
+          set -euo pipefail
+          for path in /sitemap.xml /sitemap-video.xml /sitemap-en.xml /sitemap-fr.xml /sitemap-es.xml /sitemap-models.xml; do
+            url="${SITE}${path}"
+            echo "Submitting ${url}"
+            curl -fsS -X POST "${SITE}/api/indexnow" \
+              -H "Content-Type: application/json" \
+              --data "{\"url\":\"${url}\"}" >/dev/null
+          done
+          echo "IndexNow submission completed."
