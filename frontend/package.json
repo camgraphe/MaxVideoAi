@@ -51,7 +51,7 @@
     "gray-matter": "^4.0.3",
     "isbot": "^5.1.32",
     "micro": "^10.0.1",
-    "next": "^14.2.5",
+    "next": "^15.5.10",
     "next-intl": "^4.4.0",
     "nodemailer": "^7.0.9",
     "openai": "^6.8.1",
