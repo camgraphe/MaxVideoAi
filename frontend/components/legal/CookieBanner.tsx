@@ -24,6 +24,7 @@ const DEFAULT_CHOICES: Record<ConsentCategory, boolean> = {
 const PUBLIC_GOOGLE_CONSENT_MODE = (process.env.NEXT_PUBLIC_GOOGLE_CONSENT_MODE ?? 'auto').toLowerCase();
 const ANALYTICS_STORAGE_KEY = 'mv-consent-analytics';
 const ANALYTICS_GRANTED_VALUE = 'granted';
+const OPEN_PREFERENCES_EVENT = 'consent:open-preferences';
 
 function readCookie(): string | null {
   if (typeof document === 'undefined') return null;
@@ -126,6 +127,7 @@ export function CookieBanner() {
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<ConsentCategory, boolean>>(DEFAULT_CHOICES);
   const manageChoicesButtonRef = useRef<HTMLButtonElement>(null);
+  const lastTriggerRef = useRef<HTMLElement | null>(null);
   const preferencesPanelId = useId();
   const preferencesTitleId = useId();
   const analyticsLabelId = useId();
@@ -142,6 +144,11 @@ export function CookieBanner() {
       setDraft(consent ? { ...consent.categories } : { ...DEFAULT_CHOICES });
       if (restoreFocus) {
         requestAnimationFrame(() => {
+          const trigger = lastTriggerRef.current;
+          if (trigger && trigger.isConnected) {
+            trigger.focus();
+            return;
+          }
           manageChoicesButtonRef.current?.focus();
         });
       }
@@ -207,6 +214,17 @@ export function CookieBanner() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [closePreferences, showPreferences]);
 
+  useEffect(() => {
+    const handleOpenPreferences = () => {
+      if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+        lastTriggerRef.current = document.activeElement;
+      }
+      setShowPreferences(true);
+    };
+    window.addEventListener(OPEN_PREFERENCES_EVENT, handleOpenPreferences);
+    return () => window.removeEventListener(OPEN_PREFERENCES_EVENT, handleOpenPreferences);
+  }, []);
+
   const applyConsent = useCallback(
     async (categories: Record<ConsentCategory, boolean>, source: ConsentRecord['source']) => {
       if (!version) return;
@@ -261,6 +279,9 @@ export function CookieBanner() {
     if (showPreferences) {
       closePreferences();
       return;
+    }
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      lastTriggerRef.current = document.activeElement;
     }
     setShowPreferences(true);
   };
@@ -332,29 +353,11 @@ export function CookieBanner() {
   }
 
   if (hasMadeChoice) {
-    return (
-      <>
-        <div className="pointer-events-auto fixed bottom-4 left-4 z-[1090]">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={handleManageChoicesToggle}
-            ref={manageChoicesButtonRef}
-            aria-expanded={showPreferences}
-            aria-controls={preferencesPanelId}
-            className="border-border bg-surface/95 px-3 py-2 text-xs text-text-primary shadow-card backdrop-blur"
-          >
-            {showPreferences ? 'Hide cookie settings' : 'Manage cookies'}
-          </Button>
-        </div>
-        {showPreferences ? (
-          <div className="pointer-events-auto fixed bottom-16 left-4 right-4 z-[1095] sm:right-auto sm:w-[22rem]">
-            {preferencesPanel}
-          </div>
-        ) : null}
-      </>
-    );
+    return showPreferences ? (
+      <div className="pointer-events-auto fixed bottom-16 left-4 right-4 z-[1095] sm:right-auto sm:w-[22rem]">
+        {preferencesPanel}
+      </div>
+    ) : null;
   }
 
   return (

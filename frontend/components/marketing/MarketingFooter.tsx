@@ -10,10 +10,15 @@ type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
 
 const canonicalCompareSlug = (left: string, right: string) => [left, right].sort().join('-vs-');
+const OPEN_COOKIE_PREFERENCES_EVENT = 'consent:open-preferences';
 
 export function MarketingFooter() {
   const { t } = useI18n();
   const labelFor = (key: string, fallback: string) => t(key, fallback) ?? fallback;
+  const openCookiePreferences = () => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT));
+  };
 
   const modelSlugSet = new Set(engineCatalog.map((entry) => entry.modelSlug));
 
@@ -126,6 +131,7 @@ export function MarketingFooter() {
   const productTitle = labelFor('footer.sections.product.title', 'Product');
   const companyTitle = labelFor('footer.sections.company.title', 'Company');
   const policiesTitle = labelFor('footer.sections.policies.title', 'Policies');
+  const manageCookiesLabel = labelFor('footer.sections.policies.manageCookies', 'Cookie settings');
   const sectionTitleClass = 'text-xs font-semibold uppercase tracking-micro text-text-primary';
   const linkClass =
     'text-sm text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
@@ -214,6 +220,13 @@ export function MarketingFooter() {
                 {item.label}
               </Link>
             ))}
+            <button
+              type="button"
+              onClick={openCookiePreferences}
+              className="text-xs text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            >
+              {manageCookiesLabel}
+            </button>
           </nav>
         </div>
       </div>
