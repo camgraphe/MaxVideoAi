@@ -29,19 +29,29 @@ export function PartnerBadges({ className }: PartnerBadgesProps) {
     .join(' ');
 
   return (
-    <div className={classes}>
-      {PARTNER_BADGES.map((badge) => (
-        <div
-          key={badge.id}
-          className={[
-            'w-full max-w-[300px] aspect-[600/125] [&>a>img]:h-auto [&>a>img]:w-full',
-            badge.className,
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          dangerouslySetInnerHTML={{ __html: badge.html }}
-        />
-      ))}
+    <div className="flex flex-col items-center gap-3">
+      <div className={classes}>
+        {PARTNER_BADGES.map((badge) => (
+          <div
+            key={badge.id}
+            className={[
+              'w-full max-w-[300px] aspect-[600/125] [&>a>img]:h-auto [&>a>img]:w-full',
+              badge.className,
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            dangerouslySetInnerHTML={{ __html: badge.html }}
+          />
+        ))}
+      </div>
+      <a
+        href="https://startupfa.me"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs font-medium text-text-muted underline underline-offset-2 transition hover:text-text-primary"
+      >
+        Listed on Startup Fame
+      </a>
     </div>
   );
 }
