@@ -44,7 +44,7 @@ jobs:
         run: pnpm --dir frontend run lighthouse:contact
 
       - name: Upload Lighthouse reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: lighthouse-reports
           path: frontend/lighthouse-reports/**
