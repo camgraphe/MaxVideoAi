@@ -175,13 +175,26 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
   ```
   Cette commande soumet les sitemaps à `/api/indexnow` (utile en rattrapage manuel).
 
-## 7. Known Limitations
+## 7. GitHub Automation & Guardrails
+
+- Workflows:
+  - `.github/workflows/quality.yml` runs on PRs and pushes to `main` (typecheck, lint, tests).
+  - `.github/workflows/lighthouse.yml` runs Lighthouse checks on `main`.
+  - `.github/workflows/indexnow.yml` submits sitemap URLs to IndexNow on SEO/marketing-related pushes.
+- Dependency maintenance:
+  - `.github/dependabot.yml` enables weekly updates for root npm deps, `frontend` npm deps, and GitHub Actions.
+- Branch safety policy (configured on `main`):
+  - Protect `main` with PRs + at least 1 approval.
+  - Require `Quality CI` to pass before merge.
+  - Disable force-push and branch deletion on `main`.
+
+## 8. Known Limitations
 
 - The mock API runs in-memory; persistence/job streaming left to the real backend.
 - No automated tests yet (awaiting backend contract confirmation).
 - Preview/gallery content is placeholder; real media wiring is pending asset APIs.
 
-## 8. Analytics & Session Replay
+## 9. Analytics & Session Replay
 
 - Microsoft Clarity loads through `frontend/components/analytics/Clarity.tsx`, which is mounted from the root layout once analytics consent (`mv-consent` cookie) is granted. The loader enforces production-only execution, honours `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`, and registers SPA route changes via `clarity('set','page', ...)`.
 - Consent is persisted by the client CMP banner (`frontend/components/legal/CookieBanner.tsx`) and broadcast with a `consent:updated` custom event so analytics scripts remain gated behind `ConsentScriptGate`.
