@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
 import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -8,6 +7,7 @@ import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { listExamples } from '@/server/videos';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { getExampleModelLanding } from '@/lib/examples/modelLanding';
 import ExamplesPage, { resolveEngineLabel } from '../page';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
@@ -83,11 +83,14 @@ export async function generateMetadata({
     notFound();
   }
   const canonical = resolveExampleCanonicalSlug(normalized) ?? normalized;
-
-  const t = await getTranslations({ locale: params.locale, namespace: 'gallery.meta' });
+  const modelLanding = getExampleModelLanding(params.locale, canonical);
   const engineLabel = resolveEngineLabel(normalized);
-  const title = engineLabel ? t('title_engine', { engineName: engineLabel }) : t('title');
-  const description = engineLabel ? t('description_engine', { engineName: engineLabel }) : t('description');
+  const title = modelLanding?.metaTitle ?? (engineLabel ? `${engineLabel} AI Video Examples | MaxVideoAI` : 'AI Video Examples | MaxVideoAI');
+  const description =
+    modelLanding?.metaDescription ??
+    (engineLabel
+      ? `Explore ${engineLabel} examples with prompts, settings, and per-clip pricing on MaxVideoAI.`
+      : 'Explore AI video examples with prompts, settings, and per-clip pricing on MaxVideoAI.');
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;

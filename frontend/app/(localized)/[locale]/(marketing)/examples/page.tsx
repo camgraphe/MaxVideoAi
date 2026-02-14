@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { permanentRedirect, redirect } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -16,6 +15,10 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import {
+  getExampleModelLanding,
+  getHubExamplesFaq,
+} from '@/lib/examples/modelLanding';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -80,7 +83,6 @@ const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const MODEL_SLUG_MAP = buildSlugMap('models');
 const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS);
 const DEFAULT_SORT: ExampleSort = 'playlist';
-const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page']);
 const EXAMPLES_PAGE_SIZE = 60;
 const POSTER_PLACEHOLDERS: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
@@ -138,11 +140,6 @@ function buildModelHref(locale: AppLocale, slug: string): string {
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-function isTrackingParam(key: string): boolean {
-  const normalized = key.toLowerCase();
-  return normalized.startsWith('utm_') || normalized === 'gclid' || normalized === 'fbclid';
-}
-
 const ENGINE_FILTER_GROUPS: Record<
   string,
   {
@@ -151,9 +148,9 @@ const ENGINE_FILTER_GROUPS: Record<
     brandId?: string;
   }
 > = {
-  sora: { id: 'sora', label: 'Sora 2' },
-  'sora-2': { id: 'sora', label: 'Sora 2' },
-  'sora-2-pro': { id: 'sora', label: 'Sora 2' },
+  sora: { id: 'sora', label: 'Sora' },
+  'sora-2': { id: 'sora', label: 'Sora' },
+  'sora-2-pro': { id: 'sora', label: 'Sora' },
   'veo-3-1': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-first-last': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
@@ -161,10 +158,10 @@ const ENGINE_FILTER_GROUPS: Record<
   'veo-3': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   veo: { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  'minimax-hailuo-02-text': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
-  'minimax-hailuo-02-image': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
-  'minimax-hailuo-02': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
-  hailuo: { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
+  'minimax-hailuo-02-text': { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
+  'minimax-hailuo-02-image': { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
+  'minimax-hailuo-02': { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
+  hailuo: { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
   'pika-text-to-video': { id: 'pika', label: 'Pika', brandId: 'pika' },
   'pika-image-to-video': { id: 'pika', label: 'Pika', brandId: 'pika' },
   'pika-2-2': { id: 'pika', label: 'Pika', brandId: 'pika' },
@@ -247,18 +244,6 @@ export function resolveEngineLabel(raw: string | string[] | undefined): string |
   return descriptor?.label ?? engineMeta?.label ?? canonicalEngineParam;
 }
 
-function buildExamplesCanonical(baseCanonical: string, engineParam: string, page: number | null): string {
-  const params = new URLSearchParams();
-  if (engineParam) {
-    params.set('engine', engineParam);
-  }
-  if (page && page > 1) {
-    params.set('page', String(page));
-  }
-  const suffix = params.toString();
-  return suffix ? `${baseCanonical}?${suffix}` : baseCanonical;
-}
-
 function resolveExampleCanonicalSlug(engineId: string | null | undefined): string | null {
   if (!engineId) return null;
   const normalized = engineId.trim().toLowerCase();
@@ -293,10 +278,14 @@ export async function generateMetadata({
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
   const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
-  const hasExtraFilters = hasNonDefaultSort || Boolean(normalizedPage && normalizedPage > 1);
-  const shouldNoindex = Boolean(collapsedEngineParam) && (hasExtraFilters || !canonicalExampleSlug);
-  const title = engineLabel ? t('title_engine', { engineName: engineLabel }) : t('title');
-  const description = engineLabel ? t('description_engine', { engineName: engineLabel }) : t('description');
+  const hasPaginatedView = Boolean(normalizedPage && normalizedPage > 1);
+  const shouldNoindex =
+    hasNonDefaultSort || hasPaginatedView || Boolean(collapsedEngineParam && !canonicalExampleSlug);
+  const effectiveEngineLabel = canonicalExampleSlug ? engineLabel : null;
+  const title = effectiveEngineLabel ? t('title_engine', { engineName: effectiveEngineLabel }) : t('title');
+  const description = effectiveEngineLabel
+    ? t('description_engine', { engineName: effectiveEngineLabel })
+    : t('description');
 
   if (canonicalExampleSlug) {
     return buildSeoMetadata({
@@ -314,7 +303,6 @@ export async function generateMetadata({
   }
 
   const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP, { englishPath: '/examples' });
-  const canonical = buildExamplesCanonical(metadataUrls.canonical, '', normalizedPage);
   return buildSeoMetadata({
     locale,
     title,
@@ -323,7 +311,7 @@ export async function generateMetadata({
     slugMap: GALLERY_SLUG_MAP,
     image: ogImage,
     imageAlt: 'MaxVideo AI — Examples gallery preview',
-    canonicalOverride: canonical,
+    canonicalOverride: metadataUrls.canonical,
     robots: {
       index: !shouldNoindex,
       follow: true,
@@ -419,9 +407,21 @@ function resolveFilterDescriptor(
 
 export default async function ExamplesPage({ searchParams, engineFromPath }: ExamplesPageProps) {
   const { locale, dictionary } = await resolveDictionary();
+  const appLocale = locale as AppLocale;
   const content = dictionary.examples;
-  const engineFilterLabel = (content as { engineFilterLabel?: string })?.engineFilterLabel ?? 'Engines';
+  const modelLanding = engineFromPath ? getExampleModelLanding(appLocale, engineFromPath) : null;
+  const isModelLanding = Boolean(modelLanding);
+  const hubFaq = getHubExamplesFaq(appLocale);
+  const faqBlock = modelLanding
+    ? { title: modelLanding.faqTitle, items: modelLanding.faqItems }
+    : { title: hubFaq.title, items: hubFaq.items };
   const engineFilterAllLabel = (content as { engineFilterAllLabel?: string })?.engineFilterAllLabel ?? 'All';
+  const browseByModelLabel =
+    locale === 'fr'
+      ? 'Parcourir par marque'
+      : locale === 'es'
+        ? 'Explorar por marca'
+        : 'Browse by brand';
   const paginationContent =
     (content as { pagination?: { prev?: string; next?: string; page?: string; loadMore?: string } })?.pagination ?? {};
   const paginationPrevLabel = paginationContent.prev ?? 'Previous';
@@ -430,27 +430,20 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
   const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
   const longDescription =
     locale === 'fr'
-      ? "Ces rendus vidéo IA couvrent selfie face caméra, plans d'établissement cinématographiques, packs produit, formats mobiles et boucles sociales. Comparez comment chaque moteur gère le mouvement, la lumière et la composition pour le storytelling, le marketing de performance, les lancements ou le contenu UGC. MaxVideoAI oriente vos prompts vers les meilleurs moteurs avec des prix transparents et des contrôles pro, pour passer du concept à l'export final dans un seul workspace."
+      ? "Ces rendus vidéo IA couvrent selfie face caméra, plans d'établissement cinématographiques, packs produit, formats mobiles et boucles sociales. Comparez comment chaque marque gère le mouvement, la lumière et la composition pour le storytelling, le marketing de performance, les lancements ou le contenu UGC. Chaque page de marque peut inclure plusieurs modèles et modes, avec prix transparents et contrôles pro."
       : locale === 'es'
-        ? 'Estos renders de video IA cubren talking heads, planos generales cinematográficos, close-ups de producto, formatos móviles y bucles listos para redes. Compara cómo cada motor maneja movimiento, iluminación y composición para storytelling, performance marketing, lanzamientos o contenido UGC. MaxVideoAI dirige tus prompts al mejor motor con precios transparentes y controles pro para pasar de concepto a exportación final en un solo workspace.'
-        : 'These AI video renders cover a range of formats including selfie talking heads, cinematic establishing shots, product close-ups, mobile-first ads and social-ready loops. Explore how each engine handles motion, lighting and composition for storytelling, performance marketing, product launches or UGC-style content. MaxVideoAI routes your prompts to the best engines for your use case, with transparent pricing and pro-grade controls so creatives, studios and growth teams can move from concept to final export in a single workspace.';
-  const recentAccessTitle =
-    locale === 'fr' ? 'Accès direct aux rendus récents' : locale === 'es' ? 'Acceso directo a los renders recientes' : 'Direct access to recent renders';
-  const recentAccessBody =
-    locale === 'fr'
-      ? 'Ces liens garantissent que chaque exemple public listé dans notre sitemap reste accessible en HTML standard pour le crawl.'
-      : locale === 'es'
-        ? 'Estos enlaces garantizan que cada ejemplo público de nuestro sitemap sea accesible en HTML estándar para el rastreo.'
-        : 'These links ensure every public example listed in our sitemap is also reachable through standard HTML so search engines can explore them without JavaScript.';
-  const showLabel = locale === 'fr' ? 'Afficher' : locale === 'es' ? 'Mostrar' : 'Show';
+        ? 'Estos renders de video IA cubren talking heads, planos generales cinematográficos, close-ups de producto, formatos móviles y bucles listos para redes. Compara cómo cada marca maneja movimiento, iluminación y composición para storytelling, performance marketing, lanzamientos o contenido UGC. Cada página de marca puede incluir varios modelos y modos, con precios transparentes y controles pro.'
+        : 'These AI video renders cover selfie talking heads, cinematic establishing shots, product close-ups, mobile-first ads, and social loops. Compare how each brand handles motion, lighting, and composition. Each brand page can include multiple models and modes, with transparent pricing and production controls.';
   const HERO_BODY_FALLBACK =
-    'Browse AI video examples generated with Sora 2, Veo 3.1, Pika 2.2, Kling, Wan and more. Each clip shows the prompt, format and duration so you can compare how different engines handle camera moves, product shots, selfies and cinematic storytelling in one gallery.';
-  const heroBody =
+    'Browse AI video examples with prompts, format, duration, and pricing shown per clip. Use this hub to filter by brand and open model pages for exact specs, limits, and pricing.';
+  const hubHeroBody =
     typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
+  const heroTitle = modelLanding?.heroTitle ?? content.hero.title;
+  const heroSubtitle = modelLanding?.heroSubtitle ?? content.hero.subtitle;
+  const heroBody = modelLanding?.intro ?? hubHeroBody;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
-  const engineLabel = resolveEngineLabel(searchParams.engine);
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const parsedPage = (() => {
     if (typeof pageParam !== 'string' || pageParam.trim().length === 0) {
@@ -461,34 +454,42 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
   })();
   const hasInvalidPageParam = typeof pageParam !== 'undefined' && (!Number.isFinite(parsedPage) || parsedPage < 1);
   const currentPage = hasInvalidPageParam ? 1 : Math.max(1, parsedPage || 1);
-  const unsupportedQueryKeys = Object.keys(searchParams).filter(
-    (key) => !ALLOWED_QUERY_KEYS.has(key) && !isTrackingParam(key),
-  );
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const gallerySegment = GALLERY_SLUG_MAP[locale] ?? GALLERY_SLUG_MAP.en ?? 'examples';
+  const galleryBasePath = `${localePrefix}/${gallerySegment}`.replace(/\/{2,}/g, '/');
 
   const redirectToNormalized = (targetPage: number) => {
-    const headerList = headers();
-    const rawPath =
-      headerList.get('x-pathname') ??
-      headerList.get('x-invoke-path') ??
-      headerList.get('x-matched-path') ??
-      '/examples';
-    const canonicalPath = rawPath.split('?')[0] || '/examples';
     const redirectedQuery = new URLSearchParams();
     if (sort !== DEFAULT_SORT) {
       redirectedQuery.set('sort', sort);
     }
-    if (collapsedEngineParam && !engineFromPath) {
-      redirectedQuery.set('engine', collapsedEngineParam);
-    }
     if (targetPage > 1) {
       redirectedQuery.set('page', String(targetPage));
     }
-    const target = redirectedQuery.toString() ? `${canonicalPath}?${redirectedQuery.toString()}` : canonicalPath;
+    const target = redirectedQuery.toString() ? `${galleryBasePath}?${redirectedQuery.toString()}` : galleryBasePath;
     redirect(target);
   };
 
-  if (unsupportedQueryKeys.length > 0 || hasInvalidPageParam) {
+  if (hasInvalidPageParam) {
     redirectToNormalized(1);
+  }
+
+  const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
+  if (collapsedEngineParam && !engineFromPath) {
+    if (canonicalExampleSlug) {
+      const redirectedQuery = new URLSearchParams();
+      if (sort !== DEFAULT_SORT) {
+        redirectedQuery.set('sort', sort);
+      }
+      if (currentPage > 1) {
+        redirectedQuery.set('page', String(currentPage));
+      }
+      const target = redirectedQuery.toString()
+        ? `${galleryBasePath}/${canonicalExampleSlug}?${redirectedQuery.toString()}`
+        : `${galleryBasePath}/${canonicalExampleSlug}`;
+      permanentRedirect(target);
+    }
+    redirectToNormalized(currentPage);
   }
 
   const offset = (currentPage - 1) * EXAMPLES_PAGE_SIZE;
@@ -575,15 +576,6 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
         .filter((entry): entry is { video: typeof allVideos[number]; index: number } => Boolean(entry))
     : allVideos.map((video, index) => ({ video, index }));
   const videos = filteredEntries.map((entry) => entry.video);
-  const videoLinkEntries = videos.slice(0, 120).map((video) => {
-    const excerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render', 12);
-    const suffix = video.id.replace(/^[^a-z0-9]+/gi, '').slice(-6).toUpperCase();
-    return {
-      id: video.id,
-      label: excerpt.length ? excerpt : `MaxVideoAI render ${suffix}`,
-    };
-  });
-
   const clientVideos: ExampleGalleryVideo[] = filteredEntries.map(({ video, index }) => {
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
@@ -628,13 +620,26 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
     if (nextSort !== DEFAULT_SORT) {
       query.sort = nextSort;
     }
-    if (engineValue) {
+    if (engineValue && !engineFromPath) {
       query.engine = engineValue;
     }
     if (pageValue && pageValue > 1) {
       query.page = String(pageValue);
     }
     return Object.keys(query).length ? query : undefined;
+  };
+  const buildEngineFilterHref = (engineId: string | null): string => {
+    if (!engineId) {
+      return galleryBasePath;
+    }
+    const canonicalSlug = resolveExampleCanonicalSlug(engineId);
+    if (canonicalSlug) {
+      return `${galleryBasePath}/${canonicalSlug}`;
+    }
+    const query = new URLSearchParams();
+    query.set('engine', engineId);
+    const suffix = query.toString();
+    return suffix ? `${galleryBasePath}?${suffix}` : galleryBasePath;
   };
 
   const itemListElements = videos.map((video, index) => {
@@ -654,18 +659,11 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       };
     });
 
-  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
-  const canonicalPath = `${localePrefix}/${GALLERY_SLUG_MAP[locale] ?? GALLERY_SLUG_MAP.en ?? 'examples'}`.replace(
-    /\/{2,}/g,
-    '/'
-  );
-  const canonicalUrl = buildExamplesCanonical(
-    `${SITE}${canonicalPath}`,
-    collapsedEngineParam,
-    currentPage > 1 ? currentPage : null
-  );
-  const baseExamplesUrl = `${SITE}${canonicalPath}`;
-  const breadcrumbLabels = getBreadcrumbLabels(locale as AppLocale);
+  const baseExamplesUrl = `${SITE}${galleryBasePath}`;
+  const canonicalUrl = modelLanding
+    ? `${SITE}${galleryBasePath}/${modelLanding.slug}`
+    : baseExamplesUrl;
+  const breadcrumbLabels = getBreadcrumbLabels(appLocale);
   const breadcrumbItems = [
     {
       '@type': 'ListItem',
@@ -680,11 +678,11 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       item: baseExamplesUrl,
     },
   ];
-  if (engineLabel) {
+  if (modelLanding) {
     breadcrumbItems.push({
       '@type': 'ListItem',
       position: 3,
-      name: engineLabel,
+      name: modelLanding.label,
       item: canonicalUrl,
     });
   }
@@ -699,8 +697,8 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       ? {
           '@context': 'https://schema.org',
           '@type': 'ItemList',
-          name: engineLabel
-            ? `AI video examples for ${engineLabel} on MaxVideoAI`
+          name: modelLanding
+            ? `AI video examples for ${modelLanding.label} on MaxVideoAI`
             : 'AI video examples on MaxVideoAI',
           numberOfItems: itemListElements.length,
           itemListOrder: 'https://schema.org/ItemListOrderAscending',
@@ -708,6 +706,20 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
           itemListElement: itemListElements,
         }
       : null;
+  const faqJsonLd = faqBlock.items.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqBlock.items.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer,
+          },
+        })),
+      }
+    : null;
 
   return (
     <>
@@ -715,18 +727,18 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
         <div className="stack-gap-lg">
           <section className="halo-hero halo-hero-offset stack-gap-lg text-center">
             <header className="mx-auto max-w-3xl stack-gap-sm text-center">
-              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-              <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
+              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
+              <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle}</p>
               <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
             </header>
 
             <section className="flex flex-wrap items-center justify-center gap-4 text-xs text-text-secondary">
               {engineFilterOptions.length ? (
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                  <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
+                  <span className="font-semibold uppercase tracking-micro text-text-muted">{browseByModelLabel}</span>
                   <div className="flex flex-wrap items-center justify-center gap-1">
                     <Link
-                      href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
+                      href={buildEngineFilterHref(null)}
                       rel="nofollow"
                       scroll={false}
                       className={clsx(
@@ -744,7 +756,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
                       return (
                         <Link
                           key={engine.id}
-                          href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
+                          href={buildEngineFilterHref(engine.id)}
                           rel="nofollow"
                           scroll={false}
                           className={clsx(
@@ -765,7 +777,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
                 </div>
               ) : null}
             </section>
-            {selectedEngine && modelPath ? (
+            {isModelLanding && selectedEngine && modelPath ? (
               <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-secondary">
                 <Link href={modelPath} className="font-semibold text-brand hover:text-brandHover">
                   {engineModelLinkLabel}
@@ -776,6 +788,17 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
               </div>
             ) : null}
           </section>
+
+          {modelLanding?.sections.length ? (
+            <section className="grid gap-4 md:grid-cols-3">
+              {modelLanding.sections.map((section) => (
+                <div key={section.title} className="flex flex-wrap items-center justify-center gap-2">
+                  <h2 className="text-base font-semibold text-text-primary">{section.title}</h2>
+                  <p className="text-sm leading-relaxed text-text-secondary/90">{section.body}</p>
+                </div>
+              ))}
+            </section>
+          ) : null}
 
           <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
             <ExamplesGalleryGrid
@@ -837,92 +860,52 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
             <p>{longDescription}</p>
           </section>
 
-          {videoLinkEntries.length ? (
-            <details className="rounded-[16px] border border-hairline bg-surface/70 px-4 py-5 text-sm text-text-secondary/90">
-              <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <span className="text-base font-semibold text-text-primary">{recentAccessTitle}</span>
-                <span className="text-xs uppercase tracking-micro text-text-muted">{showLabel}</span>
-              </summary>
-              <div className="mt-3">
-                <p className="text-xs text-text-muted">{recentAccessBody}</p>
-                <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-                  {videoLinkEntries.map((entry) => (
-                    <li key={entry.id}>
-                      <Link
-                        href={`/video/${encodeURIComponent(entry.id)}`}
-                        className="text-text-secondary transition hover:text-text-primary"
-                      >
-                        {entry.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </details>
-          ) : null}
+          <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
+            <h2 className="text-lg font-semibold text-text-primary">
+              {locale === 'fr'
+                ? 'Aller plus loin'
+                : locale === 'es'
+                  ? 'Siguientes pasos'
+                  : 'Next steps'}
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-3 text-sm">
+              <Link href="/models" className="font-semibold text-brand hover:text-brandHover">
+                {locale === 'fr'
+                  ? 'Voir les specs et limites des modèles'
+                  : locale === 'es'
+                    ? 'Ver specs y límites de modelos'
+                    : 'See model specs and limits'}
+              </Link>
+              <Link href="/ai-video-engines" className="font-semibold text-brand hover:text-brandHover">
+                {locale === 'fr'
+                  ? 'Choisir un moteur par use case'
+                  : locale === 'es'
+                    ? 'Elegir motor por caso de uso'
+                    : 'Choose an engine by use case'}
+              </Link>
+              <Link href="/pricing" className="font-semibold text-brand hover:text-brandHover">
+                {locale === 'fr' ? 'Comparer les tarifs vidéo' : locale === 'es' ? 'Comparar precios' : 'Compare pricing'}
+              </Link>
+              <Link href="/workflows" className="font-semibold text-brand hover:text-brandHover">
+                {locale === 'fr' ? 'Voir les workflows IA vidéo' : locale === 'es' ? 'Ver workflows de video IA' : 'See AI video workflows'}
+              </Link>
+            </div>
+          </section>
 
-          <section>
-            <details className="rounded-[16px] border border-hairline bg-surface/80 px-4 py-5 shadow-card">
-              <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <div>
-                  <h2 className="text-lg font-semibold text-text-primary">
-                    {locale === 'fr'
-                      ? "Plus d'exemples vidéo IA"
-                      : locale === 'es'
-                        ? 'Más ejemplos de video IA'
-                        : 'More AI video examples'}
-                  </h2>
-                  <p className="mt-1 text-xs text-text-secondary">
-                    {locale === 'fr'
-                      ? 'Explorez davantage de rendus publics créés avec MaxVideoAI.'
-                      : locale === 'es'
-                        ? 'Explora más renderizados públicos creados con MaxVideoAI.'
-                        : 'Browse more public renders created with MaxVideoAI.'}
-                  </p>
-                </div>
-                <span className="text-xs uppercase tracking-micro text-text-muted">
-                  {locale === 'fr' ? 'Afficher' : locale === 'es' ? 'Mostrar' : 'Show'}
-                </span>
-              </summary>
-              <div className="mt-4 grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  'job_5b9191d8-7f7c-4947-b007-c6aa384d97c1',
-                  'job_1d93e1b7-e4d4-4ae3-a2f3-421ffb4615c0',
-                  'job_0775869a-2386-40d4-9753-25083bf0f6b2',
-                  'job_5efdec94-0818-466b-b570-9898192b4f24',
-                  'job_c9abd206-c515-45f2-bb5a-dc5b18e35eeb',
-                  'job_45d957eb-e943-4838-b6f0-50a1b006687d',
-                  'job_71905754-c5e6-4078-864d-f17cd7f62d95',
-                  'job_27680a77-1690-4856-b188-5fd6d359d2f8',
-                  'job_1ecfbd83-2a68-4196-a453-a3e81e8a0623',
-                  'job_17214ed3-acbc-41b5-8528-59dce5f236a5',
-                  'job_3f4474d3-7481-4362-8fd9-a90d41853231',
-                  'job_93c9f857-1e89-4551-ba70-4619770a6cb1',
-                  'job_c1311458-e35c-4e4d-b791-488c14fc395e',
-                  'job_a1662b5f-8b50-465e-9af6-aba585e1d807',
-                  'job_9dda92fc-830a-41c4-88d4-44967acc8875',
-                  'job_19bc2180-5d30-458c-9034-610396cb9255',
-                  'job_c637ef05-1f9a-43b6-aeec-8b1bcf60e684',
-                  'job_f4b0fd07-cbd8-4f48-8e7c-3145d8063a99',
-                  'job_3676559d-d828-46c8-adc6-6dd0255f9e0a',
-                  'job_d5a3c272-4e3d-4932-b39b-837ac8aa462b',
-                  'job_948ac337-d8a4-40fe-9583-1995cdab75d1',
-                ].map((id, index) => (
-                  <Link
-                    key={id}
-                    href={`/video/${encodeURIComponent(id)}`}
-                    className="block rounded-lg border border-hairline bg-surface/80 p-4 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary"
-                  >
-                    {locale === 'fr'
-                      ? `Exemple ${index + 1}`
-                      : locale === 'es'
-                        ? `Ejemplo ${index + 1}`
-                        : `Example ${index + 1}`}
-                  </Link>
+          {faqBlock.items.length ? (
+            <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
+              <h2 className="text-lg font-semibold text-text-primary">{faqBlock.title}</h2>
+              <div className="mt-4 space-y-3">
+                {faqBlock.items.map((item) => (
+                  <details key={item.question} className="rounded-lg border border-hairline bg-surface px-4 py-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-text-primary">{item.question}</summary>
+                    <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.answer}</p>
+                  </details>
                 ))}
               </div>
-            </details>
-          </section>
+            </section>
+          ) : null}
+
         </div>
 
         {breadcrumbJsonLd ? (
@@ -937,6 +920,13 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
             type="application/ld+json"
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJson) }}
+          />
+        ) : null}
+        {faqJsonLd ? (
+          <script
+            type="application/ld+json"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
           />
         ) : null}
       </main>

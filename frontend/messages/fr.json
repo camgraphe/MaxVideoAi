@@ -1365,7 +1365,7 @@
     "hero": {
       "title": "Exemples de vidéo IA que vous pouvez cloner.",
       "subtitle": "Survolez pour boucler, cliquez pour agrandir. Chaque clip prévisualise le mouvement et le style que vous pouvez utiliser dans MaxVideo AI.",
-      "body": "Parcourez des exemples vidéo IA générés avec Sora 2, Veo 3.1, Pika 2.2, Kling, Wan et d’autres moteurs. Chaque clip affiche le prompt, le format et la durée pour comparer en un coup d’œil la façon dont chaque modèle gère mouvement, cadrage et narration."
+      "body": "Parcourez des exemples vidéo IA avec prompt, format, durée et prix affichés par clip. Utilisez ce hub pour filtrer par marque, puis ouvrez les pages modèles pour les specs, limites et prix exacts. Une page de marque peut inclure plusieurs modèles et modes."
     },
     "items": [
       {
@@ -1972,7 +1972,7 @@
       "title": "Exemples vidéo IA + prix affichés | MaxVideoAI",
       "description": "Explorez des exemples réels avec prompts, durée, audio et prix par clip. Dupliquez un plan dans votre workspace en quelques secondes.",
       "title_engine": "Exemples vidéo IA — {engineName} | MaxVideoAI",
-      "description_engine": "Découvrez des exemples vidéo {engineName} avec prompts, durée, audio et prix affichés par clip. Dupliquez chaque plan dans le workspace."
+      "description_engine": "Découvrez des exemples {engineName} avec prompts, durée, audio et prix affichés par clip. Ces pages peuvent inclure plusieurs modèles et modes {engineName}."
     }
   },
   "workspace": {
