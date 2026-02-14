@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
@@ -33,10 +35,11 @@ type HubCopy = {
     compareNow: {
       left: string;
       right: string;
-      swap: string;
       compare: string;
       searchPlaceholder: string;
       noResults: string;
+      strengthsLabel: string;
+      strengthsFallback: string;
     };
   };
   sections: {
@@ -73,10 +76,11 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       compareNow: {
         left: 'Engine A',
         right: 'Engine B',
-        swap: 'Swap engines',
         compare: 'Compare',
         searchPlaceholder: 'Search engine...',
         noResults: 'No results',
+        strengthsLabel: 'Strengths',
+        strengthsFallback: 'General purpose video',
       },
     },
     sections: {
@@ -208,10 +212,11 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       compareNow: {
         left: 'Moteur A',
         right: 'Moteur B',
-        swap: 'Inverser les moteurs',
         compare: 'Comparer',
         searchPlaceholder: 'Rechercher un moteur...',
         noResults: 'Aucun résultat',
+        strengthsLabel: 'Points forts',
+        strengthsFallback: 'Usage général vidéo',
       },
     },
     sections: {
@@ -344,10 +349,11 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       compareNow: {
         left: 'Motor A',
         right: 'Motor B',
-        swap: 'Intercambiar motores',
         compare: 'Comparar',
         searchPlaceholder: 'Buscar motor...',
         noResults: 'Sin resultados',
+        strengthsLabel: 'Fortalezas',
+        strengthsFallback: 'Uso general de video',
       },
     },
     sections: {
@@ -478,6 +484,50 @@ function getCopy(locale: AppLocale): HubCopy {
   return HUB_COPY[locale] ?? HUB_COPY.en;
 }
 
+type EngineScoreRow = {
+  modelSlug?: string;
+  engineId?: string;
+  fidelity?: number | null;
+  motion?: number | null;
+  consistency?: number | null;
+};
+
+function computeOverallFromScore(score?: EngineScoreRow | null) {
+  if (!score) return null;
+  const values = [score.fidelity, score.motion, score.consistency].filter(
+    (value): value is number => typeof value === 'number'
+  );
+  if (!values.length) return null;
+  const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return Math.round(avg * 10) / 10;
+}
+
+async function loadHubEngineScoreMap(): Promise<Map<string, number>> {
+  const candidates = [
+    path.join(process.cwd(), 'data', 'benchmarks', 'engine-scores.v1.json'),
+    path.join(process.cwd(), '..', 'data', 'benchmarks', 'engine-scores.v1.json'),
+  ];
+  for (const candidate of candidates) {
+    try {
+      const raw = await fs.readFile(candidate, 'utf8');
+      const parsed = JSON.parse(raw) as { scores?: EngineScoreRow[] };
+      const map = new Map<string, number>();
+      (parsed.scores ?? []).forEach((entry) => {
+        const key = entry.modelSlug ?? entry.engineId;
+        if (!key) return;
+        const overall = computeOverallFromScore(entry);
+        if (overall != null) {
+          map.set(key, overall);
+        }
+      });
+      return map;
+    } catch {
+      // Try next candidate path.
+    }
+  }
+  return new Map();
+}
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'aiVideoEngines.meta' });
@@ -498,6 +548,7 @@ export default async function AiVideoEnginesPage() {
   const { locale } = await resolveDictionary();
   const copy = getCopy(locale);
   const engines = getHubEngines();
+  const scoreMap = await loadHubEngineScoreMap();
 
   const engineOptions = engines.map((engine) => ({ value: engine.modelSlug, label: engine.marketingName }));
   const popularComparisons = getPopularComparisons(engines).slice(0, 12);
@@ -525,6 +576,15 @@ export default async function AiVideoEnginesPage() {
     slug: pair.slug,
     label: pair.label,
   }));
+  const engineMetaBySlug = Object.fromEntries(
+    engines.map((engine) => [
+      engine.modelSlug,
+      {
+        overall: scoreMap.get(engine.modelSlug) ?? null,
+        strengths: engine.bestFor ?? null,
+      },
+    ])
+  );
   const defaultComparison = allComparisonEntries[0];
   const enginesToggleLabel = copy.sections.enginesToggle.replace('{count}', String(engineCards.length));
 
@@ -536,28 +596,36 @@ export default async function AiVideoEnginesPage() {
   return (
     <div className="container-page max-w-6xl section">
       <div className="stack-gap-lg">
-        <header className="stack-gap-sm">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{copy.hero.title}</h1>
-          <p className="max-w-4xl text-base leading-relaxed text-text-secondary">{copy.hero.intro}</p>
-          <CompareNowWidget
-            options={engineOptions}
-            defaultLeft="sora-2"
-            defaultRight="veo-3-1"
-            labels={copy.hero.compareNow}
-          />
-          {defaultComparison ? (
-            <p className="text-xs text-text-muted">
-              {copy.sections.quickStartLabel}:{' '}
-              <Link
-                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: defaultComparison.slug } }}
-                className="font-semibold text-brand hover:text-brandHover"
-              >
-                {defaultComparison.label}
-              </Link>
-              .
-            </p>
-          ) : null}
-        </header>
+        <section className="relative min-h-[56vh] overflow-hidden rounded-[30px] border border-hairline bg-surface shadow-card sm:min-h-[60vh]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,rgba(59,130,246,0.14)_0%,rgba(59,130,246,0.02)_45%,rgba(0,0,0,0)_70%)]" />
+          <div className="relative z-10 flex h-full flex-col justify-center gap-6 p-5 sm:p-8 lg:p-10">
+            <header className="stack-gap-sm text-center">
+              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{copy.hero.title}</h1>
+              <p className="mx-auto max-w-4xl text-base leading-relaxed text-text-secondary">{copy.hero.intro}</p>
+            </header>
+            <CompareNowWidget
+              options={engineOptions}
+              defaultLeft="sora-2"
+              defaultRight="veo-3-1"
+              engineMetaBySlug={engineMetaBySlug}
+              labels={copy.hero.compareNow}
+              embedded
+              className="rounded-2xl border border-hairline bg-surface/95 p-4 shadow-card sm:p-5"
+            />
+            {defaultComparison ? (
+              <p className="text-center text-xs text-text-muted">
+                {copy.sections.quickStartLabel}:{' '}
+                <Link
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: defaultComparison.slug } }}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
+                  {defaultComparison.label}
+                </Link>
+                .
+              </p>
+            ) : null}
+          </div>
+        </section>
 
         <section className="stack-gap">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.popularTitle}</h2>
