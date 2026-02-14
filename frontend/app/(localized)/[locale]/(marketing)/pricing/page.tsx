@@ -148,23 +148,31 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const member = content.member;
   const refunds = content.refunds;
   const faq = content.faq;
+  const supplementalFaq = Array.isArray(content.supplementalFaq)
+    ? content.supplementalFaq.filter(
+        (item): item is { question: string; answer: string } =>
+          Boolean(item?.question) && Boolean(item?.answer)
+      )
+    : [];
+  const faqEntries = [...(faq.entries ?? []), ...supplementalFaq].slice(0, 10);
   const heroLink = content.hero.link ?? null;
   const canonical = buildMetadataUrls(locale as AppLocale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
   const breadcrumbLabels = getBreadcrumbLabels(locale as AppLocale);
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
   const exploreTitle =
-    locale === 'fr' ? 'Explorer les moteurs' : locale === 'es' ? 'Explorar motores' : 'Explore engines';
-  const exploreModelsLabel = locale === 'fr' ? 'Modèles' : locale === 'es' ? 'Modelos' : 'Models';
+    locale === 'fr' ? 'Pages liées' : locale === 'es' ? 'Páginas relacionadas' : 'Related pages';
+  const exploreModelsLabel = locale === 'fr' ? 'Specs des modèles' : locale === 'es' ? 'Specs de modelos' : 'Model specs';
+  const exploreEnginesLabel =
+    locale === 'fr' ? 'Choisir un moteur par use case' : locale === 'es' ? 'Elegir motor por caso de uso' : 'Choose an engine by use case';
   const exploreExamplesLabel = locale === 'fr' ? 'Exemples' : locale === 'es' ? 'Ejemplos' : 'Examples';
+  const exploreWorkflowsLabel =
+    locale === 'fr' ? 'Workflows IA vidéo' : locale === 'es' ? 'Workflows de video IA' : 'AI video workflows';
   const exploreLinks = [
     { href: { pathname: '/models' }, label: exploreModelsLabel },
+    { href: { pathname: '/ai-video-engines' }, label: exploreEnginesLabel },
     { href: { pathname: '/examples' }, label: exploreExamplesLabel },
-    { href: { pathname: '/models/[slug]', params: { slug: 'sora-2' } }, label: 'Sora 2' },
-    { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1' } }, label: 'Veo 3.1' },
-    { href: { pathname: '/models/[slug]', params: { slug: 'kling-3-standard' } }, label: 'Kling' },
-    { href: { pathname: '/models/[slug]', params: { slug: 'seedance-1-5-pro' } }, label: 'Seedance' },
-    { href: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } }, label: 'Pika' },
+    { href: { pathname: '/workflows' }, label: exploreWorkflowsLabel },
   ];
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -225,26 +233,26 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     { text: refunds.points[2], live: FEATURES.pricing.multiApproverTopups },
   ] as const;
 
-  const serviceSchema = {
+  const softwareSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Service',
-    serviceType: 'AI Video Generation and Editing',
+    '@type': ['SoftwareApplication', 'WebApplication'],
     name: 'MaxVideoAI',
     description:
-      'Generate high-quality AI videos using Sora 2, Veo 3, Pika, and other models. Digital credits, no shipping required.',
-    provider: {
+      'Estimate pricing and generate AI videos with per-clip cost visibility, model-level limits, and reusable workflows.',
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: starterCurrency,
+      price: '10.00',
+      availability: 'https://schema.org/InStock',
+      url: canonical,
+    },
+    publisher: {
       '@type': 'Organization',
       name: 'MaxVideoAI',
       url: 'https://maxvideoai.com',
       logo: 'https://maxvideoai.com/favicon-512.png',
-    },
-    areaServed: 'Worldwide',
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'EUR',
-      price: '10.00',
-      availability: 'https://schema.org/InStock',
-      url: canonical,
     },
   };
 
@@ -319,7 +327,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     return { name, requirement, benefit };
   });
 
-  const faqJsonLdEntries = faq.entries.slice(0, 6);
+  const faqJsonLdEntries = faqEntries.slice(0, 6);
 
   const heroTitleLines = (content.hero.title ?? '').split('\n').map((line) => line.trim()).filter(Boolean);
   const heroSubtitleLines = (content.hero.subtitle ?? '').split('\n').map((line) => line.trim()).filter(Boolean);
@@ -511,7 +519,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <article className="rounded-card border border-hairline bg-surface p-6 shadow-card">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faq.title}</h2>
             <dl className="mt-4 stack-gap">
-              {faq.entries.map((entry) => (
+              {faqEntries.map((entry) => (
                 <div key={entry.question}>
                   <dt className="text-sm font-semibold text-text-primary">{entry.question}</dt>
                   <dd className="mt-1 text-sm text-text-secondary">{entry.answer}</dd>
@@ -525,8 +533,8 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       <Script id="pricing-breadcrumb-jsonld" type="application/ld+json">
         {JSON.stringify(breadcrumbJsonLd)}
       </Script>
-      <Script id="pricing-jsonld" type="application/ld+json">
-        {JSON.stringify(serviceSchema)}
+      <Script id="pricing-software-jsonld" type="application/ld+json">
+        {JSON.stringify(softwareSchema)}
       </Script>
       <FAQSchema questions={faqJsonLdEntries} />
     </main>

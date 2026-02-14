@@ -604,7 +604,7 @@
   },
   "pricing": {
     "hero": {
-      "title": "Estimez le prix avant de générer. Payez uniquement ce que vous exécutez.",
+      "title": "Tarifs vidéo IA : prix avant génération.",
       "subtitle": "Commencez avec des Crédits de démarrage (10 $).\nSans abonnement. Aucun engagement.",
       "link": {
         "before": "Comparez les tarifs des moteurs dans notre ",
@@ -957,9 +957,9 @@
   },
   "models": {
     "hero": {
-      "title": "Comparez tous les modèles vidéo IA dans un seul workspace",
-      "subtitle": "Comparez tous les moteurs vidéo IA disponibles dans MaxVideoAI.",
-      "body": "MaxVideoAI vous permet de comparer chaque moteur vidéo IA sérieux côte à côte : Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax et d’autres encore. Consultez des exemples réels, les spécifications et les prix live pour choisir le bon modèle pour chaque plan plutôt que de parier sur une démo en liste d’attente."
+      "title": "Modèles vidéo IA : specs, limites et prix",
+      "subtitle": "Catalogue des modèles compatibles texte→vidéo, image→vidéo et vidéo→vidéo.",
+      "body": "Utilisez cette page comme catalogue de référence pour vérifier les entrées supportées, les limites runtime et les signaux de prix. Gardez la décision comparative sur la page moteurs."
     },
     "intro": {
       "paragraphs": [
@@ -1072,8 +1072,8 @@
         "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Modèles vidéo IA : prix & limites | MaxVideoAI",
-      "description": "Comparez les modèles vidéo IA avec prix en temps réel et limites réelles, puis choisissez 2 moteurs pour une page côte à côte avec specs, prompts et exemples."
+      "title": "Modèles vidéo IA : specs, limites et prix | MaxVideoAI",
+      "description": "Catalogue des modèles vidéo IA avec specs, limites et signaux de prix. Vérifiez les entrées, durées/résolutions et contraintes avant génération."
     },
     "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
     "detail": {
@@ -1105,22 +1105,22 @@
     },
     "listing": {
       "hero": {
-        "title": "Comparez les modèles vidéo IA avec prix en direct",
-        "subtitle": "Prix $/s en direct + limites réelles + exemples — puis comparez deux moteurs côte à côte.",
+        "title": "Modèles vidéo IA : specs, limites et prix",
+        "subtitle": "Vérifiez les entrées, limites et prix par modèle avant de générer.",
         "bullets": [
-          "Cliquez sur un modèle pour les specs complètes, presets de prompt et exemples.",
-          "Comparez deux moteurs côte à côte avec specs et prompts"
+          "Ouvrez chaque modèle pour ses specs complètes, limites et signaux de prix.",
+          "Filtrez par type d’entrée et contraintes pour cadrer rapidement votre shortlist."
         ],
         "compareLabel": "Activer le mode Compare"
       },
       "legacyToggleLabel": "Afficher les anciens modèles",
       "grid": {
-        "srTitle": "Modèles vidéo et image IA que vous pouvez comparer sur MaxVideoAI",
-        "bridgeText": "Comparez les moteurs vidéo et image IA côte à côte avec prix en direct, limites réelles et exemples clonables."
+        "srTitle": "Modèles IA vidéo et image avec specs, limites et prix sur MaxVideoAI",
+        "bridgeText": "Utilisez les cartes modèles pour valider specs, limites et prix avant sélection."
       },
       "quickCompare": {
-        "title": "Raccourcis de comparaison",
-        "subtitle": "Choisissez un duel populaire pour précharger le mode Compare (ou ouvrir la page de comparaison).",
+        "title": "Vérifications modèles par scénario",
+        "subtitle": "Ouvrez une vue côte à côte uniquement quand vous avez besoin d’une décision après revue des specs.",
         "shortcuts": [
           "ciné vs pub",
           "ciné vs contrôle",
@@ -1131,72 +1131,76 @@
         ]
       },
       "chooseOutcome": {
-        "title": "Choisir par résultat",
-        "subtitle": "Partez du résultat voulu — puis choisissez un moteur.",
+        "title": "Choisir par type d’entrée et contraintes",
+        "subtitle": "Partez des entrées supportées, des limites et des contraintes de prix.",
         "tiles": [
           {
-            "title": "Plans ciné / hero",
-            "description": "Continuité personnage, physique ciné, rendu premium."
+            "title": "Modèles texte→vidéo",
+            "description": "Repérez les modèles adaptés à la génération depuis prompt seul."
           },
           {
-            "title": "Cuts pub & marketing",
-            "description": "Cadrage précis, mouvements cohérents, variantes rapides."
+            "title": "Modèles image→vidéo",
+            "description": "Vérifiez le support des références et des workflows guidés par image."
           },
           {
-            "title": "Itération rapide (tests)",
-            "description": "Tester beaucoup de versions avant de vous engager."
+            "title": "Support vidéo→vidéo et extension",
+            "description": "Identifiez les modèles qui gèrent la continuité ou l’édition."
           },
           {
-            "title": "Stylisé / social",
-            "description": "Mouvement stylisé, boucles, look social-first."
+            "title": "Limites et formats",
+            "description": "Durée, résolution max, audio et contraintes de format par modèle."
           },
           {
-            "title": "Livrables 4K / haute rés",
-            "description": "Quand la résolution max compte."
+            "title": "Prix par modèle et mode",
+            "description": "Utilisez prix/seconde et modes pour estimer vos coûts."
           },
           {
-            "title": "Storyboard & still-first",
-            "description": "Préparer des frames et références avant la motion."
+            "title": "Exemples et références de prompts",
+            "description": "Ouvrez des sorties réelles par modèle avant de fixer vos presets."
           }
         ]
       },
       "reliability": {
-        "title": "Comment MaxVideoAI reste fiable",
-        "subtitle": "L'essentiel pour des comparaisons cohérentes et prêtes prod.",
+        "title": "Spécifications et contraintes à contrôler",
+        "subtitle": "Validez faisabilité, limites de sortie et exposition coût avant génération.",
         "items": [
           {
-            "title": "Prix en direct",
-            "body": "On suit le $/s pour voir le coût réel avant génération."
+            "title": "Support des entrées",
+            "body": "Vérifiez texte→vidéo, image→vidéo et capacités d’édition par modèle."
           },
           {
-            "title": "Limites réelles",
-            "body": "Durée, résolution max, formats… affichés par moteur."
+            "title": "Limites et formats",
+            "body": "Contrôlez durée max, résolution, audio et contraintes de format."
           },
           {
-            "title": "Exemples clonables",
-            "body": "Dupliquez prompts et réglages depuis des rendus réels."
+            "title": "Signaux de prix",
+            "body": "Consultez les plages de prix par modèle avant les lots de prod."
           }
         ],
         "faq": [
           {
-            "question": "Comment le prix est calculé",
-            "answer": "Nous affichons un $/s estimé pour chaque moteur à partir des prix publics et de notre normalisation interne. Le coût final peut varier selon le tier fournisseur et les réglages de génération."
+            "question": "Quels modèles supportent l’image→vidéo ?",
+            "answer": "Utilisez les cartes et filtres pour voir quels modèles prennent les entrées image et les références."
           },
           {
-            "question": "Pourquoi la durée max varie selon les moteurs",
-            "answer": "La durée max dépend des limites fournisseur, du tier (fast/pro) et du mode (texte→vidéo, image→vidéo, extend/continue). Nous affichons les limites les plus récentes par moteur."
+            "question": "Quels modèles supportent les workflows vidéo→vidéo ?",
+            "answer": "Le support vidéo→vidéo et continuité varie selon modèle et mode. Vérifiez les capacités exactes avant un job de prod."
           },
           {
-            "question": "Ce que montre le mode Compare (specs + prompts + exemples)",
-            "answer": "Le mode Compare ouvre une page côte à côte avec specs clés, points forts et exemples de rendus. Quand disponible, il utilise le même template de prompt pour juger plus justement."
+            "question": "Quelles sont les limites typiques par modèle ?",
+            "answer": "Durée, résolution, audio et formats disponibles dépendent du fournisseur et du mode. Le catalogue affiche les limites connues."
           },
           {
-            "question": "Comment utiliser les pages modèle (détails complets)",
-            "answer": "Chaque page modèle inclut les specs complètes, les modes supportés (T2V/I2V/V2V) et une section de prompts à copier pour reproduire ou itérer rapidement."
+            "question": "Comment le prix est-il calculé par modèle/mode ?",
+            "answer": "Le prix dépend du modèle, du mode, de la durée, de la résolution et des options. Utilisez ces signaux comme base de planification."
           },
           {
-            "question": "À quelle fréquence les données sont mises à jour",
-            "answer": "Nous mettons à jour les limites et références de prix dès que les fournisseurs publient des changements et lorsque nous testons de nouvelles versions. Si quelque chose semble incorrect, la page modèle indique la dernière mise à jour."
+            "question": "Où voir des sorties réelles par modèle ?",
+            "answer": "Consultez la galerie d’exemples pour voir sorties, prompts et réglages liés à chaque modèle."
+          },
+          {
+            "question": "À quelle fréquence limites et prix sont-ils mis à jour ?",
+            "answer": "Les limites et références de prix sont rafraîchies à chaque changement fournisseur et validation de nouvelles versions."
           }
         ]
       },
@@ -1205,10 +1209,10 @@
         "subtitle": "Choisissez un modèle ci-dessus, puis générez — ou parcourez des prompts et rendus éprouvés avant de vous lancer.",
         "pills": [
           "Prix en direct",
-          "Cloner des prompts",
-          "Comparer côte à côte"
+          "Limites modèles",
+          "Références de prompts"
         ],
-        "microcopy": "Mêmes presets de prompt • Prix en direct • Comparaisons côte à côte",
+        "microcopy": "Specs modèles • Prix en direct • Sorties réelles",
         "primaryLabel": "Générer maintenant",
         "secondaryLabel": "Voir des exemples"
       }

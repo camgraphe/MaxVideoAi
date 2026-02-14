@@ -14,7 +14,6 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
-import { ModelsCompareHeroToggle } from '@/components/marketing/ModelsCompareHeroToggle';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
@@ -515,11 +514,11 @@ export default async function ModelsPage() {
     };
   };
   const heroTitle =
-    listingCopy.hero?.title ?? content.hero?.title ?? 'Compare AI video models with live pricing';
+    listingCopy.hero?.title ?? content.hero?.title ?? 'AI Video Models: Specs, Limits, and Pricing';
   const heroSubhead =
     listingCopy.hero?.subtitle ??
     content.hero?.subtitle ??
-    'Live $/s + real limits + examples — then compare two engines side by side.';
+    'Use this catalog to check input support, runtime limits, and pricing per model before you generate.';
   const cardCtaLabel = content.cardCtaLabel ?? 'Explore model';
   const engineTypeLabels = {
     ...DEFAULT_ENGINE_TYPE_LABELS,
@@ -726,8 +725,8 @@ export default async function ModelsPage() {
 
   const heroBullets =
     listingCopy.hero?.bullets ?? [
-      'Click any model for full specs, prompt presets, and examples.',
-      'Compare engines side by side with specs and prompts',
+      'Open any model for full specs, limits, and pricing details.',
+      'Filter by input type and constraints to shortlist valid models quickly.',
     ];
 
   const cardBySlug = new Map(modelCards.map((card) => [card.id, card]));
@@ -744,68 +743,73 @@ export default async function ModelsPage() {
   const outcomeCopy = listingCopy.chooseOutcome?.tiles ?? [];
   const outcomeTiles = [
     {
-      title: outcomeCopy[0]?.title ?? 'Cinematic / hero shots',
-      description: outcomeCopy[0]?.description ?? 'Character continuity, cinematic physics, premium look.',
-      engines: ['sora-2', 'sora-2-pro', 'seedance-1-5-pro', 'kling-3-standard', 'kling-3-pro', 'kling-2-6-pro'],
+      title: outcomeCopy[0]?.title ?? 'Text-to-video models',
+      description: outcomeCopy[0]?.description ?? 'Shortlist models that support prompt-only generation.',
+      engines: ['sora-2', 'sora-2-pro', 'veo-3-1', 'kling-3-standard', 'kling-3-pro', 'seedance-1-5-pro'],
       icon: Film,
     },
     {
-      title: outcomeCopy[1]?.title ?? 'Ads & marketing cuts',
-      description: outcomeCopy[1]?.description ?? 'Precise framing, consistent camera moves, fast variants.',
-      engines: ['veo-3-1', 'veo-3-1-fast'],
+      title: outcomeCopy[1]?.title ?? 'Image-to-video models',
+      description: outcomeCopy[1]?.description ?? 'Check which models support references and image-led workflows.',
+      engines: ['veo-3-1', 'veo-3-1-fast', 'pika-text-to-video', 'wan-2-6', 'ltx-2'],
       icon: Clapperboard,
     },
     {
-      title: outcomeCopy[2]?.title ?? 'Fast iteration (cheap tests)',
-      description: outcomeCopy[2]?.description ?? 'Try lots of versions quickly before you commit.',
-      engines: ['wan-2-5', 'minimax-hailuo-02-text', 'pika-text-to-video'],
+      title: outcomeCopy[2]?.title ?? 'Video-to-video and extension support',
+      description: outcomeCopy[2]?.description ?? 'Identify models that support continuation or edit-style workflows.',
+      engines: ['wan-2-6', 'kling-3-standard', 'kling-3-pro', 'veo-3-1-first-last'],
       icon: Timer,
     },
     {
-      title: outcomeCopy[3]?.title ?? 'Stylized / social edits',
-      description: outcomeCopy[3]?.description ?? 'Stylized motion, loops, social-first look.',
-      engines: ['pika-text-to-video', 'wan-2-6'],
+      title: outcomeCopy[3]?.title ?? 'Limits and formats',
+      description: outcomeCopy[3]?.description ?? 'Duration, max resolution, audio, and format constraints by model.',
+      engines: ['sora-2', 'veo-3-1', 'kling-3-standard', 'ltx-2', 'minimax-hailuo-02-text'],
       icon: Sparkles,
     },
     {
-      title: outcomeCopy[4]?.title ?? 'High-res / 4K deliverables',
-      description: outcomeCopy[4]?.description ?? 'When max resolution matters.',
-      engines: ['ltx-2-fast', 'ltx-2'],
+      title: outcomeCopy[4]?.title ?? 'Pricing per model and mode',
+      description: outcomeCopy[4]?.description ?? 'Use per-second pricing and mode support to estimate cost accurately.',
+      engines: ['veo-3-1', 'sora-2', 'wan-2-6', 'pika-text-to-video', 'seedance-1-5-pro'],
       icon: Wand2,
     },
     {
-      title: outcomeCopy[5]?.title ?? 'Storyboard & still-first workflows',
-      description: outcomeCopy[5]?.description ?? 'Prep frames and references before motion.',
-      engines: ['nano-banana', 'nano-banana-pro'],
+      title: outcomeCopy[5]?.title ?? 'Examples and prompt references',
+      description: outcomeCopy[5]?.description ?? 'Open real outputs per model before selecting your production preset.',
+      engines: ['sora-2', 'veo-3-1', 'wan-2-6', 'kling-3-standard', 'pika-text-to-video'],
       icon: Copy,
     },
   ];
 
   const fallbackFaqItems = [
     {
-      question: 'How pricing is calculated',
+      question: 'Which models support image-to-video?',
       answer:
-        'We show an estimated $/s for each engine based on current public pricing and our internal normalization. Final cost can vary by provider tier and generation settings.',
+        'Use the model cards and filters to see which engines support image-to-video inputs and reference-based modes.',
     },
     {
-      question: 'Why max duration differs per engine',
+      question: 'Which models support video-to-video workflows?',
       answer:
-        'Max duration depends on provider limits, tier (fast/pro), and generation mode (text-to-video, image-to-video, extend/continue). We display the latest known limits per engine.',
+        'Video-to-video and continuation support differ by model and mode. Check each card for the exact capabilities before running production jobs.',
     },
     {
-      question: 'What Compare mode shows (specs + prompts + examples)',
+      question: 'What are the typical limits by model?',
       answer:
-        'Compare mode opens a side-by-side page with key specs, strengths, and example renders. When available, it uses the same prompt template so you can judge outputs more fairly.',
+        'Duration, resolution, audio support, and available formats vary by provider and mode. The catalog shows the latest known limits per model.',
     },
     {
-      question: 'How to use model pages (full details)',
+      question: 'How is pricing calculated per model and mode?',
       answer:
-        'Each model page includes full specs, supported modes (T2V/I2V/V2V), and a prompt section you can copy to reproduce results or iterate quickly.',
+        'Pricing is based on model, mode, duration, resolution, and optional add-ons. Use model-level pricing signals as planning inputs before launch.',
     },
     {
-      question: 'How often data is updated',
+      question: 'Where can I see real outputs per model?',
       answer:
-        'We update model limits and pricing references as providers change their published info and as we test new versions. If something looks off, the model page notes the last refresh.',
+        'Use the examples gallery to inspect outputs, prompts, and settings tied to each model before choosing presets for production.',
+    },
+    {
+      question: 'How often are limits and prices updated?',
+      answer:
+        'Limits and pricing references are refreshed as providers update their capabilities and as new model versions are validated in production.',
     },
   ];
   const faqItems =
@@ -814,16 +818,16 @@ export default async function ModelsPage() {
       : fallbackFaqItems;
 
   const fallbackReliabilityItems = [
-    { title: 'Live pricing', body: 'We track $/s so you see real cost before you generate.' },
-    { title: 'Real limits', body: 'Duration, max resolution, formats… shown per engine.' },
-    { title: 'Examples you can clone', body: 'Duplicate prompts and settings from real renders.' },
+    { title: 'Input type support', body: 'See text-to-video, image-to-video, and edit capabilities by model.' },
+    { title: 'Limits and formats', body: 'Check max duration, resolution, audio, and format constraints.' },
+    { title: 'Pricing signals', body: 'Review model-level price ranges before running full batches.' },
   ];
   const reliabilityItems =
     listingCopy.reliability?.items && listingCopy.reliability.items.length === 3
       ? listingCopy.reliability.items
       : fallbackReliabilityItems;
 
-  const ctaPills = listingCopy.cta?.pills ?? ['Live pricing', 'Clone prompts', 'Compare side-by-side'];
+  const ctaPills = listingCopy.cta?.pills ?? ['Live pricing', 'Model limits', 'Prompt references'];
 
   const itemListJsonLd = {
     '@context': 'https://schema.org',
@@ -863,17 +867,11 @@ export default async function ModelsPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-col items-center gap-2">
-            <ModelsCompareHeroToggle
-              label={listingCopy.hero?.compareLabel ?? 'Enter Compare Mode'}
-              className="px-7 py-3 text-sm"
-            />
-          </div>
         </header>
 
         <section id="models-grid" className="stack-gap-md scroll-mt-24">
           <h2 className="sr-only">
-            {listingCopy.grid?.srTitle ?? 'AI video and image models you can compare on MaxVideoAI'}
+            {listingCopy.grid?.srTitle ?? 'AI video and image models with specs, limits, and pricing on MaxVideoAI'}
           </h2>
           <ModelsGallery
             cards={modelCards}
@@ -883,17 +881,17 @@ export default async function ModelsPage() {
         </section>
         <p className="text-sm text-text-secondary text-center">
           {listingCopy.grid?.bridgeText ??
-            'Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone.'}
+            'Use model cards to review specs, limits, and pricing before selecting a model for production.'}
         </p>
         <div className="stack-gap-xl py-4 sm:py-10">
           <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                {listingCopy.quickCompare?.title ?? 'Quick compare shortcuts'}
+                {listingCopy.quickCompare?.title ?? 'Model checks by common scenarios'}
               </h2>
               <p className="text-sm text-text-secondary">
                 {listingCopy.quickCompare?.subtitle ??
-                  'Pick a popular matchup to preload Compare mode (or open the comparison page).'}
+                  'Open useful side-by-side checks when you need a decision view after reviewing model specs.'}
               </p>
             </div>
             <div className="mt-6 flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
@@ -936,10 +934,10 @@ export default async function ModelsPage() {
           <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                {listingCopy.chooseOutcome?.title ?? 'Choose by outcome'}
+                {listingCopy.chooseOutcome?.title ?? 'Choose by input type and constraints'}
               </h2>
               <p className="text-sm text-text-secondary">
-                {listingCopy.chooseOutcome?.subtitle ?? 'Start from the result you want — then pick an engine.'}
+                {listingCopy.chooseOutcome?.subtitle ?? 'Start from supported inputs, limits, and pricing constraints.'}
               </p>
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -984,11 +982,11 @@ export default async function ModelsPage() {
           <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                {listingCopy.reliability?.title ?? 'How MaxVideoAI stays reliable'}
+                {listingCopy.reliability?.title ?? 'Model specs and constraints that matter'}
               </h2>
               <p className="text-sm text-text-secondary">
                 {listingCopy.reliability?.subtitle ??
-                  'The essentials that keep your comparisons consistent and production-ready.'}
+                  'Use these checks to validate feasibility, output constraints, and price exposure before generation.'}
               </p>
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -1044,7 +1042,7 @@ export default async function ModelsPage() {
                   ))}
                 </div>
                 <p className="mt-3 text-xs text-text-muted">
-                  {listingCopy.cta?.microcopy ?? 'Same prompt presets • Live pricing • Side-by-side comparisons'}
+                  {listingCopy.cta?.microcopy ?? 'Model specs • Live pricing • Real output references'}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -1064,6 +1062,37 @@ export default async function ModelsPage() {
                   {listingCopy.cta?.secondaryLabel ?? 'Browse examples'}
                 </Link>
               </div>
+            </div>
+          </section>
+          <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
+            <h2 className="text-lg font-semibold text-text-primary">
+              {activeLocale === 'fr' ? 'Aller plus loin' : activeLocale === 'es' ? 'Siguientes pasos' : 'Next steps'}
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-3 text-sm">
+              <Link href="/ai-video-engines" className="font-semibold text-brand hover:text-brandHover">
+                {activeLocale === 'fr'
+                  ? 'Choisir un moteur par use case'
+                  : activeLocale === 'es'
+                    ? 'Elegir motor por caso de uso'
+                    : 'Choose an engine by use case'}
+              </Link>
+              <Link href="/pricing" className="font-semibold text-brand hover:text-brandHover">
+                {activeLocale === 'fr'
+                  ? 'Voir les tarifs vidéo'
+                  : activeLocale === 'es'
+                    ? 'Ver precios de video'
+                    : 'See video pricing'}
+              </Link>
+              <Link href="/examples" className="font-semibold text-brand hover:text-brandHover">
+                {activeLocale === 'fr' ? 'Voir des exemples' : activeLocale === 'es' ? 'Ver ejemplos' : 'See examples'}
+              </Link>
+              <Link href="/workflows" className="font-semibold text-brand hover:text-brandHover">
+                {activeLocale === 'fr'
+                  ? 'Voir les workflows IA vidéo'
+                  : activeLocale === 'es'
+                    ? 'Ver workflows de video IA'
+                    : 'See AI video workflows'}
+              </Link>
             </div>
           </section>
         </div>

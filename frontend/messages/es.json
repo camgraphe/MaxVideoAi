@@ -604,7 +604,7 @@
   },
   "pricing": {
     "hero": {
-      "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes.",
+      "title": "Precios de video IA: precio antes de generar.",
       "subtitle": "Comienza con Créditos iniciales ($10).\nSin suscripción. Sin compromiso.",
       "link": {
         "before": "Compara los precios entre motores en nuestra ",
@@ -957,9 +957,9 @@
   },
   "models": {
     "hero": {
-      "title": "Compara todos los modelos de video IA en un solo workspace",
-      "subtitle": "Compara todos los modelos de vídeo IA disponibles en MaxVideoAI.",
-      "body": "MaxVideoAI te deja comparar cada motor de video IA serio en paralelo: Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax y más. Consulta ejemplos reales, especificaciones y precios en vivo para elegir el modelo correcto para cada plano en lugar de fiarte de demos con lista de espera."
+      "title": "Modelos de video IA: specs, límites y precios",
+      "subtitle": "Catálogo de modelos para entradas texto→video, imagen→video y video→video.",
+      "body": "Usa esta página como catálogo técnico para revisar entradas soportadas, límites runtime y señales de precio. Mantén la decisión comparativa en la página de motores."
     },
     "intro": {
       "paragraphs": [
@@ -1072,8 +1072,8 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Modelos de video IA: precios y límites | MaxVideoAI",
-      "description": "Compara modelos de video IA con precios en vivo y límites reales, luego elige 2 motores para una página lado a lado con specs, prompts y ejemplos clonables."
+      "title": "Modelos de video IA: specs, límites y precios | MaxVideoAI",
+      "description": "Catálogo de modelos de video IA con specs, límites y señales de precio. Revisa entradas, duración/resolución y restricciones antes de generar."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {
@@ -1105,22 +1105,22 @@
     },
     "listing": {
       "hero": {
-        "title": "Compara modelos de video IA con precios en vivo",
-        "subtitle": "Precio $/s en vivo + límites reales + ejemplos — luego compara dos motores lado a lado.",
+        "title": "Modelos de video IA: specs, límites y precios",
+        "subtitle": "Revisa entradas, límites y precio por modelo antes de generar.",
         "bullets": [
-          "Haz clic en cualquier modelo para ver specs completas, presets de prompt y ejemplos.",
-          "Compara motores lado a lado con specs y prompts"
+          "Abre cualquier modelo para ver specs completas, límites y señales de precio.",
+          "Filtra por tipo de entrada y restricciones para acotar modelos válidos."
         ],
         "compareLabel": "Entrar en modo Comparar"
       },
       "legacyToggleLabel": "Mostrar modelos antiguos",
       "grid": {
-        "srTitle": "Modelos de video e imagen IA que puedes comparar en MaxVideoAI",
-        "bridgeText": "Compara motores de video e imagen IA lado a lado con precios en vivo, límites reales y ejemplos clonables."
+        "srTitle": "Modelos IA de video e imagen con specs, límites y precios en MaxVideoAI",
+        "bridgeText": "Usa las tarjetas de modelos para revisar specs, límites y precios antes de elegir en producción."
       },
       "quickCompare": {
-        "title": "Atajos de comparación",
-        "subtitle": "Elige un duelo popular para precargar el modo Comparar (o abrir la página de comparación).",
+        "title": "Comprobaciones de modelos por escenario",
+        "subtitle": "Abre vistas lado a lado solo cuando necesites una decisión tras revisar specs.",
         "shortcuts": [
           "cine vs anuncios",
           "cine vs control",
@@ -1131,72 +1131,76 @@
         ]
       },
       "chooseOutcome": {
-        "title": "Elige por resultado",
-        "subtitle": "Parte del resultado que quieres y luego elige un motor.",
+        "title": "Elige por tipo de entrada y restricciones",
+        "subtitle": "Empieza por entradas soportadas, límites y restricciones de precio.",
         "tiles": [
           {
-            "title": "Planos cinematográficos / hero",
-            "description": "Continuidad de personajes, física cinemática, look premium."
+            "title": "Modelos texto→video",
+            "description": "Identifica modelos aptos para generación solo con prompt."
           },
           {
-            "title": "Cortes de anuncios y marketing",
-            "description": "Encuadre preciso, movimientos consistentes, variantes rápidas."
+            "title": "Modelos imagen→video",
+            "description": "Comprueba qué modelos admiten referencias y workflows guiados por imagen."
           },
           {
-            "title": "Iteración rápida (tests baratos)",
-            "description": "Prueba muchas versiones antes de comprometerte."
+            "title": "Soporte video→video y extensión",
+            "description": "Detecta modelos con continuidad o flujos de edición."
           },
           {
-            "title": "Estilizado / social",
-            "description": "Movimiento estilizado, loops, look social-first."
+            "title": "Límites y formatos",
+            "description": "Duración, resolución máxima, audio y restricciones de formato por modelo."
           },
           {
-            "title": "Entregables 4K / alta res",
-            "description": "Cuando la resolución máxima importa."
+            "title": "Precios por modelo y modo",
+            "description": "Usa precio por segundo y soporte por modo para estimar coste real."
           },
           {
-            "title": "Storyboard y workflows still-first",
-            "description": "Prepara frames y referencias antes del motion."
+            "title": "Ejemplos y referencias de prompts",
+            "description": "Abre salidas reales por modelo antes de fijar presets de producción."
           }
         ]
       },
       "reliability": {
-        "title": "Cómo MaxVideoAI se mantiene confiable",
-        "subtitle": "Lo esencial para comparaciones consistentes y listas para producción.",
+        "title": "Specs y restricciones que sí importan",
+        "subtitle": "Valida viabilidad, límites de salida y exposición de coste antes de generar.",
         "items": [
           {
-            "title": "Precios en vivo",
-            "body": "Seguimos el $/s para ver el costo real antes de generar."
+            "title": "Soporte de entradas",
+            "body": "Revisa capacidades texto→video, imagen→video y edición por modelo."
           },
           {
-            "title": "Límites reales",
-            "body": "Duración, resolución máx., formatos… mostrados por motor."
+            "title": "Límites y formatos",
+            "body": "Comprueba duración máxima, resolución, audio y restricciones de formato."
           },
           {
-            "title": "Ejemplos clonables",
-            "body": "Duplica prompts y ajustes de renders reales."
+            "title": "Señales de precio",
+            "body": "Consulta rangos de precio por modelo antes de lanzar lotes."
           }
         ],
         "faq": [
           {
-            "question": "Cómo se calcula el precio",
-            "answer": "Mostramos un $/s estimado por motor basado en precios públicos y nuestra normalización interna. El costo final puede variar según el tier del proveedor y los ajustes de generación."
+            "question": "¿Qué modelos soportan imagen→video?",
+            "answer": "Usa tarjetas y filtros para ver qué motores aceptan entradas de imagen y referencias."
           },
           {
-            "question": "Por qué la duración máxima difiere por motor",
-            "answer": "La duración máxima depende de límites del proveedor, del tier (fast/pro) y del modo (texto a video, imagen a video, extend/continue). Mostramos los límites más recientes por motor."
+            "question": "¿Qué modelos soportan workflows video→video?",
+            "answer": "El soporte video→video y de continuidad varía por modelo y modo. Revisa capacidades exactas antes de producción."
           },
           {
-            "question": "Qué muestra el modo Comparar (specs + prompts + ejemplos)",
-            "answer": "El modo Comparar abre una página lado a lado con specs clave, fortalezas y renders de ejemplo. Cuando está disponible, usa el mismo template de prompt para comparar con mayor claridad."
+            "question": "¿Cuáles son los límites típicos por modelo?",
+            "answer": "Duración, resolución, audio y formatos dependen de proveedor y modo. El catálogo muestra los límites conocidos por modelo."
           },
           {
-            "question": "Cómo usar las páginas de modelo (detalles completos)",
-            "answer": "Cada página de modelo incluye specs completas, modos soportados (T2V/I2V/V2V) y una sección de prompts que puedes copiar para reproducir o iterar rápido."
+            "question": "¿Cómo se calcula el precio por modelo y modo?",
+            "answer": "El precio depende de modelo, modo, duración, resolución y add-ons. Usa estas señales para planificar antes de lanzar."
           },
           {
-            "question": "Con qué frecuencia se actualizan los datos",
-            "answer": "Actualizamos límites y referencias de precio cuando los proveedores cambian su info pública y cuando probamos nuevas versiones. Si algo parece incorrecto, la página del modelo indica la última actualización."
+            "question": "¿Dónde ver salidas reales por modelo?",
+            "answer": "Usa la galería de ejemplos para ver salidas, prompts y ajustes asociados a cada modelo."
+          },
+          {
+            "question": "¿Con qué frecuencia se actualizan límites y precios?",
+            "answer": "Las referencias de límites y precio se actualizan cuando cambian capacidades de proveedor y cuando validamos nuevas versiones."
           }
         ]
       },
@@ -1205,10 +1209,10 @@
         "subtitle": "Elige un modelo arriba y genera, o explora prompts y outputs probados antes de decidir.",
         "pills": [
           "Precios en vivo",
-          "Clonar prompts",
-          "Comparar lado a lado"
+          "Límites de modelo",
+          "Referencias de prompts"
         ],
-        "microcopy": "Mismos presets de prompt • Precios en vivo • Comparaciones lado a lado",
+        "microcopy": "Specs de modelos • Precios en vivo • Salidas reales",
         "primaryLabel": "Generar ahora",
         "secondaryLabel": "Ver ejemplos"
       }

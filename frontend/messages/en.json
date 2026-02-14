@@ -524,7 +524,7 @@
   },
   "pricing": {
     "hero": {
-      "title": "Price before you generate. Pay only for what you run.",
+      "title": "AI Video Pricing: Price before you generate.",
       "subtitle": "Start with Starter Credits ($10).\nNo subscription. No lock-in.",
       "link": {
         "before": "See how pricing compares across engines in our ",
@@ -873,9 +873,9 @@
   },
   "models": {
     "hero": {
-      "title": "Compare all AI video models in one workspace",
-      "subtitle": "Compare every AI video engine available in MaxVideoAI.",
-      "body": "MaxVideoAI lets you compare every serious AI video engine side-by-side: Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax and more. Check real examples, specs and live pricing so you can pick the right model for each shot, not guess from a waitlist demo."
+      "title": "AI Video Models (Specs, Limits, and Pricing)",
+      "subtitle": "Model catalog for text-to-video, image-to-video, and video-to-video inputs.",
+      "body": "Use this page as a model catalog to review input support, runtime limits, and pricing signals in one place. Keep decision-level comparisons on the engines page; use this page as your technical reference."
     },
     "intro": {
       "paragraphs": [
@@ -988,8 +988,8 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "AI Video Models: Pricing & Limits | MaxVideoAI",
-      "description": "Compare AI video models with live pricing and real limits, then select two engines to open a side-by-side page with specs, prompts, and cloneable examples."
+      "title": "AI Video Models: Specs, Limits & Pricing | MaxVideoAI",
+      "description": "AI video model catalog with specs, limits, and pricing signals. Check input support, duration/resolution constraints, and model-level details before generation."
     },
     "note": "",
     "detail": {
@@ -1021,22 +1021,22 @@
     },
     "listing": {
       "hero": {
-        "title": "Compare AI video models with live pricing",
-        "subtitle": "Live $/s + real limits + examples — then compare two engines side by side.",
+        "title": "AI Video Models (Specs, Limits, and Pricing)",
+        "subtitle": "Check input support, limits, and pricing per model before you generate.",
         "bullets": [
-          "Click any model for full specs, prompt presets, and examples.",
-          "Compare engines side by side with specs and prompts"
+          "Open any model for full specs, limits, and pricing details.",
+          "Filter by input type and constraints to shortlist valid models."
         ],
         "compareLabel": "Enter Compare Mode"
       },
       "legacyToggleLabel": "Show legacy models",
       "grid": {
-        "srTitle": "AI video and image models you can compare on MaxVideoAI",
-        "bridgeText": "Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone."
+        "srTitle": "AI video and image models with specs, limits, and pricing on MaxVideoAI",
+        "bridgeText": "Use model cards to review specs, limits, and pricing before selecting a model for production."
       },
       "quickCompare": {
-        "title": "Quick compare shortcuts",
-        "subtitle": "Pick a popular matchup to preload Compare mode (or open the comparison page).",
+        "title": "Model checks by common scenarios",
+        "subtitle": "Open side-by-side checks only when you need a decision view after reviewing specs.",
         "shortcuts": [
           "cinematic vs ad-ready",
           "cinematic vs control",
@@ -1047,72 +1047,76 @@
         ]
       },
       "chooseOutcome": {
-        "title": "Choose by outcome",
-        "subtitle": "Start from the result you want — then pick an engine.",
+        "title": "Choose by input type and constraints",
+        "subtitle": "Start from supported inputs, limits, and pricing constraints.",
         "tiles": [
           {
-            "title": "Cinematic / hero shots",
-            "description": "Character continuity, cinematic physics, premium look."
+            "title": "Text-to-video models",
+            "description": "Shortlist models that support prompt-only generation."
           },
           {
-            "title": "Ads & marketing cuts",
-            "description": "Precise framing, consistent camera moves, fast variants."
+            "title": "Image-to-video models",
+            "description": "Check which models support references and image-led workflows."
           },
           {
-            "title": "Fast iteration (cheap tests)",
-            "description": "Try lots of versions quickly before you commit."
+            "title": "Video-to-video and extension support",
+            "description": "Identify models that support continuation or edit-style workflows."
           },
           {
-            "title": "Stylized / social edits",
-            "description": "Stylized motion, loops, social-first look."
+            "title": "Limits and formats",
+            "description": "Duration, max resolution, audio, and format constraints by model."
           },
           {
-            "title": "High-res / 4K deliverables",
-            "description": "When max resolution matters."
+            "title": "Pricing per model and mode",
+            "description": "Use per-second pricing and mode support to estimate cost accurately."
           },
           {
-            "title": "Storyboard & still-first workflows",
-            "description": "Prep frames and references before motion."
+            "title": "Examples and prompt references",
+            "description": "Open real outputs per model before selecting your production preset."
           }
         ]
       },
       "reliability": {
-        "title": "How MaxVideoAI stays reliable",
-        "subtitle": "The essentials that keep your comparisons consistent and production-ready.",
+        "title": "Model specs and constraints that matter",
+        "subtitle": "Use these checks to validate feasibility, output constraints, and price exposure before generation.",
         "items": [
           {
-            "title": "Live pricing",
-            "body": "We track $/s so you see real cost before you generate."
+            "title": "Input type support",
+            "body": "See text-to-video, image-to-video, and edit capabilities by model."
           },
           {
-            "title": "Real limits",
-            "body": "Duration, max resolution, formats… shown per engine."
+            "title": "Limits and formats",
+            "body": "Check max duration, resolution, audio, and format constraints."
           },
           {
-            "title": "Examples you can clone",
-            "body": "Duplicate prompts and settings from real renders."
+            "title": "Pricing signals",
+            "body": "Review model-level price ranges before running full batches."
           }
         ],
         "faq": [
           {
-            "question": "How pricing is calculated",
-            "answer": "We show an estimated $/s for each engine based on current public pricing and our internal normalization. Final cost can vary by provider tier and generation settings."
+            "question": "Which models support image-to-video?",
+            "answer": "Use the model cards and filters to see which engines support image-to-video inputs and reference-based modes."
           },
           {
-            "question": "Why max duration differs per engine",
-            "answer": "Max duration depends on provider limits, tier (fast/pro), and generation mode (text-to-video, image-to-video, extend/continue). We display the latest known limits per engine."
+            "question": "Which models support video-to-video workflows?",
+            "answer": "Video-to-video and continuation support differ by model and mode. Check each card for the exact capabilities before running production jobs."
           },
           {
-            "question": "What Compare mode shows (specs + prompts + examples)",
-            "answer": "Compare mode opens a side-by-side page with key specs, strengths, and example renders. When available, it uses the same prompt template so you can judge outputs more fairly."
+            "question": "What are the typical limits by model?",
+            "answer": "Duration, resolution, audio support, and available formats vary by provider and mode. The catalog shows the latest known limits per model."
           },
           {
-            "question": "How to use model pages (full details)",
-            "answer": "Each model page includes full specs, supported modes (T2V/I2V/V2V), and a prompt section you can copy to reproduce results or iterate quickly."
+            "question": "How is pricing calculated per model and mode?",
+            "answer": "Pricing is based on model, mode, duration, resolution, and optional add-ons. Use model-level pricing signals as planning inputs before launch."
           },
           {
-            "question": "How often data is updated",
-            "answer": "We update model limits and pricing references as providers change their published info and as we test new versions. If something looks off, the model page notes the last refresh."
+            "question": "Where can I see real outputs per model?",
+            "answer": "Use the examples gallery to inspect outputs, prompts, and settings tied to each model before choosing presets for production."
+          },
+          {
+            "question": "How often are limits and prices updated?",
+            "answer": "Limits and pricing references are refreshed as providers update their capabilities and as new model versions are validated in production."
           }
         ]
       },
@@ -1121,10 +1125,10 @@
         "subtitle": "Pick a model above, then generate — or browse proven prompts and outputs before you commit.",
         "pills": [
           "Live pricing",
-          "Clone prompts",
-          "Compare side-by-side"
+          "Model limits",
+          "Prompt references"
         ],
-        "microcopy": "Same prompt presets • Live pricing • Side-by-side comparisons",
+        "microcopy": "Model specs • Live pricing • Real output references",
         "primaryLabel": "Generate now",
         "secondaryLabel": "Browse examples"
       }
