@@ -18,6 +18,7 @@ export type ExampleModelLanding = {
   heroTitle: string;
   heroSubtitle: string;
   intro: string;
+  summary: string;
   sections: ExampleSectionItem[];
   faqTitle: string;
   faqItems: ExampleFaqItem[];
@@ -817,24 +818,24 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
   const variantsSentence =
     variantsList.length > 0
       ? locale === 'fr'
-        ? `Inclut ${variantsList}.`
+        ? `Cette page regroupe ${variantsList}.`
         : locale === 'es'
-          ? `Incluye ${variantsList}.`
-          : `Includes ${variantsList}.`
+          ? `Esta página reúne ${variantsList}.`
+          : `This page includes ${variantsList}.`
       : locale === 'fr'
-        ? `Inclut plusieurs modèles ${label}.`
+        ? `Cette page regroupe plusieurs modèles ${label}.`
         : locale === 'es'
-          ? `Incluye varios modelos de ${label}.`
-          : `Includes multiple ${label} models.`;
+          ? `Esta página reúne varios modelos de ${label}.`
+          : `This page includes multiple ${label} models.`;
   const metaTitle =
     locale === 'fr'
-      ? `${label} Exemples vidéo IA (prompts + réglages) | MaxVideoAI`
+      ? `Exemples vidéo IA ${label} (prompts + réglages) | MaxVideoAI`
       : locale === 'es'
-        ? `${label} Ejemplos de video IA (prompts + ajustes) | MaxVideoAI`
+        ? `Ejemplos de video con IA de ${label} (prompts + ajustes) | MaxVideoAI`
         : `${label} AI Video Examples (Prompts + Settings) | MaxVideoAI`;
   const sectionPromptTitle =
     locale === 'fr'
-      ? `Patterns de prompt sur les modèles ${label}`
+      ? `Prompts sur les modèles ${label}`
       : locale === 'es'
         ? `Patrones de prompt en modelos de ${label}`
         : `Prompt patterns across ${label} models`;
@@ -846,9 +847,9 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
         : 'Strengths and limits by model';
   const sectionPricingTitle =
     locale === 'fr'
-      ? 'Notes de prix (variable selon le modèle)'
+      ? 'Notes de prix (selon le modèle)'
       : locale === 'es'
-        ? 'Notas de precio (varía por modelo)'
+        ? 'Notas de precio (según el modelo)'
         : 'Pricing notes (varies by model)';
 
   return {
@@ -857,14 +858,20 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
     metaTitle,
     metaDescription:
       locale === 'fr'
-        ? `Découvrez des exemples ${label} avec prompts, réglages et prix par clip. ${variantsSentence}`
+        ? `Exemples vidéo IA ${label} avec prompts, réglages et prix par clip. ${variantsSentence}`
         : locale === 'es'
-          ? `Explora ejemplos de ${label} con prompts, ajustes y precio por clip. ${variantsSentence}`
-          : `Explore ${label} examples with prompts, settings, and per-clip pricing. ${variantsSentence}`,
+          ? `Ejemplos de video con IA de ${label} con prompts, ajustes y precio por clip. ${variantsSentence}`
+          : `${label} examples with prompts, settings, and price per clip. ${variantsSentence}`,
     heroTitle:
       locale === 'fr' ? `Exemples ${label}` : locale === 'es' ? `Ejemplos de ${label}` : `${label} Examples`,
     heroSubtitle: localized.subtitle,
     intro: `${localized.intro} ${variantsSentence}`,
+    summary:
+      locale === 'fr'
+        ? `${variantsSentence} Consultez les prompts, les réglages et le prix par clip avant de lancer un nouveau rendu.`
+        : locale === 'es'
+          ? `${variantsSentence} Revisa prompts, ajustes y precio por clip antes de lanzar un nuevo render.`
+          : `${variantsSentence} Review prompts, settings, and price per clip before running a new render.`,
     sections: [
       {
         title: sectionPromptTitle,

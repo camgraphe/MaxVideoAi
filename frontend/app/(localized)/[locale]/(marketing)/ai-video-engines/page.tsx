@@ -72,7 +72,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     hero: {
       title: 'Compare AI video engines',
       intro:
-        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter engines by core limits, and jump into direct tests quickly. Check audio support, duration, resolution, motion consistency, and pricing before you render. This hub is a comparison tool for AI models used in AI video generation - text-to-video, image-to-video, and video-to-video. MaxVideoAI is an online AI video generator platform: compare each video model here, then generate videos from simple text prompts or a reference image with the best engine for your shot.',
+        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter by key limits, and validate pricing before you render. It covers text-to-video, image-to-video, and video-to-video engines, then routes you to the right fit for your shot.',
       compareNow: {
         left: 'Engine A',
         right: 'Engine B',
@@ -208,7 +208,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     hero: {
       title: 'Comparer les moteurs vidéo IA',
       intro:
-        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Ce hub permet de repérer rapidement les matchups utiles, de filtrer les moteurs sur les limites clés et de tester sans friction. Vérifiez audio, durée, résolution, régularité du mouvement et niveau de prix avant de lancer un rendu. Ce hub est un outil de comparaison des modèles IA pour la génération vidéo IA - texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo. MaxVideoAI est une plateforme en ligne de génération vidéo IA : comparez chaque modèle vidéo ici, puis générez des vidéos à partir de prompts texte simples ou d’une image de référence avec le moteur le plus adapté à votre plan.',
+        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les matchups utiles, filtrer sur les limites clés et valider le prix avant rendu. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
       compareNow: {
         left: 'Moteur A',
         right: 'Moteur B',
@@ -345,7 +345,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     hero: {
       title: 'Comparar motores de video con IA',
       intro:
-        'Elige dos motores y abre una comparativa lado a lado con un clic. Este hub te ayuda a ver matchups clave, filtrar por límites importantes y pasar rápido a pruebas reales. Revisa audio, duración, resolución, consistencia de movimiento y precio antes de generar. Este hub es una herramienta de comparación de modelos de IA para generación de video con IA: texto a video, imagen a video y video a video. MaxVideoAI es una plataforma online para generar video con IA: compara cada modelo de video aquí y luego genera videos desde prompts de texto simples o una imagen de referencia con el motor ideal para tu toma.',
+        'Elige dos motores y abre una comparativa lado a lado con un clic. Usa este hub para revisar matchups útiles, filtrar por límites clave y validar precios antes de generar. Cubre texto a video, imagen a video y video a video, y te guía al motor más adecuado para tu toma.',
       compareNow: {
         left: 'Motor A',
         right: 'Motor B',

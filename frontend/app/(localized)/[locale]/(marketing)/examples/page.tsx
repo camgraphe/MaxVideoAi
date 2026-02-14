@@ -244,7 +244,7 @@ function resolveCanonicalEngineParam(raw: string | string[] | undefined): string
   return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
 }
 
-export function resolveEngineLabel(raw: string | string[] | undefined): string | null {
+function resolveEngineLabel(raw: string | string[] | undefined): string | null {
   const engineParam = Array.isArray(raw) ? raw[0] : raw;
   const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
   if (!engineParamValue) return null;
@@ -331,7 +331,6 @@ export async function generateMetadata({
 
 type ExamplesPageProps = {
   searchParams: Record<string, string | string[] | undefined>;
-  engineFromPath?: string;
 };
 
 // Labels will be localized from dictionary at render time
@@ -372,6 +371,18 @@ function formatPrice(priceCents: number | null | undefined, currency: string | n
   } catch {
     return `${normalizedCurrency} ${(priceCents / 100).toFixed(2)}`;
   }
+}
+
+function compactLeadCopy(value: string, maxChars = 130): string {
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxChars) return normalized;
+  const sentenceBreak = normalized.slice(0, maxChars).lastIndexOf('.');
+  if (sentenceBreak > Math.floor(maxChars * 0.45)) {
+    return normalized.slice(0, sentenceBreak + 1);
+  }
+  const wordBreak = normalized.slice(0, maxChars).lastIndexOf(' ');
+  const end = wordBreak > 0 ? wordBreak : maxChars;
+  return `${normalized.slice(0, end).trim()}...`;
 }
 
 type EngineFilterOption = {
@@ -415,7 +426,14 @@ function resolveFilterDescriptor(
   return { id: targetId, label, brandId };
 }
 
-export default async function ExamplesPage({ searchParams, engineFromPath }: ExamplesPageProps) {
+export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
+  const internalEngineFromPath = Array.isArray(searchParams.__engineFromPath)
+    ? searchParams.__engineFromPath[0]
+    : searchParams.__engineFromPath;
+  const engineFromPath =
+    typeof internalEngineFromPath === 'string' && internalEngineFromPath.trim().length
+      ? internalEngineFromPath.trim().toLowerCase()
+      : '';
   const { locale, dictionary } = await resolveDictionary();
   const appLocale = locale as AppLocale;
   const content = dictionary.examples;
@@ -440,17 +458,21 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
   const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
   const longDescription =
     locale === 'fr'
-      ? "Ces rendus vidéo IA couvrent selfie face caméra, plans d'établissement cinématographiques, packs produit, formats mobiles et boucles sociales. Comparez comment chaque marque gère le mouvement, la lumière et la composition pour le storytelling, le marketing de performance, les lancements ou le contenu UGC. Chaque page de marque peut inclure plusieurs modèles et modes, avec prix transparents et contrôles pro."
+      ? "Parcourez des exemples de vidéo IA par marque, avec prompt, réglages, durée et prix par clip. Utilisez ce hub pour comparer mouvement, lumière et composition, puis ouvrez les pages modèles pour les caractéristiques, limites et détails de mode."
       : locale === 'es'
-        ? 'Estos renders de video IA cubren talking heads, planos generales cinematográficos, close-ups de producto, formatos móviles y bucles listos para redes. Compara cómo cada marca maneja movimiento, iluminación y composición para storytelling, performance marketing, lanzamientos o contenido UGC. Cada página de marca puede incluir varios modelos y modos, con precios transparentes y controles pro.'
-        : 'These AI video renders cover selfie talking heads, cinematic establishing shots, product close-ups, mobile-first ads, and social loops. Compare how each brand handles motion, lighting, and composition. Each brand page can include multiple models and modes, with transparent pricing and production controls.';
+        ? 'Explora ejemplos de video con IA por marca, con prompt, ajustes, duración y precio por clip. Usa este hub para revisar movimiento, luz y composición, y abre las páginas de modelos para ver especificaciones, límites y detalles por modo.'
+        : 'Browse AI video examples by model, including prompt, settings, duration, and price per clip. Use this hub to review motion, lighting, and composition across brands, then open model pages for specs, limits, and mode details.';
   const HERO_BODY_FALLBACK =
-    'Browse AI video examples with prompts, format, duration, and pricing shown per clip. Use this hub to filter by brand and open model pages for exact specs, limits, and pricing.';
+    'Browse AI video examples by model with prompt, format, duration, and price per clip. Use filters to review outputs and open model pages for specs and limits.';
   const hubHeroBody =
     typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
   const heroTitle = modelLanding?.heroTitle ?? content.hero.title;
   const heroSubtitle = modelLanding?.heroSubtitle ?? content.hero.subtitle;
   const heroBody = modelLanding?.intro ?? hubHeroBody;
+  const modelLandingSections = modelLanding?.sections.map((section) => ({
+    ...section,
+    body: compactLeadCopy(section.body, 118),
+  }));
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
@@ -659,6 +681,20 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
     const suffix = query.toString();
     return suffix ? `${galleryBasePath}?${suffix}` : galleryBasePath;
   };
+  const buildPaginationHref = (targetPage: number) => {
+    const query = buildQueryParams(sort, selectedEngine, targetPage);
+    if (engineFromPath && modelLanding) {
+      const modelPath = `${galleryBasePath}/${modelLanding.slug}`;
+      if (!query) return modelPath;
+      const params = new URLSearchParams(query);
+      const suffix = params.toString();
+      return suffix ? `${modelPath}?${suffix}` : modelPath;
+    }
+    return {
+      pathname: '/examples' as const,
+      query,
+    };
+  };
 
   const itemListElements = videos.map((video, index) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
@@ -750,51 +786,6 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
               <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
             </header>
 
-            <section className="flex flex-wrap items-center justify-center gap-4 text-xs text-text-secondary">
-              {engineFilterOptions.length ? (
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  <span className="font-semibold uppercase tracking-micro text-text-muted">{browseByModelLabel}</span>
-                  <div className="flex flex-wrap items-center justify-center gap-1">
-                    <Link
-                      href={buildEngineFilterHref(null)}
-                      rel="nofollow"
-                      scroll={false}
-                      className={clsx(
-                        'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        selectedEngine
-                          ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                          : 'border-hairline bg-surface-2 text-text-primary shadow-card'
-                      )}
-                    >
-                      {engineFilterAllLabel}
-                    </Link>
-                    {engineFilterOptions.map((engine) => {
-                      const isActive = selectedEngine === engine.id;
-                      const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
-                      return (
-                        <Link
-                          key={engine.id}
-                          href={buildEngineFilterHref(engine.id)}
-                          rel="nofollow"
-                          scroll={false}
-                          className={clsx(
-                            'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            isActive
-                              ? 'border-transparent bg-text-primary text-bg shadow-card'
-                              : palette
-                                ? 'border border-surface-on-media-dark-10 hover:opacity-90'
-                                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                          )}
-                          style={!isActive && palette ? { backgroundColor: palette.bg, color: palette.text } : undefined}
-                        >
-                          {engine.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-            </section>
             {isModelLanding && selectedEngine && modelLinks.length ? (
               <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-secondary">
                 <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{modelPagesLabel}</span>
@@ -810,16 +801,77 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
             ) : null}
           </section>
 
-          {modelLanding?.sections.length ? (
-            <section className="grid gap-4 md:grid-cols-3">
-              {modelLanding.sections.map((section) => (
-                <div key={section.title} className="flex flex-wrap items-center justify-center gap-2">
-                  <h2 className="text-base font-semibold text-text-primary">{section.title}</h2>
-                  <p className="text-sm leading-relaxed text-text-secondary/90">{section.body}</p>
-                </div>
-              ))}
+          {modelLandingSections?.length ? (
+            <section className="w-full overflow-x-auto pb-1">
+              <div className="inline-flex w-max min-w-full justify-center gap-2 px-1">
+                {modelLandingSections.map((section) => (
+                  <article
+                    key={section.title}
+                    className="inline-flex min-w-[230px] max-w-[280px] items-center rounded-2xl border border-hairline/80 bg-surface/85 px-3 py-2.5 text-center shadow-sm"
+                  >
+                    <div className="min-w-0">
+                      <h2 className="text-[11px] font-semibold leading-tight text-text-primary">{section.title}</h2>
+                      <p
+                        className="mt-1 text-[11px] leading-snug text-text-secondary/90"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {section.body}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </section>
           ) : null}
+
+          <section className="flex flex-wrap items-center justify-center gap-4 text-xs text-text-secondary">
+            {engineFilterOptions.length ? (
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <span className="font-semibold uppercase tracking-micro text-text-muted">{browseByModelLabel}</span>
+                <div className="flex flex-wrap items-center justify-center gap-1">
+                  <Link
+                    href={buildEngineFilterHref(null)}
+                    scroll={false}
+                    className={clsx(
+                      'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      selectedEngine
+                        ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
+                        : 'border-hairline bg-surface-2 text-text-primary shadow-card'
+                    )}
+                  >
+                    {engineFilterAllLabel}
+                  </Link>
+                  {engineFilterOptions.map((engine) => {
+                    const isActive = selectedEngine === engine.id;
+                    const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
+                    return (
+                      <Link
+                        key={engine.id}
+                        href={buildEngineFilterHref(engine.id)}
+                        scroll={false}
+                        className={clsx(
+                          'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          isActive
+                            ? 'border-transparent bg-text-primary text-bg shadow-card'
+                            : palette
+                              ? 'border border-surface-on-media-dark-10 hover:opacity-90'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
+                        )}
+                        style={!isActive && palette ? { backgroundColor: palette.bg, color: palette.text } : undefined}
+                      >
+                        {engine.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </section>
 
           <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
             <ExamplesGalleryGrid
@@ -838,10 +890,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
               <div>
                 {hasPreviousPage ? (
                   <Link
-                    href={{
-                      pathname: '/examples',
-                      query: buildQueryParams(sort, selectedEngine, currentPage - 1),
-                    }}
+                    href={buildPaginationHref(currentPage - 1)}
                     rel="prev"
                     className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
@@ -859,10 +908,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
               <div>
                 {hasNextPage ? (
                   <Link
-                    href={{
-                      pathname: '/examples',
-                      query: buildQueryParams(sort, selectedEngine, currentPage + 1),
-                    }}
+                    href={buildPaginationHref(currentPage + 1)}
                     rel="next"
                     className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
@@ -877,9 +923,15 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
             </nav>
           ) : null}
 
-          <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
-            <p>{longDescription}</p>
-          </section>
+          {!modelLanding ? (
+            <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+              <p>{longDescription}</p>
+            </section>
+          ) : (
+            <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+              <p>{modelLanding.summary}</p>
+            </section>
+          )}
 
           <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
             <h2 className="text-lg font-semibold text-text-primary">
@@ -892,9 +944,9 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
               <Link href="/models" className="font-semibold text-brand hover:text-brandHover">
                 {locale === 'fr'
-                  ? 'Voir les specs et limites des modèles'
+                  ? 'Voir les spécifications et limites des modèles'
                   : locale === 'es'
-                    ? 'Ver specs y límites de modelos'
+                    ? 'Ver especificaciones y límites de modelos'
                     : 'See model specs and limits'}
               </Link>
               <Link href="/ai-video-engines" className="font-semibold text-brand hover:text-brandHover">

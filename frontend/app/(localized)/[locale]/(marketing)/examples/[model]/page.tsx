@@ -8,7 +8,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { listExamples } from '@/server/videos';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { getExampleModelLanding } from '@/lib/examples/modelLanding';
-import ExamplesPage, { resolveEngineLabel } from '../page';
+import ExamplesPage from '../page';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS.map((slug) => slug.toLowerCase()));
@@ -84,13 +84,11 @@ export async function generateMetadata({
   }
   const canonical = resolveExampleCanonicalSlug(normalized) ?? normalized;
   const modelLanding = getExampleModelLanding(params.locale, canonical);
-  const engineLabel = resolveEngineLabel(normalized);
-  const title = modelLanding?.metaTitle ?? (engineLabel ? `${engineLabel} AI Video Examples | MaxVideoAI` : 'AI Video Examples | MaxVideoAI');
+  const modelLabel = modelLanding?.label ?? canonical.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+  const title = modelLanding?.metaTitle ?? `${modelLabel} AI Video Examples | MaxVideoAI`;
   const description =
     modelLanding?.metaDescription ??
-    (engineLabel
-      ? `Explore ${engineLabel} examples with prompts, settings, and per-clip pricing on MaxVideoAI.`
-      : 'Explore AI video examples with prompts, settings, and per-clip pricing on MaxVideoAI.');
+    `Explore ${modelLabel} examples with prompts, settings, and per-clip pricing on MaxVideoAI.`;
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
@@ -129,6 +127,10 @@ export default async function ExamplesModelPage({
     permanentRedirect(buildExamplesHref(params.locale, canonical, searchParams));
   }
 
-  const mergedSearchParams = { ...(searchParams ?? {}), engine: normalized };
-  return <ExamplesPage searchParams={mergedSearchParams} engineFromPath={normalized} />;
+  const mergedSearchParams = {
+    ...(searchParams ?? {}),
+    engine: normalized,
+    __engineFromPath: normalized,
+  };
+  return <ExamplesPage searchParams={mergedSearchParams} />;
 }
