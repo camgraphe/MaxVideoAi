@@ -677,7 +677,14 @@ function resolveLangParamRedirect(req: NextRequest, pathname: string): NextRespo
 }
 
 function resolveQueryAllowlist(pathWithoutLocale: string): Set<string> | null {
-  if (pathWithoutLocale === '/examples') {
+  if (
+    pathWithoutLocale === '/examples' ||
+    pathWithoutLocale.startsWith('/examples/') ||
+    pathWithoutLocale === '/galerie' ||
+    pathWithoutLocale.startsWith('/galerie/') ||
+    pathWithoutLocale === '/galeria' ||
+    pathWithoutLocale.startsWith('/galeria/')
+  ) {
     return QUERY_PARAM_ALLOWLISTS.examples;
   }
   if (
@@ -696,6 +703,17 @@ function resolveQueryAllowlist(pathWithoutLocale: string): Set<string> | null {
   return null;
 }
 
+function isExamplesGalleryPath(pathWithoutLocale: string): boolean {
+  return (
+    pathWithoutLocale === '/examples' ||
+    pathWithoutLocale.startsWith('/examples/') ||
+    pathWithoutLocale === '/galerie' ||
+    pathWithoutLocale.startsWith('/galerie/') ||
+    pathWithoutLocale === '/galeria' ||
+    pathWithoutLocale.startsWith('/galeria/')
+  );
+}
+
 function normalizePublicQueryParams(req: NextRequest, pathname: string): NextResponse | null {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     return null;
@@ -706,6 +724,11 @@ function normalizePublicQueryParams(req: NextRequest, pathname: string): NextRes
   }
   const params = req.nextUrl.searchParams;
   if (!params.size) {
+    return null;
+  }
+  if (isExamplesGalleryPath(pathWithoutLocale)) {
+    // Examples pages implement route-aware canonicalization in app code.
+    // Skip middleware-level cleanup to avoid multi-hop redirects.
     return null;
   }
   const allowlist = resolveQueryAllowlist(pathWithoutLocale);

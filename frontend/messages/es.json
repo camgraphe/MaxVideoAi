@@ -121,8 +121,8 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "Comparar motores y modelos de video con IA | MaxVideoAI",
-      "description": "Compara motores y modelos de video con IA lado a lado. Filtra por texto a video, imagen a video, video a video, audio, duración, resolución y precio - elige el mejor modelo de IA antes de generar."
+      "title": "Comparar motores de video con IA por caso de uso | MaxVideoAI",
+      "description": "Compara motores de video con IA lado a lado. Filtra por texto a video, imagen a video, video a video, audio, duración, resolución y precio para elegir el motor adecuado antes de generar."
     },
     "hero": {
       "title": "Ejecuta generadores de video IA en Europa — Sora 2, Veo 3, Pika y más",

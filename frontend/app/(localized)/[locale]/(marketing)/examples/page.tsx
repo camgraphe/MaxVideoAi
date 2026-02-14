@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
-import { permanentRedirect, redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -84,6 +84,7 @@ const MODEL_SLUG_MAP = buildSlugMap('models');
 const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS);
 const DEFAULT_SORT: ExampleSort = 'playlist';
 const EXAMPLES_PAGE_SIZE = 60;
+const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page', '__engineFromPath']);
 const POSTER_PLACEHOLDERS: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
   '16:9': '/assets/frames/thumb-16x9.svg',
@@ -145,6 +146,29 @@ function formatModelSlugLabel(slug: string): string {
     .split('-')
     .map((part) => (/\d/.test(part) ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1)))
     .join(' ');
+}
+
+function isTrackingParam(key: string): boolean {
+  const normalized = key.toLowerCase();
+  return normalized.startsWith('utm_') || normalized === 'gclid' || normalized === 'fbclid';
+}
+
+function appendTrackingParams(
+  target: URLSearchParams,
+  source: Record<string, string | string[] | undefined>
+): void {
+  Object.entries(source).forEach(([key, value]) => {
+    if (!isTrackingParam(key)) return;
+    if (Array.isArray(value)) {
+      value.forEach((entry) => {
+        if (typeof entry === 'string' && entry.length) target.append(key, entry);
+      });
+      return;
+    }
+    if (typeof value === 'string' && value.length) {
+      target.set(key, value);
+    }
+  });
 }
 
 export const dynamic = 'force-dynamic';
@@ -491,15 +515,20 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const galleryBasePath = `${localePrefix}/${gallerySegment}`.replace(/\/{2,}/g, '/');
 
   const redirectToNormalized = (targetPage: number) => {
+    const normalizedBasePath =
+      engineFromPath && modelLanding ? `${galleryBasePath}/${modelLanding.slug}` : galleryBasePath;
     const redirectedQuery = new URLSearchParams();
+    appendTrackingParams(redirectedQuery, searchParams);
     if (sort !== DEFAULT_SORT) {
       redirectedQuery.set('sort', sort);
     }
     if (targetPage > 1) {
       redirectedQuery.set('page', String(targetPage));
     }
-    const target = redirectedQuery.toString() ? `${galleryBasePath}?${redirectedQuery.toString()}` : galleryBasePath;
-    redirect(target);
+    const target = redirectedQuery.toString()
+      ? `${normalizedBasePath}?${redirectedQuery.toString()}`
+      : normalizedBasePath;
+    permanentRedirect(target);
   };
 
   if (hasInvalidPageParam) {
@@ -510,6 +539,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   if (collapsedEngineParam && !engineFromPath) {
     if (canonicalExampleSlug) {
       const redirectedQuery = new URLSearchParams();
+      appendTrackingParams(redirectedQuery, searchParams);
       if (sort !== DEFAULT_SORT) {
         redirectedQuery.set('sort', sort);
       }
@@ -524,6 +554,13 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     redirectToNormalized(currentPage);
   }
 
+  const unsupportedQueryKeys = Object.keys(searchParams).filter(
+    (key) => !ALLOWED_QUERY_KEYS.has(key) && !isTrackingParam(key)
+  );
+  if (unsupportedQueryKeys.length > 0) {
+    redirectToNormalized(currentPage);
+  }
+
   const offset = (currentPage - 1) * EXAMPLES_PAGE_SIZE;
   const pageResult = await listExamplesPage({
     sort,
@@ -534,10 +571,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const allVideos = pageResult.items;
   const totalCount = pageResult.total;
   const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));
-
-  if (currentPage > totalPages) {
-    redirectToNormalized(Math.max(1, totalPages));
-  }
+  const displayTotalPages = Math.max(totalPages, currentPage);
 
   const engineFilterMap = allVideos.reduce<Map<string, EngineFilterOption>>((acc, video) => {
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
@@ -903,7 +937,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 )}
               </div>
               <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                {paginationPageLabel} {currentPage} / {totalPages}
+                {paginationPageLabel} {currentPage} / {displayTotalPages}
               </span>
               <div>
                 {hasNextPage ? (

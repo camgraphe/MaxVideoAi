@@ -65,9 +65,7 @@ const EXAMPLES_MENU: LabeledSlug[] = [
 const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'sora-2-vs-veo-3-1', label: 'Sora 2 vs Veo 3.1' },
   { slug: 'kling-3-pro-vs-sora-2', label: 'Kling 3 Pro vs Sora 2' },
-  { slug: 'kling-3-pro-vs-veo-3-1', label: 'Kling 3 Pro vs Veo 3.1' },
   { slug: 'kling-3-pro-vs-seedance-1-5-pro', label: 'Kling 3 Pro vs Seedance 1.5 Pro' },
-  { slug: 'seedance-1-5-pro-vs-sora-2', label: 'Seedance 1.5 Pro vs Sora 2' },
   { slug: 'seedance-1-5-pro-vs-veo-3-1', label: 'Seedance 1.5 Pro vs Veo 3.1' },
   { slug: 'sora-2-vs-wan-2-6', label: 'Sora 2 vs Wan 2.6' },
   { slug: 'ltx-2-vs-veo-3-1', label: 'LTX-2 vs Veo 3.1' },

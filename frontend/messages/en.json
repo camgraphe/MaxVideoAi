@@ -1290,8 +1290,8 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "Compare AI Video Engines and Models | MaxVideoAI",
-      "description": "Compare AI video engines and models side-by-side. Filter by text-to-video, image-to-video, video-to-video, audio, duration, resolution, and pricing - pick the best AI model before you generate."
+      "title": "Compare AI Video Engines by Use Case | MaxVideoAI",
+      "description": "Compare AI video engines side by side. Filter by text-to-video, image-to-video, video-to-video, audio, duration, resolution, and pricing to choose the right engine before you generate."
     },
     "hero": {
       "title": "Run AI Video Generators in Europe — Sora 2, Veo 3, Pika & More",

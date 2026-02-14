@@ -864,8 +864,8 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
           : `${label} examples with prompts, settings, and price per clip. ${variantsSentence}`,
     heroTitle:
       locale === 'fr' ? `Exemples ${label}` : locale === 'es' ? `Ejemplos de ${label}` : `${label} Examples`,
-    heroSubtitle: localized.subtitle,
-    intro: `${localized.intro} ${variantsSentence}`,
+    heroSubtitle: `${localized.subtitle} ${variantsSentence}`,
+    intro: localized.intro,
     summary:
       locale === 'fr'
         ? `${variantsSentence} Consultez les prompts, les réglages et le prix par clip avant de lancer un nouveau rendu.`

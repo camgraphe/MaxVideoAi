@@ -540,7 +540,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     slugMap: COMPARE_SLUG_MAP,
     imageAlt: t('title'),
     ogType: 'website',
-    keywords: ['AI video engines', 'AI video models', 'compare AI video generators', 'Sora vs Veo', 'MaxVideoAI'],
+    keywords: ['AI video engines', 'AI video engine comparison', 'compare AI video generators', 'Sora vs Veo', 'MaxVideoAI'],
   });
 }
 
