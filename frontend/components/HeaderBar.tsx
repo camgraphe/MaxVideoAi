@@ -371,6 +371,7 @@ export function HeaderBar() {
   const marketingLinks = [
     { key: 'models', href: '/models' },
     { key: 'examples', href: '/examples' },
+    { key: 'compare', href: '/ai-video-engines' },
     { key: 'pricing', href: '/pricing' },
     { key: 'workflows', href: '/workflows' },
     { key: 'docs', href: '/docs' },

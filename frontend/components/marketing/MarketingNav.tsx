@@ -33,6 +33,7 @@ export function MarketingNav() {
   const defaultLinks: Array<{ key: string; href: string }> = [
     { key: 'models', href: '/models' },
     { key: 'examples', href: '/examples' },
+    { key: 'compare', href: '/ai-video-engines' },
     { key: 'pricing', href: '/pricing' },
     { key: 'workflows', href: '/workflows' },
     { key: 'docs', href: '/docs' },

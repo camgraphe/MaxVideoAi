@@ -11,6 +11,10 @@
         "href": "/examples"
       },
       {
+        "key": "compare",
+        "href": "/ai-video-engines"
+      },
+      {
         "key": "pricing",
         "href": "/pricing"
       },
@@ -32,6 +36,7 @@
     "linkLabels": {
       "models": "Modelos",
       "examples": "Ejemplos",
+      "compare": "Comparativas",
       "pricing": "Precios",
       "workflows": "Flujos de trabajo",
       "docs": "Documentación",
@@ -40,6 +45,7 @@
     "dropdown": {
       "allModels": "Todos los modelos",
       "allExamples": "Todos los ejemplos",
+      "allComparisons": "Todas las comparativas",
       "viewAll": "Ver todo",
       "models": {
         "items": {
@@ -76,6 +82,18 @@
           "minimax-hailuo-02-text": "MiniMax Hailuo 02",
           "ltx-2-fast": "LTX-2 Fast",
           "seedance-1-5-pro": "Seedance 1.5 Pro"
+        }
+      },
+      "compare": {
+        "items": {
+          "sora-2-vs-veo-3-1": "Sora 2 vs Veo 3.1",
+          "kling-3-pro-vs-sora-2": "Kling 3 Pro vs Sora 2",
+          "kling-3-pro-vs-veo-3-1": "Kling 3 Pro vs Veo 3.1",
+          "kling-3-pro-vs-seedance-1-5-pro": "Kling 3 Pro vs Seedance 1.5 Pro",
+          "seedance-1-5-pro-vs-sora-2": "Seedance 1.5 Pro vs Sora 2",
+          "seedance-1-5-pro-vs-veo-3-1": "Seedance 1.5 Pro vs Veo 3.1",
+          "sora-2-vs-wan-2-6": "Sora 2 vs Wan 2.6",
+          "ltx-2-vs-veo-3-1": "LTX-2 vs Veo 3.1"
         }
       },
       "workflows": {
