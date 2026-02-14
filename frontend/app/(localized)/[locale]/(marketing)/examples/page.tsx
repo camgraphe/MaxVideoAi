@@ -103,16 +103,19 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
   'ltx-2': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
 };
 
-const ENGINE_MODEL_LINKS: Record<string, string> = {
-  sora: 'sora-2-pro',
-  veo: 'veo-3-1',
-  seedance: 'seedance-1-5-pro',
-  kling: 'kling-3-pro',
-  wan: 'wan-2-6',
-  pika: 'pika-text-to-video',
-  hailuo: 'minimax-hailuo-02-text',
-  'ltx-2': 'ltx-2',
+const ENGINE_MODEL_LINKS_BY_GROUP: Record<string, string[]> = {
+  sora: ['sora-2-pro', 'sora-2'],
+  veo: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-first-last'],
+  seedance: ['seedance-1-5-pro'],
+  kling: ['kling-3-pro', 'kling-3-standard', 'kling-2-6-pro', 'kling-2-5-turbo'],
+  wan: ['wan-2-6', 'wan-2-5'],
+  pika: ['pika-text-to-video'],
+  hailuo: ['minimax-hailuo-02-text'],
+  'ltx-2': ['ltx-2', 'ltx-2-fast'],
 };
+const ENGINE_MODEL_LINKS: Record<string, string> = Object.fromEntries(
+  Object.entries(ENGINE_MODEL_LINKS_BY_GROUP).map(([key, slugs]) => [key, slugs[0]])
+) as Record<string, string>;
 
 const ENGINE_EXAMPLE_LINKS: Record<string, string> = {
   sora: 'sora',
@@ -135,6 +138,13 @@ function buildModelHref(locale: AppLocale, slug: string): string {
   const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const segment = MODEL_SLUG_MAP[locale] ?? MODEL_SLUG_MAP.en ?? 'models';
   return `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
+}
+
+function formatModelSlugLabel(slug: string): string {
+  return slug
+    .split('-')
+    .map((part) => (/\d/.test(part) ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join(' ');
 }
 
 export const dynamic = 'force-dynamic';
@@ -549,16 +559,24 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       ? engineFilterOptions.find((option) => option.key === normalizeFilterId(collapsedEngineParam))
       : null;
   const selectedEngine = selectedOption?.id ?? null;
-  const selectedEngineLabel = selectedOption?.label ?? 'Model';
-  const modelSlug = selectedEngine ? ENGINE_MODEL_LINKS[selectedEngine.toLowerCase()] ?? null : null;
-  const modelPath = modelSlug ? { pathname: '/models/[slug]', params: { slug: modelSlug } } : null;
+  const modelSlugs = selectedEngine
+    ? ENGINE_MODEL_LINKS_BY_GROUP[selectedEngine.toLowerCase()] ?? []
+    : [];
+  const modelLinks = modelSlugs.map((slug) => {
+    const label = ENGINE_META.get(slug)?.label ?? formatModelSlugLabel(slug);
+    return {
+      slug,
+      label,
+      href: { pathname: '/models/[slug]' as const, params: { slug } },
+    };
+  });
   const pricingPath = { pathname: '/pricing' };
-  const engineModelLinkLabel =
+  const modelPagesLabel =
     locale === 'fr'
-      ? `Voir le modèle ${selectedEngineLabel}`
+      ? 'Pages modèles concernées'
       : locale === 'es'
-        ? `Ver modelo ${selectedEngineLabel}`
-        : `View ${selectedEngineLabel} model`;
+        ? 'Páginas de modelo relacionadas'
+        : 'Related model pages';
   const pricingLinkLabel =
     locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
 
@@ -777,11 +795,14 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
                 </div>
               ) : null}
             </section>
-            {isModelLanding && selectedEngine && modelPath ? (
+            {isModelLanding && selectedEngine && modelLinks.length ? (
               <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-secondary">
-                <Link href={modelPath} className="font-semibold text-brand hover:text-brandHover">
-                  {engineModelLinkLabel}
-                </Link>
+                <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{modelPagesLabel}</span>
+                {modelLinks.map((model) => (
+                  <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
+                    {model.label}
+                  </Link>
+                ))}
                 <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
                   {pricingLinkLabel}
                 </Link>

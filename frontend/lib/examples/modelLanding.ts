@@ -59,6 +59,17 @@ const MODEL_LABELS: Record<AppLocale, Record<CanonicalSlug, string>> = {
   },
 };
 
+const MODEL_VARIANTS_BY_SLUG: Record<CanonicalSlug, string[]> = {
+  sora: ['OpenAI Sora 2 Pro', 'OpenAI Sora 2'],
+  veo: ['Google Veo 3.1', 'Google Veo 3.1 Fast', 'Google Veo 3.1 First/Last'],
+  wan: ['Wan 2.6 Text & Image to Video', 'Wan 2.5 Text & Image to Video'],
+  kling: ['Kling 3 Pro', 'Kling 3 Standard', 'Kling 2.6 Pro', 'Kling 2.5 Turbo'],
+  seedance: ['Seedance 1.5 Pro'],
+  'ltx-2': ['LTX Video 2.0 Pro', 'LTX Video 2.0 Fast'],
+  pika: ['Pika 2.2 Text & Image to Video'],
+  hailuo: ['MiniMax Hailuo 02 Standard'],
+};
+
 type LocalizedModelDescriptor = {
   subtitle: string;
   intro: string;
@@ -787,24 +798,40 @@ function getLocalizedModelData(locale: AppLocale): Record<CanonicalSlug, Localiz
   return EN_MODEL_DATA;
 }
 
+function formatLocalizedList(locale: AppLocale, items: string[]): string {
+  if (!items.length) return '';
+  if (items.length === 1) return items[0];
+  const conjunction = locale === 'fr' ? 'et' : locale === 'es' ? 'y' : 'and';
+  if (items.length === 2) return `${items[0]} ${conjunction} ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, ${conjunction} ${items[items.length - 1]}`;
+}
+
 export function getExampleModelLanding(locale: AppLocale, slug: string): ExampleModelLanding | null {
   const normalized = slug.trim().toLowerCase() as CanonicalSlug;
   if (!CANONICAL_SLUGS.includes(normalized)) return null;
 
   const label = (MODEL_LABELS[locale] ?? MODEL_LABELS.en)[normalized];
   const localized = getLocalizedModelData(locale)[normalized];
+  const variants = MODEL_VARIANTS_BY_SLUG[normalized] ?? [];
+  const variantsList = formatLocalizedList(locale, variants);
+  const variantsSentence =
+    variantsList.length > 0
+      ? locale === 'fr'
+        ? `Inclut ${variantsList}.`
+        : locale === 'es'
+          ? `Incluye ${variantsList}.`
+          : `Includes ${variantsList}.`
+      : locale === 'fr'
+        ? `Inclut plusieurs modèles ${label}.`
+        : locale === 'es'
+          ? `Incluye varios modelos de ${label}.`
+          : `Includes multiple ${label} models.`;
   const metaTitle =
     locale === 'fr'
       ? `${label} Exemples vidéo IA (prompts + réglages) | MaxVideoAI`
       : locale === 'es'
         ? `${label} Ejemplos de video IA (prompts + ajustes) | MaxVideoAI`
         : `${label} AI Video Examples (Prompts + Settings) | MaxVideoAI`;
-  const variantScope =
-    locale === 'fr'
-      ? `Inclut plusieurs modèles ${label}.`
-      : locale === 'es'
-        ? `Incluye varios modelos de ${label}.`
-        : `Includes multiple ${label} models.`;
   const sectionPromptTitle =
     locale === 'fr'
       ? `Patterns de prompt sur les modèles ${label}`
@@ -830,14 +857,14 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
     metaTitle,
     metaDescription:
       locale === 'fr'
-        ? `Découvrez des exemples ${label} avec prompts, réglages et prix par clip. Cette page regroupe plusieurs modèles ${label} avec des sorties réutilisables.`
+        ? `Découvrez des exemples ${label} avec prompts, réglages et prix par clip. ${variantsSentence}`
         : locale === 'es'
-          ? `Explora ejemplos de ${label} con prompts, ajustes y precio por clip. Esta página reúne varios modelos de ${label} con salidas reutilizables.`
-          : `Explore ${label} examples with prompts, settings, and per-clip pricing. This page includes multiple ${label} models with reusable outputs.`,
+          ? `Explora ejemplos de ${label} con prompts, ajustes y precio por clip. ${variantsSentence}`
+          : `Explore ${label} examples with prompts, settings, and per-clip pricing. ${variantsSentence}`,
     heroTitle:
       locale === 'fr' ? `Exemples ${label}` : locale === 'es' ? `Ejemplos de ${label}` : `${label} Examples`,
     heroSubtitle: localized.subtitle,
-    intro: `${localized.intro} ${variantScope}`,
+    intro: `${localized.intro} ${variantsSentence}`,
     sections: [
       {
         title: sectionPromptTitle,
