@@ -2868,7 +2868,7 @@
       "descriptionFallback": "Side-by-side comparison of AI video engines with MaxVideoAI metrics and guidance."
     },
     "hero": {
-      "back": "Back to models",
+      "back": "Back to comparisons",
       "kicker": "Compare engines",
       "intro": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.",
       "takeawaysTitle": "Key takeaways",

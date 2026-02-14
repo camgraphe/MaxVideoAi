@@ -990,9 +990,8 @@ export default async function CompareDetailPage({
     notFound();
   }
   const localePrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale]}` : '';
-  const modelsBase = MODELS_SLUG_MAP[activeLocale] ?? MODELS_SLUG_MAP.en ?? 'models';
   const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
-  const modelsHref = `/${modelsBase}`.replace(/\/{2,}/g, '/');
+  const compareHubHref = `${localePrefix}/${compareBase}`.replace(/\/{2,}/g, '/');
   const canonicalSlug = canonicalInfo.canonicalSlug;
   if (canonicalSlug !== slug) {
     const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
@@ -1774,8 +1773,8 @@ export default async function CompareDetailPage({
     <div className="container-page max-w-6xl section">
       <div className="stack-gap-xl">
         <div className="text-sm text-text-muted">
-          <Link href={modelsHref} className="font-semibold text-brand hover:text-brandHover">
-            {compareCopy.hero?.back ?? 'Back to models'}
+          <Link href={compareHubHref} className="font-semibold text-brand hover:text-brandHover">
+            {compareCopy.hero?.back ?? 'Back to comparisons'}
           </Link>
         </div>
         <header className="text-center">
@@ -2189,8 +2188,8 @@ export default async function CompareDetailPage({
         </section>
 
         <div className="text-sm text-text-muted">
-          <Link href={modelsHref} className="font-semibold text-brand hover:text-brandHover">
-            {compareCopy.hero?.back ?? 'Back to models'}
+          <Link href={compareHubHref} className="font-semibold text-brand hover:text-brandHover">
+            {compareCopy.hero?.back ?? 'Back to comparisons'}
           </Link>
         </div>
       </div>

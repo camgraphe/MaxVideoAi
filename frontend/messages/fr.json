@@ -2879,7 +2879,7 @@
       "descriptionFallback": "Comparaison face à face des moteurs vidéo IA avec les métriques et repères MaxVideoAI."
     },
     "hero": {
-      "back": "Retour aux modèles",
+      "back": "Retour aux comparatifs",
       "kicker": "Comparer les moteurs",
       "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les specs clés et un scorecard sur 11 critères. Utilisez-la pour choisir vite — puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
       "takeawaysTitle": "Points clés",
