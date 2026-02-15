@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Script from 'next/script';
 
 const GA_ID =
@@ -33,15 +34,49 @@ function isLighthouseRun() {
   }
 }
 
+type ConsentEventDetail = {
+  categories?: {
+    analytics?: boolean;
+  };
+};
+
 export default function ConsentModeBootstrap() {
+  const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
+
+  useEffect(() => {
+    const syncFromStorage = () => setAnalyticsConsentGranted(hasConsent());
+
+    const handleConsentUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<ConsentEventDetail>).detail;
+      if (detail?.categories && typeof detail.categories.analytics === 'boolean') {
+        setAnalyticsConsentGranted(Boolean(detail.categories.analytics));
+        return;
+      }
+      syncFromStorage();
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key && event.key !== 'mv-consent-analytics') return;
+      syncFromStorage();
+    };
+
+    syncFromStorage();
+    window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
   if (!GA_ID) return null;
   if (DISABLE_GA) return null;
   if (isLighthouseRun()) return null;
-  if (!hasConsent()) return null;
+  if (!analyticsConsentGranted) return null;
 
   return (
     <>
-      <Script id="gcm-default" strategy="lazyOnload">
+      <Script id="gcm-default" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
@@ -58,8 +93,8 @@ export default function ConsentModeBootstrap() {
           gtag('set', 'url_passthrough', true);
         `}
       </Script>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="lazyOnload" />
-      <Script id="ga-init" strategy="lazyOnload">
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+      <Script id="ga-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           window.gtag = window.gtag || function(){dataLayer.push(arguments);};

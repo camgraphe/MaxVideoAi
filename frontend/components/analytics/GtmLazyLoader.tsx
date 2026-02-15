@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const GTM_ID =
   process.env.NEXT_PUBLIC_GTM_ID ??
@@ -43,17 +43,58 @@ function isLighthouseRun() {
   }
 }
 
+type ConsentEventDetail = {
+  categories?: {
+    analytics?: boolean;
+  };
+};
+
 export function GtmLazyLoader({
   delayMs = 4000,
   consentStorageKey = 'mv-consent-analytics',
   consentGrantedValue = 'granted',
 }: GtmLazyLoaderProps = {}) {
+  const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
+
+  useEffect(() => {
+    const syncFromStorage = () => {
+      setAnalyticsConsentGranted(
+        hasConsent({
+          storageKey: consentStorageKey,
+          grantedValue: consentGrantedValue,
+        })
+      );
+    };
+
+    const handleConsentUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<ConsentEventDetail>).detail;
+      if (detail?.categories && typeof detail.categories.analytics === 'boolean') {
+        setAnalyticsConsentGranted(Boolean(detail.categories.analytics));
+        return;
+      }
+      syncFromStorage();
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key && event.key !== consentStorageKey) return;
+      syncFromStorage();
+    };
+
+    syncFromStorage();
+    window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [consentGrantedValue, consentStorageKey]);
+
   useEffect(() => {
     if (!GTM_ID) return;
     if (DISABLE_GTM || isLighthouseRun()) {
       return;
     }
-    if (!hasConsent({ storageKey: consentStorageKey, grantedValue: consentGrantedValue })) {
+    if (!analyticsConsentGranted) {
       return;
     }
 
@@ -75,7 +116,7 @@ export function GtmLazyLoader({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [consentGrantedValue, consentStorageKey, delayMs]);
+  }, [analyticsConsentGranted, delayMs]);
 
   return null;
 }
