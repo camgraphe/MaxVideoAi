@@ -24,6 +24,8 @@ import { getResultProviderMode } from '@/lib/result-provider';
 import { getNanoBananaDefaultAspectRatio, normalizeNanoBananaAspectRatio } from '@/lib/image/aspectRatios';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
+import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import { getReferenceConstraints, resolveRequestedResolution } from '../utils';
 
 const DISPLAY_CURRENCY = 'USD';
@@ -641,9 +643,20 @@ export async function POST(req: NextRequest) {
       url: normalizeMediaUrl(image.url) ?? image.url,
     }));
 
-    const hero = normalizedImages[0]?.url ?? null;
+    const thumbUrls = await createImageThumbnailBatch({
+      jobId,
+      userId,
+      imageUrls: normalizedImages.map((image) => image.url),
+    });
+    const normalizedImagesWithThumbs = normalizedImages.map((image, index) => ({
+      ...image,
+      thumbUrl: thumbUrls[index] ?? null,
+    }));
+    const storedRenderEntries = buildStoredImageRenderEntries(normalizedImagesWithThumbs);
+    const hero = normalizedImagesWithThumbs[0]?.url ?? null;
+    const heroThumb = resolveHeroThumbFromRenders(normalizedImagesWithThumbs) ?? hero;
     const description = (result.data && typeof result.data === 'object' && (result.data as { description?: string }).description) || null;
-    const renderIdsJson = JSON.stringify(normalizedImages.map((image) => image.url));
+    const renderIdsJson = JSON.stringify(storedRenderEntries);
     const providerRequestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
     providerJobId = providerRequestId ?? undefined;
 
@@ -670,7 +683,7 @@ export async function POST(req: NextRequest) {
        WHERE job_id = $1`,
       [
         jobId,
-        hero ?? PLACEHOLDER_THUMB,
+        heroThumb ?? PLACEHOLDER_THUMB,
         null,
         providerJobId ?? null,
         pricing.totalCents,
@@ -715,7 +728,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       jobId,
       mode,
-      images: normalizedImages,
+      images: normalizedImagesWithThumbs,
       description,
       requestId: providerJobId ?? result.requestId ?? null,
       providerJobId: providerJobId ?? null,
@@ -724,7 +737,7 @@ export async function POST(req: NextRequest) {
       durationMs: undefined,
       pricing,
       paymentStatus: 'paid_wallet',
-      thumbUrl: hero,
+      thumbUrl: heroThumb,
       aspectRatio: resolvedAspectRatio,
       resolution,
     } satisfies ImageGenerationResponse);

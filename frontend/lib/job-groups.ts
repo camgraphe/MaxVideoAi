@@ -1,7 +1,7 @@
-import { normalizeMediaUrl } from '@/lib/media';
-import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
-import type { Job } from '@/types/jobs';
-import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
+import { normalizeMediaUrl } from './media';
+import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from './job-status';
+import type { Job } from '../types/jobs';
+import type { GroupSummary, GroupMemberSummary } from '../types/groups';
 
 interface GroupBucket {
   key: string;
@@ -228,11 +228,13 @@ export function groupJobsIntoSummaries(
     sorted.forEach((job) => {
       const baseMember = buildMember(job);
       if (isImageVariantJob(job)) {
+        const renderThumbUrls = Array.isArray(job.renderThumbUrls) ? job.renderThumbUrls : [];
         job.renderIds.forEach((url, index) => {
+          const thumbCandidate = renderThumbUrls[index];
           members.push({
             ...baseMember,
             id: `${job.jobId}-image-${index}`,
-            thumbUrl: normalizeMediaUrl(url) ?? url,
+            thumbUrl: normalizeMediaUrl(thumbCandidate) ?? normalizeMediaUrl(url) ?? url,
             videoUrl: null,
             aspectRatio: baseMember.aspectRatio ?? '1:1',
           });

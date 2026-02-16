@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getJobStatus, hideJob, useEngines, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
@@ -19,7 +18,8 @@ import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
-import { resolveJobsRailThumb } from '@/lib/jobs-rail-thumb';
+import { isPlaceholderMediaUrl } from '@/lib/media';
+import { resolveJobsRailPlaceholderThumb, resolveJobsRailThumb, resolveJobsRailVideo } from '@/lib/jobs-rail-thumb';
 import { Button } from '@/components/ui/Button';
 
 const DEFAULT_JOBS_COPY = {
@@ -593,14 +593,54 @@ function renderSkeletonCards(count: number, prefix: string) {
   ));
 }
 const COLLAPSED_RAIL_ITEM_WIDTH = 220;
-const COLLAPSED_RAIL_IMAGE_SIZES = '220px';
 
-function RailThumb({ src }: { src: string }) {
-  if (src.startsWith('data:')) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" className="h-full w-full object-contain" />;
+function RailThumb({ src, videoSrc, fallbackSrc }: { src: string; videoSrc?: string | null; fallbackSrc: string }) {
+  const [resolvedSrc, setResolvedSrc] = useState(src);
+  const [imageFailed, setImageFailed] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  useEffect(() => {
+    setResolvedSrc(src);
+    setImageFailed(false);
+    setVideoFailed(false);
+  }, [src, videoSrc]);
+
+  const showVideo = Boolean(videoSrc && (isPlaceholderMediaUrl(resolvedSrc) || imageFailed) && !videoFailed);
+
+  if (showVideo) {
+    return (
+      <video
+        src={videoSrc ?? undefined}
+        poster={fallbackSrc}
+        className="h-full w-full object-cover"
+        muted
+        playsInline
+        loop
+        autoPlay
+        preload="metadata"
+        onError={() => {
+          setVideoFailed(true);
+          setResolvedSrc(fallbackSrc);
+        }}
+      />
+    );
   }
-  return <Image src={src} alt="" fill className="object-contain" sizes={COLLAPSED_RAIL_IMAGE_SIZES} />;
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={resolvedSrc}
+      alt=""
+      className="h-full w-full object-cover"
+      loading="lazy"
+      onError={() => {
+        setImageFailed(true);
+        if (!videoSrc && resolvedSrc !== fallbackSrc) {
+          setResolvedSrc(fallbackSrc);
+        }
+      }}
+    />
+  );
 }
 
 function CollapsedGroupRailSkeleton() {
@@ -634,6 +674,8 @@ function CollapsedGroupRail({
     <div className="flex gap-4 overflow-x-auto pb-2">
       {items.map((group) => {
         const thumb = resolveJobsRailThumb(group);
+        const fallbackThumb = resolveJobsRailPlaceholderThumb(group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null);
+        const video = resolveJobsRailVideo(group);
         return (
           <Button
             key={group.id}
@@ -646,7 +688,7 @@ function CollapsedGroupRail({
             aria-label="Open render"
           >
             <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-              <RailThumb src={thumb} />
+              <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
               {group.count > 1 ? (
                 <div className="absolute bottom-2 right-2 rounded-full bg-surface-on-media-dark-55 px-2 py-0.5 text-xs font-semibold text-on-inverse">
                   ×{group.count}

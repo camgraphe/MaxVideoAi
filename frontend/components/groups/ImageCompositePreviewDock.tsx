@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type PreviewImage = {
   url: string;
+  thumbUrl?: string | null;
   width?: number | null;
   height?: number | null;
 };
@@ -77,6 +78,7 @@ export function ImageCompositePreviewDock({
   const images = entry?.images ?? [];
   const safeIndex = Math.min(Math.max(0, selectedIndex), Math.max(0, images.length - 1));
   const selected = images.length ? images[safeIndex] : null;
+  const selectedPreviewUrl = selected?.thumbUrl ?? selected?.url ?? null;
   const aspectRatioCss = resolveCssAspectRatio({
     value: entry?.aspectRatio ?? null,
     width: selected?.width ?? null,
@@ -214,7 +216,7 @@ export function ImageCompositePreviewDock({
           >
             {selected ? (
               <img
-                src={selected.url}
+                src={selectedPreviewUrl ?? selected.url}
                 alt={entry?.prompt ?? ''}
                 className="h-full w-full object-contain"
                 loading="lazy"
@@ -250,7 +252,13 @@ export function ImageCompositePreviewDock({
                   aria-label={buttonLabel}
                   aria-pressed={isActive}
                 >
-                  <img src={image.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+                  <img
+                    src={image.thumbUrl ?? image.url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
                 </Button>
               );
             })}

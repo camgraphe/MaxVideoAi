@@ -10,6 +10,7 @@ import { listStarterPlaylistVideos } from '@/server/videos';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
+import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 
 export const dynamic = 'force-dynamic';
 
@@ -396,46 +397,18 @@ type JobRow = {
     const nextCursor = hasMore && items.length ? formatCursorValue(items[items.length - 1]) : null;
 
     type Row = (typeof rows)[number];
-    const normalizeRenderIds = (value: unknown): string[] | undefined => {
-      const coerce = (entries: unknown[]): string[] =>
-        entries
-          .map((entry) => {
-            if (typeof entry === 'string' && entry.length) return entry;
-            if (entry && typeof entry === 'object') {
-              const record = entry as Record<string, unknown>;
-              if (typeof record.url === 'string' && record.url.length) {
-                return record.url;
-              }
-            }
-            return null;
-          })
-          .filter((entry): entry is string => Boolean(entry));
-
-      if (Array.isArray(value)) {
-        return coerce(value);
-      }
-      if (typeof value === 'string' && value.trim().length) {
-        try {
-          const parsed = JSON.parse(value) as unknown;
-          if (Array.isArray(parsed)) {
-            return coerce(parsed);
-          }
-        } catch {
-          return undefined;
-        }
-      }
-      return undefined;
-    };
-
     let mapped = items.map((r: Row) => {
-      const renderIds = normalizeRenderIds(r.render_ids);
+      const parsedRenders = parseStoredImageRenders(r.render_ids);
+      const renderIds = extractRenderIds(parsedRenders.entries);
+      const renderThumbUrls = extractRenderThumbUrls(parsedRenders);
       const primaryImage = renderIds?.[0] ? normalizeMediaUrl(renderIds[0]) ?? renderIds[0] : undefined;
+      const primaryThumb = renderThumbUrls?.[0] ? normalizeMediaUrl(renderThumbUrls[0]) ?? renderThumbUrls[0] : undefined;
       return {
         jobId: r.job_id,
         engineLabel: r.engine_label,
         durationSec: r.duration_sec,
         prompt: r.prompt,
-        thumbUrl: normalizeMediaUrl(r.thumb_url) ?? primaryImage ?? undefined,
+        thumbUrl: normalizeMediaUrl(r.thumb_url) ?? primaryThumb ?? primaryImage ?? undefined,
         videoUrl: normalizeMediaUrl(r.video_url) ?? undefined,
         createdAt: r.created_at,
         engineId: r.engine_id,
@@ -455,6 +428,7 @@ type JobRow = {
         iterationIndex: r.iteration_index ?? undefined,
         iterationCount: r.iteration_count ?? undefined,
         renderIds,
+        renderThumbUrls,
         status: r.status ?? undefined,
         progress: typeof r.progress === 'number' ? r.progress : undefined,
         heroRenderId: r.hero_render_id ?? undefined,
@@ -495,6 +469,7 @@ type JobRow = {
           iterationIndex: undefined,
           iterationCount: undefined,
           renderIds: undefined,
+          renderThumbUrls: undefined,
           heroRenderId: undefined,
           localKey: undefined,
           status: 'completed',

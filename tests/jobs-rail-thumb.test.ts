@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { resolveJobsRailThumb } from '../frontend/src/lib/jobs-rail-thumb';
+import { resolveJobsRailThumb, resolveJobsRailVideo } from '../frontend/src/lib/jobs-rail-thumb';
 import type { GroupSummary } from '../frontend/types/groups';
 
 function createGroup(overrides: Partial<GroupSummary>): GroupSummary {
@@ -69,4 +69,31 @@ test('rail thumb uses hero job previewFrame before placeholder fallback', () => 
   });
 
   assert.equal(resolveJobsRailThumb(group), 'https://cdn.example.com/preview-frame.jpg');
+});
+
+test('rail video resolves from preview video first', () => {
+  const group = createGroup({
+    previews: [
+      { id: 'p-1', videoUrl: 'https://cdn.example.com/preview-video.mp4' },
+      { id: 'p-2', videoUrl: 'https://cdn.example.com/preview-video-2.mp4' },
+    ],
+  });
+
+  assert.equal(resolveJobsRailVideo(group), 'https://cdn.example.com/preview-video.mp4');
+});
+
+test('rail video falls back to hero job video when preview has none', () => {
+  const group = createGroup({
+    hero: {
+      id: 'member-1',
+      engineLabel: 'Test Engine',
+      durationSec: 0,
+      createdAt: '2026-02-16T00:00:00.000Z',
+      source: 'job',
+      job: { videoUrl: 'https://cdn.example.com/hero-video.mp4' } as GroupSummary['hero']['job'],
+    },
+    previews: [{ id: 'p-1' }],
+  });
+
+  assert.equal(resolveJobsRailVideo(group), 'https://cdn.example.com/hero-video.mp4');
 });

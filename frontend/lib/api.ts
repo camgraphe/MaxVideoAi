@@ -61,6 +61,7 @@ type GeneratePayload = {
   iterationIndex?: number | null;
   iterationCount?: number | null;
   renderIds?: string[] | null;
+  renderThumbUrls?: string[] | null;
   heroRenderId?: string | null;
   localKey?: string | null;
   message?: string | null;
@@ -100,6 +101,7 @@ type GenerateResult = {
   iterationIndex?: number | null;
   iterationCount?: number | null;
   renderIds?: string[] | null;
+  renderThumbUrls?: string[] | null;
   heroRenderId?: string | null;
   localKey?: string | null;
   message?: string | null;
@@ -392,6 +394,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
               if (detail.renderIds !== undefined) {
                 next.renderIds = detail.renderIds;
               }
+              if (detail.renderThumbUrls !== undefined) {
+                next.renderThumbUrls = detail.renderThumbUrls;
+              }
               return next;
             });
             return pageModified ? { ...page, jobs } : page;
@@ -478,6 +483,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
         if (job.readyVideoUrl == null && existing.readyVideoUrl != null) merged.readyVideoUrl = existing.readyVideoUrl;
         if (job.previewFrame == null && existing.previewFrame != null) merged.previewFrame = existing.previewFrame;
         if (job.renderIds == null && existing.renderIds != null) merged.renderIds = existing.renderIds;
+        if (job.renderThumbUrls == null && existing.renderThumbUrls != null) {
+          merged.renderThumbUrls = existing.renderThumbUrls;
+        }
         if (job.heroRenderId == null && existing.heroRenderId != null) merged.heroRenderId = existing.heroRenderId;
         byId[job.jobId] = merged;
       });
@@ -688,6 +696,12 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
       : payload.renderIds === null
         ? null
         : undefined;
+  const renderThumbUrls =
+    Array.isArray(payload.renderThumbUrls) && payload.renderThumbUrls.length
+      ? payload.renderThumbUrls.filter((value): value is string => typeof value === 'string')
+      : payload.renderThumbUrls === null
+        ? null
+        : undefined;
 
   const result: JobStatusResult = {
     ok: true,
@@ -706,6 +720,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     iterationIndex: payload.iterationIndex ?? null,
     iterationCount: payload.iterationCount ?? null,
     renderIds: renderIds ?? null,
+    renderThumbUrls: renderThumbUrls ?? null,
     heroRenderId: payload.heroRenderId ?? null,
     localKey: payload.localKey ?? null,
     message: normalizedMessage ?? null,

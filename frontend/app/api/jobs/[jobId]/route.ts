@@ -8,6 +8,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
+import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,8 +60,8 @@ const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_ALIASES);
 
 function inferJobSurface(job: Pick<DbJobRow, 'engine_id' | 'video_url' | 'render_ids'>): 'video' | 'image' {
   if (job.video_url) return 'video';
-  const renderIds = job.render_ids;
-  if (Array.isArray(renderIds) && renderIds.some((entry) => typeof entry === 'string' && entry.length > 0)) {
+  const parsedRenders = parseStoredImageRenders(job.render_ids);
+  if (parsedRenders.entries.length > 0) {
     return 'image';
   }
   if (job.engine_id && IMAGE_ENGINE_ID_SET.has(job.engine_id)) {
@@ -72,10 +73,7 @@ function inferJobSurface(job: Pick<DbJobRow, 'engine_id' | 'video_url' | 'render
 function buildFallbackSettingsSnapshot(job: DbJobRow): unknown {
   const surface = inferJobSurface(job);
   if (surface === 'image') {
-    const renderIds =
-      Array.isArray(job.render_ids) && job.render_ids.length
-        ? job.render_ids.filter((value): value is string => typeof value === 'string' && value.length > 0)
-        : [];
+    const renderIds = extractRenderIds(parseStoredImageRenders(job.render_ids).entries) ?? [];
     return {
       schemaVersion: 1,
       surface: 'image',
@@ -174,11 +172,9 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   }
   const normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   const normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
-  const parsedRenderIds = Array.isArray(job.render_ids)
-    ? (job.render_ids as unknown[])
-        .map((value) => (typeof value === 'string' ? value : null))
-        .filter((entry): entry is string => Boolean(entry))
-    : undefined;
+  const parsedRenders = parseStoredImageRenders(job.render_ids);
+  const parsedRenderIds = extractRenderIds(parsedRenders.entries);
+  const parsedRenderThumbUrls = extractRenderThumbUrls(parsedRenders);
 
   // Optionally poll FAL once if pending and we have provider job id
   if (shouldUseFalApis() && job.provider_job_id && job.status !== 'completed' && job.status !== 'failed') {
@@ -247,6 +243,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
             iterationIndex: job.iteration_index ?? undefined,
             iterationCount: job.iteration_count ?? undefined,
             renderIds: parsedRenderIds,
+            renderThumbUrls: parsedRenderThumbUrls,
             heroRenderId: job.hero_render_id ?? undefined,
             localKey: job.local_key ?? undefined,
             message: job.message ?? undefined,
@@ -285,6 +282,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     iterationIndex: job.iteration_index ?? undefined,
     iterationCount: job.iteration_count ?? undefined,
     renderIds: parsedRenderIds,
+    renderThumbUrls: parsedRenderThumbUrls,
     heroRenderId: job.hero_render_id ?? undefined,
     localKey: job.local_key ?? undefined,
     message: job.message ?? undefined,

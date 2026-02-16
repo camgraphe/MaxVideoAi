@@ -2,6 +2,7 @@ import type { VideoGroup, VideoItem, VideoAspect, ResultProvider } from '@/types
 
 type ImageVariant = {
   url: string;
+  thumbUrl?: string | null;
   width?: number | null;
   height?: number | null;
 };
@@ -58,7 +59,7 @@ export function buildVideoGroupFromImageRun(run: ImageRunDescriptor): VideoGroup
   const items: VideoItem[] = run.images.map((image, index) => ({
     id: `${run.id}-img-${index}`,
     url: image.url,
-    thumb: image.url,
+    thumb: image.thumbUrl ?? image.url,
     aspect: inferAspect(image.width, image.height, run.aspectRatio),
     jobId: run.jobId ?? run.id,
     engineId: run.engineId ?? undefined,

@@ -20,6 +20,7 @@ export interface ImageGenerationRequest {
 
 export interface GeneratedImage {
   url: string;
+  thumbUrl?: string | null;
   width?: number | null;
   height?: number | null;
   mimeType?: string | null;

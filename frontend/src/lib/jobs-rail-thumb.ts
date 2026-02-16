@@ -19,6 +19,13 @@ function resolveRealThumb(candidate?: string | null): string | null {
   return normalized;
 }
 
+function resolveRealVideo(candidate?: string | null): string | null {
+  const normalized = normalizeMediaUrl(candidate);
+  if (!normalized) return null;
+  if (isPlaceholderMediaUrl(normalized)) return null;
+  return normalized;
+}
+
 export function resolveJobsRailThumb(group: GroupSummary): string {
   const previewThumb = group.previews
     .map((preview) => resolveRealThumb(preview?.thumbUrl))
@@ -37,4 +44,17 @@ export function resolveJobsRailThumb(group: GroupSummary): string {
   }
 
   return resolveJobsRailPlaceholderThumb(group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null);
+}
+
+export function resolveJobsRailVideo(group: GroupSummary): string | null {
+  const candidates: Array<string | null | undefined> = [
+    group.previews.find((preview) => preview?.videoUrl)?.videoUrl,
+    group.hero.videoUrl,
+    group.hero.job?.videoUrl,
+  ];
+  for (const candidate of candidates) {
+    const video = resolveRealVideo(candidate);
+    if (video) return video;
+  }
+  return null;
 }

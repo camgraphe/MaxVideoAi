@@ -494,11 +494,18 @@ function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
   const renderUrls = Array.isArray(job.renderIds)
     ? job.renderIds.filter((url): url is string => typeof url === 'string' && url.length > 0)
     : [];
+  const renderThumbUrls = Array.isArray(job.renderThumbUrls)
+    ? job.renderThumbUrls.filter((url): url is string => typeof url === 'string' && url.length > 0)
+    : [];
+  const heroOriginal = typeof job.heroRenderId === 'string' && job.heroRenderId.length ? job.heroRenderId : null;
   const images: GeneratedImage[] =
     renderUrls.length > 0
-      ? renderUrls.map((url) => ({ url }))
+      ? renderUrls.map((url, index) => ({
+          url,
+          thumbUrl: renderThumbUrls[index] ?? (index === 0 ? job.thumbUrl ?? null : null),
+        }))
       : job.thumbUrl
-        ? [{ url: job.thumbUrl }]
+        ? [{ url: heroOriginal ?? job.thumbUrl, thumbUrl: job.thumbUrl }]
         : [];
   if (!images.length) return null;
   const timestamp = Date.parse(job.createdAt ?? '');
@@ -839,6 +846,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       aspectRatio: entry.aspectRatio ?? null,
       images: entry.images.map((image) => ({
         url: image.url,
+        thumbUrl: image.thumbUrl ?? null,
         width: image.width ?? null,
         height: image.height ?? null,
       })),
@@ -1516,11 +1524,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         : null;
       const matchByUrl =
         !matchById && heroUrl
-          ? historyEntries.find((entry) => entry.images.some((image) => image.url === heroUrl))
+          ? historyEntries.find((entry) => entry.images.some((image) => image.url === heroUrl || image.thumbUrl === heroUrl))
           : null;
       const match = matchById ?? matchByUrl;
       if (match) {
-        const index = heroUrl ? match.images.findIndex((image) => image.url === heroUrl) : -1;
+        const index = heroUrl ? match.images.findIndex((image) => image.url === heroUrl || image.thumbUrl === heroUrl) : -1;
         setSelectedPreviewEntryId(match.id);
         setSelectedPreviewImageIndex(index >= 0 ? index : 0);
         applyEntryDefaults(match);
@@ -1535,6 +1543,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         previewUrls.push(heroUrl);
       }
       if (!previewUrls.length) return;
+      const heroRenderUrls = Array.isArray(group.hero.job?.renderIds)
+        ? group.hero.job.renderIds.filter((url): url is string => typeof url === 'string' && url.length > 0)
+        : [];
+      const heroRenderThumbUrls = Array.isArray(group.hero.job?.renderThumbUrls)
+        ? group.hero.job.renderThumbUrls.filter((url): url is string => typeof url === 'string' && url.length > 0)
+        : [];
+      const fallbackImages =
+        heroRenderUrls.length > 0
+          ? heroRenderUrls.map((url, index) => ({
+              url,
+              thumbUrl: heroRenderThumbUrls[index] ?? (index === 0 ? group.hero.thumbUrl ?? null : null),
+            }))
+          : previewUrls.map((url) => ({ url, thumbUrl: url }));
 
       const createdAt = Date.parse(group.createdAt ?? '');
       const entry: HistoryEntry = {
@@ -1546,7 +1567,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         prompt: group.hero.prompt ?? '',
         createdAt: Number.isNaN(createdAt) ? Date.now() : createdAt,
         description: group.hero.message ?? null,
-        images: previewUrls.map((url) => ({ url })),
+        images: fallbackImages,
         aspectRatio: group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null,
       };
 
@@ -1554,7 +1575,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         if (prev.some((existing) => existing.id === entry.id)) return prev;
         return [entry, ...prev].slice(0, 24);
       });
-      const fallbackIndex = heroUrl ? previewUrls.findIndex((url) => url === heroUrl) : -1;
+      const fallbackIndex = heroUrl
+        ? fallbackImages.findIndex((image) => image.url === heroUrl || image.thumbUrl === heroUrl)
+        : -1;
       setSelectedPreviewEntryId(entry.id);
       setSelectedPreviewImageIndex(fallbackIndex >= 0 ? fallbackIndex : 0);
       applyEntryDefaults(entry);

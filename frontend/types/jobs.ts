@@ -20,6 +20,7 @@ export interface Job {
   iterationCount?: number | null;
   splitMode?: string | null;
   renderIds?: string[] | null;
+  renderThumbUrls?: string[] | null;
   heroRenderId?: string | null;
   localKey?: string | null;
   status?: string;
