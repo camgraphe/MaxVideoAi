@@ -3571,15 +3571,16 @@ function Sora2PageLayout({
     <>
       <Head>
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
-        {schemaPayloads.map((schema, index) => (
-          <script
-            key={`schema-${index}`}
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
-          />
-        ))}
       </Head>
+      {schemaPayloads.map((schema, index) => (
+        <script
+          key={`schema-${index}`}
+          id={`model-jsonld-${index}`}
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+        />
+      ))}
       <main className="container-page model-page max-w-6xl pb-0 pt-5 sm:pt-7">
         <div className="stack-gap-lg gap-0">
           <div className="stack-gap-xs">
@@ -4651,15 +4652,16 @@ export default async function ModelDetailPage({ params }: PageParams) {
     <>
       <Head>
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
-        {schemaPayloads.map((schema, index) => (
-          <script
-            key={`schema-${index}`}
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
-          />
-        ))}
       </Head>
+      {schemaPayloads.map((schema, index) => (
+        <script
+          key={`schema-${index}`}
+          id={`model-detail-jsonld-${index}`}
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+        />
+      ))}
       <div className="container-page max-w-4xl section">
         <div className="stack-gap-lg">
           <div className="stack-gap-sm">

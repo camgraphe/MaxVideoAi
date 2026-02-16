@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
-import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -126,6 +125,8 @@ const DEFAULT_PRICE_FACTORS = {
     'Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate.',
   ],
 } as const;
+
+const serializeJsonLd = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -530,12 +531,18 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         </section>
       </div>
 
-      <Script id="pricing-breadcrumb-jsonld" type="application/ld+json">
-        {JSON.stringify(breadcrumbJsonLd)}
-      </Script>
-      <Script id="pricing-software-jsonld" type="application/ld+json">
-        {JSON.stringify(softwareSchema)}
-      </Script>
+      <script
+        id="pricing-breadcrumb-jsonld"
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+      />
+      <script
+        id="pricing-software-jsonld"
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareSchema) }}
+      />
       <FAQSchema questions={faqJsonLdEntries} />
     </main>
   );
