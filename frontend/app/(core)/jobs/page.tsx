@@ -612,7 +612,7 @@ function RailThumb({ src, videoSrc, fallbackSrc }: { src: string; videoSrc?: str
       <video
         src={videoSrc ?? undefined}
         poster={fallbackSrc}
-        className="h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
         muted
         playsInline
         loop
@@ -631,7 +631,7 @@ function RailThumb({ src, videoSrc, fallbackSrc }: { src: string; videoSrc?: str
     <img
       src={resolvedSrc}
       alt=""
-      className="h-full w-full object-cover"
+      className="absolute inset-0 h-full w-full object-cover"
       loading="lazy"
       onError={() => {
         setImageFailed(true);
@@ -677,17 +677,15 @@ function CollapsedGroupRail({
         const fallbackThumb = resolveJobsRailPlaceholderThumb(group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null);
         const video = resolveJobsRailVideo(group);
         return (
-          <Button
+          <button
             key={group.id}
             type="button"
-            size="sm"
-            variant="ghost"
             onClick={() => onOpen(group)}
-            className="group relative min-h-0 h-auto shrink-0 overflow-hidden rounded-card border border-border bg-surface p-0 shadow-card"
+            className="group relative block h-auto min-h-0 shrink-0 overflow-hidden rounded-card border border-border bg-surface p-0 shadow-card transition hover:border-border-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             style={{ width: COLLAPSED_RAIL_ITEM_WIDTH }}
             aria-label="Open render"
           >
-            <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+            <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
               <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
               {group.count > 1 ? (
                 <div className="absolute bottom-2 right-2 rounded-full bg-surface-on-media-dark-55 px-2 py-0.5 text-xs font-semibold text-on-inverse">
@@ -695,7 +693,7 @@ function CollapsedGroupRail({
                 </div>
               ) : null}
             </div>
-          </Button>
+          </button>
         );
       })}
     </div>

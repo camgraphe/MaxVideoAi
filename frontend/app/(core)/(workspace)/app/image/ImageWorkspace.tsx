@@ -125,6 +125,7 @@ interface ImageWorkspaceCopy {
   };
   messages: {
     success: string;
+    generatingInProgress: string;
     savedToLibrary: string;
     removedFromLibrary: string;
   };
@@ -240,6 +241,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
   },
   messages: {
     success: 'Generated {count} image{suffix}.',
+    generatingInProgress: 'Generating in progress ({count})…',
     savedToLibrary: 'Saved to Library.',
     removedFromLibrary: 'Removed from Library.',
   },
@@ -1631,8 +1633,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const savedAsset = (savedAssets?.[0] as LibraryAsset | undefined) ?? null;
   const isInLibrary = Boolean(savedAsset?.id);
 
-  const hasPendingRuns = pendingGroups.length > 0;
   const promptCharCount = formatTemplate(resolvedCopy.composer.charCount, { count: prompt.length });
+  const inProgressMessage = useMemo(() => {
+    const count = pendingGroups.length;
+    if (count <= 0) return null;
+    return formatTemplate(resolvedCopy.messages.generatingInProgress, { count });
+  }, [pendingGroups.length, resolvedCopy.messages.generatingInProgress]);
   const aspectRatioOptions = useMemo(
     () => (isNanoBanana ? getNanoBananaAspectRatios(mode) : []),
     [isNanoBanana, mode]
@@ -1842,7 +1848,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </p>
                   ) : null}
 
-                  {statusMessage ? (
+                  {inProgressMessage ? (
+                    <p className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
+                      {inProgressMessage}
+                    </p>
+                  ) : statusMessage ? (
                     <p className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
                       {statusMessage}
                     </p>
@@ -1877,7 +1887,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       </div>
                     </div>
                     <Button type="submit" size="lg" className="w-full sm:w-auto shadow-card">
-                      {hasPendingRuns ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
+                      {resolvedCopy.runButton.idle}
                     </Button>
                   </div>
 
