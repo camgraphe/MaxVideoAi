@@ -45,7 +45,7 @@ async function main(): Promise<void> {
   let cursorId = 0;
 
   while (true) {
-    const rows = await query<BackfillRow>(
+    const rows: BackfillRow[] = await query<BackfillRow>(
       `SELECT id, job_id, user_id, thumb_url, render_ids, updated_at
        FROM app_jobs
        WHERE video_url IS NULL

@@ -126,6 +126,7 @@ type JobStatusResult = {
   iterationIndex?: number | null;
   iterationCount?: number | null;
   renderIds?: string[] | null;
+  renderThumbUrls?: string[] | null;
   heroRenderId?: string | null;
   localKey?: string | null;
   message?: string | null;
