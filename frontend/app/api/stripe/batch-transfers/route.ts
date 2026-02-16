@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { isConnectPayments } from '@/lib/env';
+import { sendGa4Event } from '@/server/ga4';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +33,64 @@ function formatError(error: unknown): string {
   return 'Unknown error';
 }
 
+function anonymizeVendorId(destination: string): string {
+  const digest = createHash('sha256').update(destination).digest('hex');
+  return `vendor_${digest.slice(0, 24)}`;
+}
+
+function trackVendorPayoutEvent({
+  eventName,
+  destination,
+  amountCents,
+  currency,
+  thresholdCents,
+  maxTransferCents,
+  batchId,
+  transferId,
+  errorMessage,
+}: {
+  eventName: 'vendor_payout_sent' | 'vendor_payout_failed';
+  destination: string;
+  amountCents: number;
+  currency: string;
+  thresholdCents: number;
+  maxTransferCents: number;
+  batchId?: number;
+  transferId?: string;
+  errorMessage?: string;
+}) {
+  const userId = anonymizeVendorId(destination);
+  const normalizedCurrency = (currency || 'usd').toUpperCase();
+  const params: Record<string, unknown> = {
+    value: amountCents / 100,
+    currency: normalizedCurrency,
+    payout_amount: amountCents / 100,
+    payout_amount_cents: amountCents,
+    payout_flow: 'batch_transfer',
+    payout_provider: 'stripe',
+    threshold_cents: thresholdCents,
+  };
+
+  if (batchId) {
+    params.payout_batch_id = batchId;
+  }
+  if (maxTransferCents > 0) {
+    params.max_transfer_cents = maxTransferCents;
+  }
+  if (transferId) {
+    params.stripe_transfer_id = transferId;
+  }
+  if (errorMessage) {
+    params.error_message = errorMessage;
+  }
+
+  void sendGa4Event({
+    name: eventName,
+    userId,
+    params,
+  });
+}
+
 export async function POST(req: Request) {
   if (!isConnectPayments()) {
     return NextResponse.json({
@@ -50,7 +110,10 @@ export async function POST(req: Request) {
   }
 
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && req.headers.get('x-cron-key') !== cronSecret) {
+  const cronOverrideToken =
+    req.headers.get('x-cron-key') ??
+    (req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '');
+  if (cronSecret && cronOverrideToken !== cronSecret) {
     return new NextResponse('unauthorized', { status: 401 });
   }
 
@@ -117,6 +180,15 @@ export async function POST(req: Request) {
           ok: false,
           error: 'Failed to create payout batch record',
         });
+        trackVendorPayoutEvent({
+          eventName: 'vendor_payout_failed',
+          destination,
+          amountCents: amount,
+          currency: balanceCurrency,
+          thresholdCents,
+          maxTransferCents,
+          errorMessage: 'batch_record_create_failed',
+        });
         continue;
       }
 
@@ -156,6 +228,16 @@ export async function POST(req: Request) {
           transfer: transfer.id,
           ok: true,
         });
+        trackVendorPayoutEvent({
+          eventName: 'vendor_payout_sent',
+          destination,
+          amountCents: amount,
+          currency: balanceCurrency,
+          thresholdCents,
+          maxTransferCents,
+          batchId,
+          transferId: transfer.id,
+        });
       } catch (error) {
         const message = formatError(error);
         await query(
@@ -170,6 +252,16 @@ export async function POST(req: Request) {
           amount,
           ok: false,
           error: message,
+        });
+        trackVendorPayoutEvent({
+          eventName: 'vendor_payout_failed',
+          destination,
+          amountCents: amount,
+          currency: balanceCurrency,
+          thresholdCents,
+          maxTransferCents,
+          batchId,
+          errorMessage: message,
         });
       }
     }
