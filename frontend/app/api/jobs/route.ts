@@ -9,6 +9,7 @@ import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { listStarterPlaylistVideos } from '@/server/videos';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
 
 export const dynamic = 'force-dynamic';
 
@@ -466,7 +467,7 @@ type JobRow = {
       };
     });
 
-    if (!mapped.length && !cursor) {
+    if (!mapped.length && shouldUseStarterFallback(feedType, cursor)) {
       const starterVideos = await listStarterPlaylistVideos(limit);
       if (starterVideos.length) {
         mapped = starterVideos.map((video) => ({
