@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import clsx from 'clsx';
@@ -996,7 +996,7 @@ export default async function CompareDetailPage({
   if (canonicalSlug !== slug) {
     const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
     const query = orderParam ? `?order=${orderParam}` : '';
-    redirect(`${localePrefix}/${compareBase}/${canonicalSlug}${query}`.replace(/\/{2,}/g, '/'));
+    permanentRedirect(`${localePrefix}/${compareBase}/${canonicalSlug}${query}`.replace(/\/{2,}/g, '/'));
   }
   let { left, right } = resolved;
   if (requestedOrder && requestedOrder === right.modelSlug) {
