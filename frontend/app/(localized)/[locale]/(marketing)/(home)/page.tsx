@@ -14,6 +14,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { PartnerBadges } from '@/components/marketing/PartnerBadges';
 import { getHomepageSlotsCached, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { getImageAlt } from '@/lib/image-alt';
 import { listFalEngines } from '@/config/falEngines';
 import type { CompareEngineEntry } from '@/components/marketing/CompareEnginesCarousel';
 import type { EngineCaps } from '@/types/engines';
@@ -243,12 +244,6 @@ const HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE: Record<AppLocale, string> = {
   en: 'Generate with {engine} settings',
   fr: 'Générer avec les réglages {engine}',
   es: 'Generar con ajustes de {engine}',
-};
-
-const HERO_ALT_TEMPLATE_BY_LOCALE: Record<AppLocale, string> = {
-  en: '{engine} AI video preview',
-  fr: 'Aperçu vidéo IA de {engine}',
-  es: 'Vista previa de video IA de {engine}',
 };
 
 const HERO_LIGHTBOX_COPY_BY_LOCALE: Record<
@@ -644,8 +639,14 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     const videoPosterSrc = buildOptimizedPoster(posterSrc);
     const rawAdminPriceLabel = slot?.subtitle?.trim() || null;
     const adminPriceLabel = rawAdminPriceLabel ? localizePricePrefix(rawAdminPriceLabel, locale) : null;
-    const altTemplate = HERO_ALT_TEMPLATE_BY_LOCALE[locale] ?? HERO_ALT_TEMPLATE_BY_LOCALE.en;
-    const alt = altTemplate.replace('{engine}', label);
+    const promptSummary = truncateText(video?.promptExcerpt ?? video?.prompt ?? slot?.subtitle ?? null, 80);
+    const alt = getImageAlt({
+      kind: 'renderThumb',
+      engine: label,
+      label: promptSummary ?? `${label} homepage highlight`,
+      prompt: video?.promptExcerpt ?? video?.prompt ?? null,
+      locale,
+    });
     const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
     const durationSec = video?.durationSec ?? fallback.durationSec;
     const resolution = fallback.resolution;
@@ -922,7 +923,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
             <div className="overflow-hidden rounded-t-[16px] shadow-float">
               <Image
                 src="/assets/marketing/app-dashboard.webp"
-                alt={heroScreenshot.alt}
+                alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
               width={3072}
               height={2170}
                 sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
@@ -962,7 +963,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
             <div className="overflow-hidden rounded-t-[16px]">
               <Image
                 src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
-                alt={compareSeoImageAlt}
+                alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
                 width={2278}
                 height={1928}
                 sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"

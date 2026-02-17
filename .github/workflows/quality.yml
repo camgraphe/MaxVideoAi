@@ -34,5 +34,8 @@ jobs:
       - name: Lint (frontend)
         run: pnpm --dir frontend run lint
 
+      - name: Alt quality check (frontend)
+        run: pnpm --dir frontend run qa:image-alt
+
       - name: Validate tests
         run: pnpm run test:validate

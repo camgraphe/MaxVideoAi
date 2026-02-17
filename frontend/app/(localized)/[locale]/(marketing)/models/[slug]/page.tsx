@@ -15,6 +15,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -3486,6 +3487,21 @@ function Sora2PageLayout({
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
   const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
+  const galleryPreviewAlts = dedupeAltsInList(
+    galleryVideos.slice(0, 6).map((video, index) => ({
+      id: video.id,
+      alt: getImageAlt({
+        kind: 'renderThumb',
+        engine: video.engineLabel,
+        label: video.promptFull ?? video.prompt,
+        prompt: video.promptFull ?? video.prompt,
+        locale,
+      }),
+      tag: inferRenderTag(video.promptFull ?? video.prompt, locale),
+      index,
+      locale,
+    }))
+  );
   const hasTextSection = true;
   const hasTipsSection =
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
@@ -3702,6 +3718,7 @@ function Sora2PageLayout({
                   <MediaPreview
                     media={heroMedia}
                     label={heroTitle}
+                    locale={locale}
                     hideLabel
                     hidePrompt
                     metaLines={heroMetaLines}
@@ -3916,9 +3933,14 @@ function Sora2PageLayout({
                                 <Image
                                   src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
                                   alt={
-                                    video.prompt
-                                      ? `MaxVideoAI ${video.engineLabel} example – ${video.prompt}`
-                                      : `MaxVideoAI ${video.engineLabel} example`
+                                    galleryPreviewAlts.get(video.id) ??
+                                    getImageAlt({
+                                      kind: 'renderThumb',
+                                      engine: video.engineLabel,
+                                      label: video.prompt,
+                                      prompt: video.prompt,
+                                      locale,
+                                    })
                                   }
                                   fill
                                   className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
@@ -4010,6 +4032,7 @@ function Sora2PageLayout({
                       <MediaPreview
                         media={demoMedia}
                         label={copy.demoTitle ?? 'Sora 2 demo'}
+                        locale={locale}
                         hideLabel
                         promptLabel={useDemoMediaPrompt ? undefined : copy.demoPromptLabel ?? undefined}
                         promptLines={useDemoMediaPrompt ? [] : copy.demoPrompt}
@@ -4266,6 +4289,7 @@ function Sora2PageLayout({
 function MediaPreview({
   media,
   label,
+  locale,
   promptLabel,
   promptLines = [],
   hideLabel = false,
@@ -4279,6 +4303,7 @@ function MediaPreview({
 }: {
   media: FeaturedMedia;
   label: string;
+  locale: AppLocale;
   promptLabel?: string;
   promptLines?: string[];
   hideLabel?: boolean;
@@ -4298,7 +4323,13 @@ function MediaPreview({
   const isVertical = isValidAspect ? w < h : false;
   const normalizedPromptLabel = promptLabel?.trim() ?? '';
   const displayPromptLabel = /^prompt\b/i.test(normalizedPromptLabel) ? 'Prompt' : normalizedPromptLabel;
-  const altText = media.prompt ? `Sora 2 preview – ${media.prompt}` : label;
+  const altText = getImageAlt({
+    kind: 'renderThumb',
+    engine: media.label ?? label,
+    label: media.prompt ?? label,
+    prompt: media.prompt ?? label,
+    locale,
+  });
   const figureClassName = [
     'group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card',
     isVertical ? 'mx-auto max-w-sm' : '',

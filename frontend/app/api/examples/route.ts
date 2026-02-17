@@ -202,6 +202,7 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
     engineBrandId: engineMeta?.brandId,
     priceLabel,
     prompt: promptDisplay,
+    promptFull: video.prompt ?? null,
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,

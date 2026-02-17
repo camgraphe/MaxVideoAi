@@ -196,6 +196,7 @@ export function ModelHeroMedia({
           playsInline
           preload="metadata"
           poster={posterSrc ?? undefined}
+          aria-label={alt}
         >
           <source src={videoSrc} type="video/mp4" />
         </video>

@@ -23,6 +23,7 @@ import { CopyPromptButton } from './CopyPromptButton.client';
 import { getLatestVideoByPromptAndEngine, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { fetchEngineAverageDurations } from '@/server/generate-metrics';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import { getImageAlt } from '@/lib/image-alt';
 import type { EngineCaps } from '@/types/engines';
 
 const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL ?? 'https://maxvideoai.com').replace(
@@ -667,9 +668,18 @@ function renderShowdownMedia(
   fallbackLabel: string,
   placeholderLabel: string,
   noPreviewLabel: string,
-  aspectRatio?: string
+  aspectRatio?: string,
+  mediaAlt?: string
 ) {
   const label = side.label ?? fallbackLabel;
+  const altText =
+    mediaAlt ??
+    getImageAlt({
+      kind: 'renderThumb',
+      engine: label,
+      label,
+      locale: 'en',
+    });
   const emptyLabel = side.placeholder ? placeholderLabel : noPreviewLabel;
   const isPortrait = aspectRatio === '9:16';
   const mediaClass = isPortrait ? 'object-contain' : 'object-cover';
@@ -689,13 +699,14 @@ function renderShowdownMedia(
             preload="none"
             poster={side.posterUrl}
             playsInline
+            aria-label={altText}
           >
             <source src={side.videoUrl} />
           </video>
         ) : side.posterUrl ? (
           <Image
             src={side.posterUrl}
-            alt={`${label} showdown frame`}
+            alt={altText}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             className={clsx('h-full w-full', mediaClass)}
@@ -2038,12 +2049,29 @@ export default async function CompareDetailPage({
             <p className="text-xs text-text-muted">{compareCopy.showdown?.note ?? 'Showing up to 3 prompt pairs for clarity.'}</p>
 
             <div className="stack-gap-lg">
-              {showdownSlots.map((entry) => (
-                <article
-                  key={`${slug}-showdown-${entry.id}`}
-                  className="rounded-card border border-hairline bg-surface p-6 shadow-card"
-                >
-                  <div className="stack-gap-sm">
+              {showdownSlots.map((entry) => {
+                const leftLabel = entry.left.label ?? formatEngineName(left);
+                const rightLabel = entry.right.label ?? formatEngineName(right);
+                const leftAlt = getImageAlt({
+                  kind: 'compareThumb',
+                  engine: leftLabel,
+                  compareEngine: rightLabel,
+                  label: `${entry.title} - ${leftLabel}`,
+                  locale: activeLocale,
+                });
+                const rightAlt = getImageAlt({
+                  kind: 'compareThumb',
+                  engine: rightLabel,
+                  compareEngine: leftLabel,
+                  label: `${entry.title} - ${rightLabel}`,
+                  locale: activeLocale,
+                });
+                return (
+                  <article
+                    key={`${slug}-showdown-${entry.id}`}
+                    className="rounded-card border border-hairline bg-surface p-6 shadow-card"
+                  >
+                    <div className="stack-gap-sm">
                     <div>
                       <h3 className="text-lg font-semibold text-text-primary">{entry.title}</h3>
                       <p className="text-sm text-text-secondary">
@@ -2080,14 +2108,16 @@ export default async function CompareDetailPage({
                         formatEngineName(left),
                         labels.placeholder,
                         labels.placeholder,
-                        entry.aspectRatio
+                        entry.aspectRatio,
+                        leftAlt
                       )}
                       {renderShowdownMedia(
                         entry.right,
                         formatEngineName(right),
                         labels.placeholder,
                         labels.placeholder,
-                        entry.aspectRatio
+                        entry.aspectRatio,
+                        rightAlt
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
@@ -2111,8 +2141,9 @@ export default async function CompareDetailPage({
                       <span className="text-xs text-text-muted">{labels.opensGenerator}</span>
                     </div>
                   </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
             <p className="text-sm text-text-secondary">
               {compareCopy.showdown?.footer ??

@@ -298,6 +298,7 @@ export function HeroMediaTile({
                 playsInline
                 preload="metadata"
                 poster={posterSrc}
+                aria-label={alt}
               >
                 <source src={videoSrc} type="video/mp4" />
               </video>

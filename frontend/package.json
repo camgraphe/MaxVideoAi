@@ -22,6 +22,8 @@
     "qa:hreflang": "tsx scripts/qa/hreflang-check.ts",
     "qa:canonical-host": "tsx scripts/qa/canonical-host-guard.ts",
     "qa:compare-en": "tsx scripts/qa/compare-en-prod.ts",
+    "qa:image-alt": "node ../scripts/check-image-alt.mjs",
+    "audit:images": "node ../scripts/audit-images.mjs",
     "lighthouse:home": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/home && lhci collect --url=https://maxvideoai.com/?nolocale=1 --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/home && cp -R .lighthouseci/* ./lighthouse-reports/home/ && rm -rf .lighthouseci",
     "lighthouse:examples": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/examples && lhci collect --url=https://maxvideoai.com/examples?nolocale=1 --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/examples && cp -R .lighthouseci/* ./lighthouse-reports/examples/ && rm -rf .lighthouseci",
     "lighthouse:models-veo": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/models-veo && lhci collect --url=https://maxvideoai.com/models/veo-3-1 --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/models-veo && cp -R .lighthouseci/* ./lighthouse-reports/models-veo/ && rm -rf .lighthouseci",

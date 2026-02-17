@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
+import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
 import mediaStyles from './examples-media.module.css';
 import masonryStyles from './examples-masonry.module.css';
 
@@ -141,6 +142,26 @@ export default function ExamplesGalleryGridClient({
   };
 
   const columns = useMemo(() => splitIntoColumns(visibleVideos, columnCount), [visibleVideos, columnCount]);
+  const altById = useMemo(() => {
+    const alts = visibleVideos.map((video, index) => {
+      const promptSeed = video.promptFull ?? video.prompt;
+      const baseAlt = getImageAlt({
+        kind: 'renderThumb',
+        engine: video.engineLabel,
+        label: promptSeed,
+        prompt: promptSeed,
+        locale,
+      });
+      return {
+        id: video.id,
+        alt: baseAlt,
+        tag: inferRenderTag(promptSeed, locale),
+        index: video.sourceIndex ?? index,
+        locale,
+      };
+    });
+    return dedupeAltsInList(alts);
+  }, [locale, visibleVideos]);
   const shouldUseTallCardLayout = !isMobile;
   const firstVisibleId = visibleVideos[0]?.id;
   const hasMore = !isLighthouse && nextOffset < pageOffsetEnd;
@@ -156,13 +177,14 @@ export default function ExamplesGalleryGridClient({
                 key={video.id}
                 video={video}
                 isFirst={isFirstVideo}
-                isLighthouse={isLighthouse}
-                forceExclusivePlay={false}
-                enableTallCardLayout={false}
-                enableInlineVideo={isFirstVideo}
-              />
-            );
-          })}
+                    isLighthouse={isLighthouse}
+                    forceExclusivePlay={false}
+                    enableTallCardLayout={false}
+                    enableInlineVideo={isFirstVideo}
+                    altText={altById.get(video.id) ?? getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })}
+                  />
+                );
+              })}
         </div>
       ) : (
         <div className={masonryStyles.masonry}>
@@ -179,6 +201,7 @@ export default function ExamplesGalleryGridClient({
                     forceExclusivePlay={false}
                     enableTallCardLayout={shouldUseTallCardLayout}
                     enableInlineVideo
+                    altText={altById.get(video.id) ?? getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })}
                   />
                 );
               })}
@@ -210,6 +233,7 @@ function ExampleCard({
   forceExclusivePlay,
   enableTallCardLayout,
   enableInlineVideo,
+  altText,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
@@ -217,6 +241,7 @@ function ExampleCard({
   forceExclusivePlay: boolean;
   enableTallCardLayout: boolean;
   enableInlineVideo: boolean;
+  altText: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [inView, setInView] = useState(false);
@@ -321,6 +346,7 @@ function ExampleCard({
                   playsInline
                   poster={posterSrc ?? undefined}
                   data-examples-card
+                  aria-label={altText}
                   className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]"
                 >
                   <source src={video.videoUrl} type="video/mp4" />
@@ -328,7 +354,7 @@ function ExampleCard({
               ) : posterSrc ? (
                 <Image
                   src={posterSrc}
-                  alt={`${video.engineLabel} AI video example – ${video.prompt}`}
+                  alt={altText}
                   fill
                   className="h-full w-full object-cover object-center"
                   priority={isLighthouse || isFirst}
