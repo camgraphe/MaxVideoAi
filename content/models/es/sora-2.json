@@ -2,13 +2,13 @@
   "marketingName": "OpenAI Sora 2",
   "versionLabel": "2",
   "seo": {
-    "title": "Sora 2 – Genera videos de IA desde texto o imagen con sonido",
-    "description": "Crea videos ricos generados por IA a partir de prompts de texto o imagen con Sora 2. Voz en off nativa, ambientes y movimiento sincronizado vía MaxVideoAI.",
+    "title": "Sora 2 Texto/Imagen a video — audio nativo + ejemplos",
+    "description": "Genera videos con Sora 2 desde texto o imágenes con voz en off nativa y ambiente. Ejemplos que puedes recrear, estructura de prompts y precios por uso en MaxVideoAI.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
     "title": "Sora 2",
-    "intro": "Clips cinematográficos desde texto o un solo fotograma — con sonido nativo.",
+    "intro": "Clips cinematográficos desde texto o una imagen — con audio nativo (voz + ambiente).",
     "badge": "720p · 4/8/12s · Texto→Video · Imagen→Video · 16:9/9:16 · Audio incluido",
     "ctaPrimary": {
       "label": "Generar con Sora 2",

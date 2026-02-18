@@ -2,14 +2,14 @@
   "marketingName": "Wan 2.6",
   "versionLabel": "2.6",
   "seo": {
-    "title": "Wan 2.6 – Générateur vidéo IA (Texte, Image & Référence) – MaxVideoAI",
-    "description": "Générez des clips cinématiques de 5–15 s (Texte/Image) avec Wan 2.6 dans MaxVideoAI. Utilisez des prompts multi‑shots, animez un still, ou gardez la cohérence du sujet avec 1–3 vidéos de référence (5–10 s). 720p/1080p, prix à la seconde.",
+    "title": "Wan 2.6 (5–15s, 1080p) — Texte/Image/Vidéos de référence",
+    "description": "Wan 2.6 dans MaxVideoAI : clips 5–15s depuis texte/images, ou meilleure cohérence du sujet avec 1–3 vidéos de référence (5–10s). 720p/1080p, prix à la seconde, exemples.",
     "image": "/hero/wan-26.jpg"
   },
   "overview": "Wan 2.6 dans MaxVideoAI : clips multi‑shots 5–15 s depuis texte ou image, plus Reference‑to‑Video (5–10 s) pour la cohérence du sujet. Sortie 720p/1080p, audio optionnel en T2V/I2V, pricing à la seconde.",
   "hero": {
     "title": "Wan 2.6 – Vidéo IA multi‑shot (Texte/Image 5–15 s, Référence 5–10 s, 720p/1080p)",
-    "intro": "Clips structurés multi‑shots avec une meilleure cohérence du sujet — surtout quand vous partez de références.",
+    "intro": "Clips structurés 5–15s en 720p/1080p — meilleure cohérence du sujet avec 1–3 vidéos de référence.",
     "badge": "720p/1080p · Texte/Image 5–15 s · Référence 5–10 s · Audio optionnel (T2V/I2V)",
     "ctaPrimary": {
       "label": "Générer avec Wan 2.6",

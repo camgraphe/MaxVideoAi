@@ -2,15 +2,15 @@
   "marketingName": "Kling 3 Pro",
   "versionLabel": "v3 Pro",
   "seo": {
-    "title": "Kling 3 Pro – Multi-shot Text & Image to Video | MaxVideoAI",
-    "description": "Generate longer, multi-shot Kling 3 Pro videos with scene-level prompts, elements, and optional voice control. 3–15s clips with native audio.",
+    "title": "Kling 3 Pro Multi-Shot (3–15s) — Native Audio + Controls",
+    "description": "Generate Kling 3 Pro multi-shot videos with scene-level prompts, Elements, and optional voice control. Create 3–15s clips with native audio, compare per-second pricing, and generate via wallet.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
   "overview": "Kling 3 Pro in MaxVideoAI is built for storyboard-style control: multi-shot prompts, reusable Elements, optional end frames, and native audio with voice IDs. Create 3–15s clips from text or image inputs with 1080p output and flexible aspect ratios.",
   "pricingNotes": "Pricing is per second: $0.336/s with audio, $0.224/s audio off, $0.392/s with voice control.",
   "hero": {
     "title": "Kling 3 Pro – Multi-shot cinematic control",
-    "intro": "Scene-level prompts, Elements, voice IDs, and end-frame control for premium cinematic beats.",
+    "intro": "Multi-shot 3–15s clips with native audio — scene-level prompts, Elements, voice IDs, and end-frame control.",
     "badge": "1080p · 3–15s · Multi-prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 3 Pro",

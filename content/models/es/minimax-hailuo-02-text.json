@@ -2,14 +2,14 @@
   "marketingName": "MiniMax Hailuo 02",
   "versionLabel": "02",
   "seo": {
-    "title": "Modelo MiniMax Hailuo‑02 texto→video – MaxVideoAI",
-    "description": "Genera borradores MiniMax Hailuo 02 económicos y con física marcada en 512p/768p desde texto o imagen. Crea clips silenciosos de 6–10 s para storyboards, loops y tests de motion, y luego pasa los ganadores a Veo, Kling, Wan o Sora en MaxVideoAI.",
+    "title": "Hailuo 02 (512p/768p) — borradores texto a video (6–10s)",
+    "description": "Crea clips borrador Hailuo 02 de bajo costo en 512p/768p desde texto (o imágenes). Videos silenciosos de 6–10s para storyboards y pruebas de movimiento, y luego sube a Veo/Kling/Wan/Sora en MaxVideoAI.",
     "image": "/hero/minimax-video01.jpg"
   },
   "overview": "MiniMax Hailuo 02 en MaxVideoAI: clips cortos y económicos, con física marcada, a 512p/768p en 6 o 10 segundos. Entrada de texto o imagen, frame final opcional, salida silenciosa y pricing por wallet para borradores rápidos y loops.",
   "hero": {
     "title": "MiniMax Hailuo 02 – Borradores de video IA económicos con física fuerte",
-    "intro": "Clips draft orientados a la física para tests de movimiento, experimentos de cámara e iteración visual rápida.",
+    "intro": "Borradores silenciosos de 6–10s en 512p/768p — pruebas de movimiento, cámara e iteración rápida.",
     "badge": "512p/768p · 6–10 s · Entrada texto o imagen · Salida silenciosa",
     "ctaPrimary": {
       "label": "Probar MiniMax Hailuo 02",

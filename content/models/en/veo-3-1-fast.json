@@ -2,14 +2,14 @@
   "marketingName": "Google Veo 3.1 Fast",
   "versionLabel": "3.1 Fast",
   "seo": {
-    "title": "Veo 3.1 Fast cinematic AI video model – MaxVideoAI",
-    "description": "Create Veo 3.1 Fast videos online with optional audio. Generate 4–8s clips in 720p/1080p from text or images at a lower price than full Veo 3.1, available worldwide via the MaxVideoAI wallet.",
+    "title": "Veo 3.1 Fast (4–8s, 1080p) — Specs, Pricing & Optional Audio",
+    "description": "Veo 3.1 Fast: generate 4–8s clips in 720p/1080p from text or images with optional audio. Compare per-second pricing vs full Veo 3.1 and generate via wallet worldwide.",
     "image": "/hero/veo3.jpg"
   },
   "overview": "Veo 3.1 Fast is the speed-and-cost tier of the Veo family: 4–8s clips, 720p/1080p, text or image input, framing/tone presets, optional native audio, and per-second pricing for rapid testing.",
   "hero": {
     "title": "Veo 3.1 Fast – High-Speed AI Video with Optional Audio",
-    "intro": "Draft-tier Veo for quick volume testing — with the same cinematic language.",
+    "intro": "Lower-cost 4–8s cinematic clips in 720p/1080p — optional audio for quick volume testing.",
     "badge": "720p/1080p · 4–8s · Text or Image input",
     "ctaPrimary": {
       "label": "Try Veo 3.1 Fast",

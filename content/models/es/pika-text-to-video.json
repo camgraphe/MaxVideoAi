@@ -2,14 +2,14 @@
   "marketingName": "Pika 2.2",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika 2.2 Texto e Imagen a Video (5–10 s, 1080p) | Ejemplos y specs",
-    "description": "Pika 2.2 en MaxVideoAI: texto→video e imagen→video en 5 s o 10 s (720p/1080p). Mira el precio por segundo, ejemplos reales que puedes recrear y genera con pago por uso — sin suscripción.",
+    "title": "Pika 2.2 Duración máx. de video (5s/10s) — 1080p + precio",
+    "description": "Pika 2.2 en MaxVideoAI: la duración máxima es 5s o 10s (720p/1080p). Límites, precio por segundo y ejemplos que puedes recrear—pago por uso, sin suscripción.",
     "image": "/hero/pika-22.jpg"
   },
   "overview": "Pika 2.2 en MaxVideoAI: clips cortos y silenciosos (5–10 s) en 720p/1080p desde texto o una sola imagen, en 1:1, 16:9 o 9:16. Ideal para looks anime, cómic, pixel y 3D lúdico pensados para feeds sociales.",
   "hero": {
     "title": "Pika 2.2",
-    "intro": "Clips estilizados, social‑first, desde texto o un solo frame — hechos para destacar en el feed.",
+    "intro": "Duración máxima de video: 5s o 10s en 720p/1080p — texto a video o imagen a video con estilo, hecho para destacar en el feed.",
     "badge": "Hasta 1080p · 5–10 s · Entrada de texto o imagen",
     "ctaPrimary": {
       "label": "Generar con Pika 2.2",

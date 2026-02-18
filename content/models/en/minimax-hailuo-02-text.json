@@ -2,14 +2,14 @@
   "marketingName": "MiniMax Hailuo 02",
   "versionLabel": "02",
   "seo": {
-    "title": "Minimax Hailuo-02 text-to-video AI model – MaxVideoAI",
-    "description": "Generate cheap, physics-aware MiniMax Hailuo 02 drafts at 512p/768p from text or images. Create 6–10s silent clips for storyboards, loops and motion tests, then upgrade winners to Veo, Kling, Wan or Sora in MaxVideoAI.",
+    "title": "Hailuo 02 (512p/768p) — 6–10s Draft Text-to-Video",
+    "description": "Create low-cost Hailuo 02 draft clips at 512p/768p from text (or images). 6–10s silent videos for storyboards and motion tests—then upgrade winners to Veo/Kling/Wan/Sora in MaxVideoAI.",
     "image": "/hero/minimax-video01.jpg"
   },
   "overview": "MiniMax Hailuo 02 in MaxVideoAI: short, cheap, physics-aware clips at 512p/768p in 6 or 10 seconds. Text or image input, optional end frame, silent output, and wallet-based pricing for rapid drafts and loops.",
   "hero": {
     "title": "MiniMax Hailuo 02 – Budget AI Video Drafts with Strong Physics",
-    "intro": "Physics-forward draft clips for motion tests, camera experiments, and fast visual iteration.",
+    "intro": "Silent 6–10s draft clips at 512p/768p — physics-aware motion tests, camera experiments, and fast iteration.",
     "badge": "512p/768p · 6–10s · Text or Image input · Silent output",
     "ctaPrimary": {
       "label": "Try MiniMax Hailuo 02",

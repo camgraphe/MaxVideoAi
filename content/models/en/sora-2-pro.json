@@ -2,13 +2,13 @@
   "marketingName": "OpenAI Sora 2 Pro",
   "versionLabel": "Pro",
   "seo": {
-    "title": "Sora 2 Pro – Longer AI Videos with Audio & Enhanced Prompt Control",
-    "description": "Create longer, more immersive AI videos from text or images using Sora 2 Pro. Native voice, ambient sound, prompt chaining, and advanced control via MaxVideoAI.",
+    "title": "Sora 2 Pro — Longer AI Videos with Native Audio & Controls",
+    "description": "Create longer Sora 2 Pro videos from text/images with native voice + ambience, prompt chaining, and advanced controls—pay-as-you-go via MaxVideoAI.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
     "title": "Sora 2 Pro",
-    "intro": "High-res, production-ready clips from text or a single frame — with native audio.",
+    "intro": "Longer, production-ready clips from text or images — native voice + ambience with enhanced prompt control.",
     "badge": "1792×1024 · 4/8/12s · Text→Video · Image→Video · 16:9/9:16 · Audio included",
     "ctaPrimary": {
       "label": "Generate with Sora 2 Pro",

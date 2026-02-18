@@ -2,15 +2,15 @@
   "marketingName": "Kling 3 Standard",
   "versionLabel": "v3 Standard",
   "seo": {
-    "title": "Kling 3 Standard – Texto e imagen a video multi‑escena | MaxVideoAI",
-    "description": "Crea clips Kling 3 Standard multi‑shot con prompts por escena, Elements y voice control opcional. 3–15 s, 1080p, con audio nativo.",
+    "title": "Kling 3 Standard — texto/imagen a video + ejemplos",
+    "description": "Genera videos con Kling 3 Standard desde texto o imágenes en MaxVideoAI. Ejemplos que puedes recrear, tips de prompts y pago por uso—sin suscripción.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/bb896348-7394-4ef3-9cff-ff392639c8db-job_99e0f0fa-6092-4b8a-8c08-e329c579d0f2.jpg"
   },
   "overview": "Kling 3 Standard ofrece prompts multi‑shot, Elements reutilizables, frame final opcional y audio nativo con voice IDs en un tier más económico. Genera clips de 3–15 s desde texto o imagen en 1080p, con relaciones flexibles.",
   "pricingNotes": "Tarificación por segundo: 0,252 $/s con audio, 0,168 $/s audio off, 0,308 $/s con voice control.",
   "hero": {
     "title": "Kling 3 Standard – Storytelling multi‑shot a menor costo",
-    "intro": "Prompts multi‑shot, Elements reutilizables, voice IDs opcionales y control de frame final en un tier más económico.",
+    "intro": "Texto a video o imagen a video con Kling 3 Standard — para resultados cinematográficos limpios y iteración rápida.",
     "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 3 Standard",

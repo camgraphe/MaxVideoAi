@@ -2,14 +2,14 @@
   "marketingName": "LTX-2 Fast",
   "versionLabel": "Fast",
   "seo": {
-    "title": "LTX-2 Fast – Vidéo IA rapide avec audio | MaxVideoAI",
-    "description": "Générez des vidéos IA cinématiques rapidement avec LTX-2 Fast. Transformez texte ou images en clips de 6–20 s avec audio synchronisé, jusqu’en 4K et 25–50 fps, idéal pour le social et l’itération rapide.",
+    "title": "LTX-2 Fast (6–20s, jusqu’à 4K) — vidéo + audio",
+    "description": "Générez des clips 6–20s depuis texte ou images avec audio synchronisé, jusqu’à 4K et 25–50 images/s (fps). Idéal pour tester et ajuster rapidement — paiement à l’usage sur MaxVideoAI.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
   "overview": "LTX-2 Fast dans MaxVideoAI : rendus 6–20 s, 1080p/1440p/4K, 25 ou 50 fps, entrée texte ou image, audio natif on/off, prix à la seconde.",
   "hero": {
     "title": "LTX-2 Fast – Vidéo IA avec audio natif",
-    "intro": "Clips niveau draft conçus pour la vitesse — idéal pour tester des idées sans friction.",
+    "intro": "Clips rapides 6–20s avec audio synchronisé — jusqu’à 4K et 25–50 images/s (fps), idéal pour tester et ajuster rapidement.",
     "badge": "1080p/1440p/4K · 6–20 s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
       "label": "Générer avec LTX-2 Fast",

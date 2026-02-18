@@ -2,14 +2,14 @@
   "marketingName": "LTX-2 Pro",
   "versionLabel": "Pro",
   "seo": {
-    "title": "LTX-2 Pro – Vidéo IA haute fidélité texte & image avec audio | MaxVideoAI",
-    "description": "Créez des vidéos IA cinématiques haute fidélité avec LTX-2 Pro. Transformez texte ou images en clips de 6–10 s avec audio synchronisé, résolution 1080p–4K et 25–50 fps, idéal pour campagnes premium et workflows de production.",
+    "title": "LTX-2 Pro (6–10s, jusqu’à 4K) — vidéo + audio premium",
+    "description": "Créez des clips 6–10s haute fidélité avec audio synchronisé (1080p–4K, 25–50 images/s (fps)). Pensé pour des workflows premium — paiement à l’usage sur MaxVideoAI.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
   "overview": "LTX-2 Pro dans MaxVideoAI : clips cinématiques 6–10 s, 1080p/1440p/4K, 25 ou 50 fps, entrée texte ou image, toggle audio natif, prix à la seconde.",
   "hero": {
     "title": "LTX-2 Pro – Vidéo IA haute fidélité avec audio",
-    "intro": "Clips production‑grade depuis texte ou un still — pensés pour un motion propre et un son bien synchronisé.",
+    "intro": "Clips haute fidélité 6–10s avec audio synchronisé — 1080p–4K à 25–50 images/s (fps), pour une production soignée.",
     "badge": "1080p/1440p/4K · 6–10 s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
       "label": "Générer avec LTX-2 Pro",
