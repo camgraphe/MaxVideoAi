@@ -6,17 +6,38 @@ import { resolveLocale } from '@/lib/i18n/server';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = (await resolveLocale()) as AppLocale;
-  return buildSeoMetadata({
-    locale,
+const METADATA_COPY: Record<AppLocale, { title: string; description: string; imageAlt: string }> = {
+  en: {
     title: 'Terms of Service',
     description: 'MaxVideoAI Terms of Service governing access to the platform and AI-assisted video generation tools.',
+    imageAlt: 'Terms of Service document.',
+  },
+  fr: {
+    title: "Conditions d’utilisation",
+    description:
+      'Conditions d’utilisation de MaxVideoAI encadrant l’accès à la plateforme et aux outils de génération vidéo assistée par IA.',
+    imageAlt: "Document des Conditions d’utilisation.",
+  },
+  es: {
+    title: 'Términos del servicio',
+    description:
+      'Términos del servicio de MaxVideoAI que regulan el acceso a la plataforma y a las herramientas de generación de vídeo asistida por IA.',
+    imageAlt: 'Documento de Términos del servicio.',
+  },
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  const metadata = METADATA_COPY[locale] ?? METADATA_COPY.en;
+  return buildSeoMetadata({
+    locale,
+    title: metadata.title,
+    description: metadata.description,
     hreflangGroup: 'legalTerms',
     englishPath: '/legal/terms',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',
-    imageAlt: 'Terms of Service document.',
+    imageAlt: metadata.imageAlt,
   });
 }
 
