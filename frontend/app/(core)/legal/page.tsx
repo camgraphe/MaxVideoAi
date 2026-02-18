@@ -74,7 +74,7 @@ const HERO_COPY: Record<AppLocale, HeroCopy> = {
       cookies: 'Cookie Policy',
       acceptableUse: 'Acceptable Use Policy',
       takedown: 'Notice & Takedown',
-      mentions: 'Mentions légales',
+      mentions: 'Legal Notice',
       subprocessors: 'Sub-processors',
     },
   },
