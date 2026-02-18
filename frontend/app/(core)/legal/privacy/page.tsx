@@ -242,7 +242,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">8. Cookies &amp; similar technologies</h3>
         <p>
           We use essential cookies to run the site and, with your consent, analytics or advertising cookies. Consent can be withdrawn at any time via the cookie banner or settings. See the{' '}
-          <Link href="/legal/cookies" className="text-brand underline hover:text-brandHover">
+          <Link href="/legal/cookies-list" className="text-brand underline hover:text-brandHover">
             Cookie Policy
           </Link>{' '}
           for details.
@@ -410,7 +410,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         <p>
           Nous utilisons des cookies essentiels pour faire fonctionner le site et, avec votre accord, des cookies d’analyse/publicité. Vous pouvez retirer votre consentement via la bannière ou les
           paramètres. Voir la{' '}
-          <Link href="/legal/cookies" className="text-brand underline hover:text-brandHover">
+          <Link href="/legal/cookies-list" className="text-brand underline hover:text-brandHover">
             Politique cookies
           </Link>{' '}
           pour plus de détails.
@@ -578,7 +578,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">8. Cookies y tecnologías similares</h3>
         <p>
           Usamos cookies esenciales para el funcionamiento y, con tu consentimiento, cookies de analítica o publicidad. Puedes retirar el consentimiento desde el banner o los ajustes. Consulta la{' '}
-          <Link href="/legal/cookies" className="text-brand underline hover:text-brandHover">
+          <Link href="/legal/cookies-list" className="text-brand underline hover:text-brandHover">
             Política de cookies
           </Link>{' '}
           para más información.

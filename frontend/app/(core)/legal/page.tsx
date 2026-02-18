@@ -31,7 +31,7 @@ type LinkKey =
 const LINKS: Array<{ href: string; key: LinkKey; docKey?: 'terms' | 'privacy' | 'cookies' }> = [
   { href: '/legal/terms', key: 'terms', docKey: 'terms' },
   { href: '/legal/privacy', key: 'privacy', docKey: 'privacy' },
-  { href: '/legal/cookies', key: 'cookies', docKey: 'cookies' },
+  { href: '/legal/cookies-list', key: 'cookies', docKey: 'cookies' },
   { href: '/legal/acceptable-use', key: 'acceptableUse' },
   { href: '/legal/takedown', key: 'takedown' },
   { href: '/legal/mentions', key: 'mentions' },
