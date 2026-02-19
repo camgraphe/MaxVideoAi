@@ -13,6 +13,7 @@ export type EngineCatalogCard = {
   modelSlug: string;
   marketingName: string;
   provider: string;
+  availability: string;
   status: string;
   modes: string[];
   audio: boolean;
@@ -24,8 +25,12 @@ export type EngineCatalogCard = {
 
 type EnginesCatalogProps = {
   cards: EngineCatalogCard[];
+  extendedCards?: EngineCatalogCard[];
   labels: {
     sortAll: string;
+    toggles: {
+      includeWaitlistEarlyAccess: string;
+    };
     filters: {
       mode: string;
       audio: string;
@@ -89,7 +94,8 @@ function humanizeStatus(status: string, labels: EnginesCatalogProps['labels']['s
   return status || labels.unknown;
 }
 
-export function EnginesCatalog({ cards, labels }: EnginesCatalogProps) {
+export function EnginesCatalog({ cards, extendedCards, labels }: EnginesCatalogProps) {
+  const [includeWaitlistEarlyAccess, setIncludeWaitlistEarlyAccess] = useState(false);
   const [mode, setMode] = useState('all');
   const [audio, setAudio] = useState('all');
   const [duration, setDuration] = useState('all');
@@ -97,13 +103,16 @@ export function EnginesCatalog({ cards, labels }: EnginesCatalogProps) {
   const [status, setStatus] = useState('all');
   const [provider, setProvider] = useState('all');
 
+  const canToggleExtended = Boolean(extendedCards && extendedCards.length > 0);
+  const sourceCards = includeWaitlistEarlyAccess && canToggleExtended ? extendedCards ?? cards : cards;
+
   const providerOptions = useMemo(() => {
-    const providers = Array.from(new Set(cards.map((card) => card.provider))).sort((a, b) => a.localeCompare(b));
+    const providers = Array.from(new Set(sourceCards.map((card) => card.provider))).sort((a, b) => a.localeCompare(b));
     return [
       { value: 'all', label: `${labels.filters.provider}: ${labels.options.all}` },
       ...providers.map((entry) => ({ value: entry, label: entry })),
     ];
-  }, [cards, labels.filters.provider, labels.options.all]);
+  }, [sourceCards, labels.filters.provider, labels.options.all]);
 
   const localizedModeOptions = useMemo(
     () => [
@@ -155,7 +164,7 @@ export function EnginesCatalog({ cards, labels }: EnginesCatalogProps) {
 
   const filtered = useMemo(
     () =>
-      cards.filter((card) => {
+      sourceCards.filter((card) => {
         if (mode !== 'all' && !card.modes.includes(mode)) return false;
         if (audio === 'on' && !card.audio) return false;
         if (audio === 'off' && card.audio) return false;
@@ -177,7 +186,7 @@ export function EnginesCatalog({ cards, labels }: EnginesCatalogProps) {
 
         return true;
       }),
-    [audio, cards, duration, mode, provider, resolution, status]
+    [audio, duration, mode, provider, resolution, sourceCards, status]
   );
 
   const hasActiveFilters =
@@ -194,6 +203,18 @@ export function EnginesCatalog({ cards, labels }: EnginesCatalogProps) {
 
   return (
     <div className="space-y-5">
+      {canToggleExtended ? (
+        <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-text-secondary">
+          <input
+            type="checkbox"
+            checked={includeWaitlistEarlyAccess}
+            onChange={(event) => setIncludeWaitlistEarlyAccess(event.target.checked)}
+            className="h-4 w-4 rounded border-hairline"
+          />
+          <span>{labels.toggles.includeWaitlistEarlyAccess}</span>
+        </label>
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         <SelectMenu
           options={localizedModeOptions}

@@ -132,6 +132,9 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     popularCompareLabel: 'Compare',
     catalogLabels: {
       sortAll: 'All',
+      toggles: {
+        includeWaitlistEarlyAccess: 'Include waitlist / early access',
+      },
       filters: {
         mode: 'Mode',
         audio: 'Audio',
@@ -269,6 +272,9 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     popularCompareLabel: 'Comparer',
     catalogLabels: {
       sortAll: 'Tous',
+      toggles: {
+        includeWaitlistEarlyAccess: 'Inclure waitlist / accès anticipé',
+      },
       filters: {
         mode: 'Mode',
         audio: 'Audio',
@@ -406,6 +412,9 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     popularCompareLabel: 'Comparar',
     catalogLabels: {
       sortAll: 'Todos',
+      toggles: {
+        includeWaitlistEarlyAccess: 'Incluir waitlist / acceso anticipado',
+      },
       filters: {
         mode: 'Modo',
         audio: 'Audio',
@@ -548,6 +557,7 @@ export default async function AiVideoEnginesPage() {
   const { locale } = await resolveDictionary();
   const copy = getCopy(locale);
   const engines = getHubEngines();
+  const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
   const scoreMap = await loadHubEngineScoreMap();
 
   const engineOptions = engines.map((engine) => ({ value: engine.modelSlug, label: engine.marketingName }));
@@ -558,19 +568,23 @@ export default async function AiVideoEnginesPage() {
     pairs: bucket.pairs,
   }));
 
-  const engineCards: EngineCatalogCard[] = engines.map((engine) => {
-    const compareActions = getSuggestedOpponents(engine.modelSlug, engines, 3).map((opponent) => {
+  const toEngineCards = (list: ReturnType<typeof getHubEngines>): EngineCatalogCard[] =>
+    list.map((engine) => {
+      const compareActions = getSuggestedOpponents(engine.modelSlug, list, 3).map((opponent) => {
+        return {
+          slug: buildCanonicalCompareSlug(engine.modelSlug, opponent.modelSlug),
+          label: opponent.marketingName,
+        };
+      });
+
       return {
-        slug: buildCanonicalCompareSlug(engine.modelSlug, opponent.modelSlug),
-        label: opponent.marketingName,
+        ...engine,
+        compareActions,
       };
     });
 
-    return {
-      ...engine,
-      compareActions,
-    };
-  });
+  const engineCards = toEngineCards(engines);
+  const extendedEngineCards = toEngineCards(enginesWithWaitlist);
 
   const allComparisonEntries = getRankedComparisonPairs(engines).map((pair) => ({
     slug: pair.slug,
@@ -693,7 +707,7 @@ export default async function AiVideoEnginesPage() {
               </span>
             </summary>
             <div className="mt-4">
-              <EnginesCatalog cards={engineCards} labels={copy.catalogLabels} />
+              <EnginesCatalog cards={engineCards} extendedCards={extendedEngineCards} labels={copy.catalogLabels} />
             </div>
           </details>
         </section>

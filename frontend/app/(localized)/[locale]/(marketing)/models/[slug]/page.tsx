@@ -1031,6 +1031,12 @@ type EngineKeySpecsEntry = {
   keySpecs?: Record<string, unknown>;
   sources?: string[];
 };
+type SourceLink = {
+  url: string;
+  domain: string;
+  label: string;
+  official: boolean;
+};
 type EngineKeySpecsFile = {
   version?: string;
   last_updated?: string;
@@ -1331,6 +1337,7 @@ const SECTION_LABELS: Record<
   AppLocale,
   {
     specs: string;
+    sources: string;
     examples: string;
     prompting: string;
     tips: string;
@@ -1341,6 +1348,7 @@ const SECTION_LABELS: Record<
 > = {
   en: {
     specs: 'Specs',
+    sources: 'Sources & docs',
     examples: 'Examples',
     prompting: 'Prompting',
     tips: 'Tips',
@@ -1350,6 +1358,7 @@ const SECTION_LABELS: Record<
   },
   fr: {
     specs: 'Spécifications',
+    sources: 'Sources & docs',
     examples: 'Exemples',
     prompting: 'Prompts',
     tips: 'Conseils',
@@ -1359,6 +1368,7 @@ const SECTION_LABELS: Record<
   },
   es: {
     specs: 'Especificaciones',
+    sources: 'Fuentes y docs',
     examples: 'Ejemplos',
     prompting: 'Prompts',
     tips: 'Consejos',
@@ -2043,6 +2053,81 @@ async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEntry>> {
     }
   }
   return new Map();
+}
+
+const OFFICIAL_SOURCE_DOMAINS = [
+  'maxvideoai.com',
+  'openai.com',
+  'platform.openai.com',
+  'developers.openai.com',
+  'google.com',
+  'ai.google',
+  'deepmind.google',
+  'fal.ai',
+  'pika.art',
+  'kuaishou.com',
+  'klingai.com',
+  'luma.ai',
+  'runwayml.com',
+];
+
+function normalizeSourceUrl(rawUrl: string): string | null {
+  const value = rawUrl.trim();
+  if (!value) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return null;
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) return null;
+  parsed.hash = '';
+  const normalized = parsed.toString().replace(/\/$/, '');
+  return normalized;
+}
+
+function isOfficialSourceDomain(domain: string): boolean {
+  return OFFICIAL_SOURCE_DOMAINS.some((official) => domain === official || domain.endsWith(`.${official}`));
+}
+
+function buildSourceLabel(url: URL): string {
+  const domain = url.hostname.replace(/^www\./i, '');
+  const pathname = url.pathname.replace(/\/$/, '');
+  if (!pathname || pathname === '/') return domain;
+  const shortPath = pathname.length > 40 ? `${pathname.slice(0, 37)}...` : pathname;
+  return `${domain}${shortPath}`;
+}
+
+function buildSourceLinks(sources: string[] | undefined, maxLinks = 5): SourceLink[] {
+  if (!Array.isArray(sources) || sources.length === 0) return [];
+  const unique = new Map<string, URL>();
+  sources.forEach((entry) => {
+    if (typeof entry !== 'string') return;
+    const normalized = normalizeSourceUrl(entry);
+    if (!normalized || unique.has(normalized)) return;
+    try {
+      unique.set(normalized, new URL(normalized));
+    } catch {
+      // Ignore invalid URL.
+    }
+  });
+
+  const ranked = Array.from(unique.entries())
+    .map(([normalized, parsed]) => {
+      const domain = parsed.hostname.replace(/^www\./i, '').toLowerCase();
+      return {
+        url: normalized,
+        domain,
+        label: buildSourceLabel(parsed),
+        official: isOfficialSourceDomain(domain),
+      };
+    })
+    .sort((a, b) => {
+      if (a.official !== b.official) return Number(b.official) - Number(a.official);
+      return a.domain.localeCompare(b.domain, 'en');
+    });
+
+  return ranked.slice(0, maxLinks).map(({ url, domain, label, official }) => ({ url, domain, label, official }));
 }
 
 function resolveKeySpecValue(
@@ -3237,6 +3322,7 @@ async function renderSoraModelPage({
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
+  const sourceLinks = buildSourceLinks(keySpecsEntry?.sources, 5);
   const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
   const pricePerImageLabel = await buildPricePerImageLabel(pricingEngine, locale);
   const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, {
@@ -3309,6 +3395,7 @@ async function renderSoraModelPage({
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}
       keySpecValues={keySpecValues}
+      sourceLinks={sourceLinks}
       pricePerImageLabel={pricePerImageLabel}
       pricePerSecondLabel={pricePerSecondLabel}
       engineSlug={engine.modelSlug}
@@ -3336,6 +3423,7 @@ function Sora2PageLayout({
   faqEntries,
   keySpecRows,
   keySpecValues,
+  sourceLinks,
   pricePerImageLabel,
   pricePerSecondLabel,
   engineSlug,
@@ -3359,6 +3447,7 @@ function Sora2PageLayout({
   faqEntries: LocalizedFaqEntry[];
   keySpecRows: KeySpecRow[];
   keySpecValues: KeySpecValues | null;
+  sourceLinks: SourceLink[];
   pricePerImageLabel: string | null;
   pricePerSecondLabel: string | null;
   engineSlug: string;
@@ -3493,6 +3582,7 @@ function Sora2PageLayout({
   const durationIso = heroMedia.durationSec ? `PT${Math.round(heroMedia.durationSec)}S` : undefined;
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
+  const hasSourceLinks = sourceLinks.length > 0;
   const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
   const galleryPreviewAlts = dedupeAltsInList(
@@ -3522,6 +3612,7 @@ function Sora2PageLayout({
   const compareAnchorId = 'compare';
   const tocItems = [
     { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
+    { id: 'sources', label: sectionLabels.sources, visible: hasSourceLinks },
     { id: textAnchorId, label: sectionLabels.examples, visible: hasExamples },
     { id: imageAnchorId, label: sectionLabels.prompting, visible: hasTextSection },
     { id: 'tips', label: sectionLabels.tips, visible: hasTipsSection },
@@ -3897,6 +3988,29 @@ function Sora2PageLayout({
                 <SpecDetailsGrid sections={specSectionsToShow} />
               )
             ) : null}
+          </section>
+        ) : null}
+
+        {hasSourceLinks ? (
+          <section
+            id="sources"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
+          >
+            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{sectionLabels.sources}</h2>
+            <div className="mx-auto grid w-full max-w-5xl gap-3 sm:grid-cols-2">
+              {sourceLinks.map((source) => (
+                <a
+                  key={source.url}
+                  href={source.url}
+                  target="_blank"
+                  rel={source.official ? 'noopener noreferrer' : 'noopener noreferrer nofollow'}
+                  className="rounded-2xl border border-hairline bg-surface/80 px-4 py-3 text-sm text-text-secondary shadow-card transition hover:border-text-muted hover:text-text-primary"
+                >
+                  <span className="block font-semibold text-text-primary">{source.label}</span>
+                  <span className="mt-1 block text-xs text-text-muted">{source.domain}</span>
+                </a>
+              ))}
+            </div>
           </section>
         ) : null}
 

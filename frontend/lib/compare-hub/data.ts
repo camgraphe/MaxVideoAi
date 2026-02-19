@@ -4,11 +4,13 @@ import engineCatalog from '@/config/engine-catalog.json';
 const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
 const ELIGIBLE_STATUSES = new Set(['live', 'early_access']);
 const VIDEO_MODES = new Set(['t2v', 'i2v', 'v2v', 'r2v']);
+const LEGACY_UNAVAILABLE = new Set(['paused']);
 
 export type HubEngine = {
   modelSlug: string;
   marketingName: string;
   provider: string;
+  availability: string;
   status: string;
   modes: string[];
   audio: boolean;
@@ -59,6 +61,11 @@ export type HubUseCaseBucket = {
 };
 
 type CatalogEngine = (typeof engineCatalog)[number];
+type HubEngineFilterOptions = {
+  includeLimited?: boolean;
+  includeWaitlist?: boolean;
+  includeUnavailable?: boolean;
+};
 
 const hubConfig = compareHubConfig as CompareHubConfig;
 const catalogEntries = engineCatalog as CatalogEngine[];
@@ -109,10 +116,19 @@ function resolveMaxResolution(resolutions: string[] | undefined): { label: strin
   return { label: bestLabel, value: bestValue };
 }
 
-function isHubEligibleEngine(entry: CatalogEngine): boolean {
+function isHubEligibleEngine(entry: CatalogEngine, options: HubEngineFilterOptions = {}): boolean {
   if (!entry?.modelSlug || EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug)) return false;
   const status = String(entry.engine?.status ?? '').toLowerCase();
   if (!ELIGIBLE_STATUSES.has(status)) return false;
+  const availability = String(entry.availability ?? '').toLowerCase();
+  const allowedAvailability = new Set<string>(['available']);
+  if (options.includeLimited) allowedAvailability.add('limited');
+  if (options.includeWaitlist) allowedAvailability.add('waitlist');
+  if (options.includeUnavailable) {
+    allowedAvailability.add('unavailable');
+    LEGACY_UNAVAILABLE.forEach((value) => allowedAvailability.add(value));
+  }
+  if (!allowedAvailability.has(availability)) return false;
   const modes = entry.engine?.modes ?? [];
   return modes.some((mode) => VIDEO_MODES.has(mode));
 }
@@ -136,9 +152,9 @@ export function buildCompareRoute(leftSlug: string, rightSlug: string): CompareR
   };
 }
 
-export function getHubEngines(): HubEngine[] {
+export function getHubEngines(options: HubEngineFilterOptions = {}): HubEngine[] {
   return catalogEntries
-    .filter(isHubEligibleEngine)
+    .filter((entry) => isHubEligibleEngine(entry, options))
     .map((entry) => {
       const maxResolution = resolveMaxResolution(entry.engine?.resolutions as string[] | undefined);
       const modes = Array.from(new Set((entry.engine?.modes ?? []).map((mode) => normalizeMode(String(mode)))));
@@ -146,6 +162,7 @@ export function getHubEngines(): HubEngine[] {
         modelSlug: entry.modelSlug,
         marketingName: entry.marketingName,
         provider: entry.provider,
+        availability: String(entry.availability ?? 'unknown'),
         status: String(entry.engine?.status ?? 'unknown'),
         modes,
         audio: Boolean(entry.engine?.audio),
@@ -279,5 +296,11 @@ export function getRankedComparisonPairs(engines: HubEngine[] = getHubEngines())
 }
 
 export function getHubComparisonSlugsForSitemap(): string[] {
-  return getAllCanonicalPairs(getHubEngines()).map((pair) => pair.slug);
+  return getAllCanonicalPairs(
+    getHubEngines({
+      includeLimited: true,
+      includeWaitlist: true,
+      includeUnavailable: true,
+    })
+  ).map((pair) => pair.slug);
 }
