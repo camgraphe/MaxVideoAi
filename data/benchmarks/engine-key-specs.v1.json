@@ -490,6 +490,39 @@
       }
     },
     {
+      "modelSlug": "seedance-2-0",
+      "sources": [
+        "https://fal.ai/seedance-2-0",
+        "https://seed.bytedance.com/en/seedance2_0",
+        "https://seed.bytedance.com/en/blog/official-launch-of-seedance-2-0"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported",
+        "firstLastFrame": "Not specified",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxResolution": "Not specified (official pre-launch)",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "dualChannelAudio": "Supported",
+        "lipSync": "Not specified",
+        "cameraMotionControls": "Advanced",
+        "watermark": "Not specified",
+        "releaseDate": "Feb 24, 2026 (fal.ai availability)"
+      }
+    },
+    {
       "modelSlug": "pika-text-to-video",
       "sources": [
         "https://maxvideoai.com/models/pika-text-to-video",

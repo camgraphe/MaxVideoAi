@@ -768,7 +768,7 @@ const SORA_2_PRO_ENGINE: EngineCaps = {
     provider: 'openai',
     modelSlug: 'fal-ai/sora-2/text-to-video/pro',
   },
-  availability: 'waitlist',
+  availability: 'available',
   brandId: 'openai',
 };
 
@@ -1419,6 +1419,122 @@ const SEEDANCE_1_5_PRO_ENGINE: EngineCaps = {
     modelSlug: 'fal-ai/bytedance/seedance/v1.5/pro/text-to-video',
   },
   availability: 'available',
+  brandId: 'bytedance',
+};
+
+const SEEDANCE_2_0_ENGINE: EngineCaps = {
+  id: 'seedance-2-0',
+  label: 'Seedance 2.0',
+  provider: 'ByteDance',
+  version: '2.0',
+  status: 'early_access',
+  latencyTier: 'standard',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2v', 'i2v'],
+  maxDurationSec: 15,
+  resolutions: ['720p', '1080p'],
+  aspectRatios: ['16:9', '9:16', '1:1'],
+  fps: [24],
+  audio: true,
+  upscale4k: false,
+  extend: true,
+  motionControls: true,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 25,
+    videoMaxMB: 50,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Reference image',
+        modes: ['i2v'],
+        requiredInModes: ['i2v'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+    ],
+    optional: [
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration (seconds)',
+        values: ['5', '10', '15'],
+        default: '10',
+        min: 5,
+        max: 15,
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['16:9', '9:16', '1:1'],
+        default: '16:9',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['720p', '1080p'],
+        default: '1080p',
+      },
+      {
+        id: 'reference_image_urls',
+        type: 'text',
+        label: 'Reference images (up to 9)',
+      },
+      {
+        id: 'reference_video_urls',
+        type: 'text',
+        label: 'Reference video clips (up to 3)',
+      },
+      {
+        id: 'reference_audio_urls',
+        type: 'text',
+        label: 'Reference audio clips (up to 3)',
+      },
+      {
+        id: 'generate_audio',
+        type: 'enum',
+        label: 'Generate audio',
+        values: ['true', 'false'],
+        default: 'true',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+      maxImageSizeMB: 25,
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: {
+      default: 0,
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    base: 0,
+    currency: 'USD',
+    notes: 'Pricing details will be confirmed at launch.',
+  },
+  updatedAt: '2026-02-19T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'bytedance',
+    modelSlug: 'fal-ai/seedance-2.0/text-to-video',
+  },
+  availability: 'waitlist',
   brandId: 'bytedance',
 };
 
@@ -2339,7 +2455,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     brandId: 'openai',
     family: 'sora',
     versionLabel: 'Pro',
-    availability: 'waitlist',
+    availability: 'available',
     logoPolicy: 'textOnly',
     engine: SORA_2_PRO_ENGINE,
     modes: [
@@ -3255,6 +3371,91 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     },
     promptExample:
       'Locked camera shot of a neon alley, subtle rain, soft ambient audio, slow motion detail.',
+  },
+  {
+    id: 'seedance-2-0',
+    modelSlug: 'seedance-2-0',
+    marketingName: 'Seedance 2.0',
+    cardTitle: 'Seedance 2.0',
+    provider: 'ByteDance',
+    brandId: 'bytedance',
+    family: 'seedance',
+    versionLabel: '2.0',
+    availability: 'waitlist',
+    logoPolicy: 'textOnly',
+    billingNote: 'Available on fal.ai February 24, 2026. Pricing will be confirmed at launch.',
+    engine: SEEDANCE_2_0_ENGINE,
+    modes: [
+      {
+        mode: 't2v',
+        falModelId: 'fal-ai/seedance-2.0/text-to-video',
+        ui: {
+          modes: ['t2v'],
+          duration: { options: [5, 10, 15], default: 10 },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          audioToggle: true,
+          notes: 'Coming soon on fal.ai. Native audio with up to 15s multi-shot generation.',
+        },
+      },
+      {
+        mode: 'i2v',
+        falModelId: 'fal-ai/seedance-2.0/image-to-video',
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [5, 10, 15], default: 10 },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 25,
+          audioToggle: true,
+          notes: 'Supports multimodal references at launch (images, video clips, audio clips).',
+        },
+      },
+    ],
+    defaultFalModelId: 'fal-ai/seedance-2.0/text-to-video',
+    seo: {
+      title: 'Seedance 2.0 on fal.ai — AI Video with Native Audio (Feb 24)',
+      description:
+        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control. Coming to fal.ai Feb 24, 2026.',
+      canonicalPath: '/models/seedance-2-0',
+    },
+    type: 'textImage',
+    seoText:
+      'Seedance 2.0 is coming to fal.ai on February 24, 2026 with multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
+    prompts: [
+      {
+        title: 'Action chase prelaunch test',
+        prompt:
+          'Cinematic rooftop chase at dusk, three shots with natural cuts, handheld tracking then crane reveal, synchronized footsteps and city ambience, 15 seconds total.',
+        mode: 't2v',
+      },
+      {
+        title: 'Storyboard reference run',
+        prompt:
+          'Use storyboard references to keep character wardrobe and location continuity across a 3-shot sequence, with dual-channel ambient audio and one dialogue line.',
+        mode: 'i2v',
+      },
+    ],
+    faqs: [
+      {
+        question: 'When is Seedance 2.0 available on fal.ai?',
+        answer:
+          'Seedance 2.0 is marked as available on fal.ai on February 24, 2026. Until then it is visible in pre-launch mode.',
+      },
+      {
+        question: 'Can I run Seedance 2.0 before launch?',
+        answer:
+          'No. Runtime generation is locked before launch even though the model page is indexable.',
+      },
+    ],
+    pricingHint: {
+      currency: 'USD',
+      amountCents: 0,
+      label: 'Pricing confirmed at launch',
+    },
+    promptExample:
+      'Three-shot cinematic sequence, 15 seconds total, director-style camera language, realistic physics, synchronized dialogue and ambience, 16:9.',
   },
   {
     id: 'wan-2-5',

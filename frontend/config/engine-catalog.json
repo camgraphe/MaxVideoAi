@@ -113,9 +113,9 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 12,
+          "default": 10,
           "byResolution": {
-            "720p": 12
+            "720p": 10
           }
         }
       },
@@ -218,7 +218,7 @@
     "provider": "OpenAI",
     "brandId": "openai",
     "versionLabel": "Pro",
-    "availability": "waitlist",
+    "availability": "available",
     "logoPolicy": "textOnly",
     "engine": {
       "id": "sora-2-pro",
@@ -349,7 +349,7 @@
         "provider": "openai",
         "modelSlug": "fal-ai/sora-2/text-to-video/pro"
       },
-      "availability": "waitlist",
+      "availability": "available",
       "brandId": "openai"
     },
     "modes": [
@@ -2775,7 +2775,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "21:9",
@@ -2850,6 +2851,245 @@
       }
     },
     "bestFor": "Cinematic motion with camera lock"
+  },
+  {
+    "engineId": "seedance-2-0",
+    "modelSlug": "seedance-2-0",
+    "marketingName": "Seedance 2.0",
+    "provider": "ByteDance",
+    "brandId": "bytedance",
+    "versionLabel": "2.0",
+    "availability": "waitlist",
+    "logoPolicy": "textOnly",
+    "engine": {
+      "id": "seedance-2-0",
+      "label": "Seedance 2.0",
+      "provider": "ByteDance",
+      "version": "2.0",
+      "status": "early_access",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": true,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25,
+        "videoMaxMB": 50
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "5",
+              "10",
+              "15"
+            ],
+            "default": "10",
+            "min": 5,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "text",
+            "label": "Reference images (up to 9)"
+          },
+          {
+            "id": "reference_video_urls",
+            "type": "text",
+            "label": "Reference video clips (up to 3)"
+          },
+          {
+            "id": "reference_audio_urls",
+            "type": "text",
+            "label": "Reference audio clips (up to 3)"
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Generate audio",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 25
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 0
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0,
+        "currency": "USD",
+        "notes": "Pricing details will be confirmed at launch."
+      },
+      "updatedAt": "2026-02-19T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "bytedance",
+        "modelSlug": "fal-ai/seedance-2.0/text-to-video"
+      },
+      "availability": "waitlist",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/seedance-2.0/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              10,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Coming soon on fal.ai. Native audio with up to 15s multi-shot generation."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/seedance-2.0/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              10,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 25,
+          "audioToggle": true,
+          "notes": "Supports multimodal references at launch (images, video clips, audio clips)."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": true
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": true
+      }
+    }
   },
   {
     "engineId": "wan-2-5",

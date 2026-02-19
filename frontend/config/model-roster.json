@@ -1,5 +1,41 @@
 [
   {
+    "engineId": "seedance-1-5-pro",
+    "marketingName": "Seedance 1.5 Pro",
+    "brandId": "bytedance",
+    "modelSlug": "seedance-1-5-pro",
+    "versionLabel": "v1.5 Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "seedance-2-0",
+    "marketingName": "Seedance 2.0",
+    "brandId": "bytedance",
+    "modelSlug": "seedance-2-0",
+    "versionLabel": "2.0",
+    "availability": "waitlist",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "nano-banana",
+    "marketingName": "Nano Banana (Image Generation)",
+    "brandId": "google",
+    "modelSlug": "nano-banana",
+    "versionLabel": "Nano",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "nano-banana-pro",
+    "marketingName": "Nano Banana Pro",
+    "brandId": "google",
+    "modelSlug": "nano-banana-pro",
+    "versionLabel": "Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
     "engineId": "veo-3-1",
     "marketingName": "Google Veo 3.1",
     "brandId": "google-veo",
@@ -32,6 +68,51 @@
     "brandId": "kling",
     "modelSlug": "kling-2-5-turbo",
     "versionLabel": "2.5 Turbo",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling-2-6-pro",
+    "marketingName": "Kling 2.6 Pro",
+    "brandId": "kling",
+    "modelSlug": "kling-2-6-pro",
+    "versionLabel": "v2.6 Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling-3-pro",
+    "marketingName": "Kling 3 Pro",
+    "brandId": "kling",
+    "modelSlug": "kling-3-pro",
+    "versionLabel": "v3 Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling-3-standard",
+    "marketingName": "Kling 3 Standard",
+    "brandId": "kling",
+    "modelSlug": "kling-3-standard",
+    "versionLabel": "v3 Standard",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "ltx-2-fast",
+    "marketingName": "LTX Video 2.0 Fast",
+    "brandId": "lightricks",
+    "modelSlug": "ltx-2-fast",
+    "versionLabel": "Fast",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "ltx-2",
+    "marketingName": "LTX Video 2.0 Pro",
+    "brandId": "lightricks",
+    "modelSlug": "ltx-2",
+    "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "textOnly"
   },
@@ -76,88 +157,16 @@
     "marketingName": "Wan 2.5 Text & Image to Video",
     "brandId": "wan",
     "modelSlug": "wan-2-5",
-    "versionLabel": "2.5 Preview",
+    "versionLabel": "Preview",
     "availability": "available",
     "logoPolicy": "textOnly"
   },
   {
     "engineId": "wan-2-6",
-    "marketingName": "Wan 2.6 Text, Image & Reference to Video",
+    "marketingName": "Wan 2.6 Text & Image to Video",
     "brandId": "wan",
     "modelSlug": "wan-2-6",
     "versionLabel": "2.6",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "nano-banana",
-    "marketingName": "Nano Banana",
-    "brandId": "google",
-    "modelSlug": "nano-banana",
-    "versionLabel": "Nano",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "nano-banana-pro",
-    "marketingName": "Nano Banana Pro",
-    "brandId": "google",
-    "modelSlug": "nano-banana-pro",
-    "versionLabel": "Pro",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "ltx-2-fast",
-    "marketingName": "LTX Video 2.0 Fast",
-    "brandId": "lightricks",
-    "modelSlug": "ltx-2-fast",
-    "versionLabel": "Fast",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "ltx-2",
-    "marketingName": "LTX Video 2.0 Pro",
-    "brandId": "lightricks",
-    "modelSlug": "ltx-2",
-    "versionLabel": "Pro",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "kling-2-6-pro",
-    "marketingName": "Kling 2.6 Pro",
-    "brandId": "kling",
-    "modelSlug": "kling-2-6-pro",
-    "versionLabel": "v2.6 Pro",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "kling-3-pro",
-    "marketingName": "Kling 3 Pro",
-    "brandId": "kling",
-    "modelSlug": "kling-3-pro",
-    "versionLabel": "v3 Pro",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "kling-3-standard",
-    "marketingName": "Kling 3 Standard",
-    "brandId": "kling",
-    "modelSlug": "kling-3-standard",
-    "versionLabel": "v3 Standard",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "seedance-1-5-pro",
-    "marketingName": "Seedance 1.5 Pro",
-    "brandId": "bytedance",
-    "modelSlug": "seedance-1-5-pro",
-    "versionLabel": "v1.5 Pro",
     "availability": "available",
     "logoPolicy": "textOnly"
   }
