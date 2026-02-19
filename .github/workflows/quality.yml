@@ -28,6 +28,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build engine catalog
+        run: pnpm run engine:catalog
+
+      - name: Check model roster drift
+        run: pnpm run model:generate
+
+      - name: Audit model datasets
+        run: pnpm run models:audit
+
+      - name: Audit runtime overrides (non-blocking)
+        if: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL != '' }}
+        env:
+          DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
+        run: pnpm run models:audit -- --runtime
+        continue-on-error: true
+
+      - name: Check sources quality (warn-only)
+        run: pnpm run sources:check
+        continue-on-error: true
+
       - name: Type check (frontend)
         run: pnpm --dir frontend exec tsc --noEmit
 

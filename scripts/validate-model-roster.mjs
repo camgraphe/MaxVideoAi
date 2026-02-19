@@ -1,110 +1,71 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { spawnSync } from 'node:child_process';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
-
-const ROSTER_PATH = path.join(ROOT, 'docs', 'model-roster.json');
-const DICTIONARIES_PATH = path.join(ROOT, 'frontend', 'lib', 'i18n', 'dictionaries.ts');
 const REPORT_PATH = path.join(ROOT, 'docs', 'model-roster-report.md');
 
-function extractModelMetaSlugs(source) {
-  const enIndex = source.indexOf('const en: Dictionary');
-  const searchStart = enIndex === -1 ? 0 : enIndex;
-  const modelsIndex = source.indexOf('models: {', searchStart);
-  if (modelsIndex === -1) return [];
-  const metaKeyIndex = source.indexOf('meta:', modelsIndex);
-  if (metaKeyIndex === -1) return [];
-  const braceStart = source.indexOf('{', metaKeyIndex);
-  if (braceStart === -1) return [];
-  let depth = 0;
-  let i = braceStart;
-  while (i < source.length) {
-    const char = source[i];
-    if (char === '{') depth++;
-    else if (char === '}') {
-      depth--;
-      if (depth === 0) {
-        break;
-      }
-    }
-    i++;
-  }
-  const metaSegment = source.slice(braceStart, i + 1);
-  const matches = Array.from(metaSegment.matchAll(/['"]([a-z0-9-]+)['"]\s*:\s*{[^}]*displayName:/g));
-  return matches.map((match) => match[1]);
+function runNodeScript(scriptPath, args = []) {
+  const absolutePath = path.join(ROOT, scriptPath);
+  const result = spawnSync(process.execPath, [absolutePath, ...args], {
+    cwd: ROOT,
+    stdio: 'inherit',
+  });
+  return result.status === 0;
 }
 
-function extractSlugsFromGallery(source) {
-  const enIndex = source.indexOf('const en: Dictionary');
-  const slice = enIndex === -1 ? source : source.slice(enIndex);
-  const matches = Array.from(slice.matchAll(/meta:\s*{\s*slug:\s*'([a-z0-9-]+)'/g));
-  return matches.map((match) => match[1]);
-}
-
-function unique(values) {
-  return Array.from(new Set(values));
-}
-
-async function main() {
-  const [rosterRaw, dictionariesRaw] = await Promise.all([
-    fs.readFile(ROSTER_PATH, 'utf-8'),
-    fs.readFile(DICTIONARIES_PATH, 'utf-8'),
-  ]);
-
-  const roster = JSON.parse(rosterRaw);
-  const rosterSlugs = new Set(roster.map((entry) => entry.modelSlug));
-  const pausedEntries = roster.filter((entry) => entry.availability === 'paused');
-
-  const metaSlugs = extractModelMetaSlugs(dictionariesRaw);
-  const gallerySlugs = extractSlugsFromGallery(dictionariesRaw);
-  const marketingSlugs = unique([...metaSlugs, ...gallerySlugs]);
-
-  const missingInRoster = marketingSlugs.filter((slug) => !rosterSlugs.has(slug));
-  const rosterWithoutMeta = roster.filter((entry) => !metaSlugs.includes(entry.modelSlug));
-
-  const issues = [];
-  if (missingInRoster.length) {
-    issues.push(`- Missing roster entries for marketing slugs: ${missingInRoster.join(', ')}`);
-  }
-  if (pausedEntries.length) {
-    const slugs = pausedEntries.map((entry) => entry.modelSlug);
-    issues.push(`- Models marked as paused in roster: ${slugs.join(', ')}`);
-  }
-  if (rosterWithoutMeta.length) {
-    const slugs = rosterWithoutMeta.map((entry) => entry.modelSlug);
-    issues.push(`- Roster slugs without dictionary meta: ${slugs.join(', ')}`);
-  }
-
-  const reportLines = [
+async function writeReport(stepResults) {
+  const failed = stepResults.filter((step) => !step.ok);
+  const lines = [
     '# Model Roster QA Report',
     '',
     `Generated on ${new Date().toISOString()}`,
     '',
+    '## Steps',
+    '',
+    ...stepResults.map((step) => `- ${step.ok ? 'PASS' : 'FAIL'}: ${step.label}`),
+    '',
     '## Summary',
     '',
-    `- Roster entries: ${roster.length}`,
-    `- Marketing slugs referenced: ${marketingSlugs.length}`,
-    '',
-    '## Checks',
-    '',
+    failed.length === 0
+      ? '- All checks passed.'
+      : `- ${failed.length} step(s) failed: ${failed.map((step) => step.label).join(', ')}`,
+  ];
+  await fs.writeFile(REPORT_PATH, `${lines.join('\n')}\n`, 'utf-8');
+}
+
+async function main() {
+  const runtimeArgs = process.argv.slice(2).includes('--runtime') ? ['--runtime'] : [];
+  const steps = [
+    {
+      label: 'model:generate (check mode)',
+      scriptPath: 'scripts/generate-model-roster.mjs',
+      args: [],
+    },
+    {
+      label: runtimeArgs.length ? 'models:audit --runtime' : 'models:audit',
+      scriptPath: 'scripts/models-audit.mjs',
+      args: runtimeArgs,
+    },
   ];
 
-  if (issues.length === 0) {
-    reportLines.push('- All checks passed.');
-  } else {
-    reportLines.push(...issues.map((issue) => `- ${issue}`));
-  }
+  const results = steps.map((step) => ({
+    label: step.label,
+    ok: runNodeScript(step.scriptPath, step.args),
+  }));
 
-  await fs.writeFile(REPORT_PATH, `${reportLines.join('\n')}\n`, 'utf-8');
+  await writeReport(results);
 
-  if (issues.length) {
-    console.error('[model-roster] Validation failed. See docs/model-roster-report.md for details.');
+  const failed = results.filter((result) => !result.ok);
+  if (failed.length > 0) {
+    console.error(`[model-roster] Validation failed (${failed.length} step(s)). See docs/model-roster-report.md.`);
     process.exitCode = 1;
-  } else {
-    console.log('[model-roster] Validation passed.');
+    return;
   }
+
+  console.log('[model-roster] Validation passed.');
 }
 
 main().catch((error) => {

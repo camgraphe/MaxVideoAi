@@ -38,3 +38,6 @@ private/
 
 # TypeScript incremental builds
 *.tsbuildinfo
+
+# Local audit reports
+.reports/
