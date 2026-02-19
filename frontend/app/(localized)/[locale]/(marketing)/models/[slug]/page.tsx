@@ -108,6 +108,14 @@ function buildCanonicalComparePath({
   return `/${sanitizedBase}/${canonicalPair}${orderParam}`.replace(/\/{2,}/g, '/');
 }
 
+const CANONICAL_ONLY_COMPARE_SLUGS = new Set([
+  'pika-text-to-video-vs-sora-2-pro',
+  'pika-text-to-video-vs-wan-2-6',
+  'pika-text-to-video-vs-veo-3-1-fast',
+  'pika-text-to-video-vs-veo-3-1-first-last',
+  'pika-text-to-video-vs-seedance-1-5-pro',
+]);
+
 const LOCALE_PREFIX_PATTERN = /^\/(fr|es)(?=\/)/i;
 const NON_LOCALIZED_PREFIXES = [
   '/app',
@@ -4192,7 +4200,9 @@ function Sora2PageLayout({
                         !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug ?? '');
                       const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
                       const compareHref = canCompare
-                        ? localizeComparePath(compareSlug, engineSlug)
+                        ? CANONICAL_ONLY_COMPARE_SLUGS.has(compareSlug)
+                          ? localizeComparePath(compareSlug)
+                          : localizeComparePath(compareSlug, engineSlug)
                         : localizeModelsPath(entry.modelSlug ?? '');
                       const ctaLabel = canCompare ? compareCopy.ctaCompare(label) : compareCopy.ctaExplore(label);
                       const description =
@@ -4968,7 +4978,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
               const compareSlug = [slug, candidate.modelSlug].sort().join('-vs-');
               const compareHref = compareDisabled
                 ? localizeModelsPath(candidate.modelSlug)
-                : localizeComparePath(compareSlug, slug);
+                : CANONICAL_ONLY_COMPARE_SLUGS.has(compareSlug)
+                  ? localizeComparePath(compareSlug)
+                  : localizeComparePath(compareSlug, slug);
               const linkLabel = compareDisabled ? relatedCopy.cta : ctaLabel;
               return (
                 <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
