@@ -189,10 +189,10 @@ function formatEngineShortName(entry: EngineCatalogEntry): string {
   if (providerHint && words[0]?.toLowerCase() === providerHint.split(' ')[0]) {
     return words.slice(1).join(' ');
   }
-  if (['openai', 'google'].includes(words[0]?.toLowerCase())) {
+  if (['openai', 'google', 'bytedance', 'minimax', 'kling', 'runway', 'pika'].includes(words[0]?.toLowerCase())) {
     return words.slice(1).join(' ');
   }
-  return words.slice(1).join(' ');
+  return fullName;
 }
 
 function formatEngineMetaName(entry: EngineCatalogEntry): string {
@@ -525,7 +525,31 @@ function formatPriceLine(label: string | null, cents: number) {
   return label ? `${label}: ${value}` : value;
 }
 
-async function resolvePricingDisplay(entry: EngineCatalogEntry, pricingEngine?: EngineCaps | null) {
+function getPrelaunchPricingLabel(locale: AppLocale) {
+  if (locale === 'fr') return 'Confirmé au lancement';
+  if (locale === 'es') return 'Confirmado en lanzamiento';
+  return 'TBD at launch';
+}
+
+function isEngineGeneratable(entry: EngineCatalogEntry) {
+  const availability = String(entry.availability ?? '').toLowerCase();
+  return availability === 'available' || availability === 'limited';
+}
+
+async function resolvePricingDisplay(
+  entry: EngineCatalogEntry,
+  locale: AppLocale,
+  pricingEngine?: EngineCaps | null
+) {
+  const availability = String(entry.availability ?? '').toLowerCase();
+  if (availability === 'waitlist') {
+    return {
+      headline: getPrelaunchPricingLabel(locale),
+      subline: null,
+      prices: [],
+    };
+  }
+
   if (pricingEngine) {
     const range = await computeMarketingPriceRange(pricingEngine, { durationSec: 5, memberTier: 'member' });
     if (range) {
@@ -1030,8 +1054,8 @@ export default async function CompareDetailPage({
   const leftSpecs = buildSpecValues(left, leftKeySpecs);
   const rightSpecs = buildSpecValues(right, rightKeySpecs);
   const [leftPricingDisplay, rightPricingDisplay] = await Promise.all([
-    resolvePricingDisplay(left, PRICING_ENGINES.get(left.modelSlug)),
-    resolvePricingDisplay(right, PRICING_ENGINES.get(right.modelSlug)),
+    resolvePricingDisplay(left, activeLocale, PRICING_ENGINES.get(left.modelSlug)),
+    resolvePricingDisplay(right, activeLocale, PRICING_ENGINES.get(right.modelSlug)),
   ]);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
@@ -1151,6 +1175,8 @@ export default async function CompareDetailPage({
   const rightAccent = getEngineAccent(right);
   const leftButtonStyle = getEngineButtonStyle(left);
   const rightButtonStyle = getEngineButtonStyle(right);
+  const leftCanGenerate = isEngineGeneratable(left);
+  const rightCanGenerate = isEngineGeneratable(right);
   const priceScores = {
     leftScore: computePricingScore(leftPricingDisplay.prices),
     rightScore: computePricingScore(rightPricingDisplay.prices),
@@ -1939,19 +1965,21 @@ export default async function CompareDetailPage({
 
             <div className="mt-8 grid grid-cols-2 items-center gap-3 sm:gap-4">
               <div className="flex flex-col items-center gap-2">
-                <ButtonLink
-                  href={`/app?engine=${left.modelSlug}`}
-                  size="sm"
-                  style={leftButtonStyle}
-                  className={clsx(
-                    'w-full max-w-[180px] justify-center hover:brightness-95 active:brightness-90',
-                    !leftButtonStyle && leftAccent.buttonClass
-                  )}
-                >
-                  {formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
-                    engine: formatEngineShortName(left),
-                  })}
-                </ButtonLink>
+                {leftCanGenerate ? (
+                  <ButtonLink
+                    href={`/app?engine=${left.modelSlug}`}
+                    size="sm"
+                    style={leftButtonStyle}
+                    className={clsx(
+                      'w-full max-w-[180px] justify-center hover:brightness-95 active:brightness-90',
+                      !leftButtonStyle && leftAccent.buttonClass
+                    )}
+                  >
+                    {formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+                      engine: formatEngineShortName(left),
+                    })}
+                  </ButtonLink>
+                ) : null}
                 <Link
                   href={{ pathname: '/models/[slug]', params: { slug: left.modelSlug } }}
                   className="text-xs font-semibold text-brand hover:text-brandHover"
@@ -1960,19 +1988,21 @@ export default async function CompareDetailPage({
                 </Link>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <ButtonLink
-                  href={`/app?engine=${right.modelSlug}`}
-                  size="sm"
-                  style={rightButtonStyle}
-                  className={clsx(
-                    'w-full max-w-[180px] justify-center hover:brightness-95 active:brightness-90',
-                    !rightButtonStyle && rightAccent.buttonClass
-                  )}
-                >
-                  {formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
-                    engine: formatEngineShortName(right),
-                  })}
-                </ButtonLink>
+                {rightCanGenerate ? (
+                  <ButtonLink
+                    href={`/app?engine=${right.modelSlug}`}
+                    size="sm"
+                    style={rightButtonStyle}
+                    className={clsx(
+                      'w-full max-w-[180px] justify-center hover:brightness-95 active:brightness-90',
+                      !rightButtonStyle && rightAccent.buttonClass
+                    )}
+                  >
+                    {formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+                      engine: formatEngineShortName(right),
+                    })}
+                  </ButtonLink>
+                ) : null}
                 <Link
                   href={{ pathname: '/models/[slug]', params: { slug: right.modelSlug } }}
                   className="text-xs font-semibold text-brand hover:text-brandHover"
