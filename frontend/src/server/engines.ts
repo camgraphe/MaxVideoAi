@@ -169,9 +169,9 @@ export async function getConfiguredEngines(includeDisabled = false): Promise<Eng
   return getConfiguredEnginesForBase(baseEngines, includeDisabled);
 }
 
-export async function getConfiguredEngine(engineId: string): Promise<EngineCaps | undefined> {
+export async function getConfiguredEngine(engineId: string, includeDisabled = false): Promise<EngineCaps | undefined> {
   if (!engineId) return undefined;
-  const engines = await getConfiguredEngines(true);
+  const engines = await getConfiguredEngines(includeDisabled);
   return engines.find((engine) => engine.id === engineId);
 }
 
@@ -179,6 +179,17 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   const engineId = typeof request.engine === 'string' ? request.engine : '';
   const engine = await getConfiguredEngine(engineId);
   if (!engine) {
+    const disabledEngine = await getConfiguredEngine(engineId, true);
+    if (disabledEngine) {
+      return {
+        ok: false,
+        messages: ['Engine is temporarily unavailable'],
+        error: {
+          code: 'ENGINE_DISABLED',
+          message: 'Engine is temporarily unavailable',
+        },
+      };
+    }
     return {
       ok: false,
       messages: ['Unknown engine selection'],

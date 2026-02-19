@@ -173,7 +173,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { engineId: 
 
   await ensureEngineSettingsSeed(adminId);
 
-  const engine = await getConfiguredEngine(engineId);
+  const engine = await getConfiguredEngine(engineId, true);
   if (!engine) {
     return NextResponse.json({ error: 'Unknown engine' }, { status: 404 });
   }
@@ -253,7 +253,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { engineId: 
     return NextResponse.json({ error: message }, { status: 500 });
   }
 
-  const updated = await getConfiguredEngine(engineId);
+  const updated = await getConfiguredEngine(engineId, true);
   return NextResponse.json({ ok: true, engine: updated });
 }
 

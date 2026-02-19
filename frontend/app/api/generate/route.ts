@@ -439,8 +439,16 @@ export async function POST(req: NextRequest) {
     });
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
 
-  const engine = await getConfiguredEngine(String(body.engineId || ''));
-  if (!engine) return NextResponse.json({ ok: false, error: 'Unknown engine' }, { status: 400 });
+  const requestedEngineId = String(body.engineId || '');
+  const engine = await getConfiguredEngine(requestedEngineId);
+  if (!engine) {
+    const disabledEngine = await getConfiguredEngine(requestedEngineId, true);
+    if (disabledEngine) {
+      console.info('[api/generate] runtime lock active; generation blocked', { engineId: requestedEngineId });
+      return NextResponse.json({ ok: false, error: 'Engine unavailable' }, { status: 400 });
+    }
+    return NextResponse.json({ ok: false, error: 'Unknown engine' }, { status: 400 });
+  }
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
 
