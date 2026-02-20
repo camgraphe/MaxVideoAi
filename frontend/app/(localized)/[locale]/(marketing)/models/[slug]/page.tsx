@@ -2532,12 +2532,24 @@ function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, l
 
   const selected: FalEngineEntry[] = [];
   const usedFamilies = new Set<string>();
+  const registerEngine = (entry: FalEngineEntry) => {
+    selected.push(entry);
+    const familyKey = entry.family ?? entry.brandId ?? entry.provider ?? entry.modelSlug;
+    usedFamilies.add(familyKey);
+  };
+
+  if (currentSlug === 'seedance-1-5-pro') {
+    const seedancePrelaunch = filtered.find((entry) => entry.modelSlug === 'seedance-2-0');
+    if (seedancePrelaunch) {
+      registerEngine(seedancePrelaunch);
+      if (selected.length >= limit) return selected;
+    }
+  }
 
   for (const entry of filtered) {
     const familyKey = entry.family ?? entry.brandId ?? entry.provider ?? entry.modelSlug;
     if (usedFamilies.has(familyKey)) continue;
-    selected.push(entry);
-    usedFamilies.add(familyKey);
+    registerEngine(entry);
     if (selected.length >= limit) return selected;
   }
 

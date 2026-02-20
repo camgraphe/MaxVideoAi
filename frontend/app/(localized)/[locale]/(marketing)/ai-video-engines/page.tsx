@@ -57,6 +57,9 @@ type HubCopy = {
     faqTitle: string;
     complianceLabel: string;
     quickStartLabel: string;
+    prelaunchSpotlightLabel: string;
+    prelaunchModelLabel: string;
+    prelaunchCompareLabel: string;
     useCasesFallback: string;
   };
   tagLabels: Record<string, string>;
@@ -99,6 +102,9 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       faqTitle: 'AI video engine comparison FAQ',
       complianceLabel: 'Read compliance details',
       quickStartLabel: 'Quick start',
+      prelaunchSpotlightLabel: 'Pre-launch spotlight',
+      prelaunchModelLabel: 'Seedance 2.0 profile',
+      prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
       useCasesFallback: 'Interactive chips refine recommendations instantly. All links remain crawlable and available in plain HTML.',
     },
     tagLabels: {
@@ -238,6 +244,9 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       faqTitle: 'FAQ comparatif des moteurs vidéo IA',
       complianceLabel: 'Voir les notes de conformité',
       quickStartLabel: 'Accès rapide',
+      prelaunchSpotlightLabel: 'Focus pré-lancement',
+      prelaunchModelLabel: 'Profil Seedance 2.0',
+      prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
       useCasesFallback:
         'Les puces interactives affinent les recommandations instantanément. Tous les liens restent crawlables et présents en HTML standard.',
     },
@@ -378,6 +387,9 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       faqTitle: 'FAQ de comparativas de motores de video con IA',
       complianceLabel: 'Ver notas de cumplimiento',
       quickStartLabel: 'Acceso rápido',
+      prelaunchSpotlightLabel: 'Enfoque de prelanzamiento',
+      prelaunchModelLabel: 'Perfil de Seedance 2.0',
+      prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
       useCasesFallback:
         'Los chips interactivos ajustan recomendaciones al instante. Todos los enlaces siguen siendo rastreables y visibles en HTML estándar.',
     },
@@ -600,6 +612,9 @@ export default async function AiVideoEnginesPage() {
     ])
   );
   const defaultComparison = allComparisonEntries[0];
+  const seedancePrelaunch = enginesWithWaitlist.find((engine) => engine.modelSlug === 'seedance-2-0') ?? null;
+  const showSeedanceSpotlight = Boolean(seedancePrelaunch && !engines.some((engine) => engine.modelSlug === 'seedance-2-0'));
+  const seedanceCompareSlug = buildCanonicalCompareSlug('seedance-2-0', 'sora-2');
   const enginesToggleLabel = copy.sections.enginesToggle.replace('{count}', String(engineCards.length));
 
   const faqJsonLdEntries = copy.faq.slice(0, 5).map((entry) => ({
@@ -634,6 +649,25 @@ export default async function AiVideoEnginesPage() {
                   className="font-semibold text-brand hover:text-brandHover"
                 >
                   {defaultComparison.label}
+                </Link>
+                .
+              </p>
+            ) : null}
+            {showSeedanceSpotlight ? (
+              <p className="text-center text-xs text-text-muted">
+                {copy.sections.prelaunchSpotlightLabel}:{' '}
+                <Link
+                  href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
+                  {copy.sections.prelaunchModelLabel}
+                </Link>
+                {' · '}
+                <Link
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: seedanceCompareSlug } }}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
+                  {copy.sections.prelaunchCompareLabel}
                 </Link>
                 .
               </p>
