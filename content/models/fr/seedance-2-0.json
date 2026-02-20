@@ -2,7 +2,7 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 sur fal.ai — vidéo IA avec audio natif (24/02)",
+    "title": "Seedance 2.0 — vidéo IA avec audio natif (24/02)",
     "description": "Découvrez Seedance 2.0 (ByteDance) en pré-lancement : vidéo IA cinématique, audio natif, contrôle caméra avancé et sorties jusqu'à 15 s en 1080p."
   },
   "overview": "Seedance 2.0 est le modèle vidéo IA de ByteDance orienté rendu cinématique, continuité multi-plans et génération audio native synchronisée à l'image. Cette page est une vue pré-lancement indexable pour préparer vos prompts, vos cas d'usage et vos choix de production avant la disponibilité runtime.",
@@ -10,10 +10,10 @@
   "hero": {
     "title": "Seedance 2.0",
     "intro": "Préparez vos flux de production vidéo avant la sortie : capacités officielles, cas d'usage prioritaires et gabarits de prompts orientés multi-plans + audio natif.",
-    "badge": "Pré-lancement · Disponible sur fal.ai le 24 février 2026",
+    "badge": "Pré-lancement · Lancement prévu le 24 février 2026",
     "ctaPrimary": {
       "label": "Rejoindre la liste d'attente / Être notifié",
-      "href": "https://fal.ai/seedance-2-0"
+      "href": "/ai-video-engines"
     },
     "secondaryLinks": [
       {
@@ -59,7 +59,7 @@
   "technicalOverview": [
     {
       "label": "Statut",
-      "body": "Pré-lancement. Disponible sur fal.ai le 24 février 2026. La page est indexable avant cette date, mais la génération runtime reste verrouillée."
+      "body": "Pré-lancement. Lancement prévu le 24 février 2026. La page est indexable avant cette date, mais la génération runtime reste verrouillée."
     },
     {
       "label": "Entrées",
@@ -83,7 +83,7 @@
     },
     {
       "label": "Sources",
-      "body": "Sources officielles : fal.ai + pages Seed ByteDance. Les détails d'exposition endpoint sont finalisés au lancement."
+      "body": "Sources officielles : pages Seed ByteDance. Les détails d'exposition endpoint sont finalisés au lancement."
     }
   ],
   "promptStructure": {
@@ -145,8 +145,8 @@
       "a": "Les communications officielles indiquent jusqu'à 15 secondes par génération."
     },
     {
-      "q": "Quand sera-t-il disponible sur fal.ai ?",
-      "a": "Disponibilité annoncée sur fal.ai le 24 février 2026."
+      "q": "Quand sera-t-il disponible ?",
+      "a": "Lancement prévu le 24 février 2026."
     },
     {
       "q": "Peut-on générer avant cette date ?",

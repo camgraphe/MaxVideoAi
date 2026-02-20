@@ -2,7 +2,7 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 en fal.ai — video IA con audio nativo (24/02)",
+    "title": "Seedance 2.0 — video IA con audio nativo (24/02)",
     "description": "Conozca Seedance 2.0 (ByteDance) en prelanzamiento: video IA cinematográfico, audio nativo, control avanzado de cámara y salidas de hasta 15 s en 1080p."
   },
   "overview": "Seedance 2.0 es el modelo de video IA de ByteDance enfocado en movimiento cinematográfico, continuidad multi-shot y generación nativa de audio sincronizado con la imagen. Esta página es una vista de prelanzamiento indexable para que usted prepare prompts, casos de uso y decisiones de producción antes de la disponibilidad runtime.",
@@ -10,10 +10,10 @@
   "hero": {
     "title": "Seedance 2.0",
     "intro": "Prepare su flujo de video antes del lanzamiento: capacidades oficiales, casos de uso prioritarios y plantillas de prompts orientadas a multi-shot + audio nativo.",
-    "badge": "Prelanzamiento · Disponible en fal.ai el 24 de febrero de 2026",
+    "badge": "Prelanzamiento · Lanzamiento previsto el 24 de febrero de 2026",
     "ctaPrimary": {
       "label": "Unirse a la lista de espera / Recibir aviso",
-      "href": "https://fal.ai/seedance-2-0"
+      "href": "/ai-video-engines"
     },
     "secondaryLinks": [
       {
@@ -59,7 +59,7 @@
   "technicalOverview": [
     {
       "label": "Estado",
-      "body": "Prelanzamiento. Disponible en fal.ai el 24 de febrero de 2026. La página es indexable antes de esa fecha, pero la generación runtime permanece bloqueada."
+      "body": "Prelanzamiento. Lanzamiento previsto el 24 de febrero de 2026. La página es indexable antes de esa fecha, pero la generación runtime permanece bloqueada."
     },
     {
       "label": "Entradas",
@@ -83,7 +83,7 @@
     },
     {
       "label": "Fuentes",
-      "body": "Fuentes oficiales: fal.ai + páginas de Seed ByteDance. La exposición final de endpoints se confirma en el lanzamiento."
+      "body": "Fuentes oficiales: páginas de Seed ByteDance. La exposición final de endpoints se confirma en el lanzamiento."
     }
   ],
   "promptStructure": {
@@ -145,8 +145,8 @@
       "a": "Las comunicaciones oficiales indican hasta 15 segundos por generación."
     },
     {
-      "q": "¿Cuándo estará disponible en fal.ai?",
-      "a": "Disponibilidad anunciada en fal.ai el 24 de febrero de 2026."
+      "q": "¿Cuándo estará disponible?",
+      "a": "Lanzamiento previsto el 24 de febrero de 2026."
     },
     {
       "q": "¿Se puede generar antes de esa fecha?",

@@ -16,10 +16,10 @@ const PRELAUNCH_CONTENT_RULES = [
   {
     modelSlug: 'seedance-2-0',
     requiredAvailability: 'waitlist',
-    expectedDateByLocale: {
-      en: 'Available on fal.ai February 24, 2026',
-      fr: 'Disponible sur fal.ai le 24 février 2026',
-      es: 'Disponible en fal.ai el 24 de febrero de 2026',
+    acceptedDateSnippetsByLocale: {
+      en: ['February 24, 2026', 'Feb 24, 2026', '2026-02-24'],
+      fr: ['24 février 2026', '2026-02-24'],
+      es: ['24 de febrero de 2026', '2026-02-24'],
     },
   },
 ];
@@ -257,8 +257,12 @@ async function runPrelaunchContentChecks(catalogBySlug, issues) {
     if (catalogAvailability.normalized !== rule.requiredAvailability) continue;
 
     for (const locale of LOCALES) {
-      const expectedDate = rule.expectedDateByLocale[locale];
-      if (typeof expectedDate !== 'string' || !expectedDate.trim().length) continue;
+      const expectedDateSnippets = Array.isArray(rule.acceptedDateSnippetsByLocale?.[locale])
+        ? rule.acceptedDateSnippetsByLocale[locale].filter(
+            (snippet) => typeof snippet === 'string' && snippet.trim().length
+          )
+        : [];
+      if (!expectedDateSnippets.length) continue;
 
       let content = null;
       try {
@@ -275,13 +279,18 @@ async function runPrelaunchContentChecks(catalogBySlug, issues) {
       }
 
       const serialized = JSON.stringify(content).toLowerCase();
-      if (!serialized.includes(expectedDate.toLowerCase())) {
+      const hasAcceptedDateSnippet = expectedDateSnippets.some((snippet) =>
+        serialized.includes(snippet.toLowerCase())
+      );
+      if (!hasAcceptedDateSnippet) {
         addIssue(
           issues,
           'critical',
           'prelaunch_release_date_missing',
-          `Missing launch date phrase in content/models/${locale}/${rule.modelSlug}.json: "${expectedDate}".`,
-          { modelSlug: rule.modelSlug, locale, expectedDate }
+          `Missing launch date phrase in content/models/${locale}/${rule.modelSlug}.json. Expected one of: ${expectedDateSnippets
+            .map((snippet) => `"${snippet}"`)
+            .join(', ')}.`,
+          { modelSlug: rule.modelSlug, locale, expectedDateSnippets }
         );
       }
     }

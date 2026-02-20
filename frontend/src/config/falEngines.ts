@@ -3376,7 +3376,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: '2.0',
     availability: 'waitlist',
     logoPolicy: 'textOnly',
-    billingNote: 'Available on fal.ai February 24, 2026. Pricing will be confirmed at launch.',
+    billingNote: 'Expected launch: February 24, 2026. Pricing will be confirmed at launch.',
     engine: SEEDANCE_2_0_ENGINE,
     modes: [
       {
@@ -3388,7 +3388,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
           resolution: ['720p', '1080p'],
           aspectRatio: ['16:9', '9:16', '1:1'],
           audioToggle: true,
-          notes: 'Coming soon on fal.ai. Native audio with up to 15s multi-shot generation.',
+          notes: 'Coming soon. Native audio with up to 15s multi-shot generation.',
         },
       },
       {
@@ -3408,14 +3408,14 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/seedance-2.0/text-to-video',
     seo: {
-      title: 'Seedance 2.0 on fal.ai — AI Video with Native Audio (Feb 24)',
+      title: 'Seedance 2.0 — AI Video with Native Audio (Feb 24)',
       description:
-        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control. Coming to fal.ai Feb 24, 2026.',
+        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control. Expected launch Feb 24, 2026.',
       canonicalPath: '/models/seedance-2-0',
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 is coming to fal.ai on February 24, 2026 with multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
+      'Seedance 2.0 is expected on February 24, 2026 with multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
     media: {
       videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
       imagePath: '/hero/seedance-2-0.jpg',
@@ -3438,9 +3438,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     faqs: [
       {
-        question: 'When is Seedance 2.0 available on fal.ai?',
+        question: 'When is Seedance 2.0 available?',
         answer:
-          'Seedance 2.0 is marked as available on fal.ai on February 24, 2026. Until then it is visible in pre-launch mode.',
+          'Seedance 2.0 is expected on February 24, 2026. Until then it is visible in pre-launch mode.',
       },
       {
         question: 'Can I run Seedance 2.0 before launch?',

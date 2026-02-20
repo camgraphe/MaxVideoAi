@@ -13,7 +13,7 @@
     "badge": "Coming soon · Expected launch: February 24, 2026",
     "ctaPrimary": {
       "label": "Join waitlist / Get notified",
-      "href": "https://fal.ai/seedance-2-0"
+      "href": "/ai-video-engines"
     },
     "secondaryLinks": [
       {
@@ -59,7 +59,7 @@
   "technicalOverview": [
     {
       "label": "Launch status",
-      "body": "Coming soon. Expected launch: February 24, 2026. Available on fal.ai February 24, 2026. Pre-launch page is indexable; runtime generation remains locked before launch."
+      "body": "Coming soon. Expected launch: February 24, 2026. Pre-launch page is indexable; runtime generation remains locked before launch."
     },
     {
       "label": "Inputs",
@@ -83,7 +83,7 @@
     },
     {
       "label": "Notes",
-      "body": "ByteDance describes extension/editing capabilities; final endpoint exposure on fal.ai depends on launch endpoints."
+      "body": "ByteDance describes extension/editing capabilities; final endpoint exposure depends on launch endpoints."
     }
   ],
   "promptStructure": {
@@ -103,7 +103,7 @@
     "title": "Limitations and pre-launch notes",
     "items": [
       "Model page is live and indexable before launch; generation is locked until February 24, 2026.",
-      "Commercial usage details are confirmed at launch via fal.ai terms.",
+      "Commercial usage details are confirmed at launch.",
       "Advanced editing and extension capabilities depend on launch endpoint exposure.",
       "Keep prompts structured for multi-shot coherence in <=15s outputs."
     ]

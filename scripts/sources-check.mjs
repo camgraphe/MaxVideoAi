@@ -45,7 +45,7 @@ async function loadDataset() {
 function classifyHttpStatus(status, timedOut = false, networkError = false) {
   if (timedOut || networkError) return 'dead';
   if (status === 200 || status === 204) return 'ok';
-  if (status === 301 || status === 302) return 'redirect';
+  if (status === 301 || status === 302 || status === 303 || status === 307 || status === 308) return 'redirect';
   if (status === 403 || status === 429) return 'blocked';
   if (status === 404 || status === 410) return 'dead';
   if (status >= 500) return 'dead';
