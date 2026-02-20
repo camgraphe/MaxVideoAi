@@ -10,6 +10,8 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      RUNTIME_AUDIT_DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,9 +40,9 @@ jobs:
         run: pnpm run models:audit
 
       - name: Audit runtime overrides (non-blocking)
-        if: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL != '' }}
+        if: ${{ env.RUNTIME_AUDIT_DATABASE_URL != '' }}
         env:
-          DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
+          DATABASE_URL: ${{ env.RUNTIME_AUDIT_DATABASE_URL }}
         run: pnpm run models:audit -- --runtime
         continue-on-error: true
 
