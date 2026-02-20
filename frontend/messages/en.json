@@ -2871,12 +2871,14 @@
       "back": "Back to comparisons",
       "kicker": "Compare engines",
       "intro": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.",
+      "introPrelaunch": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.",
       "takeawaysTitle": "Key takeaways",
       "lastUpdatedLabel": "Last updated"
     },
     "scorecard": {
       "title": "Scorecard (Side-by-Side)",
       "subtitle": "Scores reflect quality and control on MaxVideoAI across 11 criteria.",
+      "provisionalNote": "Pre-launch scores are provisional and will update once runtime renders and final pricing are available.",
       "strengthsLabel": "Strengths",
       "winnerSummary": "Winner summary",
       "generateWith": "Generate with {engine}",
@@ -2889,7 +2891,10 @@
       "na": "N/A",
       "prompt": "Prompt",
       "tryPrompt": "Try this prompt:",
+      "tryPromptPrelaunch": "Save this prompt for launch:",
       "opensGenerator": "Opens the generator pre-filled.",
+      "opensGeneratorPrelaunch": "Use these prompt links for planning; pre-launch engines unlock at launch.",
+      "savePromptForLaunch": "Save this prompt for launch",
       "whatTests": "What it tests",
       "placeholder": "Placeholder example — prompt render coming soon",
       "copyPrompt": "Copy prompt",
@@ -2925,8 +2930,13 @@
     "showdown": {
       "title": "Showdown (same prompt)",
       "subtitle": "Side-by-side renders from the same prompt on MaxVideoAI. Prompts are identical; outputs may vary by model.",
+      "subtitlePrelaunch": "Side-by-side prompts and renders (when available) on MaxVideoAI. Prompts are identical; outputs may vary by model.",
       "note": "Showing up to 3 prompt pairs for clarity.",
       "footer": "This side-by-side AI video comparison uses identical prompts to highlight differences in motion, realism, human fidelity, and text legibility. For full specs, controls, and more prompt examples, open each engine profile."
+    },
+    "prelaunch": {
+      "title": "Pre-launch comparison",
+      "notice": "At least one engine on this page is pre-launch. Runtime renders are not available yet; final pricing and outputs are confirmed at launch."
     },
     "faq": {
       "title": "FAQ",

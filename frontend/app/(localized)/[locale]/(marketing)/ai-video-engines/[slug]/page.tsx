@@ -531,6 +531,30 @@ function getPrelaunchPricingLabel(locale: AppLocale) {
   return 'TBD at launch';
 }
 
+function isPrelaunchAvailability(entry: EngineCatalogEntry) {
+  const availability = String(entry.availability ?? '').toLowerCase();
+  return availability === 'waitlist' || availability === 'limited';
+}
+
+function getPrelaunchCompareNotice(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      title: 'Comparaison pré-lancement',
+      body: 'Un moteur de cette page est en pré-lancement. Les rendus runtime ne sont pas encore disponibles; les prix et sorties finales sont confirmés au lancement.',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      title: 'Comparación de prelanzamiento',
+      body: 'Un motor de esta página está en prelanzamiento. Los renders runtime aún no están disponibles; los precios y resultados finales se confirman en el lanzamiento.',
+    };
+  }
+  return {
+    title: 'Pre-launch comparison',
+    body: 'At least one engine on this page is pre-launch. Runtime renders are not available yet; final pricing and outputs are confirmed at launch.',
+  };
+}
+
 function isEngineGeneratable(entry: EngineCatalogEntry) {
   const availability = String(entry.availability ?? '').toLowerCase();
   return availability === 'available' || availability === 'limited';
@@ -816,12 +840,14 @@ type ComparePageCopy = {
     back?: string;
     kicker?: string;
     intro?: string;
+    introPrelaunch?: string;
     takeawaysTitle?: string;
     lastUpdatedLabel?: string;
   };
   scorecard?: {
     title?: string;
     subtitle?: string;
+    provisionalNote?: string;
     strengthsLabel?: string;
     winnerSummary?: string;
     generateWith?: string;
@@ -834,7 +860,10 @@ type ComparePageCopy = {
     na?: string;
     prompt?: string;
     tryPrompt?: string;
+    tryPromptPrelaunch?: string;
     opensGenerator?: string;
+    opensGeneratorPrelaunch?: string;
+    savePromptForLaunch?: string;
     whatTests?: string;
     placeholder?: string;
     copyPrompt?: string;
@@ -844,8 +873,9 @@ type ComparePageCopy = {
   };
   keySpecs?: { title?: string; subtitle?: string; keyLabel?: string };
   specLabels?: Record<string, string>;
-  showdown?: { title?: string; subtitle?: string; note?: string; footer?: string };
+  showdown?: { title?: string; subtitle?: string; subtitlePrelaunch?: string; note?: string; footer?: string };
   related?: { title?: string; subtitle?: string };
+  prelaunch?: { title?: string; notice?: string };
   faq?: {
     title?: string;
     subtitle?: string;
@@ -1000,7 +1030,12 @@ export default async function CompareDetailPage({
     na: compareCopy.labels?.na ?? 'N/A',
     prompt: compareCopy.labels?.prompt ?? 'Prompt',
     tryPrompt: compareCopy.labels?.tryPrompt ?? 'Try this prompt:',
+    tryPromptPrelaunch: compareCopy.labels?.tryPromptPrelaunch ?? 'Save this prompt for launch:',
     opensGenerator: compareCopy.labels?.opensGenerator ?? 'Opens the generator pre-filled.',
+    opensGeneratorPrelaunch:
+      compareCopy.labels?.opensGeneratorPrelaunch ??
+      'Use these prompt links for planning; pre-launch engines unlock at launch.',
+    savePromptForLaunch: compareCopy.labels?.savePromptForLaunch ?? 'Save this prompt for launch',
     whatTests: compareCopy.labels?.whatTests ?? 'What it tests',
     placeholder: compareCopy.labels?.placeholder ?? '',
     expandPrompt: compareCopy.labels?.expandPrompt ?? 'Show full prompt',
@@ -1059,6 +1094,29 @@ export default async function CompareDetailPage({
   ]);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
+  const hasPrelaunchEngine = isPrelaunchAvailability(left) || isPrelaunchAvailability(right);
+  const prelaunchNotice = hasPrelaunchEngine
+    ? {
+        title: compareCopy.prelaunch?.title ?? getPrelaunchCompareNotice(activeLocale).title,
+        body: compareCopy.prelaunch?.notice ?? getPrelaunchCompareNotice(activeLocale).body,
+      }
+    : null;
+  const heroIntroTemplate = hasPrelaunchEngine
+    ? (compareCopy.hero?.introPrelaunch ??
+      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.')
+    : (compareCopy.hero?.intro ??
+      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.');
+  const showdownSubtitle = hasPrelaunchEngine
+    ? (compareCopy.showdown?.subtitlePrelaunch ??
+      'Side-by-side prompts and renders (when available) on MaxVideoAI. Prompts are identical; outputs may vary by model.')
+    : (compareCopy.showdown?.subtitle ??
+      'Side-by-side renders from the same prompt on MaxVideoAI. Prompts are identical; outputs may vary by model.');
+  const scorecardProvisionalNote = hasPrelaunchEngine
+    ? (compareCopy.scorecard?.provisionalNote ??
+      'Pre-launch scores are provisional and will update once runtime renders and final pricing are available.')
+    : null;
+  const prelaunchTryPromptLabel = hasPrelaunchEngine ? labels.tryPromptPrelaunch : labels.tryPrompt;
+  const prelaunchOpensGeneratorLabel = hasPrelaunchEngine ? labels.opensGeneratorPrelaunch : labels.opensGenerator;
   const overallTone = resolveOverallTone(leftOverall, rightOverall);
   const leftOverallClass =
     overallTone === 'left'
@@ -1175,6 +1233,8 @@ export default async function CompareDetailPage({
   const rightAccent = getEngineAccent(right);
   const leftButtonStyle = getEngineButtonStyle(left);
   const rightButtonStyle = getEngineButtonStyle(right);
+  const leftIsPrelaunch = isPrelaunchAvailability(left);
+  const rightIsPrelaunch = isPrelaunchAvailability(right);
   const leftCanGenerate = isEngineGeneratable(left);
   const rightCanGenerate = isEngineGeneratable(right);
   const priceScores = {
@@ -1271,15 +1331,6 @@ export default async function CompareDetailPage({
   const faqAudioGenRight = formatFaqValue(rightSpecs.nativeAudioGeneration);
   const faqLipLeft = formatFaqValue(leftSpecs.lipSync);
   const faqLipRight = formatFaqValue(rightSpecs.lipSync);
-  const faqPricingTemplate =
-    compareCopy.faq?.pricingDiff ??
-    'Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} vs {right} starts at {rightValue}.';
-  const faqPricingDiff = formatTemplate(faqPricingTemplate, {
-    left: formatEngineName(left),
-    right: formatEngineName(right),
-    leftValue: faqPricingLeft,
-    rightValue: faqPricingRight,
-  });
   const capabilityTemplates = {
     value:
       compareCopy.faq?.capabilityDiff ??
@@ -1354,7 +1405,7 @@ export default async function CompareDetailPage({
         faqTemplates.q4 ?? 'What are the biggest differences between {left} and {right}?',
         { left: formatEngineName(left), right: formatEngineName(right) }
       ),
-      answer: [faqPricingDiff, faqCapabilityDiff, faqOutputDiff],
+      answer: [faqCapabilityDiff, faqOutputDiff],
     },
     {
       question:
@@ -1823,11 +1874,16 @@ export default async function CompareDetailPage({
           </h1>
           <p className="mt-4 text-sm text-text-secondary">
             {formatTemplate(
-              compareCopy.hero?.intro ??
-                'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.',
+              heroIntroTemplate,
               { left: formatEngineName(left), right: formatEngineName(right) }
             )}
           </p>
+          {prelaunchNotice ? (
+            <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-left shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-micro text-amber-900">{prelaunchNotice.title}</p>
+              <p className="mt-1 text-sm text-amber-950">{prelaunchNotice.body}</p>
+            </div>
+          ) : null}
         </header>
 
         <section className="relative overflow-hidden rounded-[36px] border border-hairline bg-surface shadow-card">
@@ -1904,6 +1960,9 @@ export default async function CompareDetailPage({
                 {compareCopy.scorecard?.subtitle ??
                   'Scores reflect quality and control on MaxVideoAI across 11 criteria.'}
               </p>
+              {scorecardProvisionalNote ? (
+                <p className="mt-2 text-xs font-semibold text-text-muted">{scorecardProvisionalNote}</p>
+              ) : null}
             </div>
             <CompareScoreboard
               metrics={comparisonMetrics}
@@ -2073,8 +2132,7 @@ export default async function CompareDetailPage({
               {compareCopy.showdown?.title ?? 'Showdown (same prompt)'}
             </h2>
             <p className="text-sm text-text-secondary">
-              {compareCopy.showdown?.subtitle ??
-                'Side-by-side renders from the same prompt on MaxVideoAI. Prompts are identical; outputs may vary by model.'}
+              {showdownSubtitle}
             </p>
             <p className="text-xs text-text-muted">{compareCopy.showdown?.note ?? 'Showing up to 3 prompt pairs for clarity.'}</p>
 
@@ -2151,14 +2209,14 @@ export default async function CompareDetailPage({
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
-                      <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{labels.tryPrompt}</span>
+                      <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{prelaunchTryPromptLabel}</span>
                       <Link
                         href={buildGenerateHref(left.modelSlug, entry.prompt, entry.aspectRatio, entry.mode)}
                         rel="nofollow"
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
-                        {formatEngineShortName(left)}
+                        {leftIsPrelaunch ? labels.savePromptForLaunch : formatEngineShortName(left)}
                       </Link>
                       <Link
                         href={buildGenerateHref(right.modelSlug, entry.prompt, entry.aspectRatio, entry.mode)}
@@ -2166,9 +2224,9 @@ export default async function CompareDetailPage({
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
-                        {formatEngineShortName(right)}
+                        {rightIsPrelaunch ? labels.savePromptForLaunch : formatEngineShortName(right)}
                       </Link>
-                      <span className="text-xs text-text-muted">{labels.opensGenerator}</span>
+                      <span className="text-xs text-text-muted">{prelaunchOpensGeneratorLabel}</span>
                     </div>
                   </div>
                   </article>

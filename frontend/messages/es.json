@@ -2848,12 +2848,14 @@
       "back": "Volver a comparativas",
       "kicker": "Comparar motores",
       "intro": "Esta página compara {left} vs {right} en MaxVideoAI usando los mismos prompts, renders lado a lado, specs clave y un scorecard en 11 criterios. Úsala para elegir rápido y luego abre el perfil de cada motor para specs completas y ejemplos de prompts.",
+      "introPrelaunch": "Esta página compara {left} vs {right} en MaxVideoAI usando los mismos prompts, prompts y renders lado a lado (cuando estén disponibles), specs clave y un scorecard en 11 criterios. Úsela para decidir más rápido y luego abra el perfil de cada motor para ver specs completas y ejemplos de prompts.",
       "takeawaysTitle": "Puntos clave",
       "lastUpdatedLabel": "Actualizado"
     },
     "scorecard": {
       "title": "Scorecard (lado a lado)",
       "subtitle": "Las puntuaciones reflejan la calidad y el control en MaxVideoAI a lo largo de 11 criterios.",
+      "provisionalNote": "Las puntuaciones de prelanzamiento son provisionales y se actualizarán cuando haya renders runtime y precio final.",
       "strengthsLabel": "Fortalezas",
       "winnerSummary": "Resumen del ganador",
       "generateWith": "Generar con {engine}",
@@ -2861,12 +2863,15 @@
     },
     "labels": {
       "pending": "Datos pendientes",
-      "supported": "Compatible",
-      "notSupported": "No compatible",
+      "supported": "Soportado",
+      "notSupported": "No soportado",
       "na": "N/A",
       "prompt": "Prompt",
-      "tryPrompt": "Prueba este prompt:",
-      "opensGenerator": "Abre el generador con el prompt cargado.",
+      "tryPrompt": "Use este prompt:",
+      "tryPromptPrelaunch": "Guarde este prompt para el lanzamiento:",
+      "opensGenerator": "Se abre el generador con el prompt cargado.",
+      "opensGeneratorPrelaunch": "Use estos enlaces de prompt para planificar; los motores de prelanzamiento se habilitan en el lanzamiento.",
+      "savePromptForLaunch": "Guardar este prompt para el lanzamiento",
       "whatTests": "Qué evalúa",
       "placeholder": "Ejemplo provisional — render del prompt pronto",
       "copyPrompt": "Copiar prompt",
@@ -2902,8 +2907,13 @@
     "showdown": {
       "title": "Showdown (mismo prompt)",
       "subtitle": "Renders lado a lado del mismo prompt en MaxVideoAI. Los prompts son idénticos; los resultados pueden variar según el modelo.",
+      "subtitlePrelaunch": "Prompts y renders lado a lado (cuando estén disponibles) en MaxVideoAI. Los prompts son idénticos; los resultados pueden variar según el modelo.",
       "note": "Mostrando hasta 3 pares de prompts para claridad.",
       "footer": "Esta comparación lado a lado usa prompts idénticos para resaltar diferencias en movimiento, realismo, fidelidad humana y legibilidad del texto. Para specs completas, controles y más ejemplos, abre cada perfil de motor."
+    },
+    "prelaunch": {
+      "title": "Comparación de prelanzamiento",
+      "notice": "Al menos un motor de esta página está en prelanzamiento. Los renders runtime aún no están disponibles; los precios y resultados finales se confirman en el lanzamiento."
     },
     "faq": {
       "title": "FAQ",

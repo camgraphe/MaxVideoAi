@@ -2882,12 +2882,14 @@
       "back": "Retour aux comparatifs",
       "kicker": "Comparer les moteurs",
       "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les specs clés et un scorecard sur 11 critères. Utilisez-la pour choisir vite — puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
+      "introPrelaunch": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des prompts et rendus face à face (lorsqu’ils sont disponibles), les specs clés et un scorecard sur 11 critères. Utilisez-la pour décider rapidement, puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
       "takeawaysTitle": "Points clés",
       "lastUpdatedLabel": "Mis à jour"
     },
     "scorecard": {
       "title": "Scorecard (face à face)",
       "subtitle": "Les scores reflètent la qualité et le contrôle sur MaxVideoAI selon 11 critères.",
+      "provisionalNote": "Les scores pré-lancement sont provisoires et seront mis à jour dès que les rendus runtime et le prix final seront disponibles.",
       "strengthsLabel": "Points forts",
       "winnerSummary": "Résumé gagnant",
       "generateWith": "Générer avec {engine}",
@@ -2900,7 +2902,10 @@
       "na": "N/A",
       "prompt": "Prompt",
       "tryPrompt": "Essayez ce prompt :",
+      "tryPromptPrelaunch": "Enregistrer ce prompt pour le lancement :",
       "opensGenerator": "Ouvre le générateur pré-rempli.",
+      "opensGeneratorPrelaunch": "Utilisez ces liens de prompt pour préparer vos tests ; les moteurs pré-lancement s’ouvrent au lancement.",
+      "savePromptForLaunch": "Enregistrer ce prompt pour le lancement",
       "whatTests": "Ce que ça teste",
       "placeholder": "Exemple provisoire — rendu du prompt bientôt",
       "copyPrompt": "Copier le prompt",
@@ -2936,8 +2941,13 @@
     "showdown": {
       "title": "Showdown (même prompt)",
       "subtitle": "Rendus face à face issus du même prompt sur MaxVideoAI. Prompts identiques ; les sorties peuvent varier selon le modèle.",
+      "subtitlePrelaunch": "Prompts et rendus face à face (lorsqu’ils sont disponibles) sur MaxVideoAI. Les prompts sont identiques ; les sorties peuvent varier selon le modèle.",
       "note": "Jusqu’à 3 paires de prompts pour la clarté.",
       "footer": "Cette comparaison face à face utilise des prompts identiques pour mettre en évidence les différences de mouvement, réalisme, fidélité humaine et lisibilité du texte. Pour les specs complètes, contrôles et plus d’exemples, ouvrez chaque page moteur."
+    },
+    "prelaunch": {
+      "title": "Comparaison pré-lancement",
+      "notice": "Au moins un moteur de cette page est en pré-lancement. Les rendus runtime ne sont pas encore disponibles ; les prix et sorties finales sont confirmés au lancement."
     },
     "faq": {
       "title": "FAQ",
