@@ -2,23 +2,23 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 sur fal.ai — Vidéo IA avec audio natif (24/02)",
-    "description": "Seedance 2.0 (ByteDance) : vidéo IA cinématique avec audio natif, physique réaliste et contrôle caméra niveau réalisateur. Disponible sur fal.ai le 24 février 2026."
+    "title": "Seedance 2.0 sur fal.ai — vidéo IA avec audio natif (24/02)",
+    "description": "Découvrez Seedance 2.0 (ByteDance) en pré-lancement : vidéo IA cinématique, audio natif, contrôle caméra avancé et sorties jusqu'à 15 s en 1080p."
   },
-  "overview": "Seedance 2.0 est le modèle vidéo nouvelle génération de ByteDance, orienté rendu cinématique, contrôle caméra avancé et génération audio-vidéo native. Il prend en charge le prompting multimodal via texte, image, audio et vidéo de référence.",
-  "pricingNotes": "Pré-lancement : les détails tarifaires et commerciaux sont confirmés au lancement.",
+  "overview": "Seedance 2.0 est le modèle vidéo IA de ByteDance orienté rendu cinématique, continuité multi-plans et génération audio native synchronisée à l'image. Cette page est une vue pré-lancement indexable pour préparer vos prompts, vos cas d'usage et vos choix de production avant la disponibilité runtime.",
+  "pricingNotes": "Pré-lancement : le tarif final et les conditions commerciales sont confirmés au lancement.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "La nouvelle génération de vidéo IA avec audio natif et contrôle caméra avancé.",
-    "badge": "Disponible sur fal.ai le 24 février 2026",
+    "intro": "Préparez vos flux de production vidéo avant la sortie : capacités officielles, cas d'usage prioritaires et gabarits de prompts orientés multi-plans + audio natif.",
+    "badge": "Pré-lancement · Disponible sur fal.ai le 24 février 2026",
     "ctaPrimary": {
       "label": "Rejoindre la liste d'attente / Être notifié",
       "href": "https://fal.ai/seedance-2-0"
     },
     "secondaryLinks": [
       {
-        "label": "Comparer Seedance 2.0",
-        "href": "/ai-video-engines"
+        "label": "Voir Seedance 1.5 Pro",
+        "href": "/models/seedance-1-5-pro"
       },
       {
         "label": "Lire l'annonce officielle",
@@ -30,15 +30,15 @@
     "title": "Cas d'usage",
     "items": [
       {
-        "title": "Scènes d'action et poursuites avec physique réaliste",
+        "title": "Séquences d'action avec interactions plus crédibles",
         "icon": "camera"
       },
       {
-        "title": "Publicités multi-plans et narration produit",
+        "title": "Publicités multi-plans avec continuité visuelle",
         "icon": "product"
       },
       {
-        "title": "Visuels pilotés par l'audio avec synchro précise",
+        "title": "Visuels pilotés par l'audio avec meilleure synchro",
         "icon": "music"
       },
       {
@@ -46,7 +46,7 @@
         "icon": "storyboard"
       },
       {
-        "title": "Mouvements caméra de type réalisateur",
+        "title": "Mouvements de caméra de niveau réalisateur",
         "icon": "clapperboard"
       },
       {
@@ -59,118 +59,118 @@
   "technicalOverview": [
     {
       "label": "Statut",
-      "body": "Disponible sur fal.ai le 24 février 2026. La page est indexable avant cette date, mais la génération runtime reste verrouillée."
+      "body": "Pré-lancement. Disponible sur fal.ai le 24 février 2026. La page est indexable avant cette date, mais la génération runtime reste verrouillée."
     },
     {
       "label": "Entrées",
-      "body": "Texte + images + audio + vidéos de référence"
+      "body": "Texte + image + audio + vidéo de référence"
     },
     {
       "label": "Limites de références",
-      "body": "Jusqu'à 9 images, 3 clips vidéo et 3 clips audio, plus les instructions texte"
+      "body": "Jusqu'à 9 images, 3 clips vidéo et 3 clips audio, plus l'instruction texte"
     },
     {
       "label": "Durée",
-      "body": "Jusqu'à 15 secondes par génération avec transitions multi-plans"
+      "body": "Jusqu'à 15 secondes par génération, avec continuité multi-plans dans une seule sortie"
     },
     {
       "label": "Audio",
-      "body": "Génération audio-vidéo conjointe, avec mention dual-channel (stéréo) côté ByteDance"
+      "body": "Audio natif pris en charge, lip sync pris en charge, et mention dual-channel (stéréo) dans les sources officielles"
     },
     {
       "label": "Caméra et motion",
-      "body": "Contrôle caméra niveau réalisateur et meilleure cohérence physique"
+      "body": "Contrôles caméra avancés, avec meilleurs résultats sur prompts de direction explicites"
     },
     {
-      "label": "Note",
-      "body": "ByteDance mentionne extension/édition; l'exposition de ces capacités dépend des endpoints fal.ai au lancement."
+      "label": "Sources",
+      "body": "Sources officielles : fal.ai + pages Seed ByteDance. Les détails d'exposition endpoint sont finalisés au lancement."
     }
   ],
   "promptStructure": {
     "title": "Prompter Seedance 2.0",
     "quote": "[Genre] + [sujet] + [décor] + [beats d'action] + [langage caméra] + [cues audio] + [durée <=15s] + [structure multi-plans].",
-    "description": "Pour une meilleure cohérence, explicitez le timing des plans et la synchro audio dans le même prompt.",
+    "description": "Pour de meilleurs résultats, structurez la timeline par plans, explicitez les transitions, puis alignez dialogue/SFX sur des actions visibles.",
     "steps": [
-      "Définir le genre et le sujet",
-      "Fixer le décor et les ancrages visuels",
-      "Décrire 2 à 4 plans avec timing",
-      "Préciser les transitions et mouvements caméra",
-      "Ajouter dialogue, ambiance et SFX"
+      "Définir le genre et le sujet principal",
+      "Fixer les ancrages visuels (tenue, décor, lumière)",
+      "Écrire 2 à 4 plans avec timing précis",
+      "Ajouter les mouvements caméra et transitions",
+      "Spécifier ambiance, dialogue court et SFX synchronisés"
     ]
   },
-  "promptingTip": "Astuce : une action claire par plan + des cues audio courts donnent une meilleure synchro.",
+  "promptingTip": "Astuce : Seedance 2.0 répond mieux aux prompts avec timing de plans + verbes caméra + cues audio courts.",
   "tips": {
     "title": "Limites et notes pré-lancement",
     "items": [
-      "La page est visible et indexable avant le lancement; la génération reste bloquée jusqu'au 24/02/2026.",
-      "Les détails d'usage commercial sont confirmés au lancement.",
-      "Les fonctions d'édition/extension dépendront des endpoints publiés côté fal.ai.",
-      "Conservez des prompts structurés pour de meilleurs résultats multi-plans sur <=15s."
+      "La page est visible et indexable en pré-lancement ; l'exécution runtime reste verrouillée jusqu'au 24/02/2026.",
+      "Le prix final et les conditions commerciales sont confirmés au lancement.",
+      "Certaines capacités avancées (extension/édition) dépendent des endpoints exposés au lancement.",
+      "Pour le multi-plans en <=15 s, privilégiez des beats simples et bien séquencés."
     ]
   },
   "prompts": [
     {
       "title": "Poursuite d'action multi-plans",
-      "prompt": "Poursuite sur toits au crépuscule en trois plans, plan 1 large tracking, plan 2 poursuite rapprochée, plan 3 reveal grue sur skyline, impacts de pas et sirènes en synchro, 15 secondes."
+      "prompt": "Poursuite sur toits au crépuscule en trois plans : plan 1 large tracking, plan 2 poursuite rapprochée caméra épaule, plan 3 reveal à la grue sur skyline. Impacts de pas et sirènes synchronisés. Durée 15 secondes."
     },
     {
-      "title": "Spy thriller continu",
-      "prompt": "Un agent sort d'une gare néon, caméra épaule vers une ruelle sous la pluie, rack focus sur un message codé, basse synthétique et annonces lointaines, 12 secondes."
+      "title": "Thriller d'espionnage continu",
+      "prompt": "Un agent sort d'une station néon. Caméra sur l'épaule vers une ruelle sous la pluie, rack focus sur un message codé, basse synthétique et annonces lointaines. Durée 12 secondes."
     },
     {
-      "title": "Publicité 3 plans",
-      "prompt": "Plan 1 macro couronne de montre, plan 2 rotation hero en studio, plan 3 close-up lifestyle sous pluie nocturne, transitions nettes et bande-son premium, 15 secondes."
+      "title": "Publicité en 3 plans",
+      "prompt": "Plan 1 macro produit, plan 2 plan hero en studio, plan 3 close-up lifestyle nocturne. Transitions nettes, sound design publicitaire et continuité de marque. Durée 15 secondes."
     },
     {
       "title": "Storyboard multimodal",
-      "prompt": "Utiliser @Image1..@Image9 pour le style, @Video1..@Video3 pour le rythme, @Audio1..@Audio3 pour la texture sonore, continuité de tenue et décor en 16:9."
+      "prompt": "Utiliser @Image1..@Image9 pour le style et les personnages, @Video1..@Video3 pour le rythme, @Audio1..@Audio3 pour l'ambiance. Produire une sortie cohérente en 3 plans (<=15 s)."
     },
     {
-      "title": "Scène dialogue audio-first",
-      "prompt": "Dialogue entre deux personnages sur un quai de métro la nuit, voix, ambiance et SFX métalliques synchronisés, dolly fluide et plan rapproché, rendu stéréo, 10 secondes."
+      "title": "Scène dialogue orientée audio",
+      "prompt": "Dialogue court entre deux personnages sur un quai de métro nocturne. Ambiance continue + SFX métalliques au moment des actions visibles, dolly fluide puis cut-in rapproché. Rendu stéréo, 10 secondes."
     }
   ],
   "faqTitle": "FAQ – Seedance 2.0 sur MaxVideoAI",
   "faqs": [
     {
       "q": "Qu'est-ce que Seedance 2.0 ?",
-      "a": "Seedance 2.0 est le modèle vidéo IA de ByteDance orienté cinématique, références multimodales et audio natif."
+      "a": "Seedance 2.0 est le modèle vidéo IA de ByteDance conçu pour le rendu cinématique, la continuité multi-plans et l'audio natif."
     },
     {
-      "q": "Quels types d'entrées sont supportés ?",
-      "a": "Les sources officielles mentionnent texte, image, audio et vidéo, avec références multimodales dans un même workflow."
+      "q": "Quels types d'entrées sont pris en charge ?",
+      "a": "Les sources officielles indiquent texte, image, audio et vidéo, avec références multimodales dans un même prompt."
     },
     {
-      "q": "Quelle durée maximale ?",
-      "a": "Les annonces officielles indiquent jusqu'à 15 secondes, avec multi-plans dans une seule sortie."
+      "q": "Quelle est la durée maximale ?",
+      "a": "Les communications officielles indiquent jusqu'à 15 secondes par génération."
     },
     {
       "q": "Quand sera-t-il disponible sur fal.ai ?",
-      "a": "Disponible sur fal.ai le 24 février 2026."
+      "a": "Disponibilité annoncée sur fal.ai le 24 février 2026."
     },
     {
-      "q": "Peut-on l'utiliser via API avant la date ?",
-      "a": "Non. La page est visible avant lancement, mais l'exécution runtime reste verrouillée."
+      "q": "Peut-on générer avant cette date ?",
+      "a": "Non. Cette page est indexable en pré-lancement, mais l'exécution runtime reste verrouillée avant la sortie."
     },
     {
-      "q": "Les conditions commerciales sont-elles finales ?",
-      "a": "Les détails commerciaux et tarifaires sont confirmés au lancement."
+      "q": "Le prix est-il déjà final ?",
+      "a": "Non. Le prix final est publié au lancement."
     }
   ],
   "custom": {
-    "whyTitle": "Ce qui différencie Seedance 2.0",
+    "whyTitle": "Ce qui distingue Seedance 2.0",
     "heroHighlights": [
-      "Langage caméra niveau réalisateur||Mouvements, transitions et cadrages plus proches d'un workflow cinéma",
-      "Accent sur la physique||Scènes d'action et interactions avec meilleure plausibilité",
-      "Audio natif synchronisé||Dialogue, ambiance et SFX générés avec l'image",
-      "Références multimodales||Texte + images + vidéos + audio dans le même flux"
+      "Langage caméra de niveau réalisateur||Contrôle explicite des mouvements, cadrages et transitions",
+      "Continuité multi-plans||Sorties courtes structurées en plusieurs beats cohérents",
+      "Audio natif synchronisé||Audio output, génération audio native et lip sync pris en charge",
+      "Références multimodales||Combiner texte, image, vidéo et audio pour verrouiller style et rythme"
     ],
-    "specTitle": "Capacités clés (sources officielles)",
-    "specNote": "Uniquement des points sourcés officiellement; la disponibilité endpoint exacte est confirmée au lancement.",
+    "specTitle": "Spécifications (pré-lancement)",
+    "specNote": "Points sourcés officiellement. Les paramètres finaux d'accès et de prix sont confirmés au lancement.",
     "specSections": [
       {
-        "title": "Pipeline d'entrées multimodales",
-        "intro": "Seedance 2.0 supporte texte, image, audio et vidéo de référence.",
+        "title": "Entrées multimodales",
+        "intro": "Seedance 2.0 prend en charge texte, image, audio et vidéo de référence.",
         "items": [
           "Instructions texte + références multimodales",
           "Jusqu'à 9 images",
@@ -180,91 +180,95 @@
       },
       {
         "title": "Sortie et structure",
-        "intro": "Mise en avant du contrôle cinématique et des sorties multi-plans.",
+        "intro": "Les sources officielles mettent en avant le contrôle cinématique et l'audio natif.",
         "items": [
-          "Jusqu'à 15s par génération",
-          "Transitions naturelles entre plans",
-          "Génération audio-vidéo conjointe",
-          "Audio dual-channel (stéréo) mentionné par ByteDance"
+          "Jusqu'à 1080p",
+          "Jusqu'à 15 s par génération",
+          "24 FPS (annoncé)",
+          "Transitions naturelles multi-plans",
+          "Audio output pris en charge",
+          "Native audio generation prise en charge",
+          "Lip sync pris en charge",
+          "Dual-channel (stéréo) pris en charge"
         ]
       }
     ],
     "promptingTitle": "Prompt Lab — Seedance 2.0",
     "promptingGuideLabel": "Page officielle Seedance 2.0",
     "promptingGuideUrl": "https://seed.bytedance.com/en/seedance2_0",
-    "promptingIntro": "Utilisez des prompts structurés avec timing des plans, langage caméra explicite et cues audio synchronisés.",
+    "promptingIntro": "Seedance 2.0 performe mieux avec timing des plans + verbes caméra + cues audio. Gardez des répliques courtes et des actions visibles.",
     "promptingGlobalPrinciples": [
-      "Un objectif clair par plan.",
-      "Transitions et mouvements caméra explicites.",
-      "Références multimodales pour la continuité.",
-      "Dialogue court + SFX calés sur les actions visibles."
+      "Structurer en 0-5 s / 5-10 s / 10-15 s.",
+      "Définir le mouvement caméra plan par plan.",
+      "Limiter chaque plan à un beat principal.",
+      "Ancrer SFX et dialogue sur des actions visibles."
     ],
     "promptingEngineWhy": [
-      "Optimisé pour la direction caméra et le rendu cinématique.",
-      "Les prompts structurés améliorent les sorties multi-plans.",
-      "La génération audio-vidéo conjointe aide la synchro.",
-      "Les références multiples renforcent la cohérence."
+      "Optimisé pour le langage caméra et la continuité multi-plans.",
+      "Les prompts structurés améliorent la cohérence temporelle.",
+      "L'audio natif est plus robuste avec des cues courts et contextualisés.",
+      "Les références multimodales renforcent la stabilité visuelle."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = itération rapide d'idée.",
-      "structured": "Structured = continuité et contrôle.",
-      "pro": "Pro = direction détaillée + sound design.",
-      "storyboard": "Storyboard = timeline multi-plans pilotée par références."
+      "quick": "Rapide = itération conceptuelle.",
+      "structured": "Structuré = continuité et contrôle.",
+      "pro": "Pro = direction détaillée + design sonore.",
+      "storyboard": "Storyboard = timeline guidée par références."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Quick",
+        "label": "Rapide",
         "title": "Prompt concept rapide",
         "description": "Idéation rapide avec un beat principal.",
-        "copy": "[Sujet] dans [décor], [mouvement caméra], [lumière], [cue audio], [durée <= 15s]."
+        "copy": "[Sujet] dans [décor]. Caméra: [mouvement + intention]. Lumière: [style]. Action: [beat principal]. Audio: [ambiance + 1 SFX]. (<=15 s)"
       },
       {
         "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré production",
+        "label": "Structuré",
+        "title": "Prompt de production structuré",
         "description": "Pour verrouiller la cohérence en multi-plans.",
-        "copy": "Sujet + ancrages\nDécor + moment\nPlan 1 / Plan 2 / Plan 3 avec durées\nDirection caméra par plan\nDialogue + ambiance + SFX\nContraintes de sortie"
+        "copy": "Ancrages de continuité: tenue, accessoires, lieu, moment\nTimeline: 0-5 s / 5-10 s / 10-15 s\nPar plan: action + mouvement caméra + verbe de transition\nPlan audio: ambiance + SFX calés + dialogue court\nContraintes: éviter / ne pas inclure / limites sécurité"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Brief réalisateur",
-        "description": "Contrôle cinématique détaillé + audio synchronisé.",
-        "copy": "Intent réalisateur:\nAncrages visuels:\nTimeline des plans:\nMouvements caméra:\nPlan audio:\nContraintes finales:"
+        "description": "Contrôle cinématique détaillé avec audio synchronisé.",
+        "copy": "Intention réalisateur:\nAncrages visuels:\nTimeline des plans + transitions:\nLangage caméra: push-in / whip pan / crane / handheld / fixe\nDesign sonore: ambiance, SFX, longueur dialogue\nContraintes + négatifs: pas d'overlay texte, pas de logos, pas de shaky cam"
       },
       {
         "id": "storyboard",
         "label": "Storyboard",
         "title": "Prompt storyboard multimodal",
-        "description": "Prompting piloté par références image/vidéo/audio.",
-        "copy": "Utiliser @Image1..@Image9 pour style/continuité.\nUtiliser @Video1..@Video3 pour rythme caméra.\nUtiliser @Audio1..@Audio3 pour texture sonore.\nProduire 3 plans cohérents en <=15s."
+        "description": "Prompting guidé par références image/vidéo/audio.",
+        "copy": "Utiliser @Image1..@Image9 pour style et personnages.\nUtiliser @Video1..@Video3 pour rythme et grammaire caméra.\nUtiliser @Audio1..@Audio3 pour texture sonore.\nProduire 3 plans cohérents en <=15 s avec transitions explicites."
       }
     ],
     "tipsTitle": "Conseils et limites",
     "strengths": [
-      "Très bon contrôle caméra sur des beats explicites.",
-      "Continuité renforcée avec références multimodales.",
-      "Audio natif synchronisé sur sorties courtes multi-plans.",
-      "Utile pour pubs, action, préviz et storyboard."
+      "Très bon contrôle caméra lorsque les beats sont explicites.",
+      "Continuité renforcée grâce aux références multimodales.",
+      "Audio natif synchronisé sur des sorties courtes.",
+      "Pertinent pour publicité, action et prévisualisation."
     ],
     "troubleshootingItems": [
-      "Coupes abruptes -> préciser verbes de transition + timing.",
-      "Drift visuel -> renforcer ancrages tenue/décor.",
-      "Audio désynchronisé -> raccourcir les lignes et caler les cues.",
-      "Physique instable -> réduire le nombre d'actions simultanées."
+      "Coupes abruptes -> ajouter verbes de transition + timestamps.",
+      "Drift de continuité -> renforcer ancrages (tenue, accessoire, lieu).",
+      "Audio désynchronisé -> raccourcir le dialogue et caler les cues.",
+      "Physique peu crédible -> réduire les actions simultanées par plan."
     ],
     "boundaries": [
       "Visibilité pré-lancement != accès runtime.",
       "Les opérations avancées dépendent des endpoints disponibles au lancement.",
-      "Tarifs et conditions commerciales finalisés au lancement.",
-      "En production, s'en tenir aux capacités officiellement documentées."
+      "Tarification et conditions commerciales finalisées au lancement.",
+      "En production, s'appuyer sur les capacités officiellement documentées."
     ],
     "galleryTitle": "Exemples Seedance 2.0",
-    "galleryIntro": "Consultez les références officielles pendant la phase pré-lancement.",
+    "galleryIntro": "Consultez les références officielles pendant le pré-lancement. Les rendus MaxVideoAI seront publiés ici dès l'ouverture runtime.",
     "galleryAllCta": "Voir tous les exemples Seedance ->",
     "recreateLabel": "Recréer ce plan ->",
-    "demoTitle": "Prompt démo — Seedance 2.0",
+    "demoTitle": "Prompt de démonstration — Seedance 2.0",
     "demoPromptLabel": "Prompt"
   }
 }

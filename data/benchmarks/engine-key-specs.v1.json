@@ -267,13 +267,14 @@
         "firstLastFrame": "Not supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Supported",
-        "maxResolution": "1080p",
-        "maxDuration": "15s",
+        "maxResolution": "Up to 1080p",
+        "maxDuration": "Up to 15s (per generation)",
         "aspectRatios": [
           "16:9",
           "9:16",
           "1:1"
         ],
+        "fpsOptions": "24 (as announced)",
         "fpsOptions": [
           24
         ],
@@ -503,7 +504,7 @@
         "firstLastFrame": "Not specified",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Supported",
-        "maxResolution": "Not specified (official pre-launch)",
+        "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
           "16:9",
@@ -516,10 +517,11 @@
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "dualChannelAudio": "Supported",
-        "lipSync": "Not specified",
+        "lipSync": "Supported",
+        "pricePerSecond": "TBD (confirmed at launch)",
         "cameraMotionControls": "Advanced",
         "watermark": "Not specified",
-        "releaseDate": "Feb 24, 2026 (fal.ai availability)"
+        "releaseDate": "Expected Feb 24, 2026 (availability to be confirmed at launch)"
       }
     },
     {

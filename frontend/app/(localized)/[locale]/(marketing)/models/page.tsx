@@ -199,6 +199,18 @@ function getMinPricePerSecond(entry?: EngineCatalogEntry | null) {
   return Math.min(...candidates);
 }
 
+function getPrelaunchPricingLabel(locale: AppLocale) {
+  if (locale === 'fr') return 'Confirmé au lancement';
+  if (locale === 'es') return 'Confirmado en lanzamiento';
+  return 'TBD at launch';
+}
+
+function getPrelaunchPricingNote(locale: AppLocale) {
+  if (locale === 'fr') return 'Tarif final publié le 24 février 2026.';
+  if (locale === 'es') return 'Precio final publicado el 24 de febrero de 2026.';
+  return 'Final pricing will be published on February 24, 2026.';
+}
+
 const SCORE_LABELS: Array<{ key: keyof EngineScore; label: string }> = [
   { key: 'fidelity', label: 'Prompt Adherence' },
   { key: 'visualQuality', label: 'Visual Quality' },
@@ -541,6 +553,7 @@ export default async function ModelsPage() {
     'sora-2',
     'sora-2-pro',
     'veo-3-1',
+    'seedance-2-0',
     'seedance-1-5-pro',
     'veo-3-1-fast',
     'veo-3-1-first-last',
@@ -646,7 +659,14 @@ export default async function ModelsPage() {
     );
     const pricingRange = pricingRangeMap.get(engine.modelSlug) ?? null;
     const priceFromCents = pricingRange?.min.cents ?? getMinPricePerSecond(catalogEntry);
-    const priceFrom = typeof priceFromCents === 'number' ? `$${(priceFromCents / 100).toFixed(2)}/s` : 'Data pending';
+    const isPrelaunchWaitlist = engine.availability === 'waitlist';
+    const hasConfirmedPricing = !isPrelaunchWaitlist && typeof priceFromCents === 'number' && priceFromCents > 0;
+    const showPrelaunchPricePlaceholder = isPrelaunchWaitlist;
+    const priceFrom = hasConfirmedPricing
+      ? `$${(priceFromCents / 100).toFixed(2)}/s`
+      : showPrelaunchPricePlaceholder
+        ? getPrelaunchPricingLabel(activeLocale)
+        : 'Data pending';
     const capabilityKeywordsList = [
       t2v ? 'T2V' : null,
       i2v ? 'I2V' : null,
@@ -688,7 +708,7 @@ export default async function ModelsPage() {
       description: microDescription,
       versionLabel,
       overallScore,
-      priceNote: null,
+      priceNote: showPrelaunchPricePlaceholder ? getPrelaunchPricingNote(activeLocale) : null,
       priceNoteHref: null,
       href: { pathname: '/models/[slug]', params: { slug: engine.modelSlug } },
       backgroundColor: pictogram.backgroundColor,
@@ -716,7 +736,7 @@ export default async function ModelsPage() {
         maxResolution: maxResolution.value,
         maxDuration: maxDuration.value,
         priceFrom: (() => {
-          return typeof priceFromCents === 'number' ? priceFromCents / 100 : null;
+          return hasConfirmedPricing ? priceFromCents / 100 : null;
         })(),
         legacy: Boolean(engine.isLegacy),
       },

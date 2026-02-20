@@ -190,7 +190,10 @@ function buildLumaRay2Snapshot(params: {
   };
 }
 
-function buildDefinitionFromEngine(engine: EngineCaps, pricingDetails?: EnginePricingDetails): PricingEngineDefinition {
+function buildDefinitionFromEngine(
+  engine: EngineCaps,
+  pricingDetails?: EnginePricingDetails
+): PricingEngineDefinition | null {
   const currency =
     pricingDetails?.currency ??
     engine.pricing?.currency ??
@@ -221,7 +224,7 @@ function buildDefinitionFromEngine(engine: EngineCaps, pricingDetails?: EnginePr
   }
 
   if (baseUnitPriceCents == null || baseUnitPriceCents <= 0) {
-    baseUnitPriceCents = 1;
+    return null;
   }
 
   const resolutionMultipliers: Record<string, number> = {};

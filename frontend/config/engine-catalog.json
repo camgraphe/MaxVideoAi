@@ -2990,17 +2990,10 @@
           "maxImageSizeMB": 25
         }
       },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 0
-        }
-      },
       "pricing": {
         "unit": "USD/s",
-        "base": 0,
         "currency": "USD",
-        "notes": "Pricing details will be confirmed at launch."
+        "notes": "Pricing is confirmed at launch."
       },
       "updatedAt": "2026-02-19T00:00:00Z",
       "ttlSec": 600,

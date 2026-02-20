@@ -167,6 +167,8 @@ export function ModelHeroMedia({
   }, [clearScheduledLoad]);
 
   const mediaClassName = ['absolute inset-0 h-full w-full object-cover', objectClassName].filter(Boolean).join(' ');
+  const normalizedVideoSrc = (videoSrc ?? '').toLowerCase();
+  const sourceType = normalizedVideoSrc.includes('.webm') ? 'video/webm' : 'video/mp4';
 
   return (
     <div className={className}>
@@ -198,7 +200,7 @@ export function ModelHeroMedia({
           poster={posterSrc ?? undefined}
           aria-label={alt}
         >
-          <source src={videoSrc} type="video/mp4" />
+          <source src={videoSrc} type={sourceType} />
         </video>
       ) : null}
       {videoSrc && !shouldLoadVideo && showPlayButton ? (

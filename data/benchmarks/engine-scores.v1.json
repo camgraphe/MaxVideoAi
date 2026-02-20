@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-02-10",
+  "last_updated": "2026-02-19",
   "method": "manual-v1-placeholder",
   "scores": [
     {
@@ -92,6 +92,21 @@
       "speedStability": 7.6,
       "pricing": 8.5,
       "last_updated": "2026-02-10"
+    },
+    {
+      "modelSlug": "seedance-2-0",
+      "fidelity": 8.6,
+      "visualQuality": 8.8,
+      "motion": 8.7,
+      "consistency": 8.2,
+      "anatomy": 8.4,
+      "textRendering": 7.0,
+      "lipsyncQuality": 9.2,
+      "sequencingQuality": 8.4,
+      "controllability": 8.8,
+      "speedStability": 7.4,
+      "pricing": null,
+      "last_updated": "2026-02-19"
     },
     {
       "modelSlug": "wan-2-6",

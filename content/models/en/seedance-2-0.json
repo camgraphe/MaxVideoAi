@@ -2,23 +2,23 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 on fal.ai — AI Video with Native Audio (Feb 24)",
-    "description": "Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control. Coming to fal.ai February 24, 2026."
+    "title": "Seedance 2.0 (ByteDance) — AI Video with Native Audio & Multi-Shot Control | MaxVideoAI",
+    "description": "Explore ByteDance Seedance 2.0 before launch: native audio generation, 1080p up to 15s, multi-shot outputs, cinematic camera language, and structured prompt templates. Launch expected Feb 24, 2026."
   },
-  "overview": "Seedance 2.0 is ByteDance's next-generation video model focused on cinematic motion, strong camera language, and native audio-video generation. It supports multimodal prompting with text, image, audio, and video references and is designed for multi-shot storytelling in one output.",
+  "overview": "Seedance 2.0 is ByteDance's next-gen AI video model focused on cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. This page is a pre-launch overview: specs, best use cases, and prompt templates so you can plan workflows before release.",
   "pricingNotes": "Pre-launch: pricing and commercial terms are confirmed at launch.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "The next generation of AI video with native audio and director-level control.",
-    "badge": "Available on fal.ai February 24, 2026",
+    "intro": "Seedance 2.0 is ByteDance's next-gen AI video model focused on cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. This page is a pre-launch overview: specs, best use cases, and prompt templates so you can plan workflows before release.",
+    "badge": "Coming soon · Expected launch: February 24, 2026",
     "ctaPrimary": {
       "label": "Join waitlist / Get notified",
       "href": "https://fal.ai/seedance-2-0"
     },
     "secondaryLinks": [
       {
-        "label": "Compare Seedance 2.0",
-        "href": "/ai-video-engines"
+        "label": "See Seedance 1.5 Pro",
+        "href": "/models/seedance-1-5-pro"
       },
       {
         "label": "Read official launch details",
@@ -30,27 +30,27 @@
     "title": "Use cases",
     "items": [
       {
-        "title": "Action and chase sequences with realistic physics",
+        "title": "Action sequences with more believable physics and interaction",
         "icon": "camera"
       },
       {
-        "title": "Multi-shot ads and product storytelling",
+        "title": "Multi-shot ads with consistent product and scene continuity",
         "icon": "product"
       },
       {
-        "title": "Music-led visuals with synchronized audio cues",
+        "title": "Music-led visuals with synced ambience and SFX cues",
         "icon": "music"
       },
       {
-        "title": "Storyboard-to-video with multimodal references",
+        "title": "Storyboard-to-video using text and multimodal references",
         "icon": "storyboard"
       },
       {
-        "title": "Director-style camera moves and transitions",
+        "title": "Director-style camera moves, transitions, and framing control",
         "icon": "clapperboard"
       },
       {
-        "title": "Previsualization before final production editing",
+        "title": "Pre-visualization before final edit (concept to shot list to rough cut)",
         "icon": "layers"
       }
     ]
@@ -59,7 +59,7 @@
   "technicalOverview": [
     {
       "label": "Launch status",
-      "body": "Available on fal.ai February 24, 2026. Pre-launch page is indexable; runtime generation remains locked before launch."
+      "body": "Coming soon. Expected launch: February 24, 2026. Available on fal.ai February 24, 2026. Pre-launch page is indexable; runtime generation remains locked before launch."
     },
     {
       "label": "Inputs",
@@ -71,15 +71,15 @@
     },
     {
       "label": "Duration",
-      "body": "Up to 15 seconds per generation with multi-shot transitions in one output"
+      "body": "Up to 15s per generation with multi-shot continuity in one output"
     },
     {
       "label": "Audio",
-      "body": "Joint audio-video generation with dual-channel (stereo) capability highlighted by ByteDance"
+      "body": "Official materials highlight native audio generated alongside video, including audio-video sync"
     },
     {
       "label": "Camera and motion",
-      "body": "Director-level camera control and real-world physics for dynamic scenes"
+      "body": "Advanced camera and motion controls, with best results from explicit shot direction"
     },
     {
       "label": "Notes",
@@ -98,7 +98,7 @@
       "Add dialogue, ambience, and SFX cues"
     ]
   },
-  "promptingTip": "Tip: use one clear action per shot and keep audio cues concise so dialogue and SFX land on the intended moments.",
+  "promptingTip": "Tip: Seedance 2.0 rewards shot timing, camera verbs, and audio cues. Keep dialogue short, pin SFX to visible actions, and use references to lock continuity.",
   "tips": {
     "title": "Limitations and pre-launch notes",
     "items": [
@@ -134,39 +134,36 @@
   "faqs": [
     {
       "q": "What is Seedance 2.0?",
-      "a": "Seedance 2.0 is ByteDance's AI video model focused on cinematic motion, multimodal references, and native audio generation."
-    },
-    {
-      "q": "Which inputs are supported?",
-      "a": "Official materials mention text, image, audio, and video inputs, with multimodal references in the same generation workflow."
+      "a": "Seedance 2.0 is ByteDance's AI video model focused on cinematic motion, multi-shot continuity, and native audio generation."
     },
     {
       "q": "How long can outputs be?",
-      "a": "Official launch messaging highlights up to 15 seconds with multi-shot transitions in a single output."
+      "a": "Launch materials highlight outputs up to 15 seconds per generation."
     },
     {
-      "q": "When is it available on fal.ai?",
-      "a": "Available on fal.ai February 24, 2026."
+      "q": "Does it support audio?",
+      "a": "Yes. Native audio is highlighted in official messaging, with audio generated alongside video for better sync."
     },
     {
-      "q": "Can I use Seedance 2.0 via API before launch?",
-      "a": "No. The model page is visible pre-launch, but runtime generation stays locked before launch."
+      "q": "When will it be available on MaxVideoAI?",
+      "a": "This page is pre-launch. Availability and pricing will be confirmed at launch (currently expected Feb 24, 2026)."
     },
     {
-      "q": "Are commercial terms final now?",
-      "a": "Commercial usage and pricing are confirmed at launch."
+      "q": "Can I generate before launch?",
+      "a": "No. The model page can be indexed for discovery, but runtime remains locked until release."
     }
   ],
   "custom": {
     "whyTitle": "What makes Seedance 2.0 different",
+    "heroTrustLine": "Pay-as-you-go on MaxVideoAI · Price shown before you generate (at launch)",
     "heroHighlights": [
-      "Director-level camera language||Cinematic camera moves, transitions, and shot framing closer to film direction workflows",
-      "Real-world physics focus||Action and interaction shots target stronger physical plausibility",
-      "Native audio generation||Dialogue, ambience, and SFX are generated in sync with visuals",
-      "Multimodal references at scale||Prompt with text plus image, video, and audio references in one generation"
+      "Director-level camera language||Optimized for explicit shot direction: camera movement, framing, and transition verbs",
+      "Multi-shot continuity in a single render||Designed for short timelines where multiple beats can be stitched into one coherent output",
+      "Native audio generation (visual and sound together)||Official materials highlight audio generated alongside video for stronger sync",
+      "Multimodal references at scale||Mix text with image, video, and audio references to lock style, pacing, and continuity"
     ],
-    "specTitle": "Key capabilities (official pre-launch)",
-    "specNote": "Only officially sourced claims are listed here; endpoint-level availability is confirmed at launch.",
+    "specTitle": "Specs (pre-launch)",
+    "specNote": "Only officially sourced claims are listed here. Availability and final pricing are confirmed at launch.",
     "specSections": [
       {
         "title": "Multimodal input stack",
@@ -182,9 +179,12 @@
         "title": "Output style and structure",
         "intro": "Model messaging emphasizes cinematic control and multi-shot outputs.",
         "items": [
+          "Up to 1080p",
           "Up to 15s per generation",
+          "24 FPS (as announced)",
           "Natural transitions across multiple shots",
           "Native audio-video joint generation",
+          "Audio-video sync mentioned in official materials",
           "Dual-channel (stereo) audio support highlighted by ByteDance"
         ]
       }
@@ -192,12 +192,12 @@
     "promptingTitle": "Prompt Lab — Seedance 2.0",
     "promptingGuideLabel": "Official Seedance 2.0 page",
     "promptingGuideUrl": "https://seed.bytedance.com/en/seedance2_0",
-    "promptingIntro": "Use structured prompts with explicit shot timing, camera language, and synchronized audio cues for the strongest results.",
+    "promptingIntro": "Seedance 2.0 tends to reward shot timing, camera verbs, and audio cues. Keep dialogue short, pin SFX to visible actions, and use references to lock continuity.",
     "promptingGlobalPrinciples": [
-      "Describe one clear objective for each shot beat.",
-      "Specify camera movement and transitions explicitly.",
-      "Use multimodal references to lock style and continuity.",
-      "Keep dialogue short and time SFX cues to visible actions."
+      "Use explicit shot timing (0-5s, 5-10s, 10-15s).",
+      "Write camera movement and transition verbs clearly.",
+      "Keep one clear action beat per shot.",
+      "Pin dialogue and SFX to visible moments."
     ],
     "promptingEngineWhy": [
       "The model is optimized for cinematic camera language and controlled motion.",
@@ -217,28 +217,28 @@
         "label": "Quick",
         "title": "Quick concept prompt",
         "description": "Fast ideation with one cinematic beat.",
-        "copy": "[Subject] in [setting], [camera move], [lighting], [one audio cue], [duration <= 15s]."
+        "copy": "[Subject] in [setting]. Camera: [move + lens feel]. Lighting: [style]. Action: [one clear beat]. Audio: [ambience + one SFX cue]. (<=15s, choose aspect ratio in UI.)\n\nExample: Handheld UGC unboxing at a kitchen table. Slow push-in, natural daylight. She peels the seal, smiles, turns the bottle to camera. Room tone + packaging crinkle + soft click when cap opens."
       },
       {
         "id": "structured",
         "label": "Structured",
         "title": "Structured production prompt",
         "description": "Use this to keep consistency in multi-shot outputs.",
-        "copy": "Subject + continuity anchors\nSetting + time of day\nShot 1 / Shot 2 / Shot 3 with durations\nCamera language per shot\nDialogue + ambience + SFX cues\nOutput constraints (aspect, duration)"
+        "copy": "Continuity anchors: wardrobe, props, location, time of day\nShot timeline: 0-5s / 5-10s / 10-15s\nFor each shot: subject action + camera move + transition verb\nAudio plan: ambience bed + timed SFX + short dialogue (optional)\nExclusions: avoid / do not include / safety boundaries"
       },
       {
         "id": "pro",
         "label": "Pro",
         "title": "Director brief prompt",
         "description": "Detailed cinematic control with synchronized sound design.",
-        "copy": "Director intent:\nVisual continuity anchors:\nShot timeline (0-5s / 5-10s / 10-15s):\nCamera directions:\nAudio plan (dialogue, ambience, SFX):\nFinal constraints and exclusions:"
+        "copy": "Director intent (1 sentence):\nVisual anchors:\nShot timeline + transitions:\nCamera language: push-in / whip pan / crane / handheld / locked-off\nSound design: ambience, SFX hits, dialogue length\nConstraints + negatives: no text overlays, no logos, no shaky cam, etc."
       },
       {
         "id": "storyboard",
         "label": "Storyboard",
         "title": "Storyboard multimodal prompt",
         "description": "Reference-driven prompting with images, videos, and audio.",
-        "copy": "Use @Image1..@Image9 for style and continuity.\nUse @Video1..@Video3 for pacing and camera rhythm.\nUse @Audio1..@Audio3 for ambience and sound texture.\nProduce a coherent 3-shot output in <=15s."
+        "copy": "Use @Image1..@Image9 to lock style and characters.\nUse @Video1..@Video3 for pacing and camera rhythm.\nUse @Audio1..@Audio3 for ambience texture.\nProduce a coherent 3-shot output (<=15s) with explicit transition verbs."
       }
     ],
     "tipsTitle": "Tips and boundaries",
@@ -249,10 +249,10 @@
       "High utility for ads, action beats, and storyboard prototyping."
     ],
     "troubleshootingItems": [
-      "Cuts feel abrupt -> define shot transition verbs and timing.",
-      "Continuity drifts -> add explicit reference anchors for wardrobe/location.",
-      "Audio mismatch -> shorten dialogue and pin SFX to visible actions.",
-      "Physics look unstable -> reduce simultaneous actions in each beat."
+      "Cuts feel abrupt -> add transition verbs and timestamps (match cut at 5s, whip pan into Shot 2).",
+      "Continuity drifts -> add anchors (wardrobe, prop, location) and reuse references.",
+      "Audio mismatch -> shorten dialogue, pin SFX to visible action, keep one ambience bed.",
+      "Physics looks off -> simplify simultaneous actions per beat and reduce fast interactions."
     ],
     "boundaries": [
       "Pre-launch visibility does not imply runtime access.",
@@ -261,7 +261,7 @@
       "Use only officially documented capabilities in production planning."
     ],
     "galleryTitle": "Seedance 2.0 examples",
-    "galleryIntro": "Explore official references and examples while runtime remains locked pre-launch.",
+    "galleryIntro": "Explore official references and prompt patterns while runtime remains locked pre-launch. We will publish real MaxVideoAI renders here once the model is live.",
     "galleryAllCta": "View all Seedance examples ->",
     "recreateLabel": "Recreate this shot ->",
     "demoTitle": "Demo prompt — Seedance 2.0",

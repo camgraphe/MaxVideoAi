@@ -1031,12 +1031,6 @@ type EngineKeySpecsEntry = {
   keySpecs?: Record<string, unknown>;
   sources?: string[];
 };
-type SourceLink = {
-  url: string;
-  domain: string;
-  label: string;
-  official: boolean;
-};
 type EngineKeySpecsFile = {
   version?: string;
   last_updated?: string;
@@ -1337,7 +1331,6 @@ const SECTION_LABELS: Record<
   AppLocale,
   {
     specs: string;
-    sources: string;
     examples: string;
     prompting: string;
     tips: string;
@@ -1348,7 +1341,6 @@ const SECTION_LABELS: Record<
 > = {
   en: {
     specs: 'Specs',
-    sources: 'Sources & docs',
     examples: 'Examples',
     prompting: 'Prompting',
     tips: 'Tips',
@@ -1358,7 +1350,6 @@ const SECTION_LABELS: Record<
   },
   fr: {
     specs: 'Spécifications',
-    sources: 'Sources & docs',
     examples: 'Exemples',
     prompting: 'Prompts',
     tips: 'Conseils',
@@ -1368,7 +1359,6 @@ const SECTION_LABELS: Record<
   },
   es: {
     specs: 'Especificaciones',
-    sources: 'Fuentes y docs',
     examples: 'Ejemplos',
     prompting: 'Prompts',
     tips: 'Consejos',
@@ -1379,9 +1369,15 @@ const SECTION_LABELS: Record<
 };
 
 const SPEC_TITLE_BASE: Record<AppLocale, string> = {
-  en: 'Real Specs',
-  fr: 'Spécifications réelles',
-  es: 'Especificaciones reales',
+  en: 'Specs',
+  fr: 'Spécifications',
+  es: 'Especificaciones',
+};
+
+const PRELAUNCH_SPEC_SUFFIX: Record<AppLocale, string> = {
+  en: '(pre-launch)',
+  fr: '(pré-lancement)',
+  es: '(prelanzamiento)',
 };
 
 const SPECS_DECISION_NOTES: Record<AppLocale, string> = {
@@ -1393,7 +1389,7 @@ const SPECS_DECISION_NOTES: Record<AppLocale, string> = {
 const SPEC_STATUS_LABELS: Record<AppLocale, { supported: string; notSupported: string; pending: string }> = {
   en: { supported: 'Supported', notSupported: 'Not supported', pending: 'Data pending' },
   fr: { supported: 'Pris en charge', notSupported: 'Non pris en charge', pending: 'Données en attente' },
-  es: { supported: 'Compatible', notSupported: 'No compatible', pending: 'Datos pendientes' },
+  es: { supported: 'Soportado', notSupported: 'No soportado', pending: 'Datos pendientes' },
 };
 
 const AUTO_SPEC_LABELS: Record<
@@ -1573,6 +1569,12 @@ const PRICE_AUDIO_LABELS: Record<AppLocale, { on: string; off: string }> = {
   en: { on: 'Audio on', off: 'Audio off' },
   fr: { on: 'Audio activé', off: 'Audio coupé' },
   es: { on: 'Audio activado', off: 'Audio desactivado' },
+};
+
+const PRELAUNCH_AUDIO_BADGE_LABELS: Record<AppLocale, string> = {
+  en: 'Audio: supported (pre-launch)',
+  fr: 'Audio: pris en charge (pré-lancement)',
+  es: 'Audio: soportado (prelanzamiento)',
 };
 
 const TIPS_CARD_LABELS: Record<
@@ -2055,81 +2057,6 @@ async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEntry>> {
   return new Map();
 }
 
-const OFFICIAL_SOURCE_DOMAINS = [
-  'maxvideoai.com',
-  'openai.com',
-  'platform.openai.com',
-  'developers.openai.com',
-  'google.com',
-  'ai.google',
-  'deepmind.google',
-  'fal.ai',
-  'pika.art',
-  'kuaishou.com',
-  'klingai.com',
-  'luma.ai',
-  'runwayml.com',
-];
-
-function normalizeSourceUrl(rawUrl: string): string | null {
-  const value = rawUrl.trim();
-  if (!value) return null;
-  let parsed: URL;
-  try {
-    parsed = new URL(value);
-  } catch {
-    return null;
-  }
-  if (!['http:', 'https:'].includes(parsed.protocol)) return null;
-  parsed.hash = '';
-  const normalized = parsed.toString().replace(/\/$/, '');
-  return normalized;
-}
-
-function isOfficialSourceDomain(domain: string): boolean {
-  return OFFICIAL_SOURCE_DOMAINS.some((official) => domain === official || domain.endsWith(`.${official}`));
-}
-
-function buildSourceLabel(url: URL): string {
-  const domain = url.hostname.replace(/^www\./i, '');
-  const pathname = url.pathname.replace(/\/$/, '');
-  if (!pathname || pathname === '/') return domain;
-  const shortPath = pathname.length > 40 ? `${pathname.slice(0, 37)}...` : pathname;
-  return `${domain}${shortPath}`;
-}
-
-function buildSourceLinks(sources: string[] | undefined, maxLinks = 5): SourceLink[] {
-  if (!Array.isArray(sources) || sources.length === 0) return [];
-  const unique = new Map<string, URL>();
-  sources.forEach((entry) => {
-    if (typeof entry !== 'string') return;
-    const normalized = normalizeSourceUrl(entry);
-    if (!normalized || unique.has(normalized)) return;
-    try {
-      unique.set(normalized, new URL(normalized));
-    } catch {
-      // Ignore invalid URL.
-    }
-  });
-
-  const ranked = Array.from(unique.entries())
-    .map(([normalized, parsed]) => {
-      const domain = parsed.hostname.replace(/^www\./i, '').toLowerCase();
-      return {
-        url: normalized,
-        domain,
-        label: buildSourceLabel(parsed),
-        official: isOfficialSourceDomain(domain),
-      };
-    })
-    .sort((a, b) => {
-      if (a.official !== b.official) return Number(b.official) - Number(a.official);
-      return a.domain.localeCompare(b.domain, 'en');
-    });
-
-  return ranked.slice(0, maxLinks).map(({ url, domain, label, official }) => ({ url, domain, label, official }));
-}
-
 function resolveKeySpecValue(
   specs: Record<string, unknown> | undefined,
   key: string,
@@ -2411,32 +2338,26 @@ function normalizeHeroSubtitle(text: string, locale: AppLocale): string {
   return output;
 }
 
-function stripMaxVideoAI(text: string): string {
-  let output = text;
-  output = output.replace(/\b(as\s+available|available)\s+in\s+MaxVideoAI(?:\s+today)?\b/gi, '');
-  output = output.replace(/\b(in|inside|on|via)\s+MaxVideoAI(?:\s+today)?\b/gi, '');
-  output = output.replace(/\bMaxVideoAI\b/gi, '');
-  output = output.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?])/g, '$1');
-  output = output.replace(/^[\s–—-]+/, '').replace(/[\s–—-]+$/, '');
-  return output.trim();
+function isPrelaunchAvailabilityValue(availability?: string | null) {
+  const normalized = String(availability ?? '').toLowerCase();
+  return normalized === 'waitlist' || normalized === 'limited';
 }
 
-function buildDefaultSpecTitle(providerName: string | null, heroTitle: string, locale: AppLocale): string {
+function buildDefaultSpecTitle(locale: AppLocale, availability?: string | null): string {
   const base = SPEC_TITLE_BASE[locale] ?? SPEC_TITLE_BASE.en;
-  const parts = [providerName, heroTitle].filter(Boolean);
-  if (!parts.length) return base;
-  return `${base} — ${parts.join(' ')}`;
+  if (!isPrelaunchAvailabilityValue(availability)) return base;
+  const suffix = PRELAUNCH_SPEC_SUFFIX[locale] ?? PRELAUNCH_SPEC_SUFFIX.en;
+  return `${base} ${suffix}`;
 }
 
 function normalizeSpecTitle(
-  _rawTitle: string | null,
-  providerName: string | null,
-  heroTitle: string,
-  locale: AppLocale
+  rawTitle: string | null,
+  locale: AppLocale,
+  availability?: string | null
 ): string {
-  const cleanedProvider = providerName ? stripMaxVideoAI(providerName) : null;
-  const cleanedTitle = stripMaxVideoAI(heroTitle);
-  return buildDefaultSpecTitle(cleanedProvider, cleanedTitle, locale);
+  const cleanRaw = rawTitle?.trim();
+  if (cleanRaw) return cleanRaw;
+  return buildDefaultSpecTitle(locale, availability);
 }
 
 function normalizeSpecNote(_rawNote: string | null, locale: AppLocale): string | null {
@@ -3282,21 +3203,31 @@ async function renderSoraModelPage({
     });
   }
 
+  const modelName = localizedContent.marketingName ?? engine.marketingName;
+  const isPrelaunchAvailability = isPrelaunchAvailabilityValue(engine.availability);
+  const prelaunchFallbackPrompt =
+    locale === 'fr'
+      ? `${modelName} aperçu de pré-lancement (placeholder)`
+      : locale === 'es'
+        ? `${modelName} vista previa de prelanzamiento (placeholder)`
+        : `${modelName} pre-launch preview placeholder`;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
     prompt:
-      engine.type === 'image'
-        ? `${localizedContent.marketingName ?? engine.marketingName} demo still from MaxVideoAI`
-        : `${localizedContent.marketingName ?? engine.marketingName} demo clip from MaxVideoAI`,
+      isPrelaunchAvailability
+        ? prelaunchFallbackPrompt
+        : engine.type === 'image'
+          ? `${modelName} demo still from MaxVideoAI`
+          : `${modelName} demo clip from MaxVideoAI`,
     videoUrl: engine.type === 'image' ? null : engine.media?.videoUrl ?? engine.demoUrl ?? null,
     posterUrl:
-      buildOptimizedPosterUrl(engine.media?.imagePath, { width: 1200, quality: 75 }) ??
       engine.media?.imagePath ??
+      buildOptimizedPosterUrl(engine.media?.imagePath, { width: 1200, quality: 75 }) ??
       null,
     durationSec: null,
     hasAudio: engine.type === 'image' ? false : true,
     href: null,
-    label: localizedContent.marketingName ?? engine.marketingName ?? 'Sora',
+    label: modelName ?? 'Sora',
   };
 
   let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
@@ -3322,7 +3253,6 @@ async function renderSoraModelPage({
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
-  const sourceLinks = buildSourceLinks(keySpecsEntry?.sources, 5);
   const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
   const pricePerImageLabel = await buildPricePerImageLabel(pricingEngine, locale);
   const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, {
@@ -3395,7 +3325,6 @@ async function renderSoraModelPage({
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}
       keySpecValues={keySpecValues}
-      sourceLinks={sourceLinks}
       pricePerImageLabel={pricePerImageLabel}
       pricePerSecondLabel={pricePerSecondLabel}
       engineSlug={engine.modelSlug}
@@ -3423,7 +3352,6 @@ function Sora2PageLayout({
   faqEntries,
   keySpecRows,
   keySpecValues,
-  sourceLinks,
   pricePerImageLabel,
   pricePerSecondLabel,
   engineSlug,
@@ -3447,7 +3375,6 @@ function Sora2PageLayout({
   faqEntries: LocalizedFaqEntry[];
   keySpecRows: KeySpecRow[];
   keySpecValues: KeySpecValues | null;
-  sourceLinks: SourceLink[];
   pricePerImageLabel: string | null;
   pricePerSecondLabel: string | null;
   engineSlug: string;
@@ -3478,8 +3405,11 @@ function Sora2PageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues);
-  const heroTrustLine = locale === 'en' ? GENERIC_TRUST_LINE : copy.heroTrustLine;
-  const specTitle = normalizeSpecTitle(copy.specTitle, providerName, heroTitle, locale);
+  const heroTrustLine =
+    locale === 'en'
+      ? (engine.modelSlug === 'seedance-2-0' ? copy.heroTrustLine : null) ?? GENERIC_TRUST_LINE
+      : copy.heroTrustLine;
+  const specTitle = normalizeSpecTitle(copy.specTitle, locale, engine.availability);
   const specNote = normalizeSpecNote(copy.specNote, locale);
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = isImageEngine
@@ -3512,6 +3442,18 @@ function Sora2PageLayout({
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = normalizeSecondaryCta(copy.secondaryCta);
   const secondaryCtaHref = copy.secondaryCtaHref ?? '/models/sora-2-pro';
+  const isSeedancePrelaunchLocked =
+    engine.modelSlug === 'seedance-2-0' && String(engine.availability).toLowerCase() === 'waitlist';
+  const audioBadgeLabel = isPrelaunchAvailabilityValue(engine.availability)
+    ? PRELAUNCH_AUDIO_BADGE_LABELS[locale] ?? PRELAUNCH_AUDIO_BADGE_LABELS.en
+    : resolveAudioPricingLabels(locale).on;
+  const prelaunchPrimaryCtaLabel =
+    locale === 'fr'
+      ? 'Coming soon · Lancement le 24 février 2026'
+      : locale === 'es'
+        ? 'Coming soon · Lanzamiento el 24 de febrero de 2026'
+        : 'Coming soon · Launches February 24, 2026';
+  const resolvedPrimaryCta = isSeedancePrelaunchLocked ? prelaunchPrimaryCtaLabel : primaryCta;
   const normalizeCtaHref = (href?: string | null): LocalizedLinkHref | null => {
     if (!href) return null;
     const examplesHref = resolveExamplesHrefFromRaw(href);
@@ -3582,7 +3524,6 @@ function Sora2PageLayout({
   const durationIso = heroMedia.durationSec ? `PT${Math.round(heroMedia.durationSec)}S` : undefined;
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hasSourceLinks = sourceLinks.length > 0;
   const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
   const galleryPreviewAlts = dedupeAltsInList(
@@ -3612,7 +3553,6 @@ function Sora2PageLayout({
   const compareAnchorId = 'compare';
   const tocItems = [
     { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
-    { id: 'sources', label: sectionLabels.sources, visible: hasSourceLinks },
     { id: textAnchorId, label: sectionLabels.examples, visible: hasExamples },
     { id: imageAnchorId, label: sectionLabels.prompting, visible: hasTextSection },
     { id: 'tips', label: sectionLabels.tips, visible: hasTipsSection },
@@ -3772,14 +3712,25 @@ function Sora2PageLayout({
               ) : null}
             </div>
             <div className="flex flex-wrap justify-center gap-4">
-              <ButtonLink
-                href={normalizedPrimaryCtaHref}
-                size="lg"
-                className="shadow-card"
-                linkComponent={Link}
-              >
-                {primaryCta}
-              </ButtonLink>
+              {resolvedPrimaryCta ? (
+                isSeedancePrelaunchLocked ? (
+                  <span
+                    aria-disabled="true"
+                    className="inline-flex min-h-[48px] cursor-not-allowed select-none items-center justify-center gap-2 rounded-input bg-brand px-6 py-3 text-sm font-semibold text-on-brand opacity-85 shadow-card"
+                  >
+                    {resolvedPrimaryCta}
+                  </span>
+                ) : (
+                  <ButtonLink
+                    href={normalizedPrimaryCtaHref}
+                    size="lg"
+                    className="shadow-card"
+                    linkComponent={Link}
+                  >
+                    {resolvedPrimaryCta}
+                  </ButtonLink>
+                )
+              ) : null}
               {secondaryCta && localizedSecondaryCtaHref ? (
                 <ButtonLink
                   href={localizedSecondaryCtaHref}
@@ -3818,6 +3769,7 @@ function Sora2PageLayout({
                     media={heroMedia}
                     label={heroTitle}
                     locale={locale}
+                    audioBadgeLabel={audioBadgeLabel}
                     hideLabel
                     hidePrompt
                     metaLines={heroMetaLines}
@@ -3991,29 +3943,6 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {hasSourceLinks ? (
-          <section
-            id="sources"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-          >
-            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{sectionLabels.sources}</h2>
-            <div className="mx-auto grid w-full max-w-5xl gap-3 sm:grid-cols-2">
-              {sourceLinks.map((source) => (
-                <a
-                  key={source.url}
-                  href={source.url}
-                  target="_blank"
-                  rel={source.official ? 'noopener noreferrer' : 'noopener noreferrer nofollow'}
-                  className="rounded-2xl border border-hairline bg-surface/80 px-4 py-3 text-sm text-text-secondary shadow-card transition hover:border-text-muted hover:text-text-primary"
-                >
-                  <span className="block font-semibold text-text-primary">{source.label}</span>
-                  <span className="mt-1 block text-xs text-text-muted">{source.domain}</span>
-                </a>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         {isImageEngine && copy.microCta ? (
           <div className="flex justify-center">
             <Link
@@ -4155,6 +4084,7 @@ function Sora2PageLayout({
                         media={demoMedia}
                         label={copy.demoTitle ?? 'Sora 2 demo'}
                         locale={locale}
+                        audioBadgeLabel={audioBadgeLabel}
                         hideLabel
                         promptLabel={useDemoMediaPrompt ? undefined : copy.demoPromptLabel ?? undefined}
                         promptLines={useDemoMediaPrompt ? [] : copy.demoPrompt}
@@ -4379,7 +4309,6 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-
         {faqList.length ? (
           <section
             id="faq"
@@ -4414,6 +4343,7 @@ function MediaPreview({
   media,
   label,
   locale,
+  audioBadgeLabel,
   promptLabel,
   promptLines = [],
   hideLabel = false,
@@ -4428,6 +4358,7 @@ function MediaPreview({
   media: FeaturedMedia;
   label: string;
   locale: AppLocale;
+  audioBadgeLabel?: string;
   promptLabel?: string;
   promptLines?: string[];
   hideLabel?: boolean;
@@ -4454,6 +4385,19 @@ function MediaPreview({
     prompt: media.prompt ?? label,
     locale,
   });
+  const placeholderHint = (media.prompt ?? '').toLowerCase();
+  const isPrelaunchPlaceholder =
+    placeholderHint.includes('pre-launch') ||
+    placeholderHint.includes('pré-lancement') ||
+    placeholderHint.includes('prelanzamiento');
+  const resolvedAltText = isPrelaunchPlaceholder
+    ? locale === 'fr'
+      ? `${media.label ?? label} aperçu visuel de pré-lancement`
+      : locale === 'es'
+        ? `${media.label ?? label} vista visual de prelanzamiento`
+        : `${media.label ?? label} pre-launch visual preview`
+    : altText;
+  const resolvedAudioBadgeLabel = audioBadgeLabel ?? (PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en).on;
   const figureClassName = [
     'group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card',
     isVertical ? 'mx-auto max-w-sm' : '',
@@ -4469,7 +4413,7 @@ function MediaPreview({
               <ModelHeroMedia
                 posterSrc={posterSrc}
                 videoSrc={media.videoUrl}
-                alt={altText}
+                alt={resolvedAltText}
                 sizes="(max-width: 768px) 100vw, 720px"
                 autoPlayDelayMs={autoPlayDelayMs}
                 waitForLcp={waitForLcp}
@@ -4483,7 +4427,7 @@ function MediaPreview({
             ) : posterSrc ? (
               <Image
                 src={posterSrc}
-                alt={altText}
+                alt={resolvedAltText}
                 fill
                 className="h-full w-full object-cover"
                 sizes="(max-width: 768px) 100vw, 720px"
@@ -4499,7 +4443,7 @@ function MediaPreview({
             )}
             {media.hasAudio ? (
               <span className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-on-inverse">
-                Audio on
+                {resolvedAudioBadgeLabel}
               </span>
             ) : null}
             {media.durationSec ? (
@@ -4575,6 +4519,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'kling-2-6-pro' ||
     slug === 'kling-3-standard' ||
     slug === 'seedance-1-5-pro' ||
+    slug === 'seedance-2-0' ||
     slug === 'kling-3-pro' ||
     slug === 'nano-banana' ||
     slug === 'nano-banana-pro'

@@ -1516,17 +1516,10 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
       maxImageSizeMB: 25,
     },
   },
-  pricingDetails: {
-    currency: 'USD',
-    perSecondCents: {
-      default: 0,
-    },
-  },
   pricing: {
     unit: 'USD/s',
-    base: 0,
     currency: 'USD',
-    notes: 'Pricing details will be confirmed at launch.',
+    notes: 'Pricing is confirmed at launch.',
   },
   updatedAt: '2026-02-19T00:00:00Z',
   ttlSec: 600,
@@ -3423,6 +3416,12 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'textImage',
     seoText:
       'Seedance 2.0 is coming to fal.ai on February 24, 2026 with multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
+    media: {
+      videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+      imagePath: '/hero/seedance-2-0.jpg',
+      altText: 'Seedance 2.0 demo frame showing a cinematic homecoming scene',
+    },
+    demoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
     prompts: [
       {
         title: 'Action chase prelaunch test',
