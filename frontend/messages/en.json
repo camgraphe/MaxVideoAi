@@ -2870,8 +2870,8 @@
     "hero": {
       "back": "Back to comparisons",
       "kicker": "Compare engines",
-      "intro": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.",
-      "introPrelaunch": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.",
+      "intro": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.",
+      "introPrelaunch": "This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.",
       "takeawaysTitle": "Key takeaways",
       "lastUpdatedLabel": "Last updated"
     },
@@ -2881,6 +2881,7 @@
       "provisionalNote": "Pre-launch scores are provisional and will update once runtime renders and final pricing are available.",
       "strengthsLabel": "Strengths",
       "winnerSummary": "Winner summary",
+      "winnerSummaryPrelaunch": "Current leader (pre-launch)",
       "generateWith": "Generate with {engine}",
       "fullProfile": "Full engine profile"
     },
@@ -2891,7 +2892,7 @@
       "na": "N/A",
       "prompt": "Prompt",
       "tryPrompt": "Try this prompt:",
-      "tryPromptPrelaunch": "Save this prompt for launch:",
+      "tryPromptPrelaunch": "Prompt actions:",
       "opensGenerator": "Opens the generator pre-filled.",
       "opensGeneratorPrelaunch": "Use these prompt links for planning; pre-launch engines unlock at launch.",
       "savePromptForLaunch": "Save this prompt for launch",
@@ -2973,9 +2974,11 @@
     },
     "summary": {
       "scorecardLabel": "Leads on scorecard",
+      "scorecardLabelPrelaunch": "Currently leads on scorecard (provisional)",
       "pricingLabel": "Cheaper on MaxVideoAI",
       "durationLabel": "Max duration",
       "scorecardTemplate": "Leads on scorecard: {engine} leads on {wins}/{total}{best}.",
+      "scorecardTemplatePrelaunch": "Currently leads on scorecard (provisional): {engine} leads on {wins}/{total}{best}.",
       "pricingTemplate": "Cheaper: {engine} ({pricing}).",
       "durationTemplate": "Max duration: {engine} ({duration}).",
       "specTemplate": "{label}: {engine} ({leftValue} vs {rightValue}).",

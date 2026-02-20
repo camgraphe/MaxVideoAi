@@ -850,6 +850,7 @@ type ComparePageCopy = {
     provisionalNote?: string;
     strengthsLabel?: string;
     winnerSummary?: string;
+    winnerSummaryPrelaunch?: string;
     generateWith?: string;
     fullProfile?: string;
   };
@@ -912,9 +913,11 @@ type ComparePageCopy = {
   };
   summary?: {
     scorecardLabel?: string;
+    scorecardLabelPrelaunch?: string;
     pricingLabel?: string;
     durationLabel?: string;
     scorecardTemplate?: string;
+    scorecardTemplatePrelaunch?: string;
     pricingTemplate?: string;
     durationTemplate?: string;
     specTemplate?: string;
@@ -1030,7 +1033,7 @@ export default async function CompareDetailPage({
     na: compareCopy.labels?.na ?? 'N/A',
     prompt: compareCopy.labels?.prompt ?? 'Prompt',
     tryPrompt: compareCopy.labels?.tryPrompt ?? 'Try this prompt:',
-    tryPromptPrelaunch: compareCopy.labels?.tryPromptPrelaunch ?? 'Save this prompt for launch:',
+    tryPromptPrelaunch: compareCopy.labels?.tryPromptPrelaunch ?? 'Prompt actions:',
     opensGenerator: compareCopy.labels?.opensGenerator ?? 'Opens the generator pre-filled.',
     opensGeneratorPrelaunch:
       compareCopy.labels?.opensGeneratorPrelaunch ??
@@ -1103,9 +1106,9 @@ export default async function CompareDetailPage({
     : null;
   const heroIntroTemplate = hasPrelaunchEngine
     ? (compareCopy.hero?.introPrelaunch ??
-      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.')
+      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.')
     : (compareCopy.hero?.intro ??
-      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to pick a winner fast — then open each engine profile for full specs and prompt examples.');
+      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.');
   const showdownSubtitle = hasPrelaunchEngine
     ? (compareCopy.showdown?.subtitlePrelaunch ??
       'Side-by-side prompts and renders (when available) on MaxVideoAI. Prompts are identical; outputs may vary by model.')
@@ -1117,6 +1120,9 @@ export default async function CompareDetailPage({
     : null;
   const prelaunchTryPromptLabel = hasPrelaunchEngine ? labels.tryPromptPrelaunch : labels.tryPrompt;
   const prelaunchOpensGeneratorLabel = hasPrelaunchEngine ? labels.opensGeneratorPrelaunch : labels.opensGenerator;
+  const winnerSummaryHeading = hasPrelaunchEngine
+    ? (compareCopy.scorecard?.winnerSummaryPrelaunch ?? 'Current leader (pre-launch)')
+    : (compareCopy.scorecard?.winnerSummary ?? 'Winner summary');
   const overallTone = resolveOverallTone(leftOverall, rightOverall);
   const leftOverallClass =
     overallTone === 'left'
@@ -1695,9 +1701,14 @@ export default async function CompareDetailPage({
   const durationSummary = `${formatFaqValue(leftSpecs.maxDuration)} vs ${formatFaqValue(rightSpecs.maxDuration)}`;
   const pricingSummary = `${leftPricingDisplay.headline} vs ${rightPricingDisplay.headline}`;
   const summaryCopy = compareCopy.summary ?? {};
-  const scorecardTemplate =
-    summaryCopy.scorecardTemplate ??
-    'Scorecard winner: {engine} leads on {wins}/{total}{best}.';
+  const scorecardTemplate = hasPrelaunchEngine
+    ? (summaryCopy.scorecardTemplatePrelaunch ??
+      'Currently leads on scorecard (provisional): {engine} leads on {wins}/{total}{best}.')
+    : (summaryCopy.scorecardTemplate ??
+      'Scorecard winner: {engine} leads on {wins}/{total}{best}.');
+  const scorecardSummaryLabel = hasPrelaunchEngine
+    ? (summaryCopy.scorecardLabelPrelaunch ?? 'Currently leads on scorecard (provisional)')
+    : (summaryCopy.scorecardLabel ?? 'Scorecard winner');
   const pricingTemplate =
     summaryCopy.pricingTemplate ??
     'Cheaper: {engine} ({pricing}).';
@@ -1780,7 +1791,7 @@ export default async function CompareDetailPage({
     winnerSummaryRows.push({
       id: 'scorecard',
       icon: 'scorecard',
-      label: summaryCopy.scorecardLabel ?? 'Scorecard winner',
+      label: scorecardSummaryLabel,
       value: formatTemplate(scorecardTemplate, {
         engine: formatEngineName(topWinner),
         wins: String(scoreLeader === 'left' ? leftWins : rightWins),
@@ -1978,7 +1989,7 @@ export default async function CompareDetailPage({
                     {summaryIcons.scorecard}
                   </span>
                   <h3 className="text-sm font-semibold text-text-primary">
-                    {compareCopy.scorecard?.winnerSummary ?? 'Winner summary'}
+                    {winnerSummaryHeading}
                   </h3>
                 </div>
                 <div className="mt-3 grid gap-2">
@@ -2216,7 +2227,11 @@ export default async function CompareDetailPage({
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
-                        {leftIsPrelaunch ? labels.savePromptForLaunch : formatEngineShortName(left)}
+                        {leftIsPrelaunch
+                          ? labels.savePromptForLaunch
+                          : formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+                              engine: formatEngineShortName(left),
+                            })}
                       </Link>
                       <Link
                         href={buildGenerateHref(right.modelSlug, entry.prompt, entry.aspectRatio, entry.mode)}
@@ -2224,7 +2239,11 @@ export default async function CompareDetailPage({
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
-                        {rightIsPrelaunch ? labels.savePromptForLaunch : formatEngineShortName(right)}
+                        {rightIsPrelaunch
+                          ? labels.savePromptForLaunch
+                          : formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+                              engine: formatEngineShortName(right),
+                            })}
                       </Link>
                       <span className="text-xs text-text-muted">{prelaunchOpensGeneratorLabel}</span>
                     </div>

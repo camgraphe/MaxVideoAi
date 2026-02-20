@@ -2881,8 +2881,8 @@
     "hero": {
       "back": "Retour aux comparatifs",
       "kicker": "Comparer les moteurs",
-      "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les specs clés et un scorecard sur 11 critères. Utilisez-la pour choisir vite — puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
-      "introPrelaunch": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des prompts et rendus face à face (lorsqu’ils sont disponibles), les specs clés et un scorecard sur 11 critères. Utilisez-la pour décider rapidement, puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
+      "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les specs clés et un scorecard sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
+      "introPrelaunch": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des prompts et rendus face à face (lorsqu’ils sont disponibles), les specs clés et un scorecard sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
       "takeawaysTitle": "Points clés",
       "lastUpdatedLabel": "Mis à jour"
     },
@@ -2892,6 +2892,7 @@
       "provisionalNote": "Les scores pré-lancement sont provisoires et seront mis à jour dès que les rendus runtime et le prix final seront disponibles.",
       "strengthsLabel": "Points forts",
       "winnerSummary": "Résumé gagnant",
+      "winnerSummaryPrelaunch": "Leader actuel (pré-lancement)",
       "generateWith": "Générer avec {engine}",
       "fullProfile": "Profil complet du moteur"
     },
@@ -2902,7 +2903,7 @@
       "na": "N/A",
       "prompt": "Prompt",
       "tryPrompt": "Essayez ce prompt :",
-      "tryPromptPrelaunch": "Enregistrer ce prompt pour le lancement :",
+      "tryPromptPrelaunch": "Actions de prompt :",
       "opensGenerator": "Ouvre le générateur pré-rempli.",
       "opensGeneratorPrelaunch": "Utilisez ces liens de prompt pour préparer vos tests ; les moteurs pré-lancement s’ouvrent au lancement.",
       "savePromptForLaunch": "Enregistrer ce prompt pour le lancement",
@@ -2984,9 +2985,11 @@
     },
     "summary": {
       "scorecardLabel": "Leader du scorecard",
+      "scorecardLabelPrelaunch": "Leader actuel du scorecard (provisoire)",
       "pricingLabel": "Moins cher sur MaxVideoAI",
       "durationLabel": "Durée max",
       "scorecardTemplate": "Leader du scorecard : {engine} mène {wins}/{total}{best}.",
+      "scorecardTemplatePrelaunch": "Actuellement en tête du scorecard (provisoire) : {engine} mène {wins}/{total}{best}.",
       "pricingTemplate": "Moins cher : {engine} ({pricing}).",
       "durationTemplate": "Durée max : {engine} ({duration}).",
       "specTemplate": "{label} : {engine} ({leftValue} vs {rightValue}).",
