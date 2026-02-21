@@ -905,6 +905,14 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
                 </div>
               ))}
             </div>
+            <a
+              href="https://startupfa.me/s/maxvideoai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-auto w-fit text-xs font-medium text-text-muted underline underline-offset-2 transition hover:text-text-primary"
+            >
+              View on Startup Fame
+            </a>
           </article>
         </div>
       </section>
