@@ -2,7 +2,7 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 — vidéo IA avec audio natif (24/02)",
+    "title": "Seedance 2.0 — vidéo IA avec audio natif",
     "description": "Découvrez Seedance 2.0 (ByteDance) en pré-lancement : vidéo IA cinématique, audio natif, contrôle caméra avancé et sorties jusqu'à 15 s en 1080p."
   },
   "overview": "Seedance 2.0 est le modèle vidéo IA de ByteDance orienté rendu cinématique, continuité multi-plans et génération audio native synchronisée à l'image. Cette page est une vue pré-lancement indexable pour préparer vos prompts, vos cas d'usage et vos choix de production avant la disponibilité runtime.",
@@ -10,7 +10,7 @@
   "hero": {
     "title": "Seedance 2.0",
     "intro": "Préparez vos flux de production vidéo avant la sortie : capacités officielles, cas d'usage prioritaires et gabarits de prompts orientés multi-plans + audio natif.",
-    "badge": "Pré-lancement · Lancement prévu le 24 février 2026",
+    "badge": "Pré-lancement · Date officielle à confirmer",
     "ctaPrimary": {
       "label": "Rejoindre la liste d'attente / Être notifié",
       "href": "/ai-video-engines"
@@ -59,7 +59,7 @@
   "technicalOverview": [
     {
       "label": "Statut",
-      "body": "Pré-lancement. Lancement prévu le 24 février 2026. La page est indexable avant cette date, mais la génération runtime reste verrouillée."
+      "body": "Pré-lancement. Date officielle à confirmer. La page est indexable, mais la génération runtime reste verrouillée avant lancement."
     },
     {
       "label": "Entrées",
@@ -102,7 +102,7 @@
   "tips": {
     "title": "Limites et notes pré-lancement",
     "items": [
-      "La page est visible et indexable en pré-lancement ; l'exécution runtime reste verrouillée jusqu'au 24/02/2026.",
+      "La page est visible et indexable en pré-lancement ; l'exécution runtime reste verrouillée jusqu'au lancement.",
       "Le prix final et les conditions commerciales sont confirmés au lancement.",
       "Certaines capacités avancées (extension/édition) dépendent des endpoints exposés au lancement.",
       "Pour le multi-plans en <=15 s, privilégiez des beats simples et bien séquencés."
@@ -146,7 +146,7 @@
     },
     {
       "q": "Quand sera-t-il disponible ?",
-      "a": "Lancement prévu le 24 février 2026."
+      "a": "La date officielle est à confirmer."
     },
     {
       "q": "Peut-on générer avant cette date ?",

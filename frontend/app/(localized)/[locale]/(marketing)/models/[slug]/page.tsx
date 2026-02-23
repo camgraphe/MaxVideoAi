@@ -3461,10 +3461,10 @@ function Sora2PageLayout({
     : resolveAudioPricingLabels(locale).on;
   const prelaunchPrimaryCtaLabel =
     locale === 'fr'
-      ? 'Coming soon · Lancement le 24 février 2026'
+      ? "Liste d'attente · Date officielle à confirmer"
       : locale === 'es'
-        ? 'Coming soon · Lanzamiento el 24 de febrero de 2026'
-        : 'Coming soon · Launches February 24, 2026';
+        ? 'Lista de espera · Fecha oficial por confirmar'
+        : 'Join waitlist · Official date TBA';
   const resolvedPrimaryCta = isSeedancePrelaunchLocked ? prelaunchPrimaryCtaLabel : primaryCta;
   const normalizeCtaHref = (href?: string | null): LocalizedLinkHref | null => {
     if (!href) return null;

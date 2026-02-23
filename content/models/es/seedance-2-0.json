@@ -2,7 +2,7 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 — video IA con audio nativo (24/02)",
+    "title": "Seedance 2.0 — video IA con audio nativo",
     "description": "Conozca Seedance 2.0 (ByteDance) en prelanzamiento: video IA cinematográfico, audio nativo, control avanzado de cámara y salidas de hasta 15 s en 1080p."
   },
   "overview": "Seedance 2.0 es el modelo de video IA de ByteDance enfocado en movimiento cinematográfico, continuidad multi-shot y generación nativa de audio sincronizado con la imagen. Esta página es una vista de prelanzamiento indexable para que usted prepare prompts, casos de uso y decisiones de producción antes de la disponibilidad runtime.",
@@ -10,7 +10,7 @@
   "hero": {
     "title": "Seedance 2.0",
     "intro": "Prepare su flujo de video antes del lanzamiento: capacidades oficiales, casos de uso prioritarios y plantillas de prompts orientadas a multi-shot + audio nativo.",
-    "badge": "Prelanzamiento · Lanzamiento previsto el 24 de febrero de 2026",
+    "badge": "Prelanzamiento · Fecha oficial por confirmar",
     "ctaPrimary": {
       "label": "Unirse a la lista de espera / Recibir aviso",
       "href": "/ai-video-engines"
@@ -59,7 +59,7 @@
   "technicalOverview": [
     {
       "label": "Estado",
-      "body": "Prelanzamiento. Lanzamiento previsto el 24 de febrero de 2026. La página es indexable antes de esa fecha, pero la generación runtime permanece bloqueada."
+      "body": "Prelanzamiento. Fecha oficial por confirmar. La página es indexable, pero la generación runtime permanece bloqueada antes del lanzamiento."
     },
     {
       "label": "Entradas",
@@ -102,7 +102,7 @@
   "tips": {
     "title": "Límites y notas de prelanzamiento",
     "items": [
-      "La página es visible e indexable en prelanzamiento; la ejecución runtime sigue bloqueada hasta el 24/02/2026.",
+      "La página es visible e indexable en prelanzamiento; la ejecución runtime sigue bloqueada hasta el lanzamiento.",
       "El precio final y los términos comerciales se confirman en el lanzamiento.",
       "Algunas capacidades avanzadas (extensión/edición) dependen de los endpoints publicados al lanzamiento.",
       "Para multi-shot en <=15 s, use beats simples y bien secuenciados."
@@ -146,7 +146,7 @@
     },
     {
       "q": "¿Cuándo estará disponible?",
-      "a": "Lanzamiento previsto el 24 de febrero de 2026."
+      "a": "La fecha oficial está por confirmar."
     },
     {
       "q": "¿Se puede generar antes de esa fecha?",

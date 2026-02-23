@@ -16,10 +16,10 @@ const PRELAUNCH_CONTENT_RULES = [
   {
     modelSlug: 'seedance-2-0',
     requiredAvailability: 'waitlist',
-    acceptedDateSnippetsByLocale: {
-      en: ['February 24, 2026', 'Feb 24, 2026', '2026-02-24'],
-      fr: ['24 février 2026', '2026-02-24'],
-      es: ['24 de febrero de 2026', '2026-02-24'],
+    acceptedLaunchSnippetsByLocale: {
+      en: ['coming soon', 'official date tba', 'launch date tba'],
+      fr: ['pré-lancement', 'date officielle à confirmer'],
+      es: ['prelanzamiento', 'fecha oficial por confirmar'],
     },
   },
 ];
@@ -257,12 +257,12 @@ async function runPrelaunchContentChecks(catalogBySlug, issues) {
     if (catalogAvailability.normalized !== rule.requiredAvailability) continue;
 
     for (const locale of LOCALES) {
-      const expectedDateSnippets = Array.isArray(rule.acceptedDateSnippetsByLocale?.[locale])
-        ? rule.acceptedDateSnippetsByLocale[locale].filter(
+      const expectedLaunchSnippets = Array.isArray(rule.acceptedLaunchSnippetsByLocale?.[locale])
+        ? rule.acceptedLaunchSnippetsByLocale[locale].filter(
             (snippet) => typeof snippet === 'string' && snippet.trim().length
           )
         : [];
-      if (!expectedDateSnippets.length) continue;
+      if (!expectedLaunchSnippets.length) continue;
 
       let content = null;
       try {
@@ -279,18 +279,18 @@ async function runPrelaunchContentChecks(catalogBySlug, issues) {
       }
 
       const serialized = JSON.stringify(content).toLowerCase();
-      const hasAcceptedDateSnippet = expectedDateSnippets.some((snippet) =>
+      const hasAcceptedLaunchSnippet = expectedLaunchSnippets.some((snippet) =>
         serialized.includes(snippet.toLowerCase())
       );
-      if (!hasAcceptedDateSnippet) {
+      if (!hasAcceptedLaunchSnippet) {
         addIssue(
           issues,
           'critical',
-          'prelaunch_release_date_missing',
-          `Missing launch date phrase in content/models/${locale}/${rule.modelSlug}.json. Expected one of: ${expectedDateSnippets
+          'prelaunch_launch_signal_missing',
+          `Missing prelaunch launch-status phrase in content/models/${locale}/${rule.modelSlug}.json. Expected one of: ${expectedLaunchSnippets
             .map((snippet) => `"${snippet}"`)
             .join(', ')}.`,
-          { modelSlug: rule.modelSlug, locale, expectedDateSnippets }
+          { modelSlug: rule.modelSlug, locale, expectedLaunchSnippets }
         );
       }
     }

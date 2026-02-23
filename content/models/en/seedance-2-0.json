@@ -3,14 +3,14 @@
   "versionLabel": "2.0",
   "seo": {
     "title": "Seedance 2.0 (ByteDance) — AI Video with Native Audio & Multi-Shot Control | MaxVideoAI",
-    "description": "Explore ByteDance Seedance 2.0 before launch: native audio generation, 1080p up to 15s, multi-shot outputs, cinematic camera language, and structured prompt templates. Launch expected Feb 24, 2026."
+    "description": "Explore ByteDance Seedance 2.0 before launch: native audio generation, 1080p up to 15s, multi-shot outputs, cinematic camera language, and structured prompt templates. Official launch date TBA."
   },
   "overview": "Seedance 2.0 is ByteDance's next-gen AI video model focused on cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. This page is a pre-launch overview: specs, best use cases, and prompt templates so you can plan workflows before release.",
   "pricingNotes": "Pre-launch: pricing and commercial terms are confirmed at launch.",
   "hero": {
     "title": "Seedance 2.0",
     "intro": "Seedance 2.0 is ByteDance's next-gen AI video model focused on cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. This page is a pre-launch overview: specs, best use cases, and prompt templates so you can plan workflows before release.",
-    "badge": "Coming soon · Expected launch: February 24, 2026",
+    "badge": "Coming soon · Official date TBA",
     "ctaPrimary": {
       "label": "Join waitlist / Get notified",
       "href": "/ai-video-engines"
@@ -59,7 +59,7 @@
   "technicalOverview": [
     {
       "label": "Launch status",
-      "body": "Coming soon. Expected launch: February 24, 2026. Pre-launch page is indexable; runtime generation remains locked before launch."
+      "body": "Coming soon. Official launch date TBA. Pre-launch page is indexable; runtime generation remains locked before launch."
     },
     {
       "label": "Inputs",
@@ -102,7 +102,7 @@
   "tips": {
     "title": "Limitations and pre-launch notes",
     "items": [
-      "Model page is live and indexable before launch; generation is locked until February 24, 2026.",
+      "Model page is live and indexable before launch; generation is locked until launch.",
       "Commercial usage details are confirmed at launch.",
       "Advanced editing and extension capabilities depend on launch endpoint exposure.",
       "Keep prompts structured for multi-shot coherence in <=15s outputs."
@@ -146,7 +146,7 @@
     },
     {
       "q": "When will it be available on MaxVideoAI?",
-      "a": "This page is pre-launch. Availability and pricing will be confirmed at launch (currently expected Feb 24, 2026)."
+      "a": "This page is pre-launch. Availability and pricing will be confirmed at launch (official date TBA)."
     },
     {
       "q": "Can I generate before launch?",

@@ -3376,7 +3376,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: '2.0',
     availability: 'waitlist',
     logoPolicy: 'textOnly',
-    billingNote: 'Expected launch: February 24, 2026. Pricing will be confirmed at launch.',
+    billingNote: 'Launch date TBA. Pricing will be confirmed at launch.',
     engine: SEEDANCE_2_0_ENGINE,
     modes: [
       {
@@ -3408,14 +3408,14 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/seedance-2.0/text-to-video',
     seo: {
-      title: 'Seedance 2.0 — AI Video with Native Audio (Feb 24)',
+      title: 'Seedance 2.0 — AI Video with Native Audio (Coming Soon)',
       description:
-        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control. Expected launch Feb 24, 2026.',
+        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control. Official launch date TBA.',
       canonicalPath: '/models/seedance-2-0',
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 is expected on February 24, 2026 with multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
+      'Seedance 2.0 is coming soon with multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
     media: {
       videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
       imagePath: '/hero/seedance-2-0.jpg',
@@ -3440,7 +3440,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       {
         question: 'When is Seedance 2.0 available?',
         answer:
-          'Seedance 2.0 is expected on February 24, 2026. Until then it is visible in pre-launch mode.',
+          'Seedance 2.0 is coming soon with an official date TBA. Until then it is visible in pre-launch mode.',
       },
       {
         question: 'Can I run Seedance 2.0 before launch?',

@@ -206,9 +206,9 @@ function getPrelaunchPricingLabel(locale: AppLocale) {
 }
 
 function getPrelaunchPricingNote(locale: AppLocale) {
-  if (locale === 'fr') return 'Tarif final publié le 24 février 2026.';
-  if (locale === 'es') return 'Precio final publicado el 24 de febrero de 2026.';
-  return 'Final pricing will be published on February 24, 2026.';
+  if (locale === 'fr') return 'Tarif final publié au lancement (date officielle à confirmer).';
+  if (locale === 'es') return 'Precio final publicado en el lanzamiento (fecha oficial por confirmar).';
+  return 'Final pricing will be published at launch (official date TBA).';
 }
 
 const SCORE_LABELS: Array<{ key: keyof EngineScore; label: string }> = [
