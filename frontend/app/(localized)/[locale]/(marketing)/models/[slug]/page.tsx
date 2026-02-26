@@ -2522,6 +2522,15 @@ const DEFAULT_VIDEO_SAFETY = [
 
 const DEFAULT_GENERIC_SAFETY = DEFAULT_VIDEO_SAFETY;
 
+const COMPARE_PRIORITY_BY_MODEL: Record<string, string[]> = {
+  'veo-3-1': ['kling-3-pro', 'veo-3-1-fast', 'sora-2'],
+  'kling-3-pro': ['veo-3-1', 'sora-2', 'seedance-1-5-pro'],
+  'sora-2': ['veo-3-1', 'kling-3-pro', 'seedance-2-0'],
+  'pika-text-to-video': ['seedance-2-0', 'minimax-hailuo-02-text', 'ltx-2-fast'],
+  'seedance-1-5-pro': ['seedance-2-0', 'kling-3-pro', 'sora-2'],
+  'seedance-2-0': ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
+};
+
 function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
   const filtered = allEngines.filter((entry) => {
     if (entry.modelSlug === currentSlug) return false;
@@ -2529,21 +2538,25 @@ function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, l
     const hasVideoMode = modes.some((mode) => mode.endsWith('v'));
     return hasVideoMode;
   });
+  const filteredBySlug = new Map(filtered.map((entry) => [entry.modelSlug, entry]));
 
   const selected: FalEngineEntry[] = [];
   const usedFamilies = new Set<string>();
+  const usedSlugs = new Set<string>();
   const registerEngine = (entry: FalEngineEntry) => {
+    if (usedSlugs.has(entry.modelSlug)) return;
     selected.push(entry);
+    usedSlugs.add(entry.modelSlug);
     const familyKey = entry.family ?? entry.brandId ?? entry.provider ?? entry.modelSlug;
     usedFamilies.add(familyKey);
   };
 
-  if (currentSlug === 'seedance-1-5-pro') {
-    const seedancePrelaunch = filtered.find((entry) => entry.modelSlug === 'seedance-2-0');
-    if (seedancePrelaunch) {
-      registerEngine(seedancePrelaunch);
-      if (selected.length >= limit) return selected;
-    }
+  const priorityTargets = COMPARE_PRIORITY_BY_MODEL[currentSlug] ?? [];
+  for (const targetSlug of priorityTargets) {
+    const target = filteredBySlug.get(targetSlug);
+    if (!target) continue;
+    registerEngine(target);
+    if (selected.length >= limit) return selected;
   }
 
   for (const entry of filtered) {

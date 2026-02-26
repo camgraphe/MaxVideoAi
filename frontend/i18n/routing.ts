@@ -67,6 +67,11 @@ export const routing = defineRouting({
       fr: '/status',
       es: '/status',
     },
+    '/company': {
+      en: '/company',
+      fr: '/company',
+      es: '/company',
+    },
     '/legal/terms': {
       en: '/legal/terms',
       fr: '/legal/terms',

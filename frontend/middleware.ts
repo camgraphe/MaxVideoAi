@@ -50,6 +50,7 @@ const KNOWN_MARKETING_SEGMENTS = new Set(
     'ai-video-engines',
     'blog',
     'changelog',
+    'company',
     'contact',
     'docs',
     'examples',
@@ -89,6 +90,7 @@ const QUERY_PARAM_STRIP_PREFIXES = [
   '/changelog',
   '/contact',
   '/about',
+  '/company',
   '/video',
   '/login',
 ];
@@ -380,15 +382,7 @@ export async function middleware(req: NextRequest) {
 
   if (isMarketingPath) {
     const defaultPrefix = localePathnames[defaultLocale];
-    if (!hasLocalePrefix(pathname) && !localeFromPath && !defaultPrefix) {
-      const rewriteUrl = req.nextUrl.clone();
-      const suffix = pathname === '/' ? '' : pathname;
-      rewriteUrl.pathname = `/${defaultLocale}${suffix}`;
-      if (bypassLocaleRedirect) {
-        rewriteUrl.searchParams.delete('nolocale');
-      }
-      response = NextResponse.rewrite(rewriteUrl);
-    } else if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
+    if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
       const rewriteUrl = req.nextUrl.clone();
       if (defaultPrefix) {
         const suffix = pathname === '/' ? '' : pathname;

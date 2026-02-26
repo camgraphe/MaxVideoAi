@@ -977,25 +977,45 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   : 'Next steps'}
             </h2>
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <Link href="/models" className="font-semibold text-brand hover:text-brandHover">
+              <Link
+                href={{ pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
                 {locale === 'fr'
-                  ? 'Voir les spécifications et limites des modèles'
+                  ? 'Voir le profil Veo 3.1 Fast'
                   : locale === 'es'
-                    ? 'Ver especificaciones y límites de modelos'
-                    : 'See model specs and limits'}
+                    ? 'Ver el perfil de Veo 3.1 Fast'
+                    : 'View Veo 3.1 Fast profile'}
               </Link>
-              <Link href="/ai-video-engines" className="font-semibold text-brand hover:text-brandHover">
+              <Link
+                href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
                 {locale === 'fr'
-                  ? 'Choisir un moteur par use case'
+                  ? 'Voir le profil Seedance 2.0'
                   : locale === 'es'
-                    ? 'Elegir motor por caso de uso'
-                    : 'Choose an engine by use case'}
+                    ? 'Ver el perfil de Seedance 2.0'
+                    : 'View Seedance 2.0 profile'}
               </Link>
-              <Link href="/pricing" className="font-semibold text-brand hover:text-brandHover">
-                {locale === 'fr' ? 'Comparer les tarifs vidéo' : locale === 'es' ? 'Comparar precios' : 'Compare pricing'}
+              <Link
+                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
+                {locale === 'fr'
+                  ? 'Comparer Kling 3 Pro vs Veo 3.1'
+                  : locale === 'es'
+                    ? 'Comparar Kling 3 Pro vs Veo 3.1'
+                    : 'Compare Kling 3 Pro vs Veo 3.1'}
               </Link>
-              <Link href="/workflows" className="font-semibold text-brand hover:text-brandHover">
-                {locale === 'fr' ? 'Voir les workflows IA vidéo' : locale === 'es' ? 'Ver workflows de video IA' : 'See AI video workflows'}
+              <Link
+                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-sora-2' } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
+                {locale === 'fr'
+                  ? 'Comparer Seedance 2.0 vs Sora 2'
+                  : locale === 'es'
+                    ? 'Comparar Seedance 2.0 vs Sora 2'
+                    : 'Compare Seedance 2.0 vs Sora 2'}
               </Link>
             </div>
           </section>

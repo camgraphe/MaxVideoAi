@@ -1089,29 +1089,42 @@ export default async function ModelsPage() {
               {activeLocale === 'fr' ? 'Aller plus loin' : activeLocale === 'es' ? 'Siguientes pasos' : 'Next steps'}
             </h2>
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <Link href="/ai-video-engines" className="font-semibold text-brand hover:text-brandHover">
+              <Link href={{ pathname: '/ai-video-engines' }} className="font-semibold text-brand hover:text-brandHover">
                 {activeLocale === 'fr'
                   ? 'Choisir un moteur par use case'
                   : activeLocale === 'es'
                     ? 'Elegir motor por caso de uso'
                     : 'Choose an engine by use case'}
               </Link>
-              <Link href="/pricing" className="font-semibold text-brand hover:text-brandHover">
+              <Link
+                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
                 {activeLocale === 'fr'
-                  ? 'Voir les tarifs vidéo'
+                  ? 'Comparer Kling 3 Pro vs Veo 3.1'
                   : activeLocale === 'es'
-                    ? 'Ver precios de video'
-                    : 'See video pricing'}
+                    ? 'Comparar Kling 3 Pro vs Veo 3.1'
+                    : 'Compare Kling 3 Pro vs Veo 3.1'}
               </Link>
-              <Link href="/examples" className="font-semibold text-brand hover:text-brandHover">
-                {activeLocale === 'fr' ? 'Voir des exemples' : activeLocale === 'es' ? 'Ver ejemplos' : 'See examples'}
-              </Link>
-              <Link href="/workflows" className="font-semibold text-brand hover:text-brandHover">
+              <Link
+                href={{ pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
                 {activeLocale === 'fr'
-                  ? 'Voir les workflows IA vidéo'
+                  ? 'Voir le profil Veo 3.1 Fast'
                   : activeLocale === 'es'
-                    ? 'Ver workflows de video IA'
-                    : 'See AI video workflows'}
+                    ? 'Ver el perfil de Veo 3.1 Fast'
+                    : 'View Veo 3.1 Fast profile'}
+              </Link>
+              <Link
+                href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
+                {activeLocale === 'fr'
+                  ? 'Voir le profil Seedance 2.0'
+                  : activeLocale === 'es'
+                    ? 'Ver el perfil de Seedance 2.0'
+                    : 'View Seedance 2.0 profile'}
               </Link>
             </div>
           </section>

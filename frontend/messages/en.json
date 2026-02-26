@@ -19,10 +19,6 @@
         "href": "/pricing"
       },
       {
-        "key": "workflows",
-        "href": "/workflows"
-      },
-      {
         "key": "docs",
         "href": "/docs"
       },
@@ -38,7 +34,6 @@
       "examples": "Examples",
       "compare": "Compare",
       "pricing": "Pricing",
-      "workflows": "Workflows",
       "docs": "Docs",
       "blog": "Blog"
     },
@@ -122,24 +117,8 @@
   "footer": {
     "links": [
       {
-        "label": "Blog",
-        "href": "/blog"
-      },
-      {
-        "label": "Terms",
-        "href": "/legal/terms"
-      },
-      {
-        "label": "Privacy",
-        "href": "/legal/privacy"
-      },
-      {
-        "label": "Acceptable Use",
-        "href": "/legal/acceptable-use"
-      },
-      {
-        "label": "Notice & Takedown",
-        "href": "/legal/takedown"
+        "label": "Legal Center",
+        "href": "/legal"
       }
     ],
     "brandNote": "Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
@@ -195,7 +174,6 @@
         "items": {
           "generate": "Generate",
           "pricing": "Pricing",
-          "workflows": "Workflows",
           "docs": "Docs",
           "models": "All models"
         }
@@ -204,9 +182,8 @@
         "title": "Company",
         "items": {
           "blog": "Blog",
-          "about": "About",
-          "contact": "Contact",
-          "status": "Status"
+          "status": "Status",
+          "companyHub": "Company & Trust"
         }
       },
       "policies": {
@@ -1581,8 +1558,8 @@
     "seeAlso": {
       "onboarding": [
         {
-          "href": "/workflows#how-it-works",
-          "label": "Workflows overview"
+          "href": "/models/veo-3-1-fast",
+          "label": "Veo 3.1 Fast model"
         },
         {
           "href": "/examples",
@@ -1611,8 +1588,8 @@
       ],
       "safety": [
         {
-          "href": "/workflows#how-it-works",
-          "label": "Workflows overview"
+          "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1",
+          "label": "Kling 3 Pro vs Veo 3.1"
         },
         {
           "href": "/models",
@@ -1631,8 +1608,8 @@
       ],
       "library": [
         {
-          "href": "/workflows",
-          "label": "Workflows"
+          "href": "/ai-video-engines/seedance-2-0-vs-sora-2",
+          "label": "Seedance 2.0 vs Sora 2"
         },
         {
           "href": "/models",

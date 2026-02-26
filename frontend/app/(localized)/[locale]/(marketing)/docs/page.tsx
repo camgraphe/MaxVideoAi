@@ -302,9 +302,9 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                 <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">
                   {feedbackCopy.yes ?? 'Yes'}
                 </Link>
-                <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">
+                <a href="mailto:support@maxvideo.ai" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">
                   {feedbackCopy.no ?? 'No'}
-                </Link>
+                </a>
                 <a href="#top" className="ml-2 text-sm underline underline-offset-2">
                   {feedbackCopy.backToTop ?? 'Back to top'}
                 </a>

@@ -9,6 +9,7 @@ const HREFLANG_GROUP_PATHS = {
   blog: '/blog',
   docs: '/docs',
   status: '/status',
+  company: '/company',
   contact: '/contact',
   about: '/about',
   compare: '/ai-video-engines',

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
+import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import engineCatalog from '@/config/engine-catalog.json';
@@ -13,7 +13,13 @@ const canonicalCompareSlug = (left: string, right: string) => [left, right].sort
 const OPEN_COOKIE_PREFERENCES_EVENT = 'consent:open-preferences';
 
 export function MarketingFooter() {
+  const pathname = usePathname();
+  const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
   const { t } = useI18n();
+  if (isCompanyTrustHub) {
+    return null;
+  }
+
   const labelFor = (key: string, fallback: string) => t(key, fallback) ?? fallback;
   const openCookiePreferences = () => {
     if (typeof window === 'undefined') return;
@@ -22,13 +28,7 @@ export function MarketingFooter() {
 
   const modelSlugSet = new Set(engineCatalog.map((entry) => entry.modelSlug));
 
-  const defaultPolicyLinks: PolicyLink[] = [
-    { label: 'Blog', href: '/blog', locale: true },
-    { label: 'Terms', href: '/legal/terms', locale: false },
-    { label: 'Privacy', href: '/legal/privacy', locale: false },
-    { label: 'Acceptable Use', href: '/legal/acceptable-use', locale: false },
-    { label: 'Notice & Takedown', href: '/legal/takedown', locale: false },
-  ];
+  const defaultPolicyLinks: PolicyLink[] = [{ label: 'Legal Center', href: '/legal', locale: false }];
   const maybeLinks = t('footer.links', defaultPolicyLinks);
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : defaultPolicyLinks;
   const isPolicyLink = (item: PolicyLink) => typeof item.href === 'string' && item.href.startsWith('/legal');
@@ -112,15 +112,17 @@ export function MarketingFooter() {
   const productLinks: FooterLink[] = [
     { key: 'generate', label: labelFor('footer.sections.product.items.generate', 'Generate'), href: '/app' },
     { key: 'pricing', label: labelFor('footer.sections.product.items.pricing', 'Pricing'), href: { pathname: '/pricing' } },
-    { key: 'workflows', label: labelFor('footer.sections.product.items.workflows', 'Workflows'), href: { pathname: '/workflows' } },
     { key: 'docs', label: labelFor('footer.sections.product.items.docs', 'Docs'), href: { pathname: '/docs' } },
     { key: 'models', label: labelFor('footer.sections.product.items.models', 'All models'), href: { pathname: '/models' } },
   ];
 
   const companyLinks: FooterLink[] = [
     { key: 'blog', label: labelFor('footer.sections.company.items.blog', 'Blog'), href: { pathname: '/blog' } },
-    { key: 'about', label: labelFor('footer.sections.company.items.about', 'About'), href: { pathname: '/about' } },
-    { key: 'contact', label: labelFor('footer.sections.company.items.contact', 'Contact'), href: { pathname: '/contact' } },
+    {
+      key: 'companyHub',
+      label: labelFor('footer.sections.company.items.companyHub', 'Company & Trust'),
+      href: { pathname: '/company' },
+    },
     { key: 'status', label: labelFor('footer.sections.company.items.status', 'Status'), href: { pathname: '/status' } },
   ];
 

@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:exposure": "node ../scripts/check-public-exposure.mjs",
-    "seo:check": "node ../scripts/seo-guard.mjs",
+    "seo:check": "node ../scripts/seo-guard.mjs && node ../scripts/internal-link-guard.mjs",
     "precommit": "npm run seo:check",
     "thumbs:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-thumbnails.ts",
     "thumbs:image-backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-image-thumbnails.ts",

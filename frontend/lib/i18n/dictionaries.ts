@@ -283,7 +283,6 @@ const en: Dictionary = {
       { key: 'models', href: '/models' },
       { key: 'examples', href: '/examples' },
       { key: 'pricing', href: '/pricing' },
-      { key: 'workflows', href: '/workflows' },
       { key: 'docs', href: '/docs' },
       { key: 'blog', href: '/blog' },
     ],
@@ -293,18 +292,13 @@ const en: Dictionary = {
       models: 'Models',
       examples: 'Examples',
       pricing: 'Pricing',
-      workflows: 'Workflows',
       docs: 'Docs',
       blog: 'Blog',
     },
   },
   footer: {
     links: [
-      { label: 'Blog', href: '/blog' },
-      { label: 'Terms', href: '/legal/terms' },
-      { label: 'Privacy', href: '/legal/privacy' },
-      { label: 'Acceptable Use', href: '/legal/acceptable-use' },
-      { label: 'Notice & Takedown', href: '/legal/takedown' },
+      { label: 'Legal Center', href: '/legal' },
     ],
     brandNote:
       'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.',

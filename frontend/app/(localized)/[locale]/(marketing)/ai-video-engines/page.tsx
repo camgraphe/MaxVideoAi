@@ -60,6 +60,7 @@ type HubCopy = {
     prelaunchSpotlightLabel: string;
     prelaunchModelLabel: string;
     prelaunchCompareLabel: string;
+    prelaunchCompareSecondaryLabel: string;
     useCasesFallback: string;
   };
   tagLabels: Record<string, string>;
@@ -105,6 +106,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       prelaunchSpotlightLabel: 'Pre-launch spotlight',
       prelaunchModelLabel: 'Seedance 2.0 profile',
       prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
+      prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback: 'Interactive chips refine recommendations instantly. All links remain crawlable and available in plain HTML.',
     },
     tagLabels: {
@@ -247,6 +249,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       prelaunchSpotlightLabel: 'Focus pré-lancement',
       prelaunchModelLabel: 'Profil Seedance 2.0',
       prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
+      prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback:
         'Les puces interactives affinent les recommandations instantanément. Tous les liens restent crawlables et présents en HTML standard.',
     },
@@ -390,6 +393,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       prelaunchSpotlightLabel: 'Enfoque de prelanzamiento',
       prelaunchModelLabel: 'Perfil de Seedance 2.0',
       prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
+      prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback:
         'Los chips interactivos ajustan recomendaciones al instante. Todos los enlaces siguen siendo rastreables y visibles en HTML estándar.',
     },
@@ -612,6 +616,13 @@ export default async function AiVideoEnginesPage() {
     ])
   );
   const defaultComparison = allComparisonEntries[0];
+  const strategicKlingVeoComparison =
+    allComparisonEntries.find((entry) => entry.slug === 'kling-3-pro-vs-veo-3-1') ?? null;
+  const strategicSeedanceSoraComparison =
+    allComparisonEntries.find((entry) => entry.slug === 'seedance-2-0-vs-sora-2') ?? null;
+  const pikaSeedanceCompareSlug = buildCanonicalCompareSlug('pika-text-to-video', 'seedance-2-0');
+  const strategicPikaSeedanceComparison =
+    allComparisonEntries.find((entry) => entry.slug === pikaSeedanceCompareSlug) ?? null;
   const seedancePrelaunch = enginesWithWaitlist.find((engine) => engine.modelSlug === 'seedance-2-0') ?? null;
   const showSeedanceSpotlight = Boolean(seedancePrelaunch && !engines.some((engine) => engine.modelSlug === 'seedance-2-0'));
   const seedanceCompareSlug = buildCanonicalCompareSlug('seedance-2-0', 'sora-2');
@@ -653,6 +664,18 @@ export default async function AiVideoEnginesPage() {
                 .
               </p>
             ) : null}
+            {strategicKlingVeoComparison && strategicKlingVeoComparison.slug !== defaultComparison?.slug ? (
+              <p className="text-center text-xs text-text-muted">
+                {copy.sections.quickStartLabel}:{' '}
+                <Link
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: strategicKlingVeoComparison.slug } }}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
+                  {strategicKlingVeoComparison.label}
+                </Link>
+                .
+              </p>
+            ) : null}
             {showSeedanceSpotlight ? (
               <p className="text-center text-xs text-text-muted">
                 {copy.sections.prelaunchSpotlightLabel}:{' '}
@@ -668,6 +691,39 @@ export default async function AiVideoEnginesPage() {
                   className="font-semibold text-brand hover:text-brandHover"
                 >
                   {copy.sections.prelaunchCompareLabel}
+                </Link>
+                {' · '}
+                <Link
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pikaSeedanceCompareSlug } }}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
+                  {copy.sections.prelaunchCompareSecondaryLabel}
+                </Link>
+                .
+              </p>
+            ) : null}
+            {!showSeedanceSpotlight && strategicSeedanceSoraComparison ? (
+              <p className="text-center text-xs text-text-muted">
+                {copy.sections.quickStartLabel}:{' '}
+                <Link
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: strategicSeedanceSoraComparison.slug } }}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
+                  {strategicSeedanceSoraComparison.label}
+                </Link>
+                .
+              </p>
+            ) : null}
+            {!showSeedanceSpotlight &&
+            strategicPikaSeedanceComparison &&
+            strategicPikaSeedanceComparison.slug !== defaultComparison?.slug ? (
+              <p className="text-center text-xs text-text-muted">
+                {copy.sections.quickStartLabel}:{' '}
+                <Link
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: strategicPikaSeedanceComparison.slug } }}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
+                  {strategicPikaSeedanceComparison.label}
                 </Link>
                 .
               </p>

@@ -163,17 +163,25 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
   const exploreTitle =
     locale === 'fr' ? 'Pages liées' : locale === 'es' ? 'Páginas relacionadas' : 'Related pages';
-  const exploreModelsLabel = locale === 'fr' ? 'Specs des modèles' : locale === 'es' ? 'Specs de modelos' : 'Model specs';
+  const exploreModelsLabel =
+    locale === 'fr' ? 'Profil Veo 3.1 Fast' : locale === 'es' ? 'Perfil Veo 3.1 Fast' : 'Veo 3.1 Fast profile';
   const exploreEnginesLabel =
-    locale === 'fr' ? 'Choisir un moteur par use case' : locale === 'es' ? 'Elegir motor por caso de uso' : 'Choose an engine by use case';
-  const exploreExamplesLabel = locale === 'fr' ? 'Exemples' : locale === 'es' ? 'Ejemplos' : 'Examples';
-  const exploreWorkflowsLabel =
-    locale === 'fr' ? 'Workflows IA vidéo' : locale === 'es' ? 'Workflows de video IA' : 'AI video workflows';
+    locale === 'fr' ? 'Kling 3 Pro vs Veo 3.1' : locale === 'es' ? 'Kling 3 Pro vs Veo 3.1' : 'Kling 3 Pro vs Veo 3.1';
+  const exploreSeedanceModelLabel =
+    locale === 'fr' ? 'Profil Seedance 2.0' : locale === 'es' ? 'Perfil Seedance 2.0' : 'Seedance 2.0 profile';
+  const exploreSeedanceCompareLabel =
+    locale === 'fr' ? 'Seedance 2.0 vs Sora 2' : locale === 'es' ? 'Seedance 2.0 vs Sora 2' : 'Seedance 2.0 vs Sora 2';
   const exploreLinks = [
-    { href: { pathname: '/models' }, label: exploreModelsLabel },
-    { href: { pathname: '/ai-video-engines' }, label: exploreEnginesLabel },
-    { href: { pathname: '/examples' }, label: exploreExamplesLabel },
-    { href: { pathname: '/workflows' }, label: exploreWorkflowsLabel },
+    { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } }, label: exploreModelsLabel },
+    {
+      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } },
+      label: exploreEnginesLabel,
+    },
+    { href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }, label: exploreSeedanceModelLabel },
+    {
+      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-sora-2' } },
+      label: exploreSeedanceCompareLabel,
+    },
   ];
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',

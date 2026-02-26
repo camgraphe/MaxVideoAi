@@ -17,11 +17,6 @@ type ObfuscatedEmailLinkProps = {
    */
   placeholder?: string;
   /**
-   * Fallback href while the component is still rendering on the server.
-   * Defaults to the contact page so users still have a way to reach us if JS is disabled.
-   */
-  fallbackHref?: string;
-  /**
    * If true, skip the default brand styles so callers can control the appearance entirely.
    */
   unstyled?: boolean;
@@ -37,29 +32,37 @@ export function ObfuscatedEmailLink({
   domain,
   label,
   placeholder,
-  fallbackHref = '/contact',
   unstyled = false,
   className,
 }: ObfuscatedEmailLinkProps) {
+  const [hydrated, setHydrated] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
-  const [href, setHref] = useState<string>(fallbackHref);
 
   useEffect(() => {
+    setHydrated(true);
     const computed = `${user}@${domain}`;
     setEmail(computed);
-    setHref(`mailto:${computed}`);
   }, [user, domain]);
 
+  const linkClassName = clsx(unstyled ? undefined : 'font-semibold text-brand hover:text-brandHover', className);
   const safePlaceholder = placeholder ?? `${user} [at] ${domain}`;
-  const display = email ? label ?? email : safePlaceholder;
+  const hydratedLabel = label ?? email ?? safePlaceholder;
+
+  if (!hydrated || !email) {
+    return (
+      <span className={linkClassName} aria-label={`Email ${user} at ${domain}`}>
+        {safePlaceholder}
+      </span>
+    );
+  }
 
   return (
     <a
-      href={href}
-      className={clsx(unstyled ? undefined : 'font-semibold text-brand hover:text-brandHover', className)}
-      aria-label={`Email ${email ?? `${user} at ${domain}`}`}
+      href={`mailto:${email}`}
+      className={linkClassName}
+      aria-label={`Email ${email}`}
     >
-      {display}
+      {hydratedLabel}
     </a>
   );
 }

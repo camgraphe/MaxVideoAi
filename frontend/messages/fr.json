@@ -19,10 +19,6 @@
         "href": "/pricing"
       },
       {
-        "key": "workflows",
-        "href": "/workflows"
-      },
-      {
         "key": "docs",
         "href": "/docs"
       },
@@ -38,7 +34,6 @@
       "examples": "Exemples",
       "compare": "Comparatifs",
       "pricing": "Tarifs",
-      "workflows": "Flux de travail",
       "docs": "Documentation",
       "blog": "Blog"
     },
@@ -202,24 +197,8 @@
   "footer": {
     "links": [
       {
-        "label": "Blog",
-        "href": "/blog"
-      },
-      {
-        "label": "Conditions",
-        "href": "/legal/terms"
-      },
-      {
-        "label": "Confidentialité",
-        "href": "/legal/privacy"
-      },
-      {
-        "label": "Utilisation acceptable",
-        "href": "/legal/acceptable-use"
-      },
-      {
-        "label": "Notification & retrait",
-        "href": "/legal/takedown"
+        "label": "Centre juridique",
+        "href": "/legal"
       }
     ],
     "brandNote": "Centre indépendant pour la vidéo IA professionnelle — prix affiché avant génération, restez sur les derniers moteurs, un espace de travail pour chaque plan. Fonctionne avec Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, et plus. Les marques appartiennent à leurs propriétaires.",
@@ -275,7 +254,6 @@
         "items": {
           "generate": "Générer",
           "pricing": "Tarifs",
-          "workflows": "Flux de travail",
           "docs": "Documentation",
           "models": "Tous les modèles"
         }
@@ -284,9 +262,8 @@
         "title": "Entreprise",
         "items": {
           "blog": "Blog",
-          "about": "À propos",
-          "contact": "Contact",
-          "status": "Statut"
+          "status": "Statut",
+          "companyHub": "Entreprise & confiance"
         }
       },
       "policies": {
@@ -1592,8 +1569,8 @@
     "seeAlso": {
       "onboarding": [
         {
-          "href": "/fr/workflows#how-it-works",
-          "label": "Aperçu des workflows"
+          "href": "/fr/modeles/veo-3-1-fast",
+          "label": "Modèle Veo 3.1 Fast"
         },
         {
           "href": "/fr/galerie",
@@ -1622,8 +1599,8 @@
       ],
       "safety": [
         {
-          "href": "/fr/workflows#how-it-works",
-          "label": "Aperçu des workflows"
+          "href": "/fr/comparatif/kling-3-pro-vs-veo-3-1",
+          "label": "Kling 3 Pro vs Veo 3.1"
         },
         {
           "href": "/fr/modeles",
@@ -1642,8 +1619,8 @@
       ],
       "library": [
         {
-          "href": "/fr/workflows",
-          "label": "Workflows"
+          "href": "/fr/comparatif/seedance-2-0-vs-sora-2",
+          "label": "Seedance 2.0 vs Sora 2"
         },
         {
           "href": "/fr/modeles",

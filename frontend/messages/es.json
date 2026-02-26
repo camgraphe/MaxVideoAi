@@ -19,10 +19,6 @@
         "href": "/pricing"
       },
       {
-        "key": "workflows",
-        "href": "/workflows"
-      },
-      {
         "key": "docs",
         "href": "/docs"
       },
@@ -38,7 +34,6 @@
       "examples": "Ejemplos",
       "compare": "Comparativas",
       "pricing": "Precios",
-      "workflows": "Flujos de trabajo",
       "docs": "Documentación",
       "blog": "Blog"
     },
@@ -202,24 +197,8 @@
   "footer": {
     "links": [
       {
-        "label": "Blog",
-        "href": "/blog"
-      },
-      {
-        "label": "Términos",
-        "href": "/legal/terms"
-      },
-      {
-        "label": "Privacidad",
-        "href": "/legal/privacy"
-      },
-      {
-        "label": "Uso aceptable",
-        "href": "/legal/acceptable-use"
-      },
-      {
-        "label": "Aviso y retirada",
-        "href": "/legal/takedown"
+        "label": "Centro legal",
+        "href": "/legal"
       }
     ],
     "brandNote": "Centro independiente para video profesional con IA - precio antes de generar, mantente con los motores más recientes, un espacio de trabajo para cada plano. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
@@ -275,7 +254,6 @@
         "items": {
           "generate": "Generar",
           "pricing": "Precios",
-          "workflows": "Flujos de trabajo",
           "docs": "Documentación",
           "models": "Todos los modelos"
         }
@@ -284,9 +262,8 @@
         "title": "Empresa",
         "items": {
           "blog": "Blog",
-          "about": "Acerca de",
-          "contact": "Contacto",
-          "status": "Estado"
+          "status": "Estado",
+          "companyHub": "Empresa y confianza"
         }
       },
       "policies": {
@@ -1585,8 +1562,8 @@
     "seeAlso": {
       "onboarding": [
         {
-          "href": "/es/workflows#how-it-works",
-          "label": "Resumen de workflows"
+          "href": "/es/modelos/veo-3-1-fast",
+          "label": "Modelo Veo 3.1 Fast"
         },
         {
           "href": "/es/galeria",
@@ -1615,8 +1592,8 @@
       ],
       "safety": [
         {
-          "href": "/es/workflows#how-it-works",
-          "label": "Resumen de workflows"
+          "href": "/es/comparativa/kling-3-pro-vs-veo-3-1",
+          "label": "Kling 3 Pro vs Veo 3.1"
         },
         {
           "href": "/es/modelos",
@@ -1635,8 +1612,8 @@
       ],
       "library": [
         {
-          "href": "/es/workflows",
-          "label": "Workflows"
+          "href": "/es/comparativa/seedance-2-0-vs-sora-2",
+          "label": "Seedance 2.0 vs Sora 2"
         },
         {
           "href": "/es/modelos",
@@ -2053,7 +2030,14 @@
         "refresh": "Actualizar",
         "close": "Cerrar",
         "fieldFallback": "Imagen de referencia",
-        "empty": "Aún no hay imágenes guardadas. Sube una referencia para verla aquí."
+        "empty": "Aún no hay imágenes guardadas. Sube una referencia para verla aquí.",
+        "emptyUploads": "Aún no hay imágenes subidas. Sube una referencia para verla aquí.",
+        "emptyGenerated": "Aún no hay imágenes generadas guardadas. Guarda una imagen generada para verla aquí.",
+        "tabs": {
+          "all": "Todas",
+          "upload": "Subidas",
+          "generated": "Generadas"
+        }
       },
       "processing": {
         "title": "Procesando…",
@@ -2346,7 +2330,9 @@
       "loading": "Cargando…",
       "actions": {
         "addToLibrary": "Agregar a la biblioteca",
-        "saving": "Guardando…"
+        "removeFromLibrary": "Quitar de la biblioteca",
+        "saving": "Guardando…",
+        "removing": "Quitando…"
       }
     },
     "dashboard": {
@@ -2657,7 +2643,9 @@
         "generic": "La generación de imagen falló."
       },
       "messages": {
-        "success": "Se generaron {count} imagen(es)."
+        "success": "Se generaron {count} imagen(es).",
+        "savedToLibrary": "Guardado en la biblioteca.",
+        "removedFromLibrary": "Quitado de la biblioteca."
       },
       "general": {
         "uploading": "Subiendo…",
@@ -2669,12 +2657,19 @@
         "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página.",
         "overlay": "Usar esta imagen",
         "assetFallback": "Recurso",
+        "tabs": {
+          "all": "Todas",
+          "upload": "Imágenes subidas",
+          "generated": "Imágenes generadas"
+        },
         "modal": {
           "title": "Seleccionar desde la biblioteca",
           "description": "Elige una imagen que ya importaste.",
           "close": "Cerrar",
           "error": "No se pudieron cargar los recursos. Intenta de nuevo.",
-          "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página."
+          "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página.",
+          "emptyUploads": "Aún no hay imágenes subidas. Sube imágenes desde el compositor o desde la página de Biblioteca.",
+          "emptyGenerated": "Aún no hay imágenes generadas guardadas. Guarda una imagen generada para verla aquí."
         }
       }
     },
@@ -2687,13 +2682,22 @@
           "video": "Generar video"
         }
       },
+      "tabs": {
+        "all": "Todas",
+        "upload": "Imágenes subidas",
+        "generated": "Imágenes generadas"
+      },
       "assets": {
         "title": "Recursos de la biblioteca",
         "countLabel": "{count}",
         "loadError": "No se pudieron cargar los recursos importados.",
         "empty": "Aún no tienes recursos importados. Súbelos desde el compositor o arrástralos aquí.",
+        "emptyUploads": "Aún no hay imágenes subidas. Súbelas desde el compositor o arrástralas aquí.",
+        "emptyGenerated": "Aún no hay imágenes generadas guardadas. Genera una imagen y guárdala en tu biblioteca.",
         "deleteError": "No se pudo eliminar esta imagen.",
         "deleteButton": "Eliminar",
+        "downloadButton": "Descargar",
+        "useSettingsButton": "Usar ajustes",
         "deleting": "Eliminando…",
         "assetFallback": "Recurso"
       }

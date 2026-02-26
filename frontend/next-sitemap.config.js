@@ -19,6 +19,7 @@ const MARKETING_CORE_PATHS = [
   '/pricing',
   '/docs',
   '/blog',
+  '/company',
   '/about',
   '/contact',
   '/legal',

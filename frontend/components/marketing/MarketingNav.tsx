@@ -18,6 +18,7 @@ import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 
 export function MarketingNav() {
   const pathname = usePathname();
+  const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
   const { t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,7 +36,6 @@ export function MarketingNav() {
     { key: 'examples', href: '/examples' },
     { key: 'compare', href: '/ai-video-engines' },
     { key: 'pricing', href: '/pricing' },
-    { key: 'workflows', href: '/workflows' },
     { key: 'docs', href: '/docs' },
     { key: 'blog', href: '/blog' },
   ];
@@ -243,6 +243,10 @@ export function MarketingNav() {
     }
     return namePart.slice(0, 2).toUpperCase();
   }, [email]);
+
+  if (isCompanyTrustHub) {
+    return null;
+  }
 
   return (
     <>
