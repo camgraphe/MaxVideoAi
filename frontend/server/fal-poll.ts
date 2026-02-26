@@ -38,6 +38,11 @@ export async function runFalPoll() {
   let updates = 0;
 
   for (const job of rows) {
+    type MarkFailedOptions = {
+      autoRefundEligible?: boolean;
+      failureOrigin?: 'provider_terminal' | 'poll_internal';
+    };
+
     const recordPollEvent = async (status: string, payload: Record<string, unknown>, engineId?: string | null) => {
       if (!job.provider_job_id) return;
       try {
@@ -61,12 +66,15 @@ export async function runFalPoll() {
       }
     };
 
-    const markJobFailed = async (reason: string) => {
+    const markJobFailed = async (reason: string, options: MarkFailedOptions = {}) => {
+      const autoRefundEligible = options.autoRefundEligible === true;
       console.warn('[fal-poll] marking job as failed', {
         at: new Date().toISOString(),
         jobId: job.job_id,
         providerJobId: job.provider_job_id,
         reason,
+        autoRefundEligible,
+        failureOrigin: options.failureOrigin ?? 'poll_internal',
       });
       await recordPollEvent('poll:failed', { reason });
       try {
@@ -75,6 +83,8 @@ export async function runFalPoll() {
           status: 'failed',
           response: { error: reason, status: 'failed' } as unknown,
           result: { error: reason, status: 'failed' } as unknown,
+          auto_refund_eligible: autoRefundEligible,
+          failure_origin: options.failureOrigin ?? 'poll_internal',
         });
       } catch (updateError) {
         console.warn('[fal-poll] webhook update failed, falling back to DB update', job.job_id, updateError);
@@ -216,7 +226,10 @@ export async function runFalPoll() {
         undefined;
 
       if (state && FAILURE_STATES.has(state)) {
-        await markJobFailed(providerError ?? 'Fal reported this job as failed.');
+        await markJobFailed(providerError ?? 'Fal reported this job as failed.', {
+          autoRefundEligible: true,
+          failureOrigin: 'provider_terminal',
+        });
         continue;
       }
 

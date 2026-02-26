@@ -22,6 +22,10 @@ type FalWebhookPayload = {
   data?: unknown;
   result?: unknown;
   error?: unknown;
+  auto_refund_eligible?: boolean;
+  autoRefundEligible?: boolean;
+  failure_origin?: string;
+  failureOrigin?: string;
 };
 
 type AppJobRow = {
@@ -940,6 +944,23 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     effectiveEngineId && effectiveEngineId !== 'fal-unknown' ? effectiveEngineId : null;
   const engineLabelForUpdate =
     effectiveEngineLabel && effectiveEngineLabel !== 'fal-unknown' ? effectiveEngineLabel : null;
+  const explicitAutoRefundEligibility = (() => {
+    if (typeof payload.auto_refund_eligible === 'boolean') return payload.auto_refund_eligible;
+    if (typeof payload.autoRefundEligible === 'boolean') return payload.autoRefundEligible;
+    return null;
+  })();
+  const failureOrigin =
+    (typeof payload.failure_origin === 'string' && payload.failure_origin.trim()) ||
+    (typeof payload.failureOrigin === 'string' && payload.failureOrigin.trim()) ||
+    null;
+  const shouldAutoRefundFailure =
+    nextStatus === 'failed'
+      ? explicitAutoRefundEligibility === true
+        ? true
+        : explicitAutoRefundEligibility === false
+          ? false
+          : typeof payload.status === 'string' && FAILED_STATUSES.has(payload.status.toUpperCase())
+      : false;
 
   if (nextStatus === 'failed') {
     console.error('[fal-webhook] job failed', {
@@ -947,6 +968,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       requestId,
       engineId: job.engine_id,
       message: normalizedMessage,
+      autoRefundEligible: shouldAutoRefundFailure,
+      failureOrigin,
       payload: payload.error ?? payload,
     });
   }
@@ -989,11 +1012,12 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     ]
   );
 
-  if (nextStatus === 'failed') {
+  if (nextStatus === 'failed' && shouldAutoRefundFailure) {
     await maybeAutoRefundWalletCharge(job.job_id, {
       engineLabel: engineLabelForUpdate ?? job.engine_label ?? job.engine_id,
       providerJobId: requestId,
       failureMessage: normalizedMessage ?? null,
+      failureOrigin,
     });
   }
 
@@ -1095,7 +1119,12 @@ function normalizeCurrency(value: string | null | undefined): string {
 
 async function maybeAutoRefundWalletCharge(
   jobId: string,
-  context: { engineLabel?: string | null; providerJobId?: string | null; failureMessage?: string | null }
+  context: {
+    engineLabel?: string | null;
+    providerJobId?: string | null;
+    failureMessage?: string | null;
+    failureOrigin?: string | null;
+  }
 ): Promise<boolean> {
   const jobInfoRows = await query<{
     payment_status: string | null;
@@ -1163,6 +1192,7 @@ async function maybeAutoRefundWalletCharge(
   const refundMetadata = {
     reason: 'auto_fal_failure_refund',
     provider_job_id: context.providerJobId ?? null,
+    failure_origin: context.failureOrigin ?? null,
     note: context.failureMessage ?? null,
   };
 

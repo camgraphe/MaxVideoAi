@@ -210,12 +210,18 @@ type JobRow = {
       const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
       const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED']);
       for (const jobRow of staleJobs) {
-        const markJobFailed = async (reason: string) => {
+        const markJobFailed = async (
+          reason: string,
+          options: { autoRefundEligible?: boolean; failureOrigin?: 'provider_terminal' | 'stale_refresh_internal' } = {}
+        ) => {
+          const autoRefundEligible = options.autoRefundEligible === true;
           console.warn('[api/jobs] marking job as failed after stale refresh', {
             at: new Date().toISOString(),
             jobId: jobRow.job_id,
             providerJobId: jobRow.provider_job_id,
             reason,
+            autoRefundEligible,
+            failureOrigin: options.failureOrigin ?? 'stale_refresh_internal',
           });
           try {
             await updateJobFromFalWebhook({
@@ -223,6 +229,8 @@ type JobRow = {
               status: 'failed',
               response: { error: reason, status: 'failed' },
               result: { error: reason, status: 'failed' },
+              auto_refund_eligible: autoRefundEligible,
+              failure_origin: options.failureOrigin ?? 'stale_refresh_internal',
             });
           } catch (updateError) {
             console.warn('[api/jobs] failed to mark job as failed via webhook handler', jobRow.job_id, updateError);
@@ -300,7 +308,10 @@ type JobRow = {
             undefined;
 
           if (state && FAILURE_STATES.has(state)) {
-            await markJobFailed(providerError ?? 'Fal reported this job as failed.');
+            await markJobFailed(providerError ?? 'Fal reported this job as failed.', {
+              autoRefundEligible: true,
+              failureOrigin: 'provider_terminal',
+            });
             continue;
           }
 
