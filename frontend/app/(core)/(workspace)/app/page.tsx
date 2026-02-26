@@ -1895,8 +1895,7 @@ useEffect(() => {
           return true;
         }
         const hasVideo = Boolean(render.videoUrl ?? render.readyVideoUrl);
-        const hasThumb = Boolean(render.thumbUrl && !isPlaceholderMediaUrl(render.thumbUrl));
-        if (!hasVideo || !hasThumb) {
+        if (!hasVideo) {
           return true;
         }
         changed = true;
