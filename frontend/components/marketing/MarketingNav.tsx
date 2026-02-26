@@ -36,7 +36,6 @@ export function MarketingNav() {
     { key: 'examples', href: '/examples' },
     { key: 'compare', href: '/ai-video-engines' },
     { key: 'pricing', href: '/pricing' },
-    { key: 'docs', href: '/docs' },
     { key: 'blog', href: '/blog' },
   ];
   const maybeLinks = t('nav.links', defaultLinks);

@@ -283,7 +283,6 @@ const en: Dictionary = {
       { key: 'models', href: '/models' },
       { key: 'examples', href: '/examples' },
       { key: 'pricing', href: '/pricing' },
-      { key: 'docs', href: '/docs' },
       { key: 'blog', href: '/blog' },
     ],
     login: 'Log in',
