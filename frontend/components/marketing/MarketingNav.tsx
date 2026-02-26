@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
-import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
+import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 
 export function MarketingNav() {
   const pathname = usePathname();
@@ -31,15 +31,8 @@ export function MarketingNav() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
-  const defaultLinks: Array<{ key: string; href: string }> = [
-    { key: 'models', href: '/models' },
-    { key: 'examples', href: '/examples' },
-    { key: 'compare', href: '/ai-video-engines' },
-    { key: 'pricing', href: '/pricing' },
-    { key: 'blog', href: '/blog' },
-  ];
-  const maybeLinks = t('nav.links', defaultLinks);
-  const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : defaultLinks;
+  const maybeLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
+  const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : MARKETING_TOP_NAV_LINKS;
   const login = t('nav.login', 'Log in');
   const cta = t('nav.cta', 'Start a render');
   const generateLabel = t('nav.generate', 'Generate');

@@ -21,7 +21,7 @@ import {
   writeLastKnownUserId,
   writeLastKnownWallet,
 } from '@/lib/last-known';
-import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
+import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 
 function resolveLocalizedHref(href: LocalizedLinkHref): string {
@@ -51,6 +51,10 @@ function resolveLocalizedHref(href: LocalizedLinkHref): string {
   }
   return resolved;
 }
+
+const MARKETING_TOP_NAV_HREF_BY_KEY: Record<string, string> = Object.fromEntries(
+  MARKETING_TOP_NAV_LINKS.map((item) => [item.key, item.href])
+);
 
 export function HeaderBar() {
   const { t } = useI18n();
@@ -368,15 +372,27 @@ export function HeaderBar() {
     return namePart.slice(0, 2).toUpperCase();
   }, [email]);
 
-  const marketingLinks = [
-    { key: 'models', href: '/models' },
-    { key: 'examples', href: '/examples' },
-    { key: 'compare', href: '/ai-video-engines' },
-    { key: 'pricing', href: '/pricing' },
-    { key: 'workflows', href: '/workflows' },
-    { key: 'docs', href: '/docs' },
-    { key: 'blog', href: '/blog' },
-  ] as const;
+  const rawMarketingLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
+  const marketingLinks = useMemo(() => {
+    const source = Array.isArray(rawMarketingLinks) ? rawMarketingLinks : [];
+    const normalized: Array<{ key: string; href: string }> = [];
+    const seen = new Set<string>();
+
+    for (const entry of source) {
+      if (!entry || typeof entry !== 'object') continue;
+      const key = (entry as { key?: unknown }).key;
+      if (typeof key !== 'string' || seen.has(key)) continue;
+      const allowedHref = MARKETING_TOP_NAV_HREF_BY_KEY[key];
+      if (!allowedHref) continue;
+      seen.add(key);
+      normalized.push({ key, href: allowedHref });
+    }
+
+    if (normalized.length) {
+      return normalized;
+    }
+    return MARKETING_TOP_NAV_LINKS.map((item) => ({ key: item.key, href: item.href }));
+  }, [rawMarketingLinks]);
   const isAuthenticated = Boolean(email);
 
   return (

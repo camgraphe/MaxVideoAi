@@ -13,6 +13,21 @@ export type MarketingNavDropdown = {
   allLabelFallback: string;
 };
 
+export type MarketingTopNavKey = 'models' | 'examples' | 'compare' | 'pricing' | 'blog';
+
+export type MarketingTopNavLink = {
+  key: MarketingTopNavKey;
+  href: string;
+};
+
+export const MARKETING_TOP_NAV_LINKS: readonly MarketingTopNavLink[] = [
+  { key: 'models', href: '/models' },
+  { key: 'examples', href: '/examples' },
+  { key: 'compare', href: '/ai-video-engines' },
+  { key: 'pricing', href: '/pricing' },
+  { key: 'blog', href: '/blog' },
+] as const;
+
 type LabeledSlug = { slug: string; label: string };
 
 const modelLink = (slug: string): LocalizedLinkHref => ({

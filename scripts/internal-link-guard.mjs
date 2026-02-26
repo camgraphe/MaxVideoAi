@@ -39,12 +39,14 @@ function relativeFromRoot(absolutePath) {
 
 const footerPath = 'frontend/components/marketing/MarketingFooter.tsx';
 const navPath = 'frontend/components/marketing/MarketingNav.tsx';
+const appHeaderPath = 'frontend/components/HeaderBar.tsx';
 const obfuscatedEmailPath = 'frontend/components/marketing/ObfuscatedEmailLink.tsx';
 const dictionariesPath = 'frontend/lib/i18n/dictionaries.ts';
 const companyPagePath = 'frontend/app/(localized)/[locale]/(marketing)/company/page.tsx';
 
 const footerSource = read(footerPath);
 const navSource = read(navPath);
+const appHeaderSource = read(appHeaderPath);
 const obfuscatedEmailSource = read(obfuscatedEmailPath);
 const dictionariesSource = read(dictionariesPath);
 const companyPageSource = read(companyPagePath);
@@ -60,10 +62,20 @@ assert(!/fallbackHref/.test(obfuscatedEmailSource), 'ObfuscatedEmailLink must no
 assert(/mailto:/.test(obfuscatedEmailSource), 'ObfuscatedEmailLink must render mailto links after hydration.');
 
 assert(!/\{ key: 'workflows', href: '\/workflows' \}/.test(navSource), 'Top nav default links must not include /workflows.');
+assert(!/\{ key: 'docs', href: '\/docs' \}/.test(navSource), 'Top nav default links must not include /docs.');
 assert(
   !/\{ key: 'workflows', href: '\/workflows' \}/.test(dictionariesSource),
   'Dictionary fallback nav links must not include /workflows.'
 );
+assert(
+  !/\{ key: 'docs', href: '\/docs' \}/.test(dictionariesSource),
+  'Dictionary fallback nav links must not include /docs.'
+);
+
+assert(!/\{ key: 'workflows', href: '\/workflows' \}/.test(appHeaderSource), 'App header top nav must not include /workflows.');
+assert(!/\{ key: 'docs', href: '\/docs' \}/.test(appHeaderSource), 'App header top nav must not include /docs.');
+assert(/MARKETING_TOP_NAV_LINKS/.test(appHeaderSource), 'App header must use shared MARKETING_TOP_NAV_LINKS.');
+assert(/MARKETING_TOP_NAV_HREF_BY_KEY/.test(appHeaderSource), 'App header must normalize nav links with top-nav allowlist.');
 
 const strategicHrefPatterns = [
   /\/models\b/,
@@ -87,8 +99,14 @@ for (const localeFile of ['frontend/messages/en.json', 'frontend/messages/fr.jso
   const companyItems = payload?.footer?.sections?.company?.items ?? {};
 
   assert(
-    !navLinks.some((entry) => entry?.key === 'workflows' || entry?.href === '/workflows'),
-    `${localeFile}: nav.links must not include workflows.`
+    !navLinks.some(
+      (entry) =>
+        entry?.key === 'workflows' ||
+        entry?.href === '/workflows' ||
+        entry?.key === 'docs' ||
+        entry?.href === '/docs'
+    ),
+    `${localeFile}: nav.links must not include workflows or docs.`
   );
   assert(
     footerLinks.length === 1 && footerLinks[0]?.href === '/legal',
