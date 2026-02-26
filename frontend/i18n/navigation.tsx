@@ -12,7 +12,7 @@ import { routing } from '@/i18n/routing';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
 import { applyNofollowRel } from '@/lib/seo/nofollow';
 
-const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/generate', '/login', '/legal'];
+const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/generate', '/login', '/legal', '/video', '/v'];
 const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z0-9+\-.]*:|\/\/)/i;
 const LOCALE_PREFIXES = Object.values(localePathnames).filter((prefix): prefix is string => Boolean(prefix && prefix.length));
 const LOCALE_PREFIX_REGEX = LOCALE_PREFIXES.length ? new RegExp(`^/(${LOCALE_PREFIXES.join('|')})(/|$)`, 'i') : null;

@@ -19,6 +19,7 @@ import type { PricingRuleLite } from '@/lib/pricing-rules';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { TextLink } from '@/components/ui/TextLink';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
@@ -157,6 +158,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     : [];
   const faqEntries = [...(faq.entries ?? []), ...supplementalFaq].slice(0, 10);
   const heroLink = content.hero.link ?? null;
+  const compareBlogHref = localizePathFromEnglish(locale, '/blog/compare-ai-video-engines');
   const canonical = buildMetadataUrls(locale as AppLocale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
   const breadcrumbLabels = getBreadcrumbLabels(locale as AppLocale);
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
@@ -358,7 +360,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           {heroLink ? (
             <p className="text-base leading-relaxed text-text-secondary">
               {heroLink.before}
-              <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-brand hover:text-brandHover">
+              <Link href={compareBlogHref} className="font-semibold text-brand hover:text-brandHover">
                 {heroLink.label ?? 'AI video comparison'}
               </Link>
               {heroLink.after}

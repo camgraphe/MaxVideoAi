@@ -28,6 +28,13 @@ const FALLBACK_THUMB = `${SITE}/og/price-before.png`;
 const FALLBACK_POSTER = `${SITE}/og/price-before.png`;
 const TITLE_SUFFIX = ' — MaxVideoAI';
 const META_TITLE_LIMIT = 60;
+const LEGACY_MODEL_SLUG_REDIRECTS: Record<string, string> = {
+  'veo-3-fast': 'veo-3-1-fast',
+  'google-veo-3-fast': 'veo-3-1-fast',
+  'pika-image-to-video': 'pika-text-to-video',
+  'pika-2-2': 'pika-text-to-video',
+  'minimax-hailuo-02-image': 'minimax-hailuo-02-text',
+};
 
 export const revalidate = 60 * 30; // 30 minutes
 
@@ -252,6 +259,11 @@ function resolveEngineEntry(engineId?: string | null): FalEngineEntry | null {
   return getFalEngineById(normalized) ?? getFalEngineBySlug(normalized) ?? null;
 }
 
+function toCanonicalModelSlug(slug: string): string {
+  const normalized = slug.trim().toLowerCase();
+  return LEGACY_MODEL_SLUG_REDIRECTS[normalized] ?? slug;
+}
+
 function getPromptStyle(video: GalleryVideo, copy: VideoPageCopy): string {
   const source = video.promptExcerpt || video.prompt || '';
   const normalized = source.replace(/\s+/g, ' ').trim();
@@ -474,7 +486,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const heroHeading = video.promptExcerpt || video.prompt || engineLabel;
   const heroTitle = engineLabel || heroHeading || copy.hero.titleFallback;
   const engineDescription = engineEntry?.seo?.description ?? copy.details.engineDescriptionFallback;
-  const engineSlug = engineEntry?.modelSlug ?? normalizeEngineId(video.engineId ?? '') ?? '';
+  const engineSlug = toCanonicalModelSlug(engineEntry?.modelSlug ?? normalizeEngineId(video.engineId ?? '') ?? '');
   const engineLink = engineSlug
     ? localizePathFromEnglish(supportedLocale, `/models/${engineSlug}`)
     : null;
