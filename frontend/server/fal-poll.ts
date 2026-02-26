@@ -16,6 +16,7 @@ type FalPendingJob = {
 const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000, 60_000, 120_000];
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
+const POLL_TIMEOUT_GRACE_MS = 20 * 60_000;
 const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
 const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED']);
 
@@ -37,6 +38,29 @@ export async function runFalPoll() {
   let updates = 0;
 
   for (const job of rows) {
+    const recordPollEvent = async (status: string, payload: Record<string, unknown>, engineId?: string | null) => {
+      if (!job.provider_job_id) return;
+      try {
+        await query(
+          `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+           VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+          [
+            job.job_id,
+            'fal',
+            job.provider_job_id,
+            engineId ?? job.engine_id ?? 'fal-unknown',
+            status,
+            JSON.stringify({
+              at: new Date().toISOString(),
+              ...payload,
+            }),
+          ]
+        );
+      } catch (logError) {
+        console.warn('[fal-poll] failed to record poll event', { jobId: job.job_id, status }, logError);
+      }
+    };
+
     const markJobFailed = async (reason: string) => {
       console.warn('[fal-poll] marking job as failed', {
         at: new Date().toISOString(),
@@ -44,27 +68,7 @@ export async function runFalPoll() {
         providerJobId: job.provider_job_id,
         reason,
       });
-      if (job.provider_job_id) {
-        try {
-          await query(
-            `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-             VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-            [
-              job.job_id,
-              'fal',
-              job.provider_job_id,
-              job.engine_id ?? 'fal-unknown',
-              'poll:failed',
-              JSON.stringify({
-                at: new Date().toISOString(),
-                reason,
-              }),
-            ]
-          );
-        } catch (logError) {
-          console.warn('[fal-poll] failed to record failure log', job.job_id, logError);
-        }
-      }
+      await recordPollEvent('poll:failed', { reason });
       try {
         await updateJobFromFalWebhook({
           request_id: job.provider_job_id,
@@ -94,10 +98,9 @@ export async function runFalPoll() {
       }
 
       const createdAtMs = Date.parse(job.created_at);
-      if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
-        await markJobFailed('Fal polling exceeded expected window.');
-        continue;
-      }
+      const ageMs = Number.isFinite(createdAtMs) ? now - createdAtMs : 0;
+      const timedOut = Number.isFinite(createdAtMs) && ageMs > POLL_MAX_DURATION_MS;
+      const beyondTimeoutGrace = Number.isFinite(createdAtMs) && ageMs > POLL_MAX_DURATION_MS + POLL_TIMEOUT_GRACE_MS;
 
       const pollHistory = await query<{ attempts: number; last_attempt_at: string | null }>(
         `SELECT COUNT(*)::int AS attempts, MAX(created_at) AS last_attempt_at
@@ -147,6 +150,18 @@ export async function runFalPoll() {
       }
 
       if (!engineIdForLookup || engineIdForLookup === 'fal-unknown') {
+        if (timedOut && !beyondTimeoutGrace) {
+          await recordPollEvent(
+            'poll:timeout-grace',
+            {
+              reason: 'Unable to determine Fal engine during timeout grace window.',
+              ageMs,
+              graceMs: POLL_TIMEOUT_GRACE_MS,
+            },
+            engineIdForLookup
+          );
+          continue;
+        }
         await markJobFailed('Unable to determine Fal engine for this job.');
         continue;
       }
@@ -158,28 +173,32 @@ export async function runFalPoll() {
           console.warn('[fal-poll] fal status fetch failed', job.job_id, error);
           return null;
         })) as Record<string, unknown> | null;
-      try {
-        await query(
-          `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-           VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-          [
-            job.job_id,
-            'fal',
-            job.provider_job_id,
-            engineIdForLookup,
-            'poll:status',
-            JSON.stringify({
-              attempt: pollAttempt,
-              at: new Date().toISOString(),
-              status: statusInfo?.status ?? null,
-            }),
-          ]
-        );
-      } catch (logError) {
-        console.warn('[fal-poll] failed to record status poll log', job.job_id, logError);
-      }
+      await recordPollEvent(
+        'poll:status',
+        {
+          attempt: pollAttempt,
+          status: statusInfo?.status ?? null,
+        },
+        engineIdForLookup
+      );
 
       if (!statusInfo) {
+        if (timedOut && !beyondTimeoutGrace) {
+          await recordPollEvent(
+            'poll:timeout-grace',
+            {
+              reason: 'Fal status temporarily unavailable during timeout grace window.',
+              ageMs,
+              graceMs: POLL_TIMEOUT_GRACE_MS,
+            },
+            engineIdForLookup
+          );
+          continue;
+        }
+        if (timedOut && beyondTimeoutGrace) {
+          await markJobFailed('Fal status remained unavailable after timeout grace period.');
+          continue;
+        }
         await markJobFailed('Fal job status unavailable (possibly expired).');
         continue;
       }
@@ -202,41 +221,62 @@ export async function runFalPoll() {
       }
 
       if (state && !COMPLETED_STATES.has(state)) {
+        if (timedOut && beyondTimeoutGrace) {
+          await markJobFailed('Fal polling exceeded expected window after timeout grace period.');
+          continue;
+        }
         await updateJobFromFalWebhook({
           request_id: job.provider_job_id,
           status: state,
           data: statusInfo as unknown,
         });
+        if (timedOut) {
+          await recordPollEvent(
+            'poll:timeout-grace',
+            {
+              reason: 'Fal job still non-terminal during timeout grace window.',
+              falStatus: state,
+              ageMs,
+              graceMs: POLL_TIMEOUT_GRACE_MS,
+            },
+            engineIdForLookup
+          );
+        }
         updates += 1;
         continue;
       }
 
       const result = await falClient.queue.result(falModel, { requestId: job.provider_job_id });
       if (!result) {
+        if (timedOut && !beyondTimeoutGrace) {
+          await recordPollEvent(
+            'poll:timeout-grace',
+            {
+              reason: 'Fal result not ready during timeout grace window.',
+              falStatus: state ?? null,
+              ageMs,
+              graceMs: POLL_TIMEOUT_GRACE_MS,
+            },
+            engineIdForLookup
+          );
+          continue;
+        }
+        if (timedOut && beyondTimeoutGrace) {
+          await markJobFailed(providerError ?? 'Fal returned no result after timeout grace period.');
+          continue;
+        }
         await markJobFailed(providerError ?? 'Fal returned no result for this job.');
         continue;
       }
-      try {
-        await query(
-          `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-           VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-          [
-            job.job_id,
-            'fal',
-            job.provider_job_id,
-            engineIdForLookup,
-            'poll:result',
-            JSON.stringify({
-              attempt: pollAttempt,
-              at: new Date().toISOString(),
-              status: result && typeof result === 'object' && 'status' in result ? (result as { status?: string }).status ?? null : null,
-              hasResult: true,
-            }),
-          ]
-        );
-      } catch (logError) {
-        console.warn('[fal-poll] failed to record result log', job.job_id, logError);
-      }
+      await recordPollEvent(
+        'poll:result',
+        {
+          attempt: pollAttempt,
+          status: result && typeof result === 'object' && 'status' in result ? (result as { status?: string }).status ?? null : null,
+          hasResult: true,
+        },
+        engineIdForLookup
+      );
       const queueStatus =
         result && typeof result === 'object' && 'status' in result
           ? ((result as { status?: string | null }).status ?? null)
