@@ -24,11 +24,22 @@ export async function GET(req: NextRequest) {
   const userId = sanitizeParam(url.searchParams.get('userId'));
   const engineId = sanitizeParam(url.searchParams.get('engineId'));
   const status = sanitizeParam(url.searchParams.get('status'));
+  const outcome = sanitizeParam(url.searchParams.get('outcome'));
   const from = parseDateParam(url.searchParams.get('from'));
   const to = parseDateParam(url.searchParams.get('to'));
 
   try {
-    const { jobs, nextCursor } = await fetchRecentJobAudits({ limit, cursor, jobId, userId, engineId, status, from, to });
+    const { jobs, nextCursor } = await fetchRecentJobAudits({
+      limit,
+      cursor,
+      jobId,
+      userId,
+      engineId,
+      status,
+      outcome,
+      from,
+      to,
+    });
     return NextResponse.json({ ok: true, jobs, nextCursor });
   } catch (error) {
     console.error('[admin/jobs/audit] failed to load jobs', error);
