@@ -66,11 +66,15 @@ function normalizeRotation(value: number): number {
   return ((value % 360) + 360) % 360;
 }
 
+function snap(value: number, step: number): number {
+  return Number((Math.round(value / step) * step).toFixed(step < 1 ? 1 : 0));
+}
+
 function sanitizeParams(params: AngleToolNumericParams): AngleToolNumericParams {
   return {
-    rotation: normalizeRotation(params.rotation),
-    tilt: clamp(params.tilt, -30, 30),
-    zoom: clamp(params.zoom, 0, 10),
+    rotation: normalizeRotation(snap(params.rotation, 1)),
+    tilt: clamp(snap(params.tilt, 1), -30, 30),
+    zoom: clamp(snap(params.zoom, 0.1), 0, 10),
   };
 }
 
@@ -693,7 +697,7 @@ export default function AngleToolPage() {
 
   const handleParamChange = (key: keyof AngleToolNumericParams) => (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
-    setParams((previous) => ({ ...previous, [key]: value }));
+    setParams((previous) => sanitizeParams({ ...previous, [key]: value }));
   };
 
   const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -728,10 +732,12 @@ export default function AngleToolPage() {
     setSaveMessage(null);
 
     try {
+      const normalizedParams = sanitizeParams(params);
+      setParams(normalizedParams);
       const response = await runAngleTool({
         imageUrl: sourceImage.url,
         engineId,
-        params,
+        params: normalizedParams,
         safeMode,
         generateBestAngles,
         imageWidth: sourceImage.width ?? undefined,
@@ -910,6 +916,9 @@ export default function AngleToolPage() {
                       </select>
                     </label>
                     <p className="mt-2 text-xs text-text-muted">{selectedEngine?.description}</p>
+                    {engineId === 'flux-multiple-angles' ? (
+                      <p className="mt-1 text-xs text-text-muted">Flux mapping: tilt 0deg = vertical_angle 30deg (range 0-60).</p>
+                    ) : null}
                   </div>
 
                   <AngleOrbitSelector

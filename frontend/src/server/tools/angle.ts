@@ -215,9 +215,9 @@ function buildFalInput(
   options?: { generateBestAngles?: boolean }
 ) {
   const requestedOutputs = options?.generateBestAngles && engine.supportsMultiOutput ? 6 : 1;
-  const horizontalAngle = Number(normalizeRotation(params.rotation).toFixed(2));
-  const verticalAngle = Number(mapTiltForEngine(engine.id, params.tilt).toFixed(2));
-  const zoomAmount = Number(params.zoom.toFixed(2));
+  const horizontalAngle = Math.round(normalizeRotation(params.rotation));
+  const verticalAngle = Math.round(mapTiltForEngine(engine.id, params.tilt));
+  const zoomAmount = Number(params.zoom.toFixed(1));
 
   return {
     image_urls: [imageUrl],
