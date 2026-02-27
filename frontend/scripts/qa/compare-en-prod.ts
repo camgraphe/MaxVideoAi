@@ -4,7 +4,14 @@ import path from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
 const PROD_SITEMAP = process.env.PROD_SITEMAP || 'https://maxvideoai.com/sitemap.xml';
-const LOCAL_SITEMAP = process.env.LOCAL_SITEMAP || path.resolve(process.cwd(), 'public', 'sitemap.xml');
+const DEFAULT_LOCAL_SITEMAP_CANDIDATES = [
+  path.resolve(process.cwd(), 'public', 'generated-sitemaps', 'sitemap.xml'),
+  path.resolve(process.cwd(), 'public', 'sitemap.xml'),
+];
+const LOCAL_SITEMAP =
+  process.env.LOCAL_SITEMAP ||
+  DEFAULT_LOCAL_SITEMAP_CANDIDATES.find((candidate) => fs.existsSync(candidate)) ||
+  DEFAULT_LOCAL_SITEMAP_CANDIDATES[0];
 const HOST = process.env.PROD_HOST || 'https://maxvideoai.com';
 const CANONICAL_HOST = process.env.CANONICAL_HOST || HOST;
 const OPTIONAL_CANONICAL_PATHS = new Set(['/sitemap-video.xml']);
@@ -64,10 +71,11 @@ async function loadRemoteSitemap(url: string) {
 }
 
 async function loadLocalSitemap(filePath: string) {
+  const baseDir = path.dirname(filePath);
   const resolver = async (loc: string) => {
     try {
       const parsed = new URL(loc);
-      const file = path.resolve(process.cwd(), 'public', path.basename(parsed.pathname));
+      const file = path.resolve(baseDir, path.basename(parsed.pathname));
       if (fs.existsSync(file)) {
         return fs.readFileSync(file, 'utf8');
       }
