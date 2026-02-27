@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
-import type { AdminJobAuditRecord } from '@/server/admin-job-audit';
+import type { AdminJobAuditRecord, AdminJobOutcome } from '@/server/admin-job-audit';
 import { Button } from '@/components/ui/Button';
 
 interface JobAuditTableProps {
@@ -31,14 +31,52 @@ function formatDate(value: string | null | undefined) {
   }
 }
 
-function statusBadge(status?: string | null) {
+function outcomeMeta(outcome: AdminJobOutcome) {
+  const base = 'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-micro';
+  if (outcome === 'failed_action_required') {
+    return {
+      label: 'Action required',
+      className: clsx(base, 'border-error-border bg-error-bg text-error'),
+    };
+  }
+  if (outcome === 'refunded_failure_resolved') {
+    return {
+      label: 'Refunded failure',
+      className: clsx(base, 'border-info-border bg-info-bg text-info'),
+    };
+  }
+  if (outcome === 'completed') {
+    return {
+      label: 'Completed',
+      className: clsx(base, 'border-success-border bg-success-bg text-success'),
+    };
+  }
+  if (outcome === 'in_progress') {
+    return {
+      label: 'In progress',
+      className: clsx(base, 'border-warning-border bg-warning-bg text-warning'),
+    };
+  }
+  return {
+    label: 'Unknown',
+    className: clsx(base, 'border-border bg-muted text-text-secondary'),
+  };
+}
+
+function technicalStatusBadge(status?: string | null) {
   if (!status) return null;
   const normalized = status.toLowerCase();
   const base = 'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-micro';
-  if (normalized === 'completed') return <span className={clsx(base, 'border-success-border bg-success-bg text-success')}>Completed</span>;
-  if (normalized === 'failed') return <span className={clsx(base, 'border-error-border bg-error-bg text-error')}>Failed</span>;
-  if (normalized === 'running' || normalized === 'queued') return <span className={clsx(base, 'border-warning-border bg-warning-bg text-warning')}>{status}</span>;
-  return <span className={clsx(base, 'border-info-border bg-info-bg text-info')}>{status}</span>;
+  if (normalized === 'completed') {
+    return <span className={clsx(base, 'border-success-border bg-success-bg text-success')}>completed</span>;
+  }
+  if (normalized === 'failed') {
+    return <span className={clsx(base, 'border-error-border bg-error-bg text-error')}>failed</span>;
+  }
+  if (normalized === 'running' || normalized === 'queued' || normalized === 'pending') {
+    return <span className={clsx(base, 'border-warning-border bg-warning-bg text-warning')}>{normalized}</span>;
+  }
+  return <span className={clsx(base, 'border-info-border bg-info-bg text-info')}>{normalized}</span>;
 }
 
 export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }: JobAuditTableProps) {
@@ -51,6 +89,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
   const [showArchived, setShowArchived] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [syncingJobId, setSyncingJobId] = useState<string | null>(null);
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
 
   const buildSearchParams = useCallback(
     (overrides: Record<string, string | null | undefined>) => {
@@ -233,7 +272,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="text-sm text-text-secondary">
           Showing {sortedJobs.length} job{sortedJobs.length === 1 ? '' : 's'} (latest first)
-          {showArchived ? ' (including archived failures).' : '.'}
+          {showArchived ? ' (including archived jobs).' : '.'}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -282,7 +321,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
               <th className="px-4 py-3 text-left">Job</th>
               <th className="px-4 py-3 text-left">User</th>
               <th className="px-4 py-3 text-left">Engine</th>
-              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-left">Outcome</th>
               <th className="px-4 py-3 text-left">Display</th>
               <th className="px-4 py-3 text-left">Payment</th>
               <th className="px-4 py-3 text-left">Fal</th>
@@ -304,178 +343,240 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                 const falClass = job.falOk
                   ? 'border-success-border bg-success-bg text-success'
                   : 'border-error-border bg-error-bg text-error';
+                const meta = outcomeMeta(job.outcome);
+                const isExpanded = expandedJobId === job.jobId;
 
                 return (
-                  <tr key={job.jobId} className="align-top">
-                    <td className="px-4 py-3 align-top text-xs text-text-secondary">
-                      <div className="flex flex-col gap-2">
-                        <div>
-                          <div className="font-mono text-xs text-text-secondary">{formatDate(job.createdAt)}</div>
-                          <div className="font-mono text-[11px] text-text-muted">Updated: {formatDate(job.updatedAt)}</div>
+                  <Fragment key={job.jobId}>
+                    <tr className="align-top">
+                      <td className="px-4 py-3 align-top text-xs text-text-secondary">
+                        <div className="flex flex-col gap-2">
+                          <div>
+                            <div className="font-mono text-xs text-text-secondary">{formatDate(job.createdAt)}</div>
+                            <div className="font-mono text-[11px] text-text-muted">Updated: {formatDate(job.updatedAt)}</div>
+                          </div>
+                          {job.videoUrl ? (
+                            <video
+                              className="h-24 w-40 rounded border border-border bg-black"
+                              src={job.videoUrl}
+                              controls
+                              preload="metadata"
+                            />
+                          ) : null}
+                          {job.archived ? (
+                            <div className="flex flex-col gap-2">
+                              <span className="inline-flex items-center rounded-full border border-warning-border bg-warning-bg px-2 py-0.5 font-semibold uppercase tracking-micro text-warning">
+                                Auto-archived
+                              </span>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRestore(job.jobId)}
+                                className="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary hover:border-text-muted hover:bg-surface-2"
+                              >
+                                Bring back online
+                              </Button>
+                            </div>
+                          ) : null}
                         </div>
-                        {job.videoUrl ? (
-                          <video
-                            className="h-24 w-40 rounded border border-border bg-black"
-                            src={job.videoUrl}
-                            controls
-                            preload="metadata"
-                          />
-                        ) : null}
-                        {job.archived ? (
-                          <div className="flex flex-col gap-2">
-                            <span className="inline-flex items-center rounded-full border border-warning-border bg-warning-bg px-2 py-0.5 font-semibold uppercase tracking-micro text-warning">
-                              Auto-archived
-                            </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-2">
+                          <span className="font-mono text-xs text-text-primary break-all">{job.jobId}</span>
+                          {job.providerJobId ? (
+                            <span className="font-mono text-[11px] text-text-muted break-all">{job.providerJobId}</span>
+                          ) : null}
+                          {job.failureReason ? (
+                            <span className="text-xs text-text-secondary line-clamp-2">{job.failureReason}</span>
+                          ) : job.message ? (
+                            <span className="text-xs text-text-secondary line-clamp-2">{job.message}</span>
+                          ) : null}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {job.providerJobId && (!job.videoUrl || job.status !== 'completed') ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => void handleResync(job.jobId)}
+                                disabled={syncingJobId === job.jobId}
+                                className={clsx(
+                                  'rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary',
+                                  syncingJobId === job.jobId
+                                    ? 'cursor-not-allowed opacity-60'
+                                    : 'hover:border-text-muted hover:bg-surface-2'
+                                )}
+                              >
+                                {syncingJobId === job.jobId ? 'Syncing…' : 'Resync Fal'}
+                              </Button>
+                            ) : null}
                             <Button
                               type="button"
                               size="sm"
                               variant="outline"
-                              onClick={() => handleRestore(job.jobId)}
+                              onClick={() => setExpandedJobId((prev) => (prev === job.jobId ? null : job.jobId))}
                               className="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary hover:border-text-muted hover:bg-surface-2"
                             >
-                              Bring back online
+                              {isExpanded ? 'Hide details' : 'Details'}
                             </Button>
                           </div>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-2">
-                        <span className="font-mono text-xs text-text-primary break-all">{job.jobId}</span>
-                        {job.providerJobId ? (
-                          <span className="font-mono text-[11px] text-text-muted break-all">
-                            {job.providerJobId}
-                          </span>
-                        ) : null}
-                        {job.message ? (
-                          <span className="text-xs text-text-secondary">{job.message}</span>
-                        ) : null}
-                        {job.providerJobId && (!job.videoUrl || job.status !== 'completed') ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => void handleResync(job.jobId)}
-                            disabled={syncingJobId === job.jobId}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col text-xs text-text-muted">
+                          <span>{job.userId ?? '—'}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col text-xs text-text-secondary">
+                          <span className="font-medium text-text-primary">{job.engineLabel ?? 'Unknown engine'}</span>
+                          {job.durationSec != null ? <span>{job.durationSec}s</span> : null}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1 text-xs">
+                          <span className={meta.className}>{meta.label}</span>
+                          {technicalStatusBadge(job.status)}
+                          <span className="text-text-muted">Progress: {job.progress ?? 0}%</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1 text-xs">
+                          <span
                             className={clsx(
-                              'rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary',
-                              syncingJobId === job.jobId
-                                ? 'cursor-not-allowed opacity-60'
-                                : 'hover:border-text-muted hover:bg-surface-2'
+                              'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
+                              job.hasVideo
+                                ? 'border-success-border bg-success-bg text-success'
+                                : job.isPlaceholderVideo
+                                  ? 'border-warning-border bg-warning-bg text-warning'
+                                  : 'border-error-border bg-error-bg text-error'
                             )}
                           >
-                            {syncingJobId === job.jobId ? 'Sync en cours…' : 'Reprendre sur Fal'}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col text-xs text-text-muted">
-                        <span>{job.userId ?? '—'}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col text-xs text-text-secondary">
-                        <span className="font-medium text-text-primary">{job.engineLabel ?? 'Unknown engine'}</span>
-                        {job.durationSec != null ? <span>{job.durationSec}s</span> : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1 text-xs">
-                        {statusBadge(job.status)}
-                        <span className="text-text-muted">Progress: {job.progress ?? 0}%</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1 text-xs">
-                        <span
-                          className={clsx(
-                            'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
-                            job.hasVideo
-                              ? 'border-success-border bg-success-bg text-success'
-                              : job.isPlaceholderVideo
-                                ? 'border-warning-border bg-warning-bg text-warning'
-                                : 'border-error-border bg-error-bg text-error'
-                          )}
-                        >
-                          {job.hasVideo ? 'Video ready' : job.isPlaceholderVideo ? 'Placeholder asset' : 'Missing video'}
-                        </span>
-                        {job.videoUrl ? (
-                          <a
-                            href={job.videoUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-xs text-primary underline-offset-2 hover:underline"
-                          >
-                            Open video
-                          </a>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1 text-xs">
-                        <span className="text-text-muted">Status: {job.paymentStatus ?? '—'}</span>
-                        <span className="text-text-muted">
-                          Expected: {formatCurrency(job.finalPriceCents, job.currency)}
-                        </span>
-                        <span className="text-text-muted">
-                          Charges: {formatCurrency(job.totalChargeCents, job.currency)}
-                        </span>
-                        <span className="text-text-muted">
-                          Refunds: {formatCurrency(job.totalRefundCents, job.currency)}
-                        </span>
-                        <span
-                          className={clsx(
-                            'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
-                            paymentClass
-                          )}
-                        >
-                          {job.paymentOk ? 'Debit OK' : 'Check debit'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1 text-xs text-text-muted">
-                        <span>Latest: {job.falStatus ?? '—'}</span>
-                        <span>Updated: {formatDate(job.falUpdatedAt)}</span>
-                        <span
-                          className={clsx(
-                            'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
-                            falClass
-                          )}
-                        >
-                          {job.falOk ? 'Fal OK' : 'Fal error'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-2 text-xs text-text-muted">
-                        <div className="flex flex-col gap-1">
-                          {job.receipts.length === 0 ? (
-                            <span>No receipts</span>
-                          ) : (
-                            job.receipts.map((receipt) => (
-                              <span key={receipt.id} className="font-mono">
-                                {receipt.type} · {formatCurrency(receipt.amountCents, receipt.currency)} ·{' '}
-                                {formatDate(receipt.createdAt)}
-                              </span>
-                            ))
-                          )}
+                            {job.hasVideo ? 'Video ready' : job.isPlaceholderVideo ? 'Placeholder asset' : 'Missing video'}
+                          </span>
+                          {job.videoUrl ? (
+                            <a
+                              href={job.videoUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-primary underline-offset-2 hover:underline"
+                            >
+                              Open video
+                            </a>
+                          ) : null}
                         </div>
-                        {job.paymentStatus?.includes('paid_wallet') && job.totalChargeCents > 0 && job.totalRefundCents === 0 ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleRefund(job.jobId)}
-                            className="rounded-md border-destructive px-2.5 py-1 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1 text-xs">
+                          <span className="text-text-muted">Status: {job.paymentStatus ?? '—'}</span>
+                          <span className="text-text-muted">Expected: {formatCurrency(job.finalPriceCents, job.currency)}</span>
+                          <span className="text-text-muted">Charges: {formatCurrency(job.totalChargeCents, job.currency)}</span>
+                          <span className="text-text-muted">Refunds: {formatCurrency(job.totalRefundCents, job.currency)}</span>
+                          <span className="text-text-muted">Net: {formatCurrency(job.netChargeCents, job.currency)}</span>
+                          <span
+                            className={clsx(
+                              'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
+                              paymentClass
+                            )}
                           >
-                            Refund tokens
-                          </Button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
+                            {job.paymentOk ? 'Debit OK' : 'Check debit'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1 text-xs text-text-muted">
+                          <span>Latest: {job.falStatus ?? '—'}</span>
+                          <span>Updated: {formatDate(job.falUpdatedAt)}</span>
+                          {job.failureAt ? <span>Failure at: {formatDate(job.failureAt)}</span> : null}
+                          <span
+                            className={clsx(
+                              'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
+                              falClass
+                            )}
+                          >
+                            {job.falOk ? 'Fal OK' : 'Fal issue'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-2 text-xs text-text-muted">
+                          <div className="flex flex-col gap-1">
+                            {job.receipts.length === 0 ? (
+                              <span>No receipts</span>
+                            ) : (
+                              job.receipts.slice(0, 4).map((receipt) => (
+                                <span key={receipt.id} className="font-mono">
+                                  {receipt.type} · {formatCurrency(receipt.amountCents, receipt.currency)} · {formatDate(receipt.createdAt)}
+                                </span>
+                              ))
+                            )}
+                          </div>
+                          {job.paymentStatus?.includes('paid_wallet') && job.totalChargeCents > 0 && job.totalRefundCents === 0 ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRefund(job.jobId)}
+                              className="rounded-md border-destructive px-2.5 py-1 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              Refund tokens
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded ? (
+                      <tr className="bg-muted/30">
+                        <td colSpan={9} className="px-4 py-3">
+                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
+                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Fal diagnostics</p>
+                              <p>Raw status: {job.falStatus ?? '—'}</p>
+                              <p>Failure at: {formatDate(job.failureAt)}</p>
+                              <p>Failure origin: {job.failureOrigin ?? '—'}</p>
+                              <p>Reason: {job.failureReason ?? '—'}</p>
+                              <p>Log entries: {job.falLogCount}</p>
+                            </div>
+                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
+                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Refund</p>
+                              <p>Refunded: {job.isRefunded ? 'Yes' : 'No'}</p>
+                              <p>Refund at: {formatDate(job.refundAt)}</p>
+                              <p>Refund reason: {job.refundReason ?? '—'}</p>
+                              <p>Payment status: {job.paymentStatus ?? '—'}</p>
+                            </div>
+                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
+                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Identifiers</p>
+                              <p className="break-all">Job ID: {job.jobId}</p>
+                              <p className="break-all">Provider ID: {job.providerJobId ?? '—'}</p>
+                              <p>Created: {formatDate(job.createdAt)}</p>
+                              <p>Updated: {formatDate(job.updatedAt)}</p>
+                            </div>
+                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
+                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Timeline</p>
+                              {job.timeline.length ? (
+                                <ul className="space-y-1">
+                                  {job.timeline.map((event, index) => (
+                                    <li key={`${job.jobId}-${event.at}-${event.kind}-${index}`}>
+                                      <span className="font-mono text-[11px]">{formatDate(event.at)}</span>
+                                      {' · '}
+                                      <span>{event.source}</span>
+                                      {' · '}
+                                      <span>{event.kind}</span>
+                                      {' · '}
+                                      <span>{event.summary}</span>
+                                      {event.details ? <span>{` (${event.details})`}</span> : null}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p>No timeline events</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Fragment>
                 );
               })
             )}
@@ -483,9 +584,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
         </table>
       </div>
       <div ref={sentinelRef} className="h-10 w-full" aria-hidden="true" />
-      {isLoadingMore ? (
-        <div className="text-center text-xs text-text-muted">Loading more jobs…</div>
-      ) : null}
+      {isLoadingMore ? <div className="text-center text-xs text-text-muted">Loading more jobs…</div> : null}
       {nextCursor ? (
         <div className="text-center">
           <Button
@@ -503,9 +602,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
           </Button>
         </div>
       ) : null}
-      {!nextCursor && !isLoadingMore ? (
-        <div className="text-center text-xs text-text-muted">End of results</div>
-      ) : null}
+      {!nextCursor && !isLoadingMore ? <div className="text-center text-xs text-text-muted">End of results</div> : null}
     </section>
   );
 }

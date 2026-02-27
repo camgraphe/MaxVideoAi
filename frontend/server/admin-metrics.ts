@@ -97,6 +97,38 @@ const HEALTH_WINDOW_HOURS = 24;
 const PENDING_STALE_MINUTES = 15;
 const ENGINE_USAGE_WINDOW_DAYS = 30;
 
+function unresolvedFailedCondition(alias: string): string {
+  return `(
+    LOWER(COALESCE(${alias}.status, '')) IN ('failed', 'error', 'errored', 'cancelled', 'canceled', 'aborted')
+    AND COALESCE(${alias}.payment_status, '') NOT ILIKE '%refunded%'
+    AND NOT EXISTS (
+      SELECT 1
+      FROM app_receipts refund_receipts
+      WHERE refund_receipts.job_id = ${alias}.job_id
+        AND refund_receipts.type = 'refund'
+    )
+  )`;
+}
+
+function refundedFailedCondition(alias: string): string {
+  return `(
+    LOWER(COALESCE(${alias}.status, '')) IN ('failed', 'error', 'errored', 'cancelled', 'canceled', 'aborted')
+    AND (
+      COALESCE(${alias}.payment_status, '') ILIKE '%refunded%'
+      OR EXISTS (
+        SELECT 1
+        FROM app_receipts refund_receipts
+        WHERE refund_receipts.job_id = ${alias}.job_id
+          AND refund_receipts.type = 'refund'
+      )
+    )
+  )`;
+}
+
+function completedCondition(alias: string): string {
+  return `LOWER(COALESCE(${alias}.status, '')) IN ('completed', 'success', 'succeeded', 'finished')`;
+}
+
 export const METRIC_RANGE_OPTIONS: MetricsRangeLabel[] = ['7d', '30d', '90d'];
 export const DEFAULT_METRIC_RANGE: MetricsRangeLabel = '30d';
 
@@ -701,26 +733,26 @@ export async function fetchAdminMetrics(
     safeQuery<HealthRow>(
       `
         SELECT
-          COUNT(*) FILTER (WHERE status = 'failed')::bigint AS failed_count,
-          COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
-        FROM app_jobs
+          COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
+          COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
+        FROM app_jobs j
         WHERE created_at >= NOW() - INTERVAL '30 days'
-          ${excludeUserIdClause('user_id', { allowNulls: true })}
+          ${excludeUserIdClause('j.user_id', { allowNulls: true })}
       `,
       exclusionParams
     ),
     safeQuery<FailedEngineRow>(
       `
         SELECT
-          COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
-          COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
-          COUNT(*) FILTER (WHERE status = 'failed')::bigint AS failed_count,
-          COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
-        FROM app_jobs
+          COALESCE(NULLIF(j.engine_id, ''), 'unknown') AS engine_id,
+          COALESCE(NULLIF(j.engine_label, ''), COALESCE(NULLIF(j.engine_id, ''), 'unknown')) AS engine_label,
+          COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
+          COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
+        FROM app_jobs j
         WHERE created_at >= NOW() - INTERVAL '30 days'
-          ${excludeUserIdClause('user_id', { allowNulls: true })}
+          ${excludeUserIdClause('j.user_id', { allowNulls: true })}
         GROUP BY engine_id, engine_label
-        HAVING COUNT(*) FILTER (WHERE status IN ('failed', 'completed')) > 0
+        HAVING COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')})) > 0
         ORDER BY failed_count DESC
       `,
       exclusionParams
@@ -827,18 +859,27 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
   if (!isDatabaseConfigured()) {
     return {
       failedRenders24h: 0,
+      refundedFailures24h: 0,
       stalePendingJobs: 0,
       serviceNotice,
       engineStats: [],
     };
   }
 
-  const [failedRows, pendingRows, engineRows] = await Promise.all([
+  const [failedRows, refundedRows, pendingRows, engineRows] = await Promise.all([
     safeQuery<CountValueRow>(
       `
         SELECT COUNT(*)::bigint AS count
-        FROM app_jobs
-        WHERE status = 'failed'
+        FROM app_jobs j
+        WHERE ${unresolvedFailedCondition('j')}
+          AND created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
+      `
+    ),
+    safeQuery<CountValueRow>(
+      `
+        SELECT COUNT(*)::bigint AS count
+        FROM app_jobs j
+        WHERE ${refundedFailedCondition('j')}
           AND created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
       `
     ),
@@ -853,19 +894,20 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
     safeQuery<FailedEngineRow>(
       `
         SELECT
-          COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
-          COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
-          COUNT(*) FILTER (WHERE status = 'failed')::bigint AS failed_count,
-          COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
-        FROM app_jobs
+          COALESCE(NULLIF(j.engine_id, ''), 'unknown') AS engine_id,
+          COALESCE(NULLIF(j.engine_label, ''), COALESCE(NULLIF(j.engine_id, ''), 'unknown')) AS engine_label,
+          COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
+          COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
+        FROM app_jobs j
         WHERE created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
         GROUP BY engine_id, engine_label
-        HAVING COUNT(*) FILTER (WHERE status IN ('failed', 'completed')) > 0
+        HAVING COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')})) > 0
       `
     ),
   ]);
 
   const failedRenders24h = coerceNumber(failedRows[0]?.count ?? 0);
+  const refundedFailures24h = coerceNumber(refundedRows[0]?.count ?? 0);
   const stalePendingJobs = coerceNumber(pendingRows[0]?.count ?? 0);
 
   const engineStats: EngineHealthStat[] = engineRows
@@ -886,6 +928,7 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
 
   return {
     failedRenders24h,
+    refundedFailures24h,
     stalePendingJobs,
     serviceNotice,
     engineStats,

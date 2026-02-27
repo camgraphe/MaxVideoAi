@@ -147,7 +147,7 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
               <span key={stat.engineId}>
                 {index > 0 ? ', ' : null}
                 <Link
-                  href={buildJobsHref({ status: 'failed', engineId: stat.engineId })}
+                  href={buildJobsHref({ outcome: 'failed_action_required', engineId: stat.engineId })}
                   className="font-medium text-text-primary underline-offset-2 hover:underline"
                 >
                   {stat.engineLabel}
@@ -161,7 +161,7 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
 
   return (
     <section className="rounded-card border border-surface-on-media-25 bg-surface-glass-95 p-5 shadow-card">
-      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-5">
         <HealthTile
           label="Engine signals"
           value={atRisk.length ? `${atRisk.length} incident${atRisk.length > 1 ? 's' : ''}` : 'All clear'}
@@ -169,11 +169,18 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
           variant={atRisk.length ? 'warn' : 'ok'}
         />
         <HealthTile
-          label="Failed renders (24h)"
+          label="Failed unresolved (24h)"
           value={formatNumber(health.failedRenders24h)}
-          helper="Aggregated across all engines"
+          helper="Failed jobs without refund resolution"
           variant={health.failedRenders24h > 0 ? 'warn' : 'ok'}
-          href={buildJobsHref({ status: 'failed' })}
+          href={buildJobsHref({ outcome: 'failed_action_required' })}
+        />
+        <HealthTile
+          label="Refunded failures (24h)"
+          value={formatNumber(health.refundedFailures24h)}
+          helper="Failed jobs already refunded"
+          variant={health.refundedFailures24h > 0 ? 'info' : 'ok'}
+          href={buildJobsHref({ outcome: 'refunded_failure_resolved' })}
         />
         <HealthTile
           label="Pending jobs (stuck)"
@@ -207,10 +214,11 @@ function HealthTile({
   label: string;
   value: string;
   helper?: ReactNode;
-  variant?: 'ok' | 'warn';
+  variant?: 'ok' | 'warn' | 'info';
   href?: string;
 }) {
-  const intentClasses = variant === 'warn' ? 'text-error' : 'text-text-primary';
+  const intentClasses =
+    variant === 'warn' ? 'text-error' : variant === 'info' ? 'text-info' : 'text-text-primary';
   const baseClasses = 'block rounded-2xl border border-surface-on-media-25 bg-surface px-5 py-4';
   const interactiveClasses = href
     ? 'transition hover:-translate-y-0.5 hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -325,9 +333,10 @@ function formatPercent(value: number) {
   return percentFormatter.format(value);
 }
 
-function buildJobsHref(filters: { status?: string; engineId?: string }) {
+function buildJobsHref(filters: { status?: string; outcome?: string; engineId?: string }) {
   const params = new URLSearchParams();
   if (filters.status) params.set('status', filters.status);
+  if (filters.outcome) params.set('outcome', filters.outcome);
   if (filters.engineId) params.set('engineId', filters.engineId);
   const query = params.toString();
   return query.length ? `/admin/jobs?${query}` : '/admin/jobs';

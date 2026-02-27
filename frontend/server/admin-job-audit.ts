@@ -1,6 +1,21 @@
 import { query } from '@/lib/db';
 import { normalizeMediaUrl, isPlaceholderMediaUrl } from '@/lib/media';
 
+export type AdminJobOutcome =
+  | 'failed_action_required'
+  | 'refunded_failure_resolved'
+  | 'completed'
+  | 'in_progress'
+  | 'unknown';
+
+type AdminJobAuditTimelineEvent = {
+  at: string;
+  source: 'fal' | 'payment';
+  kind: string;
+  summary: string;
+  details: string | null;
+};
+
 type RawJobAuditRow = {
   id: number;
   job_id: string;
@@ -31,6 +46,18 @@ type RawJobAuditRow = {
   }> | null;
   fal_status: string | null;
   fal_created_at: string | null;
+  fal_failure_status: string | null;
+  fal_failure_created_at: string | null;
+  fal_failure_payload: unknown;
+  fal_log_count: number | null;
+  latest_refund_created_at: string | null;
+  latest_refund_metadata: unknown;
+  fal_events: Array<{
+    createdAt: string;
+    status: string | null;
+    summary: string | null;
+    origin: string | null;
+  }> | null;
 };
 
 export type AdminJobAuditRecord = {
@@ -63,6 +90,15 @@ export type AdminJobAuditRecord = {
   }>;
   falStatus: string | null;
   falUpdatedAt: string | null;
+  outcome: AdminJobOutcome;
+  failureReason: string | null;
+  failureOrigin: string | null;
+  failureAt: string | null;
+  isRefunded: boolean;
+  refundAt: string | null;
+  refundReason: string | null;
+  falLogCount: number;
+  timeline: AdminJobAuditTimelineEvent[];
   hasVideo: boolean;
   isPlaceholderVideo: boolean;
   netChargeCents: number;
@@ -70,6 +106,17 @@ export type AdminJobAuditRecord = {
   falOk: boolean;
   archived: boolean;
 };
+
+const FAILED_STATUSES = new Set(['failed', 'error', 'errored', 'cancelled', 'canceled', 'aborted']);
+const COMPLETED_STATUSES = new Set(['completed', 'success', 'succeeded', 'finished']);
+const IN_PROGRESS_STATUSES = new Set(['pending', 'queued', 'running', 'processing', 'in_progress']);
+const OUTCOME_FILTERS: ReadonlySet<AdminJobOutcome> = new Set([
+  'failed_action_required',
+  'refunded_failure_resolved',
+  'completed',
+  'in_progress',
+  'unknown',
+]);
 
 function coerceNumber(value: number | string | null | undefined): number {
   if (typeof value === 'number') return value;
@@ -95,6 +142,169 @@ function normalizeReceipts(
     currency: normalizeCurrency(entry.currency),
     createdAt: entry.createdAt,
   }));
+}
+
+function normalizeAuditText(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const trimmed = value.replace(/\s+/g, ' ').trim();
+    if (!trimmed.length) return null;
+    if (/^(error|failed|null|undefined|n\/a)$/i.test(trimmed)) return null;
+    return trimmed;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return null;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>;
+      }
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function findFirstTextByKeys(payload: unknown, keys: string[]): string | null {
+  if (!payload) return null;
+  const normalizedKeys = new Set(keys.map((key) => key.toLowerCase()));
+  const visited = new Set<unknown>();
+  const stack: unknown[] = [payload];
+
+  while (stack.length) {
+    const current = stack.pop();
+    if (!current || visited.has(current)) continue;
+    visited.add(current);
+
+    const direct = normalizeAuditText(current);
+    if (direct && typeof current !== 'object') {
+      return direct;
+    }
+
+    if (Array.isArray(current)) {
+      current.forEach((entry) => stack.push(entry));
+      continue;
+    }
+
+    const record = asRecord(current);
+    if (!record) continue;
+
+    for (const [key, value] of Object.entries(record)) {
+      if (normalizedKeys.has(key.toLowerCase())) {
+        const candidate = normalizeAuditText(value);
+        if (candidate) return candidate;
+      }
+    }
+
+    for (const value of Object.values(record)) {
+      if (value && (typeof value === 'object' || Array.isArray(value))) {
+        stack.push(value);
+      }
+    }
+  }
+
+  return null;
+}
+
+function isRefundedJob(params: {
+  paymentStatus: string | null;
+  totalRefundCents: number;
+  refundCount: number;
+}): boolean {
+  if (params.refundCount > 0 || params.totalRefundCents > 0) return true;
+  return (params.paymentStatus ?? '').toLowerCase().includes('refunded');
+}
+
+function deriveOutcome(status: string | null, refunded: boolean): AdminJobOutcome {
+  const normalized = (status ?? '').toLowerCase();
+  if (FAILED_STATUSES.has(normalized)) {
+    return refunded ? 'refunded_failure_resolved' : 'failed_action_required';
+  }
+  if (COMPLETED_STATUSES.has(normalized)) {
+    return 'completed';
+  }
+  if (IN_PROGRESS_STATUSES.has(normalized)) {
+    return 'in_progress';
+  }
+  return 'unknown';
+}
+
+function normalizeOutcomeFilter(value: string | null | undefined): AdminJobOutcome | null {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return null;
+  if (OUTCOME_FILTERS.has(normalized as AdminJobOutcome)) {
+    return normalized as AdminJobOutcome;
+  }
+  return null;
+}
+
+function buildOutcomeSqlCondition(outcome: AdminJobOutcome): string {
+  const failedExpr = `LOWER(COALESCE(j.status, '')) IN ('failed','error','errored','cancelled','canceled','aborted')`;
+  const completedExpr = `LOWER(COALESCE(j.status, '')) IN ('completed','success','succeeded','finished')`;
+  const inProgressExpr = `LOWER(COALESCE(j.status, '')) IN ('pending','queued','running','processing','in_progress')`;
+  const refundedExpr =
+    `(COALESCE(refunds.refund_count, 0) > 0 OR COALESCE(refunds.total_refund_cents, 0) > 0 OR COALESCE(j.payment_status, '') ILIKE '%refunded%')`;
+
+  if (outcome === 'failed_action_required') {
+    return `(${failedExpr} AND NOT ${refundedExpr})`;
+  }
+  if (outcome === 'refunded_failure_resolved') {
+    return `(${failedExpr} AND ${refundedExpr})`;
+  }
+  if (outcome === 'completed') {
+    return completedExpr;
+  }
+  if (outcome === 'in_progress') {
+    return inProgressExpr;
+  }
+  return `NOT (${failedExpr} OR ${completedExpr} OR ${inProgressExpr})`;
+}
+
+function normalizeTimeline(
+  falEventsRaw: RawJobAuditRow['fal_events'],
+  receipts: AdminJobAuditRecord['receipts']
+): AdminJobAuditRecord['timeline'] {
+  const falEvents: AdminJobAuditRecord['timeline'] = Array.isArray(falEventsRaw)
+    ? falEventsRaw
+        .map((event) => {
+          const falStatus = normalizeAuditText(event.status) ?? 'event';
+          const summary =
+            normalizeAuditText(event.summary) ??
+            normalizeAuditText(findFirstTextByKeys(event, ['reason', 'message', 'note'])) ??
+            `Fal ${falStatus}`;
+          const details = normalizeAuditText(event.origin) ?? null;
+          return {
+            at: event.createdAt,
+            source: 'fal' as const,
+            kind: falStatus.toLowerCase(),
+            summary,
+            details,
+          };
+        })
+        .filter((event) => Boolean(event.at))
+    : [];
+
+  const paymentEvents: AdminJobAuditRecord['timeline'] = receipts.map((receipt) => ({
+    at: receipt.createdAt,
+    source: 'payment' as const,
+    kind: receipt.type,
+    summary: `${receipt.type} ${receipt.amountCents / 100} ${receipt.currency}`,
+    details: `Receipt #${receipt.id}`,
+  }));
+
+  return [...falEvents, ...paymentEvents]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+    .slice(0, 10);
 }
 
 const ARCHIVE_THRESHOLD_MS = 30 * 60 * 1000;
@@ -141,6 +351,7 @@ type FetchJobAuditFilters = {
   userId?: string | null;
   engineId?: string | null;
   status?: string | null;
+  outcome?: string | null;
   from?: Date | null;
   to?: Date | null;
 };
@@ -162,6 +373,7 @@ export async function fetchRecentJobAudits({
   userId = null,
   engineId = null,
   status = null,
+  outcome = null,
   from = null,
   to = null,
 }: FetchJobAuditParams = {}): Promise<FetchJobAuditResult> {
@@ -195,6 +407,11 @@ export async function fetchRecentJobAudits({
     params.push(status.trim().toLowerCase());
     const index = params.length;
     conditions.push(`LOWER(j.status) = $${index}`);
+  }
+
+  const outcomeFilter = normalizeOutcomeFilter(outcome);
+  if (outcomeFilter) {
+    conditions.push(buildOutcomeSqlCondition(outcomeFilter));
   }
 
   if (from instanceof Date && !Number.isNaN(from.getTime())) {
@@ -251,7 +468,14 @@ export async function fetchRecentJobAudits({
         COALESCE(refunds.refund_count, 0) AS refund_count,
         receipts.receipts,
         fal.status AS fal_status,
-        fal.created_at AS fal_created_at
+        fal.created_at AS fal_created_at,
+        fal_failure.status AS fal_failure_status,
+        fal_failure.created_at AS fal_failure_created_at,
+        fal_failure.payload AS fal_failure_payload,
+        COALESCE(fal_counts.log_count, 0) AS fal_log_count,
+        latest_refund.created_at AS latest_refund_created_at,
+        latest_refund.metadata AS latest_refund_metadata,
+        fal_events.fal_events
       FROM app_jobs j
       LEFT JOIN LATERAL (
         SELECT
@@ -287,6 +511,52 @@ export async function fetchRecentJobAudits({
         ORDER BY created_at DESC
         LIMIT 1
       ) fal ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT status, created_at, payload
+        FROM fal_queue_log f
+        WHERE f.job_id = j.job_id
+          AND (
+            LOWER(f.status) IN ('failed', 'error', 'errored', 'canceled', 'cancelled', 'aborted')
+            OR f.status = 'poll:failed'
+            OR f.status = 'manual:no-media'
+            OR COALESCE(f.payload ->> 'appStatus', '') ILIKE 'failed'
+            OR COALESCE(f.payload ->> 'falStatus', '') ~* '(failed|error|cancel|abort)'
+          )
+        ORDER BY created_at DESC
+        LIMIT 1
+      ) fal_failure ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS log_count
+        FROM fal_queue_log f
+        WHERE f.job_id = j.job_id
+      ) fal_counts ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT created_at, metadata
+        FROM app_receipts r
+        WHERE r.job_id = j.job_id
+          AND r.type = 'refund'
+        ORDER BY created_at DESC
+        LIMIT 1
+      ) latest_refund ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT
+          jsonb_agg(
+            jsonb_build_object(
+              'createdAt', recent.created_at,
+              'status', recent.status,
+              'summary', COALESCE(recent.payload ->> 'message', recent.payload ->> 'reason', recent.payload ->> 'note'),
+              'origin', COALESCE(recent.payload ->> 'failure_origin', recent.payload ->> 'failureOrigin')
+            )
+            ORDER BY recent.created_at DESC
+          ) AS fal_events
+        FROM (
+          SELECT created_at, status, payload
+          FROM fal_queue_log f
+          WHERE f.job_id = j.job_id
+          ORDER BY created_at DESC
+          LIMIT 6
+        ) recent
+      ) fal_events ON TRUE
       ${whereClause}
       ORDER BY j.created_at DESC, j.id DESC
       LIMIT $${limitIndex}
@@ -305,17 +575,22 @@ export async function fetchRecentJobAudits({
     const netCharge = totalCharge - totalRefund;
     const currency = normalizeCurrency(row.currency);
     const paymentStatus = row.payment_status ?? '';
+    const refunded = isRefundedJob({
+      paymentStatus: row.payment_status,
+      totalRefundCents: totalRefund,
+      refundCount: row.refund_count ?? 0,
+    });
+    const outcome = deriveOutcome(row.status, refunded);
 
     const paymentOk =
-      paymentStatus.includes('refunded') ? netCharge <= 0 : finalPrice === netCharge;
+      paymentStatus.includes('refunded') || refunded ? netCharge <= 0 : finalPrice === netCharge;
 
     const falStatus = row.fal_status;
-    const falOk = !falStatus || falStatus.toUpperCase() === 'COMPLETED';
+    const falOk = !falStatus || falStatus.toUpperCase() === 'COMPLETED' || outcome === 'refunded_failure_resolved';
 
-    const statusNormalized = (row.status ?? '').toLowerCase();
     const updatedAtDate = new Date(row.updated_at);
     const archived =
-      ['failed', 'error', 'errored', 'cancelled', 'canceled'].includes(statusNormalized) &&
+      outcome === 'failed_action_required' &&
       !Number.isNaN(updatedAtDate.getTime()) &&
       Date.now() - updatedAtDate.getTime() >= ARCHIVE_THRESHOLD_MS;
 
@@ -323,6 +598,36 @@ export async function fetchRecentJobAudits({
     const thumbUrl = row.thumb_url ? normalizeMediaUrl(row.thumb_url) ?? row.thumb_url : null;
     const placeholderVideo = isPlaceholderMediaUrl(videoUrl);
     const displayOk = Boolean(videoUrl) && !placeholderVideo;
+    const receipts = normalizeReceipts(row.receipts);
+
+    const failureReason =
+      normalizeAuditText(
+        findFirstTextByKeys(row.fal_failure_payload, [
+          'reason',
+          'message',
+          'note',
+          'error',
+          'error_message',
+          'status_message',
+          'falError',
+          'detail',
+        ])
+      ) ?? normalizeAuditText(row.message);
+    const failureOrigin =
+      normalizeAuditText(
+        findFirstTextByKeys(row.latest_refund_metadata, ['failure_origin', 'failureOrigin'])
+      ) ??
+      normalizeAuditText(
+        findFirstTextByKeys(row.fal_failure_payload, ['failure_origin', 'failureOrigin'])
+      ) ??
+      null;
+    const refundReason =
+      normalizeAuditText(
+        findFirstTextByKeys(row.latest_refund_metadata, ['note', 'reason', 'message'])
+      ) ?? null;
+
+    const failureAt = row.fal_failure_created_at ?? (outcome === 'failed_action_required' ? row.updated_at : null);
+    const timeline = normalizeTimeline(row.fal_events, receipts);
 
     return {
       id: row.id,
@@ -345,9 +650,18 @@ export async function fetchRecentJobAudits({
       totalRefundCents: totalRefund,
       chargeCount: row.charge_count ?? 0,
       refundCount: row.refund_count ?? 0,
-      receipts: normalizeReceipts(row.receipts),
+      receipts,
       falStatus,
       falUpdatedAt: row.fal_created_at,
+      outcome,
+      failureReason,
+      failureOrigin,
+      failureAt,
+      isRefunded: refunded,
+      refundAt: row.latest_refund_created_at,
+      refundReason,
+      falLogCount: row.fal_log_count ?? 0,
+      timeline,
       hasVideo: displayOk,
       isPlaceholderVideo: placeholderVideo,
       netChargeCents: netCharge,

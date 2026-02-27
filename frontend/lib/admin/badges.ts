@@ -8,7 +8,11 @@ export function buildAdminBadges(health: AdminHealthSnapshot): AdminNavBadgeMap 
   };
 
   if (health.failedRenders24h > 0) {
-    badges.jobs.push({ label: `Failed ${health.failedRenders24h}`, tone: 'warn' });
+    badges.jobs.push({ label: `Failed unresolved ${health.failedRenders24h}`, tone: 'warn' });
+  }
+
+  if (health.refundedFailures24h > 0) {
+    badges.jobs.push({ label: `Refunded ${health.refundedFailures24h}`, tone: 'info' });
   }
 
   if (health.stalePendingJobs > 0) {

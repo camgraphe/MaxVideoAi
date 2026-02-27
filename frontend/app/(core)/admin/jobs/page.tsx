@@ -8,6 +8,7 @@ type PageProps = {
     userId?: string;
     engineId?: string;
     status?: string;
+    outcome?: string;
     from?: string;
     to?: string;
   };
@@ -36,6 +37,7 @@ export default async function AdminJobsAuditPage({ searchParams = {} }: PageProp
     userId: filters.userId || null,
     engineId: filters.engineId || null,
     status: filters.status || null,
+    outcome: filters.outcome || null,
     from: filters.fromDate,
     to: filters.toDate,
   });
@@ -61,6 +63,7 @@ type UiFilters = {
   userId: string;
   engineId: string;
   status: string;
+  outcome: string;
   from: string;
   to: string;
   fromDate: Date | null;
@@ -73,11 +76,12 @@ function normalizeFilters(params: PageProps['searchParams']): UiFilters {
   const userId = coerce(params?.userId);
   const engineId = coerce(params?.engineId);
   const status = coerce(params?.status);
+  const outcome = coerce(params?.outcome);
   const from = coerce(params?.from);
   const to = coerce(params?.to);
   const fromDate = from ? parseDate(from) : null;
   const toDate = to ? parseDate(to) : null;
-  return { jobId, userId, engineId, status, from, to, fromDate, toDate };
+  return { jobId, userId, engineId, status, outcome, from, to, fromDate, toDate };
 }
 
 function parseDate(value: string): Date | null {
@@ -92,6 +96,7 @@ function buildFiltersQuery(filters: UiFilters): string {
   if (filters.userId) params.set('userId', filters.userId);
   if (filters.engineId) params.set('engineId', filters.engineId);
   if (filters.status) params.set('status', filters.status);
+  if (filters.outcome) params.set('outcome', filters.outcome);
   if (filters.from) params.set('from', filters.from);
   if (filters.to) params.set('to', filters.to);
   return params.toString();
@@ -147,6 +152,21 @@ function JobFilters({ filters }: { filters: UiFilters }) {
                 {value}
               </option>
             ))}
+          </select>
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+          Outcome
+          <select
+            name="outcome"
+            defaultValue={filters.outcome}
+            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">All</option>
+            <option value="failed_action_required">Action required</option>
+            <option value="refunded_failure_resolved">Refunded failure</option>
+            <option value="completed">Completed</option>
+            <option value="in_progress">In progress</option>
+            <option value="unknown">Unknown</option>
           </select>
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">

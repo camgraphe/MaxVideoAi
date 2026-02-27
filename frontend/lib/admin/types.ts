@@ -105,6 +105,7 @@ export type EngineHealthStat = {
 
 export type AdminHealthSnapshot = {
   failedRenders24h: number;
+  refundedFailures24h: number;
   stalePendingJobs: number;
   serviceNotice: {
     active: boolean;

@@ -23,7 +23,18 @@ type CommandItem = {
 };
 
 const JOB_STATUS_COMMANDS: CommandItem[] = [
-  { id: 'jobs-failed', label: 'Failed jobs', group: 'Operations', href: '/admin/jobs?status=failed' },
+  {
+    id: 'jobs-failed-unresolved',
+    label: 'Failed jobs (action required)',
+    group: 'Operations',
+    href: '/admin/jobs?outcome=failed_action_required',
+  },
+  {
+    id: 'jobs-refunded-failures',
+    label: 'Refunded failures',
+    group: 'Operations',
+    href: '/admin/jobs?outcome=refunded_failure_resolved',
+  },
   { id: 'jobs-pending', label: 'Pending jobs', group: 'Operations', href: '/admin/jobs?status=pending' },
 ];
 
@@ -82,6 +93,7 @@ export function AdminCommandPalette({ navGroups, open, onOpenChange }: AdminComm
     const userTerm = parsePrefixQuery(normalized, ['user:', 'users:', 'u:']);
     const jobTerm = parsePrefixQuery(normalized, ['job:', 'jobs:', 'j:']);
     const statusTerm = parsePrefixQuery(normalized, ['status:']);
+    const outcomeTerm = parsePrefixQuery(normalized, ['outcome:', 'state:']);
 
     if (userTerm !== null) {
       filterQuery = userTerm;
@@ -114,7 +126,24 @@ export function AdminCommandPalette({ navGroups, open, onOpenChange }: AdminComm
           id: `status-${status}`,
           label: `${status === 'failed' ? 'Failed' : 'Pending'} jobs`,
           group: 'Quick search',
-          action: () => router.push(`/admin/jobs?status=${encodeURIComponent(status)}`),
+          action: () =>
+            router.push(
+              status === 'failed'
+                ? '/admin/jobs?outcome=failed_action_required'
+                : `/admin/jobs?status=${encodeURIComponent(status)}`
+            ),
+        });
+      }
+    }
+
+    if (outcomeTerm !== null) {
+      const outcome = outcomeTerm.trim();
+      if (outcome === 'failed_action_required' || outcome === 'refunded_failure_resolved') {
+        nextDynamic.push({
+          id: `outcome-${outcome}`,
+          label: outcome === 'failed_action_required' ? 'Failed jobs (action required)' : 'Refunded failures',
+          group: 'Quick search',
+          action: () => router.push(`/admin/jobs?outcome=${encodeURIComponent(outcome)}`),
         });
       }
     }
@@ -124,7 +153,21 @@ export function AdminCommandPalette({ navGroups, open, onOpenChange }: AdminComm
         id: `quick-${normalized}`,
         label: `${normalized === 'failed' ? 'Failed' : 'Pending'} jobs`,
         group: 'Quick search',
-        action: () => router.push(`/admin/jobs?status=${encodeURIComponent(normalized)}`),
+        action: () =>
+          router.push(
+            normalized === 'failed'
+              ? '/admin/jobs?outcome=failed_action_required'
+              : `/admin/jobs?status=${encodeURIComponent(normalized)}`
+          ),
+      });
+    }
+
+    if (normalized === 'refunded' || normalized === 'refunded_failure_resolved') {
+      nextDynamic.push({
+        id: 'quick-refunded-failures',
+        label: 'Refunded failures',
+        group: 'Quick search',
+        action: () => router.push('/admin/jobs?outcome=refunded_failure_resolved'),
       });
     }
 
