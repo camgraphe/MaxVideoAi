@@ -13,6 +13,7 @@ import type { VideoAsset } from '@/types/render';
 import { translateError } from '@/lib/error-messages';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
+import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -648,6 +649,33 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
     });
     throw error;
   }
+  return data;
+}
+
+export async function runAngleTool(payload: AngleToolRequest): Promise<AngleToolResponse> {
+  const response = await authFetch('/api/tools/angle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as
+    | (AngleToolResponse & { error?: { code?: string; message?: string; detail?: unknown } })
+    | null;
+
+  if (!data) {
+    throw new Error('Angle tool response malformed');
+  }
+
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.error?.message ?? `Angle tool failed (${response.status})`);
+    Object.assign(error, {
+      code: data.error?.code ?? 'angle_tool_failed',
+      detail: data.error?.detail,
+      status: response.status,
+    });
+    throw error;
+  }
+
   return data;
 }
 

@@ -12,7 +12,7 @@ import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 
 const NEXT_LOCALE_COOKIE = 'NEXT_LOCALE';
 const LOGIN_PATH = '/login';
-const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/admin'];
+const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/tools', '/admin'];
 const NON_LOCALIZED_PREFIXES = [
   '/api',
   '/trpc',
@@ -26,6 +26,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/login',
   '/auth',
   '/settings',
+  '/tools',
   '/video',
   '/sitemap-video.xml',
   '/app',
@@ -171,7 +172,7 @@ const LOCALIZED_PREFIX_SET = new Set(LOCALIZED_PREFIXES.map((value) => value.toL
 const LOCALE_PREFIX_REGEX = LOCALIZED_PREFIXES.length
   ? new RegExp(`^/(${LOCALIZED_PREFIXES.join('|')})(/|$)`)
   : null;
-const APP_NOINDEX_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/connect'];
+const APP_NOINDEX_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/tools', '/connect'];
 const ENGLISH_SEGMENT_TO_LOCALIZED = new Map<string, Record<AppLocale, string>>();
 const LOCALIZED_SEGMENT_TO_ENGLISH = new Map<string, string>();
 Object.values(localizedSlugConfig as Record<string, Record<string, string>>).forEach((entry) => {
