@@ -189,7 +189,7 @@ export function HeroMediaTile({
         onClick={(event) => {
           event.stopPropagation();
         }}
-        className="pointer-events-auto absolute bottom-1.5 left-1/2 z-10 -translate-x-1/2 inline-flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full px-2.5 py-1.5 text-[10px] font-medium text-on-media-90 transition hover:text-on-inverse focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface-on-media-40 sm:bottom-2 sm:min-h-[48px] sm:min-w-[48px] sm:px-3 sm:py-2 sm:text-xs"
+        className="pointer-events-auto absolute bottom-1.5 left-1/2 z-10 hidden -translate-x-1/2 items-center justify-center rounded-full px-2.5 py-1.5 text-[10px] font-medium text-on-media-90 transition hover:text-on-inverse focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface-on-media-40 sm:inline-flex sm:bottom-2 sm:min-h-[48px] sm:min-w-[48px] sm:px-3 sm:py-2 sm:text-xs"
       >
         {overlayLabel ?? 'Clone these settings'}
       </Link>
