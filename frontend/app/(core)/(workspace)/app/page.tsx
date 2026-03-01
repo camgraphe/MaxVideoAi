@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ChangeEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { supabase } from '@/lib/supabaseClient';
@@ -204,6 +204,10 @@ type UserAsset = {
 
 type AssetLibrarySource = 'all' | 'upload' | 'generated';
 
+type AssetPickerTarget =
+  | { kind: 'field'; field: EngineInputField; slotIndex?: number }
+  | { kind: 'kling'; elementId: string; slot: 'frontal' | 'reference'; slotIndex?: number };
+
 type AssetLibraryModalProps = {
   fieldLabel: string;
   assets: UserAsset[];
@@ -242,6 +246,9 @@ const DEFAULT_WORKSPACE_COPY = {
   },
   assetLibrary: {
     title: 'Select reference image',
+    import: 'Import',
+    importing: 'Importing…',
+    importFailed: 'Import failed. Please try again.',
     refresh: 'Refresh',
     close: 'Close',
     fieldFallback: 'Reference image',
@@ -285,12 +292,66 @@ function AssetLibraryModal({
 }: AssetLibraryModalProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary) ?? DEFAULT_WORKSPACE_COPY.assetLibrary;
+  const copyAssetLibrary = copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary;
+  const importLabel = copyAssetLibrary.import ?? DEFAULT_WORKSPACE_COPY.assetLibrary.import;
+  const importingLabel = copyAssetLibrary.importing ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importing;
+  const importFailedLabel = copyAssetLibrary.importFailed ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importFailed;
   const emptyLabel =
     source === 'generated'
-      ? (copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).emptyGenerated
+      ? copyAssetLibrary.emptyGenerated
       : source === 'upload'
-        ? (copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).emptyUploads
+        ? copyAssetLibrary.emptyUploads
         : copy.empty;
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImportChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.currentTarget.files?.[0] ?? null;
+      event.currentTarget.value = '';
+      if (!file) return;
+
+      setImportError(null);
+      setIsImporting(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        const response = await authFetch('/api/uploads/image', {
+          method: 'POST',
+          body: formData,
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok || !payload?.asset?.url) {
+          const message = typeof payload?.error === 'string' ? payload.error : importFailedLabel;
+          throw new Error(message);
+        }
+
+        const uploadedAsset = payload.asset as {
+          id?: string;
+          url: string;
+          width?: number | null;
+          height?: number | null;
+          size?: number | null;
+          mime?: string | null;
+        };
+
+        onSelect({
+          id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
+          url: uploadedAsset.url,
+          width: uploadedAsset.width ?? null,
+          height: uploadedAsset.height ?? null,
+          size: uploadedAsset.size ?? null,
+          mime: uploadedAsset.mime ?? null,
+        });
+      } catch (error) {
+        setImportError(error instanceof Error ? error.message : importFailedLabel);
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [importFailedLabel, onSelect]
+  );
   const formatSize = (bytes?: number | null) => {
     if (!bytes || bytes <= 0) return null;
     if (bytes >= 1024 * 1024) {
@@ -312,6 +373,23 @@ function AssetLibraryModal({
             <p className="text-sm text-text-secondary">{fieldLabel}</p>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto">
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleImportChange}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-border px-3 text-sm text-text-secondary hover:text-text-primary"
+              disabled={isImporting}
+              onClick={() => importInputRef.current?.click()}
+            >
+              {isImporting ? importingLabel : importLabel}
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -383,6 +461,11 @@ function AssetLibraryModal({
         </div>
 
         <div className="mt-4 max-h-[60vh] overflow-y-auto">
+          {importError ? (
+            <div className="mb-3 rounded-input border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
+              {importError}
+            </div>
+          ) : null}
           {error ? (
             <div className="rounded-input border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
               {error}
@@ -2276,7 +2359,7 @@ useEffect(() => {
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const noticeTimeoutRef = useRef<number | null>(null);
   const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
-  const [assetPickerTarget, setAssetPickerTarget] = useState<{ field: EngineInputField; slotIndex?: number } | null>(null);
+  const [assetPickerTarget, setAssetPickerTarget] = useState<AssetPickerTarget | null>(null);
   const [assetLibrary, setAssetLibrary] = useState<UserAsset[]>([]);
   const [isAssetLibraryLoading, setIsAssetLibraryLoading] = useState(false);
   const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
@@ -2456,7 +2539,17 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const handleOpenAssetLibrary = useCallback(
     (field: EngineInputField, slotIndex?: number) => {
-      setAssetPickerTarget({ field, slotIndex });
+      setAssetPickerTarget({ kind: 'field', field, slotIndex });
+      if (!isAssetLibraryLoading && (!assetLibraryLoaded || assetLibraryLoadedSource !== assetLibrarySource)) {
+        void fetchAssetLibrary(assetLibrarySource);
+      }
+    },
+    [assetLibraryLoaded, assetLibraryLoadedSource, assetLibrarySource, fetchAssetLibrary, isAssetLibraryLoading]
+  );
+
+  const handleOpenKlingAssetLibrary = useCallback(
+    (elementId: string, slot: 'frontal' | 'reference', slotIndex?: number) => {
+      setAssetPickerTarget({ kind: 'kling', elementId, slot, slotIndex });
       if (!isAssetLibraryLoading && (!assetLibraryLoaded || assetLibraryLoadedSource !== assetLibrarySource)) {
         void fetchAssetLibrary(assetLibrarySource);
       }
@@ -2518,6 +2611,45 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       setAssetPickerTarget(null);
     },
     [showNotice]
+  );
+
+  const handleSelectKlingLibraryAsset = useCallback(
+    (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => {
+      const newAsset: KlingElementAsset = {
+        id: asset.id || `library_${Date.now().toString(36)}`,
+        previewUrl: asset.url,
+        kind: 'image',
+        name: asset.url.split('/').pop() ?? 'Image',
+        status: 'ready',
+        url: asset.url,
+      };
+
+      setKlingElements((previous) =>
+        previous.map((element) => {
+          if (element.id !== target.elementId) return element;
+
+          if (target.slot === 'frontal') {
+            revokeKlingAssetPreview(element.frontal);
+            return { ...element, frontal: newAsset };
+          }
+
+          const references = [...element.references];
+          let targetIndex = typeof target.slotIndex === 'number' ? target.slotIndex : references.findIndex((entry) => entry === null);
+          if (targetIndex < 0) {
+            targetIndex = references.length > 0 ? references.length - 1 : 0;
+          }
+          if (targetIndex >= references.length) {
+            return element;
+          }
+          revokeKlingAssetPreview(references[targetIndex]);
+          references[targetIndex] = newAsset;
+          return { ...element, references };
+        })
+      );
+
+      setAssetPickerTarget(null);
+    },
+    []
   );
 
   const handleAssetAdd = useCallback(
@@ -5451,6 +5583,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onRemoveElement={handleKlingElementRemove}
                       onAddAsset={handleKlingElementAssetAdd}
                       onRemoveAsset={handleKlingElementAssetRemove}
+                      onOpenLibrary={handleOpenKlingAssetLibrary}
                     />
                   ) : null
                 }
@@ -5681,7 +5814,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       )}
       {assetPickerTarget && (
         <AssetLibraryModal
-          fieldLabel={assetPickerTarget.field.label ?? workspaceCopy.assetLibrary.fieldFallback}
+          fieldLabel={
+            assetPickerTarget.kind === 'field'
+              ? assetPickerTarget.field.label ?? workspaceCopy.assetLibrary.fieldFallback
+              : assetPickerTarget.slot === 'frontal'
+                ? 'Kling frontal image'
+                : `Kling reference ${typeof assetPickerTarget.slotIndex === 'number' ? assetPickerTarget.slotIndex + 1 : ''}`.trim()
+          }
           assets={assetLibrary}
           isLoading={isAssetLibraryLoading}
           error={assetLibraryError}
@@ -5695,7 +5834,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           }}
           onClose={() => setAssetPickerTarget(null)}
           onRefresh={fetchAssetLibrary}
-          onSelect={(asset) => handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex)}
+          onSelect={(asset) => {
+            if (assetPickerTarget.kind === 'field') {
+              handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
+              return;
+            }
+            handleSelectKlingLibraryAsset(assetPickerTarget, asset);
+          }}
           onDelete={handleDeleteLibraryAsset}
           deletingAssetId={assetDeletePendingId}
         />

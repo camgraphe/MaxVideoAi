@@ -28,6 +28,7 @@ interface KlingElementsBuilderProps {
   onRemoveElement: (id: string) => void;
   onAddAsset: (elementId: string, slot: 'frontal' | 'reference' | 'video', file: File, index?: number) => void;
   onRemoveAsset: (elementId: string, slot: 'frontal' | 'reference' | 'video', index?: number) => void;
+  onOpenLibrary?: (elementId: string, slot: 'frontal' | 'reference', index?: number) => void;
   maxReferenceImages?: number;
   disableAdd?: boolean;
 }
@@ -38,6 +39,7 @@ function AssetSlot({
   accept,
   onSelect,
   onRemove,
+  onOpenLibrary,
   disabled,
 }: {
   label: string;
@@ -45,22 +47,38 @@ function AssetSlot({
   accept: string;
   onSelect: (file: File) => void;
   onRemove: () => void;
+  onOpenLibrary?: () => void;
   disabled?: boolean;
 }) {
+  const allowLibrary = typeof onOpenLibrary === 'function' && accept.startsWith('image/');
+
   return (
     <div className="rounded-input border border-border bg-surface p-3 text-sm text-text-secondary">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[12px] uppercase tracking-micro text-text-muted">{label}</span>
         {asset && (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={onRemove}
-            className="min-h-0 h-auto px-2 py-1 text-[11px]"
-          >
-            Remove
-          </Button>
+          <div className="flex items-center gap-1">
+            {allowLibrary ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={onOpenLibrary}
+                className="min-h-0 h-auto px-2 py-1 text-[11px]"
+              >
+                Library
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={onRemove}
+              className="min-h-0 h-auto px-2 py-1 text-[11px]"
+            >
+              Remove
+            </Button>
+          </div>
         )}
       </div>
       {asset ? (
@@ -85,26 +103,40 @@ function AssetSlot({
           </div>
         </div>
       ) : (
-        <label
-          className={clsx(
-            'mt-2 inline-flex cursor-pointer items-center gap-2 rounded-input border border-dashed border-border px-3 py-2 text-[12px] text-text-muted hover:border-text-muted',
-            disabled && 'cursor-not-allowed opacity-60'
-          )}
-        >
-          <input
-            type="file"
-            accept={accept}
-            className="hidden"
-            disabled={disabled}
-            onChange={(event) => {
-              const file = event.currentTarget.files?.[0];
-              if (!file || disabled) return;
-              onSelect(file);
-              event.currentTarget.value = '';
-            }}
-          />
-          Upload
-        </label>
+        <div className="mt-2 flex items-center gap-2">
+          <label
+            className={clsx(
+              'inline-flex cursor-pointer items-center gap-2 rounded-input border border-dashed border-border px-3 py-2 text-[12px] text-text-muted hover:border-text-muted',
+              disabled && 'cursor-not-allowed opacity-60'
+            )}
+          >
+            <input
+              type="file"
+              accept={accept}
+              className="hidden"
+              disabled={disabled}
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0];
+                if (!file || disabled) return;
+                onSelect(file);
+                event.currentTarget.value = '';
+              }}
+            />
+            Upload
+          </label>
+          {allowLibrary ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onOpenLibrary}
+              disabled={disabled}
+              className="min-h-0 h-auto px-3 py-2 text-[12px]"
+            >
+              Library
+            </Button>
+          ) : null}
+        </div>
       )}
     </div>
   );
@@ -116,6 +148,7 @@ export function KlingElementsBuilder({
   onRemoveElement,
   onAddAsset,
   onRemoveAsset,
+  onOpenLibrary,
   maxReferenceImages = 3,
   disableAdd = false,
 }: KlingElementsBuilderProps) {
@@ -163,6 +196,11 @@ export function KlingElementsBuilder({
                 accept="image/*"
                 onSelect={(file) => onAddAsset(element.id, 'frontal', file)}
                 onRemove={() => onRemoveAsset(element.id, 'frontal')}
+                onOpenLibrary={
+                  onOpenLibrary
+                    ? () => onOpenLibrary(element.id, 'frontal')
+                    : undefined
+                }
               />
               <AssetSlot
                 label="Video (optional)"
@@ -181,6 +219,11 @@ export function KlingElementsBuilder({
                   accept="image/*"
                   onSelect={(file) => onAddAsset(element.id, 'reference', file, slotIndex)}
                   onRemove={() => onRemoveAsset(element.id, 'reference', slotIndex)}
+                  onOpenLibrary={
+                    onOpenLibrary
+                      ? () => onOpenLibrary(element.id, 'reference', slotIndex)
+                      : undefined
+                  }
                 />
               ))}
             </div>
