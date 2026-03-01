@@ -785,12 +785,14 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   return (
     <div>
       <section className="container-page section max-w-6xl flex flex-col items-center gap-3 pt-4 pb-5 text-center sm:gap-6 sm:pt-10 sm:pb-12 lg:gap-8 lg:pt-12 lg:pb-14 halo-hero">
-        <div className="mx-auto grid w-full max-w-[300px] grid-cols-2 gap-1.5 sm:flex sm:w-auto sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
+        <div className="mx-auto grid w-full max-w-[330px] grid-cols-2 gap-1.5 px-2 sm:flex sm:w-auto sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center sm:gap-4 sm:px-0">
           {badges.map((badge, index) => (
             <span
               key={badge}
-              className={`w-fit whitespace-nowrap justify-self-center rounded-pill border border-hairline bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-micro text-text-secondary sm:shrink-0 sm:px-3 sm:py-1 sm:text-xs ${
-                badges.length === 3 && index === 2 ? 'col-span-2' : ''
+              className={`min-w-0 whitespace-nowrap overflow-hidden text-ellipsis text-center rounded-pill border border-hairline bg-surface py-0.5 text-[9px] font-semibold uppercase leading-none tracking-micro text-text-secondary sm:shrink-0 sm:px-3 sm:py-1 sm:text-xs ${
+                badges.length === 3 && index === 2
+                  ? 'col-span-2 mx-auto w-auto max-w-[90%] px-2.5'
+                  : 'w-full px-1.5'
               }`}
             >
               {badge}
