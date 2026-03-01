@@ -789,7 +789,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
           {badges.map((badge, index) => (
             <span
               key={badge}
-              className={`w-fit justify-self-center rounded-pill border border-hairline bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-micro text-text-secondary sm:shrink-0 sm:px-3 sm:py-1 sm:text-xs ${
+              className={`w-fit whitespace-nowrap justify-self-center rounded-pill border border-hairline bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-micro text-text-secondary sm:shrink-0 sm:px-3 sm:py-1 sm:text-xs ${
                 badges.length === 3 && index === 2 ? 'col-span-2' : ''
               }`}
             >
