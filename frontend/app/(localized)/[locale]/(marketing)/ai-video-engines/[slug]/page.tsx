@@ -11,6 +11,7 @@ import { localePathnames, locales } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { isDatabaseConfigured } from '@/lib/db';
 import compareConfig from '@/config/compare-config.json';
 import { COMPARE_SHOWDOWNS } from '@/config/compare-showdowns';
@@ -26,10 +27,6 @@ import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
 import { getImageAlt } from '@/lib/image-alt';
 import type { EngineCaps } from '@/types/engines';
 
-const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL ?? 'https://maxvideoai.com').replace(
-  /\/+$/,
-  ''
-);
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
 const MODELS_SLUG_MAP = buildSlugMap('models');
 
@@ -1074,6 +1071,10 @@ export default async function CompareDetailPage({
   const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
   const compareHubHref = `${localePrefix}/${compareBase}`.replace(/\/{2,}/g, '/');
   const canonicalSlug = canonicalInfo.canonicalSlug;
+  const compareHubCanonicalUrl = buildMetadataUrls(activeLocale, undefined, { englishPath: '/ai-video-engines' }).canonical;
+  const comparisonCanonicalUrl = buildMetadataUrls(activeLocale, undefined, {
+    englishPath: `/ai-video-engines/${canonicalSlug}`,
+  }).canonical;
   const metaOverride = compareCopy.meta?.slugOverrides?.[canonicalSlug];
   if (canonicalSlug !== slug) {
     const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
@@ -1533,13 +1534,13 @@ export default async function CompareDetailPage({
         '@type': 'ListItem',
         position: 1,
         name: compareCopy.breadcrumb?.root ?? 'Comparisons',
-        item: `${SITE_BASE}/ai-video-engines`,
+        item: compareHubCanonicalUrl,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: `${formatEngineName(left)} vs ${formatEngineName(right)}`,
-        item: `${SITE_BASE}/ai-video-engines/${canonicalSlug}`,
+        item: comparisonCanonicalUrl,
       },
     ],
   };
@@ -1551,7 +1552,7 @@ export default async function CompareDetailPage({
       metaOverride?.title ?? compareCopy.meta?.title ?? '{left} vs {right}: specs, pricing & prompt test',
       { left: formatEngineName(left), right: formatEngineName(right) }
     ),
-    url: `${SITE_BASE}/ai-video-engines/${canonicalSlug}`,
+    url: comparisonCanonicalUrl,
     description: formatTemplate(
       metaOverride?.description ??
         compareCopy.meta?.description ??
