@@ -8,7 +8,7 @@ type GenerateWaysItem = {
   body: string;
 };
 
-export function GenerateWaysMobileTabs({ items }: { items: GenerateWaysItem[] }) {
+export function GenerateWaysMobileTabs({ items }: { items: readonly GenerateWaysItem[] }) {
   const safeItems = useMemo(() => items.filter((item) => item?.title && item?.body), [items]);
   const [activeIndex, setActiveIndex] = useState(0);
 
