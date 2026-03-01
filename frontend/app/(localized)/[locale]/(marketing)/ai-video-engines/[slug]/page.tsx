@@ -835,7 +835,13 @@ function pickOutputDifference(
 }
 
 type ComparePageCopy = {
-  meta?: { title?: string; description?: string; titleFallback?: string; descriptionFallback?: string };
+  meta?: {
+    title?: string;
+    description?: string;
+    titleFallback?: string;
+    descriptionFallback?: string;
+    slugOverrides?: Record<string, { title?: string; description?: string }>;
+  };
   hero?: {
     back?: string;
     kicker?: string;
@@ -940,13 +946,16 @@ export async function generateMetadata({
   const compareCopy = (dictionary.comparePage ?? {}) as ComparePageCopy;
   const slug = params.slug;
   const canonicalInfo = getCanonicalCompareSlug(slug);
+  const canonicalSlug = canonicalInfo?.canonicalSlug ?? slug;
+  const metaOverride = compareCopy.meta?.slugOverrides?.[canonicalSlug];
   const resolved = canonicalInfo ? resolveEngines(canonicalInfo.canonicalSlug) : null;
   const titleTemplate =
-    compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
+    metaOverride?.title ?? compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
   const titleFallback =
     compareCopy.meta?.titleFallback ??
     'Compare AI video engines — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
   const descriptionTemplate =
+    metaOverride?.description ??
     compareCopy.meta?.description ??
     'Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across 11 criteria.';
   const descriptionFallback =
@@ -1005,7 +1014,6 @@ export async function generateMetadata({
     robots = { index: false, follow: true };
   }
 
-  const canonicalSlug = canonicalInfo?.canonicalSlug ?? slug;
   const meta = buildSeoMetadata({
     locale,
     title,
@@ -1066,6 +1074,7 @@ export default async function CompareDetailPage({
   const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
   const compareHubHref = `${localePrefix}/${compareBase}`.replace(/\/{2,}/g, '/');
   const canonicalSlug = canonicalInfo.canonicalSlug;
+  const metaOverride = compareCopy.meta?.slugOverrides?.[canonicalSlug];
   if (canonicalSlug !== slug) {
     const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
     const query = orderParam ? `?order=${orderParam}` : '';
@@ -1539,12 +1548,13 @@ export default async function CompareDetailPage({
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: formatTemplate(
-      compareCopy.meta?.title ?? '{left} vs {right}: specs, pricing & prompt test',
+      metaOverride?.title ?? compareCopy.meta?.title ?? '{left} vs {right}: specs, pricing & prompt test',
       { left: formatEngineName(left), right: formatEngineName(right) }
     ),
     url: `${SITE_BASE}/ai-video-engines/${canonicalSlug}`,
     description: formatTemplate(
-      compareCopy.meta?.description ??
+      metaOverride?.description ??
+        compareCopy.meta?.description ??
         'Compare {left} vs {right} with the same prompts, key specs, and a scorecard across 11 criteria on MaxVideoAI.',
       { left: formatEngineName(left), right: formatEngineName(right) }
     ),

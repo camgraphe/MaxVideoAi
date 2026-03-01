@@ -1264,7 +1264,7 @@
   "aiVideoEngines": {
     "meta": {
       "title": "Compare AI Video Engines by Use Case | MaxVideoAI",
-      "description": "Compare AI video engines side by side. Filter by text-to-video, image-to-video, video-to-video, audio, duration, resolution, and pricing to choose the right engine before you generate."
+      "description": "Compare AI video engines side by side. Filter by text-to-video, image-to-video, video-to-video, audio, duration, resolution, and pricing."
     },
     "hero": {
       "title": "Run AI Video Generators in Europe — Sora 2, Veo 3, Pika & More",
@@ -2838,6 +2838,80 @@
       "title": "{left} vs {right} — Specs & Pricing | MaxVideoAI",
       "titleFallback": "AI video engines — Specs & Pricing | MaxVideoAI",
       "description": "Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across 11 criteria.",
+      "slugOverrides": {
+        "kling-2-6-pro-vs-ltx-2": {
+          "title": "Kling 2.6 Pro vs LTX-2 Pro — Speed vs Quality | MaxVideoAI",
+          "description": "Side-by-side test with identical prompts: quality, speed, pricing, modes, and an 11-point scorecard. Pick the winner by use case."
+        },
+        "ltx-2-fast-vs-wan-2-6": {
+          "title": "LTX-2 Fast vs WAN 2.6 — Quality, Speed & Cost | MaxVideoAI",
+          "description": "Compare LTX-2 Fast vs WAN 2.6 with the same prompts, key specs, pricing, and an 11-point scorecard. See speed/stability vs video-to-video support."
+        },
+        "veo-3-1-vs-veo-3-1-fast": {
+          "title": "Veo 3.1 vs Veo 3.1 Fast — Differences & Cost | MaxVideoAI",
+          "description": "Compare Veo 3.1 vs Veo 3.1 Fast: speed/queue time, cost, max duration, and output quality, tested with identical prompts and a scorecard."
+        },
+        "wan-2-5-vs-wan-2-6": {
+          "title": "WAN 2.5 vs WAN 2.6 — What's New + Specs | MaxVideoAI",
+          "description": "See what changed in WAN 2.6 vs 2.5: longer clips, multi-shot output, video-to-video support, pricing, and an 11-point scorecard with identical prompts."
+        },
+        "ltx-2-vs-wan-2-6": {
+          "title": "LTX-2 Pro vs WAN 2.6 — Quality, Modes & Cost | MaxVideoAI",
+          "description": "Compare LTX-2 Pro vs WAN 2.6 using the same prompts: quality, motion, text, modes, pricing, and an 11-point scorecard. Pick the best for your workflow."
+        },
+        "ltx-2-fast-vs-wan-2-5": {
+          "title": "LTX-2 Fast vs WAN 2.5 — Quality, Speed & Cost | MaxVideoAI",
+          "description": "Compare LTX-2 Fast vs WAN 2.5 with identical prompts, key specs, pricing, and an 11-point scorecard. Pick the best engine for your workflow."
+        },
+        "kling-3-pro-vs-wan-2-6": {
+          "title": "Kling 3 Pro vs WAN 2.6 — Quality, Audio & Cost | MaxVideoAI",
+          "description": "Compare Kling 3 Pro vs WAN 2.6 with identical prompts: quality, audio, speed, modes, pricing, and an 11-point scorecard."
+        },
+        "kling-3-pro-vs-veo-3-1": {
+          "title": "Kling 3 Pro vs Veo 3.1 — Quality, Speed & Cost | MaxVideoAI",
+          "description": "Compare Kling 3 Pro vs Google Veo 3.1 using the same prompts: output quality, speed, pricing, modes, and an 11-point scorecard."
+        },
+        "ltx-2-vs-veo-3-1-fast": {
+          "title": "LTX-2 Pro vs Veo 3.1 Fast — Speed vs Quality | MaxVideoAI",
+          "description": "Compare LTX-2 Pro vs Veo 3.1 Fast: speed/queue time, cost, max duration, and output quality, tested with identical prompts and a scorecard."
+        },
+        "ltx-2-vs-veo-3-1": {
+          "title": "LTX-2 Pro vs Veo 3.1 — Quality, Cost & Modes | MaxVideoAI",
+          "description": "Compare LTX-2 Pro vs Google Veo 3.1 with identical prompts: quality, motion realism, text legibility, modes, pricing, and an 11-point scorecard."
+        },
+        "seedance-1-5-pro-vs-seedance-2-0": {
+          "title": "Seedance 1.5 Pro vs Seedance 2 — What's New | MaxVideoAI",
+          "description": "Compare Seedance 1.5 Pro vs Seedance 2.0: key differences, specs, pricing, and same-prompt tests with an 11-point scorecard."
+        },
+        "seedance-1-5-pro-vs-veo-3-1": {
+          "title": "Seedance 1.5 Pro vs Veo 3.1 — Speed vs Quality | MaxVideoAI",
+          "description": "Compare Seedance 1.5 Pro vs Google Veo 3.1 with identical prompts: cinematic quality, speed, pricing, modes, and an 11-point scorecard."
+        },
+        "ltx-2-vs-seedance-2-0": {
+          "title": "LTX-2 Pro vs Seedance 2 — Scores & Pricing | MaxVideoAI",
+          "description": "Compare LTX-2 Pro vs Seedance 2.0 using the same prompts: quality, speed, modes, pricing, and an 11-point scorecard to pick by use case."
+        },
+        "kling-3-standard-vs-veo-3-1": {
+          "title": "Kling 3 Std vs Veo 3.1 — Scores & Pricing | MaxVideoAI",
+          "description": "Compare Kling 3 Standard vs Google Veo 3.1 with identical prompts: quality, speed, pricing, modes, and an 11-point scorecard."
+        },
+        "kling-3-pro-vs-sora-2": {
+          "title": "Kling 3 Pro vs Sora 2 — Scores & Pricing | MaxVideoAI",
+          "description": "Compare Kling 3 Pro vs OpenAI Sora 2 with identical prompts: quality, speed, max duration, pricing, and an 11-point scorecard."
+        },
+        "kling-3-pro-vs-kling-3-standard": {
+          "title": "Kling 3 Pro vs Kling 3 Std — Differences | MaxVideoAI",
+          "description": "Compare Kling 3 Pro vs Kling 3 Standard: key differences, specs, pricing, and same-prompt tests with an 11-point scorecard."
+        },
+        "kling-2-6-pro-vs-seedance-2-0": {
+          "title": "Kling 2.6 Pro vs Seedance 2 — Scores & Pricing | MaxVideoAI",
+          "description": "Compare Kling 2.6 Pro vs Seedance 2.0 using identical prompts: quality, audio, speed, pricing, and an 11-point scorecard."
+        },
+        "kling-3-standard-vs-ltx-2": {
+          "title": "Kling 3 Std vs LTX-2 Pro — Speed vs Quality | MaxVideoAI",
+          "description": "Compare Kling 3 Standard vs LTX-2 Pro with identical prompts: quality, speed, pricing, modes, and an 11-point scorecard."
+        }
+      },
       "descriptionFallback": "Side-by-side comparison of AI video engines with MaxVideoAI metrics and guidance."
     },
     "hero": {
