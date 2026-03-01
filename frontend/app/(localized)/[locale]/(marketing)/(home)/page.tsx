@@ -10,6 +10,7 @@ import { TextLink } from '@/components/ui/TextLink';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
+import { GenerateWaysMobileTabs } from '@/components/marketing/GenerateWaysMobileTabs';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { PartnerBadges } from '@/components/marketing/PartnerBadges';
 import { getHomepageSlotsCached, HERO_SLOT_KEYS } from '@/server/homepage';
@@ -783,38 +784,47 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   };
   return (
     <div>
-      <section className="container-page section max-w-6xl stack-gap-lg items-center pt-8 pb-10 text-center sm:pt-10 sm:pb-12 lg:pt-12 lg:pb-14 halo-hero">
-        <div className="flex flex-wrap items-center justify-center gap-4">
+      <section className="container-page section max-w-6xl flex flex-col items-center gap-3 pt-4 pb-5 text-center sm:gap-6 sm:pt-10 sm:pb-12 lg:gap-8 lg:pt-12 lg:pb-14 halo-hero">
+        <div className="scrollbar-rail -mx-4 flex w-[calc(100%+2rem)] flex-nowrap items-center justify-center gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:w-auto sm:flex-wrap sm:justify-center sm:gap-4 sm:px-0">
           {badges.map((badge) => (
-            <span key={badge} className="rounded-pill border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
+            <span
+              key={badge}
+              className="shrink-0 rounded-pill border border-hairline bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-micro text-text-secondary sm:px-3 sm:py-1 sm:text-xs"
+            >
               {badge}
             </span>
           ))}
         </div>
-        <div className="stack-gap-lg">
-          <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">{hero.title}</h1>
-          <p className="mx-auto sm:max-w-[62ch] text-base leading-relaxed text-text-secondary sm:text-lg">
+        <div className="flex flex-col gap-3 sm:gap-5">
+          <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-4xl">{hero.title}</h1>
+          <p className="mx-auto text-sm leading-relaxed text-text-secondary sm:max-w-[62ch] sm:text-lg">
             {hero.subtitle}
           </p>
-          <p className="mx-auto -mt-1 sm:max-w-[72ch] text-xs leading-relaxed text-text-secondary sm:-mt-2 sm:text-sm">
+          <p className="mx-auto text-xs leading-relaxed text-text-secondary sm:-mt-2 sm:max-w-[72ch] sm:text-sm">
             {heroSeoParagraph}
           </p>
         </div>
-        <div className="flex flex-col items-center gap-4 sm:flex-row">
+        <div className="flex w-full flex-nowrap items-center justify-center gap-2 sm:w-auto sm:gap-4">
           <ButtonLink
             href="/app"
             prefetch={false}
-            size="lg"
-            className="shadow-card"
+            size="md"
+            className="min-h-[38px] px-3 py-2 text-[11px] shadow-card whitespace-nowrap sm:min-h-[48px] sm:px-6 sm:py-3 sm:text-sm"
             linkComponent={Link}
           >
             {hero.primaryCta}
           </ButtonLink>
-          <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>
+          <ButtonLink
+            href={{ pathname: '/examples' }}
+            variant="outline"
+            size="md"
+            className="min-h-[38px] px-3 py-2 text-[11px] whitespace-nowrap sm:min-h-[48px] sm:px-6 sm:py-3 sm:text-sm"
+            linkComponent={Link}
+          >
             {hero.secondaryCta}
           </ButtonLink>
         </div>
-        <div className="grid w-full grid-gap-sm sm:grid-cols-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:grid-gap-sm">
           {heroTileConfigs.map((tile, index) => (
             <HeroMediaTile
               key={tile.id}
@@ -842,10 +852,10 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
             />
           ))}
         </div>
-        <div className="grid w-full gap-3 text-left sm:grid-cols-2 lg:grid-cols-3">
+        <div className="scrollbar-rail flex w-full gap-2 overflow-x-auto pb-1 text-left sm:grid sm:gap-3 sm:overflow-visible sm:grid-cols-2 lg:grid-cols-3">
           {heroMicroPoints.map((point) => (
-            <div key={point} className="rounded-card border border-hairline bg-surface/70 p-4 shadow-card">
-              <p className="text-sm font-medium leading-relaxed text-text-primary">{point}</p>
+            <div key={point} className="min-w-[220px] shrink-0 rounded-xl border border-hairline bg-surface/70 p-2.5 shadow-card sm:min-w-0 sm:rounded-card sm:p-4">
+              <p className="line-clamp-2 text-xs font-medium leading-relaxed text-text-primary sm:line-clamp-none sm:text-sm">{point}</p>
             </div>
           ))}
         </div>
@@ -897,7 +907,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
 
           <article className="stack-gap-sm">
             <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">{generateWaysTitle}</h2>
-            <div className="grid grid-gap lg:grid-cols-3">
+            <GenerateWaysMobileTabs items={generateWaysItems} />
+            <div className="hidden sm:grid sm:grid-gap lg:grid-cols-3">
               {generateWaysItems.map((item) => (
                 <div key={item.title} className="rounded-xl border border-hairline bg-transparent p-4">
                   <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
@@ -921,6 +932,16 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
         <div className="container-page flex max-w-7xl flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-stretch">
           <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
+            <div className="relative w-full overflow-hidden rounded-t-[16px] shadow-float lg:hidden">
+              <Image
+                src="/assets/marketing/app-dashboard.webp"
+                alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
+                width={3072}
+                height={2170}
+                sizes="100vw"
+                className="w-full h-auto"
+              />
+            </div>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
             <ButtonLink
               href="/app"
@@ -932,13 +953,13 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               {workspaceCtaLabel}
             </ButtonLink>
           </div>
-          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end">
+          <div className="relative hidden w-full max-w-6xl lg:block lg:w-[65%] lg:max-w-none lg:self-end">
             <div className="overflow-hidden rounded-t-[16px] shadow-float">
               <Image
                 src="/assets/marketing/app-dashboard.webp"
                 alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
-              width={3072}
-              height={2170}
+                width={3072}
+                height={2170}
                 sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
                 priority
                 className="w-full h-auto"
@@ -952,6 +973,16 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
         <div className="container-page flex max-w-7xl flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row-reverse lg:items-stretch">
           <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{compareSeoTitle}</h2>
+            <div className="relative w-full overflow-hidden rounded-t-[16px] lg:hidden">
+              <Image
+                src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
+                alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
+                width={2278}
+                height={1928}
+                sizes="100vw"
+                className="w-full h-auto"
+              />
+            </div>
             <p className="text-sm leading-relaxed text-text-secondary sm:text-base">{compareSeoBody}</p>
             <p className="text-sm text-text-secondary">{compareSeoWorksWith}</p>
             <div className="flex flex-wrap gap-3 text-sm">
@@ -972,7 +1003,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               </Link>
             </div>
           </div>
-          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end">
+          <div className="relative hidden w-full max-w-6xl lg:block lg:w-[65%] lg:max-w-none lg:self-end">
             <div className="overflow-hidden rounded-t-[16px]">
               <Image
                 src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"

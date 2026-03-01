@@ -165,9 +165,9 @@ export function HeroMediaTile({
             <source src={videoSrc} type="video/mp4" />
           </video>
         ) : null}
-        <div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-black/65 via-black/25 to-transparent p-4 text-left text-on-inverse">
-          <p className="text-2xl font-semibold leading-tight sm:text-3xl">{label}</p>
-          <p className="mt-0.5 text-xs font-medium leading-none text-on-media-80 sm:text-sm">{priceLabel}</p>
+        <div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-black/65 via-black/25 to-transparent p-2.5 text-left text-on-inverse sm:p-4">
+          <p className="text-lg font-semibold leading-tight sm:text-3xl">{label}</p>
+          <p className="mt-0.5 text-[10px] font-medium leading-none text-on-media-80 sm:text-sm">{priceLabel}</p>
         </div>
         {badge ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-on-inverse">
@@ -189,7 +189,7 @@ export function HeroMediaTile({
         onClick={(event) => {
           event.stopPropagation();
         }}
-        className="pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full px-3 py-2 text-xs font-medium text-on-media-90 transition hover:text-on-inverse focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface-on-media-40"
+        className="pointer-events-auto absolute bottom-1.5 left-1/2 z-10 -translate-x-1/2 inline-flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full px-2.5 py-1.5 text-[10px] font-medium text-on-media-90 transition hover:text-on-inverse focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface-on-media-40 sm:bottom-2 sm:min-h-[48px] sm:min-w-[48px] sm:px-3 sm:py-2 sm:text-xs"
       >
         {overlayLabel ?? 'Clone these settings'}
       </Link>
