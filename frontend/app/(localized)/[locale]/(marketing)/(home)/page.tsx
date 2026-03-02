@@ -791,8 +791,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               key={badge}
               className={`min-w-0 whitespace-nowrap overflow-hidden text-ellipsis text-center rounded-pill border border-hairline bg-surface py-0.5 text-[9px] font-semibold uppercase leading-none tracking-micro text-text-secondary sm:shrink-0 sm:px-3 sm:py-1 sm:text-xs ${
                 badges.length === 3 && index === 2
-                  ? 'col-span-2 mx-auto w-auto max-w-[90%] px-2.5'
-                  : 'w-full px-1.5'
+                  ? 'col-span-2 mx-auto w-auto max-w-[90%] px-2.5 sm:col-auto sm:mx-0 sm:max-w-none sm:px-3'
+                  : 'w-full px-1.5 sm:w-auto'
               }`}
             >
               {badge}
