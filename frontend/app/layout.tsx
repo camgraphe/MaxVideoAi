@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -12,6 +13,20 @@ type RootLayoutProps = {
 };
 
 const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? process.env.GTM_ID ?? '';
+
+export const metadata: Metadata = {
+  applicationName: 'MaxVideoAI',
+  manifest: '/site.webmanifest',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', type: 'image/x-icon' },
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: ['/favicon.ico'],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+  },
+};
 
 export default async function RootLayout({ children }: RootLayoutProps) {
   noStore();
