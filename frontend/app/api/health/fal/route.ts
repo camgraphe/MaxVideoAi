@@ -9,9 +9,12 @@ export async function GET(req: NextRequest) {
   if (unauthorized) return unauthorized;
 
   try {
-    const pingUrl = buildFalProxyUrl('/');
+    const pingUrl = buildFalProxyUrl('');
     const res = await fetch(pingUrl, { method: 'OPTIONS' });
-    if (!res.ok && res.status !== 404) {
+    const body = await res.text().catch(() => '');
+    const expectedMissingTargetHeader =
+      res.status === 400 && body.toLowerCase().includes('missing the x-fal-target-url header');
+    if (!res.ok && res.status !== 404 && !expectedMissingTargetHeader) {
       return Response.json({ ok: false, error: 'fal_unavailable' }, { status: 503 });
     }
     return Response.json({ ok: true });
