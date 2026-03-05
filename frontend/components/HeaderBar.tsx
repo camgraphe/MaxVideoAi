@@ -102,8 +102,7 @@ export function HeaderBar() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const stored = window.localStorage.getItem(themeStorageKey);
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-    const resolved = stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light';
+    const resolved = stored === 'dark' || stored === 'light' ? stored : 'light';
     setTheme(resolved);
     if (resolved === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
