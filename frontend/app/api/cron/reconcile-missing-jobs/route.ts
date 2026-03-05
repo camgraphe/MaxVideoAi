@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
 
@@ -21,6 +21,46 @@ const minAgeMinutes = Math.max(5, Number.parseInt(process.env.CRON_RECONCILE_MIN
 const maxLookbackMinutesRaw = Number.parseInt(process.env.CRON_RECONCILE_MAX_LOOKBACK_MINUTES ?? '180', 10);
 const maxLookbackMinutes = Math.max(minAgeMinutes + 1, Number.isFinite(maxLookbackMinutesRaw) ? maxLookbackMinutesRaw : 180);
 const allowStripeRefunds = (process.env.CRON_RECONCILE_ALLOW_STRIPE_REFUNDS ?? '').trim().toLowerCase() === 'true';
+const CRON_SECRET = (process.env.CRON_SECRET ?? '').trim();
+
+function unauthorized(reason: string, req: NextRequest) {
+  console.warn('[reconcile-orphans] unauthorized', {
+    reason,
+    cron: req.headers.get('x-vercel-cron') || null,
+    ua: req.headers.get('user-agent') || null,
+    deployment: req.headers.get('x-vercel-deployment-id') || null,
+    source: req.headers.get('x-vercel-source') || null,
+  });
+  return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+}
+
+function authorize(req: NextRequest): NextResponse | null {
+  const overrideToken =
+    req.headers.get('x-cron-key')?.trim() ??
+    (req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() ?? '');
+
+  if (process.env.VERCEL === '1') {
+    const cronHeader = req.headers.get('x-vercel-cron');
+    const userAgent = req.headers.get('user-agent') ?? '';
+    const deploymentId = (process.env.VERCEL_DEPLOYMENT_ID ?? '').trim();
+    const incomingDeploymentId = (req.headers.get('x-vercel-deployment-id') ?? '').trim();
+    const looksLikeCron = Boolean(cronHeader || userAgent.toLowerCase().includes('vercel'));
+
+    if (!looksLikeCron && overrideToken !== CRON_SECRET) {
+      return unauthorized('missing-vercel-markers', req);
+    }
+    if (deploymentId && incomingDeploymentId && deploymentId !== incomingDeploymentId) {
+      return unauthorized('deployment-mismatch', req);
+    }
+    return null;
+  }
+
+  if (overrideToken !== CRON_SECRET) {
+    return unauthorized('missing-token', req);
+  }
+
+  return null;
+}
 
 async function issueStripeRefund(row: ChargeRow, stripe: Stripe): Promise<string | null> {
   const reference = row.stripe_payment_intent_id ?? row.stripe_charge_id;
@@ -69,7 +109,7 @@ async function recordRefund(row: ChargeRow, stripeRefundId: string | null) {
   );
 }
 
-export async function GET() {
+async function reconcile() {
   if (!isEnabled) {
     return NextResponse.json(
       { ok: false, refunded: 0, stripeRefunds: 0, disabled: true, reason: 'CRON_RECONCILE_ORPHANS_ENABLED is not true' },
@@ -139,4 +179,16 @@ export async function GET() {
     stripeRefunds,
     note: 'Charges with missing jobs after 25 minutes were refunded.',
   });
+}
+
+export async function GET(req: NextRequest) {
+  const auth = authorize(req);
+  if (auth) return auth;
+  return reconcile();
+}
+
+export async function POST(req: NextRequest) {
+  const auth = authorize(req);
+  if (auth) return auth;
+  return reconcile();
 }

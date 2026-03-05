@@ -123,6 +123,7 @@ The application expects the following environment variables (scoped per Vercel e
 | `GA4_MEASUREMENT_ID` | Server (optional) | GA4 Measurement ID used for server-side Measurement Protocol events. |
 | `GA4_API_SECRET` | Server (optional) | GA4 Measurement Protocol API secret for top-up completion tracking. |
 | `SLACK_BOT_TOKEN` / `SLACK_SIGNING_SECRET` / `SLACK_WEBHOOK_URL` | Server (optional) | Slack integration secrets if hooks/bots are enabled. |
+| `HEALTHCHECK_TOKEN` | Server (recommended) | Shared token required by protected health endpoints in Preview/Production. |
 
 ### Health Endpoints
 
@@ -134,7 +135,7 @@ Additional read-only endpoints help verify deployment wiring (Preview/Production
 - `GET /api/health/legal` — Node runtime. Verifies Neon connectivity and confirms legal document versions are seeded.
 - `GET /api/health/stripe` — Node runtime. Calls `stripe.prices.list(limit: 1)` to ensure the secret key is valid.
 
-All endpoints respond with `{ ok: true }` on success (or include an `error` string on failure). Share Preview/Production URLs during verification.
+Preview/Production health endpoints require `HEALTHCHECK_TOKEN` via `Authorization: Bearer ...` or `x-healthcheck-token`. Local development can remain open when the token is unset.
 
 ### Neon Migrations
 

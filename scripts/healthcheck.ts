@@ -331,17 +331,21 @@ async function checkFalProxy(): Promise<CheckResult> {
 }
 
 async function checkHealthEndpoints(baseUrl: string): Promise<CheckResult[]> {
+  const token = process.env.HEALTHCHECK_TOKEN?.trim();
+  const headers = token ? { 'x-healthcheck-token': token } : undefined;
   const healthEndpoints: EndpointCheck[] = [
     {
       name: 'Health /api/health/env',
       path: '/api/health/env',
       method: 'GET',
+      headers,
       expectStatus: [200],
     },
     {
       name: 'Health /api/health/db',
       path: '/api/health/db',
       method: 'GET',
+      headers,
       expectStatus: [200, 503],
       failureSeverity: 'warn',
     },
@@ -349,6 +353,7 @@ async function checkHealthEndpoints(baseUrl: string): Promise<CheckResult[]> {
       name: 'Health /api/health/stripe',
       path: '/api/health/stripe',
       method: 'GET',
+      headers,
       expectStatus: [200, 503],
       failureSeverity: 'warn',
     },
@@ -423,6 +428,7 @@ async function main() {
   results.push(checkEnvGroup('Stripe server keys', ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'], true));
   results.push(checkEnvGroup('Stripe pricing IDs (optional)', ['STRIPE_PRICE_PLUS', 'STRIPE_PRICE_PRO'], false));
   results.push(checkEnvGroup('Stripe publishable key', ['NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'], true));
+  results.push(checkEnvGroup('Healthcheck token (optional)', ['HEALTHCHECK_TOKEN'], false));
   results.push(checkBatchPayoutMode());
   results.push(checkAtLeastOne('FAL API keys', ['FAL_KEY', 'FAL_API_KEY'], true));
 

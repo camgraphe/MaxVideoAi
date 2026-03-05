@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server';
+import { authorizeHealthcheckRequest } from '@/server/ops-auth';
+
 export const runtime = 'nodejs';
 
 const REQUIRED_KEYS = [
@@ -12,7 +15,10 @@ const REQUIRED_KEYS = [
 
 type RequiredEnvKey = (typeof REQUIRED_KEYS)[number];
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const unauthorized = authorizeHealthcheckRequest(req);
+  if (unauthorized) return unauthorized;
+
   const status = Object.fromEntries(
     REQUIRED_KEYS.map((key) => [key, Boolean(process.env[key as RequiredEnvKey])])
   );

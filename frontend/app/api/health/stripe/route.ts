@@ -1,11 +1,16 @@
+import type { NextRequest } from 'next/server';
 import Stripe from 'stripe';
+import { authorizeHealthcheckRequest } from '@/server/ops-auth';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const unauthorized = authorizeHealthcheckRequest(req);
+  if (unauthorized) return unauthorized;
+
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
-    return Response.json({ ok: false, error: 'STRIPE_SECRET_KEY missing' }, { status: 500 });
+    return Response.json({ ok: false, error: 'stripe_unavailable' }, { status: 503 });
   }
 
   try {
@@ -13,9 +18,10 @@ export async function GET() {
     const prices = await stripe.prices.list({ limit: 1 });
     return Response.json({ ok: true, count: prices.data.length });
   } catch (error) {
+    console.error('[health/stripe] probe failed', error);
     return Response.json(
-      { ok: false, error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      { ok: false, error: 'stripe_unavailable' },
+      { status: 503 }
     );
   }
 }

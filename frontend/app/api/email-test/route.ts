@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getMailer, getDefaultFromAddress } from '@/server/mailer';
+import { isUserAdmin } from '@/server/admin';
+import { getUserIdFromRequest } from '@/lib/user';
 
 export const dynamic = 'force-dynamic';
+
+async function isAuthorized(req: NextRequest): Promise<boolean> {
+  const configuredToken = process.env.EMAIL_TEST_TOKEN?.trim();
+  const providedToken =
+    req.headers.get('x-email-test-token')?.trim() ??
+    req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() ??
+    '';
+
+  if (configuredToken && providedToken === configuredToken) {
+    return true;
+  }
+
+  const userId = await getUserIdFromRequest(req);
+  return isUserAdmin(userId);
+}
 
 async function runTest(to?: string) {
   const mailer = getMailer();
@@ -35,6 +52,10 @@ async function runTest(to?: string) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!(await isAuthorized(req))) {
+    return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 });
+  }
+
   let body: unknown = null;
   try {
     body = await req.json();
@@ -48,6 +69,10 @@ export async function POST(req: NextRequest) {
   return runTest(to);
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!(await isAuthorized(req))) {
+    return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 });
+  }
+
   return runTest();
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { isConnectPayments } from '@/lib/env';
+import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? '';
 const STRIPE_API_VERSION: Stripe.StripeConfig['apiVersion'] = '2023-10-16';
@@ -11,6 +12,12 @@ const stripe =
     : null;
 
 export async function GET(req: NextRequest) {
+  try {
+    await requireAdmin(req);
+  } catch (error) {
+    return adminErrorToResponse(error);
+  }
+
   if (!isConnectPayments()) {
     return NextResponse.json({ error: 'feature disabled' }, { status: 410 });
   }
@@ -210,8 +217,5 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isConnectPayments()) {
-    return NextResponse.json({ error: 'feature disabled' }, { status: 410 });
-  }
   return GET(req);
 }

@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { linkFalJob } from '@/server/admin-job-tools';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  try {
+    await requireAdmin(request);
+  } catch (error) {
+    return adminErrorToResponse(error);
+  }
+
   if (!process.env.DATABASE_URL) {
     return NextResponse.json(
       { ok: false, error: 'DATABASE_URL is not configured on this environment.' },

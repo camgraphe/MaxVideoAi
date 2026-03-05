@@ -1,13 +1,19 @@
+import type { NextRequest } from 'next/server';
+import { authorizeHealthcheckRequest } from '@/server/ops-auth';
+
 export const runtime = 'nodejs';
 
 const REQUIRED_KEYS = ['terms', 'privacy', 'cookies'] as const;
 
 type RequiredKey = (typeof REQUIRED_KEYS)[number];
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const unauthorized = authorizeHealthcheckRequest(req);
+  if (unauthorized) return unauthorized;
+
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    return Response.json({ ok: false, error: 'DATABASE_URL missing' }, { status: 500 });
+    return Response.json({ ok: false, error: 'legal_unavailable' }, { status: 503 });
   }
 
   const { Pool } = await import('pg');
@@ -42,9 +48,10 @@ export async function GET() {
       client.release();
     }
   } catch (error) {
+    console.error('[health/legal] probe failed', error);
     return Response.json(
-      { ok: false, error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      { ok: false, error: 'legal_unavailable' },
+      { status: 503 }
     );
   } finally {
     await pool.end().catch(() => undefined);
