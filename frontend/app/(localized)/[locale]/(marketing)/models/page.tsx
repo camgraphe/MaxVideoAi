@@ -115,8 +115,24 @@ function getCatalogBySlug() {
 function resolveSupported(value: unknown) {
   if (value == null) return null;
   const normalized = String(value).trim().toLowerCase();
-  if (normalized === 'supported' || normalized === 'yes' || normalized === 'true') return true;
-  if (normalized === 'not supported' || normalized === 'no' || normalized === 'false') return false;
+  if (
+    normalized === 'supported' ||
+    normalized.startsWith('supported ') ||
+    normalized.startsWith('supported (') ||
+    normalized === 'yes' ||
+    normalized === 'true'
+  ) {
+    return true;
+  }
+  if (
+    normalized === 'not supported' ||
+    normalized.startsWith('not supported ') ||
+    normalized.startsWith('not supported (') ||
+    normalized === 'no' ||
+    normalized === 'false'
+  ) {
+    return false;
+  }
   return null;
 }
 

@@ -42,6 +42,8 @@ export type MultiPromptScene = {
 type ComposerModeToggle = {
   mode: Mode | null;
   label: string;
+  disabled?: boolean;
+  disabledReason?: string;
 };
 
 interface Props {
@@ -88,6 +90,7 @@ interface Props {
   } | null;
   extraFields?: ReactNode;
   disableGenerate?: boolean;
+  workflowNotice?: string | null;
 }
 
 const DEFAULT_COMPOSER_COPY = {
@@ -164,6 +167,7 @@ export function Composer({
   multiPrompt,
   extraFields,
   disableGenerate,
+  workflowNotice,
 }: Props) {
   const { t } = useI18n();
   const composerCopy = useMemo<ComposerCopy>(() => {
@@ -315,6 +319,8 @@ export function Composer({
                         size="sm"
                         variant={active ? 'primary' : 'outline'}
                         onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
+                        disabled={entry.disabled}
+                        title={entry.disabledReason}
                         className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-micro"
                       >
                         {entry.label}
@@ -357,6 +363,11 @@ export function Composer({
           {promptDescription && (
             <p className="text-[12px] text-text-muted">{promptDescription}</p>
           )}
+          {workflowNotice ? (
+            <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary">
+              {workflowNotice}
+            </div>
+          ) : null}
           {multiPromptEnabled && multiPrompt ? (
             <div className="space-y-3">
               {multiPrompt.scenes.map((scene, index) => (

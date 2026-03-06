@@ -2,7 +2,6 @@ import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import Image from 'next/image';
-import Head from 'next/head';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -2530,6 +2529,8 @@ const COMPARE_PRIORITY_BY_MODEL: Record<string, string[]> = {
   'pika-text-to-video': ['seedance-2-0', 'minimax-hailuo-02-text', 'ltx-2-fast'],
   'seedance-1-5-pro': ['seedance-2-0', 'kling-3-pro', 'sora-2'],
   'seedance-2-0': ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
+  'ltx-2-3': ['ltx-2-3-fast', 'veo-3-1', 'sora-2'],
+  'ltx-2-3-fast': ['ltx-2-3', 'veo-3-1-fast', 'ltx-2-fast'],
 };
 
 function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
@@ -3493,10 +3494,6 @@ function Sora2PageLayout({
   };
   const normalizedPrimaryCtaHref = normalizeCtaHref(primaryCtaHref) ?? primaryCtaHref;
   const localizedSecondaryCtaHref = normalizeCtaHref(secondaryCtaHref);
-  const heroPosterPreload = heroMedia.posterUrl
-    ? buildOptimizedPosterUrl(heroMedia.posterUrl, { width: 1200, quality: 75 }) ?? heroMedia.posterUrl
-    : null;
-
   const heroHighlights = copy.heroHighlights;
   const bestUseCaseItems = copy.bestUseCaseItems.length
     ? copy.bestUseCaseItems
@@ -3650,9 +3647,6 @@ function Sora2PageLayout({
 
   return (
     <>
-      <Head>
-        {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
-      </Head>
       {schemaPayloads.map((schema, index) => (
         <script
           key={`schema-${index}`}
@@ -4542,6 +4536,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'minimax-hailuo-02-text' ||
     slug === 'ltx-2' ||
     slug === 'ltx-2-fast' ||
+    slug === 'ltx-2-3' ||
+    slug === 'ltx-2-3-fast' ||
     slug === 'kling-2-6-pro' ||
     slug === 'kling-3-standard' ||
     slug === 'seedance-1-5-pro' ||
@@ -4727,9 +4723,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const pricingLinkHref = { pathname: '/pricing' };
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
-  const heroPosterPreload = heroPosterSrc
-    ? buildOptimizedPosterUrl(heroPosterSrc, { width: 1200, quality: 75 }) ?? heroPosterSrc
-    : null;
   const heroPosterAbsolute = toAbsoluteUrl(heroPosterSrc);
   const heroTitle = heroContent?.title ?? marketingName ?? slug;
   const pageDescription = introText ?? seoDescription ?? heroTitle;
@@ -4776,9 +4769,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
   return (
     <>
-      <Head>
-        {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
-      </Head>
       {schemaPayloads.map((schema, index) => (
         <script
           key={`schema-${index}`}

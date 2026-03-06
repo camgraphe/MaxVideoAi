@@ -20,6 +20,8 @@ interface CoreSettingsBarProps {
   onNumFramesChange?: (value: number) => void;
   resolution: string;
   onResolutionChange: (value: string) => void;
+  fps: number;
+  onFpsChange: (value: number) => void;
   aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
   iterations?: number;
@@ -109,6 +111,8 @@ export function CoreSettingsBar({
   onNumFramesChange,
   resolution,
   onResolutionChange,
+  fps,
+  onFpsChange,
   aspectRatio,
   onAspectRatioChange,
   iterations,
@@ -157,10 +161,20 @@ export function CoreSettingsBar({
     }
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
+  const fpsOptions = useMemo(() => {
+    const base = Array.isArray(caps?.fps)
+      ? caps.fps
+      : typeof caps?.fps === 'number'
+        ? [caps.fps]
+        : engine.fps;
+    if (isLtxFastLong) return base.filter((value) => value === 25);
+    return base;
+  }, [caps?.fps, engine.fps, isLtxFastLong]);
 
   const durationLabel = controlsCopy.duration.optionsLabel ?? 'Duration';
   const framesLabel = controlsCopy.frames.label ?? 'Frames';
   const resolutionLabel = controlsCopy.resolution.label ?? 'Resolution';
+  const fpsLabel = 'FPS';
   const aspectLabel = controlsCopy.aspect.label ?? 'Aspect';
   const iterationsLabel = controlsCopy.iterationsLabel ?? 'Iterations';
   const audioLabel = controlsCopy.audio.label ?? 'Audio';
@@ -217,6 +231,7 @@ export function CoreSettingsBar({
   });
 
   const showResolutionControl = resolutionOptions.length > 0 && !caps?.resolutionLocked;
+  const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
   const showAspectControl = aspectOptions.length > 0;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl;
   const audioNotice = audioControlNote ?? (audioIncluded ? controlsCopy.core.audioIncluded : null);
@@ -229,9 +244,9 @@ export function CoreSettingsBar({
 
   return (
     <div className="min-w-0 flex-1">
-      <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {durationManaged ? (
-          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-6">
             <div className="rounded-input border border-dashed border-border bg-surface-glass-60 px-3 py-2 text-[11px] uppercase tracking-micro text-text-muted">
               {resolvedDurationManagedLabel}
             </div>
@@ -264,6 +279,18 @@ export function CoreSettingsBar({
             options={resolutionOptionsList}
             value={resolution}
             onChange={(value) => onResolutionChange(String(value))}
+          />
+        )}
+
+        {showFpsControl && (
+          <SelectGroup
+            label={fpsLabel}
+            options={fpsOptions.map((option) => ({
+              value: option,
+              label: (controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option)),
+            }))}
+            value={fps}
+            onChange={(value) => onFpsChange(Number(value))}
           />
         )}
 
@@ -310,7 +337,7 @@ export function CoreSettingsBar({
           />
         )}
         {audioNotice && (
-          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-6">
             <span className="inline-flex items-center rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[10px] font-semibold uppercase tracking-micro text-text-secondary">
               {audioNotice}
             </span>
@@ -319,7 +346,8 @@ export function CoreSettingsBar({
       </div>
       {isLtxFastLong && (
         <p className="mt-2 text-[10px] text-text-muted">
-          LTX Fast: durations above 10s run at 1080p / 25 fps (Fal constraint).
+          LTX Fast: durations above 10s are limited to 1080p / 25 fps. Switch back to 10s or less to unlock
+          1440p, 4K, and 24/48/50 fps.
         </p>
       )}
     </div>

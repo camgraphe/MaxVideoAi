@@ -776,11 +776,20 @@ function framesToSeconds(frames: number): number {
 function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | null | undefined): FormState {
   const capability = getEngineCaps(engine.id, mode) as EngineCapabilityCaps | undefined;
   const isLumaRay2Engine = engine.id === 'lumaRay2';
+  const resetFastDefaultsOnEngineSwitch =
+    (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') &&
+    Boolean(previous?.engineId) &&
+    previous?.engineId !== engine.id;
+  const previousDurationOption = resetFastDefaultsOnEngineSwitch ? null : previous?.durationOption ?? null;
+  const previousDurationSec = resetFastDefaultsOnEngineSwitch ? null : previous?.durationSec ?? null;
+  const previousNumFrames = resetFastDefaultsOnEngineSwitch ? null : previous?.numFrames ?? null;
+  const previousResolution = resetFastDefaultsOnEngineSwitch ? null : previous?.resolution ?? null;
+  const previousFps = resetFastDefaultsOnEngineSwitch ? null : previous?.fps ?? null;
 
   const durationResult = (() => {
-    const prevOption = previous?.durationOption ?? null;
-    const prevSeconds = previous?.durationSec ?? null;
-    const prevFrames = previous?.numFrames ?? null;
+    const prevOption = previousDurationOption;
+    const prevSeconds = previousDurationSec;
+    const prevFrames = previousNumFrames;
     if (capability?.frames && capability.frames.length) {
       const framesList = capability.frames;
       let selectedFrames = prevFrames && framesList.includes(prevFrames) ? prevFrames : null;
@@ -856,9 +865,8 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
 
   const resolution = (() => {
     if (resolutionOptions.length === 0) {
-      return previous?.resolution ?? engine.resolutions[0] ?? '1080p';
+      return previousResolution ?? engine.resolutions[0] ?? '1080p';
     }
-    const previousResolution = previous?.resolution;
     if (previousResolution && resolutionOptions.includes(previousResolution)) {
       return previousResolution;
     }
@@ -882,8 +890,8 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     return engine.fps && engine.fps.length ? engine.fps : [24];
   })();
   const fps = (() => {
-    if (previous?.fps && fpsOptions.includes(previous.fps)) {
-      return previous.fps;
+    if (previousFps && fpsOptions.includes(previousFps)) {
+      return previousFps;
     }
     return fpsOptions[0];
   })();
@@ -4062,14 +4070,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     return modes[0] ?? 't2v';
   }, [form?.mode, referenceInputStatus.hasAudio, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
 
+  const audioToVideoSupported = Boolean(selectedEngine?.modes.includes('a2v'));
+  const audioWorkflowLocked = referenceInputStatus.hasAudio && audioToVideoSupported;
+  const audioWorkflowUnsupported = referenceInputStatus.hasAudio && Boolean(selectedEngine) && !audioToVideoSupported;
+
   const activeManualMode = useMemo<Mode | null>(() => {
     if (!selectedEngine) return null;
+    if (referenceInputStatus.hasAudio) return null;
     const currentMode = form?.mode ?? null;
     if ((currentMode === 'extend' || currentMode === 'retake') && selectedEngine.modes.includes(currentMode)) {
       return currentMode;
     }
     return null;
-  }, [form?.mode, selectedEngine]);
+  }, [form?.mode, referenceInputStatus.hasAudio, selectedEngine]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
 
@@ -4174,6 +4187,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const composerModeToggles = useMemo(() => {
     if (selectedEngine?.id !== 'ltx-2-3') return undefined;
+    const disabledReason = audioWorkflowLocked
+      ? 'Remove the audio source to unlock Extend Video and Retake Video.'
+      : undefined;
     return [
       { mode: null, label: 'Generate Video' },
       ...(['extend', 'retake'] as const)
@@ -4181,19 +4197,36 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         .map((mode) => ({
           mode,
           label: MODE_DISPLAY_LABEL[mode],
+          disabled: audioWorkflowLocked,
+          disabledReason,
         })),
     ];
-  }, [selectedEngine]);
+  }, [audioWorkflowLocked, selectedEngine]);
+
+  const composerWorkflowNotice = useMemo(() => {
+    if (!selectedEngine || !referenceInputStatus.hasAudio) return null;
+    if (audioWorkflowUnsupported) {
+      return 'This engine does not support Audio → Video. Remove the audio source or switch to LTX 2.3.';
+    }
+    if (selectedEngine.id === 'ltx-2-3') {
+      return 'Audio source detected. LTX 2.3 is now locked to Audio → Video. Extend Video and Retake Video will unlock again when you remove the audio source.';
+    }
+    return 'Audio source detected. The available controls are now limited to Audio → Video settings until you remove the audio source.';
+  }, [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine]);
 
   const handleComposerModeToggle = useCallback(
     (mode: Mode | null) => {
       if (!selectedEngine) return;
+      if (referenceInputStatus.hasAudio && (mode === 'extend' || mode === 'retake')) {
+        showNotice('Remove the audio source to use Extend Video or Retake Video.');
+        return;
+      }
       const nextMode = mode ?? implicitMode;
       setForm((current) =>
         coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
       );
     },
-    [implicitMode, selectedEngine]
+    [implicitMode, referenceInputStatus.hasAudio, selectedEngine, showNotice]
   );
 
   const handleDurationChange = useCallback(
@@ -4514,6 +4547,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine || !authChecked) return;
+    if (audioWorkflowUnsupported) {
+      showNotice('This engine does not support Audio → Video. Remove the audio source or switch to LTX 2.3.');
+      return;
+    }
     const trimmedPrompt = effectivePrompt.trim();
     const trimmedNegativePrompt = negativePrompt.trim();
     const supportsNegativePrompt = Boolean(inputSchemaSummary.negativePromptField);
@@ -5350,6 +5387,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       void runIteration(iterationIndex);
     }
   }, [
+    audioWorkflowUnsupported,
     form,
     effectivePrompt,
     effectiveDurationSec,
@@ -5869,6 +5907,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 modeToggles={composerModeToggles}
                 activeManualMode={activeManualMode}
                 onModeToggle={handleComposerModeToggle}
+                workflowNotice={composerWorkflowNotice}
                 assetFields={inputSchemaSummary.assetFields}
                 assets={composerAssets}
                 onAssetAdd={handleAssetAdd}
@@ -5891,7 +5930,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       }
                     : null
                 }
-                disableGenerate={multiPromptInvalid}
+                disableGenerate={multiPromptInvalid || audioWorkflowUnsupported}
                 extraFields={
                   <>
                     {inputSchemaSummary.genericFields.length ? (
@@ -5984,6 +6023,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     onNumFramesChange={handleFramesChange}
                     resolution={form.resolution}
                     onResolutionChange={handleResolutionChange}
+                    fps={form.fps}
+                    onFpsChange={handleFpsChange}
                     aspectRatio={form.aspectRatio}
                     onAspectRatioChange={handleAspectRatioChange}
                     iterations={form.iterations}

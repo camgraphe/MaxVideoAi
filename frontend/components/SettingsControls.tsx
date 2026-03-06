@@ -620,28 +620,6 @@ export function SettingsControls({
               </>
             )}
 
-            {fpsOptions.length > 1 && (
-              <div className="flex flex-wrap gap-2">
-                {fpsOptions.map((option) => (
-                  <Button
-                    key={option}
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onFpsChange(option)}
-                    className={clsx(
-                      'min-h-0 h-auto px-3 py-1.5 text-[13px]',
-                      option === fps
-                        ? 'border-brand bg-brand text-on-brand'
-                        : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                    )}
-                  >
-                    {(controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option))}
-                  </Button>
-                ))}
-              </div>
-            )}
-
             {engine.params.promptStrength && (
               <div className="space-y-2">
                 <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.promptStrength}</span>

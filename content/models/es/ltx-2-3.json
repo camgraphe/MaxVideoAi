@@ -1,14 +1,43 @@
 {
   "marketingName": "LTX 2.3",
   "versionLabel": "2.3",
-  "overview": "LTX 2.3 reúne text-to-video, image-to-video, audio-to-video, extend y retake en un solo modelo Lightricks dentro de MaxVideoAI.",
+  "seo": {
+    "title": "LTX 2.3 - video IA con texto, imagen, audio, extend y retake",
+    "description": "Usa LTX 2.3 en MaxVideoAI para text-to-video, image-to-video, audio-to-video, extend-video y retake-video con audio nativo, salida 1080p a 4K y formatos verticales o panoramicos.",
+    "image": "/assets/placeholders/preview-16x9.png"
+  },
+  "overview": "LTX 2.3 unifica en MaxVideoAI los flujos de texto, imagen, audio, extend y retake dentro de una sola pagina de modelo.",
   "hero": {
-    "title": "LTX 2.3 – workflows LTX unificados",
-    "intro": "Texto, imagen, audio, extend y retake en una sola página de modelo LTX 2.3.",
-    "badge": "T2V · I2V · A2V · Extend · Retake",
+    "title": "LTX 2.3 - generacion, audio, extend y retake en una sola pagina",
+    "intro": "Genera desde texto o imagen, anima a partir de audio, extiende un clip existente o rehace solo la parte que falla sin salir del mismo modelo.",
+    "badge": "T2V + I2V + A2V + Extend + Retake",
     "ctaPrimary": {
-      "label": "Crear con LTX 2.3",
+      "label": "Empezar con LTX 2.3",
       "href": "/app?engine=ltx-2-3"
-    }
+    },
+    "secondaryLinks": [
+      {
+        "label": "Comparar LTX 2.3 vs LTX 2.3 Fast ->",
+        "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3"
+      },
+      {
+        "label": "Ver ejemplos de LTX 2.3 ->",
+        "href": "/examples?engine=ltx-2-3"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Comparar LTX 2.3 vs LTX 2.3 Fast ->",
+    "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3"
+  },
+  "custom": {
+    "heroSpecChips": [
+      { "label": "Texto→Video", "icon": "textToVideo" },
+      { "label": "Imagen→Video", "icon": "imageToVideo" },
+      { "label": "Audio→Video (2–20 s)", "icon": "audio" },
+      { "label": "Generación: 6–10 s", "icon": "duration" },
+      { "label": "4K en generación", "icon": "resolution" },
+      { "label": "Extend / Retake desde video fuente" }
+    ]
   }
 }

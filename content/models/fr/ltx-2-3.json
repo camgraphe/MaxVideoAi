@@ -1,14 +1,43 @@
 {
   "marketingName": "LTX 2.3",
   "versionLabel": "2.3",
-  "overview": "LTX 2.3 regroupe text-to-video, image-to-video, audio-to-video, extend et retake dans un seul modèle Lightricks sur MaxVideoAI.",
+  "seo": {
+    "title": "LTX 2.3 - video IA texte, image, audio, extend et retake",
+    "description": "Utilisez LTX 2.3 sur MaxVideoAI pour le text-to-video, image-to-video, audio-to-video, extend-video et retake-video avec audio natif, sorties 1080p a 4K et formats paysage ou vertical.",
+    "image": "/assets/placeholders/preview-16x9.png"
+  },
+  "overview": "LTX 2.3 regroupe dans MaxVideoAI les workflows texte, image, audio, extend et retake sur une seule page modele.",
   "hero": {
-    "title": "LTX 2.3 – workflows LTX unifiés",
-    "intro": "Texte, image, audio, extend et retake dans une seule page modèle LTX 2.3.",
-    "badge": "T2V · I2V · A2V · Extend · Retake",
+    "title": "LTX 2.3 - generation, audio, extend et retake sur une seule page",
+    "intro": "Generez depuis un prompt ou une image, animez a partir d'un audio, prolongez un plan existant ou refaites uniquement la portion qui pose probleme.",
+    "badge": "T2V + I2V + A2V + Extend + Retake",
     "ctaPrimary": {
-      "label": "Créer avec LTX 2.3",
+      "label": "Generer avec LTX 2.3",
       "href": "/app?engine=ltx-2-3"
-    }
+    },
+    "secondaryLinks": [
+      {
+        "label": "Comparer LTX 2.3 vs LTX 2.3 Fast ->",
+        "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3"
+      },
+      {
+        "label": "Voir les exemples LTX 2.3 ->",
+        "href": "/examples?engine=ltx-2-3"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Comparer LTX 2.3 vs LTX 2.3 Fast ->",
+    "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3"
+  },
+  "custom": {
+    "heroSpecChips": [
+      { "label": "Texte→Vidéo", "icon": "textToVideo" },
+      { "label": "Image→Vidéo", "icon": "imageToVideo" },
+      { "label": "Audio→Vidéo (2–20 s)", "icon": "audio" },
+      { "label": "Génération : 6–10 s", "icon": "duration" },
+      { "label": "4K en génération", "icon": "resolution" },
+      { "label": "Extend / Retake depuis une vidéo source" }
+    ]
   }
 }

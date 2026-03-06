@@ -3956,7 +3956,8 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
+            "description": "Used as the first frame for image-to-video generation.",
             "modes": [
               "i2v"
             ],
@@ -4088,7 +4089,7 @@
           "4k": 0.16
         },
         "currency": "USD",
-        "notes": "$0.24 per 6s @1080p, $0.48 @1440p, $0.96 @4K. Durations above 10s require 1080p / 25 fps."
+        "notes": "$0.31 per 6s @1080p, $0.62 @1440p, $1.25 @4K. Durations above 10s require 1080p / 25 fps."
       },
       "updatedAt": "2026-03-06T00:00:00Z",
       "ttlSec": 600,
@@ -4275,7 +4276,8 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
+            "description": "Used as the first frame for image-to-video generation.",
             "modes": [
               "i2v"
             ],
@@ -4542,7 +4544,7 @@
           "4k": 0.24
         },
         "currency": "USD",
-        "notes": "$0.36 per 6s @1080p, $0.72 @1440p, $1.44 @4K"
+        "notes": "$0.47 per 6s @1080p, $0.94 @1440p, $1.87 @4K"
       },
       "updatedAt": "2026-03-06T00:00:00Z",
       "ttlSec": 600,
@@ -4841,7 +4843,7 @@
           "4k": 0.16
         },
         "currency": "USD",
-        "notes": "$0.20 per 5s @1080p, $0.40 @1440p, $0.80 @4K"
+        "notes": "$0.26 per 5s @1080p, $0.52 @1440p, $1.04 @4K"
       },
       "updatedAt": "2025-03-05T00:00:00Z",
       "ttlSec": 600,
@@ -5089,7 +5091,7 @@
           "4k": 0.24
         },
         "currency": "USD",
-        "notes": "$0.30 per 5s @1080p, $0.60 @1440p, $1.20 @4K"
+        "notes": "$0.39 per 5s @1080p, $0.78 @1440p, $1.56 @4K"
       },
       "updatedAt": "2025-03-05T00:00:00Z",
       "ttlSec": 600,

@@ -1,14 +1,43 @@
 {
   "marketingName": "LTX 2.3 Fast",
-  "versionLabel": "2.3 Fast",
-  "overview": "LTX 2.3 Fast se concentre sur des générations text-to-video et image-to-video rapides pour les itérations LTX.",
+  "versionLabel": "Fast",
+  "seo": {
+    "title": "LTX 2.3 Fast - video IA rapide en text-to-video et image-to-video",
+    "description": "Utilisez LTX 2.3 Fast sur MaxVideoAI pour des generations rapides en text-to-video et image-to-video avec audio natif, start/end image, sorties 1080p a 4K et clips de 6 a 20 secondes.",
+    "image": "/assets/placeholders/preview-16x9.png"
+  },
+  "overview": "LTX 2.3 Fast est la version rapide de la nouvelle famille LTX 2.3 pour les workflows texte et image uniquement.",
   "hero": {
-    "title": "LTX 2.3 Fast – itération rapide",
-    "intro": "Utilisez LTX 2.3 Fast pour les workflows Fast publics text-to-video et image-to-video.",
-    "badge": "T2V · I2V · Fast",
+    "title": "LTX 2.3 Fast - generation rapide avant la passe finale",
+    "intro": "Utilisez LTX 2.3 Fast pour tester vite des hooks, des formats verticaux et des variantes image-to-video avant de passer sur la version standard si le projet demande plus de controle.",
+    "badge": "T2V + I2V | 6-20 s | 1080p a 4K",
     "ctaPrimary": {
-      "label": "Créer avec LTX 2.3 Fast",
+      "label": "Generer avec LTX 2.3 Fast",
       "href": "/app?engine=ltx-2-3-fast"
-    }
+    },
+    "secondaryLinks": [
+      {
+        "label": "Comparer LTX 2.3 Fast vs LTX 2.3 ->",
+        "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3-fast"
+      },
+      {
+        "label": "Voir les exemples LTX 2.3 Fast ->",
+        "href": "/examples?engine=ltx-2-3-fast"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Comparer LTX 2.3 Fast vs LTX 2.3 ->",
+    "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3-fast"
+  },
+  "custom": {
+    "heroSpecChips": [
+      { "label": "Texte→Vidéo", "icon": "textToVideo" },
+      { "label": "Image→Vidéo", "icon": "imageToVideo" },
+      { "label": "Image de début + de fin", "icon": "imageToVideo" },
+      { "label": "6–20 s", "icon": "duration" },
+      { "label": "4K", "icon": "resolution" },
+      { "label": "Audio", "icon": "audio" }
+    ]
   }
 }

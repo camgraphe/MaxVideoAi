@@ -4187,7 +4187,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       videoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
       imagePath:
         'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg',
-      altText: 'LTX 2.3 Fast sample clip',
+      altText: 'LTX 2.3 Fast temporary demo clip using LTX 2 Fast media',
     },
     prompts: [
       {
@@ -4297,7 +4297,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       videoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
       imagePath:
         'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg',
-      altText: 'LTX 2.3 sample clip',
+      altText: 'LTX 2.3 temporary demo clip using LTX 2 Pro media',
     },
     prompts: [
       {

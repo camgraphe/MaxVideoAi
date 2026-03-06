@@ -658,7 +658,12 @@ function resolveKeySpecValue(
 
 function renderSpecValue(value: string, labels: { pending: string; supported: string; notSupported: string }) {
   const normalized = value.toLowerCase();
-  if (normalized === labels.supported.toLowerCase() || normalized === 'supported') {
+  if (
+    normalized === labels.supported.toLowerCase() ||
+    normalized === 'supported' ||
+    normalized.startsWith('supported ') ||
+    normalized.startsWith('supported (')
+  ) {
     return (
       <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 p-1">
         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] text-white" aria-hidden>
@@ -667,7 +672,12 @@ function renderSpecValue(value: string, labels: { pending: string; supported: st
       </span>
     );
   }
-  if (normalized === labels.notSupported.toLowerCase() || normalized === 'not supported') {
+  if (
+    normalized === labels.notSupported.toLowerCase() ||
+    normalized === 'not supported' ||
+    normalized.startsWith('not supported ') ||
+    normalized.startsWith('not supported (')
+  ) {
     return (
       <span className="inline-flex items-center rounded-full border border-rose-500/30 bg-rose-500/10 p-1">
         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white" aria-hidden>
@@ -1735,8 +1745,10 @@ export default async function CompareDetailPage({
     'Max resolution: {engine} ({leftValue} vs {rightValue}).';
   const specWinnerRow: { id: string; icon: string; label: string; value: string; accent: OverallTone } | null = (() => {
     const valueForSupport = (label: string, leftValue: string, rightValue: string) => {
-      const leftIsSupported = leftValue.toLowerCase() === 'supported';
-      const rightIsSupported = rightValue.toLowerCase() === 'supported';
+      const leftNormalized = leftValue.toLowerCase();
+      const rightNormalized = rightValue.toLowerCase();
+      const leftIsSupported = leftNormalized === 'supported' || leftNormalized.startsWith('supported ');
+      const rightIsSupported = rightNormalized === 'supported' || rightNormalized.startsWith('supported ');
       if (leftIsSupported === rightIsSupported) return null;
       const winner = leftIsSupported ? 'left' : 'right';
       return {
