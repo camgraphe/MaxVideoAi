@@ -18,6 +18,7 @@ import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import { getLocalizedCapabilityKeywords, getLocalizedModelUseCases } from '@/lib/ltx-localization';
 import engineCatalog from '@/config/engine-catalog.json';
 const MODELS_SLUG_MAP = buildSlugMap('models');
 
@@ -341,6 +342,11 @@ const USE_CASE_MAP: Record<string, string> = {
 };
 
 const DEFAULT_VALUE_SENTENCE = 'Best for {useCase} with strong {strengths} in {capabilities} workflows.';
+const DEFAULT_VALUE_SENTENCE_BY_LOCALE: Record<AppLocale, string> = {
+  en: DEFAULT_VALUE_SENTENCE,
+  fr: 'Idéal pour {useCase} avec de bons résultats sur {strengths} dans les workflows {capabilities}.',
+  es: 'Ideal para {useCase} con buen nivel en {strengths} dentro de workflows {capabilities}.',
+};
 const DEFAULT_CAPABILITY_KEYWORDS: Record<string, string> = {
   T2V: 'text-to-video',
   I2V: 'image-to-video',
@@ -349,6 +355,21 @@ const DEFAULT_CAPABILITY_KEYWORDS: Record<string, string> = {
   Audio: 'native audio',
   'First/Last': 'first/last frame control',
   Extend: 'extend workflows',
+};
+const DEFAULT_VALUE_STRENGTHS_FALLBACK: Record<AppLocale, string> = {
+  en: 'reliable outputs',
+  fr: 'des résultats fiables',
+  es: 'resultados fiables',
+};
+const DEFAULT_VALUE_CAPABILITY_FALLBACK: Record<AppLocale, string> = {
+  en: 'AI video',
+  fr: 'vidéo IA',
+  es: 'video IA',
+};
+const DEFAULT_VALUE_CONJUNCTION: Record<AppLocale, string> = {
+  en: 'and',
+  fr: 'et',
+  es: 'y',
 };
 
 function formatTemplate(template: string, values: Record<string, string>) {
@@ -623,12 +644,18 @@ export default async function ModelsPage() {
     key,
     label: scoreLabelMap[key] ?? DEFAULT_SCORE_LABEL_MAP[key],
   }));
-  const valueTemplate = galleryCopy.valueSentence?.template ?? DEFAULT_VALUE_SENTENCE;
-  const strengthsFallback = galleryCopy.valueSentence?.strengthsFallback ?? 'reliable outputs';
-  const capabilityFallback = galleryCopy.valueSentence?.capabilityFallback ?? 'AI video';
-  const conjunction = galleryCopy.valueSentence?.conjunction ?? 'and';
-  const useCaseMap = { ...USE_CASE_MAP, ...(galleryCopy.valueSentence?.useCases ?? {}) };
-  const capabilityMap = { ...DEFAULT_CAPABILITY_KEYWORDS, ...(galleryCopy.valueSentence?.capabilityKeywords ?? {}) };
+  const valueTemplate = galleryCopy.valueSentence?.template ?? DEFAULT_VALUE_SENTENCE_BY_LOCALE[activeLocale];
+  const strengthsFallback =
+    galleryCopy.valueSentence?.strengthsFallback ?? DEFAULT_VALUE_STRENGTHS_FALLBACK[activeLocale];
+  const capabilityFallback =
+    galleryCopy.valueSentence?.capabilityFallback ?? DEFAULT_VALUE_CAPABILITY_FALLBACK[activeLocale];
+  const conjunction = galleryCopy.valueSentence?.conjunction ?? DEFAULT_VALUE_CONJUNCTION[activeLocale];
+  const useCaseMap = { ...USE_CASE_MAP, ...getLocalizedModelUseCases(activeLocale), ...(galleryCopy.valueSentence?.useCases ?? {}) };
+  const capabilityMap = {
+    ...DEFAULT_CAPABILITY_KEYWORDS,
+    ...getLocalizedCapabilityKeywords(activeLocale),
+    ...(galleryCopy.valueSentence?.capabilityKeywords ?? {}),
+  };
 
   const modelCards = engines.map((engine) => {
     const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;

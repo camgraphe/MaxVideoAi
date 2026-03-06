@@ -23,17 +23,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { getExamplesHref } from '@/lib/examples-links';
 import { formatResolutionList } from '@/lib/resolution-labels';
-
-const MODE_LABELS: Record<Mode, string> = {
-  t2v: 'Text -> Video',
-  i2v: 'Image -> Video',
-  r2v: 'Reference -> Video',
-  a2v: 'Audio -> Video',
-  extend: 'Extend Video',
-  retake: 'Retake Video',
-  t2i: 'Text -> Image',
-  i2i: 'Image -> Image',
-};
+import { getLocalizedModeLabel, normalizeUiLocale } from '@/lib/ltx-localization';
 
 type EngineRegistryMeta = {
   order: Map<string, number>;
@@ -70,13 +60,21 @@ const VEO_ENGINE_IDS = ['veo-3-1', 'veo-3-1-fast'] as const;
 const VEO_ENGINE_SET = new Set<string>(VEO_ENGINE_IDS);
 const KLING_3_ENGINE_IDS = ['kling-3-standard', 'kling-3-pro'] as const;
 const KLING_3_ENGINE_SET = new Set<string>(KLING_3_ENGINE_IDS);
+const LTX_2_3_ENGINE_IDS = ['ltx-2-3', 'ltx-2-3-fast'] as const;
+const LTX_2_3_ENGINE_SET = new Set<string>(LTX_2_3_ENGINE_IDS);
 const MODE_VARIANT_ENGINE_IDS = ['veo-3-1-first-last'] as const;
 const MODE_VARIANT_ENGINE_SET = new Set<string>(MODE_VARIANT_ENGINE_IDS);
 
 const ENGINE_VARIANT_LABEL_OVERRIDES: Record<string, string> = {
   'kling-3-standard': 'Standard',
   'kling-3-pro': 'Pro',
+  'ltx-2-3': 'Pro',
+  'ltx-2-3-fast': 'Fast',
 };
+const ENGINE_VARIANT_SORT_ORDER = new Map<string, number>([
+  ['ltx-2-3', 0],
+  ['ltx-2-3-fast', 1],
+]);
 const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
 const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v'];
@@ -105,12 +103,13 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
 function getModeLabel(
   engineId: string | undefined,
   value: Mode,
+  locale: string | undefined,
   overrides?: Partial<Record<Mode, string>>
 ): string {
   const custom = overrides?.[value];
   if (custom) return custom;
   const engineOverrides = engineId ? ENGINE_MODE_LABEL_OVERRIDES[engineId] : undefined;
-  return engineOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase();
+  return engineOverrides?.[value] ?? getLocalizedModeLabel(value, normalizeUiLocale(locale));
 }
 
 function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
@@ -197,7 +196,7 @@ export function EngineSelect({
   density = 'default',
   className,
 }: EngineSelectProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
   const [registryMeta, setRegistryMeta] = useState<EngineRegistryMeta | null>(() => engineRegistryMetaCache);
   const [open, setOpen] = useState(false);
@@ -241,13 +240,18 @@ export function EngineSelect({
   const availableEngines = useMemo(() => {
     const sorted = engines.slice();
     const order = registryMeta?.order;
-    if (order) {
-      sorted.sort((a, b) => {
-        const orderA = order.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-        const orderB = order.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-        return orderA - orderB;
-      });
-    }
+    sorted.sort((a, b) => {
+      const variantOrderA = ENGINE_VARIANT_SORT_ORDER.get(a.id);
+      const variantOrderB = ENGINE_VARIANT_SORT_ORDER.get(b.id);
+      if (variantOrderA != null || variantOrderB != null) {
+        if (variantOrderA == null) return 1;
+        if (variantOrderB == null) return -1;
+        if (variantOrderA !== variantOrderB) return variantOrderA - variantOrderB;
+      }
+      const orderA = order?.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+      const orderB = order?.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    });
     return sorted.filter((entry) => entry.availability !== 'paused');
   }, [engines, registryMeta]);
 
@@ -280,6 +284,11 @@ export function EngineSelect({
     }
     if (KLING_3_ENGINE_SET.has(selectedEngine.id)) {
       return availableEngines.filter((entry) => KLING_3_ENGINE_SET.has(entry.id));
+    }
+    if (LTX_2_3_ENGINE_SET.has(selectedEngine.id)) {
+      return LTX_2_3_ENGINE_IDS
+        .map((id) => availableEngines.find((entry) => entry.id === id))
+        .filter((entry): entry is EngineCaps => Boolean(entry));
     }
     return [];
   }, [availableEngines, selectedEngine]);
@@ -655,7 +664,7 @@ export function EngineSelect({
                           : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2'
                       )}
                     >
-                      {getModeLabel(selectedEngine?.id, candidate, modeLabelOverrides)}
+                      {getModeLabel(selectedEngine?.id, candidate, locale, modeLabelOverrides)}
                     </button>
                   );
                 })}
@@ -744,7 +753,7 @@ export function EngineSelect({
                                 <div className="flex flex-wrap gap-1 text-[10px]">
                                   {getModeDisplayOrder(engine.id, engine.modes).map((engineMode) => (
                                     <Chip key={engineMode} variant="outline" className="px-1.5 py-0.5 text-[10px]">
-                                      {getModeLabel(engine.id, engineMode, modeLabelOverrides)}
+                                      {getModeLabel(engine.id, engineMode, locale, modeLabelOverrides)}
                                     </Chip>
                                   ))}
                                   {engine.isLab && (
@@ -801,7 +810,7 @@ export function EngineSelect({
                           : 'cursor-not-allowed border-border bg-surface text-text-muted/60'
                     )}
                   >
-                    {getModeLabel(selectedEngine?.id, candidate, modeLabelOverrides)}
+                    {getModeLabel(selectedEngine?.id, candidate, locale, modeLabelOverrides)}
                   </button>
                 );
               })}
@@ -868,6 +877,7 @@ function BrowseEnginesModal({
   showLegacy,
   onToggleLegacy,
 }: BrowseEnginesModalProps) {
+  const { locale } = useI18n();
   const modalCopy = copy.modal;
   const viewModelLabel = modalCopy.viewModel ?? DEFAULT_ENGINE_SELECT_COPY.modal.viewModel;
   const viewExamplesLabel = modalCopy.viewExamples ?? DEFAULT_ENGINE_SELECT_COPY.modal.viewExamples;
@@ -1181,7 +1191,7 @@ function BrowseEnginesModal({
                       <span>
                         Modes:{' '}
                         {getModeDisplayOrder(engine.id, engine.modes)
-                          .map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides))
+                          .map((entry) => getModeLabel(engine.id, entry, locale, modeLabelOverrides))
                           .join(' / ')}
                       </span>
                       <span>

@@ -17,7 +17,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare LTX 2.3 Fast vs LTX 2.3 ->",
+        "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro ->",
         "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3-fast"
       },
       {
@@ -105,14 +105,14 @@
   "tips": {
     "title": "Tips & limits",
     "items": [
-      "Use LTX 2.3 Fast for idea volume, then rerun winning concepts in LTX 2.3 when you need more workflow flexibility.",
+      "Use LTX 2.3 Fast for idea volume, then rerun winning concepts in LTX 2.3 Pro when you need more workflow flexibility.",
       "For 12 to 20 seconds, accept the 1080p and 25 fps constraint instead of fighting it.",
       "Use an end image only when the destination frame matters for the cut.",
       "Audio is available here, but Audio-to-Video, Extend and Retake are not."
     ]
   },
   "compareLink": {
-    "label": "Compare LTX 2.3 Fast vs LTX 2.3 ->",
+    "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro ->",
     "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3-fast"
   },
   "prompts": [
@@ -143,14 +143,14 @@
       "a": "Fast can still render up to 20 seconds, but runs above 10 seconds are constrained to 1080p at 25 fps."
     },
     {
-      "q": "When should I move from Fast to standard LTX 2.3?",
-      "a": "Stay on Fast while testing hooks, pacing and format variants. Move to standard LTX 2.3 when you need Audio-to-Video, Extend, Retake, or a more complete end-to-end LTX workflow."
+      "q": "When should I move from Fast to LTX 2.3 Pro?",
+      "a": "Stay on Fast while testing hooks, pacing and format variants. Move to LTX 2.3 Pro when you need Audio-to-Video, Extend, Retake, or a more complete end-to-end LTX workflow."
     }
   ],
   "custom": {
-    "heroDesc1": "LTX 2.3 Fast is the generate-first version of the new LTX 2.3 family. It keeps the broad text/image generation surface, native audio and start/end image support, but drops the editing workflows that belong to standard LTX 2.3.",
+    "heroDesc1": "LTX 2.3 Fast is the generate-first version of the new LTX 2.3 family. It keeps the broad text/image generation surface, native audio and start/end image support, but drops the editing workflows that belong to LTX 2.3 Pro.",
     "heroDesc2": "That makes it a cleaner fit for rapid concepting, social aspect-ratio variants and quick hook testing, especially when you want more clip length than ultra-short engines usually allow.",
-    "heroSupportLine": "Use Fast for speed and volume, then promote only the winners to standard LTX 2.3 if the project needs deeper control.",
+    "heroSupportLine": "Use Fast for speed and volume, then promote only the winners to LTX 2.3 Pro if the project needs deeper control.",
     "heroSpecChips": [
       { "label": "Text→Video", "icon": "textToVideo" },
       { "label": "Image→Video", "icon": "imageToVideo" },
@@ -181,7 +181,7 @@
       },
       {
         "title": "What Fast does not include",
-        "intro": "The product boundary is important for clear UX. Audio-to-Video, Extend and Retake stay on standard LTX 2.3 so Fast remains simpler and more predictable.",
+        "intro": "The product boundary is important for clear UX. Audio-to-Video, Extend and Retake stay on LTX 2.3 Pro so Fast remains simpler and more predictable.",
         "items": [
           "No uploaded-audio-driven video mode.",
           "No source-video extension workflow.",
@@ -236,7 +236,7 @@
       "Easy to rerun in multiple variants"
     ],
     "multishotTitle": "Longer fast beats",
-    "multishotIntro1": "Fast can run longer than the standard LTX 2.3 generate path, which is useful for simple walkthroughs and pacing tests.",
+    "multishotIntro1": "Fast can run longer than the LTX 2.3 Pro generate path, which is useful for simple walkthroughs and pacing tests.",
     "multishotIntro2": "Just remember that >10 second runs trade some flexibility for routing stability.",
     "multishotTips": [
       "Use 6 to 10 seconds for the highest flexibility.",
@@ -257,14 +257,14 @@
     "comparisonTitle": "When to pick LTX 2.3 Fast",
     "comparisonPoints": [
       "Choose Fast for idea volume, social variants and first-pass motion tests.",
-      "Move to standard LTX 2.3 when you need Audio-to-Video, Extend or Retake.",
+      "Move to LTX 2.3 Pro when you need Audio-to-Video, Extend or Retake.",
       "Use Fast when the job is generation-only and simplicity is more important than editing controls."
     ],
-    "comparisonCta": "Compare LTX 2.3 Fast vs standard ->",
+    "comparisonCta": "Compare LTX 2.3 Fast vs Pro ->",
     "relatedTitle": "Explore other engines",
     "relatedSubtitle": "Compare LTX 2.3 Fast with LTX 2.3, Veo Fast and older LTX fast tiers while keeping the same page structure.",
     "finalPara1": "Ready for a lighter LTX generation workflow? Open LTX 2.3 Fast in Generate.",
-    "finalPara2": "Use Fast for speed, then move the winning prompt to standard LTX 2.3 if the project needs deeper editing tools.",
+    "finalPara2": "Use Fast for speed, then move the winning prompt to LTX 2.3 Pro if the project needs deeper editing tools.",
     "finalButton": "Open LTX 2.3 Fast in Generate ->",
     "promptingTitle": "How to Write a Great LTX 2.3 Fast Prompt",
     "promptingIntro": "LTX 2.3 Fast is a generate-first engine, so keep the prompt short, visual and direct.",
@@ -321,7 +321,7 @@
       "Image-to-Video feels weak -> improve the start image composition before adding more prompt detail.",
       "Start-to-end transition feels forced -> make the end image closer to the same visual world.",
       "The clip feels too busy -> reduce to one action and one camera move.",
-      "You need source-video editing -> move to standard LTX 2.3 instead of overloading Fast."
+      "You need source-video editing -> move to LTX 2.3 Pro instead of overloading Fast."
     ]
   }
 }

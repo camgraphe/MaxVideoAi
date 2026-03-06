@@ -82,7 +82,7 @@ const ENGINE_FILTER_GROUPS: Record<string, { id: string; label: string; brandId?
   wan: { id: 'wan', label: 'Wan', brandId: 'wan' },
   seedance: { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
   hailuo: { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
-  'ltx-2-3': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'ltx-2-3': { id: 'ltx-2-3', label: 'LTX 2.3 Pro', brandId: 'lightricks' },
   'ltx-2': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
 };
 

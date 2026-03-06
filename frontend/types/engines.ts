@@ -85,6 +85,8 @@ export interface EngineInputField {
   values?: string[];
   source?: 'upload' | 'url' | 'either';
   engineParam?: string;
+  minDurationSec?: number;
+  maxDurationSec?: number;
 }
 
 export interface EngineInputSchema {

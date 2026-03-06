@@ -55,6 +55,12 @@ import {
 } from '@/lib/luma-ray2';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isPlaceholderMediaUrl } from '@/lib/media';
+import {
+  getLocalizedModeLabel,
+  getLocalizedWorkflowCopy,
+  localizeLtxField,
+  normalizeUiLocale,
+} from '@/lib/ltx-localization';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -186,6 +192,7 @@ type ReferenceAsset = {
   url?: string;
   width?: number | null;
   height?: number | null;
+  durationSec?: number | null;
   assetId?: string;
   status: 'uploading' | 'ready' | 'error';
   error?: string;
@@ -294,7 +301,8 @@ function AssetLibraryModal({
   onDelete,
   deletingAssetId,
 }: AssetLibraryModalProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const uiLocale = normalizeUiLocale(locale);
   const copy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary) ?? DEFAULT_WORKSPACE_COPY.assetLibrary;
   const copyAssetLibrary = copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary;
   const importLabel = copyAssetLibrary.import ?? DEFAULT_WORKSPACE_COPY.assetLibrary.import;
@@ -305,14 +313,26 @@ function AssetLibraryModal({
   const emptyLabel =
     source === 'generated'
       ? assetType === 'video'
-        ? 'No generated videos yet. Render a video to reuse it here.'
+        ? uiLocale === 'fr'
+          ? "Aucune vidéo générée pour l’instant. Lancez un rendu vidéo pour la réutiliser ici."
+          : uiLocale === 'es'
+            ? 'Aún no hay videos generados. Renderiza un video para reutilizarlo aquí.'
+            : 'No generated videos yet. Render a video to reuse it here.'
         : copyAssetLibrary.emptyGenerated
       : source === 'upload'
         ? assetType === 'video'
-          ? 'No uploaded videos yet. Upload a source video to see it here.'
-          : copyAssetLibrary.emptyUploads
+          ? uiLocale === 'fr'
+            ? "Aucune vidéo uploadée pour l’instant. Importez une vidéo source pour la voir ici."
+            : uiLocale === 'es'
+              ? 'Aún no hay videos subidos. Sube un video fuente para verlo aquí.'
+              : 'No uploaded videos yet. Upload a source video to see it here.'
+        : copyAssetLibrary.emptyUploads
         : assetType === 'video'
-          ? 'No saved videos yet. Upload or generate a video to see it here.'
+          ? uiLocale === 'fr'
+            ? "Aucune vidéo enregistrée pour l’instant. Importez ou générez une vidéo pour la voir ici."
+            : uiLocale === 'es'
+              ? 'Aún no hay videos guardados. Sube o genera un video para verlo aquí.'
+              : 'No saved videos yet. Upload or generate a video to see it here.'
           : copy.empty;
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -574,16 +594,6 @@ function AssetLibraryModal({
   );
 }
 
-const MODE_DISPLAY_LABEL: Record<Mode, string> = {
-  t2v: 'Text → Video',
-  i2v: 'Image → Video',
-  r2v: 'Reference → Video',
-  a2v: 'Audio → Video',
-  extend: 'Extend Video',
-  retake: 'Retake Video',
-  t2i: 'Text → Image',
-  i2i: 'Image → Image',
-};
 const DESKTOP_RAIL_MIN_WIDTH = 1088;
 
 type DurationOptionMeta = {
@@ -1294,7 +1304,9 @@ export default function Page() {
   );
   const provider = useResultProvider();
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const uiLocale = normalizeUiLocale(locale);
+  const workflowCopy = useMemo(() => getLocalizedWorkflowCopy(uiLocale), [uiLocale]);
   const workspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY) ?? DEFAULT_WORKSPACE_COPY;
   const processingCopy = (t('workspace.generate.processing', DEFAULT_PROCESSING_COPY) ??
     DEFAULT_PROCESSING_COPY) as typeof DEFAULT_PROCESSING_COPY;
@@ -2837,7 +2849,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   );
 
   const handleAssetAdd = useCallback(
-    (field: EngineInputField, file: File, slotIndex?: number) => {
+    (field: EngineInputField, file: File, slotIndex?: number, meta?: { durationSec?: number }) => {
       const assetId =
         typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
           ? crypto.randomUUID()
@@ -2851,6 +2863,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         name: file.name,
         size: file.size,
         type: file.type,
+        durationSec: typeof meta?.durationSec === 'number' ? meta.durationSec : null,
         status: 'uploading' as const,
       };
 
@@ -3525,10 +3538,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const cameraFixedValue = typeof form?.cameraFixed === 'boolean' ? form.cameraFixed : false;
   const safetyCheckerValue = typeof form?.safetyChecker === 'boolean' ? form.safetyChecker : true;
   const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
-  const effectiveDurationSec = useMemo(
-    () => (multiPromptActive ? multiPromptTotalSec : form?.durationSec ?? 0),
-    [multiPromptActive, multiPromptTotalSec, form?.durationSec]
-  );
+  const primaryAudioDurationSec = useMemo(() => {
+    for (const entries of Object.values(inputAssets)) {
+      for (const asset of entries) {
+        if (asset?.kind === 'audio' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
+          return Math.max(1, Math.round(asset.durationSec));
+        }
+      }
+    }
+    return null;
+  }, [inputAssets]);
   const multiPromptError = multiPromptInvalid
     ? `Multi-prompt requires a prompt per scene and total duration between ${MULTI_PROMPT_MIN_SEC}s and ${MULTI_PROMPT_MAX_SEC}s.`
     : null;
@@ -4085,6 +4104,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, [form?.mode, referenceInputStatus.hasAudio, selectedEngine]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
+  const effectiveDurationSec = useMemo(() => {
+    if (multiPromptActive) return multiPromptTotalSec;
+    if (activeMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
+    return form?.durationSec ?? 0;
+  }, [multiPromptActive, multiPromptTotalSec, activeMode, primaryAudioDurationSec, form?.durationSec]);
 
   useEffect(() => {
     if (!selectedEngine || !form) return;
@@ -4188,37 +4212,37 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const composerModeToggles = useMemo(() => {
     if (selectedEngine?.id !== 'ltx-2-3') return undefined;
     const disabledReason = audioWorkflowLocked
-      ? 'Remove the audio source to unlock Extend Video and Retake Video.'
+      ? workflowCopy.removeAudioToUnlock
       : undefined;
     return [
-      { mode: null, label: 'Generate Video' },
+      { mode: null, label: workflowCopy.generateVideo },
       ...(['extend', 'retake'] as const)
         .filter((mode) => selectedEngine.modes.includes(mode))
         .map((mode) => ({
           mode,
-          label: MODE_DISPLAY_LABEL[mode],
+          label: getLocalizedModeLabel(mode, uiLocale),
           disabled: audioWorkflowLocked,
           disabledReason,
         })),
     ];
-  }, [audioWorkflowLocked, selectedEngine]);
+  }, [audioWorkflowLocked, selectedEngine, uiLocale, workflowCopy]);
 
   const composerWorkflowNotice = useMemo(() => {
     if (!selectedEngine || !referenceInputStatus.hasAudio) return null;
     if (audioWorkflowUnsupported) {
-      return 'This engine does not support Audio → Video. Remove the audio source or switch to LTX 2.3.';
+      return workflowCopy.audioUnsupported;
     }
     if (selectedEngine.id === 'ltx-2-3') {
-      return 'Audio source detected. LTX 2.3 is now locked to Audio → Video. Extend Video and Retake Video will unlock again when you remove the audio source.';
+      return workflowCopy.audioLocked;
     }
-    return 'Audio source detected. The available controls are now limited to Audio → Video settings until you remove the audio source.';
-  }, [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine]);
+    return workflowCopy.audioLockedFallback;
+  }, [audioWorkflowUnsupported, referenceInputStatus.hasAudio, selectedEngine, workflowCopy]);
 
   const handleComposerModeToggle = useCallback(
     (mode: Mode | null) => {
       if (!selectedEngine) return;
       if (referenceInputStatus.hasAudio && (mode === 'extend' || mode === 'retake')) {
-        showNotice('Remove the audio source to use Extend Video or Retake Video.');
+        showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
       const nextMode = mode ?? implicitMode;
@@ -4226,7 +4250,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
       );
     },
-    [implicitMode, referenceInputStatus.hasAudio, selectedEngine, showNotice]
+    [implicitMode, referenceInputStatus.hasAudio, selectedEngine, showNotice, workflowCopy]
   );
 
   const handleDurationChange = useCallback(
@@ -4359,11 +4383,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       if (!fields) return;
       fields.forEach((field) => {
         if (!appliesToMode(field)) return;
-        const normalizedId = normalizeFieldId(field.id);
-        if (field.type === 'text') {
-          const normalizedIdValue = (field.id ?? '').toLowerCase();
+        const localizedField = localizeLtxField(field, uiLocale, selectedEngine?.id);
+        const normalizedId = normalizeFieldId(localizedField.id);
+        if (localizedField.type === 'text') {
+          const normalizedIdValue = (localizedField.id ?? '').toLowerCase();
           const normalizedIdCompact = normalizedIdValue.replace(/[^a-z0-9]/g, '');
-          const normalizedLabel = (field.label ?? '').toLowerCase();
+          const normalizedLabel = (localizedField.label ?? '').toLowerCase();
           const normalizedLabelCompact = normalizedLabel.replace(/\s+/g, '');
           const hasNegativePromptCue = (value: string) =>
             value.includes('negativeprompt') ||
@@ -4376,26 +4401,26 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             hasNegativePromptCue(normalizedLabelCompact);
           if (isNegative) {
             if (!negativePromptField) {
-              negativePromptField = field;
+              negativePromptField = localizedField;
               negativePromptOrigin = origin;
             }
             return;
           }
           const isPrompt = normalizedIdValue === 'prompt';
           if (!promptField || isPrompt) {
-            promptField = field;
+            promptField = localizedField;
             promptFieldOrigin = origin;
           }
           return;
         }
-        const required = isRequired(field, origin);
-        if (field.type === 'image' || field.type === 'video' || field.type === 'audio') {
-          const role = resolveAssetFieldRole(field, required);
-          assetFields.push({ field, required, role });
+        const required = isRequired(localizedField, origin);
+        if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
+          const role = resolveAssetFieldRole(localizedField, required);
+          assetFields.push({ field: localizedField, required, role });
           return;
         }
         if (!STANDARD_ENGINE_FIELD_IDS.has(normalizedId)) {
-          genericFields.push({ field, required });
+          genericFields.push({ field: localizedField, required });
         }
       });
     };
@@ -4416,7 +4441,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       negativePromptField,
       negativePromptRequired,
     };
-  }, [selectedEngine, activeMode]);
+  }, [selectedEngine, activeMode, uiLocale]);
 
   useEffect(() => {
     setForm((current) => {
@@ -4530,7 +4555,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
     return map;
   }, [inputAssets]);
-
   const handleExtraInputValueChange = useCallback((field: EngineInputField, value: unknown) => {
     setForm((current) => {
       if (!current) return current;
@@ -4548,7 +4572,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine || !authChecked) return;
     if (audioWorkflowUnsupported) {
-      showNotice('This engine does not support Audio → Video. Remove the audio source or switch to LTX 2.3.');
+      showNotice(workflowCopy.audioUnsupported);
       return;
     }
     const trimmedPrompt = effectivePrompt.trim();
@@ -4866,7 +4890,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const visibilityPreference: 'public' | 'private' = allowIndex ? 'public' : 'private';
 
     const runIteration = async (iterationIndex: number) => {
-      const isImageDrivenMode = form.mode === 'i2v' || form.mode === 'i2i';
+      const isImageDrivenMode = activeMode === 'i2v' || activeMode === 'i2i';
       const isVeoFirstLast =
         isImageDrivenMode
         && (selectedEngine.id === 'veo-3-1-first-last' || selectedEngine.id === 'veo-3-1-first-last-fast');
@@ -4885,19 +4909,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         showNotice(guardMessage);
         return;
       }
-      const isVideoDrivenMode = form.mode === 'r2v';
+      const isVideoDrivenMode = activeMode === 'r2v';
       if (isVideoDrivenMode && referenceVideoUrls.length === 0) {
         showNotice('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
         return;
       }
-      const isAudioDrivenMode = form.mode === 'a2v';
+      const isAudioDrivenMode = activeMode === 'a2v';
       if (isAudioDrivenMode && !primaryAudioUrl) {
         showNotice('Add an audio file before running Audio → Video.');
         return;
       }
-      const isExtendOrRetakeMode = form.mode === 'extend' || form.mode === 'retake';
+      const isExtendOrRetakeMode = activeMode === 'extend' || activeMode === 'retake';
       if (isExtendOrRetakeMode && referenceVideoUrls.length === 0) {
-        showNotice(`Add a source video before running ${MODE_DISPLAY_LABEL[form.mode]}.`);
+        showNotice(workflowCopy.addSourceVideo(getLocalizedModeLabel(activeMode, uiLocale)));
         return;
       }
       if (isVeoFirstLast) {
@@ -5068,7 +5092,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const generatePayload = {
           engineId: selectedEngine.id,
           prompt: trimmedPrompt,
-          mode: form.mode,
+          mode: activeMode,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
           cfgScale: typeof cfgScale === 'number' ? cfgScale : undefined,
@@ -5091,7 +5115,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ...(multiPromptPayload && multiPromptPayload.length ? { multiPrompt: multiPromptPayload } : {}),
           ...(isKlingV3
             ? {
-                shotType: form.mode === 'i2v' ? 'customize' : shotType,
+                shotType: activeMode === 'i2v' ? 'customize' : shotType,
                 ...(voiceIds.length ? { voiceIds } : {}),
                 ...(voiceControlEnabled ? { voiceControl: true } : {}),
                 ...(klingElementsPayload ? { elements: klingElementsPayload } : {}),
@@ -5402,6 +5426,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     inputAssets,
     authChecked,
     setActiveGroupId,
+    uiLocale,
+    workflowCopy,
     capability,
     defaultAllowIndex,
     workspaceCopy.wallet.insufficient,
@@ -5463,7 +5489,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     const payload: PreflightRequest = {
       engine: form.engineId,
-      mode: form.mode,
+      mode: activeMode,
       durationSec: effectiveDurationSec,
       resolution: form.resolution as PreflightRequest['resolution'],
       aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'],
@@ -5500,7 +5526,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       canceled = true;
       clearTimeout(timeout);
     };
-  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle, effectiveDurationSec, voiceControlEnabled]);
+  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle, effectiveDurationSec, voiceControlEnabled, activeMode]);
 
   const handleQuadTileAction = useCallback(
     (action: QuadTileAction, tile: QuadPreviewTile) => {
@@ -5871,7 +5897,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     mode={activeMode}
                     onModeChange={handleModeChange}
                     modeOptions={engineModeOptions}
-                    modeLabel={MODE_DISPLAY_LABEL[activeMode]}
+                    modeLabel={getLocalizedModeLabel(activeMode, uiLocale)}
                     showModeBadge={false}
                   />
                 }
@@ -5936,8 +5962,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     {inputSchemaSummary.genericFields.length ? (
                       <div className="rounded-card border border-border bg-surface-glass-70 p-4">
                         <div className="mb-3">
-                          <h3 className="text-sm font-semibold text-text-primary">Workflow options</h3>
-                          <p className="text-xs text-text-secondary">Settings specific to this workflow.</p>
+                          <h3 className="text-sm font-semibold text-text-primary">{workflowCopy.workflowOptionsTitle}</h3>
+                          <p className="text-xs text-text-secondary">{workflowCopy.workflowOptionsSubtitle}</p>
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
                           {inputSchemaSummary.genericFields.map(({ field, required }) => {
@@ -5953,7 +5979,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                                     value={String(fieldValue ?? '')}
                                     onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
                                   >
-                                    <option value="">{required ? 'Select an option' : 'Default'}</option>
+                                    <option value="">
+                                      {required ? workflowCopy.selectOption : workflowCopy.defaultOption}
+                                    </option>
                                     {values.map((value) => (
                                       <option key={`${field.id}-${value}`} value={String(value)}>
                                         {String(value)}

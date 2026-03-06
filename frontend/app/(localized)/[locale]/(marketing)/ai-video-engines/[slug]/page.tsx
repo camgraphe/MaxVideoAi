@@ -656,8 +656,64 @@ function resolveKeySpecValue(
   return normalized;
 }
 
-function renderSpecValue(value: string, labels: { pending: string; supported: string; notSupported: string }) {
+function localizeSpecDetailValue(
+  value: string,
+  locale: AppLocale,
+  labels: { pending: string; supported: string; notSupported: string }
+): string {
+  const normalized = value.trim();
+  const lower = normalized.toLowerCase();
+  if (lower === 'supported') return labels.supported;
+  if (lower === 'not supported') return labels.notSupported;
+  if (lower === 'data pending') return labels.pending;
+  if (lower.startsWith('supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.supported} (${localizeSpecDetailValue(detail, locale, labels)})`;
+  }
+  if (lower.startsWith('not supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.notSupported} (${localizeSpecDetailValue(detail, locale, labels)})`;
+  }
+  if (lower === 'prompt-based only') {
+    return locale === 'fr' ? 'Via prompt uniquement' : locale === 'es' ? 'Solo mediante prompt' : normalized;
+  }
+  if (lower === 'single start image') {
+    return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
+  }
+  if (lower === 'source clip for extend / retake') {
+    return locale === 'fr'
+      ? 'clip source pour extension / retake'
+      : locale === 'es'
+        ? 'clip fuente para extensión / retake'
+        : normalized;
+  }
+  if (lower === 'start + end image in i2v') {
+    return locale === 'fr'
+      ? 'image de départ + image de fin en image → vidéo'
+      : locale === 'es'
+        ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'extend / retake workflows') {
+    return locale === 'fr'
+      ? 'workflows extension / retake'
+      : locale === 'es'
+        ? 'workflows de extensión / retake'
+        : normalized;
+  }
+  if (lower === 'no (maxvideoai)') {
+    return locale === 'fr' ? 'Non (MaxVideoAI)' : locale === 'es' ? 'No (MaxVideoAI)' : normalized;
+  }
+  return value;
+}
+
+function renderSpecValue(
+  value: string,
+  locale: AppLocale,
+  labels: { pending: string; supported: string; notSupported: string }
+) {
   const normalized = value.toLowerCase();
+  const localizedValue = localizeSpecDetailValue(value, locale, labels);
   if (
     normalized === labels.supported.toLowerCase() ||
     normalized === 'supported' ||
@@ -689,7 +745,7 @@ function renderSpecValue(value: string, labels: { pending: string; supported: st
   if (normalized === 'data pending') {
     return <span>{labels.pending}</span>;
   }
-  return <span>{value}</span>;
+  return <span>{localizedValue}</span>;
 }
 
 function computeOverall(score?: EngineScore | null) {
@@ -1331,7 +1387,8 @@ export default async function CompareDetailPage({
     );
 
   const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
-  const formatFaqValue = (value: string) => (isPending(value) ? validatingLabel : value);
+  const formatFaqValue = (value: string) =>
+    isPending(value) ? validatingLabel : localizeSpecDetailValue(value, activeLocale, labels);
   const faqPricingLeft = formatFaqValue(leftPricingDisplay.headline);
   const faqPricingRight = formatFaqValue(rightPricingDisplay.headline);
   const faqT2vLeft = formatFaqValue(leftSpecs.textToVideo);
@@ -2131,7 +2188,7 @@ export default async function CompareDetailPage({
                       )}
                     >
                       <div className="rounded-md px-1 py-0.5 text-text-secondary sm:px-2 sm:py-1">
-                        {renderSpecValue(row.left, {
+                        {renderSpecValue(row.left, activeLocale, {
                           pending: labels.pending,
                           supported: labels.supported,
                           notSupported: labels.notSupported,
@@ -2142,7 +2199,7 @@ export default async function CompareDetailPage({
                       </div>
                       <span className="text-center text-text-primary">{row.label}</span>
                       <div className="rounded-md px-1 py-0.5 text-right text-text-secondary sm:px-2 sm:py-1">
-                        {renderSpecValue(row.right, {
+                        {renderSpecValue(row.right, activeLocale, {
                           pending: labels.pending,
                           supported: labels.supported,
                           notSupported: labels.notSupported,

@@ -12,6 +12,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 
 const VEO_REFERENCE_WARNING_ENGINES = new Set(['veo-3-1', 'veo-3-1-fast']);
 
@@ -37,6 +38,10 @@ export type MultiPromptScene = {
   id: string;
   prompt: string;
   duration: number;
+};
+
+type AssetUploadMeta = {
+  durationSec?: number;
 };
 
 type ComposerModeToggle = {
@@ -68,7 +73,7 @@ interface Props {
   negativePromptRequired?: boolean;
   assetFields: AssetFieldConfig[];
   assets: Record<string, (ComposerAttachment | null)[]>;
-  onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number) => void;
+  onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
   onAssetRemove?: (field: EngineInputField, index: number) => void;
   onNotice?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
@@ -564,7 +569,7 @@ interface AssetDropzoneProps {
   required: boolean;
   role?: AssetFieldRole;
   assets: (ComposerAttachment | null)[];
-  onSelect?: (field: EngineInputField, file: File, slotIndex: number) => void;
+  onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
@@ -586,6 +591,8 @@ function AssetDropzone({
   assetSlotCta,
   referenceWarning,
 }: AssetDropzoneProps) {
+  const { locale } = useI18n();
+  const assetCopy = useMemo(() => getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale)), [locale]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const maxCount = field.maxCount ?? 0;
   const minCount = required ? (field.minCount ?? 1) : 0;
@@ -606,6 +613,32 @@ function AssetDropzone({
   })();
   const limits = engine.inputLimits;
   const constraints = engine.inputSchema?.constraints ?? {};
+  const readMediaDuration = useCallback((file: File, type: 'audio' | 'video') => {
+    return new Promise<number | null>((resolve) => {
+      if (typeof window === 'undefined') {
+        resolve(null);
+        return;
+      }
+      const objectUrl = URL.createObjectURL(file);
+      const element = document.createElement(type);
+      const cleanup = () => {
+        URL.revokeObjectURL(objectUrl);
+        element.removeAttribute('src');
+        element.load?.();
+      };
+      element.preload = 'metadata';
+      element.onloadedmetadata = () => {
+        const duration = Number.isFinite(element.duration) ? element.duration : null;
+        cleanup();
+        resolve(duration);
+      };
+      element.onerror = () => {
+        cleanup();
+        resolve(null);
+      };
+      element.src = objectUrl;
+    });
+  }, []);
   const hideRequiredSlotCopy =
     field.type === 'image' &&
     (role === 'primary' || role === 'reference') &&
@@ -628,36 +661,53 @@ function AssetDropzone({
   }, [assets, slotCount]);
 
   const handleFile = useCallback(
-    (file: File, slotIndex: number) => {
+    async (file: File, slotIndex: number) => {
       if (!onSelect) return;
       if (field.type === 'image') {
         if (!file.type.startsWith('image/')) {
-          onError?.('Please drop an image file (PNG, JPG, WebP...).');
+          onError?.(assetCopy.dropImageFile);
           return;
         }
         if (acceptFormats.length) {
           const ext = file.name.split('.').pop()?.toLowerCase();
           if (!ext || !acceptFormats.includes(ext)) {
-            onError?.(`Format not supported. Allowed: ${acceptFormats.map((entry) => entry.toUpperCase()).join(', ')}`);
+            onError?.(assetCopy.formatNotSupported(acceptFormats.map((entry) => entry.toUpperCase()).join(', ')));
             return;
           }
         }
       }
       if (field.type === 'video' && !file.type.startsWith('video/')) {
-        onError?.('Please drop a video file (MP4, MOV...).');
+        onError?.(assetCopy.dropVideoFile);
         return;
       }
       if (field.type === 'audio' && !file.type.startsWith('audio/')) {
-        onError?.('Please drop an audio file (MP3, WAV...).');
+        onError?.(assetCopy.dropAudioFile);
+        return;
+      }
+      if (field.type === 'audio') {
+        const duration = await readMediaDuration(file, 'audio');
+        if (duration == null) {
+          onError?.(assetCopy.unableToReadAudioDuration);
+          return;
+        }
+        const minDurationSec = field.minDurationSec;
+        const maxDurationSec = field.maxDurationSec ?? limits.audioMaxDurationSec;
+        if (typeof minDurationSec === 'number' && duration < minDurationSec) {
+          onError?.(assetCopy.audioMinDuration(minDurationSec));
+          return;
+        }
+        if (typeof maxDurationSec === 'number' && duration > maxDurationSec) {
+          onError?.(assetCopy.audioMaxDuration(maxDurationSec));
+          return;
+        }
+        onSelect(field, file, slotIndex, { durationSec: duration });
         return;
       }
       const maxSizeMB = field.type === 'image'
         ? caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB
-        : field.type === 'audio'
-          ? constraints.maxAudioSizeMB ?? limits.audioMaxMB ?? limits.videoMaxMB
-          : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
+        : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
       if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
-        onError?.(`File exceeds the ${maxSizeMB} MB limit.`);
+        onError?.(assetCopy.fileTooLarge(maxSizeMB));
         return;
       }
       onSelect(field, file, slotIndex);
@@ -678,21 +728,21 @@ function AssetDropzone({
   );
 
   const onInputChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>, slotIndex: number) => {
+    async (event: ChangeEvent<HTMLInputElement>, slotIndex: number) => {
       const file = event.target.files?.[0];
       event.target.value = '';
       if (!file) return;
-      handleFile(file, slotIndex);
+      await handleFile(file, slotIndex);
     },
     [handleFile]
   );
 
   const handleDrop = useCallback(
-    (event: DragEvent<HTMLDivElement>, slotIndex: number) => {
+    async (event: DragEvent<HTMLDivElement>, slotIndex: number) => {
       event.preventDefault();
       const file = event.dataTransfer.files?.[0];
       if (!file) return;
-      handleFile(file, slotIndex);
+      await handleFile(file, slotIndex);
     },
     [handleFile]
   );
@@ -701,28 +751,37 @@ function AssetDropzone({
     const lines: string[] = [];
     if (field.type === 'image') {
       if (acceptFormats.length) {
-        lines.push(`Formats: ${acceptFormats.map((ext) => ext.toUpperCase()).join(', ')}`);
+        lines.push(assetCopy.formats(acceptFormats.map((ext) => ext.toUpperCase()).join(', ')));
       } else {
-        lines.push('Formats: PNG, JPG, WebP');
+        lines.push(assetCopy.formats('PNG, JPG, WebP'));
       }
       const maxImage = caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB;
-      if (maxImage) lines.push(`${maxImage} MB max`);
+      if (maxImage) lines.push(assetCopy.mbMax(maxImage));
     } else if (field.type === 'video') {
-      lines.push('Formats: MP4, MOV');
+      lines.push(assetCopy.formats('MP4, MOV'));
       const maxVideo = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
-      if (maxVideo) lines.push(`${maxVideo} MB max`);
-      if (limits.videoMaxDurationSec) lines.push(`${limits.videoMaxDurationSec}s max`);
+      if (maxVideo) lines.push(assetCopy.mbMax(maxVideo));
+      if (limits.videoMaxDurationSec) lines.push(assetCopy.secondsMax(limits.videoMaxDurationSec));
     } else {
-      lines.push('Formats: MP3, WAV, M4A');
+      lines.push(assetCopy.formats('MP3, WAV, M4A'));
       const maxAudio = constraints.maxAudioSizeMB ?? limits.audioMaxMB ?? limits.videoMaxMB;
-      if (maxAudio) lines.push(`${maxAudio} MB max`);
-      if (limits.audioMaxDurationSec) lines.push(`${limits.audioMaxDurationSec}s max`);
+      if (maxAudio) lines.push(assetCopy.mbMax(maxAudio));
+      const minAudioDuration = field.minDurationSec;
+      const maxAudioDuration = field.maxDurationSec ?? limits.audioMaxDurationSec;
+      if (typeof minAudioDuration === 'number' && typeof maxAudioDuration === 'number') {
+        lines.push(assetCopy.secondsRequired(minAudioDuration, maxAudioDuration));
+      } else if (typeof maxAudioDuration === 'number') {
+        lines.push(assetCopy.secondsMax(maxAudioDuration));
+      }
+      if (field.id === 'audio_url') {
+        lines.push(assetCopy.videoLengthFollowsAudio);
+      }
     }
     if (field.maxCount && field.maxCount > 1) {
-      lines.push(`Up to ${field.maxCount} files`);
+      lines.push(assetCopy.upToFiles(field.maxCount));
     }
     if (field.minCount && field.minCount > 1) {
-      lines.push(`At least ${field.minCount} files`);
+      lines.push(assetCopy.atLeastFiles(field.minCount));
     }
     return lines;
   }, [
@@ -732,6 +791,8 @@ function AssetDropzone({
     constraints.maxImageSizeMB,
     constraints.maxVideoSizeMB,
     field.maxCount,
+    field.maxDurationSec,
+    field.minDurationSec,
     field.minCount,
     field.type,
     limits.audioMaxDurationSec,
@@ -739,6 +800,7 @@ function AssetDropzone({
     limits.imageMaxMB,
     limits.videoMaxDurationSec,
     limits.videoMaxMB,
+    assetCopy,
   ]);
 
   return (
@@ -748,22 +810,22 @@ function AssetDropzone({
           <div>
             <span className="text-sm font-medium text-text-primary">
               {role === 'primary'
-                ? field.label ?? 'Primary reference image'
+                ? field.label ?? assetCopy.primaryImageFallback
                 : role === 'reference'
-                  ? field.label ?? 'Additional references'
+                  ? field.label ?? assetCopy.additionalReferencesFallback
                   : role === 'frame'
-                    ? field.label ?? 'Frame'
+                    ? field.label ?? assetCopy.frameFallback
                     : field.label}
             </span>
             {(role === 'primary' || role === 'reference' || role === 'frame' || field.description) && (
               <p className="text-[11px] text-text-muted">
                 {role === 'primary'
-                  ? 'This still is used as the start image / first frame that drives the motion.'
+                  ? assetCopy.primaryRoleDescription
                   : role === 'reference'
-                    ? 'Optional supporting stills to guide style or lighting.'
-                  : role === 'frame'
-                    ? 'Defines the transition frame for this engine.'
-                    : null}
+                    ? assetCopy.referenceRoleDescription
+                    : role === 'frame'
+                      ? assetCopy.frameRoleDescription
+                      : null}
                 {field.description ? ` ${field.description}` : ''}
               </p>
             )}
@@ -772,7 +834,7 @@ function AssetDropzone({
             )}
           </div>
           <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', required ? 'border-brand text-brand' : 'border-border text-text-muted')}>
-            {required ? 'Required' : 'Optional'}
+            {required ? assetCopy.required : assetCopy.optional}
           </span>
         </div>
 
@@ -785,7 +847,11 @@ function AssetDropzone({
           {slotAssets.map((asset, index) => {
             const slotRequired = index < minCount;
             const showRequiredHint = slotRequired && engine.id !== 'wan-2-6' && !hideRequiredSlotCopy;
-            const slotLabel = hideRequiredSlotCopy ? 'Image' : slotRequired ? 'Required' : 'Optional';
+            const slotLabel = hideRequiredSlotCopy
+              ? assetCopy.imageSlot
+              : slotRequired
+                ? assetCopy.required
+                : assetCopy.optional;
             const allowClick = asset === null || maxCount === 0;
             return (
               <div
@@ -826,7 +892,7 @@ function AssetDropzone({
                     ) : (
                       <>
                             <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-contain" />
-                            <AudioEqualizerBadge tone="light" size="sm" label="Video includes audio" />
+                            <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
                           </>
                         )}
                     <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-surface-on-media-dark-50 px-2 py-1 text-[11px] text-on-inverse">
@@ -843,17 +909,17 @@ function AssetDropzone({
                           onRemove?.(field, index);
                         }}
                       >
-                        Remove
+                        {assetCopy.remove}
                       </Button>
                     </div>
                     {asset.status === 'uploading' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-surface-on-media-dark-50 px-3 text-xs font-medium uppercase tracking-widest text-on-inverse">
-                        Uploading…
+                        {assetCopy.uploading}
                       </div>
                     )}
                     {asset.status === 'error' && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-on-media-dark-60 px-4 text-center text-xs text-on-inverse">
-                        <span>{asset.error ?? 'Upload failed'}</span>
+                        <span>{asset.error ?? assetCopy.uploadFailed}</span>
                         <Button
                           type="button"
                           size="sm"
@@ -864,7 +930,7 @@ function AssetDropzone({
                             onRemove?.(field, index);
                           }}
                         >
-                          Remove
+                          {assetCopy.remove}
                         </Button>
                       </div>
                     )}
@@ -872,13 +938,12 @@ function AssetDropzone({
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-1.5 px-3 text-center">
                     <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
-                      {slotLabel} slot
+                      {assetCopy.slotSuffix(slotLabel)}
                     </span>
                     <span className="text-[11px] text-text-muted">
-                      Drag & drop or click to add.{' '}
-                      {helperLines.length > 0 ? helperLines.join(' • ') : null}
+                      {assetCopy.addFile(helperLines.length > 0 ? helperLines.join(' • ') : '')}
                     </span>
-                    {showRequiredHint && <span className="text-[10px] text-warning">Needed before generating.</span>}
+                    {showRequiredHint && <span className="text-[10px] text-warning">{assetCopy.neededBeforeGenerating}</span>}
                     {(field.type === 'image' || field.type === 'video') && (
                       <div className="flex w-full items-center justify-center gap-2 pt-1">
                         {assetSlotCta ? (
@@ -903,7 +968,7 @@ function AssetDropzone({
                               onOpenLibrary(field, index);
                             }}
                           >
-                            Library
+                            {assetCopy.library}
                           </Button>
                         ) : null}
                       </div>
@@ -921,7 +986,7 @@ function AssetDropzone({
                       onOpenLibrary(field, index);
                     }}
                   >
-                    Library
+                    {assetCopy.library}
                   </Button>
                 )}
               </div>

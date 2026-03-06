@@ -25,6 +25,7 @@ import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
+import { getLocalizedHeroChipLabels, getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
 import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -2242,11 +2243,51 @@ function resolveSpecStatusLabels(locale: AppLocale) {
   return SPEC_STATUS_LABELS[locale] ?? SPEC_STATUS_LABELS.en;
 }
 
-function localizeSpecStatus(value: string, locale: AppLocale) {
+function localizeSpecStatus(value: string, locale: AppLocale): string {
   const labels = resolveSpecStatusLabels(locale);
-  if (isSupported(value)) return labels.supported;
-  if (isUnsupported(value)) return labels.notSupported;
-  if (isPending(value)) return labels.pending;
+  const normalized = value.trim();
+  const lower = normalized.toLowerCase();
+  if (isSupported(normalized)) return labels.supported;
+  if (isUnsupported(normalized)) return labels.notSupported;
+  if (isPending(normalized)) return labels.pending;
+  if (lower.startsWith('supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.supported} (${localizeSpecStatus(detail, locale)})`;
+  }
+  if (lower.startsWith('not supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.notSupported} (${localizeSpecStatus(detail, locale)})`;
+  }
+  if (lower === 'prompt-based only') {
+    return locale === 'fr' ? 'Via prompt uniquement' : locale === 'es' ? 'Solo mediante prompt' : normalized;
+  }
+  if (lower === 'single start image') {
+    return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
+  }
+  if (lower === 'source clip for extend / retake') {
+    return locale === 'fr'
+      ? 'clip source pour extension / retake'
+      : locale === 'es'
+        ? 'clip fuente para extensión / retake'
+        : normalized;
+  }
+  if (lower === 'start + end image in i2v') {
+    return locale === 'fr'
+      ? 'image de départ + image de fin en image → vidéo'
+      : locale === 'es'
+        ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'extend / retake workflows') {
+    return locale === 'fr'
+      ? 'workflows extension / retake'
+      : locale === 'es'
+        ? 'workflows de extensión / retake'
+        : normalized;
+  }
+  if (lower === 'no (maxvideoai)') {
+    return locale === 'fr' ? 'Non (MaxVideoAI)' : locale === 'es' ? 'No (MaxVideoAI)' : normalized;
+  }
   return value;
 }
 
@@ -2259,9 +2300,10 @@ function normalizeMaxResolution(value: string) {
   return value;
 }
 
-function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
+function buildAutoHeroSpecChips(values: KeySpecValues | null, locale: AppLocale): HeroSpecChip[] {
   if (!values) return [];
   const chips: HeroSpecChip[] = [];
+  const labels = getLocalizedHeroChipLabels(locale);
   const add = (label: string | null, icon: HeroSpecIconKey | null) => {
     if (!label) return;
     chips.push({ label, icon });
@@ -2273,14 +2315,14 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
   const duration = values.maxDuration && !isPending(values.maxDuration) ? values.maxDuration.replace(' max', '') : null;
   const aspect = values.aspectRatios && !isPending(values.aspectRatios) ? values.aspectRatios : null;
 
-  if (isSupported(values.textToImage)) add('Text→Image', 'textToVideo');
-  if (isSupported(values.imageToImage)) add('Image→Image', 'imageToVideo');
-  if (isSupported(values.textToVideo)) add('Text→Video', 'textToVideo');
-  if (isSupported(values.imageToVideo)) add('Image→Video', 'imageToVideo');
+  if (isSupported(values.textToImage)) add(labels.textToImage, 'textToVideo');
+  if (isSupported(values.imageToImage)) add(labels.imageToImage, 'imageToVideo');
+  if (isSupported(values.textToVideo)) add(labels.textToVideo, 'textToVideo');
+  if (isSupported(values.imageToVideo)) add(labels.imageToVideo, 'imageToVideo');
   if (resolution) add(resolution, 'resolution');
   if (duration) add(duration, 'duration');
   if (aspect) add(aspect, 'aspectRatio');
-  if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add('Audio', 'audio');
+  if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add(labels.audio, 'audio');
 
   return chips.slice(0, 6);
 }
@@ -3431,7 +3473,8 @@ function Sora2PageLayout({
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
-  const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues);
+  const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues, locale);
+  const heroMetaLabels = getLocalizedModelMetaLabels(locale);
   const heroTrustLine =
     locale === 'en'
       ? (engine.modelSlug === 'seedance-2-0' ? copy.heroTrustLine : null) ?? GENERIC_TRUST_LINE
@@ -3448,9 +3491,9 @@ function Sora2PageLayout({
       : keySpecValues?.maxDuration ?? 'Data pending';
   const heroFormat = heroMedia.aspectRatio ?? keySpecValues?.aspectRatios ?? 'Data pending';
   const heroMetaLines = [
-    { label: 'Price', value: heroPrice },
-    { label: 'Duration', value: heroDuration },
-    { label: 'Format', value: heroFormat },
+    { label: heroMetaLabels.price, value: heroPrice },
+    { label: heroMetaLabels.duration, value: heroDuration },
+    { label: heroMetaLabels.format, value: heroFormat },
   ].filter((line) => Boolean(line.value));
   const isEsLocale = locale === 'es';
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');

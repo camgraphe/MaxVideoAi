@@ -2185,9 +2185,9 @@ const LTX_2_3_FAST_ENGINE: EngineCaps = {
 
 const LTX_2_3_ENGINE: EngineCaps = {
   id: 'ltx-2-3',
-  label: 'LTX 2.3',
+  label: 'LTX 2.3 Pro',
   provider: 'Lightricks',
-  version: '2.3',
+  version: '2.3 Pro',
   status: 'live',
   latencyTier: 'standard',
   queueDepth: 0,
@@ -2232,11 +2232,14 @@ const LTX_2_3_ENGINE: EngineCaps = {
         id: 'audio_url',
         type: 'audio',
         label: 'Source audio',
+        description: 'Video duration follows the audio length. Use an audio file between 2 and 20 seconds.',
         modes: ['a2v'],
         requiredInModes: ['a2v'],
         minCount: 1,
         maxCount: 1,
         source: 'either',
+        minDurationSec: 2,
+        maxDurationSec: 20,
       },
       {
         id: 'video_url',
@@ -4214,12 +4217,12 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
   {
     id: 'ltx-2-3',
     modelSlug: 'ltx-2-3',
-    marketingName: 'LTX 2.3',
-    cardTitle: 'LTX 2.3 – text, image, audio, extend and retake',
+    marketingName: 'LTX 2.3 Pro',
+    cardTitle: 'LTX 2.3 Pro – text, image, audio, extend and retake',
     provider: 'Lightricks',
     brandId: 'lightricks',
     family: 'ltx',
-    versionLabel: '2.3',
+    versionLabel: 'Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
     engine: LTX_2_3_ENGINE,
@@ -4284,20 +4287,20 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/ltx-2.3/text-to-video',
     seo: {
-      title: 'LTX 2.3 AI Video – Text, Image, Audio, Extend & Retake | MaxVideoAI',
+      title: 'LTX 2.3 Pro AI Video – Text, Image, Audio, Extend & Retake | MaxVideoAI',
       description:
-        'Use LTX 2.3 on MaxVideoAI for text-to-video, image-to-video, audio-to-video, extend-video and retake-video workflows with Fal’s official 1080p/1440p/4K and 24/25/48/50 fps options.',
+        'Use LTX 2.3 Pro on MaxVideoAI for text-to-video, image-to-video, audio-to-video, extend-video and retake-video workflows with Fal’s official 1080p/1440p/4K and 24/25/48/50 fps options.',
       canonicalPath: '/models/ltx-2-3',
     },
     type: 'textImage',
     seoText:
-      'LTX 2.3 brings Lightricks text, image, audio, extend, and retake workflows into one page while keeping Fal’s actual controls coherent by mode: 6–10s text/image clips up to 4K, audio-driven video, plus extend and retake tools for source footage.',
+      'LTX 2.3 Pro brings Lightricks text, image, audio, extend, and retake workflows into one page while keeping Fal’s actual controls coherent by mode: 6–10s text/image clips up to 4K, audio-driven video, plus extend and retake tools for source footage.',
     demoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
     media: {
       videoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
       imagePath:
         'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg',
-      altText: 'LTX 2.3 temporary demo clip using LTX 2 Pro media',
+      altText: 'LTX 2.3 Pro temporary demo clip using LTX 2 Pro media',
     },
     prompts: [
       {

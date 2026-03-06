@@ -1,27 +1,27 @@
 {
-  "marketingName": "LTX 2.3",
+  "marketingName": "LTX 2.3 Pro",
   "versionLabel": "2.3",
   "seo": {
-    "title": "LTX 2.3 AI Video - Text, Image, Audio, Extend & Retake",
-    "description": "Use LTX 2.3 on MaxVideoAI for text-to-video, image-to-video, audio-to-video, extend-video and retake-video workflows with native audio, 1080p to 4K output, and vertical or landscape formats.",
+    "title": "LTX 2.3 Pro AI Video - Text, Image, Audio, Extend & Retake",
+    "description": "Use LTX 2.3 Pro on MaxVideoAI for text-to-video, image-to-video, audio-to-video, extend-video and retake-video workflows with native audio, 1080p to 4K output, and vertical or landscape formats.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
-  "overview": "LTX 2.3 in MaxVideoAI unifies text-to-video, image-to-video, audio-to-video, extend and retake workflows in one Lightricks model, with 1080p to 4K output for generate modes and dedicated editing tools for source footage.",
+  "overview": "LTX 2.3 Pro in MaxVideoAI unifies text-to-video, image-to-video, audio-to-video, extend and retake workflows in one Lightricks model, with 1080p to 4K output for generate modes and dedicated editing tools for source footage.",
   "hero": {
-    "title": "LTX 2.3 - one page for generate, audio, extend and retake",
+    "title": "LTX 2.3 Pro - one page for generate, audio, extend and retake",
     "intro": "Generate from text or images, drive timing from uploaded audio, extend existing shots, or retake just one section without leaving the same model page.",
     "badge": "T2V + I2V + A2V + Extend + Retake",
     "ctaPrimary": {
-      "label": "Start generating with LTX 2.3",
+      "label": "Start generating with LTX 2.3 Pro",
       "href": "/app?engine=ltx-2-3"
     },
     "secondaryLinks": [
       {
-        "label": "Compare LTX 2.3 vs LTX 2.3 Fast ->",
+        "label": "Compare LTX 2.3 Pro vs LTX 2.3 Fast ->",
         "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3"
       },
       {
-        "label": "View LTX 2.3 examples ->",
+        "label": "View LTX 2.3 Pro examples ->",
         "href": "/examples?engine=ltx-2-3"
       }
     ]
@@ -91,9 +91,9 @@
     }
   ],
   "promptStructure": {
-    "title": "How to prompt LTX 2.3 by workflow",
+    "title": "How to prompt LTX 2.3 Pro by workflow",
     "quote": "Mode: Generate Video. Subject: [who/what]. Action: [single beat]. Camera: [move]. Look: [lighting + color]. Format: [16:9 or 9:16, duration, resolution]. Audio: [ambience, dialogue or music cue].",
-    "description": "Treat LTX 2.3 like a family of workflows, not one single prompt box. The prompt should match the mode: generation, audio-driven animation, extension, or retake.",
+    "description": "Treat LTX 2.3 Pro like a family of workflows, not one single prompt box. The prompt should match the mode: generation, audio-driven animation, extension, or retake.",
     "steps": [
       "For Generate Video, describe subject, action, camera, look, duration and format.",
       "For Image-to-Video, use the prompt to define motion while the start image anchors the first frame.",
@@ -114,7 +114,7 @@
     ]
   },
   "compareLink": {
-    "label": "Compare LTX 2.3 vs LTX 2.3 Fast ->",
+    "label": "Compare LTX 2.3 Pro vs LTX 2.3 Fast ->",
     "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3"
   },
   "prompts": [
@@ -134,15 +134,15 @@
   ],
   "faqs": [
     {
-      "q": "What is new in LTX 2.3 compared with the older LTX 2.0 pages?",
-      "a": "LTX 2.3 adds a unified workflow surface around generate modes plus Audio-to-Video, Extend and Retake, while also supporting 16:9 and 9:16 in the generate flows."
+      "q": "What is new in LTX 2.3 Pro compared with the older LTX 2.0 pages?",
+      "a": "LTX 2.3 Pro adds a unified workflow surface around generate modes plus Audio-to-Video, Extend and Retake, while also supporting 16:9 and 9:16 in the generate flows."
     },
     {
       "q": "What is the difference between Extend and Retake?",
       "a": "Extend continues a source video before or after the existing footage. Retake replaces a selected section inside the source video, with controls for start time, duration and replacement mode."
     },
     {
-      "q": "Does LTX 2.3 support native audio?",
+      "q": "Does LTX 2.3 Pro support native audio?",
       "a": "Yes. Text-to-Video and Image-to-Video expose a native audio toggle, and Audio-to-Video uses an uploaded audio file as the driving input."
     },
     {
@@ -151,7 +151,7 @@
     }
   ],
   "custom": {
-    "heroDesc1": "LTX 2.3 is the most workflow-complete LTX page in MaxVideoAI. It covers generation, audio-driven animation, source-video extension, and selective retakes from one engine instead of splitting those tasks across separate model pages.",
+    "heroDesc1": "LTX 2.3 Pro is the most workflow-complete LTX page in MaxVideoAI. It covers generation, audio-driven animation, source-video extension, and selective retakes from one engine instead of splitting those tasks across separate model pages.",
     "heroDesc2": "That matters for production: you can block a shot from text, refine it from an image, test an audio-led version, extend the winning take, then retake only the broken section without changing engines.",
     "heroSupportLine": "Best for teams that want one LTX surface for ideation, sound-led animation, and quick editorial fixes.",
     "heroSpecChips": [
@@ -162,14 +162,14 @@
       { "label": "4K on generate", "icon": "resolution" },
       { "label": "Extend / Retake from source video" }
     ],
-    "whyTitle": "Why LTX 2.3 is strategically useful",
+    "whyTitle": "Why LTX 2.3 Pro is strategically useful",
     "heroHighlights": [
       "One engine, multiple workflows||Generate, animate from sound, extend existing clips, and retake broken sections without leaving the LTX family.",
       "Audio is no longer just a toggle||You can either generate native audio in standard runs or drive the clip from an uploaded soundtrack in Audio-to-Video.",
       "Better editing leverage||Extend and Retake are practical tools for keeping a good shot instead of starting from zero.",
       "Fits modern content formats||Landscape and vertical generate modes make it easier to plan both hero and social variants."
     ],
-    "specTitle": "Real Specs - LTX 2.3 in MaxVideoAI",
+    "specTitle": "Real Specs - LTX 2.3 Pro in MaxVideoAI",
     "specNote": "These specs describe the live public Fal routing exposed in MaxVideoAI today, not a theoretical future feature list.",
     "specSections": [
       {
@@ -184,7 +184,7 @@
       },
       {
         "title": "Audio, extend and retake",
-        "intro": "The biggest difference versus simpler engines is not just image quality. It is that LTX 2.3 covers timing-led animation and source-clip edits from the same page.",
+        "intro": "The biggest difference versus simpler engines is not just image quality. It is that LTX 2.3 Pro covers timing-led animation and source-clip edits from the same page.",
         "items": [
           "Audio-to-Video turns uploaded audio into the timing spine of the clip.",
           "Extend can grow a strong shot at the head or tail.",
@@ -193,20 +193,20 @@
         ]
       }
     ],
-    "whatTitle": "How LTX 2.3 works in MaxVideoAI",
-    "whatIntro1": "Choose LTX 2.3, then stay in Generate Video for standard text/image flows or switch to Extend Video / Retake Video when you need source-video editing. Audio-to-Video is selected automatically when an audio source is present.",
+    "whatTitle": "How LTX 2.3 Pro works in MaxVideoAI",
+    "whatIntro1": "Choose LTX 2.3 Pro, then stay in Generate Video for standard text/image flows or switch to Extend Video / Retake Video when you need source-video editing. Audio-to-Video is selected automatically when an audio source is present.",
     "whatIntro2": "This structure keeps the page focused on one engine while still exposing the real Fal workflows behind it.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
-      "Pick LTX 2.3 as the engine.",
+      "Pick LTX 2.3 Pro as the engine.",
       "Stay on Generate Video for text, image and audio-led generation, or activate Extend Video / Retake Video when needed.",
       "Choose 6, 8 or 10 seconds for text and image generation, plus format, resolution and fps.",
       "Upload the relevant asset for the active workflow: start image, end image, audio source or source video.",
       "Review the live price before generation, then iterate only on the workflow that matters."
     ],
-    "galleryTitle": "LTX 2.3 examples",
-    "galleryIntro": "Local placeholders are used for now on this dev branch. Replace them with final approved LTX 2.3 renders before production launch.",
-    "galleryAllCta": "View all LTX 2.3 examples ->",
+    "galleryTitle": "LTX 2.3 Pro examples",
+    "galleryIntro": "Local placeholders are used for now on this dev branch. Replace them with final approved LTX 2.3 Pro renders before production launch.",
+    "galleryAllCta": "View all LTX 2.3 Pro examples ->",
     "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",
     "strengths": [
@@ -216,7 +216,7 @@
     ],
     "boundaries": [
       "4K, 9:16 and fps controls currently apply to the standard generate modes, not every editing workflow.",
-      "Audio-to-Video, Extend and Retake are standard LTX 2.3 only, not Fast.",
+      "Audio-to-Video, Extend and Retake are standard LTX 2.3 Pro only, not Fast.",
       "Retake still needs a precise source window and a clear prompt to avoid drifting too far from the original clip."
     ],
     "safetyTitle": "Safety and likeness guidance",
@@ -239,7 +239,7 @@
       "Optional opening image can lock the first frame"
     ],
     "multishotTitle": "Continuation and pickup workflows",
-    "multishotIntro1": "LTX 2.3 is less about long-form generation than about keeping momentum when a shot already exists.",
+    "multishotIntro1": "LTX 2.3 Pro is less about long-form generation than about keeping momentum when a shot already exists.",
     "multishotIntro2": "Use Extend for continuation and Retake for repairs instead of rebuilding a sequence from scratch.",
     "multishotTips": [
       "Extend when the ending is too abrupt but the shot is otherwise strong.",
@@ -257,20 +257,20 @@
       "Useful for on-brand portrait and product transitions",
       "Helps bridge still campaigns into motion deliverables"
     ],
-    "comparisonTitle": "When to pick LTX 2.3",
+    "comparisonTitle": "When to pick LTX 2.3 Pro",
     "comparisonPoints": [
-      "Choose LTX 2.3 when you need more than standard generation: audio-driven motion, continuation, or selective retakes.",
+      "Choose LTX 2.3 Pro when you need more than standard generation: audio-driven motion, continuation, or selective retakes.",
       "Use it when a source clip already exists and you want to extend or repair instead of regenerating everything.",
       "Choose LTX 2.3 Fast only when speed and simple generate workflows matter more than editing controls."
     ],
-    "comparisonCta": "Compare LTX 2.3 vs Fast ->",
+    "comparisonCta": "Compare LTX 2.3 Pro vs LTX 2.3 Fast ->",
     "relatedTitle": "Explore other engines",
-    "relatedSubtitle": "Compare LTX 2.3 against faster draft models and premium cinematic engines without leaving the same cluster.",
-    "finalPara1": "Ready to test a full LTX workflow with audio, extend and retake in one place? Open LTX 2.3 in Generate.",
+    "relatedSubtitle": "Compare LTX 2.3 Pro against faster draft models and premium cinematic engines without leaving the same cluster.",
+    "finalPara1": "Ready to test a full LTX workflow with audio, extend and retake in one place? Open LTX 2.3 Pro in Generate.",
     "finalPara2": "Use the standard model when the project needs more than just a fast first pass.",
-    "finalButton": "Open LTX 2.3 in Generate ->",
-    "promptingTitle": "How to Write a Great LTX 2.3 Prompt",
-    "promptingIntro": "LTX 2.3 works best when the prompt matches the active workflow: pure generation, audio-led animation, continuation, or retake.",
+    "finalButton": "Open LTX 2.3 Pro in Generate ->",
+    "promptingTitle": "How to Write a Great LTX 2.3 Pro Prompt",
+    "promptingIntro": "LTX 2.3 Pro works best when the prompt matches the active workflow: pure generation, audio-led animation, continuation, or retake.",
     "promptingTip": "Tip: duration, resolution, fps and workflow-specific controls live in the UI. Use the prompt for subject, action, camera, lighting, timing intent and what should change.",
     "promptingGlobalPrinciples": [
       "Define one subject, one core beat and one camera move before layering style.",
