@@ -1453,6 +1453,18 @@ if (typeof window !== 'undefined') {
 const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
 const skipOnboardingRef = useRef<boolean>(false);
 const hydratedJobRef = useRef<string | null>(null);
+const preserveStoredDraftRef = useRef<boolean>(false);
+const requestedEngineOverrideIdRef = useRef<string | null>(null);
+const requestedEngineOverrideTokenRef = useRef<string | null>(null);
+
+useEffect(() => {
+  if (!resolvedRequestedEngineId) return;
+  requestedEngineOverrideIdRef.current = resolvedRequestedEngineId;
+  requestedEngineOverrideTokenRef.current = requestedEngineToken;
+}, [resolvedRequestedEngineId, requestedEngineToken]);
+
+const effectiveRequestedEngineId = resolvedRequestedEngineId ?? requestedEngineOverrideIdRef.current;
+const effectiveRequestedEngineToken = requestedEngineToken ?? requestedEngineOverrideTokenRef.current;
 
 useEffect(() => {
   if (typeof window === 'undefined') return;
@@ -1746,6 +1758,7 @@ useEffect(() => {
         }
       })();
       let nextForm: FormState | null = null;
+      preserveStoredDraftRef.current = Boolean(effectiveRequestedEngineId && storedFormRaw);
 
       if (storedFormRaw) {
         const storedToken = normalizeEngineToken(storedFormRaw.engineId);
@@ -1797,12 +1810,59 @@ useEffect(() => {
       }
       hasStoredFormRef.current = Boolean(nextForm);
 
-      if (resolvedRequestedEngineId) {
-        if (!storedFormRaw) {
-          const requestedEngine = engines.find((entry) => entry.id === resolvedRequestedEngineId) ?? null;
-          const preferredMode = requestedEngine ? getPreferredEngineMode(requestedEngine) : ('t2v' as Mode);
+      if (effectiveRequestedEngineId) {
+        const requestedEngine =
+          engines.find((entry) => entry.id === effectiveRequestedEngineId) ??
+          (effectiveRequestedEngineToken
+            ? engines.find((entry) => matchesEngineToken(entry, effectiveRequestedEngineToken))
+            : null) ??
+          null;
+        if (requestedEngine) {
+          const preferredMode = getPreferredEngineMode(requestedEngine, nextForm?.mode ?? null);
+          const normalizedPrevious = nextForm
+            ? { ...nextForm, engineId: requestedEngine.id, mode: preferredMode }
+            : null;
+          const base: FormState = normalizedPrevious
+            ? coerceFormState(requestedEngine, preferredMode, normalizedPrevious)
+            : {
+                engineId: requestedEngine.id,
+                mode: preferredMode,
+                durationSec: 4,
+                durationOption: 4,
+                numFrames: undefined,
+                resolution: '720p',
+                aspectRatio: '16:9',
+                fps: 24,
+                iterations: 1,
+                seedLocked: false,
+                audio: true,
+                seed: null,
+                cameraFixed: false,
+                safetyChecker: true,
+                extraInputValues: {},
+              };
+          nextForm = base;
+          hasStoredFormRef.current = hasStoredFormRef.current && preserveStoredDraftRef.current;
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[generate] engine override from storage hydrate', {
+              from: storedFormRaw?.engineId ?? null,
+              to: nextForm.engineId,
+              preserveStoredDraft: preserveStoredDraftRef.current,
+            });
+          }
+          if (!preserveStoredDraftRef.current) {
+            queueMicrotask(() => {
+              try {
+                writeStorage(STORAGE_KEYS.form, JSON.stringify(nextForm));
+              } catch {
+                // noop
+              }
+            });
+          }
+        } else if (!storedFormRaw) {
+          const preferredMode: Mode = 't2v';
           const base: FormState = {
-            engineId: resolvedRequestedEngineId,
+            engineId: effectiveRequestedEngineId,
             mode: preferredMode,
             durationSec: 4,
             durationOption: 4,
@@ -1880,7 +1940,8 @@ useEffect(() => {
     writeStorage,
     setMemberTier,
     storageScope,
-    resolvedRequestedEngineId,
+    effectiveRequestedEngineId,
+    effectiveRequestedEngineToken,
     requestedJobId,
   ]);
 
@@ -2410,6 +2471,7 @@ useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
     if (!form) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.form, JSON.stringify({ ...form, updatedAt: Date.now() }));
     } catch {
@@ -2420,6 +2482,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.prompt, prompt);
     } catch {
@@ -2429,6 +2492,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.negativePrompt, negativePrompt);
     } catch {
@@ -2439,6 +2503,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.multiPromptEnabled, multiPromptEnabled ? 'true' : 'false');
     } catch {
@@ -2449,6 +2514,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.multiPromptScenes, JSON.stringify(multiPromptScenes));
     } catch {
@@ -2459,6 +2525,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.shotType, shotType);
     } catch {
@@ -2469,6 +2536,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.voiceIds, voiceIdsInput);
     } catch {
@@ -2479,6 +2547,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (hydratedForScope !== storageScope) return;
+    if (preserveStoredDraftRef.current) return;
     try {
       writeStorage(STORAGE_KEYS.memberTier, memberTier);
     } catch {
@@ -3355,6 +3424,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   useEffect(() => {
     if (selectedPreview || renders.length > 0) return;
+    if (effectiveRequestedEngineId || effectiveRequestedEngineToken) return;
     if (hasStoredFormRef.current) return;
     const storedPreviewJobId = (readScopedStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
     if (storedPreviewJobId.startsWith('job_')) return;
@@ -3369,13 +3439,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
       prompt: latestJobWithMedia.prompt ?? undefined,
     });
-  }, [readScopedStorage, recentJobs, renders.length, selectedPreview]);
+  }, [effectiveRequestedEngineId, effectiveRequestedEngineToken, readScopedStorage, recentJobs, renders.length, selectedPreview]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!authChecked) return;
     if (!engines.length) return;
     if (hydratedForScope !== storageScope) return;
+    if (effectiveRequestedEngineId || effectiveRequestedEngineToken) return;
     if (requestedJobId) return;
     if (fromVideoId) return;
     if (renders.length > 0) return;
@@ -3476,6 +3547,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, [
     authChecked,
     engines.length,
+    effectiveRequestedEngineId,
+    effectiveRequestedEngineToken,
     compositeOverride,
     compositeOverrideSummary,
     fromVideoId,
@@ -3493,13 +3566,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, []);
 
   const engineOverride = useMemo<EngineCaps | null>(() => {
-    if (!requestedEngineToken) return null;
+    if (!effectiveRequestedEngineToken) return null;
     if (!engines.length) return null;
     if (hasStoredFormRef.current) return null;
     return (
-      engines.find((engine) => matchesEngineToken(engine, requestedEngineToken)) ?? null
+      engines.find((engine) => matchesEngineToken(engine, effectiveRequestedEngineToken)) ?? null
     );
-  }, [engines, requestedEngineToken]);
+  }, [engines, effectiveRequestedEngineToken]);
 
   const selectedEngine = useMemo<EngineCaps | null>(() => {
     if (!engines.length) return null;
@@ -4153,6 +4226,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     (engineId: string) => {
       const nextEngine = engines.find((entry) => entry.id === engineId);
       if (!nextEngine) return;
+      requestedEngineOverrideIdRef.current = null;
+      requestedEngineOverrideTokenRef.current = null;
+      preserveStoredDraftRef.current = false;
       setForm((current) => {
         const candidate = current ?? null;
         const nextMode = getPreferredEngineMode(nextEngine, candidate?.mode ?? null);
@@ -4190,15 +4266,34 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, [engineOverride, writeStorage]);
 
   useEffect(() => {
+    const pinnedToken = requestedEngineOverrideTokenRef.current;
+    if (!pinnedToken) return;
+    if (!authChecked) return;
+    if (hydratedForScope !== storageScope) return;
+    if (!selectedEngine) return;
+    if (matchesEngineToken(selectedEngine, pinnedToken)) return;
+    const pinnedEngine = engines.find((engine) => matchesEngineToken(engine, pinnedToken));
+    if (!pinnedEngine) return;
+    setForm((current) => {
+      const candidate = current ?? null;
+      const nextMode = getPreferredEngineMode(pinnedEngine, candidate?.mode ?? null);
+      const normalizedPrevious = candidate ? { ...candidate, engineId: pinnedEngine.id, mode: nextMode } : null;
+      return coerceFormState(pinnedEngine, nextMode, normalizedPrevious);
+    });
+  }, [authChecked, hydratedForScope, storageScope, selectedEngine, engines]);
+
+  useEffect(() => {
     if (!requestedEngineToken) return;
     if (!selectedEngine) return;
+    if (!authChecked) return;
+    if (hydratedForScope !== storageScope) return;
     if (!matchesEngineToken(selectedEngine, requestedEngineToken)) return;
     if (!searchString.includes('engine=')) return;
     const params = new URLSearchParams(searchString);
     params.delete('engine');
     const next = params.toString();
     router.replace(next ? `/app?${next}` : '/app');
-  }, [requestedEngineToken, selectedEngine, searchString, router]);
+  }, [requestedEngineToken, selectedEngine, searchString, router, authChecked, hydratedForScope, storageScope]);
 
   const handleModeChange = useCallback(
     (mode: Mode) => {
