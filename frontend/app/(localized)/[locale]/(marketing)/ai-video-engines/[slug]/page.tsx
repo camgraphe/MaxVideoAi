@@ -1258,7 +1258,7 @@ export default async function CompareDetailPage({
       if (!needsLeft && !needsRight) return;
       if (needsLeft) {
         lookupTasks.push(
-          getLatestVideoByPromptAndEngine(template.prompt, left.modelSlug).then((video) => {
+          getLatestVideoByPromptAndEngine(template.prompt, left.engineId || left.modelSlug).then((video) => {
             if (!video) return;
             const current = fallbackByTemplateId.get(template.id) ?? {};
             fallbackByTemplateId.set(template.id, { ...current, left: video });
@@ -1267,7 +1267,7 @@ export default async function CompareDetailPage({
       }
       if (needsRight) {
         lookupTasks.push(
-          getLatestVideoByPromptAndEngine(template.prompt, right.modelSlug).then((video) => {
+          getLatestVideoByPromptAndEngine(template.prompt, right.engineId || right.modelSlug).then((video) => {
             if (!video) return;
             const current = fallbackByTemplateId.get(template.id) ?? {};
             fallbackByTemplateId.set(template.id, { ...current, right: video });
