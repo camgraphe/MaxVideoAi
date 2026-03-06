@@ -1,4 +1,4 @@
-import type { EngineCaps, EnginePricing, EnginePricingDetails } from '@/types/engines';
+import type { EngineCaps, EngineInputField, EnginePricing, EnginePricingDetails } from '@/types/engines';
 import type { PricingAddonRule, PricingEngineDefinition } from '@maxvideoai/pricing';
 
 const DEFAULT_MEMBER_DISCOUNTS = {
@@ -7,14 +7,43 @@ const DEFAULT_MEMBER_DISCOUNTS = {
   pro: 0.1,
 } as const;
 
+const STANDARD_PRICING_MODES = new Set(['t2v', 'i2v', 't2i', 'i2i']);
+
+function parseDurationValue(value: number | string | undefined): number | null {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.round(value);
+  }
+  if (typeof value === 'string') {
+    const numeric = Number(value.replace(/[^\d.]/g, ''));
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return Math.round(numeric);
+    }
+  }
+  return null;
+}
+
+function isStandardDurationField(field: EngineInputField | undefined) {
+  if (!Array.isArray(field?.modes) || !field.modes.length) {
+    return true;
+  }
+  return field.modes.some((mode) => STANDARD_PRICING_MODES.has(mode));
+}
+
 function resolveDurationSteps(engine: EngineCaps) {
   const durationField =
-    engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds') ??
-    engine.inputSchema?.optional?.find((field) => field.id === 'duration');
-  const min = Math.max(1, Math.floor(durationField?.min ?? 1));
+    engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds' && isStandardDurationField(field)) ??
+    engine.inputSchema?.optional?.find((field) => field.id === 'duration' && isStandardDurationField(field));
+  const parsedValues = Array.isArray(durationField?.values)
+    ? durationField.values
+        .map((value) => parseDurationValue(value))
+        .filter((value): value is number => value != null)
+    : [];
+  const parsedMin = typeof durationField?.min === 'number' ? Math.floor(durationField.min) : null;
+  const parsedMax = typeof durationField?.max === 'number' ? Math.floor(durationField.max) : null;
+  const min = Math.max(1, parsedMin ?? parsedValues[0] ?? 1);
   const max = Math.max(
     min,
-    Math.floor(durationField?.max ?? engine.pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30)
+    parsedMax ?? parsedValues[parsedValues.length - 1] ?? engine.pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30
   );
   const step = Math.max(1, Math.floor(durationField?.step ?? 1));
   const rawDefault = durationField?.default;

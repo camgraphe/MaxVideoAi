@@ -241,7 +241,7 @@ function resolveExampleGroupId(engineId: string | null | undefined): string | nu
   if (normalized.startsWith('kling') || normalized.includes('kling-video')) return 'kling';
   if (normalized.startsWith('wan') || normalized.includes('wan/')) return 'wan';
   if (normalized.startsWith('seedance')) return 'seedance';
-  if (normalized.startsWith('ltx-2') || normalized.includes('ltx-2')) return 'ltx-2';
+  if (normalized === 'ltx' || normalized.startsWith('ltx-2') || normalized.includes('ltx-2')) return 'ltx';
   return normalized;
 }
 

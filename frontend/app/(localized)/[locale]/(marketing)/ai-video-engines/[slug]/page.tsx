@@ -24,6 +24,7 @@ import { CopyPromptButton } from './CopyPromptButton.client';
 import { getLatestVideoByPromptAndEngine, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { fetchEngineAverageDurations } from '@/server/generate-metrics';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { getImageAlt } from '@/lib/image-alt';
 import type { EngineCaps } from '@/types/engines';
 
@@ -388,11 +389,11 @@ function getPricePerSecondCents(entry: EngineCatalogEntry): number | null {
   const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
   const cents = perSecond?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
   if (typeof cents === 'number') {
-    return cents;
+    return applyDisplayedPriceMarginCents(cents);
   }
   const base = entry.engine?.pricing?.base;
   if (typeof base === 'number') {
-    return Math.round(base * 100);
+    return applyDisplayedPriceMarginCents(Math.round(base * 100));
   }
   return null;
 }
@@ -492,7 +493,7 @@ function resolveAudioOffPrice(entry: EngineCatalogEntry): string | null {
   if (!perSecond || typeof perSecond.default !== 'number') return null;
   const audioOffDelta = entry.engine?.pricingDetails?.addons?.audio_off?.perSecondCents;
   if (typeof audioOffDelta !== 'number') return null;
-  const total = perSecond.default + audioOffDelta;
+  const total = applyDisplayedPriceMarginCents(perSecond.default + audioOffDelta);
   return `Audio off: $${(total / 100).toFixed(2)}/s`;
 }
 
@@ -589,7 +590,7 @@ async function resolvePricingDisplay(
   const resolutionEntries = Object.entries(byResolution)
     .map(([label, cents]) => ({
       label,
-      cents: typeof cents === 'number' ? cents : null,
+      cents: typeof cents === 'number' ? applyDisplayedPriceMarginCents(cents) : null,
       order: parseResolutionLabel(label),
     }))
     .filter((entry): entry is { label: string; cents: number; order: number | null } => entry.cents != null);
@@ -618,7 +619,7 @@ async function resolvePricingDisplay(
     const audioOffDelta = entry.engine?.pricingDetails?.addons?.audio_off?.perSecondCents;
     const audioOffCents =
       typeof audioOffDelta === 'number' && typeof perSecond?.default === 'number'
-        ? perSecond.default + audioOffDelta
+        ? applyDisplayedPriceMarginCents(perSecond.default + audioOffDelta)
         : null;
     const prices = [baseCents / 100];
     if (typeof audioOffCents === 'number') {
@@ -655,9 +656,70 @@ function resolveKeySpecValue(
   return normalized;
 }
 
-function renderSpecValue(value: string, labels: { pending: string; supported: string; notSupported: string }) {
+function localizeSpecDetailValue(
+  value: string,
+  locale: AppLocale,
+  labels: { pending: string; supported: string; notSupported: string }
+): string {
+  const normalized = value.trim();
+  const lower = normalized.toLowerCase();
+  if (lower === 'supported') return labels.supported;
+  if (lower === 'not supported') return labels.notSupported;
+  if (lower === 'data pending') return labels.pending;
+  if (lower.startsWith('supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.supported} (${localizeSpecDetailValue(detail, locale, labels)})`;
+  }
+  if (lower.startsWith('not supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.notSupported} (${localizeSpecDetailValue(detail, locale, labels)})`;
+  }
+  if (lower === 'prompt-based only') {
+    return locale === 'fr' ? 'Via prompt uniquement' : locale === 'es' ? 'Solo mediante prompt' : normalized;
+  }
+  if (lower === 'single start image') {
+    return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
+  }
+  if (lower === 'source clip for extend / retake') {
+    return locale === 'fr'
+      ? 'clip source pour extension / retake'
+      : locale === 'es'
+        ? 'clip fuente para extensión / retake'
+        : normalized;
+  }
+  if (lower === 'start + end image in i2v') {
+    return locale === 'fr'
+      ? 'image de départ + image de fin en image → vidéo'
+      : locale === 'es'
+        ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'extend / retake workflows') {
+    return locale === 'fr'
+      ? 'workflows extension / retake'
+      : locale === 'es'
+        ? 'workflows de extensión / retake'
+        : normalized;
+  }
+  if (lower === 'no (maxvideoai)') {
+    return locale === 'fr' ? 'Non (MaxVideoAI)' : locale === 'es' ? 'No (MaxVideoAI)' : normalized;
+  }
+  return value;
+}
+
+function renderSpecValue(
+  value: string,
+  locale: AppLocale,
+  labels: { pending: string; supported: string; notSupported: string }
+) {
   const normalized = value.toLowerCase();
-  if (normalized === labels.supported.toLowerCase() || normalized === 'supported') {
+  const localizedValue = localizeSpecDetailValue(value, locale, labels);
+  if (
+    normalized === labels.supported.toLowerCase() ||
+    normalized === 'supported' ||
+    normalized.startsWith('supported ') ||
+    normalized.startsWith('supported (')
+  ) {
     return (
       <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 p-1">
         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] text-white" aria-hidden>
@@ -666,7 +728,12 @@ function renderSpecValue(value: string, labels: { pending: string; supported: st
       </span>
     );
   }
-  if (normalized === labels.notSupported.toLowerCase() || normalized === 'not supported') {
+  if (
+    normalized === labels.notSupported.toLowerCase() ||
+    normalized === 'not supported' ||
+    normalized.startsWith('not supported ') ||
+    normalized.startsWith('not supported (')
+  ) {
     return (
       <span className="inline-flex items-center rounded-full border border-rose-500/30 bg-rose-500/10 p-1">
         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white" aria-hidden>
@@ -678,7 +745,7 @@ function renderSpecValue(value: string, labels: { pending: string; supported: st
   if (normalized === 'data pending') {
     return <span>{labels.pending}</span>;
   }
-  return <span>{value}</span>;
+  return <span>{localizedValue}</span>;
 }
 
 function computeOverall(score?: EngineScore | null) {
@@ -1320,7 +1387,8 @@ export default async function CompareDetailPage({
     );
 
   const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
-  const formatFaqValue = (value: string) => (isPending(value) ? validatingLabel : value);
+  const formatFaqValue = (value: string) =>
+    isPending(value) ? validatingLabel : localizeSpecDetailValue(value, activeLocale, labels);
   const faqPricingLeft = formatFaqValue(leftPricingDisplay.headline);
   const faqPricingRight = formatFaqValue(rightPricingDisplay.headline);
   const faqT2vLeft = formatFaqValue(leftSpecs.textToVideo);
@@ -1734,8 +1802,10 @@ export default async function CompareDetailPage({
     'Max resolution: {engine} ({leftValue} vs {rightValue}).';
   const specWinnerRow: { id: string; icon: string; label: string; value: string; accent: OverallTone } | null = (() => {
     const valueForSupport = (label: string, leftValue: string, rightValue: string) => {
-      const leftIsSupported = leftValue.toLowerCase() === 'supported';
-      const rightIsSupported = rightValue.toLowerCase() === 'supported';
+      const leftNormalized = leftValue.toLowerCase();
+      const rightNormalized = rightValue.toLowerCase();
+      const leftIsSupported = leftNormalized === 'supported' || leftNormalized.startsWith('supported ');
+      const rightIsSupported = rightNormalized === 'supported' || rightNormalized.startsWith('supported ');
       if (leftIsSupported === rightIsSupported) return null;
       const winner = leftIsSupported ? 'left' : 'right';
       return {
@@ -2118,7 +2188,7 @@ export default async function CompareDetailPage({
                       )}
                     >
                       <div className="rounded-md px-1 py-0.5 text-text-secondary sm:px-2 sm:py-1">
-                        {renderSpecValue(row.left, {
+                        {renderSpecValue(row.left, activeLocale, {
                           pending: labels.pending,
                           supported: labels.supported,
                           notSupported: labels.notSupported,
@@ -2129,7 +2199,7 @@ export default async function CompareDetailPage({
                       </div>
                       <span className="text-center text-text-primary">{row.label}</span>
                       <div className="rounded-md px-1 py-0.5 text-right text-text-secondary sm:px-2 sm:py-1">
-                        {renderSpecValue(row.right, {
+                        {renderSpecValue(row.right, activeLocale, {
                           pending: labels.pending,
                           supported: labels.supported,
                           notSupported: labels.notSupported,

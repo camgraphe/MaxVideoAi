@@ -24,7 +24,7 @@ export type ExampleModelLanding = {
   faqItems: ExampleFaqItem[];
 };
 
-const CANONICAL_SLUGS = ['sora', 'veo', 'wan', 'kling', 'seedance', 'ltx-2', 'pika', 'hailuo'] as const;
+const CANONICAL_SLUGS = ['sora', 'veo', 'wan', 'kling', 'seedance', 'ltx', 'pika', 'hailuo'] as const;
 type CanonicalSlug = (typeof CANONICAL_SLUGS)[number];
 
 const MODEL_LABELS: Record<AppLocale, Record<CanonicalSlug, string>> = {
@@ -34,7 +34,7 @@ const MODEL_LABELS: Record<AppLocale, Record<CanonicalSlug, string>> = {
     wan: 'Wan',
     kling: 'Kling',
     seedance: 'Seedance',
-    'ltx-2': 'LTX-2',
+    ltx: 'LTX',
     pika: 'Pika',
     hailuo: 'Hailuo',
   },
@@ -44,7 +44,7 @@ const MODEL_LABELS: Record<AppLocale, Record<CanonicalSlug, string>> = {
     wan: 'Wan',
     kling: 'Kling',
     seedance: 'Seedance',
-    'ltx-2': 'LTX-2',
+    ltx: 'LTX',
     pika: 'Pika',
     hailuo: 'Hailuo',
   },
@@ -54,7 +54,7 @@ const MODEL_LABELS: Record<AppLocale, Record<CanonicalSlug, string>> = {
     wan: 'Wan',
     kling: 'Kling',
     seedance: 'Seedance',
-    'ltx-2': 'LTX-2',
+    ltx: 'LTX',
     pika: 'Pika',
     hailuo: 'Hailuo',
   },
@@ -66,7 +66,7 @@ const MODEL_VARIANTS_BY_SLUG: Record<CanonicalSlug, string[]> = {
   wan: ['Wan 2.6 Text & Image to Video', 'Wan 2.5 Text & Image to Video'],
   kling: ['Kling 3 Pro', 'Kling 3 Standard', 'Kling 2.6 Pro', 'Kling 2.5 Turbo'],
   seedance: ['Seedance 1.5 Pro'],
-  'ltx-2': ['LTX Video 2.0 Pro', 'LTX Video 2.0 Fast'],
+  ltx: ['LTX 2.3 Pro', 'LTX 2.3 Fast', 'LTX Video 2.0 Pro', 'LTX Video 2.0 Fast'],
   pika: ['Pika 2.2 Text & Image to Video'],
   hailuo: ['MiniMax Hailuo 02 Standard'],
 };
@@ -206,28 +206,28 @@ const EN_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
       },
     ],
   },
-  'ltx-2': {
-    subtitle: 'LTX-2 examples for fast iteration loops and repeatable prompt-to-video execution.',
+  ltx: {
+    subtitle: 'LTX examples across the full family, from legacy fast drafts to LTX 2.3 Pro workflows with audio, Extend, and Retake.',
     intro:
-      'Use this page to explore LTX-2 examples that prioritize speed, repeatability, and consistent output framing. The intent is to help teams validate ideas quickly before committing to longer or higher-cost runs. Every section is model-specific so the guidance stays operational.',
+      'Use this page to review the whole LTX family in one place. It brings together LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro, and LTX 2.0 Fast so you can compare speed, prompt patterns, framing behavior, and workflow breadth before choosing the right starting point.',
     promptPatterns:
-      'Use concise prompts with explicit subject and one camera action. LTX-2 examples perform better when constraints are concrete and short.',
+      'Use concise prompts with a clear subject, one main action, and one camera instruction. LTX examples are easiest to compare when the brief stays stable and only the model variant changes.',
     strengthsLimits:
-      'LTX-2 is useful for high-velocity ideation and variant testing. For complex narratives, validate transitions in short segments before chaining.',
+      'The LTX family is strong for fast iteration and repeatable framing. LTX 2.3 Pro adds audio-driven generation plus Extend and Retake, while LTX 2.0 still matters as a ranked legacy entry with historical example depth.',
     pricingNotes:
-      'Keep a fixed baseline preset for pricing checks. This helps isolate model differences from setting-related cost changes.',
+      'Keep one reference preset for cost comparison, then compare variants at the same duration and resolution. This makes it easier to see when the newer 2.3 workflows justify the higher spend versus legacy LTX 2 runs.',
     faq: [
       {
-        question: 'When should I use LTX-2 examples first?',
-        answer: 'Use them when you need rapid creative testing before committing to heavier final-quality runs.',
+        question: 'When should I start from LTX examples?',
+        answer: 'Use them when you want to compare the full LTX family, from legacy fast drafts to LTX 2.3 Pro workflows with audio, Extend, and Retake.',
       },
       {
-        question: 'How do I improve consistency in LTX-2 outputs?',
-        answer: 'Reuse one validated prompt template and adjust only one variable per iteration.',
+        question: 'How do I improve consistency across LTX variants?',
+        answer: 'Reuse one validated prompt template and change only one variable at a time so model differences stay readable.',
       },
       {
-        question: 'Can I compare LTX-2 pricing with other engines from here?',
-        answer: 'Yes. Use matching duration and resolution settings to keep comparisons accurate.',
+        question: 'Can I compare LTX family pricing from here?',
+        answer: 'Yes. Use matching duration and resolution settings so the price difference reflects the model tier rather than the setup.',
       },
     ],
   },
@@ -409,28 +409,28 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
       },
     ],
   },
-  'ltx-2': {
-    subtitle: 'Exemples LTX-2 pour itération rapide et exécution prompt-to-video reproductible.',
+  ltx: {
+    subtitle: 'Exemples LTX sur toute la famille, des drafts legacy rapides jusqu’aux workflows LTX 2.3 Pro avec audio, Extend et Retake.',
     intro:
-      'Cette page LTX-2 est conçue pour valider des idées rapidement avec des sorties cohérentes. Elle aide à tester des variantes avant de pousser des rendus plus coûteux.',
+      'Cette page réunit toute la famille LTX au même endroit. Elle regroupe LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro et LTX 2.0 Fast pour comparer vitesse, structure de prompt, cadrage et profondeur de workflow avant de choisir la bonne base.',
     promptPatterns:
-      'Utilisez des prompts concis avec sujet clair et un mouvement caméra unique.',
+      'Utilisez des prompts concis avec un sujet clair, une action principale et une seule instruction caméra. Les exemples LTX se comparent mieux quand le brief reste stable et que seule la variante moteur change.',
     strengthsLimits:
-      'LTX-2 convient bien aux cycles d’itération rapides. Pour des récits complexes, validez par segments courts.',
+      'La famille LTX fonctionne bien pour l’itération rapide et des cadrages reproductibles. LTX 2.3 Pro ajoute l’audio piloté, Extend et Retake, tandis que LTX 2.0 reste une entrée legacy importante avec un historique d’exemples déjà bien référencé.',
     pricingNotes:
-      'Conservez un preset de référence fixe pour comparer proprement les coûts.',
+      'Gardez un preset de référence fixe pour comparer les coûts, puis comparez les variantes à durée et résolution identiques. Cela aide à voir quand les workflows 2.3 justifient un coût supérieur à LTX 2 legacy.',
     faq: [
       {
-        question: 'Quand utiliser d’abord des exemples LTX-2 ?',
-        answer: 'Quand vous devez explorer rapidement des directions créatives.',
+        question: 'Quand faut-il commencer par le hub d’exemples LTX ?',
+        answer: 'Quand vous voulez comparer toute la famille LTX, des drafts legacy rapides aux workflows LTX 2.3 Pro avec audio, Extend et Retake.',
       },
       {
-        question: 'Comment améliorer la cohérence LTX-2 ?',
-        answer: 'Gardez une structure de prompt stable et modifiez une variable par test.',
+        question: 'Comment améliorer la cohérence entre variantes LTX ?',
+        answer: 'Gardez une structure de prompt stable et ne modifiez qu’une variable à la fois pour mieux isoler les différences entre modèles.',
       },
       {
-        question: 'Peut-on comparer LTX-2 depuis cette page ?',
-        answer: 'Oui, en gardant durée/résolution identiques entre moteurs.',
+        question: 'Peut-on comparer les prix de la famille LTX depuis cette page ?',
+        answer: 'Oui, à condition de garder durée et résolution identiques pour obtenir une comparaison propre.',
       },
     ],
   },
@@ -612,28 +612,28 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
       },
     ],
   },
-  'ltx-2': {
-    subtitle: 'Ejemplos de LTX-2 para iteración rápida y ejecución prompt-to-video repetible.',
+  ltx: {
+    subtitle: 'Ejemplos de toda la familia LTX, desde borradores legacy rápidos hasta workflows LTX 2.3 Pro con audio, Extend y Retake.',
     intro:
-      'Esta página de LTX-2 está diseñada para validar ideas rápido con salidas consistentes. Ayuda a probar variantes antes de pasar a renders más costosos.',
+      'Esta página reúne toda la familia LTX en un solo lugar. Agrupa LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro y LTX 2.0 Fast para comparar velocidad, estructura de prompt, encuadre y profundidad de workflow antes de elegir la mejor base.',
     promptPatterns:
-      'Usa prompts concisos con sujeto claro y un movimiento de cámara principal.',
+      'Usa prompts concisos con un sujeto claro, una acción principal y una sola instrucción de cámara. Los ejemplos LTX se comparan mejor cuando el brief se mantiene estable y solo cambia la variante del modelo.',
     strengthsLimits:
-      'LTX-2 encaja bien en ciclos de iteración veloces. Para narrativas complejas, valida por segmentos cortos.',
+      'La familia LTX funciona bien para iteración rápida y encuadres repetibles. LTX 2.3 Pro añade generación guiada por audio, Extend y Retake, mientras que LTX 2.0 sigue siendo una entrada legacy importante con histórico de ejemplos ya posicionado.',
     pricingNotes:
-      'Mantén un preset base fijo para comparar costes de forma limpia.',
+      'Mantén un preset base fijo y compara variantes con la misma duración y resolución. Así se ve mejor cuándo los workflows 2.3 justifican más coste frente a LTX 2 legacy.',
     faq: [
       {
-        question: '¿Cuándo conviene empezar por ejemplos de LTX-2?',
-        answer: 'Cuando necesitas explorar direcciones creativas con mucha velocidad.',
+        question: '¿Cuándo conviene empezar por el hub de ejemplos LTX?',
+        answer: 'Cuando quieres comparar toda la familia LTX, desde borradores legacy rápidos hasta workflows LTX 2.3 Pro con audio, Extend y Retake.',
       },
       {
-        question: '¿Cómo mejoro consistencia en LTX-2?',
-        answer: 'Reutiliza una estructura estable y cambia una variable por prueba.',
+        question: '¿Cómo mejoro consistencia entre variantes LTX?',
+        answer: 'Reutiliza una estructura estable y cambia una sola variable por prueba para aislar mejor las diferencias entre modelos.',
       },
       {
-        question: '¿Puedo comparar LTX-2 desde esta página?',
-        answer: 'Sí, usando duración y resolución equivalentes entre motores.',
+        question: '¿Puedo comparar precios de la familia LTX desde esta página?',
+        answer: 'Sí, usando duración y resolución equivalentes para que la comparación siga siendo limpia.',
       },
     ],
   },

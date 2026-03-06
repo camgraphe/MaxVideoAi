@@ -12,6 +12,8 @@ import type { Mode } from '@/types/engines';
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { getExamplesHref } from '@/lib/examples-links';
 import { formatResolutionList } from '@/lib/resolution-labels';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import { getLocalizedModeLabel, normalizeUiLocale } from '@/lib/ltx-localization';
 
 type CompareCopy = {
   title?: string;
@@ -45,14 +47,6 @@ type CompareEnginesCarouselProps = {
   copy?: CompareCopy | null;
 };
 
-const MODE_LABELS: Record<Mode, string> = {
-  t2v: 'Text -> Video',
-  i2v: 'Image -> Video',
-  r2v: 'Reference -> Video',
-  t2i: 'Text -> Image',
-  i2i: 'Image -> Image',
-};
-
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
   'veo-3-1-first-last': {
     i2v: 'Standard',
@@ -74,9 +68,14 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
   },
 };
 
-function getModeLabel(engineId: string | undefined, value: Mode, labels: Record<Mode, string>): string {
+function getModeLabel(
+  engineId: string | undefined,
+  value: Mode,
+  locale: string | undefined,
+  labels: Partial<Record<Mode, string>>
+): string {
   const override = engineId ? ENGINE_MODE_LABEL_OVERRIDES[engineId]?.[value] : undefined;
-  return override ?? labels[value] ?? value.toUpperCase();
+  return override ?? labels[value] ?? getLocalizedModeLabel(value, normalizeUiLocale(locale));
 }
 
 function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
@@ -95,6 +94,7 @@ function formatAvgDuration(value: number | null | undefined): string | null {
 }
 
 export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarouselProps) {
+  const { locale } = useI18n();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -113,10 +113,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
   const modesLabel = cardLabels.modes ?? 'Modes';
   const maxLabel = cardLabels.max ?? 'Max';
   const resLabel = cardLabels.res ?? 'Res';
-  const modeLabels: Record<Mode, string> = {
-    ...MODE_LABELS,
-    ...(copy?.modeLabels ?? {}),
-  };
+  const modeLabels = copy?.modeLabels ?? {};
 
   const scrollByCard = (direction: number) => {
     const el = containerRef.current;
@@ -255,7 +252,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
           const labsBadgeNeeded = engine.engine.isLab && !badges.some((badge) => badge === 'Labs');
           const combinedBadges = labsBadgeNeeded ? [...badges, 'Labs'] : badges;
           const modes = getModeDisplayOrder(engine.id, engine.engine.modes)
-            .map((mode) => getModeLabel(engine.id, mode, modeLabels))
+            .map((mode) => getModeLabel(engine.id, mode, locale, modeLabels))
             .join(' / ');
           const modelHref = { pathname: '/models/[slug]', params: { slug: engine.modelSlug } };
           const allowExamples = engine.category !== 'image' && engine.type !== 'image';

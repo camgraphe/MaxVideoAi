@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-02-10",
+  "last_updated": "2026-03-06",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -239,6 +239,83 @@
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Oct 2025"
+      }
+    },
+    {
+      "modelSlug": "ltx-2-3-pro",
+      "sources": [
+        "https://fal.ai/ltx-2.3",
+        "https://fal.ai/models/fal-ai/ltx-2.3/text-to-video",
+        "https://fal.ai/models/fal-ai/ltx-2.3/image-to-video",
+        "https://fal.ai/models/fal-ai/ltx-2.3/audio-to-video",
+        "https://fal.ai/models/fal-ai/ltx-2.3/extend-video",
+        "https://fal.ai/models/fal-ai/ltx-2.3/retake-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (extend / retake workflows)",
+        "firstLastFrame": "Supported (start + end image in I2V)",
+        "referenceImageStyle": "Supported (single start image)",
+        "referenceVideo": "Supported (source clip for extend / retake)",
+        "maxResolution": "4K",
+        "maxDuration": "20s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps",
+          "25 fps",
+          "48 fps",
+          "50 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Prompt-based only",
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Data pending"
+      }
+    },
+    {
+      "modelSlug": "ltx-2-3-fast",
+      "sources": [
+        "https://fal.ai/ltx-2.3",
+        "https://fal.ai/models/fal-ai/ltx-2.3/text-to-video/fast",
+        "https://fal.ai/models/fal-ai/ltx-2.3/image-to-video/fast"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported (start + end image in I2V)",
+        "referenceImageStyle": "Supported (single start image)",
+        "referenceVideo": "Not supported",
+        "maxResolution": "4K",
+        "maxDuration": "20s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps",
+          "25 fps",
+          "48 fps",
+          "50 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Prompt-based only",
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Data pending"
       }
     },
     {

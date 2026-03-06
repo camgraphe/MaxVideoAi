@@ -1,0 +1,330 @@
+{
+  "marketingName": "LTX 2.3 Pro",
+  "versionLabel": "2.3",
+  "seo": {
+    "title": "LTX 2.3 Pro - vidéo IA texte, image, audio, extension et retake",
+    "description": "Utilisez LTX 2.3 Pro sur MaxVideoAI pour les workflows texte vers vidéo, image vers vidéo, audio vers vidéo, extension vidéo et retake vidéo, avec audio natif, sorties 1080p à 4K et formats paysage ou vertical.",
+    "image": "/assets/placeholders/preview-16x9.png"
+  },
+  "overview": "LTX 2.3 Pro dans MaxVideoAI réunit les workflows texte vers vidéo, image vers vidéo, audio vers vidéo, Extend et Retake au sein d'un seul modèle Lightricks, avec une sortie 1080p à 4K pour les modes de génération et des outils dédiés pour retravailler une vidéo source.",
+  "hero": {
+    "title": "LTX 2.3 Pro - une seule page pour générer, animer avec l'audio, prolonger et corriger",
+    "intro": "Générez depuis du texte ou des images, pilotez le timing à partir d'un audio uploadé, prolongez des plans existants ou refaites uniquement une section sans quitter la même page modèle.",
+    "badge": "T2V + I2V + A2V + Extend + Retake",
+    "ctaPrimary": {
+      "label": "Commencer avec LTX 2.3 Pro",
+      "href": "/app?engine=ltx-2-3"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Comparer LTX 2.3 Pro vs LTX 2.3 Fast ->",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+      },
+      {
+        "label": "Voir tous les exemples LTX ->",
+        "href": "/examples/ltx"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d'usage",
+    "items": [
+      {
+        "title": "De l'idée à la retouche sur un seul moteur",
+        "icon": "layers"
+      },
+      {
+        "title": "Contenus sociaux rythmés par l'audio",
+        "icon": "music"
+      },
+      {
+        "title": "Image vers vidéo avec transitions début / fin",
+        "icon": "camera"
+      },
+      {
+        "title": "Continuation de plan et plans de raccord",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Corrections de dialogue et retakes ciblés",
+        "icon": "scissors"
+      },
+      {
+        "title": "Variantes de campagne en vertical et paysage",
+        "icon": "smartphone"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Vue d'ensemble technique",
+  "technicalOverview": [
+    {
+      "label": "Durées en génération",
+      "body": "6 s, 8 s ou 10 s pour Texte vers vidéo et Image vers vidéo"
+    },
+    {
+      "label": "Résolution",
+      "body": "1080p, 1440p ou 2160p (4K) pour Texte vers vidéo et Image vers vidéo"
+    },
+    {
+      "label": "Formats",
+      "body": "16:9 et 9:16 pour Texte vers vidéo et Image vers vidéo"
+    },
+    {
+      "label": "Cadence",
+      "body": "24, 25, 48 ou 50 fps pour Texte vers vidéo et Image vers vidéo"
+    },
+    {
+      "label": "Entrées par mode",
+      "body": "Prompt texte, image de départ plus image de fin optionnelle, audio uploadé ou vidéo source selon le workflow sélectionné"
+    },
+    {
+      "label": "Audio",
+      "body": "Toggle audio natif sur les modes de génération, plus un workflow Audio vers vidéo dédié piloté par un fichier audio uploadé"
+    },
+    {
+      "label": "Workflows d'édition",
+      "body": "Extend au début ou à la fin avec contrôles de contexte ; retake sur une fenêtre temporelle choisie avec remplacement de l'audio, de la vidéo ou des deux"
+    },
+    {
+      "label": "Tarification",
+      "body": "Paiement à l'usage ; le prix affiché en génération commence autour de 0,08 $/s en 1080p, 0,16 $/s en 1440p et 0,31 $/s en 4K"
+    }
+  ],
+  "promptStructure": {
+    "title": "Comment prompter LTX 2.3 Pro selon le workflow",
+    "quote": "Mode : Générer une vidéo. Sujet : [qui/quoi]. Action : [un seul beat]. Caméra : [mouvement]. Look : [lumière + couleur]. Format : [16:9 ou 9:16, durée, résolution]. Audio : [ambiance, dialogue ou indice musical].",
+    "description": "Pensez LTX 2.3 Pro comme une famille de workflows, pas comme un simple champ de prompt. Le prompt doit correspondre au mode : génération, animation pilotée par l'audio, extension ou retake.",
+    "steps": [
+      "Pour Generate Video, décrivez le sujet, l'action, la caméra, le look, la durée et le format.",
+      "Pour Image vers vidéo, utilisez le prompt pour définir le mouvement tandis que l'image de départ ancre la première frame.",
+      "Pour les transitions début / fin, combinez une image de départ avec une image de fin optionnelle et décrivez comment la scène évolue entre les deux.",
+      "Pour Audio vers vidéo, laissez l'audio uploadé définir le timing et utilisez le prompt uniquement pour guider l'intention de scène, l'énergie et le mouvement caméra.",
+      "Pour Extend, décrivez ce qui doit se passer avant ou après la vidéo source existante.",
+      "Pour Retake, expliquez exactement ce qui doit changer dans la section sélectionnée au lieu de réécrire tout le clip."
+    ]
+  },
+  "tips": {
+    "title": "Conseils & limites",
+    "items": [
+      "Utilisez Audio vers vidéo quand le timing, le mouvement des lèvres ou le phrasé musical doivent suivre une vraie bande-son.",
+      "N'utilisez image de départ et image de fin que si la cible de transition est claire ; sinon, gardez Image vers vidéo sur une seule image de départ.",
+      "Utilisez Extend quand le plan est déjà bon et qu'il vous faut seulement plus d'amorce ou de sortie.",
+      "Utilisez Retake quand une seule section est ratée mais que le reste du clip doit rester intact.",
+      "Gardez la 4K pour les passes finales ; itérez d'abord à moindre coût, puis relancez le workflow gagnant."
+    ]
+  },
+  "compareLink": {
+    "label": "Comparer LTX 2.3 Pro vs LTX 2.3 Fast ->",
+    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+  },
+  "prompts": [
+    {
+      "title": "Beat publicitaire cinématique en texte vers vidéo",
+      "prompt": "Un film de lancement de sneaker premium en 16:9, lumière latérale dramatique, travelling lent autour du produit, légère brume dans l'air, reflets subtils sur le sol, 8 secondes, bande audio de marque soignée."
+    },
+    {
+      "title": "Image vers vidéo avec image finale",
+      "prompt": "Partez du portrait mode uploadé, ajoutez un lent push-in à l'épaule et un léger mouvement de cheveux, puis faites évoluer la scène vers l'image finale uploadée pendant que les reflets néon s'intensifient."
+    },
+    {
+      "title": "Setup performance Audio vers vidéo",
+      "prompt": "Utilisez l'audio uploadé comme colonne vertébrale rythmique d'une performance scénique mélancolique, avec un mouvement caméra retenu, un fort contre-jour et des gros plans émotionnels qui montent avec le refrain.",
+      "notes": "Uploadez l'audio d'abord ; une image de départ optionnelle peut aider à verrouiller la première frame."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Qu'est-ce qui change avec LTX 2.3 Pro par rapport aux anciennes pages LTX 2.0 ?",
+      "a": "LTX 2.3 Pro ajoute une surface unifiée autour des modes de génération, plus Audio vers vidéo, Extend et Retake, tout en prenant en charge le 16:9 et le 9:16 sur les flux de génération."
+    },
+    {
+      "q": "Quelle est la différence entre Extend et Retake ?",
+      "a": "Extend prolonge une vidéo source avant ou après le plan existant. Retake remplace une section sélectionnée dans la vidéo source, avec des contrôles de temps de départ, de durée et de mode de remplacement."
+    },
+    {
+      "q": "LTX 2.3 Pro prend-il en charge l'audio natif ?",
+      "a": "Oui. Texte vers vidéo et Image vers vidéo exposent un toggle audio natif, et Audio vers vidéo utilise un fichier audio uploadé comme entrée principale."
+    },
+    {
+      "q": "LTX 2.3 Fast inclut-il Audio vers vidéo, Extend ou Retake ?",
+      "a": "Non. LTX 2.3 Fast est limité à texte vers vidéo et image vers vidéo dans le routing public Fal actuel."
+    }
+  ],
+  "custom": {
+    "heroDesc1": "LTX 2.3 Pro est la page LTX la plus complète en matière de workflows dans MaxVideoAI. Elle couvre la génération, l'animation pilotée par audio, l'extension de vidéo source et les retakes ciblés depuis un seul moteur au lieu de répartir ces tâches sur plusieurs pages modèle.",
+    "heroDesc2": "C'est utile en production : vous pouvez bloquer un plan à partir du texte, le raffiner depuis une image, tester une version guidée par l'audio, prolonger la meilleure prise, puis retaker uniquement la section cassée sans changer de moteur.",
+    "heroSupportLine": "Idéal pour les équipes qui veulent une seule interface LTX pour l'idéation, l'animation pilotée par le son et les corrections éditoriales rapides.",
+    "heroSpecChips": [
+      { "label": "Texte→Vidéo", "icon": "textToVideo" },
+      { "label": "Image→Vidéo", "icon": "imageToVideo" },
+      { "label": "Audio→Vidéo (2–20 s)", "icon": "audio" },
+      { "label": "Génération : 6–10 s", "icon": "duration" },
+      { "label": "4K en génération", "icon": "resolution" },
+      { "label": "Extend / Retake depuis une vidéo source" }
+    ],
+    "whyTitle": "Pourquoi LTX 2.3 Pro est stratégiquement utile",
+    "heroHighlights": [
+      "Un moteur, plusieurs workflows||Générez, animez depuis le son, prolongez des clips existants et retakez les sections ratées sans quitter la famille LTX.",
+      "L'audio n'est plus seulement un toggle||Vous pouvez soit générer de l'audio natif dans les runs standards, soit piloter le clip depuis une bande-son uploadée en Audio vers vidéo.",
+      "Un vrai levier d'édition||Extend et Retake permettent de conserver un bon plan au lieu de repartir de zéro.",
+      "Adapté aux formats de contenu actuels||Les modes paysage et vertical facilitent la planification des variantes hero et social."
+    ],
+    "specTitle": "Vraies specs - LTX 2.3 Pro dans MaxVideoAI",
+    "specNote": "Ces specs décrivent le routing public Fal actuellement exposé dans MaxVideoAI, pas une liste théorique de futures fonctionnalités.",
+    "specSections": [
+      {
+        "title": "Workflows de génération",
+        "intro": "Texte vers vidéo et Image vers vidéo sont les modes les plus larges : 6 à 10 secondes, 1080p à 4K, vertical ou paysage, avec audio natif disponible.",
+        "items": [
+          "Utilisez Texte vers vidéo pour de nouveaux beats narratifs.",
+          "Utilisez Image vers vidéo quand la première frame doit rester fidèle à la marque.",
+          "Ajoutez une image de fin seulement quand la composition finale compte réellement.",
+          "Choisissez 9:16 quand le clip est pensé pour le social short-form."
+        ]
+      },
+      {
+        "title": "Audio, extend et retake",
+        "intro": "La plus grande différence face aux moteurs plus simples n'est pas seulement la qualité d'image. C'est que LTX 2.3 Pro couvre l'animation pilotée par le timing et l'édition de clips source depuis la même page.",
+        "items": [
+          "Audio vers vidéo transforme un audio uploadé en colonne vertébrale rythmique du clip.",
+          "Extend peut allonger un bon plan en tête ou en queue.",
+          "Retake est utile quand une seule section doit être remplacée.",
+          "Les contrôles de contexte aident à préserver la continuité pendant l'extension."
+        ]
+      }
+    ],
+    "whatTitle": "Comment fonctionne LTX 2.3 Pro dans MaxVideoAI",
+    "whatIntro1": "Choisissez LTX 2.3 Pro, restez sur Generate Video pour les flux standard texte / image ou basculez sur Extend Video / Retake Video quand vous avez besoin d'éditer une vidéo source. Audio vers vidéo se sélectionne automatiquement lorsqu'une source audio est présente.",
+    "whatIntro2": "Cette structure garde la page centrée sur un seul moteur tout en exposant les vrais workflows Fal derrière l'UI.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Choisissez LTX 2.3 Pro comme moteur.",
+      "Restez sur Generate Video pour la génération texte, image et audio, ou activez Extend Video / Retake Video quand nécessaire.",
+      "Choisissez 6, 8 ou 10 secondes pour la génération texte et image, ainsi que le format, la résolution et les fps.",
+      "Uploadez l'asset pertinent pour le workflow actif : image de départ, image de fin, source audio ou vidéo source.",
+      "Vérifiez le prix live avant génération, puis itérez uniquement sur le workflow qui compte."
+    ],
+    "galleryTitle": "Exemples LTX 2.3 Pro",
+    "galleryIntro": "Des placeholders locaux sont utilisés pour l'instant sur cette branche de dev. Remplacez-les par les rendus LTX 2.3 Pro finaux et validés avant la mise en production.",
+    "galleryAllCta": "Voir tous les exemples LTX 2.3 Pro ->",
+    "recreateLabel": "Recréer ce plan ->",
+    "tipsTitle": "Forces pratiques et limites",
+    "strengths": [
+      "L'interface LTX la plus complète : génération, animation pilotée par audio, extension et retake au même endroit.",
+      "Utile pour préparer des variantes verticales et paysage quand le même concept doit vivre sur plusieurs placements.",
+      "Extend et Retake réduisent le gaspillage parce que vous pouvez préserver les bonnes parties d'un clip."
+    ],
+    "boundaries": [
+      "La 4K, le 9:16 et les contrôles fps s'appliquent actuellement aux modes de génération standards, pas à tous les workflows d'édition.",
+      "Audio vers vidéo, Extend et Retake sont disponibles seulement sur LTX 2.3 Pro standard, pas sur Fast.",
+      "Retake a toujours besoin d'une fenêtre source précise et d'un prompt clair pour éviter une dérive trop forte par rapport au clip d'origine."
+    ],
+    "safetyTitle": "Sécurité et consignes de likeness",
+    "safetyRules": [
+      "Ne générez pas de contenu sexuel ni de contenu impliquant des mineurs.",
+      "N'imitez pas des personnes réelles ou des figures publiques sans autorisation claire.",
+      "N'uploadez pas de données personnelles privées ou sensibles dans les médias source.",
+      "Gardez les droits de dialogue, de likeness et de musique clairs quand vous utilisez Audio vers vidéo ou Retake."
+    ],
+    "safetyInterpretation": [],
+    "safetyNote": null,
+    "demoTitle": "Prompt de démo - performance pilotée par audio",
+    "demoPromptLabel": "Clip de performance A2V",
+    "demoPrompt": [
+      "Utilisez l'extrait musical uploadé comme référence de timing pour une performance de danse mélancolique en entrepôt, avec un lent mouvement caméra latéral dans l'intro et des gros plans plus serrés et émotionnels à l'arrivée du refrain."
+    ],
+    "demoNotes": [
+      "L'audio définit le rythme et la structure",
+      "Le prompt ajoute le staging et la direction caméra",
+      "Une image d'ouverture optionnelle peut verrouiller la première frame"
+    ],
+    "multishotTitle": "Workflows de continuation et de correction",
+    "multishotIntro1": "LTX 2.3 Pro est moins un moteur de génération long-form qu'un moteur de continuité quand un plan existe déjà.",
+    "multishotIntro2": "Utilisez Extend pour continuer et Retake pour réparer au lieu de reconstruire une séquence complète depuis zéro.",
+    "multishotTips": [
+      "Utilisez Extend quand la fin est trop abrupte mais que le plan est sinon solide.",
+      "Utilisez Retake quand une ligne, un geste ou un beat de mouvement échoue à l'intérieur d'un clip globalement exploitable."
+    ],
+    "imageTitle": "Contrôle image et transition",
+    "imageIntro": "L'image de départ est l'ancre d'ouverture en Image vers vidéo, et une image de fin optionnelle peut définir le point de résolution du mouvement.",
+    "imageFlow": [
+      "Uploadez l'image de départ qui doit servir de première frame.",
+      "Uploadez une image de fin optionnelle quand la composition finale compte.",
+      "Utilisez le prompt pour le mouvement caméra, les changements d'environnement et le pacing entre ces deux points."
+    ],
+    "imageWhy": [
+      "Pertinent pour les séquences de révélation contrôlées",
+      "Utile pour les transitions portrait et produit on-brand",
+      "Aide à transformer des campagnes still en livrables motion"
+    ],
+    "comparisonTitle": "Quand choisir LTX 2.3 Pro",
+    "comparisonPoints": [
+      "Choisissez LTX 2.3 Pro quand vous avez besoin de plus que de la génération standard : motion piloté par audio, continuation ou retakes sélectifs.",
+      "Utilisez-le quand un clip source existe déjà et que vous voulez étendre ou réparer au lieu de tout régénérer.",
+      "Choisissez LTX 2.3 Fast uniquement quand la vitesse et les workflows de génération simples comptent plus que les contrôles d'édition."
+    ],
+    "comparisonCta": "Comparer LTX 2.3 Pro vs LTX 2.3 Fast ->",
+    "relatedTitle": "Explorer d'autres moteurs",
+    "relatedSubtitle": "Comparez LTX 2.3 Pro à des modèles de draft plus rapides et à des moteurs premium plus cinématiques sans quitter le même cluster.",
+    "finalPara1": "Prêt à tester un workflow LTX complet avec audio, extend et retake au même endroit ? Ouvrez LTX 2.3 Pro dans Generate.",
+    "finalPara2": "Utilisez le modèle standard quand le projet demande plus qu'une simple première passe rapide.",
+    "finalButton": "Ouvrir LTX 2.3 Pro dans Generate ->",
+    "promptingTitle": "Comment écrire un excellent prompt LTX 2.3 Pro",
+    "promptingIntro": "LTX 2.3 Pro fonctionne mieux quand le prompt correspond au workflow actif : génération pure, animation pilotée par audio, continuation ou retake.",
+    "promptingTip": "Astuce : la durée, la résolution, les fps et les contrôles spécifiques au workflow vivent déjà dans l'UI. Utilisez le prompt pour le sujet, l'action, la caméra, la lumière, l'intention de timing et ce qui doit changer.",
+    "promptingGlobalPrinciples": [
+      "Définissez un sujet, un beat principal et un mouvement caméra avant d'ajouter le style.",
+      "Utilisez le workflow qui correspond au job : génération, audio, extend ou retake.",
+      "Pour les retakes, décrivez seulement la section à changer au lieu de réécrire toute la vidéo."
+    ],
+    "promptingEngineWhy": [
+      "La génération texte et image reste directe et cinématique.",
+      "Audio vers vidéo fonctionne mieux quand la bande-son porte le timing et que le prompt guide le staging.",
+      "Extend et Retake sont plus solides quand le prompt est précis sur la continuité et sur ce qui doit rester inchangé."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = drafts rapides de génération.",
+      "structured": "Structured = direction plus propre pour des sorties répétables.",
+      "pro": "Workflow = le meilleur choix quand la continuité ou l'édition d'une source comptent.",
+      "storyboard": "Storyboard = utile pour des passes multi-beats avant extension."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Rapide",
+        "title": "Prompt rapide (première passe)",
+        "description": "Utilisez un prompt court quand vous devez surtout valider l'idée de mouvement.",
+        "copy": "[Sujet + une action] dans [environnement], [mouvement caméra], [lumière/style], [indice audio optionnel]."
+      },
+      {
+        "id": "structured",
+        "label": "Structuré",
+        "title": "Prompt structuré (résultats répétables)",
+        "description": "Séparez sujet, décor, caméra et look pour plus de cohérence.",
+        "copy": "Sujet :\n[Qui/quoi + une action]\n\nDécor :\n[Où + moment + ancres visuelles]\n\nCaméra :\n[Cadrage + angle + un mouvement]\n\nLook :\n[Lumière + palette + texture]\n\nAudio :\n[Ambiance / musique / dialogue si utile]"
+      },
+      {
+        "id": "pro",
+        "label": "Workflow",
+        "title": "Prompt workflow (extend / retake / audio)",
+        "description": "Le meilleur choix quand vous ne partez pas de zéro.",
+        "copy": "Source actuelle :\n[Ce qui existe déjà]\n\nObjectif :\n[Ce qui doit changer ou continuer]\n\nContinuité à préserver :\n[Identité, décor, rythme caméra, lumière]\n\nNouveau beat :\n[Action / timing / indice sonore]\n\nÀ éviter :\n[Ce qui ne doit pas dériver]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (génération multi-beats)",
+        "description": "À utiliser quand vous voulez une passe de génération de 6 à 10 secondes proche d'une séquence avant édition.",
+        "copy": "Plan 1 : [mise en place + caméra]\nPlan 2 : [action principale + caméra]\nPlan 3 : [résolution ou reveal]\n\nLook :\n[Lumière + étalonnage]\n\nAudio :\n[Ambiance + un indice clé]"
+      }
+    ],
+    "troubleshootingTitle": "Problèmes fréquents -> correctifs rapides",
+    "troubleshootingItems": [
+      "Audio vers vidéo paraît visuellement déconnecté -> réduisez la complexité de la scène et laissez la bande-son porter le pacing.",
+      "Extend dérive trop loin du clip d'origine -> décrivez les ancres de continuité et resserrez la nouvelle action.",
+      "Retake modifie plus que la section visée -> raccourcissez la fenêtre de retake et précisez clairement ce qui doit rester identique.",
+      "Image vers vidéo paraît générique -> renforcez la frame de départ et simplifiez la demande de mouvement.",
+      "Les runs 4K semblent trop coûteux pour l'idéation -> validez d'abord le mouvement dans une passe moins chère, puis relancez le gagnant."
+    ]
+  }
+}

@@ -41,12 +41,12 @@ function toPrimitiveArray(value: unknown): PrimitiveValue[] | undefined {
 type GeneratePayload = {
   engineId: string;
   prompt: string;
-  durationSec: number;
+  durationSec?: number;
   durationOption?: number | string | null;
   numFrames?: number | null;
   aspectRatio?: string;
-  resolution: string;
-  fps: number;
+  resolution?: string;
+  fps?: number;
   mode: string;
   audio?: boolean;
   cfgScale?: number | null;
@@ -56,6 +56,7 @@ type GeneratePayload = {
   inputs?: GenerateAttachment[] | undefined;
   idempotencyKey?: string;
   apiKey?: string;
+  audioUrl?: string;
   batchId?: string | null;
   groupId?: string | null;
   iterationIndex?: number | null;
@@ -78,6 +79,7 @@ type GeneratePayload = {
   voiceControl?: boolean;
   elements?: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>;
   endImageUrl?: string;
+  extraInputValues?: Record<string, unknown>;
 };
 
 type GenerateOptions = {

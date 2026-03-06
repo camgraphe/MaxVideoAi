@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "last_updated": "2026-02-19",
-  "method": "manual-v1-placeholder",
+  "last_updated": "2026-03-06",
+  "method": "manual-v1-internet-calibrated",
   "scores": [
     {
       "modelSlug": "sora-2",
@@ -223,6 +223,36 @@
       "controllability": 5.7,
       "speedStability": 9.2,
       "pricing": 9.3
+    },
+    {
+      "modelSlug": "ltx-2-3-pro",
+      "fidelity": 7.6,
+      "visualQuality": 7.4,
+      "motion": 7.5,
+      "consistency": 6.2,
+      "anatomy": 7.3,
+      "textRendering": 6.5,
+      "lipsyncQuality": 7.8,
+      "sequencingQuality": 6.5,
+      "controllability": 7.9,
+      "speedStability": 7.8,
+      "pricing": 8.8,
+      "last_updated": "2026-03-06"
+    },
+    {
+      "modelSlug": "ltx-2-3-fast",
+      "fidelity": 7.1,
+      "visualQuality": 6.9,
+      "motion": 7.2,
+      "consistency": 5.9,
+      "anatomy": 7.0,
+      "textRendering": 6.2,
+      "lipsyncQuality": 7.3,
+      "sequencingQuality": 6.0,
+      "controllability": 7.1,
+      "speedStability": 9.0,
+      "pricing": 9.2,
+      "last_updated": "2026-03-06"
     },
     {
       "modelSlug": "wan-2-5",

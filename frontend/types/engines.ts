@@ -3,7 +3,7 @@ export type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early_access';
 export type LatencyTier = 'fast' | 'standard';
-export type Mode = 't2v' | 'i2v' | 'r2v' | 't2i' | 'i2i';
+export type Mode = 't2v' | 'i2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 't2i' | 'i2i';
 export type Resolution =
   | '480p'
   | '720p'
@@ -63,9 +63,11 @@ export interface EngineInputLimits {
   videoMaxMB?: number;
   videoMaxDurationSec?: number;
   videoCodecs?: string[];
+  audioMaxMB?: number;
+  audioMaxDurationSec?: number;
 }
 
-export type EngineInputFieldType = 'text' | 'number' | 'enum' | 'image' | 'video';
+export type EngineInputFieldType = 'text' | 'number' | 'enum' | 'image' | 'video' | 'audio';
 
 export interface EngineInputField {
   id: string;
@@ -83,6 +85,8 @@ export interface EngineInputField {
   values?: string[];
   source?: 'upload' | 'url' | 'either';
   engineParam?: string;
+  minDurationSec?: number;
+  maxDurationSec?: number;
 }
 
 export interface EngineInputSchema {
@@ -92,6 +96,7 @@ export interface EngineInputSchema {
     supportedFormats?: string[];
     maxImageSizeMB?: number;
     maxVideoSizeMB?: number;
+    maxAudioSizeMB?: number;
     [key: string]: unknown;
   };
 }

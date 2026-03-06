@@ -36,7 +36,7 @@ const STORAGE_KEYS = {
   imageForm: 'maxvideoai.image.composer.v1',
   templates: 'maxvideoai.dashboard.templates.v1',
 } as const;
-const MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'r2v'];
+const MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v'];
 const IMAGE_MODE_OPTIONS: Mode[] = ['t2i', 'i2i'];
 const IN_PROGRESS_POLL_MS = 5000;
 const IN_PROGRESS_LIMIT = 8;
@@ -67,6 +67,9 @@ const DEFAULT_DASHBOARD_COPY = {
   modes: {
     t2v: 'T2V',
     i2v: 'I2V',
+    a2v: 'A2V',
+    extend: 'Extend',
+    retake: 'Retake',
     r2v: 'Reference',
     t2i: 'Create',
     i2i: 'Edit',
@@ -972,6 +975,9 @@ function CreateVideoCard({
             modeLabelOverrides={{
               t2v: copy.modes.t2v,
               i2v: copy.modes.i2v,
+              a2v: copy.modes.a2v,
+              extend: copy.modes.extend,
+              retake: copy.modes.retake,
               r2v: copy.modes.r2v,
             }}
             showModeSelect={false}

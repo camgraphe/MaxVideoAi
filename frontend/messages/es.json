@@ -501,6 +501,9 @@
         "t2v": "Texto -> video",
         "i2v": "Imagen -> video",
         "r2v": "Referencia -> video",
+        "a2v": "Audio -> video",
+        "extend": "Extender video",
+        "retake": "Retake video",
         "t2i": "Texto -> imagen",
         "i2i": "Imagen -> imagen"
       }

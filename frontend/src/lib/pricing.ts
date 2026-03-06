@@ -17,6 +17,7 @@ import {
 } from '@/lib/luma-ray2';
 
 const DECIMAL_PLACES = 6;
+const STANDARD_PRICING_MODES = new Set(['t2v', 'i2v', 't2i', 'i2i']);
 
 export type RawPricingRule = {
   id: string;
@@ -243,11 +244,33 @@ function buildDefinitionFromEngine(
     resolutionMultipliers.default = 1;
   }
 
-  const durationField = engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds');
-  const minDuration = Math.max(1, Math.floor(durationField?.min ?? 1));
+  const durationField =
+    engine.inputSchema?.optional?.find(
+      (field) =>
+        field.id === 'duration_seconds' &&
+        (!Array.isArray(field.modes) || !field.modes.length || field.modes.some((mode) => STANDARD_PRICING_MODES.has(mode)))
+    ) ??
+    engine.inputSchema?.optional?.find(
+      (field) =>
+        field.id === 'duration' &&
+        (!Array.isArray(field.modes) || !field.modes.length || field.modes.some((mode) => STANDARD_PRICING_MODES.has(mode)))
+    );
+  const durationValues = Array.isArray(durationField?.values)
+    ? durationField.values
+        .map((value) => {
+          if (typeof value === 'number' && Number.isFinite(value) && value > 0) return Math.round(value);
+          if (typeof value === 'string') {
+            const numeric = Number(value.replace(/[^\d.]/g, ''));
+            return Number.isFinite(numeric) && numeric > 0 ? Math.round(numeric) : null;
+          }
+          return null;
+        })
+        .filter((value): value is number => value != null)
+    : [];
+  const minDuration = Math.max(1, Math.floor(durationField?.min ?? durationValues[0] ?? 1));
   const maxDuration = Math.max(
     minDuration,
-    Math.floor(durationField?.max ?? pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30)
+    Math.floor(durationField?.max ?? durationValues[durationValues.length - 1] ?? pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30)
   );
   const stepDuration = Math.max(1, Math.floor(durationField?.step ?? 1));
   const defaultDurationRaw = durationField?.default;

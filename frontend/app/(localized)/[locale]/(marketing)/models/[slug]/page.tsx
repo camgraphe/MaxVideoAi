@@ -2,8 +2,7 @@ import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import Image from 'next/image';
-import Head from 'next/head';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
@@ -24,7 +23,9 @@ import { listPlaylistVideos, getVideosByIds, type GalleryVideo } from '@/server/
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
+import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
+import { getLocalizedHeroChipLabels, getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
 import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -2138,11 +2139,11 @@ function getPricePerSecondCents(engineCaps: EngineCaps | undefined): number | nu
   const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
   const cents = perSecond?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
   if (typeof cents === 'number') {
-    return cents;
+    return applyDisplayedPriceMarginCents(cents);
   }
   const base = engineCaps?.pricing?.base;
   if (typeof base === 'number') {
-    return Math.round(base * 100);
+    return applyDisplayedPriceMarginCents(Math.round(base * 100));
   }
   return null;
 }
@@ -2152,11 +2153,11 @@ function getPricePerImageCents(engineCaps: EngineCaps | undefined): number | nul
   const byResolution = flat?.byResolution ? Object.values(flat.byResolution) : [];
   const cents = flat?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
   if (typeof cents === 'number') {
-    return cents;
+    return applyDisplayedPriceMarginCents(cents);
   }
   const base = engineCaps?.pricing?.base;
   if (typeof base === 'number') {
-    return Math.round(base * 100);
+    return applyDisplayedPriceMarginCents(Math.round(base * 100));
   }
   return null;
 }
@@ -2242,11 +2243,51 @@ function resolveSpecStatusLabels(locale: AppLocale) {
   return SPEC_STATUS_LABELS[locale] ?? SPEC_STATUS_LABELS.en;
 }
 
-function localizeSpecStatus(value: string, locale: AppLocale) {
+function localizeSpecStatus(value: string, locale: AppLocale): string {
   const labels = resolveSpecStatusLabels(locale);
-  if (isSupported(value)) return labels.supported;
-  if (isUnsupported(value)) return labels.notSupported;
-  if (isPending(value)) return labels.pending;
+  const normalized = value.trim();
+  const lower = normalized.toLowerCase();
+  if (isSupported(normalized)) return labels.supported;
+  if (isUnsupported(normalized)) return labels.notSupported;
+  if (isPending(normalized)) return labels.pending;
+  if (lower.startsWith('supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.supported} (${localizeSpecStatus(detail, locale)})`;
+  }
+  if (lower.startsWith('not supported (') && normalized.endsWith(')')) {
+    const detail = normalized.slice(normalized.indexOf('(') + 1, -1);
+    return `${labels.notSupported} (${localizeSpecStatus(detail, locale)})`;
+  }
+  if (lower === 'prompt-based only') {
+    return locale === 'fr' ? 'Via prompt uniquement' : locale === 'es' ? 'Solo mediante prompt' : normalized;
+  }
+  if (lower === 'single start image') {
+    return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
+  }
+  if (lower === 'source clip for extend / retake') {
+    return locale === 'fr'
+      ? 'clip source pour extension / retake'
+      : locale === 'es'
+        ? 'clip fuente para extensión / retake'
+        : normalized;
+  }
+  if (lower === 'start + end image in i2v') {
+    return locale === 'fr'
+      ? 'image de départ + image de fin en image → vidéo'
+      : locale === 'es'
+        ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'extend / retake workflows') {
+    return locale === 'fr'
+      ? 'workflows extension / retake'
+      : locale === 'es'
+        ? 'workflows de extensión / retake'
+        : normalized;
+  }
+  if (lower === 'no (maxvideoai)') {
+    return locale === 'fr' ? 'Non (MaxVideoAI)' : locale === 'es' ? 'No (MaxVideoAI)' : normalized;
+  }
   return value;
 }
 
@@ -2259,9 +2300,10 @@ function normalizeMaxResolution(value: string) {
   return value;
 }
 
-function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
+function buildAutoHeroSpecChips(values: KeySpecValues | null, locale: AppLocale): HeroSpecChip[] {
   if (!values) return [];
   const chips: HeroSpecChip[] = [];
+  const labels = getLocalizedHeroChipLabels(locale);
   const add = (label: string | null, icon: HeroSpecIconKey | null) => {
     if (!label) return;
     chips.push({ label, icon });
@@ -2273,14 +2315,14 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
   const duration = values.maxDuration && !isPending(values.maxDuration) ? values.maxDuration.replace(' max', '') : null;
   const aspect = values.aspectRatios && !isPending(values.aspectRatios) ? values.aspectRatios : null;
 
-  if (isSupported(values.textToImage)) add('Text→Image', 'textToVideo');
-  if (isSupported(values.imageToImage)) add('Image→Image', 'imageToVideo');
-  if (isSupported(values.textToVideo)) add('Text→Video', 'textToVideo');
-  if (isSupported(values.imageToVideo)) add('Image→Video', 'imageToVideo');
+  if (isSupported(values.textToImage)) add(labels.textToImage, 'textToVideo');
+  if (isSupported(values.imageToImage)) add(labels.imageToImage, 'imageToVideo');
+  if (isSupported(values.textToVideo)) add(labels.textToVideo, 'textToVideo');
+  if (isSupported(values.imageToVideo)) add(labels.imageToVideo, 'imageToVideo');
   if (resolution) add(resolution, 'resolution');
   if (duration) add(duration, 'duration');
   if (aspect) add(aspect, 'aspectRatio');
-  if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add('Audio', 'audio');
+  if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add(labels.audio, 'audio');
 
   return chips.slice(0, 6);
 }
@@ -2529,6 +2571,8 @@ const COMPARE_PRIORITY_BY_MODEL: Record<string, string[]> = {
   'pika-text-to-video': ['seedance-2-0', 'minimax-hailuo-02-text', 'ltx-2-fast'],
   'seedance-1-5-pro': ['seedance-2-0', 'kling-3-pro', 'sora-2'],
   'seedance-2-0': ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
+  'ltx-2-3-pro': ['ltx-2-3-fast', 'veo-3-1', 'sora-2'],
+  'ltx-2-3-fast': ['ltx-2-3-pro', 'veo-3-1-fast', 'ltx-2-fast'],
 };
 
 function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
@@ -2988,22 +3032,24 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     };
   }
 
-  const localized = await getEngineLocalized(slug, locale);
-  const detailSlugMap = buildDetailSlugMap(slug);
-  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
+  const canonicalSlug = engine.modelSlug ?? slug;
+  const localized = await getEngineLocalized(canonicalSlug, locale);
+  const detailSlugMap = buildDetailSlugMap(canonicalSlug);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = localized.seo.title ?? fallbackTitle;
   const description =
     localized.seo.description ??
     engine.seo.description ??
     'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
-  const ogImagePath = localized.seo.image ?? MODEL_OG_IMAGE_MAP[slug] ?? engine.media?.imagePath ?? '/og/price-before.png';
+  const ogImagePath =
+    localized.seo.image ?? MODEL_OG_IMAGE_MAP[canonicalSlug] ?? engine.media?.imagePath ?? '/og/price-before.png';
   return buildSeoMetadata({
     locale,
     title,
     description,
     slugMap: detailSlugMap,
-    englishPath: `/models/${slug}`,
+    englishPath: `/models/${canonicalSlug}`,
     availableLocales: publishableLocales,
     image: ogImagePath,
     imageAlt: title,
@@ -3164,8 +3210,13 @@ async function renderSoraModelPage({
     }
   })();
   let examples: GalleryVideo[] = [];
+  const examplePlaylistKeys =
+    engine.modelSlug === 'ltx-2-3-pro' ? ['examples-ltx-2-3-pro', 'examples-ltx-2-3'] : [`examples-${engine.modelSlug}`];
   try {
-    examples = await listPlaylistVideos(`examples-${engine.modelSlug}`, 200);
+    for (const playlistKey of examplePlaylistKeys) {
+      examples = await listPlaylistVideos(playlistKey, 200);
+      if (examples.length) break;
+    }
   } catch (error) {
     console.warn('[models/sora-2] failed to load examples', error);
   }
@@ -3429,7 +3480,8 @@ function Sora2PageLayout({
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
-  const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues);
+  const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues, locale);
+  const heroMetaLabels = getLocalizedModelMetaLabels(locale);
   const heroTrustLine =
     locale === 'en'
       ? (engine.modelSlug === 'seedance-2-0' ? copy.heroTrustLine : null) ?? GENERIC_TRUST_LINE
@@ -3446,9 +3498,9 @@ function Sora2PageLayout({
       : keySpecValues?.maxDuration ?? 'Data pending';
   const heroFormat = heroMedia.aspectRatio ?? keySpecValues?.aspectRatios ?? 'Data pending';
   const heroMetaLines = [
-    { label: 'Price', value: heroPrice },
-    { label: 'Duration', value: heroDuration },
-    { label: 'Format', value: heroFormat },
+    { label: heroMetaLabels.price, value: heroPrice },
+    { label: heroMetaLabels.duration, value: heroDuration },
+    { label: heroMetaLabels.format, value: heroFormat },
   ].filter((line) => Boolean(line.value));
   const isEsLocale = locale === 'es';
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
@@ -3492,10 +3544,6 @@ function Sora2PageLayout({
   };
   const normalizedPrimaryCtaHref = normalizeCtaHref(primaryCtaHref) ?? primaryCtaHref;
   const localizedSecondaryCtaHref = normalizeCtaHref(secondaryCtaHref);
-  const heroPosterPreload = heroMedia.posterUrl
-    ? buildOptimizedPosterUrl(heroMedia.posterUrl, { width: 1200, quality: 75 }) ?? heroMedia.posterUrl
-    : null;
-
   const heroHighlights = copy.heroHighlights;
   const bestUseCaseItems = copy.bestUseCaseItems.length
     ? copy.bestUseCaseItems
@@ -3649,9 +3697,6 @@ function Sora2PageLayout({
 
   return (
     <>
-      <Head>
-        {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
-      </Head>
       {schemaPayloads.map((schema, index) => (
         <script
           key={`schema-${index}`}
@@ -4528,6 +4573,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
     notFound();
   }
 
+  if (slug !== engine.modelSlug) {
+    const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
+    permanentRedirect(`/${localizedModelsBase}/${engine.modelSlug}`.replace(/\/{2,}/g, '/'));
+  }
+
   if (
     slug === 'sora-2' ||
     slug === 'sora-2-pro' ||
@@ -4541,6 +4591,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'minimax-hailuo-02-text' ||
     slug === 'ltx-2' ||
     slug === 'ltx-2-fast' ||
+    slug === 'ltx-2-3-pro' ||
+    slug === 'ltx-2-3-fast' ||
     slug === 'kling-2-6-pro' ||
     slug === 'kling-3-standard' ||
     slug === 'seedance-1-5-pro' ||
@@ -4593,11 +4645,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
     }
     return href;
   };
-  const localizedContent = await getEngineLocalized(slug, activeLocale);
-  const detailSlugMap = buildDetailSlugMap(slug);
-  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
+  const localizedContent = await getEngineLocalized(engine.modelSlug, activeLocale);
+  const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
   const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, {
-    englishPath: `/models/${slug}`,
+    englishPath: `/models/${engine.modelSlug}`,
     availableLocales: publishableLocales,
   });
   const allEngines = listFalEngines();
@@ -4605,7 +4657,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   type RelatedCopyContent = { title?: string; subtitle?: string; cta?: string };
   const relatedContent = (dictionary.models as typeof dictionary.models & { related?: RelatedCopyContent }).related ?? {};
   const relatedEngines = allEngines
-    .filter((entry) => entry.modelSlug !== slug)
+    .filter((entry) => entry.modelSlug !== engine.modelSlug)
     .sort((a, b) => {
       const familyDiff = rankEngine(a) - rankEngine(b);
       if (familyDiff !== 0) {
@@ -4726,9 +4778,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const pricingLinkHref = { pathname: '/pricing' };
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
-  const heroPosterPreload = heroPosterSrc
-    ? buildOptimizedPosterUrl(heroPosterSrc, { width: 1200, quality: 75 }) ?? heroPosterSrc
-    : null;
   const heroPosterAbsolute = toAbsoluteUrl(heroPosterSrc);
   const heroTitle = heroContent?.title ?? marketingName ?? slug;
   const pageDescription = introText ?? seoDescription ?? heroTitle;
@@ -4775,9 +4824,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
   return (
     <>
-      <Head>
-        {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
-      </Head>
       {schemaPayloads.map((schema, index) => (
         <script
           key={`schema-${index}`}
