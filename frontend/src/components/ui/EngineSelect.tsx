@@ -28,6 +28,9 @@ const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
   i2v: 'Image -> Video',
   r2v: 'Reference -> Video',
+  a2v: 'Audio -> Video',
+  extend: 'Extend Video',
+  retake: 'Retake Video',
   t2i: 'Text -> Image',
   i2i: 'Image -> Image',
 };
@@ -76,7 +79,7 @@ const ENGINE_VARIANT_LABEL_OVERRIDES: Record<string, string> = {
 };
 const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
-const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'r2v'];
+const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v'];
 
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
   'veo-3-1-first-last': {

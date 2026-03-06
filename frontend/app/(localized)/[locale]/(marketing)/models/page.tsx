@@ -17,6 +17,7 @@ import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import engineCatalog from '@/config/engine-catalog.json';
 const MODELS_SLUG_MAP = buildSlugMap('models');
 
@@ -181,19 +182,19 @@ function getMinPricePerSecond(entry?: EngineCatalogEntry | null) {
   const perSecond = entry.engine.pricingDetails?.perSecondCents;
   const candidates: number[] = [];
   if (typeof perSecond?.default === 'number') {
-    candidates.push(perSecond.default);
+    candidates.push(applyDisplayedPriceMarginCents(perSecond.default));
     const audioOffDelta = entry.engine.pricingDetails?.addons?.audio_off?.perSecondCents;
     if (typeof audioOffDelta === 'number') {
-      candidates.push(perSecond.default + audioOffDelta);
+      candidates.push(applyDisplayedPriceMarginCents(perSecond.default + audioOffDelta));
     }
   }
   if (perSecond?.byResolution) {
     Object.values(perSecond.byResolution).forEach((value) => {
-      if (typeof value === 'number') candidates.push(value);
+      if (typeof value === 'number') candidates.push(applyDisplayedPriceMarginCents(value));
     });
   }
   if (typeof entry.engine.pricing?.base === 'number') {
-    candidates.push(Math.round(entry.engine.pricing.base * 100));
+    candidates.push(applyDisplayedPriceMarginCents(Math.round(entry.engine.pricing.base * 100)));
   }
   if (!candidates.length) return null;
   return Math.min(...candidates);
@@ -314,6 +315,8 @@ const USE_CASE_MAP: Record<string, string> = {
   'wan-2-6': 'structured prompts with clean transitions',
   'wan-2-5': 'budget-friendly prompt testing',
   'pika-text-to-video': 'stylized social-first clips',
+  'ltx-2-3': 'all-in-one LTX video workflows with audio and retakes',
+  'ltx-2-3-fast': 'quick LTX 2.3 iterations for text and image video',
   'ltx-2': 'fast iteration with responsive motion',
   'ltx-2-fast': 'rapid testing and quick iteration',
   'minimax-hailuo-02-text': 'budget-friendly concept tests',
@@ -564,6 +567,8 @@ export default async function ModelsPage() {
     'kling-3-pro',
     'kling-2-6-pro',
     'kling-2-5-turbo',
+    'ltx-2-3-fast',
+    'ltx-2-3',
     'ltx-2-fast',
     'ltx-2',
     'minimax-hailuo-02-text',
@@ -771,7 +776,7 @@ export default async function ModelsPage() {
     {
       title: outcomeCopy[1]?.title ?? 'Image-to-video models',
       description: outcomeCopy[1]?.description ?? 'Check which models support references and image-led workflows.',
-      engines: ['veo-3-1', 'veo-3-1-fast', 'pika-text-to-video', 'wan-2-6', 'ltx-2'],
+      engines: ['veo-3-1', 'veo-3-1-fast', 'pika-text-to-video', 'wan-2-6', 'ltx-2-3'],
       icon: Clapperboard,
     },
     {
@@ -783,7 +788,7 @@ export default async function ModelsPage() {
     {
       title: outcomeCopy[3]?.title ?? 'Limits and formats',
       description: outcomeCopy[3]?.description ?? 'Duration, max resolution, audio, and format constraints by model.',
-      engines: ['sora-2', 'veo-3-1', 'kling-3-standard', 'ltx-2', 'minimax-hailuo-02-text'],
+      engines: ['sora-2', 'veo-3-1', 'kling-3-standard', 'ltx-2-3', 'minimax-hailuo-02-text'],
       icon: Sparkles,
     },
     {

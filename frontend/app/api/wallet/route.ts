@@ -210,10 +210,7 @@ export async function POST(req: NextRequest) {
     let durationSec = Number(body.durationSec ?? engine.maxDurationSec ?? 4);
     let resolution = String(body.resolution || engine.resolutions?.[0] || '1080p');
     const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : 't2v';
-    let mode: Mode = 't2v';
-    if (rawMode === 'i2v' || rawMode === 'i2i') {
-      mode = rawMode as Mode;
-    }
+    const mode: Mode = engine.modes.includes(rawMode as Mode) ? (rawMode as Mode) : ('t2v' as Mode);
     let soraRequest: SoraRequest | null = null;
 
     if (isSoraEngineId(engine.id)) {

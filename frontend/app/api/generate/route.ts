@@ -40,7 +40,7 @@ const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
-type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'i2i'>;
+type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'i2i' | 'r2v' | 'a2v' | 'extend' | 'retake'>;
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -84,8 +84,36 @@ function withFalTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 }
 
 function isVideoMode(value: unknown): value is VideoMode {
-  return value === 't2v' || value === 'i2v';
+  return (
+    value === 't2v' ||
+    value === 'i2v' ||
+    value === 'i2i' ||
+    value === 'r2v' ||
+    value === 'a2v' ||
+    value === 'extend' ||
+    value === 'retake'
+  );
 }
+
+function normalizeFieldId(value: string | undefined): string {
+  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const STANDARD_INPUT_FIELD_IDS = new Set([
+  'prompt',
+  'negativeprompt',
+  'duration',
+  'durationseconds',
+  'resolution',
+  'aspectratio',
+  'fps',
+  'generateaudio',
+  'seed',
+  'camerafixed',
+  'enablesafetychecker',
+  'cfgscale',
+  'loop',
+]);
 
 async function resolveUserId(): Promise<string | null> {
   try {
@@ -584,7 +612,20 @@ export async function POST(req: NextRequest) {
     : null;
   const endImageUrl =
     typeof body.endImageUrl === 'string' && body.endImageUrl.trim().length ? body.endImageUrl.trim() : null;
+  const rawAudioUrl =
+    typeof body.audioUrl === 'string' && body.audioUrl.trim().length
+      ? body.audioUrl.trim()
+      : typeof body.audio_url === 'string' && body.audio_url.trim().length
+        ? body.audio_url.trim()
+        : null;
   const capability = getEngineCaps(engine.id, mode);
+  const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
+  const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
+  const supportsFps = capability
+    ? Array.isArray(capability.fps)
+      ? capability.fps.length > 0
+      : typeof capability.fps === 'number'
+    : true;
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawAspectRatio =
     supportsAspectRatio && typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length
@@ -633,6 +674,10 @@ export async function POST(req: NextRequest) {
       ? Math.max(0, Math.trunc(body.etaSeconds))
       : null;
   const etaLabel = typeof body.etaLabel === 'string' && body.etaLabel.trim().length ? body.etaLabel.trim() : null;
+  const rawExtraInputValues =
+    body.extraInputValues && typeof body.extraInputValues === 'object' && !Array.isArray(body.extraInputValues)
+      ? (body.extraInputValues as Record<string, unknown>)
+      : null;
 
   let requestedResolution =
     typeof body.resolution === 'string' && body.resolution.trim().length
@@ -656,8 +701,8 @@ export async function POST(req: NextRequest) {
     effectiveResolution = lumaResolutionInfo.value;
     requestedResolution = lumaResolutionInfo.value;
   }
-  if (engine.id === 'ltx-2-fast' && durationSec > 10) {
-    // Fal requirement: 12–20s clips must run at 1080p/25fps on LTX-2 Fast.
+  if ((engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10) {
+    // Fal requirement: 12–20s clips must run at 1080p/25fps on LTX fast variants.
     requestedResolution = '1080p';
     pricingResolution = '1080p';
     effectiveResolution = '1080p';
@@ -1019,12 +1064,92 @@ async function rollbackPendingPayment(params: {
   let stripeChargeId: string | null = null;
   let walletChargeReserved = false;
 
+  const applicableSchemaFields = (() => {
+    const schema = engine.inputSchema;
+    if (!schema) return [] as Array<{ id: string; type: string; required: boolean; values?: Array<string | number> }>;
+    return [...(schema.required ?? []), ...(schema.optional ?? [])]
+      .filter((field) => !field.modes || field.modes.includes(mode))
+      .filter((field) => field.type === 'text' || field.type === 'number' || field.type === 'enum')
+      .filter((field) => !STANDARD_INPUT_FIELD_IDS.has(normalizeFieldId(field.id)))
+      .map((field) => ({
+        id: field.id,
+        type: field.type,
+        required: Boolean(field.requiredInModes ? field.requiredInModes.includes(mode) : (schema.required ?? []).includes(field)),
+        values: field.values,
+      }));
+  })();
+
+  const applicableFieldMap = new Map(applicableSchemaFields.map((field) => [field.id, field]));
+  const validatedExtraInputValues: Record<string, unknown> = {};
+  if (rawExtraInputValues) {
+    for (const [key, rawValue] of Object.entries(rawExtraInputValues)) {
+      const schemaField = applicableFieldMap.get(key);
+      if (!schemaField) {
+        return NextResponse.json(
+          { ok: false, error: 'INVALID_EXTRA_FIELD', field: key, message: `Unsupported input field "${key}" for this mode.` },
+          { status: 400 }
+        );
+      }
+      if (schemaField.type === 'number') {
+        const parsed =
+          typeof rawValue === 'number'
+            ? rawValue
+            : typeof rawValue === 'string' && rawValue.trim().length
+              ? Number(rawValue.trim())
+              : Number.NaN;
+        if (!Number.isFinite(parsed)) {
+          return NextResponse.json(
+            { ok: false, error: 'INVALID_EXTRA_FIELD', field: key, message: `${key} must be a number.` },
+            { status: 400 }
+          );
+        }
+        validatedExtraInputValues[key] = parsed;
+        continue;
+      }
+      if (schemaField.type === 'enum') {
+        const parsed = typeof rawValue === 'number' ? rawValue : typeof rawValue === 'string' ? rawValue.trim() : '';
+        if (parsed === '') {
+          continue;
+        }
+        if (Array.isArray(schemaField.values) && !schemaField.values.some((value) => String(value) === String(parsed))) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: 'INVALID_EXTRA_FIELD',
+              field: key,
+              message: `${key} must be one of ${(schemaField.values ?? []).join(', ')}.`,
+            },
+            { status: 400 }
+          );
+        }
+        validatedExtraInputValues[key] = parsed;
+        continue;
+      }
+      if (schemaField.type === 'text') {
+        const parsed = typeof rawValue === 'string' ? rawValue.trim() : '';
+        if (!parsed) {
+          continue;
+        }
+        validatedExtraInputValues[key] = parsed;
+      }
+    }
+  }
+
+  for (const field of applicableSchemaFields) {
+    if (field.required && validatedExtraInputValues[field.id] == null) {
+      return NextResponse.json(
+        { ok: false, error: 'MISSING_EXTRA_FIELD', field: field.id, message: `${field.id} is required for this mode.` },
+        { status: 400 }
+      );
+    }
+  }
+
   let generationResult: Awaited<ReturnType<typeof generateVideo>> | null = null;
   type NormalizedAttachment = {
     name: string;
     type: string;
     size: number;
-    kind?: 'image' | 'video';
+    kind?: 'image' | 'video' | 'audio';
     slotId?: string;
     label?: string;
     url?: string;
@@ -1056,8 +1181,8 @@ async function rollbackPendingPayment(params: {
       type: typeof candidate.type === 'string' ? candidate.type : 'application/octet-stream',
       size: typeof candidate.size === 'number' ? candidate.size : 0,
       kind:
-        candidate.kind === 'image' || candidate.kind === 'video'
-          ? (candidate.kind as 'image' | 'video')
+        candidate.kind === 'image' || candidate.kind === 'video' || candidate.kind === 'audio'
+          ? (candidate.kind as 'image' | 'video' | 'audio')
           : undefined,
       slotId: typeof candidate.slotId === 'string' ? candidate.slotId : undefined,
       label: typeof candidate.label === 'string' ? candidate.label : undefined,
@@ -1079,7 +1204,7 @@ async function rollbackPendingPayment(params: {
 
       let sizeBytes = base.size;
       let mimeType = base.type;
-      if (!sizeBytes || !mimeType || mimeType === 'application/octet-stream') {
+      if (base.kind === 'image' && (!sizeBytes || !mimeType || mimeType === 'application/octet-stream')) {
         const probe = await probeImageUrl(urlCandidate);
         if (!probe.ok) {
           return NextResponse.json({ ok: false, error: 'IMAGE_UNREACHABLE', url: urlCandidate }, { status: 422 });
@@ -1101,6 +1226,12 @@ async function rollbackPendingPayment(params: {
     }
 
     if (dataUrlCandidate && dataUrlCandidate.startsWith('data:')) {
+      if (base.kind && base.kind !== 'image') {
+        return NextResponse.json(
+          { ok: false, error: 'INLINE_ASSET_UNSUPPORTED', message: 'Inline audio/video uploads are not supported.' },
+          { status: 400 }
+        );
+      }
       const { buffer, mime } = decodeDataUrl(dataUrlCandidate);
       let uploadResult;
       try {
@@ -1125,7 +1256,7 @@ async function rollbackPendingPayment(params: {
           height: uploadResult.height,
           size: uploadResult.size,
           source: 'inline',
-          metadata: { originalName: base.name },
+          metadata: { originalName: base.name, kind: 'image' },
         });
 
         processedAttachments.push({
@@ -1154,6 +1285,11 @@ async function rollbackPendingPayment(params: {
     .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
     .map((attachment) => attachment.url!.trim())
     .filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
+  const audioUrls = processedAttachments
+    .filter((attachment) => attachment.kind === 'audio' && typeof attachment.url === 'string')
+    .map((attachment) => attachment.url!.trim())
+    .filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
+  const resolvedAudioUrl = rawAudioUrl ?? audioUrls[0] ?? undefined;
   const initialImageUrl =
     soraRequest?.mode === 'i2v'
       ? soraRequest.image_url
@@ -1191,9 +1327,13 @@ async function rollbackPendingPayment(params: {
   if (videoUrls.length) {
     validationPayload.video_urls = videoUrls;
   }
+  if (resolvedAudioUrl) {
+    validationPayload.audio_url = resolvedAudioUrl;
+  }
 
   const needsImage = mode === 'i2v' || mode === 'i2i';
-  const needsVideo = mode === 'r2v';
+  const needsVideo = mode === 'r2v' || mode === 'extend' || mode === 'retake';
+  const needsAudio = mode === 'a2v';
   if (isLumaRay2 && mode === 'i2v') {
     if (!initialImageUrl) {
       logMetric('rejected', {
@@ -1221,6 +1361,14 @@ async function rollbackPendingPayment(params: {
         meta: { engineId: engine.id, mode },
       });
       return NextResponse.json({ ok: false, error: 'Video URLs are required for this engine mode' }, { status: 400 });
+    }
+  } else if (needsAudio) {
+    if (!resolvedAudioUrl) {
+      logMetric('rejected', {
+        errorCode: 'AUDIO_URL_REQUIRED',
+        meta: { engineId: engine.id, mode },
+      });
+      return NextResponse.json({ ok: false, error: 'Audio URL is required for this engine mode' }, { status: 400 });
     }
   }
 
@@ -1458,8 +1606,10 @@ async function rollbackPendingPayment(params: {
       : undefined;
   const falInputSummary = {
     primaryImageUrl: initialImageUrl ?? null,
+    primaryAudioUrl: resolvedAudioUrl ?? null,
     referenceImageCount: Array.isArray(normalizedReferenceImages) ? normalizedReferenceImages.length : 0,
     referenceVideoCount: videoUrls.length,
+    referenceAudioCount: audioUrls.length,
     hasFirstFrame: Boolean(firstFrameUrl),
     hasLastFrame: Boolean(lastFrameUrl),
     inputSlots:
@@ -1471,24 +1621,20 @@ async function rollbackPendingPayment(params: {
   };
 
   const falDurationOption = lumaDurationInfo?.label ?? rawDurationLabel ?? rawDurationOption ?? null;
-  const isLtx2FastLong = engine.id === 'ltx-2-fast' && durationSec > 10;
+  const isLtxFastLong = (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10;
   let clampedFps =
     typeof body.fps === 'number' && Number.isFinite(body.fps) && body.fps > 0 ? Math.trunc(body.fps) : undefined;
-  if (isLtx2FastLong) {
+  if (isLtxFastLong) {
     clampedFps = 25;
   }
   const falPayload: Parameters<typeof generateVideo>[0] = {
     engineId: engine.id,
     prompt: prompt,
-    durationSec,
-    durationOption: falDurationOption,
-    numFrames,
-    aspectRatio: aspectRatio ?? undefined,
-    resolution: effectiveResolution,
     mode,
     apiKey: typeof body.apiKey === 'string' ? body.apiKey : undefined,
     idempotencyKey: jobId,
     imageUrl: initialImageUrl,
+    audioUrl: resolvedAudioUrl,
     referenceImages: normalizedReferenceImages,
     inputs: falInputs,
     soraRequest: soraRequest ?? undefined,
@@ -1503,11 +1649,15 @@ async function rollbackPendingPayment(params: {
     voiceIds: voiceIds.length ? voiceIds : undefined,
     elements: elements ?? undefined,
     endImageUrl: endImageUrl ?? undefined,
+    extraInputValues: Object.keys(validatedExtraInputValues).length ? validatedExtraInputValues : undefined,
+    ...(supportsDuration ? { durationSec, durationOption: falDurationOption, numFrames } : {}),
+    ...(supportsAspectRatio ? { aspectRatio: aspectRatio ?? undefined } : {}),
+    ...(supportsResolution ? { resolution: effectiveResolution } : {}),
   };
   if (typeof audioEnabled === 'boolean') {
     falPayload.audio = audioEnabled;
   }
-  if (typeof clampedFps === 'number') {
+  if (supportsFps && typeof clampedFps === 'number') {
     falPayload.fps = clampedFps;
   }
   if (typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale)) {
@@ -1546,9 +1696,11 @@ async function rollbackPendingPayment(params: {
       voiceIds: voiceIds.length ? voiceIds : null,
       voiceControl: voiceControl ? true : null,
       multiPrompt: multiPrompt ?? null,
+      extraInputValues: Object.keys(validatedExtraInputValues).length ? validatedExtraInputValues : null,
     },
     refs: {
       imageUrl: initialImageUrl ?? null,
+      audioUrl: resolvedAudioUrl ?? null,
       referenceImages: normalizedReferenceImages ?? null,
       videoUrls: videoUrls.length ? videoUrls : null,
       firstFrameUrl: firstFrameUrl ?? null,

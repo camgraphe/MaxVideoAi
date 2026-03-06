@@ -24,6 +24,7 @@ import { CopyPromptButton } from './CopyPromptButton.client';
 import { getLatestVideoByPromptAndEngine, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { fetchEngineAverageDurations } from '@/server/generate-metrics';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { getImageAlt } from '@/lib/image-alt';
 import type { EngineCaps } from '@/types/engines';
 
@@ -388,11 +389,11 @@ function getPricePerSecondCents(entry: EngineCatalogEntry): number | null {
   const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
   const cents = perSecond?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
   if (typeof cents === 'number') {
-    return cents;
+    return applyDisplayedPriceMarginCents(cents);
   }
   const base = entry.engine?.pricing?.base;
   if (typeof base === 'number') {
-    return Math.round(base * 100);
+    return applyDisplayedPriceMarginCents(Math.round(base * 100));
   }
   return null;
 }
@@ -492,7 +493,7 @@ function resolveAudioOffPrice(entry: EngineCatalogEntry): string | null {
   if (!perSecond || typeof perSecond.default !== 'number') return null;
   const audioOffDelta = entry.engine?.pricingDetails?.addons?.audio_off?.perSecondCents;
   if (typeof audioOffDelta !== 'number') return null;
-  const total = perSecond.default + audioOffDelta;
+  const total = applyDisplayedPriceMarginCents(perSecond.default + audioOffDelta);
   return `Audio off: $${(total / 100).toFixed(2)}/s`;
 }
 
@@ -589,7 +590,7 @@ async function resolvePricingDisplay(
   const resolutionEntries = Object.entries(byResolution)
     .map(([label, cents]) => ({
       label,
-      cents: typeof cents === 'number' ? cents : null,
+      cents: typeof cents === 'number' ? applyDisplayedPriceMarginCents(cents) : null,
       order: parseResolutionLabel(label),
     }))
     .filter((entry): entry is { label: string; cents: number; order: number | null } => entry.cents != null);
@@ -618,7 +619,7 @@ async function resolvePricingDisplay(
     const audioOffDelta = entry.engine?.pricingDetails?.addons?.audio_off?.perSecondCents;
     const audioOffCents =
       typeof audioOffDelta === 'number' && typeof perSecond?.default === 'number'
-        ? perSecond.default + audioOffDelta
+        ? applyDisplayedPriceMarginCents(perSecond.default + audioOffDelta)
         : null;
     const prices = [baseCents / 100];
     if (typeof audioOffCents === 'number') {

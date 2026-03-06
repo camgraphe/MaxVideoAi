@@ -179,7 +179,7 @@ type ReferenceAsset = {
   id: string;
   fieldId: string;
   previewUrl: string;
-  kind: 'image' | 'video';
+  kind: 'image' | 'video' | 'audio';
   name: string;
   size: number;
   type: string;
@@ -194,12 +194,14 @@ type ReferenceAsset = {
 type UserAsset = {
   id: string;
   url: string;
+  kind: 'image' | 'video' | 'audio';
   width?: number | null;
   height?: number | null;
   size?: number | null;
   mime?: string | null;
   source?: string | null;
   createdAt?: string;
+  canDelete?: boolean;
 };
 
 type AssetLibrarySource = 'all' | 'upload' | 'generated';
@@ -210,6 +212,7 @@ type AssetPickerTarget =
 
 type AssetLibraryModalProps = {
   fieldLabel: string;
+  assetType: 'image' | 'video';
   assets: UserAsset[];
   isLoading: boolean;
   error: string | null;
@@ -279,6 +282,7 @@ function matchesEngineToken(engine: EngineCaps, token: string): boolean {
 
 function AssetLibraryModal({
   fieldLabel,
+  assetType,
   assets,
   isLoading,
   error,
@@ -296,12 +300,20 @@ function AssetLibraryModal({
   const importLabel = copyAssetLibrary.import ?? DEFAULT_WORKSPACE_COPY.assetLibrary.import;
   const importingLabel = copyAssetLibrary.importing ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importing;
   const importFailedLabel = copyAssetLibrary.importFailed ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importFailed;
+  const importAccept = assetType === 'video' ? 'video/*' : 'image/*';
+  const importEndpoint = assetType === 'video' ? '/api/uploads/video' : '/api/uploads/image';
   const emptyLabel =
     source === 'generated'
-      ? copyAssetLibrary.emptyGenerated
+      ? assetType === 'video'
+        ? 'No generated videos yet. Render a video to reuse it here.'
+        : copyAssetLibrary.emptyGenerated
       : source === 'upload'
-        ? copyAssetLibrary.emptyUploads
-        : copy.empty;
+        ? assetType === 'video'
+          ? 'No uploaded videos yet. Upload a source video to see it here.'
+          : copyAssetLibrary.emptyUploads
+        : assetType === 'video'
+          ? 'No saved videos yet. Upload or generate a video to see it here.'
+          : copy.empty;
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -317,7 +329,7 @@ function AssetLibraryModal({
       try {
         const formData = new FormData();
         formData.append('file', file, file.name);
-        const response = await authFetch('/api/uploads/image', {
+        const response = await authFetch(importEndpoint, {
           method: 'POST',
           body: formData,
         });
@@ -339,10 +351,12 @@ function AssetLibraryModal({
         onSelect({
           id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
           url: uploadedAsset.url,
+          kind: assetType,
           width: uploadedAsset.width ?? null,
           height: uploadedAsset.height ?? null,
           size: uploadedAsset.size ?? null,
           mime: uploadedAsset.mime ?? null,
+          canDelete: true,
         });
       } catch (error) {
         setImportError(error instanceof Error ? error.message : importFailedLabel);
@@ -350,7 +364,7 @@ function AssetLibraryModal({
         setIsImporting(false);
       }
     },
-    [importFailedLabel, onSelect]
+    [assetType, importEndpoint, importFailedLabel, onSelect]
   );
   const formatSize = (bytes?: number | null) => {
     if (!bytes || bytes <= 0) return null;
@@ -376,7 +390,7 @@ function AssetLibraryModal({
             <input
               ref={importInputRef}
               type="file"
-              accept="image/*"
+              accept={importAccept}
               className="sr-only"
               onChange={handleImportChange}
             />
@@ -413,7 +427,7 @@ function AssetLibraryModal({
 
         <div
           role="tablist"
-          aria-label="Library image filters"
+          aria-label="Library asset filters"
           className="mt-4 flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
         >
           <Button
@@ -480,7 +494,7 @@ function AssetLibraryModal({
             </div>
           ) : assets.length === 0 ? (
             <div className="rounded-input border border-border bg-surface-2 px-4 py-6 text-center text-sm text-text-secondary">
-              {emptyLabel ?? copy.empty ?? 'No saved images yet. Upload a reference image to see it here.'}
+              {emptyLabel ?? (assetType === 'video' ? 'No saved videos yet.' : 'No saved images yet.')}
             </div>
           ) : (
             <div className="grid grid-gap-sm sm:grid-cols-2">
@@ -488,16 +502,21 @@ function AssetLibraryModal({
                 const dimensions = asset.width && asset.height ? `${asset.width}×${asset.height}` : null;
                 const sizeLabel = formatSize(asset.size);
                 const isDeleting = deletingAssetId === asset.id;
+                const canDelete = asset.canDelete !== false && !asset.id.startsWith('job:');
                 return (
                   <div key={asset.id} className="overflow-hidden rounded-card border border-border/60 bg-surface">
                     <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                      <Image
-                        src={asset.url}
-                        alt="Reference"
-                        fill
-                        className="object-cover"
-                        sizes="(min-width: 1024px) 400px, (min-width: 640px) 300px, 100vw"
-                      />
+                      {asset.kind === 'video' ? (
+                        <video src={asset.url} controls className="h-full w-full bg-black object-cover" />
+                      ) : (
+                        <Image
+                          src={asset.url}
+                          alt="Reference"
+                          fill
+                          className="object-cover"
+                          sizes="(min-width: 1024px) 400px, (min-width: 640px) 300px, 100vw"
+                        />
+                      )}
                     </div>
                     <div className="flex items-center justify-between gap-4 border-t border-border bg-surface px-3 py-2 text-[12px] text-text-secondary">
                       <div className="flex flex-col gap-1">
@@ -505,28 +524,30 @@ function AssetLibraryModal({
                         {sizeLabel && <span>{sizeLabel}</span>}
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className={clsx(
-                            'px-3 py-1 text-[12px] font-semibold uppercase tracking-micro focus-visible:ring-error-border',
-                            isDeleting
-                              ? 'border-error-border bg-error-bg text-error opacity-70'
-                              : 'border-error-border bg-error-bg text-error hover:border-error-border hover:bg-error-bg'
-                          )}
-                          onClick={() => {
-                            const result = onDelete(asset);
-                            if (result && typeof result.then === 'function') {
-                              void result.catch(() => {
-                                // errors handled upstream
-                              });
-                            }
-                          }}
-                          disabled={isDeleting}
-                        >
-                          {isDeleting ? 'Deleting…' : 'Delete'}
-                        </Button>
+                        {canDelete ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className={clsx(
+                              'px-3 py-1 text-[12px] font-semibold uppercase tracking-micro focus-visible:ring-error-border',
+                              isDeleting
+                                ? 'border-error-border bg-error-bg text-error opacity-70'
+                                : 'border-error-border bg-error-bg text-error hover:border-error-border hover:bg-error-bg'
+                            )}
+                            onClick={() => {
+                              const result = onDelete(asset);
+                              if (result && typeof result.then === 'function') {
+                                void result.catch(() => {
+                                  // errors handled upstream
+                                });
+                              }
+                            }}
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? 'Deleting…' : 'Delete'}
+                          </Button>
+                        ) : null}
                         <Button
                           type="button"
                           onClick={() => onSelect(asset)}
@@ -557,6 +578,9 @@ const MODE_DISPLAY_LABEL: Record<Mode, string> = {
   t2v: 'Text → Video',
   i2v: 'Image → Video',
   r2v: 'Reference → Video',
+  a2v: 'Audio → Video',
+  extend: 'Extend Video',
+  retake: 'Retake Video',
   t2i: 'Text → Image',
   i2i: 'Image → Image',
 };
@@ -605,6 +629,80 @@ function matchesDurationOption(meta: DurationOptionMeta, previousOption: number 
 
 function normalizeFieldId(value: string | undefined): string {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const STANDARD_ENGINE_FIELD_IDS = new Set([
+  'prompt',
+  'negativeprompt',
+  'duration',
+  'durationseconds',
+  'resolution',
+  'aspectratio',
+  'fps',
+  'generateaudio',
+  'seed',
+  'camerafixed',
+  'enablesafetychecker',
+  'cfgscale',
+  'loop',
+]);
+
+function isModeValue(value: unknown): value is Mode {
+  return (
+    value === 't2v' ||
+    value === 'i2v' ||
+    value === 'r2v' ||
+    value === 'a2v' ||
+    value === 'extend' ||
+    value === 'retake' ||
+    value === 't2i' ||
+    value === 'i2i'
+  );
+}
+
+function coerceStoredExtraInputValues(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>((acc, [key, entry]) => {
+    if (!key.trim()) return acc;
+    if (
+      entry === null ||
+      typeof entry === 'string' ||
+      typeof entry === 'number' ||
+      typeof entry === 'boolean' ||
+      (Array.isArray(entry) &&
+        entry.every(
+          (item) => item === null || typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'
+        ))
+    ) {
+      acc[key] = entry;
+    }
+    return acc;
+  }, {});
+}
+
+function normalizeExtraInputValue(field: EngineInputField, value: unknown): unknown {
+  if (value == null) return undefined;
+  if (field.type === 'number') {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return undefined;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    }
+    return undefined;
+  }
+  if (field.type === 'enum') {
+    const raw = typeof value === 'number' ? value : typeof value === 'string' ? value.trim() : '';
+    if (raw === '') return undefined;
+    return raw;
+  }
+  if (field.type === 'text') {
+    if (typeof value !== 'string') return undefined;
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : undefined;
+  }
+  return undefined;
 }
 
 function parseBooleanInput(value: unknown): boolean | null {
@@ -778,7 +876,11 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     return aspectOptions[0];
   })();
 
-  const fpsOptions = engine.fps && engine.fps.length ? engine.fps : [24];
+  const fpsOptions = (() => {
+    if (Array.isArray(capability?.fps)) return capability.fps;
+    if (typeof capability?.fps === 'number') return [capability.fps];
+    return engine.fps && engine.fps.length ? engine.fps : [24];
+  })();
   const fps = (() => {
     if (previous?.fps && fpsOptions.includes(previous.fps)) {
       return previous.fps;
@@ -825,6 +927,7 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     seed,
     cameraFixed,
     safetyChecker,
+    extraInputValues: previous?.extraInputValues ?? {},
   };
 }
 
@@ -873,6 +976,7 @@ interface FormState {
   seed?: number | null;
   cameraFixed?: boolean;
   safetyChecker?: boolean;
+  extraInputValues: Record<string, unknown>;
 }
 
 const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
@@ -912,6 +1016,7 @@ function parseStoredForm(value: string): StoredFormState | null {
       seed,
       cameraFixed,
       safetyChecker,
+      extraInputValues,
       updatedAt,
     } = raw;
 
@@ -939,6 +1044,7 @@ function parseStoredForm(value: string): StoredFormState | null {
       seed: typeof seed === 'number' && Number.isFinite(seed) ? Math.trunc(seed) : undefined,
       cameraFixed: typeof cameraFixed === 'boolean' ? cameraFixed : undefined,
       safetyChecker: typeof safetyChecker === 'boolean' ? safetyChecker : undefined,
+      extraInputValues: coerceStoredExtraInputValues(extraInputValues),
       updatedAt: typeof updatedAt === 'number' && Number.isFinite(updatedAt) ? updatedAt : undefined,
     };
   } catch {
@@ -1536,8 +1642,10 @@ useEffect(() => {
       const lastKnownUserId = readLastKnownUserId();
       if (lastKnownUserId) {
         setUserId(lastKnownUserId);
-        setAuthChecked(true);
+      } else {
+        setUserId(null);
       }
+      setAuthChecked(true);
       return;
     }
     setUserId(null);
@@ -1662,6 +1770,7 @@ useEffect(() => {
               typeof storedFormRaw.safetyChecker === 'boolean'
                 ? storedFormRaw.safetyChecker
                 : base.safetyChecker,
+            extraInputValues: storedFormRaw.extraInputValues ?? base.extraInputValues,
           };
           nextForm = coerceFormState(engine, mode, candidate);
         }
@@ -1687,6 +1796,7 @@ useEffect(() => {
             seed: null,
             cameraFixed: false,
             safetyChecker: true,
+            extraInputValues: {},
           };
           nextForm = base;
           if (process.env.NODE_ENV !== 'production') {
@@ -2368,6 +2478,14 @@ useEffect(() => {
   const [assetLibraryLoadedSource, setAssetLibraryLoadedSource] = useState<AssetLibrarySource | null>(null);
   const [assetDeletePendingId, setAssetDeletePendingId] = useState<string | null>(null);
 
+  const assetLibraryKind = useMemo<'image' | 'video'>(() => {
+    if (!assetPickerTarget) return 'image';
+    if (assetPickerTarget.kind === 'field' && assetPickerTarget.field.type === 'video') {
+      return 'video';
+    }
+    return 'image';
+  }, [assetPickerTarget]);
+
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
   const klingElementsRef = useRef<KlingElementState[]>([]);
 
@@ -2429,43 +2547,97 @@ const showNotice = useCallback((message: string) => {
     setIsAssetLibraryLoading(true);
     setAssetLibraryError(null);
     try {
-      const url =
+      const assetUrl =
         source === 'all'
           ? '/api/user-assets?limit=60'
           : `/api/user-assets?limit=60&source=${encodeURIComponent(source)}`;
-      const response = await authFetch(url);
-      if (response.status === 401) {
+      const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
+      if (assetLibraryKind === 'video' && source !== 'upload') {
+        requests.push(authFetch(`/api/jobs?limit=60&type=video`));
+      }
+
+      const [assetResponse, jobsResponse] = await Promise.all(requests);
+      if (assetResponse.status === 401 || jobsResponse?.status === 401) {
         setAssetLibrary([]);
-        setAssetLibraryError('Sign in to access your image library.');
+        setAssetLibraryError(
+          assetLibraryKind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.'
+        );
         return;
       }
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) {
-        const message = typeof payload?.error === 'string' ? payload.error : 'Failed to load images';
+      const payload = await assetResponse.json().catch(() => null);
+      if (!assetResponse.ok || !payload?.ok) {
+        const message =
+          typeof payload?.error === 'string'
+            ? payload.error
+            : assetLibraryKind === 'video'
+              ? 'Failed to load videos'
+              : 'Failed to load images';
         throw new Error(message);
       }
       const assets = Array.isArray(payload.assets)
-        ? (payload.assets as UserAsset[]).map((asset) => ({
-            id: asset.id,
-            url: asset.url,
-            width: asset.width ?? null,
-            height: asset.height ?? null,
-            size: asset.size ?? null,
-            mime: asset.mime ?? null,
-            createdAt: asset.createdAt,
-          }))
+        ? (payload.assets as Array<Omit<UserAsset, 'kind' | 'canDelete'>>).map((asset) => {
+            const mime = asset.mime ?? null;
+            return {
+              id: asset.id,
+              url: asset.url,
+              kind: mime?.startsWith('video/') ? 'video' : 'image',
+              width: asset.width ?? null,
+              height: asset.height ?? null,
+              size: asset.size ?? null,
+              mime,
+              source: asset.source ?? null,
+              createdAt: asset.createdAt,
+              canDelete: true,
+            } satisfies UserAsset;
+          })
         : [];
-      const filtered = assets.filter((asset) => !asset.mime || asset.mime.startsWith('image/'));
-      setAssetLibrary(filtered);
+      const filteredUploads = assets.filter((asset) =>
+        assetLibraryKind === 'video'
+          ? Boolean(asset.mime?.startsWith('video/'))
+          : !asset.mime || asset.mime.startsWith('image/')
+      );
+
+      let generatedVideos: UserAsset[] = [];
+      if (assetLibraryKind === 'video' && jobsResponse) {
+        const jobsPayload = await jobsResponse.json().catch(() => null);
+        if (jobsResponse.ok && Array.isArray(jobsPayload?.jobs)) {
+          generatedVideos = (jobsPayload.jobs as Job[])
+            .filter((job) => typeof job.videoUrl === 'string' && job.videoUrl.trim().length > 0)
+            .map((job) => ({
+              id: `job:${job.jobId}`,
+              url: job.videoUrl as string,
+              kind: 'video',
+              mime: 'video/mp4',
+              source: 'generated',
+              createdAt: job.createdAt,
+              canDelete: false,
+            }));
+        }
+      }
+
+      const combined =
+        assetLibraryKind === 'video'
+          ? [...filteredUploads, ...generatedVideos]
+          : filteredUploads;
+      const deduped = combined.filter(
+        (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
+      );
+      setAssetLibrary(deduped);
       setAssetLibraryLoaded(true);
       setAssetLibraryLoadedSource(source);
     } catch (error) {
       console.error('[assets] failed to load library', error);
-      setAssetLibraryError(error instanceof Error ? error.message : 'Failed to load images');
+      setAssetLibraryError(
+        error instanceof Error
+          ? error.message
+          : assetLibraryKind === 'video'
+            ? 'Failed to load videos'
+            : 'Failed to load images'
+      );
     } finally {
       setIsAssetLibraryLoading(false);
     }
-  }, [assetLibrarySource]);
+  }, [assetLibraryKind, assetLibrarySource]);
 
   const handleDeleteLibraryAsset = useCallback(
     async (asset: UserAsset) => {
@@ -2563,10 +2735,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         id: asset.id || `library_${Date.now().toString(36)}`,
         fieldId: field.id,
         previewUrl: asset.url,
-        kind: 'image',
-        name: asset.url.split('/').pop() ?? 'Image',
+        kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
+        name:
+          asset.url.split('/').pop() ??
+          (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
         size: asset.size ?? 0,
-        type: asset.mime ?? 'image/*',
+        type:
+          asset.mime ??
+          (field.type === 'video' ? 'video/*' : field.type === 'audio' ? 'audio/*' : 'image/*'),
         url: asset.url,
         width: asset.width ?? null,
         height: asset.height ?? null,
@@ -2593,7 +2769,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
         if (targetIndex < 0) {
           if (maxCount > 0 && current.length >= maxCount) {
-            showNotice('Maximum reference image count reached for this engine.');
+            showNotice(`Maximum ${field.label ?? 'reference image'} count reached for this engine.`);
             return previous;
           }
           current.push(newAsset);
@@ -2663,7 +2839,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         id: assetId,
         fieldId: field.id,
         previewUrl,
-        kind: field.type === 'video' ? 'video' : 'image',
+        kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
         name: file.name,
         size: file.size,
         type: file.type,
@@ -2708,7 +2884,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         try {
           const formData = new FormData();
           formData.append('file', file, file.name);
-          const uploadEndpoint = field.type === 'video' ? '/api/uploads/video' : '/api/uploads/image';
+          const uploadEndpoint =
+            field.type === 'video'
+              ? '/api/uploads/video'
+              : field.type === 'audio'
+                ? '/api/uploads/audio'
+                : '/api/uploads/image';
           const response = await authFetch(uploadEndpoint, {
             method: 'POST',
             body: formData,
@@ -3366,7 +3547,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       const available = order.filter((value) => selectedEngine.modes.includes(value));
       return available.length ? available : undefined;
     }
-    const preferredOrder: Mode[] = ['t2v', 'i2v', 'r2v', 'i2i'];
+    if (selectedEngine.id === 'ltx-2-3') {
+      const order: Mode[] = ['extend', 'retake'];
+      const available = order.filter((value) => selectedEngine.modes.includes(value));
+      return available.length ? available : undefined;
+    }
+    const preferredOrder: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
     const available = preferredOrder.filter((value) => selectedEngine.modes.includes(value));
     return available.length ? available : undefined;
   }, [selectedEngine]);
@@ -3415,10 +3601,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           throw new Error('No engines available to apply this snapshot');
         }
         const snapshotModeRaw = typeof record.inputMode === 'string' ? record.inputMode : '';
-        const snapshotMode: Mode =
-          snapshotModeRaw === 't2v' || snapshotModeRaw === 'i2v' || snapshotModeRaw === 't2i' || snapshotModeRaw === 'i2i'
-            ? (snapshotModeRaw as Mode)
-            : getPreferredEngineMode(engine);
+        const snapshotMode: Mode = isModeValue(snapshotModeRaw) ? snapshotModeRaw : getPreferredEngineMode(engine);
         const mode = engine.modes.includes(snapshotMode) ? snapshotMode : getPreferredEngineMode(engine);
 
         const promptValue = typeof record.prompt === 'string' ? record.prompt : '';
@@ -3450,6 +3633,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
         const advanced =
           record.advanced && typeof record.advanced === 'object' ? (record.advanced as Record<string, unknown>) : {};
+        const extraInputValues = coerceStoredExtraInputValues(advanced.extraInputValues) ?? {};
         const cfgScaleValue =
           typeof advanced.cfgScale === 'number' && Number.isFinite(advanced.cfgScale) ? advanced.cfgScale : null;
         if (cfgScaleValue !== null) {
@@ -3532,6 +3716,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               typeof safetyCheckerValue === 'boolean'
                 ? safetyCheckerValue
                 : previous?.safetyChecker ?? resolveBooleanFieldDefault(engine, mode, 'enable_safety_checker', true),
+            extraInputValues,
           };
           return coerceFormState(engine, mode, candidate);
         });
@@ -3551,10 +3736,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 const slotId = typeof attachment.slotId === 'string' ? attachment.slotId : '';
                 const url = typeof attachment.url === 'string' ? attachment.url : '';
                 if (!slotId || !url) return;
-                const kind = attachment.kind === 'video' ? 'video' : 'image';
+                const kind = attachment.kind === 'video' ? 'video' : attachment.kind === 'audio' ? 'audio' : 'image';
                 const name = typeof attachment.name === 'string' ? attachment.name : `${kind}-${index + 1}`;
                 const type =
-                  typeof attachment.type === 'string' ? attachment.type : kind === 'image' ? 'image/*' : 'video/*';
+                  typeof attachment.type === 'string'
+                    ? attachment.type
+                    : kind === 'image'
+                      ? 'image/*'
+                      : kind === 'audio'
+                        ? 'audio/*'
+                        : 'video/*';
                 const size =
                   typeof attachment.size === 'number' && Number.isFinite(attachment.size) ? attachment.size : 0;
                 const width =
@@ -3840,6 +4031,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const referenceInputStatus = useMemo(() => {
     let hasImage = false;
     let hasVideo = false;
+    let hasAudio = false;
     Object.values(inputAssets).forEach((entries) => {
       entries.forEach((asset) => {
         if (!asset) return;
@@ -3849,9 +4041,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         if (asset.kind === 'video') {
           hasVideo = true;
         }
+        if (asset.kind === 'audio') {
+          hasAudio = true;
+        }
       });
     });
-    return { hasImage, hasVideo };
+    return { hasImage, hasVideo, hasAudio };
   }, [inputAssets]);
 
   const implicitMode = useMemo<Mode>(() => {
@@ -3860,22 +4055,33 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (selectedEngine.id === 'veo-3-1-first-last') {
       return getPreferredEngineMode(selectedEngine, form?.mode);
     }
+    if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
     if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
     if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
     if (modes.includes('t2v')) return 't2v';
     return modes[0] ?? 't2v';
-  }, [form?.mode, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
+  }, [form?.mode, referenceInputStatus.hasAudio, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
+
+  const activeManualMode = useMemo<Mode | null>(() => {
+    if (!selectedEngine) return null;
+    const currentMode = form?.mode ?? null;
+    if ((currentMode === 'extend' || currentMode === 'retake') && selectedEngine.modes.includes(currentMode)) {
+      return currentMode;
+    }
+    return null;
+  }, [form?.mode, selectedEngine]);
+
+  const activeMode: Mode = activeManualMode ?? implicitMode;
 
   useEffect(() => {
     if (!selectedEngine || !form) return;
+    if (activeManualMode) return;
     if (form.mode === implicitMode) return;
     setForm((current) => {
       if (!current || current.mode === implicitMode) return current;
       return coerceFormState(selectedEngine, implicitMode, { ...current, mode: implicitMode });
     });
-  }, [form, implicitMode, selectedEngine, setForm]);
-
-  const activeMode: Mode = form?.mode ?? (selectedEngine ? getPreferredEngineMode(selectedEngine) : 't2v');
+  }, [activeManualMode, form, implicitMode, selectedEngine, setForm]);
 
   useEffect(() => {
     if (!isKlingV3) return;
@@ -3964,6 +4170,30 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
     [selectedEngine]
+  );
+
+  const composerModeToggles = useMemo(() => {
+    if (selectedEngine?.id !== 'ltx-2-3') return undefined;
+    return [
+      { mode: null, label: 'Generate Video' },
+      ...(['extend', 'retake'] as const)
+        .filter((mode) => selectedEngine.modes.includes(mode))
+        .map((mode) => ({
+          mode,
+          label: MODE_DISPLAY_LABEL[mode],
+        })),
+    ];
+  }, [selectedEngine]);
+
+  const handleComposerModeToggle = useCallback(
+    (mode: Mode | null) => {
+      if (!selectedEngine) return;
+      const nextMode = mode ?? implicitMode;
+      setForm((current) =>
+        coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
+      );
+    },
+    [implicitMode, selectedEngine]
   );
 
   const handleDurationChange = useCallback(
@@ -4059,6 +4289,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!schema) {
       return {
         assetFields: [] as AssetFieldConfig[],
+        genericFields: [] as Array<{ field: EngineInputField; required: boolean }>,
         promptField: undefined as EngineInputField | undefined,
         promptRequired: true,
         negativePromptField: undefined as EngineInputField | undefined,
@@ -4066,12 +4297,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       };
     }
 
-    const allowsCrossModeAssets = activeMode === 't2v' && Boolean(selectedEngine?.modes?.some((mode) => mode === 'i2v' || mode === 'r2v'));
+    const allowsCrossModeAssets =
+      activeMode === 't2v' &&
+      Boolean(selectedEngine?.modes?.some((mode) => mode === 'i2v' || mode === 'r2v' || mode === 'a2v'));
     const appliesToMode = (field: EngineInputField) => {
       if (!field.modes || field.modes.includes(activeMode)) return true;
       if (!allowsCrossModeAssets) return false;
       if (field.type === 'image' && field.modes.includes('i2v')) return true;
       if (field.type === 'video' && field.modes.includes('r2v')) return true;
+      if (field.type === 'audio' && field.modes.includes('a2v')) return true;
       return false;
     };
     const isRequired = (field: EngineInputField, origin: 'required' | 'optional') => {
@@ -4082,6 +4316,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     };
 
     const assetFields: AssetFieldConfig[] = [];
+    const genericFields: Array<{ field: EngineInputField; required: boolean }> = [];
     let promptField: EngineInputField | undefined;
     let promptFieldOrigin: 'required' | 'optional' | undefined;
     let negativePromptField: EngineInputField | undefined;
@@ -4091,9 +4326,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       if (!fields) return;
       fields.forEach((field) => {
         if (!appliesToMode(field)) return;
+        const normalizedId = normalizeFieldId(field.id);
         if (field.type === 'text') {
-          const normalizedId = (field.id ?? '').toLowerCase();
-          const normalizedIdCompact = normalizedId.replace(/[^a-z0-9]/g, '');
+          const normalizedIdValue = (field.id ?? '').toLowerCase();
+          const normalizedIdCompact = normalizedIdValue.replace(/[^a-z0-9]/g, '');
           const normalizedLabel = (field.label ?? '').toLowerCase();
           const normalizedLabelCompact = normalizedLabel.replace(/\s+/g, '');
           const hasNegativePromptCue = (value: string) =>
@@ -4101,7 +4337,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             (value.includes('negative') && value.includes('prompt')) ||
             value.includes('negprompt');
           const isNegative =
-            normalizedId === 'negative_prompt' ||
+            normalizedIdValue === 'negative_prompt' ||
             hasNegativePromptCue(normalizedIdCompact) ||
             normalizedLabel.includes('negative prompt') ||
             hasNegativePromptCue(normalizedLabelCompact);
@@ -4112,17 +4348,21 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             }
             return;
           }
-          const isPrompt = normalizedId === 'prompt';
+          const isPrompt = normalizedIdValue === 'prompt';
           if (!promptField || isPrompt) {
             promptField = field;
             promptFieldOrigin = origin;
           }
           return;
         }
-        if (field.type === 'image' || field.type === 'video') {
-          const required = isRequired(field, origin);
+        const required = isRequired(field, origin);
+        if (field.type === 'image' || field.type === 'video' || field.type === 'audio') {
           const role = resolveAssetFieldRole(field, required);
           assetFields.push({ field, required, role });
+          return;
+        }
+        if (!STANDARD_ENGINE_FIELD_IDS.has(normalizedId)) {
+          genericFields.push({ field, required });
         }
       });
     };
@@ -4137,12 +4377,30 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     return {
       assetFields,
+      genericFields,
       promptField,
       promptRequired,
       negativePromptField,
       negativePromptRequired,
     };
   }, [selectedEngine, activeMode]);
+
+  useEffect(() => {
+    setForm((current) => {
+      if (!current) return current;
+      const allowedFieldIds = new Set(inputSchemaSummary.genericFields.map(({ field }) => field.id));
+      const nextExtraInputValues = Object.entries(current.extraInputValues).reduce<Record<string, unknown>>((acc, [key, value]) => {
+        if (allowedFieldIds.has(key)) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+      if (JSON.stringify(nextExtraInputValues) === JSON.stringify(current.extraInputValues)) {
+        return current;
+      }
+      return { ...current, extraInputValues: nextExtraInputValues };
+    });
+  }, [inputSchemaSummary.genericFields]);
 
   useEffect(() => {
     setInputAssets((previous) => {
@@ -4196,6 +4454,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     return new Set(ids);
   }, [inputSchemaSummary.assetFields]);
 
+  const primaryAssetFieldLabel = useMemo(() => {
+    const primaryField = inputSchemaSummary.assetFields.find((entry) => entry.role === 'primary')?.field;
+    return primaryField?.label ?? 'Reference image';
+  }, [inputSchemaSummary.assetFields]);
+
   useEffect(() => {
     if (!selectedEngine) {
       if (cfgScale !== null) {
@@ -4234,6 +4497,20 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
     return map;
   }, [inputAssets]);
+
+  const handleExtraInputValueChange = useCallback((field: EngineInputField, value: unknown) => {
+    setForm((current) => {
+      if (!current) return current;
+      const normalized = normalizeExtraInputValue(field, value);
+      const next = { ...current.extraInputValues };
+      if (normalized === undefined) {
+        delete next[field.id];
+      } else {
+        next[field.id] = normalized;
+      }
+      return { ...current, extraInputValues: next };
+    });
+  }, []);
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine || !authChecked) return;
@@ -4276,6 +4553,17 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     if (missingAssetField) {
       showNotice(`${missingAssetField.field.label} is required before generating.`);
+      return;
+    }
+
+    const missingGenericField = inputSchemaSummary.genericFields.find(({ field, required }) => {
+      if (!required) return false;
+      const value = normalizeExtraInputValue(field, form.extraInputValues[field.id] ?? field.default);
+      return value === undefined;
+    });
+
+    if (missingGenericField) {
+      showNotice(`${missingGenericField.field.label} is required before generating.`);
       return;
     }
 
@@ -4396,7 +4684,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       name: string;
       type: string;
       size: number;
-      kind: 'image' | 'video';
+      kind: 'image' | 'video' | 'audio';
       slotId?: string;
       label?: string;
       url: string;
@@ -4419,7 +4707,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
         collected.push({
           name: asset.name,
-          type: asset.type || (asset.kind === 'image' ? 'image/*' : 'video/*'),
+          type: asset.type || (asset.kind === 'image' ? 'image/*' : asset.kind === 'audio' ? 'audio/*' : 'video/*'),
           size: asset.size,
           kind: asset.kind,
           slotId: field.id,
@@ -4464,9 +4752,18 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       : [];
 
     const primaryImageUrl = primaryAttachment?.url ?? referenceImageUrls[0];
+    const primaryAudioUrl =
+      inputsPayload?.find((attachment) => attachment.kind === 'audio' && typeof attachment.url === 'string')?.url ?? undefined;
     const endImageUrl =
       inputsPayload?.find((attachment) => attachment.slotId === 'end_image_url' && typeof attachment.url === 'string')
         ?.url ?? undefined;
+    const extraInputValues = inputSchemaSummary.genericFields.reduce<Record<string, unknown>>((acc, { field }) => {
+      const normalized = normalizeExtraInputValue(field, form.extraInputValues[field.id] ?? field.default);
+      if (normalized !== undefined) {
+        acc[field.id] = normalized;
+      }
+      return acc;
+    }, {});
 
     let klingElementsPayload:
       | Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>
@@ -4547,13 +4844,23 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       if (isImageDrivenMode && !primaryImageUrl && !hasFirstLastFrames) {
         const guardMessage = selectedEngine.id.startsWith('sora-2')
           ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
-          : 'Add at least one reference image (URL or upload) before running this mode.';
+          : `Add at least one ${primaryAssetFieldLabel.toLowerCase()} (URL or upload) before running this mode.`;
         showNotice(guardMessage);
         return;
       }
       const isVideoDrivenMode = form.mode === 'r2v';
       if (isVideoDrivenMode && referenceVideoUrls.length === 0) {
         showNotice('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
+        return;
+      }
+      const isAudioDrivenMode = form.mode === 'a2v';
+      if (isAudioDrivenMode && !primaryAudioUrl) {
+        showNotice('Add an audio file before running Audio → Video.');
+        return;
+      }
+      const isExtendOrRetakeMode = form.mode === 'extend' || form.mode === 'retake';
+      if (isExtendOrRetakeMode && referenceVideoUrls.length === 0) {
+        showNotice(`Add a source video before running ${MODE_DISPLAY_LABEL[form.mode]}.`);
         return;
       }
       if (isVeoFirstLast) {
@@ -4708,7 +5015,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             : toLumaRay2DurationLabel(effectiveDurationSec, durationOptionLabel) ??
               durationOptionLabel ??
               effectiveDurationSec;
+        const shouldSendDuration = !capability || Boolean(capability.duration || capability.frames);
+        const shouldSendResolution = !capability || (capability.resolution?.length ?? 0) > 0;
         const resolvedResolution = isLumaRay2 && lumaResolution ? lumaResolution.value : form.resolution;
+        const shouldSendFps =
+          !capability ||
+          (Array.isArray(capability.fps) ? capability.fps.length > 0 : typeof capability.fps === 'number');
         const seedNumber =
           typeof form.seed === 'number' && Number.isFinite(form.seed) ? Math.trunc(form.seed) : undefined;
         const cameraFixed =
@@ -4719,11 +5031,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const generatePayload = {
           engineId: selectedEngine.id,
           prompt: trimmedPrompt,
-          durationSec: resolvedDurationSeconds,
-          durationOption: resolvedDurationLabel,
-          numFrames: form.numFrames ?? undefined,
-          resolution: resolvedResolution,
-          fps: form.fps,
           mode: form.mode,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
@@ -4731,13 +5038,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ...(selectedEngine.id.startsWith('sora-2')
             ? { variant: selectedEngine.id === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
             : {}),
+          ...(shouldSendDuration ? { durationSec: resolvedDurationSeconds, durationOption: resolvedDurationLabel } : {}),
+          ...(form.numFrames != null ? { numFrames: form.numFrames } : {}),
+          ...(shouldSendResolution ? { resolution: resolvedResolution } : {}),
+          ...(shouldSendFps ? { fps: form.fps } : {}),
           ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
           ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
           ...(supportsAudioToggle ? { audio: form.audio } : {}),
           ...(inputsPayload ? { inputs: inputsPayload } : {}),
           ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
+          ...(primaryAudioUrl ? { audioUrl: primaryAudioUrl } : {}),
           ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
           ...(endImageUrl ? { endImageUrl } : {}),
+          ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
           ...(multiPromptPayload && multiPromptPayload.length ? { multiPrompt: multiPromptPayload } : {}),
           ...(isKlingV3
             ? {
@@ -5003,7 +5316,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           const userMessage =
             typeof payload.userMessage === 'string'
               ? payload.userMessage
-              : 'The provider rejected this reference image. Please try with a different one.';
+              : `The provider rejected this ${primaryAssetFieldLabel.toLowerCase()}. Please try with a different one.`;
           const providerMessage =
             typeof payload.providerMessage === 'string'
               ? payload.providerMessage
@@ -5057,6 +5370,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     workspaceCopy.wallet.insufficientWithAmount,
     cfgScale,
     formatTakeLabel,
+    primaryAssetFieldLabel,
     primaryAssetFieldIds,
     referenceAssetFieldIds,
     genericImageFieldIds,
@@ -5552,6 +5866,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 promptRequired={inputSchemaSummary.promptRequired}
                 negativePromptField={inputSchemaSummary.negativePromptField}
                 negativePromptRequired={inputSchemaSummary.negativePromptRequired}
+                modeToggles={composerModeToggles}
+                activeManualMode={activeManualMode}
+                onModeToggle={handleComposerModeToggle}
                 assetFields={inputSchemaSummary.assetFields}
                 assets={composerAssets}
                 onAssetAdd={handleAssetAdd}
@@ -5576,16 +5893,84 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 }
                 disableGenerate={multiPromptInvalid}
                 extraFields={
-                  isKlingV3 && activeMode === 'i2v' ? (
-                    <KlingElementsBuilder
-                      elements={klingElements}
-                      onAddElement={handleKlingElementAdd}
-                      onRemoveElement={handleKlingElementRemove}
-                      onAddAsset={handleKlingElementAssetAdd}
-                      onRemoveAsset={handleKlingElementAssetRemove}
-                      onOpenLibrary={handleOpenKlingAssetLibrary}
-                    />
-                  ) : null
+                  <>
+                    {inputSchemaSummary.genericFields.length ? (
+                      <div className="rounded-card border border-border bg-surface-glass-70 p-4">
+                        <div className="mb-3">
+                          <h3 className="text-sm font-semibold text-text-primary">Workflow options</h3>
+                          <p className="text-xs text-text-secondary">Settings specific to this workflow.</p>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {inputSchemaSummary.genericFields.map(({ field, required }) => {
+                            const fieldValue = form.extraInputValues[field.id] ?? field.default ?? '';
+                            const label = `${field.label}${required ? ' *' : ''}`;
+                            if (field.type === 'enum') {
+                              const values = Array.isArray(field.values) ? field.values : [];
+                              return (
+                                <label key={field.id} className="flex flex-col gap-1">
+                                  <span className="text-xs font-medium text-text-secondary">{label}</span>
+                                  <select
+                                    className="h-11 rounded-xl border border-border bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-brand"
+                                    value={String(fieldValue ?? '')}
+                                    onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
+                                  >
+                                    <option value="">{required ? 'Select an option' : 'Default'}</option>
+                                    {values.map((value) => (
+                                      <option key={`${field.id}-${value}`} value={String(value)}>
+                                        {String(value)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
+                                </label>
+                              );
+                            }
+                            if (field.type === 'number') {
+                              return (
+                                <label key={field.id} className="flex flex-col gap-1">
+                                  <span className="text-xs font-medium text-text-secondary">{label}</span>
+                                  <Input
+                                    type="number"
+                                    value={fieldValue === '' || fieldValue == null ? '' : String(fieldValue)}
+                                    onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
+                                    placeholder={
+                                      typeof field.default === 'number' || typeof field.default === 'string'
+                                        ? String(field.default)
+                                        : ''
+                                    }
+                                  />
+                                  {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
+                                </label>
+                              );
+                            }
+                            return (
+                              <label key={field.id} className="flex flex-col gap-1 md:col-span-2">
+                                <span className="text-xs font-medium text-text-secondary">{label}</span>
+                                <textarea
+                                  value={typeof fieldValue === 'string' ? fieldValue : ''}
+                                  onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
+                                  placeholder={typeof field.default === 'string' ? field.default : ''}
+                                  rows={3}
+                                  className="min-h-[92px] rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none transition focus:border-brand"
+                                />
+                                {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                    {isKlingV3 && activeMode === 'i2v' ? (
+                      <KlingElementsBuilder
+                        elements={klingElements}
+                        onAddElement={handleKlingElementAdd}
+                        onRemoveElement={handleKlingElementRemove}
+                        onAddAsset={handleKlingElementAssetAdd}
+                        onRemoveAsset={handleKlingElementAssetRemove}
+                        onOpenLibrary={handleOpenKlingAssetLibrary}
+                      />
+                    ) : null}
+                  </>
                 }
                 settingsBar={
                   <CoreSettingsBar
@@ -5821,6 +6206,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 ? 'Kling frontal image'
                 : `Kling reference ${typeof assetPickerTarget.slotIndex === 'number' ? assetPickerTarget.slotIndex + 1 : ''}`.trim()
           }
+          assetType={assetLibraryKind}
           assets={assetLibrary}
           isLoading={isAssetLibraryLoading}
           error={assetLibraryError}

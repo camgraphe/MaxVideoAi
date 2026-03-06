@@ -70,7 +70,7 @@ export type GenerateAttachment = {
   name: string;
   type: string;
   size: number;
-  kind?: 'image' | 'video';
+  kind?: 'image' | 'video' | 'audio';
   slotId?: string;
   label?: string;
   url?: string;
@@ -83,7 +83,7 @@ export type GenerateAttachment = {
 export type GeneratePayload = {
   engineId: string;
   prompt: string;
-  durationSec: number;
+  durationSec?: number;
   durationOption?: number | string | null;
   numFrames?: number | null;
   aspectRatio?: string;
@@ -94,6 +94,7 @@ export type GeneratePayload = {
   apiKey?: string;
   idempotencyKey?: string;
   imageUrl?: string;
+  audioUrl?: string;
   referenceImages?: string[];
   inputs?: GenerateAttachment[];
   soraRequest?: SoraRequest;
@@ -109,6 +110,7 @@ export type GeneratePayload = {
   voiceIds?: string[];
   elements?: Array<{ frontalImageUrl?: string; referenceImageUrls?: string[]; videoUrl?: string }>;
   endImageUrl?: string;
+  extraInputValues?: Record<string, unknown>;
 };
 
 export type GenerateResult = {
@@ -201,6 +203,13 @@ function normalizeVideoUrl(rawUrl: string): string {
   return `/${normalized}`;
 }
 
+function normalizeFalVideoResolution(value: string | undefined): string | undefined {
+  if (!value) return value;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === '4k') return '2160p';
+  return value;
+}
+
 function unwrapFalResponse(payload: unknown): FalRunResponse | null {
   if (!payload || typeof payload !== 'object') {
     return null;
@@ -236,7 +245,20 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
   if (mapped) {
     return mapped;
   }
-  const mode = payload.mode === 'i2v' ? 'image-to-video' : 'text-to-video';
+  const mode = (() => {
+    switch (payload.mode) {
+      case 'i2v':
+        return 'image-to-video';
+      case 'a2v':
+        return 'audio-to-video';
+      case 'extend':
+        return 'extend-video';
+      case 'retake':
+        return 'retake-video';
+      default:
+        return 'text-to-video';
+    }
+  })();
 
   if (payload.engineId === 'veo-3-1-first-last') {
     if (payload.mode === 'i2i') {
@@ -339,17 +361,22 @@ async function generateViaFal(
     }
   } else {
     requestBody = {
-      prompt: payload.prompt,
-      resolution: payload.resolution,
+      resolution: normalizeFalVideoResolution(payload.resolution),
       fps: payload.fps,
-      mode: payload.mode,
     };
+    if (payload.prompt.trim().length) {
+      requestBody.prompt = payload.prompt;
+    }
     if (payload.aspectRatio) {
       requestBody.aspect_ratio = payload.aspectRatio;
     }
 
     if (typeof payload.audio === 'boolean') {
       requestBody.generate_audio = payload.audio;
+    }
+
+    if (payload.audioUrl) {
+      requestBody.audio_url = payload.audioUrl;
     }
 
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
@@ -423,6 +450,7 @@ async function generateViaFal(
 
   const attachments = payload.inputs ?? [];
   let primaryImageUrl = payload.imageUrl?.trim();
+  let primaryAudioUrl = payload.audioUrl?.trim();
 
   for (const attachment of attachments) {
     const urlCandidate = attachment.url?.trim() ?? attachment.dataUrl?.trim();
@@ -430,6 +458,9 @@ async function generateViaFal(
 
     if (!primaryImageUrl && attachment.kind === 'image') {
       primaryImageUrl = urlCandidate;
+    }
+    if (!primaryAudioUrl && attachment.kind === 'audio') {
+      primaryAudioUrl = urlCandidate;
     }
 
     const slotId = attachment.slotId?.trim();
@@ -446,6 +477,19 @@ async function generateViaFal(
       addToArray('video_urls', urlCandidate);
       continue;
     }
+    if (
+      slotId === 'audio_url' ||
+      slotId === 'audio_urls' ||
+      slotId === 'reference_audio_urls' ||
+      slotId === 'reference_audios'
+    ) {
+      if (slotId === 'audio_url') {
+        requestBody.audio_url = urlCandidate;
+      } else {
+        addToArray(slotId === 'reference_audios' ? 'reference_audio_urls' : slotId, urlCandidate);
+      }
+      continue;
+    }
     if (slotId === 'input_image' || slotId === 'image' || slotId === 'image_url') {
       requestBody[slotId] = urlCandidate;
       continue;
@@ -456,6 +500,14 @@ async function generateViaFal(
     }
     if (!slotId && attachment.kind === 'video') {
       addToArray('video_urls', urlCandidate);
+      continue;
+    }
+    if (!slotId && attachment.kind === 'audio') {
+      if (!requestBody.audio_url) {
+        requestBody.audio_url = urlCandidate;
+      } else {
+        addToArray('reference_audio_urls', urlCandidate);
+      }
       continue;
     }
   }
@@ -480,8 +532,18 @@ async function generateViaFal(
   if (!requestBody.image_url && primaryImageUrl) {
     requestBody.image_url = primaryImageUrl;
   }
+  if (!requestBody.audio_url && primaryAudioUrl) {
+    requestBody.audio_url = primaryAudioUrl;
+  }
   if (!requestBody.input_image && primaryImageUrl && payload.engineId.startsWith('sora-2')) {
     requestBody.input_image = primaryImageUrl;
+  }
+
+  if (payload.extraInputValues) {
+    Object.entries(payload.extraInputValues).forEach(([key, value]) => {
+      if (value === undefined || value === null || key in requestBody) return;
+      requestBody[key] = value;
+    });
   }
 
   if (payload.engineId.startsWith('kling-3') && requestBody.image_url && !requestBody.start_image_url) {

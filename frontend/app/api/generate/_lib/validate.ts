@@ -40,6 +40,111 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
+  const normalizedMode: Mode = mode ?? 't2v';
+
+  if (normalizedMode === 'r2v') {
+    const rawVideos = payload['video_urls'];
+    const videos = Array.isArray(rawVideos)
+      ? rawVideos.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
+      : typeof rawVideos === 'string' && rawVideos.trim().length
+        ? [rawVideos.trim()]
+        : [];
+    if (!videos.length) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'video_urls',
+          message: 'Reference videos are required for this engine mode',
+        },
+      };
+    }
+    if (videos.length > 3) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'video_urls',
+          message: 'Up to 3 reference videos are supported',
+          allowed: [1, 3],
+          value: videos.length,
+        },
+      };
+    }
+  }
+
+  if (normalizedMode === 'extend' || normalizedMode === 'retake') {
+    const rawVideos = payload['video_urls'];
+    const videos = Array.isArray(rawVideos)
+      ? rawVideos.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
+      : typeof rawVideos === 'string' && rawVideos.trim().length
+        ? [rawVideos.trim()]
+        : [];
+    if (!videos.length) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'video_urls',
+          message: 'A source video is required for this engine mode',
+        },
+      };
+    }
+  }
+
+  if (engineId === 'veo-3-1-first-last' && (normalizedMode === 'i2v' || normalizedMode === 'i2i')) {
+    const firstFrame = typeof payload['first_frame_url'] === 'string' ? payload['first_frame_url'].trim() : '';
+    if (!firstFrame) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'first_frame_url',
+          message: 'First frame is required for this engine',
+        },
+      };
+    }
+    const lastFrame = typeof payload['last_frame_url'] === 'string' ? payload['last_frame_url'].trim() : '';
+    if (!lastFrame) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'last_frame_url',
+          message: 'Last frame is required for this engine',
+        },
+      };
+    }
+  } else if (normalizedMode === 'i2v' || normalizedMode === 'i2i') {
+    const imageUrl =
+      typeof payload['image_url'] === 'string' && payload['image_url'].trim().length ? payload['image_url'].trim() : null;
+    if (!imageUrl) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'image_url',
+          message: 'Image URL is required for this engine mode',
+        },
+      };
+    }
+  }
+
+  if (normalizedMode === 'a2v') {
+    const audioUrl =
+      typeof payload['audio_url'] === 'string' && payload['audio_url'].trim().length ? payload['audio_url'].trim() : null;
+    if (!audioUrl) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'audio_url',
+          message: 'Audio URL is required for this engine mode',
+        },
+      };
+    }
+  }
+
   if (caps.frames) {
     const frames = payload['num_frames'];
     if (typeof frames !== 'number' || !caps.frames.includes(frames)) {
@@ -199,77 +304,6 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
-  const normalizedMode: Mode = mode ?? 't2v';
-
-  if (normalizedMode === 'r2v') {
-    const rawVideos = payload['video_urls'];
-    const videos = Array.isArray(rawVideos)
-      ? rawVideos.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
-      : typeof rawVideos === 'string' && rawVideos.trim().length
-        ? [rawVideos.trim()]
-        : [];
-    if (!videos.length) {
-      return {
-        ok: false,
-        error: {
-          code: 'ENGINE_CONSTRAINT',
-          field: 'video_urls',
-          message: 'Reference videos are required for this engine mode',
-        },
-      };
-    }
-    if (videos.length > 3) {
-      return {
-        ok: false,
-        error: {
-          code: 'ENGINE_CONSTRAINT',
-          field: 'video_urls',
-          message: 'Up to 3 reference videos are supported',
-          allowed: [1, 3],
-          value: videos.length,
-        },
-      };
-    }
-  }
-
-  if (engineId === 'veo-3-1-first-last' && (normalizedMode === 'i2v' || normalizedMode === 'i2i')) {
-    const firstFrame = typeof payload['first_frame_url'] === 'string' ? payload['first_frame_url'].trim() : '';
-    if (!firstFrame) {
-      return {
-        ok: false,
-        error: {
-          code: 'ENGINE_CONSTRAINT',
-          field: 'first_frame_url',
-          message: 'First frame is required for this engine',
-        },
-      };
-    }
-    const lastFrame = typeof payload['last_frame_url'] === 'string' ? payload['last_frame_url'].trim() : '';
-    if (!lastFrame) {
-      return {
-        ok: false,
-        error: {
-          code: 'ENGINE_CONSTRAINT',
-          field: 'last_frame_url',
-          message: 'Last frame is required for this engine',
-        },
-      };
-    }
-  } else if (normalizedMode === 'i2v' || normalizedMode === 'i2i') {
-    const imageUrl =
-      typeof payload['image_url'] === 'string' && payload['image_url'].trim().length ? payload['image_url'].trim() : null;
-    if (!imageUrl) {
-      return {
-        ok: false,
-        error: {
-          code: 'ENGINE_CONSTRAINT',
-          field: 'image_url',
-          message: 'Image URL is required for this engine mode',
-        },
-      };
-    }
-  }
-
   const audioFlag = payload['generate_audio'] ?? payload['audio'];
   if (audioFlag !== undefined && !caps.audioToggle) {
     return {
@@ -286,11 +320,17 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
   const uploadedMb = payload['_uploadedFileMB'];
   if (caps.maxUploadMB && typeof uploadedMb === 'number') {
     if (uploadedMb > caps.maxUploadMB) {
+      const uploadField =
+        normalizedMode === 'r2v' || normalizedMode === 'extend' || normalizedMode === 'retake'
+          ? 'video_urls'
+          : normalizedMode === 'a2v'
+            ? 'audio_url'
+            : 'image_url';
       return {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: normalizedMode === 'r2v' ? 'video_urls' : 'image_url',
+          field: uploadField,
           message: `Max upload is ${caps.maxUploadMB}MB`,
           allowed: [caps.maxUploadMB],
           value: uploadedMb,

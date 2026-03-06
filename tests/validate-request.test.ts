@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate.ts';
+import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
 const OK = { ok: true } as const;
 
@@ -230,4 +231,57 @@ test('Wan 2.6 R2V requires reference videos', () => {
   });
   assert.equal(invalidLong.ok, false);
   assert.equal(invalidLong.error?.field, 'duration');
+});
+
+test('LTX 2.3 registry exposes unified mode mapping', () => {
+  const registry = listFalEngines();
+  const ltx23 = registry.find((entry) => entry.id === 'ltx-2-3');
+  const ltx23Fast = registry.find((entry) => entry.id === 'ltx-2-3-fast');
+
+  assert.ok(ltx23);
+  assert.ok(ltx23Fast);
+  assert.equal(ltx23?.modes.find((mode) => mode.mode === 't2v')?.falModelId, 'fal-ai/ltx-2.3/text-to-video');
+  assert.equal(ltx23?.modes.find((mode) => mode.mode === 'i2v')?.falModelId, 'fal-ai/ltx-2.3/image-to-video');
+  assert.equal(ltx23?.modes.find((mode) => mode.mode === 'a2v')?.falModelId, 'fal-ai/ltx-2.3/audio-to-video');
+  assert.equal(ltx23?.modes.find((mode) => mode.mode === 'extend')?.falModelId, 'fal-ai/ltx-2.3/extend-video');
+  assert.equal(ltx23?.modes.find((mode) => mode.mode === 'retake')?.falModelId, 'fal-ai/ltx-2.3/retake-video');
+  assert.equal(ltx23Fast?.modes.find((mode) => mode.mode === 't2v')?.falModelId, 'fal-ai/ltx-2.3/text-to-video/fast');
+  assert.equal(ltx23Fast?.modes.find((mode) => mode.mode === 'i2v')?.falModelId, 'fal-ai/ltx-2.3/image-to-video/fast');
+  assert.equal(ltx23Fast?.modes.some((mode) => mode.mode === 'a2v'), false);
+  assert.equal(ltx23Fast?.modes.some((mode) => mode.mode === 'extend'), false);
+  assert.equal(ltx23Fast?.modes.some((mode) => mode.mode === 'retake'), false);
+});
+
+test('LTX 2.3 A2V requires audio input', () => {
+  const missing = validateRequest('ltx-2-3', 'a2v', {});
+  assert.equal(missing.ok, false);
+  assert.equal(missing.error?.field, 'audio_url');
+
+  const valid = validateRequest('ltx-2-3', 'a2v', {
+    audio_url: 'https://example.com/audio.mp3',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('LTX 2.3 extend and retake require a source video', () => {
+  const missingExtend = validateRequest('ltx-2-3', 'extend', { duration: 5 });
+  assert.equal(missingExtend.ok, false);
+  assert.equal(missingExtend.error?.field, 'video_urls');
+
+  const validExtend = validateRequest('ltx-2-3', 'extend', {
+    duration: 5,
+    video_urls: ['https://example.com/source.mp4'],
+  });
+  assert.deepEqual(validExtend, OK);
+
+  const missingRetake = validateRequest('ltx-2-3', 'retake', { duration: 5, prompt: 'Retake the shot' });
+  assert.equal(missingRetake.ok, false);
+  assert.equal(missingRetake.error?.field, 'video_urls');
+
+  const validRetake = validateRequest('ltx-2-3', 'retake', {
+    duration: 5,
+    prompt: 'Retake the shot',
+    video_urls: ['https://example.com/source.mp4'],
+  });
+  assert.deepEqual(validRetake, OK);
 });

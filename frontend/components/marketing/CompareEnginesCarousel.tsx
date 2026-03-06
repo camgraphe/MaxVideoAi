@@ -49,6 +49,9 @@ const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
   i2v: 'Image -> Video',
   r2v: 'Reference -> Video',
+  a2v: 'Audio -> Video',
+  extend: 'Extend Video',
+  retake: 'Retake Video',
   t2i: 'Text -> Image',
   i2i: 'Image -> Image',
 };

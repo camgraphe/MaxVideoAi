@@ -1,0 +1,14 @@
+{
+  "marketingName": "LTX 2.3 Fast",
+  "versionLabel": "2.3 Fast",
+  "overview": "LTX 2.3 Fast se concentre sur des générations text-to-video et image-to-video rapides pour les itérations LTX.",
+  "hero": {
+    "title": "LTX 2.3 Fast – itération rapide",
+    "intro": "Utilisez LTX 2.3 Fast pour les workflows Fast publics text-to-video et image-to-video.",
+    "badge": "T2V · I2V · Fast",
+    "ctaPrimary": {
+      "label": "Créer avec LTX 2.3 Fast",
+      "href": "/app?engine=ltx-2-3-fast"
+    }
+  }
+}

@@ -143,12 +143,12 @@ export function CoreSettingsBar({
     return 'min' in caps.duration ? caps.duration : null;
   }, [caps]);
 
-  const isLtx2FastLong = engine.id === 'ltx-2-fast' && durationSec > 10;
+  const isLtxFastLong = (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10;
   const resolutionOptions = useMemo(() => {
     const base = caps?.resolution && caps.resolution.length ? caps.resolution : engine.resolutions;
-    if (isLtx2FastLong) return base.filter((value) => value === '1080p');
+    if (isLtxFastLong) return base.filter((value) => value === '1080p');
     return base;
-  }, [caps?.resolution, engine.resolutions, isLtx2FastLong]);
+  }, [caps?.resolution, engine.resolutions, isLtxFastLong]);
 
   const aspectOptions = useMemo(() => {
     if (caps) {
@@ -317,9 +317,9 @@ export function CoreSettingsBar({
           </div>
         )}
       </div>
-      {isLtx2FastLong && (
+      {isLtxFastLong && (
         <p className="mt-2 text-[10px] text-text-muted">
-          LTX-2 Fast: durations above 10s run at 1080p / 25 fps (Fal constraint).
+          LTX Fast: durations above 10s run at 1080p / 25 fps (Fal constraint).
         </p>
       )}
     </div>

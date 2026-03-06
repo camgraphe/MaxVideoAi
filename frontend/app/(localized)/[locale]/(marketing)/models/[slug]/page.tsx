@@ -24,6 +24,7 @@ import { listPlaylistVideos, getVideosByIds, type GalleryVideo } from '@/server/
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
+import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
@@ -2138,11 +2139,11 @@ function getPricePerSecondCents(engineCaps: EngineCaps | undefined): number | nu
   const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
   const cents = perSecond?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
   if (typeof cents === 'number') {
-    return cents;
+    return applyDisplayedPriceMarginCents(cents);
   }
   const base = engineCaps?.pricing?.base;
   if (typeof base === 'number') {
-    return Math.round(base * 100);
+    return applyDisplayedPriceMarginCents(Math.round(base * 100));
   }
   return null;
 }
@@ -2152,11 +2153,11 @@ function getPricePerImageCents(engineCaps: EngineCaps | undefined): number | nul
   const byResolution = flat?.byResolution ? Object.values(flat.byResolution) : [];
   const cents = flat?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
   if (typeof cents === 'number') {
-    return cents;
+    return applyDisplayedPriceMarginCents(cents);
   }
   const base = engineCaps?.pricing?.base;
   if (typeof base === 'number') {
-    return Math.round(base * 100);
+    return applyDisplayedPriceMarginCents(Math.round(base * 100));
   }
   return null;
 }

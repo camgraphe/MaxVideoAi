@@ -4,7 +4,7 @@
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import type { Ref, ChangeEvent, DragEvent, ReactNode } from 'react';
-import type { EngineCaps, EngineInputField, PreflightResponse } from '@/types/engines';
+import type { EngineCaps, EngineInputField, Mode, PreflightResponse } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -16,7 +16,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 const VEO_REFERENCE_WARNING_ENGINES = new Set(['veo-3-1', 'veo-3-1-fast']);
 
 export type ComposerAttachment = {
-  kind: 'image' | 'video';
+  kind: 'image' | 'video' | 'audio';
   name: string;
   size: number;
   type: string;
@@ -37,6 +37,11 @@ export type MultiPromptScene = {
   id: string;
   prompt: string;
   duration: number;
+};
+
+type ComposerModeToggle = {
+  mode: Mode | null;
+  label: string;
 };
 
 interface Props {
@@ -66,6 +71,9 @@ interface Props {
   onNotice?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
   settingsBar?: ReactNode;
+  modeToggles?: ComposerModeToggle[];
+  activeManualMode?: Mode | null;
+  onModeToggle?: (mode: Mode | null) => void;
   multiPrompt?: {
     enabled: boolean;
     scenes: MultiPromptScene[];
@@ -150,6 +158,9 @@ export function Composer({
   onNotice,
   onOpenLibrary,
   settingsBar,
+  modeToggles,
+  activeManualMode,
+  onModeToggle,
   multiPrompt,
   extraFields,
   disableGenerate,
@@ -227,6 +238,28 @@ export function Composer({
       return entries.some((asset) => asset?.kind === 'image');
     });
   }, [assetFields, assets]);
+  const orderedAssetFields = useMemo(() => {
+    if (!engine.id.startsWith('ltx-2-3')) {
+      return assetFields;
+    }
+
+    const order = new Map<string, number>([
+      ['image_url', 0],
+      ['end_image_url', 1],
+      ['audio_url', 2],
+      ['video_url', 3],
+    ]);
+
+    return [...assetFields].sort((left, right) => {
+      const leftRank = order.get(left.field.id) ?? 99;
+      const rightRank = order.get(right.field.id) ?? 99;
+      if (leftRank !== rightRank) {
+        return leftRank - rightRank;
+      }
+      return left.field.id.localeCompare(right.field.id);
+    });
+  }, [assetFields, engine.id]);
+  const useLtxAssetGridLayout = engine.id.startsWith('ltx-2-3');
   const promptPlaceholder = hasReferenceImage
     ? composerCopy.prompt.placeholderWithImage ?? composerCopy.prompt.placeholder
     : composerCopy.prompt.placeholder;
@@ -269,7 +302,28 @@ export function Composer({
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
+              {modeToggles && modeToggles.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {modeToggles.map((entry) => {
+                    const active = activeManualMode === entry.mode;
+                    return (
+                      <Button
+                        key={entry.mode ?? 'base'}
+                        type="button"
+                        size="sm"
+                        variant={active ? 'primary' : 'outline'}
+                        onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
+                        className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-micro"
+                      >
+                        {entry.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
               {multiPrompt && (
                 <Button
@@ -440,12 +494,15 @@ export function Composer({
           </div>
         )}
 
-        {extraFields ? <div className="space-y-2">{extraFields}</div> : null}
-
         {assetFields.length > 0 && (
           <div className="space-y-2">
-            <div className="flex flex-wrap gap-4 text-sm">
-              {assetFields.map(({ field, required, role }) => (
+            <div
+              className={clsx(
+                'text-sm',
+                useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2 xl:grid-cols-3' : 'flex flex-wrap gap-4'
+              )}
+            >
+              {orderedAssetFields.map(({ field, required, role }) => (
                 <AssetDropzone
                   key={field.id}
                   engine={engine}
@@ -475,6 +532,8 @@ export function Composer({
             ) : null}
           </div>
         )}
+
+        {extraFields ? <div className="space-y-2">{extraFields}</div> : null}
       </div>
       {messages && messages.length > 0 && (
         <ul className="space-y-1 text-xs text-text-muted">
@@ -518,16 +577,22 @@ function AssetDropzone({
 }: AssetDropzoneProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const maxCount = field.maxCount ?? 0;
-  const minCount = field.minCount ?? (required ? 1 : 0);
+  const minCount = required ? (field.minCount ?? 1) : 0;
   const acceptFormats = useMemo(
     () => caps?.acceptsImageFormats?.map((format) => format.toLowerCase()) ?? [],
     [caps?.acceptsImageFormats]
   );
-  const accept = field.type === 'image'
-    ? acceptFormats.length
-      ? acceptFormats.map((ext) => `.${ext.replace(/^\./, '').toLowerCase()}`).join(',')
-      : 'image/*'
-    : 'video/*';
+  const accept = (() => {
+    if (field.type === 'image') {
+      return acceptFormats.length
+        ? acceptFormats.map((ext) => `.${ext.replace(/^\./, '').toLowerCase()}`).join(',')
+        : 'image/*';
+    }
+    if (field.type === 'audio') {
+      return 'audio/*';
+    }
+    return 'video/*';
+  })();
   const limits = engine.inputLimits;
   const constraints = engine.inputSchema?.constraints ?? {};
   const hideRequiredSlotCopy =
@@ -571,16 +636,34 @@ function AssetDropzone({
         onError?.('Please drop a video file (MP4, MOV...).');
         return;
       }
+      if (field.type === 'audio' && !file.type.startsWith('audio/')) {
+        onError?.('Please drop an audio file (MP3, WAV...).');
+        return;
+      }
       const maxSizeMB = field.type === 'image'
         ? caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB
-        : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
+        : field.type === 'audio'
+          ? constraints.maxAudioSizeMB ?? limits.audioMaxMB ?? limits.videoMaxMB
+          : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
       if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
         onError?.(`File exceeds the ${maxSizeMB} MB limit.`);
         return;
       }
       onSelect(field, file, slotIndex);
     },
-    [acceptFormats, caps?.maxUploadMB, constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field, limits.imageMaxMB, limits.videoMaxMB, onError, onSelect]
+    [
+      acceptFormats,
+      caps?.maxUploadMB,
+      constraints.maxAudioSizeMB,
+      constraints.maxImageSizeMB,
+      constraints.maxVideoSizeMB,
+      field,
+      limits.audioMaxMB,
+      limits.imageMaxMB,
+      limits.videoMaxMB,
+      onError,
+      onSelect,
+    ]
   );
 
   const onInputChange = useCallback(
@@ -613,11 +696,16 @@ function AssetDropzone({
       }
       const maxImage = caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB;
       if (maxImage) lines.push(`${maxImage} MB max`);
-    } else {
+    } else if (field.type === 'video') {
       lines.push('Formats: MP4, MOV');
       const maxVideo = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
       if (maxVideo) lines.push(`${maxVideo} MB max`);
       if (limits.videoMaxDurationSec) lines.push(`${limits.videoMaxDurationSec}s max`);
+    } else {
+      lines.push('Formats: MP3, WAV, M4A');
+      const maxAudio = constraints.maxAudioSizeMB ?? limits.audioMaxMB ?? limits.videoMaxMB;
+      if (maxAudio) lines.push(`${maxAudio} MB max`);
+      if (limits.audioMaxDurationSec) lines.push(`${limits.audioMaxDurationSec}s max`);
     }
     if (field.maxCount && field.maxCount > 1) {
       lines.push(`Up to ${field.maxCount} files`);
@@ -626,7 +714,21 @@ function AssetDropzone({
       lines.push(`At least ${field.minCount} files`);
     }
     return lines;
-  }, [acceptFormats, caps?.maxUploadMB, constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field.maxCount, field.minCount, field.type, limits.imageMaxMB, limits.videoMaxDurationSec, limits.videoMaxMB]);
+  }, [
+    acceptFormats,
+    caps?.maxUploadMB,
+    constraints.maxAudioSizeMB,
+    constraints.maxImageSizeMB,
+    constraints.maxVideoSizeMB,
+    field.maxCount,
+    field.minCount,
+    field.type,
+    limits.audioMaxDurationSec,
+    limits.audioMaxMB,
+    limits.imageMaxMB,
+    limits.videoMaxDurationSec,
+    limits.videoMaxMB,
+  ]);
 
   return (
     <div className="flex min-w-[260px] flex-1">
@@ -645,7 +747,7 @@ function AssetDropzone({
             {(role === 'primary' || role === 'reference' || role === 'frame' || field.description) && (
               <p className="text-[11px] text-text-muted">
                 {role === 'primary'
-                  ? 'This still drives the image-to-video motion.'
+                  ? 'This still is used as the start image / first frame that drives the motion.'
                   : role === 'reference'
                     ? 'Optional supporting stills to guide style or lighting.'
                   : role === 'frame'
@@ -706,6 +808,10 @@ function AssetDropzone({
                   <>
                     {asset.kind === 'image' ? (
                       <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full bg-surface object-contain" />
+                    ) : asset.kind === 'audio' ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-surface p-4">
+                        <audio src={asset.previewUrl} controls className="w-full" />
+                      </div>
                     ) : (
                       <>
                             <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-contain" />
@@ -762,7 +868,7 @@ function AssetDropzone({
                       {helperLines.length > 0 ? helperLines.join(' • ') : null}
                     </span>
                     {showRequiredHint && <span className="text-[10px] text-warning">Needed before generating.</span>}
-                    {field.type === 'image' && (
+                    {(field.type === 'image' || field.type === 'video') && (
                       <div className="flex w-full items-center justify-center gap-2 pt-1">
                         {assetSlotCta ? (
                           <ButtonLink
@@ -793,7 +899,7 @@ function AssetDropzone({
                     )}
                   </div>
                 )}
-                {asset && onOpenLibrary && field.type === 'image' && (
+                {asset && onOpenLibrary && (field.type === 'image' || field.type === 'video') && (
                   <Button
                     type="button"
                     size="sm"

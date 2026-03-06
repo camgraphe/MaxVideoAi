@@ -25,6 +25,8 @@ const EXAMPLE_SLUG_ALIASES: Record<string, string> = {
   seedance: 'seedance',
   'seedance-1-5-pro': 'seedance',
   'seedance-2-0': 'seedance',
+  'ltx-2-3': 'ltx-2-3',
+  'ltx-2-3-fast': 'ltx-2-3',
   'ltx-2-fast': 'ltx-2',
   'ltx-2': 'ltx-2',
   pika: 'pika',

@@ -1,0 +1,14 @@
+{
+  "marketingName": "LTX 2.3",
+  "versionLabel": "2.3",
+  "overview": "LTX 2.3 regroupe text-to-video, image-to-video, audio-to-video, extend et retake dans un seul modèle Lightricks sur MaxVideoAI.",
+  "hero": {
+    "title": "LTX 2.3 – workflows LTX unifiés",
+    "intro": "Texte, image, audio, extend et retake dans une seule page modèle LTX 2.3.",
+    "badge": "T2V · I2V · A2V · Extend · Retake",
+    "ctaPrimary": {
+      "label": "Créer avec LTX 2.3",
+      "href": "/app?engine=ltx-2-3"
+    }
+  }
+}

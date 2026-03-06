@@ -258,7 +258,7 @@ export function SettingsControls({
   const durationOptionsContainerRef = useRef<HTMLDivElement | null>(null);
   const durationSliderRef = useRef<HTMLInputElement | null>(null);
   const frameOptionsContainerRef = useRef<HTMLDivElement | null>(null);
-  const isLtx2FastLong = engine.id === 'ltx-2-fast' && durationSec > 10;
+  const isLtxFastLong = (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10;
 
   useEffect(() => {
     const target = focusRefs?.duration;
@@ -280,9 +280,19 @@ export function SettingsControls({
 
   const resolutionOptions = useMemo(() => {
     const base = caps?.resolution && caps.resolution.length ? caps.resolution : engine.resolutions;
-    if (isLtx2FastLong) return base.filter((value) => value === '1080p');
+    if (isLtxFastLong) return base.filter((value) => value === '1080p');
     return base;
-  }, [caps?.resolution, engine.resolutions, isLtx2FastLong]);
+  }, [caps?.resolution, engine.resolutions, isLtxFastLong]);
+
+  const fpsOptions = useMemo(() => {
+    const base = Array.isArray(caps?.fps)
+      ? caps.fps
+      : typeof caps?.fps === 'number'
+        ? [caps.fps]
+        : engine.fps;
+    if (isLtxFastLong) return base.filter((value) => value === 25);
+    return base;
+  }, [caps?.fps, engine.fps, isLtxFastLong]);
 
   const aspectOptions = useMemo(() => {
     if (caps) {
@@ -462,9 +472,9 @@ export function SettingsControls({
                 }}
               />
             )}
-            {isLtx2FastLong ? (
+            {isLtxFastLong ? (
               <p className="text-[11px] text-text-muted">
-                LTX-2 Fast: durations above 10s run at 1080p / 25 fps (Fal constraint).
+                LTX Fast: durations above 10s run at 1080p / 25 fps (Fal constraint).
               </p>
             ) : null}
 
@@ -610,9 +620,9 @@ export function SettingsControls({
               </>
             )}
 
-            {engine.fps.length > 1 && (
+            {fpsOptions.length > 1 && (
               <div className="flex flex-wrap gap-2">
-                {(isLtx2FastLong ? engine.fps.filter((value) => value === 25) : engine.fps).map((option) => (
+                {fpsOptions.map((option) => (
                   <Button
                     key={option}
                     type="button"

@@ -90,7 +90,7 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
-const PREFERRED_ENGINE_ORDER = ['sora', 'kling', 'veo', 'wan', 'seedance', 'ltx-2', 'pika', 'hailuo'];
+const PREFERRED_ENGINE_ORDER = ['sora', 'kling', 'veo', 'wan', 'seedance', 'ltx-2-3', 'ltx-2', 'pika', 'hailuo'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
@@ -101,6 +101,7 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
   seedance: { bg: 'var(--engine-bytedance-bg)', text: 'var(--engine-bytedance-ink)' },
   kling: { bg: 'var(--engine-kling-bg)', text: 'var(--engine-kling-ink)' },
   wan: { bg: 'var(--engine-wan-bg)', text: 'var(--engine-wan-ink)' },
+  'ltx-2-3': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
   'ltx-2': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
 };
 
@@ -112,6 +113,7 @@ const ENGINE_MODEL_LINKS_BY_GROUP: Record<string, string[]> = {
   wan: ['wan-2-6', 'wan-2-5'],
   pika: ['pika-text-to-video'],
   hailuo: ['minimax-hailuo-02-text'],
+  'ltx-2-3': ['ltx-2-3', 'ltx-2-3-fast'],
   'ltx-2': ['ltx-2', 'ltx-2-fast'],
 };
 const ENGINE_MODEL_LINKS: Record<string, string> = Object.fromEntries(
@@ -126,6 +128,7 @@ const ENGINE_EXAMPLE_LINKS: Record<string, string> = {
   seedance: 'seedance',
   pika: 'pika',
   hailuo: 'hailuo',
+  'ltx-2-3': 'ltx-2-3',
   'ltx-2': 'ltx-2',
 };
 
@@ -227,6 +230,15 @@ const ENGINE_FILTER_GROUPS: Record<
     label: 'Seedance',
     brandId: 'bytedance',
   },
+  'ltx-2-3-fast': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'ltx-2-3': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'fal-ai/ltx-2.3/text-to-video': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'fal-ai/ltx-2.3/image-to-video': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'fal-ai/ltx-2.3/audio-to-video': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'fal-ai/ltx-2.3/extend-video': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'fal-ai/ltx-2.3/retake-video': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'fal-ai/ltx-2.3/text-to-video/fast': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
+  'fal-ai/ltx-2.3/image-to-video/fast': { id: 'ltx-2-3', label: 'LTX 2.3', brandId: 'lightricks' },
   'ltx-2-fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'ltx-2': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'fal-ai/ltx-2/text-to-video': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
@@ -440,6 +452,10 @@ function resolveFilterDescriptor(
       group = ENGINE_FILTER_GROUPS['kling'];
     } else if (normalized.startsWith('wan')) {
       group = ENGINE_FILTER_GROUPS['wan'];
+    } else if (normalized.startsWith('ltx-2-3')) {
+      group = ENGINE_FILTER_GROUPS['ltx-2-3'];
+    } else if (normalized.startsWith('ltx-2')) {
+      group = ENGINE_FILTER_GROUPS['ltx-2'];
     }
   }
 
