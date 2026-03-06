@@ -227,6 +227,14 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: 'job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab',
     demo: 'job_b748b50c-30bc-42ba-a83b-208abbd4fb7f',
   },
+  'ltx-2-3-pro': {
+    hero: 'job_2a07e085-4764-4e9b-8850-c3941dbf303a',
+    demo: 'job_ff7bf5c5-44f2-4d8d-92a6-851ecc5a59ab',
+  },
+  'ltx-2-3-fast': {
+    hero: 'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f',
+    demo: 'job_a3197eac-62e4-4043-a0d6-7b62a8f57ff0',
+  },
 };
 
 type FocusVsCopy = { title: string; items: string[] };

@@ -292,6 +292,82 @@
         }
       }
     ],
+    "ltx-2-3-fast-vs-ltx-2-3-pro": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "LTX 2.3 Fast",
+          "jobId": "job_716ddb6f-c9d0-4339-b6c9-3a9160d291ce"
+        },
+        "right": {
+          "label": "LTX 2.3 Pro",
+          "jobId": "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "LTX 2.3 Fast",
+          "jobId": "job_a757f656-43b8-47bc-83d2-0bd6728b320b"
+        },
+        "right": {
+          "label": "LTX 2.3 Pro",
+          "jobId": "job_d2e0b731-ba85-498b-bf45-a1b17b468963"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "LTX 2.3 Fast",
+          "jobId": "job_4ed60dee-1717-47a8-b858-53bd6e75f6fe"
+        },
+        "right": {
+          "label": "LTX 2.3 Pro",
+          "jobId": "job_286942bf-41a9-4283-aeff-628746259477"
+        }
+      }
+    ],
+    "ltx-2-3-pro-vs-veo-3-1": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "LTX 2.3 Pro",
+          "jobId": "job_5123dfd5-0392-4c8a-9e3c-2dd78e60ef22"
+        },
+        "right": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b3187535-7c87-4616-a8ec-2c635d44ff58"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "LTX 2.3 Pro",
+          "jobId": "job_d2e0b731-ba85-498b-bf45-a1b17b468963"
+        },
+        "right": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b197fc68-0bb7-4a24-9720-0ff721642446"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "LTX 2.3 Pro",
+          "jobId": "job_286942bf-41a9-4283-aeff-628746259477"
+        },
+        "right": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_5981bbec-f5e9-4163-9c65-093df7e296f5"
+        }
+      }
+    ],
     "ltx-2-vs-sora-2": [
       {
         "slotId": "motion-physics",
