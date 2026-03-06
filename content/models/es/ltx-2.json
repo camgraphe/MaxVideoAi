@@ -21,8 +21,8 @@
         "href": "/models/ltx-2-fast"
       },
       {
-        "label": "Ver ejemplos LTX-2",
-        "href": "/examples?engine=ltx-2"
+        "label": "Ver todos los ejemplos de LTX",
+        "href": "/examples/ltx"
       }
     ]
   },

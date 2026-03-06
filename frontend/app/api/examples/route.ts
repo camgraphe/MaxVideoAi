@@ -82,8 +82,9 @@ const ENGINE_FILTER_GROUPS: Record<string, { id: string; label: string; brandId?
   wan: { id: 'wan', label: 'Wan', brandId: 'wan' },
   seedance: { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
   hailuo: { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
-  'ltx-2-3': { id: 'ltx-2-3', label: 'LTX 2.3 Pro', brandId: 'lightricks' },
-  'ltx-2': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
+  ltx: { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
+  'ltx-2-3': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
+  'ltx-2': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
 };
 
 const ENGINE_MODEL_LINKS: Record<string, string> = {
@@ -94,7 +95,8 @@ const ENGINE_MODEL_LINKS: Record<string, string> = {
   wan: 'wan-2-6',
   pika: 'pika-text-to-video',
   hailuo: 'minimax-hailuo-02-text',
-  'ltx-2-3': 'ltx-2-3',
+  ltx: 'ltx-2',
+  'ltx-2-3': 'ltx-2',
   'ltx-2': 'ltx-2',
 };
 
@@ -141,10 +143,10 @@ function resolveFilterDescriptor(
       group = ENGINE_FILTER_GROUPS['wan'];
     } else if (normalized.startsWith('seedance')) {
       group = ENGINE_FILTER_GROUPS['seedance'];
-    } else if (normalized.startsWith('ltx-2-3')) {
-      group = ENGINE_FILTER_GROUPS['ltx-2-3'];
+    } else if (normalized === 'ltx' || normalized.startsWith('ltx-2-3')) {
+      group = ENGINE_FILTER_GROUPS.ltx;
     } else if (normalized.startsWith('ltx-2')) {
-      group = ENGINE_FILTER_GROUPS['ltx-2'];
+      group = ENGINE_FILTER_GROUPS.ltx;
     }
   }
 

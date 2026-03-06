@@ -61,7 +61,7 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'veo-3-1', label: 'Veo 3.1' },
   { slug: 'wan-2-6', label: 'Wan 2.6' },
   { slug: 'seedance-1-5-pro', label: 'Seedance 1.5 Pro' },
-  { slug: 'ltx-2-3', label: 'LTX 2.3 Pro' },
+  { slug: 'ltx-2-3-pro', label: 'LTX 2.3 Pro' },
   { slug: 'pika-text-to-video', label: 'Pika 2.2' },
   { slug: 'minimax-hailuo-02-text', label: 'MiniMax Hailuo 02' },
 ];
@@ -72,7 +72,7 @@ const EXAMPLES_MENU: LabeledSlug[] = [
   { slug: 'veo', label: 'Veo 3.1' },
   { slug: 'wan', label: 'Wan 2.6' },
   { slug: 'seedance', label: 'Seedance 1.5 Pro' },
-  { slug: 'ltx-2-3', label: 'LTX 2.3 Pro' },
+  { slug: 'ltx', label: 'LTX' },
   { slug: 'pika', label: 'Pika 2.2' },
   { slug: 'hailuo', label: 'MiniMax Hailuo 02' },
 ];
@@ -103,7 +103,9 @@ export const MARKETING_EXAMPLE_SLUGS = [
   'wan-2-5',
   'wan-2-6',
   'seedance-1-5-pro',
+  'ltx',
   'ltx-2-3',
+  'ltx-2-3-pro',
   'ltx-2-3-fast',
   'ltx-2',
   'ltx-2-fast',

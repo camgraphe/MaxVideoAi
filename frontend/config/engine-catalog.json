@@ -4206,18 +4206,18 @@
   },
   {
     "engineId": "ltx-2-3",
-    "modelSlug": "ltx-2-3",
-    "marketingName": "LTX 2.3",
+    "modelSlug": "ltx-2-3-pro",
+    "marketingName": "LTX 2.3 Pro",
     "provider": "Lightricks",
     "brandId": "lightricks",
-    "versionLabel": "2.3",
+    "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
     "engine": {
       "id": "ltx-2-3",
-      "label": "LTX 2.3",
+      "label": "LTX 2.3 Pro",
       "provider": "Lightricks",
-      "version": "2.3",
+      "version": "2.3 Pro",
       "status": "live",
       "latencyTier": "standard",
       "queueDepth": 0,
@@ -4292,6 +4292,7 @@
             "id": "audio_url",
             "type": "audio",
             "label": "Source audio",
+            "description": "Video duration follows the audio length. Use an audio file between 2 and 20 seconds.",
             "modes": [
               "a2v"
             ],
@@ -4300,7 +4301,9 @@
             ],
             "minCount": 1,
             "maxCount": 1,
-            "source": "either"
+            "source": "either",
+            "minDurationSec": 2,
+            "maxDurationSec": 20
           },
           {
             "id": "video_url",

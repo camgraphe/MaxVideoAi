@@ -18,11 +18,11 @@
     "secondaryLinks": [
       {
         "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro ->",
-        "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3-fast"
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-fast"
       },
       {
-        "label": "View LTX 2.3 Fast examples ->",
-        "href": "/examples?engine=ltx-2-3-fast"
+        "label": "Browse all LTX examples ->",
+        "href": "/examples/ltx"
       }
     ]
   },
@@ -113,7 +113,7 @@
   },
   "compareLink": {
     "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro ->",
-    "href": "/ai-video-engines/ltx-2-3-vs-ltx-2-3-fast?order=ltx-2-3-fast"
+    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-fast"
   },
   "prompts": [
     {

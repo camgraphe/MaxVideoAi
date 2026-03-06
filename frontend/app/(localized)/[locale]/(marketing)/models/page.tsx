@@ -332,7 +332,7 @@ const USE_CASE_MAP: Record<string, string> = {
   'wan-2-6': 'structured prompts with clean transitions',
   'wan-2-5': 'budget-friendly prompt testing',
   'pika-text-to-video': 'stylized social-first clips',
-  'ltx-2-3': 'all-in-one LTX video workflows with audio and retakes',
+  'ltx-2-3-pro': 'all-in-one LTX video workflows with audio and retakes',
   'ltx-2-3-fast': 'quick LTX 2.3 iterations for text and image video',
   'ltx-2': 'fast iteration with responsive motion',
   'ltx-2-fast': 'rapid testing and quick iteration',
@@ -605,7 +605,7 @@ export default async function ModelsPage() {
     'kling-2-6-pro',
     'kling-2-5-turbo',
     'ltx-2-3-fast',
-    'ltx-2-3',
+    'ltx-2-3-pro',
     'ltx-2-fast',
     'ltx-2',
     'minimax-hailuo-02-text',
@@ -819,7 +819,7 @@ export default async function ModelsPage() {
     {
       title: outcomeCopy[1]?.title ?? 'Image-to-video models',
       description: outcomeCopy[1]?.description ?? 'Check which models support references and image-led workflows.',
-      engines: ['veo-3-1', 'veo-3-1-fast', 'pika-text-to-video', 'wan-2-6', 'ltx-2-3'],
+      engines: ['veo-3-1', 'veo-3-1-fast', 'pika-text-to-video', 'wan-2-6', 'ltx-2-3-pro'],
       icon: Clapperboard,
     },
     {
@@ -831,7 +831,7 @@ export default async function ModelsPage() {
     {
       title: outcomeCopy[3]?.title ?? 'Limits and formats',
       description: outcomeCopy[3]?.description ?? 'Duration, max resolution, audio, and format constraints by model.',
-      engines: ['sora-2', 'veo-3-1', 'kling-3-standard', 'ltx-2-3', 'minimax-hailuo-02-text'],
+      engines: ['sora-2', 'veo-3-1', 'kling-3-standard', 'ltx-2-3-pro', 'minimax-hailuo-02-text'],
       icon: Sparkles,
     },
     {

@@ -2571,8 +2571,8 @@ const COMPARE_PRIORITY_BY_MODEL: Record<string, string[]> = {
   'pika-text-to-video': ['seedance-2-0', 'minimax-hailuo-02-text', 'ltx-2-fast'],
   'seedance-1-5-pro': ['seedance-2-0', 'kling-3-pro', 'sora-2'],
   'seedance-2-0': ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
-  'ltx-2-3': ['ltx-2-3-fast', 'veo-3-1', 'sora-2'],
-  'ltx-2-3-fast': ['ltx-2-3', 'veo-3-1-fast', 'ltx-2-fast'],
+  'ltx-2-3-pro': ['ltx-2-3-fast', 'veo-3-1', 'sora-2'],
+  'ltx-2-3-fast': ['ltx-2-3-pro', 'veo-3-1-fast', 'ltx-2-fast'],
 };
 
 function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
@@ -3208,8 +3208,13 @@ async function renderSoraModelPage({
     }
   })();
   let examples: GalleryVideo[] = [];
+  const examplePlaylistKeys =
+    engine.modelSlug === 'ltx-2-3-pro' ? ['examples-ltx-2-3-pro', 'examples-ltx-2-3'] : [`examples-${engine.modelSlug}`];
   try {
-    examples = await listPlaylistVideos(`examples-${engine.modelSlug}`, 200);
+    for (const playlistKey of examplePlaylistKeys) {
+      examples = await listPlaylistVideos(playlistKey, 200);
+      if (examples.length) break;
+    }
   } catch (error) {
     console.warn('[models/sora-2] failed to load examples', error);
   }
@@ -4579,7 +4584,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'minimax-hailuo-02-text' ||
     slug === 'ltx-2' ||
     slug === 'ltx-2-fast' ||
-    slug === 'ltx-2-3' ||
+    slug === 'ltx-2-3-pro' ||
     slug === 'ltx-2-3-fast' ||
     slug === 'kling-2-6-pro' ||
     slug === 'kling-3-standard' ||

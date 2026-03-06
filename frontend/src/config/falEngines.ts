@@ -4216,7 +4216,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
   },
   {
     id: 'ltx-2-3',
-    modelSlug: 'ltx-2-3',
+    modelSlug: 'ltx-2-3-pro',
     marketingName: 'LTX 2.3 Pro',
     cardTitle: 'LTX 2.3 Pro – text, image, audio, extend and retake',
     provider: 'Lightricks',
@@ -4290,7 +4290,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       title: 'LTX 2.3 Pro AI Video – Text, Image, Audio, Extend & Retake | MaxVideoAI',
       description:
         'Use LTX 2.3 Pro on MaxVideoAI for text-to-video, image-to-video, audio-to-video, extend-video and retake-video workflows with Fal’s official 1080p/1440p/4K and 24/25/48/50 fps options.',
-      canonicalPath: '/models/ltx-2-3',
+      canonicalPath: '/models/ltx-2-3-pro',
     },
     type: 'textImage',
     seoText:
@@ -4716,5 +4716,8 @@ export function getFalEngineById(id: string): FalEngineEntry | undefined {
 }
 
 export function getFalEngineBySlug(slug: string): FalEngineEntry | undefined {
+  if (slug === 'ltx-2-3') {
+    return FAL_ENGINE_REGISTRY.find((entry) => entry.modelSlug === 'ltx-2-3-pro');
+  }
   return FAL_ENGINE_REGISTRY.find((entry) => entry.modelSlug === slug);
 }

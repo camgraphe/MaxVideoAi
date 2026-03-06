@@ -99,20 +99,20 @@
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "ltx-2-3",
-    "marketingName": "LTX 2.3",
-    "brandId": "lightricks",
-    "modelSlug": "ltx-2-3",
-    "versionLabel": "2.3",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
     "engineId": "ltx-2-3-fast",
     "marketingName": "LTX 2.3 Fast",
     "brandId": "lightricks",
     "modelSlug": "ltx-2-3-fast",
     "versionLabel": "2.3 Fast",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "ltx-2-3",
+    "marketingName": "LTX 2.3 Pro",
+    "brandId": "lightricks",
+    "modelSlug": "ltx-2-3-pro",
+    "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "textOnly"
   },

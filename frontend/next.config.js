@@ -194,17 +194,77 @@ const nextConfig = {
       },
       {
         source: '/examples/ltx-2-fast',
-        destination: '/examples/ltx-2',
+        destination: '/examples/ltx',
         permanent: true,
       },
       {
         source: '/fr/galerie/ltx-2-fast',
-        destination: '/fr/galerie/ltx-2',
+        destination: '/fr/galerie/ltx',
         permanent: true,
       },
       {
         source: '/es/galeria/ltx-2-fast',
-        destination: '/es/galeria/ltx-2',
+        destination: '/es/galeria/ltx',
+        permanent: true,
+      },
+      {
+        source: '/examples/ltx-2',
+        destination: '/examples/ltx',
+        permanent: true,
+      },
+      {
+        source: '/examples/ltx-2-3',
+        destination: '/examples/ltx',
+        permanent: true,
+      },
+      {
+        source: '/examples/ltx-2-3-pro',
+        destination: '/examples/ltx',
+        permanent: true,
+      },
+      {
+        source: '/examples/ltx-2-3-fast',
+        destination: '/examples/ltx',
+        permanent: true,
+      },
+      {
+        source: '/fr/galerie/ltx-2',
+        destination: '/fr/galerie/ltx',
+        permanent: true,
+      },
+      {
+        source: '/fr/galerie/ltx-2-3',
+        destination: '/fr/galerie/ltx',
+        permanent: true,
+      },
+      {
+        source: '/fr/galerie/ltx-2-3-pro',
+        destination: '/fr/galerie/ltx',
+        permanent: true,
+      },
+      {
+        source: '/fr/galerie/ltx-2-3-fast',
+        destination: '/fr/galerie/ltx',
+        permanent: true,
+      },
+      {
+        source: '/es/galeria/ltx-2',
+        destination: '/es/galeria/ltx',
+        permanent: true,
+      },
+      {
+        source: '/es/galeria/ltx-2-3',
+        destination: '/es/galeria/ltx',
+        permanent: true,
+      },
+      {
+        source: '/es/galeria/ltx-2-3-pro',
+        destination: '/es/galeria/ltx',
+        permanent: true,
+      },
+      {
+        source: '/es/galeria/ltx-2-3-fast',
+        destination: '/es/galeria/ltx',
         permanent: true,
       },
       {

@@ -6,8 +6,8 @@
     "sora-2-vs-wan-2-6",
     "veo-3-1-vs-wan-2-6",
     "kling-2-6-pro-vs-wan-2-6",
-    "ltx-2-3-vs-ltx-2-3-fast",
-    "ltx-2-3-vs-veo-3-1",
+    "ltx-2-3-fast-vs-ltx-2-3-pro",
+    "ltx-2-3-pro-vs-veo-3-1",
     "ltx-2-vs-sora-2",
     "ltx-2-vs-veo-3-1",
     "minimax-hailuo-02-text-vs-pika-text-to-video",
@@ -50,13 +50,13 @@
       "kling-2-6-pro-vs-veo-3-1",
       "sora-2-vs-wan-2-6"
     ],
-    "ltx-2-3-vs-ltx-2-3-fast": [
-      "ltx-2-3-vs-veo-3-1",
+    "ltx-2-3-fast-vs-ltx-2-3-pro": [
+      "ltx-2-3-pro-vs-veo-3-1",
       "ltx-2-vs-veo-3-1",
       "ltx-2-vs-sora-2"
     ],
-    "ltx-2-3-vs-veo-3-1": [
-      "ltx-2-3-vs-ltx-2-3-fast",
+    "ltx-2-3-pro-vs-veo-3-1": [
+      "ltx-2-3-fast-vs-ltx-2-3-pro",
       "sora-2-vs-veo-3-1",
       "ltx-2-vs-veo-3-1"
     ],
