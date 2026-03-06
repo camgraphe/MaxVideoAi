@@ -2,7 +2,7 @@ import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
@@ -3032,22 +3032,24 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     };
   }
 
-  const localized = await getEngineLocalized(slug, locale);
-  const detailSlugMap = buildDetailSlugMap(slug);
-  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
+  const canonicalSlug = engine.modelSlug ?? slug;
+  const localized = await getEngineLocalized(canonicalSlug, locale);
+  const detailSlugMap = buildDetailSlugMap(canonicalSlug);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = localized.seo.title ?? fallbackTitle;
   const description =
     localized.seo.description ??
     engine.seo.description ??
     'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
-  const ogImagePath = localized.seo.image ?? MODEL_OG_IMAGE_MAP[slug] ?? engine.media?.imagePath ?? '/og/price-before.png';
+  const ogImagePath =
+    localized.seo.image ?? MODEL_OG_IMAGE_MAP[canonicalSlug] ?? engine.media?.imagePath ?? '/og/price-before.png';
   return buildSeoMetadata({
     locale,
     title,
     description,
     slugMap: detailSlugMap,
-    englishPath: `/models/${slug}`,
+    englishPath: `/models/${canonicalSlug}`,
     availableLocales: publishableLocales,
     image: ogImagePath,
     imageAlt: title,
@@ -4571,6 +4573,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
     notFound();
   }
 
+  if (slug !== engine.modelSlug) {
+    const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
+    permanentRedirect(`/${localizedModelsBase}/${engine.modelSlug}`.replace(/\/{2,}/g, '/'));
+  }
+
   if (
     slug === 'sora-2' ||
     slug === 'sora-2-pro' ||
@@ -4638,11 +4645,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
     }
     return href;
   };
-  const localizedContent = await getEngineLocalized(slug, activeLocale);
-  const detailSlugMap = buildDetailSlugMap(slug);
-  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
+  const localizedContent = await getEngineLocalized(engine.modelSlug, activeLocale);
+  const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
   const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, {
-    englishPath: `/models/${slug}`,
+    englishPath: `/models/${engine.modelSlug}`,
     availableLocales: publishableLocales,
   });
   const allEngines = listFalEngines();
@@ -4650,7 +4657,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   type RelatedCopyContent = { title?: string; subtitle?: string; cta?: string };
   const relatedContent = (dictionary.models as typeof dictionary.models & { related?: RelatedCopyContent }).related ?? {};
   const relatedEngines = allEngines
-    .filter((entry) => entry.modelSlug !== slug)
+    .filter((entry) => entry.modelSlug !== engine.modelSlug)
     .sort((a, b) => {
       const familyDiff = rankEngine(a) - rankEngine(b);
       if (familyDiff !== 0) {

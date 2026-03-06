@@ -103,6 +103,21 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/models/ltx-2-3',
+        destination: '/models/ltx-2-3-pro',
+        permanent: true,
+      },
+      {
+        source: '/fr/modeles/ltx-2-3',
+        destination: '/fr/modeles/ltx-2-3-pro',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/ltx-2-3',
+        destination: '/es/modelos/ltx-2-3-pro',
+        permanent: true,
+      },
+      {
         source: '/models/openai-sora-2-pro',
         destination: '/models/sora-2-pro',
         permanent: true,
