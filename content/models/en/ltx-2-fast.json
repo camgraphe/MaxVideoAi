@@ -17,8 +17,12 @@
     },
     "secondaryLinks": [
       {
-        "label": "See LTX-2 Pro",
-        "href": "/models/ltx-2"
+        "label": "See LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
+      },
+      {
+        "label": "See LTX 2.3 Fast",
+        "href": "/models/ltx-2-3-fast"
       },
       {
         "label": "Browse all LTX examples",
@@ -247,8 +251,24 @@
       "For silent drafts, toggle audio off to reduce cost"
     ],
     "comparisonCta": "Compare LTX-2 Fast vs Pro →",
-    "relatedTitle": "Explore other engines",
-    "relatedSubtitle": "Try a premium or vertical-first alternative next.",
+    "relatedTitle": "Compare legacy LTX-2 Fast with LTX 2.3",
+    "relatedSubtitle": "Move from the legacy Fast tier to the newer LTX 2.3 line for current routing and a cleaner model split.",
+    "relatedItems": [
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Fast",
+        "description": "Stay in a fast workflow but switch to the current LTX 2.3 Fast routing for newer text-to-video and image-to-video generation.",
+        "modelSlug": "ltx-2-3-fast",
+        "ctaLabel": "Compare LTX-2 Fast vs LTX 2.3 Fast →"
+      },
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Pro",
+        "description": "Step up to LTX 2.3 Pro when you need audio-to-video, extend, retake, and the broader current-generation LTX workflow set.",
+        "modelSlug": "ltx-2-3-pro",
+        "ctaLabel": "Compare LTX-2 Fast vs LTX 2.3 Pro →"
+      }
+    ],
     "finalPara1": "Ready to try LTX-2 Fast? Load your wallet and see the live price chip before you run.",
     "finalPara2": "Swap to LTX-2 Pro when you need maximum fidelity and synced audio.",
     "finalButton": "Open LTX-2 Fast in Generate →",

@@ -17,8 +17,12 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver LTX-2 Pro",
-        "href": "/models/ltx-2"
+        "label": "Ver LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
+      },
+      {
+        "label": "Ver LTX 2.3 Fast",
+        "href": "/models/ltx-2-3-fast"
       },
       {
         "label": "Ver todos los ejemplos de LTX",
@@ -247,8 +251,24 @@
       "Para borradores silenciosos, apaga el audio para bajar costo"
     ],
     "comparisonCta": "Comparar LTX-2 Fast vs Pro →",
-    "relatedTitle": "Explora otros motores",
-    "relatedSubtitle": "Prueba una alternativa premium o multi‑relación.",
+    "relatedTitle": "Compara el LTX-2 Fast legacy con LTX 2.3",
+    "relatedSubtitle": "Salta del tier Fast legacy a la nueva línea LTX 2.3 para tener routing vigente y una segmentación más clara.",
+    "relatedItems": [
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Fast",
+        "description": "Mantén un workflow rápido cambiando al routing actual de LTX 2.3 Fast para generación texto→video e imagen→video.",
+        "modelSlug": "ltx-2-3-fast",
+        "ctaLabel": "Comparar LTX-2 Fast vs LTX 2.3 Fast →"
+      },
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Pro",
+        "description": "Sube a LTX 2.3 Pro cuando necesites audio→video, extend, retake y un set de workflows más completo.",
+        "modelSlug": "ltx-2-3-pro",
+        "ctaLabel": "Comparar LTX-2 Fast vs LTX 2.3 Pro →"
+      }
+    ],
     "finalPara1": "¿Listo para probar LTX-2 Fast? Carga tu wallet y revisa el chip de precio antes de lanzar.",
     "finalPara2": "Pasa a LTX‑2 Pro cuando necesites máxima fidelidad y audio sincronizado.",
     "finalButton": "Abrir LTX-2 Fast en Generate →",

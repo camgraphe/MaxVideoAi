@@ -17,8 +17,12 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver LTX-2 Fast",
-        "href": "/models/ltx-2-fast"
+        "label": "Ver LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
+      },
+      {
+        "label": "Ver LTX 2.3 Fast",
+        "href": "/models/ltx-2-3-fast"
       },
       {
         "label": "Ver todos los ejemplos de LTX",
@@ -240,8 +244,24 @@
       "Combínalo con Nano Banana para preparar keyframes fotorealistas"
     ],
     "comparisonCta": "Comparar LTX-2 Pro vs Fast →",
-    "relatedTitle": "Explora otros motores",
-    "relatedSubtitle": "Prueba otro nivel de calidad o un modelo multi‑relación.",
+    "relatedTitle": "Compara el LTX-2 legacy con LTX 2.3",
+    "relatedSubtitle": "Pasa de la línea LTX-2 legacy a la generación LTX 2.3 para acceder a workflows más actuales y al routing vigente.",
+    "relatedItems": [
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Pro",
+        "description": "Muévete al flagship actual de LTX 2.3 para reunir texto→video, imagen→video, audio→video, extend y retake en una sola superficie.",
+        "modelSlug": "ltx-2-3-pro",
+        "ctaLabel": "Comparar LTX-2 Pro vs LTX 2.3 Pro →"
+      },
+      {
+        "brand": "ltx",
+        "title": "LTX 2.3 Fast",
+        "description": "Mantén un workflow rápido, pero cambia al routing actual de LTX 2.3 Fast para iteración texto→video e imagen→video.",
+        "modelSlug": "ltx-2-3-fast",
+        "ctaLabel": "Comparar LTX-2 Pro vs LTX 2.3 Fast →"
+      }
+    ],
     "finalPara1": "¿Listo para renderizar en LTX-2 Pro? Revisa el chip de precio antes de lanzar.",
     "finalPara2": "Itera en LTX-2 Fast y luego cambia a Pro para finalizar.",
     "finalButton": "Abrir LTX-2 Pro en Generate →",

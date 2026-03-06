@@ -5509,6 +5509,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, [
     audioWorkflowUnsupported,
     form,
+    activeMode,
     effectivePrompt,
     effectiveDurationSec,
     negativePrompt,
