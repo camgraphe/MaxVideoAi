@@ -1149,7 +1149,8 @@ export default async function CompareDetailPage({
     permanentRedirect(`${localePrefix}/${compareBase}/${canonicalSlug}${query}`.replace(/\/{2,}/g, '/'));
   }
   let { left, right } = resolved;
-  if (requestedOrder && requestedOrder === right.modelSlug) {
+  const shouldSwapDisplayOrder = Boolean(requestedOrder && requestedOrder === right.modelSlug);
+  if (shouldSwapDisplayOrder) {
     [left, right] = [right, left];
   }
   const averageDurations = isDatabaseConfigured() ? await fetchEngineAverageDurations() : [];
@@ -1214,8 +1215,12 @@ export default async function CompareDetailPage({
         ? 'bg-orange-500 text-white'
         : 'bg-surface-2 text-text-primary';
   const reversedShowdownSlug = reverseCompareSlug(canonicalSlug);
+  const showdownSourceSlug =
+    SHOWDOWNS[canonicalSlug] != null ? canonicalSlug : reversedShowdownSlug && SHOWDOWNS[reversedShowdownSlug] != null
+      ? reversedShowdownSlug
+      : canonicalSlug;
   const showdowns = await hydrateShowdowns(
-    SHOWDOWNS[canonicalSlug] ?? (reversedShowdownSlug ? SHOWDOWNS[reversedShowdownSlug] : []) ?? []
+    SHOWDOWNS[showdownSourceSlug] ?? []
   );
   const normalizePrompt = (value?: string | null) => (value ?? '').trim().toLowerCase();
   const normalizedShowdowns = showdowns.filter(
@@ -1282,6 +1287,9 @@ export default async function CompareDetailPage({
   type ShowdownSlot = (typeof COMPARE_SHOWDOWNS)[number] & { left: ShowdownSide; right: ShowdownSide };
   const showdownSlots = COMPARE_SHOWDOWNS.map((template, index) => {
     const entry = orderedShowdowns[index];
+    const shouldSwapShowdownSides = showdownSourceSlug === canonicalSlug ? shouldSwapDisplayOrder : !shouldSwapDisplayOrder;
+    const entryLeft = shouldSwapShowdownSides ? entry?.right : entry?.left;
+    const entryRight = shouldSwapShowdownSides ? entry?.left : entry?.right;
     const fallback = fallbackByTemplateId.get(template.id);
     const fallbackLeft = fallback?.left;
     const fallbackRight = fallback?.right;
@@ -1290,17 +1298,17 @@ export default async function CompareDetailPage({
     const leftOverrideVideo = leftOverrideId ? overrideVideos.get(leftOverrideId) : undefined;
     const rightOverrideVideo = rightOverrideId ? overrideVideos.get(rightOverrideId) : undefined;
     const leftSide = {
+      ...(entryLeft ?? {}),
       label: formatEngineName(left),
-      ...(entry?.left ?? {}),
-      videoUrl: entry?.left?.videoUrl ?? leftOverrideVideo?.videoUrl ?? fallbackLeft?.videoUrl,
-      posterUrl: entry?.left?.posterUrl ?? leftOverrideVideo?.thumbUrl ?? fallbackLeft?.thumbUrl,
+      videoUrl: entryLeft?.videoUrl ?? leftOverrideVideo?.videoUrl ?? fallbackLeft?.videoUrl,
+      posterUrl: entryLeft?.posterUrl ?? leftOverrideVideo?.thumbUrl ?? fallbackLeft?.thumbUrl,
       placeholder: false,
     };
     const rightSide = {
+      ...(entryRight ?? {}),
       label: formatEngineName(right),
-      ...(entry?.right ?? {}),
-      videoUrl: entry?.right?.videoUrl ?? rightOverrideVideo?.videoUrl ?? fallbackRight?.videoUrl,
-      posterUrl: entry?.right?.posterUrl ?? rightOverrideVideo?.thumbUrl ?? fallbackRight?.thumbUrl,
+      videoUrl: entryRight?.videoUrl ?? rightOverrideVideo?.videoUrl ?? fallbackRight?.videoUrl,
+      posterUrl: entryRight?.posterUrl ?? rightOverrideVideo?.thumbUrl ?? fallbackRight?.thumbUrl,
       placeholder: false,
     };
     leftSide.placeholder = !hasMedia(leftSide);
