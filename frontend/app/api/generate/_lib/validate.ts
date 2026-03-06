@@ -74,18 +74,20 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
   }
 
   if (normalizedMode === 'extend' || normalizedMode === 'retake') {
-    const rawVideos = payload['video_urls'];
-    const videos = Array.isArray(rawVideos)
-      ? rawVideos.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
-      : typeof rawVideos === 'string' && rawVideos.trim().length
-        ? [rawVideos.trim()]
-        : [];
-    if (!videos.length) {
+    const sourceVideo =
+      typeof payload['video_url'] === 'string' && payload['video_url'].trim().length
+        ? payload['video_url'].trim()
+        : Array.isArray(payload['video_urls'])
+          ? payload['video_urls'].find((value): value is string => typeof value === 'string' && value.trim().length > 0)
+          : typeof payload['video_urls'] === 'string' && payload['video_urls'].trim().length
+            ? payload['video_urls'].trim()
+            : '';
+    if (!sourceVideo) {
       return {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'video_urls',
+          field: 'video_url',
           message: 'A source video is required for this engine mode',
         },
       };
@@ -321,8 +323,10 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
   if (caps.maxUploadMB && typeof uploadedMb === 'number') {
     if (uploadedMb > caps.maxUploadMB) {
       const uploadField =
-        normalizedMode === 'r2v' || normalizedMode === 'extend' || normalizedMode === 'retake'
+        normalizedMode === 'r2v'
           ? 'video_urls'
+          : normalizedMode === 'extend' || normalizedMode === 'retake'
+            ? 'video_url'
           : normalizedMode === 'a2v'
             ? 'audio_url'
             : 'image_url';

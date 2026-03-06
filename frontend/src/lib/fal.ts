@@ -441,6 +441,7 @@ async function generateViaFal(
   }
 
   const arrayCollectors = new Map<string, Set<string>>();
+  const expectsSingleSourceVideo = payload.mode === 'extend' || payload.mode === 'retake';
   const addToArray = (key: string, value: string) => {
     if (!arrayCollectors.has(key)) {
       arrayCollectors.set(key, new Set());
@@ -474,7 +475,13 @@ async function generateViaFal(
       slotId === 'reference_videos' ||
       slotId === 'videos'
     ) {
-      addToArray('video_urls', urlCandidate);
+      if (expectsSingleSourceVideo) {
+        if (!requestBody.video_url) {
+          requestBody.video_url = urlCandidate;
+        }
+      } else {
+        addToArray('video_urls', urlCandidate);
+      }
       continue;
     }
     if (
@@ -499,7 +506,13 @@ async function generateViaFal(
       continue;
     }
     if (!slotId && attachment.kind === 'video') {
-      addToArray('video_urls', urlCandidate);
+      if (expectsSingleSourceVideo) {
+        if (!requestBody.video_url) {
+          requestBody.video_url = urlCandidate;
+        }
+      } else {
+        addToArray('video_urls', urlCandidate);
+      }
       continue;
     }
     if (!slotId && attachment.kind === 'audio') {
@@ -537,6 +550,22 @@ async function generateViaFal(
   }
   if (!requestBody.input_image && primaryImageUrl && payload.engineId.startsWith('sora-2')) {
     requestBody.input_image = primaryImageUrl;
+  }
+
+  if (expectsSingleSourceVideo) {
+    if (!requestBody.video_url) {
+      const collected = requestBody.video_urls;
+      const sourceVideo =
+        Array.isArray(collected) && collected.length
+          ? collected.find((value): value is string => typeof value === 'string' && value.trim().length > 0)
+          : typeof collected === 'string' && collected.trim().length
+            ? collected.trim()
+            : undefined;
+      if (sourceVideo) {
+        requestBody.video_url = sourceVideo;
+      }
+    }
+    delete requestBody.video_urls;
   }
 
   if (payload.extraInputValues) {

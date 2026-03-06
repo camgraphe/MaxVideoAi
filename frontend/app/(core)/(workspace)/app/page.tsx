@@ -5188,13 +5188,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           engineId: selectedEngine.id,
           prompt: trimmedPrompt,
           mode: activeMode,
+          durationSec: resolvedDurationSeconds,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
           cfgScale: typeof cfgScale === 'number' ? cfgScale : undefined,
           ...(selectedEngine.id.startsWith('sora-2')
             ? { variant: selectedEngine.id === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
             : {}),
-          ...(shouldSendDuration ? { durationSec: resolvedDurationSeconds, durationOption: resolvedDurationLabel } : {}),
+          ...(shouldSendDuration ? { durationOption: resolvedDurationLabel } : {}),
           ...(form.numFrames != null ? { numFrames: form.numFrames } : {}),
           ...(shouldSendResolution ? { resolution: resolvedResolution } : {}),
           ...(shouldSendFps ? { fps: form.fps } : {}),

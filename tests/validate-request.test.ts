@@ -266,22 +266,42 @@ test('LTX 2.3 A2V requires audio input', () => {
 test('LTX 2.3 extend and retake require a source video', () => {
   const missingExtend = validateRequest('ltx-2-3', 'extend', { duration: 5 });
   assert.equal(missingExtend.ok, false);
-  assert.equal(missingExtend.error?.field, 'video_urls');
+  assert.equal(missingExtend.error?.field, 'video_url');
 
   const validExtend = validateRequest('ltx-2-3', 'extend', {
     duration: 5,
-    video_urls: ['https://example.com/source.mp4'],
+    video_url: 'https://example.com/source.mp4',
   });
   assert.deepEqual(validExtend, OK);
 
   const missingRetake = validateRequest('ltx-2-3', 'retake', { duration: 5, prompt: 'Retake the shot' });
   assert.equal(missingRetake.ok, false);
-  assert.equal(missingRetake.error?.field, 'video_urls');
+  assert.equal(missingRetake.error?.field, 'video_url');
 
   const validRetake = validateRequest('ltx-2-3', 'retake', {
     duration: 5,
     prompt: 'Retake the shot',
-    video_urls: ['https://example.com/source.mp4'],
+    video_url: 'https://example.com/source.mp4',
   });
   assert.deepEqual(validRetake, OK);
+});
+
+test('LTX 2.3 image-to-video supports auto aspect ratio only on i2v', () => {
+  const i2vValid = validateRequest('ltx-2-3', 'i2v', {
+    prompt: 'Animate this still',
+    image_url: 'https://example.com/frame.png',
+    duration: 6,
+    resolution: '1080p',
+    aspect_ratio: 'auto',
+  });
+  assert.deepEqual(i2vValid, OK);
+
+  const t2vInvalid = validateRequest('ltx-2-3', 't2v', {
+    prompt: 'Generate from text',
+    duration: 6,
+    resolution: '1080p',
+    aspect_ratio: 'auto',
+  });
+  assert.equal(t2vInvalid.ok, false);
+  assert.equal(t2vInvalid.error?.field, 'aspect_ratio');
 });

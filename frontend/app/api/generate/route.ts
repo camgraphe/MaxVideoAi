@@ -1296,22 +1296,26 @@ async function rollbackPendingPayment(params: {
       : typeof body.imageUrl === 'string' && body.imageUrl.trim().length
         ? body.imageUrl.trim()
         : undefined;
-  const validationPayload: Record<string, unknown> = {
-    resolution: effectiveResolution,
-  };
-  if (aspectRatio) {
+  const sourceInputVideoUrl = videoUrls[0];
+  const validationPayload: Record<string, unknown> = {};
+  if (supportsResolution) {
+    validationPayload.resolution = effectiveResolution;
+  }
+  if (supportsAspectRatio && aspectRatio) {
     validationPayload.aspect_ratio = aspectRatio;
   }
   if (typeof audioEnabled === 'boolean') {
     validationPayload.generate_audio = audioEnabled;
   }
 
-  if (numFrames != null) {
-    validationPayload.num_frames = numFrames;
-  } else if (lumaDurationInfo) {
-    validationPayload.duration = lumaDurationInfo.label;
-  } else if (Number.isFinite(durationSec)) {
-    validationPayload.duration = durationSec;
+  if (supportsDuration) {
+    if (numFrames != null) {
+      validationPayload.num_frames = numFrames;
+    } else if (lumaDurationInfo) {
+      validationPayload.duration = lumaDurationInfo.label;
+    } else if (Number.isFinite(durationSec)) {
+      validationPayload.duration = durationSec;
+    }
   }
 
   if (maxUploadedBytes > 0) {
@@ -1324,15 +1328,17 @@ async function rollbackPendingPayment(params: {
   if (lastFrameUrl) {
     validationPayload.last_frame_url = lastFrameUrl;
   }
-  if (videoUrls.length) {
+  if (mode === 'r2v' && videoUrls.length) {
     validationPayload.video_urls = videoUrls;
+  }
+  if ((mode === 'extend' || mode === 'retake') && sourceInputVideoUrl) {
+    validationPayload.video_url = sourceInputVideoUrl;
   }
   if (resolvedAudioUrl) {
     validationPayload.audio_url = resolvedAudioUrl;
   }
 
   const needsImage = mode === 'i2v' || mode === 'i2i';
-  const needsVideo = mode === 'r2v' || mode === 'extend' || mode === 'retake';
   const needsAudio = mode === 'a2v';
   if (isLumaRay2 && mode === 'i2v') {
     if (!initialImageUrl) {
@@ -1354,13 +1360,21 @@ async function rollbackPendingPayment(params: {
     if (initialImageUrl) {
       validationPayload.image_url = initialImageUrl;
     }
-  } else if (needsVideo) {
+  } else if (mode === 'r2v') {
     if (!videoUrls.length) {
       logMetric('rejected', {
         errorCode: 'VIDEO_URL_REQUIRED',
         meta: { engineId: engine.id, mode },
       });
       return NextResponse.json({ ok: false, error: 'Video URLs are required for this engine mode' }, { status: 400 });
+    }
+  } else if (mode === 'extend' || mode === 'retake') {
+    if (!sourceInputVideoUrl) {
+      logMetric('rejected', {
+        errorCode: 'VIDEO_URL_REQUIRED',
+        meta: { engineId: engine.id, mode },
+      });
+      return NextResponse.json({ ok: false, error: 'Source video is required for this engine mode' }, { status: 400 });
     }
   } else if (needsAudio) {
     if (!resolvedAudioUrl) {

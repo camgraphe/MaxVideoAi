@@ -143,7 +143,11 @@ function buildAudioAddonPayload(
 
 function getDurationField(engine: EngineCaps): EngineInputField | undefined {
   const optional = engine.inputSchema?.optional ?? [];
-  return optional.find((field) => field.id === 'duration_seconds' || field.id === 'duration');
+  return optional.find(
+    (field) =>
+      (field.id === 'duration_seconds' || field.id === 'duration') &&
+      (!Array.isArray(field.modes) || !field.modes.length || field.modes.some((mode) => SUPPORTED_MODES.has(mode)))
+  );
 }
 
 function parseDurationValue(raw: number | string | null | undefined) {
@@ -179,18 +183,20 @@ function collectDurationOptions(
     }
   };
 
-  entry.modes.forEach((mode) => {
-    const durationCaps = mode.ui?.duration as
-      | { options?: Array<number | string>; default?: number | string; min?: number | string; max?: number | string }
-      | undefined;
-    if (!durationCaps) return;
-    if (Array.isArray(durationCaps.options)) {
-      durationCaps.options.forEach((value) => add(value));
-    }
-    add(durationCaps.default);
-    add(durationCaps.min);
-    add(durationCaps.max);
-  });
+  entry.modes
+    .filter((mode) => SUPPORTED_MODES.has(mode.mode))
+    .forEach((mode) => {
+      const durationCaps = mode.ui?.duration as
+        | { options?: Array<number | string>; default?: number | string; min?: number | string; max?: number | string }
+        | undefined;
+      if (!durationCaps) return;
+      if (Array.isArray(durationCaps.options)) {
+        durationCaps.options.forEach((value) => add(value));
+      }
+      add(durationCaps.default);
+      add(durationCaps.min);
+      add(durationCaps.max);
+    });
 
   if (Array.isArray(durationField?.values)) {
     durationField?.values.forEach((value) => add(value));
@@ -213,7 +219,7 @@ function collectDurationOptions(
     add(stepMax);
   }
 
-  if (engineCaps.maxDurationSec) {
+  if (!map.size && engineCaps.maxDurationSec) {
     add(engineCaps.maxDurationSec);
   }
 
