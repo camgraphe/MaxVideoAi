@@ -340,6 +340,7 @@ function PrivacyTab({
   saving,
   loadError,
   error,
+  guest,
   onToggleIndexing,
   copy,
 }: {
