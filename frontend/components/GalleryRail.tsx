@@ -512,7 +512,6 @@ export function GalleryRail({
       {combinedGroups.map((group) => {
         const engineId = group.hero.engineId;
         const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
-        const curated = Boolean(group.hero.job?.curated);
         return (
           <GroupedJobCard
             key={group.id}
@@ -521,8 +520,6 @@ export function GalleryRail({
             onOpen={handleCardOpen}
             onAction={handleCardAction}
             allowRemove={allowCardRemoval(group)}
-            showImageCta={curated}
-            imageCtaLabel={copy.imageCta}
             metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
           />

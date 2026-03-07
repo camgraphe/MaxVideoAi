@@ -5,7 +5,7 @@
 import clsx from 'clsx';
 import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
 import type {
   FormEvent,
@@ -17,10 +17,11 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { GalleryRail } from '@/components/GalleryRail';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
+import { supabase } from '@/lib/supabaseClient';
 import type { ImageGenerationMode, GeneratedImage } from '@/types/image-generation';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
@@ -154,6 +155,13 @@ interface ImageWorkspaceCopy {
       emptyGenerated: string;
     };
   };
+  authGate: {
+    title: string;
+    body: string;
+    primary: string;
+    secondary: string;
+    close: string;
+  };
 }
 
 const DEFAULT_COPY: ImageWorkspaceCopy = {
@@ -269,6 +277,13 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       emptyUploads: 'No uploaded images yet. Upload images from the composer or the Library page.',
       emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
     },
+  },
+  authGate: {
+    title: 'Create an account to render',
+    body: 'You can explore the image workspace, but starting a real image generation requires an account.',
+    primary: 'Create account',
+    secondary: 'Sign in',
+    close: 'Maybe later',
   },
 };
 
@@ -576,11 +591,17 @@ function buildPendingGroup({
 
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const { t } = useI18n();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const rawCopy = t('workspace.image', DEFAULT_COPY);
   const resolvedCopy = useMemo<ImageWorkspaceCopy>(() => {
     return deepmerge<ImageWorkspaceCopy>(DEFAULT_COPY, (rawCopy ?? {}) as Partial<ImageWorkspaceCopy>);
   }, [rawCopy]);
+  const loginRedirectTarget = useMemo(() => {
+    const params = searchParams?.toString() ?? '';
+    const base = pathname ?? '/app/image';
+    return params ? `${base}?${params}` : base;
+  }, [pathname, searchParams]);
   const hasHydratedStorageRef = useRef(false);
   const hydratedJobRef = useRef<string | null>(null);
   const persistTimerRef = useRef<number | null>(null);
@@ -610,6 +631,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     open: false,
     slotIndex: null,
   });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const fileInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [
     priceEstimateKey,
@@ -1371,6 +1393,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setError(resolvedCopy.errors.referenceMissing);
         return;
       }
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.access_token) {
+        setAuthModalOpen(true);
+        return;
+      }
       setError(null);
       setStatusMessage(null);
       const pendingId = `pending-${crypto.randomUUID()}`;
@@ -2076,6 +2103,42 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         defaultAllowIndex={false}
         onSaveToLibrary={handleSaveVariantToLibrary}
       />
+    ) : null}
+      {authModalOpen ? (
+      <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6">
+        <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
+        <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h2 className="text-base font-semibold text-text-primary">{resolvedCopy.authGate.title}</h2>
+              <p className="mt-2 text-sm text-text-secondary">{resolvedCopy.authGate.body}</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setAuthModalOpen(false)}
+              className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
+              aria-label={resolvedCopy.authGate.close}
+            >
+              {resolvedCopy.authGate.close}
+            </Button>
+          </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
+              {resolvedCopy.authGate.primary}
+            </ButtonLink>
+            <ButtonLink
+              href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
+              variant="outline"
+              size="sm"
+              className="px-4"
+            >
+              {resolvedCopy.authGate.secondary}
+            </ButtonLink>
+          </div>
+        </div>
+      </div>
     ) : null}
       {libraryModal.open ? (
       <ImageLibraryModal

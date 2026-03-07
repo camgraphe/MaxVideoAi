@@ -17,7 +17,6 @@ import { UIIcon } from '@/components/ui/UIIcon';
 import {
   clearLastKnownAccount,
   readLastKnownUserId,
-  readLastKnownWallet,
   writeLastKnownUserId,
   writeLastKnownWallet,
 } from '@/lib/last-known';
@@ -94,12 +93,6 @@ export function HeaderBar() {
   const bannerMessage = serviceNotice?.trim() ?? '';
   const showServiceNotice = Boolean(bannerMessage);
   useEffect(() => {
-    const storedWallet = readLastKnownWallet();
-    if (storedWallet) {
-      setWallet((current) => current ?? { balance: storedWallet.balance });
-    }
-  }, []);
-  useEffect(() => {
     if (typeof window === 'undefined') return;
     const stored = window.localStorage.getItem(themeStorageKey);
     const resolved = stored === 'dark' || stored === 'light' ? stored : 'light';
@@ -160,12 +153,20 @@ export function HeaderBar() {
           writeLastKnownUserId(userId);
         }
         setEmail(session?.user?.email ?? null);
+        if (!userId) {
+          setWallet(null);
+          setIsAdmin(false);
+        }
         setAuthResolved(true);
-        void fetchAccountState(session?.access_token, userId);
+        if (userId) {
+          void fetchAccountState(session?.access_token, userId);
+        }
       })
       .catch(() => {
         if (mounted) {
           setEmail(null);
+          setWallet(null);
+          setIsAdmin(false);
           setAuthResolved(true);
         }
       });
@@ -184,10 +185,15 @@ export function HeaderBar() {
       const userId = session?.user?.id ?? null;
       if (userId) {
         writeLastKnownUserId(userId);
+      } else {
+        setWallet(null);
+        setIsAdmin(false);
       }
       setEmail(session?.user?.email ?? null);
       setAuthResolved(true);
-      void fetchAccountState(session?.access_token, userId);
+      if (userId) {
+        void fetchAccountState(session?.access_token, userId);
+      }
     });
     const handleInvalidate = async () => {
       const { data } = await supabase.auth.getSession();
@@ -195,6 +201,10 @@ export function HeaderBar() {
       const userId = session?.user?.id ?? null;
       if (userId) {
         writeLastKnownUserId(userId);
+      } else {
+        setWallet(null);
+        setIsAdmin(false);
+        return;
       }
       await fetchAccountState(session?.access_token, userId);
     };

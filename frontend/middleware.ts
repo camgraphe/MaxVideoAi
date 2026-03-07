@@ -8,6 +8,7 @@ import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
 import { updateSession } from '@/lib/supabase-ssr';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
+import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 
 const NEXT_LOCALE_COOKIE = 'NEXT_LOCALE';
 const LOGIN_PATH = '/login';
@@ -447,6 +448,10 @@ export async function middleware(req: NextRequest) {
     const logoutResponse = NextResponse.redirect(redirectUrl);
     mergeResponseCookies(logoutResponse, response);
     return finalizeResponse(logoutResponse, true, trackingNoindex, appNoindex);
+  }
+
+  if (canVisitorBrowseWorkspacePath(pathname)) {
+    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 
   const redirectUrl = req.nextUrl.clone();

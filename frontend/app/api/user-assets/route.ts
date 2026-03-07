@@ -3,12 +3,16 @@ import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { deleteUserAsset, uploadImageToStorage, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
+    if (VISITOR_WORKSPACE_ENABLED) {
+      return NextResponse.json({ ok: true, assets: [] });
+    }
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 

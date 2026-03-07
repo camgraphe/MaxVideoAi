@@ -2,6 +2,8 @@
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import deepmerge from 'deepmerge';
+import { usePathname } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
@@ -11,13 +13,11 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
-  readLastKnownMember,
-  readLastKnownUserId,
-  readLastKnownWallet,
   writeLastKnownMember,
+  readLastKnownUserId,
   writeLastKnownWallet,
 } from '@/lib/last-known';
 
@@ -174,6 +174,13 @@ const DEFAULT_BILLING_COPY = {
     lowBalance: 'Your balance is low. Top up to keep creating.',
     topupStart: 'Unable to start payment.',
   },
+  authGate: {
+    title: 'Create an account to fund your wallet',
+    body: 'You can browse Billing and inspect live pricing, but adding funds requires an account.',
+    primary: 'Create account',
+    secondary: 'Sign in',
+    close: 'Maybe later',
+  },
 };
 
 type BillingCopy = Omit<typeof DEFAULT_BILLING_COPY, 'estimator'>;
@@ -185,34 +192,24 @@ type DispatchGaEventOptions = {
 
 export default function BillingPage() {
   const { t } = useI18n();
-  const copy = t('workspace.billing', DEFAULT_BILLING_COPY) as BillingCopy;
+  const rawCopy = t('workspace.billing', DEFAULT_BILLING_COPY);
+  const copy = useMemo<BillingCopy>(() => {
+    if (!rawCopy || typeof rawCopy !== 'object') return DEFAULT_BILLING_COPY;
+    return deepmerge(DEFAULT_BILLING_COPY, rawCopy as Partial<BillingCopy>);
+  }, [rawCopy]);
+  const pathname = usePathname();
   const walletCurrencyDetected = copy.wallet.currencyDetected ?? DEFAULT_BILLING_COPY.wallet.currencyDetected;
   const walletCurrencyOverride = copy.wallet.currencyOverride ?? DEFAULT_BILLING_COPY.wallet.currencyOverride;
   const walletCurrencyLoading = copy.wallet.currencyLoading ?? DEFAULT_BILLING_COPY.wallet.currencyLoading;
   const walletCurrencyLoadError = copy.wallet.currencyLoadError ?? DEFAULT_BILLING_COPY.wallet.currencyLoadError;
   const walletQuoteLoading = copy.wallet.quoteLoading ?? DEFAULT_BILLING_COPY.wallet.quoteLoading;
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
-  const { session, loading: authLoading } = useRequireAuth();
+  const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const [currencyOptions, setCurrencyOptions] = useState<string[]>(['USD']);
-  const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(() => {
-    const stored = readLastKnownWallet();
-    if (!stored) return null;
-    return {
-      balance: stored.balance,
-      currency: typeof stored.currency === 'string' ? stored.currency.toUpperCase() : 'USD',
-    };
-  });
-  const [member, setMember] = useState<MemberStatus | null>(() => {
-    const stored = readLastKnownMember();
-    if (!stored?.tier) return null;
-    return {
-      tier: stored.tier,
-      savingsPct: stored.savingsPct,
-      spent30: stored.spent30,
-      spentToday: stored.spentToday,
-    };
-  });
+  const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
+  const [member, setMember] = useState<MemberStatus | null>(null);
   const [stripeMode, setStripeMode] = useState<'test' | 'live' | 'disabled'>('disabled');
   const [toast, setToast] = useState<string | null>(null);
   const [receipts, setReceipts] = useState<{
@@ -235,6 +232,7 @@ export default function BillingPage() {
   const autoCurrencyRef = useRef('USD');
   const conversionSentRef = useRef(false);
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
+  const loginRedirectTarget = pathname || '/billing';
 
   useEffect(() => {
     autoCurrencyRef.current = autoCurrency;
@@ -391,35 +389,45 @@ export default function BillingPage() {
   }, [clearPendingTopupCancelled, dispatchGaEvent]);
 
   useEffect(() => {
-    if (authLoading || !session) return;
+    if (authLoading) return;
 
     let mounted = true;
     async function load() {
+      if (!session) {
+        if (mounted) {
+          setWallet(null);
+          setReceipts({ items: [], nextCursor: null, loading: false, error: null });
+        }
+      }
       const token = session?.access_token ?? null;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      fetch('/api/wallet', { headers, cache: 'no-store' })
-        .then(async (r) => {
-          const payload = await r.json().catch(() => null);
-          if (!r.ok) {
-            throw new Error(payload?.error ?? 'wallet_load_failed');
-          }
-          return payload;
-        })
-        .then((d) => {
-          if (!mounted || !d) return;
-          const balance = typeof d.balance === 'number' ? d.balance : null;
-          if (balance === null) return;
-          const currency = typeof d.currency === 'string' ? d.currency : 'USD';
-          const nextWallet = { balance, currency };
-          setWallet(nextWallet);
-          writeLastKnownWallet(nextWallet, session?.user?.id ?? readLastKnownUserId());
-          const resolvedCurrency = String(d.settlementCurrency ?? currency ?? 'USD').toUpperCase();
-          setAutoCurrency(resolvedCurrency);
-          if (!userCurrencyOverrideRef.current) {
-            setChargeCurrency(resolvedCurrency);
-          }
-        })
-        .catch(() => undefined);
+      if (session) {
+        fetch('/api/wallet', { headers, cache: 'no-store' })
+          .then(async (r) => {
+            const payload = await r.json().catch(() => null);
+            if (!r.ok) {
+              throw new Error(payload?.error ?? 'wallet_load_failed');
+            }
+            return payload;
+          })
+          .then((d) => {
+            if (!mounted || !d) return;
+            const balance = typeof d.balance === 'number' ? d.balance : null;
+            if (balance === null) return;
+            const currency = typeof d.currency === 'string' ? d.currency : 'USD';
+            const nextWallet = { balance, currency };
+            setWallet(nextWallet);
+            if (session.user?.id) {
+              writeLastKnownWallet(nextWallet, session.user.id ?? readLastKnownUserId());
+            }
+            const resolvedCurrency = String(d.settlementCurrency ?? currency ?? 'USD').toUpperCase();
+            setAutoCurrency(resolvedCurrency);
+            if (!userCurrencyOverrideRef.current) {
+              setChargeCurrency(resolvedCurrency);
+            }
+          })
+          .catch(() => undefined);
+      }
       fetch('/api/member-status?includeTiers=1', { headers, cache: 'no-store' })
         .then(async (r) => {
           const payload = await r.json().catch(() => null);
@@ -433,20 +441,25 @@ export default function BillingPage() {
           if (typeof d.tier === 'string') {
             const nextMember = d as MemberStatus;
             setMember(nextMember);
-            writeLastKnownMember(
-              {
-                tier: nextMember.tier,
-                spent30: nextMember.spent30,
-                spentToday: nextMember.spentToday,
-                savingsPct: nextMember.savingsPct,
-              },
-              session?.user?.id ?? readLastKnownUserId()
-            );
+            if (session?.user?.id) {
+              writeLastKnownMember(
+                {
+                  tier: nextMember.tier,
+                  spent30: nextMember.spent30,
+                  spentToday: nextMember.spentToday,
+                  savingsPct: nextMember.savingsPct,
+                },
+                session.user.id ?? readLastKnownUserId()
+              );
+            }
           }
         })
         .catch(() => undefined);
 
       // Load receipts first page
+      if (!session) {
+        return;
+      }
       setReceipts((s) => ({ ...s, loading: true, error: null }));
       fetch('/api/receipts?limit=25', { headers })
         .then((r) => r.json())
@@ -460,9 +473,16 @@ export default function BillingPage() {
   }, [authLoading, session, copy.membership.defaultTier, copy.errors.loadReceipts]);
 
   useEffect(() => {
-    if (authLoading || !session) return;
+    if (authLoading) return;
     let canceled = false;
     async function loadCurrencySummary() {
+      if (!session) {
+        setCurrencyOptions(['USD']);
+        if (!userCurrencyOverrideRef.current) {
+          setChargeCurrency((autoCurrencyRef.current || 'USD').toUpperCase());
+        }
+        return;
+      }
       setCurrencyLoading(true);
       setCurrencyError(null);
       const token = session?.access_token ?? null;
@@ -499,7 +519,7 @@ export default function BillingPage() {
   }, [authLoading, session, walletCurrencyLoadError]);
 
   useEffect(() => {
-    if (!session) return;
+    if (authLoading) return;
     let canceled = false;
     async function loadQuotes() {
       setQuoteLoading(true);
@@ -615,6 +635,10 @@ export default function BillingPage() {
   }, []);
 
   async function handleTopUp(amountCents: number) {
+    if (!session) {
+      setAuthModalOpen(true);
+      return;
+    }
     const token = session?.access_token ?? null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {
@@ -777,7 +801,7 @@ export default function BillingPage() {
   const customAmountValid = customAmountCents != null && customAmountCents >= 1000;
   const visibleReceipts = receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items;
 
-  if (authLoading || !session) {
+  if (authLoading) {
     return null;
   }
 
@@ -1125,6 +1149,42 @@ export default function BillingPage() {
 
         </main>
       </div>
+      {authModalOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
+          <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h2 className="text-base font-semibold text-text-primary">{copy.authGate.title}</h2>
+                <p className="mt-2 text-sm text-text-secondary">{copy.authGate.body}</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setAuthModalOpen(false)}
+                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
+                aria-label={copy.authGate.close}
+              >
+                {copy.authGate.close}
+              </Button>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
+                {copy.authGate.primary}
+              </ButtonLink>
+              <ButtonLink
+                href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
+                variant="outline"
+                size="sm"
+                className="px-4"
+              >
+                {copy.authGate.secondary}
+              </ButtonLink>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

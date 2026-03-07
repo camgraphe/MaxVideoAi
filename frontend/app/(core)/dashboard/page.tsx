@@ -23,9 +23,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import {
-  readLastKnownMember,
   readLastKnownUserId,
-  readLastKnownWallet,
   writeLastKnownMember,
   writeLastKnownWallet,
 } from '@/lib/last-known';
@@ -170,7 +168,7 @@ export default function DashboardPage() {
   const { t } = useI18n();
   const copy = t('workspace.dashboard', DEFAULT_DASHBOARD_COPY) as DashboardCopy;
   const router = useRouter();
-  const { loading: authLoading } = useRequireAuth();
+  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const { data: enginesData, error: enginesError } = useEngines();
   const { data: imageEnginesData } = useEngines('image');
   const {
@@ -193,19 +191,8 @@ export default function DashboardPage() {
   const [imageSelectionResolved, setImageSelectionResolved] = useState(false);
   const [exportsSummary, setExportsSummary] = useState<{ total: number } | null>(null);
   const [templates, setTemplates] = useState<TemplateEntry[]>([]);
-  const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(() => {
-    const stored = readLastKnownWallet();
-    if (!stored) return null;
-    return {
-      balance: stored.balance,
-      currency: typeof stored.currency === 'string' ? stored.currency.toUpperCase() : 'USD',
-    };
-  });
-  const [memberSummary, setMemberSummary] = useState<{ spentToday?: number; spent30?: number } | null>(() => {
-    const stored = readLastKnownMember();
-    if (!stored) return null;
-    return { spentToday: stored.spentToday, spent30: stored.spent30 };
-  });
+  const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
+  const [memberSummary, setMemberSummary] = useState<{ spentToday?: number; spent30?: number } | null>(null);
   const [recentTab, setRecentTab] = useState<'all' | 'completed' | 'failed'>('all');
   const [lightbox, setLightbox] = useState<{ kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | null>(null);
   const quickStartRef = useRef<HTMLDivElement | null>(null);
@@ -357,6 +344,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (authLoading) return;
+    if (!user) {
+      setWalletSummary(null);
+      setMemberSummary(null);
+      return;
+    }
     let mounted = true;
 
     const fetchAccountState = async () => {
@@ -411,7 +403,7 @@ export default function DashboardPage() {
       mounted = false;
       window.removeEventListener('wallet:invalidate', handleInvalidate);
     };
-  }, [authLoading]);
+  }, [authLoading, user]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

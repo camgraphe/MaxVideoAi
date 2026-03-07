@@ -790,12 +790,16 @@ export async function POST(req: NextRequest) {
     typeof body.payment === 'object' && body.payment
       ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
       : {};
-  const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
   const authenticatedUserId = await resolveUserId();
-  const userId = explicitUserId ?? authenticatedUserId ?? null;
-  if (userId) {
-    metricState.userId = userId;
+  if (!authenticatedUserId) {
+    logMetric('rejected', { errorCode: 'AUTH_REQUIRED' });
+    return NextResponse.json(
+      { ok: false, error: 'auth_required', message: 'Authentication required.' },
+      { status: 401 }
+    );
   }
+  const userId = authenticatedUserId;
+  metricState.userId = userId;
   const localKey = typeof body.localKey === 'string' && body.localKey.trim().length ? body.localKey.trim() : null;
   if (localKey && userId) {
     const existingJobs = await query<{

@@ -9,6 +9,8 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
+import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
+import { getVisitorStarterJob } from '@/server/visitor-workspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -138,6 +140,40 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
 
   const { userId } = await getRouteAuthContext(_req);
   if (!userId) {
+    if (VISITOR_WORKSPACE_ENABLED) {
+      const visitorJob = await getVisitorStarterJob(jobId);
+      if (visitorJob) {
+        return json({
+          ok: true,
+          jobId: visitorJob.jobId,
+          createdAt: visitorJob.createdAt,
+          status: 'completed',
+          progress: 100,
+          videoUrl: visitorJob.videoUrl ?? undefined,
+          thumbUrl: visitorJob.thumbUrl ?? undefined,
+          aspectRatio: visitorJob.aspectRatio ?? undefined,
+          pricing: visitorJob.pricingSnapshot ?? undefined,
+          settingsSnapshot: undefined,
+          finalPriceCents: visitorJob.finalPriceCents ?? undefined,
+          currency: visitorJob.currency ?? 'USD',
+          paymentStatus: visitorJob.paymentStatus ?? 'curated',
+          vendorAccountId: undefined,
+          stripePaymentIntentId: undefined,
+          stripeChargeId: undefined,
+          batchId: undefined,
+          groupId: undefined,
+          iterationIndex: undefined,
+          iterationCount: undefined,
+          renderIds: visitorJob.renderIds ?? undefined,
+          renderThumbUrls: visitorJob.renderThumbUrls ?? undefined,
+          heroRenderId: visitorJob.heroRenderId ?? undefined,
+          localKey: visitorJob.localKey ?? undefined,
+          message: undefined,
+          etaSeconds: undefined,
+          etaLabel: undefined,
+        });
+      }
+    }
     return json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 

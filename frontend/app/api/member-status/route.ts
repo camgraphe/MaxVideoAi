@@ -3,6 +3,8 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getMembershipTiers } from '@/lib/membership';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
+import { getVisitorMemberStatus } from '@/server/visitor-workspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +16,6 @@ function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
 
 export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
-  if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
-
   const includeTiers = (() => {
     try {
       const param = req.nextUrl.searchParams.get('includeTiers');
@@ -25,6 +25,13 @@ export async function GET(req: NextRequest) {
       return false;
     }
   })();
+
+  if (!userId) {
+    if (VISITOR_WORKSPACE_ENABLED) {
+      return json(await getVisitorMemberStatus(includeTiers));
+    }
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const databaseConfigured = isDatabaseConfigured();
   if (!databaseConfigured) {

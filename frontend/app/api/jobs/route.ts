@@ -11,6 +11,8 @@ import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
+import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
+import { listVisitorStarterJobs } from '@/server/visitor-workspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +90,16 @@ export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
 
   if (!userId) {
+    if (VISITOR_WORKSPACE_ENABLED) {
+      if (feedType === 'image') {
+        return json({ ok: true, jobs: [], nextCursor: null });
+      }
+      if (shouldUseStarterFallback(feedType, cursor)) {
+        const jobs = await listVisitorStarterJobs(limit);
+        return json({ ok: true, jobs, nextCursor: null });
+      }
+      return json({ ok: true, jobs: [], nextCursor: null });
+    }
     return json({ ok: false, jobs: [], nextCursor: null, error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -470,7 +482,7 @@ type JobRow = {
           previewFrame: video.thumbUrl ?? undefined,
           finalPriceCents: video.finalPriceCents ?? undefined,
           currency: video.currency ?? 'USD',
-          pricingSnapshot: undefined,
+          pricingSnapshot: video.pricingSnapshot,
           vendorAccountId: undefined,
           paymentStatus: 'curated',
           stripePaymentIntentId: undefined,

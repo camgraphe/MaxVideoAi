@@ -22,6 +22,10 @@ type RequireAuthResult = {
   authStatus: 'unknown' | 'refreshing' | 'authed' | 'loggedOut';
 };
 
+type UseRequireAuthOptions = {
+  redirectIfLoggedOut?: boolean;
+};
+
 const AUTH_SESSION_LOOKUP_TIMEOUT_MS = 4000;
 const AUTH_USER_LOOKUP_TIMEOUT_MS = 4000;
 const AUTH_FOCUS_THROTTLE_MS = 2000;
@@ -58,7 +62,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   });
 }
 
-export function useRequireAuth(): RequireAuthResult {
+export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResult {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -77,6 +81,7 @@ export function useRequireAuth(): RequireAuthResult {
   const lastKnownSessionRef = useRef<Session | null>(null);
   const lastKnownUserRef = useRef<User | null>(null);
   const initialLastKnownUserId = useMemo(() => readLastKnownUserId(), []);
+  const redirectIfLoggedOut = options?.redirectIfLoggedOut !== false;
   const lastKnownUserIdRef = useRef<string | null>(initialLastKnownUserId);
 
   const nextPath = useMemo(() => {
@@ -134,8 +139,10 @@ export function useRequireAuth(): RequireAuthResult {
       setLoading(false);
       initialResolvedRef.current = true;
     }
-    redirectToLogin();
-  }, [redirectToLogin]);
+    if (redirectIfLoggedOut) {
+      redirectToLogin();
+    }
+  }, [redirectIfLoggedOut, redirectToLogin]);
 
   const ensureSession = useCallback(async () => {
     if (ensureSessionInFlightRef.current) {

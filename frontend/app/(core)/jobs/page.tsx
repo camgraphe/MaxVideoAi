@@ -92,7 +92,7 @@ export default function JobsPage() {
     isValidating: imageIsValidating,
     mutate: mutateImage,
   } = useInfiniteJobs(24, { type: 'image' });
-  const { loading: authLoading, user } = useRequireAuth();
+  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const { data: preferences } = useUserPreferences(!authLoading && Boolean(user));
   const defaultAllowIndex = preferences?.defaultAllowIndex ?? true;
 

@@ -1,12 +1,13 @@
 'use client';
 
 import clsx from 'clsx';
+import deepmerge from 'deepmerge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { supabase } from '@/lib/supabaseClient';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
@@ -43,7 +44,7 @@ import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
   getLumaRay2DurationInfo,
@@ -254,6 +255,13 @@ const DEFAULT_WORKSPACE_COPY = {
     submit: 'Add funds',
     submitting: 'Starting top-up…',
   },
+  authGate: {
+    title: 'Create an account to render',
+    body: 'You can explore the full workspace with starter renders, but launching a real render requires an account.',
+    primary: 'Create account',
+    secondary: 'Sign in',
+    close: 'Maybe later',
+  },
   assetLibrary: {
     title: 'Select reference image',
     import: 'Import',
@@ -303,8 +311,15 @@ function AssetLibraryModal({
 }: AssetLibraryModalProps) {
   const { t, locale } = useI18n();
   const uiLocale = normalizeUiLocale(locale);
-  const copy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary) ?? DEFAULT_WORKSPACE_COPY.assetLibrary;
-  const copyAssetLibrary = copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary;
+  const rawCopy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary);
+  const copyAssetLibrary = useMemo(
+    () =>
+      deepmerge(
+        DEFAULT_WORKSPACE_COPY.assetLibrary,
+        (rawCopy ?? {}) as Partial<typeof DEFAULT_WORKSPACE_COPY.assetLibrary>
+      ),
+    [rawCopy]
+  );
   const importLabel = copyAssetLibrary.import ?? DEFAULT_WORKSPACE_COPY.assetLibrary.import;
   const importingLabel = copyAssetLibrary.importing ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importing;
   const importFailedLabel = copyAssetLibrary.importFailed ?? DEFAULT_WORKSPACE_COPY.assetLibrary.importFailed;
@@ -333,7 +348,7 @@ function AssetLibraryModal({
             : uiLocale === 'es'
               ? 'Aún no hay videos guardados. Sube o genera un video para verlo aquí.'
               : 'No saved videos yet. Upload or generate a video to see it here.'
-          : copy.empty;
+          : copyAssetLibrary.empty;
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -403,7 +418,7 @@ function AssetLibraryModal({
       <div className="relative z-10 w-full max-w-3xl rounded-modal border border-border bg-surface p-6 shadow-float">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{copyAssetLibrary.title}</h2>
             <p className="text-sm text-text-secondary">{fieldLabel}</p>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto">
@@ -431,7 +446,7 @@ function AssetLibraryModal({
               className="border-border px-3 text-sm text-text-secondary hover:text-text-primary"
               onClick={() => onRefresh(source)}
             >
-              {copy.refresh}
+              {copyAssetLibrary.refresh}
             </Button>
             <Button
               type="button"
@@ -440,7 +455,7 @@ function AssetLibraryModal({
               className="border-border px-3 text-sm text-text-secondary hover:text-text-primary"
               onClick={onClose}
             >
-              {copy.close}
+              {copyAssetLibrary.close}
             </Button>
           </div>
         </div>
@@ -462,7 +477,7 @@ function AssetLibraryModal({
               source === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
             )}
           >
-            {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.all}
+            {copyAssetLibrary.tabs.all}
           </Button>
           <Button
             type="button"
@@ -476,7 +491,7 @@ function AssetLibraryModal({
               source === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
             )}
           >
-            {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.upload}
+            {copyAssetLibrary.tabs.upload}
           </Button>
           <Button
             type="button"
@@ -490,7 +505,7 @@ function AssetLibraryModal({
               source === 'generated' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
             )}
           >
-            {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.generated}
+            {copyAssetLibrary.tabs.generated}
           </Button>
         </div>
 
@@ -1290,7 +1305,7 @@ export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
-  const { user, loading: authLoading, authStatus } = useRequireAuth();
+  const { user, loading: authLoading, authStatus } = useRequireAuth({ redirectIfLoggedOut: false });
   const engineIdByLabel = useMemo(() => {
     const map = new Map<string, string>();
     engines.forEach((engine) => {
@@ -1307,7 +1322,15 @@ export default function Page() {
   const { t, locale } = useI18n();
   const uiLocale = normalizeUiLocale(locale);
   const workflowCopy = useMemo(() => getLocalizedWorkflowCopy(uiLocale), [uiLocale]);
-  const workspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY) ?? DEFAULT_WORKSPACE_COPY;
+  const rawWorkspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY);
+  const workspaceCopy = useMemo(
+    () =>
+      deepmerge(
+        DEFAULT_WORKSPACE_COPY,
+        (rawWorkspaceCopy ?? {}) as Partial<typeof DEFAULT_WORKSPACE_COPY>
+      ),
+    [rawWorkspaceCopy]
+  );
   const processingCopy = (t('workspace.generate.processing', DEFAULT_PROCESSING_COPY) ??
     DEFAULT_PROCESSING_COPY) as typeof DEFAULT_PROCESSING_COPY;
   const formatTakeLabel = useCallback(
@@ -1321,6 +1344,7 @@ export default function Page() {
   );
 
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -1347,6 +1371,7 @@ export default function Page() {
     amountLabel?: string;
     shortfallCents?: number;
   } | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState<number>(1000);
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
   const [topUpError, setTopUpError] = useState<string | null>(null);
@@ -1451,6 +1476,10 @@ if (typeof window !== 'undefined') {
   });
 }
 const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
+const loginRedirectTarget = useMemo(() => {
+  const base = pathname ?? '/app';
+  return searchString ? `${base}?${searchString}` : base;
+}, [pathname, searchString]);
 const skipOnboardingRef = useRef<boolean>(false);
 const hydratedJobRef = useRef<string | null>(null);
 const preserveStoredDraftRef = useRef<boolean>(false);
@@ -4744,6 +4773,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token ?? null;
+    if (!token) {
+      setAuthModalOpen(true);
+      return;
+    }
     const paymentMode: 'wallet' | 'platform' = token ? 'wallet' : 'platform';
     const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
 
@@ -6361,6 +6394,42 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               </Button>
             </div>
           </form>
+        </div>
+      )}
+      {authModalOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
+          <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h2 className="text-base font-semibold text-text-primary">{workspaceCopy.authGate.title}</h2>
+                <p className="mt-2 text-sm text-text-secondary">{workspaceCopy.authGate.body}</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setAuthModalOpen(false)}
+                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
+                aria-label={workspaceCopy.authGate.close}
+              >
+                {workspaceCopy.authGate.close}
+              </Button>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
+                {workspaceCopy.authGate.primary}
+              </ButtonLink>
+              <ButtonLink
+                href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
+                variant="outline"
+                size="sm"
+                className="px-4"
+              >
+                {workspaceCopy.authGate.secondary}
+              </ButtonLink>
+            </div>
+          </div>
         </div>
       )}
       {assetPickerTarget && (

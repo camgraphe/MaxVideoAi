@@ -82,13 +82,14 @@ type SettingsCopy = typeof DEFAULT_SETTINGS_COPY;
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('account');
-  const { loading: authLoading, user } = useRequireAuth();
+  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const { t } = useI18n();
   const rawCopy = t('workspace.settings', DEFAULT_SETTINGS_COPY);
   const copy = useMemo<SettingsCopy>(() => {
     if (!rawCopy || typeof rawCopy !== 'object') return DEFAULT_SETTINGS_COPY;
     return deepmerge(DEFAULT_SETTINGS_COPY, rawCopy as Partial<SettingsCopy>);
   }, [rawCopy]);
+  const isGuest = !user;
   const {
     data: preferences,
     isLoading: prefsLoading,
@@ -128,7 +129,7 @@ export default function SettingsPage() {
     [prefSaving, mutatePreferences, copy.privacy.preferenceError]
   );
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return null;
   }
 
@@ -176,13 +177,14 @@ export default function SettingsPage() {
               saving={prefSaving}
               loadError={preferencesLoadError}
               error={prefError}
+              guest={isGuest}
               copy={copy.privacy}
               onToggleIndexing={(value) => {
                 void handleDefaultIndexChange(value);
               }}
             />
           )}
-          {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} />}
+          {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} guest={isGuest} />}
         </main>
       </div>
     </div>
@@ -346,11 +348,12 @@ function PrivacyTab({
   saving: boolean;
   loadError?: string | null;
   error: string | null;
+  guest: boolean;
   onToggleIndexing: (next: boolean) => void;
   copy: SettingsCopy['privacy'];
 }) {
   const allowIndex = defaultAllowIndex ?? true;
-  const isDisabled = loading || saving || Boolean(loadError);
+  const isDisabled = guest || loading || saving || Boolean(loadError);
 
   return (
     <section className="rounded-card border border-border bg-surface p-4 shadow-card">
@@ -380,8 +383,16 @@ function PrivacyTab({
   );
 }
 
-function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['notifications'] }) {
-  const { data: marketingPref, isLoading, mutate } = useMarketingPreference(live);
+function NotificationsTab({
+  live,
+  copy,
+  guest,
+}: {
+  live: boolean;
+  copy: SettingsCopy['notifications'];
+  guest: boolean;
+}) {
+  const { data: marketingPref, isLoading, mutate } = useMarketingPreference(live && !guest);
   const [saving, setSaving] = useState(false);
   const [prefError, setPrefError] = useState<string | null>(null);
 
@@ -401,7 +412,7 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
   }
 
   const handleMarketingToggle = async () => {
-    if (saving) return;
+    if (guest || saving) return;
     setSaving(true);
     setPrefError(null);
     try {
@@ -457,7 +468,7 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
             size="sm"
             variant="ghost"
             onClick={handleMarketingToggle}
-            disabled={isLoading || saving}
+            disabled={guest || isLoading || saving}
             className={`h-7 w-12 min-h-0 rounded-full border p-0 ${marketingEnabled ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
             aria-pressed={marketingEnabled}
           >
@@ -468,23 +479,27 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
         </div>
         {prefError ? <p className="text-xs text-state-warning">{prefError}</p> : null}
         <div className="grid grid-gap-sm sm:grid-cols-2">
-          <ToggleRow label={copy.toggles.jobDone} />
-          <ToggleRow label={copy.toggles.jobFailed} />
-          <ToggleRow label={copy.toggles.lowWallet} />
-          <ToggleRow label={copy.toggles.weeklySummary} />
+          <ToggleRow label={copy.toggles.jobDone} disabled={guest} />
+          <ToggleRow label={copy.toggles.jobFailed} disabled={guest} />
+          <ToggleRow label={copy.toggles.lowWallet} disabled={guest} />
+          <ToggleRow label={copy.toggles.weeklySummary} disabled={guest} />
         </div>
       </div>
     </section>
   );
 }
 
-function ToggleRow({ label }: { label: string }) {
+function ToggleRow({ label, disabled = false }: { label: string; disabled?: boolean }) {
   return (
     <div className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2 text-sm">
       <span className="text-text-secondary">{label}</span>
       <label className="inline-flex cursor-pointer items-center">
-        <input type="checkbox" className="peer sr-only" defaultChecked />
-        <span className="h-5 w-9 rounded-full bg-surface ring-1 ring-border transition peer-checked:bg-brand" />
+        <input type="checkbox" className="peer sr-only" defaultChecked={!disabled} disabled={disabled} />
+        <span
+          className={`h-5 w-9 rounded-full ring-1 ring-border transition ${
+            disabled ? 'bg-surface-disabled opacity-70' : 'bg-surface peer-checked:bg-brand'
+          }`}
+        />
       </label>
     </div>
   );
