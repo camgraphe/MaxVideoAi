@@ -4695,6 +4695,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine || !authChecked) return;
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token ?? null;
+    if (!token) {
+      setAuthModalOpen(true);
+      return;
+    }
     if (audioWorkflowUnsupported) {
       showNotice(workflowCopy.audioUnsupported);
       return;
@@ -4771,12 +4777,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       });
     }
 
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token ?? null;
-    if (!token) {
-      setAuthModalOpen(true);
-      return;
-    }
     const paymentMode: 'wallet' | 'platform' = token ? 'wallet' : 'platform';
     const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
 

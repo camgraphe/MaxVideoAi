@@ -1384,6 +1384,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!selectedEngine) return;
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.access_token) {
+        setAuthModalOpen(true);
+        return;
+      }
       const trimmedPrompt = prompt.trim();
       if (!trimmedPrompt) {
         setError(resolvedCopy.errors.promptMissing);
@@ -1391,11 +1396,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       }
       if (referenceMinRequired > 0 && readyReferenceUrls.length < referenceMinRequired) {
         setError(resolvedCopy.errors.referenceMissing);
-        return;
-      }
-      const { data } = await supabase.auth.getSession();
-      if (!data.session?.access_token) {
-        setAuthModalOpen(true);
         return;
       }
       setError(null);
