@@ -25,6 +25,10 @@
         "href": "/models/ltx-2-3-fast"
       },
       {
+        "label": "Comparer LTX 2.3 Pro vs Veo 3.1",
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-veo-3-1"
+      },
+      {
         "label": "Voir tous les exemples LTX",
         "href": "/examples/ltx"
       }

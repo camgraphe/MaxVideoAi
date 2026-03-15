@@ -18,6 +18,7 @@
     "sora-2-vs-veo-3-1": [
       "kling-2-6-pro-vs-sora-2",
       "kling-2-6-pro-vs-veo-3-1",
+      "ltx-2-3-pro-vs-veo-3-1",
       "sora-2-vs-wan-2-6",
       "sora-2-vs-veo-3-1-first-last",
       "sora-2-vs-wan-2-5"
@@ -61,11 +62,14 @@
       "ltx-2-vs-veo-3-1"
     ],
     "ltx-2-vs-sora-2": [
+      "ltx-2-3-fast-vs-ltx-2-3-pro",
       "ltx-2-vs-veo-3-1",
       "sora-2-vs-veo-3-1",
       "kling-2-6-pro-vs-sora-2"
     ],
     "ltx-2-vs-veo-3-1": [
+      "ltx-2-3-pro-vs-veo-3-1",
+      "ltx-2-3-fast-vs-ltx-2-3-pro",
       "ltx-2-vs-sora-2",
       "kling-2-6-pro-vs-veo-3-1",
       "veo-3-1-vs-wan-2-6"

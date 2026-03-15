@@ -3,6 +3,8 @@
     { "left": "sora-2", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
     { "left": "kling-3-pro", "right": "sora-2", "tags": ["cinematic", "quality", "long"] },
     { "left": "veo-3-1", "right": "kling-3-pro", "tags": ["audio", "ads", "quality"] },
+    { "left": "ltx-2-3-pro", "right": "veo-3-1", "tags": ["audio", "ads", "quality"] },
+    { "left": "ltx-2-3-fast", "right": "ltx-2-3-pro", "tags": ["fast", "audio", "quality"] },
     { "left": "ltx-2", "right": "veo-3-1", "tags": ["product", "quality", "audio"] },
     { "left": "wan-2-6", "right": "sora-2", "tags": ["value", "general", "i2v"] },
     { "left": "seedance-1-5-pro", "right": "kling-3-pro", "tags": ["cinematic", "storyboards", "quality"] },
@@ -23,6 +25,7 @@
     {
       "id": "ads",
       "pairs": [
+        { "left": "ltx-2-3-pro", "right": "veo-3-1" },
         { "left": "veo-3-1", "right": "ltx-2" },
         { "left": "veo-3-1", "right": "kling-2-6-pro" },
         { "left": "sora-2", "right": "veo-3-1" }
@@ -39,6 +42,7 @@
     {
       "id": "product",
       "pairs": [
+        { "left": "ltx-2-3-pro", "right": "veo-3-1" },
         { "left": "ltx-2", "right": "veo-3-1" },
         { "left": "sora-2", "right": "ltx-2" },
         { "left": "kling-3-standard", "right": "ltx-2" }
@@ -97,6 +101,7 @@
       "pairs": [
         { "left": "sora-2", "right": "veo-3-1-first-last" },
         { "left": "wan-2-6", "right": "veo-3-1" },
+        { "left": "ltx-2-3-fast", "right": "ltx-2-3-pro" },
         { "left": "ltx-2", "right": "minimax-hailuo-02-text" }
       ]
     },
@@ -111,10 +116,13 @@
   ],
   "opponentOverrides": {
     "sora-2": ["veo-3-1", "kling-3-pro", "wan-2-6"],
-    "veo-3-1": ["sora-2", "kling-3-pro", "ltx-2"],
+    "veo-3-1": ["sora-2", "kling-3-pro", "ltx-2-3-pro"],
     "kling-3-pro": ["sora-2", "veo-3-1", "seedance-1-5-pro"],
     "wan-2-6": ["sora-2", "veo-3-1", "ltx-2-fast"],
-    "ltx-2": ["veo-3-1", "sora-2", "kling-3-standard"],
-    "pika-text-to-video": ["minimax-hailuo-02-text", "ltx-2-fast", "wan-2-5"]
+    "ltx-2-3-pro": ["veo-3-1", "sora-2", "ltx-2-3-fast"],
+    "ltx-2-3-fast": ["ltx-2-3-pro", "veo-3-1-fast", "ltx-2-fast"],
+    "ltx-2": ["ltx-2-3-pro", "veo-3-1", "sora-2"],
+    "ltx-2-fast": ["ltx-2-3-fast", "veo-3-1-fast", "wan-2-5"],
+    "pika-text-to-video": ["minimax-hailuo-02-text", "ltx-2-3-fast", "wan-2-5"]
   }
 }

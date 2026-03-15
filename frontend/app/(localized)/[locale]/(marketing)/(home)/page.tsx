@@ -381,7 +381,8 @@ const POPULAR_COMPARISON_LINKS = [
   { label: 'Sora 2 vs Veo 3.1 comparison', slug: 'sora-2-vs-veo-3-1' },
   { label: 'Kling 3 vs Sora 2 comparison', slug: 'kling-3-pro-vs-sora-2' },
   { label: 'Veo 3.1 vs Kling 3 comparison', slug: 'kling-3-pro-vs-veo-3-1' },
-  { label: 'LTX-2 vs Veo 3.1 comparison', slug: 'ltx-2-vs-veo-3-1' },
+  { label: 'LTX 2.3 Fast vs Pro comparison', slug: 'ltx-2-3-fast-vs-ltx-2-3-pro' },
+  { label: 'LTX 2.3 Pro vs Veo 3.1 comparison', slug: 'ltx-2-3-pro-vs-veo-3-1' },
 ] as const;
 
 function MiniFAQ({ faq }: MiniFaqProps) {

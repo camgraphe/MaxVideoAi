@@ -25,6 +25,10 @@
         "href": "/models/ltx-2-3-fast"
       },
       {
+        "label": "Comparer LTX 2.3 Fast vs Pro",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+      },
+      {
         "label": "Voir tous les exemples LTX",
         "href": "/examples/ltx"
       }
