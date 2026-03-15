@@ -40,7 +40,7 @@ export function MarketingFooter() {
     { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
     { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
     { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
-    { slug: 'ltx-2', labelKey: 'footer.sections.engines.items.ltx2', fallback: 'LTX-2' },
+    { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
     { slug: 'seedance-1-5-pro', labelKey: 'footer.sections.engines.items.seedance1_5pro', fallback: 'Seedance 1.5 Pro' },
   ];
   const engineLinks: FooterLink[] = engineItems
@@ -71,10 +71,10 @@ export function MarketingFooter() {
       fallback: 'Kling 3 Pro vs Wan 2.6',
     },
     {
-      left: 'ltx-2',
-      right: 'veo-3-1',
-      labelKey: 'footer.sections.comparisons.items.ltx2_vs_veo3_1',
-      fallback: 'LTX-2 vs Veo 3.1',
+      left: 'ltx-2-3-fast',
+      right: 'ltx-2-3-pro',
+      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_ltx23pro',
+      fallback: 'LTX 2.3 Fast vs Pro',
     },
     {
       left: 'sora-2',
@@ -101,6 +101,7 @@ export function MarketingFooter() {
     { slug: 'sora', labelKey: 'footer.sections.examples.items.sora2', fallback: 'Sora 2 examples' },
     { slug: 'kling', labelKey: 'footer.sections.examples.items.kling', fallback: 'Kling examples' },
     { slug: 'veo', labelKey: 'footer.sections.examples.items.veo3_1', fallback: 'Veo 3.1 examples' },
+    { slug: 'ltx', labelKey: 'footer.sections.examples.items.ltx', fallback: 'LTX examples' },
     { slug: null, labelKey: 'footer.sections.examples.items.all', fallback: 'All examples' },
   ];
   const exampleLinks: FooterLink[] = exampleItems.map((item) => ({
