@@ -2132,6 +2132,11 @@
           "singular": "{count} variante",
           "plural": "{count} variantes"
         },
+        "guided": {
+          "previous": "Exemple précédent",
+          "next": "Exemple suivant",
+          "badge": "Sample {current}/{total}"
+        },
         "controls": {
           "play": {
             "on": "Pause",

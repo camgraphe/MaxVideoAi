@@ -26,7 +26,7 @@ import {
 } from '@/components/Composer';
 import { KlingElementsBuilder, type KlingElementState, type KlingElementAsset } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
-import { GalleryRail } from '@/components/GalleryRail';
+import { GalleryRail, type GalleryFeedState } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 import { CompositePreviewDock } from '@/components/groups/CompositePreviewDock';
 import dynamic from 'next/dynamic';
@@ -120,6 +120,14 @@ function buildMultiPromptSummary(scenes: MultiPromptScene[]): string {
     .filter((scene) => scene.prompt.trim().length)
     .map((scene, index) => `Scene ${index + 1}: ${scene.prompt.trim()}`)
     .join(' | ');
+}
+
+function haveSameGroupOrder(a: GroupSummary[], b: GroupSummary[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index += 1) {
+    if (a[index]?.id !== b[index]?.id) return false;
+  }
+  return true;
 }
 
 function createKlingElement(): KlingElementState {
@@ -1570,6 +1578,7 @@ useEffect(() => {
     etaLabel?: string;
     prompt?: string;
   } | null>(null);
+  const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
   const [viewerTarget, setViewerTarget] = useState<{ kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | null>(null);
@@ -2406,6 +2415,8 @@ useEffect(() => {
   const activeVideoGroups = useMemo(() => adaptGroupSummaries(pendingGroups, provider), [pendingGroups, provider]);
   const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
   const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
+  const isGuidedSamplesActive = guidedSampleFeed.sampleOnly;
+  const guidedSampleGroups = guidedSampleFeed.visibleGroups;
   const restoredPreviewJobRef = useRef<string | null>(null);
   const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
   const activeVideoGroup = useMemo<VideoGroup | null>(() => {
@@ -5898,6 +5909,61 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     ]
   );
 
+  const handleGalleryFeedStateChange = useCallback((state: GalleryFeedState) => {
+    setGuidedSampleFeed((prev) => {
+      if (prev.sampleOnly === state.sampleOnly && haveSameGroupOrder(prev.visibleGroups, state.visibleGroups)) {
+        return prev;
+      }
+      return state;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isGuidedSamplesActive) return;
+    if (compositeOverrideSummary?.hero.job?.curated) {
+      setCompositeOverride(null);
+      setCompositeOverrideSummary(null);
+    }
+  }, [compositeOverrideSummary, isGuidedSamplesActive]);
+
+  useEffect(() => {
+    if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return;
+    const currentGroupId = compositeOverrideSummary?.id ?? null;
+    if (currentGroupId && guidedSampleGroups.some((group) => group.id === currentGroupId)) {
+      return;
+    }
+    handleGalleryGroupAction(guidedSampleGroups[0], 'open');
+  }, [compositeOverrideSummary?.id, guidedSampleGroups, handleGalleryGroupAction, isGuidedSamplesActive]);
+
+  const currentGuidedSampleIndex = useMemo(() => {
+    if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return -1;
+    const currentGroupId = compositeOverrideSummary?.id ?? null;
+    if (!currentGroupId) return -1;
+    return guidedSampleGroups.findIndex((group) => group.id === currentGroupId);
+  }, [compositeOverrideSummary?.id, guidedSampleGroups, isGuidedSamplesActive]);
+
+  const openGuidedSampleAt = useCallback(
+    (index: number) => {
+      const target = guidedSampleGroups[index];
+      if (!target) return;
+      handleGalleryGroupAction(target, 'open');
+    },
+    [guidedSampleGroups, handleGalleryGroupAction]
+  );
+
+  const guidedNavigation = useMemo(() => {
+    if (!isGuidedSamplesActive || guidedSampleGroups.length === 0) return null;
+    const activeIndex = currentGuidedSampleIndex >= 0 ? currentGuidedSampleIndex : 0;
+    return {
+      currentIndex: activeIndex,
+      total: guidedSampleGroups.length,
+      canPrev: activeIndex > 0,
+      canNext: activeIndex < guidedSampleGroups.length - 1,
+      onPrev: () => openGuidedSampleAt(activeIndex - 1),
+      onNext: () => openGuidedSampleAt(activeIndex + 1),
+    };
+  }, [currentGuidedSampleIndex, guidedSampleGroups, isGuidedSamplesActive, openGuidedSampleAt]);
+
   const openGroupViaGallery = useCallback(
     (group: GroupSummary) => {
       setActiveGroupId(group.id);
@@ -6019,6 +6085,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 copyPrompt={sharedVideoSettings ? null : sharedPrompt}
                 onCopyPrompt={sharedVideoSettings ? undefined : sharedPrompt ? handleCopySharedPrompt : undefined}
                 showTitle={false}
+                guidedNavigation={guidedNavigation}
                 engineSettings={
                   <EngineSettingsBar
                     engines={engines}
@@ -6270,6 +6337,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               activeGroups={normalizedPendingGroups}
               onOpenGroup={openGroupViaGallery}
               onGroupAction={handleGalleryGroupAction}
+              onFeedStateChange={handleGalleryFeedStateChange}
               variant="desktop"
             />
           </div>
@@ -6282,6 +6350,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             activeGroups={normalizedPendingGroups}
             onOpenGroup={openGroupViaGallery}
             onGroupAction={handleGalleryGroupAction}
+            onFeedStateChange={handleGalleryFeedStateChange}
             variant="mobile"
           />
         </div>

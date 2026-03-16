@@ -19,12 +19,18 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 
 type GalleryVariant = 'desktop' | 'mobile';
 
+export interface GalleryFeedState {
+  visibleGroups: GroupSummary[];
+  sampleOnly: boolean;
+}
+
 interface Props {
   engine: EngineCaps;
   feedType?: 'video' | 'image';
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
+  onFeedStateChange?: (state: GalleryFeedState) => void;
   jobFilter?: (job: Job) => boolean;
   variant?: GalleryVariant;
 }
@@ -69,6 +75,7 @@ export function GalleryRail({
   activeGroups = [],
   onOpenGroup,
   onGroupAction,
+  onFeedStateChange,
   jobFilter,
   variant = 'desktop',
 }: Props) {
@@ -128,6 +135,10 @@ export function GalleryRail({
     if (nonCurated.length) return nonCurated;
     return [...normalizedActiveGroups, ...normalizedHistoricalGroups];
   }, [normalizedActiveGroups, normalizedHistoricalGroups]);
+  const sampleOnly = useMemo(
+    () => combinedGroups.length > 0 && combinedGroups.every((group) => group.hero.job?.curated === true),
+    [combinedGroups]
+  );
   const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
 
   const lastPage = data?.[data.length - 1];
@@ -447,6 +458,10 @@ export function GalleryRail({
     setShowRail(true);
     setRailProgress(element.scrollTop / maxScroll);
   }, [isDesktopVariant, railTrackOffset]);
+
+  useEffect(() => {
+    onFeedStateChange?.({ visibleGroups: combinedGroups, sampleOnly });
+  }, [combinedGroups, onFeedStateChange, sampleOnly]);
 
   useEffect(() => {
     const element = sentinelRef.current;

@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Download, ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'lucide-react';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
@@ -29,6 +29,11 @@ const DEFAULT_PREVIEW_COPY = {
     openTake: { label: 'Open', aria: 'Open this take' },
     copyPrompt: 'Copy prompt',
   },
+  guided: {
+    previous: 'Previous sample',
+    next: 'Next sample',
+    badge: 'Starter sample {current}/{total}',
+  },
   placeholder: '—',
 } as const;
 
@@ -42,6 +47,14 @@ interface CompositePreviewDockProps {
   onCopyPrompt?: () => void;
   engineSettings?: ReactNode;
   showTitle?: boolean;
+  guidedNavigation?: {
+    currentIndex: number;
+    total: number;
+    canPrev: boolean;
+    canNext: boolean;
+    onPrev: () => void;
+    onNext: () => void;
+  } | null;
 }
 
 const LAYOUT_SLOT_COUNT: Record<VideoGroup['layout'], number> = {
@@ -88,6 +101,7 @@ export function CompositePreviewDock({
   onCopyPrompt,
   engineSettings,
   showTitle = true,
+  guidedNavigation = null,
 }: CompositePreviewDockProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.preview', DEFAULT_PREVIEW_COPY) as PreviewCopy;
@@ -107,6 +121,10 @@ export function CompositePreviewDock({
     modal: { ...DEFAULT_PREVIEW_COPY.controls.modal, ...(copy.controls?.modal ?? {}) },
     openTake: { ...DEFAULT_PREVIEW_COPY.controls.openTake, ...(copy.controls?.openTake ?? {}) },
     copyPrompt: copy.controls?.copyPrompt ?? DEFAULT_PREVIEW_COPY.controls.copyPrompt,
+  };
+  const guidedCopy = {
+    ...DEFAULT_PREVIEW_COPY.guided,
+    ...(copy.guided ?? {}),
   };
 
   useEffect(() => {
@@ -638,6 +656,53 @@ export function CompositePreviewDock({
                 <span className="text-sm font-semibold uppercase tracking-micro">Preview unavailable</span>
                 <span className="mt-2 text-xs text-on-media-85">{group?.errorMsg ?? 'Generation failed. Please retry.'}</span>
               </div>
+            ) : null}
+            {guidedNavigation && group ? (
+              <>
+                <div className="pointer-events-none absolute right-3 top-3 z-20">
+                  <span className="inline-flex rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-65 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-on-inverse shadow-sm backdrop-blur">
+                    {guidedCopy.badge
+                      .replace('{current}', String(guidedNavigation.currentIndex + 1))
+                      .replace('{total}', String(guidedNavigation.total))}
+                  </span>
+                </div>
+                <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-20 flex items-center justify-between px-3 sm:px-4">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={guidedNavigation.onPrev}
+                    disabled={!guidedNavigation.canPrev}
+                    className={clsx(
+                      'pointer-events-auto h-11 w-11 rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 p-0 text-on-inverse shadow-sm backdrop-blur transition hover:bg-surface-on-media-dark-70',
+                      'disabled:cursor-not-allowed disabled:opacity-35'
+                    )}
+                    aria-label={guidedCopy.previous}
+                    title={guidedCopy.previous}
+                  >
+                    <span className="inline-flex h-5 w-5 items-center justify-center">
+                      <UIIcon icon={ChevronLeft} size={18} />
+                    </span>
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={guidedNavigation.onNext}
+                    disabled={!guidedNavigation.canNext}
+                    className={clsx(
+                      'pointer-events-auto h-11 w-11 rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 p-0 text-on-inverse shadow-sm backdrop-blur transition hover:bg-surface-on-media-dark-70',
+                      'disabled:cursor-not-allowed disabled:opacity-35'
+                    )}
+                    aria-label={guidedCopy.next}
+                    title={guidedCopy.next}
+                  >
+                    <span className="inline-flex h-5 w-5 items-center justify-center">
+                      <UIIcon icon={ChevronRight} size={18} />
+                    </span>
+                  </Button>
+                </div>
+              </>
             ) : null}
           </div>
           <div className="mt-3 flex w-full max-w-[960px]">

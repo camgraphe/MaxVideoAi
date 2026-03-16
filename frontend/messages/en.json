@@ -2121,6 +2121,11 @@
           "singular": "{count} variant",
           "plural": "{count} variants"
         },
+        "guided": {
+          "previous": "Previous sample",
+          "next": "Next sample",
+          "badge": "Sample {current}/{total}"
+        },
         "controls": {
           "play": {
             "on": "Pause",
