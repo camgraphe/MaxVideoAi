@@ -138,6 +138,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     description: t('description'),
     hreflangGroup: 'pricing',
     slugMap: PRICING_SLUG_MAP,
+    image: '/og/pricing-hub.png',
     imageAlt: 'Pricing estimator interface.',
   });
 }

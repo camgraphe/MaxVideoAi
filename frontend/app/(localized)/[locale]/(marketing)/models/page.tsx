@@ -455,6 +455,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     description: t('description'),
     hreflangGroup: 'models',
     slugMap: MODELS_SLUG_MAP,
+    image: '/og/models-hub.png',
     imageAlt: 'Model lineup overview with Price-Before chip.',
   });
   return meta;

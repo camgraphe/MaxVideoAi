@@ -563,6 +563,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     description: t('description'),
     hreflangGroup: 'compare',
     slugMap: COMPARE_SLUG_MAP,
+    image: '/og/compare-hub.png',
     imageAlt: t('title'),
     ogType: 'website',
     keywords: ['AI video engines', 'AI video engine comparison', 'compare AI video generators', 'Sora vs Veo', 'MaxVideoAI'],
