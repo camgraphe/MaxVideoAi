@@ -3,9 +3,23 @@
 ## 🌐 Live App
 👉 https://maxvideoai.com
 
-## AI Video Model Examples and Specs
+## AI Video Models, Examples and Specs
 
-Explore prompts, examples, and detailed model pages for the LTX video generation models available on MaxVideoAI.
+Explore prompts, examples, and detailed model pages for the AI video engines available on MaxVideoAI.
+
+MaxVideoAI lets you explore and compare multiple AI video engines.
+
+Currently supported models include:
+
+- OpenAI Sora
+- Google Veo
+- Kling
+- Seedance
+- LTX video models
+
+### Example: LTX model pages
+
+LTX is a strong example of how MaxVideoAI exposes prompts, model detail pages, and workflow-specific discovery.
 
 ### LTX examples (prompts + settings)
 
@@ -83,6 +97,9 @@ https://maxvideoai.com/examples
 
 Models overview  
 https://maxvideoai.com/models
+
+Compare engines (Sora, Veo, Kling, Seedance, LTX)  
+https://maxvideoai.com/ai-video-engines
 
 Inside `frontend/`:
 
