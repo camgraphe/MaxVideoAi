@@ -5,35 +5,35 @@
 
 ## AI Video Models, Examples and Specs
 
-Explore prompts, examples, and detailed model pages for the AI video engines available on MaxVideoAI.
+MaxVideoAI is a multi-engine AI video platform for comparing and generating videos across models such as Sora, Veo, Kling, Seedance, and LTX.
 
-MaxVideoAI lets you explore and compare multiple AI video engines.
+Explore the main entry points below:
 
-Currently supported models include:
+### Examples gallery
+Browse prompts, settings, and outputs across multiple AI video engines.
 
-- OpenAI Sora
-- Google Veo
-- Kling
-- Seedance
-- LTX video models
+https://maxvideoai.com/examples
 
-### Example: LTX model pages
+### Models overview
+Explore model pages, specs, workflows, and pricing across the full engine catalog.
 
-LTX is a strong example of how MaxVideoAI exposes prompts, model detail pages, and workflow-specific discovery.
+https://maxvideoai.com/models
 
-### LTX examples (prompts + settings)
+### Example cluster: LTX pages
+
+#### LTX examples (prompts + settings)
 
 Browse real prompts, settings, and outputs across the LTX model family.
 
 https://maxvideoai.com/examples/ltx
 
-### LTX 2.3 Fast model
+#### LTX 2.3 Fast model
 
 Specs, pricing, max clip length, and use cases for the fast iteration model.
 
 https://maxvideoai.com/models/ltx-2-3-fast
 
-### LTX 2.3 Pro model
+#### LTX 2.3 Pro model
 
 Advanced workflows including audio-driven generation, Extend and Retake editing.
 
@@ -90,7 +90,7 @@ curl -s http://127.0.0.1:3333/api/preflight \
 
 ## Compare AI Video Engines
 
-MaxVideoAI allows developers and creators to compare AI video engines such as Sora, Veo, Kling, Seedance, and LTX across different workflows.
+MaxVideoAI helps developers and creators compare AI video engines such as Sora, Veo, Kling, Seedance, Wan, and LTX across different workflows.
 
 Examples gallery  
 https://maxvideoai.com/examples
@@ -98,7 +98,7 @@ https://maxvideoai.com/examples
 Models overview  
 https://maxvideoai.com/models
 
-Compare engines (Sora, Veo, Kling, Seedance, LTX)  
+AI video engine comparisons  
 https://maxvideoai.com/ai-video-engines
 
 Inside `frontend/`:
