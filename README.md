@@ -3,6 +3,28 @@
 ## 🌐 Live App
 👉 https://maxvideoai.com
 
+## AI Video Model Examples and Specs
+
+Explore prompts, examples, and detailed model pages for the LTX video generation models available on MaxVideoAI.
+
+### LTX examples (prompts + settings)
+
+Browse real prompts, settings, and outputs across the LTX model family.
+
+https://maxvideoai.com/examples/ltx
+
+### LTX 2.3 Fast model
+
+Specs, pricing, max clip length, and use cases for the fast iteration model.
+
+https://maxvideoai.com/models/ltx-2-3-fast
+
+### LTX 2.3 Pro model
+
+Advanced workflows including audio-driven generation, Extend and Retake editing.
+
+https://maxvideoai.com/models/ltx-2-3-pro
+
 MaxVideoAI is a fully deployed multi-engine AI video generator running on Next.js + Vercel + Fal.ai.  
 
 This repo contains:
@@ -51,6 +73,16 @@ curl -s http://127.0.0.1:3333/api/preflight \
 ```
 
 ## 3. Frontend (Next.js)
+
+## Compare AI Video Engines
+
+MaxVideoAI allows developers and creators to compare AI video engines such as Sora, Veo, Kling, Seedance, and LTX across different workflows.
+
+Examples gallery  
+https://maxvideoai.com/examples
+
+Models overview  
+https://maxvideoai.com/models
 
 Inside `frontend/`:
 
