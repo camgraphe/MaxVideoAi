@@ -46,6 +46,8 @@ export type ModelGalleryCard = {
   };
 };
 
+type GalleryFilterKey = 'sort' | 'mode' | 'format' | 'duration' | 'price' | 'age';
+
 const INITIAL_COUNT = 6;
 const LOAD_COUNT = 6;
 const CTA_ARROW = '→';
@@ -191,10 +193,14 @@ export function ModelsGallery({
   cards,
   ctaLabel,
   copy,
+  visibleFilters = ['sort', 'mode', 'format', 'duration', 'price', 'age'],
+  allowCompare = true,
 }: {
   cards: ModelGalleryCard[];
   ctaLabel: string;
   copy?: ModelsGalleryCopy;
+  visibleFilters?: GalleryFilterKey[];
+  allowCompare?: boolean;
 }) {
   const filtersCopy = copy?.filters ?? {};
   const sortBase = DEFAULT_COPY.filters.sort ?? { options: {} };
@@ -272,6 +278,7 @@ export function ModelsGallery({
   };
   const capabilityTooltips = { ...DEFAULT_COPY.capabilityTooltips, ...(copy?.capabilityTooltips ?? {}) };
   const filterClearLabel = filtersCopy.clear ?? DEFAULT_COPY.filters.clear;
+  const visibleFilterSet = useMemo(() => new Set<GalleryFilterKey>(visibleFilters), [visibleFilters]);
 
   const MODE_OPTIONS: SelectOption[] = [
     { value: 'all', label: `${modeCopy.label}: ${modeCopy.options.all}` },
@@ -324,7 +331,7 @@ export function ModelsGallery({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const nextRouter = useNextRouter();
-  const [compareMode, setCompareMode] = useState(searchParams?.get('compare') === '1');
+  const [compareMode, setCompareMode] = useState(allowCompare && searchParams?.get('compare') === '1');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedMode, setSelectedMode] = useState('all');
   const [selectedFormat, setSelectedFormat] = useState('all');
@@ -350,10 +357,11 @@ export function ModelsGallery({
   }, [compareMode]);
 
   useEffect(() => {
-    setCompareMode(searchParams?.get('compare') === '1');
-  }, [searchParams]);
+    setCompareMode(allowCompare && searchParams?.get('compare') === '1');
+  }, [allowCompare, searchParams]);
 
   useEffect(() => {
+    if (!allowCompare) return undefined;
     const handler = (event: Event) => {
       if (!(event instanceof CustomEvent)) return;
       const enabled = Boolean(event.detail?.enabled);
@@ -364,12 +372,19 @@ export function ModelsGallery({
     };
     window.addEventListener('models-compare-mode', handler as EventListener);
     return () => window.removeEventListener('models-compare-mode', handler as EventListener);
-  }, []);
+  }, [allowCompare]);
+
+  useEffect(() => {
+    if (allowCompare || !compareMode) return;
+    setCompareMode(false);
+    setSelectedIds([]);
+  }, [allowCompare, compareMode]);
 
   const cardById = useMemo(() => new Map(cards.map((card) => [card.id, card])), [cards]);
   const selectedCards = selectedIds.map((id) => cardById.get(id)).filter(Boolean);
 
   const enableCompareMode = useCallback(() => {
+    if (!allowCompare) return;
     if (compareMode) return;
     const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.set('compare', '1');
@@ -378,7 +393,7 @@ export function ModelsGallery({
     const target = query ? `${currentPath}?${query}` : currentPath;
     nextRouter.push(target, { scroll: false });
     setCompareMode(true);
-  }, [compareMode, nextRouter, pathname, searchParams]);
+  }, [allowCompare, compareMode, nextRouter, pathname, searchParams]);
 
   const disableCompareMode = useCallback(() => {
     if (!compareMode) return;
@@ -534,42 +549,54 @@ export function ModelsGallery({
   return (
     <>
       <div className="mt-8 flex flex-wrap gap-2" id="models-compare-toggle">
-        <SelectMenu
-          options={SORT_OPTIONS}
-          value={selectedSort}
-          onChange={(value) => setSelectedSort(String(value))}
-          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
-        />
-        <SelectMenu
-          options={MODE_OPTIONS}
-          value={selectedMode}
-          onChange={(value) => setSelectedMode(String(value))}
-          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
-        />
-        <SelectMenu
-          options={FORMAT_OPTIONS}
-          value={selectedFormat}
-          onChange={(value) => setSelectedFormat(String(value))}
-          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
-        />
-        <SelectMenu
-          options={DURATION_OPTIONS}
-          value={selectedDuration}
-          onChange={(value) => setSelectedDuration(String(value))}
-          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
-        />
-        <SelectMenu
-          options={PRICE_OPTIONS}
-          value={selectedPrice}
-          onChange={(value) => setSelectedPrice(String(value))}
-          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
-        />
-        <SelectMenu
-          options={AGE_OPTIONS}
-          value={selectedAge}
-          onChange={(value) => setSelectedAge(String(value))}
-          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
-        />
+        {visibleFilterSet.has('sort') ? (
+          <SelectMenu
+            options={SORT_OPTIONS}
+            value={selectedSort}
+            onChange={(value) => setSelectedSort(String(value))}
+            buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+          />
+        ) : null}
+        {visibleFilterSet.has('mode') ? (
+          <SelectMenu
+            options={MODE_OPTIONS}
+            value={selectedMode}
+            onChange={(value) => setSelectedMode(String(value))}
+            buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+          />
+        ) : null}
+        {visibleFilterSet.has('format') ? (
+          <SelectMenu
+            options={FORMAT_OPTIONS}
+            value={selectedFormat}
+            onChange={(value) => setSelectedFormat(String(value))}
+            buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+          />
+        ) : null}
+        {visibleFilterSet.has('duration') ? (
+          <SelectMenu
+            options={DURATION_OPTIONS}
+            value={selectedDuration}
+            onChange={(value) => setSelectedDuration(String(value))}
+            buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+          />
+        ) : null}
+        {visibleFilterSet.has('price') ? (
+          <SelectMenu
+            options={PRICE_OPTIONS}
+            value={selectedPrice}
+            onChange={(value) => setSelectedPrice(String(value))}
+            buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+          />
+        ) : null}
+        {visibleFilterSet.has('age') ? (
+          <SelectMenu
+            options={AGE_OPTIONS}
+            value={selectedAge}
+            onChange={(value) => setSelectedAge(String(value))}
+            buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+          />
+        ) : null}
         {hasActiveFilters ? (
           <button
             type="button"
@@ -595,6 +622,7 @@ export function ModelsGallery({
             statsLabels={statsLabels}
             capabilityTooltips={capabilityTooltips}
             audioAvailableLabel={audioAvailableLabel}
+            compareEnabled={allowCompare}
             selected={selectedIds.includes(card.id)}
             onToggle={() => handleToggleCard(card.id)}
             onActivateCompare={enableCompareMode}
@@ -605,7 +633,7 @@ export function ModelsGallery({
         <div ref={observerRef} className="h-4 w-full" aria-hidden />
       ) : null}
 
-      {compareMode ? (
+      {allowCompare && compareMode ? (
         <div className="fixed inset-x-4 bottom-6 z-40 mx-auto max-w-4xl rounded-2xl border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.78))] px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.22),0_6px_16px_rgba(15,23,42,0.16)] backdrop-blur dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.9))]">
           <span className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),transparent)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]" />
           <div className="relative flex flex-wrap items-center justify-between gap-3 text-sm">
@@ -657,6 +685,7 @@ function ModelCard({
   statsLabels,
   capabilityTooltips,
   audioAvailableLabel,
+  compareEnabled,
   selected,
   onToggle,
   onActivateCompare,
@@ -671,6 +700,7 @@ function ModelCard({
   statsLabels: Required<NonNullable<ModelsGalleryCopy['stats']>>;
   capabilityTooltips: Record<string, string>;
   audioAvailableLabel: string;
+  compareEnabled: boolean;
   selected: boolean;
   onToggle: () => void;
   onActivateCompare: () => void;
@@ -859,7 +889,7 @@ function ModelCard({
           )
         ) : null}
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {!card.compareDisabled ? (
+          {compareEnabled && !card.compareDisabled ? (
             <label
               className={`flex items-center gap-2 px-0 py-0 text-[10px] font-semibold uppercase tracking-micro transition ${
                 selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-secondary dark:text-white/75'

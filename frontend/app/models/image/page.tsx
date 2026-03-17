@@ -1,0 +1,16 @@
+import ModelsCatalogPage, { generateModelsMetadata as generateLocalizedMetadata } from '../../(localized)/[locale]/(marketing)/models/ModelsCatalogPage';
+import LocaleLayout from '../../(localized)/[locale]/layout';
+import MarketingLayout from '../../(localized)/[locale]/(marketing)/layout';
+import { DEFAULT_LOCALE } from '../../default-locale-wrapper';
+
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE }, scope: 'image' });
+
+export default function ImageModelsDefaultPage() {
+  return (
+    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+      <MarketingLayout>
+        <ModelsCatalogPage scope="image" />
+      </MarketingLayout>
+    </LocaleLayout>
+  );
+}

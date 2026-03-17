@@ -12,6 +12,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
+import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
@@ -1635,13 +1636,16 @@ function resolveProviderInfo(engine: FalEngineEntry) {
 }
 
 function buildOfferSchema(canonical: string, engine: FalEngineEntry) {
+  const imageModel = isImageOnlyModel(engine);
   return {
     '@type': 'Offer',
     url: canonical,
     priceCurrency: 'USD',
     price: '0',
     availability: AVAILABILITY_SCHEMA_MAP[engine.availability] ?? AVAILABILITY_SCHEMA_MAP.limited,
-    description: 'Pay-as-you-go pricing (varies by provider and duration).',
+    description: imageModel
+      ? 'Pay-as-you-go pricing (varies by provider, output size, and request options).'
+      : 'Pay-as-you-go pricing (varies by provider and duration).',
     priceSpecification: {
       '@type': 'UnitPriceSpecification',
       price: 0,
@@ -1649,7 +1653,7 @@ function buildOfferSchema(canonical: string, engine: FalEngineEntry) {
       referenceQuantity: {
         '@type': 'QuantitativeValue',
         value: 1,
-        unitCode: 'SEC',
+        unitCode: imageModel ? 'C62' : 'SEC',
       },
     },
   };
@@ -1670,12 +1674,17 @@ function buildProductSchema({
 }) {
   const provider = resolveProviderInfo(engine);
   const offer = buildOfferSchema(canonical, engine);
+  const category = isImageOnlyModel(engine)
+    ? 'AI Image Generator'
+    : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
+      ? 'AI Audio Generator'
+      : 'AI Video Generator';
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: heroTitle,
     description,
-    category: 'AI Video Generator',
+    category,
     url: canonical,
     image: heroPosterAbsolute ? [heroPosterAbsolute] : undefined,
     brand: {
@@ -1705,12 +1714,17 @@ function buildSoftwareSchema({
 }) {
   const provider = resolveProviderInfo(engine);
   const offer = buildOfferSchema(canonical, engine);
+  const applicationCategory = isImageOnlyModel(engine)
+    ? 'ImageGenerationApplication'
+    : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
+      ? 'AudioGenerationApplication'
+      : 'VideoGenerationApplication';
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: heroTitle,
     description,
-    applicationCategory: 'VideoGenerationApplication',
+    applicationCategory,
     operatingSystem: 'Web',
     url: canonical,
     provider: {

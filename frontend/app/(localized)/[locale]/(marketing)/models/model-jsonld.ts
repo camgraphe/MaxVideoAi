@@ -1,5 +1,6 @@
 import type { EngineAvailability } from '@/types/engines';
 import { getFalEngineBySlug } from '@/config/falEngines';
+import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
 
@@ -17,9 +18,18 @@ export function buildModelServiceJsonLd(slug: string) {
   }
 
   const url = `${SITE}${engine.seo.canonicalPath}`;
+  const isImageModel = isImageOnlyModel(engine);
+  const serviceType = isImageModel
+    ? `AI Image Generation with ${engine.marketingName}`
+    : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
+      ? `AI Audio Generation with ${engine.marketingName}`
+      : `AI Video Generation with ${engine.marketingName}`;
   const description =
-    engine.seo?.description ?? engine.seoText ?? 'Generate AI videos with this model on MaxVideoAI.';
-  const serviceType = `AI Video Generation with ${engine.marketingName}`;
+    engine.seo?.description ??
+    engine.seoText ??
+    (isImageModel
+      ? 'Generate AI still images with this model on MaxVideoAI.'
+      : 'Generate AI videos with this model on MaxVideoAI.');
   const name = engine.cardTitle ?? engine.marketingName;
   const availability = AVAILABILITY_MAP[engine.availability] ?? AVAILABILITY_MAP.limited;
 

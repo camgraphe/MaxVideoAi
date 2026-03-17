@@ -17,6 +17,16 @@ export const routing = defineRouting({
       fr: '/modeles/[slug]',
       es: '/modelos/[slug]',
     },
+    '/models/video': {
+      en: '/models/video',
+      fr: '/modeles/video',
+      es: '/modelos/video',
+    },
+    '/models/image': {
+      en: '/models/image',
+      fr: '/modeles/image',
+      es: '/modelos/image',
+    },
     '/pricing': {
       en: '/pricing',
       fr: '/tarifs',

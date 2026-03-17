@@ -13,6 +13,8 @@ const LOCALE_PREFIXES = { en: '', fr: 'fr', es: 'es' };
 const MARKETING_CORE_PATHS = [
   '/',
   '/models',
+  '/models/video',
+  '/models/image',
   '/examples',
   '/sitemap-video.xml',
   '/workflows',

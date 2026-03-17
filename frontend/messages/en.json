@@ -870,9 +870,9 @@
   },
   "models": {
     "hero": {
-      "title": "AI Video Models (Specs, Limits, and Pricing)",
-      "subtitle": "Model catalog for text-to-video, image-to-video, and video-to-video inputs.",
-      "body": "Use this page as a model catalog to review input support, runtime limits, and pricing signals in one place. Keep decision-level comparisons on the engines page; use this page as your technical reference."
+      "title": "AI Models (Specs, Limits, and Pricing)",
+      "subtitle": "Model catalog for video and image generation workflows.",
+      "body": "Use this page as a model catalog to review capabilities, runtime limits, and pricing signals in one place. Keep side-by-side engine comparisons on the video engines page and use this page as the broader technical reference."
     },
     "intro": {
       "paragraphs": [
@@ -915,6 +915,7 @@
     "engineTypeLabels": {
       "textImage": "Text + Image to Video",
       "text": "Text to Video",
+      "imageVideo": "Image to Video",
       "image": "Image Generation · Text & Image to Image",
       "default": "AI Video Engine"
     },
@@ -985,8 +986,8 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "AI Video Models: Specs, Limits & Pricing | MaxVideoAI",
-      "description": "AI video model catalog with specs, limits, and pricing signals. Check input support, duration/resolution constraints, and model-level details before generation."
+      "title": "AI Models: Specs, Limits & Pricing | MaxVideoAI",
+      "description": "Catalog of AI video and image models with specs, limits, and pricing signals. Check capabilities and constraints before generation."
     },
     "note": "",
     "detail": {
@@ -1018,18 +1019,18 @@
     },
     "listing": {
       "hero": {
-        "title": "AI Video Models (Specs, Limits, and Pricing)",
-        "subtitle": "Check input support, limits, and pricing per model before you generate.",
+        "title": "AI Models (Specs, Limits, and Pricing)",
+        "subtitle": "Review video and image model capabilities, limits, and pricing before you generate.",
         "bullets": [
           "Open any model for full specs, limits, and pricing details.",
-          "Filter by input type and constraints to shortlist valid models."
+          "Use the dedicated video and image hubs to narrow the right shortlist faster."
         ],
         "compareLabel": "Enter Compare Mode"
       },
       "legacyToggleLabel": "Show legacy models",
       "grid": {
         "srTitle": "AI video and image models with specs, limits, and pricing on MaxVideoAI",
-        "bridgeText": "Use model cards to review specs, limits, and pricing before selecting a model for production."
+        "bridgeText": "Use model cards to review capabilities first, then jump into the video or image hub for a tighter shortlist."
       },
       "quickCompare": {
         "title": "Model checks by common scenarios",
@@ -1044,90 +1045,78 @@
         ]
       },
       "chooseOutcome": {
-        "title": "Choose by input type and constraints",
-        "subtitle": "Start from supported inputs, limits, and pricing constraints.",
+        "title": "Choose a model family first",
+        "subtitle": "Start with the media you need to generate, then refine by limits and pricing.",
         "tiles": [
           {
-            "title": "Text-to-video models",
-            "description": "Shortlist models that support prompt-only generation."
+            "title": "Video models",
+            "description": "Open the video hub for rendering workflows, compare pages, and motion-first engines."
           },
           {
-            "title": "Image-to-video models",
-            "description": "Check which models support references and image-led workflows."
-          },
-          {
-            "title": "Video-to-video and extension support",
-            "description": "Identify models that support continuation or edit-style workflows."
+            "title": "Image models",
+            "description": "Open the image hub for still generation, edits, and reference-led workflows."
           },
           {
             "title": "Limits and formats",
-            "description": "Duration, max resolution, audio, and format constraints by model."
+            "description": "Check duration, resolution, references, audio, and output constraints by model."
           },
           {
-            "title": "Pricing per model and mode",
-            "description": "Use per-second pricing and mode support to estimate cost accurately."
+            "title": "Pricing by workflow",
+            "description": "Separate per-second video pricing from per-image still pricing."
           },
           {
-            "title": "Examples and prompt references",
-            "description": "Open real outputs per model before selecting your production preset."
+            "title": "Model pages and guidance",
+            "description": "Open each profile for prompts, workflow notes, and detailed operational limits."
           }
         ]
       },
       "reliability": {
-        "title": "Model specs and constraints that matter",
-        "subtitle": "Use these checks to validate feasibility, output constraints, and price exposure before generation.",
+        "title": "Checks that matter before launch",
+        "subtitle": "Validate media type, output constraints, and billing model before picking a workflow.",
         "items": [
           {
-            "title": "Input type support",
-            "body": "See text-to-video, image-to-video, and edit capabilities by model."
+            "title": "Media type",
+            "body": "Separate video engines from still-image models before reviewing specs or cost."
           },
           {
             "title": "Limits and formats",
-            "body": "Check max duration, resolution, audio, and format constraints."
+            "body": "Check duration, resolution, references, audio, and format constraints."
           },
           {
-            "title": "Pricing signals",
-            "body": "Review model-level price ranges before running full batches."
+            "title": "Pricing model",
+            "body": "Review whether billing is per second, per image, by resolution, or add-on driven."
           }
         ],
         "faq": [
           {
-            "question": "Which models support image-to-video?",
-            "answer": "Use the model cards and filters to see which engines support image-to-video inputs and reference-based modes."
+            "question": "Should I start from the video hub or the image hub?",
+            "answer": "Use the video hub for motion workflows and compare pages. Use the image hub for still generation, edits, reference limits, and per-image pricing."
           },
           {
-            "question": "Which models support video-to-video workflows?",
-            "answer": "Video-to-video and continuation support differ by model and mode. Check each card for the exact capabilities before running production jobs."
+            "question": "Are all models in this catalog video models?",
+            "answer": "No. The catalog includes both video and image models, and future media categories can be separated into dedicated hubs."
           },
           {
-            "question": "What are the typical limits by model?",
-            "answer": "Duration, resolution, audio support, and available formats vary by provider and mode. The catalog shows the latest known limits per model."
+            "question": "How should I interpret pricing on this page?",
+            "answer": "Video models are generally priced per second, while still-image models are priced per image or output size. Open the model page for the exact billing pattern."
           },
           {
-            "question": "How is pricing calculated per model and mode?",
-            "answer": "Pricing is based on model, mode, duration, resolution, and optional add-ons. Use model-level pricing signals as planning inputs before launch."
-          },
-          {
-            "question": "Where can I see real outputs per model?",
-            "answer": "Use the examples gallery to inspect outputs, prompts, and settings tied to each model before choosing presets for production."
-          },
-          {
-            "question": "How often are limits and prices updated?",
-            "answer": "Limits and pricing references are refreshed as providers update their capabilities and as new model versions are validated in production."
+            "question": "Where should I compare video engines side by side?",
+            "answer": "Use the video compare hub for side-by-side comparisons. Image models currently rely on dedicated detail pages rather than the compare hub."
           }
         ]
       },
       "cta": {
-        "title": "Start generating in seconds",
-        "subtitle": "Pick a model above, then generate — or browse proven prompts and outputs before you commit.",
+        "title": "Start from the right media hub",
+        "subtitle": "Open the dedicated video or image hub when you want filters, copy, and next steps aligned to that workflow.",
         "pills": [
-          "Live pricing",
-          "Model limits",
-          "Prompt references"
+          "Video models",
+          "Image models",
+          "Live pricing"
         ],
-        "microcopy": "Model specs • Live pricing • Real output references",
-        "primaryLabel": "Generate now",
-        "secondaryLabel": "Browse examples"
+        "microcopy": "Category-first navigation • Live pricing • Model-level constraints",
+        "primaryLabel": "Open video models",
+        "secondaryLabel": "Open image models"
       }
     },
     "gallery": {

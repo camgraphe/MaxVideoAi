@@ -954,9 +954,9 @@
   },
   "models": {
     "hero": {
-      "title": "Modelos de video IA: specs, límites y precios",
-      "subtitle": "Catálogo de modelos para entradas texto→video, imagen→video y video→video.",
-      "body": "Usa esta página como catálogo técnico para revisar entradas soportadas, límites runtime y señales de precio. Mantén la decisión comparativa en la página de motores."
+      "title": "Modelos IA: specs, límites y precios",
+      "subtitle": "Catálogo de workflows de generación de video e imagen.",
+      "body": "Usa esta página como catálogo técnico para revisar capacidades, límites runtime y señales de precio en un solo sitio. Mantén las comparaciones lado a lado en la página de motores de video y usa aquí la referencia técnica global."
     },
     "intro": {
       "paragraphs": [
@@ -999,6 +999,7 @@
     "engineTypeLabels": {
       "textImage": "Texto + imagen a video",
       "text": "Texto a video",
+      "imageVideo": "Imagen a video",
       "image": "Generación de imágenes (Texto & Imagen→Imagen)",
       "default": "Motor IA"
     },
@@ -1069,8 +1070,8 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Modelos de video IA: specs, límites y precios | MaxVideoAI",
-      "description": "Catálogo de modelos de video IA con specs, límites y señales de precio. Revisa entradas, duración/resolución y restricciones antes de generar."
+      "title": "Modelos IA: specs, límites y precios | MaxVideoAI",
+      "description": "Catálogo de modelos IA de video e imagen con specs, límites y señales de precio. Revisa capacidades y restricciones antes de generar."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {
@@ -1102,18 +1103,18 @@
     },
     "listing": {
       "hero": {
-        "title": "Modelos de video IA: specs, límites y precios",
-        "subtitle": "Revisa entradas, límites y precio por modelo antes de generar.",
+        "title": "Modelos IA: specs, límites y precios",
+        "subtitle": "Revisa capacidades, límites y precios de modelos de video e imagen antes de generar.",
         "bullets": [
           "Abre cualquier modelo para ver specs completas, límites y señales de precio.",
-          "Filtra por tipo de entrada y restricciones para acotar modelos válidos."
+          "Usa los hubs de video e imagen para aislar la mejor shortlist más rápido."
         ],
         "compareLabel": "Entrar en modo Comparar"
       },
       "legacyToggleLabel": "Mostrar modelos antiguos",
       "grid": {
         "srTitle": "Modelos IA de video e imagen con specs, límites y precios en MaxVideoAI",
-        "bridgeText": "Usa las tarjetas de modelos para revisar specs, límites y precios antes de elegir en producción."
+        "bridgeText": "Usa las tarjetas de modelo para validar capacidades y luego entra en el hub de video o imagen para afinar la shortlist."
       },
       "quickCompare": {
         "title": "Comprobaciones de modelos por escenario",
@@ -1128,90 +1129,78 @@
         ]
       },
       "chooseOutcome": {
-        "title": "Elige por tipo de entrada y restricciones",
-        "subtitle": "Empieza por entradas soportadas, límites y restricciones de precio.",
+        "title": "Elige primero una familia de modelos",
+        "subtitle": "Empieza por el medio que necesitas generar y luego refina por límites y precio.",
         "tiles": [
           {
-            "title": "Modelos texto→video",
-            "description": "Identifica modelos aptos para generación solo con prompt."
+            "title": "Modelos de video",
+            "description": "Abre el hub de video para workflows de render, páginas comparativas y motores orientados al movimiento."
           },
           {
-            "title": "Modelos imagen→video",
-            "description": "Comprueba qué modelos admiten referencias y workflows guiados por imagen."
-          },
-          {
-            "title": "Soporte video→video y extensión",
-            "description": "Detecta modelos con continuidad o flujos de edición."
+            "title": "Modelos de imagen",
+            "description": "Abre el hub de imagen para stills, edits y workflows guiados por referencias."
           },
           {
             "title": "Límites y formatos",
-            "description": "Duración, resolución máxima, audio y restricciones de formato por modelo."
+            "description": "Controla duración, resolución, referencias, audio y restricciones de salida por modelo."
           },
           {
-            "title": "Precios por modelo y modo",
-            "description": "Usa precio por segundo y soporte por modo para estimar coste real."
+            "title": "Precio por workflow",
+            "description": "Separa motores cobrados por segundo de modelos cobrados por imagen."
           },
           {
-            "title": "Ejemplos y referencias de prompts",
-            "description": "Abre salidas reales por modelo antes de fijar presets de producción."
+            "title": "Páginas de modelo y guidance",
+            "description": "Abre cada ficha para prompts, notas de workflow y límites detallados."
           }
         ]
       },
       "reliability": {
-        "title": "Specs y restricciones que sí importan",
-        "subtitle": "Valida viabilidad, límites de salida y exposición de coste antes de generar.",
+        "title": "Comprobaciones útiles antes de lanzar",
+        "subtitle": "Valida tipo de media, restricciones de salida y lógica de facturación antes de elegir workflow.",
         "items": [
           {
-            "title": "Soporte de entradas",
-            "body": "Revisa capacidades texto→video, imagen→video y edición por modelo."
+            "title": "Tipo de media",
+            "body": "Separa motores de video de modelos de imagen antes de revisar specs o coste."
           },
           {
             "title": "Límites y formatos",
-            "body": "Comprueba duración máxima, resolución, audio y restricciones de formato."
+            "body": "Comprueba duración, resolución, referencias, audio y restricciones de formato."
           },
           {
-            "title": "Señales de precio",
-            "body": "Consulta rangos de precio por modelo antes de lanzar lotes."
+            "title": "Lógica de precio",
+            "body": "Revisa si la facturación es por segundo, por imagen, por resolución o mediante add-ons."
           }
         ],
         "faq": [
           {
-            "question": "¿Qué modelos soportan imagen→video?",
-            "answer": "Usa tarjetas y filtros para ver qué motores aceptan entradas de imagen y referencias."
+            "question": "¿Debo empezar por el hub de video o el de imagen?",
+            "answer": "Usa el hub de video para workflows de movimiento y páginas comparativas. Usa el hub de imagen para stills, edits, límites de referencias y precio por imagen."
           },
           {
-            "question": "¿Qué modelos soportan workflows video→video?",
-            "answer": "El soporte video→video y de continuidad varía por modelo y modo. Revisa capacidades exactas antes de producción."
+            "question": "¿Todos los modelos de este catálogo son de video?",
+            "answer": "No. El catálogo ya incluye modelos de video e imagen, y futuras categorías de media pueden tener hubs dedicados."
           },
           {
-            "question": "¿Cuáles son los límites típicos por modelo?",
-            "answer": "Duración, resolución, audio y formatos dependen de proveedor y modo. El catálogo muestra los límites conocidos por modelo."
+            "question": "¿Cómo debo interpretar los precios en esta página?",
+            "answer": "Los modelos de video suelen cobrarse por segundo, mientras que los modelos de imagen se cobran por imagen o por tamaño de salida. Abre la ficha del modelo para ver el patrón exacto."
           },
           {
-            "question": "¿Cómo se calcula el precio por modelo y modo?",
-            "answer": "El precio depende de modelo, modo, duración, resolución y add-ons. Usa estas señales para planificar antes de lanzar."
-          },
-          {
-            "question": "¿Dónde ver salidas reales por modelo?",
-            "answer": "Usa la galería de ejemplos para ver salidas, prompts y ajustes asociados a cada modelo."
-          },
-          {
-            "question": "¿Con qué frecuencia se actualizan límites y precios?",
-            "answer": "Las referencias de límites y precio se actualizan cuando cambian capacidades de proveedor y cuando validamos nuevas versiones."
+            "question": "¿Dónde comparo motores de video lado a lado?",
+            "answer": "Usa el hub comparativo de video para comparaciones directas. Los modelos de imagen dependen hoy de sus páginas de detalle en lugar del compare hub."
           }
         ]
       },
       "cta": {
-        "title": "Empieza a generar en segundos",
-        "subtitle": "Elige un modelo arriba y genera, o explora prompts y outputs probados antes de decidir.",
+        "title": "Empieza por el hub de media correcto",
+        "subtitle": "Abre el hub de video o imagen cuando quieras filtros, copy y siguientes pasos alineados al workflow.",
         "pills": [
-          "Precios en vivo",
-          "Límites de modelo",
-          "Referencias de prompts"
+          "Modelos de video",
+          "Modelos de imagen",
+          "Precios en vivo"
         ],
-        "microcopy": "Specs de modelos • Precios en vivo • Salidas reales",
-        "primaryLabel": "Generar ahora",
-        "secondaryLabel": "Ver ejemplos"
+        "microcopy": "Navegación por categoría • Precios en vivo • Restricciones por modelo",
+        "primaryLabel": "Abrir modelos de video",
+        "secondaryLabel": "Abrir modelos de imagen"
       }
     },
     "gallery": {
