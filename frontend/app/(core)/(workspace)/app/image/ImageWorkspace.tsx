@@ -34,6 +34,14 @@ import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
 import {
+  formatSupportedImageFormatsLabel,
+  getImageAcceptAttribute,
+  getSupportedImageFormats,
+  inferImageFormatFromUrl,
+  isSupportedImageFormat,
+  isSupportedImageMime,
+} from '@/lib/image/formats';
+import {
   MAX_REFERENCE_IMAGES,
   clampRequestedImageCount,
   getAspectRatioOptions,
@@ -138,6 +146,7 @@ interface ImageWorkspaceCopy {
   };
   errors: {
     onlyImages: string;
+    unsupportedFormat: string;
     uploadFailed: string;
     fileTooLarge: string;
     unauthorized: string;
@@ -160,6 +169,8 @@ interface ImageWorkspaceCopy {
     button: string;
     empty: string;
     overlay: string;
+    unsupported: string;
+    supportedFormats: string;
     assetFallback: string;
     tabs: {
       all: string;
@@ -172,6 +183,7 @@ interface ImageWorkspaceCopy {
       close: string;
       error: string;
       empty: string;
+      emptyCompatible: string;
       emptyUploads: string;
       emptyGenerated: string;
     };
@@ -275,6 +287,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
   },
   errors: {
     onlyImages: 'Only image files are supported.',
+    unsupportedFormat: 'This engine accepts {formats}.',
     uploadFailed: 'Unable to upload the selected image. Try again.',
     fileTooLarge: 'Image exceeds {maxMB} MB. Compress it or choose a smaller file.',
     unauthorized: 'Session expired — please sign in again and retry the upload.',
@@ -297,6 +310,8 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     button: 'Library',
     empty: 'No assets saved yet. Upload images from the composer or the Library page.',
     overlay: 'Use this image',
+    unsupported: 'Unsupported format',
+    supportedFormats: 'Supported formats: {formats}',
     assetFallback: 'Asset',
     tabs: {
       all: 'All images',
@@ -309,6 +324,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       close: 'Close',
       error: 'Unable to load assets. Please retry.',
       empty: 'No assets saved yet. Upload images from the composer or the Library page.',
+      emptyCompatible: 'No compatible assets for this model yet.',
       emptyUploads: 'No uploaded images yet. Upload images from the composer or the Library page.',
       emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
     },
@@ -728,16 +744,24 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [selectedEngineCaps, mode]
   );
   const isResolutionLocked = Boolean(resolutionField && resolutionOptions.length === 1);
-  const referenceField = useMemo(
-    () => getImageInputField(selectedEngineCaps ?? null, 'image_urls', mode),
-    [selectedEngineCaps, mode]
-  );
   const referenceConstraints = useMemo(
     () =>
       selectedEngineCaps
         ? getReferenceConstraints(selectedEngineCaps, mode)
         : { min: mode === 'i2i' ? 1 : 0, max: 4, requires: mode === 'i2i' },
     [selectedEngineCaps, mode]
+  );
+  const supportedReferenceFormats = useMemo(
+    () => getSupportedImageFormats(selectedEngineCaps ?? null),
+    [selectedEngineCaps]
+  );
+  const supportedReferenceFormatsLabel = useMemo(
+    () => formatSupportedImageFormatsLabel(supportedReferenceFormats),
+    [supportedReferenceFormats]
+  );
+  const referenceInputAccept = useMemo(
+    () => getImageAcceptAttribute(supportedReferenceFormats),
+    [supportedReferenceFormats]
   );
   const outputFormatField = useMemo(
     () => getImageInputField(selectedEngineCaps ?? null, 'output_format', mode),
@@ -1423,6 +1447,30 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setNumImages(clampRequestedImageCount(selectedEngineCaps ?? null, mode, value));
   }, [selectedEngineCaps, mode]);
 
+  const showUnsupportedFormatError = useCallback(() => {
+    setError(
+      formatTemplate(resolvedCopy.errors.unsupportedFormat, {
+        formats: supportedReferenceFormatsLabel || 'JPG, JPEG, PNG, WEBP',
+      })
+    );
+  }, [resolvedCopy.errors.unsupportedFormat, supportedReferenceFormatsLabel]);
+
+  const isSupportedReferenceAsset = useCallback(
+    (mime?: string | null, locator?: string | null) => {
+      if (!supportedReferenceFormats.length) return true;
+      const supportedByMime = isSupportedImageMime(supportedReferenceFormats, mime);
+      if (supportedByMime != null) {
+        return supportedByMime;
+      }
+      const inferredFormat = inferImageFormatFromUrl(locator);
+      if (!inferredFormat) {
+        return true;
+      }
+      return isSupportedImageFormat(supportedReferenceFormats, inferredFormat);
+    },
+    [supportedReferenceFormats]
+  );
+
   const handleRemoveReferenceSlot = useCallback(
     (index: number) => {
       setReferenceSlots((previous) => {
@@ -1437,8 +1485,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const handleReferenceFile = useCallback(
     async (index: number, file: File | null) => {
-      if (!file || !file.type.startsWith('image/')) {
+      if (!file) {
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
         setError(resolvedCopy.errors.onlyImages);
+        return;
+      }
+      if (!isSupportedReferenceAsset(file.type, file.name)) {
+        showUnsupportedFormatError();
         return;
       }
       const tempUrl = URL.createObjectURL(file);
@@ -1529,16 +1584,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     },
     [
       cleanupSlotPreview,
+      isSupportedReferenceAsset,
       resolvedCopy.errors.onlyImages,
       resolvedCopy.errors.uploadFailed,
       resolvedCopy.errors.fileTooLarge,
       resolvedCopy.errors.unauthorized,
+      showUnsupportedFormatError,
     ]
   );
 
   const handleReferenceUrl = useCallback(
     (index: number, url: string, source: ReferenceSlotValue['source']) => {
       if (!url) return;
+      if (!isSupportedReferenceAsset(null, url)) {
+        showUnsupportedFormatError();
+        return;
+      }
       setReferenceSlots((previous) => {
         const next = previous.slice();
         cleanupSlotPreview(next[index]);
@@ -1552,7 +1613,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         return next;
       });
     },
-    [cleanupSlotPreview]
+    [cleanupSlotPreview, isSupportedReferenceAsset, showUnsupportedFormatError]
   );
 
   const handleSlotDrop = useCallback(
@@ -1596,6 +1657,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const handleLibrarySelect = useCallback(
     (asset: LibraryAsset) => {
+      if (!isSupportedReferenceAsset(asset.mime, asset.url)) {
+        showUnsupportedFormatError();
+        return;
+      }
       let slotIndex = libraryModal.slotIndex;
       if (slotIndex == null) {
         slotIndex = referenceSlots.slice(0, referenceSlotLimit).findIndex((slot) => slot === null);
@@ -1628,9 +1693,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [
       canCollapseReferenceSlots,
       cleanupSlotPreview,
+      isSupportedReferenceAsset,
       libraryModal.slotIndex,
       referenceSlotLimit,
       referenceSlots,
+      showUnsupportedFormatError,
     ]
   );
 
@@ -2340,7 +2407,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         >
                           <input
                             type="file"
-                            accept="image/*"
+                            accept={referenceInputAccept}
                             ref={(element) => {
                               fileInputRefs.current[index] = element;
                             }}
@@ -2544,6 +2611,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         onClose={() => setLibraryModal({ open: false, slotIndex: null })}
         onSelect={handleLibrarySelect}
         copy={resolvedCopy.library}
+        supportedFormats={supportedReferenceFormats}
+        supportedFormatsLabel={supportedReferenceFormatsLabel}
       />
     ) : null}
     </>
@@ -2555,11 +2624,15 @@ function ImageLibraryModal({
   onClose,
   onSelect,
   copy,
+  supportedFormats,
+  supportedFormatsLabel,
 }: {
   open: boolean;
   onClose: () => void;
   onSelect: (asset: LibraryAsset) => void;
   copy: ImageWorkspaceCopy['library'];
+  supportedFormats: string[];
+  supportedFormatsLabel: string;
 }) {
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
   const swrKey = open
@@ -2588,12 +2661,30 @@ function ImageLibraryModal({
   }
 
   const assets = data ?? [];
+  const compatibilityByAssetId = useMemo(() => {
+    const entries = assets.map((asset) => {
+      if (!supportedFormats.length) {
+        return [asset.id, true] as const;
+      }
+      const supportedByMime = isSupportedImageMime(supportedFormats, asset.mime);
+      if (supportedByMime != null) {
+        return [asset.id, supportedByMime] as const;
+      }
+      const inferredFormat = inferImageFormatFromUrl(asset.url);
+      return [asset.id, inferredFormat ? isSupportedImageFormat(supportedFormats, inferredFormat) : true] as const;
+    });
+    return new Map(entries);
+  }, [assets, supportedFormats]);
   const emptyLabel =
     activeSource === 'generated'
       ? copy.modal.emptyGenerated
       : activeSource === 'upload'
         ? copy.modal.emptyUploads
         : copy.modal.empty;
+  const supportedFormatsHint =
+    supportedFormats.length && supportedFormatsLabel.length
+      ? formatTemplate(copy.supportedFormats, { formats: supportedFormatsLabel })
+      : null;
 
   const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
@@ -2613,6 +2704,7 @@ function ImageLibraryModal({
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>
             <p className="text-xs text-text-secondary">{copy.modal.description}</p>
+            {supportedFormatsHint ? <p className="mt-1 text-xs text-text-muted">{supportedFormatsHint}</p> : null}
           </div>
           <Button
             type="button"
@@ -2698,27 +2790,41 @@ function ImageLibraryModal({
             </div>
           ) : (
             <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {assets.map((asset) => (
-                <Button
-                  key={asset.id}
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onSelect(asset)}
-                  className="group min-h-0 h-auto rounded-card border border-border bg-surface p-0 text-left shadow-card hover:border-text-primary"
-                >
+              {assets.map((asset) => {
+                const isCompatible = compatibilityByAssetId.get(asset.id) !== false;
+                return (
+                  <button
+                    key={asset.id}
+                    type="button"
+                    onClick={() => {
+                      if (isCompatible) onSelect(asset);
+                    }}
+                    disabled={!isCompatible}
+                    className={clsx(
+                      'group block w-full overflow-hidden rounded-card border border-border bg-surface text-left shadow-card transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+                      isCompatible ? 'hover:border-text-primary' : 'cursor-not-allowed opacity-60'
+                    )}
+                  >
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
                     <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-on-inverse group-hover:flex">
-                      {copy.overlay}
-                    </div>
+                    {isCompatible ? (
+                      <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-on-inverse group-hover:flex">
+                        {copy.overlay}
+                      </div>
+                    ) : (
+                      <div className="absolute inset-x-3 bottom-3 rounded-full bg-surface-on-media-dark-60 px-3 py-1 text-center text-[11px] font-semibold text-on-inverse">
+                        {copy.unsupported}
+                      </div>
+                    )}
                   </div>
-                  <div className="space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
+                  <div className="min-w-0 space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
                     <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assetFallback}</p>
+                    {!isCompatible ? <p className="text-state-warning">{copy.unsupported}</p> : null}
                     {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                   </div>
-                </Button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

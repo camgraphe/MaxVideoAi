@@ -12,7 +12,7 @@ import type {
 } from '@/types/image-generation';
 import { getFalClient } from '@/lib/fal-client';
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { ensureBillingSchema } from '@/lib/schema';
+import { ensureAssetSchema, ensureBillingSchema } from '@/lib/schema';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import type { PricingSnapshot } from '@/types/engines';
 import { reserveWalletCharge } from '@/lib/wallet';
@@ -25,6 +25,13 @@ import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
+import {
+  formatSupportedImageFormatsLabel,
+  getSupportedImageFormats,
+  inferImageFormatFromUrl,
+  isSupportedImageFormat,
+  isSupportedImageMime,
+} from '@/lib/image/formats';
 import {
   canonicalizeImageFieldValue,
   clampRequestedImageCount,
@@ -89,6 +96,30 @@ function normalizeUrl(value: string): string {
   }
   const normalized = trimmed.replace(/^\.?\/+/, '');
   return `https://fal.media/files/${normalized}`;
+}
+
+async function getStoredAssetMimeByUrl(userId: string, urls: string[]): Promise<Map<string, string>> {
+  if (!urls.length) {
+    return new Map();
+  }
+  try {
+    await ensureAssetSchema();
+    const rows = await query<{ url: string; mime_type: string | null }>(
+      `SELECT url, mime_type
+       FROM user_assets
+       WHERE user_id = $1
+         AND url = ANY($2::text[])`,
+      [userId, urls]
+    );
+    return new Map(
+      rows
+        .filter((row): row is { url: string; mime_type: string } => typeof row.url === 'string' && typeof row.mime_type === 'string')
+        .map((row) => [row.url, row.mime_type])
+    );
+  } catch (error) {
+    console.warn('[images] unable to inspect stored asset formats', error);
+    return new Map();
+  }
 }
 
 function extractImages(payload: unknown): GeneratedImage[] {
@@ -339,6 +370,35 @@ export async function POST(req: NextRequest) {
         engineLabel: engineEntry.marketingName,
       }
     );
+  }
+  const supportedReferenceFormats = getSupportedImageFormats(engine);
+  if (supportedReferenceFormats.length && imageUrls.length) {
+    const storedAssetMimeByUrl = await getStoredAssetMimeByUrl(userId, imageUrls);
+    const invalidImageFormatUrl = imageUrls.find((entry) => {
+      const storedMime = storedAssetMimeByUrl.get(entry) ?? null;
+      const supportedByMime = isSupportedImageMime(supportedReferenceFormats, storedMime);
+      if (supportedByMime != null) {
+        return !supportedByMime;
+      }
+      const inferredFormat = inferImageFormatFromUrl(entry);
+      if (!inferredFormat) {
+        return false;
+      }
+      return !isSupportedImageFormat(supportedReferenceFormats, inferredFormat);
+    });
+    if (invalidImageFormatUrl) {
+      return respondError(
+        mode,
+        'image_format_invalid',
+        `Reference images must use ${formatSupportedImageFormatsLabel(supportedReferenceFormats)}.`,
+        400,
+        { allowed: supportedReferenceFormats, url: invalidImageFormatUrl },
+        {
+          engineId: engineEntry.id,
+          engineLabel: engineEntry.marketingName,
+        }
+      );
+    }
   }
   const referenceConstraints = getReferenceConstraints(engine, mode);
   if (referenceConstraints.min > 0 && imageUrls.length < referenceConstraints.min) {
