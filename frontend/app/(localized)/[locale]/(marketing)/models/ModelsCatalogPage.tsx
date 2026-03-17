@@ -1083,7 +1083,9 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     const hasConfirmedPricing = !isPrelaunchWaitlist && typeof priceFromCents === 'number' && priceFromCents > 0;
     const showPrelaunchPricePlaceholder = isPrelaunchWaitlist;
     const priceFrom = hasConfirmedPricing
-      ? `$${(priceFromCents / 100).toFixed(2)}/s`
+      ? isImageOnly
+        ? `$${(priceFromCents / 100).toFixed(2)}`
+        : `$${(priceFromCents / 100).toFixed(2)}/s`
       : showPrelaunchPricePlaceholder
         ? getPrelaunchPricingLabel(activeLocale)
         : 'Data pending';
