@@ -5,7 +5,6 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { usePathname, useSearchParams, useRouter as useNextRouter } from 'next/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 export type ModelGalleryCard = {
   id: string;
@@ -707,23 +706,59 @@ function ModelCard({
 }) {
   const router = useRouter();
   type RouterPushInput = Parameters<typeof router.push>[0];
-  const background = card.backgroundColor ?? 'var(--surface-2)';
-  const textColor = card.textColor ?? 'var(--text-primary)';
-  const gradientBackground = `linear-gradient(140deg, color-mix(in srgb, ${background} 96%, white 4%) 0%, color-mix(in srgb, ${background} 78%, white 22%) 48%, color-mix(in srgb, ${background} 55%, white 45%) 100%)`;
-  const gradientBackgroundDark = `linear-gradient(140deg, color-mix(in srgb, ${background} 62%, #000 38%) 0%, color-mix(in srgb, ${background} 42%, #000 58%) 55%, #0b0f17 100%)`;
-  const accentGlow = `radial-gradient(120% 90% at 10% 0%, color-mix(in srgb, ${background} 72%, white 28%) 0%, transparent 62%)`;
-  const accentGlowDark = `radial-gradient(120% 90% at 10% 0%, color-mix(in srgb, ${background} 48%, #000 52%) 0%, transparent 60%)`;
-  const separatorLine = `linear-gradient(90deg, transparent, color-mix(in srgb, ${background} 45%, white 55%), transparent)`;
-  const separatorLineDark = `linear-gradient(90deg, transparent, color-mix(in srgb, ${background} 48%, #000 52%), transparent)`;
-  const separatorGlow = `radial-gradient(circle at center, color-mix(in srgb, ${background} 38%, white 62%), transparent 70%)`;
-  const separatorGlowDark = `radial-gradient(circle at center, rgba(0,0,0,0.7), transparent 70%)`;
-  const cardSolid = `color-mix(in srgb, ${background} 96%, white 4%)`;
-  const cardSolidDark = `color-mix(in srgb, ${background} 52%, #000 48%)`;
-  const cardBg = `${accentGlow}, ${gradientBackground}`;
-  const cardBgDark = `${accentGlowDark}, ${gradientBackgroundDark}`;
+  const accent = card.backgroundColor ?? '#6366f1';
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
+  const ctaText = normalizedCtaLabel.replace(/\s*→\s*$/, '');
+  const scoreValue = typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : null;
+  const scoreSweep = `${Math.max(0, Math.min(360, (card.overallScore ?? 0) * 36))}deg`;
+  const providerBadgeBg = `color-mix(in srgb, ${accent} 4%, white 96%)`;
+  const providerBadgeBorder = `color-mix(in srgb, ${accent} 11%, #d6deea 89%)`;
+  const providerBadgeText = `color-mix(in srgb, ${accent} 20%, #475569 80%)`;
+  const providerBadgeBgDark = `color-mix(in srgb, ${accent} 10%, #0f172a 90%)`;
+  const providerBadgeBorderDark = `color-mix(in srgb, ${accent} 18%, #334155 82%)`;
+  const providerBadgeTextDark = `color-mix(in srgb, ${accent} 20%, #f8fafc 80%)`;
+  const accentTopBorder = `linear-gradient(90deg, color-mix(in srgb, ${accent} 82%, white 18%) 0%, color-mix(in srgb, ${accent} 42%, white 58%) 58%, transparent 100%)`;
+  const accentGlow = `radial-gradient(circle at top right, color-mix(in srgb, ${accent} 11%, white 89%) 0%, transparent 70%)`;
+  const accentGlowDark = `radial-gradient(circle at top right, color-mix(in srgb, ${accent} 16%, #020617 84%) 0%, transparent 70%)`;
+  const cardSurface = `linear-gradient(180deg, rgba(255,255,255,0.985) 0%, color-mix(in srgb, ${accent} 2%, #f8fafc 98%) 100%)`;
+  const cardSurfaceDark = `linear-gradient(180deg, color-mix(in srgb, ${accent} 8%, #101827 92%) 0%, #0a1220 100%)`;
+  const specPanelBg = `linear-gradient(180deg, rgba(255,255,255,0.9) 0%, color-mix(in srgb, ${accent} 3%, #f8fafc 97%) 100%)`;
+  const specPanelBgDark = 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%)';
+  const specPanelBorder = `color-mix(in srgb, ${accent} 9%, #dbe4ee 91%)`;
+  const specPanelBorderDark = `color-mix(in srgb, ${accent} 15%, #334155 85%)`;
+  const specDivider = `color-mix(in srgb, ${accent} 8%, #d7dee8 92%)`;
+  const specDividerDark = `color-mix(in srgb, ${accent} 16%, #334155 84%)`;
+  const chipBg = `color-mix(in srgb, ${accent} 3%, white 97%)`;
+  const chipBorder = `color-mix(in srgb, ${accent} 9%, #d8dfeb 91%)`;
+  const chipText = `color-mix(in srgb, ${accent} 21%, #475569 79%)`;
+  const chipBgDark = `color-mix(in srgb, ${accent} 8%, #0f172a 92%)`;
+  const chipBorderDark = `color-mix(in srgb, ${accent} 15%, #334155 85%)`;
+  const chipTextDark = `color-mix(in srgb, ${accent} 18%, #f8fafc 82%)`;
+  const scoreRingBackground = scoreValue
+    ? `conic-gradient(from 220deg, color-mix(in srgb, ${accent} 70%, white 30%) 0deg ${scoreSweep}, rgba(148,163,184,0.1) ${scoreSweep} 360deg)`
+    : `linear-gradient(135deg, color-mix(in srgb, ${accent} 72%, white 28%), color-mix(in srgb, ${accent} 42%, white 58%))`;
+  const ctaBackground = `linear-gradient(180deg, color-mix(in srgb, ${accent} 8%, #111827 92%) 0%, #0f172a 100%)`;
+  const ctaBackgroundHover = `linear-gradient(180deg, color-mix(in srgb, ${accent} 12%, #0b1220 88%) 0%, #020617 100%)`;
+  const priceNoteBg = `color-mix(in srgb, ${accent} 8%, #f8fafc 92%)`;
+  const priceNoteBorder = `color-mix(in srgb, ${accent} 14%, #d2dbe7 86%)`;
+  const priceNoteBgDark = `color-mix(in srgb, ${accent} 8%, #111827 92%)`;
+  const priceNoteBorderDark = `color-mix(in srgb, ${accent} 16%, #334155 84%)`;
+  const ctaBorder = 'rgba(255,255,255,0.12)';
+  const ctaBorderDark = `color-mix(in srgb, ${accent} 20%, rgba(255,255,255,0.14) 80%)`;
   const compareLabelExceptions = new Set(['veo-3-1-first-last', 'kling-2-5-turbo']);
   const hideCompare = card.label.length > 14 && !compareLabelExceptions.has(card.id);
+  const secondarySpecValueClass =
+    'mt-1 min-h-[2.3rem] tabular-nums font-semibold leading-tight tracking-[-0.03em] text-slate-950 dark:text-white';
+  const maxResolutionValueClass =
+    (card.stats?.maxResolution?.length ?? 0) > 7 ? 'text-[14px] sm:text-[15px]' : 'text-[17px] sm:text-[18px]';
+  const capabilityItems = [...(card.capabilities ?? [])];
+  if (card.filterMeta?.lipSync && !capabilityItems.includes('Lip sync')) {
+    capabilityItems.push('Lip sync');
+  }
+  if (card.audioAvailable && !capabilityItems.includes('Audio')) {
+    capabilityItems.push('Audio');
+  }
+  const visibleCapabilities = capabilityItems.slice(0, 6);
   const handleCompareToggle = (event: React.MouseEvent | React.ChangeEvent) => {
     event.stopPropagation();
     if (card.compareDisabled) return;
@@ -754,171 +789,237 @@ function ModelCard({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={`group relative isolate flex min-h-[11.5rem] cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] border border-white/20 bg-[color:var(--card-solid)] bg-[image:var(--card-bg)] p-5 text-text-primary shadow-[0_12px_30px_rgba(15,23,42,0.12),0_2px_8px_rgba(15,23,42,0.08)] transition hover:shadow-[0_16px_40px_rgba(15,23,42,0.16),0_4px_12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[color:var(--card-solid-dark)] dark:bg-[image:var(--card-bg-dark)] ${
-        selected ? 'ring-2 ring-emerald-500/40' : ''
+      className={`group relative isolate flex min-h-[22rem] cursor-pointer flex-col overflow-hidden rounded-[24px] border border-slate-200/70 bg-white bg-[image:var(--card-surface)] p-5 text-slate-950 shadow-[0_18px_38px_rgba(15,23,42,0.06),0_4px_10px_rgba(15,23,42,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--card-border-hover)] hover:shadow-[0_24px_56px_rgba(15,23,42,0.09),0_10px_24px_rgba(15,23,42,0.05)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--card-focus-ring)] dark:border-white/10 dark:bg-[image:var(--card-surface-dark)] dark:text-white dark:hover:border-[color:var(--card-border-hover-dark)] dark:focus-visible:ring-[color:var(--card-focus-ring-dark)] ${
+        selected ? 'ring-2 ring-emerald-500/35 border-emerald-400/60' : ''
       }`}
       style={
         {
-          color: textColor,
-          '--card-bg': cardBg,
-          '--card-bg-dark': cardBgDark,
-          '--card-sep-line': separatorLine,
-          '--card-sep-line-dark': separatorLineDark,
-          '--card-sep-glow': separatorGlow,
-          '--card-sep-glow-dark': separatorGlowDark,
-          '--card-solid': cardSolid,
-          '--card-solid-dark': cardSolidDark,
+          '--card-surface': cardSurface,
+          '--card-border-hover': providerBadgeBorder,
+          '--card-focus-ring': providerBadgeBorder,
+          '--card-surface-dark': cardSurfaceDark,
+          '--card-border-hover-dark': providerBadgeBorderDark,
+          '--card-focus-ring-dark': providerBadgeBorderDark,
+          '--spec-panel-bg': specPanelBg,
+          '--spec-panel-bg-dark': specPanelBgDark,
+          '--spec-panel-border': specPanelBorder,
+          '--spec-panel-border-dark': specPanelBorderDark,
+          '--spec-divider': specDivider,
+          '--spec-divider-dark': specDividerDark,
+          '--provider-badge-bg': providerBadgeBg,
+          '--provider-badge-bg-dark': providerBadgeBgDark,
+          '--provider-badge-border': providerBadgeBorder,
+          '--provider-badge-border-dark': providerBadgeBorderDark,
+          '--provider-badge-text': providerBadgeText,
+          '--provider-badge-text-dark': providerBadgeTextDark,
+          '--chip-bg': chipBg,
+          '--chip-bg-dark': chipBgDark,
+          '--chip-border': chipBorder,
+          '--chip-border-dark': chipBorderDark,
+          '--chip-text': chipText,
+          '--chip-text-dark': chipTextDark,
+          '--price-note-bg': priceNoteBg,
+          '--price-note-bg-dark': priceNoteBgDark,
+          '--price-note-border': priceNoteBorder,
+          '--price-note-border-dark': priceNoteBorderDark,
+          '--cta-border': ctaBorder,
+          '--cta-border-dark': ctaBorderDark,
         } as React.CSSProperties
       }
       aria-label={`${normalizedCtaLabel} ${card.label}`}
     >
-      <span className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.55),transparent_70%)] dark:bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.95),transparent_70%)]" />
-      <span className="pointer-events-none absolute inset-x-0 top-[84px] h-[1px] bg-white/40 dark:bg-white/15" />
-      <span className="pointer-events-none absolute inset-x-0 bottom-16 h-10 bg-[radial-gradient(circle_at_bottom,rgba(255,255,255,0.2),transparent_70%)] dark:bg-[radial-gradient(circle_at_bottom,rgba(0,0,0,0.75),transparent_70%)]" />
-      <div className="relative z-10 flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-          <h3
-            className="truncate text-[20px] font-semibold leading-tight text-text-primary dark:text-white/90 sm:text-[22px]"
-          >
-            {card.label}
-          </h3>
-          {card.provider ? (
-            <span className="rounded-full border border-white/35 bg-white/70 px-1.5 py-[2px] text-[8px] font-semibold uppercase tracking-micro text-text-secondary dark:border-white/15 dark:bg-black/80 dark:text-white/70">
-              {card.provider}
-            </span>
-          ) : null}
+      <span className="pointer-events-none absolute inset-px rounded-[23px] border border-white/70 opacity-80 dark:border-white/[0.04]" aria-hidden />
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 h-[3px]"
+        style={{ backgroundImage: accentTopBorder }}
+        aria-hidden
+      />
+      <span
+        className="pointer-events-none absolute right-0 top-0 h-40 w-40 opacity-80 blur-3xl dark:opacity-60"
+        style={{ backgroundImage: accentGlow }}
+        aria-hidden
+      />
+      <span
+        className="pointer-events-none absolute right-0 top-0 hidden h-40 w-40 opacity-60 blur-3xl dark:block"
+        style={{ backgroundImage: accentGlowDark }}
+        aria-hidden
+      />
+      <div className="relative z-10 flex h-full flex-col">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-[27px] font-semibold leading-[0.98] tracking-[-0.04em] text-slate-950 dark:text-white sm:text-[30px]">
+              {card.label}
+            </h3>
+            {card.provider ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-3 py-[0.4rem] text-[10px] font-medium tracking-[0.03em] text-[color:var(--provider-badge-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
+                  {card.provider}
+                </span>
+              </div>
+            ) : null}
+          </div>
+          <div className="shrink-0">
+            <div
+              className="relative grid h-[74px] w-[74px] place-items-center rounded-full p-[3px] shadow-[0_10px_18px_rgba(15,23,42,0.06)]"
+              style={{ background: scoreRingBackground }}
+            >
+              <span className="absolute inset-[3px] rounded-full border border-slate-200/70 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-white/10 dark:bg-[#08101d]" />
+              <div className="relative flex flex-col items-center justify-center leading-none">
+                <div className="flex items-end gap-0.5">
+                  <span className="tabular-nums text-[25px] font-semibold tracking-[-0.07em] text-slate-950 dark:text-white">
+                    {scoreValue ?? '—'}
+                  </span>
+                  {scoreValue ? (
+                    <span className="mb-[3px] text-[8px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/58">
+                      /10
+                    </span>
+                  ) : null}
+                </div>
+                <span className="mt-1 text-[7px] font-semibold uppercase tracking-[0.26em] text-slate-400 dark:text-white/56">
+                  Score
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/70 text-[17px] font-semibold text-text-primary shadow-sm dark:border-white/15 dark:bg-black/80 dark:text-white/90">
-          {typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : '—'}
-        </div>
-      </div>
 
-      <div className="relative z-10 mt-3 pt-4">
-        <span className="pointer-events-none absolute inset-x-4 top-0 h-[2px] bg-[image:var(--card-sep-line)] opacity-75 dark:bg-[image:var(--card-sep-line-dark)] dark:opacity-40" />
-        <span className="pointer-events-none absolute inset-x-10 top-0 h-8 bg-[image:var(--card-sep-glow)] opacity-35 dark:bg-[image:var(--card-sep-glow-dark)] dark:opacity-20" />
         {card.strengths?.length ? (
-          <p className="mt-1 flex items-center gap-2 text-xs text-text-secondary dark:text-white/75">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/75 text-[11px] text-text-primary dark:bg-black/80 dark:text-white/90">
-              ★
-            </span>
-            <span>
-              {strengthsLabel}: {card.strengths.join(', ')}
+          <p className="mt-4 flex items-center gap-2 text-[13px] leading-5 text-slate-700 dark:text-white/90">
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
+            <span className="min-w-0 truncate">
+              <span className="font-semibold text-slate-900 dark:text-white">{strengthsLabel}:</span>{' '}
+              {card.strengths.join(' · ')}
             </span>
           </p>
         ) : null}
+
         {card.stats ? (
-          <dl className="mt-3 grid grid-cols-2 gap-y-2 text-[11px] text-text-secondary divide-x divide-black/15 dark:divide-white/20 sm:grid-cols-3">
-            <div className="px-3 first:pl-0">
-              <dt className="text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85">
+          <dl
+            className="mt-5 grid grid-cols-3 overflow-hidden rounded-[18px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_10px_20px_rgba(15,23,42,0.03)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white/84 dark:shadow-none"
+          >
+            <div className="min-w-0 border-r border-r-[color:var(--spec-divider)] px-4 py-3 dark:border-r-[color:var(--spec-divider-dark)]">
+              <dt className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-white/60">
                 {statsLabels.from}
               </dt>
-              <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.priceFrom ?? '—'}</dd>
+              <dd className={`${secondarySpecValueClass} text-[17px] sm:text-[18px]`}>
+                {card.stats.priceFrom ?? '—'}
+              </dd>
             </div>
-            <div className="px-3 first:pl-0">
+            <div className="min-w-0 border-r border-r-[color:var(--spec-divider)] px-4 py-3 dark:border-r-[color:var(--spec-divider-dark)]">
               <dt
-                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85"
+                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-white/60"
                 aria-label={card.statsLabels?.duration ? statsLabels.typeLong : statsLabels.maxDurLong}
               >
                 {card.statsLabels?.duration ? statsLabels.typeShort : statsLabels.maxDurShort}
               </dt>
-              <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.maxDuration ?? '—'}</dd>
+              <dd className={`${secondarySpecValueClass} text-[17px] sm:text-[18px]`}>
+                {card.stats.maxDuration ?? '—'}
+              </dd>
             </div>
-            <div className="px-3 first:pl-0">
+            <div className="min-w-0 px-4 py-3">
               <dt
-                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85"
+                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-white/60"
                 aria-label={statsLabels.maxResLong}
               >
                 {statsLabels.maxResShort}
               </dt>
-              <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.maxResolution ?? '—'}</dd>
+              <dd className={`${secondarySpecValueClass} ${maxResolutionValueClass}`}>
+                {card.stats.maxResolution ?? '—'}
+              </dd>
             </div>
           </dl>
         ) : null}
-        {card.capabilities?.length || card.audioAvailable ? (
-          <div className="mt-2 flex flex-wrap items-center gap-1">
-            {card.capabilities?.map((cap) => {
-              const tooltip = capabilityTooltips[cap] ?? cap;
+
+        {visibleCapabilities.length ? (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {visibleCapabilities.map((cap) => {
+              const tooltip = cap === 'Audio' ? audioAvailableLabel : capabilityTooltips[cap] ?? cap;
               return (
-                <span key={cap} className="group/chip relative">
-                  <span
-                    aria-label={tooltip}
-                    className="rounded-pill border border-surface-on-media-dark-10 bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary dark:border-white/15 dark:bg-black/80 dark:text-white/90"
-                  >
-                    {cap}
-                  </span>
-                  <span
-                    role="tooltip"
-                    className="pointer-events-none absolute left-1/2 top-full z-20 mt-1 -translate-x-1/2 whitespace-nowrap rounded-full border border-hairline bg-surface px-2 py-1 text-[10px] font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover/chip:opacity-100 dark:bg-surface-2 dark:text-white/65"
-                  >
-                    {tooltip}
-                  </span>
+                <span
+                  key={cap}
+                  title={tooltip}
+                  aria-label={tooltip}
+                  className="inline-flex min-h-7 items-center rounded-full border border-[color:var(--chip-border)] bg-[color:var(--chip-bg)] px-3 py-[0.38rem] text-[9px] font-semibold uppercase tracking-[0.22em] text-[color:var(--chip-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(15,23,42,0.03)] transition group-hover:border-[color:var(--card-border-hover)] dark:border-[color:var(--chip-border-dark)] dark:bg-[color:var(--chip-bg-dark)] dark:text-[color:var(--chip-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:group-hover:border-[color:var(--card-border-hover-dark)]"
+                >
+                  {cap}
                 </span>
               );
             })}
-            {card.audioAvailable ? (
-              <AudioEqualizerBadge
-                inline
-                tone="muted"
-                size="sm"
-                className="ml-1 dark:!text-white/90"
-                label={audioAvailableLabel}
-              />
-            ) : null}
           </div>
         ) : null}
-      </div>
 
-      <div className="relative z-10 mt-3 pt-4">
-        <span className="pointer-events-none absolute inset-x-4 top-0 h-[2px] bg-[image:var(--card-sep-line)] opacity-70 dark:bg-[image:var(--card-sep-line-dark)] dark:opacity-35" />
-        <span className="pointer-events-none absolute inset-x-10 top-0 h-8 bg-[image:var(--card-sep-glow)] opacity-30 dark:bg-[image:var(--card-sep-glow-dark)] dark:opacity-20" />
-        <p className="text-[14px] text-text-primary/80 line-clamp-2 dark:text-white/75">{card.description}</p>
+        <div className="mt-4 min-h-[5.5rem]">
+          <p className="line-clamp-4 text-[14px] font-medium leading-[1.55] text-slate-900 dark:text-white/[0.97]">
+            {card.description}
+          </p>
+        </div>
         {card.priceNote ? (
           card.priceNoteHref ? (
             <Link
               href={card.priceNoteHref}
               prefetch={false}
-              className="mt-2 inline-flex text-xs font-semibold text-text-secondary hover:text-text-primary dark:text-white/65 dark:hover:text-white/80"
+              className="mt-3 inline-flex items-center rounded-full border border-[color:var(--price-note-border)] bg-[color:var(--price-note-bg)] px-3 py-1.5 text-[11px] font-medium tracking-[0.02em] text-slate-600 transition hover:text-slate-950 dark:border-[color:var(--price-note-border-dark)] dark:bg-[color:var(--price-note-bg-dark)] dark:text-white/82 dark:hover:text-white"
               onClick={(event) => event.stopPropagation()}
             >
               {card.priceNote}
             </Link>
           ) : (
-            <span className="mt-2 inline-flex text-xs font-semibold text-text-secondary dark:text-white/65">
+            <span
+              className="mt-3 inline-flex items-center rounded-full border border-[color:var(--price-note-border)] bg-[color:var(--price-note-bg)] px-3 py-1.5 text-[11px] font-medium tracking-[0.02em] text-slate-600 dark:border-[color:var(--price-note-border-dark)] dark:bg-[color:var(--price-note-bg-dark)] dark:text-white/82"
+            >
               {card.priceNote}
             </span>
           )
         ) : null}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {compareEnabled && !card.compareDisabled ? (
-            <label
-              className={`flex items-center gap-2 px-0 py-0 text-[10px] font-semibold uppercase tracking-micro transition ${
-                selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-secondary dark:text-white/75'
-              }`}
-              title={compareTooltip}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <input
-                type="checkbox"
-                checked={selected}
-                onChange={handleCompareToggle}
+        <div className="mt-auto pt-6">
+          <div className="flex flex-wrap items-center gap-3 border-t border-slate-200/65 pt-4 dark:border-white/10">
+            {compareEnabled && !card.compareDisabled ? (
+              <label
+                className={`inline-flex items-center gap-3 text-sm font-medium transition ${
+                  selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-white/84'
+                }`}
+                title={compareTooltip}
                 onClick={(event) => event.stopPropagation()}
-                className="h-4 w-4 rounded border border-text-muted/60 bg-transparent text-emerald-600 accent-emerald-500 dark:border-white/40"
-                aria-label={formatTemplate(compareAria, { engine: card.label })}
-              />
-              {!hideCompare ? <span>{compareLabel}</span> : null}
-            </label>
-          ) : null}
-          <Link
-            href={card.href}
-            prefetch={false}
-            className="ml-auto inline-flex items-center gap-2 rounded-full border border-text-primary/40 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary shadow-sm transition hover:border-text-primary/60 hover:text-text-primary dark:border-white/25 dark:bg-black/30 dark:text-white/80 dark:hover:border-white/40 dark:hover:bg-black/40"
-            aria-label={`${normalizedCtaLabel.replace(/\s*→\s*$/, '')} — ${card.label}`}
-            onClick={(event) => event.stopPropagation()}
-          >
-            {normalizedCtaLabel.replace(/\s*→\s*$/, '')}
-            <span className="sr-only"> — {card.label}</span>
-            <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
-          </Link>
+              >
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={handleCompareToggle}
+                  onClick={(event) => event.stopPropagation()}
+                  className="peer sr-only"
+                  aria-label={formatTemplate(compareAria, { engine: card.label })}
+                />
+                <span className="grid h-5 w-5 place-items-center rounded-[6px] border border-slate-300/90 bg-white text-[12px] text-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] transition peer-checked:border-emerald-500 peer-checked:bg-emerald-500 peer-checked:text-white dark:border-white/18 dark:bg-white/[0.02] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  ✓
+                </span>
+                {!hideCompare ? <span>{compareLabel}</span> : null}
+              </label>
+            ) : (
+              <span className="text-sm text-slate-400 dark:text-white/35" />
+            )}
+            <Link
+              href={card.href}
+              prefetch={false}
+              className="ml-auto inline-flex items-center gap-2 rounded-full border px-4 py-[0.58rem] text-[13px] font-semibold tracking-[0.01em] text-white shadow-[0_8px_16px_rgba(15,23,42,0.1)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_22px_rgba(15,23,42,0.12)] dark:border-[color:var(--cta-border-dark)] dark:text-white"
+              style={{
+                background: ctaBackground,
+                borderColor: ctaBorder,
+              }}
+              aria-label={`${ctaText} — ${card.label}`}
+              onClick={(event) => event.stopPropagation()}
+              onMouseEnter={(event) => {
+                event.currentTarget.style.background = ctaBackgroundHover;
+              }}
+              onMouseLeave={(event) => {
+                event.currentTarget.style.background = ctaBackground;
+              }}
+            >
+              {ctaText}
+              <span className="sr-only"> — {card.label}</span>
+              <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+            </Link>
+          </div>
         </div>
       </div>
     </article>

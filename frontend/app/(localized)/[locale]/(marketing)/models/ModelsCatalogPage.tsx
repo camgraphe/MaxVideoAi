@@ -658,7 +658,10 @@ function stripProvider(name: string, provider: string, providerId?: string | nul
 function clampDescription(value: string, maxLength = 110) {
   const trimmed = value.trim();
   if (trimmed.length <= maxLength) return trimmed;
-  return `${trimmed.slice(0, maxLength - 1).trim()}…`;
+  const sliced = trimmed.slice(0, maxLength - 1).trim();
+  const lastSpace = sliced.lastIndexOf(' ');
+  const safeSlice = lastSpace > Math.floor(maxLength * 0.65) ? sliced.slice(0, lastSpace).trim() : sliced;
+  return `${safeSlice}…`;
 }
 
 const USE_CASE_MAP: Record<string, string> = {
@@ -1111,7 +1114,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
       useCaseMap,
       capabilityMap,
     });
-    const microDescription = clampDescription(generatedDescription, 120);
+    const microDescription = clampDescription(generatedDescription, 170);
     const pictogram = getEnginePictogram({
       id: engine.engine.id,
       brandId: engine.brandId ?? engine.engine.brandId,
