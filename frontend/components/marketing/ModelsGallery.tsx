@@ -859,29 +859,29 @@ function ModelCard({
               </div>
             ) : null}
           </div>
-          <div className="shrink-0">
-            <div
-              className="relative grid h-[74px] w-[74px] place-items-center rounded-full p-[3px] shadow-[0_10px_18px_rgba(15,23,42,0.06)]"
-              style={{ background: scoreRingBackground }}
-            >
-              <span className="absolute inset-[3px] rounded-full border border-slate-200/70 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-white/10 dark:bg-[#08101d]" />
-              <div className="relative flex flex-col items-center justify-center leading-none">
-                <div className="flex items-end gap-0.5">
-                  <span className="tabular-nums text-[25px] font-semibold tracking-[-0.07em] text-slate-950 dark:text-white">
-                    {scoreValue ?? '—'}
-                  </span>
-                  {scoreValue ? (
+          {scoreValue ? (
+            <div className="shrink-0">
+              <div
+                className="relative grid h-[74px] w-[74px] place-items-center rounded-full p-[3px] shadow-[0_10px_18px_rgba(15,23,42,0.06)]"
+                style={{ background: scoreRingBackground }}
+              >
+                <span className="absolute inset-[3px] rounded-full border border-slate-200/70 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-white/10 dark:bg-[#08101d]" />
+                <div className="relative flex flex-col items-center justify-center leading-none">
+                  <div className="flex items-end gap-0.5">
+                    <span className="tabular-nums text-[25px] font-semibold tracking-[-0.07em] text-slate-950 dark:text-white">
+                      {scoreValue}
+                    </span>
                     <span className="mb-[3px] text-[8px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/58">
                       /10
                     </span>
-                  ) : null}
+                  </div>
+                  <span className="mt-1 text-[7px] font-semibold uppercase tracking-[0.26em] text-slate-400 dark:text-white/56">
+                    Score
+                  </span>
                 </div>
-                <span className="mt-1 text-[7px] font-semibold uppercase tracking-[0.26em] text-slate-400 dark:text-white/56">
-                  Score
-                </span>
               </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         {card.strengths?.length ? (
