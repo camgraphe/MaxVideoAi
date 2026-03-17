@@ -847,7 +847,7 @@ function ModelCard({
       <div className="relative z-10 flex h-full flex-col">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-[27px] font-semibold leading-[0.98] tracking-[-0.04em] text-slate-950 dark:text-white sm:text-[30px]">
+            <h3 className="line-clamp-2 min-h-[2.2em] text-balance text-[24px] font-semibold leading-[1.02] tracking-[-0.035em] text-slate-950 dark:text-white sm:text-[26px]">
               {card.label}
             </h3>
             {card.provider ? (
