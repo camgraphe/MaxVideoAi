@@ -11,6 +11,10 @@ export interface ImageGenerationRequest {
   indexable?: boolean;
   visibility?: 'public' | 'private';
   seed?: number;
+  outputFormat?: 'jpeg' | 'png' | 'webp';
+  enableWebSearch?: boolean;
+  thinkingLevel?: 'minimal' | 'high';
+  limitGenerations?: boolean;
   engineId?: string;
   membershipTier?: string;
   jobId?: string;

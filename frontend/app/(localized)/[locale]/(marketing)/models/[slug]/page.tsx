@@ -1723,7 +1723,7 @@ function buildSoftwareSchema({
 }
 const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
-const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
+const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
 
 function buildDetailSlugMap(slug: string) {
   return locales.reduce<Record<AppLocale, string>>((acc, locale) => {
@@ -3605,7 +3605,7 @@ function Sora2PageLayout({
   const durationIso = heroMedia.durationSec ? `PT${Math.round(heroMedia.durationSec)}S` : undefined;
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
+  const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
   const galleryPreviewAlts = dedupeAltsInList(
     galleryVideos.slice(0, 6).map((video, index) => ({
@@ -4607,7 +4607,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'seedance-2-0' ||
     slug === 'kling-3-pro' ||
     slug === 'nano-banana' ||
-    slug === 'nano-banana-pro'
+    slug === 'nano-banana-pro' ||
+    slug === 'nano-banana-2'
   ) {
     const activeLocale = routeLocale ?? 'en';
     const { dictionary } = await resolveDictionary();
@@ -4702,7 +4703,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
     },
   };
 
-  if (engine.modelSlug === 'nano-banana' || engine.modelSlug === 'nano-banana-pro') {
+  if (
+    engine.modelSlug === 'nano-banana' ||
+    engine.modelSlug === 'nano-banana-pro' ||
+    engine.modelSlug === 'nano-banana-2'
+  ) {
     detailCopy.overviewTitle = 'Overview';
   }
   const marketingName = localizedContent.marketingName ?? engine.marketingName;

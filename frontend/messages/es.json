@@ -1337,7 +1337,8 @@
           "ltx-2-fast": "tests rápidos e iteración veloz",
           "minimax-hailuo-02-text": "tests de concepto económicos",
           "nano-banana": "storyboards y workflows still-first",
-          "nano-banana-pro": "stills de campaña y ediciones tipográficas"
+          "nano-banana-pro": "stills de campaña y ediciones tipográficas",
+          "nano-banana-2": "stills guiados y ediciones en formatos amplios"
         },
         "capabilityKeywords": {
           "T2V": "texto a video",
@@ -2222,7 +2223,7 @@
           "modeAll": "Modo: Todos",
           "modeValue": "Modo: {value}",
           "resolutionAll": "Resolución: Todas",
-          "legacyToggleLabel": "Modelos legacy",
+          "legacyToggleLabel": "Modelos antiguos",
           "viewModel": "Ver página del modelo",
           "viewExamples": "Ver ejemplos",
           "empty": "Ningún motor coincide todavía con tus filtros. Ajusta los filtros o borra la búsqueda para explorar todo el catálogo.",

@@ -22,6 +22,17 @@ export function normalizeMemberTier(value?: string | null): MemberTier {
 }
 
 const ENGINE_BLOCKLIST = new Set(['dev-sim', 'developer', 'developer-simulator']);
+const ENGINE_DISCOVERY_PRIORITY = new Map<string, number>([
+  ['sora-2', 0],
+  ['sora-2-pro', 1],
+  ['veo-3-1', 2],
+  ['veo-3-1-fast', 3],
+  ['pika-text-to-video', 4],
+  ['minimax-hailuo-02-text', 5],
+  ['nano-banana-2', 6],
+  ['nano-banana-pro', 7],
+  ['nano-banana', 8],
+]);
 
 const MODEL_PRIORITY_ENTRIES = getModelRoster().map(
   (entry, index) => [String(entry.engineId).toLowerCase(), index] as [string, number]
@@ -41,6 +52,15 @@ function buildBaseEngines(entries: typeof REGISTRY_ENTRIES): EngineCaps[] {
     .map((entry) => cloneEngine(entry.engine))
     .filter((engine) => !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase()))
     .sort((a, b) => {
+      const aDiscoveryPriority = ENGINE_DISCOVERY_PRIORITY.get(a.id.toLowerCase());
+      const bDiscoveryPriority = ENGINE_DISCOVERY_PRIORITY.get(b.id.toLowerCase());
+      if (aDiscoveryPriority != null || bDiscoveryPriority != null) {
+        if (aDiscoveryPriority == null) return 1;
+        if (bDiscoveryPriority == null) return -1;
+        if (aDiscoveryPriority !== bDiscoveryPriority) {
+          return aDiscoveryPriority - bDiscoveryPriority;
+        }
+      }
       const aPriority = MODEL_PRIORITY.get(a.id.toLowerCase()) ?? DEFAULT_PRIORITY;
       const bPriority = MODEL_PRIORITY.get(b.id.toLowerCase()) ?? DEFAULT_PRIORITY;
       if (aPriority !== bPriority) {

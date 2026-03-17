@@ -93,7 +93,7 @@ function collectAllComparisonSlugs() {
 function collectCatalogComparisonSlugsForModels(changedModelSlugs) {
   const slugs = new Set();
   const catalog = readJson(ENGINE_CATALOG_PATH, []);
-  const excluded = new Set(['nano-banana', 'nano-banana-pro']);
+  const excluded = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
   const eligibleStatuses = new Set(['live', 'early_access']);
 
   const eligibleModels = (Array.isArray(catalog) ? catalog : [])

@@ -339,6 +339,7 @@ const USE_CASE_MAP: Record<string, string> = {
   'minimax-hailuo-02-text': 'budget-friendly concept tests',
   'nano-banana': 'storyboards and still-first workflows',
   'nano-banana-pro': 'campaign stills and typography-focused edits',
+  'nano-banana-2': 'grounded stills and wide-format image edits',
 };
 
 const DEFAULT_VALUE_SENTENCE = 'Best for {useCase} with strong {strengths} in {capabilities} workflows.';
@@ -610,8 +611,9 @@ export default async function ModelsPage() {
     'ltx-2-fast',
     'ltx-2',
     'minimax-hailuo-02-text',
-    'nano-banana',
+    'nano-banana-2',
     'nano-banana-pro',
+    'nano-banana',
   ];
 
   const engineIndex = new Map<string, FalEngineEntry>(listFalEngines().map((entry) => [entry.modelSlug, entry]));
@@ -729,7 +731,7 @@ export default async function ModelsPage() {
     const capabilities = capabilityKeywordsList
       .filter((cap) => cap !== 'Lip sync' && cap !== 'Audio')
       .slice(0, 5) as string[];
-    const compareDisabled = ['nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
+    const compareDisabled = ['nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
     const bestForFallback = catalogEntry?.bestFor ? sanitizeDescription(catalogEntry.bestFor) : engineType;
     const generatedDescription = buildValueSentence({
       slug: engine.modelSlug,

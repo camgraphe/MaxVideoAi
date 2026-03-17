@@ -78,6 +78,17 @@ const PER_IMAGE_ENGINE_CONFIG = new Map<
       ],
     },
   ],
+  [
+    'nano-banana-2',
+    {
+      rates: [
+        { value: '0.5k', label: '0.5K', rate: 0.04 },
+        { value: '1k', label: '1K', rate: 0.08 },
+        { value: '2k', label: '2K', rate: 0.12 },
+        { value: '4k', label: '4K', rate: 0.16 },
+      ],
+    },
+  ],
 ]);
 const PER_IMAGE_ENGINE_IDS = new Set<string>(Array.from(PER_IMAGE_ENGINE_CONFIG.keys()));
 type EngineOptionOverrides = {
@@ -201,7 +212,9 @@ function collectDurationOptions(
   if (Array.isArray(durationField?.values)) {
     durationField?.values.forEach((value) => add(value));
   }
-  add(durationField?.default);
+  if (typeof durationField?.default === 'string' || typeof durationField?.default === 'number') {
+    add(durationField.default);
+  }
 
   const durationSteps = definition?.durationSteps;
   if (durationSteps) {
@@ -319,7 +332,11 @@ function buildEngineOption(
 
   const defaultDurationRaw =
     parseDurationValue(definition?.durationSteps?.default as number | string | undefined)?.value ??
-    parseDurationValue(durationField?.default)?.value ??
+    parseDurationValue(
+      typeof durationField?.default === 'string' || typeof durationField?.default === 'number'
+        ? durationField.default
+        : undefined
+    )?.value ??
     durationOptions[Math.floor(durationOptions.length / 2)]?.value ??
     Math.round((minDuration + maxDuration) / 2);
   const defaultDuration = Math.min(Math.max(defaultDurationRaw ?? minDuration, minDuration), maxDuration);
@@ -440,8 +457,9 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
       'veo-3-1-first-last-fast',
       'pika-text-to-video',
       'minimax-hailuo-02-text',
-      'nano-banana',
+      'nano-banana-2',
       'nano-banana-pro',
+      'nano-banana',
     ];
     const preferredIndex = new Map<string, number>(preferredOrder.map((id, index) => [id, index]));
 

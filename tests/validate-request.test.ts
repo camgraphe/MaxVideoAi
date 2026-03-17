@@ -252,6 +252,24 @@ test('LTX 2.3 registry exposes unified mode mapping', () => {
   assert.equal(ltx23Fast?.modes.some((mode) => mode.mode === 'retake'), false);
 });
 
+test('Nano Banana 2 registry exposes image mappings and schema caps', () => {
+  const registry = listFalEngines();
+  const nanoBanana2 = registry.find((entry) => entry.id === 'nano-banana-2');
+
+  assert.ok(nanoBanana2);
+  assert.equal(nanoBanana2?.modes.find((mode) => mode.mode === 't2i')?.falModelId, 'fal-ai/nano-banana-2');
+  assert.equal(nanoBanana2?.modes.find((mode) => mode.mode === 'i2i')?.falModelId, 'fal-ai/nano-banana-2/edit');
+  assert.deepEqual(nanoBanana2?.engine.resolutions, ['0.5k', '1k', '2k', '4k']);
+  assert.ok(nanoBanana2?.engine.aspectRatios.includes('4:1'));
+  assert.ok(nanoBanana2?.engine.aspectRatios.includes('8:1'));
+  const numImagesField = nanoBanana2?.engine.inputSchema?.optional?.find((field) => field.id === 'num_images');
+  const imageUrlsField = nanoBanana2?.engine.inputSchema?.optional?.find(
+    (field) => field.id === 'image_urls' && field.modes?.includes('i2i')
+  );
+  assert.equal(numImagesField?.max, 4);
+  assert.equal(imageUrlsField?.maxCount, 14);
+});
+
 test('LTX 2.3 A2V requires audio input', () => {
   const missing = validateRequest('ltx-2-3', 'a2v', {});
   assert.equal(missing.ok, false);

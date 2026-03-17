@@ -52,5 +52,8 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     'minimax-hailuo-02-text': {
       bestFor: 'Stylised text or image motion',
     },
+    'nano-banana-2': {
+      bestFor: 'Grounded stills and wide-format image edits',
+    },
   };
 }

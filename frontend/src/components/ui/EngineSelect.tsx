@@ -75,6 +75,20 @@ const ENGINE_VARIANT_SORT_ORDER = new Map<string, number>([
   ['ltx-2-3', 0],
   ['ltx-2-3-fast', 1],
 ]);
+const ENGINE_DISCOVERY_PRIORITY = [
+  'sora-2',
+  'sora-2-pro',
+  'veo-3-1',
+  'veo-3-1-fast',
+  'pika-text-to-video',
+  'minimax-hailuo-02-text',
+  'nano-banana-2',
+  'nano-banana-pro',
+  'nano-banana',
+] as const;
+const ENGINE_DISCOVERY_PRIORITY_INDEX = new Map<string, number>(
+  ENGINE_DISCOVERY_PRIORITY.map((id, index) => [id, index])
+);
 const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
 const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v'];
@@ -213,6 +227,7 @@ export function EngineSelect({
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const triggerId = useId();
+  const legacyToggleId = useId();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -248,6 +263,13 @@ export function EngineSelect({
         if (variantOrderB == null) return -1;
         if (variantOrderA !== variantOrderB) return variantOrderA - variantOrderB;
       }
+      const priorityOrderA = ENGINE_DISCOVERY_PRIORITY_INDEX.get(a.id);
+      const priorityOrderB = ENGINE_DISCOVERY_PRIORITY_INDEX.get(b.id);
+      if (priorityOrderA != null || priorityOrderB != null) {
+        if (priorityOrderA == null) return 1;
+        if (priorityOrderB == null) return -1;
+        if (priorityOrderA !== priorityOrderB) return priorityOrderA - priorityOrderB;
+      }
       const orderA = order?.get(a.id) ?? Number.MAX_SAFE_INTEGER;
       const orderB = order?.get(b.id) ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
@@ -273,6 +295,11 @@ export function EngineSelect({
       return engine.id === selectedEngine?.id;
     });
   }, [availableEngines, registryMeta, selectedEngine, showLegacy]);
+  const hasLegacyEngines = useMemo(
+    () => availableEngines.some((engine) => Boolean(registryMeta?.meta.get(engine.id)?.isLegacy)),
+    [availableEngines, registryMeta]
+  );
+  const legacyToggleLabel = copy.modal.legacyToggleLabel ?? DEFAULT_ENGINE_SELECT_COPY.modal.legacyToggleLabel;
 
   const variantEngines = useMemo(() => {
     if (!selectedEngine) return [];
@@ -688,17 +715,34 @@ export function EngineSelect({
                 <div className="overflow-hidden rounded-card border border-border bg-surface shadow-float">
                   <div className="flex items-center justify-between gap-4 border-b border-hairline px-3 py-2 text-[12px] text-text-muted">
                     <span>Engines</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOpen(false);
-                        setHighlightedIndex(-1);
-                        setBrowseOpen(true);
-                      }}
-                      className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {copy.browse}
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {hasLegacyEngines ? (
+                        <label
+                          htmlFor={legacyToggleId}
+                          className="inline-flex items-center gap-2 whitespace-nowrap text-[11px] font-medium text-text-secondary"
+                        >
+                          <input
+                            id={legacyToggleId}
+                            type="checkbox"
+                            checked={showLegacy}
+                            onChange={(event) => setShowLegacy(event.currentTarget.checked)}
+                            className="h-4 w-4 rounded border border-border accent-brand"
+                          />
+                          <span>{legacyToggleLabel}</span>
+                        </label>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpen(false);
+                          setHighlightedIndex(-1);
+                          setBrowseOpen(true);
+                        }}
+                        className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {copy.browse}
+                      </button>
+                    </div>
                   </div>
                   <ul
                     className="max-h-72 overflow-y-auto py-1"
@@ -966,15 +1010,6 @@ function BrowseEnginesModal({
 
   const filteredEngines = useMemo(() => {
     const guides = copy.guides ?? DEFAULT_ENGINE_GUIDE;
-    const priorityOrder = [
-      'sora-2',
-      'sora-2-pro',
-      'veo-3-1',
-      'veo-3-1-fast',
-      'pika-text-to-video',
-      'minimax-hailuo-02-text',
-    ];
-    const priorityIndex = new Map(priorityOrder.map((id, index) => [id, index]));
     const ranked = legacyFilteredEngines
       .slice()
       .filter((engine) => {
@@ -997,8 +1032,8 @@ function BrowseEnginesModal({
         return haystack.includes(searchValue);
       })
       .sort((a, b) => {
-        const aPriority = priorityIndex.has(a.id) ? priorityIndex.get(a.id)! : Number.MAX_SAFE_INTEGER;
-        const bPriority = priorityIndex.has(b.id) ? priorityIndex.get(b.id)! : Number.MAX_SAFE_INTEGER;
+        const aPriority = ENGINE_DISCOVERY_PRIORITY_INDEX.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const bPriority = ENGINE_DISCOVERY_PRIORITY_INDEX.get(b.id) ?? Number.MAX_SAFE_INTEGER;
         if (aPriority !== bPriority) {
           return aPriority - bPriority;
         }

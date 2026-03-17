@@ -1337,7 +1337,8 @@
           "ltx-2-fast": "tests rapides et itération express",
           "minimax-hailuo-02-text": "tests de concepts économiques",
           "nano-banana": "storyboards et workflows still-first",
-          "nano-banana-pro": "stills de campagne et edits typographiques"
+          "nano-banana-pro": "stills de campagne et edits typographiques",
+          "nano-banana-2": "stills guidés et edits grand format"
         },
         "capabilityKeywords": {
           "T2V": "texte‑vers‑vidéo",
@@ -2229,7 +2230,7 @@
           "modeAll": "Mode : Tous",
           "modeValue": "Mode : {value}",
           "resolutionAll": "Résolution : Toutes",
-          "legacyToggleLabel": "Modèles legacy",
+          "legacyToggleLabel": "Modèles anciens",
           "viewModel": "Voir la page du modèle",
           "viewExamples": "Voir les exemples",
           "empty": "Aucun moteur ne correspond encore à vos filtres. Ajustez-les ou effacez la recherche pour explorer tout le catalogue.",

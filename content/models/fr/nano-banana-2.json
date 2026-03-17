@@ -1,0 +1,180 @@
+{
+  "marketingName": "Nano Banana 2",
+  "versionLabel": "2",
+  "seo": {
+    "title": "Nano Banana 2 - Generation d'images guidee et edition | MaxVideoAI",
+    "description": "Generez des stills avec Nano Banana 2 dans MaxVideoAI. Sorties 0.5K a 4K, ratios larges et extremes, jusqu'a 14 references en edit, et grounding web optionnel.",
+    "image": "https://v3b.fal.media/files/b/elephant/swnM7Nh3lbF0WcmLFEd7v.png"
+  },
+  "overview": "Nano Banana 2 est la branche la plus souple de la famille Nano Banana pour l'image fixe : brouillons 0.5K moins chers, finals de 1K a 4K, ratios plus varies, sets d'edition plus grands, et grounding web optionnel quand il faut des references plus actuelles.",
+  "hero": {
+    "title": "Nano Banana 2 - text-to-image et edition guidee",
+    "intro": "Generation de stills flexible pour concepts documentes, layouts larges et edits multi-reference.",
+    "badge": "Texte -> Image · Image -> Image · 0.5K / 1K / 2K / 4K",
+    "ctaPrimary": {
+      "label": "Lancer Nano Banana 2",
+      "href": "/app/image?engine=nano-banana-2"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ouvrir l'Image Lab",
+        "href": "/app/image"
+      },
+      {
+        "label": "Voir les tarifs live",
+        "href": "/generate"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d'usage",
+    "items": [
+      {
+        "title": "Stills de campagne en formats larges",
+        "icon": "layout"
+      },
+      {
+        "title": "Moodboards guides par des references actuelles",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Edits produit avec plus de references",
+        "icon": "layers"
+      },
+      {
+        "title": "Workflows draft -> final rapides",
+        "icon": "storyboard"
+      }
+    ]
+  },
+  "promptStructure": {
+    "title": "Mini-guide de prompt",
+    "quote": "[Sujet] dans [decor], [composition], [lumiere/style], [usage], et [ce qui doit rester fixe ou changer].",
+    "description": "Commencez par le sujet et la composition, puis ajoutez style, materiaux et contexte de livraison. Pour les prompts guides, precisez quelles references actuelles ou quels signaux de tendance comptent.",
+    "steps": [
+      "Sujet et cadrage",
+      "Decor, lumiere et materiaux",
+      "Intention de ratio ou de layout",
+      "Notes de verrouillage pour les edits",
+      "Contexte de grounding si la web search est activee",
+      "Choix de resolution pour brouillon ou final"
+    ]
+  },
+  "tips": {
+    "title": "Conseils et limites",
+    "items": [
+      "Utilisez 0.5K ou 1K pour explorer vite, puis relancez en 2K ou 4K pour les finals.",
+      "Activez la web search seulement quand un contexte externe actuel compte vraiment ; elle ajoute un cout fixe par requete.",
+      "Passez jusqu'a 14 references en mode Edit si vous devez verrouiller details produit, palette ou set dressing.",
+      "Les ratios extremes comme 4:1 ou 8:1 marchent mieux si vous decrivez clairement les zones de composition."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Concept retail guide",
+      "prompt": "Concevoir un still de lancement skincare premium inspire des codes actuels du retail luxe, socle en pierre claire, lumiere douce, typographie serif retenue, finition campagne haut de gamme."
+    },
+    {
+      "title": "Board architecture ultra-large",
+      "prompt": "Still panoramique 8:1 d'un terminal aeroport futuriste au lever du soleil, beton poli, longues reflections, peu de voyageurs, composition editoriale et propre."
+    },
+    {
+      "title": "Cleanup produit multi-reference",
+      "prompt": "Combinez ces references en un still final de campagne : gardez exactement la silhouette et les coutures du sac, harmonisez le ton du cuir, nettoyez les reflets et conservez la lumiere studio douce."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Comment fonctionne le pricing de Nano Banana 2 ?",
+      "a": "Le pricing est par image : 0,04 $ en 0.5K, 0,08 $ en 1K, 0,12 $ en 2K et 0,16 $ en 4K. La web search optionnelle ajoute 0,015 $ par requete."
+    },
+    {
+      "q": "Combien d'images puis-je generer par run ?",
+      "a": "Jusqu'a 4 images par requete."
+    },
+    {
+      "q": "Combien d'images de reference en mode Edit ?",
+      "a": "Jusqu'a 14 references dans le workspace image de MaxVideoAI pour Nano Banana 2."
+    }
+  ],
+  "pricingNotes": "0,08 $ par image en 1K. 0.5K coute 0,04 $, 2K 0,12 $, 4K 0,16 $, et la web search optionnelle ajoute 0,015 $ par requete.",
+  "custom": {
+    "heroEyebrow": "Google - Nano Banana 2",
+    "heroSupportLine": "Ideal pour des stills guides, des layouts larges et des edits multi-image plus lourds.",
+    "heroSpecChips": [
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Jusqu'a 14 refs"
+      },
+      {
+        "label": "0.5K a 4K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Grounding web"
+      }
+    ],
+    "whyTitle": "Pourquoi Nano Banana 2 se distingue",
+    "heroDesc1": "Nano Banana 2 ajoute des passes de brouillon moins cheres, plus de ratios et un grounding web optionnel dans le meme workflow image.",
+    "heroDesc2": "C'est la variante Nano Banana la plus simple a utiliser quand vous avez besoin d'un cadrage plus large ou de plus de references.",
+    "heroHighlights": [
+      "Boucle de draft moins chere||0.5K et 1K sont utiles pour tester la composition avant les finals.",
+      "Plus d'options de cadrage||Supporte auto, ratios standards et formats extremes comme 4:1 et 8:1.",
+      "Sets d'edit plus grands||Jusqu'a 14 references pour du produit ou des edits issus de moodboards.",
+      "Grounding optionnel||Activez la web search si le brief depend de references visuelles recentes."
+    ],
+    "whatTitle": "Comment Nano Banana 2 fonctionne ici",
+    "whatIntro1": "Choisissez Create ou Edit, reglez le nombre d'images, le ratio et la resolution, puis decidez si la web search ou un thinking level plus eleve est utile.",
+    "whatIntro2": "Pour les edits, chargez une ou plusieurs references, verifiez le price chip live, puis generez depuis le wallet MaxVideoAI partage.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Selectionnez Nano Banana 2 dans l'Image Lab",
+      "Choisissez text-to-image ou edit",
+      "Reglez batch, ratio et resolution",
+      "Activez si besoin web search, output format, seed ou thinking level",
+      "Ajoutez des references si vous editez puis lancez"
+    ],
+    "tipsTitle": "Conseils et limites",
+    "tipsIntro": "Nano Banana 2 est le plus propre quand vous separez clairement l'intention de composition de l'intention de style et n'activez le grounding que si le prompt en a besoin.",
+    "strengths": [
+      "Utilisez 0.5K et 1K pour baisser le cout pendant les essais de composition.",
+      "Decrivez explicitement les zones du frame sur les ratios larges ou tres verticaux.",
+      "Si la web search est activee, indiquez quels signaux actuels comptent.",
+      "En edit multi-reference, donnez un role a chaque reference et dites ce qui doit rester identique."
+    ],
+    "boundaries": [
+      "Images fixes uniquement.",
+      "Maximum 4 sorties par requete.",
+      "La web search est optionnelle et facturee par requete.",
+      "Le mode Edit accepte jusqu'a 14 images de reference."
+    ],
+    "safetyTitle": "Securite et ressemblance",
+    "safetyRules": [
+      "Pas de contenu sexuel ni de contenu impliquant des mineurs.",
+      "Pas de demandes haineuses, harcelantes ou de violence graphique.",
+      "N'usurpez pas l'identite de personnes reelles ou publiques sans consentement.",
+      "N'incluez pas de donnees personnelles privees ni de documents sensibles."
+    ],
+    "promptingTitle": "Comment ecrire un bon prompt Nano Banana 2",
+    "promptingIntro": "Nano Banana 2 repond mieux a des instructions de composition claires, des contraintes d'edit explicites et un grounding uniquement quand il est vraiment utile.",
+    "promptingTip": "Astuce : utilisez l'UI pour le ratio, la resolution, la seed, la web search et l'output format. Gardez le prompt centre sur le sujet, le layout, le style et ce qui doit rester fixe.",
+    "promptingGlobalPrinciples": [
+      "Decrivez d'abord le cadre puis le style.",
+      "Pour les edits, dites ce qui change et ce qui reste.",
+      "Utilisez le grounding seulement si le contexte actuel compte."
+    ],
+    "promptingEngineWhy": [
+      "Les ratios larges marchent mieux avec des zones de composition explicites.",
+      "De gros sets de references aident, mais les roles par reference gardent l'edit plus net.",
+      "Les prompts guides doivent quand meme rester precis sur l'esthetique cible."
+    ],
+    "promptingGuideLabel": "En savoir plus"
+  }
+}

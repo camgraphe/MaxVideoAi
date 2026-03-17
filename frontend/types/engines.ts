@@ -5,6 +5,7 @@ export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early
 export type LatencyTier = 'fast' | 'standard';
 export type Mode = 't2v' | 'i2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 't2i' | 'i2i';
 export type Resolution =
+  | '0.5k'
   | '480p'
   | '720p'
   | '1080p'
@@ -22,6 +23,10 @@ export type AspectRatio =
   | '16:9'
   | '9:16'
   | '1:1'
+  | '4:1'
+  | '1:4'
+  | '8:1'
+  | '1:8'
   | '4:5'
   | '5:4'
   | '4:3'
@@ -67,7 +72,7 @@ export interface EngineInputLimits {
   audioMaxDurationSec?: number;
 }
 
-export type EngineInputFieldType = 'text' | 'number' | 'enum' | 'image' | 'video' | 'audio';
+export type EngineInputFieldType = 'text' | 'number' | 'enum' | 'image' | 'video' | 'audio' | 'boolean';
 
 export interface EngineInputField {
   id: string;
@@ -81,7 +86,7 @@ export interface EngineInputField {
   min?: number;
   max?: number;
   step?: number;
-  default?: number | string;
+  default?: boolean | number | string;
   values?: string[];
   source?: 'upload' | 'url' | 'either';
   engineParam?: string;

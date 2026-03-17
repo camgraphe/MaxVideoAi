@@ -3,7 +3,7 @@ import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { resolveRequestedResolution } from '../utils';
+import { clampRequestedImageCount, getImageInputField, resolveRequestedResolution } from '../utils';
 
 export const runtime = 'nodejs';
 
@@ -13,13 +13,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'auth_required' }, { status: 401 });
   }
 
-  let body: { engineId?: string; mode?: ImageGenerationMode; numImages?: number; resolution?: string } | null = null;
+  let body:
+    | {
+        engineId?: string;
+        mode?: ImageGenerationMode;
+        numImages?: number;
+        resolution?: string;
+        enableWebSearch?: boolean;
+      }
+    | null = null;
   try {
     body = (await req.json()) as {
       engineId?: string;
       mode?: ImageGenerationMode;
       numImages?: number;
       resolution?: string;
+      enableWebSearch?: boolean;
     } | null;
   } catch {
     return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 });
@@ -29,7 +38,6 @@ export async function POST(req: NextRequest) {
   const mode = body?.mode === 'i2i' || body?.mode === 't2i' ? body.mode : 't2i';
   const requestedImages =
     typeof body?.numImages === 'number' && Number.isFinite(body.numImages) ? Math.round(body.numImages) : 1;
-  const numImages = Math.min(8, Math.max(1, requestedImages));
 
   const engineEntry = listFalEngines().find((entry) => entry.id === engineId);
   if (!engineEntry || (engineEntry.category ?? 'video') !== 'image') {
@@ -37,6 +45,7 @@ export async function POST(req: NextRequest) {
   }
 
   const engineCaps = engineEntry.engine;
+  const numImages = clampRequestedImageCount(engineCaps, mode, requestedImages);
   const modeConfig = engineEntry.modes.find((entry) => entry.mode === mode);
   if (!modeConfig) {
     return NextResponse.json({ ok: false, error: 'mode_unsupported' }, { status: 400 });
@@ -59,6 +68,10 @@ export async function POST(req: NextRequest) {
       durationSec: numImages,
       resolution: resolutionResult.resolution,
       currency: engineCaps.pricing?.currency ?? 'USD',
+      addons:
+        getImageInputField(engineCaps, 'enable_web_search', mode) && body?.enableWebSearch === true
+          ? { enable_web_search: true }
+          : undefined,
     });
 
     return NextResponse.json({ ok: true, pricing });

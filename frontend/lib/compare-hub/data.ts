@@ -1,7 +1,7 @@
 import compareHubConfig from '@/config/compare-hub.json';
 import engineCatalog from '@/config/engine-catalog.json';
 
-const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
+const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
 const ELIGIBLE_STATUSES = new Set(['live', 'early_access']);
 const VIDEO_MODES = new Set(['t2v', 'i2v', 'v2v', 'r2v']);
 const LEGACY_UNAVAILABLE = new Set(['paused']);

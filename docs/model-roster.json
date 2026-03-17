@@ -27,6 +27,15 @@
     "logoPolicy": "textOnly"
   },
   {
+    "engineId": "nano-banana-2",
+    "marketingName": "Nano Banana 2",
+    "brandId": "google",
+    "modelSlug": "nano-banana-2",
+    "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
     "engineId": "nano-banana-pro",
     "marketingName": "Nano Banana Pro",
     "brandId": "google",

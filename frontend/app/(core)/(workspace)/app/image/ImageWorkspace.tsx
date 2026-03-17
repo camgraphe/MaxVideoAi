@@ -23,7 +23,7 @@ import { SelectMenu } from '@/components/ui/SelectMenu';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import { supabase } from '@/lib/supabaseClient';
 import type { ImageGenerationMode, GeneratedImage } from '@/types/image-generation';
-import type { EngineCaps, EngineInputField } from '@/types/engines';
+import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import type { VideoGroup } from '@/types/video-groups';
@@ -32,15 +32,22 @@ import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/co
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
 import {
-  formatAspectRatioLabel,
-  getNanoBananaAspectRatios,
-  getNanoBananaDefaultAspectRatio,
-} from '@/lib/image/aspectRatios';
+  MAX_REFERENCE_IMAGES,
+  clampRequestedImageCount,
+  getAspectRatioOptions,
+  getDefaultAspectRatio,
+  getDefaultResolution,
+  getImageCountConstraints,
+  getImageFieldDefaultBoolean,
+  getImageFieldDefaultNumber,
+  getImageFieldDefaultString,
+  getImageFieldValues,
+  getImageInputField,
+  getReferenceConstraints,
+} from '@/lib/image/inputSchema';
 import { authFetch } from '@/lib/authFetch';
-
-const NANO_BANANA_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
-const NANO_BANANA_ALIAS_PREFIXES = ['fal-ai/nano-banana'];
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -85,11 +92,25 @@ interface ImageWorkspaceCopy {
     resolutionLabel: string;
     resolutionHint: string;
     resolutionLockedLabel: string;
+    seedLabel: string;
+    seedPlaceholder: string;
+    outputFormatLabel: string;
+    outputFormatHint: string;
+    enableWebSearchLabel: string;
+    enableWebSearchHint: string;
+    thinkingLevelLabel: string;
+    thinkingLevelHint: string;
+    limitGenerationsLabel: string;
+    limitGenerationsHint: string;
+    toggleEnabled: string;
+    toggleDisabled: string;
     estimatedCost: string;
     referenceLabel: string;
     referenceHelper: string;
     referenceNote: string;
     referenceButton: string;
+    referenceExpand: string;
+    referenceCollapse: string;
     referenceSlotLabel: string;
     referenceSlotHint: string;
     referenceSlotNameFallback: string;
@@ -194,7 +215,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     promptPlaceholder: 'Describe the image you’d like to generate...',
     promptPlaceholderWithImage: 'Describe how the image should be edited / transformed…',
     charCount: '{count} chars',
-    presetsHint: 'Tap a preset · 1–8 per run',
+    presetsHint: 'Tap a preset or start from scratch.',
     numImagesLabel: 'Number of images',
     numImagesCount: '{count} {unit}',
     numImagesUnit: {
@@ -203,16 +224,30 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     },
     aspectRatioLabel: 'Aspect ratio',
     aspectRatioHint: 'Choose a preset to match your frame.',
-    aspectRatioAutoNote: 'Auto lets Nano Banana decide the final crop.',
+    aspectRatioAutoNote: 'Auto lets the model decide the final crop.',
     resolutionLabel: 'Resolution',
-    resolutionHint: 'Draft in 1K/2K, then switch to 4K for finals (pricing updates automatically).',
+    resolutionHint: 'Adjust output size here. Pricing updates automatically.',
     resolutionLockedLabel: 'Resolution locked by this engine.',
+    seedLabel: 'Seed',
+    seedPlaceholder: 'Optional',
+    outputFormatLabel: 'Output format',
+    outputFormatHint: 'Choose the file type for the final images.',
+    enableWebSearchLabel: 'Web search',
+    enableWebSearchHint: 'Ground the request with current web context when supported.',
+    thinkingLevelLabel: 'Thinking level',
+    thinkingLevelHint: 'Increase reasoning depth when the engine supports it.',
+    limitGenerationsLabel: 'Limit generations',
+    limitGenerationsHint: 'Reduce extra exploratory generations when supported.',
+    toggleEnabled: 'Enabled',
+    toggleDisabled: 'Disabled',
     estimatedCost: 'Estimated cost: {amount}',
     referenceLabel: 'Reference images',
     referenceHelper: 'Optional · up to {count} images',
     referenceNote:
       'Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.',
     referenceButton: 'Library',
+    referenceExpand: 'Show {count} more slots',
+    referenceCollapse: 'Hide extra slots',
     referenceSlotLabel: 'Slot {index}',
     referenceSlotHint: 'Drop image, click to upload, paste, or choose from your library.',
     referenceSlotNameFallback: 'Image',
@@ -293,10 +328,8 @@ function formatTemplate(template: string, values: Record<string, string | number
   }, template);
 }
 
-const MAX_REFERENCE_SLOTS = 8;
-const DEFAULT_REFERENCE_LIMIT = 4;
-const MIN_IMAGE_COUNT = 1;
-const MAX_IMAGE_COUNT = 8;
+const MAX_REFERENCE_SLOTS = MAX_REFERENCE_IMAGES;
+const DEFAULT_VISIBLE_REFERENCE_SLOTS = 4;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
 const DESKTOP_RAIL_MIN_WIDTH = 1088;
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
@@ -307,27 +340,8 @@ const IMAGE_COMPOSER_STORAGE_KEY = 'maxvideoai.image.composer.v1';
 const IMAGE_COMPOSER_STORAGE_VERSION = 1;
 const IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS = 1200;
 
-const clampImageCount = (value: number) => Math.min(MAX_IMAGE_COUNT, Math.max(MIN_IMAGE_COUNT, Math.round(value)));
-
 function normalizeEngineToken(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
-}
-
-function isNanoBananaEngine(engine?: ImageEngineOption | null): boolean {
-  if (!engine) return false;
-  if (NANO_BANANA_ENGINE_IDS.has(engine.id)) {
-    return true;
-  }
-  const aliases = engine.aliases ?? [];
-  return aliases.some((alias) => {
-    if (typeof alias !== 'string' || !alias.length) {
-      return false;
-    }
-    if (NANO_BANANA_ENGINE_IDS.has(alias)) {
-      return true;
-    }
-    return NANO_BANANA_ALIAS_PREFIXES.some((prefix) => alias.startsWith(prefix));
-  });
 }
 
 function findImageEngine(engines: ImageEngineOption[], engineId: string): ImageEngineOption | null {
@@ -398,6 +412,11 @@ type PersistedImageComposerState = {
   numImages: number;
   aspectRatio: string | null;
   resolution: string | null;
+  seed: number | null;
+  outputFormat: string | null;
+  enableWebSearch: boolean;
+  thinkingLevel: string | null;
+  limitGenerations: boolean;
   referenceSlots: PersistedReferenceSlot[];
 };
 
@@ -409,10 +428,16 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
     if (typeof raw.engineId !== 'string' || raw.engineId.trim().length === 0) return null;
     const mode = raw.mode === 't2i' || raw.mode === 'i2i' ? raw.mode : 't2i';
     const prompt = typeof raw.prompt === 'string' ? raw.prompt : '';
-    const numImagesRaw =
+    const numImages =
       typeof raw.numImages === 'number' && Number.isFinite(raw.numImages) ? Math.round(raw.numImages) : 1;
     const aspectRatio = typeof raw.aspectRatio === 'string' ? raw.aspectRatio : null;
     const resolution = typeof raw.resolution === 'string' ? raw.resolution : null;
+    const seed =
+      typeof raw.seed === 'number' && Number.isFinite(raw.seed) ? Math.round(raw.seed) : null;
+    const outputFormat = typeof raw.outputFormat === 'string' ? raw.outputFormat : null;
+    const enableWebSearch = raw.enableWebSearch === true;
+    const thinkingLevel = typeof raw.thinkingLevel === 'string' ? raw.thinkingLevel : null;
+    const limitGenerations = raw.limitGenerations === true;
     const referenceSlotsRaw = Array.isArray(raw.referenceSlots) ? raw.referenceSlots : [];
     const referenceSlots = referenceSlotsRaw
       .slice(0, MAX_REFERENCE_SLOTS)
@@ -434,9 +459,14 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
       engineId: raw.engineId.trim(),
       mode,
       prompt,
-      numImages: numImagesRaw,
+      numImages,
       aspectRatio,
       resolution,
+      seed,
+      outputFormat,
+      enableWebSearch,
+      thinkingLevel,
+      limitGenerations,
       referenceSlots,
     };
   } catch {
@@ -613,6 +643,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [numImages, setNumImages] = useState(1);
   const [aspectRatio, setAspectRatio] = useState<string | null>(null);
   const [resolution, setResolution] = useState<string | null>(null);
+  const [seed, setSeed] = useState<string>('');
+  const [outputFormat, setOutputFormat] = useState<string | null>(null);
+  const [enableWebSearch, setEnableWebSearch] = useState(false);
+  const [thinkingLevel, setThinkingLevel] = useState<string | null>(null);
+  const [limitGenerations, setLimitGenerations] = useState(false);
   const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
     Array(MAX_REFERENCE_SLOTS).fill(null)
   );
@@ -623,6 +658,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [areReferenceSlotsExpanded, setAreReferenceSlotsExpanded] = useState(false);
   const [isSavingToLibrary, setIsSavingToLibrary] = useState(false);
   const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
@@ -636,8 +672,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [
     priceEstimateKey,
     setPriceEstimateKey,
-  ] = useState<[string, string, ImageGenerationMode, number, string] | null>(() =>
-    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, ''] : null
+  ] = useState<[string, string, ImageGenerationMode, number, string, boolean] | null>(() =>
+    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, '', false] : null
   );
 
   useEffect(() => {
@@ -661,104 +697,216 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [engineId, engines]
   );
   const selectedEngineCaps = selectedEngine?.engineCaps ?? engines[0]?.engineCaps;
-  const engineInputFields = useMemo<EngineInputField[]>(() => {
-    const schema = selectedEngineCaps?.inputSchema;
-    if (!schema) {
-      return [];
-    }
-    return [...(schema.required ?? []), ...(schema.optional ?? [])];
-  }, [selectedEngineCaps]);
-  const resolutionField = useMemo<EngineInputField | null>(() => {
-    if (!engineInputFields.length) return null;
-    const byMode =
-      engineInputFields.find(
-        (field) =>
-          field.id === 'resolution' &&
-          (field.modes?.includes(mode) || field.requiredInModes?.includes(mode))
-      ) ?? null;
-    if (byMode) return byMode;
-    return engineInputFields.find((field) => field.id === 'resolution') ?? null;
-  }, [engineInputFields, mode]);
-  const resolutionOptions = useMemo(() => {
-    if (!resolutionField?.values?.length) return null;
-    return resolutionField.values;
-  }, [resolutionField]);
-  const hasResolutionOptions = Boolean(resolutionOptions && resolutionOptions.length > 0);
-  const isResolutionLocked = hasResolutionOptions && !!resolutionOptions && resolutionOptions.length === 1;
-  useEffect(() => {
-    if (!hasResolutionOptions) {
-      setResolution(null);
-      return;
-    }
-    const defaultValue =
-      (typeof resolutionField?.default === 'string' && resolutionField.default.length
-        ? resolutionField.default
-        : null) ?? resolutionOptions?.[0] ?? null;
-    setResolution((previous) => {
-      if (previous && resolutionOptions?.includes(previous)) {
-        return previous;
-      }
-      return defaultValue;
-    });
-  }, [hasResolutionOptions, resolutionField, resolutionOptions]);
-  const referenceField = useMemo<EngineInputField | null>(() => {
-    if (!engineInputFields.length) return null;
-    const byMode =
-      engineInputFields.find(
-        (field) =>
-          field.id === 'image_urls' &&
-          (field.modes?.includes(mode) || field.requiredInModes?.includes(mode))
-      ) ?? null;
-    if (byMode) return byMode;
-    return engineInputFields.find((field) => field.id === 'image_urls') ?? null;
-  }, [engineInputFields, mode]);
-  const referenceMinRequired = useMemo(() => {
-    const requiresReferences =
-      mode === 'i2i' || Boolean(referenceField?.requiredInModes?.includes(mode));
-    if (!requiresReferences) {
-      return 0;
-    }
-    const rawMin =
-      typeof referenceField?.minCount === 'number' && Number.isFinite(referenceField.minCount)
-        ? Math.round(referenceField.minCount)
-        : null;
-    return Math.max(1, rawMin ?? 1);
-  }, [mode, referenceField]);
-  const referenceSlotLimit = useMemo(() => {
-    const desiredMax = referenceField?.maxCount ?? DEFAULT_REFERENCE_LIMIT;
-    const requiredMin = referenceField?.minCount ?? 1;
-    const next = Math.max(requiredMin, desiredMax, 1);
-    return Math.min(MAX_REFERENCE_SLOTS, next);
-  }, [referenceField]);
+  const imageCountField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'num_images', mode),
+    [selectedEngineCaps, mode]
+  );
+  const imageCountConstraints = useMemo(
+    () => getImageCountConstraints(selectedEngineCaps ?? null, mode),
+    [selectedEngineCaps, mode]
+  );
+  const aspectRatioField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'aspect_ratio', mode),
+    [selectedEngineCaps, mode]
+  );
+  const aspectRatioOptions = useMemo(
+    () => getAspectRatioOptions(selectedEngineCaps ?? null, mode),
+    [selectedEngineCaps, mode]
+  );
+  const resolutionField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'resolution', mode),
+    [selectedEngineCaps, mode]
+  );
+  const resolutionOptions = useMemo(
+    () =>
+      getImageFieldValues(
+        selectedEngineCaps ?? null,
+        'resolution',
+        mode,
+        Array.isArray(selectedEngineCaps?.resolutions) ? [...selectedEngineCaps.resolutions] : []
+      ),
+    [selectedEngineCaps, mode]
+  );
+  const isResolutionLocked = Boolean(resolutionField && resolutionOptions.length === 1);
+  const referenceField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'image_urls', mode),
+    [selectedEngineCaps, mode]
+  );
+  const referenceConstraints = useMemo(
+    () =>
+      selectedEngineCaps
+        ? getReferenceConstraints(selectedEngineCaps, mode)
+        : { min: mode === 'i2i' ? 1 : 0, max: 4, requires: mode === 'i2i' },
+    [selectedEngineCaps, mode]
+  );
+  const outputFormatField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'output_format', mode),
+    [selectedEngineCaps, mode]
+  );
+  const outputFormatOptions = useMemo(
+    () => getImageFieldValues(selectedEngineCaps ?? null, 'output_format', mode),
+    [selectedEngineCaps, mode]
+  );
+  const seedField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'seed', mode),
+    [selectedEngineCaps, mode]
+  );
+  const enableWebSearchField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'enable_web_search', mode),
+    [selectedEngineCaps, mode]
+  );
+  const thinkingLevelField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'thinking_level', mode),
+    [selectedEngineCaps, mode]
+  );
+  const thinkingLevelOptions = useMemo(
+    () => getImageFieldValues(selectedEngineCaps ?? null, 'thinking_level', mode),
+    [selectedEngineCaps, mode]
+  );
+  const limitGenerationsField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'limit_generations', mode),
+    [selectedEngineCaps, mode]
+  );
+  const referenceMinRequired = referenceConstraints.min;
+  const referenceSlotLimit = Math.min(MAX_REFERENCE_SLOTS, referenceConstraints.max);
   const visibleReferenceSlots = useMemo(
     () => referenceSlots.slice(0, referenceSlotLimit),
     [referenceSlots, referenceSlotLimit]
+  );
+  const canCollapseReferenceSlots = referenceSlotLimit > DEFAULT_VISIBLE_REFERENCE_SLOTS;
+  const displayedReferenceSlotCount =
+    canCollapseReferenceSlots && !areReferenceSlotsExpanded
+      ? DEFAULT_VISIBLE_REFERENCE_SLOTS
+      : referenceSlotLimit;
+  const displayedReferenceSlots = useMemo(
+    () => visibleReferenceSlots.slice(0, displayedReferenceSlotCount),
+    [displayedReferenceSlotCount, visibleReferenceSlots]
+  );
+  const collapsedReferenceSlotCount = Math.max(referenceSlotLimit - displayedReferenceSlotCount, 0);
+  const hasCollapsedReferenceContent = useMemo(
+    () =>
+      referenceSlots
+        .slice(DEFAULT_VISIBLE_REFERENCE_SLOTS, referenceSlotLimit)
+        .some((slot) => Boolean(slot)),
+    [referenceSlotLimit, referenceSlots]
   );
   const referenceHelperText = useMemo(
     () => formatTemplate(resolvedCopy.composer.referenceHelper, { count: referenceSlotLimit }),
     [referenceSlotLimit, resolvedCopy.composer.referenceHelper]
   );
-  const isNanoBanana = useMemo(() => isNanoBananaEngine(selectedEngine), [selectedEngine]);
+  const referenceToggleLabel = useMemo(
+    () =>
+      areReferenceSlotsExpanded
+        ? resolvedCopy.composer.referenceCollapse
+        : formatTemplate(resolvedCopy.composer.referenceExpand, { count: collapsedReferenceSlotCount }),
+    [
+      areReferenceSlotsExpanded,
+      collapsedReferenceSlotCount,
+      resolvedCopy.composer.referenceCollapse,
+      resolvedCopy.composer.referenceExpand,
+    ]
+  );
+  useEffect(() => {
+    setNumImages((previous) => clampRequestedImageCount(selectedEngineCaps ?? null, mode, previous));
+  }, [selectedEngineCaps, mode]);
 
   useEffect(() => {
-    if (!isNanoBanana) {
+    if (!aspectRatioField || !aspectRatioOptions.length) {
       setAspectRatio(null);
       return;
     }
-    const options = getNanoBananaAspectRatios(mode);
-    const defaultValue = getNanoBananaDefaultAspectRatio(mode);
+    const defaultValue = getDefaultAspectRatio(selectedEngineCaps ?? null, mode);
     setAspectRatio((previous) => {
-      if (previous && options.includes(previous)) {
+      if (previous && aspectRatioOptions.includes(previous)) {
         return previous;
       }
       return defaultValue;
     });
-  }, [isNanoBanana, mode]);
+  }, [aspectRatioField, aspectRatioOptions, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!resolutionField || !resolutionOptions.length) {
+      setResolution(null);
+      return;
+    }
+    const defaultValue = getDefaultResolution(selectedEngineCaps ?? null, mode);
+    setResolution((previous) => {
+      if (previous && resolutionOptions.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [resolutionField, resolutionOptions, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!seedField) {
+      setSeed('');
+      return;
+    }
+    const defaultValue = getImageFieldDefaultNumber(selectedEngineCaps ?? null, 'seed', mode);
+    setSeed((previous) => {
+      if (previous.trim().length) {
+        const parsed = Number(previous);
+        if (Number.isFinite(parsed)) {
+          return String(Math.round(parsed));
+        }
+      }
+      return defaultValue == null ? '' : String(defaultValue);
+    });
+  }, [seedField, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!outputFormatField || !outputFormatOptions.length) {
+      setOutputFormat(null);
+      return;
+    }
+    const defaultValue =
+      getImageFieldDefaultString(selectedEngineCaps ?? null, 'output_format', mode) ?? outputFormatOptions[0] ?? null;
+    setOutputFormat((previous) => {
+      if (previous && outputFormatOptions.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [outputFormatField, outputFormatOptions, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!enableWebSearchField) {
+      setEnableWebSearch(false);
+      return;
+    }
+    const defaultValue = getImageFieldDefaultBoolean(selectedEngineCaps ?? null, 'enable_web_search', mode);
+    setEnableWebSearch((previous) => previous ?? defaultValue ?? false);
+  }, [enableWebSearchField, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!thinkingLevelField || !thinkingLevelOptions.length) {
+      setThinkingLevel(null);
+      return;
+    }
+    const defaultValue =
+      getImageFieldDefaultString(selectedEngineCaps ?? null, 'thinking_level', mode) ?? thinkingLevelOptions[0] ?? null;
+    setThinkingLevel((previous) => {
+      if (previous && thinkingLevelOptions.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [thinkingLevelField, thinkingLevelOptions, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!limitGenerationsField) {
+      setLimitGenerations(false);
+      return;
+    }
+    const defaultValue = getImageFieldDefaultBoolean(selectedEngineCaps ?? null, 'limit_generations', mode);
+    setLimitGenerations((previous) => previous ?? defaultValue ?? false);
+  }, [limitGenerationsField, selectedEngineCaps, mode]);
 
   useEffect(() => {
     if (!selectedEngine) return;
-    setPriceEstimateKey(['image-pricing', selectedEngine.id, mode, numImages, resolution ?? '']);
-  }, [selectedEngine, mode, numImages, resolution]);
+    setPriceEstimateKey(['image-pricing', selectedEngine.id, mode, numImages, resolution ?? '', enableWebSearch]);
+  }, [selectedEngine, mode, numImages, resolution, enableWebSearch]);
 
   const {
     data: pricingData,
@@ -766,7 +914,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     isValidating: pricingValidating,
   } = useSWR(
     priceEstimateKey,
-    async ([, engineId, requestMode, count, requestResolution]) => {
+    async ([, engineId, requestMode, count, requestResolution, requestEnableWebSearch]) => {
       const response = await authFetch('/api/images/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -775,6 +923,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           mode: requestMode,
           numImages: count,
           resolution: requestResolution || undefined,
+          enableWebSearch: requestEnableWebSearch || undefined,
         }),
       });
       const payload = (await response.json().catch(() => null)) as PricingEstimateResponse | null;
@@ -925,18 +1074,50 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         const nextMode = engineMatch.modes.includes(parsed.mode) ? parsed.mode : engineMatch.modes[0] ?? 't2i';
         setMode(nextMode);
         setPrompt(parsed.prompt);
-        setNumImages(clampImageCount(parsed.numImages));
-        const allowedResolutions = (engineMatch.engineCaps?.resolutions ?? []) as readonly string[];
-        setResolution(parsed.resolution && allowedResolutions.includes(parsed.resolution) ? parsed.resolution : null);
-
-        if (isNanoBananaEngine(engineMatch)) {
-          const options = getNanoBananaAspectRatios(nextMode);
-          const defaultValue = getNanoBananaDefaultAspectRatio(nextMode);
-          const nextAspectRatio = parsed.aspectRatio && options.includes(parsed.aspectRatio) ? parsed.aspectRatio : defaultValue;
-          setAspectRatio(nextAspectRatio);
-        } else {
-          setAspectRatio(null);
-        }
+        setNumImages(clampRequestedImageCount(engineMatch.engineCaps, nextMode, parsed.numImages));
+        const allowedResolutions = getImageFieldValues(
+          engineMatch.engineCaps,
+          'resolution',
+          nextMode,
+          Array.isArray(engineMatch.engineCaps?.resolutions) ? [...engineMatch.engineCaps.resolutions] : []
+        );
+        const defaultResolution = getImageInputField(engineMatch.engineCaps, 'resolution', nextMode)
+          ? getDefaultResolution(engineMatch.engineCaps, nextMode)
+          : null;
+        setResolution(
+          parsed.resolution && allowedResolutions.includes(parsed.resolution) ? parsed.resolution : defaultResolution
+        );
+        const allowedAspectRatios = getAspectRatioOptions(engineMatch.engineCaps, nextMode);
+        const defaultAspectRatio = getDefaultAspectRatio(engineMatch.engineCaps, nextMode);
+        setAspectRatio(
+          parsed.aspectRatio && allowedAspectRatios.includes(parsed.aspectRatio) ? parsed.aspectRatio : defaultAspectRatio
+        );
+        const seedDefault = getImageFieldDefaultNumber(engineMatch.engineCaps, 'seed', nextMode);
+        setSeed(parsed.seed == null ? (seedDefault == null ? '' : String(seedDefault)) : String(parsed.seed));
+        const outputFormats = getImageFieldValues(engineMatch.engineCaps, 'output_format', nextMode);
+        const defaultOutputFormat =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'output_format', nextMode) ?? outputFormats[0] ?? null;
+        setOutputFormat(
+          parsed.outputFormat && outputFormats.includes(parsed.outputFormat) ? parsed.outputFormat : defaultOutputFormat
+        );
+        setEnableWebSearch(
+          getImageInputField(engineMatch.engineCaps, 'enable_web_search', nextMode)
+            ? parsed.enableWebSearch
+            : false
+        );
+        const thinkingLevels = getImageFieldValues(engineMatch.engineCaps, 'thinking_level', nextMode);
+        const defaultThinkingLevel =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'thinking_level', nextMode) ?? thinkingLevels[0] ?? null;
+        setThinkingLevel(
+          parsed.thinkingLevel && thinkingLevels.includes(parsed.thinkingLevel)
+            ? parsed.thinkingLevel
+            : defaultThinkingLevel
+        );
+        setLimitGenerations(
+          getImageInputField(engineMatch.engineCaps, 'limit_generations', nextMode)
+            ? parsed.limitGenerations
+            : false
+        );
       }
 
       if (parsed.referenceSlots.length) {
@@ -1012,22 +1193,76 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       const core = record.core && typeof record.core === 'object' ? (record.core as Record<string, unknown>) : {};
       const numImagesRaw = core.numImages;
       if (typeof numImagesRaw === 'number' && Number.isFinite(numImagesRaw)) {
-        setNumImages(clampImageCount(numImagesRaw));
+        setNumImages(
+          engineMatch
+            ? clampRequestedImageCount(
+                engineMatch.engineCaps,
+                snapshotMode && engineMatch.modes.includes(snapshotMode) ? snapshotMode : engineMatch.modes[0] ?? 't2i',
+                numImagesRaw
+              )
+            : Math.max(1, Math.round(numImagesRaw))
+        );
       }
       const aspectRatioRaw = typeof core.aspectRatio === 'string' ? core.aspectRatio : null;
       const resolutionRaw = typeof core.resolution === 'string' ? core.resolution : null;
+      const seedRaw =
+        typeof core.seed === 'number' && Number.isFinite(core.seed) ? Math.round(core.seed) : null;
+      const outputFormatRaw = typeof core.outputFormat === 'string' ? core.outputFormat : null;
+      const enableWebSearchRaw = core.enableWebSearch === true;
+      const thinkingLevelRaw = typeof core.thinkingLevel === 'string' ? core.thinkingLevel : null;
+      const limitGenerationsRaw = core.limitGenerations === true;
       if (engineMatch) {
-        const allowedResolutions = (engineMatch.engineCaps?.resolutions ?? []) as readonly string[];
-        setResolution(resolutionRaw && allowedResolutions.includes(resolutionRaw) ? resolutionRaw : null);
-      } else {
-        setResolution(resolutionRaw);
-      }
-      if (engineMatch && isNanoBananaEngine(engineMatch)) {
         const resolvedMode =
           snapshotMode && engineMatch.modes.includes(snapshotMode) ? snapshotMode : engineMatch.modes[0] ?? 't2i';
-        const options = getNanoBananaAspectRatios(resolvedMode);
-        const defaultValue = getNanoBananaDefaultAspectRatio(resolvedMode);
-        setAspectRatio(aspectRatioRaw && options.includes(aspectRatioRaw) ? aspectRatioRaw : defaultValue);
+        const allowedResolutions = getImageFieldValues(
+          engineMatch.engineCaps,
+          'resolution',
+          resolvedMode,
+          Array.isArray(engineMatch.engineCaps?.resolutions) ? [...engineMatch.engineCaps.resolutions] : []
+        );
+        const defaultResolution = getImageInputField(engineMatch.engineCaps, 'resolution', resolvedMode)
+          ? getDefaultResolution(engineMatch.engineCaps, resolvedMode)
+          : null;
+        setResolution(resolutionRaw && allowedResolutions.includes(resolutionRaw) ? resolutionRaw : defaultResolution);
+        const allowedAspectRatios = getAspectRatioOptions(engineMatch.engineCaps, resolvedMode);
+        const defaultAspectRatio = getDefaultAspectRatio(engineMatch.engineCaps, resolvedMode);
+        setAspectRatio(
+          aspectRatioRaw && allowedAspectRatios.includes(aspectRatioRaw) ? aspectRatioRaw : defaultAspectRatio
+        );
+        const seedDefault = getImageFieldDefaultNumber(engineMatch.engineCaps, 'seed', resolvedMode);
+        setSeed(seedRaw == null ? (seedDefault == null ? '' : String(seedDefault)) : String(seedRaw));
+        const outputFormats = getImageFieldValues(engineMatch.engineCaps, 'output_format', resolvedMode);
+        const defaultOutputFormat =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'output_format', resolvedMode) ?? outputFormats[0] ?? null;
+        setOutputFormat(
+          outputFormatRaw && outputFormats.includes(outputFormatRaw) ? outputFormatRaw : defaultOutputFormat
+        );
+        setEnableWebSearch(
+          getImageInputField(engineMatch.engineCaps, 'enable_web_search', resolvedMode)
+            ? enableWebSearchRaw
+            : false
+        );
+        const thinkingLevels = getImageFieldValues(engineMatch.engineCaps, 'thinking_level', resolvedMode);
+        const defaultThinkingLevel =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'thinking_level', resolvedMode) ??
+          thinkingLevels[0] ??
+          null;
+        setThinkingLevel(
+          thinkingLevelRaw && thinkingLevels.includes(thinkingLevelRaw) ? thinkingLevelRaw : defaultThinkingLevel
+        );
+        setLimitGenerations(
+          getImageInputField(engineMatch.engineCaps, 'limit_generations', resolvedMode)
+            ? limitGenerationsRaw
+            : false
+        );
+      } else {
+        setResolution(resolutionRaw);
+        setAspectRatio(aspectRatioRaw);
+        setSeed(seedRaw == null ? '' : String(seedRaw));
+        setOutputFormat(outputFormatRaw);
+        setEnableWebSearch(enableWebSearchRaw);
+        setThinkingLevel(thinkingLevelRaw);
+        setLimitGenerations(limitGenerationsRaw);
       }
 
       const refs = record.refs && typeof record.refs === 'object' ? (record.refs as Record<string, unknown>) : {};
@@ -1108,6 +1343,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       numImages,
       aspectRatio,
       resolution,
+      seed: seed.trim().length ? Math.round(Number(seed)) : null,
+      outputFormat,
+      enableWebSearch,
+      thinkingLevel,
+      limitGenerations,
       referenceSlots: persistableReferenceSlots,
     };
     if (!payload.engineId) return;
@@ -1137,14 +1377,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     };
   }, [
     aspectRatio,
+    enableWebSearch,
     engineId,
     engines,
+    limitGenerations,
     mode,
     numImages,
+    outputFormat,
     persistableReferenceSlots,
     prompt,
     resolution,
+    seed,
     storageHydrated,
+    thinkingLevel,
   ]);
 
   useEffect(() => {
@@ -1162,9 +1407,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     });
   }, [cleanupSlotPreview, referenceSlotLimit]);
 
+  useEffect(() => {
+    if (!canCollapseReferenceSlots && areReferenceSlotsExpanded) {
+      setAreReferenceSlotsExpanded(false);
+    }
+  }, [areReferenceSlotsExpanded, canCollapseReferenceSlots]);
+
+  useEffect(() => {
+    if (!areReferenceSlotsExpanded && hasCollapsedReferenceContent) {
+      setAreReferenceSlotsExpanded(true);
+    }
+  }, [areReferenceSlotsExpanded, hasCollapsedReferenceContent]);
+
   const setNumImagesPreset = useCallback((value: number) => {
-    setNumImages(clampImageCount(value));
-  }, []);
+    setNumImages(clampRequestedImageCount(selectedEngineCaps ?? null, mode, value));
+  }, [selectedEngineCaps, mode]);
 
   const handleRemoveReferenceSlot = useCallback(
     (index: number) => {
@@ -1341,7 +1598,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     (asset: LibraryAsset) => {
       let slotIndex = libraryModal.slotIndex;
       if (slotIndex == null) {
-        slotIndex = visibleReferenceSlots.findIndex((slot) => slot === null);
+        slotIndex = referenceSlots.slice(0, referenceSlotLimit).findIndex((slot) => slot === null);
         if (slotIndex < 0) {
           slotIndex = Math.max(0, referenceSlotLimit - 1);
         }
@@ -1351,6 +1608,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         return;
       }
       const index = slotIndex;
+      if (index >= DEFAULT_VISIBLE_REFERENCE_SLOTS && canCollapseReferenceSlots) {
+        setAreReferenceSlotsExpanded(true);
+      }
       setReferenceSlots((previous) => {
         const next = previous.slice();
         cleanupSlotPreview(next[index]);
@@ -1365,7 +1625,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       });
       setLibraryModal({ open: false, slotIndex: null });
     },
-    [cleanupSlotPreview, libraryModal.slotIndex, referenceSlotLimit, visibleReferenceSlots]
+    [
+      canCollapseReferenceSlots,
+      cleanupSlotPreview,
+      libraryModal.slotIndex,
+      referenceSlotLimit,
+      referenceSlots,
+    ]
   );
 
   const triggerFileDialog = useCallback((index: number) => {
@@ -1414,12 +1680,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         ...prev,
       ]);
       try {
-        const appliedAspectRatio =
-          isNanoBanana && (aspectRatio || aspectRatio === 'auto')
-            ? aspectRatio
-            : isNanoBanana
-              ? getNanoBananaDefaultAspectRatio(mode)
-              : undefined;
+        const appliedAspectRatio = aspectRatioField
+          ? aspectRatio ?? getDefaultAspectRatio(selectedEngine.engineCaps, mode) ?? undefined
+          : undefined;
+        const normalizedSeed = (() => {
+          const trimmed = seed.trim();
+          if (!trimmed.length) return undefined;
+          const parsed = Number(trimmed);
+          return Number.isFinite(parsed) ? Math.round(parsed) : undefined;
+        })();
         const response = await runImageGeneration({
           engineId: selectedEngine.id,
           mode,
@@ -1428,6 +1697,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,
+          seed: seedField ? normalizedSeed : undefined,
+          outputFormat: outputFormatField
+            ? ((outputFormat ?? undefined) as 'jpeg' | 'png' | 'webp' | undefined)
+            : undefined,
+          enableWebSearch: enableWebSearchField ? enableWebSearch : undefined,
+          thinkingLevel: thinkingLevelField
+            ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
+            : undefined,
+          limitGenerations: limitGenerationsField ? limitGenerations : undefined,
         });
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
@@ -1465,10 +1743,20 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       resolvedCopy.errors.referenceMissing,
       resolvedCopy.messages.success,
       aspectRatio,
-      isNanoBanana,
+      aspectRatioField,
+      enableWebSearch,
+      enableWebSearchField,
+      limitGenerations,
+      limitGenerationsField,
       referenceMinRequired,
       resolution,
+      seed,
+      seedField,
       selectedEngine,
+      outputFormat,
+      outputFormatField,
+      thinkingLevel,
+      thinkingLevelField,
       mutateJobs,
     ]
   );
@@ -1520,9 +1808,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         if (typeof entry.prompt === 'string') {
           setPrompt(entry.prompt);
         }
-        if (engineMatch && isNanoBananaEngine(engineMatch)) {
-          const options = getNanoBananaAspectRatios(entry.mode);
-          const fallback = getNanoBananaDefaultAspectRatio(entry.mode);
+        if (engineMatch) {
+          const nextMode = engineMatch.modes.includes(entry.mode) ? entry.mode : engineMatch.modes[0] ?? 't2i';
+          const options = getAspectRatioOptions(engineMatch.engineCaps, nextMode);
+          const fallback = getDefaultAspectRatio(engineMatch.engineCaps, nextMode);
           const nextAspect = entry.aspectRatio && options.includes(entry.aspectRatio) ? entry.aspectRatio : fallback;
           setAspectRatio(nextAspect);
         }
@@ -1666,20 +1955,25 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     if (count <= 0) return null;
     return formatTemplate(resolvedCopy.messages.generatingInProgress, { count });
   }, [pendingGroups.length, resolvedCopy.messages.generatingInProgress]);
-  const aspectRatioOptions = useMemo(
-    () => (isNanoBanana ? getNanoBananaAspectRatios(mode) : []),
-    [isNanoBanana, mode]
-  );
   const imageCountOptions = useMemo(
-    () =>
-      QUICK_IMAGE_COUNT_OPTIONS.map((option) => ({
+    () => {
+      const options = Array.from(
+        new Set<number>([
+          ...QUICK_IMAGE_COUNT_OPTIONS.filter(
+            (option) => option >= imageCountConstraints.min && option <= imageCountConstraints.max
+          ),
+          imageCountConstraints.max,
+        ])
+      );
+      return options.map((option) => ({
         value: option,
         label: formatTemplate(resolvedCopy.composer.numImagesCount, {
           count: option,
           unit: option === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural,
         }),
-      })),
-    [resolvedCopy.composer.numImagesCount, resolvedCopy.composer.numImagesUnit]
+      }));
+    },
+    [imageCountConstraints.max, imageCountConstraints.min, resolvedCopy.composer.numImagesCount, resolvedCopy.composer.numImagesUnit]
   );
   const aspectRatioSelectOptions = useMemo(
     () =>
@@ -1691,14 +1985,43 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   );
   const resolutionSelectOptions = useMemo(
     () =>
-      (resolutionOptions ?? []).map((option) => ({
+      resolutionOptions.map((option) => ({
         value: option,
         label: option.toUpperCase(),
       })),
     [resolutionOptions]
   );
-  const showAspectRatioControl = aspectRatioSelectOptions.length > 0;
-  const showResolutionControl = resolutionSelectOptions.length > 0;
+  const outputFormatSelectOptions = useMemo(
+    () =>
+      outputFormatOptions.map((option) => ({
+        value: option,
+        label: option.toUpperCase(),
+      })),
+    [outputFormatOptions]
+  );
+  const thinkingLevelSelectOptions = useMemo(
+    () =>
+      thinkingLevelOptions.map((option) => ({
+        value: option,
+        label: option === 'high' ? 'High' : option === 'minimal' ? 'Minimal' : option,
+      })),
+    [thinkingLevelOptions]
+  );
+  const booleanSelectOptions = useMemo(
+    () => [
+      { value: false, label: resolvedCopy.composer.toggleDisabled },
+      { value: true, label: resolvedCopy.composer.toggleEnabled },
+    ],
+    [resolvedCopy.composer.toggleDisabled, resolvedCopy.composer.toggleEnabled]
+  );
+  const showNumImagesControl = Boolean(imageCountField);
+  const showAspectRatioControl = Boolean(aspectRatioField) && aspectRatioSelectOptions.length > 0;
+  const showResolutionControl = Boolean(resolutionField) && resolutionSelectOptions.length > 0;
+  const showSeedControl = Boolean(seedField);
+  const showOutputFormatControl = Boolean(outputFormatField) && outputFormatSelectOptions.length > 0;
+  const showEnableWebSearchControl = Boolean(enableWebSearchField);
+  const showThinkingLevelControl = Boolean(thinkingLevelField) && thinkingLevelSelectOptions.length > 0;
+  const showLimitGenerationsControl = Boolean(limitGenerationsField);
   const promptPlaceholder =
     mode === 'i2i'
       ? resolvedCopy.composer.promptPlaceholderWithImage ?? resolvedCopy.composer.promptPlaceholder
@@ -1887,13 +2210,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
                   <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
                     <div className="min-w-0 flex-1">
-                      <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4">
-                        <SelectGroup
-                          label={resolvedCopy.composer.numImagesLabel}
-                          options={imageCountOptions}
-                          value={numImages}
-                          onChange={(value) => setNumImagesPreset(Number(value))}
-                        />
+                      <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                        {showNumImagesControl ? (
+                          <SelectGroup
+                            label={resolvedCopy.composer.numImagesLabel}
+                            options={imageCountOptions}
+                            value={numImages}
+                            onChange={(value) => setNumImagesPreset(Number(value))}
+                          />
+                        ) : null}
                         {showAspectRatioControl ? (
                           <SelectGroup
                             label={resolvedCopy.composer.aspectRatioLabel}
@@ -1911,7 +2236,67 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                             disabled={isResolutionLocked}
                           />
                         ) : null}
+                        {showOutputFormatControl ? (
+                          <SelectGroup
+                            label={resolvedCopy.composer.outputFormatLabel}
+                            options={outputFormatSelectOptions}
+                            value={outputFormat ?? outputFormatSelectOptions[0]?.value ?? ''}
+                            onChange={(value) => setOutputFormat(String(value))}
+                          />
+                        ) : null}
+                        {showThinkingLevelControl ? (
+                          <SelectGroup
+                            label={resolvedCopy.composer.thinkingLevelLabel}
+                            options={thinkingLevelSelectOptions}
+                            value={thinkingLevel ?? thinkingLevelSelectOptions[0]?.value ?? ''}
+                            onChange={(value) => setThinkingLevel(String(value))}
+                          />
+                        ) : null}
+                        {showEnableWebSearchControl ? (
+                          <SelectGroup
+                            label={resolvedCopy.composer.enableWebSearchLabel}
+                            options={booleanSelectOptions}
+                            value={enableWebSearch}
+                            onChange={(value) => setEnableWebSearch(Boolean(value))}
+                          />
+                        ) : null}
+                        {showLimitGenerationsControl ? (
+                          <SelectGroup
+                            label={resolvedCopy.composer.limitGenerationsLabel}
+                            options={booleanSelectOptions}
+                            value={limitGenerations}
+                            onChange={(value) => setLimitGenerations(Boolean(value))}
+                          />
+                        ) : null}
+                        {showSeedControl ? (
+                          <label className="flex min-w-0 flex-col gap-1">
+                            <span className="text-[10px] uppercase tracking-micro text-text-muted">
+                              {resolvedCopy.composer.seedLabel}
+                            </span>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              step={1}
+                              placeholder={resolvedCopy.composer.seedPlaceholder}
+                              value={seed}
+                              onChange={(event) => setSeed(event.target.value)}
+                              className="min-h-[42px] rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            />
+                          </label>
+                        ) : null}
                       </div>
+                      {(showAspectRatioControl || showResolutionControl || showOutputFormatControl || showEnableWebSearchControl || showThinkingLevelControl || showLimitGenerationsControl) ? (
+                        <div className="mt-2 flex flex-col gap-1 text-[11px] text-text-secondary">
+                          {showAspectRatioControl && aspectRatioSelectOptions.some((option) => option.value === 'auto') ? (
+                            <p>{resolvedCopy.composer.aspectRatioAutoNote}</p>
+                          ) : null}
+                          {showResolutionControl ? <p>{resolvedCopy.composer.resolutionHint}</p> : null}
+                          {showOutputFormatControl ? <p>{resolvedCopy.composer.outputFormatHint}</p> : null}
+                          {showEnableWebSearchControl ? <p>{resolvedCopy.composer.enableWebSearchHint}</p> : null}
+                          {showThinkingLevelControl ? <p>{resolvedCopy.composer.thinkingLevelHint}</p> : null}
+                          {showLimitGenerationsControl ? <p>{resolvedCopy.composer.limitGenerationsHint}</p> : null}
+                        </div>
+                      ) : null}
                     </div>
                     <Button type="submit" size="lg" className="w-full sm:w-auto shadow-card">
                       {resolvedCopy.runButton.idle}
@@ -1939,7 +2324,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       </Button>
                     </div>
                     <div className="grid grid-gap-sm sm:grid-cols-2">
-                      {visibleReferenceSlots.map((slot, index) => (
+                      {displayedReferenceSlots.map((slot, index) => (
                         <div
                           key={`slot-${index}`}
                           onDragOver={(event) => {
@@ -2064,6 +2449,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         </div>
                       ))}
                     </div>
+                    {canCollapseReferenceSlots ? (
+                      <div className="flex justify-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAreReferenceSlotsExpanded((previous) => !previous)}
+                          className="rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
+                        >
+                          {referenceToggleLabel}
+                        </Button>
+                      </div>
+                    ) : null}
                     <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
                   </section>
                 </Card>

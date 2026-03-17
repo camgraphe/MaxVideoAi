@@ -2,6 +2,7 @@ engineId,marketingName,brandId,modelSlug,versionLabel,availability,logoPolicy
 seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,v1.5 Pro,available,textOnly
 seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,2.0,waitlist,textOnly
 nano-banana,Nano Banana (Image Generation),google,nano-banana,Nano,available,textOnly
+nano-banana-2,Nano Banana 2,google,nano-banana-2,2,available,textOnly
 nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,Pro,available,textOnly
 veo-3-1,Google Veo 3.1,google-veo,veo-3-1,3.1,available,textOnly
 veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,3.1 Fast,available,textOnly

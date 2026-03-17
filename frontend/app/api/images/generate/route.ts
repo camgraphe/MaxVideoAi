@@ -21,28 +21,28 @@ import { ensureUserPreferences } from '@/server/preferences';
 import { ensureUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
-import { getNanoBananaDefaultAspectRatio, normalizeNanoBananaAspectRatio } from '@/lib/image/aspectRatios';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
-import { getReferenceConstraints, resolveRequestedResolution } from '../utils';
+import {
+  canonicalizeImageFieldValue,
+  clampRequestedImageCount,
+  getImageFieldValues,
+  getImageInputField,
+  getReferenceConstraints,
+  normalizeFalImageResolution,
+  resolveRequestedAspectRatio,
+  resolveRequestedResolution,
+} from '../utils';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
-const MAX_IMAGES = 8;
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
-const NANO_BANANA_IMAGE_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 
-function normalizeFalResolution(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return trimmed;
-  // Fal Nano Banana Pro expects 1K/2K/4K (uppercase).
-  if (/^\d+k$/i.test(trimmed)) {
-    return trimmed.toUpperCase();
-  }
-  return trimmed;
+function normalizeOptionalBoolean(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null;
 }
 
 type PendingReceipt = {
@@ -290,10 +290,25 @@ export async function POST(req: NextRequest) {
       engineLabel: engineEntry.marketingName,
     });
   }
-  const isNanoBanana = NANO_BANANA_IMAGE_ENGINE_IDS.has(engineEntry.id);
-  const resolvedAspectRatio = isNanoBanana
-    ? normalizeNanoBananaAspectRatio(mode, body?.aspectRatio) ?? getNanoBananaDefaultAspectRatio(mode)
-    : null;
+  const aspectRatioResult = resolveRequestedAspectRatio(
+    engine,
+    mode,
+    typeof body?.aspectRatio === 'string' ? body.aspectRatio : null
+  );
+  if (!aspectRatioResult.ok) {
+    return respondError(
+      mode,
+      'aspect_ratio_invalid',
+      'Selected aspect ratio is not available for this engine.',
+      400,
+      { allowed: aspectRatioResult.allowed },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
+  }
+  const resolvedAspectRatio = aspectRatioResult.value || null;
 
   const prompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
   if (!prompt.length) {
@@ -305,7 +320,7 @@ export async function POST(req: NextRequest) {
 
   const requestedImages =
     typeof body?.numImages === 'number' && Number.isFinite(body.numImages) ? Math.round(body.numImages) : 1;
-  const numImages = Math.min(MAX_IMAGES, Math.max(1, requestedImages));
+  const numImages = clampRequestedImageCount(engine, mode, requestedImages);
 
   const rawImageUrls = Array.isArray(body?.imageUrls) ? body.imageUrls : [];
   const imageUrls = rawImageUrls
@@ -374,6 +389,50 @@ export async function POST(req: NextRequest) {
   }
   const resolution = resolutionResult.resolution;
   const shouldSendResolution = resolutionResult.configurable;
+  const normalizedSeed =
+    getImageInputField(engine, 'seed', mode) && typeof body?.seed === 'number' && Number.isFinite(body.seed)
+      ? Math.round(body.seed)
+      : null;
+  const outputFormatValues = getImageFieldValues(engine, 'output_format', mode);
+  const outputFormat =
+    typeof body?.outputFormat === 'string'
+      ? canonicalizeImageFieldValue(outputFormatValues, body.outputFormat)
+      : null;
+  if (typeof body?.outputFormat === 'string' && body.outputFormat.trim().length && !outputFormat) {
+    return respondError(
+      mode,
+      'output_format_invalid',
+      'Selected output format is not available for this engine.',
+      400,
+      { allowed: outputFormatValues },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
+  }
+  const thinkingLevelValues = getImageFieldValues(engine, 'thinking_level', mode);
+  const thinkingLevel =
+    typeof body?.thinkingLevel === 'string'
+      ? canonicalizeImageFieldValue(thinkingLevelValues, body.thinkingLevel)
+      : null;
+  if (typeof body?.thinkingLevel === 'string' && body.thinkingLevel.trim().length && !thinkingLevel) {
+    return respondError(
+      mode,
+      'thinking_level_invalid',
+      'Selected thinking level is not available for this engine.',
+      400,
+      { allowed: thinkingLevelValues },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
+  }
+  const enableWebSearch =
+    getImageInputField(engine, 'enable_web_search', mode) && normalizeOptionalBoolean(body?.enableWebSearch) === true;
+  const limitGenerations =
+    getImageInputField(engine, 'limit_generations', mode) && normalizeOptionalBoolean(body?.limitGenerations) === true;
 
   let pricing: PricingSnapshot;
   const membershipTierRaw = (body as { membershipTier?: unknown } | null)?.membershipTier;
@@ -385,6 +444,7 @@ export async function POST(req: NextRequest) {
       resolution,
       membershipTier,
       currency: DISPLAY_CURRENCY,
+      addons: enableWebSearch ? { enable_web_search: true } : undefined,
     });
   } catch (error) {
     console.error('[images] failed to compute pricing snapshot', error);
@@ -396,7 +456,7 @@ export async function POST(req: NextRequest) {
 
   const jobAspectRatio = resolvedAspectRatio ?? null;
   const falAspectRatio = resolvedAspectRatio && resolvedAspectRatio !== 'auto' ? resolvedAspectRatio : null;
-  const falResolution = shouldSendResolution ? normalizeFalResolution(resolution) : null;
+  const falResolution = shouldSendResolution ? normalizeFalImageResolution(resolution) : null;
 
   pricing.meta = {
     ...(pricing.meta ?? {}),
@@ -407,6 +467,11 @@ export async function POST(req: NextRequest) {
       numImages,
       resolution,
       ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}),
+      ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
+      ...(outputFormat ? { outputFormat } : {}),
+      ...(enableWebSearch ? { enableWebSearch } : {}),
+      ...(thinkingLevel ? { thinkingLevel } : {}),
+      ...(limitGenerations ? { limitGenerations } : {}),
     },
   };
 
@@ -442,6 +507,11 @@ export async function POST(req: NextRequest) {
       numImages,
       aspectRatio: resolvedAspectRatio ?? null,
       resolution,
+      seed: normalizedSeed,
+      outputFormat,
+      enableWebSearch,
+      thinkingLevel,
+      limitGenerations,
     },
     refs: {
       imageUrls,
@@ -621,6 +691,11 @@ export async function POST(req: NextRequest) {
         ...(mode === 'i2i' ? { image_urls: resolvedReferenceUrls } : {}),
         ...(falAspectRatio ? { aspect_ratio: falAspectRatio } : {}),
         ...(falResolution ? { resolution: falResolution } : {}),
+        ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
+        ...(outputFormat ? { output_format: outputFormat } : {}),
+        ...(enableWebSearch ? { enable_web_search: true } : {}),
+        ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
+        ...(limitGenerations ? { limit_generations: true } : {}),
       },
       mode: 'polling',
       onEnqueue(requestId) {
@@ -715,6 +790,11 @@ export async function POST(req: NextRequest) {
               numImages,
               resolution,
               ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
+              ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
+              ...(outputFormat ? { output_format: outputFormat } : {}),
+              ...(enableWebSearch ? { enable_web_search: true } : {}),
+              ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
+              ...(limitGenerations ? { limit_generations: true } : {}),
             },
             pricing: { totalCents: pricing.totalCents, currency: pricing.currency },
           }),
@@ -811,6 +891,11 @@ export async function POST(req: NextRequest) {
               numImages,
               resolution,
               ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
+              ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
+              ...(outputFormat ? { output_format: outputFormat } : {}),
+              ...(enableWebSearch ? { enable_web_search: true } : {}),
+              ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
+              ...(limitGenerations ? { limit_generations: true } : {}),
               referenceImageCount: imageUrls.length,
               referenceImageHosts: uniqueHosts,
               falModelId: modeConfig.falModelId,

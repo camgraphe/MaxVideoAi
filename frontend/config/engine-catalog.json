@@ -5259,6 +5259,49 @@
             "description": "Batch size per call (max 8)."
           },
           {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2i"
+            ],
+            "values": [
+              "9:16",
+              "16:9",
+              "1:1",
+              "4:5",
+              "5:4",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "21:9"
+            ],
+            "default": "1:1"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "i2i"
+            ],
+            "values": [
+              "auto",
+              "9:16",
+              "16:9",
+              "1:1",
+              "4:5",
+              "5:4",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "21:9"
+            ],
+            "default": "auto"
+          },
+          {
             "id": "image_urls",
             "type": "image",
             "label": "Image inputs",
@@ -5476,6 +5519,30 @@
             "id": "aspect_ratio",
             "type": "enum",
             "label": "Aspect ratio",
+            "modes": [
+              "t2i"
+            ],
+            "values": [
+              "9:16",
+              "16:9",
+              "1:1",
+              "4:5",
+              "5:4",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "21:9"
+            ],
+            "default": "1:1"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "i2i"
+            ],
             "values": [
               "auto",
               "9:16",
@@ -5489,7 +5556,7 @@
               "2:3",
               "21:9"
             ],
-            "default": "1:1"
+            "default": "auto"
           },
           {
             "id": "seed",
@@ -5620,5 +5687,328 @@
         "value": false
       }
     }
+  },
+  {
+    "engineId": "nano-banana-2",
+    "modelSlug": "nano-banana-2",
+    "marketingName": "Nano Banana 2",
+    "provider": "Google",
+    "brandId": "google",
+    "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "engine": {
+      "id": "nano-banana-2",
+      "label": "Nano Banana 2",
+      "provider": "Google",
+      "version": "2",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 4,
+      "resolutions": [
+        "0.5k",
+        "1k",
+        "2k",
+        "4k"
+      ],
+      "aspectRatios": [
+        "auto",
+        "21:9",
+        "16:9",
+        "3:2",
+        "4:3",
+        "5:4",
+        "1:1",
+        "4:5",
+        "3:4",
+        "2:3",
+        "9:16",
+        "4:1",
+        "1:4",
+        "8:1",
+        "1:8"
+      ],
+      "fps": [
+        1
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the still you want to generate or the edit you want applied."
+          }
+        ],
+        "optional": [
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Number of images",
+            "min": 1,
+            "max": 4,
+            "step": 1,
+            "default": 1,
+            "description": "Generate up to 4 images per request."
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "description": "Add 1-14 reference images for edit mode.",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 14,
+            "source": "either"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "0.5k",
+              "1k",
+              "2k",
+              "4k"
+            ],
+            "default": "1k",
+            "description": "0.5K runs at half price, 2K is 1.5x, and 4K is 2x."
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "auto",
+              "21:9",
+              "16:9",
+              "3:2",
+              "4:3",
+              "5:4",
+              "1:1",
+              "4:5",
+              "3:4",
+              "2:3",
+              "9:16",
+              "4:1",
+              "1:4",
+              "8:1",
+              "1:8"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed",
+            "description": "Reuse a seed to iterate on the same composition."
+          },
+          {
+            "id": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "default": "jpeg"
+          },
+          {
+            "id": "enable_web_search",
+            "type": "boolean",
+            "label": "Enable web search",
+            "default": false,
+            "description": "Optional web grounding adds $0.015 per request."
+          },
+          {
+            "id": "thinking_level",
+            "type": "enum",
+            "label": "Thinking level",
+            "values": [
+              "minimal",
+              "high"
+            ],
+            "default": "minimal"
+          },
+          {
+            "id": "limit_generations",
+            "type": "boolean",
+            "label": "Limit generations",
+            "default": false
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 25
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 8,
+          "byResolution": {
+            "0.5k": 4,
+            "1k": 8,
+            "2k": 12,
+            "4k": 16
+          }
+        },
+        "flatCents": {
+          "default": 8,
+          "byResolution": {
+            "0.5k": 4,
+            "1k": 8,
+            "2k": 12,
+            "4k": 16
+          }
+        },
+        "addons": {
+          "enable_web_search": {
+            "flatCents": 1.5
+          }
+        }
+      },
+      "pricing": {
+        "unit": "image",
+        "base": 0.08,
+        "byResolution": {
+          "0.5k": 0.04,
+          "1k": 0.08,
+          "2k": 0.12,
+          "4k": 0.16
+        },
+        "addons": {
+          "enable_web_search": {
+            "flat": 0.015
+          }
+        },
+        "currency": "USD",
+        "notes": "$0.08 per 1K image, $0.04 at 0.5K, $0.12 at 2K, $0.16 at 4K, plus $0.015/request for web search."
+      },
+      "updatedAt": "2026-03-17T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "fal.ai",
+        "modelSlug": "fal-ai/nano-banana-2"
+      },
+      "availability": "available",
+      "brandId": "google"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "fal-ai/nano-banana-2",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "3:2",
+            "4:3",
+            "5:4",
+            "1:1",
+            "4:5",
+            "3:4",
+            "2:3",
+            "9:16",
+            "4:1",
+            "1:4",
+            "8:1",
+            "1:8"
+          ],
+          "resolution": [
+            "0.5k",
+            "1k",
+            "2k",
+            "4k"
+          ],
+          "notes": "Balanced quality, broader aspect ratios, and optional web-grounded image generation."
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "fal-ai/nano-banana-2/edit",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "3:2",
+            "4:3",
+            "5:4",
+            "1:1",
+            "4:5",
+            "3:4",
+            "2:3",
+            "9:16",
+            "4:1",
+            "1:4",
+            "8:1",
+            "1:8"
+          ],
+          "resolution": [
+            "0.5k",
+            "1k",
+            "2k",
+            "4k"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 25,
+          "notes": "Edit with up to 14 reference images and optional web grounding."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Grounded stills and wide-format image edits"
   }
 ]
