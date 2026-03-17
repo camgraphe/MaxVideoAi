@@ -2656,11 +2656,7 @@ function ImageLibraryModal({
     return payload.assets;
   });
 
-  if (!open) {
-    return null;
-  }
-
-  const assets = data ?? [];
+  const assets = useMemo(() => data ?? [], [data]);
   const compatibilityByAssetId = useMemo(() => {
     const entries = assets.map((asset) => {
       if (!supportedFormats.length) {
@@ -2675,6 +2671,10 @@ function ImageLibraryModal({
     });
     return new Map(entries);
   }, [assets, supportedFormats]);
+
+  if (!open) {
+    return null;
+  }
   const emptyLabel =
     activeSource === 'generated'
       ? copy.modal.emptyGenerated
