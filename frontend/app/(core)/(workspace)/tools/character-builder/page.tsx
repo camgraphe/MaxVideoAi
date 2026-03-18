@@ -2098,7 +2098,7 @@ export default function CharacterBuilderPage() {
                           <div className="grid gap-3 md:grid-cols-2">
                             {[
                               ['fullBodyRequired', 'Full body required'],
-                              ['includeCloseUps', 'Close-ups included'],
+                              ['includeCloseUps', '4 close-ups below'],
                               ['neutralStudioBackground', 'Neutral background'],
                               ['preserveFacialDetails', 'Preserve facial details'],
                               ['avoid3dRenderLook', 'Avoid 3D look'],

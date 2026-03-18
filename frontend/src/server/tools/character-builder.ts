@@ -58,9 +58,11 @@ function collectReferenceImages(referenceImages: CharacterBuilderReferenceImage[
 function getAspectRatio(
   outputMode: CharacterBuilderOutputMode,
   action: CharacterBuilderAction,
-  fullBodyRequired: boolean
+  fullBodyRequired: boolean,
+  includeCloseUps: boolean
 ): string {
   if (action === 'full-body-fix') return '2:3';
+  if (outputMode === 'character-sheet' && includeCloseUps) return '16:9';
   if (outputMode === 'character-sheet') return '3:2';
   return fullBodyRequired ? '2:3' : '4:5';
 }
@@ -190,7 +192,14 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
       'Keep scale, lighting, anatomy, and spacing consistent across the sheet.',
     ];
     if (outputOptions.includeCloseUps) {
-      blocks.push('Add one or two close-up facial crops that match the same identity and lighting.');
+      blocks.push('Arrange the sheet as a clean two-row grid.');
+      blocks.push('Top row: four full-body views showing front, side, three-quarter, and back.');
+      blocks.push('Reserve roughly two-thirds of the total canvas height for the top row so each full-body panel is tall enough to show the complete head-to-toe figure.');
+      blocks.push('Each top-row panel must include the full head, full legs, ankles, and feet with no crop.');
+      blocks.push('Bottom row: four compact close-up head-and-shoulders portraits directly underneath, matching the same view order.');
+      blocks.push('Keep the bottom row to roughly one-third of the total canvas height so the close-ups read as a shorter strip and do not steal height from the full-body views.');
+      blocks.push('Keep all eight panels aligned with even spacing, the same neutral background, and consistent lighting.');
+      blocks.push('The close-ups must clearly show the same face, hairstyle, earrings, makeup, and distinctive identity cues as the full-body views.');
     }
     return blocks;
   }
@@ -486,7 +495,8 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
   const aspectRatio = getAspectRatio(
     request.outputMode,
     request.action,
-    request.outputOptions.fullBodyRequired
+    request.outputOptions.fullBodyRequired,
+    request.outputOptions.includeCloseUps
   );
   const resolution = getDefaultResolution(request.qualityMode);
 
