@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Wrench, Camera } from 'lucide-react';
+import { Camera, Sparkles, Wrench } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { ButtonLink } from '@/components/ui/Button';
@@ -67,6 +67,30 @@ export default function ToolsPage() {
             </section>
 
             <section className="grid gap-4 md:grid-cols-2">
+              <Card className="border border-border bg-surface p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
+                    <Sparkles className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Reference tool</p>
+                    <h2 className="text-lg font-semibold text-text-primary">Consistent Character Builder</h2>
+                  </div>
+                </div>
+                <p className="text-sm text-text-secondary">
+                  Build a reusable character reference or character sheet before manually reusing it in later image or video workflows.
+                </p>
+                <div className="mt-5 flex items-center justify-between">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    V1
+                  </span>
+                  <ButtonLink href="/tools/character-builder" variant="primary" linkComponent={Link}>
+                    Open Tool
+                  </ButtonLink>
+                </div>
+              </Card>
+
               <Card className="border border-border bg-surface p-5">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">

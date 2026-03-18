@@ -12,6 +12,7 @@ import type { GenerateAttachment } from '@/lib/fal';
 import type { VideoAsset } from '@/types/render';
 import { translateError } from '@/lib/error-messages';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
+import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 
@@ -644,6 +645,28 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
     const error = new Error(data.error?.message ?? `Image generation failed (${response.status})`);
     Object.assign(error, {
       code: data.error?.code ?? 'image_generation_failed',
+      detail: data.error?.detail,
+      status: response.status,
+    });
+    throw error;
+  }
+  return data;
+}
+
+export async function runCharacterBuilderTool(payload: CharacterBuilderRequest): Promise<CharacterBuilderResponse> {
+  const response = await authFetch('/api/tools/character-builder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as CharacterBuilderResponse | null;
+  if (!data) {
+    throw new Error('Character builder response malformed');
+  }
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.error?.message ?? `Character builder failed (${response.status})`);
+    Object.assign(error, {
+      code: data.error?.code ?? 'character_builder_failed',
       detail: data.error?.detail,
       status: response.status,
     });

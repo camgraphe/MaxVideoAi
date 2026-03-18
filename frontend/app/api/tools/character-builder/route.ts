@@ -1,0 +1,64 @@
+export const runtime = 'nodejs';
+
+import { NextRequest, NextResponse } from 'next/server';
+import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { CharacterBuilderError, runCharacterBuilder } from '@/server/tools/character-builder';
+
+export async function POST(req: NextRequest) {
+  let body: Partial<CharacterBuilderRequest> | null = null;
+
+  try {
+    body = (await req.json()) as Partial<CharacterBuilderRequest>;
+  } catch {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code: 'invalid_payload',
+          message: 'Payload must be valid JSON.',
+        },
+      } satisfies CharacterBuilderResponse,
+      { status: 400 }
+    );
+  }
+
+  const { userId } = await getRouteAuthContext(req);
+  if (!userId) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code: 'auth_required',
+          message: 'Authentication required.',
+        },
+      } satisfies CharacterBuilderResponse,
+      { status: 401 }
+    );
+  }
+
+  try {
+    const result = await runCharacterBuilder({
+      ...(body ?? {}),
+      userId,
+    } as CharacterBuilderRequest & { userId: string });
+    return NextResponse.json(result);
+  } catch (error) {
+    const status = error instanceof CharacterBuilderError ? error.status : 502;
+    const code = error instanceof CharacterBuilderError ? error.code : 'character_builder_error';
+    const detail = error instanceof CharacterBuilderError ? error.detail : undefined;
+    const message = error instanceof Error ? error.message : 'Character builder request failed.';
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code,
+          message,
+          detail,
+        },
+      } satisfies CharacterBuilderResponse,
+      { status }
+    );
+  }
+}
