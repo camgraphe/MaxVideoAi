@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
+import { Check, UserRound, Users, X } from 'lucide-react';
 import type {
   FormEvent,
   DragEvent as ReactDragEvent,
@@ -22,7 +23,12 @@ import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import { supabase } from '@/lib/supabaseClient';
-import type { ImageGenerationMode, GeneratedImage } from '@/types/image-generation';
+import type {
+  CharacterReferenceSelection,
+  CharacterReferencesResponse,
+  ImageGenerationMode,
+  GeneratedImage,
+} from '@/types/image-generation';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
@@ -117,6 +123,10 @@ interface ImageWorkspaceCopy {
     referenceHelper: string;
     referenceNote: string;
     referenceButton: string;
+    characterButton: string;
+    characterNote: string;
+    characterHiddenNotice: string;
+    characterLimitNotice: string;
     referenceExpand: string;
     referenceCollapse: string;
     referenceSlotLabel: string;
@@ -188,6 +198,15 @@ interface ImageWorkspaceCopy {
       emptyGenerated: string;
     };
   };
+  characterPicker: {
+    title: string;
+    description: string;
+    selected: string;
+    select: string;
+    done: string;
+    empty: string;
+    limitLabel: string;
+  };
   authGate: {
     title: string;
     body: string;
@@ -258,6 +277,10 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     referenceNote:
       'Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.',
     referenceButton: 'Library',
+    characterButton: 'Characters',
+    characterNote: 'Pick generated characters to use as identity anchors.',
+    characterHiddenNotice: 'Selected characters are saved and will be reused when you switch back to a compatible engine.',
+    characterLimitNotice: 'Only the first {count} character reference{suffix} will be used with this engine.',
     referenceExpand: 'Show {count} more slots',
     referenceCollapse: 'Hide extra slots',
     referenceSlotLabel: 'Slot {index}',
@@ -329,6 +352,15 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
     },
   },
+  characterPicker: {
+    title: 'Select characters',
+    description: 'Choose from your Character Builder outputs. Selected characters are added as identity references.',
+    selected: 'Selected',
+    select: 'Select',
+    done: 'Done',
+    empty: 'No character references yet. Generate one in the Character Builder first.',
+    limitLabel: 'Up to {count} character reference{suffix}',
+  },
   authGate: {
     title: 'Create an account to render',
     body: 'You can explore the image workspace, but starting a real image generation requires an account.',
@@ -348,12 +380,13 @@ const MAX_REFERENCE_SLOTS = MAX_REFERENCE_IMAGES;
 const DEFAULT_VISIBLE_REFERENCE_SLOTS = 4;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
 const DESKTOP_RAIL_MIN_WIDTH = 1088;
+const NANO_BANANA_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
   : 25;
 
 const IMAGE_COMPOSER_STORAGE_KEY = 'maxvideoai.image.composer.v1';
-const IMAGE_COMPOSER_STORAGE_VERSION = 1;
+const IMAGE_COMPOSER_STORAGE_VERSION = 2;
 const IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS = 1200;
 
 function normalizeEngineToken(value: string): string {
@@ -419,6 +452,7 @@ type ReferenceSlotValue = {
 };
 
 type PersistedReferenceSlot = { url: string; source?: ReferenceSlotValue['source'] } | null;
+type PersistedCharacterReference = CharacterReferenceSelection;
 
 type PersistedImageComposerState = {
   version: number;
@@ -434,13 +468,14 @@ type PersistedImageComposerState = {
   thinkingLevel: string | null;
   limitGenerations: boolean;
   referenceSlots: PersistedReferenceSlot[];
+  characterReferences?: PersistedCharacterReference[];
 };
 
 function parsePersistedImageComposerState(value: string): PersistedImageComposerState | null {
   try {
     const raw = JSON.parse(value) as Partial<PersistedImageComposerState> | null;
     if (!raw || typeof raw !== 'object') return null;
-    if (raw.version !== IMAGE_COMPOSER_STORAGE_VERSION) return null;
+    if (raw.version !== 1 && raw.version !== IMAGE_COMPOSER_STORAGE_VERSION) return null;
     if (typeof raw.engineId !== 'string' || raw.engineId.trim().length === 0) return null;
     const mode = raw.mode === 't2i' || raw.mode === 'i2i' ? raw.mode : 't2i';
     const prompt = typeof raw.prompt === 'string' ? raw.prompt : '';
@@ -469,6 +504,30 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
             : undefined;
         return { url, source };
       });
+    const characterReferencesRaw = Array.isArray(raw.characterReferences) ? raw.characterReferences : [];
+    const characterReferences = characterReferencesRaw.reduce<PersistedCharacterReference[]>((acc, entry) => {
+      if (!entry || typeof entry !== 'object') return acc;
+      const record = entry as Partial<CharacterReferenceSelection>;
+      const id = typeof record.id === 'string' ? record.id.trim() : '';
+      const jobId = typeof record.jobId === 'string' ? record.jobId.trim() : '';
+      const imageUrl = typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '';
+      if (!id || !jobId || !/^https?:\/\//i.test(imageUrl)) return acc;
+      acc.push({
+        id,
+        jobId,
+        imageUrl,
+        thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : null,
+        prompt: typeof record.prompt === 'string' ? record.prompt : null,
+        createdAt: typeof record.createdAt === 'string' ? record.createdAt : null,
+        engineLabel: typeof record.engineLabel === 'string' ? record.engineLabel : null,
+        outputMode: record.outputMode === 'portrait-reference' || record.outputMode === 'character-sheet' ? record.outputMode : null,
+        action:
+          record.action === 'generate' || record.action === 'full-body-fix' || record.action === 'lighting-variant'
+            ? record.action
+            : null,
+      });
+      return acc;
+    }, []);
 
     return {
       version: IMAGE_COMPOSER_STORAGE_VERSION,
@@ -484,6 +543,7 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
       thinkingLevel,
       limitGenerations,
       referenceSlots,
+      characterReferences,
     };
   } catch {
     return null;
@@ -506,6 +566,10 @@ type AssetsResponse = {
   assets: LibraryAsset[];
 };
 
+type CharacterPickerModalState = {
+  open: boolean;
+};
+
 type PricingEstimateResponse = {
   ok: boolean;
   pricing: PricingSnapshot;
@@ -513,6 +577,20 @@ type PricingEstimateResponse = {
 
 interface ImageWorkspaceProps {
   engines: ImageEngineOption[];
+}
+
+function getCharacterReferenceLabel(reference: CharacterReferenceSelection): string {
+  if (reference.action === 'lighting-variant') return 'Lighting variant';
+  if (reference.action === 'full-body-fix') return 'Full-body fix';
+  if (reference.outputMode === 'character-sheet') return 'Character sheet';
+  return 'Portrait reference';
+}
+
+function formatCharacterReferenceDate(value?: string | null): string {
+  if (!value) return 'Recent';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'Recent';
+  return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 function SectionDivider() {
@@ -667,6 +745,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
     Array(MAX_REFERENCE_SLOTS).fill(null)
   );
+  const [selectedCharacterReferences, setSelectedCharacterReferences] = useState<CharacterReferenceSelection[]>([]);
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
   const [selectedPreviewEntryId, setSelectedPreviewEntryId] = useState<string | null>(null);
   const [selectedPreviewImageIndex, setSelectedPreviewImageIndex] = useState(0);
@@ -683,6 +762,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     open: false,
     slotIndex: null,
   });
+  const [characterPickerModal, setCharacterPickerModal] = useState<CharacterPickerModalState>({ open: false });
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const fileInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [
@@ -712,6 +792,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     () => engines.find((engine) => engine.id === engineId) ?? engines[0],
     [engineId, engines]
   );
+  const selectedEngineIsNanoBanana = Boolean(selectedEngine && NANO_BANANA_ENGINE_IDS.has(selectedEngine.id));
+  const autoModeFromReferences = selectedEngineIsNanoBanana;
   const selectedEngineCaps = selectedEngine?.engineCaps ?? engines[0]?.engineCaps;
   const imageCountField = useMemo(
     () => getImageInputField(selectedEngineCaps ?? null, 'num_images', mode),
@@ -792,7 +874,34 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [selectedEngineCaps, mode]
   );
   const referenceMinRequired = referenceConstraints.min;
-  const referenceSlotLimit = Math.min(MAX_REFERENCE_SLOTS, referenceConstraints.max);
+  const referencePickerConstraints = useMemo(
+    () =>
+      autoModeFromReferences && selectedEngineCaps
+        ? getReferenceConstraints(selectedEngineCaps, 'i2i')
+        : referenceConstraints,
+    [autoModeFromReferences, referenceConstraints, selectedEngineCaps]
+  );
+  const baseReferenceSlotLimit = Math.min(MAX_REFERENCE_SLOTS, referencePickerConstraints.max);
+  const supportsCharacterReferences = baseReferenceSlotLimit > 0;
+  const totalRegularReferenceSelections = useMemo(
+    () => referenceSlots.slice(0, baseReferenceSlotLimit).filter((slot) => Boolean(slot)).length,
+    [baseReferenceSlotLimit, referenceSlots]
+  );
+  const characterSelectionLimit = supportsCharacterReferences
+    ? Math.max(0, baseReferenceSlotLimit - totalRegularReferenceSelections)
+    : 0;
+  const effectiveCharacterReferences = useMemo(
+    () =>
+      supportsCharacterReferences
+        ? selectedCharacterReferences.slice(0, characterSelectionLimit)
+        : [],
+    [characterSelectionLimit, selectedCharacterReferences, supportsCharacterReferences]
+  );
+  const activeCharacterReferenceCount = effectiveCharacterReferences.length;
+  const hasHiddenCharacterReferences = selectedCharacterReferences.length > effectiveCharacterReferences.length;
+  const referenceSlotLimit = supportsCharacterReferences
+    ? Math.max(0, baseReferenceSlotLimit - activeCharacterReferenceCount)
+    : baseReferenceSlotLimit;
   const visibleReferenceSlots = useMemo(
     () => referenceSlots.slice(0, referenceSlotLimit),
     [referenceSlots, referenceSlotLimit]
@@ -1030,6 +1139,39 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         .map((slot) => slot.url),
     [visibleReferenceSlots]
   );
+  const activeCharacterReferenceUrls = useMemo(
+    () => effectiveCharacterReferences.map((reference) => reference.imageUrl),
+    [effectiveCharacterReferences]
+  );
+  const combinedReferenceUrls = useMemo(
+    () => [...activeCharacterReferenceUrls, ...readyReferenceUrls],
+    [activeCharacterReferenceUrls, readyReferenceUrls]
+  );
+  const hasAnyReferenceSelection = useMemo(
+    () => visibleReferenceSlots.some((slot) => Boolean(slot)) || activeCharacterReferenceUrls.length > 0,
+    [activeCharacterReferenceUrls.length, visibleReferenceSlots]
+  );
+  const referenceNoteText = autoModeFromReferences
+    ? 'Add a reference or character and Nano Banana switches to Edit automatically.'
+    : resolvedCopy.composer.referenceNote;
+  const showReferenceMissingWarning =
+    mode === 'i2i' &&
+    referenceMinRequired > 0 &&
+    combinedReferenceUrls.length < referenceMinRequired &&
+    (!autoModeFromReferences || !hasAnyReferenceSelection);
+
+  useEffect(() => {
+    if (!selectedEngine || !autoModeFromReferences) return;
+    const desiredMode: ImageGenerationMode =
+      hasAnyReferenceSelection && selectedEngine.modes.includes('i2i')
+        ? 'i2i'
+        : selectedEngine.modes.includes('t2i')
+          ? 't2i'
+          : (selectedEngine.modes[0] as ImageGenerationMode);
+    if (mode !== desiredMode) {
+      setMode(desiredMode);
+    }
+  }, [autoModeFromReferences, hasAnyReferenceSelection, mode, selectedEngine]);
 
   const handleOpenHistoryEntry = useCallback((entry: HistoryEntry) => {
     if (!entry.images.length) return;
@@ -1166,6 +1308,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           return changed ? next : previous;
         });
       }
+      setSelectedCharacterReferences(parsed.characterReferences ?? []);
     }
 
     setStorageHydrated(true);
@@ -1311,6 +1454,35 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           return next;
         });
       }
+      const characterReferencesRaw = Array.isArray(refs.characterReferences) ? refs.characterReferences : [];
+      setSelectedCharacterReferences(
+        characterReferencesRaw.reduce<CharacterReferenceSelection[]>((acc, entry) => {
+          if (!entry || typeof entry !== 'object') return acc;
+          const record = entry as Partial<CharacterReferenceSelection>;
+          const id = typeof record.id === 'string' ? record.id.trim() : '';
+          const jobId = typeof record.jobId === 'string' ? record.jobId.trim() : '';
+          const imageUrl = typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '';
+          if (!id || !jobId || !/^https?:\/\//i.test(imageUrl)) return acc;
+          acc.push({
+            id,
+            jobId,
+            imageUrl,
+            thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : null,
+            prompt: typeof record.prompt === 'string' ? record.prompt : null,
+            createdAt: typeof record.createdAt === 'string' ? record.createdAt : null,
+            engineLabel: typeof record.engineLabel === 'string' ? record.engineLabel : null,
+            outputMode:
+              record.outputMode === 'portrait-reference' || record.outputMode === 'character-sheet'
+                ? record.outputMode
+                : null,
+            action:
+              record.action === 'generate' || record.action === 'full-body-fix' || record.action === 'lighting-variant'
+                ? record.action
+                : null,
+          });
+          return acc;
+        }, [])
+      );
 
       if (selectJobId) {
         setSelectedPreviewEntryId(selectJobId);
@@ -1355,6 +1527,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       }),
     [referenceSlots]
   );
+  const persistableCharacterReferences = useMemo<PersistedCharacterReference[]>(
+    () =>
+      selectedCharacterReferences.map((reference) => ({
+        id: reference.id,
+        jobId: reference.jobId,
+        imageUrl: reference.imageUrl,
+        thumbUrl: reference.thumbUrl ?? null,
+        prompt: reference.prompt ?? null,
+        createdAt: reference.createdAt ?? null,
+        engineLabel: reference.engineLabel ?? null,
+        outputMode: reference.outputMode ?? null,
+        action: reference.action ?? null,
+      })),
+    [selectedCharacterReferences]
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1373,6 +1560,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       thinkingLevel,
       limitGenerations,
       referenceSlots: persistableReferenceSlots,
+      characterReferences: persistableCharacterReferences,
     };
     if (!payload.engineId) return;
     let serialized: string;
@@ -1408,6 +1596,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     mode,
     numImages,
     outputFormat,
+    persistableCharacterReferences,
     persistableReferenceSlots,
     prompt,
     resolution,
@@ -1420,7 +1609,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setReferenceSlots((previous) => {
       let mutated = false;
       const next = previous.slice();
-      for (let index = referenceSlotLimit; index < next.length; index += 1) {
+      for (let index = baseReferenceSlotLimit; index < next.length; index += 1) {
         if (next[index]) {
           cleanupSlotPreview(next[index]);
           next[index] = null;
@@ -1429,7 +1618,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       }
       return mutated ? next : previous;
     });
-  }, [cleanupSlotPreview, referenceSlotLimit]);
+  }, [baseReferenceSlotLimit, cleanupSlotPreview]);
 
   useEffect(() => {
     if (!canCollapseReferenceSlots && areReferenceSlotsExpanded) {
@@ -1713,6 +1902,26 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     []
   );
 
+  const toggleCharacterReference = useCallback(
+    (reference: CharacterReferenceSelection) => {
+      setSelectedCharacterReferences((previous) => {
+        const existingIndex = previous.findIndex((entry) => entry.id === reference.id);
+        if (existingIndex >= 0) {
+          return previous.filter((entry) => entry.id !== reference.id);
+        }
+        if (!supportsCharacterReferences || previous.length >= characterSelectionLimit) {
+          return previous;
+        }
+        return [...previous, reference];
+      });
+    },
+    [characterSelectionLimit, supportsCharacterReferences]
+  );
+
+  const removeCharacterReference = useCallback((referenceId: string) => {
+    setSelectedCharacterReferences((previous) => previous.filter((entry) => entry.id !== referenceId));
+  }, []);
+
   const handleRun = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -1727,7 +1936,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setError(resolvedCopy.errors.promptMissing);
         return;
       }
-      if (referenceMinRequired > 0 && readyReferenceUrls.length < referenceMinRequired) {
+      if (referenceMinRequired > 0 && combinedReferenceUrls.length < referenceMinRequired) {
         setError(resolvedCopy.errors.referenceMissing);
         return;
       }
@@ -1761,7 +1970,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           mode,
           prompt: trimmedPrompt,
           numImages,
-          imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
+          imageUrls: mode === 'i2i' ? combinedReferenceUrls : undefined,
+          characterReferences: mode === 'i2i' ? effectiveCharacterReferences : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,
           seed: seedField ? normalizedSeed : undefined,
@@ -1804,7 +2014,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       mode,
       numImages,
       prompt,
-      readyReferenceUrls,
+      combinedReferenceUrls,
+      effectiveCharacterReferences,
       resolvedCopy.errors.generic,
       resolvedCopy.errors.promptMissing,
       resolvedCopy.errors.referenceMissing,
@@ -2204,7 +2415,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       t2i: resolvedCopy.modeTabs.generate,
                       i2i: resolvedCopy.modeTabs.edit,
                     }}
-                    showModeSelect
+                    showModeSelect={!autoModeFromReferences}
                     modeLayout="stacked"
                     showBillingNote={false}
                     variant="bar"
@@ -2229,7 +2440,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         </Chip>
                       </div>
                     </div>
-                    {mode === 'i2i' && referenceMinRequired > 0 && readyReferenceUrls.length < referenceMinRequired ? (
+                    {showReferenceMissingWarning ? (
                       <p className="text-[12px] text-state-warning">{resolvedCopy.errors.referenceMissing}</p>
                     ) : null}
                     {pricingError ? <p className="text-[12px] text-state-warning">{pricingError.message}</p> : null}
@@ -2380,16 +2591,78 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         </p>
                         <p className="text-[10px] text-text-secondary">{referenceHelperText}</p>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setLibraryModal({ open: true, slotIndex: null })}
-                        className="rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
-                      >
-                        {resolvedCopy.composer.referenceButton}
-                      </Button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={referenceSlotLimit === 0}
+                          onClick={() => setLibraryModal({ open: true, slotIndex: null })}
+                          className="rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
+                        >
+                          {resolvedCopy.composer.referenceButton}
+                        </Button>
+                        {supportsCharacterReferences ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCharacterPickerModal({ open: true })}
+                            className="gap-2 rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
+                          >
+                            <Users className="h-3.5 w-3.5" />
+                            {resolvedCopy.composer.characterButton}
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
+                    {selectedCharacterReferences.length ? (
+                      <div className="flex flex-wrap gap-3">
+                        {selectedCharacterReferences.map((reference) => (
+                          <div
+                            key={reference.id}
+                            className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-surface px-2 py-2 shadow-card"
+                          >
+                            <img
+                              src={reference.thumbUrl ?? reference.imageUrl}
+                              alt=""
+                              className="h-12 w-12 rounded-xl object-cover"
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium text-text-primary">
+                                {getCharacterReferenceLabel(reference)}
+                              </p>
+                              <p className="text-[11px] text-text-secondary">
+                                {formatCharacterReferenceDate(reference.createdAt)}
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeCharacterReference(reference.id)}
+                              className="min-h-0 h-8 w-8 rounded-full px-0 text-text-muted hover:text-text-primary"
+                              aria-label="Remove character reference"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    {!supportsCharacterReferences && selectedCharacterReferences.length ? (
+                      <p className="text-xs text-text-secondary">{resolvedCopy.composer.characterHiddenNotice}</p>
+                    ) : null}
+                    {hasHiddenCharacterReferences && supportsCharacterReferences ? (
+                      <p className="text-xs text-text-secondary">
+                        {formatTemplate(resolvedCopy.composer.characterLimitNotice, {
+                          count: effectiveCharacterReferences.length,
+                          suffix: effectiveCharacterReferences.length === 1 ? '' : 's',
+                        })}
+                      </p>
+                    ) : null}
                     <div className="grid grid-gap-sm sm:grid-cols-2">
                       {displayedReferenceSlots.map((slot, index) => (
                         <div
@@ -2529,7 +2802,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         </Button>
                       </div>
                     ) : null}
-                    <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
+                    <p className="mt-2 text-xs text-text-secondary">{referenceNoteText}</p>
                   </section>
                 </Card>
               </form>
@@ -2613,6 +2886,16 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         copy={resolvedCopy.library}
         supportedFormats={supportedReferenceFormats}
         supportedFormatsLabel={supportedReferenceFormatsLabel}
+      />
+    ) : null}
+      {characterPickerModal.open ? (
+      <CharacterPickerModal
+        open={characterPickerModal.open}
+        onClose={() => setCharacterPickerModal({ open: false })}
+        onToggle={toggleCharacterReference}
+        selectedReferences={selectedCharacterReferences}
+        maxSelectable={characterSelectionLimit}
+        copy={resolvedCopy.characterPicker}
       />
     ) : null}
     </>
@@ -2822,6 +3105,151 @@ function ImageLibraryModal({
                     {!isCompatible ? <p className="text-state-warning">{copy.unsupported}</p> : null}
                     {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                   </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CharacterPickerModal({
+  open,
+  onClose,
+  onToggle,
+  selectedReferences,
+  maxSelectable,
+  copy,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onToggle: (reference: CharacterReferenceSelection) => void;
+  selectedReferences: CharacterReferenceSelection[];
+  maxSelectable: number;
+  copy: ImageWorkspaceCopy['characterPicker'];
+}) {
+  const swrKey = open ? '/api/character-references?limit=60' : null;
+  const { data, error, isLoading } = useSWR(swrKey, async (url: string) => {
+    const response = await authFetch(url);
+    const payload = (await response.json().catch(() => null)) as CharacterReferencesResponse | null;
+    if (!response.ok || !payload?.ok) {
+      let message: string | undefined;
+      if (payload && typeof payload.error === 'string') {
+        message = payload.error;
+      }
+      throw new Error(message ?? 'Failed to load character references');
+    }
+    return payload.characters;
+  });
+
+  const characters = useMemo(() => data ?? [], [data]);
+  const selectedIds = useMemo(() => new Set(selectedReferences.map((reference) => reference.id)), [selectedReferences]);
+  const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={handleBackdropClick}
+    >
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-modal border border-border bg-surface shadow-float">
+        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
+              <UserRound className="h-3.5 w-3.5" />
+              Characters
+            </div>
+            <h2 className="mt-2 text-lg font-semibold text-text-primary">{copy.title}</h2>
+            <p className="text-xs text-text-secondary">{copy.description}</p>
+            <p className="mt-1 text-xs text-text-muted">
+              {formatTemplate(copy.limitLabel, { count: maxSelectable, suffix: maxSelectable === 1 ? '' : 's' })}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="self-start rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
+          >
+            {copy.done}
+          </Button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
+          {error ? (
+            <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
+              {error instanceof Error ? error.message : copy.empty}
+            </div>
+          ) : isLoading && !characters.length ? (
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={`character-modal-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-t-card bg-placeholder">
+                    <div className="skeleton absolute inset-0" />
+                  </div>
+                  <div className="border-t border-border px-4 py-3">
+                    <div className="h-3 w-24 rounded-full bg-skeleton" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : characters.length === 0 ? (
+            <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
+              {copy.empty}
+            </div>
+          ) : (
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+              {characters.map((character) => {
+                const isSelected = selectedIds.has(character.id);
+                const isDisabled = !isSelected && selectedReferences.length >= maxSelectable;
+                return (
+                  <button
+                    key={character.id}
+                    type="button"
+                    onClick={() => onToggle(character)}
+                    disabled={isDisabled}
+                    className={clsx(
+                      'group block w-full overflow-hidden rounded-card border bg-surface text-left shadow-card transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+                      isSelected ? 'border-brand ring-2 ring-brand/20' : 'border-border hover:border-text-primary',
+                      isDisabled && 'cursor-not-allowed opacity-60'
+                    )}
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-t-card bg-placeholder">
+                      <img
+                        src={character.thumbUrl ?? character.imageUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-x-3 top-3 flex items-center justify-between">
+                        <Chip variant={isSelected ? 'accent' : 'outline'} className="border-none bg-surface-on-media-dark-60 text-on-inverse">
+                          {isSelected ? copy.selected : copy.select}
+                        </Chip>
+                        {isSelected ? (
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand text-on-brand shadow-card">
+                            <Check className="h-4 w-4" />
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="min-w-0 space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
+                      <p className="truncate text-sm font-medium text-text-primary">{getCharacterReferenceLabel(character)}</p>
+                      <p>{formatCharacterReferenceDate(character.createdAt)}</p>
+                      <p className="truncate text-text-muted">{character.engineLabel ?? 'Character Builder'}</p>
+                    </div>
                   </button>
                 );
               })}

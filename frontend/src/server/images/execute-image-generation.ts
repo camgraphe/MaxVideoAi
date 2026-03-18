@@ -2,6 +2,7 @@ import { ApiError, ValidationError } from '@fal-ai/client';
 import { randomUUID } from 'crypto';
 import { listFalEngines } from '@/config/falEngines';
 import type {
+  CharacterReferenceSelection,
   GeneratedImage,
   ImageGenerationMode,
   ImageGenerationRequest,
@@ -122,6 +123,53 @@ function normalizeUrl(value: string): string {
   if (!trimmed) return trimmed;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://fal.media/files/${trimmed.replace(/^\.?\/+/, '')}`;
+}
+
+function sanitizeCharacterReferences(value: unknown): CharacterReferenceSelection[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.reduce<CharacterReferenceSelection[]>((acc, entry) => {
+    if (!entry || typeof entry !== 'object') return acc;
+    const record = entry as Record<string, unknown>;
+    const id = typeof record.id === 'string' ? record.id.trim() : '';
+    const jobId = typeof record.jobId === 'string' ? record.jobId.trim() : '';
+    const imageUrl = typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '';
+    if (!id || !jobId || !/^https?:\/\//i.test(imageUrl)) return acc;
+
+    acc.push({
+      id,
+      jobId,
+      imageUrl,
+      thumbUrl:
+        typeof record.thumbUrl === 'string' && /^https?:\/\//i.test(record.thumbUrl.trim())
+          ? record.thumbUrl.trim()
+          : null,
+      prompt: typeof record.prompt === 'string' && record.prompt.trim().length ? record.prompt.trim() : null,
+      createdAt: typeof record.createdAt === 'string' && record.createdAt.trim().length ? record.createdAt.trim() : null,
+      engineLabel:
+        typeof record.engineLabel === 'string' && record.engineLabel.trim().length ? record.engineLabel.trim() : null,
+      outputMode:
+        record.outputMode === 'portrait-reference' || record.outputMode === 'character-sheet'
+          ? record.outputMode
+          : null,
+      action:
+        record.action === 'generate' || record.action === 'full-body-fix' || record.action === 'lighting-variant'
+          ? record.action
+          : null,
+    });
+    return acc;
+  }, []);
+}
+
+function buildCharacterReferencePrompt(prompt: string, characterReferences: CharacterReferenceSelection[]): string {
+  if (!characterReferences.length) return prompt;
+
+  const instruction =
+    characterReferences.length === 1
+      ? 'Use the selected character reference as the primary identity anchor. Preserve face, hairstyle, body proportions, and distinctive character cues unless the prompt explicitly requests a change.'
+      : 'Treat the selected character references as distinct character identities. Preserve each separately, match cast order to selection order, and do not merge identities. If the user prompt implies fewer characters than selected, prioritize them in selection order.';
+
+  return `${prompt}\n\nCharacter reference instructions:\n${instruction}`;
 }
 
 async function getStoredAssetMimeByUrl(userId: string, urls: string[]): Promise<Map<string, string>> {
@@ -299,6 +347,7 @@ function buildDefaultSettingsSnapshot(args: {
   thinkingLevel: string | null;
   limitGenerations: boolean;
   imageUrls: string[];
+  characterReferences: CharacterReferenceSelection[];
   membershipTier?: string;
   visibility: 'public' | 'private';
   indexable: boolean;
@@ -322,6 +371,7 @@ function buildDefaultSettingsSnapshot(args: {
     },
     refs: {
       imageUrls: args.imageUrls,
+      characterReferences: args.characterReferences,
     },
     meta: {
       memberTier: args.membershipTier ?? null,
@@ -410,7 +460,11 @@ export async function executeImageGeneration({
   const imageUrls = rawImageUrls
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry) => entry.length);
-  const invalidImageUrl = imageUrls.find((entry) => !/^https?:\/\//i.test(entry));
+  const characterReferences = sanitizeCharacterReferences(body.characterReferences);
+  const characterReferenceUrls = characterReferences.map((entry) => entry.imageUrl);
+  const combinedImageUrls = [...characterReferenceUrls, ...imageUrls];
+  const effectivePrompt = buildCharacterReferencePrompt(prompt, characterReferences);
+  const invalidImageUrl = combinedImageUrls.find((entry) => !/^https?:\/\//i.test(entry));
   if (invalidImageUrl) {
     fail(
       mode,
@@ -426,9 +480,9 @@ export async function executeImageGeneration({
   }
 
   const supportedReferenceFormats = getSupportedImageFormats(engine);
-  if (supportedReferenceFormats.length && imageUrls.length) {
-    const storedAssetMimeByUrl = await getStoredAssetMimeByUrl(userId, imageUrls);
-    const invalidImageFormatUrl = imageUrls.find((entry) => {
+  if (supportedReferenceFormats.length && combinedImageUrls.length) {
+    const storedAssetMimeByUrl = await getStoredAssetMimeByUrl(userId, combinedImageUrls);
+    const invalidImageFormatUrl = combinedImageUrls.find((entry) => {
       const storedMime = storedAssetMimeByUrl.get(entry) ?? null;
       const supportedByMime = isSupportedImageMime(supportedReferenceFormats, storedMime);
       if (supportedByMime != null) {
@@ -456,7 +510,7 @@ export async function executeImageGeneration({
   }
 
   const referenceConstraints = getReferenceConstraints(engine, mode);
-  if (referenceConstraints.min > 0 && imageUrls.length < referenceConstraints.min) {
+  if (referenceConstraints.min > 0 && combinedImageUrls.length < referenceConstraints.min) {
     const message =
       referenceConstraints.min === 1
         ? 'At least one reference image is required for this request.'
@@ -466,7 +520,7 @@ export async function executeImageGeneration({
       engineLabel: engineEntry.marketingName,
     });
   }
-  if (imageUrls.length > referenceConstraints.max) {
+  if (combinedImageUrls.length > referenceConstraints.max) {
     fail(
       mode,
       'too_many_image_urls',
@@ -587,6 +641,7 @@ export async function executeImageGeneration({
       mode,
       numImages,
       resolution,
+      ...(characterReferences.length ? { characterReferenceCount: characterReferences.length } : {}),
       ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}),
       ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
       ...(outputFormat ? { outputFormat } : {}),
@@ -636,6 +691,7 @@ export async function executeImageGeneration({
         thinkingLevel,
         limitGenerations,
         imageUrls,
+        characterReferences,
         membershipTier,
         visibility,
         indexable,
@@ -785,7 +841,7 @@ export async function executeImageGeneration({
     const resolvedReferenceUrls =
       mode === 'i2i'
         ? await Promise.all(
-            imageUrls.map(async (url) => {
+            combinedImageUrls.map(async (url) => {
               const key = extractStorageKeyFromUrl(url);
               if (!key || !isStorageConfigured()) return url;
               try {
@@ -802,7 +858,7 @@ export async function executeImageGeneration({
 
     const result = await falClient.subscribe(modeConfig.falModelId, {
       input: {
-        prompt,
+        prompt: effectivePrompt,
         num_images: numImages,
         ...(mode === 'i2i' ? { image_urls: resolvedReferenceUrls } : {}),
         ...(falAspectRatio ? { aspect_ratio: falAspectRatio } : {}),
@@ -906,6 +962,7 @@ export async function executeImageGeneration({
               mode,
               numImages,
               resolution,
+              ...(characterReferences.length ? { characterReferenceCount: characterReferences.length } : {}),
               ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
               ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
               ...(outputFormat ? { output_format: outputFormat } : {}),
@@ -980,7 +1037,7 @@ export async function executeImageGeneration({
     }
 
     try {
-      const hosts = imageUrls
+      const hosts = combinedImageUrls
         .map((url) => {
           try {
             return new URL(url).host;
@@ -1005,13 +1062,14 @@ export async function executeImageGeneration({
               mode,
               numImages,
               resolution,
+              ...(characterReferences.length ? { characterReferenceCount: characterReferences.length } : {}),
               ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
               ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
               ...(outputFormat ? { output_format: outputFormat } : {}),
               ...(enableWebSearch ? { enable_web_search: true } : {}),
               ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
               ...(limitGenerations ? { limit_generations: true } : {}),
-              referenceImageCount: imageUrls.length,
+              referenceImageCount: combinedImageUrls.length,
               referenceImageHosts: uniqueHosts,
               falModelId: modeConfig.falModelId,
             },

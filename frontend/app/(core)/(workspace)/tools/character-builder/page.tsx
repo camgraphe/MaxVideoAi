@@ -314,7 +314,7 @@ function countConfiguredSecondaryControls(state: CharacterBuilderState, hasIdent
   if (state.consistencyMode !== 'balanced') count += 1;
   if (hasIdentityReference && state.referenceStrength && state.referenceStrength !== 'balanced') count += 1;
   if (state.advancedNotes.trim().length) count += 1;
-  if (state.outputOptions.includeCloseUps) count += 1;
+  if (state.outputMode === 'character-sheet' && !state.outputOptions.includeCloseUps) count += 1;
   if (state.outputOptions.fullBodyRequired && state.outputMode !== 'character-sheet') count += 1;
   if (!state.outputOptions.neutralStudioBackground) count += 1;
   if (!state.outputOptions.preserveFacialDetails) count += 1;
@@ -1277,7 +1277,6 @@ export default function CharacterBuilderPage() {
     state.traits.outfitStyle.value && !FEATURED_OUTFIT_IDS.includes(state.traits.outfitStyle.value as (typeof FEATURED_OUTFIT_IDS)[number])
       ? state.traits.outfitStyle.value
       : '__more_outfits__';
-
   useEffect(() => {
     const persisted = readPersistedState();
     if (persisted) {
@@ -1717,23 +1716,31 @@ export default function CharacterBuilderPage() {
             <section className="relative overflow-hidden rounded-[32px] border border-border bg-surface p-6 lg:p-8">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(11,107,255,0.14),transparent_42%),linear-gradient(135deg,rgba(16,24,40,0.03),rgba(255,255,255,0))]" />
               <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_520px] xl:items-center">
-                <div className="space-y-4">
-                  <ButtonLink href="/tools" variant="ghost" size="sm" linkComponent={Link} className="gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Tools
-                  </ButtonLink>
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-[linear-gradient(135deg,rgba(11,107,255,0.14),rgba(255,255,255,0.92))] shadow-[0_14px_28px_rgba(11,107,255,0.14)]">
-                    <div className="relative">
-                      <Sparkles className="h-6 w-6 text-brand" />
-                      <Camera className="absolute -bottom-2 -right-2 h-4 w-4 text-text-primary" />
+                <div className="relative p-5 sm:p-6">
+                  <div className="relative z-10 space-y-4">
+                    <ButtonLink
+                      href="/tools"
+                      variant="ghost"
+                      size="sm"
+                      linkComponent={Link}
+                      className="gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back to Tools
+                    </ButtonLink>
+                    <div
+                      className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-[linear-gradient(135deg,rgba(11,107,255,0.14),rgba(255,255,255,0.92))] shadow-[0_14px_28px_rgba(11,107,255,0.14)]"
+                    >
+                      <div className="relative">
+                        <Sparkles className="h-6 w-6 text-brand" />
+                        <Camera className="absolute -bottom-2 -right-2 h-4 w-4 text-text-primary" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Image-only tool</p>
-                    <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">Consistent Character Builder</h1>
-                    <p className="max-w-xl text-sm text-text-secondary">
-                      Build a reusable character reference before moving to video.
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Image-only tool</p>
+                      <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">Consistent Character Builder</h1>
+                      <p className="max-w-xl text-sm text-text-secondary">Build a reusable character reference before moving to video.</p>
+                    </div>
                   </div>
                 </div>
                 <HeroPreviewStrip />

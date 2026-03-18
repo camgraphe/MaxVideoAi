@@ -316,7 +316,7 @@ export function createDefaultCharacterBuilderState(
     qualityMode: 'draft',
     outputOptions: {
       fullBodyRequired: false,
-      includeCloseUps: false,
+      includeCloseUps: true,
       neutralStudioBackground: true,
       preserveFacialDetails: true,
       avoid3dRenderLook: true,
