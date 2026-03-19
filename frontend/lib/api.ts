@@ -203,7 +203,12 @@ export function useEngines(category: EngineCategory = 'video') {
     `static-engines:${category}`,
     async () => {
       const response = await authFetch(`/api/engines${query}`);
-      const data = (await response.json().catch(() => null)) as { engines?: EnginesResponse['engines'] } | null;
+      const data = (await response.json().catch(() => null)) as
+        | { engines?: EnginesResponse['engines']; error?: string }
+        | null;
+      if (!response.ok) {
+        throw new Error(data?.error ?? `Engines request failed: ${response.status}`);
+      }
       return { engines: data?.engines ?? [] };
     },
     {

@@ -63,6 +63,36 @@ export async function ensureBillingSchema(): Promise<void> {
       }
     }
 
+    try {
+      await query(`
+        CREATE TABLE IF NOT EXISTS engine_overrides (
+          engine_id TEXT PRIMARY KEY,
+          active BOOLEAN NOT NULL DEFAULT TRUE,
+          availability TEXT,
+          status TEXT,
+          latency_tier TEXT,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_by UUID
+        );
+      `);
+    } catch (error) {
+      const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+      if (code !== '42P07' && code !== '23505') {
+        throw error;
+      }
+    }
+
+    try {
+      await query(`
+        CREATE INDEX IF NOT EXISTS engine_overrides_updated_idx ON engine_overrides (updated_at DESC);
+      `);
+    } catch (error) {
+      const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+      if (code !== '42P07' && code !== '23505') {
+        throw error;
+      }
+    }
+
       await query(`
         INSERT INTO app_pricing_rules (
           id,
