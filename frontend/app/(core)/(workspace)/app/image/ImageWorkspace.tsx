@@ -63,6 +63,7 @@ import {
   getReferenceConstraints,
 } from '@/lib/image/inputSchema';
 import { authFetch } from '@/lib/authFetch';
+import { normalizeJobSurface } from '@/lib/job-surface';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -1116,6 +1117,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const isImageJob = useCallback(
     (job: Job) => {
+      const surface = normalizeJobSurface(job.surface);
+      if (surface) {
+        return surface === 'image';
+      }
       const check = (value: string | null | undefined) =>
         Boolean(value && imageEngineAliasSet.has(value.trim().toLowerCase()));
       if (check(job.engineId)) return true;
@@ -1450,24 +1455,20 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       const imageUrlsRaw = refs.imageUrls;
       const imageUrls = Array.isArray(imageUrlsRaw)
         ? imageUrlsRaw.map((entry) => (typeof entry === 'string' ? entry.trim() : '')).filter((entry) => entry.length)
-        : imageUrlsRaw === null
-          ? []
-          : null;
-      if (imageUrls !== null) {
-        setReferenceSlots(() => {
-          const next = Array(MAX_REFERENCE_SLOTS).fill(null) as Array<ReferenceSlotValue | null>;
-          imageUrls.slice(0, MAX_REFERENCE_SLOTS).forEach((url, index) => {
-            next[index] = {
-              id: `snapshot-${index}`,
-              url,
-              previewUrl: url,
-              status: 'ready',
-              source: 'library',
-            };
-          });
-          return next;
+        : [];
+      setReferenceSlots(() => {
+        const next = Array(MAX_REFERENCE_SLOTS).fill(null) as Array<ReferenceSlotValue | null>;
+        imageUrls.slice(0, MAX_REFERENCE_SLOTS).forEach((url, index) => {
+          next[index] = {
+            id: `snapshot-${index}`,
+            url,
+            previewUrl: url,
+            status: 'ready',
+            source: 'library',
+          };
         });
-      }
+        return next;
+      });
       const characterReferencesRaw = Array.isArray(refs.characterReferences) ? refs.characterReferences : [];
       setSelectedCharacterReferences(
         characterReferencesRaw.reduce<CharacterReferenceSelection[]>((acc, entry) => {
