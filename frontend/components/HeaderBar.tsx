@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
-import { ChevronDown, Moon, Sun, Wallet } from 'lucide-react';
+import { ChevronDown, Image as ImageIcon, ListVideo, Moon, Sparkles, Sun, Wallet } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
@@ -54,6 +54,14 @@ function resolveLocalizedHref(href: LocalizedLinkHref): string {
 const MARKETING_TOP_NAV_HREF_BY_KEY: Record<string, string> = Object.fromEntries(
   MARKETING_TOP_NAV_LINKS.map((item) => [item.key, item.href])
 );
+
+const GUEST_MOBILE_NAV_ITEM_IDS = new Set(['generate', 'generate-image', 'jobs']);
+
+const GUEST_MOBILE_NAV_ICONS = {
+  generate: Sparkles,
+  'generate-image': ImageIcon,
+  jobs: ListVideo,
+} as const;
 
 export function HeaderBar() {
   const { t } = useI18n();
@@ -403,6 +411,10 @@ export function HeaderBar() {
     return MARKETING_TOP_NAV_LINKS.map((item) => ({ key: item.key, href: item.href }));
   }, [rawMarketingLinks]);
   const isAuthenticated = Boolean(email);
+  const guestMobileNavItems = useMemo(
+    () => NAV_ITEMS.filter((item) => GUEST_MOBILE_NAV_ITEM_IDS.has(item.id)),
+    []
+  );
 
   return (
     <>
@@ -707,6 +719,46 @@ export function HeaderBar() {
               </Button>
             </div>
             <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
+              {!isAuthenticated ? (
+                <div className="rounded-[28px] border border-hairline bg-surface px-4 py-4 shadow-card">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Workspace</p>
+                      <p className="mt-1 text-sm font-medium text-text-primary">Open the app without dead ends.</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {guestMobileNavItems.map((item) => {
+                      const Icon = GUEST_MOBILE_NAV_ICONS[item.id as keyof typeof GUEST_MOBILE_NAV_ICONS];
+                      const label = t(`workspace.sidebar.links.${item.id}`, item.label);
+                      const currentPath = pathname ?? '';
+                      const isActive =
+                        item.id === 'generate'
+                          ? currentPath === item.href
+                          : currentPath === item.href || currentPath.startsWith(`${item.href}/`);
+                      return (
+                        <Link
+                          key={item.id}
+                          href={item.href}
+                          prefetch={false}
+                          className={clsx(
+                            'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            isActive
+                              ? 'border-border bg-surface-2 text-text-primary'
+                              : 'border-hairline bg-bg/40 text-text-primary hover:bg-surface-2'
+                          )}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-hairline bg-surface text-text-primary">
+                            <UIIcon icon={Icon} size={18} />
+                          </span>
+                          <span>{label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
               {marketingLinks.map((item) => {
                 const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
                 const label = t(`nav.linkLabels.${item.key}`, item.key);
