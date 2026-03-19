@@ -132,6 +132,8 @@ export async function ensureBillingSchema(): Promise<void> {
           id BIGSERIAL PRIMARY KEY,
           job_id TEXT NOT NULL UNIQUE,
           user_id TEXT,
+          surface TEXT DEFAULT 'video',
+          billing_product_key TEXT,
           engine_id TEXT NOT NULL,
           engine_label TEXT NOT NULL,
           duration_sec INTEGER NOT NULL,
@@ -183,6 +185,8 @@ export async function ensureBillingSchema(): Promise<void> {
       await query(`
         ALTER TABLE app_jobs
         ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS surface TEXT DEFAULT 'video',
+        ADD COLUMN IF NOT EXISTS billing_product_key TEXT,
         ADD COLUMN IF NOT EXISTS batch_id TEXT,
         ADD COLUMN IF NOT EXISTS group_id TEXT,
         ADD COLUMN IF NOT EXISTS iteration_index INTEGER,
@@ -208,6 +212,55 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_surface_created_idx ON app_jobs (surface, created_at DESC);
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS app_billing_products (
+          product_key TEXT PRIMARY KEY,
+          surface TEXT NOT NULL,
+          label TEXT NOT NULL,
+          currency TEXT NOT NULL DEFAULT 'USD',
+          unit_kind TEXT NOT NULL CHECK (unit_kind IN ('image','run')),
+          unit_price_cents INTEGER NOT NULL CHECK (unit_price_cents >= 0),
+          active BOOLEAN NOT NULL DEFAULT TRUE,
+          metadata JSONB,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
+      await query(`
+        INSERT INTO app_billing_products (
+          product_key,
+          surface,
+          label,
+          currency,
+          unit_kind,
+          unit_price_cents,
+          active,
+          metadata
+        )
+        VALUES
+          ('character-draft', 'character', 'Character Draft', 'USD', 'image', 8, TRUE, '{"seeded":true,"tool":"character-builder","qualityMode":"draft"}'::jsonb),
+          ('character-final', 'character', 'Character Final', 'USD', 'image', 15, TRUE, '{"seeded":true,"tool":"character-builder","qualityMode":"final"}'::jsonb),
+          ('angle-flux-single', 'angle', 'Angle FLUX Single', 'USD', 'run', 4, TRUE, '{"seeded":true,"tool":"angle","engineId":"flux-multiple-angles","variant":"single"}'::jsonb),
+          ('angle-flux-multi', 'angle', 'Angle FLUX Multi', 'USD', 'run', 24, TRUE, '{"seeded":true,"tool":"angle","engineId":"flux-multiple-angles","variant":"multi"}'::jsonb),
+          ('angle-qwen-single', 'angle', 'Angle Qwen Single', 'USD', 'run', 7, TRUE, '{"seeded":true,"tool":"angle","engineId":"qwen-multiple-angles","variant":"single"}'::jsonb),
+          ('angle-qwen-multi', 'angle', 'Angle Qwen Multi', 'USD', 'run', 40, TRUE, '{"seeded":true,"tool":"angle","engineId":"qwen-multiple-angles","variant":"multi"}'::jsonb)
+        ON CONFLICT (product_key) DO NOTHING;
+      `);
+
+      await query(`
+        UPDATE app_billing_products
+           SET active = FALSE,
+               metadata = COALESCE(metadata, '{}'::jsonb) || '{"legacy":true}'::jsonb,
+               updated_at = NOW()
+         WHERE product_key IN ('angle-single', 'angle-multi')
+           AND COALESCE(metadata->>'legacy', 'false') <> 'true';
+      `);
+
+      await query(`
         CREATE TABLE IF NOT EXISTS app_receipts (
           id BIGSERIAL PRIMARY KEY,
           user_id TEXT NOT NULL,
@@ -217,6 +270,8 @@ export async function ensureBillingSchema(): Promise<void> {
           description TEXT,
           metadata JSONB,
           job_id TEXT,
+          surface TEXT,
+          billing_product_key TEXT,
           pricing_snapshot JSONB,
           application_fee_cents INTEGER DEFAULT 0,
           vendor_account_id TEXT,
@@ -233,7 +288,9 @@ export async function ensureBillingSchema(): Promise<void> {
         ADD COLUMN IF NOT EXISTS original_currency TEXT,
         ADD COLUMN IF NOT EXISTS fx_rate NUMERIC,
         ADD COLUMN IF NOT EXISTS fx_margin_bps INTEGER,
-        ADD COLUMN IF NOT EXISTS fx_rate_timestamp TIMESTAMPTZ;
+        ADD COLUMN IF NOT EXISTS fx_rate_timestamp TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS surface TEXT,
+        ADD COLUMN IF NOT EXISTS billing_product_key TEXT;
       `);
 
       await query(`
@@ -306,6 +363,8 @@ export async function ensureBillingSchema(): Promise<void> {
           description,
           created_at,
           job_id,
+          surface,
+          billing_product_key,
           NULL::bigint AS tax_amount_cents,
           NULL::bigint AS discount_amount_cents
         FROM app_receipts;

@@ -7,10 +7,10 @@ import { buildFalProxyUrl } from '@/lib/fal-proxy';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { getVisitorStarterJob } from '@/server/visitor-workspace';
+import { deriveJobSurface } from '@/lib/job-surface';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +27,8 @@ type DbJobRow = {
   status: string;
   progress: number;
   provider_job_id: string | null;
+  surface: string | null;
+  billing_product_key: string | null;
   video_url: string | null;
   thumb_url: string | null;
   engine_id: string;
@@ -55,30 +57,20 @@ type DbJobRow = {
   aspect_ratio: string | null;
 };
 
-const IMAGE_ENGINE_ALIASES = listFalEngines()
-  .filter((engine) => (engine.category ?? 'video') === 'image')
-  .flatMap((engine) => getEngineAliases(engine));
-const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_ALIASES);
-
-function inferJobSurface(job: Pick<DbJobRow, 'engine_id' | 'video_url' | 'render_ids'>): 'video' | 'image' {
-  if (job.video_url) return 'video';
-  const parsedRenders = parseStoredImageRenders(job.render_ids);
-  if (parsedRenders.entries.length > 0) {
-    return 'image';
-  }
-  if (job.engine_id && IMAGE_ENGINE_ID_SET.has(job.engine_id)) {
-    return 'image';
-  }
-  return 'video';
-}
-
 function buildFallbackSettingsSnapshot(job: DbJobRow): unknown {
-  const surface = inferJobSurface(job);
-  if (surface === 'image') {
+  const surface = deriveJobSurface({
+    surface: job.surface,
+    settingsSnapshot: job.settings_snapshot,
+    jobId: job.job_id,
+    engineId: job.engine_id,
+    videoUrl: job.video_url,
+    renderIds: job.render_ids,
+  });
+  if (surface !== 'video') {
     const renderIds = extractRenderIds(parseStoredImageRenders(job.render_ids).entries) ?? [];
     return {
       schemaVersion: 1,
-      surface: 'image',
+      surface,
       engineId: job.engine_id,
       engineLabel: job.engine_label,
       inputMode: 't2i',
@@ -187,7 +179,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   let rows: DbJobRow[];
   try {
     rows = await query<DbJobRow>(
-      `SELECT id, job_id, user_id, status, progress, provider_job_id, video_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
+      `SELECT id, job_id, user_id, status, progress, provider_job_id, surface, billing_product_key, video_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -211,6 +203,14 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   const parsedRenders = parseStoredImageRenders(job.render_ids);
   const parsedRenderIds = extractRenderIds(parsedRenders.entries);
   const parsedRenderThumbUrls = extractRenderThumbUrls(parsedRenders);
+  const surface = deriveJobSurface({
+    surface: job.surface,
+    settingsSnapshot: job.settings_snapshot,
+    jobId: job.job_id,
+    engineId: job.engine_id,
+    videoUrl: job.video_url,
+    renderIds: job.render_ids,
+  });
 
   // Optionally poll FAL once if pending and we have provider job id
   if (shouldUseFalApis() && job.provider_job_id && job.status !== 'completed' && job.status !== 'failed') {
@@ -260,6 +260,8 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
           return json({
             ok: true,
             jobId,
+            surface,
+            billingProductKey: job.billing_product_key ?? undefined,
             createdAt: job.created_at,
             status,
             progress,
@@ -296,6 +298,8 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   return json({
     ok: true,
     jobId,
+    surface,
+    billingProductKey: job.billing_product_key ?? undefined,
     createdAt: job.created_at,
     status: job.status,
     progress: job.progress,

@@ -8,6 +8,7 @@ export const FEATURES = {
   workflows: {
     priceChip: true,
     nanoBananaImage: false,
+    toolsSection: true,
     brandKits: false,
     approvals: false,
     deliveryExports: {

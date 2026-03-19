@@ -21,14 +21,21 @@ import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink'
 import { isPlaceholderMediaUrl } from '@/lib/media';
 import { resolveJobsRailPlaceholderThumb, resolveJobsRailThumb, resolveJobsRailVideo } from '@/lib/jobs-rail-thumb';
 import { Button } from '@/components/ui/Button';
+import type { Job } from '@/types/jobs';
+import type { JobSurface } from '@/types/billing';
+import { deriveJobSurface } from '@/lib/job-surface';
 
 const DEFAULT_JOBS_COPY = {
   title: 'Jobs',
   sections: {
     video: 'Video jobs',
     image: 'Image jobs',
+    character: 'Character jobs',
+    angle: 'Angle jobs',
     videoEmpty: 'No video jobs yet.',
     imageEmpty: 'No image jobs yet.',
+    characterEmpty: 'No character jobs yet.',
+    angleEmpty: 'No angle jobs yet.',
   },
   teams: {
     title: 'Teams',
@@ -52,6 +59,16 @@ const DEFAULT_JOBS_COPY = {
 } as const;
 
 type JobsCopy = typeof DEFAULT_JOBS_COPY;
+
+function resolveClientJobSurface(job: Job): JobSurface {
+  return deriveJobSurface({
+    surface: job.surface,
+    jobId: job.jobId,
+    engineId: job.engineId ?? null,
+    videoUrl: job.videoUrl ?? null,
+    renderIds: job.renderIds,
+  });
+}
 
 export default function JobsPage() {
   const { t } = useI18n();
@@ -83,7 +100,7 @@ export default function JobsPage() {
     setSize: setVideoSize,
     isValidating: videoIsValidating,
     mutate: mutateVideo,
-  } = useInfiniteJobs(24, { type: 'video' });
+  } = useInfiniteJobs(24, { surface: 'video' });
   const {
     data: imageData,
     error: imageError,
@@ -91,17 +108,39 @@ export default function JobsPage() {
     setSize: setImageSize,
     isValidating: imageIsValidating,
     mutate: mutateImage,
-  } = useInfiniteJobs(24, { type: 'image' });
+  } = useInfiniteJobs(24, { surface: 'image' });
+  const {
+    data: characterData,
+    error: characterError,
+    isLoading: characterIsLoading,
+    setSize: setCharacterSize,
+    isValidating: characterIsValidating,
+    mutate: mutateCharacter,
+  } = useInfiniteJobs(24, { surface: 'character' });
+  const {
+    data: angleData,
+    error: angleError,
+    isLoading: angleIsLoading,
+    setSize: setAngleSize,
+    isValidating: angleIsValidating,
+    mutate: mutateAngle,
+  } = useInfiniteJobs(24, { surface: 'angle' });
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const { data: preferences } = useUserPreferences(!authLoading && Boolean(user));
   const defaultAllowIndex = preferences?.defaultAllowIndex ?? true;
 
   const videoPages = videoData ?? [];
   const imagePages = imageData ?? [];
-  const videoJobs = videoPages.flatMap((page) => page.jobs);
-  const imageJobs = imagePages.flatMap((page) => page.jobs);
+  const characterPages = characterData ?? [];
+  const anglePages = angleData ?? [];
+  const videoJobs = videoPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'video');
+  const imageJobs = imagePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'image');
+  const characterJobs = characterPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'character');
+  const angleJobs = anglePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'angle');
   const videoHasMore = videoPages.length > 0 && videoPages[videoPages.length - 1].nextCursor !== null;
   const imageHasMore = imagePages.length > 0 && imagePages[imagePages.length - 1].nextCursor !== null;
+  const characterHasMore = characterPages.length > 0 && characterPages[characterPages.length - 1].nextCursor !== null;
+  const angleHasMore = anglePages.length > 0 && anglePages[anglePages.length - 1].nextCursor !== null;
 
   const { groups: apiVideoGroups } = useMemo(
     () => groupJobsIntoSummaries(videoJobs, { includeSinglesAsGroups: true }),
@@ -111,16 +150,26 @@ export default function JobsPage() {
     () => groupJobsIntoSummaries(imageJobs, { includeSinglesAsGroups: true }),
     [imageJobs]
   );
+  const { groups: apiCharacterGroups } = useMemo(
+    () => groupJobsIntoSummaries(characterJobs, { includeSinglesAsGroups: true }),
+    [characterJobs]
+  );
+  const { groups: apiAngleGroups } = useMemo(
+    () => groupJobsIntoSummaries(angleJobs, { includeSinglesAsGroups: true }),
+    [angleJobs]
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleHidden = () => {
       void mutateVideo();
       void mutateImage();
+      void mutateCharacter();
+      void mutateAngle();
     };
     window.addEventListener('jobs:hidden', handleHidden);
     return () => window.removeEventListener('jobs:hidden', handleHidden);
-  }, [mutateImage, mutateVideo]);
+  }, [mutateAngle, mutateCharacter, mutateImage, mutateVideo]);
 
   const groupedVideoJobs = useMemo(
     () => [...apiVideoGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
@@ -130,9 +179,20 @@ export default function JobsPage() {
     () => [...apiImageGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     [apiImageGroups]
   );
+  const groupedCharacterJobs = useMemo(
+    () => [...apiCharacterGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [apiCharacterGroups]
+  );
+  const groupedAngleJobs = useMemo(
+    () => [...apiAngleGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [apiAngleGroups]
+  );
   const groupedJobs = useMemo(
-    () => [...groupedVideoJobs, ...groupedImageJobs].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
-    [groupedImageJobs, groupedVideoJobs]
+    () =>
+      [...groupedVideoJobs, ...groupedImageJobs, ...groupedCharacterJobs, ...groupedAngleJobs].sort(
+        (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
+      ),
+    [groupedAngleJobs, groupedCharacterJobs, groupedImageJobs, groupedVideoJobs]
   );
 
   const engineLookup = useMemo(() => {
@@ -165,24 +225,35 @@ export default function JobsPage() {
     return map;
   }, [groupedJobs]);
 
-  const [collapsedSections, setCollapsedSections] = useState<{ video: boolean; image: boolean }>({
+  const [collapsedSections, setCollapsedSections] = useState<{
+    video: boolean;
+    image: boolean;
+    character: boolean;
+    angle: boolean;
+  }>({
     video: true,
     image: true,
+    character: true,
+    angle: true,
   });
   const [savingImageGroupIds, setSavingImageGroupIds] = useState<Set<string>>(new Set());
 
-  const toggleSection = useCallback((section: 'video' | 'image') => {
+  const toggleSection = useCallback((section: 'video' | 'image' | 'character' | 'angle') => {
     setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
   const videoGroups = useMemo(() => normalizeGroupSummaries(groupedVideoJobs), [groupedVideoJobs]);
   const imageGroups = useMemo(() => normalizeGroupSummaries(groupedImageJobs), [groupedImageJobs]);
+  const characterGroups = useMemo(() => normalizeGroupSummaries(groupedCharacterJobs), [groupedCharacterJobs]);
+  const angleGroups = useMemo(() => normalizeGroupSummaries(groupedAngleJobs), [groupedAngleJobs]);
   const normalizedGroupMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     videoGroups.forEach((group) => map.set(group.id, group));
     imageGroups.forEach((group) => map.set(group.id, group));
+    characterGroups.forEach((group) => map.set(group.id, group));
+    angleGroups.forEach((group) => map.set(group.id, group));
     return map;
-  }, [imageGroups, videoGroups]);
+  }, [angleGroups, characterGroups, imageGroups, videoGroups]);
   const hasCuratedVideo = useMemo(
     () => videoGroups.some((group) => Boolean(group.hero.job?.curated)),
     [videoGroups]
@@ -212,12 +283,14 @@ export default function JobsPage() {
         await Promise.all([
           mutateVideo((pages) => removeFromPages(pages), false),
           mutateImage((pages) => removeFromPages(pages), false),
+          mutateCharacter((pages) => removeFromPages(pages), false),
+          mutateAngle((pages) => removeFromPages(pages), false),
         ]);
       } catch (error) {
         console.error('Failed to hide job', error);
       }
     },
-    [mutateImage, mutateVideo, summaryMap]
+    [mutateAngle, mutateCharacter, mutateImage, mutateVideo, summaryMap]
   );
 
   const allowRemove = useCallback(
@@ -288,6 +361,8 @@ export default function JobsPage() {
 
   const videoInitialLoading = videoIsLoading && videoJobs.length === 0 && videoGroups.length === 0;
   const imageInitialLoading = imageIsLoading && imageJobs.length === 0 && imageGroups.length === 0;
+  const characterInitialLoading = characterIsLoading && characterJobs.length === 0 && characterGroups.length === 0;
+  const angleInitialLoading = angleIsLoading && angleJobs.length === 0 && angleGroups.length === 0;
   const viewerGroup = useMemo(() => {
     if (!activeGroupId) return null;
     const normalized = normalizedGroupMap.get(activeGroupId);
@@ -408,6 +483,69 @@ export default function JobsPage() {
     return null;
   }
 
+  const sections = [
+    {
+      key: 'video' as const,
+      title: copy.sections.video,
+      empty: copy.sections.videoEmpty,
+      groups: videoGroups,
+      hasMore: videoHasMore,
+      isInitialLoading: videoInitialLoading,
+      isValidating: videoIsValidating,
+      error: videoError,
+      forceImageGroup: false,
+      onRetry: () => {
+        void mutateVideo();
+      },
+      onLoadMore: () => setVideoSize((prev) => prev + 1),
+    },
+    {
+      key: 'image' as const,
+      title: copy.sections.image,
+      empty: copy.sections.imageEmpty,
+      groups: imageGroups,
+      hasMore: imageHasMore,
+      isInitialLoading: imageInitialLoading,
+      isValidating: imageIsValidating,
+      error: imageError,
+      forceImageGroup: true,
+      onRetry: () => {
+        void mutateImage();
+      },
+      onLoadMore: () => setImageSize((prev) => prev + 1),
+    },
+    {
+      key: 'character' as const,
+      title: copy.sections.character,
+      empty: copy.sections.characterEmpty,
+      groups: characterGroups,
+      hasMore: characterHasMore,
+      isInitialLoading: characterInitialLoading,
+      isValidating: characterIsValidating,
+      error: characterError,
+      forceImageGroup: true,
+      onRetry: () => {
+        void mutateCharacter();
+      },
+      onLoadMore: () => setCharacterSize((prev) => prev + 1),
+    },
+    {
+      key: 'angle' as const,
+      title: copy.sections.angle,
+      empty: copy.sections.angleEmpty,
+      groups: angleGroups,
+      hasMore: angleHasMore,
+      isInitialLoading: angleInitialLoading,
+      isValidating: angleIsValidating,
+      error: angleError,
+      forceImageGroup: true,
+      onRetry: () => {
+        void mutateAngle();
+      },
+      onLoadMore: () => setAngleSize((prev) => prev + 1),
+    },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
@@ -447,123 +585,60 @@ export default function JobsPage() {
             </div>
           ) : null}
 
-          <section className="mb-8">
-            <div className="mb-3 flex items-center justify-between">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleSection('video')}
-                aria-label={collapsedSections.video ? 'Expand video jobs' : 'Collapse video jobs'}
-                className="gap-2 text-lg font-semibold text-text-primary hover:bg-transparent"
-              >
-                <span className="text-2xl leading-none text-text-primary">
-                  {collapsedSections.video ? '▸' : '▾'}
-                </span>
-                <span>{copy.sections.video}</span>
-              </Button>
-              <span className="text-xs text-text-secondary">{videoGroups.length}</span>
-            </div>
-            {videoError ? (
-              renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video', {
-                forceImageGroup: false,
-                hasMore: videoHasMore,
-                isInitialLoading: videoInitialLoading,
-                isValidating: videoIsValidating,
-                error: videoError,
-                onRetry: () => {
-                  void mutateVideo();
-                },
-              })
-            ) : collapsedSections.video ? (
-              renderCollapsedRail(videoGroups, copy.sections.videoEmpty, videoInitialLoading)
-            ) : (
-              <>
-                {renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video', {
-                  forceImageGroup: false,
-                  hasMore: videoHasMore,
-                  isInitialLoading: videoInitialLoading,
-                  isValidating: videoIsValidating,
-                  onRetry: () => {
-                    void mutateVideo();
-                  },
-                })}
-                {videoGroups.length > 0 && videoHasMore ? (
-                  <div className="mt-4 flex justify-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setVideoSize((prev) => prev + 1)}
-                      disabled={videoIsValidating}
-                      className="border-border bg-surface px-4 text-sm font-medium text-text-primary shadow-card hover:bg-surface-glass-80"
-                    >
-                      {videoIsValidating ? copy.loading : copy.loadMore}
-                    </Button>
-                  </div>
-                ) : null}
-              </>
-            )}
-          </section>
-
-          <section>
-            <div className="mb-3 flex items-center justify-between">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleSection('image')}
-                aria-label={collapsedSections.image ? 'Expand image jobs' : 'Collapse image jobs'}
-                className="gap-2 text-lg font-semibold text-text-primary hover:bg-transparent"
-              >
-                <span className="text-2xl leading-none text-text-primary">
-                  {collapsedSections.image ? '▸' : '▾'}
-                </span>
-                <span>{copy.sections.image}</span>
-              </Button>
-              <span className="text-xs text-text-secondary">{imageGroups.length}</span>
-            </div>
-            {imageError ? (
-              renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image', {
-                forceImageGroup: true,
-                hasMore: imageHasMore,
-                isInitialLoading: imageInitialLoading,
-                isValidating: imageIsValidating,
-                error: imageError,
-                onRetry: () => {
-                  void mutateImage();
-                },
-              })
-            ) : collapsedSections.image ? (
-              renderCollapsedRail(imageGroups, copy.sections.imageEmpty, imageInitialLoading)
-            ) : (
-              <>
-                {renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image', {
-                  forceImageGroup: true,
-                  hasMore: imageHasMore,
-                  isInitialLoading: imageInitialLoading,
-                  isValidating: imageIsValidating,
-                  onRetry: () => {
-                    void mutateImage();
-                  },
-                })}
-                {imageGroups.length > 0 && imageHasMore ? (
-                  <div className="mt-4 flex justify-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setImageSize((prev) => prev + 1)}
-                      disabled={imageIsValidating}
-                      className="border-border bg-surface px-4 text-sm font-medium text-text-primary shadow-card hover:bg-surface-glass-80"
-                    >
-                      {imageIsValidating ? copy.loading : copy.loadMore}
-                    </Button>
-                  </div>
-                ) : null}
-              </>
-            )}
-          </section>
+          {sections.map((section, index) => (
+            <section key={section.key} className={index < sections.length - 1 ? 'mb-8' : undefined}>
+              <div className="mb-3 flex items-center justify-between">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleSection(section.key)}
+                  aria-label={collapsedSections[section.key] ? `Expand ${section.key} jobs` : `Collapse ${section.key} jobs`}
+                  className="gap-2 text-lg font-semibold text-text-primary hover:bg-transparent"
+                >
+                  <span className="text-2xl leading-none text-text-primary">{collapsedSections[section.key] ? '▸' : '▾'}</span>
+                  <span>{section.title}</span>
+                </Button>
+                <span className="text-xs text-text-secondary">{section.groups.length}</span>
+              </div>
+              {section.error ? (
+                renderGroupGrid(section.groups, section.empty, section.key, {
+                  forceImageGroup: section.forceImageGroup,
+                  hasMore: section.hasMore,
+                  isInitialLoading: section.isInitialLoading,
+                  isValidating: section.isValidating,
+                  error: section.error,
+                  onRetry: section.onRetry,
+                })
+              ) : collapsedSections[section.key] ? (
+                renderCollapsedRail(section.groups, section.empty, section.isInitialLoading)
+              ) : (
+                <>
+                  {renderGroupGrid(section.groups, section.empty, section.key, {
+                    forceImageGroup: section.forceImageGroup,
+                    hasMore: section.hasMore,
+                    isInitialLoading: section.isInitialLoading,
+                    isValidating: section.isValidating,
+                    onRetry: section.onRetry,
+                  })}
+                  {section.groups.length > 0 && section.hasMore ? (
+                    <div className="mt-4 flex justify-center">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={section.onLoadMore}
+                        disabled={section.isValidating}
+                        className="border-border bg-surface px-4 text-sm font-medium text-text-primary shadow-card hover:bg-surface-glass-80"
+                      >
+                        {section.isValidating ? copy.loading : copy.loadMore}
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </section>
+          ))}
         </main>
       </div>
       {viewerGroup ? (

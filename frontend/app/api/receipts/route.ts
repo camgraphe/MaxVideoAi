@@ -39,6 +39,8 @@ export async function GET(req: NextRequest) {
     description: string | null;
     created_at: string;
     job_id: string | null;
+    surface: string | null;
+    billing_product_key: string | null;
     tax_amount_cents: number | null;
     discount_amount_cents: number | null;
   };
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
   let rows: ReceiptRow[];
   try {
     rows = await query<ReceiptRow>(
-      `SELECT id, kind, amount_cents, currency, description, created_at, job_id, tax_amount_cents, discount_amount_cents
+      `SELECT id, kind, amount_cents, currency, description, created_at, job_id, surface, billing_product_key, tax_amount_cents, discount_amount_cents
        FROM app_receipts_public
        ${where}
        ORDER BY id DESC
@@ -70,6 +72,8 @@ export async function GET(req: NextRequest) {
     description: row.description,
     created_at: row.created_at,
     job_id: row.job_id,
+    surface: row.surface,
+    billing_product_key: row.billing_product_key,
     tax_amount_cents: row.tax_amount_cents ?? null,
     discount_amount_cents: row.discount_amount_cents ?? null,
   }));

@@ -2,11 +2,24 @@ import type { Mode, PricingSnapshot } from './engines';
 
 export type ImageGenerationMode = Extract<Mode, 't2i' | 'i2i'>;
 
+export interface CharacterReferenceSelection {
+  id: string;
+  jobId: string;
+  imageUrl: string;
+  thumbUrl?: string | null;
+  prompt?: string | null;
+  createdAt?: string | null;
+  engineLabel?: string | null;
+  outputMode?: 'portrait-reference' | 'character-sheet' | null;
+  action?: 'generate' | 'full-body-fix' | 'lighting-variant' | null;
+}
+
 export interface ImageGenerationRequest {
   mode: ImageGenerationMode;
   prompt: string;
   numImages?: number;
   imageUrls?: string[];
+  characterReferences?: CharacterReferenceSelection[];
   allowIndex?: boolean;
   indexable?: boolean;
   visibility?: 'public' | 'private';
@@ -53,4 +66,10 @@ export interface ImageGenerationResponse {
     message: string;
     detail?: unknown;
   };
+}
+
+export interface CharacterReferencesResponse {
+  ok: boolean;
+  characters: CharacterReferenceSelection[];
+  error?: string;
 }

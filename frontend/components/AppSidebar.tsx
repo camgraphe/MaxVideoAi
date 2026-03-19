@@ -17,12 +17,14 @@ import {
   PinOff,
   Settings as SettingsIcon,
   Sparkles,
+  Wrench,
   Wallet,
 } from 'lucide-react';
 import { Chip } from '@/components/ui/Chip';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { Button } from '@/components/ui/Button';
+import { FEATURES } from '@/content/feature-flags';
 
 type NavItemDefinition = {
   id: string;
@@ -37,6 +39,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
   { id: 'generate', label: 'Generate Video', badge: null, icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
+  ...(FEATURES.workflows.toolsSection ? [{ id: 'tools', label: 'Tools', badge: 'beta', badgeKey: 'toolsBeta', icon: 'tools', href: '/tools' }] : []),
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
@@ -47,6 +50,7 @@ const NAV_ICON_MAP: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   generate: Sparkles,
   'generate-image': ImageIcon,
+  tools: Wrench,
   library: BookOpen,
   jobs: ListVideo,
   billing: Wallet,

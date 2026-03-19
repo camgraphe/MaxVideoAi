@@ -29,6 +29,8 @@ type ReceiptItem = {
   description: string | null;
   created_at: string;
   job_id: string | null;
+  surface?: string | null;
+  billing_product_key?: string | null;
   tax_amount_cents: number | null;
   discount_amount_cents: number | null;
 };
@@ -182,6 +184,21 @@ const DEFAULT_BILLING_COPY = {
     close: 'Maybe later',
   },
 };
+
+function formatReceiptSurfaceLabel(surface?: string | null): string | null {
+  switch ((surface ?? '').toLowerCase()) {
+    case 'video':
+      return 'Video';
+    case 'image':
+      return 'Image';
+    case 'character':
+      return 'Character';
+    case 'angle':
+      return 'Angle';
+    default:
+      return null;
+  }
+}
 
 type BillingCopy = Omit<typeof DEFAULT_BILLING_COPY, 'estimator'>;
 
@@ -1046,6 +1063,7 @@ export default function BillingPage() {
                   const amountDisplay = formatMoney(signedCents, r.currency);
                   const typeKey = r.type === 'charge' ? 'charge' : r.type === 'refund' ? 'refund' : 'topup';
                   const typeLabel = copy.receipts.typeLabels[typeKey as keyof typeof copy.receipts.typeLabels] ?? r.type;
+                  const surfaceLabel = formatReceiptSurfaceLabel(r.surface);
                   const typeClass =
                     r.type === 'charge'
                       ? 'bg-error-bg text-error'
@@ -1068,6 +1086,11 @@ export default function BillingPage() {
                           <span className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-micro ${typeClass}`}>
                             {typeLabel}
                           </span>
+                          {surfaceLabel ? (
+                            <span className="rounded-full bg-surface-2 px-2 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                              {surfaceLabel}
+                            </span>
+                          ) : null}
                           <span className={`text-base font-semibold ${amountClass}`}>{amountDisplay}</span>
                         </div>
                       </header>

@@ -220,7 +220,7 @@ type UserAsset = {
   canDelete?: boolean;
 };
 
-type AssetLibrarySource = 'all' | 'upload' | 'generated';
+type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle';
 
 type AssetPickerTarget =
   | { kind: 'field'; field: EngineInputField; slotIndex?: number }
@@ -281,10 +281,14 @@ const DEFAULT_WORKSPACE_COPY = {
     empty: 'No saved images yet. Upload a reference image to see it here.',
     emptyUploads: 'No uploaded images yet. Upload a reference image to see it here.',
     emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
+    emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
+    emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
     tabs: {
       all: 'All',
       upload: 'Uploaded',
       generated: 'Generated',
+      character: 'Character',
+      angle: 'Angle',
     },
   },
 } as const;
@@ -350,6 +354,10 @@ function AssetLibraryModal({
               ? 'Aún no hay videos subidos. Sube un video fuente para verlo aquí.'
               : 'No uploaded videos yet. Upload a source video to see it here.'
         : copyAssetLibrary.emptyUploads
+      : source === 'character'
+        ? copyAssetLibrary.emptyCharacter
+      : source === 'angle'
+        ? copyAssetLibrary.emptyAngle
         : assetType === 'video'
           ? uiLocale === 'fr'
             ? "Aucune vidéo enregistrée pour l’instant. Importez ou générez une vidéo pour la voir ici."
@@ -514,6 +522,34 @@ function AssetLibraryModal({
             )}
           >
             {copyAssetLibrary.tabs.generated}
+          </Button>
+          <Button
+            type="button"
+            role="tab"
+            variant={source === 'character' ? 'primary' : 'ghost'}
+            size="sm"
+            aria-selected={source === 'character'}
+            onClick={() => onSourceChange('character')}
+            className={clsx(
+              'flex-1 rounded-none px-4 py-2',
+              source === 'character' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
+            )}
+          >
+            {copyAssetLibrary.tabs.character}
+          </Button>
+          <Button
+            type="button"
+            role="tab"
+            variant={source === 'angle' ? 'primary' : 'ghost'}
+            size="sm"
+            aria-selected={source === 'angle'}
+            onClick={() => onSourceChange('angle')}
+            className={clsx(
+              'flex-1 rounded-none px-4 py-2',
+              source === 'angle' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
+            )}
+          >
+            {copyAssetLibrary.tabs.angle}
           </Button>
         </div>
 

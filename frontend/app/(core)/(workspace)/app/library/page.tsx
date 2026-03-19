@@ -44,6 +44,8 @@ interface LibraryCopy {
     all: string;
     upload: string;
     generated: string;
+    character: string;
+    angle: string;
   };
   assets: {
     title: string;
@@ -52,6 +54,8 @@ interface LibraryCopy {
     empty: string;
     emptyUploads: string;
     emptyGenerated: string;
+    emptyCharacter: string;
+    emptyAngle: string;
     deleteError: string;
     deleteButton: string;
     downloadButton: string;
@@ -74,6 +78,8 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     all: 'All images',
     upload: 'Uploaded images',
     generated: 'Generated images',
+    character: 'Character assets',
+    angle: 'Angle assets',
   },
   assets: {
     title: 'Library assets',
@@ -82,6 +88,8 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     empty: 'No imported assets yet. Upload references from the composer or drop files here.',
     emptyUploads: 'No uploaded images yet. Upload references from the composer or drop files here.',
     emptyGenerated: 'No generated images saved yet. Generate an image and save it to your library.',
+    emptyCharacter: 'No character assets saved yet. Generate one in Character Builder to see it here.',
+    emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool to see it here.',
     deleteError: 'Unable to delete this image.',
     deleteButton: 'Delete',
     downloadButton: 'Download',
@@ -120,13 +128,27 @@ function formatFileSize(bytes?: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function getAssetJobHref(asset: UserAsset): string | null {
+  if (!asset.jobId) return null;
+  if (asset.source === 'angle') return null;
+  if (asset.source === 'character') {
+    return `/tools/character-builder?job=${encodeURIComponent(asset.jobId)}`;
+  }
+  if (asset.source === 'generated') {
+    return `/app/image?job=${encodeURIComponent(asset.jobId)}`;
+  }
+  return asset.jobId.startsWith('img_')
+    ? `/app/image?job=${encodeURIComponent(asset.jobId)}`
+    : `/app?job=${encodeURIComponent(asset.jobId)}`;
+}
+
 export default function LibraryPage() {
   const { t } = useI18n();
   const rawCopy = t('workspace.library', DEFAULT_LIBRARY_COPY);
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
-  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
   const {
     data: assetsData,
     error: assetsError,
@@ -150,6 +172,10 @@ export default function LibraryPage() {
       ? copy.assets.emptyGenerated
       : activeSource === 'upload'
         ? copy.assets.emptyUploads
+        : activeSource === 'character'
+          ? copy.assets.emptyCharacter
+          : activeSource === 'angle'
+            ? copy.assets.emptyAngle
         : copy.assets.empty;
 
   const handleDeleteAsset = useCallback(
@@ -262,6 +288,40 @@ export default function LibraryPage() {
                 >
                   {copy.tabs.generated}
                 </Button>
+                <Button
+                  type="button"
+                  role="tab"
+                  variant={activeSource === 'character' ? 'primary' : 'ghost'}
+                  size="sm"
+                  aria-selected={activeSource === 'character'}
+                  onClick={() => {
+                    setActiveSource('character');
+                    setDeleteError(null);
+                    setDeletingId(null);
+                  }}
+                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
+                    activeSource === 'character' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
+                  }`}
+                >
+                  {copy.tabs.character}
+                </Button>
+                <Button
+                  type="button"
+                  role="tab"
+                  variant={activeSource === 'angle' ? 'primary' : 'ghost'}
+                  size="sm"
+                  aria-selected={activeSource === 'angle'}
+                  onClick={() => {
+                    setActiveSource('angle');
+                    setDeleteError(null);
+                    setDeletingId(null);
+                  }}
+                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
+                    activeSource === 'angle' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
+                  }`}
+                >
+                  {copy.tabs.angle}
+                </Button>
               </div>
             </div>
 
@@ -304,13 +364,9 @@ export default function LibraryPage() {
                       <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
                       {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                       <div className="flex items-center gap-2">
-                        {asset.jobId ? (
+                        {getAssetJobHref(asset) ? (
                           <ButtonLink
-                            href={
-                              asset.jobId.startsWith('img_')
-                                ? `/app/image?job=${encodeURIComponent(asset.jobId)}`
-                                : `/app?job=${encodeURIComponent(asset.jobId)}`
-                            }
+                            href={getAssetJobHref(asset) ?? '#'}
                             variant="outline"
                             size="sm"
                             className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"

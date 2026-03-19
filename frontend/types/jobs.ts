@@ -1,7 +1,10 @@
 import type { PricingSnapshot } from '@/types/engines';
+import type { BillingProductKey, JobSurface } from '@/types/billing';
 
 export interface Job {
   jobId: string;
+  surface?: JobSurface;
+  billingProductKey?: BillingProductKey | null;
   engineLabel: string;
   durationSec: number;
   prompt: string;
