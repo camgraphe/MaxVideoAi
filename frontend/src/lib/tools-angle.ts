@@ -11,6 +11,12 @@ export const ANGLE_ZOOM_MAX = 10;
 export const CINEMA_SAFE_ROTATION_LIMIT = 25;
 export const CINEMA_SAFE_TILT_LIMIT = 15;
 export const CINEMA_SAFE_ZOOM_MAX = 3;
+export const ANGLE_BEST_VARIANT_OFFSETS = [
+  { rotationOffset: -70, tilt: 12 },
+  { rotationOffset: -25, tilt: 20 },
+  { rotationOffset: 25, tilt: 20 },
+  { rotationOffset: 70, tilt: 12 },
+] as const;
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -85,4 +91,17 @@ export function mapTiltForEngine(engineId: AngleToolEngineId, tilt: number): num
     return clamp(tilt, -30, 30);
   }
   return tilt;
+}
+
+export function buildBestAngleVariantParams(base: AngleToolNumericParams): AngleToolNumericParams[] {
+  const sanitized = sanitizeAngleParams(base);
+  const zoom = sanitized.zoom;
+
+  return ANGLE_BEST_VARIANT_OFFSETS.map((variant) =>
+    sanitizeAngleParams({
+      rotation: normalizeRotation(sanitized.rotation + variant.rotationOffset),
+      tilt: variant.tilt,
+      zoom,
+    })
+  );
 }

@@ -15,6 +15,7 @@ import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import {
   applyCinemaSafeParams,
+  buildBestAngleVariantParams,
   estimateAngleCostUsd,
   mapTiltForEngine,
   normalizeRotation,
@@ -34,6 +35,7 @@ const TOOL_EVENT_NAME = 'tool_angle_generate';
 const DISPLAY_CURRENCY = 'USD';
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 const ANGLE_SURFACE = 'angle' as const;
+const ANGLE_MULTI_OUTPUT_COUNT = 4;
 
 function usdToCredits(value: number | null | undefined): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
@@ -317,7 +319,6 @@ function buildFalInput(
   params: { rotation: number; tilt: number; zoom: number },
   options?: { generateBestAngles?: boolean }
 ) {
-  const requestedOutputs = options?.generateBestAngles && engine.supportsMultiOutput ? 6 : 1;
   const horizontalAngle = Math.round(normalizeRotation(params.rotation));
   const verticalAngle = Math.round(mapTiltForEngine(engine.id, params.tilt));
   const zoomAmount = Number(params.zoom.toFixed(1));
@@ -327,7 +328,7 @@ function buildFalInput(
     horizontal_angle: horizontalAngle,
     vertical_angle: verticalAngle,
     zoom_amount: zoomAmount,
-    num_images: requestedOutputs,
+    num_images: 1,
   };
 }
 
@@ -497,7 +498,7 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
   const resolvedEngineId = resolveAngleEngineForParams(input.engineId ?? 'flux-multiple-angles', applied);
   const engine = getAngleToolEngine(resolvedEngineId);
   const generateBestAngles = input.generateBestAngles === true;
-  const requestedOutputCount = generateBestAngles && engine.supportsMultiOutput ? 6 : 1;
+  const requestedOutputCount = generateBestAngles && engine.supportsMultiOutput ? ANGLE_MULTI_OUTPUT_COUNT : 1;
   const jobId = `tool_angle_${randomUUID()}`;
   const billingProductKey = getAngleBillingProductKeyForEngine(engine.id, generateBestAngles);
   const priceOnlyReceipts = receiptsPriceOnlyEnabled();
@@ -654,28 +655,39 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
     });
   }
 
-  const falInput = buildFalInput(engine, input.imageUrl, applied, { generateBestAngles });
+  const falInputs = generateBestAngles
+    ? buildBestAngleVariantParams(applied).map((variant) => buildFalInput(engine, input.imageUrl, variant))
+    : [buildFalInput(engine, input.imageUrl, applied)];
   const falClient = getFalClient();
   let providerJobId: string | null = null;
   let lastQueueUpdate: unknown = null;
   const startedAt = Date.now();
 
   try {
-    const result = await falClient.subscribe(engine.falModelId, {
-      input: falInput,
-      mode: 'polling',
-      onEnqueue(requestId) {
-        providerJobId = requestId;
-      },
-      onQueueUpdate(update) {
-        if (update?.request_id) {
-          providerJobId = update.request_id;
-        }
-        lastQueueUpdate = update;
-      },
-    });
+    const results = [];
+    const outputs: AngleToolOutput[] = [];
+    let providerCostUsdTotal = 0;
 
-    const outputs = extractOutputs(result.data);
+    for (const falInput of falInputs) {
+      const result = await falClient.subscribe(engine.falModelId, {
+        input: falInput,
+        mode: 'polling',
+        onEnqueue(requestId) {
+          providerJobId = providerJobId ?? requestId;
+        },
+        onQueueUpdate(update) {
+          if (update?.request_id) {
+            providerJobId = providerJobId ?? update.request_id;
+          }
+          lastQueueUpdate = update;
+        },
+      });
+      results.push(result);
+      outputs.push(...extractOutputs(result.data));
+      const providerCostUsd = extractActualCostUsd(result.data) ?? extractActualCostUsd(lastQueueUpdate) ?? 0;
+      providerCostUsdTotal += providerCostUsd;
+    }
+
     if (!outputs.length) {
       throw new AngleToolError('The selected engine did not return any image output.', {
         status: 502,
@@ -684,8 +696,9 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
     }
 
     const latencyMs = Date.now() - startedAt;
-    const providerCostUsd = extractActualCostUsd(result.data) ?? extractActualCostUsd(lastQueueUpdate) ?? null;
-    const requestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
+    const finalResult = results[results.length - 1] ?? null;
+    const providerCostUsd = providerCostUsdTotal > 0 ? Number(providerCostUsdTotal.toFixed(6)) : null;
+    const requestId = providerJobId ?? (finalResult ? parseRequestId(finalResult.data) ?? finalResult.requestId ?? null : null);
     const persistedOutputs = await persistAngleOutputs({
       outputs,
       userId: input.userId,

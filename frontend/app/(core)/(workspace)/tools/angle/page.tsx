@@ -181,6 +181,14 @@ function collectAnglePreviewImages(
   return [];
 }
 
+function buildTextureProxyUrl(url: string | null | undefined): string | null {
+  const trimmed = typeof url === 'string' ? url.trim() : '';
+  if (!trimmed) return null;
+  if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) return trimmed;
+  if (trimmed.startsWith('/')) return trimmed;
+  return `/api/media-proxy?url=${encodeURIComponent(trimmed)}`;
+}
+
 function AngleOutputMosaic({
   outputs,
   selectedIndex,
@@ -710,7 +718,7 @@ function useSourceTexture(urls: Array<string | null | undefined>) {
       }
       const loader = new THREE.TextureLoader();
       const candidate = candidates[index];
-      if (!candidate.startsWith('blob:')) {
+      if (!candidate.startsWith('blob:') && !candidate.startsWith('/')) {
         loader.setCrossOrigin('anonymous');
       }
 
@@ -751,7 +759,10 @@ function useSourceTexture(urls: Array<string | null | undefined>) {
 }
 
 function AngleImageCard({ sourceImage }: { sourceImage: UploadedImage }) {
-  const texture = useSourceTexture([sourceImage.previewUrl, sourceImage.url]);
+  const texture = useSourceTexture([
+    buildTextureProxyUrl(sourceImage.previewUrl),
+    buildTextureProxyUrl(sourceImage.url),
+  ]);
   const aspect = useMemo(() => {
     if (sourceImage.width && sourceImage.height) {
       return sourceImage.width / sourceImage.height;
@@ -806,6 +817,7 @@ function AngleImageCard({ sourceImage }: { sourceImage: UploadedImage }) {
 export default function AngleToolPage() {
   const { loading: authLoading, user } = useRequireAuth();
   const hasHydratedStorageRef = useRef(false);
+  const [storageHydrated, setStorageHydrated] = useState(false);
   const [engineId, setEngineId] = useState<AngleToolEngineId>(DEFAULT_ENGINE_ID as AngleToolEngineId);
   const [params, setParams] = useState<AngleToolNumericParams>({ rotation: 8, tilt: 2, zoom: 1.2 });
   const [safeMode, setSafeMode] = useState(true);
@@ -909,12 +921,14 @@ export default function AngleToolPage() {
       setSelectedOutputIndex(parsed.selectedOutputIndex);
     } catch {
       // ignore storage failures
+    } finally {
+      setStorageHydrated(true);
     }
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!hasHydratedStorageRef.current) return;
+    if (!storageHydrated) return;
     const payload: PersistedAngleToolState = {
       version: 1,
       engineId,
@@ -935,7 +949,7 @@ export default function AngleToolPage() {
     } catch {
       // ignore storage failures
     }
-  }, [engineId, generateBestAngles, params, result, safeMode, selectedOutputIndex, sourceImage]);
+  }, [engineId, generateBestAngles, params, result, safeMode, selectedOutputIndex, sourceImage, storageHydrated]);
 
   useEffect(() => {
     if (effectiveEngineId !== engineId) {
