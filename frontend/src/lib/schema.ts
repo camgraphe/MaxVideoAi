@@ -348,12 +348,8 @@ export async function ensureBillingSchema(): Promise<void> {
         ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'USD';
       `);
 
-      await query(`
-        DROP VIEW IF EXISTS app_receipts_public;
-      `);
-
-      await query(`
-        CREATE VIEW app_receipts_public AS
+      const appReceiptsPublicViewSql = `
+        CREATE OR REPLACE VIEW app_receipts_public AS
         SELECT
           id,
           user_id,
@@ -368,7 +364,48 @@ export async function ensureBillingSchema(): Promise<void> {
           NULL::bigint AS tax_amount_cents,
           NULL::bigint AS discount_amount_cents
         FROM app_receipts;
-      `);
+      `;
+
+      try {
+        await query(appReceiptsPublicViewSql);
+      } catch (error) {
+        const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+        if (code !== '42P16') {
+          throw error;
+        }
+
+        await query(`
+          DROP VIEW IF EXISTS app_receipts_public;
+        `);
+
+        try {
+          await query(`
+            CREATE VIEW app_receipts_public AS
+            SELECT
+              id,
+              user_id,
+              type AS kind,
+              amount_cents,
+              currency,
+              description,
+              created_at,
+              job_id,
+              surface,
+              billing_product_key,
+              NULL::bigint AS tax_amount_cents,
+              NULL::bigint AS discount_amount_cents
+            FROM app_receipts;
+          `);
+        } catch (createError) {
+          const createCode =
+            typeof createError === 'object' && createError && 'code' in createError
+              ? (createError as { code?: string }).code
+              : undefined;
+          if (createCode !== '42P07') {
+            throw createError;
+          }
+        }
+      }
 
       await query(`
         CREATE TABLE IF NOT EXISTS stripe_webhook_events (
