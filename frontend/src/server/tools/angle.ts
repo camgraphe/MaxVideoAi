@@ -6,11 +6,19 @@ import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
 import { ensureBillingSchema } from '@/lib/schema';
+import { computeBillingProductSnapshot } from '@/lib/billing-products';
+import { getPlatformFeeCents } from '@/lib/pricing';
+import { reserveWalletCharge } from '@/lib/wallet';
+import { receiptsPriceOnlyEnabled } from '@/lib/env';
+import { isStorageConfigured, recordUserAsset, uploadImageToStorage } from '@/server/storage';
+import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import {
   applyCinemaSafeParams,
   estimateAngleCostUsd,
   mapTiltForEngine,
   normalizeRotation,
+  resolveAngleEngineForParams,
   sanitizeAngleParams,
 } from '@/lib/tools-angle';
 import type {
@@ -20,8 +28,12 @@ import type {
   AngleToolResponse,
   AngleToolEngineId,
 } from '@/types/tools-angle';
+import type { PricingSnapshot } from '@/types/engines';
 
 const TOOL_EVENT_NAME = 'tool_angle_generate';
+const DISPLAY_CURRENCY = 'USD';
+const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
+const ANGLE_SURFACE = 'angle' as const;
 
 function usdToCredits(value: number | null | undefined): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
@@ -45,6 +57,96 @@ export class AngleToolError extends Error {
 type RunAngleToolInput = AngleToolRequest & {
   userId: string;
 };
+
+type PendingAngleReceipt = {
+  userId: string;
+  amountCents: number;
+  currency: string;
+  description: string;
+  jobId: string;
+  surface: typeof ANGLE_SURFACE;
+  billingProductKey: string;
+  snapshot: PricingSnapshot;
+  applicationFeeCents: number | null;
+  vendorAccountId: string | null;
+};
+
+function getAngleBillingProductKey(generateBestAngles: boolean): string {
+  return generateBestAngles ? 'angle-multi' : 'angle-single';
+}
+
+function buildAnglePromptSummary(params: { rotation: number; tilt: number; zoom: number }, outputCount: number): string {
+  return `Angle tool · rotation ${Math.round(params.rotation)}° · tilt ${Math.round(params.tilt)}° · zoom ${params.zoom.toFixed(1)} · ${outputCount} output${outputCount > 1 ? 's' : ''}`;
+}
+
+function buildAngleSettingsSnapshot(args: {
+  engine: AngleToolEngineDefinition;
+  imageUrl: string;
+  requested: AngleToolRequest['params'];
+  applied: AngleToolRequest['params'] & { safeMode: boolean; safeApplied: boolean };
+  generateBestAngles: boolean;
+  outputCount: number;
+  billingProductKey: string;
+}): Record<string, unknown> {
+  return {
+    schemaVersion: 1,
+    surface: ANGLE_SURFACE,
+    billingProductKey: args.billingProductKey,
+    engineId: args.engine.id,
+    engineLabel: args.engine.label,
+    inputMode: 'i2i',
+    prompt: buildAnglePromptSummary(args.applied, args.outputCount),
+    source: {
+      imageUrl: args.imageUrl,
+    },
+    controls: {
+      requested: args.requested,
+      applied: args.applied,
+      generateBestAngles: args.generateBestAngles,
+      outputCount: args.outputCount,
+    },
+  };
+}
+
+async function recordAngleRefundReceipt(receipt: PendingAngleReceipt, label: string, priceOnly: boolean) {
+  try {
+    await query(
+      `INSERT INTO app_receipts (
+         user_id,
+         type,
+         amount_cents,
+         currency,
+         description,
+         job_id,
+         surface,
+         billing_product_key,
+         pricing_snapshot,
+         application_fee_cents,
+         vendor_account_id,
+         platform_revenue_cents,
+         destination_acct
+       )
+       VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12)
+       ON CONFLICT DO NOTHING`,
+      [
+        receipt.userId,
+        receipt.amountCents,
+        receipt.currency,
+        label,
+        receipt.jobId,
+        receipt.surface,
+        receipt.billingProductKey,
+        JSON.stringify(receipt.snapshot),
+        priceOnly ? null : 0,
+        priceOnly ? null : receipt.vendorAccountId,
+        priceOnly ? null : 0,
+        priceOnly ? null : receipt.vendorAccountId,
+      ]
+    );
+  } catch (error) {
+    console.warn('[tools/angle] failed to record refund receipt', error);
+  }
+}
 
 function normalizeFalUrl(value: string): string {
   const trimmed = value.trim();
@@ -255,6 +357,121 @@ async function insertToolEvent(params: {
   }
 }
 
+async function persistAngleOutput(params: {
+  output: AngleToolOutput;
+  outputIndex: number;
+  userId: string;
+  jobId: string;
+  providerJobId?: string | null;
+  engineId: AngleToolEngineId;
+  engineLabel: string;
+}): Promise<AngleToolOutput> {
+  const { output, outputIndex, userId, jobId, providerJobId, engineId, engineLabel } = params;
+  if (!isStorageConfigured() || !output.url) {
+    return output;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12_000);
+    let response: Response;
+    try {
+      response = await fetch(output.url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!response.ok) {
+      throw new Error(`fetch failed (${response.status})`);
+    }
+
+    const mimeHeader = response.headers.get('content-type') ?? '';
+    const mime =
+      typeof output.mimeType === 'string' && output.mimeType.startsWith('image/')
+        ? output.mimeType
+        : mimeHeader.startsWith('image/')
+          ? mimeHeader
+          : 'image/png';
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (!buffer.length) {
+      throw new Error('empty image');
+    }
+
+    const upload = await uploadImageToStorage({
+      data: buffer,
+      mime,
+      userId,
+      prefix: 'angle',
+      fileName: `angle-${engineId}-${outputIndex + 1}.${mime.split('/')[1] || 'png'}`,
+    });
+
+    const assetId = await recordUserAsset({
+      userId,
+      url: upload.url,
+      mime: upload.mime,
+      width: upload.width ?? output.width ?? null,
+      height: upload.height ?? output.height ?? null,
+      size: upload.size,
+      source: 'angle',
+      metadata: {
+        originUrl: output.url,
+        jobId,
+        providerJobId: providerJobId ?? null,
+        tool: 'angle',
+        label: 'angle',
+        engineId,
+        engineLabel,
+        outputIndex,
+      },
+    });
+
+    return {
+      ...output,
+      url: upload.url,
+      width: upload.width ?? output.width ?? null,
+      height: upload.height ?? output.height ?? null,
+      mimeType: upload.mime,
+      originUrl: output.url,
+      assetId,
+      source: 'angle',
+      persisted: true,
+    };
+  } catch (error) {
+    console.warn('[tools/angle] failed to persist output', {
+      engineId,
+      jobId,
+      outputIndex,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return output;
+  }
+}
+
+async function persistAngleOutputs(params: {
+  outputs: AngleToolOutput[];
+  userId: string;
+  jobId: string;
+  providerJobId?: string | null;
+  engineId: AngleToolEngineId;
+  engineLabel: string;
+}): Promise<AngleToolOutput[]> {
+  const { outputs, userId, jobId, providerJobId, engineId, engineLabel } = params;
+  return Promise.all(
+    outputs.map((output, index) =>
+      persistAngleOutput({
+        output,
+        outputIndex: index,
+        userId,
+        jobId,
+        providerJobId,
+        engineId,
+        engineLabel,
+      })
+    )
+  );
+}
+
 function toValidationMessage(error: ValidationError): string {
   const messages = error.fieldErrors
     .map((entry) => {
@@ -273,20 +490,171 @@ function toValidationMessage(error: ValidationError): string {
 }
 
 export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolResponse> {
-  const engine = getAngleToolEngine(input.engineId);
   const requested = sanitizeAngleParams(input.params);
   const safeMode = input.safeMode !== false;
   const applied = applyCinemaSafeParams(requested, safeMode);
+  const resolvedEngineId = resolveAngleEngineForParams(input.engineId ?? 'flux-multiple-angles', applied);
+  const engine = getAngleToolEngine(resolvedEngineId);
   const generateBestAngles = input.generateBestAngles === true;
   const requestedOutputCount = generateBestAngles && engine.supportsMultiOutput ? 6 : 1;
-  const estimatedCostUsd = Number(
+  const jobId = `tool_angle_${randomUUID()}`;
+  const billingProductKey = getAngleBillingProductKey(generateBestAngles);
+  const priceOnlyReceipts = receiptsPriceOnlyEnabled();
+  let pricing: PricingSnapshot;
+  try {
+    pricing = await computeBillingProductSnapshot({
+      productKey: billingProductKey,
+      quantity: requestedOutputCount,
+      engineId: engine.id,
+    });
+  } catch (error) {
+    throw new AngleToolError('Unable to compute angle pricing.', {
+      status: 500,
+      code: 'pricing_error',
+      detail: error instanceof Error ? error.message : error,
+    });
+  }
+
+  pricing.meta = {
+    ...(pricing.meta ?? {}),
+    surface: ANGLE_SURFACE,
+    billingProductKey,
+    request: {
+      engineId: engine.id,
+      engineLabel: engine.label,
+      generateBestAngles,
+      requestedOutputCount,
+      requested,
+      applied: {
+        ...applied,
+        safeMode,
+      },
+    },
+  };
+
+  const chargedUsd = Number((pricing.totalCents / 100).toFixed(4));
+  const chargedCredits = usdToCredits(chargedUsd) ?? 1;
+  const providerCostEstimateUsd = Number(
     (estimateAngleCostUsd(engine.id, input.imageWidth, input.imageHeight) * requestedOutputCount).toFixed(4)
   );
-  const estimatedCredits = usdToCredits(estimatedCostUsd) ?? 1;
+  const settingsSnapshot = buildAngleSettingsSnapshot({
+    engine,
+    imageUrl: input.imageUrl,
+    requested,
+    applied: {
+      ...applied,
+      safeMode,
+    },
+    generateBestAngles,
+    outputCount: requestedOutputCount,
+    billingProductKey,
+  });
+  const promptSummary = buildAnglePromptSummary(applied, requestedOutputCount);
+  const pendingReceipt: PendingAngleReceipt = {
+    userId: input.userId,
+    amountCents: pricing.totalCents,
+    currency: pricing.currency,
+    description: `${engine.label} angle run`,
+    jobId,
+    surface: ANGLE_SURFACE,
+    billingProductKey,
+    snapshot: pricing,
+    applicationFeeCents: priceOnlyReceipts ? null : getPlatformFeeCents(pricing),
+    vendorAccountId: pricing.vendorAccountId ?? null,
+  };
+
+  const reserveResult = await reserveWalletCharge({
+    userId: input.userId,
+    amountCents: pricing.totalCents,
+    currency: pricing.currency,
+    description: pendingReceipt.description,
+    jobId,
+    surface: ANGLE_SURFACE,
+    billingProductKey,
+    pricingSnapshotJson: JSON.stringify(pricing),
+    applicationFeeCents: pendingReceipt.applicationFeeCents,
+    vendorAccountId: pendingReceipt.vendorAccountId,
+    stripePaymentIntentId: null,
+    stripeChargeId: null,
+  });
+
+  if (!reserveResult.ok) {
+    if (reserveResult.errorCode === 'currency_mismatch') {
+      const lockedCurrency = (reserveResult.preferredCurrency ?? 'usd').toUpperCase();
+      throw new AngleToolError(`Wallet currency locked to ${lockedCurrency}. Contact support to request a change.`, {
+        status: 409,
+        code: 'wallet_currency_mismatch',
+        detail: { lockedCurrency },
+      });
+    }
+
+    throw new AngleToolError('Insufficient wallet balance for this angle run.', {
+      status: 402,
+      code: 'insufficient_wallet_funds',
+      detail: {
+        balanceCents: reserveResult.balanceCents,
+        requiredCents: Math.max(0, pricing.totalCents - reserveResult.balanceCents),
+      },
+    });
+  }
+
+  try {
+    await query(
+      `INSERT INTO app_jobs (
+         job_id,
+         user_id,
+         surface,
+         billing_product_key,
+         engine_id,
+         engine_label,
+         duration_sec,
+         prompt,
+         thumb_url,
+         preview_frame,
+         status,
+         progress,
+         final_price_cents,
+         pricing_snapshot,
+         settings_snapshot,
+         currency,
+         vendor_account_id,
+         payment_status,
+         visibility,
+         indexable,
+         provisional
+       )
+       VALUES (
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'pending',0,$11,$12::jsonb,$13::jsonb,$14,$15,'paid_wallet','private',FALSE,TRUE
+       )`,
+      [
+        jobId,
+        input.userId,
+        ANGLE_SURFACE,
+        billingProductKey,
+        engine.id,
+        engine.label,
+        requestedOutputCount,
+        promptSummary,
+        PLACEHOLDER_THUMB,
+        PLACEHOLDER_THUMB,
+        pricing.totalCents,
+        JSON.stringify(pricing),
+        JSON.stringify(settingsSnapshot),
+        pricing.currency,
+        pendingReceipt.vendorAccountId,
+      ]
+    );
+  } catch (error) {
+    await recordAngleRefundReceipt(pendingReceipt, `Refund ${engine.label} angle run`, priceOnlyReceipts);
+    throw new AngleToolError('Failed to save angle job.', {
+      status: 500,
+      code: 'job_persist_failed',
+      detail: error instanceof Error ? error.message : error,
+    });
+  }
 
   const falInput = buildFalInput(engine, input.imageUrl, applied, { generateBestAngles });
   const falClient = getFalClient();
-  const jobId = `tool_angle_${randomUUID()}`;
   let providerJobId: string | null = null;
   let lastQueueUpdate: unknown = null;
   const startedAt = Date.now();
@@ -315,9 +683,58 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
     }
 
     const latencyMs = Date.now() - startedAt;
-    const actualCostUsd = extractActualCostUsd(result.data) ?? extractActualCostUsd(lastQueueUpdate) ?? null;
-    const actualCredits = usdToCredits(actualCostUsd);
+    const providerCostUsd = extractActualCostUsd(result.data) ?? extractActualCostUsd(lastQueueUpdate) ?? null;
     const requestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
+    const persistedOutputs = await persistAngleOutputs({
+      outputs,
+      userId: input.userId,
+      jobId,
+      providerJobId: requestId,
+      engineId: engine.id,
+      engineLabel: engine.label,
+    });
+    const thumbUrls = await createImageThumbnailBatch({
+      jobId,
+      userId: input.userId,
+      imageUrls: persistedOutputs.map((output) => output.url),
+    });
+    const outputsWithThumbs = persistedOutputs.map((output, index) => ({
+      ...output,
+      thumbUrl: thumbUrls[index] ?? null,
+    }));
+    const storedRenderEntries = buildStoredImageRenderEntries(outputsWithThumbs);
+    const heroRenderId = outputsWithThumbs[0]?.url ?? null;
+    const heroThumb = resolveHeroThumbFromRenders(outputsWithThumbs) ?? heroRenderId ?? PLACEHOLDER_THUMB;
+
+    await query(
+      `UPDATE app_jobs
+       SET thumb_url = $2,
+           preview_frame = $3,
+           status = 'completed',
+           progress = 100,
+           provider_job_id = $4,
+           final_price_cents = $5,
+           pricing_snapshot = $6::jsonb,
+           cost_breakdown_usd = $7::jsonb,
+           render_ids = $8::jsonb,
+           hero_render_id = $9,
+           message = NULL,
+           payment_status = 'paid_wallet',
+           provisional = FALSE,
+           updated_at = NOW()
+       WHERE job_id = $1`,
+      [
+        jobId,
+        heroThumb,
+        heroThumb,
+        requestId,
+        pricing.totalCents,
+        JSON.stringify(pricing),
+        JSON.stringify({ providerCostUsd }),
+        JSON.stringify(storedRenderEntries),
+        heroRenderId,
+      ]
+    );
 
     await insertToolEvent({
       jobId,
@@ -343,18 +760,22 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
         },
         latencyMs,
         pricing: {
-          estimatedCostUsd,
-          actualCostUsd,
-          currency: 'USD',
-          estimatedCredits,
-          actualCredits,
+          estimatedCostUsd: chargedUsd,
+          actualCostUsd: chargedUsd,
+          providerCostUsd,
+          currency: pricing.currency,
+          estimatedCredits: chargedCredits,
+          actualCredits: chargedCredits,
+          totalCents: pricing.totalCents,
+          billingProductKey,
         },
-        outputCount: outputs.length,
+        outputCount: outputsWithThumbs.length,
       },
     });
 
     return {
       ok: true,
+      jobId,
       engineId: engine.id,
       engineLabel: engine.label,
       requestedOutputCount,
@@ -362,18 +783,20 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
       providerJobId: requestId,
       latencyMs,
       pricing: {
-        estimatedCostUsd,
-        actualCostUsd,
-        currency: 'USD',
-        estimatedCredits,
-        actualCredits,
+        estimatedCostUsd: chargedUsd,
+        actualCostUsd: chargedUsd,
+        currency: pricing.currency,
+        estimatedCredits: chargedCredits,
+        actualCredits: chargedCredits,
+        totalCents: pricing.totalCents,
+        billingProductKey,
       },
       requested,
       applied: {
         ...applied,
         safeMode,
       },
-      outputs,
+      outputs: outputsWithThumbs,
     };
   } catch (error) {
     const latencyMs = Date.now() - startedAt;
@@ -400,6 +823,24 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
       code = 'provider_error';
     }
 
+    await recordAngleRefundReceipt(pendingReceipt, `Refund ${engine.label} angle run`, priceOnlyReceipts);
+    try {
+      await query(
+        `UPDATE app_jobs
+         SET status = 'failed',
+             progress = 0,
+             provider_job_id = COALESCE($2, provider_job_id),
+             payment_status = 'refunded_wallet',
+             message = $3,
+             provisional = FALSE,
+             updated_at = NOW()
+         WHERE job_id = $1`,
+        [jobId, providerJobId, message]
+      );
+    } catch (updateError) {
+      console.warn('[tools/angle] failed to mark job as failed', updateError);
+    }
+
     await insertToolEvent({
       jobId,
       engineId: engine.id,
@@ -424,11 +865,13 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
         },
         latencyMs,
         pricing: {
-          estimatedCostUsd,
+          estimatedCostUsd: chargedUsd,
           actualCostUsd: null,
-          currency: 'USD',
-          estimatedCredits,
+          currency: pricing.currency,
+          estimatedCredits: chargedCredits,
           actualCredits: null,
+          totalCents: pricing.totalCents,
+          billingProductKey,
         },
         error: {
           code,

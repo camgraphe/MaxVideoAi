@@ -39,6 +39,8 @@ import {
   resolveRequestedAspectRatio,
   resolveRequestedResolution,
 } from '@/app/api/images/utils';
+import { computeBillingProductSnapshot } from '@/lib/billing-products';
+import type { BillingProductKey, JobSurface } from '@/types/billing';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
@@ -51,6 +53,8 @@ type PendingReceipt = {
   currency: string;
   description: string;
   jobId: string;
+  surface: JobSurface;
+  billingProductKey: BillingProductKey | null;
   snapshot: unknown;
   applicationFeeCents: number | null;
   vendorAccountId: string | null;
@@ -62,6 +66,8 @@ type ExecuteImageGenerationOptions = {
   userId: string;
   body: Partial<ImageGenerationRequest>;
   settingsSnapshot?: unknown;
+  jobSurface?: JobSurface;
+  billingProductKey?: BillingProductKey | null;
 };
 
 type ImageEngineEntry = (typeof IMAGE_ENGINE_REGISTRY)[number];
@@ -304,6 +310,8 @@ async function recordRefundReceipt(receipt: PendingReceipt, label: string, price
          currency,
          description,
          job_id,
+         surface,
+         billing_product_key,
          pricing_snapshot,
          application_fee_cents,
          vendor_account_id,
@@ -312,7 +320,7 @@ async function recordRefundReceipt(receipt: PendingReceipt, label: string, price
          platform_revenue_cents,
          destination_acct
        )
-       VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)
+       VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13)
        ON CONFLICT DO NOTHING`,
       [
         receipt.userId,
@@ -320,6 +328,8 @@ async function recordRefundReceipt(receipt: PendingReceipt, label: string, price
         receipt.currency,
         label,
         receipt.jobId,
+        receipt.surface,
+        receipt.billingProductKey,
         JSON.stringify(receipt.snapshot),
         priceOnly ? null : 0,
         priceOnly ? null : receipt.vendorAccountId,
@@ -335,6 +345,7 @@ async function recordRefundReceipt(receipt: PendingReceipt, label: string, price
 }
 
 function buildDefaultSettingsSnapshot(args: {
+  surface: JobSurface;
   engineEntry: ImageEngineEntry;
   mode: ImageGenerationMode;
   prompt: string;
@@ -354,7 +365,7 @@ function buildDefaultSettingsSnapshot(args: {
 }): unknown {
   return {
     schemaVersion: 1,
-    surface: 'image',
+    surface: args.surface,
     engineId: args.engineEntry.id,
     engineLabel: args.engineEntry.marketingName,
     inputMode: args.mode,
@@ -396,6 +407,8 @@ export async function executeImageGeneration({
   userId,
   body,
   settingsSnapshot,
+  jobSurface = 'image',
+  billingProductKey = null,
 }: ExecuteImageGenerationOptions): Promise<ImageGenerationResponse> {
   if (!isDatabaseConfigured()) {
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
@@ -613,14 +626,21 @@ export async function executeImageGeneration({
     ? body.membershipTier.trim()
     : undefined;
   try {
-    pricing = await computePricingSnapshot({
-      engine,
-      durationSec,
-      resolution,
-      membershipTier,
-      currency: DISPLAY_CURRENCY,
-      addons: enableWebSearch ? { enable_web_search: true } : undefined,
-    });
+    pricing = billingProductKey
+      ? await computeBillingProductSnapshot({
+          productKey: billingProductKey,
+          quantity: numImages,
+          membershipTier,
+          engineId: engine.id,
+        })
+      : await computePricingSnapshot({
+          engine,
+          durationSec,
+          resolution,
+          membershipTier,
+          currency: DISPLAY_CURRENCY,
+          addons: enableWebSearch ? { enable_web_search: true } : undefined,
+        });
   } catch (error) {
     console.error('[images] failed to compute pricing snapshot', error);
     fail(mode, 'pricing_error', 'Unable to compute pricing.', 500, null, {
@@ -635,6 +655,9 @@ export async function executeImageGeneration({
 
   pricing.meta = {
     ...(pricing.meta ?? {}),
+    surface: jobSurface,
+    billingProductKey,
+    engineId: engine.id,
     request: {
       engineId: engine.id,
       engineLabel: engine.label,
@@ -679,6 +702,7 @@ export async function executeImageGeneration({
   const settingsSnapshotJson = JSON.stringify(
     settingsSnapshot ??
       buildDefaultSettingsSnapshot({
+        surface: jobSurface,
         engineEntry,
         mode,
         prompt,
@@ -698,13 +722,22 @@ export async function executeImageGeneration({
       })
   );
 
-  const description = `${engineEntry.marketingName} - ${numImages} image${numImages > 1 ? 's' : ''}`;
+  const billingProductLabel =
+    pricing.meta && typeof pricing.meta.billingProductLabel === 'string' ? pricing.meta.billingProductLabel : null;
+  const description = billingProductLabel
+    ? `${billingProductLabel} - ${numImages} image${numImages > 1 ? 's' : ''}`
+    : `${engineEntry.marketingName} - ${numImages} image${numImages > 1 ? 's' : ''}`;
+  const refundDescription = billingProductLabel
+    ? `Refund ${billingProductLabel} - ${numImages} image${numImages > 1 ? 's' : ''}`
+    : `Refund ${engine.label} - ${numImages} images`;
   const pendingReceipt: PendingReceipt = {
     userId,
     amountCents: pricing.totalCents,
     currency: DISPLAY_CURRENCY,
     description,
     jobId,
+    surface: jobSurface,
+    billingProductKey,
     snapshot: receiptSnapshot,
     applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
     vendorAccountId,
@@ -721,6 +754,8 @@ export async function executeImageGeneration({
     pricingSnapshotJson,
     applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
     vendorAccountId,
+    surface: jobSurface,
+    billingProductKey,
     stripePaymentIntentId: null,
     stripeChargeId: null,
   });
@@ -748,6 +783,8 @@ export async function executeImageGeneration({
       `INSERT INTO app_jobs (
          job_id,
          user_id,
+         surface,
+         billing_product_key,
          engine_id,
          engine_label,
          duration_sec,
@@ -785,11 +822,13 @@ export async function executeImageGeneration({
          provisional
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28::jsonb,$29::jsonb,$30,$31,$32,$33,$34,$35,$36,$37
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28::jsonb,$29::jsonb,$30::jsonb,$31,$32,$33,$34,$35,$36,$37,$38,$39
        )`,
       [
         jobId,
         userId,
+        jobSurface,
+        billingProductKey,
         engine.id,
         engine.label,
         durationSec,
@@ -829,7 +868,7 @@ export async function executeImageGeneration({
     );
   } catch (error) {
     console.error('[images] failed to persist provisional job record', error);
-    await recordRefundReceipt(pendingReceipt, `Refund ${engine.label} - ${numImages} images`, priceOnlyReceipts);
+    await recordRefundReceipt(pendingReceipt, refundDescription, priceOnlyReceipts);
     fail(mode, 'job_persist_failed', 'Failed to save job record.', 500);
   }
 
@@ -1086,7 +1125,7 @@ export async function executeImageGeneration({
       console.warn('[images] failed to record fal queue log', logError);
     }
 
-    await recordRefundReceipt(pendingReceipt, `Refund ${engine.label} - ${numImages} images`, priceOnlyReceipts);
+    await recordRefundReceipt(pendingReceipt, refundDescription, priceOnlyReceipts);
 
     fail(mode, 'fal_error', message, 502, { providerStatus, providerBody }, {
       engineId: engineEntry.id,

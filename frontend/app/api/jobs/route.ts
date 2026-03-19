@@ -13,6 +13,7 @@ import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { listVisitorStarterJobs } from '@/server/visitor-workspace';
+import { deriveJobSurface, isImageLikeSurface, normalizeJobSurface } from '@/lib/job-surface';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,7 +63,57 @@ function formatCursorValue(row: { created_at: string; id: number }): string {
 const IMAGE_ENGINE_ALIASES = listFalEngines()
   .filter((engine) => (engine.category ?? 'video') === 'image')
   .flatMap((engine) => getEngineAliases(engine));
-const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_ALIASES);
+
+function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'angle', params: Array<string | number | Date | string[]>) {
+  params.push(surface);
+  const directIndex = params.length;
+
+  if (surface === 'character') {
+    return `(surface = $${directIndex} OR settings_snapshot->>'surface' = 'character-builder')`;
+  }
+
+  if (surface === 'angle') {
+    return `(surface = $${directIndex} OR job_id LIKE 'tool_angle_%' OR settings_snapshot->>'surface' = 'angle')`;
+  }
+
+  if (surface === 'image') {
+    params.push(IMAGE_ENGINE_ALIASES);
+    const imageAliasIndex = params.length;
+    return `(
+      surface = $${directIndex}
+      OR (
+        (
+          settings_snapshot->>'surface' = 'image'
+          OR render_ids IS NOT NULL
+          OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
+        )
+        AND COALESCE(surface, '') NOT IN ('character', 'angle')
+        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('character-builder', 'angle', 'video')
+        AND job_id NOT LIKE 'tool_angle_%'
+      )
+    )`;
+  }
+
+  if (surface === 'video') {
+    params.push(IMAGE_ENGINE_ALIASES);
+    const imageAliasIndex = params.length;
+    return `(
+      (
+        surface = $${directIndex}
+        OR COALESCE(video_url, '') <> ''
+        OR settings_snapshot->>'surface' = 'video'
+      )
+      AND NOT (
+        settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle')
+        OR job_id LIKE 'tool_angle_%'
+        OR render_ids IS NOT NULL
+        OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
+      )
+    )`;
+  }
+
+  return `surface = $${directIndex}`;
+}
 
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
@@ -87,11 +138,12 @@ export async function GET(req: NextRequest) {
   const cursor = url.searchParams.get('cursor');
   const typeParam = url.searchParams.get('type');
   const feedType = typeParam === 'image' || typeParam === 'video' ? typeParam : 'all';
+  const requestedSurface = normalizeJobSurface(url.searchParams.get('surface'));
   const { userId } = await getRouteAuthContext(req);
 
   if (!userId) {
     if (VISITOR_WORKSPACE_ENABLED) {
-      if (feedType === 'image') {
+      if (feedType === 'image' || (requestedSurface && isImageLikeSurface(requestedSurface))) {
         return json({ ok: true, jobs: [], nextCursor: null });
       }
       if (shouldUseStarterFallback(feedType, cursor)) {
@@ -114,15 +166,33 @@ export async function GET(req: NextRequest) {
       conditions.push(baseFailureClause);
     }
 
-    if (IMAGE_ENGINE_ALIASES.length && feedType !== 'all') {
+    if (requestedSurface) {
+      conditions.push(buildSurfaceFilterClause(requestedSurface, params));
+    } else if (IMAGE_ENGINE_ALIASES.length && feedType !== 'all') {
       params.push(IMAGE_ENGINE_ALIASES);
       const aliasIdx = params.length;
       const aliasClause = `COALESCE(engine_id, '') = ANY($${aliasIdx}::text[])`;
       const heuristicClause = `((COALESCE(engine_id, '') = '' OR engine_id IS NULL) AND (render_ids IS NOT NULL OR (video_url IS NULL AND hero_render_id IS NOT NULL)))`;
       if (feedType === 'image') {
-        conditions.push(`(${aliasClause} OR ${heuristicClause})`);
+        conditions.push(
+          `(
+            surface IN ('image', 'character', 'angle')
+            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle')
+            OR job_id LIKE 'tool_angle_%'
+            OR ${aliasClause}
+            OR ${heuristicClause}
+          )`
+        );
       } else if (feedType === 'video') {
-        conditions.push(`NOT (${aliasClause} OR ${heuristicClause})`);
+        conditions.push(
+          `NOT (
+            surface IN ('image', 'character', 'angle')
+            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle')
+            OR job_id LIKE 'tool_angle_%'
+            OR ${aliasClause}
+            OR ${heuristicClause}
+          )`
+        );
       }
     }
 
@@ -146,6 +216,9 @@ type JobRow = {
       id: number;
       job_id: string;
       updated_at: string;
+      surface: string | null;
+      billing_product_key: string | null;
+      settings_snapshot: unknown;
       engine_id: string;
       engine_label: string;
       duration_sec: number;
@@ -182,7 +255,7 @@ type JobRow = {
     };
 
     let rows = await query<JobRow>(
-    `SELECT id, job_id, updated_at, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+    `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
       FROM app_jobs
       ${where}
       ORDER BY created_at DESC, id DESC
@@ -191,7 +264,15 @@ type JobRow = {
     );
 
     const staleJobs = rows.filter((row) => {
-      if (row.engine_id && IMAGE_ENGINE_ID_SET.has(row.engine_id)) {
+      const surface = deriveJobSurface({
+        surface: row.surface,
+        settingsSnapshot: row.settings_snapshot,
+        jobId: row.job_id,
+        engineId: row.engine_id,
+        videoUrl: row.video_url,
+        renderIds: row.render_ids,
+      });
+      if (surface !== 'video') {
         return false;
       }
       if (!row.provider_job_id) return false;
@@ -376,7 +457,7 @@ type JobRow = {
 
       if (refreshedIds.length) {
         const refreshedRows = await query<JobRow>(
-          `SELECT id, job_id, updated_at, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
              FROM app_jobs
              WHERE job_id = ANY($1::text[])`,
           [refreshedIds]
@@ -426,8 +507,18 @@ type JobRow = {
       const renderThumbUrls = extractRenderThumbUrls(parsedRenders);
       const primaryImage = renderIds?.[0] ? normalizeMediaUrl(renderIds[0]) ?? renderIds[0] : undefined;
       const primaryThumb = renderThumbUrls?.[0] ? normalizeMediaUrl(renderThumbUrls[0]) ?? renderThumbUrls[0] : undefined;
+      const surface = deriveJobSurface({
+        surface: r.surface,
+        settingsSnapshot: r.settings_snapshot,
+        jobId: r.job_id,
+        engineId: r.engine_id,
+        videoUrl: r.video_url,
+        renderIds: r.render_ids,
+      });
       return {
         jobId: r.job_id,
+        surface,
+        billingProductKey: r.billing_product_key ?? undefined,
         engineLabel: r.engine_label,
         durationSec: r.duration_sec,
         prompt: r.prompt,
@@ -469,6 +560,8 @@ type JobRow = {
       if (starterVideos.length) {
         mapped = starterVideos.map((video) => ({
           jobId: video.id,
+          surface: 'video' as const,
+          billingProductKey: undefined,
           engineLabel: video.engineLabel,
           durationSec: video.durationSec,
           prompt: video.prompt,

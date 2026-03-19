@@ -2,6 +2,7 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
+import type { BillingProductKey, JobSurface } from '@/types/billing';
 
 export type WalletBalanceByCurrency = {
   currency: Currency | null;
@@ -122,6 +123,8 @@ type ReserveWalletChargeParams = {
   currency: string;
   description: string;
   jobId: string;
+  surface?: JobSurface | null;
+  billingProductKey?: BillingProductKey | null;
   pricingSnapshotJson: string;
   applicationFeeCents: number | null;
   vendorAccountId: string | null;
@@ -237,6 +240,8 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
             currency,
             description,
             job_id,
+            surface,
+            billing_product_key,
             pricing_snapshot,
             application_fee_cents,
             vendor_account_id,
@@ -252,13 +257,15 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
             $3,
             $4,
             $5,
-            $6::jsonb,
-            $7::integer,
-            $8,
-            $9,
+            $6,
+            $7,
+            $8::jsonb,
+            $9::integer,
             $10,
-            $7::integer,
-            $8
+            $11,
+            $12,
+            $9::integer,
+            $10
           FROM balance
           WHERE balance.balance_cents >= $2::bigint
             AND COALESCE(balance.has_mismatch, 0) = 0
@@ -277,6 +284,8 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
         normalizedCurrencyUpper,
         params.description,
         params.jobId,
+        params.surface ?? null,
+        params.billingProductKey ?? null,
         params.pricingSnapshotJson,
         applicationFeeParam,
         vendorAccountParam,

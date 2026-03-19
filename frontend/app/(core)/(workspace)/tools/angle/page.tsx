@@ -4,8 +4,21 @@
 
 import clsx from 'clsx';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent as ReactPointerEvent } from 'react';
-import { ArrowLeft, Download, Loader2, Upload, WandSparkles } from 'lucide-react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import useSWR from 'swr';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ClipboardEvent as ReactClipboardEvent,
+  type DragEvent as ReactDragEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
+import { ArrowLeft, Download, Images, Loader2, Upload, WandSparkles, X } from 'lucide-react';
+import * as THREE from 'three';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -13,46 +26,45 @@ import { Card } from '@/components/ui/Card';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { runAngleTool, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
-import { estimateAngleCostUsd } from '@/lib/tools-angle';
+import { resolveAngleEngineForParams } from '@/lib/tools-angle';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
-import type {
-  AngleToolEngineId,
-  AngleToolNumericParams,
-  AngleToolPresetId,
-  AngleToolResponse,
-} from '@/types/tools-angle';
+import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } from '@/types/tools-angle';
 
 type UploadedImage = {
+  id?: string | null;
   url: string;
+  previewUrl?: string | null;
   width?: number | null;
   height?: number | null;
   name?: string | null;
+  source?: 'upload' | 'library' | 'paste';
 };
 
-const PRESETS: Record<
-  AngleToolPresetId,
-  {
-    label: string;
-    description: string;
-    params: AngleToolNumericParams;
-  }
-> = {
-  dialogue: {
-    label: 'Dialogue',
-    description: 'Subtle camera shift for conversational framing.',
-    params: { rotation: 8, tilt: 2, zoom: 1.2 },
-  },
-  product: {
-    label: 'Product',
-    description: 'Balanced reveal for hero product angles.',
-    params: { rotation: 18, tilt: 6, zoom: 1.8 },
-  },
-  action: {
-    label: 'Action',
-    description: 'Dynamic framing while staying cinema-safe.',
-    params: { rotation: 25, tilt: 12, zoom: 2.6 },
-  },
+type LibraryAsset = {
+  id: string;
+  url: string;
+  mime?: string | null;
+  width?: number | null;
+  height?: number | null;
+  size?: number | null;
+  source?: string | null;
+  createdAt?: string;
+};
+
+type LibraryAssetsResponse = {
+  ok: boolean;
+  assets: LibraryAsset[];
+};
+
+type BillingProductResponse = {
+  ok: boolean;
+  product?: {
+    productKey: string;
+    currency: string;
+    unitPriceCents: number;
+  };
+  error?: string;
 };
 
 const ENGINES = listAngleToolEngines();
@@ -104,6 +116,15 @@ function triggerDownload(url: string, fileName: string) {
   document.body.removeChild(anchor);
 }
 
+function cleanupSourcePreview(image: UploadedImage | null) {
+  if (!image?.previewUrl?.startsWith('blob:')) return;
+  try {
+    URL.revokeObjectURL(image.previewUrl);
+  } catch {
+    // Ignore preview cleanup failures.
+  }
+}
+
 async function uploadImage(file: File): Promise<UploadedImage> {
   const formData = new FormData();
   formData.set('file', file);
@@ -148,14 +169,15 @@ function AngleOrbitSelector({
   generateBestAngles,
   onGenerateBestAnglesChange,
   supportsMultiOutput,
+  sourceImage,
 }: {
   params: AngleToolNumericParams;
   onParamsChange: (next: AngleToolNumericParams) => void;
   generateBestAngles: boolean;
   onGenerateBestAnglesChange: (value: boolean) => void;
   supportsMultiOutput: boolean;
+  sourceImage?: UploadedImage | null;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const dragStateRef = useRef<{
     startX: number;
     startY: number;
@@ -203,394 +225,6 @@ function AngleOrbitSelector({
     );
   };
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const width = 320;
-    const height = 320;
-    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
-
-    if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-    }
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-
-    const cx = width / 2;
-    const cy = height / 2;
-    const radius = 108;
-    const yaw = (params.rotation * Math.PI) / 180;
-    const pitch = (-params.tilt / 30) * (Math.PI / 4);
-    const perspective = 430;
-
-    type Point3D = { x: number; y: number; z: number };
-    type Projected = { x: number; y: number; z: number };
-
-    const rotate = (point: Point3D): Point3D => {
-      const cosY = Math.cos(yaw);
-      const sinY = Math.sin(yaw);
-      const cosP = Math.cos(pitch);
-      const sinP = Math.sin(pitch);
-
-      const x1 = point.x * cosY + point.z * sinY;
-      const z1 = -point.x * sinY + point.z * cosY;
-      const y2 = point.y * cosP - z1 * sinP;
-      const z2 = point.y * sinP + z1 * cosP;
-      return { x: x1, y: y2, z: z2 };
-    };
-
-    const project = (point: Point3D): Projected => {
-      const scale = perspective / (perspective - point.z);
-      return {
-        x: cx + point.x * scale,
-        y: cy - point.y * scale,
-        z: point.z,
-      };
-    };
-
-    const drawCurve = (points: Projected[]) => {
-      for (let i = 1; i < points.length; i += 1) {
-        const a = points[i - 1];
-        const b = points[i];
-        const zAvg = (a.z + b.z) / 2;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        if (zAvg < 0) {
-          ctx.strokeStyle = 'rgba(109, 124, 148, 0.16)';
-          ctx.lineWidth = 0.6;
-        } else {
-          ctx.strokeStyle = 'rgba(151, 170, 204, 0.33)';
-          ctx.lineWidth = 0.95;
-        }
-        ctx.stroke();
-      }
-    };
-
-    const glow = ctx.createRadialGradient(cx, cy, 30, cx, cy, radius + 42);
-    glow.addColorStop(0, 'rgba(126, 152, 198, 0.28)');
-    glow.addColorStop(0.5, 'rgba(74, 95, 124, 0.14)');
-    glow.addColorStop(1, 'rgba(20, 27, 38, 0)');
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius + 34, 0, Math.PI * 2);
-    ctx.fill();
-
-    const sphereFill = ctx.createRadialGradient(cx - 22, cy - 30, 10, cx, cy, radius + 10);
-    sphereFill.addColorStop(0, 'rgba(57, 71, 93, 0.42)');
-    sphereFill.addColorStop(0.6, 'rgba(20, 28, 40, 0.68)');
-    sphereFill.addColorStop(1, 'rgba(11, 15, 23, 0.95)');
-    ctx.fillStyle = sphereFill;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    const drawRoundedRect = (x: number, y: number, w: number, h: number, r: number) => {
-      const radiusSafe = Math.max(0, Math.min(r, Math.min(w, h) / 2));
-      ctx.beginPath();
-      ctx.moveTo(x + radiusSafe, y);
-      ctx.lineTo(x + w - radiusSafe, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + radiusSafe);
-      ctx.lineTo(x + w, y + h - radiusSafe);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - radiusSafe, y + h);
-      ctx.lineTo(x + radiusSafe, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - radiusSafe);
-      ctx.lineTo(x, y + radiusSafe);
-      ctx.quadraticCurveTo(x, y, x + radiusSafe, y);
-      ctx.closePath();
-    };
-
-    const drawCameraGlyph = (
-      cameraProjected: Projected,
-      options: { opacity: number; dashedRay?: boolean; depth: number; behind: boolean }
-    ) => {
-      ctx.save();
-      ctx.globalAlpha = options.opacity;
-      if (options.dashedRay) {
-        ctx.setLineDash([3, 3]);
-      } else {
-        ctx.setLineDash([]);
-      }
-
-      const rayGradient = ctx.createLinearGradient(cameraProjected.x, cameraProjected.y, cx, cy);
-      rayGradient.addColorStop(0, options.behind ? 'rgba(190, 204, 228, 0.46)' : 'rgba(255, 255, 255, 0.96)');
-      rayGradient.addColorStop(1, options.behind ? 'rgba(164, 180, 208, 0.24)' : 'rgba(194, 212, 243, 0.64)');
-      ctx.beginPath();
-      ctx.moveTo(cameraProjected.x, cameraProjected.y);
-      ctx.lineTo(cx, cy);
-      ctx.strokeStyle = rayGradient;
-      ctx.lineWidth = 1.65;
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      const depthRatio = (options.depth + radius) / (radius * 2);
-      const scale = (generateBestAngles ? 0.76 : 0.92) + depthRatio * 0.36;
-      const angleToCenter = Math.atan2(cy - cameraProjected.y, cx - cameraProjected.x);
-
-      ctx.translate(cameraProjected.x, cameraProjected.y);
-      ctx.rotate(angleToCenter);
-      ctx.scale(scale, scale);
-
-      ctx.fillStyle = options.behind ? 'rgba(6, 10, 16, 0.42)' : 'rgba(7, 12, 18, 0.55)';
-      ctx.beginPath();
-      ctx.ellipse(1.5, 8.5, 13.8, 5.8, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      const bodyGradient = ctx.createLinearGradient(-12, -9, 10, 9);
-      if (options.behind) {
-        bodyGradient.addColorStop(0, 'rgba(54, 66, 88, 0.82)');
-        bodyGradient.addColorStop(1, 'rgba(27, 35, 50, 0.88)');
-      } else {
-        bodyGradient.addColorStop(0, 'rgba(128, 148, 182, 0.96)');
-        bodyGradient.addColorStop(1, 'rgba(51, 67, 95, 0.98)');
-      }
-      drawRoundedRect(-12, -8.5, 18.5, 16.5, 4.2);
-      ctx.fillStyle = bodyGradient;
-      ctx.fill();
-      ctx.strokeStyle = options.behind ? 'rgba(137, 157, 191, 0.38)' : 'rgba(214, 230, 255, 0.68)';
-      ctx.lineWidth = 1.1;
-      ctx.stroke();
-
-      const topGradient = ctx.createLinearGradient(-6, -13, 3.5, -7);
-      topGradient.addColorStop(0, options.behind ? 'rgba(64, 78, 105, 0.74)' : 'rgba(173, 191, 219, 0.94)');
-      topGradient.addColorStop(1, options.behind ? 'rgba(38, 48, 67, 0.78)' : 'rgba(92, 110, 144, 0.96)');
-      drawRoundedRect(-6.8, -12.6, 10.8, 5, 2);
-      ctx.fillStyle = topGradient;
-      ctx.fill();
-      ctx.strokeStyle = options.behind ? 'rgba(144, 164, 195, 0.3)' : 'rgba(220, 234, 255, 0.64)';
-      ctx.lineWidth = 0.85;
-      ctx.stroke();
-
-      const lensBarrel = ctx.createLinearGradient(5, -6, 17, 6);
-      lensBarrel.addColorStop(0, options.behind ? 'rgba(72, 85, 108, 0.7)' : 'rgba(168, 189, 222, 0.92)');
-      lensBarrel.addColorStop(1, options.behind ? 'rgba(28, 38, 57, 0.84)' : 'rgba(43, 58, 88, 0.96)');
-      drawRoundedRect(5.8, -6.8, 12.6, 13.6, 4.5);
-      ctx.fillStyle = lensBarrel;
-      ctx.fill();
-      ctx.strokeStyle = options.behind ? 'rgba(130, 151, 184, 0.36)' : 'rgba(229, 241, 255, 0.8)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(11.8, 0, 4.35, 0, Math.PI * 2);
-      ctx.fillStyle = options.behind ? 'rgba(14, 21, 34, 0.86)' : 'rgba(22, 34, 56, 0.98)';
-      ctx.fill();
-      ctx.strokeStyle = options.behind ? 'rgba(156, 177, 207, 0.42)' : 'rgba(208, 227, 255, 0.88)';
-      ctx.lineWidth = 1.15;
-      ctx.stroke();
-
-      const lensGlass = ctx.createRadialGradient(10.8, -1.3, 0.5, 11.8, 0, 4.8);
-      lensGlass.addColorStop(0, options.behind ? 'rgba(150, 181, 229, 0.5)' : 'rgba(218, 238, 255, 0.98)');
-      lensGlass.addColorStop(0.45, options.behind ? 'rgba(82, 126, 200, 0.48)' : 'rgba(108, 163, 255, 0.92)');
-      lensGlass.addColorStop(1, options.behind ? 'rgba(22, 42, 75, 0.58)' : 'rgba(17, 33, 63, 0.92)');
-      ctx.beginPath();
-      ctx.arc(11.8, 0, 3.15, 0, Math.PI * 2);
-      ctx.fillStyle = lensGlass;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(-5.7, -1.2, 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = options.behind ? 'rgba(126, 145, 175, 0.44)' : 'rgba(170, 191, 224, 0.88)';
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(12.8, -1.4, 1.1, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      ctx.fill();
-
-      ctx.strokeStyle = options.behind ? 'rgba(146, 163, 191, 0.3)' : 'rgba(240, 248, 255, 0.58)';
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.moveTo(-8.4, 3.8);
-      ctx.lineTo(3.2, 3.8);
-      ctx.stroke();
-      ctx.restore();
-    };
-
-    const cameraLocal: Point3D = { x: 0, y: 0, z: radius + 6 };
-    const angleOffsets = generateBestAngles
-      ? [
-          { yaw: -45, tilt: 10 },
-          { yaw: -20, tilt: 18 },
-          { yaw: 20, tilt: 18 },
-          { yaw: 45, tilt: 8 },
-          { yaw: -30, tilt: -10 },
-          { yaw: 30, tilt: -10 },
-        ]
-      : [{ yaw: 0, tilt: 0 }];
-
-    const cameraMarkers = angleOffsets.map((offset) => {
-      const markerYaw = ((params.rotation + offset.yaw) * Math.PI) / 180;
-      const markerPitch = (-(params.tilt + offset.tilt) / 30) * (Math.PI / 4);
-      const cosY = Math.cos(markerYaw);
-      const sinY = Math.sin(markerYaw);
-      const cosP = Math.cos(markerPitch);
-      const sinP = Math.sin(markerPitch);
-      const x1 = cameraLocal.x * cosY + cameraLocal.z * sinY;
-      const z1 = -cameraLocal.x * sinY + cameraLocal.z * cosY;
-      const y2 = cameraLocal.y * cosP - z1 * sinP;
-      const z2 = cameraLocal.y * sinP + z1 * cosP;
-      const rotated = { x: x1, y: y2, z: z2 };
-      return {
-        projected: project(rotated),
-        behind: rotated.z < 0,
-        depth: rotated.z,
-      };
-    });
-
-    cameraMarkers
-      .filter((marker) => marker.behind)
-      .forEach((marker) =>
-        drawCameraGlyph(marker.projected, { opacity: 0.34, dashedRay: true, depth: marker.depth, behind: true })
-      );
-
-    for (let lonDeg = 0; lonDeg < 180; lonDeg += 15) {
-      const lon = (lonDeg * Math.PI) / 180;
-      const points: Projected[] = [];
-      for (let latDeg = -90; latDeg <= 90; latDeg += 2) {
-        const lat = (latDeg * Math.PI) / 180;
-        const base = {
-          x: radius * Math.cos(lat) * Math.cos(lon),
-          y: radius * Math.sin(lat),
-          z: radius * Math.cos(lat) * Math.sin(lon),
-        };
-        points.push(project(rotate(base)));
-      }
-      drawCurve(points);
-    }
-
-    for (let latDeg = -75; latDeg <= 75; latDeg += 15) {
-      const lat = (latDeg * Math.PI) / 180;
-      const points: Projected[] = [];
-      for (let lonDeg = 0; lonDeg <= 360; lonDeg += 2) {
-        const lon = (lonDeg * Math.PI) / 180;
-        const base = {
-          x: radius * Math.cos(lat) * Math.cos(lon),
-          y: radius * Math.sin(lat),
-          z: radius * Math.cos(lat) * Math.sin(lon),
-        };
-        points.push(project(rotate(base)));
-      }
-      drawCurve(points);
-    }
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(191, 210, 237, 0.28)';
-    ctx.lineWidth = 1.1;
-    ctx.stroke();
-
-    if (cameraMarkers.some((marker) => marker.behind)) {
-      const occlusion = ctx.createRadialGradient(cx - 20, cy - 24, 8, cx, cy, radius + 8);
-      occlusion.addColorStop(0, 'rgba(20, 28, 40, 0.18)');
-      occlusion.addColorStop(0.7, 'rgba(14, 20, 30, 0.30)');
-      occlusion.addColorStop(1, 'rgba(11, 15, 23, 0.50)');
-      ctx.fillStyle = occlusion;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    const cubeSize = 18;
-    const cubeVertices: Point3D[] = [
-      { x: -cubeSize, y: -cubeSize, z: -cubeSize },
-      { x: cubeSize, y: -cubeSize, z: -cubeSize },
-      { x: -cubeSize, y: cubeSize, z: -cubeSize },
-      { x: cubeSize, y: cubeSize, z: -cubeSize },
-      { x: -cubeSize, y: -cubeSize, z: cubeSize },
-      { x: cubeSize, y: -cubeSize, z: cubeSize },
-      { x: -cubeSize, y: cubeSize, z: cubeSize },
-      { x: cubeSize, y: cubeSize, z: cubeSize },
-    ];
-    const rotatedCube = cubeVertices.map((vertex) => rotate(vertex));
-    const projectedCube = rotatedCube.map((vertex) => project(vertex));
-
-    const cubeFaces = [
-      { indices: [0, 2, 6, 4], fill: 'rgba(124, 142, 175, 0.26)' },
-      { indices: [1, 5, 7, 3], fill: 'rgba(168, 184, 214, 0.30)' },
-      { indices: [0, 1, 5, 4], fill: 'rgba(94, 110, 139, 0.24)' },
-      { indices: [2, 3, 7, 6], fill: 'rgba(156, 172, 203, 0.24)' },
-      { indices: [0, 1, 3, 2], fill: 'rgba(72, 84, 108, 0.22)' },
-      { indices: [4, 6, 7, 5], fill: 'rgba(188, 205, 236, 0.28)' },
-    ]
-      .map((face) => {
-        const zAvg =
-          face.indices.reduce((sum, index) => sum + projectedCube[index].z, 0) /
-          face.indices.length;
-        return { ...face, zAvg };
-      })
-      .sort((a, b) => a.zAvg - b.zAvg);
-
-    for (const face of cubeFaces) {
-      const [first, ...rest] = face.indices;
-      const firstPoint = projectedCube[first];
-      ctx.beginPath();
-      ctx.moveTo(firstPoint.x, firstPoint.y);
-      rest.forEach((index) => {
-        const point = projectedCube[index];
-        ctx.lineTo(point.x, point.y);
-      });
-      ctx.closePath();
-      ctx.fillStyle = face.zAvg >= 0 ? face.fill : face.fill.replace(/0\.\d+\)$/, '0.10)');
-      ctx.fill();
-    }
-
-    const cubeEdges: Array<[number, number]> = [
-      [0, 1], [1, 3], [3, 2], [2, 0],
-      [4, 5], [5, 7], [7, 6], [6, 4],
-      [0, 4], [1, 5], [2, 6], [3, 7],
-    ];
-    for (const [from, to] of cubeEdges) {
-      const a = projectedCube[from];
-      const b = projectedCube[to];
-      const zAvg = (a.z + b.z) / 2;
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.strokeStyle = zAvg >= 0 ? 'rgba(224, 236, 255, 0.62)' : 'rgba(157, 175, 206, 0.28)';
-      ctx.lineWidth = 1.15;
-      ctx.stroke();
-    }
-
-    const axisLength = 32;
-    const centerProjected = project(rotate({ x: 0, y: 0, z: 0 }));
-    const axisEndpoints = {
-      x: project(rotate({ x: axisLength, y: 0, z: 0 })),
-      y: project(rotate({ x: 0, y: axisLength, z: 0 })),
-      z: project(rotate({ x: 0, y: 0, z: axisLength })),
-    };
-    const axisColors = {
-      x: 'rgba(236, 127, 127, 0.88)',
-      y: 'rgba(126, 222, 157, 0.88)',
-      z: 'rgba(129, 168, 255, 0.88)',
-    };
-    (Object.keys(axisEndpoints) as Array<keyof typeof axisEndpoints>).forEach((key) => {
-      const endpoint = axisEndpoints[key];
-      ctx.beginPath();
-      ctx.moveTo(centerProjected.x, centerProjected.y);
-      ctx.lineTo(endpoint.x, endpoint.y);
-      ctx.strokeStyle = axisColors[key];
-      ctx.lineWidth = 1.35;
-      ctx.stroke();
-    });
-
-    cameraMarkers
-      .filter((marker) => !marker.behind)
-      .forEach((marker) => drawCameraGlyph(marker.projected, { opacity: 1, depth: marker.depth, behind: false }));
-
-    ctx.fillStyle = 'rgba(173, 190, 219, 0.78)';
-    ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace';
-    ctx.fillText('FRONT', cx - 19, cy + radius + 16);
-    ctx.fillText('TOP', cx - 10, cy - radius - 8);
-  }, [generateBestAngles, params.rotation, params.tilt, params.zoom]);
-
   return (
     <div className="rounded-card border border-border bg-bg p-4">
       <div className="mb-2 text-center">
@@ -608,33 +242,46 @@ function AngleOrbitSelector({
           dragging ? 'cursor-grabbing' : 'cursor-grab'
         )}
       >
-        <div className="pointer-events-none relative mx-auto h-[320px] w-[320px]">
-          <canvas ref={canvasRef} className="h-full w-full" />
+        <div className="pointer-events-none relative mx-auto h-[320px] w-[320px] overflow-hidden rounded-card">
+          <Canvas
+            dpr={[1, 2]}
+            camera={{ position: [0, 1.35, 6.4], fov: 32, near: 0.1, far: 50 }}
+            gl={{ antialias: true, alpha: false }}
+          >
+            <color attach="background" args={['#0f141c']} />
+            <fog attach="fog" args={['#0f141c', 8, 18]} />
+            <ambientLight intensity={1.1} />
+            <directionalLight position={[5, 6, 4]} intensity={2.4} color="#eef6ff" />
+            <directionalLight position={[-3, 1.5, -4]} intensity={0.85} color="#8fb4ff" />
+            <pointLight position={[0, -1.2, 0]} intensity={0.25} color="#5a86d8" />
+            <AngleCameraRig params={params} />
+            <AngleReferenceScene generateBestAngles={generateBestAngles} sourceImage={sourceImage} />
+          </Canvas>
 
           <button
             type="button"
-            className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
+            className="pointer-events-auto absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
             onClick={() => nudge(0, 4)}
           >
             ▲
           </button>
           <button
             type="button"
-            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
+            className="pointer-events-auto absolute left-2 top-1/2 -translate-y-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
             onClick={() => nudge(-12, 0)}
           >
             ◀
           </button>
           <button
             type="button"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
+            className="pointer-events-auto absolute right-2 top-1/2 -translate-y-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
             onClick={() => nudge(12, 0)}
           >
             ▶
           </button>
           <button
             type="button"
-            className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
+            className="pointer-events-auto absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
             onClick={() => nudge(0, -4)}
           >
             ▼
@@ -662,6 +309,164 @@ function AngleOrbitSelector({
   );
 }
 
+function AngleCameraRig({ params }: { params: AngleToolNumericParams }) {
+  const { camera } = useThree();
+  const target = useRef(new THREE.Vector3(0, 1.2, 0));
+  const desiredPosition = useRef(new THREE.Vector3(0, 1.35, 7.9));
+
+  useFrame(() => {
+    const yaw = (params.rotation * Math.PI) / 180;
+    const pitch = (params.tilt / 30) * (Math.PI / 5);
+    const distance = 8.3 - params.zoom * 0.46;
+    const planarDistance = Math.cos(pitch) * distance;
+
+    desiredPosition.current.set(
+      Math.sin(yaw) * planarDistance,
+      1.15 + Math.sin(pitch) * distance * 1.1,
+      Math.cos(yaw) * planarDistance
+    );
+
+    camera.position.lerp(desiredPosition.current, 0.16);
+    camera.lookAt(target.current);
+
+    if (camera instanceof THREE.PerspectiveCamera) {
+      const nextFov = clamp(32 - params.zoom * 0.72, 20, 32);
+      if (Math.abs(camera.fov - nextFov) > 0.01) {
+        camera.fov = nextFov;
+        camera.updateProjectionMatrix();
+      }
+    }
+  });
+
+  return null;
+}
+
+function AngleReferenceScene({
+  generateBestAngles,
+  sourceImage,
+}: {
+  generateBestAngles: boolean;
+  sourceImage?: UploadedImage | null;
+}) {
+  const markerOffsets = generateBestAngles
+    ? [
+        { rotation: -45, tilt: 10 },
+        { rotation: -20, tilt: 18 },
+        { rotation: 20, tilt: 18 },
+        { rotation: 45, tilt: 8 },
+        { rotation: -30, tilt: -10 },
+        { rotation: 30, tilt: -10 },
+      ]
+    : [{ rotation: 0, tilt: 0 }];
+
+  return (
+    <>
+      <group position={[0, -0.95, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <circleGeometry args={[6.6, 64]} />
+          <meshStandardMaterial color="#101824" roughness={0.96} metalness={0.06} />
+        </mesh>
+        <gridHelper args={[12, 14, '#4d6788', '#223145']} position={[0, 0.01, 0]} />
+        <axesHelper args={[1.6]} position={[-2.6, 0.02, -2.6]} />
+      </group>
+
+      {sourceImage?.url ? <AngleImageCard sourceImage={sourceImage} /> : null}
+
+      {markerOffsets.map((offset, index) => {
+        const yaw = (offset.rotation * Math.PI) / 180;
+        const pitch = (offset.tilt / 30) * (Math.PI / 5);
+        const distance = 4.8;
+        const planarDistance = Math.cos(pitch) * distance;
+        const position: [number, number, number] = [
+          Math.sin(yaw) * planarDistance,
+          1.2 + Math.sin(pitch) * distance * 1.05,
+          Math.cos(yaw) * planarDistance,
+        ];
+
+        return (
+          <group key={`angle-marker-${index}`} position={position}>
+            <mesh>
+              <sphereGeometry args={[0.11, 18, 18]} />
+              <meshStandardMaterial color={index === 0 ? '#f8fafc' : '#8fb3ff'} emissive={index === 0 ? '#94b8ff' : '#365ea6'} emissiveIntensity={1.4} />
+            </mesh>
+          </group>
+        );
+      })}
+    </>
+  );
+}
+
+function useSourceTexture(url?: string | null) {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    if (!url) {
+      setTexture(null);
+      return;
+    }
+
+    let active = true;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+
+    loader.load(
+      url,
+      (nextTexture) => {
+        if (!active) {
+          nextTexture.dispose();
+          return;
+        }
+        nextTexture.colorSpace = THREE.SRGBColorSpace;
+        nextTexture.minFilter = THREE.LinearFilter;
+        nextTexture.magFilter = THREE.LinearFilter;
+        setTexture(nextTexture);
+      },
+      undefined,
+      () => {
+        if (active) {
+          setTexture(null);
+        }
+      }
+    );
+
+    return () => {
+      active = false;
+    };
+  }, [url]);
+
+  return texture;
+}
+
+function AngleImageCard({ sourceImage }: { sourceImage: UploadedImage }) {
+  const texture = useSourceTexture(sourceImage.previewUrl ?? sourceImage.url);
+  const aspect = sourceImage.width && sourceImage.height ? sourceImage.width / sourceImage.height : 0.72;
+  const cardHeight = 3.15;
+  const cardWidth = clamp(cardHeight * aspect, 1.4, 2.5);
+
+  return (
+    <group position={[0, 0.7, 0]}>
+      <mesh position={[0, 0.92, -0.05]} castShadow receiveShadow>
+        <boxGeometry args={[cardWidth + 0.18, cardHeight + 0.2, 0.1]} />
+        <meshStandardMaterial color="#1a2535" roughness={0.84} metalness={0.12} />
+      </mesh>
+      <mesh position={[0, 0.92, 0]} castShadow receiveShadow>
+        <planeGeometry args={[cardWidth, cardHeight]} />
+        <meshBasicMaterial
+          map={texture ?? undefined}
+          color={texture ? '#ffffff' : '#7ca0d2'}
+          transparent
+          alphaTest={0.04}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh position={[0, 0.92, 0.02]} castShadow>
+        <planeGeometry args={[cardWidth + 0.02, cardHeight + 0.02]} />
+        <meshStandardMaterial color="#eef4ff" transparent opacity={0.04} roughness={1} metalness={0} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
 export default function AngleToolPage() {
   const { loading: authLoading, user } = useRequireAuth();
   const [engineId, setEngineId] = useState<AngleToolEngineId>(DEFAULT_ENGINE_ID as AngleToolEngineId);
@@ -676,49 +481,163 @@ export default function AngleToolPage() {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [sourceDragActive, setSourceDragActive] = useState(false);
+  const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedEngine = useMemo(() => ENGINES.find((engine) => engine.id === engineId) ?? ENGINES[0], [engineId]);
-  const requestedOutputCount = generateBestAngles && selectedEngine?.supportsMultiOutput ? 6 : 1;
+  const effectiveEngineId = useMemo(() => resolveAngleEngineForParams(engineId, params), [engineId, params]);
+  const effectiveEngine = useMemo(
+    () => ENGINES.find((engine) => engine.id === effectiveEngineId) ?? selectedEngine,
+    [effectiveEngineId, selectedEngine]
+  );
+  const requestedOutputCount = generateBestAngles && effectiveEngine?.supportsMultiOutput ? 6 : 1;
+  const billingProductKey = generateBestAngles ? 'angle-multi' : 'angle-single';
+
+  const { data: billingProductData } = useSWR(
+    `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}`,
+    async (url: string) => {
+      const response = await authFetch(url);
+      const payload = (await response.json().catch(() => null)) as BillingProductResponse | null;
+      if (!response.ok || !payload?.ok || !payload.product) {
+        throw new Error(payload?.error ?? 'Unable to load tool pricing');
+      }
+      return payload.product;
+    },
+    { keepPreviousData: true }
+  );
 
   const estimatedCostUsd = useMemo(() => {
-    if (!selectedEngine) return 0;
-    return Number((estimateAngleCostUsd(engineId, sourceImage?.width, sourceImage?.height) * requestedOutputCount).toFixed(4));
-  }, [engineId, requestedOutputCount, selectedEngine, sourceImage?.height, sourceImage?.width]);
+    if (!billingProductData?.unitPriceCents) return 0;
+    return Number((billingProductData.unitPriceCents / 100).toFixed(4));
+  }, [billingProductData?.unitPriceCents]);
 
   const selectedOutput = result?.outputs[selectedOutputIndex] ?? null;
 
-  const applyPreset = (presetId: AngleToolPresetId) => {
-    const preset = PRESETS[presetId];
-    if (!preset) return;
-    setParams(preset.params);
-    setSafeMode(true);
-  };
+  useEffect(() => {
+    return () => {
+      cleanupSourcePreview(sourceImage);
+    };
+  }, [sourceImage]);
+
+  useEffect(() => {
+    if (effectiveEngineId !== engineId) {
+      setEngineId(effectiveEngineId);
+    }
+  }, [effectiveEngineId, engineId]);
 
   const handleParamChange = (key: keyof AngleToolNumericParams) => (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
     setParams((previous) => sanitizeParams({ ...previous, [key]: value }));
   };
 
-  const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
+  const handleSourceFile = async (file: File | null) => {
     if (!file) return;
-
+    const localPreviewUrl = URL.createObjectURL(file);
     setUploading(true);
     setError(null);
     setSaveMessage(null);
 
     try {
       const uploaded = await uploadImage(file);
-      setSourceImage(uploaded);
+      setSourceImage((previous) => {
+        cleanupSourcePreview(previous);
+        return {
+          ...uploaded,
+          previewUrl: localPreviewUrl,
+          source: 'upload',
+        };
+      });
       setResult(null);
       setSelectedOutputIndex(0);
     } catch (uploadError) {
+      cleanupSourcePreview({ url: '', previewUrl: localPreviewUrl });
       setError(uploadError instanceof Error ? uploadError.message : 'Upload failed');
     } finally {
       setUploading(false);
-      event.target.value = '';
     }
+  };
+
+  const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = '';
+    await handleSourceFile(file);
+  };
+
+  const handleSourceUrl = (url: string, source: UploadedImage['source']) => {
+    const trimmed = url.trim();
+    if (!/^https?:\/\//i.test(trimmed)) {
+      setError('Paste or drop a valid image URL.');
+      return;
+    }
+    setError(null);
+    setSaveMessage(null);
+    setSourceImage((previous) => {
+      cleanupSourcePreview(previous);
+      return {
+        id: crypto.randomUUID(),
+        url: trimmed,
+        previewUrl: trimmed,
+        name: trimmed.split('/').pop() ?? 'Reference',
+        source,
+      };
+    });
+    setResult(null);
+    setSelectedOutputIndex(0);
+  };
+
+  const handleSourceDrop = (event: ReactDragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setSourceDragActive(false);
+    const files = event.dataTransfer.files;
+    if (files && files.length) {
+      void handleSourceFile(files[0]);
+      return;
+    }
+    const uri = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
+    if (uri && /^https?:\/\//i.test(uri.trim())) {
+      handleSourceUrl(uri, 'paste');
+    }
+  };
+
+  const handleSourcePaste = (event: ReactClipboardEvent<HTMLDivElement>) => {
+    const clipboard = event.clipboardData;
+    if (!clipboard) return;
+    const items = clipboard.items;
+    for (let i = 0; i < items.length; i += 1) {
+      const item = items[i];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        event.preventDefault();
+        const file = item.getAsFile();
+        void handleSourceFile(file);
+        return;
+      }
+    }
+    const text = clipboard.getData('text/plain');
+    if (text && /^https?:\/\//i.test(text.trim())) {
+      event.preventDefault();
+      handleSourceUrl(text, 'paste');
+    }
+  };
+
+  const handleLibrarySelect = (asset: LibraryAsset) => {
+    setSourceImage((previous) => {
+      cleanupSourcePreview(previous);
+      return {
+        id: asset.id,
+        url: asset.url,
+        previewUrl: asset.url,
+        width: asset.width,
+        height: asset.height,
+        name: asset.url.split('/').pop() ?? 'Library image',
+        source: 'library',
+      };
+    });
+    setResult(null);
+    setSelectedOutputIndex(0);
+    setError(null);
+    setSaveMessage(null);
+    setLibraryModalOpen(false);
   };
 
   const handleGenerate = async () => {
@@ -733,10 +652,11 @@ export default function AngleToolPage() {
 
     try {
       const normalizedParams = sanitizeParams(params);
+      const resolvedEngineId = resolveAngleEngineForParams(engineId, normalizedParams);
       setParams(normalizedParams);
       const response = await runAngleTool({
         imageUrl: sourceImage.url,
-        engineId,
+        engineId: resolvedEngineId,
         params: normalizedParams,
         safeMode,
         generateBestAngles,
@@ -748,7 +668,7 @@ export default function AngleToolPage() {
       setSelectedOutputIndex(0);
 
       emitClientMetric('tool_angle_generate', {
-        engineId,
+        engineId: response.engineId,
         latencyMs: response.latencyMs,
         estimatedCostUsd: response.pricing.estimatedCostUsd,
         actualCostUsd: response.pricing.actualCostUsd ?? null,
@@ -772,15 +692,21 @@ export default function AngleToolPage() {
     setSaveMessage(null);
 
     try {
-      await saveImageToLibrary({
-        url: selectedOutput.url,
-        jobId: result?.requestId ?? result?.providerJobId ?? null,
-        label: 'Angle First Frame',
-      });
-
       const downloadName = `angle-first-frame-${Date.now()}.png`;
+      if (!selectedOutput.persisted) {
+        await saveImageToLibrary({
+          url: selectedOutput.url,
+          jobId: result?.jobId ?? result?.requestId ?? result?.providerJobId ?? null,
+          label: 'Angle First Frame',
+          source: 'angle',
+        });
+      }
       triggerDownload(selectedOutput.url, downloadName);
-      setSaveMessage('Saved to Library and downloaded as first frame.');
+      setSaveMessage(
+        selectedOutput.persisted
+          ? 'Already saved in Library. Downloaded as first frame.'
+          : 'Saved to Library and downloaded as first frame.'
+      );
     } catch (saveError) {
       triggerDownload(selectedOutput.url, `angle-first-frame-${Date.now()}.png`);
       setSaveMessage(
@@ -839,99 +765,181 @@ export default function AngleToolPage() {
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <div className="w-full space-y-6">
-            <section className="rounded-card border border-border bg-surface p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Tools / Angle</p>
-                  <h1 className="mt-2 text-3xl font-semibold text-text-primary">ANGLE / Perspective</h1>
-                  <p className="mt-2 max-w-3xl text-sm text-text-secondary">
-                    Generate first-frame images with camera-angle controls, then reuse the best frame in image-to-video workflows.
-                  </p>
-                </div>
-                <ButtonLink href="/tools" variant="outline" linkComponent={Link} className="gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Tools
-                </ButtonLink>
-              </div>
-            </section>
+            <div>
+              <ButtonLink href="/tools" variant="outline" linkComponent={Link} className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Tools
+              </ButtonLink>
+            </div>
 
-            <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
               <Card className="border border-border bg-surface p-5">
                 <div className="space-y-5">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">1. Source image</p>
-                    <div className="mt-2 rounded-card border border-dashed border-border bg-bg p-4">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-medium text-text-primary">
-                            {sourceImage?.url ? 'Image ready' : 'Upload your source frame'}
+                  <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)]">
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Engine</p>
+                        <label className="mt-2 block">
+                          <span className="sr-only">Engine selection</span>
+                          <select
+                            value={engineId}
+                            onChange={(event) => setEngineId(event.target.value as AngleToolEngineId)}
+                            className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary"
+                          >
+                            {ENGINES.map((engine) => (
+                              <option key={engine.id} value={engine.id}>
+                                {engine.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <p className="mt-2 text-xs text-text-muted">{selectedEngine?.description}</p>
+                        {engineId === 'flux-multiple-angles' ? (
+                          <p className="mt-1 text-xs text-text-muted">
+                            FLUX supports eye-level to high-angle only. Negative tilt switches to Qwen automatically for low-angle shots.
                           </p>
-                          <p className="text-xs text-text-muted">
-                            {sourceImage?.width && sourceImage?.height
-                              ? `${sourceImage.width} x ${sourceImage.height}`
-                              : 'PNG / JPG / WEBP'}
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="gap-2"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={uploading}
-                        >
-                          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                          {uploading ? 'Uploading...' : sourceImage?.url ? 'Replace image' : 'Upload image'}
-                        </Button>
+                        ) : null}
+                        {engineId === 'qwen-multiple-angles' && params.tilt < 0 ? (
+                          <p className="mt-1 text-xs text-warning">Low-angle shot detected. Qwen Multiple Angles is now active.</p>
+                        ) : null}
                       </div>
 
-                      {sourceImage?.url ? (
-                        <div className="mt-4 overflow-hidden rounded-card border border-border bg-bg">
-                          <img src={sourceImage.url} alt="Source" className="h-56 w-full object-contain" />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Source image</p>
+                        <div
+                          className={clsx(
+                            'mt-2 rounded-card border border-dashed bg-bg p-4 transition',
+                            sourceDragActive ? 'border-brand bg-brand/5' : 'border-border'
+                          )}
+                          onDragOver={(event) => {
+                            event.preventDefault();
+                            event.dataTransfer.dropEffect = 'copy';
+                            setSourceDragActive(true);
+                          }}
+                          onDragLeave={(event) => {
+                            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+                            setSourceDragActive(false);
+                          }}
+                          onDrop={handleSourceDrop}
+                          onPaste={handleSourcePaste}
+                          tabIndex={0}
+                        >
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                          />
+                          {sourceImage?.url ? (
+                            <div className="overflow-hidden rounded-card border border-border bg-bg">
+                              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3">
+                                <div>
+                                  <p className="text-sm font-medium text-text-primary">Source image ready</p>
+                                  <p className="text-xs text-text-muted">
+                                    {sourceImage?.width && sourceImage?.height
+                                      ? `${sourceImage.width} x ${sourceImage.height}`
+                                      : sourceImage.source === 'library'
+                                        ? 'From Library'
+                                        : sourceImage.source === 'paste'
+                                          ? 'From pasted URL'
+                                          : 'Uploaded from device'}
+                                  </p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploading}
+                                  >
+                                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                    {uploading ? 'Uploading...' : 'Replace'}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => setLibraryModalOpen(true)}
+                                  >
+                                    <Images className="h-4 w-4" />
+                                    Library
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => {
+                                      setSourceImage((previous) => {
+                                        cleanupSourcePreview(previous);
+                                        return null;
+                                      });
+                                      setResult(null);
+                                      setSelectedOutputIndex(0);
+                                    }}
+                                  >
+                                    <X className="h-4 w-4" />
+                                    Remove
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="overflow-hidden bg-bg">
+                                <img src={sourceImage.url} alt="Source" className="h-56 w-full object-contain" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 rounded-card border border-dashed border-border bg-bg px-4 text-center">
+                              <div>
+                                <p className="text-sm font-medium text-text-primary">Add a source image</p>
+                                <p className="mt-1 text-xs text-text-muted">Drop, paste, upload, or choose from your Library.</p>
+                              </div>
+                              <div className="flex flex-wrap justify-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                  onClick={() => fileInputRef.current?.click()}
+                                  disabled={uploading}
+                                >
+                                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                  {uploading ? 'Uploading...' : 'Upload'}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                  onClick={() => setLibraryModalOpen(true)}
+                                >
+                                  <Images className="h-4 w-4" />
+                                  Library
+                                </Button>
+                              </div>
+                              <p className="text-[11px] text-text-muted">PNG / JPG / WEBP</p>
+                            </div>
+                          )}
                         </div>
-                      ) : null}
+                      </div>
                     </div>
+
+                    <AngleOrbitSelector
+                      params={params}
+                      onParamsChange={setParams}
+                      generateBestAngles={generateBestAngles}
+                      onGenerateBestAnglesChange={setGenerateBestAngles}
+                      supportsMultiOutput={Boolean(selectedEngine?.supportsMultiOutput)}
+                      sourceImage={sourceImage}
+                    />
                   </div>
 
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">2. Engine</p>
-                    <label className="mt-2 block">
-                      <span className="sr-only">Engine selection</span>
-                      <select
-                        value={engineId}
-                        onChange={(event) => setEngineId(event.target.value as AngleToolEngineId)}
-                        className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-                      >
-                        {ENGINES.map((engine) => (
-                          <option key={engine.id} value={engine.id}>
-                            {engine.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <p className="mt-2 text-xs text-text-muted">{selectedEngine?.description}</p>
-                    {engineId === 'flux-multiple-angles' ? (
-                      <p className="mt-1 text-xs text-text-muted">Flux mapping: tilt 0deg = vertical_angle 30deg (range 0-60).</p>
-                    ) : null}
-                  </div>
-
-                  <AngleOrbitSelector
-                    params={params}
-                    onParamsChange={setParams}
-                    generateBestAngles={generateBestAngles}
-                    onGenerateBestAnglesChange={setGenerateBestAngles}
-                    supportsMultiOutput={Boolean(selectedEngine?.supportsMultiOutput)}
-                  />
-
-                  <div>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">4. Presets (cinema-safe)</p>
+                  <div className="space-y-3 rounded-card border border-border bg-bg p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Camera controls</p>
                       <label className="inline-flex items-center gap-2 text-xs text-text-secondary">
                         <input
                           type="checkbox"
@@ -939,28 +947,10 @@ export default function AngleToolPage() {
                           onChange={(event) => setSafeMode(event.target.checked)}
                           className="h-4 w-4 rounded border-border"
                         />
-                        Cinema safe clamp (rot +/-25, tilt +/-15, zoom &lt;=3)
+                        Cinema-safe tilt/zoom clamp
                       </label>
                     </div>
-                    <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                      {(Object.keys(PRESETS) as AngleToolPresetId[]).map((presetId) => {
-                        const preset = PRESETS[presetId];
-                        return (
-                          <button
-                            key={presetId}
-                            type="button"
-                            className="rounded-input border border-border bg-bg px-3 py-2 text-left transition hover:border-brand/40 hover:bg-surface-2"
-                            onClick={() => applyPreset(presetId)}
-                          >
-                            <p className="text-sm font-semibold text-text-primary">{preset.label}</p>
-                            <p className="mt-1 text-xs text-text-muted">{preset.description}</p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
 
-                  <div className="space-y-3 rounded-card border border-border bg-bg p-4">
                     <label className="block">
                       <div className="mb-1 flex items-center justify-between text-sm">
                         <span className="font-medium text-text-primary">Rotation (0-360)</span>
@@ -1012,13 +1002,9 @@ export default function AngleToolPage() {
 
                   <div className="rounded-card border border-border bg-bg p-4">
                     <p className="text-xs uppercase tracking-micro text-text-muted">Estimated cost per run</p>
-                    <p className="mt-1 text-sm font-semibold text-text-primary">
+                    <p className="mt-2 text-2xl font-semibold leading-none text-text-primary">
                       {formatUsd(estimatedCostUsd)} for {requestedOutputCount} output{requestedOutputCount > 1 ? 's' : ''}
                     </p>
-                    <p className="mt-1 text-xs text-text-secondary">
-                      Estimated credits: {Math.max(1, Math.round(estimatedCostUsd * 100))} credits
-                    </p>
-                    <p className="mt-1 text-xs text-text-muted">Real cost is captured from Fal when available and logged with latency.</p>
                   </div>
 
                   <Button
@@ -1125,6 +1111,148 @@ export default function AngleToolPage() {
             </div>
           </div>
         </main>
+      </div>
+      <AngleImageLibraryModal
+        open={libraryModalOpen}
+        onClose={() => setLibraryModalOpen(false)}
+        onSelect={handleLibrarySelect}
+      />
+    </div>
+  );
+}
+
+function AngleImageLibraryModal({
+  open,
+  onClose,
+  onSelect,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (asset: LibraryAsset) => void;
+}) {
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
+  const swrKey = open
+    ? activeSource === 'all'
+      ? '/api/user-assets?limit=60'
+      : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`
+    : null;
+  const { data, error, isLoading } = useSWR<LibraryAssetsResponse>(swrKey, async (url: string) => {
+    const response = await authFetch(url);
+    const payload = (await response.json().catch(() => null)) as LibraryAssetsResponse | null;
+    if (!response.ok || !payload?.ok) {
+      throw new Error('Failed to load library images');
+    }
+    return payload;
+  });
+
+  const assets = data?.assets ?? [];
+
+  if (!open) return null;
+
+  const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={handleBackdropClick}
+    >
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-surface shadow-float">
+        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+          <div>
+            <h2 className="text-lg font-semibold text-text-primary">Choose from Library</h2>
+            <p className="text-xs text-text-secondary">Use an uploaded or saved image as the source frame.</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="self-start rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
+          >
+            Close
+          </Button>
+        </div>
+        <div className="border-b border-border px-4 py-3 sm:px-6">
+          <div
+            role="tablist"
+            aria-label="Library image filters"
+            className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
+          >
+            {([
+              ['all', 'All'],
+              ['upload', 'Uploaded'],
+              ['generated', 'Generated'],
+            ] as const).map(([value, label]) => (
+              <Button
+                key={value}
+                type="button"
+                role="tab"
+                variant="ghost"
+                size="sm"
+                aria-selected={activeSource === value}
+                onClick={() => setActiveSource(value)}
+                className={clsx(
+                  'flex-1 rounded-none px-4 py-2',
+                  activeSource === value ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
+                )}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
+          {error ? (
+            <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
+              {error instanceof Error ? error.message : 'Failed to load library images'}
+            </div>
+          ) : isLoading && !assets.length ? (
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={`angle-library-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
+                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
+                    <div className="skeleton absolute inset-0" />
+                  </div>
+                  <div className="border-t border-border px-4 py-3">
+                    <div className="h-3 w-24 rounded-full bg-skeleton" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : assets.length === 0 ? (
+            <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
+              No images saved yet.
+            </div>
+          ) : (
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+              {assets.map((asset) => (
+                <button
+                  key={asset.id}
+                  type="button"
+                  onClick={() => onSelect(asset)}
+                  className="group block w-full overflow-hidden rounded-card border border-border bg-surface text-left shadow-card transition hover:border-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                >
+                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
+                    <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-on-inverse group-hover:flex">
+                      Use image
+                    </div>
+                  </div>
+                  <div className="min-w-0 space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
+                    <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? 'Asset'}</p>
+                    {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

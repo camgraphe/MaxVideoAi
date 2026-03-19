@@ -484,6 +484,10 @@ function getEngineLabel(engineId: string): string {
   return engineId === 'nano-banana-pro' ? 'Nano Banana Pro' : 'Nano Banana 2';
 }
 
+function getBillingProductKey(qualityMode: CharacterBuilderQualityMode): string {
+  return qualityMode === 'final' ? 'character-final' : 'character-draft';
+}
+
 export async function runCharacterBuilder(input: RunCharacterBuilderInput): Promise<CharacterBuilderResponse> {
   const request = sanitizeRequest(input);
   const prompt = buildPrompt(request);
@@ -491,6 +495,7 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
   const inputMode = buildInputMode(request, imageUrls);
   const engineId = getQualityEngineId(request.qualityMode);
   const engineLabel = getEngineLabel(engineId);
+  const billingProductKey = getBillingProductKey(request.qualityMode);
   const settingsSnapshot = buildSettingsSnapshot(request, prompt, engineId, engineLabel, inputMode);
   const aspectRatio = getAspectRatio(
     request.outputMode,
@@ -503,6 +508,8 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
   try {
     const result = await executeImageGeneration({
       userId: input.userId,
+      jobSurface: 'character',
+      billingProductKey,
       body: {
         engineId,
         mode: inputMode,

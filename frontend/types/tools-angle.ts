@@ -20,9 +20,14 @@ export interface AngleToolRequest {
 
 export interface AngleToolOutput {
   url: string;
+  thumbUrl?: string | null;
   width?: number | null;
   height?: number | null;
   mimeType?: string | null;
+  originUrl?: string | null;
+  assetId?: string | null;
+  source?: string | null;
+  persisted?: boolean;
 }
 
 export interface AngleToolPricing {
@@ -31,10 +36,13 @@ export interface AngleToolPricing {
   currency?: string;
   estimatedCredits: number;
   actualCredits?: number | null;
+  totalCents?: number | null;
+  billingProductKey?: string | null;
 }
 
 export interface AngleToolResponse {
   ok: boolean;
+  jobId?: string | null;
   engineId: AngleToolEngineId;
   engineLabel: string;
   requestedOutputCount: number;

@@ -13,6 +13,7 @@ import type { EngineOverride } from '@/server/engine-overrides';
 import { ensureEngineSettingsSeed, fetchEngineSettings, EngineSettingsRecord } from '@/server/engine-settings';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { ensureBillingSchema } from '@/lib/schema';
 import {
   getLumaRay2DurationInfo,
   isLumaRay2AspectRatio,
@@ -144,6 +145,7 @@ async function getConfiguredEnginesForBase(
     return includeDisabled ? baseEngines.map(cloneEngine) : baseEngines.map(cloneEngine);
   }
 
+  await ensureBillingSchema();
   await ensureEngineSettingsSeed();
   const [settingsMap, overridesMap] = await Promise.all([
     fetchEngineSettings(),

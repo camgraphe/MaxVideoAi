@@ -1,20 +1,29 @@
 import { Pool } from 'pg';
 
-const DATABASE_URL = (process.env.DATABASE_URL ?? '').trim();
-const DATABASE_CONFIGURED = DATABASE_URL.length > 0;
-
 let pool: Pool | null = null;
+let activeConnectionString: string | null = null;
+
+function getDatabaseUrl(): string {
+  return (process.env.DATABASE_URL ?? '').trim();
+}
 
 export function isDatabaseConfigured(): boolean {
-  return DATABASE_CONFIGURED;
+  return getDatabaseUrl().length > 0;
 }
 
 export function getDb() {
-  if (!DATABASE_CONFIGURED) {
+  const connectionString = getDatabaseUrl();
+  if (!connectionString) {
     throw new Error('DATABASE_URL is not set');
   }
-  if (!pool) {
-    pool = new Pool({ connectionString: DATABASE_URL });
+  if (!pool || activeConnectionString !== connectionString) {
+    if (pool) {
+      void pool.end().catch(() => {
+        // Ignore stale pool shutdown failures.
+      });
+    }
+    pool = new Pool({ connectionString });
+    activeConnectionString = connectionString;
   }
   return pool;
 }

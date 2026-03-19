@@ -186,6 +186,8 @@ interface ImageWorkspaceCopy {
       all: string;
       upload: string;
       generated: string;
+      character: string;
+      angle: string;
     };
     modal: {
       title: string;
@@ -196,6 +198,8 @@ interface ImageWorkspaceCopy {
       emptyCompatible: string;
       emptyUploads: string;
       emptyGenerated: string;
+      emptyCharacter: string;
+      emptyAngle: string;
     };
   };
   characterPicker: {
@@ -340,6 +344,8 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       all: 'All images',
       upload: 'Uploaded images',
       generated: 'Generated images',
+      character: 'Character assets',
+      angle: 'Angle assets',
     },
     modal: {
       title: 'Select from library',
@@ -350,6 +356,8 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       emptyCompatible: 'No compatible assets for this model yet.',
       emptyUploads: 'No uploaded images yet. Upload images from the composer or the Library page.',
       emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
+      emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
+      emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
     },
   },
   characterPicker: {
@@ -1089,7 +1097,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const {
     data: jobPages,
     mutate: mutateJobs,
-  } = useInfiniteJobs(24, { type: 'image' });
+  } = useInfiniteJobs(24, { surface: 'image' });
 
   const imageEngineAliasSet = useMemo(() => {
     const set = new Set<string>();
@@ -2932,7 +2940,7 @@ function ImageLibraryModal({
   supportedFormats: string[];
   supportedFormatsLabel: string;
 }) {
-  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
   const swrKey = open
     ? activeSource === 'all'
       ? '/api/user-assets?limit=60'
@@ -2978,6 +2986,10 @@ function ImageLibraryModal({
       ? copy.modal.emptyGenerated
       : activeSource === 'upload'
         ? copy.modal.emptyUploads
+        : activeSource === 'character'
+          ? copy.modal.emptyCharacter
+          : activeSource === 'angle'
+            ? copy.modal.emptyAngle
         : copy.modal.empty;
   const supportedFormatsHint =
     supportedFormats.length && supportedFormatsLabel.length
@@ -3061,6 +3073,34 @@ function ImageLibraryModal({
               )}
             >
               {copy.tabs.generated}
+            </Button>
+            <Button
+              type="button"
+              role="tab"
+              variant="ghost"
+              size="sm"
+              aria-selected={activeSource === 'character'}
+              onClick={() => setActiveSource('character')}
+              className={clsx(
+                'flex-1 rounded-none px-4 py-2',
+                activeSource === 'character' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
+              )}
+            >
+              {copy.tabs.character}
+            </Button>
+            <Button
+              type="button"
+              role="tab"
+              variant="ghost"
+              size="sm"
+              aria-selected={activeSource === 'angle'}
+              onClick={() => setActiveSource('angle')}
+              className={clsx(
+                'flex-1 rounded-none px-4 py-2',
+                activeSource === 'angle' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
+              )}
+            >
+              {copy.tabs.angle}
             </Button>
           </div>
         </div>

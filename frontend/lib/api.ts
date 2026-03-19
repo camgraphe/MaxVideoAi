@@ -15,6 +15,7 @@ import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@
 import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
+import type { JobSurface } from '@/types/billing';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -205,7 +206,12 @@ export function useEngines(category: EngineCategory = 'video') {
     `static-engines:${category}`,
     async () => {
       const response = await authFetch(`/api/engines${query}`);
-      const data = (await response.json().catch(() => null)) as { engines?: EnginesResponse['engines'] } | null;
+      const data = (await response.json().catch(() => null)) as
+        | { engines?: EnginesResponse['engines']; error?: string }
+        | null;
+      if (!response.ok) {
+        throw new Error(data?.error ?? `Engines request failed: ${response.status}`);
+      }
       return { engines: data?.engines ?? [] };
     },
     {
@@ -215,15 +221,18 @@ export function useEngines(category: EngineCategory = 'video') {
 }
 
 type JobFeedType = 'video' | 'image' | 'all';
+type JobFeedSurface = JobSurface | 'all';
 
 async function fetchJobsPage(
   limit: number,
   cursor?: string | null,
-  options?: { type?: JobFeedType }
+  options?: { type?: JobFeedType; surface?: JobFeedSurface }
 ): Promise<JobsPage> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', cursor);
-  if (options?.type && options.type !== 'all') {
+  if (options?.surface && options.surface !== 'all') {
+    params.set('surface', options.surface);
+  } else if (options?.type && options.type !== 'all') {
     params.set('type', options.type);
   }
   const response = await authFetch(`/api/jobs?${params.toString()}`);
@@ -248,15 +257,22 @@ async function fetchJobsPage(
   };
 }
 
-type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType];
+type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType, JobFeedSurface];
 
-export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType }) {
+export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; surface?: JobFeedSurface }) {
   const [cacheKey, setCacheKey] = useState<string | null>(() => {
     if (typeof window === 'undefined') return 'server';
     return readLastKnownUserId();
   });
   const feedType: JobFeedType =
     options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
+  const feedSurface: JobFeedSurface =
+    options?.surface === 'video' ||
+    options?.surface === 'image' ||
+    options?.surface === 'character' ||
+    options?.surface === 'angle'
+      ? options.surface
+      : 'all';
   const lastRevalidateRef = useRef<number>(0);
   const lastKnownUserIdRef = useRef<string | null>(typeof window === 'undefined' ? null : readLastKnownUserId());
   const [stableStore, setStableStore] = useState<{
@@ -321,7 +337,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
 
   useEffect(() => {
     setStableStore({ byId: {}, order: [] });
-  }, [cacheKey, feedType]);
+  }, [cacheKey, feedSurface, feedType]);
 
   const getJobsKey = (index: number, previousPage: JobsPage | null | undefined): JobsKey | null => {
     if (!cacheKey) return null;
@@ -329,12 +345,12 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
       return null;
     }
     const cursor = index === 0 ? null : previousPage?.nextCursor ?? null;
-    return ['jobs', cacheKey, pageSize, cursor, feedType];
+    return ['jobs', cacheKey, pageSize, cursor, feedType, feedSurface];
   };
 
   const fetchJobs = async (key: JobsKey) => {
-    const [, , limit, cursor, type] = key;
-    return fetchJobsPage(limit, cursor, { type });
+    const [, , limit, cursor, type, surface] = key;
+    return fetchJobsPage(limit, cursor, { type, surface });
   };
 
   const swr = useSWRInfinite<JobsPage, Error>(getJobsKey, fetchJobs);
@@ -798,11 +814,22 @@ type SavedAsset = {
   size?: number | null;
 };
 
-export async function saveImageToLibrary(payload: { url: string; jobId?: string | null; label?: string | null }) {
+export async function saveImageToLibrary(payload: {
+  url: string;
+  jobId?: string | null;
+  label?: string | null;
+  source?: string | null;
+}) {
   const response = await authFetch('/api/user-assets', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      url: payload.url,
+      jobId: payload.jobId ?? null,
+      name: payload.label ?? null,
+      label: payload.label ?? null,
+      source: payload.source ?? null,
+    }),
   });
   const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; asset?: SavedAsset } | null;
   if (!response.ok || !data?.ok || !data.asset) {

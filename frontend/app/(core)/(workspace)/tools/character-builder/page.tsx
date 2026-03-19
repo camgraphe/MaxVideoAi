@@ -1470,6 +1470,7 @@ export default function CharacterBuilderPage() {
         url: result.url,
         jobId: result.jobId,
         label: 'Character reference',
+        source: 'character',
       });
       setStatusMessage('Saved to Library.');
     } catch (saveError) {

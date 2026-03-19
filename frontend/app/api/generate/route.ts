@@ -1429,6 +1429,8 @@ async function rollbackPendingPayment(params: {
       currency: DISPLAY_CURRENCY,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
+      surface: 'video',
+      billingProductKey: null,
       pricingSnapshotJson,
       applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
       vendorAccountId,
@@ -1776,6 +1778,8 @@ async function rollbackPendingPayment(params: {
         `INSERT INTO app_jobs (
          job_id,
          user_id,
+         surface,
+         billing_product_key,
          engine_id,
          engine_label,
          duration_sec,
@@ -1813,11 +1817,13 @@ async function rollbackPendingPayment(params: {
          provisional
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28::jsonb,$29::jsonb,$30,$31,$32,$33,$34,$35,$36,$37
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28::jsonb,$29::jsonb,$30::jsonb,$31,$32,$33,$34,$35,$36,$37,$38,$39
        )`,
       [
         jobId,
         userId,
+        'video',
+        null,
         engine.id,
         engine.label,
         durationSec,
@@ -2339,14 +2345,16 @@ async function rollbackPendingPayment(params: {
   if (pendingReceipt && !walletChargeReserved) {
     try {
       await query(
-        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-         VALUES ($1,'charge',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
+        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, surface, billing_product_key, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+         VALUES ($1,'charge',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)`,
         [
           pendingReceipt.userId,
           pendingReceipt.amountCents,
           pendingReceipt.currency,
           pendingReceipt.description,
           pendingReceipt.jobId,
+          'video',
+          null,
           JSON.stringify(pendingReceipt.snapshot),
           pendingReceipt.applicationFeeCents ?? null,
           pendingReceipt.vendorAccountId,
@@ -2395,8 +2403,8 @@ async function rollbackPendingPayment(params: {
   if (status === 'failed' && pendingReceipt && paymentMode === 'wallet') {
     try {
       await query(
-        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-         VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)
+        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, surface, billing_product_key, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+         VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)
          ON CONFLICT DO NOTHING`,
         [
           pendingReceipt.userId,
@@ -2404,6 +2412,8 @@ async function rollbackPendingPayment(params: {
           pendingReceipt.currency,
           `Refund ${engine.label} - ${durationSec}s`,
           pendingReceipt.jobId,
+          'video',
+          null,
           JSON.stringify(pendingReceipt.snapshot),
           priceOnlyReceipts ? null : 0,
           priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,

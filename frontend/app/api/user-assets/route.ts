@@ -4,6 +4,7 @@ import { query } from '@/lib/db';
 import { deleteUserAsset, uploadImageToStorage, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
+import { normalizeUserAssetSource } from '@/lib/job-surface';
 
 export const runtime = 'nodejs';
 
@@ -99,9 +100,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  let payload: { url?: string; name?: string; jobId?: string } | null = null;
+  let payload: { url?: string; name?: string; label?: string; jobId?: string; source?: string } | null = null;
   try {
-    payload = (await req.json()) as { url?: string; name?: string; jobId?: string } | null;
+    payload = (await req.json()) as { url?: string; name?: string; label?: string; jobId?: string; source?: string } | null;
   } catch {
     return NextResponse.json({ ok: false, error: 'INVALID_JSON' }, { status: 400 });
   }
@@ -109,6 +110,40 @@ export async function POST(req: NextRequest) {
   const sourceUrl = typeof payload?.url === 'string' ? payload.url.trim() : '';
   if (!sourceUrl) {
     return NextResponse.json({ ok: false, error: 'URL_REQUIRED' }, { status: 400 });
+  }
+
+  await ensureAssetSchema();
+
+  const existing = await query<{
+    asset_id: string;
+    url: string;
+    mime_type: string | null;
+    width: number | null;
+    height: number | null;
+    size_bytes: string | number | null;
+  }>(
+    `SELECT asset_id, url, mime_type, width, height, size_bytes
+     FROM user_assets
+     WHERE user_id = $1
+       AND metadata->>'originUrl' = $2
+     ORDER BY created_at DESC
+     LIMIT 1`,
+    [userId, sourceUrl]
+  );
+
+  if (existing.length) {
+    const [asset] = existing;
+    return NextResponse.json({
+      ok: true,
+      asset: {
+        id: asset.asset_id,
+        url: asset.url,
+        width: asset.width,
+        height: asset.height,
+        mime: asset.mime_type,
+        size: typeof asset.size_bytes === 'string' ? Number(asset.size_bytes) : asset.size_bytes,
+      },
+    });
   }
 
   let parsed: URL;
@@ -151,7 +186,7 @@ export async function POST(req: NextRequest) {
       mime,
       userId,
       prefix: 'library',
-      fileName: payload?.name ?? parsed.pathname.split('/').pop() ?? 'image.png',
+      fileName: payload?.name ?? payload?.label ?? parsed.pathname.split('/').pop() ?? 'image.png',
     });
 
     const assetId = await recordUserAsset({
@@ -161,10 +196,11 @@ export async function POST(req: NextRequest) {
       width: upload.width,
       height: upload.height,
       size: upload.size,
-      source: 'generated',
+      source: normalizeUserAssetSource(payload?.source),
       metadata: {
         originUrl: sourceUrl,
         jobId: payload?.jobId ?? null,
+        label: payload?.label ?? payload?.name ?? null,
       },
     });
 

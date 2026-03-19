@@ -47,16 +47,14 @@ export function applyCinemaSafeParams(
     return { ...sanitized, safeApplied: false };
   }
 
-  const safeSignedRotation = clamp(toSignedRotation(sanitized.rotation), -CINEMA_SAFE_ROTATION_LIMIT, CINEMA_SAFE_ROTATION_LIMIT);
   const safeTilt = clamp(sanitized.tilt, -CINEMA_SAFE_TILT_LIMIT, CINEMA_SAFE_TILT_LIMIT);
   const safeZoom = clamp(sanitized.zoom, ANGLE_ZOOM_MIN, CINEMA_SAFE_ZOOM_MAX);
 
   return {
-    rotation: toAbsoluteRotation(safeSignedRotation),
+    rotation: sanitized.rotation,
     tilt: safeTilt,
     zoom: safeZoom,
     safeApplied:
-      Math.abs(safeSignedRotation - toSignedRotation(sanitized.rotation)) > 0.0001 ||
       Math.abs(safeTilt - sanitized.tilt) > 0.0001 ||
       Math.abs(safeZoom - sanitized.zoom) > 0.0001,
   };
@@ -69,9 +67,19 @@ export function estimateAngleCostUsd(engineId: AngleToolEngineId, width?: number
   return Number((engine.estimatedCostUsdPerMp * megapixels).toFixed(4));
 }
 
+export function resolveAngleEngineForParams(
+  engineId: AngleToolEngineId,
+  params: Pick<AngleToolNumericParams, 'tilt'>
+): AngleToolEngineId {
+  if (engineId === 'flux-multiple-angles' && params.tilt < 0) {
+    return 'qwen-multiple-angles';
+  }
+  return engineId;
+}
+
 export function mapTiltForEngine(engineId: AngleToolEngineId, tilt: number): number {
   if (engineId === 'flux-multiple-angles') {
-    return clamp(tilt + 30, 0, 60);
+    return clamp(Math.max(0, tilt) * 2, 0, 60);
   }
   if (engineId === 'qwen-multiple-angles') {
     return clamp(tilt, -30, 30);
