@@ -1649,24 +1649,54 @@ function persistVideoSelection(engineId: string, mode: Mode): void {
 function persistImageSelection(engineId: string, mode: Mode): void {
   if (typeof window === 'undefined') return;
   const payload: Record<string, unknown> = {
-    version: 1,
+    version: 2,
     engineId,
     mode: mode === 't2i' || mode === 'i2i' ? mode : 't2i',
     prompt: '',
     numImages: 1,
     aspectRatio: null,
     resolution: null,
+    seed: null,
+    outputFormat: null,
+    enableWebSearch: false,
+    thinkingLevel: null,
+    limitGenerations: false,
     referenceSlots: [],
+    characterReferences: [],
   };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEYS.imageForm);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
-        Object.assign(payload, parsed);
-        payload.version = 1;
-        payload.engineId = engineId;
-        payload.mode = mode === 't2i' || mode === 'i2i' ? mode : 't2i';
+        const record = parsed as Record<string, unknown>;
+        if (typeof record.prompt === 'string') {
+          payload.prompt = record.prompt;
+        }
+        if (typeof record.numImages === 'number' && Number.isFinite(record.numImages)) {
+          payload.numImages = Math.round(record.numImages);
+        }
+        if (typeof record.aspectRatio === 'string' || record.aspectRatio === null) {
+          payload.aspectRatio = record.aspectRatio;
+        }
+        if (typeof record.resolution === 'string' || record.resolution === null) {
+          payload.resolution = record.resolution;
+        }
+        if (typeof record.seed === 'number' && Number.isFinite(record.seed)) {
+          payload.seed = Math.round(record.seed);
+        }
+        if (typeof record.outputFormat === 'string' || record.outputFormat === null) {
+          payload.outputFormat = record.outputFormat;
+        }
+        if (record.enableWebSearch === true) {
+          payload.enableWebSearch = true;
+        }
+        if (typeof record.thinkingLevel === 'string' || record.thinkingLevel === null) {
+          payload.thinkingLevel = record.thinkingLevel;
+        }
+        if (record.limitGenerations === true) {
+          payload.limitGenerations = true;
+        }
       }
     }
   } catch {
