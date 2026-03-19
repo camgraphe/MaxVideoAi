@@ -25,6 +25,7 @@ import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { authFetch } from '@/lib/authFetch';
+import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import {
   ACCESSORY_OPTIONS,
   AGE_RANGE_OPTIONS,
@@ -105,18 +106,6 @@ function getCharacterBillingProductKey(qualityMode: CharacterBuilderState['quali
 function formatUsd(value: number | null | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
   return `$${value.toFixed(2)}`;
-}
-
-function triggerDownload(url: string, fileName: string) {
-  if (typeof window === 'undefined') return;
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.target = '_blank';
-  anchor.rel = 'noopener noreferrer';
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
 }
 
 async function uploadImage(file: File): Promise<UploadedAsset> {
@@ -2247,7 +2236,10 @@ export default function CharacterBuilderPage() {
                               }))
                             }
                             onDownload={() =>
-                              triggerDownload(result.url, `character-reference-${result.id.replace(/[^a-z0-9]+/gi, '-')}.png`)
+                              triggerAppDownload(
+                                result.url,
+                                suggestDownloadFilename(result.url, `character-reference-${result.id.replace(/[^a-z0-9]+/gi, '-')}`)
+                              )
                             }
                             onSave={() => void handleSaveResult(result)}
                             onDuplicateSettings={() => {

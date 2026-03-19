@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 
 export interface MediaLightboxEntry {
   id: string;
@@ -129,31 +130,10 @@ export function MediaLightbox({
       [entry.id]: { loading: true, error: null },
     }));
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Download failed (${response.status})`);
-      }
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = downloadUrl;
-      const extension = (() => {
-        try {
-          const pathname = new URL(url).pathname;
-          const part = pathname.split('.').pop();
-          return part && part.length <= 5 ? part : 'mp4';
-        } catch {
-          return 'mp4';
-        }
-      })();
       const safeLabel =
         entry.label?.trim().replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') ||
         (entry.jobId ?? entry.id ?? 'download');
-      anchor.download = `${safeLabel}.${extension}`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-      window.URL.revokeObjectURL(downloadUrl);
+      triggerAppDownload(url, suggestDownloadFilename(url, safeLabel));
       setDownloadStates((prev) => {
         const next = { ...prev };
         delete next[entry.id];

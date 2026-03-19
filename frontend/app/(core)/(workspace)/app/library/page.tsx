@@ -14,6 +14,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
+import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
 
 type UserAsset = {
   id: string;
@@ -331,10 +332,7 @@ export default function LibraryPage() {
                         ) : null}
                         <ButtonLink
                           linkComponent="a"
-                          href={asset.url}
-                          download
-                          target="_blank"
-                          rel="noreferrer"
+                          href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, asset.url.split('/').pop() ?? 'asset'))}
                           variant="outline"
                           size="sm"
                           className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"

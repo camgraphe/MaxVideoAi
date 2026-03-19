@@ -22,6 +22,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
+import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { supabase } from '@/lib/supabaseClient';
 import type {
   CharacterReferenceSelection,
@@ -2074,14 +2075,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   }, []);
 
   const handleDownload = useCallback((url: string) => {
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = '';
-    anchor.target = '_blank';
-    anchor.rel = 'noreferrer';
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+    triggerAppDownload(url, suggestDownloadFilename(url, 'image-generation'));
   }, []);
 
   const historyEntries = combinedHistory;

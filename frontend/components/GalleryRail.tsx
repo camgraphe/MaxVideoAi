@@ -16,6 +16,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 
 type GalleryVariant = 'desktop' | 'mobile';
 
@@ -295,14 +296,7 @@ export function GalleryRail({
         setSnackbar({ message: copy.snackbar.noMedia, duration: 2400 });
         return;
       }
-      const anchor = document.createElement('a');
-      anchor.href = candidateUrl;
-      anchor.download = '';
-      anchor.target = '_blank';
-      anchor.rel = 'noreferrer';
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
+      triggerAppDownload(candidateUrl, suggestDownloadFilename(candidateUrl, feedType === 'image' ? 'gallery-image' : 'gallery-video'));
     },
     [copy.snackbar.noMedia, feedType, resolveMediaUrl, summaryIndex]
   );

@@ -17,16 +17,18 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { ArrowLeft, Download, Images, Loader2, Upload, WandSparkles, X } from 'lucide-react';
+import { ArrowLeft, Download, Images, Loader2, Plus, Upload, WandSparkles, X } from 'lucide-react';
 import * as THREE from 'three';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
-import { runAngleTool, saveImageToLibrary } from '@/lib/api';
+import { runAngleTool, saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
+import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { resolveAngleEngineForParams } from '@/lib/tools-angle';
+import { buildBestAngleVariantParams } from '@/lib/tools-angle';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } from '@/types/tools-angle';
@@ -67,8 +69,33 @@ type BillingProductResponse = {
   error?: string;
 };
 
+type AnglePreviewImage = {
+  url: string;
+  thumbUrl?: string | null;
+};
+
+type RecentAngleJobEntry = {
+  jobId: string;
+  createdAt: string;
+  engineLabel: string;
+  outputs: AnglePreviewImage[];
+};
+
 const ENGINES = listAngleToolEngines();
 const DEFAULT_ENGINE_ID = ENGINES[0]?.id ?? 'flux-multiple-angles';
+const ANGLE_TOOL_STORAGE_KEY = 'maxvideoai.tools.angle.v1';
+const ANGLE_MULTI_OUTPUT_COUNT = 4;
+
+type PersistedAngleToolState = {
+  version: 1;
+  engineId: AngleToolEngineId;
+  params: AngleToolNumericParams;
+  safeMode: boolean;
+  generateBestAngles: boolean;
+  sourceImage: UploadedImage | null;
+  result: AngleToolResponse | null;
+  selectedOutputIndex: number;
+};
 
 function getAngleBillingProductKey(engineId: AngleToolEngineId, generateBestAngles: boolean): string {
   const family = engineId === 'qwen-multiple-angles' ? 'qwen' : 'flux';
@@ -109,16 +136,9 @@ function formatUsd(value: number | null | undefined): string {
   return `$${value.toFixed(4)}`;
 }
 
-function triggerDownload(url: string, fileName: string) {
-  if (typeof window === 'undefined') return;
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.target = '_blank';
-  anchor.rel = 'noopener noreferrer';
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
+function formatUsdCompact(value: number | null | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
+  return `$${value.toFixed(2)}`;
 }
 
 function cleanupSourcePreview(image: UploadedImage | null) {
@@ -127,6 +147,237 @@ function cleanupSourcePreview(image: UploadedImage | null) {
     URL.revokeObjectURL(image.previewUrl);
   } catch {
     // Ignore preview cleanup failures.
+  }
+}
+
+function collectAnglePreviewImages(
+  renderIds?: string[] | null,
+  renderThumbUrls?: string[] | null,
+  fallbackUrl?: string | null
+): AnglePreviewImage[] {
+  const full = Array.isArray(renderIds) ? renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0) : [];
+  const thumbs = Array.isArray(renderThumbUrls)
+    ? renderThumbUrls.filter((value): value is string => typeof value === 'string' && value.length > 0)
+    : [];
+  const count = Math.max(full.length, thumbs.length);
+
+  if (count > 0) {
+    const outputs: AnglePreviewImage[] = [];
+    for (let index = 0; index < count; index += 1) {
+      const url = full[index] ?? thumbs[index];
+      if (!url) continue;
+      outputs.push({
+        url,
+        thumbUrl: thumbs[index] ?? full[index] ?? null,
+      });
+    }
+    if (outputs.length) return outputs;
+  }
+
+  if (fallbackUrl) {
+    return [{ url: fallbackUrl, thumbUrl: fallbackUrl }];
+  }
+
+  return [];
+}
+
+function AngleOutputMosaic({
+  outputs,
+  selectedIndex,
+  onSelect,
+  onDownload,
+  onAddToLibrary,
+  libraryDisabled = false,
+  compact = false,
+  singleRow = false,
+}: {
+  outputs: AnglePreviewImage[];
+  selectedIndex?: number;
+  onSelect?: (index: number) => void;
+  onDownload?: (url: string) => void;
+  onAddToLibrary?: (url: string) => void;
+  libraryDisabled?: boolean;
+  compact?: boolean;
+  singleRow?: boolean;
+}) {
+  if (!outputs.length) return null;
+
+  if (outputs.length === 1) {
+    const output = outputs[0];
+    return (
+      <div className={clsx('overflow-hidden rounded-card border border-border bg-bg', compact ? 'h-full' : '')}>
+        <div className="relative">
+          <img
+            src={output.thumbUrl ?? output.url}
+            alt=""
+            className={clsx('w-full', compact ? 'h-full object-cover' : 'h-[360px] object-contain')}
+          />
+          {!compact && (onDownload || onAddToLibrary) ? (
+            <div className="absolute bottom-3 right-3 flex items-center gap-2">
+              {onAddToLibrary ? (
+                <button
+                  type="button"
+                  title={libraryDisabled ? 'Already in Library' : 'Add to Library'}
+                  onClick={() => onAddToLibrary(output.url)}
+                  disabled={libraryDisabled}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              ) : null}
+              {onDownload ? (
+                <button
+                  type="button"
+                  title="Download"
+                  onClick={() => onDownload(output.url)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={clsx(singleRow ? 'grid grid-cols-4 gap-2' : 'grid grid-cols-2 gap-3')}>
+      {outputs.slice(0, 4).map((output, index) => {
+        const selected = index === selectedIndex;
+        const content = (
+          <>
+            <div className={clsx('relative overflow-hidden bg-bg', singleRow ? 'aspect-[4/5]' : 'aspect-square')}>
+              <img src={output.thumbUrl ?? output.url} alt="" className="h-full w-full object-cover" />
+              {!compact && selected && (onDownload || onAddToLibrary) ? (
+                <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                  {onAddToLibrary ? (
+                    <button
+                      type="button"
+                      title={libraryDisabled ? 'Already in Library' : 'Add to Library'}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onAddToLibrary(output.url);
+                      }}
+                      disabled={libraryDisabled}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                  {onDownload ? (
+                    <button
+                      type="button"
+                      title="Download"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDownload(output.url);
+                      }}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+            {!compact && !singleRow ? (
+              <div className="px-2 py-1 text-left text-[11px] text-text-secondary">
+                Angle {index + 1}
+                {selected ? ' · selected' : ''}
+              </div>
+            ) : null}
+          </>
+        );
+
+        if (!onSelect) {
+          return (
+            <div key={`${output.url}-${index}`} className="overflow-hidden rounded-card border border-border bg-bg">
+              {content}
+            </div>
+          );
+        }
+
+        return (
+          <button
+            key={`${output.url}-${index}`}
+            type="button"
+            onClick={() => onSelect(index)}
+            className={clsx(
+              'overflow-hidden rounded-card border bg-bg text-left transition',
+              selected ? 'border-brand ring-1 ring-brand/40' : 'border-border hover:border-brand/40'
+            )}
+          >
+            {content}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function parsePersistedAngleToolState(value: string): PersistedAngleToolState | null {
+  try {
+    const raw = JSON.parse(value) as Partial<PersistedAngleToolState> | null;
+    if (!raw || typeof raw !== 'object' || raw.version !== 1) return null;
+    const engineId =
+      raw.engineId === 'flux-multiple-angles' || raw.engineId === 'qwen-multiple-angles'
+        ? raw.engineId
+        : null;
+    if (!engineId) return null;
+    const params =
+      raw.params && typeof raw.params === 'object'
+        ? sanitizeParams({
+            rotation: Number((raw.params as AngleToolNumericParams).rotation ?? 0),
+            tilt: Number((raw.params as AngleToolNumericParams).tilt ?? 0),
+            zoom: Number((raw.params as AngleToolNumericParams).zoom ?? 0),
+          })
+        : { rotation: 8, tilt: 2, zoom: 1.2 };
+    const sourceImage =
+      raw.sourceImage &&
+      typeof raw.sourceImage === 'object' &&
+      typeof raw.sourceImage.url === 'string' &&
+      raw.sourceImage.url.trim().length
+        ? {
+            id: typeof raw.sourceImage.id === 'string' ? raw.sourceImage.id : null,
+            url: raw.sourceImage.url,
+            previewUrl:
+              typeof raw.sourceImage.previewUrl === 'string' && raw.sourceImage.previewUrl.trim().length
+                ? raw.sourceImage.previewUrl
+                : raw.sourceImage.url,
+            width: typeof raw.sourceImage.width === 'number' ? raw.sourceImage.width : null,
+            height: typeof raw.sourceImage.height === 'number' ? raw.sourceImage.height : null,
+            name: typeof raw.sourceImage.name === 'string' ? raw.sourceImage.name : null,
+            source:
+              raw.sourceImage.source === 'upload' || raw.sourceImage.source === 'library' || raw.sourceImage.source === 'paste'
+                ? raw.sourceImage.source
+                : undefined,
+          }
+        : null;
+    const result =
+      raw.result &&
+      typeof raw.result === 'object' &&
+      Array.isArray(raw.result.outputs)
+        ? (raw.result as AngleToolResponse)
+        : null;
+    const selectedOutputIndex =
+      typeof raw.selectedOutputIndex === 'number' && Number.isFinite(raw.selectedOutputIndex)
+        ? Math.max(0, Math.floor(raw.selectedOutputIndex))
+        : 0;
+
+    return {
+      version: 1,
+      engineId,
+      params,
+      safeMode: raw.safeMode !== false,
+      generateBestAngles: raw.generateBestAngles === true,
+      sourceImage,
+      result,
+      selectedOutputIndex,
+    };
+  } catch {
+    return null;
   }
 }
 
@@ -208,8 +459,8 @@ function AngleOrbitSelector({
     const dy = event.clientY - dragStateRef.current.startY;
     onParamsChange(
       sanitizeParams({
-        rotation: dragStateRef.current.startRotation + dx * 0.55,
-        tilt: dragStateRef.current.startTilt - dy * 0.18,
+        rotation: dragStateRef.current.startRotation - dx * 0.55,
+        tilt: dragStateRef.current.startTilt + dy * 0.18,
         zoom: params.zoom,
       })
     );
@@ -243,7 +494,7 @@ function AngleOrbitSelector({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         className={clsx(
-          'relative mx-auto w-full max-w-[360px] touch-none select-none rounded-card border border-border/80 bg-[#0f141c] p-3',
+          'relative mx-auto w-full max-w-[360px] touch-none select-none rounded-card border border-border/80 bg-[#f6f8fc] p-3',
           dragging ? 'cursor-grabbing' : 'cursor-grab'
         )}
       >
@@ -253,41 +504,41 @@ function AngleOrbitSelector({
             camera={{ position: [0, 1.35, 6.4], fov: 32, near: 0.1, far: 50 }}
             gl={{ antialias: true, alpha: false }}
           >
-            <color attach="background" args={['#0f141c']} />
-            <fog attach="fog" args={['#0f141c', 8, 18]} />
-            <ambientLight intensity={1.1} />
-            <directionalLight position={[5, 6, 4]} intensity={2.4} color="#eef6ff" />
-            <directionalLight position={[-3, 1.5, -4]} intensity={0.85} color="#8fb4ff" />
-            <pointLight position={[0, -1.2, 0]} intensity={0.25} color="#5a86d8" />
+            <color attach="background" args={['#f6f8fc']} />
+            <fog attach="fog" args={['#f6f8fc', 10, 22]} />
+            <ambientLight intensity={1.3} />
+            <directionalLight position={[5, 6, 4]} intensity={2.1} color="#ffffff" />
+            <directionalLight position={[-3, 1.5, -4]} intensity={0.65} color="#dbe6f7" />
+            <pointLight position={[0, -1.2, 0]} intensity={0.16} color="#cddaf0" />
             <AngleCameraRig params={params} />
-            <AngleReferenceScene generateBestAngles={generateBestAngles} sourceImage={sourceImage} />
+            <AngleReferenceScene sourceImage={sourceImage} generateBestAngles={generateBestAngles} params={params} />
           </Canvas>
 
           <button
             type="button"
             className="pointer-events-auto absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
-            onClick={() => nudge(0, 4)}
+            onClick={() => nudge(0, -4)}
           >
             ▲
           </button>
           <button
             type="button"
             className="pointer-events-auto absolute left-2 top-1/2 -translate-y-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
-            onClick={() => nudge(-12, 0)}
+            onClick={() => nudge(12, 0)}
           >
             ◀
           </button>
           <button
             type="button"
             className="pointer-events-auto absolute right-2 top-1/2 -translate-y-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
-            onClick={() => nudge(12, 0)}
+            onClick={() => nudge(-12, 0)}
           >
             ▶
           </button>
           <button
             type="button"
             className="pointer-events-auto absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-border/80 bg-surface/80 px-2 py-1 text-xs text-text-secondary hover:bg-surface"
-            onClick={() => nudge(0, -4)}
+            onClick={() => nudge(0, 4)}
           >
             ▼
           </button>
@@ -306,9 +557,21 @@ function AngleOrbitSelector({
           className="h-4 w-4 rounded border-border"
           checked={generateBestAngles}
           disabled={!supportsMultiOutput}
-          onChange={(event) => onGenerateBestAnglesChange(event.target.checked)}
+          onChange={(event) => {
+            const nextChecked = event.target.checked;
+            onGenerateBestAnglesChange(nextChecked);
+            if (nextChecked) {
+              onParamsChange(
+                sanitizeParams({
+                  rotation: 0,
+                  tilt: 0,
+                  zoom: params.zoom,
+                })
+              );
+            }
+          }}
         />
-        Generate from 6 best angles
+        Generate from 4 best angles
       </label>
     </div>
   );
@@ -347,126 +610,194 @@ function AngleCameraRig({ params }: { params: AngleToolNumericParams }) {
 }
 
 function AngleReferenceScene({
-  generateBestAngles,
   sourceImage,
+  generateBestAngles,
+  params,
 }: {
-  generateBestAngles: boolean;
   sourceImage?: UploadedImage | null;
+  generateBestAngles: boolean;
+  params: AngleToolNumericParams;
 }) {
-  const markerOffsets = generateBestAngles
-    ? [
-        { rotation: -45, tilt: 10 },
-        { rotation: -20, tilt: 18 },
-        { rotation: 20, tilt: 18 },
-        { rotation: 45, tilt: 8 },
-        { rotation: -30, tilt: -10 },
-        { rotation: 30, tilt: -10 },
-      ]
-    : [{ rotation: 0, tilt: 0 }];
-
   return (
     <>
       <group position={[0, -0.95, 0]}>
         <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <circleGeometry args={[6.6, 64]} />
-          <meshStandardMaterial color="#101824" roughness={0.96} metalness={0.06} />
+          <meshStandardMaterial color="#eef2f9" roughness={0.98} metalness={0.02} />
         </mesh>
-        <gridHelper args={[12, 14, '#4d6788', '#223145']} position={[0, 0.01, 0]} />
-        <axesHelper args={[1.6]} position={[-2.6, 0.02, -2.6]} />
       </group>
 
+      {generateBestAngles ? <AngleBestAnglesGuides params={params} /> : null}
       {sourceImage?.url ? <AngleImageCard sourceImage={sourceImage} /> : null}
-
-      {markerOffsets.map((offset, index) => {
-        const yaw = (offset.rotation * Math.PI) / 180;
-        const pitch = (offset.tilt / 30) * (Math.PI / 5);
-        const distance = 4.8;
-        const planarDistance = Math.cos(pitch) * distance;
-        const position: [number, number, number] = [
-          Math.sin(yaw) * planarDistance,
-          1.2 + Math.sin(pitch) * distance * 1.05,
-          Math.cos(yaw) * planarDistance,
-        ];
-
-        return (
-          <group key={`angle-marker-${index}`} position={position}>
-            <mesh>
-              <sphereGeometry args={[0.11, 18, 18]} />
-              <meshStandardMaterial color={index === 0 ? '#f8fafc' : '#8fb3ff'} emissive={index === 0 ? '#94b8ff' : '#365ea6'} emissiveIntensity={1.4} />
-            </mesh>
-          </group>
-        );
-      })}
     </>
   );
 }
 
-function useSourceTexture(url?: string | null) {
+function AngleBestAnglesGuides({ params }: { params: AngleToolNumericParams }) {
+  const guideColor = '#97a8c2';
+  const offsets = buildBestAngleVariantParams(params);
+  const target = useMemo(() => new THREE.Vector3(0, 1.2, 0), []);
+
+  return (
+    <group>
+      {offsets.map((offset, index) => (
+        <AngleGuideLine key={`best-angle-guide-${index}`} target={target} rotation={offset.rotation} tilt={offset.tilt} color={guideColor} />
+      ))}
+    </group>
+  );
+}
+
+function AngleGuideLine({
+  target,
+  rotation,
+  tilt,
+  color,
+}: {
+  target: THREE.Vector3;
+  rotation: number;
+  tilt: number;
+  color: string;
+}) {
+  const lineObject = useMemo(() => {
+    const yaw = (rotation * Math.PI) / 180;
+    const pitch = (tilt / 30) * (Math.PI / 5);
+    const distance = 4.8;
+    const planarDistance = Math.cos(pitch) * distance;
+    const position = new THREE.Vector3(
+      Math.sin(yaw) * planarDistance,
+      1.2 + Math.sin(pitch) * distance * 1.05,
+      Math.cos(yaw) * planarDistance
+    );
+    const geometry = new THREE.BufferGeometry().setFromPoints([target.clone(), position]);
+    const material = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.8 });
+    return new THREE.Line(geometry, material);
+  }, [color, rotation, target, tilt]);
+
+  useEffect(() => {
+    return () => {
+      lineObject.geometry.dispose();
+      const material = lineObject.material;
+      if (material instanceof THREE.Material) {
+        material.dispose();
+      }
+    };
+  }, [lineObject]);
+
+  return <primitive object={lineObject} />;
+}
+
+function useSourceTexture(urls: Array<string | null | undefined>) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
-    if (!url) {
+    const candidates = urls
+      .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+      .filter((entry, index, array) => entry.length > 0 && array.indexOf(entry) === index);
+    if (!candidates.length) {
       setTexture(null);
       return;
     }
 
     let active = true;
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
+    let currentTexture: THREE.Texture | null = null;
 
-    loader.load(
-      url,
-      (nextTexture) => {
-        if (!active) {
-          nextTexture.dispose();
-          return;
-        }
-        nextTexture.colorSpace = THREE.SRGBColorSpace;
-        nextTexture.minFilter = THREE.LinearFilter;
-        nextTexture.magFilter = THREE.LinearFilter;
-        setTexture(nextTexture);
-      },
-      undefined,
-      () => {
+    const tryLoad = (index: number) => {
+      if (!active || index >= candidates.length) {
         if (active) {
           setTexture(null);
         }
+        return;
       }
-    );
+      const loader = new THREE.TextureLoader();
+      const candidate = candidates[index];
+      if (!candidate.startsWith('blob:')) {
+        loader.setCrossOrigin('anonymous');
+      }
+
+      loader.load(
+        candidate,
+        (nextTexture) => {
+          if (!active) {
+            nextTexture.dispose();
+            return;
+          }
+          if (currentTexture && currentTexture !== nextTexture) {
+            currentTexture.dispose();
+          }
+          nextTexture.colorSpace = THREE.SRGBColorSpace;
+          nextTexture.minFilter = THREE.LinearFilter;
+          nextTexture.magFilter = THREE.LinearFilter;
+          currentTexture = nextTexture;
+          setTexture(nextTexture);
+        },
+        undefined,
+        () => {
+          tryLoad(index + 1);
+        }
+      );
+    };
+
+    tryLoad(0);
 
     return () => {
       active = false;
+      if (currentTexture) {
+        currentTexture.dispose();
+      }
     };
-  }, [url]);
+  }, [urls]);
 
   return texture;
 }
 
 function AngleImageCard({ sourceImage }: { sourceImage: UploadedImage }) {
-  const texture = useSourceTexture(sourceImage.previewUrl ?? sourceImage.url);
-  const aspect = sourceImage.width && sourceImage.height ? sourceImage.width / sourceImage.height : 0.72;
-  const cardHeight = 3.15;
-  const cardWidth = clamp(cardHeight * aspect, 1.4, 2.5);
+  const texture = useSourceTexture([sourceImage.previewUrl, sourceImage.url]);
+  const aspect = useMemo(() => {
+    if (sourceImage.width && sourceImage.height) {
+      return sourceImage.width / sourceImage.height;
+    }
+    const image = texture?.image as { width?: number; height?: number } | undefined;
+    if (image?.width && image?.height) {
+      return image.width / image.height;
+    }
+    return 0.72;
+  }, [sourceImage.height, sourceImage.width, texture]);
+  const maxCardWidth = 4.8;
+  const maxCardHeight = 3.15;
+  const { cardWidth, cardHeight } = useMemo(() => {
+    if (aspect >= 1) {
+      const width = maxCardWidth;
+      const height = Math.max(1.4, width / aspect);
+      return { cardWidth: width, cardHeight: Math.min(height, maxCardHeight) };
+    }
+
+    const height = maxCardHeight;
+    const width = Math.max(1.4, height * aspect);
+    return { cardWidth: Math.min(width, maxCardWidth), cardHeight: height };
+  }, [aspect]);
+  const frameZ = -0.08;
+  const imageZ = 0.065;
+  const glossZ = 0.085;
 
   return (
     <group position={[0, 0.7, 0]}>
-      <mesh position={[0, 0.92, -0.05]} castShadow receiveShadow>
+      <mesh position={[0, 0.92, frameZ]} castShadow receiveShadow>
         <boxGeometry args={[cardWidth + 0.18, cardHeight + 0.2, 0.1]} />
-        <meshStandardMaterial color="#1a2535" roughness={0.84} metalness={0.12} />
+        <meshStandardMaterial color="#dfe7f2" roughness={0.9} metalness={0.04} />
       </mesh>
-      <mesh position={[0, 0.92, 0]} castShadow receiveShadow>
+      <mesh position={[0, 0.92, imageZ]} castShadow receiveShadow>
         <planeGeometry args={[cardWidth, cardHeight]} />
         <meshBasicMaterial
           map={texture ?? undefined}
-          color={texture ? '#ffffff' : '#7ca0d2'}
+          color={texture ? '#ffffff' : '#c1d0e6'}
           transparent
           alphaTest={0.04}
           side={THREE.DoubleSide}
         />
       </mesh>
-      <mesh position={[0, 0.92, 0.02]} castShadow>
+      <mesh position={[0, 0.92, glossZ]} castShadow>
         <planeGeometry args={[cardWidth + 0.02, cardHeight + 0.02]} />
-        <meshStandardMaterial color="#eef4ff" transparent opacity={0.04} roughness={1} metalness={0} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.12} roughness={1} metalness={0} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -474,6 +805,7 @@ function AngleImageCard({ sourceImage }: { sourceImage: UploadedImage }) {
 
 export default function AngleToolPage() {
   const { loading: authLoading, user } = useRequireAuth();
+  const hasHydratedStorageRef = useRef(false);
   const [engineId, setEngineId] = useState<AngleToolEngineId>(DEFAULT_ENGINE_ID as AngleToolEngineId);
   const [params, setParams] = useState<AngleToolNumericParams>({ rotation: 8, tilt: 2, zoom: 1.2 });
   const [safeMode, setSafeMode] = useState(true);
@@ -484,10 +816,11 @@ export default function AngleToolPage() {
   const [result, setResult] = useState<AngleToolResponse | null>(null);
   const [selectedOutputIndex, setSelectedOutputIndex] = useState(0);
   const [generating, setGenerating] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [savingOutputUrl, setSavingOutputUrl] = useState<string | null>(null);
   const [sourceDragActive, setSourceDragActive] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
+  const [activeRecentJobId, setActiveRecentJobId] = useState<string | null>(null);
+  const [activeRecentOutputIndex, setActiveRecentOutputIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedEngine = useMemo(() => ENGINES.find((engine) => engine.id === engineId) ?? ENGINES[0], [engineId]);
@@ -496,7 +829,17 @@ export default function AngleToolPage() {
     () => ENGINES.find((engine) => engine.id === effectiveEngineId) ?? selectedEngine,
     [effectiveEngineId, selectedEngine]
   );
-  const requestedOutputCount = generateBestAngles && effectiveEngine?.supportsMultiOutput ? 6 : 1;
+  const negativeTiltActive = params.tilt < 0;
+  const tiltFillPercent = useMemo(() => ((params.tilt + 30) / 60) * 100, [params.tilt]);
+  const tiltTrackStyle = useMemo(
+    () => ({
+      background: `linear-gradient(to right, ${
+        negativeTiltActive ? '#d97706' : '#0ea5e9'
+      } 0%, ${negativeTiltActive ? '#d97706' : '#0ea5e9'} ${tiltFillPercent}%, #d9e0ea ${tiltFillPercent}%, #d9e0ea 100%)`,
+    }),
+    [negativeTiltActive, tiltFillPercent]
+  );
+  const requestedOutputCount = generateBestAngles && effectiveEngine?.supportsMultiOutput ? ANGLE_MULTI_OUTPUT_COUNT : 1;
   const billingProductKey = getAngleBillingProductKey(effectiveEngineId, generateBestAngles);
 
   const { data: billingProductData } = useSWR(
@@ -518,6 +861,29 @@ export default function AngleToolPage() {
   }, [billingProductData?.unitPriceCents]);
 
   const selectedOutput = result?.outputs[selectedOutputIndex] ?? null;
+  const { stableJobs: angleJobs } = useInfiniteJobs(12, { surface: 'angle' });
+  const recentAngleJobs = useMemo<RecentAngleJobEntry[]>(() => {
+    const currentJobId = result?.jobId ?? null;
+    return angleJobs
+      .filter((job) => job.jobId && job.jobId !== currentJobId)
+      .map((job) => {
+        const outputs = collectAnglePreviewImages(job.renderIds, job.renderThumbUrls, job.thumbUrl ?? null);
+        if (!outputs.length) return null;
+        return {
+          jobId: job.jobId,
+          createdAt: job.createdAt,
+          engineLabel: job.engineLabel,
+          outputs,
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+      .slice(0, 8);
+  }, [angleJobs, result?.jobId]);
+  const activeRecentJob = useMemo(
+    () => recentAngleJobs.find((entry) => entry.jobId === activeRecentJobId) ?? null,
+    [activeRecentJobId, recentAngleJobs]
+  );
+  const activeRecentOutput = activeRecentJob?.outputs[activeRecentOutputIndex] ?? activeRecentJob?.outputs[0] ?? null;
 
   useEffect(() => {
     return () => {
@@ -526,10 +892,76 @@ export default function AngleToolPage() {
   }, [sourceImage]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hasHydratedStorageRef.current) return;
+    hasHydratedStorageRef.current = true;
+    try {
+      const stored = window.localStorage.getItem(ANGLE_TOOL_STORAGE_KEY);
+      if (!stored) return;
+      const parsed = parsePersistedAngleToolState(stored);
+      if (!parsed) return;
+      setEngineId(parsed.engineId);
+      setParams(parsed.params);
+      setSafeMode(parsed.safeMode);
+      setGenerateBestAngles(parsed.generateBestAngles);
+      setSourceImage(parsed.sourceImage);
+      setResult(parsed.result);
+      setSelectedOutputIndex(parsed.selectedOutputIndex);
+    } catch {
+      // ignore storage failures
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!hasHydratedStorageRef.current) return;
+    const payload: PersistedAngleToolState = {
+      version: 1,
+      engineId,
+      params,
+      safeMode,
+      generateBestAngles,
+      sourceImage: sourceImage
+        ? {
+            ...sourceImage,
+            previewUrl: sourceImage.previewUrl?.startsWith('blob:') ? sourceImage.url : sourceImage.previewUrl ?? sourceImage.url,
+          }
+        : null,
+      result,
+      selectedOutputIndex,
+    };
+    try {
+      window.localStorage.setItem(ANGLE_TOOL_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // ignore storage failures
+    }
+  }, [engineId, generateBestAngles, params, result, safeMode, selectedOutputIndex, sourceImage]);
+
+  useEffect(() => {
     if (effectiveEngineId !== engineId) {
       setEngineId(effectiveEngineId);
     }
   }, [effectiveEngineId, engineId]);
+
+  useEffect(() => {
+    if (!result?.outputs?.length) {
+      if (selectedOutputIndex !== 0) setSelectedOutputIndex(0);
+      return;
+    }
+    if (selectedOutputIndex >= result.outputs.length) {
+      setSelectedOutputIndex(0);
+    }
+  }, [result?.outputs, selectedOutputIndex]);
+
+  useEffect(() => {
+    if (!activeRecentJob?.outputs?.length) {
+      if (activeRecentOutputIndex !== 0) setActiveRecentOutputIndex(0);
+      return;
+    }
+    if (activeRecentOutputIndex >= activeRecentJob.outputs.length) {
+      setActiveRecentOutputIndex(0);
+    }
+  }, [activeRecentJob?.outputs, activeRecentOutputIndex]);
 
   const handleParamChange = (key: keyof AngleToolNumericParams) => (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
@@ -541,7 +973,6 @@ export default function AngleToolPage() {
     const localPreviewUrl = URL.createObjectURL(file);
     setUploading(true);
     setError(null);
-    setSaveMessage(null);
 
     try {
       const uploaded = await uploadImage(file);
@@ -576,7 +1007,6 @@ export default function AngleToolPage() {
       return;
     }
     setError(null);
-    setSaveMessage(null);
     setSourceImage((previous) => {
       cleanupSourcePreview(previous);
       return {
@@ -641,7 +1071,6 @@ export default function AngleToolPage() {
     setResult(null);
     setSelectedOutputIndex(0);
     setError(null);
-    setSaveMessage(null);
     setLibraryModalOpen(false);
   };
 
@@ -653,7 +1082,6 @@ export default function AngleToolPage() {
 
     setGenerating(true);
     setError(null);
-    setSaveMessage(null);
 
     try {
       const normalizedParams = sanitizeParams(params);
@@ -690,37 +1118,19 @@ export default function AngleToolPage() {
     }
   };
 
-  const handleUseFirstFrame = async () => {
-    if (!selectedOutput?.url) return;
-
-    setSaving(true);
-    setSaveMessage(null);
-
+  const handleAddOutputToLibrary = async (url: string, jobId?: string | null) => {
+    setSavingOutputUrl(url);
     try {
-      const downloadName = `angle-first-frame-${Date.now()}.png`;
-      if (!selectedOutput.persisted) {
-        await saveImageToLibrary({
-          url: selectedOutput.url,
-          jobId: result?.jobId ?? result?.requestId ?? result?.providerJobId ?? null,
-          label: 'Angle First Frame',
-          source: 'angle',
-        });
-      }
-      triggerDownload(selectedOutput.url, downloadName);
-      setSaveMessage(
-        selectedOutput.persisted
-          ? 'Already saved in Library. Downloaded as first frame.'
-          : 'Saved to Library and downloaded as first frame.'
-      );
+      await saveImageToLibrary({
+        url,
+        jobId: jobId ?? result?.jobId ?? result?.requestId ?? result?.providerJobId ?? null,
+        label: 'Angle Output',
+        source: 'angle',
+      });
     } catch (saveError) {
-      triggerDownload(selectedOutput.url, `angle-first-frame-${Date.now()}.png`);
-      setSaveMessage(
-        saveError instanceof Error
-          ? `Saved download only (${saveError.message}).`
-          : 'Saved download only (library save failed).'
-      );
+      setError(saveError instanceof Error ? saveError.message : 'Library save failed');
     } finally {
-      setSaving(false);
+      setSavingOutputUrl((current) => (current === url ? null : current));
     }
   };
 
@@ -945,15 +1355,6 @@ export default function AngleToolPage() {
                   <div className="space-y-3 rounded-card border border-border bg-bg p-4">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Camera controls</p>
-                      <label className="inline-flex items-center gap-2 text-xs text-text-secondary">
-                        <input
-                          type="checkbox"
-                          checked={safeMode}
-                          onChange={(event) => setSafeMode(event.target.checked)}
-                          className="h-4 w-4 rounded border-border"
-                        />
-                        Cinema-safe tilt/zoom clamp
-                      </label>
                     </div>
 
                     <label className="block">
@@ -968,7 +1369,7 @@ export default function AngleToolPage() {
                         step={1}
                         value={params.rotation}
                         onChange={handleParamChange('rotation')}
-                        className="w-full"
+                        className="range-input h-1 w-full appearance-none overflow-hidden rounded-full bg-hairline"
                       />
                     </label>
 
@@ -984,7 +1385,8 @@ export default function AngleToolPage() {
                         step={1}
                         value={params.tilt}
                         onChange={handleParamChange('tilt')}
-                        className="w-full"
+                        className="range-input h-1 w-full appearance-none overflow-hidden rounded-full"
+                        style={tiltTrackStyle}
                       />
                     </label>
 
@@ -1000,7 +1402,7 @@ export default function AngleToolPage() {
                         step={0.1}
                         value={params.zoom}
                         onChange={handleParamChange('zoom')}
-                        className="w-full"
+                        className="range-input h-1 w-full appearance-none overflow-hidden rounded-full bg-hairline"
                       />
                     </label>
                   </div>
@@ -1008,7 +1410,7 @@ export default function AngleToolPage() {
                   <div className="rounded-card border border-border bg-bg p-4">
                     <p className="text-xs uppercase tracking-micro text-text-muted">Estimated cost per run</p>
                     <p className="mt-2 text-2xl font-semibold leading-none text-text-primary">
-                      {formatUsd(estimatedCostUsd)} for {requestedOutputCount} output{requestedOutputCount > 1 ? 's' : ''}
+                      {formatUsdCompact(estimatedCostUsd)}
                     </p>
                   </div>
 
@@ -1036,87 +1438,197 @@ export default function AngleToolPage() {
 
                   {selectedOutput ? (
                     <>
-                      {result && result.outputs.length > 1 ? (
-                        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                          {result.outputs.map((output, index) => (
-                            <button
-                              key={`${output.url}-${index}`}
-                              type="button"
-                              onClick={() => setSelectedOutputIndex(index)}
-                              className={clsx(
-                                'overflow-hidden rounded-card border bg-bg transition',
-                                index === selectedOutputIndex ? 'border-brand ring-1 ring-brand/40' : 'border-border hover:border-brand/40'
-                              )}
-                            >
-                              <img src={output.url} alt={`Angle variant ${index + 1}`} className="h-36 w-full object-cover" />
-                              <div className="px-2 py-1 text-left text-[11px] text-text-secondary">
-                                Angle {index + 1}
-                                {index === selectedOutputIndex ? ' · selected' : ''}
+                      <div className="relative">
+                        <AngleOutputMosaic
+                          outputs={(result?.outputs ?? []).map((output) => ({ url: output.url, thumbUrl: output.thumbUrl ?? output.url }))}
+                          selectedIndex={selectedOutputIndex}
+                          onSelect={setSelectedOutputIndex}
+                          onDownload={(url) => triggerAppDownload(url, suggestDownloadFilename(url, `angle-preview-${Date.now()}`))}
+                          onAddToLibrary={(url) => handleAddOutputToLibrary(url)}
+                          libraryDisabled={Boolean(selectedOutput?.persisted) || Boolean(savingOutputUrl)}
+                        />
+
+                        {generating ? (
+                          <div className="absolute inset-0 flex items-center justify-center rounded-card bg-surface-on-media-dark-45 backdrop-blur-[2px]">
+                            <div className="rounded-card border border-white/20 bg-surface-on-media-dark-55 px-4 py-3 text-center text-on-inverse shadow-card">
+                              <div className="flex items-center justify-center gap-2 text-sm font-medium">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Generating new angles...
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="overflow-hidden rounded-card border border-border bg-bg">
-                          <img src={selectedOutput.url} alt="Generated angle output" className="h-[360px] w-full object-contain" />
-                        </div>
-                      )}
+                              <p className="mt-1 text-xs text-on-inverse/80">Your last output stays visible until the new run is ready.</p>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
 
                       <div className="rounded-card border border-border bg-bg p-4">
                         <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
                           <span>Latency: {result?.latencyMs ?? 0} ms</span>
                           <span>·</span>
-                          <span>Est: {formatUsd(result?.pricing.estimatedCostUsd ?? null)}</span>
-                          <span>·</span>
-                          <span>Actual: {formatUsd(result?.pricing.actualCostUsd ?? null)}</span>
-                          <span>·</span>
-                          <span>
-                            Credits: {result?.pricing.actualCredits ?? result?.pricing.estimatedCredits ?? Math.max(1, Math.round(estimatedCostUsd * 100))}
-                          </span>
+                          <span>{formatUsdCompact(result?.pricing.actualCostUsd ?? result?.pricing.estimatedCostUsd ?? null)}</span>
                         </div>
                         {result?.applied.safeApplied ? (
                           <p className="mt-2 text-xs text-warning">Cinema-safe guardrails were applied to this run.</p>
                         ) : null}
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        <Button type="button" variant="primary" onClick={handleUseFirstFrame} disabled={saving} className="gap-2">
-                          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                          {saving ? 'Saving...' : 'Use as First Frame'}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => triggerDownload(selectedOutput.url, `angle-preview-${Date.now()}.png`)}
-                          className="gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          Download only
-                        </Button>
-                      </div>
-
-                      {saveMessage ? (
-                        <p className="text-sm text-text-secondary">
-                          {saveMessage} <Link href="/app/library" className="font-medium text-brand hover:underline">Open Library</Link>
-                        </p>
-                      ) : null}
                     </>
                   ) : (
                     <div className="flex min-h-[420px] items-center justify-center rounded-card border border-dashed border-border bg-bg p-6 text-center">
                       <div>
-                        <p className="text-sm font-medium text-text-primary">No output yet</p>
-                        <p className="mt-2 text-xs text-text-muted">
-                          Upload an image, tune rotation/tilt/zoom, and click Generate.
-                        </p>
+                        {generating ? (
+                          <>
+                            <div className="flex items-center justify-center gap-2 text-sm font-medium text-text-primary">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Generating new angles...
+                            </div>
+                            <p className="mt-2 text-xs text-text-muted">
+                              Your preview will appear here as soon as the run is ready.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-medium text-text-primary">No output yet</p>
+                            <p className="mt-2 text-xs text-text-muted">
+                              Upload an image, tune rotation/tilt/zoom, and click Generate.
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
+
+                  {recentAngleJobs.length ? (
+                    <div className="rounded-card border border-border bg-bg p-4">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Previous jobs</p>
+                        <Link href="/jobs" className="text-xs font-medium text-brand hover:underline">
+                          Open Jobs
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {recentAngleJobs.map((entry) => (
+                          <button
+                            key={entry.jobId}
+                            type="button"
+                            onClick={() => {
+                              setActiveRecentJobId(entry.jobId);
+                              setActiveRecentOutputIndex(0);
+                            }}
+                            className="overflow-hidden rounded-card border border-border bg-surface text-left transition hover:border-brand/40"
+                          >
+                            <div className="h-20 w-full overflow-hidden bg-bg">
+                              <AngleOutputMosaic outputs={entry.outputs} compact />
+                            </div>
+                            <div className="px-2 py-1.5">
+                              <p className="truncate text-[10px] font-medium text-text-primary">{entry.engineLabel}</p>
+                              <p className="truncate text-[10px] text-text-muted">
+                                {new Date(entry.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </Card>
             </div>
           </div>
         </main>
       </div>
+      {activeRecentJob ? (
+        <div
+          className="fixed inset-0 z-[10040] flex items-center justify-center bg-surface-on-media-dark-60 px-4 py-6"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setActiveRecentJobId(null);
+            }
+          }}
+        >
+          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-modal border border-border bg-surface shadow-float">
+            <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Angle job</p>
+                <h3 className="mt-1 text-lg font-semibold text-text-primary">{activeRecentJob.engineLabel}</h3>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => setActiveRecentJobId(null)}>
+                Close
+              </Button>
+            </div>
+            <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-5">
+              {activeRecentJob.outputs.length > 1 ? (
+                <>
+                  <AngleOutputMosaic
+                    outputs={activeRecentJob.outputs}
+                    selectedIndex={activeRecentOutputIndex}
+                    onSelect={setActiveRecentOutputIndex}
+                    onDownload={(url) => triggerAppDownload(url, suggestDownloadFilename(url, `angle-job-${Date.now()}`))}
+                    onAddToLibrary={(url) => handleAddOutputToLibrary(url, activeRecentJob.jobId)}
+                    libraryDisabled={Boolean(savingOutputUrl)}
+                    singleRow
+                  />
+                  {activeRecentOutput ? (
+                    <div className="relative overflow-hidden rounded-card border border-border bg-bg">
+                      <img src={activeRecentOutput.url} alt="" className="max-h-[48vh] w-full object-contain" />
+                      <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                        <button
+                          type="button"
+                          title="Add to Library"
+                          onClick={() => handleAddOutputToLibrary(activeRecentOutput.url, activeRecentJob.jobId)}
+                          disabled={Boolean(savingOutputUrl)}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          title="Download"
+                          onClick={() => triggerAppDownload(activeRecentOutput.url, suggestDownloadFilename(activeRecentOutput.url, `angle-job-${Date.now()}`))}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                        >
+                          <Download className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : activeRecentOutput ? (
+                <div className="relative overflow-hidden rounded-card border border-border bg-bg">
+                  <img src={activeRecentOutput.url} alt="" className="max-h-[60vh] w-full object-contain" />
+                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      title="Add to Library"
+                      onClick={() => handleAddOutputToLibrary(activeRecentOutput.url, activeRecentJob.jobId)}
+                      disabled={Boolean(savingOutputUrl)}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Download"
+                      onClick={() => triggerAppDownload(activeRecentOutput.url, suggestDownloadFilename(activeRecentOutput.url, `angle-job-${Date.now()}`))}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+              <div className="flex items-center justify-between gap-3 text-sm text-text-secondary">
+                <span>{new Date(activeRecentJob.createdAt).toLocaleString()}</span>
+                <Link href="/jobs" className="font-medium text-brand hover:underline">
+                  Open Jobs
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <AngleImageLibraryModal
         open={libraryModalOpen}
         onClose={() => setLibraryModalOpen(false)}

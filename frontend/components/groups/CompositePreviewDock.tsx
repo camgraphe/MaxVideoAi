@@ -11,6 +11,7 @@ import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { parseAspectRatio } from '@/lib/aspect';
+import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const DEFAULT_PREVIEW_COPY = {
@@ -272,14 +273,7 @@ export function CompositePreviewDock({
 
   const handleDownload = useCallback(() => {
     if (!primaryMediaUrl) return;
-    const anchor = document.createElement('a');
-    anchor.href = primaryMediaUrl;
-    anchor.download = '';
-    anchor.target = '_blank';
-    anchor.rel = 'noreferrer';
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+    triggerAppDownload(primaryMediaUrl, suggestDownloadFilename(primaryMediaUrl, 'preview'));
   }, [primaryMediaUrl]);
 
   let showSkeleton = false;
