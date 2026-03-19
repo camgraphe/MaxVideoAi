@@ -292,7 +292,11 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
-        CREATE OR REPLACE VIEW app_receipts_public AS
+        DROP VIEW IF EXISTS app_receipts_public;
+      `);
+
+      await query(`
+        CREATE VIEW app_receipts_public AS
         SELECT
           id,
           user_id,
