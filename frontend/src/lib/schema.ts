@@ -242,11 +242,22 @@ export async function ensureBillingSchema(): Promise<void> {
           metadata
         )
         VALUES
-          ('character-draft', 'character', 'Character Draft', 'USD', 'image', 8, TRUE, '{"seeded":true}'::jsonb),
-          ('character-final', 'character', 'Character Final', 'USD', 'image', 15, TRUE, '{"seeded":true}'::jsonb),
-          ('angle-single', 'angle', 'Angle Single', 'USD', 'run', 4, TRUE, '{"seeded":true}'::jsonb),
-          ('angle-multi', 'angle', 'Angle Multi', 'USD', 'run', 24, TRUE, '{"seeded":true}'::jsonb)
+          ('character-draft', 'character', 'Character Draft', 'USD', 'image', 8, TRUE, '{"seeded":true,"tool":"character-builder","qualityMode":"draft"}'::jsonb),
+          ('character-final', 'character', 'Character Final', 'USD', 'image', 15, TRUE, '{"seeded":true,"tool":"character-builder","qualityMode":"final"}'::jsonb),
+          ('angle-flux-single', 'angle', 'Angle FLUX Single', 'USD', 'run', 4, TRUE, '{"seeded":true,"tool":"angle","engineId":"flux-multiple-angles","variant":"single"}'::jsonb),
+          ('angle-flux-multi', 'angle', 'Angle FLUX Multi', 'USD', 'run', 24, TRUE, '{"seeded":true,"tool":"angle","engineId":"flux-multiple-angles","variant":"multi"}'::jsonb),
+          ('angle-qwen-single', 'angle', 'Angle Qwen Single', 'USD', 'run', 7, TRUE, '{"seeded":true,"tool":"angle","engineId":"qwen-multiple-angles","variant":"single"}'::jsonb),
+          ('angle-qwen-multi', 'angle', 'Angle Qwen Multi', 'USD', 'run', 40, TRUE, '{"seeded":true,"tool":"angle","engineId":"qwen-multiple-angles","variant":"multi"}'::jsonb)
         ON CONFLICT (product_key) DO NOTHING;
+      `);
+
+      await query(`
+        UPDATE app_billing_products
+           SET active = FALSE,
+               metadata = COALESCE(metadata, '{}'::jsonb) || '{"legacy":true}'::jsonb,
+               updated_at = NOW()
+         WHERE product_key IN ('angle-single', 'angle-multi')
+           AND COALESCE(metadata->>'legacy', 'false') <> 'true';
       `);
 
       await query(`

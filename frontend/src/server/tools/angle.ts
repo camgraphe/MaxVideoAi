@@ -71,8 +71,9 @@ type PendingAngleReceipt = {
   vendorAccountId: string | null;
 };
 
-function getAngleBillingProductKey(generateBestAngles: boolean): string {
-  return generateBestAngles ? 'angle-multi' : 'angle-single';
+function getAngleBillingProductKeyForEngine(engineId: AngleToolEngineId, generateBestAngles: boolean): string {
+  const family = engineId === 'qwen-multiple-angles' ? 'qwen' : 'flux';
+  return `angle-${family}-${generateBestAngles ? 'multi' : 'single'}`;
 }
 
 function buildAnglePromptSummary(params: { rotation: number; tilt: number; zoom: number }, outputCount: number): string {
@@ -498,7 +499,7 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
   const generateBestAngles = input.generateBestAngles === true;
   const requestedOutputCount = generateBestAngles && engine.supportsMultiOutput ? 6 : 1;
   const jobId = `tool_angle_${randomUUID()}`;
-  const billingProductKey = getAngleBillingProductKey(generateBestAngles);
+  const billingProductKey = getAngleBillingProductKeyForEngine(engine.id, generateBestAngles);
   const priceOnlyReceipts = receiptsPriceOnlyEnabled();
   let pricing: PricingSnapshot;
   try {

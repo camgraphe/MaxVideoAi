@@ -70,6 +70,11 @@ type BillingProductResponse = {
 const ENGINES = listAngleToolEngines();
 const DEFAULT_ENGINE_ID = ENGINES[0]?.id ?? 'flux-multiple-angles';
 
+function getAngleBillingProductKey(engineId: AngleToolEngineId, generateBestAngles: boolean): string {
+  const family = engineId === 'qwen-multiple-angles' ? 'qwen' : 'flux';
+  return `angle-${family}-${generateBestAngles ? 'multi' : 'single'}`;
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -492,7 +497,7 @@ export default function AngleToolPage() {
     [effectiveEngineId, selectedEngine]
   );
   const requestedOutputCount = generateBestAngles && effectiveEngine?.supportsMultiOutput ? 6 : 1;
-  const billingProductKey = generateBestAngles ? 'angle-multi' : 'angle-single';
+  const billingProductKey = getAngleBillingProductKey(effectiveEngineId, generateBestAngles);
 
   const { data: billingProductData } = useSWR(
     `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}`,

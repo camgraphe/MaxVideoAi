@@ -28,6 +28,21 @@ type MembershipResponse =
   | { ok: true; tiers: MembershipTier[] }
   | { ok: false; error?: string };
 
+type BillingProduct = {
+  productKey: string;
+  surface: 'video' | 'image' | 'character' | 'angle';
+  label: string;
+  currency: string;
+  unitKind: 'image' | 'run';
+  unitPriceCents: number;
+  active: boolean;
+  metadata?: Record<string, unknown> | null;
+};
+
+type BillingProductsResponse =
+  | { ok: true; products: BillingProduct[] }
+  | { ok: false; error?: string };
+
 const fetcher = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url, { cache: 'no-store' });
   const json = (await res.json().catch(() => null)) as T | null;
@@ -70,6 +85,12 @@ export default function PricingAdminPage() {
     mutate: mutateMembership,
     isLoading: membershipLoading,
   } = useSWR<MembershipResponse>('/api/admin/membership-tiers', fetcher);
+  const {
+    data: billingProductsData,
+    error: billingProductsError,
+    mutate: mutateBillingProducts,
+    isLoading: billingProductsLoading,
+  } = useSWR<BillingProductsResponse>('/api/admin/billing-products', fetcher);
 
   const [membershipDraft, setMembershipDraft] = useState<MembershipDraft>({});
   const [membershipInitialised, setMembershipInitialised] = useState(false);
@@ -104,6 +125,17 @@ export default function PricingAdminPage() {
       return aKey.localeCompare(bKey);
     });
   }, [rulesData]);
+
+  const toolProducts = useMemo(() => {
+    if (!billingProductsData || !billingProductsData.ok) return [];
+    return billingProductsData.products
+      .filter((product) => (product.surface === 'character' || product.surface === 'angle') && !isLegacyProduct(product))
+      .sort((a, b) => {
+        const surfaceOrder = a.surface.localeCompare(b.surface);
+        if (surfaceOrder !== 0) return surfaceOrder;
+        return a.productKey.localeCompare(b.productKey);
+      });
+  }, [billingProductsData]);
 
   const handleMembershipFieldChange = (tier: string, field: 'thresholdUsd' | 'discountPct', value: string) => {
     setMembershipDraft((prev) => ({
@@ -246,6 +278,31 @@ export default function PricingAdminPage() {
       <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
         <div className="mb-4 flex items-center justify-between">
           <div>
+            <h2 className="text-lg font-semibold text-text-primary">Tool pricing</h2>
+            <p className="text-xs text-text-tertiary">
+              Character and Angle bill from dedicated tool products, independently from the underlying engine.
+            </p>
+          </div>
+        </div>
+
+        {billingProductsLoading ? (
+          <p className="text-sm text-text-secondary">Loading tool pricing…</p>
+        ) : billingProductsError ? (
+          <p className="rounded-lg border border-error-border bg-error-bg p-3 text-xs text-error">Failed to load tool pricing.</p>
+        ) : toolProducts.length ? (
+          <div className="space-y-4">
+            {toolProducts.map((product) => (
+              <BillingProductCard key={product.productKey} product={product} onRefresh={() => mutateBillingProducts()} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary">No tool products found.</p>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
             <h2 className="text-lg font-semibold text-text-primary">Pricing rules</h2>
             <p className="text-xs text-text-tertiary">
               Override per-engine margins. Values apply to future quotes and charges.
@@ -266,6 +323,147 @@ export default function PricingAdminPage() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function isLegacyProduct(product: BillingProduct): boolean {
+  return product.metadata?.legacy === true;
+}
+
+function formatProductSubtitle(product: BillingProduct): string {
+  const metadata = product.metadata ?? {};
+  const engineId = typeof metadata.engineId === 'string' ? metadata.engineId : null;
+  const variant = typeof metadata.variant === 'string' ? metadata.variant : null;
+  const qualityMode = typeof metadata.qualityMode === 'string' ? metadata.qualityMode : null;
+
+  if (product.surface === 'character') {
+    return `Character Builder · ${qualityMode === 'final' ? 'Final mode' : 'Draft mode'} · billed per ${product.unitKind}`;
+  }
+
+  if (product.surface === 'angle') {
+    const engineLabel = engineId === 'qwen-multiple-angles' ? 'Qwen Multiple Angles' : 'FLUX Multiple Angles';
+    const variantLabel = variant === 'multi' ? 'best angles run' : 'single run';
+    return `Angle Tool · ${engineLabel} · ${variantLabel}`;
+  }
+
+  return `${product.surface} · billed per ${product.unitKind}`;
+}
+
+type BillingProductCardProps = {
+  product: BillingProduct;
+  onRefresh: () => void | Promise<unknown>;
+};
+
+function BillingProductCard({ product, onRefresh }: BillingProductCardProps) {
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [form, setForm] = useState(() => ({
+    label: product.label,
+    unitPriceUsd: (product.unitPriceCents / 100).toString(),
+    active: product.active,
+  }));
+
+  useEffect(() => {
+    setForm({
+      label: product.label,
+      unitPriceUsd: (product.unitPriceCents / 100).toString(),
+      active: product.active,
+    });
+  }, [product]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setStatus(null);
+    try {
+      const parsed = Number(form.unitPriceUsd);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        throw new Error('Unit price must be a non-negative USD amount.');
+      }
+      const response = await fetch('/api/admin/billing-products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productKey: product.productKey,
+          label: form.label.trim(),
+          unitPriceCents: Math.round(parsed * 100),
+          active: form.active,
+        }),
+      });
+      const json = await response.json().catch(() => null);
+      if (!response.ok || !json || typeof json !== 'object' || json.ok !== true) {
+        const message =
+          json && typeof json === 'object' && 'error' in json && typeof (json as { error?: unknown }).error === 'string'
+            ? (json as { error: string }).error
+            : 'Failed to save tool pricing';
+        throw new Error(message);
+      }
+      await onRefresh();
+      setStatus('saved');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Failed to save tool pricing');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-hairline bg-bg p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-semibold text-text-primary">{product.label}</h3>
+          <p className="text-xs text-text-tertiary">{formatProductSubtitle(product)}</p>
+          <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-text-muted">{product.productKey}</p>
+        </div>
+        <label className="flex items-center gap-2 text-xs text-text-secondary">
+          <input
+            type="checkbox"
+            checked={form.active}
+            onChange={(event) => {
+              setForm((prev) => ({ ...prev, active: event.target.checked }));
+              setStatus(null);
+            }}
+            disabled={saving}
+          />
+          Active
+        </label>
+      </div>
+
+      <div className="mt-4 grid grid-gap-sm sm:grid-cols-2">
+        <Field
+          label="Label"
+          value={form.label}
+          onChange={(value) => {
+            setForm((prev) => ({ ...prev, label: value }));
+            setStatus(null);
+          }}
+        />
+        <Field
+          label={`Unit price (${product.currency})`}
+          value={form.unitPriceUsd}
+          onChange={(value) => {
+            setForm((prev) => ({ ...prev, unitPriceUsd: value }));
+            setStatus(null);
+          }}
+        />
+      </div>
+
+      <div className="mt-4 flex items-center gap-4">
+        <Button
+          type="button"
+          size="sm"
+          onClick={handleSave}
+          disabled={saving}
+          className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
+        >
+          {saving ? 'Saving…' : 'Save'}
+        </Button>
+        {status === 'saved' ? (
+          <p className="text-xs text-success">Tool price saved.</p>
+        ) : status ? (
+          <p className="text-xs text-error">{status}</p>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -39,7 +39,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
   { id: 'generate', label: 'Generate Video', badge: null, icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
-  ...(FEATURES.workflows.toolsSection ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/tools' }] : []),
+  ...(FEATURES.workflows.toolsSection ? [{ id: 'tools', label: 'Tools', badge: 'beta', badgeKey: 'toolsBeta', icon: 'tools', href: '/tools' }] : []),
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },

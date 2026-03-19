@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBillingProduct, listBillingProducts } from '@/lib/billing-products';
 import { normalizeJobSurface } from '@/lib/job-surface';
+import { ensureBillingSchema } from '@/lib/schema';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   try {
+    await ensureBillingSchema();
     const productKey = (req.nextUrl.searchParams.get('productKey') ?? '').trim() || null;
     const requestedSurface = normalizeJobSurface(req.nextUrl.searchParams.get('surface'));
 
