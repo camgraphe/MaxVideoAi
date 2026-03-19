@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
-import { Check, UserRound, Users, X } from 'lucide-react';
+import { Check, UserRound, Users } from 'lucide-react';
 import type {
   FormEvent,
   DragEvent as ReactDragEvent,
@@ -896,6 +896,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         ? selectedCharacterReferences.slice(0, characterSelectionLimit)
         : [],
     [characterSelectionLimit, selectedCharacterReferences, supportsCharacterReferences]
+  );
+  const activeCharacterReferenceIds = useMemo(
+    () => new Set(effectiveCharacterReferences.map((reference) => reference.id)),
+    [effectiveCharacterReferences]
   );
   const activeCharacterReferenceCount = effectiveCharacterReferences.length;
   const hasHiddenCharacterReferences = selectedCharacterReferences.length > effectiveCharacterReferences.length;
@@ -2616,42 +2620,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         ) : null}
                       </div>
                     </div>
-                    {selectedCharacterReferences.length ? (
-                      <div className="flex flex-wrap gap-3">
-                        {selectedCharacterReferences.map((reference) => (
-                          <div
-                            key={reference.id}
-                            className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-surface px-2 py-2 shadow-card"
-                          >
-                            <img
-                              src={reference.thumbUrl ?? reference.imageUrl}
-                              alt=""
-                              className="h-12 w-12 rounded-xl object-cover"
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
-                            />
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-text-primary">
-                                {getCharacterReferenceLabel(reference)}
-                              </p>
-                              <p className="text-[11px] text-text-secondary">
-                                {formatCharacterReferenceDate(reference.createdAt)}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeCharacterReference(reference.id)}
-                              className="min-h-0 h-8 w-8 rounded-full px-0 text-text-muted hover:text-text-primary"
-                              aria-label="Remove character reference"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
                     {!supportsCharacterReferences && selectedCharacterReferences.length ? (
                       <p className="text-xs text-text-secondary">{resolvedCopy.composer.characterHiddenNotice}</p>
                     ) : null}
@@ -2664,6 +2632,53 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       </p>
                     ) : null}
                     <div className="grid grid-gap-sm sm:grid-cols-2">
+                      {selectedCharacterReferences.map((reference, index) => {
+                        const isActiveCharacter = activeCharacterReferenceIds.has(reference.id);
+                        return (
+                          <div
+                            key={`character-slot-${reference.id}`}
+                            className={clsx(
+                              'group relative flex aspect-[2/1] flex-col overflow-hidden rounded-2xl border border-solid bg-surface shadow-card transition',
+                              isActiveCharacter ? 'border-text-muted' : 'border-border opacity-80'
+                            )}
+                          >
+                            <img
+                              src={reference.thumbUrl ?? reference.imageUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="absolute left-2 top-2">
+                              <Chip
+                                variant={isActiveCharacter ? 'accent' : 'ghost'}
+                                className={clsx(
+                                  'border-none px-2.5 py-1 text-[10px] uppercase tracking-[0.16em]',
+                                  isActiveCharacter ? '' : 'bg-surface-on-media-dark-60 text-on-inverse'
+                                )}
+                              >
+                                {`Character ${index + 1}`}
+                              </Chip>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeCharacterReference(reference.id)}
+                              className="absolute right-2 top-2 min-h-0 h-auto rounded-full bg-surface-on-media-dark-65 px-2 py-0.5 text-[11px] font-semibold text-on-inverse shadow hover:bg-surface-on-media-dark-70"
+                              aria-label="Remove character reference"
+                            >
+                              ×
+                            </Button>
+                            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-surface-on-media-dark-55 px-2 py-1 text-[10px] text-on-inverse">
+                              <span className="truncate">{getCharacterReferenceLabel(reference)}</span>
+                              <span className="shrink-0 text-on-inverse/80">
+                                {isActiveCharacter ? formatCharacterReferenceDate(reference.createdAt) : 'Saved'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                       {displayedReferenceSlots.map((slot, index) => (
                         <div
                           key={`slot-${index}`}

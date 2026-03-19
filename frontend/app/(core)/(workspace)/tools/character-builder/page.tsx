@@ -8,7 +8,6 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
-  Camera,
   Check,
   Download,
   Loader2,
@@ -323,20 +322,6 @@ function countConfiguredSecondaryControls(state: CharacterBuilderState, hasIdent
   return count;
 }
 
-function StepMarker({ number, title, subtitle }: { number: string; title: string; subtitle?: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-[20px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(246,248,251,0.9))] px-3 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(11,107,255,0.18),rgba(11,107,255,0.06))] text-xs font-semibold text-brand">
-        {number}
-      </span>
-      <div>
-        <p className="text-sm font-semibold text-text-primary">{title}</p>
-        {subtitle ? <p className="text-[11px] text-text-secondary">{subtitle}</p> : null}
-      </div>
-    </div>
-  );
-}
-
 const GENDER_CARD_META: Record<string, { glyph: string; background: string; accent: string }> = {
   woman: {
     glyph: 'W',
@@ -575,68 +560,6 @@ function OutputPreviewCard({
   return <VisualChoiceCard selected={selected} onClick={onClick} title={title} subtitle={subtitle} media={preview} />;
 }
 
-function HeroPreviewCard({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="space-y-3 rounded-[24px] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(246,248,251,0.96))] p-4 shadow-[0_20px_36px_rgba(15,23,42,0.06)]">
-      <div className="overflow-hidden rounded-[20px] border border-border bg-white/80 p-3">{children}</div>
-      <div>
-        <p className="text-sm font-semibold text-text-primary">{title}</p>
-        <p className="mt-1 text-[11px] text-text-secondary">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
-
-function HeroPreviewStrip() {
-  return (
-    <div className="grid gap-3 sm:grid-cols-3">
-      <HeroPreviewCard title="Portrait reference" subtitle="Clear face-first anchor">
-        <div className="relative h-36 rounded-[18px] bg-[linear-gradient(180deg,rgba(224,242,254,0.9),rgba(255,255,255,0.92))]">
-          <div className="absolute inset-x-4 bottom-4 top-4 rounded-[16px] border border-white/80 bg-white/40" />
-          <div className="absolute left-1/2 top-7 h-12 w-12 -translate-x-1/2 rounded-full bg-brand/15" />
-          <div className="absolute left-1/2 top-20 h-12 w-16 -translate-x-1/2 rounded-[18px] bg-brand/18" />
-          <div className="absolute bottom-4 left-4 inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-text-secondary">
-            <Camera className="h-3 w-3" />
-            Portrait
-          </div>
-        </div>
-      </HeroPreviewCard>
-      <HeroPreviewCard title="Character sheet" subtitle="Clean turnaround views">
-        <div className="grid h-36 grid-cols-4 gap-2 rounded-[18px] bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(255,255,255,0.92))] p-2">
-          {[0, 1, 2, 3].map((index) => (
-            <div key={index} className="relative overflow-hidden rounded-[14px] border border-border bg-white/75">
-              <div className="absolute left-1/2 top-3 h-4 w-4 -translate-x-1/2 rounded-full bg-slate-300" />
-              <div className="absolute left-1/2 top-8 h-14 w-5 -translate-x-1/2 rounded-full bg-slate-200" />
-            </div>
-          ))}
-        </div>
-      </HeroPreviewCard>
-      <HeroPreviewCard title="Reusable asset" subtitle="Saved and ready to reuse">
-        <div className="relative h-36 rounded-[18px] bg-[linear-gradient(180deg,rgba(240,253,250,1),rgba(255,255,255,0.92))]">
-          <div className="absolute left-5 top-5 h-20 w-16 rounded-[16px] border border-white/80 bg-white/85 shadow-sm" />
-          <div className="absolute left-9 top-10 h-8 w-8 rounded-full bg-emerald-100" />
-          <div className="absolute left-7 top-20 h-8 w-12 rounded-[14px] bg-emerald-200" />
-          <div className="absolute right-4 top-4 rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-semibold text-white">
-            Ready to reuse
-          </div>
-          <div className="absolute bottom-4 right-4 inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-text-secondary">
-            <Pin className="h-3 w-3" />
-            Saved reference
-          </div>
-        </div>
-      </HeroPreviewCard>
-    </div>
-  );
-}
-
 function CharacterSummaryCard({
   identityReference,
   hairSummary,
@@ -788,7 +711,7 @@ function HairEditorPanel({
               <button
                 key={option.id}
                 type="button"
-                onClick={() => onChange('hairColor', option.id)}
+                onClick={() => onChange('hairColor', selected ? '' : option.id)}
                 className={clsx(
                   'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition',
                   selected
@@ -819,7 +742,7 @@ function HairEditorPanel({
               <button
                 key={option.id}
                 type="button"
-                onClick={() => onChange('hairLength', option.id)}
+                onClick={() => onChange('hairLength', selected ? '' : option.id)}
                 className={clsx(
                   'rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-micro transition',
                   selected
@@ -844,7 +767,7 @@ function HairEditorPanel({
               <button
                 key={option.id}
                 type="button"
-                onClick={() => onChange('hairstyle', option.id)}
+                onClick={() => onChange('hairstyle', selected ? '' : option.id)}
                 className={clsx(
                   'rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-micro transition',
                   selected
@@ -1083,12 +1006,12 @@ function MultiToggleGroup({
   );
 }
 
-function SectionTitle({ eyebrow, title, body, children }: { eyebrow: string; title: string; body?: string; children?: ReactNode }) {
+function SectionTitle({ eyebrow, title, body, children }: { eyebrow?: string; title: string; body?: string; children?: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{eyebrow}</p>
-        <h2 className="mt-2 text-xl font-semibold text-text-primary">{title}</h2>
+        {eyebrow ? <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{eyebrow}</p> : null}
+        <h2 className={clsx('text-xl font-semibold text-text-primary', eyebrow ? 'mt-2' : '')}>{title}</h2>
         {body ? <p className="mt-2 max-w-2xl text-sm text-text-secondary">{body}</p> : null}
       </div>
       {children}
@@ -1625,7 +1548,7 @@ export default function CharacterBuilderPage() {
 
         {selectedResult ? (
           <Card className="border border-border p-6">
-            <SectionTitle eyebrow="Step 4" title="Refine" />
+            <SectionTitle title="Refine" />
             <div className="mt-5 grid gap-3">
               <Button
                 variant="outline"
@@ -1713,39 +1636,18 @@ export default function CharacterBuilderPage() {
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <div className="mx-auto w-full max-w-[1500px] space-y-6">
-            <section className="relative overflow-hidden rounded-[32px] border border-border bg-surface p-6 lg:p-8">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(11,107,255,0.14),transparent_42%),linear-gradient(135deg,rgba(16,24,40,0.03),rgba(255,255,255,0))]" />
-              <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_520px] xl:items-center">
-                <div className="relative p-5 sm:p-6">
-                  <div className="relative z-10 space-y-4">
-                    <ButtonLink
-                      href="/tools"
-                      variant="ghost"
-                      size="sm"
-                      linkComponent={Link}
-                      className="gap-2"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back to Tools
-                    </ButtonLink>
-                    <div
-                      className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-[linear-gradient(135deg,rgba(11,107,255,0.14),rgba(255,255,255,0.92))] shadow-[0_14px_28px_rgba(11,107,255,0.14)]"
-                    >
-                      <div className="relative">
-                        <Sparkles className="h-6 w-6 text-brand" />
-                        <Camera className="absolute -bottom-2 -right-2 h-4 w-4 text-text-primary" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Image-only tool</p>
-                      <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">Consistent Character Builder</h1>
-                      <p className="max-w-xl text-sm text-text-secondary">Build a reusable character reference before moving to video.</p>
-                    </div>
-                  </div>
-                </div>
-                <HeroPreviewStrip />
-              </div>
-            </section>
+            <div>
+              <ButtonLink
+                href="/tools"
+                variant="ghost"
+                size="sm"
+                linkComponent={Link}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Tools
+              </ButtonLink>
+            </div>
 
             {error ? (
               <Card className="border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{error}</Card>
@@ -1758,18 +1660,6 @@ export default function CharacterBuilderPage() {
               <div className="space-y-6">
                 <Card className="overflow-visible border border-border p-6 lg:p-7">
                   <div className="space-y-6">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">3-step builder</p>
-                        <h2 className="mt-2 text-2xl font-semibold text-text-primary">Preview, choose, generate</h2>
-                      </div>
-                      <div className="grid gap-2 sm:grid-cols-3">
-                        <StepMarker number="1" title="Start" subtitle="Choose the base" />
-                        <StepMarker number="2" title="Build" subtitle="Pick the look" />
-                        <StepMarker number="3" title="Generate" subtitle="Run the reference" />
-                      </div>
-                    </div>
-
                     <div className="xl:hidden">
                       <CharacterSummaryCard
                         identityReference={identityReference}
@@ -1781,8 +1671,8 @@ export default function CharacterBuilderPage() {
                       />
                     </div>
 
-                    <section className="space-y-4 border-t border-border pt-6">
-                      <SectionTitle eyebrow="Step 1" title="Start" />
+                    <section className="space-y-4">
+                      <SectionTitle title="Start" />
                       <div className="grid gap-4 md:grid-cols-2">
                         <VisualChoiceCard
                           selected={state.sourceMode === 'scratch'}
@@ -1875,7 +1765,7 @@ export default function CharacterBuilderPage() {
                     </section>
 
                     <section className="space-y-4 border-t border-border pt-6">
-                      <SectionTitle eyebrow="Step 2" title="Build the look" />
+                      <SectionTitle title="Build the look" />
                       <div className="space-y-3">
                         <label className="block text-sm font-semibold text-text-primary">Gender presentation</label>
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -2192,7 +2082,7 @@ export default function CharacterBuilderPage() {
                     </section>
 
                     <section className="space-y-4 border-t border-border pt-6">
-                      <SectionTitle eyebrow="Step 3" title="Generate" />
+                      <SectionTitle title="Generate" />
                       <div className="grid gap-4 lg:grid-cols-2">
                         <OutputPreviewCard
                           selected={state.outputMode === 'portrait-reference'}
