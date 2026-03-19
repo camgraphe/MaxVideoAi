@@ -320,7 +320,7 @@ async function recordRefundReceipt(receipt: PendingReceipt, label: string, price
          platform_revenue_cents,
          destination_acct
        )
-       VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13)
+       VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)
        ON CONFLICT DO NOTHING`,
       [
         receipt.userId,
