@@ -4,13 +4,14 @@ export const dynamic = 'force-dynamic';
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
 import deepmerge from 'deepmerge';
 import { Download, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 
@@ -143,6 +144,7 @@ function getAssetJobHref(asset: UserAsset): string | null {
 }
 
 export default function LibraryPage() {
+  const toolsEnabled = FEATURES.workflows.toolsSection;
   const { t } = useI18n();
   const rawCopy = t('workspace.library', DEFAULT_LIBRARY_COPY);
   const copy = useMemo<LibraryCopy>(() => {
@@ -163,9 +165,22 @@ export default function LibraryPage() {
       dedupingInterval: 60_000,
     }
   );
-  const assets = assetsData?.assets ?? [];
+  const assets = useMemo(
+    () =>
+      (assetsData?.assets ?? []).filter((asset) =>
+        toolsEnabled ? true : asset.source !== 'character' && asset.source !== 'angle'
+      ),
+    [assetsData?.assets, toolsEnabled]
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const availableSources = useMemo(
+    () =>
+      toolsEnabled
+        ? (['all', 'upload', 'generated', 'character', 'angle'] as const)
+        : (['all', 'upload', 'generated'] as const),
+    [toolsEnabled]
+  );
   const assetCountLabel = formatTemplate(copy.assets.countLabel, { count: assets.length });
   const emptyLabel =
     activeSource === 'generated'
@@ -174,9 +189,15 @@ export default function LibraryPage() {
         ? copy.assets.emptyUploads
         : activeSource === 'character'
           ? copy.assets.emptyCharacter
-          : activeSource === 'angle'
+        : activeSource === 'angle'
             ? copy.assets.emptyAngle
         : copy.assets.empty;
+
+  useEffect(() => {
+    if (!availableSources.some((source) => source === activeSource)) {
+      setActiveSource('all');
+    }
+  }, [activeSource, availableSources]);
 
   const handleDeleteAsset = useCallback(
     async (assetId: string) => {
@@ -235,93 +256,26 @@ export default function LibraryPage() {
                 aria-label="Library image filters"
                 className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary sm:w-auto"
               >
-                <Button
-                  type="button"
-                  role="tab"
-                  variant={activeSource === 'all' ? 'primary' : 'ghost'}
-                  size="sm"
-                  aria-selected={activeSource === 'all'}
-                  onClick={() => {
-                    setActiveSource('all');
-                    setDeleteError(null);
-                    setDeletingId(null);
-                  }}
-                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
-                  }`}
-                >
-                  {copy.tabs.all}
-                </Button>
-                <Button
-                  type="button"
-                  role="tab"
-                  variant={activeSource === 'upload' ? 'primary' : 'ghost'}
-                  size="sm"
-                  aria-selected={activeSource === 'upload'}
-                  onClick={() => {
-                    setActiveSource('upload');
-                    setDeleteError(null);
-                    setDeletingId(null);
-                  }}
-                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
-                  }`}
-                >
-                  {copy.tabs.upload}
-                </Button>
-                <Button
-                  type="button"
-                  role="tab"
-                  variant={activeSource === 'generated' ? 'primary' : 'ghost'}
-                  size="sm"
-                  aria-selected={activeSource === 'generated'}
-                  onClick={() => {
-                    setActiveSource('generated');
-                    setDeleteError(null);
-                    setDeletingId(null);
-                  }}
-                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'generated'
-                      ? 'hover:bg-brandHover'
-                      : 'text-text-secondary hover:bg-surface'
-                  }`}
-                >
-                  {copy.tabs.generated}
-                </Button>
-                <Button
-                  type="button"
-                  role="tab"
-                  variant={activeSource === 'character' ? 'primary' : 'ghost'}
-                  size="sm"
-                  aria-selected={activeSource === 'character'}
-                  onClick={() => {
-                    setActiveSource('character');
-                    setDeleteError(null);
-                    setDeletingId(null);
-                  }}
-                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'character' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
-                  }`}
-                >
-                  {copy.tabs.character}
-                </Button>
-                <Button
-                  type="button"
-                  role="tab"
-                  variant={activeSource === 'angle' ? 'primary' : 'ghost'}
-                  size="sm"
-                  aria-selected={activeSource === 'angle'}
-                  onClick={() => {
-                    setActiveSource('angle');
-                    setDeleteError(null);
-                    setDeletingId(null);
-                  }}
-                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'angle' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
-                  }`}
-                >
-                  {copy.tabs.angle}
-                </Button>
+                {availableSources.map((source) => (
+                  <Button
+                    key={source}
+                    type="button"
+                    role="tab"
+                    variant={activeSource === source ? 'primary' : 'ghost'}
+                    size="sm"
+                    aria-selected={activeSource === source}
+                    onClick={() => {
+                      setActiveSource(source);
+                      setDeleteError(null);
+                      setDeletingId(null);
+                    }}
+                    className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
+                      activeSource === source ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
+                    }`}
+                  >
+                    {copy.tabs[source]}
+                  </Button>
+                ))}
               </div>
             </div>
 

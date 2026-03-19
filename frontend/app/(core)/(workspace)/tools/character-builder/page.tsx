@@ -5,6 +5,7 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
@@ -86,6 +87,25 @@ type ToggleItem = {
   id: string;
   label: string;
 };
+
+type BillingProductResponse = {
+  ok: boolean;
+  product?: {
+    productKey: string;
+    currency: string;
+    unitPriceCents: number;
+  };
+  error?: string;
+};
+
+function getCharacterBillingProductKey(qualityMode: CharacterBuilderState['qualityMode']): string {
+  return qualityMode === 'final' ? 'character-final' : 'character-draft';
+}
+
+function formatUsd(value: number | null | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
+  return `$${value.toFixed(2)}`;
+}
 
 function triggerDownload(url: string, fileName: string) {
   if (typeof window === 'undefined') return;
@@ -1196,10 +1216,26 @@ export default function CharacterBuilderPage() {
   const overflowOutfits = OUTFIT_STYLE_OPTIONS.filter(
     (option) => !FEATURED_OUTFIT_IDS.includes(option.id as (typeof FEATURED_OUTFIT_IDS)[number])
   );
+  const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
   const overflowOutfitValue =
     state.traits.outfitStyle.value && !FEATURED_OUTFIT_IDS.includes(state.traits.outfitStyle.value as (typeof FEATURED_OUTFIT_IDS)[number])
       ? state.traits.outfitStyle.value
       : '__more_outfits__';
+  const { data: billingProductData } = useSWR(
+    `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}`,
+    async (url: string) => {
+      const response = await authFetch(url);
+      const payload = (await response.json().catch(() => null)) as BillingProductResponse | null;
+      if (!response.ok || !payload?.ok || !payload.product) {
+        throw new Error(payload?.error ?? 'Unable to load tool pricing');
+      }
+      return payload.product;
+    },
+    { keepPreviousData: true }
+  );
+  const estimatedImageCostUsd =
+    billingProductData?.unitPriceCents != null ? Number((billingProductData.unitPriceCents / 100).toFixed(2)) : null;
+
   useEffect(() => {
     const persisted = readPersistedState();
     if (persisted) {
@@ -2130,9 +2166,10 @@ export default function CharacterBuilderPage() {
 
                         <div className="rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))] p-4">
                           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <p className="text-sm text-text-secondary">
-                              Draft uses Nano Banana 2. Final uses Nano Banana Pro.
-                            </p>
+                            <div className="space-y-1">
+                              <p className="text-sm text-text-secondary">Draft uses Nano Banana 2. Final uses Nano Banana Pro.</p>
+                              <p className="text-sm font-medium text-text-primary">{formatUsd(estimatedImageCostUsd)} per image</p>
+                            </div>
                             <div className="flex flex-col gap-2 sm:flex-row">
                               <Button
                                 onClick={() => void handleRun('generate', 1)}

@@ -3,9 +3,23 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { FEATURES } from '@/content/feature-flags';
 import { CharacterBuilderError, runCharacterBuilder } from '@/server/tools/character-builder';
 
 export async function POST(req: NextRequest) {
+  if (!FEATURES.workflows.toolsSection) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code: 'tools_disabled',
+          message: 'Tools are currently disabled.',
+        },
+      } satisfies CharacterBuilderResponse,
+      { status: 404 }
+    );
+  }
+
   let body: Partial<CharacterBuilderRequest> | null = null;
 
   try {

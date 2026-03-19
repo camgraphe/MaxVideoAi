@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { FEATURES } from '@/content/feature-flags';
 import type { AngleToolRequest, AngleToolNumericParams } from '@/types/tools-angle';
 import { runAngleTool, AngleToolError } from '@/server/tools/angle';
 
@@ -25,6 +26,19 @@ function parseParams(value: unknown): AngleToolNumericParams | null {
 }
 
 export async function POST(req: NextRequest) {
+  if (!FEATURES.workflows.toolsSection) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: {
+          code: 'tools_disabled',
+          message: 'Tools are currently disabled.',
+        },
+      },
+      { status: 404 }
+    );
+  }
+
   let body: Partial<AngleToolRequest> | null = null;
 
   try {

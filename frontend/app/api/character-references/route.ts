@@ -4,6 +4,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
+import { FEATURES } from '@/content/feature-flags';
 import type { CharacterReferenceSelection, CharacterReferencesResponse } from '@/types/image-generation';
 
 export const runtime = 'nodejs';
@@ -49,6 +50,10 @@ function parseCharacterSnapshot(snapshot: unknown): Pick<CharacterReferenceSelec
 }
 
 export async function GET(req: NextRequest) {
+  if (!FEATURES.workflows.toolsSection) {
+    return json({ ok: false, characters: [], error: 'TOOLS_DISABLED' }, { status: 404 });
+  }
+
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     if (VISITOR_WORKSPACE_ENABLED) {

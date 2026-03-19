@@ -39,6 +39,7 @@ import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
+import { FEATURES } from '@/content/feature-flags';
 import {
   formatSupportedImageFormatsLabel,
   getImageAcceptAttribute,
@@ -722,6 +723,7 @@ function buildPendingGroup({
 }
 
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
+  const toolsEnabled = FEATURES.workflows.toolsSection;
   const { t } = useI18n();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -890,7 +892,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [autoModeFromReferences, referenceConstraints, selectedEngineCaps]
   );
   const baseReferenceSlotLimit = Math.min(MAX_REFERENCE_SLOTS, referencePickerConstraints.max);
-  const supportsCharacterReferences = baseReferenceSlotLimit > 0;
+  const supportsCharacterReferences = toolsEnabled && baseReferenceSlotLimit > 0;
   const totalRegularReferenceSelections = useMemo(
     () => referenceSlots.slice(0, baseReferenceSlotLimit).filter((slot) => Boolean(slot)).length,
     [baseReferenceSlotLimit, referenceSlots]
@@ -2909,6 +2911,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         copy={resolvedCopy.library}
         supportedFormats={supportedReferenceFormats}
         supportedFormatsLabel={supportedReferenceFormatsLabel}
+        toolsEnabled={toolsEnabled}
       />
     ) : null}
       {characterPickerModal.open ? (
@@ -2932,6 +2935,7 @@ function ImageLibraryModal({
   copy,
   supportedFormats,
   supportedFormatsLabel,
+  toolsEnabled,
 }: {
   open: boolean;
   onClose: () => void;
@@ -2939,6 +2943,7 @@ function ImageLibraryModal({
   copy: ImageWorkspaceCopy['library'];
   supportedFormats: string[];
   supportedFormatsLabel: string;
+  toolsEnabled: boolean;
 }) {
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
   const swrKey = open
@@ -2962,7 +2967,26 @@ function ImageLibraryModal({
     return payload.assets;
   });
 
-  const assets = useMemo(() => data ?? [], [data]);
+  const assets = useMemo(
+    () =>
+      (data ?? []).filter((asset) =>
+        toolsEnabled ? true : asset.source !== 'character' && asset.source !== 'angle'
+      ),
+    [data, toolsEnabled]
+  );
+  const availableSources = useMemo(
+    () =>
+      toolsEnabled
+        ? (['all', 'upload', 'generated', 'character', 'angle'] as const)
+        : (['all', 'upload', 'generated'] as const),
+    [toolsEnabled]
+  );
+
+  useEffect(() => {
+    if (!availableSources.some((source) => source === activeSource)) {
+      setActiveSource('all');
+    }
+  }, [activeSource, availableSources]);
   const compatibilityByAssetId = useMemo(() => {
     const entries = assets.map((asset) => {
       if (!supportedFormats.length) {
@@ -3032,76 +3056,25 @@ function ImageLibraryModal({
             aria-label="Library image filters"
             className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
           >
-            <Button
-              type="button"
-              role="tab"
-              variant="ghost"
-              size="sm"
-              aria-selected={activeSource === 'all'}
-              onClick={() => setActiveSource('all')}
-              className={clsx(
-                'flex-1 rounded-none px-4 py-2',
-                activeSource === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
-              )}
-            >
-              {copy.tabs.all}
-            </Button>
-            <Button
-              type="button"
-              role="tab"
-              variant="ghost"
-              size="sm"
-              aria-selected={activeSource === 'upload'}
-              onClick={() => setActiveSource('upload')}
-              className={clsx(
-                'flex-1 rounded-none px-4 py-2',
-                activeSource === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
-              )}
-            >
-              {copy.tabs.upload}
-            </Button>
-            <Button
-              type="button"
-              role="tab"
-              variant="ghost"
-              size="sm"
-              aria-selected={activeSource === 'generated'}
-              onClick={() => setActiveSource('generated')}
-              className={clsx(
-                'flex-1 rounded-none px-4 py-2',
-                activeSource === 'generated' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
-              )}
-            >
-              {copy.tabs.generated}
-            </Button>
-            <Button
-              type="button"
-              role="tab"
-              variant="ghost"
-              size="sm"
-              aria-selected={activeSource === 'character'}
-              onClick={() => setActiveSource('character')}
-              className={clsx(
-                'flex-1 rounded-none px-4 py-2',
-                activeSource === 'character' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
-              )}
-            >
-              {copy.tabs.character}
-            </Button>
-            <Button
-              type="button"
-              role="tab"
-              variant="ghost"
-              size="sm"
-              aria-selected={activeSource === 'angle'}
-              onClick={() => setActiveSource('angle')}
-              className={clsx(
-                'flex-1 rounded-none px-4 py-2',
-                activeSource === 'angle' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
-              )}
-            >
-              {copy.tabs.angle}
-            </Button>
+            {availableSources.map((source) => (
+              <Button
+                key={source}
+                type="button"
+                role="tab"
+                variant="ghost"
+                size="sm"
+                aria-selected={activeSource === source}
+                onClick={() => setActiveSource(source)}
+                className={clsx(
+                  'flex-1 rounded-none px-4 py-2',
+                  activeSource === source
+                    ? 'bg-brand text-on-brand hover:bg-brand'
+                    : 'text-text-secondary hover:bg-surface'
+                )}
+              >
+                {copy.tabs[source]}
+              </Button>
+            ))}
           </div>
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
-import { deleteUserAsset, uploadImageToStorage, recordUserAsset } from '@/server/storage';
+import { deleteUserAsset, StorageUploadError, uploadImageToStorage, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { normalizeUserAssetSource } from '@/lib/job-surface';
@@ -219,7 +219,25 @@ export async function POST(req: NextRequest) {
     if (error instanceof Error && error.name === 'AbortError') {
       return NextResponse.json({ ok: false, error: 'FETCH_TIMEOUT' }, { status: 504 });
     }
-    console.error('[user-assets] save failed', error);
+    if (error instanceof StorageUploadError) {
+      console.error('[user-assets] storage upload failed', {
+        message: error.message,
+        key: error.context.key ?? null,
+        keyBytes: error.context.keyBytes ?? null,
+        prefix: error.context.prefix ?? 'library',
+        userId,
+        originalFileName: error.context.originalFileName ?? payload?.name ?? payload?.label ?? null,
+        originalFileNameBytes: Buffer.byteLength(
+          String(error.context.originalFileName ?? payload?.name ?? payload?.label ?? ''),
+          'utf8'
+        ),
+        labelBytes: Buffer.byteLength(String(payload?.label ?? ''), 'utf8'),
+        nameBytes: Buffer.byteLength(String(payload?.name ?? ''), 'utf8'),
+        sourceUrlBytes: Buffer.byteLength(sourceUrl, 'utf8'),
+      });
+    } else {
+      console.error('[user-assets] save failed', error);
+    }
     return NextResponse.json({ ok: false, error: 'SAVE_FAILED' }, { status: 500 });
   }
 }

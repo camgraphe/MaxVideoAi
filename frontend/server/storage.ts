@@ -22,6 +22,32 @@ const S3_UPLOAD_ACL = (process.env.S3_UPLOAD_ACL || '').trim();
 const S3_CACHE_CONTROL = (process.env.S3_CACHE_CONTROL || 'public, max-age=3600').trim();
 
 let s3Client: S3Client | null = null;
+const MAX_SAFE_OBJECT_KEY_BYTES = 1000;
+
+export class StorageUploadError extends Error {
+  context: {
+    key?: string;
+    keyBytes?: number;
+    prefix?: string;
+    userId?: string | null;
+    originalFileName?: string | null;
+  };
+
+  constructor(
+    message: string,
+    context: {
+      key?: string;
+      keyBytes?: number;
+      prefix?: string;
+      userId?: string | null;
+      originalFileName?: string | null;
+    } = {}
+  ) {
+    super(message);
+    this.name = 'StorageUploadError';
+    this.context = context;
+  }
+}
 
 function getS3Client(): S3Client {
   if (!s3Client) {
@@ -126,12 +152,40 @@ function sanitizeSegment(segment: string): string {
     .replace(/-+/g, '-');
 }
 
-function buildObjectKey(params: { prefix?: string; userId?: string | null; fileName: string }): string {
-  const { prefix, userId, fileName } = params;
-  return [prefix || 'uploads', userId ?? 'anonymous', fileName]
+function getObjectKeySizeBytes(key: string): number {
+  return Buffer.byteLength(key, 'utf8');
+}
+
+function buildObjectKey(params: { prefix?: string; userId?: string | null; leafName: string }): string {
+  const { prefix, userId, leafName } = params;
+  const key = [prefix || 'uploads', userId ?? 'anonymous', leafName]
     .map((segment) => sanitizeSegment(segment))
     .filter((segment) => segment.length > 0)
     .join('/');
+
+  const keyBytes = getObjectKeySizeBytes(key);
+  if (keyBytes > MAX_SAFE_OBJECT_KEY_BYTES) {
+    throw new StorageUploadError('Storage object key is too long.', {
+      key,
+      keyBytes,
+      prefix,
+      userId,
+    });
+  }
+
+  return key;
+}
+
+function buildStorageLeafName(params: { mime: string; fileName?: string | null }): string {
+  const safeMime = params.mime || 'application/octet-stream';
+  const inferredExtension = inferExtension(safeMime, 'bin');
+  const fallbackExtension = (() => {
+    const original = params.fileName?.trim();
+    if (!original) return inferredExtension;
+    const match = original.match(/\.([a-zA-Z0-9]{1,10})$/);
+    return match?.[1]?.toLowerCase() || inferredExtension;
+  })();
+  return `${randomUUID()}.${fallbackExtension}`;
 }
 
 function buildPublicUrl(key: string): string {
@@ -151,10 +205,11 @@ export async function uploadImageToStorage(params: {
 }): Promise<UploadResult> {
   const client = getS3Client();
   const safeMime = params.mime && params.mime.startsWith('image/') ? params.mime : 'image/png';
-  const extension = inferExtension(safeMime, 'png');
-  const slug = randomUUID();
-  const baseName = params.fileName?.replace(/\s+/g, '-')?.replace(/[^a-zA-Z0-9._-]/g, '') || `${slug}.${extension}`;
-  const key = buildObjectKey({ prefix: params.prefix, userId: params.userId, fileName: `${slug}-${baseName}` });
+  const key = buildObjectKey({
+    prefix: params.prefix,
+    userId: params.userId,
+    leafName: buildStorageLeafName({ mime: safeMime, fileName: params.fileName }),
+  });
 
   const putCommand = new PutObjectCommand({
     Bucket: S3_BUCKET,
@@ -169,7 +224,17 @@ export async function uploadImageToStorage(params: {
     putCommand.input.ACL = S3_UPLOAD_ACL;
   }
 
-  await client.send(putCommand);
+  try {
+    await client.send(putCommand);
+  } catch (error) {
+    throw new StorageUploadError('Failed to upload image to storage.', {
+      key,
+      keyBytes: getObjectKeySizeBytes(key),
+      prefix: params.prefix,
+      userId: params.userId ?? null,
+      originalFileName: params.fileName ?? null,
+    });
+  }
 
   const { width, height } = getImageDimensions(params.data, safeMime);
 
@@ -367,14 +432,10 @@ export async function uploadFileBuffer(params: {
   acl?: string | null;
 }): Promise<{ key: string; url: string }> {
   const client = getS3Client();
-  const extension = inferExtension(params.mime || 'application/octet-stream', 'bin');
-  const slug = randomUUID();
-  const baseName =
-    params.fileName?.replace(/\s+/g, '-')?.replace(/[^a-zA-Z0-9._-]/g, '') || `${slug}.${extension}`;
   const key = buildObjectKey({
     prefix: params.prefix ?? 'files',
     userId: params.userId ?? 'anonymous',
-    fileName: `${slug}-${baseName}`,
+    leafName: buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }),
   });
 
   const command = new PutObjectCommand({
@@ -392,7 +453,17 @@ export async function uploadFileBuffer(params: {
     command.input.ACL = acl;
   }
 
-  await client.send(command);
+  try {
+    await client.send(command);
+  } catch {
+    throw new StorageUploadError('Failed to upload file to storage.', {
+      key,
+      keyBytes: getObjectKeySizeBytes(key),
+      prefix: params.prefix ?? 'files',
+      userId: params.userId ?? 'anonymous',
+      originalFileName: params.fileName ?? null,
+    });
+  }
 
   return { key, url: buildPublicUrl(key) };
 }
