@@ -23,6 +23,12 @@ type PendingVideoRow = {
   featured: boolean | null;
 };
 
+type PlaylistAssignmentRow = {
+  video_id: string;
+  playlist_id: string;
+  playlist_name: string;
+};
+
 const FAILURE_STATES = new Set(['failed', 'error', 'errored', 'cancelled', 'canceled']);
 const ARCHIVE_THRESHOLD_MS = 30 * 60 * 1000;
 
@@ -77,6 +83,26 @@ export async function GET(req: NextRequest) {
 
     const hasMore = rows.length > limit;
     const slice = hasMore ? rows.slice(0, limit) : rows;
+    const videoIds = slice.map((row) => row.job_id);
+    const assignmentRows = videoIds.length
+      ? await query<PlaylistAssignmentRow>(
+          `
+            SELECT pi.video_id, p.id AS playlist_id, p.name AS playlist_name
+            FROM playlist_items pi
+            JOIN playlists p ON p.id = pi.playlist_id
+            WHERE pi.video_id = ANY($1::text[])
+            ORDER BY p.updated_at DESC, p.name ASC
+          `,
+          [videoIds]
+        )
+      : [];
+    const assignmentsByVideo = assignmentRows.reduce<Record<string, Array<{ id: string; name: string }>>>((acc, row) => {
+      if (!acc[row.video_id]) {
+        acc[row.video_id] = [];
+      }
+      acc[row.video_id].push({ id: row.playlist_id, name: row.playlist_name });
+      return acc;
+    }, {});
     const videos = slice.map((row) => {
       const status = row.status ?? null;
       const updatedAt = row.updated_at;
@@ -107,6 +133,7 @@ export async function GET(req: NextRequest) {
       visibility: row.visibility ?? 'public',
       indexable: row.indexable ?? true,
       featured: row.featured ?? false,
+      assignedPlaylists: assignmentsByVideo[row.job_id] ?? [],
       archived,
     }; });
     const nextCursor = hasMore
