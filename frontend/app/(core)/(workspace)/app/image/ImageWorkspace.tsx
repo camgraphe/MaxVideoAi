@@ -1986,7 +1986,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           mode,
           prompt: trimmedPrompt,
           numImages,
-          imageUrls: mode === 'i2i' ? combinedReferenceUrls : undefined,
+          imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
           characterReferences: mode === 'i2i' ? effectiveCharacterReferences : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,

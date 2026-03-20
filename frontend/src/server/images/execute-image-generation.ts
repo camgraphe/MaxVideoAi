@@ -888,7 +888,8 @@ export async function executeImageGeneration({
     .filter((entry) => entry.length);
   const characterReferences = sanitizeCharacterReferences(body.characterReferences);
   const characterReferenceUrls = characterReferences.map((entry) => entry.imageUrl);
-  const combinedImageUrls = [...characterReferenceUrls, ...imageUrls];
+  const normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
+  const combinedImageUrls = [...characterReferenceUrls, ...normalizedImageUrls];
   const effectivePrompt = buildCharacterReferencePrompt(prompt, characterReferences);
   const invalidImageUrl = combinedImageUrls.find((entry) => !/^https?:\/\//i.test(entry));
   if (invalidImageUrl) {
@@ -1127,7 +1128,7 @@ export async function executeImageGeneration({
         enableWebSearch,
         thinkingLevel,
         limitGenerations,
-        imageUrls,
+        imageUrls: normalizedImageUrls,
         characterReferences,
         membershipTier,
         visibility,
