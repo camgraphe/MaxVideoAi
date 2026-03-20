@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Check,
+  ChevronDown,
   Download,
   Loader2,
   Pin,
@@ -1369,6 +1370,42 @@ function SectionTitle({ eyebrow, title, body, children }: { eyebrow?: string; ti
   );
 }
 
+function BuilderAccordionSection({
+  title,
+  summary,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  summary?: string | null;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left sm:px-5"
+      >
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-text-primary">{title}</p>
+          {summary ? <p className="mt-1 truncate text-xs text-text-secondary">{summary}</p> : null}
+        </div>
+        <ChevronDown
+          className={clsx(
+            'h-4 w-4 shrink-0 text-text-muted transition-transform',
+            open && 'rotate-180'
+          )}
+        />
+      </button>
+      {open ? <div className="border-t border-border px-4 py-4 sm:px-5">{children}</div> : null}
+    </section>
+  );
+}
+
 function ReferenceSlot({
   title,
   subtitle,
@@ -1533,6 +1570,12 @@ export default function CharacterBuilderPage() {
   const [state, setState] = useState<CharacterBuilderState>(() => createDefaultCharacterBuilderState());
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [hairOpen, setHairOpen] = useState(false);
+  const [buildSectionsOpen, setBuildSectionsOpen] = useState({
+    identity: true,
+    hair: false,
+    outfit: false,
+    style: false,
+  });
   const [showStyleReferenceSlot, setShowStyleReferenceSlot] = useState(false);
   const [mustRemainDraft, setMustRemainDraft] = useState('');
   const [loadingAction, setLoadingAction] = useState<CharacterBuilderAction | null>(null);
@@ -1643,6 +1686,8 @@ export default function CharacterBuilderPage() {
   const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
   const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
   const outfitSummary = describeTraitValue(outfitOptions, state.traits.outfitStyle.value, copy);
+  const identitySummary = `${findChoiceLabel(genderOptions, state.traits.genderPresentation.value) ?? copy.open} · ${findChoiceLabel(ageOptions, state.traits.ageRange.value) ?? copy.open}`;
+  const realismSummary = findChoiceLabel(realismOptions, state.traits.realismStyle) ?? copy.summary.photoreal;
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
   const featuredOutfits = outfitOptions.filter((option) => FEATURED_OUTFIT_IDS.includes(option.id as (typeof FEATURED_OUTFIT_IDS)[number]));
   const overflowOutfits = outfitOptions.filter(
@@ -1667,6 +1712,21 @@ export default function CharacterBuilderPage() {
   );
   const estimatedImageCostUsd =
     billingProductData?.unitPriceCents != null ? Number((billingProductData.unitPriceCents / 100).toFixed(2)) : null;
+  const qualityLabel = findChoiceLabel(
+    qualityOptions.map((option) => ({ id: option.id, label: option.label })),
+    state.qualityMode
+  );
+  const outputLabel = findChoiceLabel(
+    outputModeOptions.map((option) => ({ id: option.id, label: option.label })),
+    state.outputMode
+  );
+
+  const toggleBuildSection = (section: keyof typeof buildSectionsOpen) => {
+    setBuildSectionsOpen((previous) => ({
+      ...previous,
+      [section]: !previous[section],
+    }));
+  };
 
   useEffect(() => {
     const persisted = readPersistedState();
@@ -2059,9 +2119,11 @@ export default function CharacterBuilderPage() {
     return (
       <div className="flex min-h-screen flex-col bg-bg">
         <HeaderBar />
-        <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-          <AppSidebar />
-          <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+        <div className="flex flex-1 min-w-0 flex-col xl:flex-row">
+          <div className="hidden xl:block">
+            <AppSidebar />
+          </div>
+          <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-28 lg:p-7 lg:pb-32 xl:pb-7">
             <div className="space-y-4 animate-pulse">
               <div className="h-40 rounded-card border border-border bg-surface" />
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_360px]">
@@ -2083,9 +2145,11 @@ export default function CharacterBuilderPage() {
     return (
       <div className="flex min-h-screen flex-col bg-bg">
         <HeaderBar />
-        <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-          <AppSidebar />
-          <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+        <div className="flex flex-1 min-w-0 flex-col xl:flex-row">
+          <div className="hidden xl:block">
+            <AppSidebar />
+          </div>
+          <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-28 lg:p-7 lg:pb-32 xl:pb-7">
             <Card className="border border-border p-6">
               <h1 className="text-2xl font-semibold text-text-primary">{copy.disabledTitle}</h1>
               <p className="mt-2 text-sm text-text-secondary">{copy.disabledBody}</p>
@@ -2099,9 +2163,11 @@ export default function CharacterBuilderPage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-        <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+      <div className="flex flex-1 min-w-0 flex-col xl:flex-row">
+        <div className="hidden xl:block">
+          <AppSidebar />
+        </div>
+        <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-28 lg:p-7 lg:pb-32 xl:pb-7">
           <div className="mx-auto w-full max-w-[1500px] space-y-6">
             <div>
               <ButtonLink
@@ -2241,151 +2307,178 @@ export default function CharacterBuilderPage() {
 
                     <section className="space-y-4 border-t border-border pt-6">
                       <SectionTitle title={copy.top.buildLook} />
-                      <div className="space-y-3">
-                        <label className="block text-sm font-semibold text-text-primary">{copy.sections.gender}</label>
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                          {genderOptions.map((option) => {
-                            const meta = GENDER_CARD_META[option.id] ?? GENDER_CARD_META.custom;
-                            return (
-                              <IconChoiceCard
-                                key={option.id}
-                                selected={state.traits.genderPresentation.value === option.id}
-                                title={option.label}
-                                glyph={meta.glyph}
-                                background={meta.background}
-                                accent={meta.accent}
-                                onClick={() => updateTrait('genderPresentation', option.id)}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="max-w-xl">
-                        <SegmentedControl
-                          label={copy.sections.age}
-                          options={ageOptions}
-                          value={state.traits.ageRange.value}
-                          onChange={(value) => updateTrait('ageRange', value)}
-                        />
-                      </div>
-
-                      {state.traits.genderPresentation.value === 'custom' ? (
-                        <Input
-                          value={state.traits.customGenderDescription ?? ''}
-                          onChange={(event) =>
-                            setState((previous) => ({
-                              ...previous,
-                              traits: {
-                                ...previous.traits,
-                                customGenderDescription: event.target.value,
-                              },
-                            }))
-                          }
-                          placeholder={copy.sections.customGenderPlaceholder}
-                        />
-                      ) : null}
-
-                      <div className="relative space-y-3">
-                        <label className="block text-sm font-semibold text-text-primary">{copy.sections.hair}</label>
-                        <button
-                          type="button"
-                          onClick={() => setHairOpen((previous) => !previous)}
-                          className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))] px-4 py-4 text-left transition hover:border-border-hover hover:shadow-[0_18px_36px_rgba(15,23,42,0.05)]"
+                      <div className="space-y-4">
+                        <BuilderAccordionSection
+                          title={copy.sections.gender}
+                          summary={identitySummary}
+                          open={buildSectionsOpen.identity}
+                          onToggle={() => toggleBuildSection('identity')}
                         >
-                          <div className="flex min-w-0 items-center gap-4">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[linear-gradient(135deg,rgba(15,23,42,0.08),rgba(255,255,255,0.96))]">
-                              <div className="space-y-1">
-                                <div className="h-2 w-7 rounded-full bg-slate-500" />
-                                <div className="h-2 w-5 rounded-full bg-slate-400" />
-                                <div className="h-2 w-6 rounded-full bg-slate-300" />
+                          <div className="space-y-4">
+                            <div className="space-y-3">
+                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                {genderOptions.map((option) => {
+                                  const meta = GENDER_CARD_META[option.id] ?? GENDER_CARD_META.custom;
+                                  return (
+                                    <IconChoiceCard
+                                      key={option.id}
+                                      selected={state.traits.genderPresentation.value === option.id}
+                                      title={option.label}
+                                      glyph={meta.glyph}
+                                      background={meta.background}
+                                      accent={meta.accent}
+                                      onClick={() => updateTrait('genderPresentation', option.id)}
+                                    />
+                                  );
+                                })}
                               </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
-                              <p className="truncate text-xs text-text-secondary">
-                                {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
-                              </p>
+
+                            <div className="max-w-xl">
+                              <SegmentedControl
+                                label={copy.sections.age}
+                                options={ageOptions}
+                                value={state.traits.ageRange.value}
+                                onChange={(value) => updateTrait('ageRange', value)}
+                              />
                             </div>
-                          </div>
-                          <span className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-text-secondary">
-                            {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
-                          </span>
-                        </button>
-                        <HairEditorPanel
-                          open={hairOpen}
-                          onClose={() => setHairOpen(false)}
-                          sourceMode={state.sourceMode}
-                          traits={state.traits}
-                          onChange={(key, value) => updateTrait(key, value)}
-                          hairColorOptions={hairColorOptions}
-                          hairLengthOptions={hairLengthOptions}
-                          hairstyleOptions={hairstyleOptions}
-                          copy={copy}
-                        />
-                      </div>
 
-                      <div className="space-y-3">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <label className="block text-sm font-semibold text-text-primary">{copy.sections.outfit}</label>
-                          <div className="w-full sm:w-[180px]">
-                            <SelectMenu
-                              options={[
-                                { value: '__more_outfits__', label: copy.sections.moreOutfits },
-                                ...overflowOutfits.map((option) => ({ value: option.id, label: option.label })),
-                              ]}
-                              value={overflowOutfitValue}
-                              onChange={(value) => {
-                                if (value === '__more_outfits__') return;
-                                updateTrait('outfitStyle', String(value));
-                              }}
-                              buttonClassName="min-h-[40px]"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex gap-3 overflow-x-auto pb-1">
-                          {featuredOutfits.map((option) => {
-                            const meta = OUTFIT_CARD_META[option.id] ?? OUTFIT_CARD_META.casual;
-                            return (
-                              <div key={option.id} className="min-w-[150px] flex-1">
-                                <StyleChoiceCard
-                                  selected={state.traits.outfitStyle.value === option.id}
-                                  title={option.label}
-                                  background={meta.background}
-                                  accent={meta.accent}
-                                  onClick={() => updateTrait('outfitStyle', option.id)}
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <label className="block text-sm font-semibold text-text-primary">{copy.sections.realism}</label>
-                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                          {realismOptions.map((option) => {
-                            const meta = REALISM_CARD_META[option.id];
-                            return (
-                              <StyleChoiceCard
-                                key={option.id}
-                                selected={state.traits.realismStyle === option.id}
-                                title={option.label}
-                                background={meta.background}
-                                accent={meta.accent}
-                                onClick={() =>
+                            {state.traits.genderPresentation.value === 'custom' ? (
+                              <Input
+                                value={state.traits.customGenderDescription ?? ''}
+                                onChange={(event) =>
                                   setState((previous) => ({
                                     ...previous,
                                     traits: {
                                       ...previous.traits,
-                                      realismStyle: option.id,
+                                      customGenderDescription: event.target.value,
                                     },
                                   }))
                                 }
+                                placeholder={copy.sections.customGenderPlaceholder}
                               />
-                            );
-                          })}
-                        </div>
+                            ) : null}
+                          </div>
+                        </BuilderAccordionSection>
+
+                        <BuilderAccordionSection
+                          title={copy.sections.hair}
+                          summary={hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
+                          open={buildSectionsOpen.hair}
+                          onToggle={() => toggleBuildSection('hair')}
+                        >
+                          <div className="relative space-y-3">
+                            <button
+                              type="button"
+                              onClick={() => setHairOpen((previous) => !previous)}
+                              className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-white px-4 py-4 text-left transition hover:border-border-hover hover:shadow-[0_18px_36px_rgba(15,23,42,0.05)]"
+                            >
+                              <div className="flex min-w-0 items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[linear-gradient(135deg,rgba(15,23,42,0.08),rgba(255,255,255,0.96))]">
+                                  <div className="space-y-1">
+                                    <div className="h-2 w-7 rounded-full bg-slate-500" />
+                                    <div className="h-2 w-5 rounded-full bg-slate-400" />
+                                    <div className="h-2 w-6 rounded-full bg-slate-300" />
+                                  </div>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
+                                  <p className="truncate text-xs text-text-secondary">
+                                    {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
+                                  </p>
+                                </div>
+                              </div>
+                              <span className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-text-secondary">
+                                {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
+                              </span>
+                            </button>
+                            <HairEditorPanel
+                              open={hairOpen}
+                              onClose={() => setHairOpen(false)}
+                              sourceMode={state.sourceMode}
+                              traits={state.traits}
+                              onChange={(key, value) => updateTrait(key, value)}
+                              hairColorOptions={hairColorOptions}
+                              hairLengthOptions={hairLengthOptions}
+                              hairstyleOptions={hairstyleOptions}
+                              copy={copy}
+                            />
+                          </div>
+                        </BuilderAccordionSection>
+
+                        <BuilderAccordionSection
+                          title={copy.sections.outfit}
+                          summary={outfitSummary === copy.notSet ? copy.open : outfitSummary}
+                          open={buildSectionsOpen.outfit}
+                          onToggle={() => toggleBuildSection('outfit')}
+                        >
+                          <div className="space-y-3">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <label className="block text-sm font-semibold text-text-primary">{copy.sections.outfit}</label>
+                              <div className="w-full sm:w-[180px]">
+                                <SelectMenu
+                                  options={[
+                                    { value: '__more_outfits__', label: copy.sections.moreOutfits },
+                                    ...overflowOutfits.map((option) => ({ value: option.id, label: option.label })),
+                                  ]}
+                                  value={overflowOutfitValue}
+                                  onChange={(value) => {
+                                    if (value === '__more_outfits__') return;
+                                    updateTrait('outfitStyle', String(value));
+                                  }}
+                                  buttonClassName="min-h-[40px]"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex gap-3 overflow-x-auto pb-1">
+                              {featuredOutfits.map((option) => {
+                                const meta = OUTFIT_CARD_META[option.id] ?? OUTFIT_CARD_META.casual;
+                                return (
+                                  <div key={option.id} className="min-w-[150px] flex-1">
+                                    <StyleChoiceCard
+                                      selected={state.traits.outfitStyle.value === option.id}
+                                      title={option.label}
+                                      background={meta.background}
+                                      accent={meta.accent}
+                                      onClick={() => updateTrait('outfitStyle', option.id)}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </BuilderAccordionSection>
+
+                        <BuilderAccordionSection
+                          title={copy.sections.realism}
+                          summary={realismSummary}
+                          open={buildSectionsOpen.style}
+                          onToggle={() => toggleBuildSection('style')}
+                        >
+                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                            {realismOptions.map((option) => {
+                              const meta = REALISM_CARD_META[option.id];
+                              return (
+                                <StyleChoiceCard
+                                  key={option.id}
+                                  selected={state.traits.realismStyle === option.id}
+                                  title={option.label}
+                                  background={meta.background}
+                                  accent={meta.accent}
+                                  onClick={() =>
+                                    setState((previous) => ({
+                                      ...previous,
+                                      traits: {
+                                        ...previous.traits,
+                                        realismStyle: option.id,
+                                      },
+                                    }))
+                                  }
+                                />
+                              );
+                            })}
+                          </div>
+                        </BuilderAccordionSection>
                       </div>
 
                       <button
@@ -2748,6 +2841,61 @@ export default function CharacterBuilderPage() {
             </div>
           </div>
         </main>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 backdrop-blur xl:hidden">
+        <div className="mx-auto flex w-full max-w-[960px] flex-col gap-3 px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-text-primary">
+                {outputLabel ?? copy.generatePanel.portraitTitle} · {qualityLabel ?? copy.options.quality.draft.label}
+              </p>
+              <p className="text-xs text-text-secondary">
+                {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
+              </p>
+            </div>
+            <div className="inline-flex rounded-full border border-border bg-bg p-1">
+              {qualityOptions.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() =>
+                    setState((previous) => ({
+                      ...previous,
+                      qualityMode: option.id as CharacterBuilderState['qualityMode'],
+                    }))
+                  }
+                  className={clsx(
+                    'rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                    state.qualityMode === option.id
+                      ? 'bg-brand text-on-brand'
+                      : 'text-text-secondary hover:text-text-primary'
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => void handleRun('generate', 1)}
+              disabled={loadingAction !== null}
+              className="flex-1 gap-2"
+            >
+              {loadingAction === 'generate' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {copy.generatePanel.generateReference}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => void handleRun('generate', 4)}
+              disabled={loadingAction !== null}
+              className="gap-2 px-4"
+            >
+              {loadingAction === 'generate' ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+              4x
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
