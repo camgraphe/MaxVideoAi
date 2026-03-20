@@ -19,7 +19,7 @@ import { ensureUserPreferences } from '@/server/preferences';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
-import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
+import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured, recordUserAsset } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, parseStoredImageRenders, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import {
@@ -1286,6 +1286,36 @@ export async function executeImageGeneration({
     const renderIdsJson = JSON.stringify(storedRenderEntries);
     const providerRequestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
     providerJobId = providerRequestId ?? undefined;
+
+    if (jobSurface === 'character') {
+      await Promise.all(
+        normalizedImagesWithThumbs.map(async (image, index) => {
+          try {
+            await recordUserAsset({
+              assetId: `${jobId}:character:${index + 1}`,
+              userId,
+              url: image.url,
+              mime: image.mimeType ?? 'image/png',
+              width: image.width ?? null,
+              height: image.height ?? null,
+              size: null,
+              source: 'character',
+              metadata: {
+                jobId,
+                thumbUrl: image.thumbUrl ?? null,
+                engineId: engine.id,
+                engineLabel: engine.label,
+                surface: jobSurface,
+                billingProductKey,
+                resultIndex: index,
+              },
+            });
+          } catch (assetError) {
+            console.warn('[images] failed to persist character asset', { jobId, index }, assetError);
+          }
+        })
+      );
+    }
 
     await query(
       `UPDATE app_jobs
