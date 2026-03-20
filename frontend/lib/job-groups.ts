@@ -32,14 +32,15 @@ function shouldGroup(job: Job, iterationCountHint: number): boolean {
 function buildMember(job: Job): GroupMemberSummary {
   const thumbUrl = normalizeMediaUrl(job.thumbUrl) ?? null;
   const videoUrl = normalizeMediaUrl(job.videoUrl) ?? null;
+  const audioUrl = normalizeMediaUrl(job.audioUrl) ?? null;
   const aspectRatio = job.aspectRatio ?? null;
   const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
   const currency = job.currency ?? job.pricingSnapshot?.currency ?? null;
   const iterationCount = job.iterationCount ?? (Array.isArray(job.renderIds) ? job.renderIds.length : null) ?? null;
-  const hasVideo = Boolean(videoUrl);
-  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasVideo);
+  const hasRenderableMedia = Boolean(videoUrl || audioUrl);
+  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasRenderableMedia);
   const status: GroupMemberSummary['status'] =
-    normalizedStatus ?? (hasVideo ? 'completed' : 'pending');
+    normalizedStatus ?? (hasRenderableMedia ? 'completed' : 'pending');
   const messageFromJob = normalizeJobMessage(job.message);
   let message = messageFromJob ?? null;
   if (!message) {
@@ -50,7 +51,7 @@ function buildMember(job: Job): GroupMemberSummary {
       message = null;
     }
   }
-  const progressValue = normalizeJobProgress(job.progress, status, hasVideo);
+  const progressValue = normalizeJobProgress(job.progress, status, hasRenderableMedia);
   const progress = typeof progressValue === 'number' ? progressValue : null;
 
   return {
@@ -67,6 +68,7 @@ function buildMember(job: Job): GroupMemberSummary {
     currency,
     thumbUrl,
     videoUrl,
+    audioUrl,
     aspectRatio,
     prompt: job.prompt,
     status,

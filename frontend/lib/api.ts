@@ -121,6 +121,7 @@ type JobStatusResult = {
   status: 'pending' | 'completed' | 'failed';
   progress: number;
   videoUrl: string | null;
+  audioUrl?: string | null;
   thumbUrl: string | null;
   aspectRatio?: string | null;
   pricing?: PricingSnapshot;
@@ -145,10 +146,16 @@ type StatusRetryMeta = {
   timer: number | null;
 };
 
+function jobHasRenderableMedia(job: Pick<Job, 'videoUrl' | 'audioUrl' | 'renderIds'>): boolean {
+  const hasImageMedia =
+    Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.length);
+  return Boolean(job.videoUrl || job.audioUrl) || hasImageMedia;
+}
+
 function normalizeJobFromApi(job: Job): Job {
   const hasImageMedia =
     Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.length);
-  const hasMedia = Boolean(job.videoUrl) || hasImageMedia;
+  const hasMedia = Boolean(job.videoUrl || job.audioUrl) || hasImageMedia;
   const normalizedStatus = normalizeJobStatus(job.status ?? null, hasMedia);
   const status: Job['status'] =
     normalizedStatus ?? (hasMedia ? 'completed' : 'pending');
@@ -399,6 +406,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                     ? progressFromDetail
                     : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
+                audioUrl: detail.audioUrl ?? job.audioUrl,
                 thumbUrl: detail.thumbUrl ?? job.thumbUrl,
                 finalPriceCents: detail.finalPriceCents ?? job.finalPriceCents,
                 currency: detail.currency ?? job.currency,
@@ -518,6 +526,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
         const merged: Job = { ...existing, ...job };
         if (job.thumbUrl == null && existing.thumbUrl != null) merged.thumbUrl = existing.thumbUrl;
         if (job.videoUrl == null && existing.videoUrl != null) merged.videoUrl = existing.videoUrl;
+        if (job.audioUrl == null && existing.audioUrl != null) merged.audioUrl = existing.audioUrl;
         if (job.readyVideoUrl == null && existing.readyVideoUrl != null) merged.readyVideoUrl = existing.readyVideoUrl;
         if (job.previewFrame == null && existing.previewFrame != null) merged.previewFrame = existing.previewFrame;
         if (job.renderIds == null && existing.renderIds != null) merged.renderIds = existing.renderIds;
@@ -565,7 +574,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       if (!jobId) return;
       seen.add(jobId);
       const normalizedStatus =
-        normalizeJobStatus(job.status ?? null, Boolean(job.videoUrl)) ?? (job.videoUrl ? 'completed' : 'pending');
+        normalizeJobStatus(job.status ?? null, jobHasRenderableMedia(job)) ??
+        (jobHasRenderableMedia(job) ? 'completed' : 'pending');
       if (normalizedStatus === 'completed' || normalizedStatus === 'failed') {
         clearStatusRetry(jobId);
       } else if (normalizedStatus === 'pending') {
@@ -795,16 +805,6 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     throw new Error('Status payload missing');
   }
 
-  const statusFromPayload = normalizeJobStatus(payload.status ?? null, Boolean(payload.videoUrl));
-  const normalizedStatus = (statusFromPayload ?? (payload.videoUrl ? 'completed' : 'pending')) as JobStatusResult['status'];
-  const progressValue = normalizeJobProgress(payload.progress, normalizedStatus, Boolean(payload.videoUrl));
-  const progress = progressValue ?? (normalizedStatus === 'completed' ? 100 : 0);
-  const normalizedMessage =
-    normalizeJobMessage(payload.message) ??
-    (normalizedStatus === 'failed'
-      ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
-      : undefined);
-
   const renderIds =
     Array.isArray(payload.renderIds) && payload.renderIds.length
       ? payload.renderIds.filter((value): value is string => typeof value === 'string')
@@ -817,6 +817,16 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
       : payload.renderThumbUrls === null
         ? null
         : undefined;
+  const hasMedia = Boolean(payload.videoUrl || payload.audioUrl) || Boolean(renderIds?.length);
+  const statusFromPayload = normalizeJobStatus(payload.status ?? null, hasMedia);
+  const normalizedStatus = (statusFromPayload ?? (hasMedia ? 'completed' : 'pending')) as JobStatusResult['status'];
+  const progressValue = normalizeJobProgress(payload.progress, normalizedStatus, hasMedia);
+  const progress = progressValue ?? (normalizedStatus === 'completed' ? 100 : 0);
+  const normalizedMessage =
+    normalizeJobMessage(payload.message) ??
+    (normalizedStatus === 'failed'
+      ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+      : undefined);
 
   const result: JobStatusResult = {
     ok: true,
@@ -824,6 +834,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     status: normalizedStatus,
     progress,
     videoUrl: payload.videoUrl ?? null,
+    audioUrl: payload.audioUrl ?? null,
     thumbUrl: payload.thumbUrl ?? null,
     aspectRatio: payload.aspectRatio ?? null,
     pricing: payload.pricing,

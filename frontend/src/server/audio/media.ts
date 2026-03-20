@@ -44,6 +44,24 @@ type SourceVideoProbe = {
   hasAudio: boolean | null;
 };
 
+type StemPresence = {
+  hasSoundDesign: boolean;
+  hasMusic: boolean;
+  hasVoice: boolean;
+  targetDurationSec?: number | null;
+};
+
+type MixAudioTracksParams = {
+  soundDesignUrl?: string | null;
+  musicUrl?: string | null;
+  voiceUrl?: string | null;
+  targetDurationSec?: number | null;
+};
+
+type MixAudioIntoVideoParams = MixAudioTracksParams & {
+  sourceVideoUrl: string;
+};
+
 export async function inspectSourceVideo(videoUrl: string): Promise<SourceVideoProbe> {
   const [durationSec, dimensions, hasAudio] = await Promise.all([
     detectMediaDuration(videoUrl, {}, 'v'),
@@ -83,68 +101,171 @@ function resolveAspectRatio(width: number | null, height: number | null): string
   return '16:9';
 }
 
-type MixAudioIntoVideoParams = {
-  sourceVideoUrl: string;
-  soundDesignUrl: string;
-  musicUrl: string;
-  voiceUrl?: string | null;
-};
-
-export function buildAudioMixFilterGraph(hasVoice: boolean): string {
-  return hasVoice
-    ? [
-        '[1:a]aresample=48000,volume=0.96[sfx]',
-        '[2:a]aresample=48000,volume=0.70[music]',
-        '[3:a]aresample=48000,volume=1.18[voice]',
-        '[music][voice]sidechaincompress=threshold=0.03:ratio=10:attack=20:release=450[musicduck]',
-        '[sfx][musicduck]amix=inputs=2:duration=longest:normalize=0:weights=1 0.85[bed]',
-        '[bed][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 1.3,alimiter=limit=0.92[outa]',
-      ].join(';')
-    : [
-        '[1:a]aresample=48000,volume=0.96[sfx]',
-        '[2:a]aresample=48000,volume=0.70[music]',
-        '[sfx][music]amix=inputs=2:duration=longest:normalize=0:weights=1 0.85,alimiter=limit=0.92[outa]',
-      ].join(';');
+function buildTrimSuffix(targetDurationSec?: number | null): string {
+  if (!targetDurationSec || !Number.isFinite(targetDurationSec) || targetDurationSec <= 0) {
+    return '';
+  }
+  return `,atrim=0:${targetDurationSec.toFixed(3)},asetpts=N/SR/TB`;
 }
 
-export async function mixAudioIntoVideo(params: MixAudioIntoVideoParams): Promise<Buffer> {
+function normalizeStemPresence(input: boolean | StemPresence): StemPresence {
+  if (typeof input === 'boolean') {
+    return {
+      hasSoundDesign: true,
+      hasMusic: true,
+      hasVoice: input,
+      targetDurationSec: null,
+    };
+  }
+  return {
+    hasSoundDesign: Boolean(input.hasSoundDesign),
+    hasMusic: Boolean(input.hasMusic),
+    hasVoice: Boolean(input.hasVoice),
+    targetDurationSec: input.targetDurationSec ?? null,
+  };
+}
+
+export function buildAudioMixFilterGraph(input: boolean | StemPresence): string {
+  const normalized = normalizeStemPresence(input);
+  const trimSuffix = buildTrimSuffix(normalized.targetDurationSec);
+
+  if (normalized.hasSoundDesign && normalized.hasMusic && normalized.hasVoice) {
+    return [
+      '[0:a]aresample=48000,volume=0.96[sfx]',
+      '[1:a]aresample=48000,volume=0.70[music]',
+      '[2:a]aresample=48000,volume=1.18[voice]',
+      '[music][voice]sidechaincompress=threshold=0.03:ratio=10:attack=20:release=450[musicduck]',
+      '[sfx][musicduck]amix=inputs=2:duration=longest:normalize=0:weights=1 0.85[bed]',
+      `[bed][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 1.3${trimSuffix},alimiter=limit=0.92[outa]`,
+    ].join(';');
+  }
+
+  if (normalized.hasSoundDesign && normalized.hasMusic) {
+    return [
+      '[0:a]aresample=48000,volume=0.96[sfx]',
+      '[1:a]aresample=48000,volume=0.70[music]',
+      `[sfx][music]amix=inputs=2:duration=longest:normalize=0:weights=1 0.85${trimSuffix},alimiter=limit=0.92[outa]`,
+    ].join(';');
+  }
+
+  if (normalized.hasSoundDesign && normalized.hasVoice) {
+    return [
+      '[0:a]aresample=48000,volume=0.96[sfx]',
+      '[1:a]aresample=48000,volume=1.18[voice]',
+      `[sfx][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 1.3${trimSuffix},alimiter=limit=0.92[outa]`,
+    ].join(';');
+  }
+
+  if (normalized.hasSoundDesign) {
+    return [`[0:a]aresample=48000,volume=0.96${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
+  }
+
+  if (normalized.hasMusic) {
+    return [`[0:a]aresample=48000,volume=1.00${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
+  }
+
+  if (normalized.hasVoice) {
+    return [`[0:a]aresample=48000,volume=1.12${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
+  }
+
+  throw new Error('At least one audio stem is required for mixing.');
+}
+
+export async function mixAudioTracks(params: MixAudioTracksParams): Promise<Buffer> {
   const ffmpegPath = getFfmpegPath();
   if (!ffmpegPath) {
     throw new Error('ffmpeg is not available');
   }
 
-  const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-audio-'));
+  const stems = [
+    params.soundDesignUrl ? { url: params.soundDesignUrl, fileName: 'sound.bin' } : null,
+    params.musicUrl ? { url: params.musicUrl, fileName: 'music.bin' } : null,
+    params.voiceUrl ? { url: params.voiceUrl, fileName: 'voice.bin' } : null,
+  ].filter((entry): entry is { url: string; fileName: string } => Boolean(entry));
+
+  if (!stems.length) {
+    throw new Error('No audio stems were provided.');
+  }
+
+  const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-audio-mix-'));
+  const outputPath = path.join(tempDir, 'mixed.m4a');
+
+  try {
+    const inputPaths = await Promise.all(
+      stems.map(async (stem, index) => {
+        const filePath = path.join(tempDir, `${index}-${stem.fileName}`);
+        await writeFetchedFile(stem.url, filePath);
+        return filePath;
+      })
+    );
+
+    const filterComplex = buildAudioMixFilterGraph({
+      hasSoundDesign: Boolean(params.soundDesignUrl),
+      hasMusic: Boolean(params.musicUrl),
+      hasVoice: Boolean(params.voiceUrl),
+      targetDurationSec: params.targetDurationSec ?? null,
+    });
+
+    const args = [
+      '-y',
+      ...inputPaths.flatMap((inputPath) => ['-i', inputPath]),
+      '-filter_complex',
+      filterComplex,
+      '-map',
+      '[outa]',
+      '-c:a',
+      'aac',
+      '-b:a',
+      '192k',
+      '-movflags',
+      '+faststart',
+      outputPath,
+    ];
+
+    await new Promise<void>((resolve, reject) => {
+      execFile(ffmpegPath, args, (error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+
+    return await readFile(outputPath);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true }).catch(() => undefined);
+  }
+}
+
+export async function muxAudioBufferIntoVideo(params: {
+  sourceVideoUrl: string;
+  audioBuffer: Buffer;
+}): Promise<Buffer> {
+  const ffmpegPath = getFfmpegPath();
+  if (!ffmpegPath) {
+    throw new Error('ffmpeg is not available');
+  }
+
+  const tempDir = await mkdtemp(path.join(tmpdir(), 'mv-audio-mux-'));
   const sourcePath = path.join(tempDir, 'source.mp4');
-  const soundPath = path.join(tempDir, 'sound.wav');
-  const musicPath = path.join(tempDir, 'music.wav');
-  const voicePath = path.join(tempDir, 'voice.wav');
+  const audioPath = path.join(tempDir, 'mixed.m4a');
   const outputPath = path.join(tempDir, 'output.mp4');
 
   try {
     await writeFetchedFile(params.sourceVideoUrl, sourcePath);
-    await writeFetchedFile(params.soundDesignUrl, soundPath);
-    await writeFetchedFile(params.musicUrl, musicPath);
-    if (params.voiceUrl) {
-      await writeFetchedFile(params.voiceUrl, voicePath);
-    }
-
-    const filterComplex = buildAudioMixFilterGraph(Boolean(params.voiceUrl));
+    await writeFile(audioPath, params.audioBuffer);
 
     const args = [
       '-y',
       '-i',
       sourcePath,
       '-i',
-      soundPath,
-      '-i',
-      musicPath,
-      ...(params.voiceUrl ? ['-i', voicePath] : []),
-      '-filter_complex',
-      filterComplex,
+      audioPath,
       '-map',
       '0:v:0',
       '-map',
-      '[outa]',
+      '1:a:0',
       '-c:v',
       'copy',
       '-c:a',
@@ -173,6 +294,22 @@ export async function mixAudioIntoVideo(params: MixAudioIntoVideoParams): Promis
   }
 }
 
+export async function mixAudioIntoVideo(
+  params: MixAudioIntoVideoParams
+): Promise<{ audioBuffer: Buffer; videoBuffer: Buffer }> {
+  const audioBuffer = await mixAudioTracks({
+    soundDesignUrl: params.soundDesignUrl,
+    musicUrl: params.musicUrl,
+    voiceUrl: params.voiceUrl,
+    targetDurationSec: params.targetDurationSec ?? null,
+  });
+  const videoBuffer = await muxAudioBufferIntoVideo({
+    sourceVideoUrl: params.sourceVideoUrl,
+    audioBuffer,
+  });
+  return { audioBuffer, videoBuffer };
+}
+
 export async function uploadAudioRenderVideo(params: {
   userId: string;
   jobId: string;
@@ -197,6 +334,24 @@ export async function uploadAudioRenderVideo(params: {
   return {
     videoUrl: upload.url,
     thumbUrl,
+  };
+}
+
+export async function uploadAudioRenderAudio(params: {
+  userId: string;
+  jobId: string;
+  audioBuffer: Buffer;
+}): Promise<{ audioUrl: string }> {
+  const upload = await uploadFileBuffer({
+    data: params.audioBuffer,
+    mime: 'audio/mp4',
+    fileName: `${params.jobId}.m4a`,
+    prefix: 'renders',
+    userId: params.userId,
+  });
+
+  return {
+    audioUrl: upload.url,
   };
 }
 

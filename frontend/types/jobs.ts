@@ -10,6 +10,7 @@ export interface Job {
   prompt: string;
   thumbUrl?: string | null;
   videoUrl?: string;
+  audioUrl?: string | null;
   readyVideoUrl?: string | null;
   createdAt: string;
   engineId?: string;

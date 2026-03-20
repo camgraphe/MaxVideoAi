@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getJobStatus, hideJob, useEngines, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
@@ -83,6 +84,7 @@ function resolveWorkspaceJobHref(jobId: string, surface: JobSurface, forceImageG
 }
 
 export default function JobsPage() {
+  const router = useRouter();
   const { t } = useI18n();
   const rawCopy = t('workspace.jobs', DEFAULT_JOBS_COPY);
   const copy: JobsCopy = useMemo(() => {
@@ -243,7 +245,7 @@ export default function JobsPage() {
       if (status.status === 'failed') {
         throw new Error(status.message ?? 'Provider reported this render as failed.');
       }
-      if (status.status !== 'completed' && !status.videoUrl) {
+      if (status.status !== 'completed' && !status.videoUrl && !status.audioUrl) {
         throw new Error('The provider is still processing this render.');
       }
     } catch (error) {
@@ -386,15 +388,29 @@ export default function JobsPage() {
         return;
       }
       if (action === 'open' || action === 'continue' || action === 'refine' || action === 'branch' || action === 'compare') {
+        const heroJob = group.hero.job;
+        const heroJobId = heroJob?.jobId ?? group.hero.jobId ?? null;
+        const heroSurface = heroJob ? resolveClientJobSurface(heroJob) : null;
+        if (heroJobId && heroSurface === 'audio') {
+          router.push(`/app/audio?job=${encodeURIComponent(heroJobId)}`);
+          return;
+        }
         setActiveGroupId(group.id);
       }
     },
-    [handleRemoveGroup, handleSaveImageGroup]
+    [handleRemoveGroup, handleSaveImageGroup, router]
   );
 
   const handleGroupOpen = useCallback((group: GroupSummary) => {
+    const heroJob = group.hero.job;
+    const heroJobId = heroJob?.jobId ?? group.hero.jobId ?? null;
+    const heroSurface = heroJob ? resolveClientJobSurface(heroJob) : null;
+    if (heroJobId && heroSurface === 'audio') {
+      router.push(`/app/audio?job=${encodeURIComponent(heroJobId)}`);
+      return;
+    }
     setActiveGroupId(group.id);
-  }, []);
+  }, [router]);
 
   const videoInitialLoading = videoIsLoading && videoJobs.length === 0 && videoGroups.length === 0;
   const audioInitialLoading = audioIsLoading && audioJobs.length === 0 && audioGroups.length === 0;

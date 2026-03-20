@@ -17,6 +17,7 @@ export interface GroupMemberSummary {
   currency?: string | null;
   thumbUrl?: string | null;
   videoUrl?: string | null;
+  audioUrl?: string | null;
   aspectRatio?: string | null;
   prompt?: string | null;
   status?: 'pending' | 'completed' | 'failed';

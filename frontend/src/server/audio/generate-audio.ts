@@ -8,17 +8,28 @@ import {
   clampAudioDuration,
   coerceAudioMood,
   coerceAudioPackId,
+  estimateVoiceScriptDurationSec,
   getAudioPackConfig,
+  resolveAudioOutputKind,
   resolveAudioVoiceMode,
   type AudioGenerateRequestBody,
   type AudioGenerateResponse,
   type AudioMood,
+  type AudioOutputKind,
   type AudioPackId,
   type AudioVoiceMode,
 } from '@/lib/audio-generation';
 import { isDatabaseConfigured, query, withDbTransaction } from '@/lib/db';
-import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { ensureBillingSchema } from '@/lib/schema';
+import { reserveWalletChargeInExecutor } from '@/lib/wallet';
+import {
+  mixAudioIntoVideo,
+  mixAudioTracks,
+  inspectSourceVideo,
+  resolveAudioAspectRatio,
+  uploadAudioRenderAudio,
+  uploadAudioRenderVideo,
+} from '@/server/audio/media';
 import {
   generateClonedVoiceTrack,
   generateMusicTrack,
@@ -26,7 +37,6 @@ import {
   generateStandardVoiceTrack,
   type AudioProviderError,
 } from '@/server/audio/providers';
-import { inspectSourceVideo, mixAudioIntoVideo, resolveAudioAspectRatio, uploadAudioRenderVideo } from '@/server/audio/media';
 
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-16x9.svg';
 
@@ -34,11 +44,15 @@ type NormalizedAudioGenerateInput = {
   sourceVideoUrl: string | null;
   sourceJobId: string | null;
   pack: AudioPackId;
-  mood: AudioMood;
+  mood: AudioMood | null;
   script: string | null;
   voiceSampleUrl: string | null;
+  durationSec: number | null;
+  musicEnabled: boolean;
+  exportAudioFile: boolean;
   locale: string | null;
   voiceMode: AudioVoiceMode | null;
+  outputKind: AudioOutputKind;
 };
 
 export type ValidatedAudioGenerateRequest = NormalizedAudioGenerateInput;
@@ -80,12 +94,34 @@ function normalizeString(value: unknown): string | null {
   return trimmed.length ? trimmed : null;
 }
 
-function buildPromptSummary(input: { pack: AudioPackId; mood: AudioMood; script: string | null }): string {
+function normalizeOptionalInteger(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.round(value);
+  if (typeof value === 'string' && value.trim().length) {
+    const parsed = Number.parseInt(value.trim(), 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function normalizeOptionalBoolean(value: unknown): boolean | null {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true') return true;
+    if (normalized === 'false') return false;
+  }
+  return null;
+}
+
+function buildPromptSummary(input: { pack: AudioPackId; mood: AudioMood | null; script: string | null }): string {
   const base = getAudioPackConfig(input.pack).label;
-  if (!input.script) {
+  if (input.script) {
+    return `${base} • ${input.script.slice(0, 80).trim()}`;
+  }
+  if (input.mood) {
     return `${base} • ${input.mood}`;
   }
-  return `${base} • ${input.mood} • ${input.script.slice(0, 80).trim()}`;
+  return base;
 }
 
 async function loadSourceJob(userId: string, sourceJobId: string): Promise<SourceJobRow | null> {
@@ -103,25 +139,17 @@ async function loadSourceJob(userId: string, sourceJobId: string): Promise<Sourc
 export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): ValidatedAudioGenerateRequest {
   const pack = coerceAudioPackId(body.pack);
   if (!pack) {
-    throw new AudioGenerationError('Audio pack is required.', {
+    throw new AudioGenerationError('Audio mode is required.', {
       status: 400,
       code: 'audio_pack_required',
       field: 'pack',
     });
   }
 
-  const mood = coerceAudioMood(body.mood);
-  if (!mood) {
-    throw new AudioGenerationError('Audio mood is required.', {
-      status: 400,
-      code: 'audio_mood_required',
-      field: 'mood',
-    });
-  }
-
+  const packConfig = getAudioPackConfig(pack);
   const sourceVideoUrl = normalizeString(body.sourceVideoUrl);
   const sourceJobId = normalizeString(body.sourceJobId);
-  if (!sourceVideoUrl && !sourceJobId) {
+  if (packConfig.requiresVideo && !sourceVideoUrl && !sourceJobId) {
     throw new AudioGenerationError('A source video is required.', {
       status: 400,
       code: 'source_video_required',
@@ -129,9 +157,26 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     });
   }
 
+  const moodValue = normalizeString(body.mood);
+  const mood = moodValue ? coerceAudioMood(moodValue) : null;
+  if (packConfig.requiresMood && !mood) {
+    throw new AudioGenerationError('Audio mood is required.', {
+      status: 400,
+      code: 'audio_mood_required',
+      field: 'mood',
+    });
+  }
+  if (moodValue && !mood) {
+    throw new AudioGenerationError('Audio mood is invalid.', {
+      status: 400,
+      code: 'audio_mood_invalid',
+      field: 'mood',
+    });
+  }
+
   const script = normalizeString(body.script);
-  if (pack === 'cinematic_voice' && !script) {
-    throw new AudioGenerationError('A narration script is required for Cinematic + Voice.', {
+  if (packConfig.requiresScript && !script) {
+    throw new AudioGenerationError('A narration script is required for this mode.', {
       status: 400,
       code: 'audio_script_required',
       field: 'script',
@@ -139,6 +184,40 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   }
 
   const voiceSampleUrl = normalizeString(body.voiceSampleUrl);
+  if (voiceSampleUrl && !packConfig.includesVoice) {
+    throw new AudioGenerationError('Voice samples are only supported on voice modes.', {
+      status: 400,
+      code: 'voice_sample_not_supported',
+      field: 'voiceSampleUrl',
+    });
+  }
+
+  const musicEnabledInput = normalizeOptionalBoolean(body.musicEnabled);
+  if (!packConfig.supportsMusicToggle && musicEnabledInput !== null) {
+    throw new AudioGenerationError('Music toggle is not supported for this mode.', {
+      status: 400,
+      code: 'music_toggle_not_supported',
+      field: 'musicEnabled',
+    });
+  }
+  const exportAudioFileInput = normalizeOptionalBoolean(body.exportAudioFile);
+  if (!packConfig.supportsAudioExport && exportAudioFileInput !== null) {
+    throw new AudioGenerationError('Audio export is not supported for this mode.', {
+      status: 400,
+      code: 'audio_export_not_supported',
+      field: 'exportAudioFile',
+    });
+  }
+
+  const durationInput = normalizeOptionalInteger(body.durationSec);
+  if (pack === 'music_only' && !sourceVideoUrl && !sourceJobId && durationInput == null) {
+    throw new AudioGenerationError('Duration is required when generating music without a video.', {
+      status: 400,
+      code: 'audio_duration_required',
+      field: 'durationSec',
+    });
+  }
+
   const locale = normalizeString(body.locale);
 
   return {
@@ -148,8 +227,12 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     mood,
     script,
     voiceSampleUrl,
+    durationSec: durationInput == null ? null : clampAudioDuration(durationInput),
+    musicEnabled: packConfig.supportsMusicToggle ? musicEnabledInput ?? packConfig.defaultMusicEnabled : false,
+    exportAudioFile: packConfig.supportsAudioExport ? exportAudioFileInput ?? false : false,
     locale,
     voiceMode: resolveAudioVoiceMode({ pack, voiceSampleUrl }),
+    outputKind: resolveAudioOutputKind({ pack, exportAudioFile: packConfig.supportsAudioExport ? exportAudioFileInput ?? false : false }),
   };
 }
 
@@ -158,6 +241,7 @@ async function updateAudioJob(jobId: string, patch: {
   status?: 'pending' | 'running' | 'completed' | 'failed';
   message?: string | null;
   videoUrl?: string | null;
+  audioUrl?: string | null;
   thumbUrl?: string | null;
   hasAudio?: boolean;
   paymentStatus?: string;
@@ -181,6 +265,10 @@ async function updateAudioJob(jobId: string, patch: {
   if (patch.videoUrl !== undefined) {
     params.push(patch.videoUrl);
     assignments.push(`video_url = $${params.length}`);
+  }
+  if (patch.audioUrl !== undefined) {
+    params.push(patch.audioUrl);
+    assignments.push(`audio_url = $${params.length}`);
   }
   if (patch.thumbUrl !== undefined) {
     params.push(patch.thumbUrl);
@@ -261,6 +349,10 @@ function parseProviderFailures(error: unknown) {
   return undefined;
 }
 
+function isVideoBackedPack(pack: AudioPackId): boolean {
+  return !getAudioPackConfig(pack).audioOnly;
+}
+
 export async function generateAudioRun(params: {
   body: AudioGenerateRequestBody;
   userId: string;
@@ -272,6 +364,7 @@ export async function generateAudioRun(params: {
   await ensureBillingSchema();
 
   const normalized = validateAudioGenerateRequest(params.body);
+  const packConfig = getAudioPackConfig(normalized.pack);
   const sourceJob =
     normalized.sourceJobId
       ? await loadSourceJob(params.userId, normalized.sourceJobId)
@@ -286,7 +379,7 @@ export async function generateAudioRun(params: {
   }
 
   const sourceVideoUrl = normalized.sourceVideoUrl ?? sourceJob?.video_url ?? null;
-  if (!sourceVideoUrl) {
+  if (packConfig.requiresVideo && !sourceVideoUrl) {
     throw new AudioGenerationError('Source video is missing.', {
       status: 400,
       code: 'source_video_missing',
@@ -294,34 +387,41 @@ export async function generateAudioRun(params: {
     });
   }
 
-  const sourceProbe = await inspectSourceVideo(sourceVideoUrl);
-  if (!sourceProbe.durationSec) {
-    throw new AudioGenerationError('Unable to inspect the source video duration.', {
-      status: 422,
-      code: 'source_video_probe_failed',
-      field: 'sourceVideoUrl',
-    });
+  const needsSourceProbe = Boolean(sourceVideoUrl) && (packConfig.requiresVideo || normalized.pack === 'music_only');
+  const sourceProbe = needsSourceProbe && sourceVideoUrl ? await inspectSourceVideo(sourceVideoUrl) : null;
+  const probedDurationSec = sourceProbe?.durationSec ? Math.round(sourceProbe.durationSec) : null;
+  if (packConfig.requiresVideo || normalized.pack === 'music_only') {
+    if (!probedDurationSec) {
+      throw new AudioGenerationError('Unable to inspect the source video duration.', {
+        status: 422,
+        code: 'source_video_probe_failed',
+        field: 'sourceVideoUrl',
+      });
+    }
+    if (probedDurationSec < AUDIO_MIN_DURATION_SEC || probedDurationSec > AUDIO_MAX_DURATION_SEC) {
+      throw new AudioGenerationError(`Source video must be between ${AUDIO_MIN_DURATION_SEC}s and ${AUDIO_MAX_DURATION_SEC}s.`, {
+        status: 400,
+        code: 'source_video_duration_invalid',
+        field: 'sourceVideoUrl',
+      });
+    }
   }
 
-  const roundedDuration = Math.round(sourceProbe.durationSec);
-  if (roundedDuration < AUDIO_MIN_DURATION_SEC || roundedDuration > AUDIO_MAX_DURATION_SEC) {
-    throw new AudioGenerationError(`Source video must be between ${AUDIO_MIN_DURATION_SEC}s and ${AUDIO_MAX_DURATION_SEC}s.`, {
-      status: 400,
-      code: 'source_video_duration_invalid',
-      field: 'sourceVideoUrl',
-    });
-  }
+  const durationSec =
+    normalized.pack === 'voice_only'
+      ? estimateVoiceScriptDurationSec(normalized.script ?? '')
+      : normalized.pack === 'music_only'
+        ? clampAudioDuration(probedDurationSec ?? normalized.durationSec ?? AUDIO_MIN_DURATION_SEC)
+        : clampAudioDuration(probedDurationSec ?? AUDIO_MIN_DURATION_SEC);
 
-  const durationSec = clampAudioDuration(roundedDuration);
   const aspectRatio =
     sourceJob?.aspect_ratio ??
-    resolveAudioAspectRatio(sourceProbe.width, sourceProbe.height) ??
-    '16:9';
-  const packConfig = getAudioPackConfig(normalized.pack);
+    resolveAudioAspectRatio(sourceProbe?.width ?? null, sourceProbe?.height ?? null) ??
+    (isVideoBackedPack(normalized.pack) ? '16:9' : null);
   const pricingSnapshot = buildAudioPricingSnapshot({
     pack: normalized.pack,
     durationSec,
-    mood: normalized.mood,
+    mood: normalized.mood ?? null,
     voiceMode: normalized.voiceMode,
   });
   const pricingSnapshotJson = JSON.stringify(pricingSnapshot);
@@ -331,11 +431,16 @@ export async function generateAudioRun(params: {
     script: normalized.script,
   });
   const initialSettingsSnapshot = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     surface: AUDIO_SURFACE,
     pack: normalized.pack,
     mood: normalized.mood,
+    durationSec,
+    script: normalized.script,
+    musicEnabled: normalized.musicEnabled,
+    exportAudioFile: normalized.exportAudioFile,
     voiceMode: normalized.voiceMode,
+    outputKind: normalized.outputKind,
     sourceJobId: sourceJob?.job_id ?? null,
     sourceVideoUrl,
     refs: {
@@ -390,6 +495,7 @@ export async function generateAudioRun(params: {
          prompt,
          thumb_url,
          video_url,
+         audio_url,
          aspect_ratio,
          has_audio,
          preview_frame,
@@ -406,7 +512,7 @@ export async function generateAudioRun(params: {
          provisional
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,NULL,$10,FALSE,$11,'pending',0,$12,$13::jsonb,$14::jsonb,$15,NULL,'paid_wallet','private',FALSE,TRUE
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,NULL,NULL,$10,FALSE,$11,'pending',0,$12,$13::jsonb,$14::jsonb,$15,NULL,'paid_wallet','private',FALSE,TRUE
        )`,
       [
         jobId,
@@ -435,37 +541,44 @@ export async function generateAudioRun(params: {
   await updateAudioJob(jobId, {
     status: 'running',
     progress: 8,
-    message: 'Preparing source video…',
+    message: sourceVideoUrl ? 'Preparing source media…' : 'Preparing audio render…',
   });
 
   try {
-    await updateAudioJob(jobId, {
-      progress: 22,
-      message: 'Generating cinematic sound design…',
-    });
-    const soundDesign = await generateSoundDesignTrack({
-      sourceVideoUrl,
-      durationSec,
-      mood: normalized.mood,
-    });
-
-    await updateAudioJob(jobId, {
-      progress: 42,
-      message: 'Generating music bed…',
-    });
-    const music = await generateMusicTrack({
-      durationSec,
-      mood: normalized.mood,
-    });
-
+    let soundDesign: Awaited<ReturnType<typeof generateSoundDesignTrack>> | null = null;
+    let music: Awaited<ReturnType<typeof generateMusicTrack>> | null = null;
     let voiceTrack: Awaited<ReturnType<typeof generateStandardVoiceTrack>> | null = null;
-    if (normalized.pack === 'cinematic_voice' && normalized.script) {
+
+    if (normalized.pack === 'cinematic' || normalized.pack === 'cinematic_voice') {
       await updateAudioJob(jobId, {
-        progress: 58,
+        progress: 24,
+        message: 'Generating cinematic sound design…',
+      });
+      soundDesign = await generateSoundDesignTrack({
+        sourceVideoUrl: sourceVideoUrl!,
+        durationSec,
+        mood: normalized.mood!,
+      });
+    }
+
+    if (normalized.pack === 'music_only' || ((normalized.pack === 'cinematic' || normalized.pack === 'cinematic_voice') && normalized.musicEnabled)) {
+      await updateAudioJob(jobId, {
+        progress: 44,
+        message: normalized.pack === 'music_only' ? 'Generating music track…' : 'Generating music bed…',
+      });
+      music = await generateMusicTrack({
+        durationSec,
+        mood: normalized.mood!,
+      });
+    }
+
+    if ((normalized.pack === 'voice_only' || normalized.pack === 'cinematic_voice') && normalized.script) {
+      await updateAudioJob(jobId, {
+        progress: normalized.pack === 'voice_only' ? 56 : 62,
         message:
           normalized.voiceMode === 'clone'
-            ? 'Generating cloned narration…'
-            : 'Generating narration…',
+            ? 'Generating cloned voice over…'
+            : 'Generating voice over…',
       });
       voiceTrack =
         normalized.voiceMode === 'clone' && normalized.voiceSampleUrl
@@ -487,40 +600,103 @@ export async function generateAudioRun(params: {
       }
     }
 
-    await updateAudioJob(jobId, {
-      progress: 76,
-      message: 'Mixing final soundtrack…',
-    });
-    const mixedVideoBuffer = await mixAudioIntoVideo({
-      sourceVideoUrl,
-      soundDesignUrl: soundDesign.url,
-      musicUrl: music.url,
-      voiceUrl: voiceTrack?.url ?? null,
-    });
+    let audioBuffer: Buffer | null = null;
+    let videoBuffer: Buffer | null = null;
 
     await updateAudioJob(jobId, {
-      progress: 91,
-      message: 'Uploading final render…',
+      progress: normalized.outputKind === 'audio' ? 78 : 80,
+      message: normalized.outputKind === 'audio' ? 'Mastering audio file…' : 'Mixing final soundtrack…',
     });
-    const uploaded = await uploadAudioRenderVideo({
-      userId: params.userId,
-      jobId,
-      videoBuffer: mixedVideoBuffer,
-    });
+
+    if (normalized.pack === 'music_only') {
+      if (!music?.url) {
+        throw new AudioGenerationError('Music generation returned no audio output.', {
+          status: 502,
+          code: 'music_output_missing',
+        });
+      }
+      audioBuffer = await mixAudioTracks({
+        musicUrl: music.url,
+        targetDurationSec: durationSec,
+      });
+    } else if (normalized.pack === 'voice_only') {
+      if (!voiceTrack?.url) {
+        throw new AudioGenerationError('Voice generation returned no audio output.', {
+          status: 502,
+          code: 'voice_output_missing',
+        });
+      }
+      audioBuffer = await mixAudioTracks({
+        voiceUrl: voiceTrack.url,
+      });
+    } else {
+      if (!soundDesign?.url) {
+        throw new AudioGenerationError('Sound design generation returned no audio output.', {
+          status: 502,
+          code: 'sound_design_output_missing',
+        });
+      }
+      const mixed = await mixAudioIntoVideo({
+        sourceVideoUrl: sourceVideoUrl!,
+        soundDesignUrl: soundDesign.url,
+        musicUrl: normalized.musicEnabled ? music?.url ?? null : null,
+        voiceUrl: voiceTrack?.url ?? null,
+        targetDurationSec: durationSec,
+      });
+      audioBuffer = normalized.exportAudioFile ? mixed.audioBuffer : null;
+      videoBuffer = mixed.videoBuffer;
+    }
+
+    let uploadedAudioUrl: string | null = null;
+    let uploadedVideoUrl: string | null = null;
+    let uploadedThumbUrl: string | null = initialThumb;
+
+    if (audioBuffer) {
+      await updateAudioJob(jobId, {
+        progress: normalized.outputKind === 'audio' ? 90 : 90,
+        message: normalized.outputKind === 'audio' ? 'Uploading audio render…' : 'Uploading audio export…',
+      });
+      const uploadedAudio = await uploadAudioRenderAudio({
+        userId: params.userId,
+        jobId,
+        audioBuffer,
+      });
+      uploadedAudioUrl = uploadedAudio.audioUrl;
+    }
+
+    if (videoBuffer) {
+      await updateAudioJob(jobId, {
+        progress: 94,
+        message: 'Uploading final render…',
+      });
+      const uploadedVideo = await uploadAudioRenderVideo({
+        userId: params.userId,
+        jobId,
+        videoBuffer,
+      });
+      uploadedVideoUrl = uploadedVideo.videoUrl;
+      uploadedThumbUrl = uploadedVideo.thumbUrl ?? initialThumb;
+    }
 
     const finalSettingsSnapshotJson = buildProviderSnapshot(initialSettingsSnapshot, {
-      soundDesign: {
-        providerKey: soundDesign.providerKey,
-        providerLabel: soundDesign.providerLabel,
-        model: soundDesign.model,
-        requestId: soundDesign.requestId ?? null,
-      },
-      music: {
-        providerKey: music.providerKey,
-        providerLabel: music.providerLabel,
-        model: music.model,
-        requestId: music.requestId ?? null,
-      },
+      soundDesign:
+        soundDesign
+          ? {
+              providerKey: soundDesign.providerKey,
+              providerLabel: soundDesign.providerLabel,
+              model: soundDesign.model,
+              requestId: soundDesign.requestId ?? null,
+            }
+          : null,
+      music:
+        music
+          ? {
+              providerKey: music.providerKey,
+              providerLabel: music.providerLabel,
+              model: music.model,
+              requestId: music.requestId ?? null,
+            }
+          : null,
       tts:
         voiceTrack && normalized.voiceMode !== 'clone'
           ? {
@@ -541,7 +717,7 @@ export async function generateAudioRun(params: {
           : null,
       source: {
         durationSec,
-        hasSourceAudio: sourceProbe.hasAudio,
+        hasSourceAudio: sourceProbe?.hasAudio ?? null,
       },
     });
 
@@ -549,8 +725,9 @@ export async function generateAudioRun(params: {
       status: 'completed',
       progress: 100,
       message: 'Audio render complete.',
-      videoUrl: uploaded.videoUrl,
-      thumbUrl: uploaded.thumbUrl ?? initialThumb,
+      videoUrl: uploadedVideoUrl,
+      audioUrl: uploadedAudioUrl,
+      thumbUrl: uploadedThumbUrl ?? initialThumb,
       hasAudio: true,
       paymentStatus: 'paid_wallet',
       settingsSnapshotJson: finalSettingsSnapshotJson,
@@ -559,8 +736,10 @@ export async function generateAudioRun(params: {
     return {
       ok: true,
       jobId,
-      videoUrl: uploaded.videoUrl,
-      thumbUrl: uploaded.thumbUrl ?? initialThumb,
+      videoUrl: uploadedVideoUrl,
+      audioUrl: uploadedAudioUrl,
+      thumbUrl: uploadedThumbUrl ?? initialThumb,
+      outputKind: normalized.outputKind,
       status: 'completed',
       progress: 100,
       pricing: pricingSnapshot,

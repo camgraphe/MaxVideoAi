@@ -30,6 +30,7 @@ type DbJobRow = {
   surface: string | null;
   billing_product_key: string | null;
   video_url: string | null;
+  audio_url: string | null;
   thumb_url: string | null;
   engine_id: string;
   engine_label: string;
@@ -179,7 +180,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   let rows: DbJobRow[];
   try {
     rows = await query<DbJobRow>(
-      `SELECT id, job_id, user_id, status, progress, provider_job_id, surface, billing_product_key, video_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
+      `SELECT id, job_id, user_id, status, progress, provider_job_id, surface, billing_product_key, video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -199,6 +200,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
   const normalizedVideoUrl = normalizeMediaUrl(job.video_url);
+  const normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
   const normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
   const parsedRenders = parseStoredImageRenders(job.render_ids);
   const parsedRenderIds = extractRenderIds(parsedRenders.entries);
@@ -266,6 +268,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
             status,
             progress,
             videoUrl: videoUrl ?? undefined,
+            audioUrl: normalizedAudioUrl ?? undefined,
             thumbUrl: thumbUrl ?? undefined,
             aspectRatio: job.aspect_ratio ?? undefined,
             pricing: job.pricing_snapshot ?? undefined,
@@ -304,6 +307,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     status: job.status,
     progress: job.progress,
     videoUrl: normalizedVideoUrl ?? undefined,
+    audioUrl: normalizedAudioUrl ?? undefined,
     thumbUrl: normalizedThumbUrl ?? undefined,
     aspectRatio: job.aspect_ratio ?? undefined,
     pricing: job.pricing_snapshot ?? undefined,
