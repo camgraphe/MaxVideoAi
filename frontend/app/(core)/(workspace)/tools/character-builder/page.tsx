@@ -2,11 +2,12 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import deepmerge from 'deepmerge';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Check,
@@ -26,6 +27,7 @@ import { Input, Textarea } from '@/components/ui/Input';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   ACCESSORY_OPTIONS,
   AGE_RANGE_OPTIONS,
@@ -98,6 +100,314 @@ type BillingProductResponse = {
   };
   error?: string;
 };
+
+const DEFAULT_CHARACTER_COPY = {
+  "auto": "Auto",
+  "notSet": "Not set",
+  "open": "Open",
+  "choose": "Choose",
+  "done": "Done",
+  "add": "Add",
+  "on": "On",
+  "off": "Off",
+  "disabledTitle": "Tools are disabled",
+  "disabledBody": "Enable `FEATURES.workflows.toolsSection` to access this area.",
+  "back": "Back to Tools",
+  "uploadIdentityStart": "Uploading identity reference…",
+  "uploadStyleStart": "Uploading style reference…",
+  "uploadIdentityDone": "Identity reference uploaded.",
+  "uploadStyleDone": "Style reference uploaded.",
+  "uploadFailed": "Upload failed.",
+  "loadFromJobDone": "Loaded character builder settings from the selected job.",
+  "duplicateDone": "Builder settings copied from that result.",
+  "missingRun": "Character builder run is missing.",
+  "runGenerateOneDone": "Generated a new character reference.",
+  "runGenerateFourDone": "Generated 4 character reference options.",
+  "runFullBodyDone": "Generated a full-body correction from the selected result.",
+  "runLightingDone": "Generated a lighting variation from the selected result.",
+  "runFailed": "Generation failed.",
+  "savedToLibrary": "Saved to Library.",
+  "saveToLibraryFailed": "Failed to save to Library.",
+  "pricingError": "Unable to load tool pricing",
+  "top": {
+    "start": "Start",
+    "buildLook": "Build the look",
+    "generate": "Generate",
+    "resultsEyebrow": "Results",
+    "resultsTitle": "Review outputs"
+  },
+  "sourceMode": {
+    "scratchTitle": "Start from scratch",
+    "scratchBody": "Build the character visually.",
+    "imageTitle": "Start from image",
+    "imageBody": "Infer the look from a reference.",
+    "autoTraits": "Auto traits",
+    "scratchNote": "Start from visual traits only. You can switch to image mode any time."
+  },
+  "references": {
+    "identityTitle": "Identity reference",
+    "identityBody": "Upload the face or character you want to anchor.",
+    "styleTitle": "Style inspiration",
+    "styleBody": "Optional. Use a second image for outfit or style direction.",
+    "addInspiration": "Add inspiration image",
+    "addInspirationBody": "Optional outfit or styling reference.",
+    "remove": "Remove"
+  },
+  "sections": {
+    "gender": "Gender presentation",
+    "age": "Age",
+    "customGenderPlaceholder": "Describe the presentation you want to preserve",
+    "hair": "Hair",
+    "hairOpenEditor": "Open the hair editor",
+    "hairEdit": "Edit",
+    "hairClose": "Close",
+    "outfit": "Outfit",
+    "moreOutfits": "More outfits",
+    "realism": "Realism style",
+    "moreControls": "More controls",
+    "optional": "Optional",
+    "setCount": "{count} set",
+    "skinTone": "Skin tone",
+    "faceCues": "Face cues",
+    "eyeColor": "Eye color",
+    "bodyBuild": "Body build",
+    "consistency": "Consistency",
+    "referenceStrength": "Reference strength",
+    "accessories": "Accessories",
+    "distinctiveFeatures": "Distinctive features",
+    "advancedNotes": "Advanced notes",
+    "advancedNotesPlaceholder": "Optional extra notes",
+    "mustRemainVisible": "Must remain visible",
+    "mustRemainPlaceholder": "Add a detail"
+  },
+  "outputOptions": {
+    "fullBodyRequired": "Full body required",
+    "includeCloseUps": "4 close-ups below",
+    "neutralStudioBackground": "Neutral background",
+    "preserveFacialDetails": "Preserve facial details",
+    "avoid3dRenderLook": "Avoid 3D look"
+  },
+  "generatePanel": {
+    "portraitTitle": "Portrait reference",
+    "portraitBody": "Clean face-first anchor",
+    "sheetTitle": "Character sheet",
+    "sheetBody": "Multi-angle full-body sheet",
+    "quality": "Quality",
+    "qualityBody": "Draft uses Nano Banana 2. Final uses Nano Banana Pro.",
+    "pricePerImage": "{price} per image",
+    "generateReference": "Generate reference",
+    "generateFour": "Generate 4 options"
+  },
+  "summary": {
+    "dna": "Character DNA",
+    "snapshot": "Live snapshot",
+    "builderBadge": "Builder",
+    "noReferenceImage": "No reference image",
+    "identity": "Identity",
+    "hair": "Hair",
+    "outfit": "Outfit",
+    "style": "Style",
+    "output": "Output",
+    "quality": "Quality",
+    "autoFromReference": "Auto from reference",
+    "photoreal": "Photoreal"
+  },
+  "hairEditor": {
+    "title": "Hair editor",
+    "body": "Pick only what matters.",
+    "color": "Color",
+    "length": "Length",
+    "style": "Style"
+  },
+  "followUp": {
+    "selectedEyebrow": "Selected result",
+    "selectedTitle": "Current reference",
+    "selectedAlt": "Selected character reference",
+    "baseReference": "Base reference output",
+    "fullBodyRefinement": "Full-body refinement",
+    "lightingRefinement": "Lighting refinement",
+    "importNote": "Import this reference manually into a video model when you are ready.",
+    "pinnedEyebrow": "Pinned base",
+    "pinnedTitle": "Refinement base",
+    "pinnedAlt": "Pinned base reference",
+    "pinnedLabel": "Pinned base",
+    "unpin": "Unpin",
+    "pinEmpty": "Select a result, then pin it if you want a stable base for refinements.",
+    "refineTitle": "Refine",
+    "fixFullBody": "Fix full body",
+    "createLighting": "Create lighting variant",
+    "refineFootnote": "This tool stops at reusable reference image creation."
+  },
+  "resultCard": {
+    "generatedAlt": "Generated character reference",
+    "referenceOutput": "Reference output",
+    "fullBodyFix": "Full-body fix",
+    "lightingVariant": "Lighting variant",
+    "selected": "Selected",
+    "base": "Base",
+    "unpinBase": "Unpin base",
+    "useAsBase": "Use as base",
+    "download": "Download",
+    "save": "Save",
+    "duplicate": "Duplicate",
+    "select": "Select"
+  },
+  "options": {
+    "gender": {
+      "woman": "Woman",
+      "man": "Man",
+      "androgynous": "Androgynous",
+      "custom": "Custom"
+    },
+    "age": {
+      "teen": "Teen",
+      "young-adult": "Young adult",
+      "adult": "Adult",
+      "mature": "Mature",
+      "senior": "Senior"
+    },
+    "skinTone": {
+      "fair": "Fair",
+      "light": "Light",
+      "medium": "Medium",
+      "olive": "Olive",
+      "deep": "Deep",
+      "rich": "Rich"
+    },
+    "faceCues": {
+      "soft": "Soft",
+      "angular": "Angular",
+      "round": "Round",
+      "defined": "Defined",
+      "strong-jaw": "Strong jaw"
+    },
+    "hairColor": {
+      "black": "Black",
+      "dark-brown": "Dark brown",
+      "brown": "Brown",
+      "blonde": "Blonde",
+      "red": "Red",
+      "gray": "Gray",
+      "fantasy": "Fantasy"
+    },
+    "hairLength": {
+      "short": "Short",
+      "medium": "Medium",
+      "long": "Long",
+      "very-long": "Very long"
+    },
+    "hairstyle": {
+      "straight": "Straight",
+      "wavy-bob": "Wavy bob",
+      "curly": "Curly",
+      "ponytail": "Ponytail",
+      "braids": "Braids",
+      "buzz-cut": "Buzz cut",
+      "afro": "Afro",
+      "tied-back": "Tied back"
+    },
+    "eyeColor": {
+      "brown": "Brown",
+      "hazel": "Hazel",
+      "blue": "Blue",
+      "green": "Green",
+      "gray": "Gray",
+      "amber": "Amber"
+    },
+    "bodyBuild": {
+      "slim": "Slim",
+      "average": "Average",
+      "athletic": "Athletic",
+      "strong": "Strong",
+      "curvy": "Curvy"
+    },
+    "outfit": {
+      "casual": "Casual",
+      "business": "Business",
+      "streetwear": "Streetwear",
+      "formal": "Formal",
+      "luxury": "Luxury",
+      "sci-fi": "Sci-fi",
+      "fantasy": "Fantasy",
+      "tactical": "Tactical"
+    },
+    "realism": {
+      "photoreal": "Photoreal",
+      "cinematic": "Cinematic",
+      "stylized": "Stylized",
+      "animated": "Animated"
+    },
+    "accessories": {
+      "glasses": "Glasses",
+      "sunglasses": "Sunglasses",
+      "earrings": "Earrings",
+      "necklace": "Necklace",
+      "hat": "Hat",
+      "headscarf": "Headscarf"
+    },
+    "distinctive": {
+      "freckles": "Freckles",
+      "scar": "Scar",
+      "tattoo": "Tattoo",
+      "piercing": "Piercing",
+      "beard": "Beard",
+      "beauty-mark": "Beauty mark",
+      "makeup": "Makeup",
+      "wrinkles": "Wrinkles"
+    },
+    "outputMode": {
+      "portrait-reference": {
+        "label": "Portrait reference",
+        "description": "Centered face-forward anchor for later reuse."
+      },
+      "character-sheet": {
+        "label": "Character sheet",
+        "description": "Full-body turnaround with clean multi-angle coverage."
+      }
+    },
+    "consistency": {
+      "exploratory": {
+        "label": "Exploratory",
+        "description": "Keep identity recognizable while allowing more variation."
+      },
+      "balanced": {
+        "label": "Balanced",
+        "description": "Aim for stable identity with a little creative flexibility."
+      },
+      "strict": {
+        "label": "Strict",
+        "description": "Bias strongly toward identity preservation across outputs."
+      }
+    },
+    "referenceStrength": {
+      "loose": {
+        "label": "Loose",
+        "description": "Use the reference for general vibe and broad identity cues."
+      },
+      "balanced": {
+        "label": "Balanced",
+        "description": "Preserve the core face and styling while allowing cleanup."
+      },
+      "strong": {
+        "label": "Strong",
+        "description": "Stay close to the uploaded identity and key visible markers."
+      }
+    },
+    "quality": {
+      "draft": {
+        "label": "Draft",
+        "description": "Fast exploratory passes on Nano Banana 2."
+      },
+      "final": {
+        "label": "Final",
+        "description": "Cleaner export-ready references on Nano Banana Pro."
+      }
+    }
+  }
+} as const;
+
+type CharacterCopy = typeof DEFAULT_CHARACTER_COPY;
+
 
 function getCharacterBillingProductKey(qualityMode: CharacterBuilderState['qualityMode']): string {
   return qualityMode === 'final' ? 'character-final' : 'character-draft';
@@ -273,9 +583,13 @@ function findChoiceLabel(options: Array<{ id: string; label: string }>, value: s
   return options.find((option) => option.id === value)?.label ?? null;
 }
 
-function describeTraitValue(options: Array<{ id: string; label: string }>, value: string | null | undefined): string {
-  if (value === 'auto') return 'Auto';
-  return findChoiceLabel(options, value) ?? 'Not set';
+function describeTraitValue(
+  options: Array<{ id: string; label: string }>,
+  value: string | null | undefined,
+  copy: CharacterCopy
+): string {
+  if (value === 'auto') return copy.auto;
+  return findChoiceLabel(options, value) ?? copy.notSet;
 }
 
 function findChoiceSwatch(
@@ -286,23 +600,31 @@ function findChoiceSwatch(
   return options.find((option) => option.id === value)?.swatch ?? null;
 }
 
-function getHairSummary(traits: CharacterBuilderTraits): string {
+function getHairSummary(
+  traits: CharacterBuilderTraits,
+  options: {
+    hairColor: Array<{ id: string; label: string }>;
+    hairLength: Array<{ id: string; label: string }>;
+    hairstyle: Array<{ id: string; label: string }>;
+  },
+  copy: CharacterCopy
+): string {
   const values = [
-    describeTraitValue(HAIR_COLOR_OPTIONS, traits.hairColor.value),
-    describeTraitValue(HAIR_LENGTH_OPTIONS, traits.hairLength.value),
-    describeTraitValue(HAIRSTYLE_OPTIONS, traits.hairstyle.value),
+    describeTraitValue(options.hairColor, traits.hairColor.value, copy),
+    describeTraitValue(options.hairLength, traits.hairLength.value, copy),
+    describeTraitValue(options.hairstyle, traits.hairstyle.value, copy),
   ];
 
-  if (values.every((value) => value === 'Auto')) {
-    return 'Auto from reference';
+  if (values.every((value) => value === copy.auto)) {
+    return copy.summary.autoFromReference;
   }
 
   const filteredValues = values.filter(
-    (value, index, array) => value !== 'Not set' || array.every((entry) => entry === 'Not set')
+    (value, index, array) => value !== copy.notSet || array.every((entry) => entry === copy.notSet)
   );
 
-  const meaningfulValues = filteredValues.filter((value) => value !== 'Not set');
-  if (!meaningfulValues.length) return 'Not set';
+  const meaningfulValues = filteredValues.filter((value) => value !== copy.notSet);
+  if (!meaningfulValues.length) return copy.notSet;
   return meaningfulValues.join(' / ');
 }
 
@@ -576,6 +898,12 @@ function CharacterSummaryCard({
   traits,
   outputMode,
   qualityMode,
+  genderOptions,
+  ageOptions,
+  realismOptions,
+  outputOptions,
+  qualityOptions,
+  copy,
 }: {
   identityReference: CharacterBuilderReferenceImage | null;
   hairSummary: string;
@@ -583,34 +911,37 @@ function CharacterSummaryCard({
   traits: CharacterBuilderTraits;
   outputMode: CharacterBuilderState['outputMode'];
   qualityMode: CharacterBuilderState['qualityMode'];
+  genderOptions: Array<{ id: string; label: string }>;
+  ageOptions: Array<{ id: string; label: string }>;
+  realismOptions: Array<{ id: string; label: string }>;
+  outputOptions: Array<{ id: string; label: string }>;
+  qualityOptions: Array<{ id: string; label: string }>;
+  copy: CharacterCopy;
 }) {
   const hairSwatch = findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
-  const genderLabel = findChoiceLabel(GENDER_PRESENTATION_OPTIONS, traits.genderPresentation.value) ?? 'Open';
-  const ageLabel = findChoiceLabel(AGE_RANGE_OPTIONS, traits.ageRange.value) ?? 'Open';
-  const realismLabel = findChoiceLabel(
-    REALISM_STYLE_OPTIONS.map((option) => ({ id: option.id, label: option.label })),
-    traits.realismStyle
-  );
-  const outputLabel = findChoiceLabel(CHARACTER_OUTPUT_OPTIONS, outputMode);
-  const qualityLabel = findChoiceLabel(CHARACTER_QUALITY_OPTIONS, qualityMode);
+  const genderLabel = findChoiceLabel(genderOptions, traits.genderPresentation.value) ?? copy.open;
+  const ageLabel = findChoiceLabel(ageOptions, traits.ageRange.value) ?? copy.open;
+  const realismLabel = findChoiceLabel(realismOptions, traits.realismStyle);
+  const outputLabel = findChoiceLabel(outputOptions, outputMode);
+  const qualityLabel = findChoiceLabel(qualityOptions, qualityMode);
 
   return (
     <Card className="overflow-hidden border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))] p-5">
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Character DNA</p>
-            <h3 className="mt-2 text-lg font-semibold text-text-primary">Live snapshot</h3>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{copy.summary.dna}</p>
+            <h3 className="mt-2 text-lg font-semibold text-text-primary">{copy.summary.snapshot}</h3>
           </div>
           <span className="rounded-full border border-border bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
-            Builder
+            {copy.summary.builderBadge}
           </span>
         </div>
 
         {identityReference ? (
           <img
             src={identityReference.url}
-            alt="Identity reference"
+            alt={copy.references.identityTitle}
             className="h-28 w-full rounded-[20px] object-cover"
           />
         ) : (
@@ -618,20 +949,20 @@ function CharacterSummaryCard({
             <div className="absolute left-1/2 top-5 h-10 w-10 -translate-x-1/2 rounded-full bg-slate-300" />
             <div className="absolute left-1/2 top-14 h-12 w-16 -translate-x-1/2 rounded-[18px] bg-slate-200" />
             <div className="absolute bottom-3 left-3 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-text-secondary">
-              No reference image
+              {copy.summary.noReferenceImage}
             </div>
           </div>
         )}
 
         <div className="grid gap-2">
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Identity</span>
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.identity}</span>
             <span className="text-sm font-medium text-text-primary">
               {genderLabel} · {ageLabel}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Hair</span>
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.hair}</span>
             <span className="flex items-center gap-2 text-sm font-medium text-text-primary">
               {hairSwatch ? (
                 <span
@@ -639,25 +970,25 @@ function CharacterSummaryCard({
                   style={{ backgroundColor: hairSwatch }}
                 />
               ) : null}
-              {hairSummary === 'Not set' ? 'Open' : hairSummary}
+              {hairSummary === copy.notSet ? copy.open : hairSummary}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Outfit</span>
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.outfit}</span>
             <span className="text-sm font-medium text-text-primary">
-              {outfitSummary === 'Not set' ? 'Open' : outfitSummary}
+              {outfitSummary === copy.notSet ? copy.open : outfitSummary}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Style</span>
-            <span className="text-sm font-medium text-text-primary">{realismLabel ?? 'Photoreal'}</span>
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.style}</span>
+            <span className="text-sm font-medium text-text-primary">{realismLabel ?? copy.summary.photoreal}</span>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Output</span>
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.output}</span>
             <span className="text-sm font-medium text-text-primary">{outputLabel}</span>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Quality</span>
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.quality}</span>
             <span className="text-sm font-medium text-text-primary">{qualityLabel}</span>
           </div>
         </div>
@@ -672,12 +1003,20 @@ function HairEditorPanel({
   sourceMode,
   traits,
   onChange,
+  hairColorOptions,
+  hairLengthOptions,
+  hairstyleOptions,
+  copy,
 }: {
   open: boolean;
   onClose: () => void;
   sourceMode: CharacterBuilderState['sourceMode'];
   traits: CharacterBuilderTraits;
   onChange: (key: 'hairColor' | 'hairLength' | 'hairstyle', value: string | 'auto') => void;
+  hairColorOptions: ChoiceOption[];
+  hairLengthOptions: ChoiceOption[];
+  hairstyleOptions: ChoiceOption[];
+  copy: CharacterCopy;
 }) {
   if (!open) return null;
 
@@ -694,7 +1033,7 @@ function HairEditorPanel({
             : 'border-border bg-white text-text-secondary hover:border-border-hover'
         )}
       >
-        Auto
+        {copy.auto}
       </button>
     ) : null;
 
@@ -702,19 +1041,19 @@ function HairEditorPanel({
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-text-primary">Hair editor</p>
-          <p className="text-[11px] text-text-secondary">Pick only what matters.</p>
+          <p className="text-sm font-semibold text-text-primary">{copy.hairEditor.title}</p>
+          <p className="text-[11px] text-text-secondary">{copy.hairEditor.body}</p>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose}>
-          Done
+          {copy.done}
         </Button>
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Color</p>
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.hairEditor.color}</p>
         <div className="flex flex-wrap gap-2">
           {autoButton('hairColor')}
-          {HAIR_COLOR_OPTIONS.map((option) => {
+          {hairColorOptions.map((option) => {
             const selected = traits.hairColor.value === option.id;
             return (
               <button
@@ -742,10 +1081,10 @@ function HairEditorPanel({
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Length</p>
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.hairEditor.length}</p>
         <div className="flex flex-wrap gap-2">
           {autoButton('hairLength')}
-          {HAIR_LENGTH_OPTIONS.map((option) => {
+          {hairLengthOptions.map((option) => {
             const selected = traits.hairLength.value === option.id;
             return (
               <button
@@ -767,10 +1106,10 @@ function HairEditorPanel({
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Style</p>
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.hairEditor.style}</p>
         <div className="flex flex-wrap gap-2">
           {autoButton('hairstyle')}
-          {HAIRSTYLE_OPTIONS.map((option) => {
+          {hairstyleOptions.map((option) => {
             const selected = traits.hairstyle.value === option.id;
             return (
               <button
@@ -847,19 +1186,21 @@ function CompactSelectField({
   value,
   options,
   onChange,
-  placeholder = 'Choose',
+  placeholder,
   autoEnabled = false,
+  autoLabel,
 }: {
   label: string;
   value: string | null;
   options: ChoiceOption[];
   onChange: (value: string | 'auto') => void;
-  placeholder?: string;
+  placeholder: string;
   autoEnabled?: boolean;
+  autoLabel: string;
 }) {
   const selectOptions = [
     { value: '', label: placeholder },
-    ...(autoEnabled ? [{ value: 'auto', label: 'Auto' }] : []),
+    ...(autoEnabled ? [{ value: 'auto', label: autoLabel }] : []),
     ...options.map((option) => ({ value: option.id, label: option.label })),
   ];
 
@@ -1035,6 +1376,7 @@ function ReferenceSlot({
   onUpload,
   onRemove,
   disabled = false,
+  removeLabel,
 }: {
   title: string;
   subtitle: string;
@@ -1042,6 +1384,7 @@ function ReferenceSlot({
   onUpload: () => void;
   onRemove: () => void;
   disabled?: boolean;
+  removeLabel: string;
 }) {
   return (
     <div
@@ -1063,7 +1406,7 @@ function ReferenceSlot({
             </div>
           </button>
           <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-            Remove
+            {removeLabel}
           </Button>
         </div>
       ) : (
@@ -1097,6 +1440,7 @@ function ResultCard({
   onSave,
   onDuplicateSettings,
   saving,
+  copy,
 }: {
   result: CharacterBuilderResult;
   selected: boolean;
@@ -1108,6 +1452,7 @@ function ResultCard({
   onSave: () => void;
   onDuplicateSettings: () => void;
   saving: boolean;
+  copy: CharacterCopy;
 }) {
   return (
     <Card
@@ -1117,27 +1462,31 @@ function ResultCard({
       )}
     >
       <button type="button" onClick={onSelect} className="block w-full text-left">
-        <img src={result.thumbUrl ?? result.url} alt="Generated character reference" className="h-48 w-full object-cover" />
+        <img src={result.thumbUrl ?? result.url} alt={copy.resultCard.generatedAlt} className="h-48 w-full object-cover" />
       </button>
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{result.engineLabel}</p>
             <p className="mt-1 text-sm font-semibold text-text-primary">
-              {result.action === 'generate' ? 'Reference output' : result.action === 'full-body-fix' ? 'Full-body fix' : 'Lighting variant'}
+              {result.action === 'generate'
+                ? copy.resultCard.referenceOutput
+                : result.action === 'full-body-fix'
+                  ? copy.resultCard.fullBodyFix
+                  : copy.resultCard.lightingVariant}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {selected ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-1 text-[11px] font-semibold text-brand">
                 <Check className="h-3.5 w-3.5" />
-                Selected
+                {copy.resultCard.selected}
               </span>
             ) : null}
             {pinned ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-1 text-[11px] font-semibold text-text-primary">
                 <Pin className="h-3.5 w-3.5" />
-                Base
+                {copy.resultCard.base}
               </span>
             ) : null}
           </div>
@@ -1147,25 +1496,25 @@ function ResultCard({
             {allowPinning ? (
               <Button variant="outline" size="sm" onClick={onPin} className="gap-2">
                 {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-                {pinned ? 'Unpin base' : 'Use as base'}
+                {pinned ? copy.resultCard.unpinBase : copy.resultCard.useAsBase}
               </Button>
             ) : null}
             <Button variant="outline" size="sm" onClick={onDownload} className="gap-2">
               <Download className="h-4 w-4" />
-              Download
+              {copy.resultCard.download}
             </Button>
             <Button variant="outline" size="sm" onClick={onSave} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              Save
+              {copy.resultCard.save}
             </Button>
             <Button variant="ghost" size="sm" onClick={onDuplicateSettings} className="gap-2">
               <WandSparkles className="h-4 w-4" />
-              Duplicate
+              {copy.resultCard.duplicate}
             </Button>
           </div>
         ) : (
           <Button variant="outline" size="sm" onClick={onSelect}>
-            Select
+            {copy.resultCard.select}
           </Button>
         )}
       </div>
@@ -1175,6 +1524,11 @@ function ResultCard({
 
 export default function CharacterBuilderPage() {
   const { loading: authLoading, user } = useRequireAuth();
+  const { t } = useI18n();
+  const rawCopy = t('workspace.characterBuilder', DEFAULT_CHARACTER_COPY);
+  const copy = useMemo<CharacterCopy>(() => {
+    return deepmerge(DEFAULT_CHARACTER_COPY, (rawCopy ?? {}) as Partial<CharacterCopy>);
+  }, [rawCopy]);
   const searchParams = useSearchParams();
   const [state, setState] = useState<CharacterBuilderState>(() => createDefaultCharacterBuilderState());
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -1189,6 +1543,95 @@ export default function CharacterBuilderPage() {
   const identityFileRef = useRef<HTMLInputElement | null>(null);
   const styleFileRef = useRef<HTMLInputElement | null>(null);
 
+  const genderOptions = useMemo(
+    () => GENDER_PRESENTATION_OPTIONS.map((option) => ({ ...option, label: copy.options.gender[option.id as keyof typeof copy.options.gender] ?? option.label })),
+    [copy]
+  );
+  const ageOptions = useMemo(
+    () => AGE_RANGE_OPTIONS.map((option) => ({ ...option, label: copy.options.age[option.id as keyof typeof copy.options.age] ?? option.label })),
+    [copy]
+  );
+  const skinToneOptions = useMemo(
+    () => SKIN_TONE_OPTIONS.map((option) => ({ ...option, label: copy.options.skinTone[option.id as keyof typeof copy.options.skinTone] ?? option.label })),
+    [copy]
+  );
+  const faceCueOptions = useMemo(
+    () => FACE_CUES_OPTIONS.map((option) => ({ ...option, label: copy.options.faceCues[option.id as keyof typeof copy.options.faceCues] ?? option.label })),
+    [copy]
+  );
+  const hairColorOptions = useMemo(
+    () => HAIR_COLOR_OPTIONS.map((option) => ({ ...option, label: copy.options.hairColor[option.id as keyof typeof copy.options.hairColor] ?? option.label })),
+    [copy]
+  );
+  const hairLengthOptions = useMemo(
+    () => HAIR_LENGTH_OPTIONS.map((option) => ({ ...option, label: copy.options.hairLength[option.id as keyof typeof copy.options.hairLength] ?? option.label })),
+    [copy]
+  );
+  const hairstyleOptions = useMemo(
+    () => HAIRSTYLE_OPTIONS.map((option) => ({ ...option, label: copy.options.hairstyle[option.id as keyof typeof copy.options.hairstyle] ?? option.label })),
+    [copy]
+  );
+  const eyeColorOptions = useMemo(
+    () => EYE_COLOR_OPTIONS.map((option) => ({ ...option, label: copy.options.eyeColor[option.id as keyof typeof copy.options.eyeColor] ?? option.label })),
+    [copy]
+  );
+  const bodyBuildOptions = useMemo(
+    () => BODY_BUILD_OPTIONS.map((option) => ({ ...option, label: copy.options.bodyBuild[option.id as keyof typeof copy.options.bodyBuild] ?? option.label })),
+    [copy]
+  );
+  const outfitOptions = useMemo(
+    () => OUTFIT_STYLE_OPTIONS.map((option) => ({ ...option, label: copy.options.outfit[option.id as keyof typeof copy.options.outfit] ?? option.label })),
+    [copy]
+  );
+  const realismOptions = useMemo(
+    () => REALISM_STYLE_OPTIONS.map((option) => ({ ...option, label: copy.options.realism[option.id as keyof typeof copy.options.realism] ?? option.label })),
+    [copy]
+  );
+  const accessoryOptions = useMemo(
+    () => ACCESSORY_OPTIONS.map((option) => ({ ...option, label: copy.options.accessories[option.id as keyof typeof copy.options.accessories] ?? option.label })),
+    [copy]
+  );
+  const distinctiveOptions = useMemo(
+    () => DISTINCTIVE_FEATURE_OPTIONS.map((option) => ({ ...option, label: copy.options.distinctive[option.id as keyof typeof copy.options.distinctive] ?? option.label })),
+    [copy]
+  );
+  const outputModeOptions = useMemo(
+    () =>
+      CHARACTER_OUTPUT_OPTIONS.map((option) => ({
+        ...option,
+        label: copy.options.outputMode[option.id].label,
+        description: copy.options.outputMode[option.id].description,
+      })),
+    [copy]
+  );
+  const consistencyOptions = useMemo(
+    () =>
+      CHARACTER_CONSISTENCY_OPTIONS.map((option) => ({
+        ...option,
+        label: copy.options.consistency[option.id].label,
+        description: copy.options.consistency[option.id].description,
+      })),
+    [copy]
+  );
+  const referenceStrengthOptions = useMemo(
+    () =>
+      CHARACTER_REFERENCE_STRENGTH_OPTIONS.map((option) => ({
+        ...option,
+        label: copy.options.referenceStrength[option.id].label,
+        description: copy.options.referenceStrength[option.id].description,
+      })),
+    [copy]
+  );
+  const qualityOptions = useMemo(
+    () =>
+      CHARACTER_QUALITY_OPTIONS.map((option) => ({
+        ...option,
+        label: copy.options.quality[option.id].label,
+        description: copy.options.quality[option.id].description,
+      })),
+    [copy]
+  );
+
   const flattenedResults = getFlattenedResults(state.runs);
   const selectedResult = findResultById(state.runs, state.selectedResultId);
   const pinnedResult = findResultById(state.runs, state.pinnedReferenceResultId);
@@ -1198,11 +1641,11 @@ export default function CharacterBuilderPage() {
   const hasResults = flattenedResults.length > 0;
   const hasMultipleResults = flattenedResults.length > 1;
   const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
-  const hairSummary = getHairSummary(state.traits);
-  const outfitSummary = describeTraitValue(OUTFIT_STYLE_OPTIONS, state.traits.outfitStyle.value);
+  const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
+  const outfitSummary = describeTraitValue(outfitOptions, state.traits.outfitStyle.value, copy);
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
-  const featuredOutfits = OUTFIT_STYLE_OPTIONS.filter((option) => FEATURED_OUTFIT_IDS.includes(option.id as (typeof FEATURED_OUTFIT_IDS)[number]));
-  const overflowOutfits = OUTFIT_STYLE_OPTIONS.filter(
+  const featuredOutfits = outfitOptions.filter((option) => FEATURED_OUTFIT_IDS.includes(option.id as (typeof FEATURED_OUTFIT_IDS)[number]));
+  const overflowOutfits = outfitOptions.filter(
     (option) => !FEATURED_OUTFIT_IDS.includes(option.id as (typeof FEATURED_OUTFIT_IDS)[number])
   );
   const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
@@ -1216,7 +1659,7 @@ export default function CharacterBuilderPage() {
       const response = await authFetch(url);
       const payload = (await response.json().catch(() => null)) as BillingProductResponse | null;
       if (!response.ok || !payload?.ok || !payload.product) {
-        throw new Error(payload?.error ?? 'Unable to load tool pricing');
+        throw new Error(payload?.error ?? copy.pricingError);
       }
       return payload.product;
     },
@@ -1269,7 +1712,7 @@ export default function CharacterBuilderPage() {
           ...snapshotState,
         }));
         setShowStyleReferenceSlot(Boolean(snapshotState.referenceImages?.some((image) => image.role === 'style')));
-        setStatusMessage('Loaded character builder settings from the selected job.');
+        setStatusMessage(copy.loadFromJobDone);
       } catch (loadError) {
         if (!cancelled) {
           console.warn('[character-builder] failed to load job snapshot', loadError);
@@ -1282,7 +1725,7 @@ export default function CharacterBuilderPage() {
     return () => {
       cancelled = true;
     };
-  }, [hydrated, jobIdFromQuery]);
+  }, [copy.loadFromJobDone, hydrated, jobIdFromQuery]);
 
   function updateTrait<K extends keyof Pick<
     CharacterBuilderTraits,
@@ -1339,7 +1782,7 @@ export default function CharacterBuilderPage() {
 
   async function handleUpload(role: CharacterBuilderReferenceImage['role'], file: File) {
     setError(null);
-    setStatusMessage(role === 'identity' ? 'Uploading identity reference…' : 'Uploading style reference…');
+    setStatusMessage(role === 'identity' ? copy.uploadIdentityStart : copy.uploadStyleStart);
 
     try {
       const asset = await uploadImage(file);
@@ -1357,9 +1800,9 @@ export default function CharacterBuilderPage() {
         referenceImages: updateReferenceImage(previous.referenceImages, nextImage),
         traits: role === 'identity' ? normalizeTraitsForSourceMode(previous.traits, 'reference-image') : previous.traits,
       }));
-      setStatusMessage(role === 'identity' ? 'Identity reference uploaded.' : 'Style reference uploaded.');
+      setStatusMessage(role === 'identity' ? copy.uploadIdentityDone : copy.uploadStyleDone);
     } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : 'Upload failed.');
+      setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
       setStatusMessage(null);
     }
   }
@@ -1405,7 +1848,7 @@ export default function CharacterBuilderPage() {
       selectedResultId: selectedId ?? previous.selectedResultId,
     }));
     setAdvancedOpen(Boolean(snapshot.builder.advancedNotes));
-    setStatusMessage('Builder settings copied from that result.');
+    setStatusMessage(copy.duplicateDone);
   }
 
   async function handleRun(action: CharacterBuilderAction, generateCount?: 1 | 4) {
@@ -1439,7 +1882,7 @@ export default function CharacterBuilderPage() {
       });
 
       if (!response.run) {
-        throw new Error('Character builder run is missing.');
+        throw new Error(copy.missingRun);
       }
 
       setState((previous) => {
@@ -1473,14 +1916,14 @@ export default function CharacterBuilderPage() {
       setStatusMessage(
         action === 'generate'
           ? generateCount === 4
-            ? 'Generated 4 character reference options.'
-            : 'Generated a new character reference.'
+            ? copy.runGenerateFourDone
+            : copy.runGenerateOneDone
           : action === 'full-body-fix'
-            ? 'Generated a full-body correction from the selected result.'
-            : 'Generated a lighting variation from the selected result.'
+            ? copy.runFullBodyDone
+            : copy.runLightingDone
       );
     } catch (runError) {
-      setError(runError instanceof Error ? runError.message : 'Generation failed.');
+      setError(runError instanceof Error ? runError.message : copy.runFailed);
     } finally {
       setLoadingAction(null);
     }
@@ -1494,12 +1937,12 @@ export default function CharacterBuilderPage() {
       await saveImageToLibrary({
         url: result.url,
         jobId: result.jobId,
-        label: 'Character reference',
+        label: copy.generatePanel.portraitTitle,
         source: 'character',
       });
-      setStatusMessage('Saved to Library.');
+      setStatusMessage(copy.savedToLibrary);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Failed to save to Library.');
+      setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
     } finally {
       setSavingResultId(null);
     }
@@ -1512,41 +1955,41 @@ export default function CharacterBuilderPage() {
       <div className="space-y-6">
         {selectedResult ? (
           <Card className="border border-border p-6">
-            <SectionTitle eyebrow="Selected result" title="Current reference" />
+            <SectionTitle eyebrow={copy.followUp.selectedEyebrow} title={copy.followUp.selectedTitle} />
             <img
               src={selectedResult.thumbUrl ?? selectedResult.url}
-              alt="Selected character reference"
+              alt={copy.followUp.selectedAlt}
               className="mt-5 h-72 w-full rounded-card object-cover"
             />
             <div className="mt-4 space-y-2">
               <p className="text-sm font-semibold text-text-primary">{selectedResult.engineLabel}</p>
               <p className="text-xs text-text-secondary">
                 {selectedResult.action === 'generate'
-                  ? 'Base reference output'
+                  ? copy.followUp.baseReference
                   : selectedResult.action === 'full-body-fix'
-                    ? 'Full-body refinement'
-                    : 'Lighting refinement'}
+                    ? copy.followUp.fullBodyRefinement
+                    : copy.followUp.lightingRefinement}
               </p>
             </div>
             <div className="mt-4 rounded-card border border-border bg-bg/40 p-4 text-sm text-text-secondary">
-              Import this reference manually into a video model when you are ready.
+              {copy.followUp.importNote}
             </div>
           </Card>
         ) : null}
 
         {hasMultipleResults ? (
           <Card className="border border-border p-6">
-            <SectionTitle eyebrow="Pinned base" title="Refinement base" />
+            <SectionTitle eyebrow={copy.followUp.pinnedEyebrow} title={copy.followUp.pinnedTitle} />
             {pinnedResult ? (
               <div className="mt-5 space-y-4">
                 <img
                   src={pinnedResult.thumbUrl ?? pinnedResult.url}
-                  alt="Pinned base reference"
+                  alt={copy.followUp.pinnedAlt}
                   className="h-64 w-full rounded-card object-cover"
                 />
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-text-primary">Pinned base</p>
+                    <p className="text-sm font-semibold text-text-primary">{copy.followUp.pinnedLabel}</p>
                     <p className="mt-1 text-xs text-text-secondary">{pinnedResult.engineLabel}</p>
                   </div>
                   <Button
@@ -1560,13 +2003,13 @@ export default function CharacterBuilderPage() {
                     }
                   >
                     <PinOff className="h-4 w-4" />
-                    Unpin
+                    {copy.followUp.unpin}
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="mt-5 rounded-card border border-dashed border-border bg-bg/40 p-5 text-sm text-text-secondary">
-                Select a result, then pin it if you want a stable base for refinements.
+                {copy.followUp.pinEmpty}
               </div>
             )}
           </Card>
@@ -1574,7 +2017,7 @@ export default function CharacterBuilderPage() {
 
         {selectedResult ? (
           <Card className="border border-border p-6">
-            <SectionTitle title="Refine" />
+            <SectionTitle title={copy.followUp.refineTitle} />
             <div className="mt-5 grid gap-3">
               <Button
                 variant="outline"
@@ -1587,7 +2030,7 @@ export default function CharacterBuilderPage() {
                 ) : (
                   <WandSparkles className="h-4 w-4" />
                 )}
-                Fix full body
+                {copy.followUp.fixFullBody}
               </Button>
               <Button
                 variant="outline"
@@ -1600,11 +2043,11 @@ export default function CharacterBuilderPage() {
                 ) : (
                   <Sparkles className="h-4 w-4" />
                 )}
-                Create lighting variant
+                {copy.followUp.createLighting}
               </Button>
             </div>
             <p className="mt-4 text-xs text-text-secondary">
-              This tool stops at reusable reference image creation.
+              {copy.followUp.refineFootnote}
             </p>
           </Card>
         ) : null}
@@ -1644,10 +2087,8 @@ export default function CharacterBuilderPage() {
           <AppSidebar />
           <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
             <Card className="border border-border p-6">
-              <h1 className="text-2xl font-semibold text-text-primary">Tools are disabled</h1>
-              <p className="mt-2 text-sm text-text-secondary">
-                Enable `FEATURES.workflows.toolsSection` to access this area.
-              </p>
+              <h1 className="text-2xl font-semibold text-text-primary">{copy.disabledTitle}</h1>
+              <p className="mt-2 text-sm text-text-secondary">{copy.disabledBody}</p>
             </Card>
           </main>
         </div>
@@ -1671,7 +2112,7 @@ export default function CharacterBuilderPage() {
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to Tools
+                {copy.back}
               </ButtonLink>
             </div>
 
@@ -1694,17 +2135,23 @@ export default function CharacterBuilderPage() {
                         traits={state.traits}
                         outputMode={state.outputMode}
                         qualityMode={state.qualityMode}
+                        genderOptions={genderOptions}
+                        ageOptions={ageOptions}
+                        realismOptions={realismOptions.map((option) => ({ id: option.id, label: option.label }))}
+                        outputOptions={outputModeOptions.map((option) => ({ id: option.id, label: option.label }))}
+                        qualityOptions={qualityOptions.map((option) => ({ id: option.id, label: option.label }))}
+                        copy={copy}
                       />
                     </div>
 
                     <section className="space-y-4">
-                      <SectionTitle title="Start" />
+                      <SectionTitle title={copy.top.start} />
                       <div className="grid gap-4 md:grid-cols-2">
                         <VisualChoiceCard
                           selected={state.sourceMode === 'scratch'}
                           onClick={() => updateSourceMode('scratch')}
-                          title="Start from scratch"
-                          subtitle="Build the character visually."
+                          title={copy.sourceMode.scratchTitle}
+                          subtitle={copy.sourceMode.scratchBody}
                           media={
                             <div className="flex h-20 items-center justify-between rounded-[18px] border border-white/60 bg-[linear-gradient(135deg,rgba(224,242,254,1),rgba(255,255,255,0.96))] px-4">
                               <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand/15 text-brand">
@@ -1720,15 +2167,15 @@ export default function CharacterBuilderPage() {
                         <VisualChoiceCard
                           selected={state.sourceMode === 'reference-image'}
                           onClick={() => updateSourceMode('reference-image')}
-                          title="Start from image"
-                          subtitle="Infer the look from a reference."
+                          title={copy.sourceMode.imageTitle}
+                          subtitle={copy.sourceMode.imageBody}
                           media={
                             <div className="flex h-20 items-center justify-between rounded-[18px] border border-white/60 bg-[linear-gradient(135deg,rgba(240,253,250,1),rgba(255,255,255,0.96))] px-4">
                               <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                                 <Upload className="h-4 w-4" />
                               </div>
                               <div className="rounded-[16px] border border-dashed border-emerald-300 bg-white/80 px-3 py-2 text-[11px] font-semibold text-text-secondary">
-                                Auto traits
+                                {copy.sourceMode.autoTraits}
                               </div>
                             </div>
                           }
@@ -1738,10 +2185,11 @@ export default function CharacterBuilderPage() {
                       {state.sourceMode === 'reference-image' ? (
                         <div className="grid gap-4 lg:grid-cols-2">
                           <ReferenceSlot
-                            title="Identity reference"
-                            subtitle="Upload the face or character you want to anchor."
+                            title={copy.references.identityTitle}
+                            subtitle={copy.references.identityBody}
                             image={identityReference}
                             onUpload={() => identityFileRef.current?.click()}
+                            removeLabel={copy.references.remove}
                             onRemove={() =>
                               setState((previous) => ({
                                 ...previous,
@@ -1757,10 +2205,11 @@ export default function CharacterBuilderPage() {
                           />
                           {showStyleReferenceSlot || styleReference ? (
                             <ReferenceSlot
-                              title="Style inspiration"
-                              subtitle="Optional. Use a second image for outfit or style direction."
+                              title={copy.references.styleTitle}
+                              subtitle={copy.references.styleBody}
                               image={styleReference}
                               onUpload={() => styleFileRef.current?.click()}
+                              removeLabel={copy.references.remove}
                               onRemove={() => {
                                 setShowStyleReferenceSlot(false);
                                 setState((previous) => ({
@@ -1778,24 +2227,24 @@ export default function CharacterBuilderPage() {
                               <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
                                 <Upload className="h-5 w-5" />
                               </span>
-                              <p className="mt-3 text-sm font-semibold text-text-primary">Add inspiration image</p>
-                              <p className="mt-1 text-xs text-text-secondary">Optional outfit or styling reference.</p>
+                              <p className="mt-3 text-sm font-semibold text-text-primary">{copy.references.addInspiration}</p>
+                              <p className="mt-1 text-xs text-text-secondary">{copy.references.addInspirationBody}</p>
                             </button>
                           )}
                         </div>
                       ) : (
                         <div className="rounded-card border border-border bg-bg/40 px-4 py-3 text-sm text-text-secondary">
-                          Start from visual traits only. You can switch to image mode any time.
+                          {copy.sourceMode.scratchNote}
                         </div>
                       )}
                     </section>
 
                     <section className="space-y-4 border-t border-border pt-6">
-                      <SectionTitle title="Build the look" />
+                      <SectionTitle title={copy.top.buildLook} />
                       <div className="space-y-3">
-                        <label className="block text-sm font-semibold text-text-primary">Gender presentation</label>
+                        <label className="block text-sm font-semibold text-text-primary">{copy.sections.gender}</label>
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                          {GENDER_PRESENTATION_OPTIONS.map((option) => {
+                          {genderOptions.map((option) => {
                             const meta = GENDER_CARD_META[option.id] ?? GENDER_CARD_META.custom;
                             return (
                               <IconChoiceCard
@@ -1814,8 +2263,8 @@ export default function CharacterBuilderPage() {
 
                       <div className="max-w-xl">
                         <SegmentedControl
-                          label="Age"
-                          options={AGE_RANGE_OPTIONS}
+                          label={copy.sections.age}
+                          options={ageOptions}
                           value={state.traits.ageRange.value}
                           onChange={(value) => updateTrait('ageRange', value)}
                         />
@@ -1833,12 +2282,12 @@ export default function CharacterBuilderPage() {
                               },
                             }))
                           }
-                          placeholder="Describe the presentation you want to preserve"
+                          placeholder={copy.sections.customGenderPlaceholder}
                         />
                       ) : null}
 
                       <div className="relative space-y-3">
-                        <label className="block text-sm font-semibold text-text-primary">Hair</label>
+                        <label className="block text-sm font-semibold text-text-primary">{copy.sections.hair}</label>
                         <button
                           type="button"
                           onClick={() => setHairOpen((previous) => !previous)}
@@ -1853,14 +2302,14 @@ export default function CharacterBuilderPage() {
                               </div>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-text-primary">Hair</p>
+                              <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
                               <p className="truncate text-xs text-text-secondary">
-                                {hairSummary === 'Not set' ? 'Open the hair editor' : hairSummary}
+                                {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
                               </p>
                             </div>
                           </div>
                           <span className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-text-secondary">
-                            {hairOpen ? 'Close' : 'Edit'}
+                            {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
                           </span>
                         </button>
                         <HairEditorPanel
@@ -1869,16 +2318,20 @@ export default function CharacterBuilderPage() {
                           sourceMode={state.sourceMode}
                           traits={state.traits}
                           onChange={(key, value) => updateTrait(key, value)}
+                          hairColorOptions={hairColorOptions}
+                          hairLengthOptions={hairLengthOptions}
+                          hairstyleOptions={hairstyleOptions}
+                          copy={copy}
                         />
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <label className="block text-sm font-semibold text-text-primary">Outfit</label>
+                          <label className="block text-sm font-semibold text-text-primary">{copy.sections.outfit}</label>
                           <div className="w-full sm:w-[180px]">
                             <SelectMenu
                               options={[
-                                { value: '__more_outfits__', label: 'More outfits' },
+                                { value: '__more_outfits__', label: copy.sections.moreOutfits },
                                 ...overflowOutfits.map((option) => ({ value: option.id, label: option.label })),
                               ]}
                               value={overflowOutfitValue}
@@ -1909,9 +2362,9 @@ export default function CharacterBuilderPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="block text-sm font-semibold text-text-primary">Realism style</label>
+                        <label className="block text-sm font-semibold text-text-primary">{copy.sections.realism}</label>
                         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                          {REALISM_STYLE_OPTIONS.map((option) => {
+                          {realismOptions.map((option) => {
                             const meta = REALISM_CARD_META[option.id];
                             return (
                               <StyleChoiceCard
@@ -1941,10 +2394,12 @@ export default function CharacterBuilderPage() {
                         className="flex w-full items-center justify-between rounded-[20px] border border-border bg-bg/40 px-4 py-3 text-left transition hover:border-border-hover"
                       >
                         <div>
-                          <p className="text-sm font-semibold text-text-primary">More controls</p>
+                          <p className="text-sm font-semibold text-text-primary">{copy.sections.moreControls}</p>
                         </div>
                         <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                          {secondaryControlsCount ? `${secondaryControlsCount} set` : 'Optional'}
+                          {secondaryControlsCount
+                            ? copy.sections.setCount.replace('{count}', String(secondaryControlsCount))
+                            : copy.sections.optional}
                         </span>
                       </button>
 
@@ -1952,79 +2407,91 @@ export default function CharacterBuilderPage() {
                         <div className="space-y-5 rounded-card border border-border bg-bg/40 p-4">
                           <div className="grid gap-4 lg:grid-cols-2">
                             <CompactSelectField
-                              label="Skin tone"
+                              label={copy.sections.skinTone}
                               value={state.traits.skinTone.value}
-                              options={SKIN_TONE_OPTIONS}
+                              options={skinToneOptions}
                               onChange={(value) => updateTrait('skinTone', value)}
+                              placeholder={copy.choose}
+                              autoLabel={copy.auto}
                               autoEnabled={state.sourceMode === 'reference-image' && AUTO_TRAIT_KEYS.has('skinTone')}
                             />
                             <CompactSelectField
-                              label="Face cues"
+                              label={copy.sections.faceCues}
                               value={state.traits.faceCues.value}
-                              options={FACE_CUES_OPTIONS}
+                              options={faceCueOptions}
                               onChange={(value) => updateTrait('faceCues', value)}
+                              placeholder={copy.choose}
+                              autoLabel={copy.auto}
                               autoEnabled={state.sourceMode === 'reference-image' && AUTO_TRAIT_KEYS.has('faceCues')}
                             />
                             <CompactSelectField
-                              label="Eye color"
+                              label={copy.sections.eyeColor}
                               value={state.traits.eyeColor.value}
-                              options={EYE_COLOR_OPTIONS}
+                              options={eyeColorOptions}
                               onChange={(value) => updateTrait('eyeColor', value)}
+                              placeholder={copy.choose}
+                              autoLabel={copy.auto}
                               autoEnabled={state.sourceMode === 'reference-image' && AUTO_TRAIT_KEYS.has('eyeColor')}
                             />
                             <CompactSelectField
-                              label="Body build"
+                              label={copy.sections.bodyBuild}
                               value={state.traits.bodyBuild.value}
-                              options={BODY_BUILD_OPTIONS}
+                              options={bodyBuildOptions}
                               onChange={(value) => updateTrait('bodyBuild', value)}
+                              placeholder={copy.choose}
+                              autoLabel={copy.auto}
                               autoEnabled={state.sourceMode === 'reference-image' && AUTO_TRAIT_KEYS.has('bodyBuild')}
                             />
                             <CompactSelectField
-                              label="Consistency"
+                              label={copy.sections.consistency}
                               value={state.consistencyMode}
-                              options={CHARACTER_CONSISTENCY_OPTIONS}
+                              options={consistencyOptions}
                               onChange={(value) =>
                                 setState((previous) => ({
                                   ...previous,
                                   consistencyMode: value as CharacterBuilderState['consistencyMode'],
                                 }))
                               }
+                              placeholder={copy.choose}
+                              autoLabel={copy.auto}
                             />
                             {hasIdentityReference ? (
                               <CompactSelectField
-                                label="Reference strength"
+                                label={copy.sections.referenceStrength}
                                 value={state.referenceStrength}
-                                options={CHARACTER_REFERENCE_STRENGTH_OPTIONS}
+                                options={referenceStrengthOptions}
                                 onChange={(value) =>
                                   setState((previous) => ({
                                     ...previous,
                                     referenceStrength: value as CharacterBuilderState['referenceStrength'],
                                   }))
                                 }
+                                placeholder={copy.choose}
+                                autoLabel={copy.auto}
                               />
                             ) : null}
                           </div>
 
                           <MultiToggleGroup
-                            label="Accessories"
-                            items={ACCESSORY_OPTIONS}
+                            label={copy.sections.accessories}
+                            items={accessoryOptions}
                             values={state.traits.accessories}
                             onToggle={(value) => toggleListValue('accessories', value)}
                           />
                           <MultiToggleGroup
-                            label="Distinctive features"
-                            items={DISTINCTIVE_FEATURE_OPTIONS}
+                            label={copy.sections.distinctiveFeatures}
+                            items={distinctiveOptions}
                             values={state.traits.distinctiveFeatures}
                             onToggle={(value) => toggleListValue('distinctiveFeatures', value)}
                           />
 
                           <div className="grid gap-3 md:grid-cols-2">
                             {[
-                              ['fullBodyRequired', 'Full body required'],
-                              ['includeCloseUps', '4 close-ups below'],
-                              ['neutralStudioBackground', 'Neutral background'],
-                              ['preserveFacialDetails', 'Preserve facial details'],
-                              ['avoid3dRenderLook', 'Avoid 3D look'],
+                              ['fullBodyRequired', copy.outputOptions.fullBodyRequired],
+                              ['includeCloseUps', copy.outputOptions.includeCloseUps],
+                              ['neutralStudioBackground', copy.outputOptions.neutralStudioBackground],
+                              ['preserveFacialDetails', copy.outputOptions.preserveFacialDetails],
+                              ['avoid3dRenderLook', copy.outputOptions.avoid3dRenderLook],
                             ].map(([key, label]) => {
                               const typedKey = key as keyof CharacterBuilderState['outputOptions'];
                               const active = state.outputOptions[typedKey];
@@ -2050,7 +2517,7 @@ export default function CharacterBuilderPage() {
                                 >
                                   <span className="text-sm font-semibold text-text-primary">{label}</span>
                                   <span className="text-xs font-semibold uppercase tracking-micro">
-                                    {active ? 'On' : 'Off'}
+                                    {active ? copy.on : copy.off}
                                   </span>
                                 </button>
                               );
@@ -2058,7 +2525,7 @@ export default function CharacterBuilderPage() {
                           </div>
 
                           <div className="space-y-3">
-                            <label className="block text-sm font-semibold text-text-primary">Advanced notes</label>
+                            <label className="block text-sm font-semibold text-text-primary">{copy.sections.advancedNotes}</label>
                             <Textarea
                               rows={3}
                               value={state.advancedNotes}
@@ -2068,12 +2535,12 @@ export default function CharacterBuilderPage() {
                                   advancedNotes: event.target.value,
                                 }))
                               }
-                              placeholder="Optional extra notes"
+                              placeholder={copy.sections.advancedNotesPlaceholder}
                             />
                           </div>
 
                           <div className="space-y-3">
-                            <label className="block text-sm font-semibold text-text-primary">Must remain visible</label>
+                            <label className="block text-sm font-semibold text-text-primary">{copy.sections.mustRemainVisible}</label>
                             <div className="flex gap-2">
                               <Input
                                 value={mustRemainDraft}
@@ -2084,9 +2551,9 @@ export default function CharacterBuilderPage() {
                                     addMustRemainTag();
                                   }
                                 }}
-                                placeholder="Add a detail"
+                                placeholder={copy.sections.mustRemainPlaceholder}
                               />
-                              <Button onClick={addMustRemainTag}>Add</Button>
+                              <Button onClick={addMustRemainTag}>{copy.add}</Button>
                             </div>
                             {state.mustRemainVisible.length ? (
                               <div className="flex flex-wrap gap-2">
@@ -2108,12 +2575,12 @@ export default function CharacterBuilderPage() {
                     </section>
 
                     <section className="space-y-4 border-t border-border pt-6">
-                      <SectionTitle title="Generate" />
+                      <SectionTitle title={copy.top.generate} />
                       <div className="grid gap-4 lg:grid-cols-2">
                         <OutputPreviewCard
                           selected={state.outputMode === 'portrait-reference'}
-                          title="Portrait reference"
-                          subtitle="Clean face-first anchor"
+                          title={copy.generatePanel.portraitTitle}
+                          subtitle={copy.generatePanel.portraitBody}
                           mode="portrait-reference"
                           onClick={() =>
                             setState((previous) => ({
@@ -2124,8 +2591,8 @@ export default function CharacterBuilderPage() {
                         />
                         <OutputPreviewCard
                           selected={state.outputMode === 'character-sheet'}
-                          title="Character sheet"
-                          subtitle="Multi-angle full-body sheet"
+                          title={copy.generatePanel.sheetTitle}
+                          subtitle={copy.generatePanel.sheetBody}
                           mode="character-sheet"
                           onClick={() =>
                             setState((previous) => ({
@@ -2142,8 +2609,8 @@ export default function CharacterBuilderPage() {
 
                       <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-end">
                         <SegmentedControl
-                          label="Quality"
-                          options={CHARACTER_QUALITY_OPTIONS}
+                          label={copy.generatePanel.quality}
+                          options={qualityOptions}
                           value={state.qualityMode}
                           onChange={(value) =>
                             setState((previous) => ({
@@ -2156,8 +2623,10 @@ export default function CharacterBuilderPage() {
                         <div className="rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))] p-4">
                           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="space-y-1">
-                              <p className="text-sm text-text-secondary">Draft uses Nano Banana 2. Final uses Nano Banana Pro.</p>
-                              <p className="text-sm font-medium text-text-primary">{formatUsd(estimatedImageCostUsd)} per image</p>
+                              <p className="text-sm text-text-secondary">{copy.generatePanel.qualityBody}</p>
+                              <p className="text-sm font-medium text-text-primary">
+                                {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
+                              </p>
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row">
                               <Button
@@ -2170,7 +2639,7 @@ export default function CharacterBuilderPage() {
                                 ) : (
                                   <Sparkles className="h-4 w-4" />
                                 )}
-                                Generate reference
+                                {copy.generatePanel.generateReference}
                               </Button>
                               <Button
                                 variant="outline"
@@ -2183,7 +2652,7 @@ export default function CharacterBuilderPage() {
                                 ) : (
                                   <WandSparkles className="h-4 w-4" />
                                 )}
-                                Generate 4 options
+                                {copy.generatePanel.generateFour}
                               </Button>
                             </div>
                           </div>
@@ -2210,7 +2679,7 @@ export default function CharacterBuilderPage() {
 
                 {hasResults ? (
                   <Card className="border border-border p-6">
-                    <SectionTitle eyebrow="Results" title="Review outputs" />
+                    <SectionTitle eyebrow={copy.top.resultsEyebrow} title={copy.top.resultsTitle} />
                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                       {flattenedResults.map((result) => {
                         const run = state.runs.find((entry) => entry.id === result.runId);
@@ -2247,6 +2716,7 @@ export default function CharacterBuilderPage() {
                                 applySettingsSnapshot(run.settingsSnapshot, result.id);
                               }
                             }}
+                            copy={copy}
                           />
                         );
                       })}
@@ -2265,6 +2735,12 @@ export default function CharacterBuilderPage() {
                     traits={state.traits}
                     outputMode={state.outputMode}
                     qualityMode={state.qualityMode}
+                    genderOptions={genderOptions}
+                    ageOptions={ageOptions}
+                    realismOptions={realismOptions.map((option) => ({ id: option.id, label: option.label }))}
+                    outputOptions={outputModeOptions.map((option) => ({ id: option.id, label: option.label }))}
+                    qualityOptions={qualityOptions.map((option) => ({ id: option.id, label: option.label }))}
+                    copy={copy}
                   />
                   {renderFollowUpPanels()}
                 </div>

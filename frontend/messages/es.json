@@ -2776,6 +2776,408 @@
           "generic": "No se pudo actualizar la preferencia"
         }
       }
+    },
+    "tools": {
+      "disabledTitle": "Las herramientas están desactivadas",
+      "disabledBody": "Activa `FEATURES.workflows.toolsSection` para acceder a esta sección.",
+      "eyebrow": "Workspace",
+      "title": "Herramientas",
+      "subtitle": "Crea assets reutilizables del primer frame antes de lanzar renders image-to-video.",
+      "characterEyebrow": "Herramienta de referencia",
+      "characterTitle": "Consistent Character Builder",
+      "characterBody": "Crea una referencia reutilizable del personaje o una hoja de personaje antes de reutilizarla manualmente en flujos de imagen o video.",
+      "angleEyebrow": "Herramienta de primer frame",
+      "angleTitle": "Angle / Perspective",
+      "angleBody": "Sube una imagen, ajusta el ángulo de cámara y genera un primer frame listo para workflows image-to-video.",
+      "open": "Abrir herramienta"
+    },
+    "toolsAngle": {
+      "disabledTitle": "Las herramientas están desactivadas",
+      "disabledBody": "Activa `FEATURES.workflows.toolsSection` para acceder a esta sección.",
+      "back": "Volver a herramientas",
+      "engine": "Motor",
+      "engineSelect": "Selección de motor",
+      "sourceImage": "Imagen fuente",
+      "sourceReady": "Imagen fuente lista",
+      "sourceFromLibrary": "Desde la Library",
+      "sourceFromPaste": "Desde URL pegada",
+      "sourceFromDevice": "Subida desde el dispositivo",
+      "replace": "Reemplazar",
+      "library": "Library",
+      "remove": "Quitar",
+      "sourceAlt": "Fuente",
+      "addSourceTitle": "Agregar imagen fuente",
+      "addSourceBody": "Suelta, pega, sube o elige desde tu Library.",
+      "upload": "Subir",
+      "uploading": "Subiendo...",
+      "formats": "PNG / JPG / WEBP",
+      "cameraControls": "Controles de cámara",
+      "rotationRange": "Rotación (0-360)",
+      "tiltRange": "Tilt (-30 a +30)",
+      "zoomRange": "Zoom (0 a 10)",
+      "degreeUnit": "deg",
+      "estimatedCost": "Costo estimado por run",
+      "generate": "Generar",
+      "generating": "Generando...",
+      "output": "Salida",
+      "outputTitle": "Preview del primer frame",
+      "generatingOverlayTitle": "Generando nuevos ángulos...",
+      "generatingOverlayBody": "Tu última salida sigue visible hasta que el nuevo run esté listo.",
+      "latency": "Latencia",
+      "safeGuardrails": "Se aplicaron guardrails cinema-safe a este run.",
+      "emptyTitle": "Todavía no hay salida",
+      "emptyBody": "Sube una imagen, ajusta rotación/tilt/zoom y haz clic en Generar.",
+      "previousJobs": "Jobs anteriores",
+      "openJobs": "Abrir Jobs",
+      "angleJob": "Job de ángulo",
+      "close": "Cerrar",
+      "libraryChoose": "Elegir desde Library",
+      "libraryBody": "Usa una imagen subida o guardada como frame fuente.",
+      "libraryError": "No se pudieron cargar las imágenes de la library",
+      "libraryEmpty": "Aún no hay imágenes guardadas.",
+      "useImage": "Usar imagen",
+      "assetFallback": "Asset",
+      "tabs": {
+        "all": "Todas",
+        "upload": "Subidas",
+        "generated": "Generadas"
+      },
+      "engineHelpFlux": "FLUX solo soporta tomas a nivel de ojos hasta high angle. Un tilt negativo cambia automáticamente a Qwen para low angles.",
+      "engineHelpQwen": "Se detectó un low angle. Qwen Multiple Angles está activo ahora.",
+      "orbitTitle": "Selector 3D de ángulo",
+      "orbitHint": "Mantén pulsado y arrastra para cambiar el ángulo de cámara",
+      "rotationShort": "Rotación",
+      "tiltShort": "Tilt",
+      "zoomShort": "Zoom",
+      "bestAngles": "Generar desde los 4 mejores ángulos",
+      "addToLibrary": "Agregar a la Library",
+      "alreadyInLibrary": "Ya está en la Library",
+      "download": "Descargar",
+      "angleLabel": "Ángulo {index}",
+      "angleSelected": "seleccionado",
+      "priceError": "No se pudo cargar el pricing de la herramienta",
+      "uploadFailed": "La subida falló",
+      "invalidUrl": "Pega o suelta una URL de imagen válida.",
+      "referenceName": "Referencia",
+      "libraryImageName": "Imagen de library",
+      "missingSource": "Sube primero una imagen fuente.",
+      "generationFailed": "La generación falló",
+      "angleOutputLabel": "Salida de ángulo",
+      "librarySaveFailed": "No se pudo guardar en la Library",
+      "engines": {
+        "flux-multiple-angles": {
+          "label": "FLUX Multiple Angles",
+          "description": "Motor FLUX LoRA multiángulo con controles horizontal / vertical / zoom."
+        },
+        "qwen-multiple-angles": {
+          "label": "Qwen Multiple Angles",
+          "description": "Motor Qwen de edición de imagen multiángulo ajustado para la consistencia del ángulo."
+        }
+      }
+    },
+    "characterBuilder": {
+      "auto": "Auto",
+      "notSet": "Sin definir",
+      "open": "Abrir",
+      "choose": "Elegir",
+      "done": "Listo",
+      "add": "Agregar",
+      "on": "On",
+      "off": "Off",
+      "disabledTitle": "Las herramientas están desactivadas",
+      "disabledBody": "Activa `FEATURES.workflows.toolsSection` para acceder a esta sección.",
+      "back": "Volver a herramientas",
+      "uploadIdentityStart": "Subiendo referencia de identidad…",
+      "uploadStyleStart": "Subiendo referencia de estilo…",
+      "uploadIdentityDone": "Referencia de identidad subida.",
+      "uploadStyleDone": "Referencia de estilo subida.",
+      "uploadFailed": "La subida falló.",
+      "loadFromJobDone": "Se cargaron los ajustes del character builder desde el job seleccionado.",
+      "duplicateDone": "Se copiaron los ajustes del builder desde ese resultado.",
+      "missingRun": "Falta el run del character builder.",
+      "runGenerateOneDone": "Se generó una nueva referencia de personaje.",
+      "runGenerateFourDone": "Se generaron 4 opciones de referencia de personaje.",
+      "runFullBodyDone": "Se generó una corrección full body a partir del resultado seleccionado.",
+      "runLightingDone": "Se generó una variación de lighting a partir del resultado seleccionado.",
+      "runFailed": "La generación falló.",
+      "savedToLibrary": "Guardado en la Library.",
+      "saveToLibraryFailed": "No se pudo guardar en la Library.",
+      "pricingError": "No se pudo cargar el pricing de la herramienta",
+      "top": {
+        "start": "Inicio",
+        "buildLook": "Construir el look",
+        "generate": "Generar",
+        "resultsEyebrow": "Resultados",
+        "resultsTitle": "Revisar salidas"
+      },
+      "sourceMode": {
+        "scratchTitle": "Empezar desde cero",
+        "scratchBody": "Construye el personaje visualmente.",
+        "imageTitle": "Empezar desde imagen",
+        "imageBody": "Infiera el look desde una referencia.",
+        "autoTraits": "Traits auto",
+        "scratchNote": "Empieza solo con rasgos visuales. Puedes cambiar al modo imagen en cualquier momento."
+      },
+      "references": {
+        "identityTitle": "Referencia de identidad",
+        "identityBody": "Sube la cara o el personaje que quieres anclar.",
+        "styleTitle": "Inspiración de estilo",
+        "styleBody": "Opcional. Usa una segunda imagen para el outfit o la dirección de estilo.",
+        "addInspiration": "Agregar imagen de inspiración",
+        "addInspirationBody": "Referencia opcional de outfit o styling.",
+        "remove": "Quitar"
+      },
+      "sections": {
+        "gender": "Presentación de género",
+        "age": "Edad",
+        "customGenderPlaceholder": "Describe la presentación que quieres preservar",
+        "hair": "Cabello",
+        "hairOpenEditor": "Abrir editor de cabello",
+        "hairEdit": "Editar",
+        "hairClose": "Cerrar",
+        "outfit": "Outfit",
+        "moreOutfits": "Más outfits",
+        "realism": "Estilo de realismo",
+        "moreControls": "Más controles",
+        "optional": "Opcional",
+        "setCount": "{count} definidos",
+        "skinTone": "Tono de piel",
+        "faceCues": "Rasgos faciales",
+        "eyeColor": "Color de ojos",
+        "bodyBuild": "Constitución",
+        "consistency": "Consistencia",
+        "referenceStrength": "Fuerza de referencia",
+        "accessories": "Accesorios",
+        "distinctiveFeatures": "Rasgos distintivos",
+        "advancedNotes": "Notas avanzadas",
+        "advancedNotesPlaceholder": "Notas extra opcionales",
+        "mustRemainVisible": "Debe seguir visible",
+        "mustRemainPlaceholder": "Agregar un detalle"
+      },
+      "outputOptions": {
+        "fullBodyRequired": "Full body requerido",
+        "includeCloseUps": "4 close-ups abajo",
+        "neutralStudioBackground": "Fondo neutro",
+        "preserveFacialDetails": "Preservar detalles faciales",
+        "avoid3dRenderLook": "Evitar look 3D"
+      },
+      "generatePanel": {
+        "portraitTitle": "Referencia de retrato",
+        "portraitBody": "Ancla limpia centrada en el rostro",
+        "sheetTitle": "Character sheet",
+        "sheetBody": "Hoja full body multiángulo",
+        "quality": "Calidad",
+        "qualityBody": "Draft usa Nano Banana 2. Final usa Nano Banana Pro.",
+        "pricePerImage": "{price} por imagen",
+        "generateReference": "Generar referencia",
+        "generateFour": "Generar 4 opciones"
+      },
+      "summary": {
+        "dna": "ADN del personaje",
+        "snapshot": "Snapshot live",
+        "builderBadge": "Builder",
+        "noReferenceImage": "Sin imagen de referencia",
+        "identity": "Identidad",
+        "hair": "Cabello",
+        "outfit": "Outfit",
+        "style": "Estilo",
+        "output": "Salida",
+        "quality": "Calidad",
+        "autoFromReference": "Auto desde la referencia",
+        "photoreal": "Photoreal"
+      },
+      "hairEditor": {
+        "title": "Editor de cabello",
+        "body": "Elige solo lo que importa.",
+        "color": "Color",
+        "length": "Largo",
+        "style": "Estilo"
+      },
+      "followUp": {
+        "selectedEyebrow": "Resultado seleccionado",
+        "selectedTitle": "Referencia actual",
+        "selectedAlt": "Referencia de personaje seleccionada",
+        "baseReference": "Salida de referencia base",
+        "fullBodyRefinement": "Refinamiento full body",
+        "lightingRefinement": "Refinamiento de lighting",
+        "importNote": "Importa esta referencia manualmente en un modelo de video cuando estés listo.",
+        "pinnedEyebrow": "Base fijada",
+        "pinnedTitle": "Base de refinamiento",
+        "pinnedAlt": "Referencia base fijada",
+        "pinnedLabel": "Base fijada",
+        "unpin": "Desfijar",
+        "pinEmpty": "Selecciona un resultado y fíjalo si quieres una base estable para refinamientos.",
+        "refineTitle": "Refinar",
+        "fixFullBody": "Corregir full body",
+        "createLighting": "Crear variación de lighting",
+        "refineFootnote": "Esta herramienta se detiene en la creación de imágenes de referencia reutilizables."
+      },
+      "resultCard": {
+        "generatedAlt": "Referencia de personaje generada",
+        "referenceOutput": "Salida de referencia",
+        "fullBodyFix": "Fix full body",
+        "lightingVariant": "Variación de lighting",
+        "selected": "Seleccionado",
+        "base": "Base",
+        "unpinBase": "Quitar base",
+        "useAsBase": "Usar como base",
+        "download": "Descargar",
+        "save": "Guardar",
+        "duplicate": "Duplicar",
+        "select": "Seleccionar"
+      },
+      "options": {
+        "gender": {
+          "woman": "Mujer",
+          "man": "Hombre",
+          "androgynous": "Andrógino",
+          "custom": "Personalizado"
+        },
+        "age": {
+          "teen": "Adolescente",
+          "young-adult": "Adulto joven",
+          "adult": "Adulto",
+          "mature": "Maduro",
+          "senior": "Senior"
+        },
+        "skinTone": {
+          "fair": "Muy claro",
+          "light": "Claro",
+          "medium": "Medio",
+          "olive": "Oliva",
+          "deep": "Oscuro",
+          "rich": "Muy oscuro"
+        },
+        "faceCues": {
+          "soft": "Suave",
+          "angular": "Angular",
+          "round": "Redondo",
+          "defined": "Definido",
+          "strong-jaw": "Mandíbula marcada"
+        },
+        "hairColor": {
+          "black": "Negro",
+          "dark-brown": "Castaño oscuro",
+          "brown": "Castaño",
+          "blonde": "Rubio",
+          "red": "Pelirrojo",
+          "gray": "Gris",
+          "fantasy": "Fantasy"
+        },
+        "hairLength": {
+          "short": "Corto",
+          "medium": "Medio",
+          "long": "Largo",
+          "very-long": "Muy largo"
+        },
+        "hairstyle": {
+          "straight": "Liso",
+          "wavy-bob": "Bob ondulado",
+          "curly": "Rizado",
+          "ponytail": "Cola de caballo",
+          "braids": "Trenzas",
+          "buzz-cut": "Buzz cut",
+          "afro": "Afro",
+          "tied-back": "Recogido"
+        },
+        "eyeColor": {
+          "brown": "Marrón",
+          "hazel": "Avellana",
+          "blue": "Azul",
+          "green": "Verde",
+          "gray": "Gris",
+          "amber": "Ámbar"
+        },
+        "bodyBuild": {
+          "slim": "Delgado",
+          "average": "Promedio",
+          "athletic": "Atlético",
+          "strong": "Fuerte",
+          "curvy": "Curvy"
+        },
+        "outfit": {
+          "casual": "Casual",
+          "business": "Business",
+          "streetwear": "Streetwear",
+          "formal": "Formal",
+          "luxury": "Luxury",
+          "sci-fi": "Sci-fi",
+          "fantasy": "Fantasy",
+          "tactical": "Táctico"
+        },
+        "realism": {
+          "photoreal": "Photoreal",
+          "cinematic": "Cinematic",
+          "stylized": "Stylized",
+          "animated": "Animated"
+        },
+        "accessories": {
+          "glasses": "Gafas",
+          "sunglasses": "Gafas de sol",
+          "earrings": "Pendientes",
+          "necklace": "Collar",
+          "hat": "Sombrero",
+          "headscarf": "Pañuelo"
+        },
+        "distinctive": {
+          "freckles": "Pecas",
+          "scar": "Cicatriz",
+          "tattoo": "Tatuaje",
+          "piercing": "Piercing",
+          "beard": "Barba",
+          "beauty-mark": "Lunar",
+          "makeup": "Maquillaje",
+          "wrinkles": "Arrugas"
+        },
+        "outputMode": {
+          "portrait-reference": {
+            "label": "Referencia de retrato",
+            "description": "Ancla de rostro centrada para reutilizar después."
+          },
+          "character-sheet": {
+            "label": "Character sheet",
+            "description": "Turnaround full body con cobertura multiángulo limpia."
+          }
+        },
+        "consistency": {
+          "exploratory": {
+            "label": "Exploratorio",
+            "description": "Mantiene la identidad reconocible permitiendo más variación."
+          },
+          "balanced": {
+            "label": "Equilibrado",
+            "description": "Busca una identidad estable con un poco de flexibilidad creativa."
+          },
+          "strict": {
+            "label": "Estricto",
+            "description": "Prioriza fuertemente la preservación de identidad entre salidas."
+          }
+        },
+        "referenceStrength": {
+          "loose": {
+            "label": "Suave",
+            "description": "Usa la referencia para la vibra general y rasgos amplios de identidad."
+          },
+          "balanced": {
+            "label": "Equilibrada",
+            "description": "Preserva el rostro y el styling base permitiendo limpieza."
+          },
+          "strong": {
+            "label": "Fuerte",
+            "description": "Mantente cerca de la identidad subida y de los marcadores visibles clave."
+          }
+        },
+        "quality": {
+          "draft": {
+            "label": "Draft",
+            "description": "Pasadas exploratorias rápidas en Nano Banana 2."
+          },
+          "final": {
+            "label": "Final",
+            "description": "Referencias más limpias listas para exportar en Nano Banana Pro."
+          }
+        }
+      }
     }
   },
   "auth": {
