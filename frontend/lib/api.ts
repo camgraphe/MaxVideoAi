@@ -16,6 +16,7 @@ import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 import type { JobSurface } from '@/types/billing';
+import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -269,6 +270,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
   const feedSurface: JobFeedSurface =
     options?.surface === 'video' ||
     options?.surface === 'image' ||
+    options?.surface === 'audio' ||
     options?.surface === 'character' ||
     options?.surface === 'angle'
       ? options.surface
@@ -666,6 +668,34 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
     });
     throw error;
   }
+  return data;
+}
+
+export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promise<AudioGenerateResponse> {
+  const response = await authFetch('/api/audio/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as
+    | (AudioGenerateResponse & { error?: string; message?: string; field?: string; providerFailures?: unknown })
+    | null;
+
+  if (!data) {
+    throw new Error('Audio generation response malformed');
+  }
+
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.message ?? `Audio generation failed (${response.status})`);
+    Object.assign(error, {
+      code: data.error ?? 'audio_generation_failed',
+      field: data.field,
+      providerFailures: data.providerFailures,
+      status: response.status,
+    });
+    throw error;
+  }
+
   return data;
 }
 

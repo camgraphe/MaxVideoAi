@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import clsx from 'clsx';
 import Image from 'next/image';
@@ -7,6 +7,7 @@ import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
+import type { JobSurface } from '@/types/billing';
 
 export interface MediaLightboxEntry {
   id: string;
@@ -15,6 +16,7 @@ export interface MediaLightboxEntry {
   thumbUrl?: string | null;
   aspectRatio?: string | null;
   jobId?: string | null;
+  surface?: JobSurface | null;
   status?: 'pending' | 'completed' | 'failed';
   progress?: number | null;
   message?: string | null;

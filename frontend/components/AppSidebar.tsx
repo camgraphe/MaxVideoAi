@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useId } from 'react';
 import {
+  AudioLines,
   BookOpen,
   Image as ImageIcon,
   LayoutDashboard,
@@ -39,6 +40,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
   { id: 'generate', label: 'Generate Video', badge: null, icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
+  { id: 'generate-audio', label: 'Generate Audio', badge: null, icon: 'generate-audio', href: '/app/audio' },
   ...(FEATURES.workflows.toolsSection ? [{ id: 'tools', label: 'Tools', badge: 'beta', badgeKey: 'toolsBeta', icon: 'tools', href: '/tools' }] : []),
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
@@ -50,6 +52,7 @@ const NAV_ICON_MAP: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   generate: Sparkles,
   'generate-image': ImageIcon,
+  'generate-audio': AudioLines,
   tools: Wrench,
   library: BookOpen,
   jobs: ListVideo,

@@ -64,7 +64,7 @@ const IMAGE_ENGINE_ALIASES = listFalEngines()
   .filter((engine) => (engine.category ?? 'video') === 'image')
   .flatMap((engine) => getEngineAliases(engine));
 
-function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'angle', params: Array<string | number | Date | string[]>) {
+function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'angle' | 'audio', params: Array<string | number | Date | string[]>) {
   params.push(surface);
   const directIndex = params.length;
 

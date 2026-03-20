@@ -14,6 +14,7 @@ import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
+import type { JobSurface } from '@/types/billing';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
@@ -152,6 +153,7 @@ type DashboardCopy = typeof DEFAULT_DASHBOARD_COPY;
 
 type TemplateEntry = {
   id: string;
+  surface?: JobSurface | null;
   prompt: string;
   engineLabel?: string | null;
   engineId?: string | null;
@@ -163,6 +165,12 @@ type TemplateEntry = {
   currency?: string | null;
   createdAt?: string | null;
 };
+
+function resolveWorkspaceJobHref(jobId: string, surface?: JobSurface | null): string {
+  return surface === 'audio'
+    ? `/app/audio?job=${encodeURIComponent(jobId)}`
+    : `/app?job=${encodeURIComponent(jobId)}`;
+}
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -643,6 +651,7 @@ export default function DashboardPage() {
           : null;
       const entry: TemplateEntry = {
         id: jobId,
+        surface: heroJob?.surface ?? null,
         prompt: group.hero.prompt ?? copy.quickStarts.defaultTitle,
         engineLabel: group.hero.engineLabel ?? null,
         engineId: group.hero.engineId ?? heroJob?.engineId ?? null,
@@ -661,7 +670,7 @@ export default function DashboardPage() {
 
   const handleUseTemplate = useCallback(
     (template: TemplateEntry) => {
-      router.push(`/app?job=${encodeURIComponent(template.id)}`);
+      router.push(resolveWorkspaceJobHref(template.id, template.surface));
     },
     [router]
   );
@@ -678,7 +687,7 @@ export default function DashboardPage() {
     (entry: MediaLightboxEntry) => {
       const jobId = entry.jobId ?? entry.id;
       if (!jobId) return;
-      router.push(`/app?job=${encodeURIComponent(jobId)}`);
+      router.push(resolveWorkspaceJobHref(jobId, entry.surface));
     },
     [router]
   );
@@ -690,6 +699,7 @@ export default function DashboardPage() {
       if (!jobId) return;
       const template: TemplateEntry = {
         id: jobId,
+        surface: entry.surface ?? null,
         prompt: entry.prompt ?? copy.quickStarts.defaultTitle,
         engineLabel: entry.engineLabel ?? null,
         engineId: entry.engineId ?? null,
@@ -1161,7 +1171,7 @@ function InProgressRow({
           {copy.inProgress.open}
         </Button>
         <ButtonLink
-          href={`/app?job=${encodeURIComponent(job.jobId)}`}
+          href={resolveWorkspaceJobHref(job.jobId, job.surface)}
           variant="outline"
           size="sm"
           className="border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
@@ -1277,7 +1287,7 @@ function RecentGrid({
                     ) : null}
                     {!isCurated ? (
                       <ButtonLink
-                        href={`/app?job=${encodeURIComponent(jobId)}`}
+                        href={resolveWorkspaceJobHref(jobId, group.hero.job?.surface ?? null)}
                         variant="outline"
                         size="sm"
                         className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
@@ -1511,6 +1521,7 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
     {
       id: job.jobId,
       jobId: job.jobId,
+      surface: job.surface ?? null,
       label: job.engineLabel,
       videoUrl: job.videoUrl ?? undefined,
       thumbUrl: job.thumbUrl ?? undefined,
@@ -1535,6 +1546,7 @@ function buildEntriesFromGroup(group: GroupSummary, versionLabel: string): Media
   return group.members.map((member) => ({
     id: member.id,
     jobId: member.jobId ?? member.id,
+    surface: member.job?.surface ?? null,
     label:
       typeof member.iterationIndex === 'number'
         ? versionLabel.replace('{index}', String(member.iterationIndex + 1))

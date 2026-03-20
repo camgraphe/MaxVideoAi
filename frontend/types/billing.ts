@@ -1,4 +1,4 @@
-export const JOB_SURFACE_VALUES = ['video', 'image', 'character', 'angle'] as const;
+export const JOB_SURFACE_VALUES = ['video', 'image', 'character', 'angle', 'audio'] as const;
 
 export type JobSurface = (typeof JOB_SURFACE_VALUES)[number];
 

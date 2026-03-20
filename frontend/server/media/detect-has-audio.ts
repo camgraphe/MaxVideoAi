@@ -14,6 +14,41 @@ export type VideoDimensions = {
   height: number;
 };
 
+export async function detectMediaDuration(
+  mediaUrl: string,
+  options: DetectOptions = {},
+  streamSelector?: 'a' | 'v'
+): Promise<number | null> {
+  if (!ffprobe.path) {
+    console.warn('[media-duration] ffprobe binary not available.');
+    return null;
+  }
+  if (!mediaUrl || !/^https?:\/\//i.test(mediaUrl)) {
+    return null;
+  }
+
+  const timeoutMs = options.timeoutMs ?? 12_000;
+  const args = ['-v', 'error'];
+  if (streamSelector) {
+    args.push('-select_streams', streamSelector === 'a' ? 'a:0' : 'v:0');
+  }
+  args.push('-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', mediaUrl);
+
+  try {
+    const { stdout } = await execFileAsync(ffprobe.path, args, { timeout: timeoutMs, maxBuffer: 1024 * 1024 });
+    const parsed = Number.parseFloat(stdout.trim());
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    const reason =
+      error instanceof Error && typeof error.message === 'string' ? error.message : 'unknown error running ffprobe';
+    console.warn('[media-duration] ffprobe failed', { mediaUrl, reason });
+    return null;
+  }
+}
+
 /**
  * Run ffprobe against the provided video URL and detect if at least one audio stream exists.
  * Returns true/false when the probe succeeds, or null when probing fails (network issues, unsupported format, etc).

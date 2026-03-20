@@ -17,7 +17,7 @@ function readSurfaceFromSnapshot(snapshot: unknown): string | null {
 export function normalizeJobSurface(value: unknown): JobSurface | null {
   if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();
-  if (normalized === 'video' || normalized === 'image' || normalized === 'character' || normalized === 'angle') {
+  if (normalized === 'video' || normalized === 'image' || normalized === 'character' || normalized === 'angle' || normalized === 'audio') {
     return normalized;
   }
   if (normalized === 'character-builder') {

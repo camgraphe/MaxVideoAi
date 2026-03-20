@@ -195,6 +195,8 @@ function formatReceiptSurfaceLabel(surface?: string | null): string | null {
       return 'Character';
     case 'angle':
       return 'Angle';
+    case 'audio':
+      return 'Audio';
     default:
       return null;
   }

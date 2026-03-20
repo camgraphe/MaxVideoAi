@@ -29,10 +29,12 @@ const DEFAULT_JOBS_COPY = {
   title: 'Jobs',
   sections: {
     video: 'Video jobs',
+    audio: 'Audio jobs',
     image: 'Image jobs',
     character: 'Character jobs',
     angle: 'Angle jobs',
     videoEmpty: 'No video jobs yet.',
+    audioEmpty: 'No audio jobs yet.',
     imageEmpty: 'No image jobs yet.',
     characterEmpty: 'No character jobs yet.',
     angleEmpty: 'No angle jobs yet.',
@@ -68,6 +70,16 @@ function resolveClientJobSurface(job: Job): JobSurface {
     videoUrl: job.videoUrl ?? null,
     renderIds: job.renderIds,
   });
+}
+
+function resolveWorkspaceJobHref(jobId: string, surface: JobSurface, forceImageGroup = false): string {
+  if (surface === 'audio') {
+    return `/app/audio?job=${encodeURIComponent(jobId)}`;
+  }
+  if (forceImageGroup || surface === 'image') {
+    return `/app/image?job=${encodeURIComponent(jobId)}`;
+  }
+  return `/app?job=${encodeURIComponent(jobId)}`;
 }
 
 export default function JobsPage() {
@@ -110,6 +122,14 @@ export default function JobsPage() {
     mutate: mutateImage,
   } = useInfiniteJobs(24, { surface: 'image' });
   const {
+    data: audioData,
+    error: audioError,
+    isLoading: audioIsLoading,
+    setSize: setAudioSize,
+    isValidating: audioIsValidating,
+    mutate: mutateAudio,
+  } = useInfiniteJobs(24, { surface: 'audio' });
+  const {
     data: characterData,
     error: characterError,
     isLoading: characterIsLoading,
@@ -130,14 +150,17 @@ export default function JobsPage() {
   const defaultAllowIndex = preferences?.defaultAllowIndex ?? true;
 
   const videoPages = videoData ?? [];
+  const audioPages = audioData ?? [];
   const imagePages = imageData ?? [];
   const characterPages = characterData ?? [];
   const anglePages = angleData ?? [];
   const videoJobs = videoPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'video');
+  const audioJobs = audioPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'audio');
   const imageJobs = imagePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'image');
   const characterJobs = characterPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'character');
   const angleJobs = anglePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'angle');
   const videoHasMore = videoPages.length > 0 && videoPages[videoPages.length - 1].nextCursor !== null;
+  const audioHasMore = audioPages.length > 0 && audioPages[audioPages.length - 1].nextCursor !== null;
   const imageHasMore = imagePages.length > 0 && imagePages[imagePages.length - 1].nextCursor !== null;
   const characterHasMore = characterPages.length > 0 && characterPages[characterPages.length - 1].nextCursor !== null;
   const angleHasMore = anglePages.length > 0 && anglePages[anglePages.length - 1].nextCursor !== null;
@@ -149,6 +172,10 @@ export default function JobsPage() {
   const { groups: apiImageGroups } = useMemo(
     () => groupJobsIntoSummaries(imageJobs, { includeSinglesAsGroups: true }),
     [imageJobs]
+  );
+  const { groups: apiAudioGroups } = useMemo(
+    () => groupJobsIntoSummaries(audioJobs, { includeSinglesAsGroups: true }),
+    [audioJobs]
   );
   const { groups: apiCharacterGroups } = useMemo(
     () => groupJobsIntoSummaries(characterJobs, { includeSinglesAsGroups: true }),
@@ -163,17 +190,22 @@ export default function JobsPage() {
     if (typeof window === 'undefined') return undefined;
     const handleHidden = () => {
       void mutateVideo();
+      void mutateAudio();
       void mutateImage();
       void mutateCharacter();
       void mutateAngle();
     };
     window.addEventListener('jobs:hidden', handleHidden);
     return () => window.removeEventListener('jobs:hidden', handleHidden);
-  }, [mutateAngle, mutateCharacter, mutateImage, mutateVideo]);
+  }, [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateVideo]);
 
   const groupedVideoJobs = useMemo(
     () => [...apiVideoGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     [apiVideoGroups]
+  );
+  const groupedAudioJobs = useMemo(
+    () => [...apiAudioGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [apiAudioGroups]
   );
   const groupedImageJobs = useMemo(
     () => [...apiImageGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
@@ -189,10 +221,10 @@ export default function JobsPage() {
   );
   const groupedJobs = useMemo(
     () =>
-      [...groupedVideoJobs, ...groupedImageJobs, ...groupedCharacterJobs, ...groupedAngleJobs].sort(
+      [...groupedVideoJobs, ...groupedAudioJobs, ...groupedImageJobs, ...groupedCharacterJobs, ...groupedAngleJobs].sort(
         (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
       ),
-    [groupedAngleJobs, groupedCharacterJobs, groupedImageJobs, groupedVideoJobs]
+    [groupedAngleJobs, groupedAudioJobs, groupedCharacterJobs, groupedImageJobs, groupedVideoJobs]
   );
 
   const engineLookup = useMemo(() => {
@@ -227,33 +259,37 @@ export default function JobsPage() {
 
   const [collapsedSections, setCollapsedSections] = useState<{
     video: boolean;
+    audio: boolean;
     image: boolean;
     character: boolean;
     angle: boolean;
   }>({
     video: true,
+    audio: true,
     image: true,
     character: true,
     angle: true,
   });
   const [savingImageGroupIds, setSavingImageGroupIds] = useState<Set<string>>(new Set());
 
-  const toggleSection = useCallback((section: 'video' | 'image' | 'character' | 'angle') => {
+  const toggleSection = useCallback((section: 'video' | 'audio' | 'image' | 'character' | 'angle') => {
     setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
   const videoGroups = useMemo(() => normalizeGroupSummaries(groupedVideoJobs), [groupedVideoJobs]);
+  const audioGroups = useMemo(() => normalizeGroupSummaries(groupedAudioJobs), [groupedAudioJobs]);
   const imageGroups = useMemo(() => normalizeGroupSummaries(groupedImageJobs), [groupedImageJobs]);
   const characterGroups = useMemo(() => normalizeGroupSummaries(groupedCharacterJobs), [groupedCharacterJobs]);
   const angleGroups = useMemo(() => normalizeGroupSummaries(groupedAngleJobs), [groupedAngleJobs]);
   const normalizedGroupMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     videoGroups.forEach((group) => map.set(group.id, group));
+    audioGroups.forEach((group) => map.set(group.id, group));
     imageGroups.forEach((group) => map.set(group.id, group));
     characterGroups.forEach((group) => map.set(group.id, group));
     angleGroups.forEach((group) => map.set(group.id, group));
     return map;
-  }, [angleGroups, characterGroups, imageGroups, videoGroups]);
+  }, [angleGroups, audioGroups, characterGroups, imageGroups, videoGroups]);
   const hasCuratedVideo = useMemo(
     () => videoGroups.some((group) => Boolean(group.hero.job?.curated)),
     [videoGroups]
@@ -282,6 +318,7 @@ export default function JobsPage() {
         };
         await Promise.all([
           mutateVideo((pages) => removeFromPages(pages), false),
+          mutateAudio((pages) => removeFromPages(pages), false),
           mutateImage((pages) => removeFromPages(pages), false),
           mutateCharacter((pages) => removeFromPages(pages), false),
           mutateAngle((pages) => removeFromPages(pages), false),
@@ -290,7 +327,7 @@ export default function JobsPage() {
         console.error('Failed to hide job', error);
       }
     },
-    [mutateAngle, mutateCharacter, mutateImage, mutateVideo, summaryMap]
+    [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateVideo, summaryMap]
   );
 
   const allowRemove = useCallback(
@@ -360,6 +397,7 @@ export default function JobsPage() {
   }, []);
 
   const videoInitialLoading = videoIsLoading && videoJobs.length === 0 && videoGroups.length === 0;
+  const audioInitialLoading = audioIsLoading && audioJobs.length === 0 && audioGroups.length === 0;
   const imageInitialLoading = imageIsLoading && imageJobs.length === 0 && imageGroups.length === 0;
   const characterInitialLoading = characterIsLoading && characterJobs.length === 0 && characterGroups.length === 0;
   const angleInitialLoading = angleIsLoading && angleJobs.length === 0 && angleGroups.length === 0;
@@ -416,9 +454,10 @@ export default function JobsPage() {
             const engineId = group.hero.engineId;
             const engine = engineId ? engineLookup.byId.get(engineId) ?? null : null;
             const heroJobId = group.hero.jobId ?? group.hero.job?.jobId ?? null;
+            const heroSurface = group.hero.job ? resolveClientJobSurface(group.hero.job) : options.forceImageGroup ? 'image' : 'video';
             const recreateHref =
               heroJobId
-                ? `${options.forceImageGroup ? '/app/image' : '/app'}?job=${encodeURIComponent(heroJobId)}`
+                ? resolveWorkspaceJobHref(heroJobId, heroSurface, options.forceImageGroup)
                 : undefined;
             return (
               <GroupedJobCard
@@ -498,6 +537,21 @@ export default function JobsPage() {
         void mutateVideo();
       },
       onLoadMore: () => setVideoSize((prev) => prev + 1),
+    },
+    {
+      key: 'audio' as const,
+      title: copy.sections.audio,
+      empty: copy.sections.audioEmpty,
+      groups: audioGroups,
+      hasMore: audioHasMore,
+      isInitialLoading: audioInitialLoading,
+      isValidating: audioIsValidating,
+      error: audioError,
+      forceImageGroup: false,
+      onRetry: () => {
+        void mutateAudio();
+      },
+      onLoadMore: () => setAudioSize((prev) => prev + 1),
     },
     {
       key: 'image' as const,
