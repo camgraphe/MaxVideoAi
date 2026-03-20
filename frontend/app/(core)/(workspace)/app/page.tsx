@@ -1208,11 +1208,27 @@ type PersistedRender = {
   heroRenderId?: string | null;
 };
 
+function isAudioWorkspaceRender(input: {
+  jobId?: string | null;
+  engineId?: string | null;
+  surface?: string | null;
+}): boolean {
+  const surface = typeof input.surface === 'string' ? input.surface.trim().toLowerCase() : '';
+  if (surface === 'audio') return true;
+  const jobId = typeof input.jobId === 'string' ? input.jobId.trim().toLowerCase() : '';
+  if (jobId.startsWith('aud_')) return true;
+  const engineId = typeof input.engineId === 'string' ? input.engineId.trim().toLowerCase() : '';
+  return engineId.startsWith('audio-');
+}
+
 function coercePersistedRender(entry: PersistedRender): LocalRender | null {
   const localKey = typeof entry.localKey === 'string' && entry.localKey.length ? entry.localKey : null;
   const engineId = typeof entry.engineId === 'string' && entry.engineId.length ? entry.engineId : null;
   const engineLabel = typeof entry.engineLabel === 'string' && entry.engineLabel.length ? entry.engineLabel : null;
   if (!localKey || !engineId || !engineLabel) {
+    return null;
+  }
+  if (isAudioWorkspaceRender({ jobId: entry.jobId, engineId })) {
     return null;
   }
 
@@ -1300,7 +1316,13 @@ function deserializePendingRenders(value: string | null): LocalRender[] {
 
 function serializePendingRenders(renders: LocalRender[]): string | null {
   const pending = renders
-    .filter((render) => render.status === 'pending' && typeof render.jobId === 'string' && render.jobId.length > 0)
+    .filter(
+      (render) =>
+        render.status === 'pending' &&
+        typeof render.jobId === 'string' &&
+        render.jobId.length > 0 &&
+        !isAudioWorkspaceRender({ jobId: render.jobId, engineId: render.engineId })
+    )
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
     .slice(0, MAX_PERSISTED_RENDERS)
     .map((render) => ({
@@ -1358,7 +1380,7 @@ export default function Page() {
     return map;
   }, [engines]);
   const recentJobs = useMemo(
-    () => latestJobsPages?.flatMap((page) => page.jobs ?? []) ?? [],
+    () => (latestJobsPages?.flatMap((page) => page.jobs ?? []) ?? []).filter((job) => job.surface !== 'audio'),
     [latestJobsPages]
   );
   const provider = useResultProvider();
@@ -2221,6 +2243,64 @@ useEffect(() => {
       });
     }
   }, [convertJobToLocalRender, recentJobs]);
+
+  useEffect(() => {
+    const removedLocalKeys: string[] = [];
+    const removedGroupIds = new Set<string>();
+
+    setRenders((prev) => {
+      let changed = false;
+      const next = prev.filter((render) => {
+        const shouldRemove = isAudioWorkspaceRender({ jobId: render.jobId, engineId: render.engineId });
+        if (!shouldRemove) {
+          return true;
+        }
+        changed = true;
+        if (render.localKey) {
+          removedLocalKeys.push(render.localKey);
+        }
+        if (render.batchId) {
+          removedGroupIds.add(render.batchId);
+        }
+        if (render.groupId) {
+          removedGroupIds.add(render.groupId);
+        }
+        return false;
+      });
+      return changed ? next : prev;
+    });
+
+    if (!removedLocalKeys.length && !removedGroupIds.size) {
+      return;
+    }
+
+    setBatchHeroes((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      removedGroupIds.forEach((groupId) => {
+        if (groupId && next[groupId]) {
+          delete next[groupId];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+    setActiveBatchId((current) => (current && removedGroupIds.has(current) ? null : current));
+    setActiveGroupId((current) => (current && removedGroupIds.has(current) ? null : current));
+    setSelectedPreview((current) => {
+      if (!current) return current;
+      if (typeof current.id === 'string' && current.id.toLowerCase().startsWith('aud_')) {
+        return null;
+      }
+      if (current.localKey && removedLocalKeys.includes(current.localKey)) {
+        return null;
+      }
+      if (current.batchId && removedGroupIds.has(current.batchId)) {
+        return null;
+      }
+      return current;
+    });
+  }, [renders]);
 
   useEffect(() => {
     if (!renders.length || !recentJobs.length) return;

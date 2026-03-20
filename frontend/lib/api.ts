@@ -484,10 +484,25 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const jobs = swr.data?.flatMap((page) => page.jobs) ?? [];
-    if (!jobs.length) return;
+    if (!jobs.length) {
+      if (swr.data) {
+        setStableStore({ byId: {}, order: [] });
+      }
+      return;
+    }
 
     setStableStore((prev) => {
-      const byId: Record<string, Job> = { ...prev.byId };
+      const currentJobIds = new Set(
+        jobs
+          .map((job) => (typeof job?.jobId === 'string' ? job.jobId : ''))
+          .filter((jobId): jobId is string => jobId.length > 0)
+      );
+      const byId: Record<string, Job> = {};
+      Object.entries(prev.byId).forEach(([jobId, job]) => {
+        if (currentJobIds.has(jobId)) {
+          byId[jobId] = job;
+        }
+      });
       let sawRealJob = false;
       jobs.forEach((job) => {
         if (!job?.jobId) return;

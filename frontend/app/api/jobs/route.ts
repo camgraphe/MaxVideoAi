@@ -104,7 +104,8 @@ function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'an
         OR settings_snapshot->>'surface' = 'video'
       )
       AND NOT (
-        settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle')
+        COALESCE(surface, '') = 'audio'
+        OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio')
         OR job_id LIKE 'tool_angle_%'
         OR render_ids IS NOT NULL
         OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
@@ -186,8 +187,8 @@ export async function GET(req: NextRequest) {
       } else if (feedType === 'video') {
         conditions.push(
           `NOT (
-            surface IN ('image', 'character', 'angle')
-            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle')
+            surface IN ('image', 'character', 'angle', 'audio')
+            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio')
             OR job_id LIKE 'tool_angle_%'
             OR ${aliasClause}
             OR ${heuristicClause}

@@ -89,10 +89,14 @@ export function GalleryRail({
     if (Array.isArray(stableJobs) && stableJobs.length) return stableJobs;
     return data?.flatMap((page) => page.jobs) ?? [];
   }, [data, stableJobs]);
+  const surfaceSafeJobs = useMemo(() => {
+    if (feedType !== 'video') return jobs;
+    return jobs.filter((job) => job.surface !== 'audio');
+  }, [feedType, jobs]);
   const filteredJobs = useMemo(() => {
-    if (!jobFilter) return jobs;
-    return jobs.filter(jobFilter);
-  }, [jobFilter, jobs]);
+    if (!jobFilter) return surfaceSafeJobs;
+    return surfaceSafeJobs.filter(jobFilter);
+  }, [jobFilter, surfaceSafeJobs]);
   const hasCuratedJobs = useMemo(() => filteredJobs.some((job) => job.curated), [filteredJobs]);
   const { groups: groupedJobSummariesFromApi } = useMemo(
     () => groupJobsIntoSummaries(filteredJobs, { includeSinglesAsGroups: true }),
