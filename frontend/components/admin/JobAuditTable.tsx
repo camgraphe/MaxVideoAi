@@ -79,6 +79,40 @@ function technicalStatusBadge(status?: string | null) {
   return <span className={clsx(base, 'border-info-border bg-info-bg text-info')}>{normalized}</span>;
 }
 
+function displayMeta(job: AdminJobAuditRecord) {
+  const surface = job.surface ?? 'video';
+  if (surface === 'image') {
+    return {
+      readyLabel: 'Image ready',
+      placeholderLabel: 'Placeholder image',
+      missingLabel: 'Missing image',
+      linkLabel: 'Open image',
+    };
+  }
+  if (surface === 'character') {
+    return {
+      readyLabel: 'Character ready',
+      placeholderLabel: 'Placeholder image',
+      missingLabel: 'Missing image',
+      linkLabel: 'Open character',
+    };
+  }
+  if (surface === 'angle') {
+    return {
+      readyLabel: 'Angle ready',
+      placeholderLabel: 'Placeholder image',
+      missingLabel: 'Missing image',
+      linkLabel: 'Open angle',
+    };
+  }
+  return {
+    readyLabel: 'Video ready',
+    placeholderLabel: 'Placeholder asset',
+    missingLabel: 'Missing video',
+    linkLabel: 'Open video',
+  };
+}
+
 export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }: JobAuditTableProps) {
   const [jobs, setJobs] = useState<AdminJobAuditRecord[]>(initialJobs);
   const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
@@ -345,6 +379,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                   : 'border-error-border bg-error-bg text-error';
                 const meta = outcomeMeta(job.outcome);
                 const isExpanded = expandedJobId === job.jobId;
+                const display = displayMeta(job);
 
                 return (
                   <Fragment key={job.jobId}>
@@ -393,7 +428,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                             <span className="text-xs text-text-secondary line-clamp-2">{job.message}</span>
                           ) : null}
                           <div className="flex flex-wrap items-center gap-2">
-                            {job.providerJobId && (!job.videoUrl || job.status !== 'completed') ? (
+                          {job.providerJobId && (!job.hasOutput || job.status !== 'completed') ? (
                               <Button
                                 type="button"
                                 size="sm"
@@ -445,23 +480,27 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                           <span
                             className={clsx(
                               'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
-                              job.hasVideo
+                              job.hasOutput
                                 ? 'border-success-border bg-success-bg text-success'
-                                : job.isPlaceholderVideo
+                                : job.isPlaceholderOutput
                                   ? 'border-warning-border bg-warning-bg text-warning'
                                   : 'border-error-border bg-error-bg text-error'
                             )}
                           >
-                            {job.hasVideo ? 'Video ready' : job.isPlaceholderVideo ? 'Placeholder asset' : 'Missing video'}
+                            {job.hasOutput
+                              ? display.readyLabel
+                              : job.isPlaceholderOutput
+                                ? display.placeholderLabel
+                                : display.missingLabel}
                           </span>
-                          {job.videoUrl ? (
+                          {job.outputUrl ? (
                             <a
-                              href={job.videoUrl}
+                              href={job.outputUrl}
                               target="_blank"
                               rel="noreferrer"
                               className="text-xs text-primary underline-offset-2 hover:underline"
                             >
-                              Open video
+                              {display.linkLabel}
                             </a>
                           ) : null}
                         </div>
@@ -535,6 +574,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                               <p>Failure at: {formatDate(job.failureAt)}</p>
                               <p>Failure origin: {job.failureOrigin ?? '—'}</p>
                               <p>Reason: {job.failureReason ?? '—'}</p>
+                              <p>Surface: {job.surface ?? 'video'}</p>
                               <p>Log entries: {job.falLogCount}</p>
                             </div>
                             <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">

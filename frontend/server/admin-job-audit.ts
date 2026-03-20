@@ -28,8 +28,11 @@ type RawJobAuditRow = {
   payment_status: string | null;
   final_price_cents: number | string | null;
   currency: string | null;
+  surface: string | null;
   video_url: string | null;
   thumb_url: string | null;
+  hero_render_id: string | null;
+  render_count: number | null;
   engine_label: string | null;
   duration_sec: number | null;
   provider_job_id: string | null;
@@ -72,8 +75,11 @@ export type AdminJobAuditRecord = {
   paymentStatus: string | null;
   finalPriceCents: number;
   currency: string;
+  surface: string | null;
   videoUrl: string | null;
   thumbUrl: string | null;
+  heroRenderId: string | null;
+  renderCount: number;
   engineLabel: string | null;
   durationSec: number | null;
   providerJobId: string | null;
@@ -99,8 +105,9 @@ export type AdminJobAuditRecord = {
   refundReason: string | null;
   falLogCount: number;
   timeline: AdminJobAuditTimelineEvent[];
-  hasVideo: boolean;
-  isPlaceholderVideo: boolean;
+  outputUrl: string | null;
+  hasOutput: boolean;
+  isPlaceholderOutput: boolean;
   netChargeCents: number;
   paymentOk: boolean;
   falOk: boolean;
@@ -457,8 +464,11 @@ export async function fetchRecentJobAudits({
         j.payment_status,
         j.final_price_cents,
         j.currency,
+        j.surface,
         j.video_url,
         j.thumb_url,
+        j.hero_render_id,
+        COALESCE(jsonb_array_length(j.render_ids), 0) AS render_count,
         j.engine_label,
         j.duration_sec,
         j.provider_job_id,
@@ -594,10 +604,18 @@ export async function fetchRecentJobAudits({
       !Number.isNaN(updatedAtDate.getTime()) &&
       Date.now() - updatedAtDate.getTime() >= ARCHIVE_THRESHOLD_MS;
 
+    const surface = normalizeAuditText(row.surface);
     const videoUrl = row.video_url ? normalizeMediaUrl(row.video_url) ?? row.video_url : null;
     const thumbUrl = row.thumb_url ? normalizeMediaUrl(row.thumb_url) ?? row.thumb_url : null;
+    const heroRenderId = row.hero_render_id ? normalizeMediaUrl(row.hero_render_id) ?? row.hero_render_id : null;
+    const renderCount = row.render_count ?? 0;
+    const imageLikeSurface = surface === 'image' || surface === 'character' || surface === 'angle';
     const placeholderVideo = isPlaceholderMediaUrl(videoUrl);
-    const displayOk = Boolean(videoUrl) && !placeholderVideo;
+    const outputUrl = imageLikeSurface ? heroRenderId ?? thumbUrl : videoUrl;
+    const placeholderOutput = imageLikeSurface ? false : placeholderVideo;
+    const displayOk = imageLikeSurface
+      ? Boolean(heroRenderId) || renderCount > 0 || Boolean(thumbUrl)
+      : Boolean(videoUrl) && !placeholderVideo;
     const receipts = normalizeReceipts(row.receipts);
 
     const failureReason =
@@ -641,8 +659,11 @@ export async function fetchRecentJobAudits({
       paymentStatus: row.payment_status,
       finalPriceCents: finalPrice,
       currency,
+      surface,
       videoUrl,
       thumbUrl,
+      heroRenderId,
+      renderCount,
       engineLabel: row.engine_label,
       durationSec: row.duration_sec,
       providerJobId: row.provider_job_id,
@@ -662,8 +683,9 @@ export async function fetchRecentJobAudits({
       refundReason,
       falLogCount: row.fal_log_count ?? 0,
       timeline,
-      hasVideo: displayOk,
-      isPlaceholderVideo: placeholderVideo,
+      outputUrl,
+      hasOutput: displayOk,
+      isPlaceholderOutput: placeholderOutput,
       netChargeCents: netCharge,
       paymentOk,
       falOk,

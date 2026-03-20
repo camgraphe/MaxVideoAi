@@ -11,6 +11,9 @@ type ChargeRow = {
   amount_cents: number;
   currency: string | null;
   description: string | null;
+  pricing_snapshot: unknown;
+  surface: string | null;
+  billing_product_key: string | null;
   stripe_payment_intent_id: string | null;
   stripe_charge_id: string | null;
   created_at: string;
@@ -80,31 +83,41 @@ async function issueStripeRefund(row: ChargeRow, stripe: Stripe): Promise<string
 }
 
 async function recordRefund(row: ChargeRow, stripeRefundId: string | null) {
+  const chargeDescription = row.description?.trim() || 'job reconciliation';
+  const refundDescription = /^refund\b/i.test(chargeDescription) ? chargeDescription : `Refund ${chargeDescription}`;
+
   // Refund is recorded as a wallet credit; no platform revenue.
   await query(
     `INSERT INTO app_receipts (
        user_id, type, amount_cents, currency, description, job_id,
-       pricing_snapshot, application_fee_cents, vendor_account_id,
+       surface, billing_product_key, pricing_snapshot, application_fee_cents, vendor_account_id,
        stripe_payment_intent_id, stripe_charge_id, stripe_refund_id,
        platform_revenue_cents, destination_acct, metadata
      )
      VALUES (
        $1,'refund',$2,$3,$4,$5,
-       NULL,0,NULL,
-       $6,$7,$8,
-       0,NULL,$9::jsonb
+       $6,$7,$8::jsonb,0,NULL,
+       $9,$10,$11,
+       0,NULL,$12::jsonb
      )
      ON CONFLICT DO NOTHING`,
     [
       row.user_id,
       row.amount_cents,
       row.currency ?? 'USD',
-      row.description ?? 'Refund: job reconciliation',
+      refundDescription,
       row.job_id,
+      row.surface,
+      row.billing_product_key,
+      row.pricing_snapshot ? JSON.stringify(row.pricing_snapshot) : null,
       row.stripe_payment_intent_id,
       row.stripe_charge_id,
       stripeRefundId,
-      JSON.stringify({ reason: 'orphan_job_missing', source: 'cron-reconcile' }),
+      JSON.stringify({
+        reason: 'orphan_job_missing',
+        source: 'cron-reconcile',
+        original_receipt_id: row.id,
+      }),
     ]
   );
 }
@@ -127,6 +140,9 @@ async function reconcile() {
         r.amount_cents,
         COALESCE(NULLIF(r.currency, ''), 'USD') AS currency,
         r.description,
+        r.pricing_snapshot,
+        r.surface,
+        r.billing_product_key,
         r.stripe_payment_intent_id,
         r.stripe_charge_id,
         r.created_at
