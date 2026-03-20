@@ -9,19 +9,19 @@ import type {
   ImageGenerationResponse,
 } from '@/types/image-generation';
 import { getFalClient } from '@/lib/fal-client';
-import { isDatabaseConfigured, query } from '@/lib/db';
+import { isDatabaseConfigured, query, type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { ensureAssetSchema, ensureBillingSchema } from '@/lib/schema';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import type { PricingSnapshot } from '@/types/engines';
-import { reserveWalletCharge } from '@/lib/wallet';
+import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferences } from '@/server/preferences';
-import { ensureUserPreferredCurrency, type Currency } from '@/lib/currency';
+import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
 import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
-import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
+import { buildStoredImageRenderEntries, parseStoredImageRenders, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import {
   formatSupportedImageFormatsLabel,
   getSupportedImageFormats,
@@ -61,6 +61,66 @@ type PendingReceipt = {
   stripePaymentIntentId?: string | null;
   stripeChargeId?: string | null;
 };
+
+export type ExistingImageJobRow = {
+  job_id: string;
+  user_id: string | null;
+  status: string;
+  progress: number;
+  provider_job_id: string | null;
+  thumb_url: string | null;
+  aspect_ratio: string | null;
+  pricing_snapshot: PricingSnapshot | null;
+  currency: string | null;
+  payment_status: string | null;
+  engine_id: string;
+  engine_label: string;
+  render_ids: unknown;
+  hero_render_id: string | null;
+  message: string | null;
+  settings_snapshot: unknown;
+};
+
+type ExistingImageChargeRow = {
+  id: number;
+  user_id: string;
+  amount_cents: number;
+  currency: string | null;
+  surface: string | null;
+  billing_product_key: string | null;
+};
+
+type ProvisionalImageJobInsert = {
+  userId: string;
+  jobId: string;
+  surface: JobSurface;
+  billingProductKey: BillingProductKey | null;
+  engineId: string;
+  engineLabel: string;
+  durationSec: number;
+  prompt: string;
+  aspectRatio: string | null;
+  canUpscale: boolean;
+  finalPriceCents: number;
+  pricingSnapshotJson: string;
+  costBreakdownJson: string | null;
+  settingsSnapshotJson: string;
+  currency: string;
+  vendorAccountId: string | null;
+  paymentStatus: string;
+  visibility: 'public' | 'private';
+  indexable: boolean;
+};
+
+type AtomicImageJobResult =
+  | {
+      kind: 'existing_job';
+      job: ExistingImageJobRow;
+    }
+  | {
+      kind: 'created';
+      recoveredCharge: boolean;
+    };
 
 type ExecuteImageGenerationOptions = {
   userId: string;
@@ -401,6 +461,359 @@ function fail(
   extras?: Partial<ImageGenerationResponse>
 ): never {
   throw new ImageGenerationExecutionError(message, { mode, code, status, detail, extras });
+}
+
+export function parseResolutionFromSettingsSnapshot(snapshot: unknown): string | null {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return null;
+  const core = (snapshot as Record<string, unknown>).core;
+  if (!core || typeof core !== 'object' || Array.isArray(core)) return null;
+  const resolution = (core as Record<string, unknown>).resolution;
+  return typeof resolution === 'string' && resolution.trim().length ? resolution : null;
+}
+
+function buildImagesFromExistingJob(job: ExistingImageJobRow): GeneratedImage[] {
+  const parsed = parseStoredImageRenders(job.render_ids);
+  if (parsed.entries.length) {
+    return parsed.entries.map((entry) => ({
+      url: entry.url,
+      thumbUrl: entry.thumbUrl ?? entry.url,
+      width: entry.width ?? null,
+      height: entry.height ?? null,
+      mimeType: entry.mimeType ?? null,
+    }));
+  }
+
+  const heroUrl = job.hero_render_id ? normalizeMediaUrl(job.hero_render_id) ?? job.hero_render_id : null;
+  const thumbUrl = job.thumb_url ? normalizeMediaUrl(job.thumb_url) ?? job.thumb_url : null;
+  if (!heroUrl) return [];
+
+  return [
+    {
+      url: heroUrl,
+      thumbUrl: thumbUrl ?? heroUrl,
+    },
+  ];
+}
+
+export function buildResponseFromExistingJob(args: {
+  job: ExistingImageJobRow;
+  mode: ImageGenerationMode;
+  engineId: string;
+  engineLabel: string;
+  pricing: PricingSnapshot;
+  resolvedAspectRatio: string | null;
+  resolution: string;
+}): ImageGenerationResponse {
+  const images = buildImagesFromExistingJob(args.job);
+  const thumbUrl = args.job.thumb_url ? normalizeMediaUrl(args.job.thumb_url) ?? args.job.thumb_url : null;
+  const pricing = args.job.pricing_snapshot ?? args.pricing;
+
+  return {
+    ok: true,
+    mode: args.mode,
+    images,
+    description: args.job.message ?? null,
+    jobId: args.job.job_id,
+    requestId: args.job.provider_job_id ?? undefined,
+    providerJobId: args.job.provider_job_id ?? undefined,
+    engineId: args.job.engine_id || args.engineId,
+    engineLabel: args.job.engine_label || args.engineLabel,
+    pricing,
+    paymentStatus: args.job.payment_status ?? 'paid_wallet',
+    thumbUrl,
+    aspectRatio: args.job.aspect_ratio ?? args.resolvedAspectRatio,
+    resolution: parseResolutionFromSettingsSnapshot(args.job.settings_snapshot) ?? args.resolution,
+  };
+}
+
+async function insertProvisionalImageJob(executor: QueryExecutor, params: ProvisionalImageJobInsert) {
+  await executor.query(
+    `INSERT INTO app_jobs (
+       job_id,
+       user_id,
+       surface,
+       billing_product_key,
+       engine_id,
+       engine_label,
+       duration_sec,
+       prompt,
+       thumb_url,
+       aspect_ratio,
+       has_audio,
+       can_upscale,
+       preview_frame,
+       batch_id,
+       group_id,
+       iteration_index,
+       iteration_count,
+       render_ids,
+       hero_render_id,
+       local_key,
+       message,
+       eta_seconds,
+       eta_label,
+       video_url,
+       status,
+       progress,
+       provider_job_id,
+       final_price_cents,
+       pricing_snapshot,
+       cost_breakdown_usd,
+       settings_snapshot,
+       currency,
+       vendor_account_id,
+       payment_status,
+       stripe_payment_intent_id,
+       stripe_charge_id,
+       visibility,
+       indexable,
+       provisional
+     )
+     VALUES (
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29::jsonb,$30::jsonb,$31::jsonb,$32,$33,$34,$35,$36,$37,$38,$39
+     )`,
+    [
+      params.jobId,
+      params.userId,
+      params.surface,
+      params.billingProductKey,
+      params.engineId,
+      params.engineLabel,
+      params.durationSec,
+      params.prompt,
+      PLACEHOLDER_THUMB,
+      params.aspectRatio,
+      false,
+      params.canUpscale,
+      PLACEHOLDER_THUMB,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      'pending',
+      0,
+      null,
+      params.finalPriceCents,
+      params.pricingSnapshotJson,
+      params.costBreakdownJson,
+      params.settingsSnapshotJson,
+      params.currency,
+      params.vendorAccountId,
+      params.paymentStatus,
+      null,
+      null,
+      params.visibility,
+      params.indexable,
+      true,
+    ]
+  );
+}
+
+async function createAtomicInitialImageJob(params: {
+  userId: string;
+  mode: ImageGenerationMode;
+  jobId: string;
+  surface: JobSurface;
+  billingProductKey: BillingProductKey | null;
+  description: string;
+  amountCents: number;
+  currency: string;
+  pricingSnapshotJson: string;
+  applicationFeeCents: number | null;
+  vendorAccountId: string | null;
+  engineId: string;
+  engineLabel: string;
+  durationSec: number;
+  prompt: string;
+  aspectRatio: string | null;
+  canUpscale: boolean;
+  finalPriceCents: number;
+  costBreakdownJson: string | null;
+  settingsSnapshotJson: string;
+  visibility: 'public' | 'private';
+  indexable: boolean;
+  preferredCurrency: Currency | null;
+}): Promise<AtomicImageJobResult> {
+  return withDbTransaction(async (executor) => {
+    await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [params.jobId]);
+
+    const existingJobs = await executor.query<ExistingImageJobRow>(
+      `SELECT
+         job_id,
+         user_id,
+         status,
+         progress,
+         provider_job_id,
+         thumb_url,
+         aspect_ratio,
+         pricing_snapshot,
+         currency,
+         payment_status,
+         engine_id,
+         engine_label,
+         render_ids,
+         hero_render_id,
+         message,
+         settings_snapshot
+       FROM app_jobs
+       WHERE job_id = $1
+       LIMIT 1`,
+      [params.jobId]
+    );
+
+    const existingJob = existingJobs[0];
+    if (existingJob) {
+      if (existingJob.user_id && existingJob.user_id !== params.userId) {
+        throw new ImageGenerationExecutionError('This job id is already in use.', {
+          mode: params.mode,
+          status: 409,
+          code: 'job_id_conflict',
+          extras: { jobId: params.jobId },
+        });
+      }
+      return { kind: 'existing_job', job: existingJob };
+    }
+
+    const existingRefunds = await executor.query<{ id: number }>(
+      `SELECT id
+       FROM app_receipts
+       WHERE job_id = $1
+         AND type = 'refund'
+       LIMIT 1`,
+      [params.jobId]
+    );
+
+    if (existingRefunds.length) {
+      throw new ImageGenerationExecutionError('This image request was already refunded.', {
+        mode: params.mode,
+        status: 409,
+        code: 'job_already_refunded',
+        extras: {
+          jobId: params.jobId,
+          paymentStatus: 'refunded_wallet',
+        },
+      });
+    }
+
+    const existingCharges = await executor.query<ExistingImageChargeRow>(
+      `SELECT
+         id,
+         user_id,
+         amount_cents,
+         currency,
+         surface,
+         billing_product_key
+       FROM app_receipts
+       WHERE job_id = $1
+         AND type = 'charge'
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [params.jobId]
+    );
+
+    const existingCharge = existingCharges[0] ?? null;
+    if (existingCharge) {
+      if (existingCharge.user_id !== params.userId) {
+        throw new ImageGenerationExecutionError('This job id is already in use.', {
+          mode: params.mode,
+          status: 409,
+          code: 'job_id_conflict',
+          extras: { jobId: params.jobId },
+        });
+      }
+
+      const existingCurrency = (existingCharge.currency ?? 'USD').toUpperCase();
+      if (
+        existingCharge.amount_cents !== params.amountCents ||
+        existingCurrency !== params.currency.toUpperCase() ||
+        (existingCharge.surface ?? null) !== params.surface ||
+        (existingCharge.billing_product_key ?? null) !== params.billingProductKey
+      ) {
+        throw new ImageGenerationExecutionError('This job id conflicts with an existing charge.', {
+          mode: params.mode,
+          status: 409,
+          code: 'job_charge_conflict',
+          extras: { jobId: params.jobId },
+        });
+      }
+    } else {
+      const reserveResult = await reserveWalletChargeInExecutor(
+        executor,
+        {
+          userId: params.userId,
+          amountCents: params.amountCents,
+          currency: params.currency,
+          description: params.description,
+          jobId: params.jobId,
+          surface: params.surface,
+          billingProductKey: params.billingProductKey,
+          pricingSnapshotJson: params.pricingSnapshotJson,
+          applicationFeeCents: params.applicationFeeCents,
+          vendorAccountId: params.vendorAccountId,
+          stripePaymentIntentId: null,
+          stripeChargeId: null,
+        },
+        { preferredCurrency: params.preferredCurrency }
+      );
+
+      if (!reserveResult.ok) {
+        if (reserveResult.errorCode === 'currency_mismatch') {
+          throw new ImageGenerationExecutionError(
+            `Wallet currency locked to ${(reserveResult.preferredCurrency ?? 'USD').toUpperCase()}.`,
+            {
+              mode: params.mode,
+              status: 409,
+              code: 'currency_mismatch',
+            }
+          );
+        }
+
+        throw new ImageGenerationExecutionError('Insufficient wallet balance.', {
+          mode: params.mode,
+          status: 402,
+          code: 'insufficient_funds',
+          detail: {
+            requiredCents: Math.max(0, params.amountCents - reserveResult.balanceCents),
+            balanceCents: reserveResult.balanceCents,
+          },
+        });
+      }
+    }
+
+    await insertProvisionalImageJob(executor, {
+      userId: params.userId,
+      jobId: params.jobId,
+      surface: params.surface,
+      billingProductKey: params.billingProductKey,
+      engineId: params.engineId,
+      engineLabel: params.engineLabel,
+      durationSec: params.durationSec,
+      prompt: params.prompt,
+      aspectRatio: params.aspectRatio,
+      canUpscale: params.canUpscale,
+      finalPriceCents: params.finalPriceCents,
+      pricingSnapshotJson: params.pricingSnapshotJson,
+      costBreakdownJson: params.costBreakdownJson,
+      settingsSnapshotJson: params.settingsSnapshotJson,
+      currency: params.currency,
+      vendorAccountId: params.vendorAccountId,
+      paymentStatus: 'paid_wallet',
+      visibility: params.visibility,
+      indexable: params.indexable,
+    });
+
+    return {
+      kind: 'created',
+      recoveredCharge: Boolean(existingCharge),
+    };
+  });
 }
 
 export async function executeImageGeneration({
@@ -744,131 +1157,58 @@ export async function executeImageGeneration({
     stripePaymentIntentId: null,
     stripeChargeId: null,
   };
-
-  const reserveResult = await reserveWalletCharge({
-    userId,
-    amountCents: pricing.totalCents,
-    currency: DISPLAY_CURRENCY,
-    description,
-    jobId,
-    pricingSnapshotJson,
-    applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
-    vendorAccountId,
-    surface: jobSurface,
-    billingProductKey,
-    stripePaymentIntentId: null,
-    stripeChargeId: null,
-  });
-
-  if (!reserveResult.ok) {
-    if (reserveResult.errorCode === 'currency_mismatch') {
-      fail(
-        mode,
-        'currency_mismatch',
-        `Wallet currency locked to ${(reserveResult.preferredCurrency ?? 'USD').toUpperCase()}.`,
-        409
-      );
-    }
-    const shortfall = Math.max(0, pricing.totalCents - reserveResult.balanceCents);
-    fail(mode, 'insufficient_funds', 'Insufficient wallet balance.', 402, {
-      requiredCents: shortfall,
-      balanceCents: reserveResult.balanceCents,
-    });
-  }
-
-  await ensureUserPreferredCurrency(userId, DISPLAY_CURRENCY_LOWER);
-
+  const preferredCurrency = await getUserPreferredCurrency(userId);
+  let shouldEnsurePreferredCurrency = !preferredCurrency;
   try {
-    await query(
-      `INSERT INTO app_jobs (
-         job_id,
-         user_id,
-         surface,
-         billing_product_key,
-         engine_id,
-         engine_label,
-         duration_sec,
-         prompt,
-         thumb_url,
-         aspect_ratio,
-         has_audio,
-         can_upscale,
-         preview_frame,
-         batch_id,
-         group_id,
-         iteration_index,
-         iteration_count,
-         render_ids,
-         hero_render_id,
-         local_key,
-         message,
-         eta_seconds,
-         eta_label,
-         video_url,
-         status,
-         progress,
-         provider_job_id,
-         final_price_cents,
-         pricing_snapshot,
-         cost_breakdown_usd,
-         settings_snapshot,
-         currency,
-         vendor_account_id,
-         payment_status,
-         stripe_payment_intent_id,
-         stripe_charge_id,
-         visibility,
-         indexable,
-         provisional
-       )
-       VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29::jsonb,$30::jsonb,$31::jsonb,$32,$33,$34,$35,$36,$37,$38,$39
-       )`,
-      [
-        jobId,
-        userId,
-        jobSurface,
-        billingProductKey,
-        engine.id,
-        engine.label,
-        durationSec,
-        prompt,
-        PLACEHOLDER_THUMB,
-        jobAspectRatio,
-        false,
-        Boolean(engine.upscale4k),
-        PLACEHOLDER_THUMB,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        'pending',
-        0,
-        null,
-        pricing.totalCents,
-        pricingSnapshotJson,
-        costBreakdownJson,
-        settingsSnapshotJson,
-        pricing.currency,
-        vendorAccountId,
-        'paid_wallet',
-        null,
-        null,
-        visibility,
-        indexable,
-        true,
-      ]
-    );
+    const initialJobState = await createAtomicInitialImageJob({
+      userId,
+      mode,
+      jobId,
+      surface: jobSurface,
+      billingProductKey,
+      description,
+      amountCents: pricing.totalCents,
+      currency: DISPLAY_CURRENCY,
+      pricingSnapshotJson,
+      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
+      vendorAccountId,
+      engineId: engine.id,
+      engineLabel: engine.label,
+      durationSec,
+      prompt,
+      aspectRatio: jobAspectRatio,
+      canUpscale: Boolean(engine.upscale4k),
+      finalPriceCents: pricing.totalCents,
+      costBreakdownJson,
+      settingsSnapshotJson,
+      visibility,
+      indexable,
+      preferredCurrency,
+    });
+
+    if (initialJobState.kind === 'existing_job') {
+      return buildResponseFromExistingJob({
+        job: initialJobState.job,
+        mode,
+        engineId: engine.id,
+        engineLabel: engine.label,
+        pricing,
+        resolvedAspectRatio,
+        resolution,
+      });
+    }
+
+    if (shouldEnsurePreferredCurrency) {
+      await ensureUserPreferredCurrency(userId, DISPLAY_CURRENCY_LOWER).catch((error) => {
+        console.warn('[images] unable to ensure preferred currency', error);
+      });
+      shouldEnsurePreferredCurrency = false;
+    }
   } catch (error) {
-    console.error('[images] failed to persist provisional job record', error);
-    await recordRefundReceipt(pendingReceipt, refundDescription, priceOnlyReceipts);
+    if (error instanceof ImageGenerationExecutionError) {
+      throw error;
+    }
+    console.error('[images] failed to create provisional image job', error);
     fail(mode, 'job_persist_failed', 'Failed to save job record.', 500);
   }
 

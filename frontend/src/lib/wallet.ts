@@ -1,4 +1,4 @@
-import { isDatabaseConfigured, query } from '@/lib/db';
+import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
@@ -117,7 +117,7 @@ export async function getWalletBalancesByCurrency(userId: string): Promise<Walle
   }
 }
 
-type ReserveWalletChargeParams = {
+export type ReserveWalletChargeParams = {
   userId: string;
   amountCents: number;
   currency: string;
@@ -148,7 +148,16 @@ type ReserveWalletChargeFailure = {
 
 export type ReserveWalletChargeResult = ReserveWalletChargeSuccess | ReserveWalletChargeFailure;
 
-export async function reserveWalletCharge(params: ReserveWalletChargeParams): Promise<ReserveWalletChargeResult> {
+type ReserveWalletChargeOptions = {
+  preferredCurrency?: Currency | null;
+  allowMockFallback?: boolean;
+};
+
+async function reserveWalletChargeWithQueryExecutor(
+  executor: QueryExecutor,
+  params: ReserveWalletChargeParams,
+  options: ReserveWalletChargeOptions = {}
+): Promise<ReserveWalletChargeResult> {
   const normalizedCurrencyLower = normalizeCurrencyCode(params.currency) ?? 'usd';
   const normalizedCurrencyUpper = normalizedCurrencyLower.toUpperCase();
   const fallbackToMock = () => {
@@ -166,11 +175,17 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
   };
 
   if (!isDatabaseConfigured()) {
+    if (options.allowMockFallback !== true) {
+      throw new Error('reserveWalletCharge: database unavailable');
+    }
     return fallbackToMock();
   }
 
   try {
-    const preferredCurrency = await getUserPreferredCurrency(params.userId);
+    const preferredCurrency =
+      options.preferredCurrency !== undefined
+        ? options.preferredCurrency
+        : await getUserPreferredCurrency(params.userId);
     if (preferredCurrency && preferredCurrency !== normalizedCurrencyLower && normalizedCurrencyLower !== 'usd') {
       return {
         ok: false,
@@ -184,7 +199,7 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
     const applicationFeeParam = priceOnly ? null : params.applicationFeeCents;
     const vendorAccountParam = priceOnly ? null : params.vendorAccountId;
 
-    const rows = await query<{
+    const rows = await executor.query<{
       balance_cents: string | number | null;
       remaining_cents: string | number | null;
       receipt_id: string | null;
@@ -321,9 +336,37 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
     const outcome: ReserveWalletChargeSuccess = { ok: true, receiptId, balanceCents, remainingCents };
     return outcome;
   } catch (error) {
+    if (options.allowMockFallback !== true) {
+      throw error;
+    }
     console.warn('[wallet] reserve failed, using mock ledger', error);
     return fallbackToMock();
   }
+}
+
+export async function reserveWalletCharge(
+  params: ReserveWalletChargeParams,
+  options: Omit<ReserveWalletChargeOptions, 'allowMockFallback'> = {}
+): Promise<ReserveWalletChargeResult> {
+  return reserveWalletChargeWithQueryExecutor(
+    { query },
+    params,
+    {
+      ...options,
+      allowMockFallback: true,
+    }
+  );
+}
+
+export async function reserveWalletChargeInExecutor(
+  executor: QueryExecutor,
+  params: ReserveWalletChargeParams,
+  options: Omit<ReserveWalletChargeOptions, 'allowMockFallback'> = {}
+): Promise<ReserveWalletChargeResult> {
+  return reserveWalletChargeWithQueryExecutor(executor, params, {
+    ...options,
+    allowMockFallback: false,
+  });
 }
 
 async function fetchExistingWalletCurrency(userId: string): Promise<Currency | null> {

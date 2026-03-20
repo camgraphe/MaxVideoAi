@@ -1,7 +1,11 @@
-import { Pool } from 'pg';
+import { Pool, type PoolClient } from 'pg';
 
 let pool: Pool | null = null;
 let activeConnectionString: string | null = null;
+
+export type QueryExecutor = {
+  query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>): Promise<TRecord[]>;
+};
 
 function getDatabaseUrl(): string {
   return (process.env.DATABASE_URL ?? '').trim();
@@ -28,11 +32,38 @@ export function getDb() {
   return pool;
 }
 
+export function createQueryExecutor(client: Pick<PoolClient, 'query'>): QueryExecutor {
+  return {
+    async query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>) {
+      const res = await client.query<TRecord>(text, params);
+      return res.rows;
+    },
+  };
+}
+
 export async function query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>) {
   const client = await getDb().connect();
   try {
-    const res = await client.query<TRecord>(text, params);
-    return res.rows;
+    return await createQueryExecutor(client).query<TRecord>(text, params);
+  } finally {
+    client.release();
+  }
+}
+
+export async function withDbTransaction<TResult>(
+  callback: (executor: QueryExecutor, client: PoolClient) => Promise<TResult>
+): Promise<TResult> {
+  const client = await getDb().connect();
+  const executor = createQueryExecutor(client);
+
+  try {
+    await client.query('BEGIN');
+    const result = await callback(executor, client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined);
+    throw error;
   } finally {
     client.release();
   }
