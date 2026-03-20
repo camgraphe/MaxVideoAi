@@ -619,18 +619,20 @@ export async function fetchRecentJobAudits({
     const receipts = normalizeReceipts(row.receipts);
 
     const failureReason =
-      normalizeAuditText(
-        findFirstTextByKeys(row.fal_failure_payload, [
-          'reason',
-          'message',
-          'note',
-          'error',
-          'error_message',
-          'status_message',
-          'falError',
-          'detail',
-        ])
-      ) ?? normalizeAuditText(row.message);
+      outcome === 'failed_action_required' || outcome === 'refunded_failure_resolved'
+        ? normalizeAuditText(
+            findFirstTextByKeys(row.fal_failure_payload, [
+              'reason',
+              'message',
+              'note',
+              'error',
+              'error_message',
+              'status_message',
+              'falError',
+              'detail',
+            ])
+          ) ?? normalizeAuditText(row.message)
+        : null;
     const failureOrigin =
       normalizeAuditText(
         findFirstTextByKeys(row.latest_refund_metadata, ['failure_origin', 'failureOrigin'])
