@@ -152,7 +152,7 @@ export default function AudioLatestRendersRail({
 
   const jobs = useMemo(() => {
     const source = Array.isArray(stableJobs) && stableJobs.length ? stableJobs : data?.flatMap((page) => page.jobs) ?? [];
-    return source.filter((job) => job.surface === 'audio');
+    return source.filter((job) => job.surface === 'audio' && Boolean(job.videoUrl || job.audioUrl));
   }, [data, stableJobs]);
 
   const lastPage = data?.[data.length - 1];

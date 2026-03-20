@@ -60,6 +60,129 @@ function formatCursorValue(row: { created_at: string; id: number }): string {
   return `${createdAt.toISOString()}|${row.id}`;
 }
 
+const STALE_AUDIO_JOB_TIMEOUT_MS = 10 * 60 * 1000;
+
+function isStaleAudioJob(row: {
+  job_id: string;
+  updated_at: string;
+  status: string | null;
+  surface: string | null;
+  settings_snapshot: unknown;
+  engine_id: string;
+  video_url: string | null;
+  audio_url: string | null;
+  render_ids: unknown;
+}): boolean {
+  const surface = deriveJobSurface({
+    surface: row.surface,
+    settingsSnapshot: row.settings_snapshot,
+    jobId: row.job_id,
+    engineId: row.engine_id,
+    videoUrl: row.video_url,
+    renderIds: row.render_ids,
+  });
+  if (surface !== 'audio') return false;
+  if (row.video_url || row.audio_url) return false;
+  const status = (row.status ?? '').trim().toLowerCase();
+  if (!status || !['pending', 'running', 'queued'].includes(status)) return false;
+  const updatedAt = new Date(row.updated_at);
+  if (Number.isNaN(updatedAt.getTime())) return false;
+  return Date.now() - updatedAt.getTime() > STALE_AUDIO_JOB_TIMEOUT_MS;
+}
+
+async function expireStaleAudioJob(
+  row: {
+    job_id: string;
+    billing_product_key: string | null;
+    pricing_snapshot: PricingSnapshot | null;
+    currency: string | null;
+    payment_status: string | null;
+    final_price_cents: number | null;
+  },
+  userId: string
+): Promise<void> {
+  const refundAmountCents =
+    typeof row.final_price_cents === 'number'
+      ? row.final_price_cents
+      : typeof row.pricing_snapshot?.totalCents === 'number'
+        ? row.pricing_snapshot.totalCents
+        : 0;
+  const refundCurrency = row.currency ?? row.pricing_snapshot?.currency ?? 'USD';
+  const refundSnapshot =
+    row.pricing_snapshot ??
+    ({
+      currency: refundCurrency,
+      totalCents: refundAmountCents,
+      subtotalBeforeDiscountCents: refundAmountCents,
+      base: {
+        seconds: 0,
+        rate: 0,
+        unit: 'sec',
+        amountCents: refundAmountCents,
+      },
+      addons: [],
+      margin: {
+        amountCents: 0,
+      },
+      membershipTier: 'member',
+      meta: {
+        surface: 'audio',
+      },
+    } satisfies PricingSnapshot);
+
+  if (refundAmountCents > 0 && row.payment_status === 'paid_wallet') {
+    const existingRefund = await query<{ present: number }>(
+      `SELECT 1 AS present
+         FROM app_receipts
+        WHERE job_id = $1
+          AND type = 'refund'
+        LIMIT 1`,
+      [row.job_id]
+    );
+    if (!existingRefund[0]) {
+      await query(
+        `INSERT INTO app_receipts (
+           user_id,
+           type,
+           amount_cents,
+           currency,
+           description,
+           job_id,
+           surface,
+           billing_product_key,
+           pricing_snapshot,
+           application_fee_cents,
+           vendor_account_id
+         )
+         VALUES ($1, 'refund', $2, $3, $4, $5, 'audio', $6, $7::jsonb, 0, NULL)`,
+        [
+          userId,
+          refundAmountCents,
+          refundCurrency,
+          'Refund stale audio render',
+          row.job_id,
+          row.billing_product_key ?? null,
+          JSON.stringify(refundSnapshot),
+        ]
+      );
+    }
+  }
+
+  await query(
+    `UPDATE app_jobs
+        SET status = 'failed',
+            progress = 0,
+            message = $1,
+            payment_status = CASE
+              WHEN payment_status = 'paid_wallet' THEN 'refunded_wallet'
+              ELSE payment_status
+            END,
+            updated_at = NOW()
+      WHERE job_id = $2`,
+    ['Audio render timed out before completion.', row.job_id]
+  );
+}
+
 const IMAGE_ENGINE_ALIASES = listFalEngines()
   .filter((engine) => (engine.category ?? 'video') === 'image')
   .flatMap((engine) => getEngineAliases(engine));
@@ -264,6 +387,40 @@ type JobRow = {
       LIMIT $${limitParamIndex}`,
       params
     );
+
+    const staleAudioJobs = rows.filter((row) => isStaleAudioJob(row));
+
+    if (staleAudioJobs.length) {
+      console.info('[api/jobs] expiring stale audio jobs', {
+        at: new Date().toISOString(),
+        userId,
+        count: staleAudioJobs.length,
+        samples: staleAudioJobs.slice(0, 5).map((job) => ({
+          jobId: job.job_id,
+          status: job.status,
+          updatedAt: job.updated_at,
+        })),
+      });
+      const expiredIds: string[] = [];
+      for (const jobRow of staleAudioJobs) {
+        try {
+          await expireStaleAudioJob(jobRow, userId);
+          expiredIds.push(jobRow.job_id);
+        } catch (error) {
+          console.warn('[api/jobs] failed to expire stale audio job', jobRow.job_id, error);
+        }
+      }
+      if (expiredIds.length) {
+        const refreshedRows = await query<JobRow>(
+          `SELECT id, job_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+             FROM app_jobs
+            WHERE job_id = ANY($1::text[])`,
+          [expiredIds]
+        );
+        const refreshedMap = new Map(refreshedRows.map((row) => [row.job_id, row]));
+        rows = rows.map((row) => refreshedMap.get(row.job_id) ?? row);
+      }
+    }
 
     const staleJobs = rows.filter((row) => {
       const surface = deriveJobSurface({

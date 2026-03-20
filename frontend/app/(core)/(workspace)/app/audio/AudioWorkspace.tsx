@@ -12,15 +12,29 @@ import type { Job } from '@/types/jobs';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
 import {
+  AUDIO_INTENSITY_VALUES,
+  AUDIO_LANGUAGE_VALUES,
   AUDIO_MOOD_VALUES,
+  AUDIO_VOICE_DELIVERY_VALUES,
+  AUDIO_VOICE_PROFILE_VALUES,
   buildAudioPricingSnapshot,
+  coerceAudioIntensity,
+  coerceAudioLanguage,
   coerceAudioMood,
   coerceAudioPackId,
+  coerceAudioVoiceDelivery,
+  coerceAudioVoiceGender,
+  coerceAudioVoiceProfile,
   estimateVoiceScriptDurationSec,
   getAudioPackConfig,
+  type AudioIntensity,
+  type AudioLanguage,
   type AudioMood,
   type AudioOutputKind,
   type AudioPackId,
+  type AudioVoiceDelivery,
+  type AudioVoiceGender,
+  type AudioVoiceProfile,
 } from '@/lib/audio-generation';
 import AudioLatestRendersRail from './AudioLatestRendersRail';
 
@@ -47,10 +61,15 @@ type GeneratedSourceVideo = {
 type AudioJobSettingsSnapshot = {
   pack?: string | null;
   mood?: string | null;
+  intensity?: string | null;
   durationSec?: number | null;
   script?: string | null;
   musicEnabled?: boolean | null;
   exportAudioFile?: boolean | null;
+  voiceGender?: string | null;
+  voiceProfile?: string | null;
+  voiceDelivery?: string | null;
+  language?: string | null;
   outputKind?: AudioOutputKind | null;
   sourceJobId?: string | null;
   sourceVideoUrl?: string | null;
@@ -104,29 +123,68 @@ const AUDIO_MODE_OPTIONS: Array<{
   {
     id: 'music_only',
     label: 'Music Only',
-    description: 'Generate an ambient or cinematic music bed, with or without a source video.',
+    description: 'Score or ambience.',
   },
   {
     id: 'voice_only',
     label: 'Voice Over Only',
-    description: 'Generate standalone narration or dialogue without requiring a video upload.',
+    description: 'Narration only.',
   },
   {
     id: 'cinematic',
     label: 'Cinematic',
-    description: 'Layer synced sound design and, optionally, a subtle score onto a source video.',
+    description: 'SFX + optional score.',
   },
   {
     id: 'cinematic_voice',
     label: 'Cinematic + Voice',
-    description: 'Blend synced sound design, optional music, and a cinematic voice over on top of video.',
+    description: 'SFX + score + VO.',
   },
 ];
 
 const DURATION_OPTIONS = [3, 5, 8, 10, 15, 20] as const;
 const DEFAULT_PACK: AudioPackId = 'cinematic';
 const DEFAULT_MOOD: AudioMood = 'epic';
+const DEFAULT_INTENSITY: AudioIntensity = 'standard';
+const DEFAULT_VOICE_GENDER: AudioVoiceGender = 'female';
+const DEFAULT_VOICE_PROFILE: AudioVoiceProfile = 'balanced';
+const DEFAULT_VOICE_DELIVERY: AudioVoiceDelivery = 'cinematic';
+const DEFAULT_LANGUAGE: AudioLanguage = 'auto';
 const DEFAULT_MANUAL_DURATION_SEC = 8;
+
+const INTENSITY_OPTIONS: Array<{ value: AudioIntensity; label: string }> = [
+  { value: 'subtle', label: 'Subtle' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'intense', label: 'Intense' },
+];
+
+const VOICE_GENDER_OPTIONS: Array<{ value: AudioVoiceGender; label: string }> = [
+  { value: 'female', label: 'Female' },
+  { value: 'male', label: 'Male' },
+  { value: 'neutral', label: 'Neutral' },
+];
+
+const VOICE_PROFILE_OPTIONS: Array<{ value: AudioVoiceProfile; label: string }> = [
+  { value: 'balanced', label: 'Balanced' },
+  { value: 'warm', label: 'Warm' },
+  { value: 'bright', label: 'Bright' },
+  { value: 'deep', label: 'Deep' },
+];
+
+const VOICE_DELIVERY_OPTIONS: Array<{ value: AudioVoiceDelivery; label: string }> = [
+  { value: 'natural', label: 'Natural' },
+  { value: 'cinematic', label: 'Cinematic' },
+  { value: 'trailer', label: 'Trailer' },
+  { value: 'intimate', label: 'Intimate' },
+];
+
+const LANGUAGE_OPTIONS: Array<{ value: AudioLanguage; label: string }> = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'english', label: 'EN' },
+  { value: 'french', label: 'FR' },
+  { value: 'spanish', label: 'ES' },
+  { value: 'german', label: 'DE' },
+];
 
 function formatCurrency(amount: number, currency = 'USD'): string {
   try {
@@ -258,6 +316,36 @@ function AudioModePicker({
   );
 }
 
+function OptionPillGroup({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: Array<{ value: string; label: string }>;
+  onChange: (next: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={[
+            'rounded-full border px-3 py-1.5 text-sm font-medium transition',
+            value === option.value
+              ? 'border-brand bg-brand text-on-brand'
+              : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover',
+          ].join(' ')}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ToggleRow({
   label,
   description,
@@ -273,7 +361,7 @@ function ToggleRow({
     <label className="flex items-start justify-between gap-4 rounded-card border border-border bg-surface px-4 py-3">
       <div className="min-w-0">
         <p className="text-sm font-semibold text-text-primary">{label}</p>
-        <p className="mt-1 text-sm text-text-secondary">{description}</p>
+        {description ? <p className="mt-1 text-sm text-text-secondary">{description}</p> : null}
       </div>
       <span className="relative mt-1 inline-flex h-6 w-11 shrink-0 items-center">
         <input
@@ -351,10 +439,8 @@ function ResultPreview({
               <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-surface shadow-card">
                 <img src="/assets/icons/audio.svg" alt="" className="h-8 w-8 opacity-75" />
               </div>
-              <p className="mt-5 text-sm font-semibold text-text-primary">Generate audio in a video-style workspace</p>
-              <p className="mt-2 max-w-xl text-sm text-text-secondary">
-                Pick a mode, upload a source video when needed, and build either a standalone audio file or a final MP4 with cinematic sound.
-              </p>
+              <p className="mt-5 text-sm font-semibold text-text-primary">Ready for audio</p>
+              <p className="mt-2 max-w-xl text-sm text-text-secondary">Pick a mode and render.</p>
             </div>
           )}
 
@@ -395,7 +481,12 @@ export default function AudioWorkspace() {
 
   const [pack, setPack] = useState<AudioPackId>(DEFAULT_PACK);
   const [mood, setMood] = useState<AudioMood>(DEFAULT_MOOD);
+  const [intensity, setIntensity] = useState<AudioIntensity>(DEFAULT_INTENSITY);
   const [script, setScript] = useState('');
+  const [voiceGender, setVoiceGender] = useState<AudioVoiceGender>(DEFAULT_VOICE_GENDER);
+  const [voiceProfile, setVoiceProfile] = useState<AudioVoiceProfile>(DEFAULT_VOICE_PROFILE);
+  const [voiceDelivery, setVoiceDelivery] = useState<AudioVoiceDelivery>(DEFAULT_VOICE_DELIVERY);
+  const [language, setLanguage] = useState<AudioLanguage>(DEFAULT_LANGUAGE);
   const [manualDurationSec, setManualDurationSec] = useState<number>(DEFAULT_MANUAL_DURATION_SEC);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [exportAudioFile, setExportAudioFile] = useState(false);
@@ -421,7 +512,9 @@ export default function AudioWorkspace() {
   const packConfig = getAudioPackConfig(pack);
   const sourceVideoRequired = packConfig.requiresVideo;
   const showMood = packConfig.requiresMood;
+  const showIntensity = pack !== 'voice_only';
   const showVoiceFields = packConfig.includesVoice;
+  const showVoiceGender = showVoiceFields && !voiceSample;
   const showMusicToggle = packConfig.supportsMusicToggle;
   const showExportToggle = packConfig.supportsAudioExport;
   const showManualDuration = pack === 'music_only' && !sourceVideo?.url;
@@ -483,6 +576,7 @@ export default function AudioWorkspace() {
       const detail = await fetchJobDetail(jobId);
       const nextPack = coerceAudioPackId(detail.settingsSnapshot?.pack) ?? DEFAULT_PACK;
       const nextMood = coerceAudioMood(detail.settingsSnapshot?.mood) ?? DEFAULT_MOOD;
+      const nextIntensity = coerceAudioIntensity(detail.settingsSnapshot?.intensity) ?? DEFAULT_INTENSITY;
       const nextMusicEnabled =
         typeof detail.settingsSnapshot?.musicEnabled === 'boolean'
           ? detail.settingsSnapshot.musicEnabled
@@ -501,7 +595,12 @@ export default function AudioWorkspace() {
 
       setPack(nextPack);
       setMood(nextMood);
+      setIntensity(nextIntensity);
       setScript(detail.settingsSnapshot?.script ?? '');
+      setVoiceGender(coerceAudioVoiceGender(detail.settingsSnapshot?.voiceGender) ?? DEFAULT_VOICE_GENDER);
+      setVoiceProfile(coerceAudioVoiceProfile(detail.settingsSnapshot?.voiceProfile) ?? DEFAULT_VOICE_PROFILE);
+      setVoiceDelivery(coerceAudioVoiceDelivery(detail.settingsSnapshot?.voiceDelivery) ?? DEFAULT_VOICE_DELIVERY);
+      setLanguage(coerceAudioLanguage(detail.settingsSnapshot?.language) ?? DEFAULT_LANGUAGE);
       setManualDurationSec(typeof detail.settingsSnapshot?.durationSec === 'number' ? detail.settingsSnapshot.durationSec : DEFAULT_MANUAL_DURATION_SEC);
       setMusicEnabled(nextMusicEnabled);
       setExportAudioFile(nextExportAudioFile);
@@ -829,8 +928,13 @@ export default function AudioWorkspace() {
         sourceJobId: sourceVideo?.jobId ?? undefined,
         pack,
         mood: showMood ? mood : undefined,
+        intensity: showIntensity ? intensity : undefined,
         script: packConfig.requiresScript ? script.trim() : undefined,
         voiceSampleUrl: showVoiceFields ? voiceSample?.url : undefined,
+        voiceGender: showVoiceFields ? voiceGender : undefined,
+        voiceProfile: showVoiceFields ? voiceProfile : undefined,
+        voiceDelivery: showVoiceFields ? voiceDelivery : undefined,
+        language: showVoiceFields ? language : undefined,
         durationSec: pack === 'music_only' && !sourceVideo?.url ? manualDurationSec : undefined,
         musicEnabled: showMusicToggle ? musicEnabled : undefined,
         exportAudioFile: showExportToggle ? exportAudioFile : undefined,
@@ -864,6 +968,8 @@ export default function AudioWorkspace() {
   }, [
     canGenerate,
     exportAudioFile,
+    intensity,
+    language,
     manualDurationSec,
     mood,
     musicEnabled,
@@ -873,11 +979,15 @@ export default function AudioWorkspace() {
     router,
     script,
     showExportToggle,
+    showIntensity,
     showMood,
     showMusicToggle,
     showVoiceFields,
     sourceVideo?.jobId,
     sourceVideo?.url,
+    voiceDelivery,
+    voiceGender,
+    voiceProfile,
     voiceSample?.url,
   ]);
 
@@ -924,95 +1034,94 @@ export default function AudioWorkspace() {
             </div>
           ) : null}
 
-          <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
-            <div className="flex flex-col gap-5">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Generate Audio</p>
-                <h1 className="mt-2 text-2xl font-semibold text-text-primary">Audio workspace</h1>
-                <p className="mt-2 max-w-3xl text-sm text-text-secondary">
-                  Match the video workflow: pick a mode, choose a source video only when needed, preview the latest output, and launch with the price visible next to the CTA.
-                </p>
-              </div>
-
-              <AudioModePicker value={pack} onChange={handlePackChange} />
-
-              <div className="rounded-card border border-border bg-bg/60 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-text-primary">Source video</h2>
-                    <p className="mt-1 text-xs text-text-secondary">
-                      {sourceVideoRequired
-                        ? 'Required for cinematic modes. Upload a file or pick one of your generated videos.'
-                        : 'Optional for Music Only and Voice Over Only. If you add one, it is used for duration and context only.'}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={isUploadingSource || queryJobLoading}
-                      onClick={() => sourceInputRef.current?.click()}
-                    >
-                      {isUploadingSource ? 'Uploading…' : 'Upload source video'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={queryJobLoading}
-                      onClick={() => setGeneratedPickerOpen(true)}
-                    >
-                      Choose generated video
-                    </Button>
-                    {sourceVideo ? (
-                      <Button type="button" variant="ghost" size="sm" onClick={handleClearSourceVideo}>
-                        Remove source video
-                      </Button>
-                    ) : null}
-                  </div>
-                  <input
-                    ref={sourceInputRef}
-                    type="file"
-                    accept="video/*"
-                    className="sr-only"
-                    onChange={(event) => {
-                      void handleSourceFileSelect(event.target.files);
-                    }}
-                  />
+          <div className="grid gap-[var(--stack-gap-lg)] xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px] xl:items-start">
+            <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
+              <div className="flex flex-col gap-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Generate Audio</p>
+                  <h1 className="mt-2 text-2xl font-semibold text-text-primary">Audio workspace</h1>
                 </div>
-                {sourceVideo ? (
-                  <div className="mt-4 flex flex-wrap items-center gap-4 rounded-card border border-border bg-surface px-4 py-3">
-                    <div className="h-16 w-24 overflow-hidden rounded-card border border-border bg-bg">
-                      <video
-                        src={sourceVideo.url}
-                        poster={sourceVideo.thumbUrl ?? undefined}
-                        className="h-full w-full object-cover"
-                        muted
-                        playsInline
-                        loop
-                        autoPlay
-                        preload="metadata"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-text-primary">{sourceVideo.label}</p>
+
+                <AudioModePicker value={pack} onChange={handlePackChange} />
+
+                <div className="rounded-card border border-border bg-bg/60 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-sm font-semibold text-text-primary">Source video</h2>
                       <p className="mt-1 text-xs text-text-secondary">
-                        {sourceVideo.durationSec ? `${sourceVideo.durationSec}s` : 'Duration pending'}{sourceVideo.aspectRatio ? ` • ${sourceVideo.aspectRatio}` : ''}
+                        {sourceVideoRequired
+                          ? 'Needed for cinematic modes.'
+                          : 'Optional for music or voice-only.'}
                       </p>
                     </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={isUploadingSource || queryJobLoading}
+                        onClick={() => sourceInputRef.current?.click()}
+                      >
+                        {isUploadingSource ? 'Uploading…' : 'Upload video'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={queryJobLoading}
+                        onClick={() => setGeneratedPickerOpen(true)}
+                      >
+                        Use generated
+                      </Button>
+                      {sourceVideo ? (
+                        <Button type="button" variant="ghost" size="sm" onClick={handleClearSourceVideo}>
+                          Clear
+                        </Button>
+                      ) : null}
+                    </div>
+                    <input
+                      ref={sourceInputRef}
+                      type="file"
+                      accept="video/*"
+                      className="sr-only"
+                      onChange={(event) => {
+                        void handleSourceFileSelect(event.target.files);
+                      }}
+                    />
                   </div>
-                ) : null}
+                  {sourceVideo ? (
+                    <div className="mt-4 flex flex-wrap items-center gap-4 rounded-card border border-border bg-surface px-4 py-3">
+                      <div className="h-16 w-24 overflow-hidden rounded-card border border-border bg-bg">
+                        <video
+                          src={sourceVideo.url}
+                          poster={sourceVideo.thumbUrl ?? undefined}
+                          className="h-full w-full object-cover"
+                          muted
+                          playsInline
+                          loop
+                          autoPlay
+                          preload="metadata"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-text-primary">{sourceVideo.label}</p>
+                        <p className="mt-1 text-xs text-text-secondary">
+                          {sourceVideo.durationSec ? `${sourceVideo.durationSec}s` : 'Duration pending'}{sourceVideo.aspectRatio ? ` • ${sourceVideo.aspectRatio}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <ResultPreview
-            result={result}
-            sourceVideo={sourceVideo}
-            activeJob={activeJob}
-            isLoading={queryJobLoading || isGenerating}
-          />
+            <ResultPreview
+              result={result}
+              sourceVideo={sourceVideo}
+              activeJob={activeJob}
+              isLoading={queryJobLoading || isGenerating}
+            />
+          </div>
 
           <section className="rounded-card border border-border bg-surface-glass-80 shadow-card">
             <div className="border-b border-border px-5 py-4">
@@ -1021,29 +1130,39 @@ export default function AudioWorkspace() {
             </div>
             <div className="space-y-5 p-5">
               {showMood ? (
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-text-primary">Audio mood</span>
-                  <select
+                <div>
+                  <span className="mb-2 block text-sm font-semibold text-text-primary">Mood</span>
+                  <OptionPillGroup
                     value={mood}
-                    onChange={(event) => {
-                      const nextMood = coerceAudioMood(event.target.value) ?? DEFAULT_MOOD;
+                    options={AUDIO_MOOD_VALUES.map((option) => ({
+                      value: option,
+                      label: option === 'sci-fi' ? 'Sci-Fi' : option.charAt(0).toUpperCase() + option.slice(1),
+                    }))}
+                    onChange={(next) => {
+                      const nextMood = coerceAudioMood(next) ?? DEFAULT_MOOD;
                       setMood(nextMood);
                     }}
-                    className="h-11 w-full rounded-input border border-hairline bg-bg px-3 text-sm text-text-primary outline-none transition focus:border-border-hover"
-                  >
-                    {AUDIO_MOOD_VALUES.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                  />
+                </div>
+              ) : null}
+
+              {showIntensity ? (
+                <div>
+                  <span className="mb-2 block text-sm font-semibold text-text-primary">Intensity</span>
+                  <OptionPillGroup
+                    value={intensity}
+                    options={INTENSITY_OPTIONS}
+                    onChange={(next) => {
+                      const nextIntensity = coerceAudioIntensity(next) ?? DEFAULT_INTENSITY;
+                      setIntensity(nextIntensity);
+                    }}
+                  />
+                </div>
               ) : null}
 
               {showManualDuration ? (
                 <div>
                   <p className="text-sm font-semibold text-text-primary">Duration</p>
-                  <p className="mt-1 text-sm text-text-secondary">Choose the target duration for the standalone music render.</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {DURATION_OPTIONS.map((option) => (
                       <button
@@ -1067,7 +1186,7 @@ export default function AudioWorkspace() {
               {showVoiceFields ? (
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
                   <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">Voice over script</span>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">Script</span>
                     <Textarea
                       rows={6}
                       value={script}
@@ -1080,15 +1199,12 @@ export default function AudioWorkspace() {
                     />
                     {pack === 'voice_only' && script.trim().length ? (
                       <p className="mt-2 text-xs text-text-secondary">
-                        Estimated spoken length: {estimatedDurationSec ?? '—'}s at 150 words/minute.
+                        ~{estimatedDurationSec ?? '—'}s estimated
                       </p>
                     ) : null}
                   </label>
                   <div className="rounded-card border border-border bg-bg/60 p-4">
                     <p className="text-sm font-semibold text-text-primary">Voice sample</p>
-                    <p className="mt-1 text-sm text-text-secondary">
-                      Optional. Upload a reference sample to switch from standard TTS to voice clone.
-                    </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Button
                         type="button"
@@ -1097,11 +1213,11 @@ export default function AudioWorkspace() {
                         disabled={isUploadingVoice}
                         onClick={() => voiceInputRef.current?.click()}
                       >
-                        {isUploadingVoice ? 'Uploading…' : 'Upload voice sample'}
+                        {isUploadingVoice ? 'Uploading…' : 'Upload sample'}
                       </Button>
                       {voiceSample ? (
                         <Button type="button" variant="ghost" size="sm" onClick={() => setVoiceSample(null)}>
-                          Remove sample
+                          Clear
                         </Button>
                       ) : null}
                     </div>
@@ -1121,9 +1237,60 @@ export default function AudioWorkspace() {
                       </div>
                     ) : (
                       <div className="mt-4 rounded-card border border-dashed border-border bg-surface px-3 py-3 text-sm text-text-secondary">
-                        Standard voice will be used if you leave this empty.
+                        Default voice
                       </div>
                     )}
+                  </div>
+                </div>
+              ) : null}
+
+              {showVoiceFields ? (
+                <div className={showVoiceGender ? 'grid gap-4 md:grid-cols-4' : 'grid gap-4 md:grid-cols-3'}>
+                  {showVoiceGender ? (
+                    <div>
+                      <span className="mb-2 block text-sm font-semibold text-text-primary">Voice type</span>
+                      <OptionPillGroup
+                        value={voiceGender}
+                        options={VOICE_GENDER_OPTIONS}
+                        onChange={(next) => {
+                          const nextGender = coerceAudioVoiceGender(next) ?? DEFAULT_VOICE_GENDER;
+                          setVoiceGender(nextGender);
+                        }}
+                      />
+                    </div>
+                  ) : null}
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">Voice</span>
+                    <OptionPillGroup
+                      value={voiceProfile}
+                      options={VOICE_PROFILE_OPTIONS}
+                      onChange={(next) => {
+                        const nextProfile = coerceAudioVoiceProfile(next) ?? DEFAULT_VOICE_PROFILE;
+                        setVoiceProfile(nextProfile);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">Delivery</span>
+                    <OptionPillGroup
+                      value={voiceDelivery}
+                      options={VOICE_DELIVERY_OPTIONS}
+                      onChange={(next) => {
+                        const nextDelivery = coerceAudioVoiceDelivery(next) ?? DEFAULT_VOICE_DELIVERY;
+                        setVoiceDelivery(nextDelivery);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">Language</span>
+                    <OptionPillGroup
+                      value={language}
+                      options={LANGUAGE_OPTIONS}
+                      onChange={(next) => {
+                        const nextLanguage = coerceAudioLanguage(next) ?? DEFAULT_LANGUAGE;
+                        setLanguage(nextLanguage);
+                      }}
+                    />
                   </div>
                 </div>
               ) : null}
@@ -1131,7 +1298,7 @@ export default function AudioWorkspace() {
               {showMusicToggle ? (
                 <ToggleRow
                   label="Music"
-                  description="Keep the score layer in the cinematic mix. Turn it off to keep only synced sound design, and voice if this mode includes one."
+                  description="Score on. Turn off for SFX-only, or SFX + voice."
                   checked={musicEnabled}
                   onChange={setMusicEnabled}
                 />
@@ -1140,7 +1307,7 @@ export default function AudioWorkspace() {
               {showExportToggle ? (
                 <ToggleRow
                   label="Export audio file"
-                  description="Also save a standalone audio file next to the final MP4. Included with cinematic modes."
+                  description="Save a separate audio file too."
                   checked={exportAudioFile}
                   onChange={setExportAudioFile}
                 />
@@ -1157,8 +1324,8 @@ export default function AudioWorkspace() {
                       {quote
                         ? `${formatOutputKind(currentOutputKind)} • ${estimatedDurationSec ?? '—'}s`
                         : sourceVideoRequired
-                          ? 'Select a source video and complete the required fields to quote this render.'
-                          : 'Complete the required fields to quote this render.'}
+                          ? 'Add a source video.'
+                          : 'Set the required options.'}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-3">

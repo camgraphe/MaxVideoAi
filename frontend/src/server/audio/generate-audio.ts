@@ -6,17 +6,27 @@ import {
   AUDIO_SURFACE,
   buildAudioPricingSnapshot,
   clampAudioDuration,
+  coerceAudioIntensity,
+  coerceAudioLanguage,
   coerceAudioMood,
   coerceAudioPackId,
+  coerceAudioVoiceDelivery,
+  coerceAudioVoiceGender,
+  coerceAudioVoiceProfile,
   estimateVoiceScriptDurationSec,
   getAudioPackConfig,
   resolveAudioOutputKind,
   resolveAudioVoiceMode,
   type AudioGenerateRequestBody,
+  type AudioIntensity,
+  type AudioLanguage,
   type AudioGenerateResponse,
   type AudioMood,
   type AudioOutputKind,
   type AudioPackId,
+  type AudioVoiceDelivery,
+  type AudioVoiceGender,
+  type AudioVoiceProfile,
   type AudioVoiceMode,
 } from '@/lib/audio-generation';
 import { isDatabaseConfigured, query, withDbTransaction } from '@/lib/db';
@@ -45,8 +55,13 @@ type NormalizedAudioGenerateInput = {
   sourceJobId: string | null;
   pack: AudioPackId;
   mood: AudioMood | null;
+  intensity: AudioIntensity;
   script: string | null;
   voiceSampleUrl: string | null;
+  voiceGender: AudioVoiceGender | null;
+  voiceProfile: AudioVoiceProfile | null;
+  voiceDelivery: AudioVoiceDelivery | null;
+  language: AudioLanguage | null;
   durationSec: number | null;
   musicEnabled: boolean;
   exportAudioFile: boolean;
@@ -174,6 +189,16 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     });
   }
 
+  const intensityValue = normalizeString(body.intensity);
+  const intensity = intensityValue ? coerceAudioIntensity(intensityValue) : 'standard';
+  if (intensityValue && !intensity) {
+    throw new AudioGenerationError('Intensity is invalid.', {
+      status: 400,
+      code: 'audio_intensity_invalid',
+      field: 'intensity',
+    });
+  }
+
   const script = normalizeString(body.script);
   if (packConfig.requiresScript && !script) {
     throw new AudioGenerationError('A narration script is required for this mode.', {
@@ -189,6 +214,78 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
       status: 400,
       code: 'voice_sample_not_supported',
       field: 'voiceSampleUrl',
+    });
+  }
+
+  const voiceGenderValue = normalizeString(body.voiceGender);
+  const voiceGender = voiceGenderValue ? coerceAudioVoiceGender(voiceGenderValue) : packConfig.includesVoice ? 'female' : null;
+  if (voiceGenderValue && !voiceGender) {
+    throw new AudioGenerationError('Voice type is invalid.', {
+      status: 400,
+      code: 'audio_voice_gender_invalid',
+      field: 'voiceGender',
+    });
+  }
+  if (!packConfig.includesVoice && voiceGenderValue) {
+    throw new AudioGenerationError('Voice type is only supported on voice modes.', {
+      status: 400,
+      code: 'audio_voice_gender_not_supported',
+      field: 'voiceGender',
+    });
+  }
+
+  const voiceProfileValue = normalizeString(body.voiceProfile);
+  const voiceProfile = voiceProfileValue ? coerceAudioVoiceProfile(voiceProfileValue) : packConfig.includesVoice ? 'balanced' : null;
+  if (voiceProfileValue && !voiceProfile) {
+    throw new AudioGenerationError('Voice option is invalid.', {
+      status: 400,
+      code: 'audio_voice_profile_invalid',
+      field: 'voiceProfile',
+    });
+  }
+  if (!packConfig.includesVoice && voiceProfileValue) {
+    throw new AudioGenerationError('Voice options are only supported on voice modes.', {
+      status: 400,
+      code: 'audio_voice_profile_not_supported',
+      field: 'voiceProfile',
+    });
+  }
+
+  const voiceDeliveryValue = normalizeString(body.voiceDelivery);
+  const voiceDelivery = voiceDeliveryValue
+    ? coerceAudioVoiceDelivery(voiceDeliveryValue)
+    : packConfig.includesVoice
+      ? 'cinematic'
+      : null;
+  if (voiceDeliveryValue && !voiceDelivery) {
+    throw new AudioGenerationError('Voice delivery is invalid.', {
+      status: 400,
+      code: 'audio_voice_delivery_invalid',
+      field: 'voiceDelivery',
+    });
+  }
+  if (!packConfig.includesVoice && voiceDeliveryValue) {
+    throw new AudioGenerationError('Voice delivery is only supported on voice modes.', {
+      status: 400,
+      code: 'audio_voice_delivery_not_supported',
+      field: 'voiceDelivery',
+    });
+  }
+
+  const languageValue = normalizeString(body.language);
+  const language = languageValue ? coerceAudioLanguage(languageValue) : packConfig.includesVoice ? 'auto' : null;
+  if (languageValue && !language) {
+    throw new AudioGenerationError('Voice language is invalid.', {
+      status: 400,
+      code: 'audio_language_invalid',
+      field: 'language',
+    });
+  }
+  if (!packConfig.includesVoice && languageValue) {
+    throw new AudioGenerationError('Voice language is only supported on voice modes.', {
+      status: 400,
+      code: 'audio_language_not_supported',
+      field: 'language',
     });
   }
 
@@ -225,8 +322,13 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     sourceJobId,
     pack,
     mood,
+    intensity: intensity ?? 'standard',
     script,
     voiceSampleUrl,
+    voiceGender,
+    voiceProfile,
+    voiceDelivery,
+    language,
     durationSec: durationInput == null ? null : clampAudioDuration(durationInput),
     musicEnabled: packConfig.supportsMusicToggle ? musicEnabledInput ?? packConfig.defaultMusicEnabled : false,
     exportAudioFile: packConfig.supportsAudioExport ? exportAudioFileInput ?? false : false,
@@ -435,11 +537,16 @@ export async function generateAudioRun(params: {
     surface: AUDIO_SURFACE,
     pack: normalized.pack,
     mood: normalized.mood,
+    intensity: normalized.intensity,
     durationSec,
     script: normalized.script,
     musicEnabled: normalized.musicEnabled,
     exportAudioFile: normalized.exportAudioFile,
     voiceMode: normalized.voiceMode,
+    voiceGender: normalized.voiceGender,
+    voiceProfile: normalized.voiceProfile,
+    voiceDelivery: normalized.voiceDelivery,
+    language: normalized.language,
     outputKind: normalized.outputKind,
     sourceJobId: sourceJob?.job_id ?? null,
     sourceVideoUrl,
@@ -558,6 +665,7 @@ export async function generateAudioRun(params: {
         sourceVideoUrl: sourceVideoUrl!,
         durationSec,
         mood: normalized.mood!,
+        intensity: normalized.intensity,
       });
     }
 
@@ -569,6 +677,7 @@ export async function generateAudioRun(params: {
       music = await generateMusicTrack({
         durationSec,
         mood: normalized.mood!,
+        intensity: normalized.intensity,
       });
     }
 
@@ -586,10 +695,17 @@ export async function generateAudioRun(params: {
               script: normalized.script,
               voiceSampleUrl: normalized.voiceSampleUrl,
               locale: normalized.locale,
+              language: normalized.language,
+              voiceProfile: normalized.voiceProfile ?? 'balanced',
+              voiceDelivery: normalized.voiceDelivery ?? 'cinematic',
             })
           : await generateStandardVoiceTrack({
               script: normalized.script,
               locale: normalized.locale,
+              language: normalized.language,
+              voiceGender: normalized.voiceGender ?? 'female',
+              voiceProfile: normalized.voiceProfile ?? 'balanced',
+              voiceDelivery: normalized.voiceDelivery ?? 'cinematic',
             });
 
       if (!voiceTrack.url) {
@@ -618,6 +734,7 @@ export async function generateAudioRun(params: {
       audioBuffer = await mixAudioTracks({
         musicUrl: music.url,
         targetDurationSec: durationSec,
+        mixIntensity: normalized.intensity,
       });
     } else if (normalized.pack === 'voice_only') {
       if (!voiceTrack?.url) {
@@ -642,6 +759,7 @@ export async function generateAudioRun(params: {
         musicUrl: normalized.musicEnabled ? music?.url ?? null : null,
         voiceUrl: voiceTrack?.url ?? null,
         targetDurationSec: durationSec,
+        mixIntensity: normalized.intensity,
       });
       audioBuffer = normalized.exportAudioFile ? mixed.audioBuffer : null;
       videoBuffer = mixed.videoBuffer;

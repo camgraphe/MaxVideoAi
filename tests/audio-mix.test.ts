@@ -15,7 +15,7 @@ test('audio mix graph prioritizes voice and ducks music when narration is presen
   assert.match(graph, /\[2:a\]aresample=48000,volume=1\.18\[voice\]/);
   assert.match(graph, /\[1:a\]aresample=48000,volume=0\.70\[music\]/);
   assert.match(graph, /\[sfx\]\[musicduck\]amix=inputs=2:duration=longest:normalize=0:weights=1 0\.85\[bed\]/);
-  assert.match(graph, /weights=1 1\.3,atrim=0:10\.000,asetpts=N\/SR\/TB,alimiter=limit=0\.92\[outa\]/);
+  assert.match(graph, /weights=1 1\.30,atrim=0:10\.000,asetpts=N\/SR\/TB,alimiter=limit=0\.92\[outa\]/);
 });
 
 test('audio mix graph stays lighter when no voice track is present', () => {
@@ -39,7 +39,7 @@ test('audio mix graph supports sfx plus voice without music', () => {
 
   assert.doesNotMatch(graph, /sidechaincompress/);
   assert.match(graph, /\[1:a\]aresample=48000,volume=1\.18\[voice\]/);
-  assert.match(graph, /\[sfx\]\[voice\]amix=inputs=2:duration=longest:normalize=0:weights=1 1\.3,alimiter=limit=0\.92\[outa\]/);
+  assert.match(graph, /\[sfx\]\[voice\]amix=inputs=2:duration=longest:normalize=0:weights=1 1\.30,alimiter=limit=0\.92\[outa\]/);
 });
 
 test('audio mix graph supports standalone voice and standalone music', () => {
@@ -55,6 +55,6 @@ test('audio mix graph supports standalone voice and standalone music', () => {
     targetDurationSec: 8,
   });
 
-  assert.match(voiceGraph, /\[0:a\]aresample=48000,volume=1\.12,alimiter=limit=0\.92\[outa\]/);
-  assert.match(musicGraph, /\[0:a\]aresample=48000,volume=1\.00,atrim=0:8\.000,asetpts=N\/SR\/TB,alimiter=limit=0\.92\[outa\]/);
+  assert.match(voiceGraph, /\[0:a\]aresample=48000,volume=1\.14,alimiter=limit=0\.92\[outa\]/);
+  assert.match(musicGraph, /\[0:a\]aresample=48000,volume=0\.88,atrim=0:8\.000,asetpts=N\/SR\/TB,alimiter=limit=0\.92\[outa\]/);
 });

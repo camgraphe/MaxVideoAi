@@ -24,6 +24,10 @@ test('audio validation allows voice-over-only without a source video', () => {
     pack: 'voice_only',
     script: '  Trailer-ready narration.  ',
     voiceSampleUrl: ' https://example.com/voice.wav ',
+    voiceGender: ' male ',
+    voiceProfile: ' warm ',
+    voiceDelivery: ' trailer ',
+    language: ' french ',
     locale: ' fr-FR ',
   });
 
@@ -32,8 +36,13 @@ test('audio validation allows voice-over-only without a source video', () => {
     sourceVideoUrl: null,
     pack: 'voice_only',
     mood: null,
+    intensity: 'standard',
     script: 'Trailer-ready narration.',
     voiceSampleUrl: 'https://example.com/voice.wav',
+    voiceGender: 'male',
+    voiceProfile: 'warm',
+    voiceDelivery: 'trailer',
+    language: 'french',
     durationSec: null,
     musicEnabled: false,
     exportAudioFile: false,
@@ -80,8 +89,13 @@ test('audio validation normalizes cinematic voice settings', () => {
     sourceVideoUrl: ' https://example.com/source.mp4 ',
     pack: ' cinematic_voice ',
     mood: ' Dark ',
+    intensity: ' intense ',
     script: '  Trailer-ready narration.  ',
     voiceSampleUrl: ' https://example.com/voice.wav ',
+    voiceGender: ' female ',
+    voiceProfile: ' deep ',
+    voiceDelivery: ' intimate ',
+    language: ' english ',
     musicEnabled: false,
     exportAudioFile: true,
     locale: ' fr-FR ',
@@ -92,8 +106,13 @@ test('audio validation normalizes cinematic voice settings', () => {
     sourceVideoUrl: 'https://example.com/source.mp4',
     pack: 'cinematic_voice',
     mood: 'dark',
+    intensity: 'intense',
     script: 'Trailer-ready narration.',
     voiceSampleUrl: 'https://example.com/voice.wav',
+    voiceGender: 'female',
+    voiceProfile: 'deep',
+    voiceDelivery: 'intimate',
+    language: 'english',
     durationSec: null,
     musicEnabled: false,
     exportAudioFile: true,
@@ -101,4 +120,22 @@ test('audio validation normalizes cinematic voice settings', () => {
     voiceMode: 'clone',
     outputKind: 'both',
   });
+});
+
+test('audio validation rejects voice options on non-voice modes', () => {
+  assert.throws(
+    () =>
+      validateAudioGenerateRequest({
+        pack: 'music_only',
+        mood: 'dreamy',
+        durationSec: 8,
+        voiceGender: 'male',
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof AudioGenerationError);
+      assert.equal(error.code, 'audio_voice_gender_not_supported');
+      assert.equal(error.field, 'voiceGender');
+      return true;
+    }
+  );
 });

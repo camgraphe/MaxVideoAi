@@ -6,8 +6,13 @@ import {
   AUDIO_MIN_DURATION_SEC,
   buildAudioPricingSnapshot,
   clampAudioDuration,
+  coerceAudioIntensity,
+  coerceAudioLanguage,
   coerceAudioMood,
   coerceAudioPackId,
+  coerceAudioVoiceDelivery,
+  coerceAudioVoiceGender,
+  coerceAudioVoiceProfile,
   estimateVoiceScriptDurationSec,
   resolveAudioOutputKind,
   resolveAudioVoiceMode,
@@ -51,6 +56,16 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
 
   assert.equal(coerceAudioMood(' Sci-Fi '), 'sci-fi');
   assert.equal(coerceAudioMood('cheerful'), null);
+  assert.equal(coerceAudioIntensity(' intense '), 'intense');
+  assert.equal(coerceAudioIntensity('loud'), null);
+  assert.equal(coerceAudioVoiceProfile(' deep '), 'deep');
+  assert.equal(coerceAudioVoiceProfile('hero'), null);
+  assert.equal(coerceAudioVoiceGender(' male '), 'male');
+  assert.equal(coerceAudioVoiceGender('robot'), null);
+  assert.equal(coerceAudioVoiceDelivery(' trailer '), 'trailer');
+  assert.equal(coerceAudioVoiceDelivery('dramatic'), null);
+  assert.equal(coerceAudioLanguage(' french '), 'french');
+  assert.equal(coerceAudioLanguage('italian'), null);
 
   assert.equal(resolveAudioVoiceMode({ pack: 'music_only', voiceSampleUrl: 'https://example.com/voice.wav' }), null);
   assert.equal(resolveAudioVoiceMode({ pack: 'voice_only', voiceSampleUrl: null }), 'standard');

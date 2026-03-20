@@ -11,8 +11,23 @@ export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 export const AUDIO_MOOD_VALUES = ['epic', 'tense', 'intimate', 'dark', 'dreamy', 'sci-fi', 'documentary'] as const;
 export type AudioMood = (typeof AUDIO_MOOD_VALUES)[number];
 
+export const AUDIO_INTENSITY_VALUES = ['subtle', 'standard', 'intense'] as const;
+export type AudioIntensity = (typeof AUDIO_INTENSITY_VALUES)[number];
+
 export const AUDIO_VOICE_MODE_VALUES = ['standard', 'clone'] as const;
 export type AudioVoiceMode = (typeof AUDIO_VOICE_MODE_VALUES)[number];
+
+export const AUDIO_VOICE_PROFILE_VALUES = ['balanced', 'warm', 'bright', 'deep'] as const;
+export type AudioVoiceProfile = (typeof AUDIO_VOICE_PROFILE_VALUES)[number];
+
+export const AUDIO_VOICE_GENDER_VALUES = ['female', 'male', 'neutral'] as const;
+export type AudioVoiceGender = (typeof AUDIO_VOICE_GENDER_VALUES)[number];
+
+export const AUDIO_VOICE_DELIVERY_VALUES = ['natural', 'cinematic', 'trailer', 'intimate'] as const;
+export type AudioVoiceDelivery = (typeof AUDIO_VOICE_DELIVERY_VALUES)[number];
+
+export const AUDIO_LANGUAGE_VALUES = ['auto', 'english', 'french', 'spanish', 'german'] as const;
+export type AudioLanguage = (typeof AUDIO_LANGUAGE_VALUES)[number];
 
 export const AUDIO_OUTPUT_KIND_VALUES = ['audio', 'video', 'both'] as const;
 export type AudioOutputKind = (typeof AUDIO_OUTPUT_KIND_VALUES)[number];
@@ -111,8 +126,13 @@ export type AudioGenerateRequestBody = {
   sourceJobId?: string;
   pack?: string;
   mood?: string;
+  intensity?: string;
   script?: string;
   voiceSampleUrl?: string;
+  voiceGender?: string;
+  voiceProfile?: string;
+  voiceDelivery?: string;
+  language?: string;
   durationSec?: number;
   musicEnabled?: boolean;
   exportAudioFile?: boolean;
@@ -149,10 +169,40 @@ export function coerceAudioMood(value: unknown): AudioMood | null {
   return AUDIO_MOOD_VALUES.find((entry) => entry === normalized) ?? null;
 }
 
+export function coerceAudioIntensity(value: unknown): AudioIntensity | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  return AUDIO_INTENSITY_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
 export function coerceAudioVoiceMode(value: unknown): AudioVoiceMode | null {
   if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();
   return AUDIO_VOICE_MODE_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceAudioVoiceProfile(value: unknown): AudioVoiceProfile | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  return AUDIO_VOICE_PROFILE_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceAudioVoiceGender(value: unknown): AudioVoiceGender | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  return AUDIO_VOICE_GENDER_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceAudioVoiceDelivery(value: unknown): AudioVoiceDelivery | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  return AUDIO_VOICE_DELIVERY_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceAudioLanguage(value: unknown): AudioLanguage | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  return AUDIO_LANGUAGE_VALUES.find((entry) => entry === normalized) ?? null;
 }
 
 export function resolveAudioVoiceMode(input: { pack: AudioPackId; voiceSampleUrl?: string | null }): AudioVoiceMode | null {

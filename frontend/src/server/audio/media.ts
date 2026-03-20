@@ -7,6 +7,7 @@ import path from 'node:path';
 import { detectHasAudioStream, detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { ensureJobThumbnail } from '@/server/thumbnails';
 import { uploadFileBuffer } from '@/server/storage';
+import type { AudioIntensity } from '@/lib/audio-generation';
 
 const requireForRuntime = createRequire(import.meta.url);
 
@@ -49,6 +50,7 @@ type StemPresence = {
   hasMusic: boolean;
   hasVoice: boolean;
   targetDurationSec?: number | null;
+  mixIntensity?: AudioIntensity | null;
 };
 
 type MixAudioTracksParams = {
@@ -56,6 +58,7 @@ type MixAudioTracksParams = {
   musicUrl?: string | null;
   voiceUrl?: string | null;
   targetDurationSec?: number | null;
+  mixIntensity?: AudioIntensity | null;
 };
 
 type MixAudioIntoVideoParams = MixAudioTracksParams & {
@@ -115,6 +118,7 @@ function normalizeStemPresence(input: boolean | StemPresence): StemPresence {
       hasMusic: true,
       hasVoice: input,
       targetDurationSec: null,
+      mixIntensity: 'standard',
     };
   }
   return {
@@ -122,50 +126,82 @@ function normalizeStemPresence(input: boolean | StemPresence): StemPresence {
     hasMusic: Boolean(input.hasMusic),
     hasVoice: Boolean(input.hasVoice),
     targetDurationSec: input.targetDurationSec ?? null,
+    mixIntensity: input.mixIntensity ?? 'standard',
   };
+}
+
+function resolveMixProfile(intensity: AudioIntensity | null | undefined) {
+  switch (intensity) {
+    case 'subtle':
+      return {
+        soundDesignVolume: 0.92,
+        musicVolume: 0.52,
+        voiceVolume: 1.12,
+        musicWeight: 0.72,
+        voiceWeight: 1.22,
+      };
+    case 'intense':
+      return {
+        soundDesignVolume: 1.02,
+        musicVolume: 0.84,
+        voiceVolume: 1.2,
+        musicWeight: 1.0,
+        voiceWeight: 1.34,
+      };
+    case 'standard':
+    default:
+      return {
+        soundDesignVolume: 0.96,
+        musicVolume: 0.7,
+        voiceVolume: 1.18,
+        musicWeight: 0.85,
+        voiceWeight: 1.3,
+      };
+  }
 }
 
 export function buildAudioMixFilterGraph(input: boolean | StemPresence): string {
   const normalized = normalizeStemPresence(input);
   const trimSuffix = buildTrimSuffix(normalized.targetDurationSec);
+  const profile = resolveMixProfile(normalized.mixIntensity);
 
   if (normalized.hasSoundDesign && normalized.hasMusic && normalized.hasVoice) {
     return [
-      '[0:a]aresample=48000,volume=0.96[sfx]',
-      '[1:a]aresample=48000,volume=0.70[music]',
-      '[2:a]aresample=48000,volume=1.18[voice]',
+      `[0:a]aresample=48000,volume=${profile.soundDesignVolume.toFixed(2)}[sfx]`,
+      `[1:a]aresample=48000,volume=${profile.musicVolume.toFixed(2)}[music]`,
+      `[2:a]aresample=48000,volume=${profile.voiceVolume.toFixed(2)}[voice]`,
       '[music][voice]sidechaincompress=threshold=0.03:ratio=10:attack=20:release=450[musicduck]',
-      '[sfx][musicduck]amix=inputs=2:duration=longest:normalize=0:weights=1 0.85[bed]',
-      `[bed][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 1.3${trimSuffix},alimiter=limit=0.92[outa]`,
+      `[sfx][musicduck]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.musicWeight.toFixed(2)}[bed]`,
+      `[bed][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.voiceWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
     ].join(';');
   }
 
   if (normalized.hasSoundDesign && normalized.hasMusic) {
     return [
-      '[0:a]aresample=48000,volume=0.96[sfx]',
-      '[1:a]aresample=48000,volume=0.70[music]',
-      `[sfx][music]amix=inputs=2:duration=longest:normalize=0:weights=1 0.85${trimSuffix},alimiter=limit=0.92[outa]`,
+      `[0:a]aresample=48000,volume=${profile.soundDesignVolume.toFixed(2)}[sfx]`,
+      `[1:a]aresample=48000,volume=${profile.musicVolume.toFixed(2)}[music]`,
+      `[sfx][music]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.musicWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
     ].join(';');
   }
 
   if (normalized.hasSoundDesign && normalized.hasVoice) {
     return [
-      '[0:a]aresample=48000,volume=0.96[sfx]',
-      '[1:a]aresample=48000,volume=1.18[voice]',
-      `[sfx][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 1.3${trimSuffix},alimiter=limit=0.92[outa]`,
+      `[0:a]aresample=48000,volume=${profile.soundDesignVolume.toFixed(2)}[sfx]`,
+      `[1:a]aresample=48000,volume=${profile.voiceVolume.toFixed(2)}[voice]`,
+      `[sfx][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.voiceWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
     ].join(';');
   }
 
   if (normalized.hasSoundDesign) {
-    return [`[0:a]aresample=48000,volume=0.96${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
+    return [`[0:a]aresample=48000,volume=${profile.soundDesignVolume.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
   }
 
   if (normalized.hasMusic) {
-    return [`[0:a]aresample=48000,volume=1.00${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
+    return [`[0:a]aresample=48000,volume=${(profile.musicVolume + 0.18).toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
   }
 
   if (normalized.hasVoice) {
-    return [`[0:a]aresample=48000,volume=1.12${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
+    return [`[0:a]aresample=48000,volume=${Math.max(1.08, profile.voiceVolume - 0.04).toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`].join(';');
   }
 
   throw new Error('At least one audio stem is required for mixing.');
@@ -204,6 +240,7 @@ export async function mixAudioTracks(params: MixAudioTracksParams): Promise<Buff
       hasMusic: Boolean(params.musicUrl),
       hasVoice: Boolean(params.voiceUrl),
       targetDurationSec: params.targetDurationSec ?? null,
+      mixIntensity: params.mixIntensity ?? 'standard',
     });
 
     const args = [
@@ -302,6 +339,7 @@ export async function mixAudioIntoVideo(
     musicUrl: params.musicUrl,
     voiceUrl: params.voiceUrl,
     targetDurationSec: params.targetDurationSec ?? null,
+    mixIntensity: params.mixIntensity ?? 'standard',
   });
   const videoBuffer = await muxAudioBufferIntoVideo({
     sourceVideoUrl: params.sourceVideoUrl,
