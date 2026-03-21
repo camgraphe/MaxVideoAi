@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 import { Camera, Sparkles, Wrench } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -33,6 +34,20 @@ const ANGLE_CARD_BACKGROUND_URLS = [
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/79fe6fd7-60cf-4419-a143-a2cb52e9b762.webp',
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/cf9ff473-5f6f-4877-b5fd-aafc36bddeb8.webp',
 ] as const;
+
+function ToolPreviewPanel({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`relative overflow-hidden border-b border-border bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] ${className}`}>
+      {children}
+    </div>
+  );
+}
 
 
 export default function ToolsPage() {
@@ -93,26 +108,31 @@ export default function ToolsPage() {
             </section>
 
             <section className="grid gap-4 md:grid-cols-2">
-              <Card className="relative overflow-hidden border border-border bg-surface p-5">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${CHARACTER_CARD_BACKGROUND_URL})` }}
-                />
-                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(145deg,rgba(2,6,23,0.82),rgba(2,6,23,0.52),rgba(2,6,23,0.88))]" />
-                <div className="relative">
+              <Card className="overflow-hidden border border-border bg-surface p-0">
+                <ToolPreviewPanel className="aspect-[16/9] p-4">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_32%)]" />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(15,23,42,0.04))]" />
+                  <div className="relative flex h-full items-center justify-center rounded-[18px] border border-white/70 bg-white/55 p-3 shadow-[0_18px_40px_rgba(37,99,235,0.10)] backdrop-blur-sm">
+                    <img
+                      src={CHARACTER_CARD_BACKGROUND_URL}
+                      alt=""
+                      className="h-full w-full rounded-[14px] object-contain"
+                    />
+                  </div>
+                </ToolPreviewPanel>
+                <div className="p-5">
                   <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-white/12 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur-sm">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
                       <Sparkles className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-micro text-white/70">{copy.characterEyebrow}</p>
-                      <h2 className="text-lg font-semibold text-white">{copy.characterTitle}</h2>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.characterEyebrow}</p>
+                      <h2 className="text-lg font-semibold text-text-primary">{copy.characterTitle}</h2>
                     </div>
                   </div>
-                  <p className="text-sm text-white/82">{copy.characterBody}</p>
+                  <p className="text-sm text-text-secondary">{copy.characterBody}</p>
                   <div className="mt-5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/86 backdrop-blur-sm">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
                       <Sparkles className="h-3.5 w-3.5" />
                       V1
                     </span>
@@ -123,31 +143,32 @@ export default function ToolsPage() {
                 </div>
               </Card>
 
-              <Card className="relative overflow-hidden border border-border bg-surface p-5">
-                <div aria-hidden className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-                  {ANGLE_CARD_BACKGROUND_URLS.map((url) => (
-                    <div
-                      key={url}
-                      className="bg-cover bg-center"
-                      style={{ backgroundImage: `url(${url})` }}
-                    />
-                  ))}
-                </div>
-                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(145deg,rgba(2,6,23,0.78),rgba(2,6,23,0.46),rgba(2,6,23,0.88))]" />
-                <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.18),transparent_35%)]" />
-                <div className="relative">
+              <Card className="overflow-hidden border border-border bg-surface p-0">
+                <ToolPreviewPanel className="aspect-[16/9] p-4">
+                  <div className="grid h-full grid-cols-2 gap-3">
+                    {ANGLE_CARD_BACKGROUND_URLS.map((url) => (
+                      <div
+                        key={url}
+                        className="overflow-hidden rounded-[16px] border border-white/75 bg-white/60 p-2 shadow-[0_14px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm"
+                      >
+                        <img src={url} alt="" className="h-full w-full rounded-[12px] object-contain" />
+                      </div>
+                    ))}
+                  </div>
+                </ToolPreviewPanel>
+                <div className="p-5">
                   <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-white/12 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur-sm">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
                       <Wrench className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-micro text-white/70">{copy.angleEyebrow}</p>
-                      <h2 className="text-lg font-semibold text-white">{copy.angleTitle}</h2>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.angleEyebrow}</p>
+                      <h2 className="text-lg font-semibold text-text-primary">{copy.angleTitle}</h2>
                     </div>
                   </div>
-                  <p className="text-sm text-white/82">{copy.angleBody}</p>
+                  <p className="text-sm text-text-secondary">{copy.angleBody}</p>
                   <div className="mt-5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/86 backdrop-blur-sm">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
                       <Camera className="h-3.5 w-3.5" />
                       MVP
                     </span>
