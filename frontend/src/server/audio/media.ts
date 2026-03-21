@@ -171,8 +171,8 @@ export function buildAudioMixFilterGraph(input: boolean | StemPresence): string 
       `[1:a]aresample=48000,volume=${profile.musicVolume.toFixed(2)}[music]`,
       `[2:a]aresample=48000,volume=${profile.voiceVolume.toFixed(2)}[voice]`,
       '[music][voice]sidechaincompress=threshold=0.03:ratio=10:attack=20:release=450[musicduck]',
-      `[sfx][musicduck]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.musicWeight.toFixed(2)}[bed]`,
-      `[bed][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.voiceWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
+      `[sfx][musicduck]amix=inputs=2:duration=longest:weights=1 ${profile.musicWeight.toFixed(2)}[bed]`,
+      `[bed][voice]amix=inputs=2:duration=longest:weights=1 ${profile.voiceWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
     ].join(';');
   }
 
@@ -180,7 +180,7 @@ export function buildAudioMixFilterGraph(input: boolean | StemPresence): string 
     return [
       `[0:a]aresample=48000,volume=${profile.soundDesignVolume.toFixed(2)}[sfx]`,
       `[1:a]aresample=48000,volume=${profile.musicVolume.toFixed(2)}[music]`,
-      `[sfx][music]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.musicWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
+      `[sfx][music]amix=inputs=2:duration=longest:weights=1 ${profile.musicWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
     ].join(';');
   }
 
@@ -188,7 +188,7 @@ export function buildAudioMixFilterGraph(input: boolean | StemPresence): string 
     return [
       `[0:a]aresample=48000,volume=${profile.soundDesignVolume.toFixed(2)}[sfx]`,
       `[1:a]aresample=48000,volume=${profile.voiceVolume.toFixed(2)}[voice]`,
-      `[sfx][voice]amix=inputs=2:duration=longest:normalize=0:weights=1 ${profile.voiceWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
+      `[sfx][voice]amix=inputs=2:duration=longest:weights=1 ${profile.voiceWeight.toFixed(2)}${trimSuffix},alimiter=limit=0.92[outa]`,
     ].join(';');
   }
 
