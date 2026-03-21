@@ -25,6 +25,15 @@ const DEFAULT_TOOLS_COPY = {
   "open": "Open Tool"
 } as const;
 
+const CHARACTER_CARD_BACKGROUND_URL =
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/cf2ad043-a5e4-44e9-826a-494321707d86.webp';
+const ANGLE_CARD_BACKGROUND_URLS = [
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp',
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp',
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/79fe6fd7-60cf-4419-a143-a2cb52e9b762.webp',
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/cf9ff473-5f6f-4877-b5fd-aafc36bddeb8.webp',
+] as const;
+
 
 export default function ToolsPage() {
   const { loading: authLoading, user } = useRequireAuth();
@@ -84,47 +93,68 @@ export default function ToolsPage() {
             </section>
 
             <section className="grid gap-4 md:grid-cols-2">
-              <Card className="border border-border bg-surface p-5">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-                    <Sparkles className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.characterEyebrow}</p>
-                    <h2 className="text-lg font-semibold text-text-primary">{copy.characterTitle}</h2>
+              <Card className="relative overflow-hidden border border-border bg-surface p-5">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${CHARACTER_CARD_BACKGROUND_URL})` }}
+                />
+                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(145deg,rgba(2,6,23,0.82),rgba(2,6,23,0.52),rgba(2,6,23,0.88))]" />
+                <div className="relative">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-white/12 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur-sm">
+                      <Sparkles className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-white/70">{copy.characterEyebrow}</p>
+                      <h2 className="text-lg font-semibold text-white">{copy.characterTitle}</h2>
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm text-text-secondary">{copy.characterBody}</p>
-                <div className="mt-5 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    V1
-                  </span>
-                  <ButtonLink href="/tools/character-builder" variant="primary" linkComponent={Link}>
-                    {copy.open}
-                  </ButtonLink>
+                  <p className="text-sm text-white/82">{copy.characterBody}</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/86 backdrop-blur-sm">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      V1
+                    </span>
+                    <ButtonLink href="/tools/character-builder" variant="primary" linkComponent={Link}>
+                      {copy.open}
+                    </ButtonLink>
+                  </div>
                 </div>
               </Card>
 
-              <Card className="border border-border bg-surface p-5">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-                    <Wrench className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.angleEyebrow}</p>
-                    <h2 className="text-lg font-semibold text-text-primary">{copy.angleTitle}</h2>
-                  </div>
+              <Card className="relative overflow-hidden border border-border bg-surface p-5">
+                <div aria-hidden className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                  {ANGLE_CARD_BACKGROUND_URLS.map((url) => (
+                    <div
+                      key={url}
+                      className="bg-cover bg-center"
+                      style={{ backgroundImage: `url(${url})` }}
+                    />
+                  ))}
                 </div>
-                <p className="text-sm text-text-secondary">{copy.angleBody}</p>
-                <div className="mt-5 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
-                    <Camera className="h-3.5 w-3.5" />
-                    MVP
-                  </span>
-                  <ButtonLink href="/tools/angle" variant="primary" linkComponent={Link}>
-                    {copy.open}
-                  </ButtonLink>
+                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(145deg,rgba(2,6,23,0.78),rgba(2,6,23,0.46),rgba(2,6,23,0.88))]" />
+                <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.18),transparent_35%)]" />
+                <div className="relative">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-white/12 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur-sm">
+                      <Wrench className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-white/70">{copy.angleEyebrow}</p>
+                      <h2 className="text-lg font-semibold text-white">{copy.angleTitle}</h2>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/82">{copy.angleBody}</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/86 backdrop-blur-sm">
+                      <Camera className="h-3.5 w-3.5" />
+                      MVP
+                    </span>
+                    <ButtonLink href="/tools/angle" variant="primary" linkComponent={Link}>
+                      {copy.open}
+                    </ButtonLink>
+                  </div>
                 </div>
               </Card>
             </section>
