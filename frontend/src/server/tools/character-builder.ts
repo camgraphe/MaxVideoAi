@@ -343,9 +343,9 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
   }
 
   const blocks = [
-    'Create a tight front-facing character reference portrait focused on the face and upper torso, with strong facial clarity and readable hair and signature details.',
-    'The face must be clearly visible, facing the camera, and occupy most of the frame.',
-    'Frame from shoulders-up or chest-up only. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition.',
+    'Create a clean front-facing character reference portrait framed as a balanced medium portrait, with strong facial clarity and readable hair and signature details.',
+    'The face must be clearly visible and facing the camera, but avoid an extreme close-up that crops too tightly around the face.',
+    'Frame from roughly mid-torso or chest-up, showing the full head, neck, shoulders, and upper torso. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition.',
     'Bias toward a stable, reusable identity anchor rather than a generic beauty shot.',
   ];
   if (outputMode !== 'portrait-reference' && outputOptions.fullBodyRequired) {
