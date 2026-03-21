@@ -268,11 +268,15 @@ export function createDefaultTraits(sourceMode: CharacterBuilderSourceMode = 'sc
     ageRange: traitValue<'teen' | 'young-adult' | 'adult' | 'mature' | 'senior'>(null, 'manual'),
     skinTone: traitValue(autoValue, autoSource),
     faceCues: traitValue(autoValue, autoSource),
+    hairEnabled: true,
+    customHairDescription: '',
     hairColor: traitValue(autoValue, autoSource),
     hairLength: traitValue(autoValue, autoSource),
     hairstyle: traitValue(autoValue, autoSource),
     eyeColor: traitValue(autoValue, autoSource),
     bodyBuild: traitValue(autoValue, autoSource),
+    outfitEnabled: true,
+    customOutfitDescription: '',
     outfitStyle: traitValue(null, 'manual'),
     accessories: [],
     distinctiveFeatures: [],
@@ -360,6 +364,7 @@ export function summarizeCharacterState(state: Pick<CharacterBuilderState, 'trai
   const gender = state.traits.genderPresentation.value;
   const age = state.traits.ageRange.value;
   const outfit = state.traits.outfitStyle.value;
+  const customOutfit = state.traits.customOutfitDescription?.trim();
 
   const genderLabel = findTraitOption(GENDER_PRESENTATION_OPTIONS, gender)?.label;
   const ageLabel = findTraitOption(AGE_RANGE_OPTIONS, age)?.label;
@@ -367,7 +372,13 @@ export function summarizeCharacterState(state: Pick<CharacterBuilderState, 'trai
 
   if (genderLabel) parts.push(genderLabel);
   if (ageLabel) parts.push(ageLabel.toLowerCase());
-  if (outfitLabel) parts.push(outfitLabel.toLowerCase());
+  if (state.traits.outfitEnabled) {
+    if (customOutfit) {
+      parts.push(customOutfit.length > 36 ? `${customOutfit.slice(0, 33).trim()}...` : customOutfit);
+    } else if (outfitLabel) {
+      parts.push(outfitLabel.toLowerCase());
+    }
+  }
   parts.push(state.outputMode === 'character-sheet' ? 'character sheet' : 'portrait reference');
 
   return parts.join(' · ');

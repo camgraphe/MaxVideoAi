@@ -30,11 +30,15 @@ export interface CharacterBuilderTraits {
   ageRange: TraitValue<'teen' | 'young-adult' | 'adult' | 'mature' | 'senior'>;
   skinTone: TraitValue<string>;
   faceCues: TraitValue<string>;
+  hairEnabled: boolean;
+  customHairDescription?: string;
   hairColor: TraitValue<string>;
   hairLength: TraitValue<string>;
   hairstyle: TraitValue<string>;
   eyeColor: TraitValue<string>;
   bodyBuild: TraitValue<string>;
+  outfitEnabled: boolean;
+  customOutfitDescription?: string;
   outfitStyle: TraitValue<string>;
   accessories: string[];
   distinctiveFeatures: string[];

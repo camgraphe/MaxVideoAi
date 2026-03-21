@@ -165,6 +165,10 @@ const DEFAULT_CHARACTER_COPY = {
     "hairClose": "Close",
     "outfit": "Outfit",
     "moreOutfits": "More outfits",
+    "customHair": "Custom hair prompt",
+    "customHairPlaceholder": "Describe the hair you want to preserve or generate",
+    "customOutfit": "Custom outfit prompt",
+    "customOutfitPlaceholder": "Describe the clothes or wardrobe you want to see",
     "realism": "Realism style",
     "moreControls": "More controls",
     "optional": "Optional",
@@ -409,6 +413,7 @@ const DEFAULT_CHARACTER_COPY = {
 } as const;
 
 type CharacterCopy = typeof DEFAULT_CHARACTER_COPY;
+type LoadingRequestKey = 'generate-1' | 'generate-4' | 'full-body-fix' | 'lighting-variant';
 
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
@@ -418,6 +423,13 @@ function formatTemplate(template: string, values: Record<string, string | number
   return Object.entries(values).reduce((result, [key, value]) => {
     return result.replaceAll(`{${key}}`, String(value));
   }, template);
+}
+
+function getLoadingRequestKey(action: CharacterBuilderAction, generateCount?: 1 | 4): LoadingRequestKey {
+  if (action === 'generate') {
+    return generateCount === 4 ? 'generate-4' : 'generate-1';
+  }
+  return action;
 }
 
 
@@ -612,6 +624,12 @@ function describeTraitValue(
   return findChoiceLabel(options, value) ?? copy.notSet;
 }
 
+function summarizeCustomText(value: string | null | undefined): string {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed) return '';
+  return trimmed.length > 44 ? `${trimmed.slice(0, 41).trim()}...` : trimmed;
+}
+
 function findChoiceSwatch(
   options: Array<{ id: string; swatch?: string }>,
   value: string | null | undefined
@@ -629,6 +647,15 @@ function getHairSummary(
   },
   copy: CharacterCopy
 ): string {
+  if (traits.hairEnabled === false) {
+    return copy.off;
+  }
+
+  const customSummary = summarizeCustomText(traits.customHairDescription);
+  if (customSummary) {
+    return customSummary;
+  }
+
   const values = [
     describeTraitValue(options.hairColor, traits.hairColor.value, copy),
     describeTraitValue(options.hairLength, traits.hairLength.value, copy),
@@ -646,6 +673,23 @@ function getHairSummary(
   const meaningfulValues = filteredValues.filter((value) => value !== copy.notSet);
   if (!meaningfulValues.length) return copy.notSet;
   return meaningfulValues.join(' / ');
+}
+
+function getOutfitSummary(
+  traits: CharacterBuilderTraits,
+  options: Array<{ id: string; label: string }>,
+  copy: CharacterCopy
+): string {
+  if (traits.outfitEnabled === false) {
+    return copy.off;
+  }
+
+  const customSummary = summarizeCustomText(traits.customOutfitDescription);
+  if (customSummary) {
+    return customSummary;
+  }
+
+  return describeTraitValue(options, traits.outfitStyle.value, copy);
 }
 
 function countConfiguredSecondaryControls(state: CharacterBuilderState, hasIdentityReference: boolean): number {
@@ -938,7 +982,10 @@ function CharacterSummaryCard({
   qualityOptions: Array<{ id: string; label: string }>;
   copy: CharacterCopy;
 }) {
-  const hairSwatch = findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
+  const hairSwatch =
+    traits.hairEnabled === false || Boolean(traits.customHairDescription?.trim())
+      ? null
+      : findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
   const genderLabel = findChoiceLabel(genderOptions, traits.genderPresentation.value) ?? copy.open;
   const ageLabel = findChoiceLabel(ageOptions, traits.ageRange.value) ?? copy.open;
   const realismLabel = findChoiceLabel(realismOptions, traits.realismStyle);
@@ -1597,7 +1644,7 @@ export default function CharacterBuilderPage() {
   });
   const [showStyleReferenceSlot, setShowStyleReferenceSlot] = useState(false);
   const [mustRemainDraft, setMustRemainDraft] = useState('');
-  const [loadingAction, setLoadingAction] = useState<CharacterBuilderAction | null>(null);
+  const [loadingAction, setLoadingAction] = useState<LoadingRequestKey | null>(null);
   const [savingResultId, setSavingResultId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -1704,7 +1751,7 @@ export default function CharacterBuilderPage() {
   const hasMultipleResults = flattenedResults.length > 1;
   const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
   const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
-  const outfitSummary = describeTraitValue(outfitOptions, state.traits.outfitStyle.value, copy);
+  const outfitSummary = getOutfitSummary(state.traits, outfitOptions, copy);
   const identitySummary = `${findChoiceLabel(genderOptions, state.traits.genderPresentation.value) ?? copy.open} · ${findChoiceLabel(ageOptions, state.traits.ageRange.value) ?? copy.open}`;
   const realismSummary = findChoiceLabel(realismOptions, state.traits.realismStyle) ?? copy.summary.photoreal;
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
@@ -1714,7 +1761,10 @@ export default function CharacterBuilderPage() {
   );
   const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
   const overflowOutfitValue =
-    state.traits.outfitStyle.value && !FEATURED_OUTFIT_IDS.includes(state.traits.outfitStyle.value as (typeof FEATURED_OUTFIT_IDS)[number])
+    state.traits.outfitEnabled &&
+    !state.traits.customOutfitDescription?.trim() &&
+    state.traits.outfitStyle.value &&
+    !FEATURED_OUTFIT_IDS.includes(state.traits.outfitStyle.value as (typeof FEATURED_OUTFIT_IDS)[number])
       ? state.traits.outfitStyle.value
       : '__more_outfits__';
   const { data: billingProductData } = useSWR(
@@ -1831,6 +1881,29 @@ export default function CharacterBuilderPage() {
     }));
   }
 
+  function setHairEnabled(enabled: boolean) {
+    setState((previous) => ({
+      ...previous,
+      traits: {
+        ...previous.traits,
+        hairEnabled: enabled,
+      },
+    }));
+    if (!enabled) {
+      setHairOpen(false);
+    }
+  }
+
+  function setOutfitEnabled(enabled: boolean) {
+    setState((previous) => ({
+      ...previous,
+      traits: {
+        ...previous.traits,
+        outfitEnabled: enabled,
+      },
+    }));
+  }
+
   function toggleListValue(key: 'accessories' | 'distinctiveFeatures', value: string) {
     setState((previous) => {
       const current = previous.traits[key];
@@ -1933,7 +2006,7 @@ export default function CharacterBuilderPage() {
   async function handleRun(action: CharacterBuilderAction, generateCount?: 1 | 4) {
     setError(null);
     setStatusMessage(null);
-    setLoadingAction(action);
+    setLoadingAction(getLoadingRequestKey(action, generateCount));
 
     try {
       const response = await runCharacterBuilderTool({
@@ -2387,41 +2460,85 @@ export default function CharacterBuilderPage() {
                           onToggle={() => toggleBuildSection('hair')}
                         >
                           <div className="relative space-y-3">
-                            <button
-                              type="button"
-                              onClick={() => setHairOpen((previous) => !previous)}
-                              className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-surface px-4 py-4 text-left transition hover:border-border-hover hover:bg-surface-hover hover:shadow-card"
-                            >
-                              <div className="flex min-w-0 items-center gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-surface-2/80">
-                                  <div className="space-y-1">
-                                    <div className="h-2 w-7 rounded-full bg-slate-500" />
-                                    <div className="h-2 w-5 rounded-full bg-slate-400" />
-                                    <div className="h-2 w-6 rounded-full bg-slate-300" />
-                                  </div>
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
-                                  <p className="truncate text-xs text-text-secondary">
-                                    {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
-                                  </p>
-                                </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
+                              <div className="inline-flex rounded-full border border-border bg-bg p-1">
+                                {[true, false].map((enabled) => (
+                                  <button
+                                    key={enabled ? 'on' : 'off'}
+                                    type="button"
+                                    onClick={() => setHairEnabled(enabled)}
+                                    className={clsx(
+                                      'rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                                      state.traits.hairEnabled === enabled
+                                        ? 'bg-brand text-on-brand'
+                                        : 'text-text-secondary hover:text-text-primary'
+                                    )}
+                                  >
+                                    {enabled ? copy.on : copy.off}
+                                  </button>
+                                ))}
                               </div>
-                              <span className="rounded-full border border-border bg-surface-2/80 px-3 py-1 text-xs font-semibold text-text-secondary">
-                                {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
-                              </span>
-                            </button>
-                            <HairEditorPanel
-                              open={hairOpen}
-                              onClose={() => setHairOpen(false)}
-                              sourceMode={state.sourceMode}
-                              traits={state.traits}
-                              onChange={(key, value) => updateTrait(key, value)}
-                              hairColorOptions={hairColorOptions}
-                              hairLengthOptions={hairLengthOptions}
-                              hairstyleOptions={hairstyleOptions}
-                              copy={copy}
-                            />
+                            </div>
+                            {state.traits.hairEnabled ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setHairOpen((previous) => !previous)}
+                                  className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-surface px-4 py-4 text-left transition hover:border-border-hover hover:bg-surface-hover hover:shadow-card"
+                                >
+                                  <div className="flex min-w-0 items-center gap-4">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-surface-2/80">
+                                      <div className="space-y-1">
+                                        <div className="h-2 w-7 rounded-full bg-slate-500" />
+                                        <div className="h-2 w-5 rounded-full bg-slate-400" />
+                                        <div className="h-2 w-6 rounded-full bg-slate-300" />
+                                      </div>
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
+                                      <p className="truncate text-xs text-text-secondary">
+                                        {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <span className="rounded-full border border-border bg-surface-2/80 px-3 py-1 text-xs font-semibold text-text-secondary">
+                                    {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
+                                  </span>
+                                </button>
+                                <div className="space-y-2">
+                                  <label className="block text-sm font-semibold text-text-primary">{copy.sections.customHair}</label>
+                                  <Textarea
+                                    value={state.traits.customHairDescription ?? ''}
+                                    onChange={(event) =>
+                                      setState((previous) => ({
+                                        ...previous,
+                                        traits: {
+                                          ...previous.traits,
+                                          customHairDescription: event.target.value,
+                                        },
+                                      }))
+                                    }
+                                    placeholder={copy.sections.customHairPlaceholder}
+                                  />
+                                </div>
+                                <HairEditorPanel
+                                  open={hairOpen}
+                                  onClose={() => setHairOpen(false)}
+                                  sourceMode={state.sourceMode}
+                                  traits={state.traits}
+                                  onChange={(key, value) => updateTrait(key, value)}
+                                  hairColorOptions={hairColorOptions}
+                                  hairLengthOptions={hairLengthOptions}
+                                  hairstyleOptions={hairstyleOptions}
+                                  copy={copy}
+                                />
+                              </>
+                            ) : (
+                              <div className="rounded-[20px] border border-dashed border-border bg-bg/40 px-4 py-4 text-sm text-text-secondary">
+                                {copy.off}
+                              </div>
+                            )}
                           </div>
                         </BuilderAccordionSection>
 
@@ -2434,37 +2551,78 @@ export default function CharacterBuilderPage() {
                           <div className="space-y-3">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <label className="block text-sm font-semibold text-text-primary">{copy.sections.outfit}</label>
-                              <div className="w-full sm:w-[180px]">
-                                <SelectMenu
-                                  options={[
-                                    { value: '__more_outfits__', label: copy.sections.moreOutfits },
-                                    ...overflowOutfits.map((option) => ({ value: option.id, label: option.label })),
-                                  ]}
-                                  value={overflowOutfitValue}
-                                  onChange={(value) => {
-                                    if (value === '__more_outfits__') return;
-                                    updateTrait('outfitStyle', String(value));
-                                  }}
-                                  buttonClassName="min-h-[40px]"
-                                />
+                              <div className="inline-flex rounded-full border border-border bg-bg p-1">
+                                {[true, false].map((enabled) => (
+                                  <button
+                                    key={enabled ? 'on' : 'off'}
+                                    type="button"
+                                    onClick={() => setOutfitEnabled(enabled)}
+                                    className={clsx(
+                                      'rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                                      state.traits.outfitEnabled === enabled
+                                        ? 'bg-brand text-on-brand'
+                                        : 'text-text-secondary hover:text-text-primary'
+                                    )}
+                                  >
+                                    {enabled ? copy.on : copy.off}
+                                  </button>
+                                ))}
                               </div>
                             </div>
-                            <div className="flex gap-3 overflow-x-auto pb-1">
-                              {featuredOutfits.map((option) => {
-                                const meta = OUTFIT_CARD_META[option.id] ?? OUTFIT_CARD_META.casual;
-                                return (
-                                  <div key={option.id} className="min-w-[150px] flex-1">
-                                    <StyleChoiceCard
-                                      selected={state.traits.outfitStyle.value === option.id}
-                                      title={option.label}
-                                      background={meta.background}
-                                      accent={meta.accent}
-                                      onClick={() => updateTrait('outfitStyle', option.id)}
-                                    />
-                                  </div>
-                                );
-                              })}
-                            </div>
+                            {state.traits.outfitEnabled ? (
+                              <>
+                                <div className="w-full sm:w-[180px]">
+                                  <SelectMenu
+                                    options={[
+                                      { value: '__more_outfits__', label: copy.sections.moreOutfits },
+                                      ...overflowOutfits.map((option) => ({ value: option.id, label: option.label })),
+                                    ]}
+                                    value={overflowOutfitValue}
+                                    onChange={(value) => {
+                                      if (value === '__more_outfits__') return;
+                                      updateTrait('outfitStyle', String(value));
+                                    }}
+                                    buttonClassName="min-h-[40px]"
+                                  />
+                                </div>
+                                <div className="flex gap-3 overflow-x-auto pb-1">
+                                  {featuredOutfits.map((option) => {
+                                    const meta = OUTFIT_CARD_META[option.id] ?? OUTFIT_CARD_META.casual;
+                                    return (
+                                      <div key={option.id} className="min-w-[150px] flex-1">
+                                        <StyleChoiceCard
+                                          selected={state.traits.outfitStyle.value === option.id}
+                                          title={option.label}
+                                          background={meta.background}
+                                          accent={meta.accent}
+                                          onClick={() => updateTrait('outfitStyle', option.id)}
+                                        />
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="block text-sm font-semibold text-text-primary">{copy.sections.customOutfit}</label>
+                                  <Textarea
+                                    value={state.traits.customOutfitDescription ?? ''}
+                                    onChange={(event) =>
+                                      setState((previous) => ({
+                                        ...previous,
+                                        traits: {
+                                          ...previous.traits,
+                                          customOutfitDescription: event.target.value,
+                                        },
+                                      }))
+                                    }
+                                    placeholder={copy.sections.customOutfitPlaceholder}
+                                  />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="rounded-[20px] border border-dashed border-border bg-bg/40 px-4 py-4 text-sm text-text-secondary">
+                                {copy.off}
+                              </div>
+                            )}
                           </div>
                         </BuilderAccordionSection>
 
@@ -2746,7 +2904,7 @@ export default function CharacterBuilderPage() {
                                 disabled={loadingAction !== null}
                                 className="gap-2"
                               >
-                                {loadingAction === 'generate' ? (
+                                {loadingAction === 'generate-1' ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <Sparkles className="h-4 w-4" />
@@ -2759,7 +2917,7 @@ export default function CharacterBuilderPage() {
                                 disabled={loadingAction !== null}
                                 className="gap-2"
                               >
-                                {loadingAction === 'generate' ? (
+                                {loadingAction === 'generate-4' ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <WandSparkles className="h-4 w-4" />
@@ -2901,7 +3059,7 @@ export default function CharacterBuilderPage() {
               disabled={loadingAction !== null}
               className="flex-1 gap-2"
             >
-              {loadingAction === 'generate' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {loadingAction === 'generate-1' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {copy.generatePanel.generateReference}
             </Button>
             <Button
@@ -2910,7 +3068,7 @@ export default function CharacterBuilderPage() {
               disabled={loadingAction !== null}
               className="gap-2 px-4"
             >
-              {loadingAction === 'generate' ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+              {loadingAction === 'generate-4' ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
               4x
             </Button>
           </div>

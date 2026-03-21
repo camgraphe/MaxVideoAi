@@ -67,28 +67,75 @@ function getAspectRatio(
   return fullBodyRequired ? '2:3' : '4:5';
 }
 
-function buildReferenceStrengthBlock(referenceStrength: CharacterBuilderReferenceStrength | null): string {
+function buildReferenceStrengthBlock(
+  referenceStrength: CharacterBuilderReferenceStrength | null,
+  traits: CharacterBuilderTraits
+): string {
+  const anchorParts = buildAnchorParts(traits);
   switch (referenceStrength) {
     case 'loose':
       return 'Use the reference image for overall vibe and recognizable identity cues, with room to clean up the design.';
     case 'strong':
-      return 'Stay very close to the uploaded identity reference for face, proportions, hairstyle, and defining visible markers.';
+      return `Stay very close to the uploaded identity reference for ${anchorParts} and defining visible markers.`;
     case 'balanced':
     default:
       return 'Stay close to the uploaded identity reference while cleaning framing, lighting, and readability.';
   }
 }
 
-function buildConsistencyBlock(consistencyMode: CharacterBuilderConsistencyMode): string {
+function buildConsistencyBlock(
+  consistencyMode: CharacterBuilderConsistencyMode,
+  traits: CharacterBuilderTraits
+): string {
   switch (consistencyMode) {
     case 'exploratory':
       return 'Keep the same person recognizable while allowing a little stylistic variation.';
     case 'strict':
-      return 'Preserve the same identity, face, hairstyle, proportions, and distinctive markers as consistently as possible.';
+      return `Preserve the same identity, ${buildAnchorParts(traits)}, and distinctive markers as consistently as possible.`;
     case 'balanced':
     default:
       return 'Aim for stable identity and styling while still allowing small cleanup improvements.';
   }
+}
+
+function isHairEnabled(traits: CharacterBuilderTraits): boolean {
+  return traits.hairEnabled !== false;
+}
+
+function isOutfitEnabled(traits: CharacterBuilderTraits): boolean {
+  return traits.outfitEnabled !== false;
+}
+
+function getCustomHairDescription(traits: CharacterBuilderTraits): string {
+  return trimString(traits.customHairDescription);
+}
+
+function getCustomOutfitDescription(traits: CharacterBuilderTraits): string {
+  return trimString(traits.customOutfitDescription);
+}
+
+function buildAnchorParts(traits: CharacterBuilderTraits): string {
+  const parts = ['face', 'proportions'];
+  if (isHairEnabled(traits)) parts.push('hairstyle');
+  return parts.join(', ');
+}
+
+function buildPreservationParts(traits: CharacterBuilderTraits): string {
+  const parts = ['same face'];
+  if (isHairEnabled(traits)) parts.push('hairstyle');
+  parts.push('proportions');
+  if (isOutfitEnabled(traits)) parts.push('outfit identity');
+  parts.push('distinctive visible markers');
+  return parts.join(', ');
+}
+
+function buildLightingPreservationParts(traits: CharacterBuilderTraits): string {
+  const parts = ['same person', 'facial identity'];
+  if (isHairEnabled(traits)) parts.push('hairstyle');
+  parts.push('proportions');
+  if (isOutfitEnabled(traits)) parts.push('outfit');
+  parts.push('signature details');
+  return parts.join(', ');
 }
 
 function buildTraitPrompt(traits: CharacterBuilderTraits, sourceMode: CharacterBuilderRequest['sourceMode']): string[] {
@@ -128,12 +175,26 @@ function buildTraitPrompt(traits: CharacterBuilderTraits, sourceMode: CharacterB
   pushTrait('ageRange');
   pushTrait('skinTone');
   pushTrait('faceCues');
-  pushTrait('hairColor');
-  pushTrait('hairLength');
-  pushTrait('hairstyle');
+  if (isHairEnabled(traits)) {
+    const customHairDescription = getCustomHairDescription(traits);
+    if (customHairDescription) {
+      parts.push(customHairDescription);
+    } else {
+      pushTrait('hairColor');
+      pushTrait('hairLength');
+      pushTrait('hairstyle');
+    }
+  }
   pushTrait('eyeColor');
   pushTrait('bodyBuild');
-  pushTrait('outfitStyle');
+  if (isOutfitEnabled(traits)) {
+    const customOutfitDescription = getCustomOutfitDescription(traits);
+    if (customOutfitDescription) {
+      parts.push(customOutfitDescription);
+    } else {
+      pushTrait('outfitStyle');
+    }
+  }
 
   traits.accessories.forEach((value) => pushValue(getAccessoryPrompt(value)));
   traits.distinctiveFeatures.forEach((value) => pushValue(getDistinctiveFeaturePrompt(value)));
@@ -152,12 +213,18 @@ function buildReferenceBlock(input: CharacterBuilderRequest, referenceImages: Ch
   const blocks: string[] = [];
 
   if (identityImages.length) {
-    blocks.push('Treat the uploaded identity reference image as the primary anchor for face, proportions, hairstyle, and recognizable identity cues.');
-    blocks.push(buildReferenceStrengthBlock(input.referenceStrength ?? 'balanced'));
+    blocks.push(
+      `Treat the uploaded identity reference image as the primary anchor for ${buildAnchorParts(input.traits)} and recognizable identity cues.`
+    );
+    blocks.push(buildReferenceStrengthBlock(input.referenceStrength ?? 'balanced', input.traits));
   }
 
   if (styleImages.length) {
-    blocks.push('Use any secondary reference image only for outfit, palette, or styling inspiration. Do not replace the core identity with it.');
+    blocks.push(
+      isOutfitEnabled(input.traits)
+        ? 'Use any secondary reference image only for outfit, palette, or styling inspiration. Do not replace the core identity with it.'
+        : 'Use any secondary reference image only for palette or overall art direction. Do not replace the core identity with it.'
+    );
   }
 
   if (identityImages.length && input.sourceMode === 'reference-image') {
@@ -174,14 +241,14 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
     return [
       'Rebuild the character as a clean head-to-toe reference image.',
       'Ensure the full head, torso, arms, hands, legs, ankles, and feet are visible with no crop.',
-      'Preserve the same face, hairstyle, outfit identity, and distinctive visible markers from the source image.',
+      `Preserve the same ${buildPreservationParts(input.traits)} from the source image.`,
     ];
   }
 
   if (action === 'lighting-variant') {
     return [
       'Create a lighting-only variation of the selected character reference.',
-      'Preserve the same person, facial identity, hairstyle, proportions, outfit, and signature details.',
+      `Preserve the same ${buildLightingPreservationParts(input.traits)}.`,
       'Change the lighting mood while keeping the character readable and reference-friendly.',
     ];
   }
@@ -199,7 +266,11 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
       blocks.push('Bottom row: four compact close-up head-and-shoulders portraits directly underneath, matching the same view order.');
       blocks.push('Keep the bottom row to roughly one-third of the total canvas height so the close-ups read as a shorter strip and do not steal height from the full-body views.');
       blocks.push('Keep all eight panels aligned with even spacing, the same neutral background, and consistent lighting.');
-      blocks.push('The close-ups must clearly show the same face, hairstyle, earrings, makeup, and distinctive identity cues as the full-body views.');
+      blocks.push(
+        isHairEnabled(input.traits)
+          ? 'The close-ups must clearly show the same face, hairstyle, earrings, makeup, and distinctive identity cues as the full-body views.'
+          : 'The close-ups must clearly show the same face, earrings, makeup, and distinctive identity cues as the full-body views.'
+      );
     }
     return blocks;
   }
@@ -275,7 +346,7 @@ function buildPrompt(input: CharacterBuilderRequest): string {
     sections.push(referenceBlock.join(' '));
   }
 
-  sections.push(buildConsistencyBlock(input.consistencyMode));
+  sections.push(buildConsistencyBlock(input.consistencyMode, input.traits));
   sections.push(layoutBlock.join(' '));
 
   if (outputBlock.length) {
@@ -344,11 +415,15 @@ function sanitizeTraits(traits: CharacterBuilderRequest['traits'] | undefined): 
     ageRange: sanitizeTrait(traits.ageRange),
     skinTone: sanitizeTrait(traits.skinTone),
     faceCues: sanitizeTrait(traits.faceCues),
+    hairEnabled: traits.hairEnabled !== false,
+    customHairDescription: trimString(traits.customHairDescription),
     hairColor: sanitizeTrait(traits.hairColor),
     hairLength: sanitizeTrait(traits.hairLength),
     hairstyle: sanitizeTrait(traits.hairstyle),
     eyeColor: sanitizeTrait(traits.eyeColor),
     bodyBuild: sanitizeTrait(traits.bodyBuild),
+    outfitEnabled: traits.outfitEnabled !== false,
+    customOutfitDescription: trimString(traits.customOutfitDescription),
     outfitStyle: sanitizeTrait(traits.outfitStyle),
     accessories: uniqueStrings(Array.isArray(traits.accessories) ? traits.accessories : []),
     distinctiveFeatures: uniqueStrings(Array.isArray(traits.distinctiveFeatures) ? traits.distinctiveFeatures : []),
