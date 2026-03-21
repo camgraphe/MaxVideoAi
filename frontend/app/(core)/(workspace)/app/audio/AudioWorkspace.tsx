@@ -1392,9 +1392,9 @@ export default function AudioWorkspace() {
         </main>
       </div>
 
-      <div className="hidden w-[336px] shrink-0 px-2 py-4 xl:block">
+      <aside className="hidden h-[calc(125vh-var(--header-height))] w-full max-w-[336px] shrink-0 flex-col border-l border-border bg-bg/80 px-3 pb-6 pt-4 xl:flex">
         <AudioLatestRendersRail activeJobId={activeJob?.jobId ?? result?.jobId ?? null} onSelectJob={handleSelectLatestJob} />
-      </div>
+      </aside>
 
       <div className="border-t border-border px-4 py-4 xl:hidden">
         <AudioLatestRendersRail

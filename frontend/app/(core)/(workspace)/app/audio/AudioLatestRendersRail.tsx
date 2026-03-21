@@ -201,7 +201,7 @@ export default function AudioLatestRendersRail({
   const hasMore = Boolean(lastPage?.nextCursor);
 
   return (
-    <aside className={variant === 'desktop' ? 'flex h-full w-[320px] flex-col' : 'flex flex-col'}>
+    <aside className={variant === 'desktop' ? 'flex min-h-0 w-full flex-1 flex-col' : 'flex flex-col'}>
       <div className="flex items-center justify-between px-1 pb-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.rail.eyebrow}</p>
@@ -211,7 +211,7 @@ export default function AudioLatestRendersRail({
           {copy.rail.viewAll}
         </ButtonLink>
       </div>
-      <div className={variant === 'desktop' ? 'flex-1 overflow-y-auto pr-1' : ''}>
+      <div className={variant === 'desktop' ? 'scrollbar-rail mt-1 min-h-0 flex-1 overflow-y-auto pr-4 pt-3' : ''}>
         <div className="space-y-3">
           {error ? (
             <div className="rounded-card border border-border bg-surface p-4 text-sm text-state-warning">

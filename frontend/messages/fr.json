@@ -2819,7 +2819,7 @@
       "auth": {
         "eyebrow": "Générer de l’audio",
         "title": "Créez un compte pour générer de l’audio",
-        "body": "Créez des bandes-son cinématiques, des musiques seules ou des voix off premium dans le workspace MaxVideoAI.",
+        "body": "Créez des bandes-son cinématiques, des pistes de musique de fond ou des voix off premium dans l’espace MaxVideoAI.",
         "createAccount": "Créer un compte",
         "signIn": "Se connecter"
       },
@@ -2830,7 +2830,7 @@
       "modes": {
         "music_only": {
           "label": "Musique seule",
-          "description": "Score ou ambiance."
+          "description": "Musique de fond ou ambiance."
         },
         "voice_only": {
           "label": "Voix off seule",
@@ -2838,11 +2838,11 @@
         },
         "cinematic": {
           "label": "Cinématique",
-          "description": "SFX + musique optionnelle."
+          "description": "SFX + musique de fond optionnelle."
         },
         "cinematic_voice": {
           "label": "Cinématique + voix",
-          "description": "SFX + musique + voix off."
+          "description": "SFX + musique de fond + voix off."
         }
       },
       "preview": {
@@ -2884,11 +2884,11 @@
         "intensity": "Intensité",
         "duration": "Durée",
         "script": "Script",
-        "scriptVoiceOnlyPlaceholder": "Écris la voix off standalone que tu veux rendre.",
-        "scriptCinematicPlaceholder": "Écris la narration ou le dialogue à poser sur le mix cinématique.",
+        "scriptVoiceOnlyPlaceholder": "Rédige la voix off que tu veux générer.",
+        "scriptCinematicPlaceholder": "Rédige la narration ou le dialogue à poser sur le mix audio cinématique.",
         "estimatedDuration": "~{seconds}s estimées",
-        "voiceSample": "Exemple de voix",
-        "uploadSample": "Importer un sample",
+        "voiceSample": "Extrait vocal",
+        "uploadSample": "Importer un extrait",
         "cloneEnabled": "Clonage de voix activé",
         "defaultVoice": "Voix par défaut",
         "voiceType": "Type de voix",
@@ -2935,7 +2935,7 @@
         },
         "musicToggle": {
           "label": "Musique",
-          "description": "Musique activée. Coupe-la pour un rendu SFX seul, ou SFX + voix."
+          "description": "Musique de fond activée. Coupe-la pour un rendu SFX seul ou SFX + voix."
         },
         "exportToggle": {
           "label": "Exporter un fichier audio",

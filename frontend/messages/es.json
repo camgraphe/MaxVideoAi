@@ -2812,18 +2812,18 @@
       "auth": {
         "eyebrow": "Generar audio",
         "title": "Crea una cuenta para generar audio",
-        "body": "Crea bandas sonoras cinemáticas, camas musicales independientes o voces en off premium dentro del workspace de MaxVideoAI.",
+        "body": "Crea bandas sonoras cinemáticas, pistas de música de fondo o voces en off premium dentro del espacio de MaxVideoAI.",
         "createAccount": "Crear cuenta",
         "signIn": "Iniciar sesión"
       },
       "hero": {
         "eyebrow": "Generar audio",
-        "title": "Workspace de audio"
+        "title": "Espacio de audio"
       },
       "modes": {
         "music_only": {
           "label": "Solo música",
-          "description": "Score o ambiente."
+          "description": "Música de fondo o ambiente."
         },
         "voice_only": {
           "label": "Solo voz en off",
@@ -2831,11 +2831,11 @@
         },
         "cinematic": {
           "label": "Cinemático",
-          "description": "SFX + score opcional."
+          "description": "SFX + música de fondo opcional."
         },
         "cinematic_voice": {
           "label": "Cinemático + voz",
-          "description": "SFX + score + VO."
+          "description": "SFX + música de fondo + voz en off."
         }
       },
       "preview": {
@@ -2873,12 +2873,12 @@
       "controls": {
         "eyebrow": "Controles",
         "title": "Configuración de audio",
-        "mood": "Mood",
+        "mood": "Ambiente",
         "intensity": "Intensidad",
         "duration": "Duración",
         "script": "Script",
         "scriptVoiceOnlyPlaceholder": "Escribe la voz en off independiente que quieres renderizar.",
-        "scriptCinematicPlaceholder": "Escribe la narración o el diálogo que debe ir sobre la mezcla cinematográfica.",
+        "scriptCinematicPlaceholder": "Escribe la narración o el diálogo que debe ir sobre la mezcla de audio cinematográfica.",
         "estimatedDuration": "~{seconds}s estimados",
         "voiceSample": "Muestra de voz",
         "uploadSample": "Subir muestra",
@@ -2928,7 +2928,7 @@
         },
         "musicToggle": {
           "label": "Música",
-          "description": "Música activada. Apágala para SFX solos, o SFX + voz."
+          "description": "Música de fondo activada. Desactívala para dejar solo SFX o SFX + voz."
         },
         "exportToggle": {
           "label": "Exportar archivo de audio",

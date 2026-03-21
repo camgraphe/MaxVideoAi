@@ -12,7 +12,7 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
   auth: {
     eyebrow: 'Generate Audio',
     title: 'Create an account to generate audio',
-    body: 'Build cinematic soundtracks, standalone music beds, or premium voice overs inside the MaxVideoAI workspace.',
+    body: 'Build cinematic soundtracks, background music tracks, or premium voice overs inside the MaxVideoAI workspace.',
     createAccount: 'Create account',
     signIn: 'Sign in',
   },
@@ -23,7 +23,7 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
   modes: {
     music_only: {
       label: 'Music Only',
-      description: 'Score or ambience.',
+      description: 'Background music or ambience.',
     },
     voice_only: {
       label: 'Voice Over Only',
@@ -31,11 +31,11 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     },
     cinematic: {
       label: 'Cinematic',
-      description: 'SFX + optional score.',
+      description: 'SFX + optional background music.',
     },
     cinematic_voice: {
       label: 'Cinematic + Voice',
-      description: 'SFX + score + VO.',
+      description: 'SFX + background music + VO.',
     },
   },
   preview: {
@@ -77,8 +77,8 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     intensity: 'Intensity',
     duration: 'Duration',
     script: 'Script',
-    scriptVoiceOnlyPlaceholder: 'Write the standalone voice over you want to render.',
-    scriptCinematicPlaceholder: 'Write the narration or dialogue that should sit on top of the cinematic mix.',
+    scriptVoiceOnlyPlaceholder: 'Write the voice over you want to render.',
+    scriptCinematicPlaceholder: 'Write the narration or dialogue that should sit on top of the cinematic audio mix.',
     estimatedDuration: '~{seconds}s estimated',
     voiceSample: 'Voice sample',
     uploadSample: 'Upload sample',
@@ -128,7 +128,7 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     } satisfies Record<AudioLanguage, string>,
     musicToggle: {
       label: 'Music',
-      description: 'Score on. Turn off for SFX-only, or SFX + voice.',
+      description: 'Background music on. Turn it off for SFX-only or SFX + voice.',
     },
     exportToggle: {
       label: 'Export audio file',
