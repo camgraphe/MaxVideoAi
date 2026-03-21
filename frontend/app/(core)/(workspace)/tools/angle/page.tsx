@@ -149,6 +149,7 @@ const DEFAULT_ANGLE_COPY = {
   "angleSelected": "selected",
   "priceError": "Unable to load tool pricing",
   "uploadFailed": "Upload failed",
+  "uploadTooLarge": "Image exceeds {maxMB} MB. Compress it or choose a smaller file.",
   "invalidUrl": "Paste or drop a valid image URL.",
   "referenceName": "Reference",
   "libraryImageName": "Library image",
@@ -173,6 +174,9 @@ type AngleCopy = typeof DEFAULT_ANGLE_COPY;
 
 const ENGINES = listAngleToolEngines();
 const DEFAULT_ENGINE_ID = ENGINES[0]?.id ?? 'flux-multiple-angles';
+const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
+  ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
+  : 25;
 const ANGLE_TOOL_STORAGE_KEY = 'maxvideoai.tools.angle.v1';
 const ANGLE_MULTI_OUTPUT_COUNT = 4;
 
@@ -229,6 +233,12 @@ function formatUsd(value: number | null | undefined): string {
 function formatUsdCompact(value: number | null | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
   return `$${value.toFixed(2)}`;
+}
+
+function formatTemplate(template: string, values: Record<string, string | number>): string {
+  return Object.entries(values).reduce((result, [key, value]) => {
+    return result.replaceAll(`{${key}}`, String(value));
+  }, template);
 }
 
 function cleanupSourcePreview(image: UploadedImage | null) {
@@ -481,7 +491,15 @@ function parsePersistedAngleToolState(value: string): PersistedAngleToolState | 
   }
 }
 
-async function uploadImage(file: File): Promise<UploadedImage> {
+function getUploadTooLargeMessage(copy: AngleCopy, maxMB: number): string {
+  return formatTemplate(copy.uploadTooLarge, { maxMB });
+}
+
+async function uploadImage(file: File, copy: AngleCopy): Promise<UploadedImage> {
+  if (file.size > DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024) {
+    throw new Error(getUploadTooLargeMessage(copy, DEFAULT_UPLOAD_LIMIT_MB));
+  }
+
   const formData = new FormData();
   formData.set('file', file);
 
@@ -505,8 +523,8 @@ async function uploadImage(file: File): Promise<UploadedImage> {
     | null;
 
   if (!response.ok || !payload?.ok || !payload.asset?.url) {
-    if (payload?.error === 'FILE_TOO_LARGE') {
-      throw new Error(`Image exceeds ${payload.maxMB ?? 25} MB.`);
+    if (payload?.error === 'FILE_TOO_LARGE' || response.status === 413) {
+      throw new Error(getUploadTooLargeMessage(copy, payload?.maxMB ?? DEFAULT_UPLOAD_LIMIT_MB));
     }
     throw new Error(payload?.error ?? `Upload failed (${response.status})`);
   }
@@ -1088,7 +1106,7 @@ export default function AngleToolPage() {
     setError(null);
 
     try {
-      const uploaded = await uploadImage(file);
+      const uploaded = await uploadImage(file, copy);
       setSourceImage((previous) => {
         cleanupSourcePreview(previous);
         return {
