@@ -455,6 +455,50 @@ function isVideoBackedPack(pack: AudioPackId): boolean {
   return !getAudioPackConfig(pack).audioOnly;
 }
 
+export function resolveAudioRenderDuration(params: {
+  pack: AudioPackId;
+  sourceVideoUrl: string | null;
+  requiresVideo: boolean;
+  probedDurationSec: number | null;
+  requestedDurationSec: number | null;
+  script: string | null;
+}): number {
+  if (params.requiresVideo) {
+    if (!params.probedDurationSec) {
+      throw new AudioGenerationError('Unable to inspect the source video duration.', {
+        status: 422,
+        code: 'source_video_probe_failed',
+        field: 'sourceVideoUrl',
+      });
+    }
+    if (params.probedDurationSec < AUDIO_MIN_DURATION_SEC || params.probedDurationSec > AUDIO_MAX_DURATION_SEC) {
+      throw new AudioGenerationError(`Source video must be between ${AUDIO_MIN_DURATION_SEC}s and ${AUDIO_MAX_DURATION_SEC}s.`, {
+        status: 400,
+        code: 'source_video_duration_invalid',
+        field: 'sourceVideoUrl',
+      });
+    }
+  } else if (params.sourceVideoUrl && params.probedDurationSec) {
+    if (params.probedDurationSec < AUDIO_MIN_DURATION_SEC || params.probedDurationSec > AUDIO_MAX_DURATION_SEC) {
+      throw new AudioGenerationError(`Source video must be between ${AUDIO_MIN_DURATION_SEC}s and ${AUDIO_MAX_DURATION_SEC}s.`, {
+        status: 400,
+        code: 'source_video_duration_invalid',
+        field: 'sourceVideoUrl',
+      });
+    }
+  }
+
+  if (params.pack === 'voice_only') {
+    return estimateVoiceScriptDurationSec(params.script ?? '');
+  }
+
+  if (params.pack === 'music_only') {
+    return clampAudioDuration(params.probedDurationSec ?? params.requestedDurationSec ?? AUDIO_MIN_DURATION_SEC);
+  }
+
+  return clampAudioDuration(params.probedDurationSec ?? AUDIO_MIN_DURATION_SEC);
+}
+
 export async function generateAudioRun(params: {
   body: AudioGenerateRequestBody;
   userId: string;
@@ -492,29 +536,14 @@ export async function generateAudioRun(params: {
   const needsSourceProbe = Boolean(sourceVideoUrl) && (packConfig.requiresVideo || normalized.pack === 'music_only');
   const sourceProbe = needsSourceProbe && sourceVideoUrl ? await inspectSourceVideo(sourceVideoUrl) : null;
   const probedDurationSec = sourceProbe?.durationSec ? Math.round(sourceProbe.durationSec) : null;
-  if (packConfig.requiresVideo || normalized.pack === 'music_only') {
-    if (!probedDurationSec) {
-      throw new AudioGenerationError('Unable to inspect the source video duration.', {
-        status: 422,
-        code: 'source_video_probe_failed',
-        field: 'sourceVideoUrl',
-      });
-    }
-    if (probedDurationSec < AUDIO_MIN_DURATION_SEC || probedDurationSec > AUDIO_MAX_DURATION_SEC) {
-      throw new AudioGenerationError(`Source video must be between ${AUDIO_MIN_DURATION_SEC}s and ${AUDIO_MAX_DURATION_SEC}s.`, {
-        status: 400,
-        code: 'source_video_duration_invalid',
-        field: 'sourceVideoUrl',
-      });
-    }
-  }
-
-  const durationSec =
-    normalized.pack === 'voice_only'
-      ? estimateVoiceScriptDurationSec(normalized.script ?? '')
-      : normalized.pack === 'music_only'
-        ? clampAudioDuration(probedDurationSec ?? normalized.durationSec ?? AUDIO_MIN_DURATION_SEC)
-        : clampAudioDuration(probedDurationSec ?? AUDIO_MIN_DURATION_SEC);
+  const durationSec = resolveAudioRenderDuration({
+    pack: normalized.pack,
+    sourceVideoUrl,
+    requiresVideo: packConfig.requiresVideo,
+    probedDurationSec,
+    requestedDurationSec: normalized.durationSec,
+    script: normalized.script,
+  });
 
   const aspectRatio =
     sourceJob?.aspect_ratio ??

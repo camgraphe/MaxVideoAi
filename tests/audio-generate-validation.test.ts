@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { AudioGenerationError, validateAudioGenerateRequest } from '../frontend/src/server/audio/generate-audio';
+import { AudioGenerationError, resolveAudioRenderDuration, validateAudioGenerateRequest } from '../frontend/src/server/audio/generate-audio';
 
 test('audio validation requires a source video for cinematic modes', () => {
   assert.throws(
@@ -135,6 +135,38 @@ test('audio validation rejects voice options on non-voice modes', () => {
       assert.ok(error instanceof AudioGenerationError);
       assert.equal(error.code, 'audio_voice_gender_not_supported');
       assert.equal(error.field, 'voiceGender');
+      return true;
+    }
+  );
+});
+
+test('audio duration resolution allows music-only without a source video', () => {
+  const duration = resolveAudioRenderDuration({
+    pack: 'music_only',
+    sourceVideoUrl: null,
+    requiresVideo: false,
+    probedDurationSec: null,
+    requestedDurationSec: 8,
+    script: null,
+  });
+
+  assert.equal(duration, 8);
+});
+
+test('audio duration resolution still requires a probed duration for cinematic packs', () => {
+  assert.throws(
+    () =>
+      resolveAudioRenderDuration({
+        pack: 'cinematic',
+        sourceVideoUrl: 'https://example.com/source.mp4',
+        requiresVideo: true,
+        probedDurationSec: null,
+        requestedDurationSec: null,
+        script: null,
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof AudioGenerationError);
+      assert.equal(error.code, 'source_video_probe_failed');
       return true;
     }
   );
