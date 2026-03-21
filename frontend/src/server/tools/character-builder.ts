@@ -114,6 +114,73 @@ function getCustomOutfitDescription(traits: CharacterBuilderTraits): string {
   return trimString(traits.customOutfitDescription);
 }
 
+function joinPromptList(values: string[]): string {
+  const filtered = values.filter(Boolean);
+  if (filtered.length <= 1) return filtered[0] ?? '';
+  if (filtered.length === 2) return `${filtered[0]} and ${filtered[1]}`;
+  return `${filtered.slice(0, -1).join(', ')}, and ${filtered[filtered.length - 1]}`;
+}
+
+function getCloseUpDetailLabels(traits: CharacterBuilderTraits): string[] {
+  const labels: string[] = [];
+
+  for (const value of traits.accessories) {
+    switch (value) {
+      case 'earrings':
+        labels.push('earrings');
+        break;
+      case 'glasses':
+        labels.push('glasses');
+        break;
+      case 'sunglasses':
+        labels.push('sunglasses');
+        break;
+      case 'hat':
+        labels.push('hat');
+        break;
+      case 'headscarf':
+        labels.push('headscarf');
+        break;
+    }
+  }
+
+  for (const value of traits.distinctiveFeatures) {
+    switch (value) {
+      case 'makeup':
+        labels.push('makeup');
+        break;
+      case 'freckles':
+        labels.push('freckles');
+        break;
+      case 'scar':
+        labels.push('scar');
+        break;
+      case 'piercing':
+        labels.push('piercing');
+        break;
+      case 'beard':
+        labels.push('beard');
+        break;
+      case 'beauty-mark':
+        labels.push('beauty mark');
+        break;
+      case 'wrinkles':
+        labels.push('wrinkles');
+        break;
+    }
+  }
+
+  return uniqueStrings(labels);
+}
+
+function buildCloseUpIdentityParts(traits: CharacterBuilderTraits): string {
+  const parts = ['same face'];
+  if (isHairEnabled(traits)) parts.push('hairstyle');
+  parts.push(...getCloseUpDetailLabels(traits));
+  parts.push('distinctive identity cues');
+  return joinPromptList(parts);
+}
+
 function buildAnchorParts(traits: CharacterBuilderTraits): string {
   const parts = ['face', 'proportions'];
   if (isHairEnabled(traits)) parts.push('hairstyle');
@@ -267,9 +334,7 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
       blocks.push('Keep the bottom row to roughly one-third of the total canvas height so the close-ups read as a shorter strip and do not steal height from the full-body views.');
       blocks.push('Keep all eight panels aligned with even spacing, the same neutral background, and consistent lighting.');
       blocks.push(
-        isHairEnabled(input.traits)
-          ? 'The close-ups must clearly show the same face, hairstyle, earrings, makeup, and distinctive identity cues as the full-body views.'
-          : 'The close-ups must clearly show the same face, earrings, makeup, and distinctive identity cues as the full-body views.'
+        `The close-ups must clearly show the ${buildCloseUpIdentityParts(input.traits)} as the full-body views.`
       );
     }
     return blocks;
