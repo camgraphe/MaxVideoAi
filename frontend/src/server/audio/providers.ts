@@ -1,4 +1,5 @@
 import { getFalClient } from '@/lib/fal-client';
+import { assertFalModelAllowed } from '@/lib/fal-model-policy';
 import type {
   AudioIntensity,
   AudioLanguage,
@@ -278,6 +279,7 @@ function findCustomVoiceId(value: unknown): string | null {
 }
 
 async function subscribeFalModel(model: string, input: Record<string, unknown>) {
+  assertFalModelAllowed(model);
   const falClient = getFalClient();
   return falClient.subscribe(model, {
     input,

@@ -22,6 +22,12 @@ test('audio provider routing keeps recent-first order for every role', () => {
   );
 });
 
+test('audio provider routing does not expose beatoven for music', () => {
+  assert.ok(
+    getAudioProviderRoster('music').every((candidate) => !candidate.model.toLowerCase().includes('beatoven'))
+  );
+});
+
 test('audio provider routing stops after the first provider failure', async () => {
   const calls: string[] = [];
   await assert.rejects(
