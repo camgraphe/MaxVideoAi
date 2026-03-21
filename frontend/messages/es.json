@@ -3177,7 +3177,7 @@
       },
       "generatePanel": {
         "portraitTitle": "Referencia de retrato",
-        "portraitBody": "Ancla limpia centrada en el rostro",
+        "portraitBody": "Ancla más cerrada centrada en el rostro",
         "sheetTitle": "Hoja de personaje",
         "sheetBody": "Hoja de cuerpo completo multiángulo",
         "quality": "Calidad",

@@ -193,9 +193,9 @@ const DEFAULT_CHARACTER_COPY = {
     "preserveFacialDetails": "Preserve facial details",
     "avoid3dRenderLook": "Avoid 3D look"
   },
-  "generatePanel": {
-    "portraitTitle": "Portrait reference",
-    "portraitBody": "Clean face-first anchor",
+    "generatePanel": {
+      "portraitTitle": "Portrait reference",
+      "portraitBody": "Tighter face-first anchor",
     "sheetTitle": "Character sheet",
     "sheetBody": "Multi-angle full-body sheet",
     "quality": "Quality",
@@ -740,41 +740,6 @@ const GENDER_CARD_META: Record<string, { glyph: string; background: string; acce
   },
 };
 
-const OUTFIT_CARD_META: Record<string, { background: string; accent: string }> = {
-  casual: {
-    background: 'linear-gradient(135deg, rgba(255,247,237,1), rgba(255,255,255,0.94))',
-    accent: '#c2410c',
-  },
-  business: {
-    background: 'linear-gradient(135deg, rgba(226,232,240,1), rgba(255,255,255,0.94))',
-    accent: '#0f172a',
-  },
-  streetwear: {
-    background: 'linear-gradient(135deg, rgba(236,253,245,1), rgba(255,255,255,0.94))',
-    accent: '#047857',
-  },
-  fantasy: {
-    background: 'linear-gradient(135deg, rgba(243,232,255,1), rgba(255,255,255,0.94))',
-    accent: '#7c3aed',
-  },
-  'sci-fi': {
-    background: 'linear-gradient(135deg, rgba(224,242,254,1), rgba(255,255,255,0.94))',
-    accent: '#0284c7',
-  },
-  formal: {
-    background: 'linear-gradient(135deg, rgba(250,245,255,1), rgba(255,255,255,0.94))',
-    accent: '#6d28d9',
-  },
-  luxury: {
-    background: 'linear-gradient(135deg, rgba(254,249,195,1), rgba(255,255,255,0.94))',
-    accent: '#ca8a04',
-  },
-  tactical: {
-    background: 'linear-gradient(135deg, rgba(236,253,245,1), rgba(255,255,255,0.94))',
-    accent: '#15803d',
-  },
-};
-
 const REALISM_CARD_META: Record<string, { background: string; accent: string }> = {
   photoreal: {
     background: 'linear-gradient(135deg, rgba(226,232,240,1), rgba(255,255,255,0.96))',
@@ -793,8 +758,6 @@ const REALISM_CARD_META: Record<string, { background: string; accent: string }> 
     accent: '#0284c7',
   },
 };
-
-const FEATURED_OUTFIT_IDS = ['casual', 'business', 'streetwear', 'fantasy', 'sci-fi'] as const;
 
 function VisualChoiceCard({
   selected,
@@ -1755,18 +1718,7 @@ export default function CharacterBuilderPage() {
   const identitySummary = `${findChoiceLabel(genderOptions, state.traits.genderPresentation.value) ?? copy.open} · ${findChoiceLabel(ageOptions, state.traits.ageRange.value) ?? copy.open}`;
   const realismSummary = findChoiceLabel(realismOptions, state.traits.realismStyle) ?? copy.summary.photoreal;
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
-  const featuredOutfits = outfitOptions.filter((option) => FEATURED_OUTFIT_IDS.includes(option.id as (typeof FEATURED_OUTFIT_IDS)[number]));
-  const overflowOutfits = outfitOptions.filter(
-    (option) => !FEATURED_OUTFIT_IDS.includes(option.id as (typeof FEATURED_OUTFIT_IDS)[number])
-  );
   const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
-  const overflowOutfitValue =
-    state.traits.outfitEnabled &&
-    !state.traits.customOutfitDescription?.trim() &&
-    state.traits.outfitStyle.value &&
-    !FEATURED_OUTFIT_IDS.includes(state.traits.outfitStyle.value as (typeof FEATURED_OUTFIT_IDS)[number])
-      ? state.traits.outfitStyle.value
-      : '__more_outfits__';
   const { data: billingProductData } = useSWR(
     `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}`,
     async (url: string) => {
@@ -2571,33 +2523,23 @@ export default function CharacterBuilderPage() {
                             </div>
                             {state.traits.outfitEnabled ? (
                               <>
-                                <div className="w-full sm:w-[180px]">
-                                  <SelectMenu
-                                    options={[
-                                      { value: '__more_outfits__', label: copy.sections.moreOutfits },
-                                      ...overflowOutfits.map((option) => ({ value: option.id, label: option.label })),
-                                    ]}
-                                    value={overflowOutfitValue}
-                                    onChange={(value) => {
-                                      if (value === '__more_outfits__') return;
-                                      updateTrait('outfitStyle', String(value));
-                                    }}
-                                    buttonClassName="min-h-[40px]"
-                                  />
-                                </div>
-                                <div className="flex gap-3 overflow-x-auto pb-1">
-                                  {featuredOutfits.map((option) => {
-                                    const meta = OUTFIT_CARD_META[option.id] ?? OUTFIT_CARD_META.casual;
+                                <div className="flex flex-wrap gap-2">
+                                  {outfitOptions.map((option) => {
+                                    const selected = state.traits.outfitStyle.value === option.id;
                                     return (
-                                      <div key={option.id} className="min-w-[150px] flex-1">
-                                        <StyleChoiceCard
-                                          selected={state.traits.outfitStyle.value === option.id}
-                                          title={option.label}
-                                          background={meta.background}
-                                          accent={meta.accent}
-                                          onClick={() => updateTrait('outfitStyle', option.id)}
-                                        />
-                                      </div>
+                                      <button
+                                        key={option.id}
+                                        type="button"
+                                        onClick={() => updateTrait('outfitStyle', selected ? '' : option.id)}
+                                        className={clsx(
+                                          'rounded-full border px-3 py-1.5 text-xs font-semibold transition',
+                                          selected
+                                            ? 'border-brand bg-brand text-on-brand'
+                                            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
+                                        )}
+                                      >
+                                        {option.label}
+                                      </button>
                                     );
                                   })}
                                 </div>
@@ -2856,6 +2798,10 @@ export default function CharacterBuilderPage() {
                             setState((previous) => ({
                               ...previous,
                               outputMode: 'portrait-reference',
+                              outputOptions: {
+                                ...previous.outputOptions,
+                                fullBodyRequired: false,
+                              },
                             }))
                           }
                         />

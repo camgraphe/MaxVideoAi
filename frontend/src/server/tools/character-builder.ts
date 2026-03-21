@@ -276,8 +276,9 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
   }
 
   const blocks = [
-    'Create a centered character reference portrait with strong facial clarity and readable hair and signature details.',
+    'Create a tight character reference portrait framed from roughly chest-up or shoulders-up, with strong facial clarity and readable hair and signature details.',
     'Bias toward a stable, reusable identity anchor rather than a generic beauty shot.',
+    'Keep the framing tighter than a full-body shot unless full-body framing is explicitly requested.',
   ];
   if (outputOptions.fullBodyRequired) {
     blocks.push('Frame the character full body from head to toe.');

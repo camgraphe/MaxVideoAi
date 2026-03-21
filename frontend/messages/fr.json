@@ -3184,7 +3184,7 @@
       },
       "generatePanel": {
         "portraitTitle": "Référence portrait",
-        "portraitBody": "Ancre propre centrée sur le visage",
+        "portraitBody": "Ancre plus serrée centrée sur le visage",
         "sheetTitle": "Planche personnage",
         "sheetBody": "Planche corps entier multi-angle",
         "quality": "Qualité",
