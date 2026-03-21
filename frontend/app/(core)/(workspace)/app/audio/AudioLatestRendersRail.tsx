@@ -108,7 +108,18 @@ function AudioJobCard({
           {durationLabel ? <span>{durationLabel}</span> : null}
           <span>{formatDateTime(job.createdAt)}</span>
         </div>
-        {job.audioUrl ? (
+        {job.videoUrl ? (
+          <video
+            controls
+            src={job.videoUrl}
+            poster={thumb}
+            className="w-full overflow-hidden rounded-input border border-border bg-bg"
+            playsInline
+            preload="metadata"
+            onClick={(event) => event.stopPropagation()}
+          />
+        ) : null}
+        {!job.videoUrl && job.audioUrl ? (
           <audio
             controls
             src={job.audioUrl}

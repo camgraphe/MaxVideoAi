@@ -1131,7 +1131,7 @@ export default function AudioWorkspace() {
               result={result}
               sourceVideo={sourceVideo}
               activeJob={activeJob}
-              isLoading={queryJobLoading || isGenerating}
+              isLoading={isGenerating}
             />
           </div>
 
