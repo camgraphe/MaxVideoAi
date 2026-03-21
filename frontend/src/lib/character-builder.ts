@@ -91,13 +91,13 @@ export const CHARACTER_QUALITY_OPTIONS: Array<{
 }> = [
   {
     id: 'draft',
-    label: 'Draft',
+    label: 'Standard',
     description: 'Fast exploratory passes on Nano Banana 2.',
     engineId: 'nano-banana-2',
   },
   {
     id: 'final',
-    label: 'Final',
+    label: 'Pro',
     description: 'Cleaner export-ready references on Nano Banana Pro.',
     engineId: 'nano-banana-pro',
   },
@@ -111,7 +111,7 @@ export const CHARACTER_FORMAT_OPTIONS: Array<{
 }> = [
   {
     id: 'standard',
-    label: 'Standard',
+    label: '1K',
     description: 'Base render size.',
     resolution: '1k',
   },

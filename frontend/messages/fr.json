@@ -3189,9 +3189,6 @@
         "sheetBody": "Planche corps entier multi-angle",
         "quality": "Qualité",
         "format": "Format",
-        "qualityBody": "Brouillon utilise Nano Banana 2. Final utilise Nano Banana Pro.",
-        "formatBodyDraft": "La 2K coûte 2x. La 4K coûte 3x.",
-        "formatBodyFinal": "Le mode standard est déjà en 2K. La 4K coûte 2x.",
         "pricePerImage": "{price} par image",
         "generateReference": "Générer une référence",
         "generateFour": "Générer 4 options"
@@ -3396,17 +3393,17 @@
         },
         "quality": {
           "draft": {
-            "label": "Brouillon",
+            "label": "Standard",
             "description": "Passes exploratoires rapides sur Nano Banana 2."
           },
           "final": {
-            "label": "Final",
+            "label": "Pro",
             "description": "Références plus propres prêtes à l’export sur Nano Banana Pro."
           }
         },
         "format": {
           "standard": {
-            "label": "Standard",
+            "label": "1K",
             "description": "Taille de rendu de base."
           },
           "2k": {

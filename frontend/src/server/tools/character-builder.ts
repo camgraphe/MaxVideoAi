@@ -345,10 +345,10 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
   const blocks = [
     'Create a tight front-facing character reference portrait focused on the face and upper torso, with strong facial clarity and readable hair and signature details.',
     'The face must be clearly visible, facing the camera, and occupy most of the frame.',
-    'Frame from shoulders-up or chest-up only. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition unless full-body framing is explicitly requested.',
+    'Frame from shoulders-up or chest-up only. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition.',
     'Bias toward a stable, reusable identity anchor rather than a generic beauty shot.',
   ];
-  if (outputOptions.fullBodyRequired) {
+  if (outputMode !== 'portrait-reference' && outputOptions.fullBodyRequired) {
     blocks.push('Frame the character full body from head to toe.');
   }
   return blocks;
@@ -365,7 +365,7 @@ function buildOutputOptionBlock(input: CharacterBuilderRequest): string[] {
   if (input.outputOptions.avoid3dRenderLook) {
     blocks.push('Avoid a glossy 3D-render look.');
   }
-  if (input.outputMode === 'character-sheet' || input.outputOptions.fullBodyRequired) {
+  if (input.outputMode === 'character-sheet') {
     blocks.push('Keep the character fully visible with realistic anatomy and complete framing.');
   }
   return blocks;
@@ -544,7 +544,7 @@ function sanitizeRequest(input: RunCharacterBuilderInput): CharacterBuilderReque
   );
   const traits = sanitizeTraits(input.traits);
   const outputOptions = {
-    fullBodyRequired: input.outputOptions?.fullBodyRequired === true,
+    fullBodyRequired: outputMode === 'character-sheet' ? input.outputOptions?.fullBodyRequired === true : false,
     includeCloseUps: input.outputOptions?.includeCloseUps === true,
     neutralStudioBackground: input.outputOptions?.neutralStudioBackground !== false,
     preserveFacialDetails: input.outputOptions?.preserveFacialDetails !== false,

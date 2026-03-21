@@ -3182,9 +3182,6 @@
         "sheetBody": "Hoja de cuerpo completo multiángulo",
         "quality": "Calidad",
         "format": "Formato",
-        "qualityBody": "Borrador usa Nano Banana 2. Final usa Nano Banana Pro.",
-        "formatBodyDraft": "2K cuesta 2x. 4K cuesta 3x.",
-        "formatBodyFinal": "El modo estándar ya renderiza en 2K. 4K cuesta 2x.",
         "pricePerImage": "{price} por imagen",
         "generateReference": "Generar referencia",
         "generateFour": "Generar 4 opciones"
@@ -3389,17 +3386,17 @@
         },
         "quality": {
           "draft": {
-            "label": "Borrador",
+            "label": "Standard",
             "description": "Pasadas exploratorias rápidas en Nano Banana 2."
           },
           "final": {
-            "label": "Final",
+            "label": "Pro",
             "description": "Referencias más limpias listas para exportar en Nano Banana Pro."
           }
         },
         "format": {
           "standard": {
-            "label": "Estándar",
+            "label": "1K",
             "description": "Tamaño base de render."
           },
           "2k": {

@@ -3178,9 +3178,6 @@
         "sheetBody": "Multi-angle full-body sheet",
         "quality": "Quality",
         "format": "Format",
-        "qualityBody": "Draft uses Nano Banana 2. Final uses Nano Banana Pro.",
-        "formatBodyDraft": "2K costs 2x. 4K costs 3x.",
-        "formatBodyFinal": "Standard already renders at 2K. 4K costs 2x.",
         "pricePerImage": "{price} per image",
         "generateReference": "Generate reference",
         "generateFour": "Generate 4 options"
@@ -3385,17 +3382,17 @@
         },
         "quality": {
           "draft": {
-            "label": "Draft",
+            "label": "Standard",
             "description": "Fast exploratory passes on Nano Banana 2."
           },
           "final": {
-            "label": "Final",
+            "label": "Pro",
             "description": "Cleaner export-ready references on Nano Banana Pro."
           }
         },
         "format": {
           "standard": {
-            "label": "Standard",
+            "label": "1K",
             "description": "Base render size."
           },
           "2k": {

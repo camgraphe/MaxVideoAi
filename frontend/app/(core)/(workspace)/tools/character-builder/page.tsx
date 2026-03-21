@@ -204,9 +204,6 @@ const DEFAULT_CHARACTER_COPY = {
     "sheetBody": "Multi-angle full-body sheet",
     "quality": "Quality",
     "format": "Format",
-    "qualityBody": "Draft uses Nano Banana 2. Final uses Nano Banana Pro.",
-    "formatBodyDraft": "2K costs 2x. 4K costs 3x.",
-    "formatBodyFinal": "Standard already renders at 2K. 4K costs 2x.",
     "pricePerImage": "{price} per image",
     "generateReference": "Generate reference",
     "generateFour": "Generate 4 options"
@@ -411,17 +408,17 @@ const DEFAULT_CHARACTER_COPY = {
     },
     "quality": {
       "draft": {
-        "label": "Draft",
+        "label": "Standard",
         "description": "Fast exploratory passes on Nano Banana 2."
       },
       "final": {
-        "label": "Final",
+        "label": "Pro",
         "description": "Cleaner export-ready references on Nano Banana Pro."
       }
     },
     "format": {
       "standard": {
-        "label": "Standard",
+        "label": "1K",
         "description": "Base render size."
       },
       "2k": {
@@ -496,6 +493,16 @@ function getResultActionLabel(copy: CharacterCopy, action: CharacterBuilderActio
   if (action === 'full-body-fix') return copy.resultCard.fullBodyFix;
   if (action === 'lighting-variant') return copy.resultCard.lightingVariant;
   return copy.resultCard.referenceOutput;
+}
+
+function getFormatDisplayLabel(
+  copy: CharacterCopy,
+  formatMode: CharacterBuilderFormatMode,
+  qualityMode: CharacterBuilderState['qualityMode']
+): string {
+  if (formatMode === '4k') return copy.options.format['4k'].label;
+  if (formatMode === '2k') return copy.options.format['2k'].label;
+  return qualityMode === 'final' ? '2K' : '1K';
 }
 
 
@@ -574,6 +581,10 @@ function readPersistedState(): CharacterBuilderState | null {
       outputOptions: {
         ...base.outputOptions,
         ...parsed.state.outputOptions,
+        fullBodyRequired:
+          (parsed.state.outputMode ?? base.outputMode) === 'character-sheet'
+            ? (parsed.state.outputOptions?.fullBodyRequired ?? base.outputOptions.fullBodyRequired)
+            : false,
       },
     };
   } catch {
@@ -669,6 +680,10 @@ function parseCharacterBuilderSnapshot(snapshot: unknown): Partial<CharacterBuil
     outputOptions: {
       ...base.outputOptions,
       ...builder.outputOptions,
+      fullBodyRequired:
+        (builder.outputMode ?? base.outputMode) === 'character-sheet'
+          ? (builder.outputOptions?.fullBodyRequired ?? base.outputOptions.fullBodyRequired)
+          : false,
     },
     advancedNotes: builder.advancedNotes ?? '',
     mustRemainVisible: Array.isArray(builder.mustRemainVisible) ? builder.mustRemainVisible : [],
@@ -777,7 +792,6 @@ function countConfiguredSecondaryControls(state: CharacterBuilderState, hasIdent
   if (hasIdentityReference && state.referenceStrength && state.referenceStrength !== 'balanced') count += 1;
   if (state.advancedNotes.trim().length) count += 1;
   if (state.outputMode === 'character-sheet' && !state.outputOptions.includeCloseUps) count += 1;
-  if (state.outputOptions.fullBodyRequired && state.outputMode !== 'character-sheet') count += 1;
   if (!state.outputOptions.neutralStudioBackground) count += 1;
   if (!state.outputOptions.preserveFacialDetails) count += 1;
   if (!state.outputOptions.avoid3dRenderLook) count += 1;
@@ -1026,7 +1040,7 @@ function CharacterSummaryCard({
   const realismLabel = findChoiceLabel(realismOptions, traits.realismStyle);
   const outputLabel = findChoiceLabel(outputOptions, outputMode);
   const qualityLabel = findChoiceLabel(qualityOptions, qualityMode);
-  const formatLabel = findChoiceLabel(formatOptions, formatMode);
+  const formatLabel = getFormatDisplayLabel(copy, formatMode, qualityMode);
 
   return (
     <Card className="overflow-hidden border border-border bg-surface p-5 shadow-card">
@@ -1821,7 +1835,7 @@ export default function CharacterBuilderPage() {
     () =>
       getAvailableCharacterFormatOptions(state.qualityMode).map((option) => ({
         ...option,
-        label: copy.options.format[option.id].label,
+        label: getFormatDisplayLabel(copy, option.id, state.qualityMode),
         description: copy.options.format[option.id].description,
       })),
     [copy, state.qualityMode]
@@ -1875,7 +1889,7 @@ export default function CharacterBuilderPage() {
     qualityLabelOptions,
     state.qualityMode
   );
-  const formatLabel = findChoiceLabel(formatLabelOptions, state.formatMode);
+  const formatLabel = getFormatDisplayLabel(copy, state.formatMode, state.qualityMode);
   const outputLabel = findChoiceLabel(
     outputModeLabelOptions,
     state.outputMode
@@ -2855,7 +2869,6 @@ export default function CharacterBuilderPage() {
 
                           <div className="grid gap-3 md:grid-cols-2">
                             {[
-                              ['fullBodyRequired', copy.outputOptions.fullBodyRequired],
                               ['includeCloseUps', copy.outputOptions.includeCloseUps],
                               ['neutralStudioBackground', copy.outputOptions.neutralStudioBackground],
                               ['preserveFacialDetails', copy.outputOptions.preserveFacialDetails],
@@ -2998,9 +3011,7 @@ export default function CharacterBuilderPage() {
 
                         <div className="rounded-[24px] border border-border bg-surface p-4 shadow-card">
                           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="space-y-1">
-                              <p className="text-sm text-text-secondary">{copy.generatePanel.qualityBody}</p>
-                              <div className="space-y-2">
+                            <div className="space-y-2">
                                 <SegmentedControl
                                   label={copy.generatePanel.format}
                                   options={formatOptions}
@@ -3015,10 +3026,6 @@ export default function CharacterBuilderPage() {
                                     }))
                                   }
                                 />
-                                <p className="text-xs text-text-secondary">
-                                  {state.qualityMode === 'final' ? copy.generatePanel.formatBodyFinal : copy.generatePanel.formatBodyDraft}
-                                </p>
-                              </div>
                               <p className="text-sm font-medium text-text-primary">
                                 {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
                               </p>
@@ -3079,8 +3086,7 @@ export default function CharacterBuilderPage() {
                           findChoiceLabel(outputModeLabelOptions, pendingRun.outputMode) ?? copy.generatePanel.portraitTitle;
                         const pendingQualityLabel =
                           findChoiceLabel(qualityLabelOptions, pendingRun.qualityMode) ?? copy.options.quality.draft.label;
-                        const pendingFormatLabel =
-                          findChoiceLabel(formatLabelOptions, pendingRun.formatMode) ?? copy.options.format.standard.label;
+                        const pendingFormatLabel = getFormatDisplayLabel(copy, pendingRun.formatMode, pendingRun.qualityMode);
                         const subtitle = `${pendingOutputLabel} · ${pendingQualityLabel} · ${pendingFormatLabel}`;
                         const badge = pendingRun.generateCount === 4 ? '4x' : null;
                         return (
