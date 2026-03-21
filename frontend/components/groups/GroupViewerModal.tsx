@@ -33,6 +33,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
     return group.items.map((item, index) => {
       const label = `Variant ${index + 1}`;
       const video = isVideo(item) ? item.url : undefined;
+      const audio = typeof item.audioUrl === 'string' ? item.audioUrl : undefined;
       const thumb = item.thumb ?? (video ? undefined : item.url);
       const rawStatus = typeof item.meta?.status === 'string' ? String(item.meta.status) : undefined;
       const jobIdMeta = typeof item.meta?.jobId === 'string' ? String(item.meta.jobId) : null;
@@ -65,6 +66,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
         label,
         jobId,
         videoUrl: video,
+        audioUrl: audio,
         thumbUrl: thumb,
         aspectRatio: item.aspect,
         status,
@@ -83,9 +85,11 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
               : false,
         mediaType:
           item.meta && typeof item.meta === 'object' && 'mediaType' in item.meta
-            ? ((item.meta as Record<string, unknown>).mediaType as 'image' | 'video' | undefined)
+            ? ((item.meta as Record<string, unknown>).mediaType as 'image' | 'video' | 'audio' | undefined)
             : video
               ? 'video'
+              : audio
+                ? 'audio'
               : 'image',
       };
     });

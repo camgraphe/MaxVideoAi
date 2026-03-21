@@ -389,7 +389,8 @@ function ResultPreview({
   isLoading: boolean;
 }) {
   const previewThumb = result?.thumbUrl ?? sourceVideo?.thumbUrl ?? '/assets/frames/thumb-16x9.svg';
-  const showOverlay = isLoading || activeJob?.status === 'pending' || activeJob?.status === 'running';
+  const hasRenderableOutput = Boolean(result?.videoUrl || result?.audioUrl);
+  const showOverlay = !hasRenderableOutput && (isLoading || activeJob?.status === 'pending' || activeJob?.status === 'running');
   const overlayMessage = activeJob?.message ?? (isLoading ? 'Loading audio render…' : 'Processing audio render…');
   const overlayProgress = activeJob?.progress ?? 0;
 
@@ -621,8 +622,9 @@ export default function AudioWorkspace() {
       });
 
       const status =
-        detail.status ??
-        ((detail.videoUrl || detail.audioUrl) ? 'completed' : 'pending');
+        (detail.videoUrl || detail.audioUrl)
+          ? 'completed'
+          : detail.status ?? 'pending';
       const progress = typeof detail.progress === 'number' ? detail.progress : status === 'completed' ? 100 : 0;
 
       const normalizedJob: ActiveAudioJobState = {
@@ -738,7 +740,7 @@ export default function AudioWorkspace() {
     latestRestoreAttemptedRef.current = true;
     let cancelled = false;
     setQueryJobLoading(true);
-    authFetch('/api/jobs?surface=audio&limit=1')
+    authFetch('/api/jobs?surface=audio&limit=12')
       .then(async (response) => {
         const payload = (await response.json().catch(() => null)) as
           | { ok?: boolean; error?: string; jobs?: Job[] }
@@ -746,7 +748,9 @@ export default function AudioWorkspace() {
         if (!response.ok || !payload?.ok || !Array.isArray(payload.jobs)) {
           throw new Error(payload?.error ?? 'Unable to load latest audio job.');
         }
-        const latestJob = payload.jobs.find((job) => job.surface === 'audio');
+        const latestJob =
+          payload.jobs.find((job) => job.surface === 'audio' && Boolean(job.videoUrl || job.audioUrl)) ??
+          null;
         if (!latestJob || cancelled) return;
         if (manualWorkspaceOverrideRef.current) return;
         await restoreAudioJob(latestJob.jobId);
@@ -782,7 +786,7 @@ export default function AudioWorkspace() {
         });
         const nextStatus: ActiveAudioJobState = {
           jobId: status.jobId,
-          status: status.status,
+          status: status.videoUrl || status.audioUrl ? 'completed' : status.status,
           progress: status.progress,
           message: status.message ?? null,
           videoUrl: status.videoUrl ?? null,

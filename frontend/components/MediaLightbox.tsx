@@ -13,6 +13,7 @@ export interface MediaLightboxEntry {
   id: string;
   label: string;
   videoUrl?: string | null;
+  audioUrl?: string | null;
   thumbUrl?: string | null;
   aspectRatio?: string | null;
   jobId?: string | null;
@@ -27,7 +28,7 @@ export interface MediaLightboxEntry {
   indexable?: boolean;
   visibility?: 'public' | 'private';
   hasAudio?: boolean;
-  mediaType?: 'image' | 'video';
+  mediaType?: 'image' | 'video' | 'audio';
   prompt?: string | null;
   priceCents?: number | null;
   currency?: string | null;
@@ -319,7 +320,10 @@ export function MediaLightbox({
     [onToggleIndexable]
   );
 
-  const hasAtLeastOneVideo = useMemo(() => entries.some((entry) => Boolean(entry.videoUrl)), [entries]);
+  const hasAtLeastOneRenderableMedia = useMemo(
+    () => entries.some((entry) => Boolean(entry.videoUrl || entry.audioUrl || entry.thumbUrl)),
+    [entries]
+  );
   const specs = useMemo(() => {
     const next: Array<{ label: string; value: string }> = [];
     if (title) {
@@ -351,7 +355,7 @@ export function MediaLightbox({
       }}
     >
       <div className="relative max-h-full w-full max-w-5xl overflow-y-auto p-5">
-        {!hasAtLeastOneVideo ? (
+        {!hasAtLeastOneRenderableMedia ? (
           <p className="mt-3 rounded-input border border-dashed border-border bg-bg px-3 py-2 text-sm text-text-muted">
             Media will be available once the render completes.
           </p>
@@ -370,8 +374,9 @@ export function MediaLightbox({
           {entries.map((entry, index) => {
             const aspectClass = aspectRatioClass(entry.aspectRatio);
             const videoUrl = entry.videoUrl ?? undefined;
+            const audioUrl = entry.audioUrl ?? undefined;
             const thumbUrl = entry.thumbUrl ?? undefined;
-            const mediaUrl = entry.videoUrl ?? entry.thumbUrl ?? null;
+            const mediaUrl = entry.videoUrl ?? entry.audioUrl ?? entry.thumbUrl ?? null;
             const libraryState = libraryStates[entry.id];
             const isProcessing = entry.status === 'pending';
             const progressLabel =
@@ -400,7 +405,7 @@ export function MediaLightbox({
             const canRefresh =
               Boolean(onRefreshEntry) &&
               hasRefreshTarget &&
-              (entry.status === 'pending' || !entry.videoUrl);
+              (entry.status === 'pending' || (!entry.videoUrl && !entry.audioUrl));
             const canRemix = Boolean(onRemixEntry);
             const canTemplate = Boolean(onUseTemplate) && !entry.curated;
             const downloadState = downloadStates[entry.id];
@@ -515,6 +520,20 @@ export function MediaLightbox({
                         autoPlay
                         muted
                       />
+                    ) : audioUrl ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_48%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))] px-6 py-6 text-center">
+                        {thumbUrl ? <Image src={thumbUrl} alt="" fill className="object-cover opacity-20" /> : null}
+                        <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/assets/icons/audio.svg" alt="" className="h-10 w-10 opacity-95" />
+                        </div>
+                        <p className="relative mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
+                          Audio output
+                        </p>
+                        <div className="relative mt-5 w-full max-w-xl">
+                          <audio controls src={audioUrl} className="w-full" />
+                        </div>
+                      </div>
                     ) : thumbUrl ? (
                       <Image src={thumbUrl} alt="" fill className="object-contain" />
                     ) : (

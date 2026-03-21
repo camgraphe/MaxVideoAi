@@ -34,6 +34,7 @@ function resolveLayout(group: GroupSummary): VideoGroupLayout {
 
 function toVideoItem(member: GroupMemberSummary): VideoItem {
   const videoUrl = normalizeMediaUrl(member.videoUrl) ?? undefined;
+  const audioUrl = normalizeMediaUrl(member.audioUrl) ?? undefined;
   const thumb = normalizeMediaUrl(member.thumbUrl) ?? undefined;
   const { aspect, original } = normalizeAspect(member.aspectRatio);
 
@@ -64,6 +65,8 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   }
   if (videoUrl) {
     meta.mediaType = 'video';
+  } else if (audioUrl) {
+    meta.mediaType = 'audio';
   } else if (thumb) {
     meta.mediaType = 'image';
   }
@@ -94,6 +97,7 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   return {
     id: member.id,
     url: videoUrl ?? thumb ?? '',
+    audioUrl,
     aspect,
     thumb,
     jobId: member.jobId ?? member.id,
