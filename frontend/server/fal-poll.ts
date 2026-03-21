@@ -6,6 +6,7 @@ import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 
 type FalPendingJob = {
   job_id: string;
+  surface: string | null;
   engine_id: string;
   provider_job_id: string;
   status: string;
@@ -22,7 +23,7 @@ const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED
 
 export async function runFalPoll() {
   const rows = await query<FalPendingJob>(
-    `SELECT job_id, engine_id, provider_job_id, status, updated_at, created_at
+    `SELECT job_id, surface, engine_id, provider_job_id, status, updated_at, created_at
      FROM app_jobs
      WHERE provider_job_id IS NOT NULL
        AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress')
@@ -38,6 +39,10 @@ export async function runFalPoll() {
   let updates = 0;
 
   for (const job of rows) {
+    if (job.surface === 'audio' || job.engine_id.startsWith('audio-')) {
+      continue;
+    }
+
     type MarkFailedOptions = {
       autoRefundEligible?: boolean;
       failureOrigin?: 'provider_terminal' | 'poll_internal';

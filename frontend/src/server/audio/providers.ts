@@ -58,11 +58,6 @@ const AUDIO_PROVIDER_ROSTER: Record<AudioPipelineRole, AudioProviderCandidate[]>
   ],
   music: [
     {
-      key: 'beatoven_music_generation',
-      label: 'Beatoven Music Generation',
-      model: 'beatoven/music-generation',
-    },
-    {
       key: 'google_lyria2',
       label: 'Google Lyria 2',
       model: 'fal-ai/lyria2',
@@ -88,6 +83,8 @@ const AUDIO_PROVIDER_ROSTER: Record<AudioPipelineRole, AudioProviderCandidate[]>
     },
   ],
 };
+
+const ENABLE_AUDIO_PROVIDER_FALLBACK = false;
 
 const AUDIO_PROVIDER_TIMEOUT_MS: Record<AudioPipelineRole, number> = {
   soundDesign: 180_000,
@@ -328,7 +325,11 @@ export async function runAudioRoleWithFallback(
 ): Promise<AudioProviderResult> {
   const failures: AudioProviderAttemptFailure[] = [];
   const subscribe = options?.subscribe ?? subscribeFalModel;
-  for (const candidate of AUDIO_PROVIDER_ROSTER[role]) {
+  const candidates = ENABLE_AUDIO_PROVIDER_FALLBACK
+    ? AUDIO_PROVIDER_ROSTER[role]
+    : AUDIO_PROVIDER_ROSTER[role].slice(0, 1);
+
+  for (const candidate of candidates) {
     try {
       const result = await subscribeWithTimeout(role, candidate.model, builder(candidate), subscribe, options?.timeoutMs);
       const audioUrl = findFileUrl(result.data, 'audio');

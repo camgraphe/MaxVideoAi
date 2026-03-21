@@ -215,7 +215,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   });
 
   // Optionally poll FAL once if pending and we have provider job id
-  if (shouldUseFalApis() && job.provider_job_id && job.status !== 'completed' && job.status !== 'failed') {
+  if (surface !== 'audio' && shouldUseFalApis() && job.provider_job_id && job.status !== 'completed' && job.status !== 'failed') {
     try {
       const statusUrl = buildFalProxyUrl(`/status/${job.provider_job_id}`);
       const sr = await fetch(statusUrl);
