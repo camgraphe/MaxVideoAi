@@ -1,11 +1,13 @@
 import { randomUUID } from 'crypto';
 import {
   getAccessoryPrompt,
-  getDefaultResolution,
+  getCharacterFormatMultiplier,
+  getCharacterFormatResolution,
   getDistinctiveFeaturePrompt,
   getQualityEngineId,
   getRealismPrompt,
   getTraitOptionPrompt,
+  normalizeCharacterFormatMode,
 } from '@/lib/character-builder';
 import { executeImageGeneration, ImageGenerationExecutionError } from '@/server/images/execute-image-generation';
 import type {
@@ -341,9 +343,10 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
   }
 
   const blocks = [
-    'Create a tight character reference portrait framed from roughly chest-up or shoulders-up, with strong facial clarity and readable hair and signature details.',
+    'Create a tight front-facing character reference portrait focused on the face and upper torso, with strong facial clarity and readable hair and signature details.',
+    'The face must be clearly visible, facing the camera, and occupy most of the frame.',
+    'Frame from shoulders-up or chest-up only. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition unless full-body framing is explicitly requested.',
     'Bias toward a stable, reusable identity anchor rather than a generic beauty shot.',
-    'Keep the framing tighter than a full-body shot unless full-body framing is explicitly requested.',
   ];
   if (outputOptions.fullBodyRequired) {
     blocks.push('Frame the character full body from head to toe.');
@@ -535,6 +538,10 @@ function sanitizeRequest(input: RunCharacterBuilderInput): CharacterBuilderReque
         ? 'balanced'
         : null;
   const qualityMode = input.qualityMode === 'final' ? 'final' : 'draft';
+  const formatMode = normalizeCharacterFormatMode(
+    input.formatMode === '2k' || input.formatMode === '4k' ? input.formatMode : 'standard',
+    qualityMode
+  );
   const traits = sanitizeTraits(input.traits);
   const outputOptions = {
     fullBodyRequired: input.outputOptions?.fullBodyRequired === true,
@@ -551,6 +558,7 @@ function sanitizeRequest(input: RunCharacterBuilderInput): CharacterBuilderReque
     consistencyMode,
     referenceStrength,
     qualityMode,
+    formatMode,
     referenceImages,
     traits,
     outputOptions,
@@ -606,6 +614,7 @@ function buildSettingsSnapshot(
       consistencyMode: request.consistencyMode,
       referenceStrength: request.referenceStrength ?? null,
       qualityMode: request.qualityMode,
+      formatMode: request.formatMode,
       referenceImages: request.referenceImages,
       traits: request.traits,
       outputOptions: request.outputOptions,
@@ -644,7 +653,8 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
     request.outputOptions.fullBodyRequired,
     request.outputOptions.includeCloseUps
   );
-  const resolution = getDefaultResolution(request.qualityMode);
+  const resolution = getCharacterFormatResolution(request.formatMode, request.qualityMode);
+  const billingQuantityMultiplier = getCharacterFormatMultiplier(request.formatMode, request.qualityMode);
 
   try {
     const result = await executeImageGeneration({
@@ -664,6 +674,7 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
         indexable: false,
       },
       settingsSnapshot,
+      billingQuantityMultiplier,
     });
 
     const createdAt = new Date().toISOString();
@@ -679,6 +690,7 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
       action: request.action,
       outputMode: request.outputMode,
       qualityMode: request.qualityMode,
+      formatMode: request.formatMode,
       parentResultId,
       createdAt,
     }));
@@ -689,6 +701,7 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
       action: request.action,
       outputMode: request.outputMode,
       qualityMode: request.qualityMode,
+      formatMode: request.formatMode,
       engineId: result.engineId ?? engineId,
       engineLabel: result.engineLabel ?? engineLabel,
       createdAt,

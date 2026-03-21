@@ -128,6 +128,7 @@ type ExecuteImageGenerationOptions = {
   settingsSnapshot?: unknown;
   jobSurface?: JobSurface;
   billingProductKey?: BillingProductKey | null;
+  billingQuantityMultiplier?: number;
 };
 
 type ImageEngineEntry = (typeof IMAGE_ENGINE_REGISTRY)[number];
@@ -822,6 +823,7 @@ export async function executeImageGeneration({
   settingsSnapshot,
   jobSurface = 'image',
   billingProductKey = null,
+  billingQuantityMultiplier = 1,
 }: ExecuteImageGenerationOptions): Promise<ImageGenerationResponse> {
   if (!isDatabaseConfigured()) {
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
@@ -1043,7 +1045,7 @@ export async function executeImageGeneration({
     pricing = billingProductKey
       ? await computeBillingProductSnapshot({
           productKey: billingProductKey,
-          quantity: numImages,
+          quantity: numImages * Math.max(1, Math.round(billingQuantityMultiplier)),
           membershipTier,
           engineId: engine.id,
         })

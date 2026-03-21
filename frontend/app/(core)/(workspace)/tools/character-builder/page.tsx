@@ -49,6 +49,9 @@ import {
   HAIR_COLOR_OPTIONS,
   HAIR_LENGTH_OPTIONS,
   HAIRSTYLE_OPTIONS,
+  getAvailableCharacterFormatOptions,
+  getCharacterFormatMultiplier,
+  normalizeCharacterFormatMode,
   normalizeTraitsForSourceMode,
   OUTFIT_STYLE_OPTIONS,
   REALISM_STYLE_OPTIONS,
@@ -59,6 +62,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type {
   CharacterBuilderAction,
+  CharacterBuilderFormatMode,
   CharacterBuilderResult,
   CharacterBuilderRun,
   CharacterBuilderSettingsSnapshot,
@@ -195,11 +199,14 @@ const DEFAULT_CHARACTER_COPY = {
   },
     "generatePanel": {
       "portraitTitle": "Portrait reference",
-      "portraitBody": "Tighter face-first anchor",
+      "portraitBody": "Face-forward portrait anchor",
     "sheetTitle": "Character sheet",
     "sheetBody": "Multi-angle full-body sheet",
     "quality": "Quality",
+    "format": "Format",
     "qualityBody": "Draft uses Nano Banana 2. Final uses Nano Banana Pro.",
+    "formatBodyDraft": "2K costs 2x. 4K costs 3x.",
+    "formatBodyFinal": "Standard already renders at 2K. 4K costs 2x.",
     "pricePerImage": "{price} per image",
     "generateReference": "Generate reference",
     "generateFour": "Generate 4 options"
@@ -215,6 +222,7 @@ const DEFAULT_CHARACTER_COPY = {
     "style": "Style",
     "output": "Output",
     "quality": "Quality",
+    "format": "Format",
     "autoFromReference": "Auto from reference",
     "photoreal": "Photoreal"
   },
@@ -249,6 +257,8 @@ const DEFAULT_CHARACTER_COPY = {
     "referenceOutput": "Reference output",
     "fullBodyFix": "Full-body fix",
     "lightingVariant": "Lighting variant",
+    "pending": "Rendering",
+    "pendingBody": "This output will appear here as soon as it is ready.",
     "selected": "Selected",
     "base": "Base",
     "unpinBase": "Unpin base",
@@ -408,12 +418,42 @@ const DEFAULT_CHARACTER_COPY = {
         "label": "Final",
         "description": "Cleaner export-ready references on Nano Banana Pro."
       }
+    },
+    "format": {
+      "standard": {
+        "label": "Standard",
+        "description": "Base render size."
+      },
+      "2k": {
+        "label": "2K",
+        "description": "Sharper output. 2x price."
+      },
+      "4k": {
+        "label": "4K",
+        "description": "Final-grade output. 3x price."
+      }
     }
   }
 } as const;
 
 type CharacterCopy = typeof DEFAULT_CHARACTER_COPY;
 type LoadingRequestKey = 'generate-1' | 'generate-4' | 'full-body-fix' | 'lighting-variant';
+type LoadingRequestCounts = Record<LoadingRequestKey, number>;
+type PendingCharacterRun = {
+  id: string;
+  action: CharacterBuilderAction;
+  outputMode: CharacterBuilderRun['outputMode'];
+  qualityMode: CharacterBuilderRun['qualityMode'];
+  formatMode: CharacterBuilderFormatMode;
+  generateCount: 1 | 4;
+};
+
+const INITIAL_LOADING_REQUEST_COUNTS: LoadingRequestCounts = {
+  'generate-1': 0,
+  'generate-4': 0,
+  'full-body-fix': 0,
+  'lighting-variant': 0,
+};
 
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
@@ -430,6 +470,32 @@ function getLoadingRequestKey(action: CharacterBuilderAction, generateCount?: 1 
     return generateCount === 4 ? 'generate-4' : 'generate-1';
   }
   return action;
+}
+
+function incrementLoadingRequestCount(
+  counts: LoadingRequestCounts,
+  key: LoadingRequestKey
+): LoadingRequestCounts {
+  return {
+    ...counts,
+    [key]: (counts[key] ?? 0) + 1,
+  };
+}
+
+function decrementLoadingRequestCount(
+  counts: LoadingRequestCounts,
+  key: LoadingRequestKey
+): LoadingRequestCounts {
+  return {
+    ...counts,
+    [key]: Math.max(0, (counts[key] ?? 0) - 1),
+  };
+}
+
+function getResultActionLabel(copy: CharacterCopy, action: CharacterBuilderAction): string {
+  if (action === 'full-body-fix') return copy.resultCard.fullBodyFix;
+  if (action === 'lighting-variant') return copy.resultCard.lightingVariant;
+  return copy.resultCard.referenceOutput;
 }
 
 
@@ -504,6 +570,7 @@ function readPersistedState(): CharacterBuilderState | null {
         ...base.traits,
         ...parsed.state.traits,
       },
+      formatMode: normalizeCharacterFormatMode(parsed.state.formatMode, parsed.state.qualityMode ?? base.qualityMode),
       outputOptions: {
         ...base.outputOptions,
         ...parsed.state.outputOptions,
@@ -598,6 +665,7 @@ function parseCharacterBuilderSnapshot(snapshot: unknown): Partial<CharacterBuil
     consistencyMode: builder.consistencyMode ?? base.consistencyMode,
     referenceStrength: builder.referenceStrength ?? base.referenceStrength,
     qualityMode: builder.qualityMode ?? base.qualityMode,
+    formatMode: normalizeCharacterFormatMode(builder.formatMode, builder.qualityMode ?? base.qualityMode),
     outputOptions: {
       ...base.outputOptions,
       ...builder.outputOptions,
@@ -925,11 +993,13 @@ function CharacterSummaryCard({
   traits,
   outputMode,
   qualityMode,
+  formatMode,
   genderOptions,
   ageOptions,
   realismOptions,
   outputOptions,
   qualityOptions,
+  formatOptions,
   copy,
 }: {
   identityReference: CharacterBuilderReferenceImage | null;
@@ -938,11 +1008,13 @@ function CharacterSummaryCard({
   traits: CharacterBuilderTraits;
   outputMode: CharacterBuilderState['outputMode'];
   qualityMode: CharacterBuilderState['qualityMode'];
+  formatMode: CharacterBuilderState['formatMode'];
   genderOptions: Array<{ id: string; label: string }>;
   ageOptions: Array<{ id: string; label: string }>;
   realismOptions: Array<{ id: string; label: string }>;
   outputOptions: Array<{ id: string; label: string }>;
   qualityOptions: Array<{ id: string; label: string }>;
+  formatOptions: Array<{ id: string; label: string }>;
   copy: CharacterCopy;
 }) {
   const hairSwatch =
@@ -954,6 +1026,7 @@ function CharacterSummaryCard({
   const realismLabel = findChoiceLabel(realismOptions, traits.realismStyle);
   const outputLabel = findChoiceLabel(outputOptions, outputMode);
   const qualityLabel = findChoiceLabel(qualityOptions, qualityMode);
+  const formatLabel = findChoiceLabel(formatOptions, formatMode);
 
   return (
     <Card className="overflow-hidden border border-border bg-surface p-5 shadow-card">
@@ -1020,6 +1093,10 @@ function CharacterSummaryCard({
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.quality}</span>
             <span className="text-sm font-medium text-text-primary">{qualityLabel}</span>
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.format}</span>
+            <span className="text-sm font-medium text-text-primary">{formatLabel ?? copy.options.format.standard.label}</span>
           </div>
         </div>
       </div>
@@ -1534,13 +1611,7 @@ function ResultCard({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{result.engineLabel}</p>
-            <p className="mt-1 text-sm font-semibold text-text-primary">
-              {result.action === 'generate'
-                ? copy.resultCard.referenceOutput
-                : result.action === 'full-body-fix'
-                  ? copy.resultCard.fullBodyFix
-                  : copy.resultCard.lightingVariant}
-            </p>
+            <p className="mt-1 text-sm font-semibold text-text-primary">{getResultActionLabel(copy, result.action)}</p>
           </div>
           <div className="flex items-center gap-2">
             {selected ? (
@@ -1588,6 +1659,48 @@ function ResultCard({
   );
 }
 
+function PendingResultCard({
+  title,
+  subtitle,
+  badge,
+  copy,
+}: {
+  title: string;
+  subtitle: string;
+  badge?: string | null;
+  copy: CharacterCopy;
+}) {
+  return (
+    <Card className="overflow-hidden border border-border bg-surface/90 p-0">
+      <div className="relative h-48 overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(11,107,255,0.14),_transparent_60%),linear-gradient(180deg,rgba(148,163,184,0.08),transparent)]">
+        <div className="absolute inset-0 animate-pulse bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_40%,rgba(11,107,255,0.08)_100%)]" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface shadow-card text-brand">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </span>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-text-primary">{copy.resultCard.pending}</p>
+            <p className="text-xs text-text-secondary">{copy.resultCard.pendingBody}</p>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-3 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{subtitle}</p>
+            <p className="mt-1 text-sm font-semibold text-text-primary">{title}</p>
+          </div>
+          {badge ? (
+            <span className="inline-flex items-center rounded-full bg-brand/10 px-2 py-1 text-[11px] font-semibold text-brand">
+              {badge}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function CharacterBuilderPage() {
   const { loading: authLoading, user } = useRequireAuth();
   const { t } = useI18n();
@@ -1607,7 +1720,8 @@ export default function CharacterBuilderPage() {
   });
   const [showStyleReferenceSlot, setShowStyleReferenceSlot] = useState(false);
   const [mustRemainDraft, setMustRemainDraft] = useState('');
-  const [loadingAction, setLoadingAction] = useState<LoadingRequestKey | null>(null);
+  const [loadingActions, setLoadingActions] = useState<LoadingRequestCounts>(INITIAL_LOADING_REQUEST_COUNTS);
+  const [pendingRuns, setPendingRuns] = useState<PendingCharacterRun[]>([]);
   const [savingResultId, setSavingResultId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -1703,14 +1817,36 @@ export default function CharacterBuilderPage() {
       })),
     [copy]
   );
+  const formatOptions = useMemo(
+    () =>
+      getAvailableCharacterFormatOptions(state.qualityMode).map((option) => ({
+        ...option,
+        label: copy.options.format[option.id].label,
+        description: copy.options.format[option.id].description,
+      })),
+    [copy, state.qualityMode]
+  );
 
   const flattenedResults = getFlattenedResults(state.runs);
   const selectedResult = findResultById(state.runs, state.selectedResultId);
   const pinnedResult = findResultById(state.runs, state.pinnedReferenceResultId);
+  const outputModeLabelOptions = useMemo(
+    () => outputModeOptions.map((option) => ({ id: option.id, label: option.label })),
+    [outputModeOptions]
+  );
+  const qualityLabelOptions = useMemo(
+    () => qualityOptions.map((option) => ({ id: option.id, label: option.label })),
+    [qualityOptions]
+  );
+  const formatLabelOptions = useMemo(
+    () => formatOptions.map((option) => ({ id: option.id, label: option.label })),
+    [formatOptions]
+  );
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
   const hasIdentityReference = Boolean(identityReference);
-  const hasResults = flattenedResults.length > 0;
+  const hasCompletedResults = flattenedResults.length > 0;
+  const hasResults = hasCompletedResults || pendingRuns.length > 0;
   const hasMultipleResults = flattenedResults.length > 1;
   const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
   const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
@@ -1732,15 +1868,19 @@ export default function CharacterBuilderPage() {
     { keepPreviousData: true }
   );
   const estimatedImageCostUsd =
-    billingProductData?.unitPriceCents != null ? Number((billingProductData.unitPriceCents / 100).toFixed(2)) : null;
+    billingProductData?.unitPriceCents != null
+      ? Number(((billingProductData.unitPriceCents * getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) / 100).toFixed(2))
+      : null;
   const qualityLabel = findChoiceLabel(
-    qualityOptions.map((option) => ({ id: option.id, label: option.label })),
+    qualityLabelOptions,
     state.qualityMode
   );
+  const formatLabel = findChoiceLabel(formatLabelOptions, state.formatMode);
   const outputLabel = findChoiceLabel(
-    outputModeOptions.map((option) => ({ id: option.id, label: option.label })),
+    outputModeLabelOptions,
     state.outputMode
   );
+  const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
 
   const toggleBuildSection = (section: keyof typeof buildSectionsOpen) => {
     setBuildSectionsOpen((previous) => ({
@@ -1946,6 +2086,7 @@ export default function CharacterBuilderPage() {
       consistencyMode: snapshot.builder.consistencyMode,
       referenceStrength: snapshot.builder.referenceStrength,
       qualityMode: snapshot.builder.qualityMode,
+      formatMode: normalizeCharacterFormatMode(snapshot.builder.formatMode, snapshot.builder.qualityMode),
       outputOptions: snapshot.builder.outputOptions,
       advancedNotes: snapshot.builder.advancedNotes,
       mustRemainVisible: snapshot.builder.mustRemainVisible,
@@ -1958,7 +2099,19 @@ export default function CharacterBuilderPage() {
   async function handleRun(action: CharacterBuilderAction, generateCount?: 1 | 4) {
     setError(null);
     setStatusMessage(null);
-    setLoadingAction(getLoadingRequestKey(action, generateCount));
+    const loadingKey = getLoadingRequestKey(action, generateCount);
+    const pendingRunId = `pending_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const pendingRun: PendingCharacterRun = {
+      id: pendingRunId,
+      action,
+      outputMode: state.outputMode,
+      qualityMode: state.qualityMode,
+      formatMode: state.formatMode,
+      generateCount: generateCount ?? 1,
+    };
+
+    setLoadingActions((previous) => incrementLoadingRequestCount(previous, loadingKey));
+    setPendingRuns((previous) => [pendingRun, ...previous].slice(0, 12));
 
     try {
       const response = await runCharacterBuilderTool({
@@ -1968,6 +2121,7 @@ export default function CharacterBuilderPage() {
         consistencyMode: state.consistencyMode,
         referenceStrength: hasIdentityReference ? state.referenceStrength : null,
         qualityMode: state.qualityMode,
+        formatMode: state.formatMode,
         referenceImages: state.referenceImages,
         traits: state.traits,
         outputOptions: state.outputOptions,
@@ -1989,6 +2143,7 @@ export default function CharacterBuilderPage() {
         throw new Error(copy.missingRun);
       }
 
+      setPendingRuns((previous) => previous.filter((entry) => entry.id !== pendingRunId));
       setState((previous) => {
         const nextRuns = [response.run!, ...previous.runs].slice(0, 12);
         const firstResultId = response.run!.results[0]?.id ?? null;
@@ -2027,9 +2182,10 @@ export default function CharacterBuilderPage() {
             : copy.runLightingDone
       );
     } catch (runError) {
+      setPendingRuns((previous) => previous.filter((entry) => entry.id !== pendingRunId));
       setError(runError instanceof Error ? runError.message : copy.runFailed);
     } finally {
-      setLoadingAction(null);
+      setLoadingActions((previous) => decrementLoadingRequestCount(previous, loadingKey));
     }
   }
 
@@ -2053,7 +2209,7 @@ export default function CharacterBuilderPage() {
   }
 
   function renderFollowUpPanels() {
-    if (!hasResults) return null;
+    if (!hasCompletedResults) return null;
 
     return (
       <div className="space-y-6">
@@ -2126,10 +2282,9 @@ export default function CharacterBuilderPage() {
               <Button
                 variant="outline"
                 onClick={() => void handleRun('full-body-fix')}
-                disabled={loadingAction !== null}
                 className="justify-start gap-2"
               >
-                {loadingAction === 'full-body-fix' ? (
+                {isActionLoading('full-body-fix') ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <WandSparkles className="h-4 w-4" />
@@ -2139,10 +2294,9 @@ export default function CharacterBuilderPage() {
               <Button
                 variant="outline"
                 onClick={() => void handleRun('lighting-variant')}
-                disabled={loadingAction !== null}
                 className="justify-start gap-2"
               >
-                {loadingAction === 'lighting-variant' ? (
+                {isActionLoading('lighting-variant') ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Sparkles className="h-4 w-4" />
@@ -2245,11 +2399,13 @@ export default function CharacterBuilderPage() {
                         traits={state.traits}
                         outputMode={state.outputMode}
                         qualityMode={state.qualityMode}
+                        formatMode={state.formatMode}
                         genderOptions={genderOptions}
                         ageOptions={ageOptions}
                         realismOptions={realismOptions.map((option) => ({ id: option.id, label: option.label }))}
                         outputOptions={outputModeOptions.map((option) => ({ id: option.id, label: option.label }))}
                         qualityOptions={qualityOptions.map((option) => ({ id: option.id, label: option.label }))}
+                        formatOptions={formatLabelOptions}
                         copy={copy}
                       />
                     </div>
@@ -2832,6 +2988,10 @@ export default function CharacterBuilderPage() {
                             setState((previous) => ({
                               ...previous,
                               qualityMode: value as CharacterBuilderState['qualityMode'],
+                              formatMode: normalizeCharacterFormatMode(
+                                previous.formatMode,
+                                value as CharacterBuilderState['qualityMode']
+                              ),
                             }))
                           }
                         />
@@ -2840,6 +3000,25 @@ export default function CharacterBuilderPage() {
                           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="space-y-1">
                               <p className="text-sm text-text-secondary">{copy.generatePanel.qualityBody}</p>
+                              <div className="space-y-2">
+                                <SegmentedControl
+                                  label={copy.generatePanel.format}
+                                  options={formatOptions}
+                                  value={state.formatMode}
+                                  onChange={(value) =>
+                                    setState((previous) => ({
+                                      ...previous,
+                                      formatMode: normalizeCharacterFormatMode(
+                                        value as CharacterBuilderState['formatMode'],
+                                        previous.qualityMode
+                                      ),
+                                    }))
+                                  }
+                                />
+                                <p className="text-xs text-text-secondary">
+                                  {state.qualityMode === 'final' ? copy.generatePanel.formatBodyFinal : copy.generatePanel.formatBodyDraft}
+                                </p>
+                              </div>
                               <p className="text-sm font-medium text-text-primary">
                                 {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
                               </p>
@@ -2847,10 +3026,9 @@ export default function CharacterBuilderPage() {
                             <div className="flex flex-col gap-2 sm:flex-row">
                               <Button
                                 onClick={() => void handleRun('generate', 1)}
-                                disabled={loadingAction !== null}
                                 className="gap-2"
                               >
-                                {loadingAction === 'generate-1' ? (
+                                {isActionLoading('generate-1') ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <Sparkles className="h-4 w-4" />
@@ -2860,10 +3038,9 @@ export default function CharacterBuilderPage() {
                               <Button
                                 variant="outline"
                                 onClick={() => void handleRun('generate', 4)}
-                                disabled={loadingAction !== null}
                                 className="gap-2"
                               >
-                                {loadingAction === 'generate-4' ? (
+                                {isActionLoading('generate-4') ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <WandSparkles className="h-4 w-4" />
@@ -2897,6 +3074,25 @@ export default function CharacterBuilderPage() {
                   <Card className="border border-border p-6">
                     <SectionTitle eyebrow={copy.top.resultsEyebrow} title={copy.top.resultsTitle} />
                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {pendingRuns.map((pendingRun) => {
+                        const pendingOutputLabel =
+                          findChoiceLabel(outputModeLabelOptions, pendingRun.outputMode) ?? copy.generatePanel.portraitTitle;
+                        const pendingQualityLabel =
+                          findChoiceLabel(qualityLabelOptions, pendingRun.qualityMode) ?? copy.options.quality.draft.label;
+                        const pendingFormatLabel =
+                          findChoiceLabel(formatLabelOptions, pendingRun.formatMode) ?? copy.options.format.standard.label;
+                        const subtitle = `${pendingOutputLabel} · ${pendingQualityLabel} · ${pendingFormatLabel}`;
+                        const badge = pendingRun.generateCount === 4 ? '4x' : null;
+                        return (
+                          <PendingResultCard
+                            key={pendingRun.id}
+                            title={getResultActionLabel(copy, pendingRun.action)}
+                            subtitle={subtitle}
+                            badge={badge}
+                            copy={copy}
+                          />
+                        );
+                      })}
                       {flattenedResults.map((result) => {
                         const run = state.runs.find((entry) => entry.id === result.runId);
                         return (
@@ -2951,11 +3147,13 @@ export default function CharacterBuilderPage() {
                     traits={state.traits}
                     outputMode={state.outputMode}
                     qualityMode={state.qualityMode}
+                    formatMode={state.formatMode}
                     genderOptions={genderOptions}
                     ageOptions={ageOptions}
                     realismOptions={realismOptions.map((option) => ({ id: option.id, label: option.label }))}
                     outputOptions={outputModeOptions.map((option) => ({ id: option.id, label: option.label }))}
                     qualityOptions={qualityOptions.map((option) => ({ id: option.id, label: option.label }))}
+                    formatOptions={formatLabelOptions}
                     copy={copy}
                   />
                   {renderFollowUpPanels()}
@@ -2970,7 +3168,7 @@ export default function CharacterBuilderPage() {
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-text-primary">
-                {outputLabel ?? copy.generatePanel.portraitTitle} · {qualityLabel ?? copy.options.quality.draft.label}
+                {outputLabel ?? copy.generatePanel.portraitTitle} · {qualityLabel ?? copy.options.quality.draft.label} · {formatLabel ?? copy.options.format.standard.label}
               </p>
               <p className="text-xs text-text-secondary">
                 {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
@@ -2985,6 +3183,10 @@ export default function CharacterBuilderPage() {
                     setState((previous) => ({
                       ...previous,
                       qualityMode: option.id as CharacterBuilderState['qualityMode'],
+                      formatMode: normalizeCharacterFormatMode(
+                        previous.formatMode,
+                        option.id as CharacterBuilderState['qualityMode']
+                      ),
                     }))
                   }
                   className={clsx(
@@ -3002,19 +3204,17 @@ export default function CharacterBuilderPage() {
           <div className="flex gap-2">
             <Button
               onClick={() => void handleRun('generate', 1)}
-              disabled={loadingAction !== null}
               className="flex-1 gap-2"
             >
-              {loadingAction === 'generate-1' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {isActionLoading('generate-1') ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {copy.generatePanel.generateReference}
             </Button>
             <Button
               variant="outline"
               onClick={() => void handleRun('generate', 4)}
-              disabled={loadingAction !== null}
               className="gap-2 px-4"
             >
-              {loadingAction === 'generate-4' ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+              {isActionLoading('generate-4') ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
               4x
             </Button>
           </div>

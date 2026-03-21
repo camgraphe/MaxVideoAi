@@ -6,6 +6,7 @@ export type CharacterBuilderOutputMode = 'portrait-reference' | 'character-sheet
 export type CharacterBuilderConsistencyMode = 'exploratory' | 'balanced' | 'strict';
 export type CharacterBuilderReferenceStrength = 'loose' | 'balanced' | 'strong';
 export type CharacterBuilderQualityMode = 'draft' | 'final';
+export type CharacterBuilderFormatMode = 'standard' | '2k' | '4k';
 export type CharacterBuilderAction = 'generate' | 'full-body-fix' | 'lighting-variant';
 export type CharacterBuilderTraitSource = 'auto' | 'manual';
 export type CharacterBuilderReferenceImageRole = 'identity' | 'style';
@@ -58,6 +59,7 @@ export interface CharacterBuilderRequest {
   consistencyMode: CharacterBuilderConsistencyMode;
   referenceStrength?: CharacterBuilderReferenceStrength | null;
   qualityMode: CharacterBuilderQualityMode;
+  formatMode: CharacterBuilderFormatMode;
   referenceImages: CharacterBuilderReferenceImage[];
   traits: CharacterBuilderTraits;
   outputOptions: {
@@ -91,6 +93,7 @@ export interface CharacterBuilderSettingsSnapshot {
     consistencyMode: CharacterBuilderConsistencyMode;
     referenceStrength: CharacterBuilderReferenceStrength | null;
     qualityMode: CharacterBuilderQualityMode;
+    formatMode: CharacterBuilderFormatMode;
     referenceImages: CharacterBuilderReferenceImage[];
     traits: CharacterBuilderTraits;
     outputOptions: {
@@ -125,6 +128,7 @@ export interface CharacterBuilderRun {
   action: CharacterBuilderAction;
   outputMode: CharacterBuilderOutputMode;
   qualityMode: CharacterBuilderQualityMode;
+  formatMode: CharacterBuilderFormatMode;
   engineId: string;
   engineLabel: string;
   createdAt: string;
@@ -153,6 +157,7 @@ export interface CharacterBuilderState {
   consistencyMode: CharacterBuilderConsistencyMode;
   referenceStrength: CharacterBuilderReferenceStrength | null;
   qualityMode: CharacterBuilderQualityMode;
+  formatMode: CharacterBuilderFormatMode;
   outputOptions: {
     fullBodyRequired: boolean;
     includeCloseUps: boolean;

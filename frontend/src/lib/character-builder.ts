@@ -1,5 +1,6 @@
 import type {
   CharacterBuilderConsistencyMode,
+  CharacterBuilderFormatMode,
   CharacterBuilderOutputMode,
   CharacterBuilderQualityMode,
   CharacterBuilderReferenceStrength,
@@ -99,6 +100,32 @@ export const CHARACTER_QUALITY_OPTIONS: Array<{
     label: 'Final',
     description: 'Cleaner export-ready references on Nano Banana Pro.',
     engineId: 'nano-banana-pro',
+  },
+];
+
+export const CHARACTER_FORMAT_OPTIONS: Array<{
+  id: CharacterBuilderFormatMode;
+  label: string;
+  description: string;
+  resolution: string;
+}> = [
+  {
+    id: 'standard',
+    label: 'Standard',
+    description: 'Base render size.',
+    resolution: '1k',
+  },
+  {
+    id: '2k',
+    label: '2K',
+    description: 'Sharper output. 2x price.',
+    resolution: '2k',
+  },
+  {
+    id: '4k',
+    label: '4K',
+    description: 'Final-grade output. 3x price.',
+    resolution: '4k',
   },
 ];
 
@@ -258,6 +285,51 @@ export function getDefaultResolution(qualityMode: CharacterBuilderQualityMode): 
   return qualityMode === 'final' ? '2k' : '1k';
 }
 
+export function getAvailableCharacterFormatOptions(
+  qualityMode: CharacterBuilderQualityMode
+): Array<(typeof CHARACTER_FORMAT_OPTIONS)[number]> {
+  if (qualityMode === 'final') {
+    return CHARACTER_FORMAT_OPTIONS.filter((entry) => entry.id !== '2k');
+  }
+  return CHARACTER_FORMAT_OPTIONS;
+}
+
+export function getCharacterFormatResolution(
+  formatMode: CharacterBuilderFormatMode,
+  qualityMode: CharacterBuilderQualityMode
+): string {
+  if (qualityMode === 'final') {
+    return formatMode === '4k' ? '4k' : '2k';
+  }
+  if (formatMode === '2k' || formatMode === '4k') {
+    return CHARACTER_FORMAT_OPTIONS.find((entry) => entry.id === formatMode)?.resolution ?? '2k';
+  }
+  return '1k';
+}
+
+export function getCharacterFormatMultiplier(
+  formatMode: CharacterBuilderFormatMode,
+  qualityMode: CharacterBuilderQualityMode
+): number {
+  if (qualityMode === 'final') {
+    return formatMode === '4k' ? 2 : 1;
+  }
+  if (formatMode === '2k') return 2;
+  if (formatMode === '4k') return 3;
+  return 1;
+}
+
+export function normalizeCharacterFormatMode(
+  formatMode: CharacterBuilderFormatMode | null | undefined,
+  qualityMode: CharacterBuilderQualityMode
+): CharacterBuilderFormatMode {
+  if (qualityMode === 'final' && formatMode === '2k') {
+    return 'standard';
+  }
+  if (formatMode === '2k' || formatMode === '4k') return formatMode;
+  return 'standard';
+}
+
 export function createDefaultTraits(sourceMode: CharacterBuilderSourceMode = 'scratch'): CharacterBuilderTraits {
   const autoValue = sourceMode === 'reference-image' ? 'auto' : null;
   const autoSource = sourceMode === 'reference-image' ? 'auto' : 'manual';
@@ -318,6 +390,7 @@ export function createDefaultCharacterBuilderState(
     consistencyMode: 'balanced',
     referenceStrength: sourceMode === 'reference-image' ? 'balanced' : null,
     qualityMode: 'draft',
+    formatMode: 'standard',
     outputOptions: {
       fullBodyRequired: false,
       includeCloseUps: true,

@@ -3173,11 +3173,14 @@
       },
       "generatePanel": {
         "portraitTitle": "Portrait reference",
-        "portraitBody": "Tighter face-first anchor",
+        "portraitBody": "Face-forward portrait anchor",
         "sheetTitle": "Character sheet",
         "sheetBody": "Multi-angle full-body sheet",
         "quality": "Quality",
+        "format": "Format",
         "qualityBody": "Draft uses Nano Banana 2. Final uses Nano Banana Pro.",
+        "formatBodyDraft": "2K costs 2x. 4K costs 3x.",
+        "formatBodyFinal": "Standard already renders at 2K. 4K costs 2x.",
         "pricePerImage": "{price} per image",
         "generateReference": "Generate reference",
         "generateFour": "Generate 4 options"
@@ -3193,6 +3196,7 @@
         "style": "Style",
         "output": "Output",
         "quality": "Quality",
+        "format": "Format",
         "autoFromReference": "Auto from reference",
         "photoreal": "Photoreal"
       },
@@ -3227,6 +3231,8 @@
         "referenceOutput": "Reference output",
         "fullBodyFix": "Full-body fix",
         "lightingVariant": "Lighting variant",
+        "pending": "Rendering",
+        "pendingBody": "This output will appear here as soon as it is ready.",
         "selected": "Selected",
         "base": "Base",
         "unpinBase": "Unpin base",
@@ -3385,6 +3391,20 @@
           "final": {
             "label": "Final",
             "description": "Cleaner export-ready references on Nano Banana Pro."
+          }
+        },
+        "format": {
+          "standard": {
+            "label": "Standard",
+            "description": "Base render size."
+          },
+          "2k": {
+            "label": "2K",
+            "description": "Sharper output. 2x price."
+          },
+          "4k": {
+            "label": "4K",
+            "description": "Final-grade output. 3x price."
           }
         }
       }

@@ -3184,11 +3184,14 @@
       },
       "generatePanel": {
         "portraitTitle": "Référence portrait",
-        "portraitBody": "Ancre plus serrée centrée sur le visage",
+        "portraitBody": "Ancre portrait de face",
         "sheetTitle": "Planche personnage",
         "sheetBody": "Planche corps entier multi-angle",
         "quality": "Qualité",
+        "format": "Format",
         "qualityBody": "Brouillon utilise Nano Banana 2. Final utilise Nano Banana Pro.",
+        "formatBodyDraft": "La 2K coûte 2x. La 4K coûte 3x.",
+        "formatBodyFinal": "Le mode standard est déjà en 2K. La 4K coûte 2x.",
         "pricePerImage": "{price} par image",
         "generateReference": "Générer une référence",
         "generateFour": "Générer 4 options"
@@ -3204,6 +3207,7 @@
         "style": "Style",
         "output": "Sortie",
         "quality": "Qualité",
+        "format": "Format",
         "autoFromReference": "Auto depuis la référence",
         "photoreal": "Photoréaliste"
       },
@@ -3238,6 +3242,8 @@
         "referenceOutput": "Sortie de référence",
         "fullBodyFix": "Correction corps entier",
         "lightingVariant": "Variation d’éclairage",
+        "pending": "Rendu en cours",
+        "pendingBody": "Cette sortie apparaîtra ici dès qu’elle sera prête.",
         "selected": "Sélectionné",
         "base": "Base",
         "unpinBase": "Retirer la base",
@@ -3396,6 +3402,20 @@
           "final": {
             "label": "Final",
             "description": "Références plus propres prêtes à l’export sur Nano Banana Pro."
+          }
+        },
+        "format": {
+          "standard": {
+            "label": "Standard",
+            "description": "Taille de rendu de base."
+          },
+          "2k": {
+            "label": "2K",
+            "description": "Sortie plus nette. Prix x2."
+          },
+          "4k": {
+            "label": "4K",
+            "description": "Sortie finalisée. Prix x3."
           }
         }
       }
