@@ -84,6 +84,10 @@ export function HeaderBar() {
   const themeStorageKey = 'mv-theme';
   const loginLabel = t('nav.login', 'Log in');
   const ctaLabel = t('nav.cta', 'Start a render');
+  const themeToggleLabel =
+    theme === 'dark'
+      ? t('workspace.header.themeToggle.toLight', 'Switch to light theme')
+      : t('workspace.header.themeToggle.toDark', 'Switch to dark theme');
   const serviceNoticeEnv = process.env.NEXT_PUBLIC_SERVICE_NOTICE;
   const envNotice =
     serviceNoticeEnv && serviceNoticeEnv.toLowerCase() === 'off'
@@ -576,7 +580,7 @@ export function HeaderBar() {
               variant="ghost"
               size="sm"
               className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
-              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              aria-label={themeToggleLabel}
               onClick={toggleTheme}
             >
               <span className="inline-flex h-4 w-4 items-center justify-center">
@@ -710,7 +714,7 @@ export function HeaderBar() {
                 variant="ghost"
                 size="sm"
                 className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
-                aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                aria-label={themeToggleLabel}
                 onClick={toggleTheme}
               >
                 <span className="inline-flex h-4 w-4 items-center justify-center">

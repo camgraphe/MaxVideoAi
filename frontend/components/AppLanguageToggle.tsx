@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
-import { Globe } from 'lucide-react';
+import { Check, Globe } from 'lucide-react';
+import { localeLabels } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { Button } from '@/components/ui/Button';
@@ -16,12 +17,6 @@ const FLAG_MAP: Record<Locale, string> = {
   fr: '🇫🇷',
   es: '🇪🇸',
 };
-
-const OPTIONS: Array<{ locale: Locale; label: string }> = [
-  { locale: 'en', label: 'English' },
-  { locale: 'fr', label: 'Français' },
-  { locale: 'es', label: 'Español' },
-];
 
 export function AppLanguageToggle() {
   const router = useRouter();
@@ -37,7 +32,14 @@ export function AppLanguageToggle() {
     setPendingLocale((current) => (current === locale ? current : locale));
   }, [locale]);
 
-  const options = useMemo(() => OPTIONS, []);
+  const options = useMemo(
+    () =>
+      (Object.entries(localeLabels) as Array<[Locale, string]>).map(([localeKey, label]) => ({
+        locale: localeKey,
+        label,
+      })),
+    []
+  );
 
   const handleChange = (value: Locale) => {
     setPendingLocale(value);
@@ -117,7 +119,7 @@ export function AppLanguageToggle() {
                   <span aria-hidden>{FLAG_MAP[option.locale]}</span>
                   <span>{option.label}</span>
                 </span>
-                {isActive ? <span className="text-xs text-text-muted">Active</span> : null}
+                {isActive ? <Check className="h-4 w-4 text-text-muted" /> : null}
               </button>
             );
           })}

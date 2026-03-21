@@ -20,9 +20,11 @@ const DEFAULT_TOOLS_COPY = {
   "characterEyebrow": "Reference tool",
   "characterTitle": "Consistent Character Builder",
   "characterBody": "Build a reusable character reference or character sheet before manually reusing it in later image or video workflows.",
+  "characterBadge": "V1",
   "angleEyebrow": "First frame tool",
   "angleTitle": "Angle / Perspective",
   "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
+  "angleBadge": "MVP",
   "open": "Open Tool"
 } as const;
 
@@ -43,7 +45,8 @@ function ToolPreviewPanel({
   className?: string;
 }) {
   return (
-    <div className={`relative overflow-hidden border-b border-border bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] ${className}`}>
+    <div className={`relative overflow-hidden border-b border-border bg-surface-2/80 ${className}`}>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.14),transparent_34%)]" />
       {children}
     </div>
   );
@@ -110,9 +113,8 @@ export default function ToolsPage() {
             <section className="grid gap-4 md:grid-cols-2">
               <Card className="overflow-hidden border border-border bg-surface p-0">
                 <ToolPreviewPanel className="aspect-[16/9] p-4">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_32%)]" />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(15,23,42,0.04))]" />
-                  <div className="relative flex h-full items-center justify-center rounded-[18px] border border-white/70 bg-white/55 p-3 shadow-[0_18px_40px_rgba(37,99,235,0.10)] backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
+                  <div className="relative flex h-full items-center justify-center rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
                     <img
                       src={CHARACTER_CARD_BACKGROUND_URL}
                       alt=""
@@ -134,7 +136,7 @@ export default function ToolsPage() {
                   <div className="mt-5 flex items-center justify-between">
                     <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
                       <Sparkles className="h-3.5 w-3.5" />
-                      V1
+                      {copy.characterBadge}
                     </span>
                     <ButtonLink href="/tools/character-builder" variant="primary" linkComponent={Link}>
                       {copy.open}
@@ -149,7 +151,7 @@ export default function ToolsPage() {
                     {ANGLE_CARD_BACKGROUND_URLS.map((url) => (
                       <div
                         key={url}
-                        className="overflow-hidden rounded-[16px] border border-white/75 bg-white/60 p-2 shadow-[0_14px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm"
+                        className="overflow-hidden rounded-[16px] border border-border/80 bg-bg/70 p-2 shadow-[0_14px_30px_rgba(15,23,42,0.14)] backdrop-blur-sm"
                       >
                         <img src={url} alt="" className="h-full w-full rounded-[12px] object-contain" />
                       </div>
@@ -170,7 +172,7 @@ export default function ToolsPage() {
                   <div className="mt-5 flex items-center justify-between">
                     <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
                       <Camera className="h-3.5 w-3.5" />
-                      MVP
+                      {copy.angleBadge}
                     </span>
                     <ButtonLink href="/tools/angle" variant="primary" linkComponent={Link}>
                       {copy.open}

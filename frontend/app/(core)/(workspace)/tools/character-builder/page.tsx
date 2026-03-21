@@ -755,8 +755,8 @@ function VisualChoiceCard({
       className={clsx(
         'group relative overflow-hidden rounded-[24px] border p-4 text-left transition',
         selected
-          ? 'border-brand bg-[linear-gradient(180deg,rgba(11,107,255,0.08),rgba(255,255,255,0.98))] shadow-[0_18px_36px_rgba(11,107,255,0.14)]'
-          : 'border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,248,251,0.96))] hover:border-border-hover hover:shadow-[0_18px_36px_rgba(15,23,42,0.06)]',
+          ? 'border-brand bg-brand/5 shadow-card'
+          : 'border-border bg-surface hover:border-border-hover hover:bg-surface-hover hover:shadow-card',
         className
       )}
     >
@@ -796,7 +796,7 @@ function IconChoiceCard({
       title={title}
       media={
         <div
-          className="flex h-16 items-center justify-between rounded-[18px] border border-white/60 px-4"
+          className="flex h-16 items-center justify-between rounded-[18px] border border-border/80 bg-surface-2/80 px-4"
           style={{ background }}
         >
           <div
@@ -806,8 +806,8 @@ function IconChoiceCard({
             {glyph}
           </div>
           <div className="flex items-end gap-1">
-            <span className="h-6 w-6 rounded-full bg-white/90 shadow-sm" />
-            <span className="h-8 w-8 rounded-[14px] bg-white/75 shadow-sm" />
+            <span className="h-6 w-6 rounded-full bg-surface shadow-sm" />
+            <span className="h-8 w-8 rounded-[14px] bg-surface/80 shadow-sm" />
           </div>
         </div>
       }
@@ -836,7 +836,7 @@ function StyleChoiceCard({
       title={title}
       media={
         <div
-          className="relative h-20 overflow-hidden rounded-[18px] border border-white/60"
+          className="relative h-20 overflow-hidden rounded-[18px] border border-border/80 bg-surface-2/80"
           style={{ background }}
         >
           <div
@@ -848,8 +848,8 @@ function StyleChoiceCard({
             style={{ backgroundColor: `${accent}cc` }}
           />
           <div className="absolute right-3 top-3 space-y-1">
-            <div className="h-2.5 w-10 rounded-full bg-white/80" />
-            <div className="h-2.5 w-8 rounded-full bg-white/60" />
+            <div className="h-2.5 w-10 rounded-full bg-surface/85" />
+            <div className="h-2.5 w-8 rounded-full bg-surface/65" />
           </div>
         </div>
       }
@@ -873,15 +873,15 @@ function OutputPreviewCard({
 }) {
   const preview =
     mode === 'portrait-reference' ? (
-      <div className="relative h-24 overflow-hidden rounded-[18px] border border-white/60 bg-[linear-gradient(180deg,rgba(239,246,255,1),rgba(255,255,255,0.96))]">
-        <div className="absolute inset-x-5 top-4 h-14 rounded-[16px] border border-white/80 bg-white/70" />
+      <div className="relative h-24 overflow-hidden rounded-[18px] border border-border/80 bg-surface-2/80">
+        <div className="absolute inset-x-5 top-4 h-14 rounded-[16px] border border-border/80 bg-surface/80" />
         <div className="absolute left-1/2 top-6 h-8 w-8 -translate-x-1/2 rounded-full bg-brand/15" />
         <div className="absolute left-1/2 top-12 h-8 w-10 -translate-x-1/2 rounded-[14px] bg-brand/20" />
       </div>
     ) : (
-      <div className="grid h-24 grid-cols-4 gap-2 rounded-[18px] border border-white/60 bg-[linear-gradient(180deg,rgba(248,250,252,1),rgba(255,255,255,0.96))] p-3">
+      <div className="grid h-24 grid-cols-4 gap-2 rounded-[18px] border border-border/80 bg-surface-2/80 p-3">
         {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="relative overflow-hidden rounded-[14px] border border-border bg-white/70">
+          <div key={index} className="relative overflow-hidden rounded-[14px] border border-border bg-surface/75">
             <div className="absolute left-1/2 top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-brand/15" />
             <div className="absolute left-1/2 top-6 h-8 w-4 -translate-x-1/2 rounded-full bg-brand/20" />
           </div>
@@ -927,14 +927,14 @@ function CharacterSummaryCard({
   const qualityLabel = findChoiceLabel(qualityOptions, qualityMode);
 
   return (
-    <Card className="overflow-hidden border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))] p-5">
+    <Card className="overflow-hidden border border-border bg-surface p-5 shadow-card">
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{copy.summary.dna}</p>
             <h3 className="mt-2 text-lg font-semibold text-text-primary">{copy.summary.snapshot}</h3>
           </div>
-          <span className="rounded-full border border-border bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
+          <span className="rounded-full border border-border bg-surface-2/80 px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
             {copy.summary.builderBadge}
           </span>
         </div>
@@ -946,23 +946,23 @@ function CharacterSummaryCard({
             className="h-28 w-full rounded-[20px] object-cover"
           />
         ) : (
-          <div className="relative h-28 overflow-hidden rounded-[20px] border border-border bg-[linear-gradient(180deg,rgba(241,245,249,1),rgba(255,255,255,0.96))]">
+          <div className="relative h-28 overflow-hidden rounded-[20px] border border-border bg-surface-2/80">
             <div className="absolute left-1/2 top-5 h-10 w-10 -translate-x-1/2 rounded-full bg-slate-300" />
             <div className="absolute left-1/2 top-14 h-12 w-16 -translate-x-1/2 rounded-[18px] bg-slate-200" />
-            <div className="absolute bottom-3 left-3 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-text-secondary">
+            <div className="absolute bottom-3 left-3 rounded-full bg-surface/85 px-2 py-1 text-[10px] font-semibold text-text-secondary">
               {copy.summary.noReferenceImage}
             </div>
           </div>
         )}
 
         <div className="grid gap-2">
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.identity}</span>
             <span className="text-sm font-medium text-text-primary">
               {genderLabel} · {ageLabel}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.hair}</span>
             <span className="flex items-center gap-2 text-sm font-medium text-text-primary">
               {hairSwatch ? (
@@ -974,21 +974,21 @@ function CharacterSummaryCard({
               {hairSummary === copy.notSet ? copy.open : hairSummary}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.outfit}</span>
             <span className="text-sm font-medium text-text-primary">
               {outfitSummary === copy.notSet ? copy.open : outfitSummary}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.style}</span>
             <span className="text-sm font-medium text-text-primary">{realismLabel ?? copy.summary.photoreal}</span>
           </div>
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.output}</span>
             <span className="text-sm font-medium text-text-primary">{outputLabel}</span>
           </div>
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-white/80 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border bg-surface-2/80 px-3 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.summary.quality}</span>
             <span className="text-sm font-medium text-text-primary">{qualityLabel}</span>
           </div>
@@ -1031,7 +1031,7 @@ function HairEditorPanel({
           'rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-micro transition',
           traits[key].value === 'auto'
             ? 'border-brand bg-brand text-on-brand'
-            : 'border-border bg-white text-text-secondary hover:border-border-hover'
+            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
         )}
       >
         {copy.auto}
@@ -1065,7 +1065,7 @@ function HairEditorPanel({
                   'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition',
                   selected
                     ? 'border-brand bg-brand/10 text-text-primary'
-                    : 'border-border bg-white text-text-secondary hover:border-border-hover'
+                    : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
                 )}
               >
                 {option.swatch ? (
@@ -1096,7 +1096,7 @@ function HairEditorPanel({
                   'rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-micro transition',
                   selected
                     ? 'border-brand bg-brand text-on-brand'
-                    : 'border-border bg-white text-text-secondary hover:border-border-hover'
+                    : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
                 )}
               >
                 {option.label}
@@ -1121,7 +1121,7 @@ function HairEditorPanel({
                   'rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-micro transition',
                   selected
                     ? 'border-brand bg-brand text-on-brand'
-                    : 'border-border bg-white text-text-secondary hover:border-border-hover'
+                    : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
                 )}
               >
                 {option.label}
@@ -1136,7 +1136,7 @@ function HairEditorPanel({
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={onClose} aria-hidden />
-      <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.98))] p-5 shadow-[0_-24px_48px_rgba(15,23,42,0.18)] lg:absolute lg:inset-x-0 lg:bottom-auto lg:top-[calc(100%+12px)] lg:z-30 lg:rounded-[24px] lg:border lg:p-5 lg:shadow-[0_24px_48px_rgba(15,23,42,0.12)]">
+      <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] border border-border bg-surface-glass-95 p-5 shadow-[0_-24px_48px_rgba(15,23,42,0.18)] lg:absolute lg:inset-x-0 lg:bottom-auto lg:top-[calc(100%+12px)] lg:z-30 lg:rounded-[24px] lg:border lg:p-5 lg:shadow-[0_24px_48px_rgba(15,23,42,0.12)]">
         {panel}
       </div>
     </>
@@ -1384,7 +1384,7 @@ function BuilderAccordionSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+    <section className="rounded-[24px] border border-border bg-surface shadow-card">
       <button
         type="button"
         onClick={onToggle}
@@ -2219,13 +2219,13 @@ export default function CharacterBuilderPage() {
                           title={copy.sourceMode.scratchTitle}
                           subtitle={copy.sourceMode.scratchBody}
                           media={
-                            <div className="flex h-20 items-center justify-between rounded-[18px] border border-white/60 bg-[linear-gradient(135deg,rgba(224,242,254,1),rgba(255,255,255,0.96))] px-4">
+                            <div className="flex h-20 items-center justify-between rounded-[18px] border border-border/80 bg-surface-2/80 px-4">
                               <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand/15 text-brand">
                                 <Sparkles className="h-4 w-4" />
                               </div>
                               <div className="flex items-end gap-1">
-                                <span className="h-7 w-7 rounded-full bg-white/85 shadow-sm" />
-                                <span className="h-9 w-9 rounded-[16px] bg-white/70 shadow-sm" />
+                                <span className="h-7 w-7 rounded-full bg-surface shadow-sm" />
+                                <span className="h-9 w-9 rounded-[16px] bg-surface/80 shadow-sm" />
                               </div>
                             </div>
                           }
@@ -2236,11 +2236,11 @@ export default function CharacterBuilderPage() {
                           title={copy.sourceMode.imageTitle}
                           subtitle={copy.sourceMode.imageBody}
                           media={
-                            <div className="flex h-20 items-center justify-between rounded-[18px] border border-white/60 bg-[linear-gradient(135deg,rgba(240,253,250,1),rgba(255,255,255,0.96))] px-4">
+                            <div className="flex h-20 items-center justify-between rounded-[18px] border border-border/80 bg-surface-2/80 px-4">
                               <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                                 <Upload className="h-4 w-4" />
                               </div>
-                              <div className="rounded-[16px] border border-dashed border-emerald-300 bg-white/80 px-3 py-2 text-[11px] font-semibold text-text-secondary">
+                              <div className="rounded-[16px] border border-dashed border-emerald-300 bg-surface/85 px-3 py-2 text-[11px] font-semibold text-text-secondary">
                                 {copy.sourceMode.autoTraits}
                               </div>
                             </div>
@@ -2371,10 +2371,10 @@ export default function CharacterBuilderPage() {
                             <button
                               type="button"
                               onClick={() => setHairOpen((previous) => !previous)}
-                              className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-white px-4 py-4 text-left transition hover:border-border-hover hover:shadow-[0_18px_36px_rgba(15,23,42,0.05)]"
+                              className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-surface px-4 py-4 text-left transition hover:border-border-hover hover:bg-surface-hover hover:shadow-card"
                             >
                               <div className="flex min-w-0 items-center gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[linear-gradient(135deg,rgba(15,23,42,0.08),rgba(255,255,255,0.96))]">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-surface-2/80">
                                   <div className="space-y-1">
                                     <div className="h-2 w-7 rounded-full bg-slate-500" />
                                     <div className="h-2 w-5 rounded-full bg-slate-400" />
@@ -2388,7 +2388,7 @@ export default function CharacterBuilderPage() {
                                   </p>
                                 </div>
                               </div>
-                              <span className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-text-secondary">
+                              <span className="rounded-full border border-border bg-surface-2/80 px-3 py-1 text-xs font-semibold text-text-secondary">
                                 {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
                               </span>
                             </button>
@@ -2713,7 +2713,7 @@ export default function CharacterBuilderPage() {
                           }
                         />
 
-                        <div className="rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))] p-4">
+                        <div className="rounded-[24px] border border-border bg-surface p-4 shadow-card">
                           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="space-y-1">
                               <p className="text-sm text-text-secondary">{copy.generatePanel.qualityBody}</p>
@@ -2842,7 +2842,7 @@ export default function CharacterBuilderPage() {
           </div>
         </main>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 backdrop-blur xl:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur xl:hidden">
         <div className="mx-auto flex w-full max-w-[960px] flex-col gap-3 px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">

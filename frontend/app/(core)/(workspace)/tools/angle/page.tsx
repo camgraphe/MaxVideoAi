@@ -320,7 +320,7 @@ function AngleOutputMosaic({
                   title={libraryDisabled ? copy.alreadyInLibrary : copy.addToLibrary}
                   onClick={() => onAddToLibrary(output.url)}
                   disabled={libraryDisabled}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70 disabled:cursor-default disabled:opacity-50"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -330,7 +330,7 @@ function AngleOutputMosaic({
                   type="button"
                   title={copy.download}
                   onClick={() => onDownload(output.url)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70"
                 >
                   <Download className="h-4 w-4" />
                 </button>
@@ -361,7 +361,7 @@ function AngleOutputMosaic({
                         onAddToLibrary(output.url);
                       }}
                       disabled={libraryDisabled}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70 disabled:cursor-default disabled:opacity-50"
                     >
                       <Plus className="h-3.5 w-3.5" />
                     </button>
@@ -374,7 +374,7 @@ function AngleOutputMosaic({
                         event.stopPropagation();
                         onDownload(output.url);
                       }}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70"
                     >
                       <Download className="h-3.5 w-3.5" />
                     </button>
@@ -1636,7 +1636,7 @@ export default function AngleToolPage() {
                             <div className="px-2 py-1.5">
                               <p className="truncate text-[10px] font-medium text-text-primary">{entry.engineLabel}</p>
                               <p className="truncate text-[10px] text-text-muted">
-                                {new Date(entry.createdAt).toLocaleDateString()}
+                              {new Date(entry.createdAt).toLocaleDateString(locale)}
                               </p>
                             </div>
                           </button>
@@ -1693,7 +1693,7 @@ export default function AngleToolPage() {
                           title={copy.addToLibrary}
                           onClick={() => handleAddOutputToLibrary(activeRecentOutput.url, activeRecentJob.jobId)}
                           disabled={Boolean(savingOutputUrl)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70 disabled:cursor-default disabled:opacity-50"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
@@ -1701,7 +1701,7 @@ export default function AngleToolPage() {
                           type="button"
                           title={copy.download}
                           onClick={() => triggerAppDownload(activeRecentOutput.url, suggestDownloadFilename(activeRecentOutput.url, `angle-job-${Date.now()}`))}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70"
                         >
                           <Download className="h-4 w-4" />
                         </button>
@@ -1718,7 +1718,7 @@ export default function AngleToolPage() {
                       title={copy.addToLibrary}
                       onClick={() => handleAddOutputToLibrary(activeRecentOutput.url, activeRecentJob.jobId)}
                       disabled={Boolean(savingOutputUrl)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70 disabled:cursor-default disabled:opacity-50"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70 disabled:cursor-default disabled:opacity-50"
                     >
                       <Plus className="h-4 w-4" />
                     </button>
@@ -1726,7 +1726,7 @@ export default function AngleToolPage() {
                       type="button"
                       title={copy.download}
                       onClick={() => triggerAppDownload(activeRecentOutput.url, suggestDownloadFilename(activeRecentOutput.url, `angle-job-${Date.now()}`))}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white transition hover:bg-black/70"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-surface-on-media-25 bg-surface-on-media-dark-55 text-on-inverse transition hover:bg-surface-on-media-dark-70"
                     >
                       <Download className="h-4 w-4" />
                     </button>

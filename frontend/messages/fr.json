@@ -1972,6 +1972,10 @@
       "walletLabel": "Portefeuille",
       "memberFallback": "Membre",
       "signedIn": "Connecté",
+      "themeToggle": {
+        "toDark": "Passer en mode sombre",
+        "toLight": "Passer en mode clair"
+      },
       "primaryNav": "Navigation principale",
       "signOut": "Se déconnecter",
       "createAccount": "Créer un compte",
@@ -1991,12 +1995,17 @@
       "links": {
         "dashboard": "Tableau de bord",
         "generate": "Générer une vidéo",
+        "generate-image": "Générer une image",
+        "generate-audio": "Générer de l’audio",
+        "tools": "Outils",
+        "library": "Bibliothèque",
         "jobs": "Jobs",
         "billing": "Facturation",
         "settings": "Paramètres"
       },
       "badges": {
-        "live": "LIVE"
+        "live": "LIVE",
+        "toolsBeta": "BÊTA"
       }
     },
     "languageToggle": {
@@ -2314,9 +2323,15 @@
       "title": "Jobs",
       "sections": {
         "video": "Jobs vidéo",
+        "audio": "Jobs audio",
         "image": "Jobs image",
+        "character": "Jobs personnage",
+        "angle": "Jobs angle",
         "videoEmpty": "Aucun job vidéo pour le moment.",
-        "imageEmpty": "Aucun job image pour le moment."
+        "audioEmpty": "Aucun job audio pour le moment.",
+        "imageEmpty": "Aucun job image pour le moment.",
+        "characterEmpty": "Aucun job personnage pour le moment.",
+        "angleEmpty": "Aucun job angle pour le moment."
       },
       "teams": {
         "title": "Équipes",
@@ -2789,14 +2804,207 @@
       "disabledBody": "Active `FEATURES.workflows.toolsSection` pour accéder à cette zone.",
       "eyebrow": "Workspace",
       "title": "Outils",
-      "subtitle": "Prépare des assets de first frame réutilisables avant de lancer des rendus image-to-video.",
+      "subtitle": "Prépare des assets de première image réutilisables avant de lancer des rendus image-to-video.",
       "characterEyebrow": "Outil de référence",
-      "characterTitle": "Consistent Character Builder",
+      "characterTitle": "Générateur de personnage cohérent",
       "characterBody": "Crée une référence personnage ou une planche personnage réutilisable avant de la réemployer dans tes workflows image ou vidéo.",
-      "angleEyebrow": "Outil first frame",
+      "characterBadge": "V1",
+      "angleEyebrow": "Outil de première image",
       "angleTitle": "Angle / Perspective",
-      "angleBody": "Importe une image, ajuste l’angle caméra, puis génère une first frame prête pour les workflows image-to-video.",
+      "angleBody": "Importe une image, ajuste l’angle caméra, puis génère une première image prête pour les workflows image-to-video.",
+      "angleBadge": "MVP",
       "open": "Ouvrir l’outil"
+    },
+    "audio": {
+      "auth": {
+        "eyebrow": "Générer de l’audio",
+        "title": "Créez un compte pour générer de l’audio",
+        "body": "Créez des bandes-son cinématiques, des musiques seules ou des voix off premium dans le workspace MaxVideoAI.",
+        "createAccount": "Créer un compte",
+        "signIn": "Se connecter"
+      },
+      "hero": {
+        "eyebrow": "Générer de l’audio",
+        "title": "Espace audio"
+      },
+      "modes": {
+        "music_only": {
+          "label": "Musique seule",
+          "description": "Score ou ambiance."
+        },
+        "voice_only": {
+          "label": "Voix off seule",
+          "description": "Narration uniquement."
+        },
+        "cinematic": {
+          "label": "Cinématique",
+          "description": "SFX + musique optionnelle."
+        },
+        "cinematic_voice": {
+          "label": "Cinématique + voix",
+          "description": "SFX + musique + voix off."
+        }
+      },
+      "preview": {
+        "eyebrow": "Aperçu",
+        "title": "Dernière sortie",
+        "audioReady": "Rendu audio prêt",
+        "emptyTitle": "Prêt pour l’audio",
+        "emptyBody": "Choisissez un mode puis lancez le rendu.",
+        "processingLabel": "Traitement",
+        "loadingMessage": "Chargement du rendu audio…",
+        "processingMessage": "Traitement du rendu audio…",
+        "openVideoFile": "Ouvrir le fichier vidéo",
+        "openAudioFile": "Ouvrir le fichier audio",
+        "outputKinds": {
+          "audio": "Sortie audio",
+          "both": "Vidéo + audio",
+          "video": "Sortie vidéo"
+        }
+      },
+      "source": {
+        "title": "Vidéo source",
+        "required": "Requise pour les modes cinématiques.",
+        "optional": "Optionnelle pour musique seule ou voix seule.",
+        "upload": "Importer une vidéo",
+        "uploading": "Import…",
+        "useGenerated": "Utiliser un rendu",
+        "clear": "Effacer",
+        "durationPending": "Durée en attente",
+        "restoredLabel": "Vidéo source restaurée",
+        "jobLabel": "Job {id}",
+        "sourceLabel": "Source {label}",
+        "uploadDurationWarning": "La vidéo source a bien été importée, mais sa durée n’a pas pu être lue dans le navigateur.",
+        "selectedDurationWarning": "La vidéo sélectionnée a bien été chargée, mais sa durée n’a pas pu être confirmée dans le navigateur."
+      },
+      "controls": {
+        "eyebrow": "Réglages",
+        "title": "Réglages audio",
+        "mood": "Ambiance",
+        "intensity": "Intensité",
+        "duration": "Durée",
+        "script": "Script",
+        "scriptVoiceOnlyPlaceholder": "Écris la voix off standalone que tu veux rendre.",
+        "scriptCinematicPlaceholder": "Écris la narration ou le dialogue à poser sur le mix cinématique.",
+        "estimatedDuration": "~{seconds}s estimées",
+        "voiceSample": "Exemple de voix",
+        "uploadSample": "Importer un sample",
+        "cloneEnabled": "Clonage de voix activé",
+        "defaultVoice": "Voix par défaut",
+        "voiceType": "Type de voix",
+        "voice": "Voix",
+        "delivery": "Interprétation",
+        "language": "Langue",
+        "moods": {
+          "epic": "Épique",
+          "tense": "Tendu",
+          "intimate": "Intime",
+          "dark": "Sombre",
+          "dreamy": "Rêveur",
+          "sci-fi": "Sci-Fi",
+          "documentary": "Documentaire"
+        },
+        "intensities": {
+          "subtle": "Subtile",
+          "standard": "Standard",
+          "intense": "Intense"
+        },
+        "voiceGenders": {
+          "female": "Femme",
+          "male": "Homme",
+          "neutral": "Neutre"
+        },
+        "voiceProfiles": {
+          "balanced": "Équilibrée",
+          "warm": "Chaleureuse",
+          "bright": "Claire",
+          "deep": "Grave"
+        },
+        "voiceDeliveries": {
+          "natural": "Naturelle",
+          "cinematic": "Cinématique",
+          "trailer": "Bande-annonce",
+          "intimate": "Intime"
+        },
+        "languages": {
+          "auto": "Auto",
+          "english": "EN",
+          "french": "FR",
+          "spanish": "ES",
+          "german": "DE"
+        },
+        "musicToggle": {
+          "label": "Musique",
+          "description": "Musique activée. Coupe-la pour un rendu SFX seul, ou SFX + voix."
+        },
+        "exportToggle": {
+          "label": "Exporter un fichier audio",
+          "description": "Enregistre aussi un fichier audio séparé."
+        }
+      },
+      "pricing": {
+        "eyebrow": "Tarif",
+        "missingInputs": "Ajoute les entrées requises",
+        "missingSourceVideo": "Ajoute une vidéo source.",
+        "missingOptions": "Règle les options requises.",
+        "summary": "{output} • {duration}",
+        "generate": "Générer l’audio",
+        "generating": "Génération…",
+        "thisRender": "Ce rendu : {amount}"
+      },
+      "picker": {
+        "title": "Choisir une vidéo générée",
+        "description": "Utilise l’un de tes rendus vidéo existants comme source.",
+        "close": "Fermer",
+        "empty": "Aucune vidéo générée trouvée pour le moment.",
+        "audioBadge": "Audio"
+      },
+      "rail": {
+        "eyebrow": "Derniers rendus",
+        "title": "Historique audio",
+        "viewAll": "Tout voir",
+        "loadFailed": "Impossible de charger les derniers rendus.",
+        "retry": "Réessayer",
+        "empty": "Aucun rendu audio pour le moment.",
+        "loadMore": "Charger plus",
+        "loading": "Chargement…",
+        "open": "Ouvrir",
+        "file": "Fichier",
+        "outputs": {
+          "videoAndAudio": "Vidéo + audio",
+          "video": "Rendu vidéo",
+          "audio": "Fichier audio",
+          "pending": "Rendu en attente"
+        },
+        "statuses": {
+          "pending": "En attente",
+          "running": "En cours",
+          "completed": "Terminé",
+          "failed": "Échoué"
+        }
+      },
+      "messages": {
+        "loadGeneratedVideos": "Impossible de charger les vidéos générées.",
+        "loadSourceJob": "Impossible de charger le job source.",
+        "loadLatestJob": "Impossible de charger le dernier job audio.",
+        "sourceUploadFailed": "Échec de l’import de la vidéo source.",
+        "voiceUploadFailed": "Échec de l’import du sample voix.",
+        "renderComplete": "Rendu audio terminé.",
+        "generationFailed": "La génération audio a échoué.",
+        "processing": {
+          "soundDesign": "Génération du sound design cinématique…",
+          "musicTrack": "Génération de la piste musicale…",
+          "musicBed": "Génération du bed musical…",
+          "clonedVoice": "Génération de la voix clonée…",
+          "voice": "Génération de la voix off…",
+          "masterAudio": "Mastering du fichier audio…",
+          "finalMix": "Mix de la bande-son finale…",
+          "uploadAudioRender": "Upload du rendu audio…",
+          "uploadAudioExport": "Upload de l’export audio…",
+          "uploadFinalRender": "Upload du rendu final…",
+          "complete": "Rendu audio terminé."
+        }
+      }
     },
     "toolsAngle": {
       "disabledTitle": "Les outils sont désactivés",
@@ -2806,15 +3014,15 @@
       "engineSelect": "Sélection du moteur",
       "sourceImage": "Image source",
       "sourceReady": "Image source prête",
-      "sourceFromLibrary": "Depuis la Library",
+      "sourceFromLibrary": "Depuis la bibliothèque",
       "sourceFromPaste": "Depuis une URL collée",
       "sourceFromDevice": "Importée depuis l’appareil",
       "replace": "Remplacer",
-      "library": "Library",
+      "library": "Bibliothèque",
       "remove": "Retirer",
       "sourceAlt": "Source",
       "addSourceTitle": "Ajouter une image source",
-      "addSourceBody": "Dépose, colle, importe ou choisis depuis ta Library.",
+      "addSourceBody": "Dépose, colle, importe ou choisis depuis ta bibliothèque.",
       "upload": "Importer",
       "uploading": "Import en cours...",
       "formats": "PNG / JPG / WEBP",
@@ -2827,7 +3035,7 @@
       "generate": "Générer",
       "generating": "Génération...",
       "output": "Sortie",
-      "outputTitle": "Preview de first frame",
+      "outputTitle": "Aperçu de la première image",
       "generatingOverlayTitle": "Génération de nouveaux angles...",
       "generatingOverlayBody": "La dernière sortie reste visible jusqu’à ce que le nouveau run soit prêt.",
       "latency": "Latence",
@@ -2838,9 +3046,9 @@
       "openJobs": "Ouvrir Jobs",
       "angleJob": "Job angle",
       "close": "Fermer",
-      "libraryChoose": "Choisir depuis la Library",
+      "libraryChoose": "Choisir depuis la bibliothèque",
       "libraryBody": "Utilise une image importée ou sauvegardée comme frame source.",
-      "libraryError": "Impossible de charger les images de la library",
+      "libraryError": "Impossible de charger les images de la bibliothèque",
       "libraryEmpty": "Aucune image enregistrée pour le moment.",
       "useImage": "Utiliser l’image",
       "assetFallback": "Asset",
@@ -2849,16 +3057,16 @@
         "upload": "Importées",
         "generated": "Générées"
       },
-      "engineHelpFlux": "FLUX prend en charge les angles à hauteur d’œil jusqu’aux high angles. Un tilt négatif bascule automatiquement sur Qwen pour les low angles.",
-      "engineHelpQwen": "Low angle détecté. Qwen Multiple Angles est maintenant actif.",
+      "engineHelpFlux": "FLUX prend en charge les angles à hauteur d’œil jusqu’aux plongées hautes. Un tilt négatif bascule automatiquement sur Qwen pour les angles bas.",
+      "engineHelpQwen": "Angle bas détecté. Qwen Multiple Angles est maintenant actif.",
       "orbitTitle": "Sélecteur d’angle 3D",
       "orbitHint": "Maintiens et glisse pour changer l’angle caméra",
       "rotationShort": "Rotation",
       "tiltShort": "Tilt",
       "zoomShort": "Zoom",
       "bestAngles": "Générer depuis les 4 meilleurs angles",
-      "addToLibrary": "Ajouter à la Library",
-      "alreadyInLibrary": "Déjà dans la Library",
+      "addToLibrary": "Ajouter à la bibliothèque",
+      "alreadyInLibrary": "Déjà dans la bibliothèque",
       "download": "Télécharger",
       "angleLabel": "Angle {index}",
       "angleSelected": "sélectionné",
@@ -2866,11 +3074,11 @@
       "uploadFailed": "Échec de l’import",
       "invalidUrl": "Colle ou dépose une URL d’image valide.",
       "referenceName": "Référence",
-      "libraryImageName": "Image de library",
+      "libraryImageName": "Image de bibliothèque",
       "missingSource": "Importe d’abord une image source.",
       "generationFailed": "Échec de la génération",
       "angleOutputLabel": "Sortie angle",
-      "librarySaveFailed": "Échec de la sauvegarde en Library",
+      "librarySaveFailed": "Échec de la sauvegarde dans la bibliothèque",
       "engines": {
         "flux-multiple-angles": {
           "label": "FLUX Multiple Angles",
@@ -2889,8 +3097,8 @@
       "choose": "Choisir",
       "done": "Terminé",
       "add": "Ajouter",
-      "on": "On",
-      "off": "Off",
+      "on": "Activé",
+      "off": "Désactivé",
       "disabledTitle": "Les outils sont désactivés",
       "disabledBody": "Active `FEATURES.workflows.toolsSection` pour accéder à cette zone.",
       "back": "Retour aux outils",
@@ -2899,16 +3107,16 @@
       "uploadIdentityDone": "Référence identité importée.",
       "uploadStyleDone": "Référence style importée.",
       "uploadFailed": "Échec de l’import.",
-      "loadFromJobDone": "Les réglages du character builder ont été chargés depuis le job sélectionné.",
-      "duplicateDone": "Les réglages du builder ont été copiés depuis ce résultat.",
-      "missingRun": "Le run du character builder est manquant.",
+      "loadFromJobDone": "Les réglages du générateur de personnage ont été chargés depuis le job sélectionné.",
+      "duplicateDone": "Les réglages de l’éditeur ont été copiés depuis ce résultat.",
+      "missingRun": "Le run du générateur de personnage est manquant.",
       "runGenerateOneDone": "Nouvelle référence personnage générée.",
       "runGenerateFourDone": "4 options de référence personnage générées.",
-      "runFullBodyDone": "Correction full body générée à partir du résultat sélectionné.",
-      "runLightingDone": "Variation de lighting générée à partir du résultat sélectionné.",
+      "runFullBodyDone": "Correction corps entier générée à partir du résultat sélectionné.",
+      "runLightingDone": "Variation d’éclairage générée à partir du résultat sélectionné.",
       "runFailed": "Échec de la génération.",
-      "savedToLibrary": "Sauvegardé dans la Library.",
-      "saveToLibraryFailed": "Échec de la sauvegarde dans la Library.",
+      "savedToLibrary": "Sauvegardé dans la bibliothèque.",
+      "saveToLibraryFailed": "Échec de la sauvegarde dans la bibliothèque.",
       "pricingError": "Impossible de charger le pricing de l’outil",
       "top": {
         "start": "Départ",
@@ -2962,8 +3170,8 @@
         "mustRemainPlaceholder": "Ajouter un détail"
       },
       "outputOptions": {
-        "fullBodyRequired": "Full body requis",
-        "includeCloseUps": "4 close-ups en bas",
+        "fullBodyRequired": "Corps entier requis",
+        "includeCloseUps": "4 gros plans en bas",
         "neutralStudioBackground": "Fond neutre",
         "preserveFacialDetails": "Préserver les détails du visage",
         "avoid3dRenderLook": "Éviter le rendu 3D"
@@ -2971,18 +3179,18 @@
       "generatePanel": {
         "portraitTitle": "Référence portrait",
         "portraitBody": "Ancre propre centrée sur le visage",
-        "sheetTitle": "Character sheet",
-        "sheetBody": "Planche full body multi-angle",
+        "sheetTitle": "Planche personnage",
+        "sheetBody": "Planche corps entier multi-angle",
         "quality": "Qualité",
-        "qualityBody": "Draft utilise Nano Banana 2. Final utilise Nano Banana Pro.",
+        "qualityBody": "Brouillon utilise Nano Banana 2. Final utilise Nano Banana Pro.",
         "pricePerImage": "{price} par image",
         "generateReference": "Générer une référence",
         "generateFour": "Générer 4 options"
       },
       "summary": {
         "dna": "ADN personnage",
-        "snapshot": "Snapshot live",
-        "builderBadge": "Builder",
+        "snapshot": "Vue d’ensemble",
+        "builderBadge": "Éditeur",
         "noReferenceImage": "Aucune image de référence",
         "identity": "Identité",
         "hair": "Cheveux",
@@ -2991,7 +3199,7 @@
         "output": "Sortie",
         "quality": "Qualité",
         "autoFromReference": "Auto depuis la référence",
-        "photoreal": "Photoreal"
+        "photoreal": "Photoréaliste"
       },
       "hairEditor": {
         "title": "Éditeur cheveux",
@@ -3005,8 +3213,8 @@
         "selectedTitle": "Référence actuelle",
         "selectedAlt": "Référence personnage sélectionnée",
         "baseReference": "Sortie de référence de base",
-        "fullBodyRefinement": "Refinement full body",
-        "lightingRefinement": "Refinement lighting",
+        "fullBodyRefinement": "Refinement corps entier",
+        "lightingRefinement": "Variation d’éclairage",
         "importNote": "Importe cette référence manuellement dans un modèle vidéo quand tu es prêt.",
         "pinnedEyebrow": "Base épinglée",
         "pinnedTitle": "Base de refinement",
@@ -3015,15 +3223,15 @@
         "unpin": "Désépingler",
         "pinEmpty": "Sélectionne un résultat, puis épingle-le si tu veux une base stable pour les refinements.",
         "refineTitle": "Refine",
-        "fixFullBody": "Corriger le full body",
-        "createLighting": "Créer une variation de lighting",
+        "fixFullBody": "Corriger le corps entier",
+        "createLighting": "Créer une variation d’éclairage",
         "refineFootnote": "Cet outil s’arrête à la création d’images de référence réutilisables."
       },
       "resultCard": {
         "generatedAlt": "Référence personnage générée",
         "referenceOutput": "Sortie de référence",
-        "fullBodyFix": "Fix full body",
-        "lightingVariant": "Variation lighting",
+        "fullBodyFix": "Correction corps entier",
+        "lightingVariant": "Variation d’éclairage",
         "selected": "Sélectionné",
         "base": "Base",
         "unpinBase": "Retirer la base",
@@ -3069,7 +3277,7 @@
           "blonde": "Blond",
           "red": "Roux",
           "gray": "Gris",
-          "fantasy": "Fantasy"
+          "fantasy": "Fantaisie"
         },
         "hairLength": {
           "short": "Court",
@@ -3100,23 +3308,23 @@
           "average": "Moyen",
           "athletic": "Athlétique",
           "strong": "Costaud",
-          "curvy": "Curvy"
+          "curvy": "Ronde"
         },
         "outfit": {
           "casual": "Casual",
-          "business": "Business",
+          "business": "Bureau",
           "streetwear": "Streetwear",
           "formal": "Formel",
           "luxury": "Luxe",
           "sci-fi": "Sci-fi",
-          "fantasy": "Fantasy",
+          "fantasy": "Fantaisie",
           "tactical": "Tactique"
         },
         "realism": {
-          "photoreal": "Photoreal",
-          "cinematic": "Cinematic",
-          "stylized": "Stylized",
-          "animated": "Animated"
+          "photoreal": "Photoréaliste",
+          "cinematic": "Cinématique",
+          "stylized": "Stylisé",
+          "animated": "Animé"
         },
         "accessories": {
           "glasses": "Lunettes",
@@ -3142,8 +3350,8 @@
             "description": "Ancre visage centrée pour une réutilisation ultérieure."
           },
           "character-sheet": {
-            "label": "Character sheet",
-            "description": "Turnaround full body avec couverture multi-angle propre."
+            "label": "Planche personnage",
+            "description": "Turnaround corps entier avec couverture multi-angle propre."
           }
         },
         "consistency": {
@@ -3176,7 +3384,7 @@
         },
         "quality": {
           "draft": {
-            "label": "Draft",
+            "label": "Brouillon",
             "description": "Passes exploratoires rapides sur Nano Banana 2."
           },
           "final": {
@@ -3185,6 +3393,33 @@
           }
         }
       }
+    }
+  },
+  "cookieBanner": {
+    "title": "Cookies et confidentialité",
+    "body": "Nous utilisons des cookies essentiels pour faire fonctionner le site. Avec votre accord, nous activerons les analytics pour améliorer le produit et les balises publicitaires pour mesurer les campagnes. Vous pouvez modifier vos choix à tout moment.",
+    "actions": {
+      "acceptAll": "Tout accepter",
+      "rejectAll": "Tout refuser",
+      "manageChoices": "Gérer mes choix",
+      "hideChoices": "Masquer les choix",
+      "savePreferences": "Enregistrer les préférences",
+      "saving": "Enregistrement…"
+    },
+    "preferences": {
+      "title": "Préférences",
+      "analytics": {
+        "title": "Cookies analytiques",
+        "body": "Aidez-nous à mesurer l’usage et à améliorer les fonctionnalités."
+      },
+      "ads": {
+        "title": "Cookies publicitaires",
+        "body": "Mesurez les campagnes et améliorez leur pertinence."
+      }
+    },
+    "errors": {
+      "loadVersion": "Impossible de charger la version de la politique cookies",
+      "save": "Impossible d’enregistrer vos préférences."
     }
   },
   "auth": {

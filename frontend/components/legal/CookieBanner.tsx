@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { CONSENT_COOKIE_NAME, createDefaultConsent, mergeConsent, parseConsent, serializeConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
 import { setAnalyticsConsentCookie, setClarityConsent } from '@/lib/clarity-client';
 import { Button } from '@/components/ui/Button';
@@ -25,6 +26,136 @@ const PUBLIC_GOOGLE_CONSENT_MODE = (process.env.NEXT_PUBLIC_GOOGLE_CONSENT_MODE 
 const ANALYTICS_STORAGE_KEY = 'mv-consent-analytics';
 const ANALYTICS_GRANTED_VALUE = 'granted';
 const OPEN_PREFERENCES_EVENT = 'consent:open-preferences';
+
+type CookieBannerLocale = 'en' | 'fr' | 'es';
+
+const COOKIE_BANNER_COPY: Record<
+  CookieBannerLocale,
+  {
+    title: string;
+    body: string;
+    actions: {
+      acceptAll: string;
+      rejectAll: string;
+      manageChoices: string;
+      hideChoices: string;
+      savePreferences: string;
+      saving: string;
+    };
+    preferences: {
+      title: string;
+      analytics: { title: string; body: string };
+      ads: { title: string; body: string };
+    };
+    errors: {
+      loadVersion: string;
+      save: string;
+    };
+  }
+> = {
+  en: {
+    title: 'Cookies & Privacy',
+    body:
+      "We use essential cookies to run the site. With your consent, we'll enable analytics to improve the product and advertising tags for campaign measurement. You can change your choices anytime.",
+    actions: {
+      acceptAll: 'Accept all',
+      rejectAll: 'Reject all',
+      manageChoices: 'Manage choices',
+      hideChoices: 'Hide choices',
+      savePreferences: 'Save preferences',
+      saving: 'Saving…',
+    },
+    preferences: {
+      title: 'Preferences',
+      analytics: {
+        title: 'Analytics cookies',
+        body: 'Help us measure usage and improve features.',
+      },
+      ads: {
+        title: 'Advertising cookies',
+        body: 'Measure campaigns and improve relevance.',
+      },
+    },
+    errors: {
+      loadVersion: 'Failed to load cookie policy version',
+      save: 'Unable to store your preferences.',
+    },
+  },
+  fr: {
+    title: 'Cookies et confidentialité',
+    body:
+      'Nous utilisons des cookies essentiels pour faire fonctionner le site. Avec votre accord, nous activerons les analytics pour améliorer le produit et les balises publicitaires pour mesurer les campagnes. Vous pouvez modifier vos choix à tout moment.',
+    actions: {
+      acceptAll: 'Tout accepter',
+      rejectAll: 'Tout refuser',
+      manageChoices: 'Gérer mes choix',
+      hideChoices: 'Masquer les choix',
+      savePreferences: 'Enregistrer les préférences',
+      saving: 'Enregistrement…',
+    },
+    preferences: {
+      title: 'Préférences',
+      analytics: {
+        title: 'Cookies analytiques',
+        body: 'Aidez-nous à mesurer l’usage et à améliorer les fonctionnalités.',
+      },
+      ads: {
+        title: 'Cookies publicitaires',
+        body: 'Mesurez les campagnes et améliorez leur pertinence.',
+      },
+    },
+    errors: {
+      loadVersion: 'Impossible de charger la version de la politique cookies',
+      save: 'Impossible d’enregistrer vos préférences.',
+    },
+  },
+  es: {
+    title: 'Cookies y privacidad',
+    body:
+      'Usamos cookies esenciales para que el sitio funcione. Con tu consentimiento, activaremos analytics para mejorar el producto y etiquetas publicitarias para medir campañas. Puedes cambiar tus elecciones en cualquier momento.',
+    actions: {
+      acceptAll: 'Aceptar todo',
+      rejectAll: 'Rechazar todo',
+      manageChoices: 'Gestionar elecciones',
+      hideChoices: 'Ocultar elecciones',
+      savePreferences: 'Guardar preferencias',
+      saving: 'Guardando…',
+    },
+    preferences: {
+      title: 'Preferencias',
+      analytics: {
+        title: 'Cookies analíticas',
+        body: 'Ayúdanos a medir el uso y mejorar las funciones.',
+      },
+      ads: {
+        title: 'Cookies publicitarias',
+        body: 'Mide campañas y mejora la relevancia.',
+      },
+    },
+    errors: {
+      loadVersion: 'No se pudo cargar la versión de la política de cookies',
+      save: 'No se pudieron guardar tus preferencias.',
+    },
+  },
+};
+
+function resolveCookieBannerLocale(pathname: string | null): CookieBannerLocale {
+  if (typeof document !== 'undefined') {
+    const cookies = document.cookie ? document.cookie.split(';') : [];
+    for (const entry of cookies) {
+      const [rawKey, ...rest] = entry.trim().split('=');
+      const key = rawKey.trim();
+      if (key !== 'NEXT_LOCALE' && key !== 'mv-locale') continue;
+      const value = decodeURIComponent(rest.join('=')).trim();
+      if (value === 'fr' || value === 'es' || value === 'en') {
+        return value;
+      }
+    }
+  }
+  if (pathname?.startsWith('/fr')) return 'fr';
+  if (pathname?.startsWith('/es')) return 'es';
+  return 'en';
+}
 
 function readCookie(): string | null {
   if (typeof document === 'undefined') return null;
@@ -121,6 +252,8 @@ async function persistToServer(categories: ConsentRecord['categories']) {
 }
 
 export function CookieBanner() {
+  const pathname = usePathname();
+  const copy = COOKIE_BANNER_COPY[resolveCookieBannerLocale(pathname)];
   const [state, setState] = useState<BannerState>({ ready: false });
   const [showPreferences, setShowPreferences] = useState(false);
   const [fetchState, setFetchState] = useState<FetchState>('idle');
@@ -161,7 +294,7 @@ export function CookieBanner() {
       const res = await fetch('/api/legal/cookies/version', { cache: 'no-store' });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok || typeof json.version !== 'string') {
-        throw new Error(json?.error ?? 'Failed to load cookie policy version');
+        throw new Error(json?.error ?? copy.errors.loadVersion);
       }
       const stored = parseConsent(readCookie());
       if (stored && stored.version === json.version) {
@@ -248,7 +381,9 @@ export function CookieBanner() {
         await persistToServer(next.categories);
         setShowPreferences(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unable to store your preferences.');
+        setError(
+          err instanceof Error ? err.message : copy.errors.save
+        );
       } finally {
         setFetchState('idle');
       }
@@ -294,12 +429,12 @@ export function CookieBanner() {
       className="w-full max-w-xs rounded-input border border-border bg-surface-2 p-4"
     >
       <p id={preferencesTitleId} className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-        Preferences
+        {copy.preferences.title}
       </p>
       <div className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
         <span id={analyticsLabelId}>
-          Analytics cookies
-          <span className="block text-xs text-text-muted">Help us measure usage and improve features.</span>
+          {copy.preferences.analytics.title}
+          <span className="block text-xs text-text-muted">{copy.preferences.analytics.body}</span>
         </span>
         <Button
           type="button"
@@ -318,8 +453,8 @@ export function CookieBanner() {
       </div>
       <div className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
         <span id={adsLabelId}>
-          Advertising cookies
-          <span className="block text-xs text-text-muted">Measure campaigns and improve relevance.</span>
+          {copy.preferences.ads.title}
+          <span className="block text-xs text-text-muted">{copy.preferences.ads.body}</span>
         </span>
         <Button
           type="button"
@@ -343,7 +478,7 @@ export function CookieBanner() {
         disabled={fetchState === 'saving'}
         className="w-full px-3 py-2 text-sm"
       >
-        {fetchState === 'saving' ? 'Saving…' : 'Save preferences'}
+        {fetchState === 'saving' ? copy.actions.saving : copy.actions.savePreferences}
       </Button>
     </div>
   );
@@ -365,11 +500,8 @@ export function CookieBanner() {
       <div className="w-full max-w-3xl rounded-card border border-border bg-surface p-5 shadow-xl">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="flex-1 space-y-2">
-            <h2 className="text-base font-semibold text-text-primary">Cookies &amp; Privacy</h2>
-            <p className="text-sm text-text-secondary">
-              We use essential cookies to run the site. With your consent, we&apos;ll enable analytics to improve the product and
-              advertising tags for campaign measurement. You can change your choices anytime.
-            </p>
+            <h2 className="text-base font-semibold text-text-primary">{copy.title}</h2>
+            <p className="text-sm text-text-secondary">{copy.body}</p>
             <div className="flex flex-wrap gap-4">
               <Button
                 type="button"
@@ -378,7 +510,7 @@ export function CookieBanner() {
                 disabled={fetchState === 'saving'}
                 className="px-4 py-2 text-sm"
               >
-                {fetchState === 'saving' ? 'Saving…' : 'Accept all'}
+                {fetchState === 'saving' ? copy.actions.saving : copy.actions.acceptAll}
               </Button>
               <Button
                 type="button"
@@ -388,7 +520,7 @@ export function CookieBanner() {
                 disabled={fetchState === 'saving'}
                 className="border-border px-4 py-2 text-sm text-text-primary hover:bg-surface-hover"
               >
-                Reject all
+                {copy.actions.rejectAll}
               </Button>
               <Button
                 type="button"
@@ -400,7 +532,7 @@ export function CookieBanner() {
                 aria-controls={preferencesPanelId}
                 className="min-h-0 h-auto p-0 text-sm font-semibold text-brand underline underline-offset-4 hover:text-brandHover"
               >
-                {showPreferences ? 'Hide choices' : 'Manage choices'}
+                {showPreferences ? copy.actions.hideChoices : copy.actions.manageChoices}
               </Button>
             </div>
             {error ? <p className="text-xs text-[var(--warning)]">{error}</p> : null}

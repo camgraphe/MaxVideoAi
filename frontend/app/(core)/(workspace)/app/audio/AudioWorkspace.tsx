@@ -2,12 +2,14 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import deepmerge from 'deepmerge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { authFetch } from '@/lib/authFetch';
 import { getJobStatus, runAudioGenerate } from '@/lib/api';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
@@ -37,6 +39,13 @@ import {
   type AudioVoiceProfile,
 } from '@/lib/audio-generation';
 import AudioLatestRendersRail from './AudioLatestRendersRail';
+import {
+  buildAudioModeOptions,
+  DEFAULT_AUDIO_WORKSPACE_COPY,
+  formatAudioOutputKind,
+  translateAudioProcessingMessage,
+  type AudioWorkspaceCopy,
+} from './copy';
 
 type SourceVideoState = {
   url: string;
@@ -115,33 +124,6 @@ type AudioResultState = {
   outputKind: AudioOutputKind;
 };
 
-const AUDIO_MODE_OPTIONS: Array<{
-  id: AudioPackId;
-  label: string;
-  description: string;
-}> = [
-  {
-    id: 'music_only',
-    label: 'Music Only',
-    description: 'Score or ambience.',
-  },
-  {
-    id: 'voice_only',
-    label: 'Voice Over Only',
-    description: 'Narration only.',
-  },
-  {
-    id: 'cinematic',
-    label: 'Cinematic',
-    description: 'SFX + optional score.',
-  },
-  {
-    id: 'cinematic_voice',
-    label: 'Cinematic + Voice',
-    description: 'SFX + score + VO.',
-  },
-];
-
 const DURATION_OPTIONS = [3, 5, 8, 10, 15, 20] as const;
 const DEFAULT_PACK: AudioPackId = 'cinematic';
 const DEFAULT_MOOD: AudioMood = 'epic';
@@ -151,44 +133,11 @@ const DEFAULT_VOICE_PROFILE: AudioVoiceProfile = 'balanced';
 const DEFAULT_VOICE_DELIVERY: AudioVoiceDelivery = 'cinematic';
 const DEFAULT_LANGUAGE: AudioLanguage = 'auto';
 const DEFAULT_MANUAL_DURATION_SEC = 8;
+const AUDIO_VOICE_GENDER_VALUES = ['female', 'male', 'neutral'] as const;
 
-const INTENSITY_OPTIONS: Array<{ value: AudioIntensity; label: string }> = [
-  { value: 'subtle', label: 'Subtle' },
-  { value: 'standard', label: 'Standard' },
-  { value: 'intense', label: 'Intense' },
-];
-
-const VOICE_GENDER_OPTIONS: Array<{ value: AudioVoiceGender; label: string }> = [
-  { value: 'female', label: 'Female' },
-  { value: 'male', label: 'Male' },
-  { value: 'neutral', label: 'Neutral' },
-];
-
-const VOICE_PROFILE_OPTIONS: Array<{ value: AudioVoiceProfile; label: string }> = [
-  { value: 'balanced', label: 'Balanced' },
-  { value: 'warm', label: 'Warm' },
-  { value: 'bright', label: 'Bright' },
-  { value: 'deep', label: 'Deep' },
-];
-
-const VOICE_DELIVERY_OPTIONS: Array<{ value: AudioVoiceDelivery; label: string }> = [
-  { value: 'natural', label: 'Natural' },
-  { value: 'cinematic', label: 'Cinematic' },
-  { value: 'trailer', label: 'Trailer' },
-  { value: 'intimate', label: 'Intimate' },
-];
-
-const LANGUAGE_OPTIONS: Array<{ value: AudioLanguage; label: string }> = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'english', label: 'EN' },
-  { value: 'french', label: 'FR' },
-  { value: 'spanish', label: 'ES' },
-  { value: 'german', label: 'DE' },
-];
-
-function formatCurrency(amount: number, currency = 'USD'): string {
+function formatCurrency(amount: number, currency = 'USD', locale?: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
     }).format(amount);
@@ -197,24 +146,30 @@ function formatCurrency(amount: number, currency = 'USD'): string {
   }
 }
 
-function formatDateTime(value: string): string {
+function formatDateTime(value: string, locale?: string): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(parsed);
 }
 
-function formatOutputKind(outputKind: AudioOutputKind): string {
-  switch (outputKind) {
-    case 'audio':
-      return 'Audio output';
-    case 'both':
-      return 'Video + audio';
-    default:
-      return 'Video output';
+function formatCopy(template: string, values: Record<string, string | number>): string {
+  return Object.entries(values).reduce((resolved, [key, value]) => {
+    return resolved.split(`{${key}}`).join(String(value));
+  }, template);
+}
+
+function resolveUiErrorMessage(
+  error: unknown,
+  fallback: string,
+  genericMessages: string[] = []
+): string {
+  if (!(error instanceof Error) || !error.message.trim().length) {
+    return fallback;
   }
+  return genericMessages.includes(error.message) ? fallback : error.message;
 }
 
 function inferOutputKind(detail: {
@@ -281,14 +236,16 @@ async function fetchJobDetail(jobId: string): Promise<AudioJobDetail> {
 
 function AudioModePicker({
   value,
+  options,
   onChange,
 }: {
   value: AudioPackId;
+  options: Array<{ id: AudioPackId; label: string; description: string }>;
   onChange: (pack: AudioPackId) => void;
 }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      {AUDIO_MODE_OPTIONS.map((mode) => (
+      {options.map((mode) => (
         <button
           key={mode.id}
           type="button"
@@ -382,23 +339,29 @@ function ResultPreview({
   sourceVideo,
   activeJob,
   isLoading,
+  copy,
 }: {
   result: AudioResultState | null;
   sourceVideo: SourceVideoState | null;
   activeJob: ActiveAudioJobState | null;
   isLoading: boolean;
+  copy: AudioWorkspaceCopy;
 }) {
   const previewThumb = result?.thumbUrl ?? sourceVideo?.thumbUrl ?? '/assets/frames/thumb-16x9.svg';
   const hasRenderableOutput = Boolean(result?.videoUrl || result?.audioUrl);
   const showOverlay = !hasRenderableOutput && (isLoading || activeJob?.status === 'pending' || activeJob?.status === 'running');
-  const overlayMessage = activeJob?.message ?? (isLoading ? 'Loading audio render…' : 'Processing audio render…');
+  const overlayMessage =
+    translateAudioProcessingMessage(
+      copy,
+      activeJob?.message ?? (isLoading ? copy.preview.loadingMessage : copy.preview.processingMessage)
+    ) ?? copy.preview.processingMessage;
   const overlayProgress = activeJob?.progress ?? 0;
 
   return (
     <section className="rounded-card border border-border bg-surface-glass-80 shadow-card">
       <div className="border-b border-border px-5 py-4">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Preview</p>
-        <h2 className="mt-1 text-xl font-semibold text-text-primary">Latest output</h2>
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.preview.eyebrow}</p>
+        <h2 className="mt-1 text-xl font-semibold text-text-primary">{copy.preview.title}</h2>
       </div>
       <div className="p-4">
         <div className="relative overflow-hidden rounded-card border border-border bg-bg" style={{ aspectRatio: '16 / 9' }}>
@@ -417,9 +380,9 @@ function ResultPreview({
                 <img src="/assets/icons/audio.svg" alt="" className="h-10 w-10 opacity-95" />
               </div>
               <p className="relative mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
-                {formatOutputKind(result.outputKind)}
+                {formatAudioOutputKind(copy, result.outputKind)}
               </p>
-              <p className="relative mt-2 text-2xl font-semibold text-white">Audio render ready</p>
+              <p className="relative mt-2 text-2xl font-semibold text-white">{copy.preview.audioReady}</p>
               <div className="relative mt-5 w-full max-w-xl">
                 <audio controls src={result.audioUrl} className="w-full" />
               </div>
@@ -436,19 +399,20 @@ function ResultPreview({
               preload="metadata"
             />
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_42%),linear-gradient(180deg,_rgba(248,250,252,0.9),_rgba(241,245,249,0.7))] px-6 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-surface shadow-card">
+            <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-bg/70 px-6 text-center">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.14),_transparent_46%)]" />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-border bg-surface shadow-card">
                 <img src="/assets/icons/audio.svg" alt="" className="h-8 w-8 opacity-75" />
               </div>
-              <p className="mt-5 text-sm font-semibold text-text-primary">Ready for audio</p>
-              <p className="mt-2 max-w-xl text-sm text-text-secondary">Pick a mode and render.</p>
+              <p className="relative mt-5 text-sm font-semibold text-text-primary">{copy.preview.emptyTitle}</p>
+              <p className="relative mt-2 max-w-xl text-sm text-text-secondary">{copy.preview.emptyBody}</p>
             </div>
           )}
 
           {showOverlay ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-55 px-6 text-center text-white backdrop-blur-[2px]">
               <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/25 border-t-white" />
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-white/75">Processing</p>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-white/75">{copy.preview.processingLabel}</p>
               <p className="mt-2 text-2xl font-semibold">{Math.max(0, Math.min(100, overlayProgress))}%</p>
               <p className="mt-2 max-w-lg text-sm text-white/80">{overlayMessage}</p>
             </div>
@@ -459,12 +423,12 @@ function ResultPreview({
           <div className="mt-4 flex flex-wrap gap-3">
             {result.videoUrl ? (
               <ButtonLink href={result.videoUrl} target="_blank" rel="noreferrer" variant="outline" size="sm">
-                Open video file
+                {copy.preview.openVideoFile}
               </ButtonLink>
             ) : null}
             {result.audioUrl ? (
               <ButtonLink href={result.audioUrl} target="_blank" rel="noreferrer" variant="outline" size="sm">
-                Open audio file
+                {copy.preview.openAudioFile}
               </ButtonLink>
             ) : null}
           </div>
@@ -478,7 +442,12 @@ export default function AudioWorkspace() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { locale, t } = useI18n();
   const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
+  const rawCopy = t('workspace.audio', DEFAULT_AUDIO_WORKSPACE_COPY);
+  const copy = useMemo<AudioWorkspaceCopy>(() => {
+    return deepmerge<AudioWorkspaceCopy>(DEFAULT_AUDIO_WORKSPACE_COPY, (rawCopy ?? {}) as Partial<AudioWorkspaceCopy>);
+  }, [rawCopy]);
 
   const [pack, setPack] = useState<AudioPackId>(DEFAULT_PACK);
   const [mood, setMood] = useState<AudioMood>(DEFAULT_MOOD);
@@ -521,6 +490,55 @@ export default function AudioWorkspace() {
   const showExportToggle = packConfig.supportsAudioExport;
   const showManualDuration = pack === 'music_only' && !sourceVideo?.url;
   const currentOutputKind: AudioOutputKind = packConfig.audioOnly ? 'audio' : exportAudioFile ? 'both' : 'video';
+  const modeOptions = useMemo(() => buildAudioModeOptions(copy), [copy]);
+  const intensityOptions = useMemo(
+    () =>
+      AUDIO_INTENSITY_VALUES.map((value) => ({
+        value,
+        label: copy.controls.intensities[value],
+      })),
+    [copy]
+  );
+  const moodOptions = useMemo(
+    () =>
+      AUDIO_MOOD_VALUES.map((value) => ({
+        value,
+        label: copy.controls.moods[value],
+      })),
+    [copy]
+  );
+  const voiceGenderOptions = useMemo(
+    () =>
+      AUDIO_VOICE_GENDER_VALUES.map((value) => ({
+        value,
+        label: copy.controls.voiceGenders[value],
+      })),
+    [copy]
+  );
+  const voiceProfileOptions = useMemo(
+    () =>
+      AUDIO_VOICE_PROFILE_VALUES.map((value) => ({
+        value,
+        label: copy.controls.voiceProfiles[value],
+      })),
+    [copy]
+  );
+  const voiceDeliveryOptions = useMemo(
+    () =>
+      AUDIO_VOICE_DELIVERY_VALUES.map((value) => ({
+        value,
+        label: copy.controls.voiceDeliveries[value],
+      })),
+    [copy]
+  );
+  const languageOptions = useMemo(
+    () =>
+      AUDIO_LANGUAGE_VALUES.map((value) => ({
+        value,
+        label: copy.controls.languages[value],
+      })),
+    [copy]
+  );
 
   const handlePackChange = useCallback((nextPack: AudioPackId) => {
     manualWorkspaceOverrideRef.current = true;
@@ -549,7 +567,9 @@ export default function AudioWorkspace() {
             thumbUrl: sourceJob.thumbUrl ?? null,
             durationSec: typeof sourceJob.durationSec === 'number' ? sourceJob.durationSec : null,
             aspectRatio: sourceJob.aspectRatio ?? input.fallbackAspectRatio ?? null,
-            label: sourceJob.engineLabel ? `${sourceJob.engineLabel} source` : `Job ${sourceJob.jobId}`,
+            label: sourceJob.engineLabel
+              ? formatCopy(copy.source.sourceLabel, { label: sourceJob.engineLabel })
+              : formatCopy(copy.source.jobLabel, { id: sourceJob.jobId }),
           });
           return;
         }
@@ -570,9 +590,11 @@ export default function AudioWorkspace() {
       thumbUrl: null,
       durationSec,
       aspectRatio: input.fallbackAspectRatio ?? null,
-      label: sourceJobId ? `Job ${sourceJobId}` : 'Restored source video',
+      label: sourceJobId
+        ? formatCopy(copy.source.jobLabel, { id: sourceJobId })
+        : copy.source.restoredLabel,
     });
-  }, []);
+  }, [copy]);
 
   const restoreAudioJob = useCallback(
     async (jobId: string) => {
@@ -663,7 +685,7 @@ export default function AudioWorkspace() {
         | { ok?: boolean; error?: string; jobs?: Job[] }
         | null;
       if (!response.ok || !payload?.ok || !Array.isArray(payload.jobs)) {
-        throw new Error(payload?.error ?? 'Unable to load generated videos.');
+        throw new Error(payload?.error ?? copy.messages.loadGeneratedVideos);
       }
       const next = payload.jobs
         .filter((job) => typeof job.videoUrl === 'string' && job.videoUrl.trim().length > 0)
@@ -680,11 +702,11 @@ export default function AudioWorkspace() {
         .filter((job, index, list) => list.findIndex((entry) => entry.jobId === job.jobId) === index);
       setGeneratedVideos(next);
     } catch (error) {
-      setGeneratedVideosError(error instanceof Error ? error.message : 'Unable to load generated videos.');
+      setGeneratedVideosError(resolveUiErrorMessage(error, copy.messages.loadGeneratedVideos, ['Unable to load generated videos.']));
     } finally {
       setIsGeneratedVideosLoading(false);
     }
-  }, []);
+  }, [copy.messages.loadGeneratedVideos]);
 
   useEffect(() => {
     if (!queryJobId || !user) return;
@@ -704,7 +726,7 @@ export default function AudioWorkspace() {
           return;
         }
         if (!payload.videoUrl) {
-          throw new Error(payload.error ?? 'Unable to load source job.');
+          throw new Error(payload.error ?? copy.messages.loadSourceJob);
         }
         setActiveJob(null);
         setResult(null);
@@ -714,13 +736,15 @@ export default function AudioWorkspace() {
           thumbUrl: payload.thumbUrl ?? null,
           durationSec: typeof payload.durationSec === 'number' ? payload.durationSec : null,
           aspectRatio: payload.aspectRatio ?? null,
-          label: payload.engineLabel ? `${payload.engineLabel} source` : `Job ${payload.jobId}`,
+          label: payload.engineLabel
+            ? formatCopy(copy.source.sourceLabel, { label: payload.engineLabel })
+            : formatCopy(copy.source.jobLabel, { id: payload.jobId }),
         });
       })
       .catch((error) => {
         if (!cancelled) {
           restoredQueryJobRef.current = null;
-          setNotice(error instanceof Error ? error.message : 'Unable to load source job.');
+          setNotice(resolveUiErrorMessage(error, copy.messages.loadSourceJob, ['Unable to load job.']));
         }
       })
       .finally(() => {
@@ -746,7 +770,7 @@ export default function AudioWorkspace() {
           | { ok?: boolean; error?: string; jobs?: Job[] }
           | null;
         if (!response.ok || !payload?.ok || !Array.isArray(payload.jobs)) {
-          throw new Error(payload?.error ?? 'Unable to load latest audio job.');
+          throw new Error(payload?.error ?? copy.messages.loadLatestJob);
         }
         const latestJob =
           payload.jobs.find((job) => job.surface === 'audio' && Boolean(job.videoUrl || job.audioUrl)) ??
@@ -769,7 +793,7 @@ export default function AudioWorkspace() {
     return () => {
       cancelled = true;
     };
-  }, [queryJobId, restoreAudioJob, user]);
+  }, [copy.messages.loadLatestJob, queryJobId, restoreAudioJob, user]);
 
   useEffect(() => {
     if (!activeJob || (activeJob.status !== 'pending' && activeJob.status !== 'running')) {
@@ -875,17 +899,17 @@ export default function AudioWorkspace() {
         label: uploaded.name,
       });
       if (!durationSec) {
-        setNotice('The source video uploaded, but its duration could not be read in the browser.');
+        setNotice(copy.source.uploadDurationWarning);
       }
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Source upload failed.');
+      setNotice(resolveUiErrorMessage(error, copy.messages.sourceUploadFailed, ['Upload failed']));
     } finally {
       setIsUploadingSource(false);
       if (sourceInputRef.current) {
         sourceInputRef.current.value = '';
       }
     }
-  }, []);
+  }, [copy.messages.sourceUploadFailed, copy.source.uploadDurationWarning]);
 
   const handleVoiceFileSelect = useCallback(async (fileList: FileList | null) => {
     const file = fileList?.[0];
@@ -897,14 +921,14 @@ export default function AudioWorkspace() {
       const uploaded = await uploadAsset(file, 'audio');
       setVoiceSample(uploaded);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Voice sample upload failed.');
+      setNotice(resolveUiErrorMessage(error, copy.messages.voiceUploadFailed, ['Upload failed']));
     } finally {
       setIsUploadingVoice(false);
       if (voiceInputRef.current) {
         voiceInputRef.current.value = '';
       }
     }
-  }, []);
+  }, [copy.messages.voiceUploadFailed]);
 
   const handleSelectGeneratedVideo = useCallback(async (video: GeneratedSourceVideo) => {
     manualWorkspaceOverrideRef.current = true;
@@ -920,10 +944,10 @@ export default function AudioWorkspace() {
     });
     setResult(null);
     if (!durationSec) {
-      setNotice('The selected video loaded, but its duration could not be confirmed in the browser.');
+      setNotice(copy.source.selectedDurationWarning);
     }
     setGeneratedPickerOpen(false);
-  }, []);
+  }, [copy.source.selectedDurationWarning]);
 
   const handleClearSourceVideo = useCallback(() => {
     manualWorkspaceOverrideRef.current = true;
@@ -955,7 +979,7 @@ export default function AudioWorkspace() {
         durationSec: pack === 'music_only' && !sourceVideo?.url ? manualDurationSec : undefined,
         musicEnabled: showMusicToggle ? musicEnabled : undefined,
         exportAudioFile: showExportToggle ? exportAudioFile : undefined,
-        locale: typeof navigator !== 'undefined' ? navigator.language : 'en',
+        locale,
       });
       const nextResult: AudioResultState = {
         jobId: response.jobId,
@@ -969,16 +993,16 @@ export default function AudioWorkspace() {
         jobId: response.jobId,
         status: response.status,
         progress: response.progress,
-        message: 'Audio render complete.',
+        message: copy.messages.processing.complete,
         videoUrl: response.videoUrl,
         audioUrl: response.audioUrl ?? null,
         thumbUrl: response.thumbUrl,
         outputKind: response.outputKind,
       });
       router.replace(`${pathname}?job=${encodeURIComponent(response.jobId)}`, { scroll: false });
-      setNotice('Audio render complete.');
+      setNotice(copy.messages.renderComplete);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Audio generation failed.');
+      setNotice(resolveUiErrorMessage(error, copy.messages.generationFailed));
     } finally {
       setIsGenerating(false);
     }
@@ -1002,10 +1026,14 @@ export default function AudioWorkspace() {
     showVoiceFields,
     sourceVideo?.jobId,
     sourceVideo?.url,
+    copy.messages.generationFailed,
+    copy.messages.processing.complete,
+    copy.messages.renderComplete,
     voiceDelivery,
     voiceGender,
     voiceProfile,
     voiceSample?.url,
+    locale,
   ]);
 
   const handleSelectLatestJob = useCallback(
@@ -1024,17 +1052,15 @@ export default function AudioWorkspace() {
     return (
       <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
         <section className="mx-auto max-w-3xl rounded-card border border-border bg-surface p-8 shadow-card">
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Generate Audio</p>
-          <h1 className="mt-3 text-2xl font-semibold text-text-primary">Create an account to generate audio</h1>
-          <p className="mt-3 text-sm text-text-secondary">
-            Build cinematic soundtracks, standalone music beds, or premium voice overs inside the MaxVideoAI workspace.
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.auth.eyebrow}</p>
+          <h1 className="mt-3 text-2xl font-semibold text-text-primary">{copy.auth.title}</h1>
+          <p className="mt-3 text-sm text-text-secondary">{copy.auth.body}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <ButtonLink href="/login" size="sm">
-              Create account
+              {copy.auth.createAccount}
             </ButtonLink>
             <ButtonLink href="/login?mode=signin" variant="outline" size="sm">
-              Sign in
+              {copy.auth.signIn}
             </ButtonLink>
           </div>
         </section>
@@ -1056,20 +1082,20 @@ export default function AudioWorkspace() {
             <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
               <div className="flex flex-col gap-5">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Generate Audio</p>
-                  <h1 className="mt-2 text-2xl font-semibold text-text-primary">Audio workspace</h1>
+                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.hero.eyebrow}</p>
+                  <h1 className="mt-2 text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>
                 </div>
 
-                <AudioModePicker value={pack} onChange={handlePackChange} />
+                <AudioModePicker value={pack} options={modeOptions} onChange={handlePackChange} />
 
                 <div className="rounded-card border border-border bg-bg/60 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-sm font-semibold text-text-primary">Source video</h2>
+                      <h2 className="text-sm font-semibold text-text-primary">{copy.source.title}</h2>
                       <p className="mt-1 text-xs text-text-secondary">
                         {sourceVideoRequired
-                          ? 'Needed for cinematic modes.'
-                          : 'Optional for music or voice-only.'}
+                          ? copy.source.required
+                          : copy.source.optional}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -1080,14 +1106,14 @@ export default function AudioWorkspace() {
                         disabled={isUploadingSource}
                         onClick={() => sourceInputRef.current?.click()}
                       >
-                        {isUploadingSource ? 'Uploading…' : 'Upload video'}
+                        {isUploadingSource ? copy.source.uploading : copy.source.upload}
                       </Button>
                       <Button type="button" variant="outline" size="sm" onClick={() => setGeneratedPickerOpen(true)}>
-                        Use generated
+                        {copy.source.useGenerated}
                       </Button>
                       {sourceVideo ? (
                         <Button type="button" variant="ghost" size="sm" onClick={handleClearSourceVideo}>
-                          Clear
+                          {copy.source.clear}
                         </Button>
                       ) : null}
                     </div>
@@ -1118,7 +1144,7 @@ export default function AudioWorkspace() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-text-primary">{sourceVideo.label}</p>
                         <p className="mt-1 text-xs text-text-secondary">
-                          {sourceVideo.durationSec ? `${sourceVideo.durationSec}s` : 'Duration pending'}{sourceVideo.aspectRatio ? ` • ${sourceVideo.aspectRatio}` : ''}
+                          {sourceVideo.durationSec ? `${sourceVideo.durationSec}s` : copy.source.durationPending}{sourceVideo.aspectRatio ? ` • ${sourceVideo.aspectRatio}` : ''}
                         </p>
                       </div>
                     </div>
@@ -1132,24 +1158,22 @@ export default function AudioWorkspace() {
               sourceVideo={sourceVideo}
               activeJob={activeJob}
               isLoading={isGenerating}
+              copy={copy}
             />
           </div>
 
           <section className="rounded-card border border-border bg-surface-glass-80 shadow-card">
             <div className="border-b border-border px-5 py-4">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Controls</p>
-              <h2 className="mt-1 text-xl font-semibold text-text-primary">Audio setup</h2>
+              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.controls.eyebrow}</p>
+              <h2 className="mt-1 text-xl font-semibold text-text-primary">{copy.controls.title}</h2>
             </div>
             <div className="space-y-5 p-5">
               {showMood ? (
                 <div>
-                  <span className="mb-2 block text-sm font-semibold text-text-primary">Mood</span>
+                  <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.mood}</span>
                   <OptionPillGroup
                     value={mood}
-                    options={AUDIO_MOOD_VALUES.map((option) => ({
-                      value: option,
-                      label: option === 'sci-fi' ? 'Sci-Fi' : option.charAt(0).toUpperCase() + option.slice(1),
-                    }))}
+                    options={moodOptions}
                     onChange={(next) => {
                       const nextMood = coerceAudioMood(next) ?? DEFAULT_MOOD;
                       setMood(nextMood);
@@ -1160,10 +1184,10 @@ export default function AudioWorkspace() {
 
               {showIntensity ? (
                 <div>
-                  <span className="mb-2 block text-sm font-semibold text-text-primary">Intensity</span>
+                  <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.intensity}</span>
                   <OptionPillGroup
                     value={intensity}
-                    options={INTENSITY_OPTIONS}
+                    options={intensityOptions}
                     onChange={(next) => {
                       const nextIntensity = coerceAudioIntensity(next) ?? DEFAULT_INTENSITY;
                       setIntensity(nextIntensity);
@@ -1174,7 +1198,7 @@ export default function AudioWorkspace() {
 
               {showManualDuration ? (
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">Duration</p>
+                  <p className="text-sm font-semibold text-text-primary">{copy.controls.duration}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {DURATION_OPTIONS.map((option) => (
                       <button
@@ -1198,25 +1222,25 @@ export default function AudioWorkspace() {
               {showVoiceFields ? (
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
                   <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">Script</span>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.script}</span>
                     <Textarea
                       rows={6}
                       value={script}
                       onChange={(event) => setScript(event.target.value)}
                       placeholder={
                         pack === 'voice_only'
-                          ? 'Write the standalone voice over you want to render.'
-                          : 'Write the narration or dialogue that should sit on top of the cinematic mix.'
+                          ? copy.controls.scriptVoiceOnlyPlaceholder
+                          : copy.controls.scriptCinematicPlaceholder
                       }
                     />
                     {pack === 'voice_only' && script.trim().length ? (
                       <p className="mt-2 text-xs text-text-secondary">
-                        ~{estimatedDurationSec ?? '—'}s estimated
+                        {formatCopy(copy.controls.estimatedDuration, { seconds: estimatedDurationSec ?? '—' })}
                       </p>
                     ) : null}
                   </label>
                   <div className="rounded-card border border-border bg-bg/60 p-4">
-                    <p className="text-sm font-semibold text-text-primary">Voice sample</p>
+                    <p className="text-sm font-semibold text-text-primary">{copy.controls.voiceSample}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Button
                         type="button"
@@ -1225,11 +1249,11 @@ export default function AudioWorkspace() {
                         disabled={isUploadingVoice}
                         onClick={() => voiceInputRef.current?.click()}
                       >
-                        {isUploadingVoice ? 'Uploading…' : 'Upload sample'}
+                        {isUploadingVoice ? copy.source.uploading : copy.controls.uploadSample}
                       </Button>
                       {voiceSample ? (
                         <Button type="button" variant="ghost" size="sm" onClick={() => setVoiceSample(null)}>
-                          Clear
+                          {copy.source.clear}
                         </Button>
                       ) : null}
                     </div>
@@ -1245,11 +1269,11 @@ export default function AudioWorkspace() {
                     {voiceSample ? (
                       <div className="mt-4 rounded-card border border-border bg-surface px-3 py-3">
                         <p className="truncate text-sm font-semibold text-text-primary">{voiceSample.name}</p>
-                        <p className="mt-1 text-xs text-text-secondary">Voice clone enabled</p>
+                        <p className="mt-1 text-xs text-text-secondary">{copy.controls.cloneEnabled}</p>
                       </div>
                     ) : (
                       <div className="mt-4 rounded-card border border-dashed border-border bg-surface px-3 py-3 text-sm text-text-secondary">
-                        Default voice
+                        {copy.controls.defaultVoice}
                       </div>
                     )}
                   </div>
@@ -1260,10 +1284,10 @@ export default function AudioWorkspace() {
                 <div className={showVoiceGender ? 'grid gap-4 md:grid-cols-4' : 'grid gap-4 md:grid-cols-3'}>
                   {showVoiceGender ? (
                     <div>
-                      <span className="mb-2 block text-sm font-semibold text-text-primary">Voice type</span>
+                      <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.voiceType}</span>
                       <OptionPillGroup
                         value={voiceGender}
-                        options={VOICE_GENDER_OPTIONS}
+                        options={voiceGenderOptions}
                         onChange={(next) => {
                           const nextGender = coerceAudioVoiceGender(next) ?? DEFAULT_VOICE_GENDER;
                           setVoiceGender(nextGender);
@@ -1272,10 +1296,10 @@ export default function AudioWorkspace() {
                     </div>
                   ) : null}
                   <div>
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">Voice</span>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.voice}</span>
                     <OptionPillGroup
                       value={voiceProfile}
-                      options={VOICE_PROFILE_OPTIONS}
+                      options={voiceProfileOptions}
                       onChange={(next) => {
                         const nextProfile = coerceAudioVoiceProfile(next) ?? DEFAULT_VOICE_PROFILE;
                         setVoiceProfile(nextProfile);
@@ -1283,10 +1307,10 @@ export default function AudioWorkspace() {
                     />
                   </div>
                   <div>
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">Delivery</span>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.delivery}</span>
                     <OptionPillGroup
                       value={voiceDelivery}
-                      options={VOICE_DELIVERY_OPTIONS}
+                      options={voiceDeliveryOptions}
                       onChange={(next) => {
                         const nextDelivery = coerceAudioVoiceDelivery(next) ?? DEFAULT_VOICE_DELIVERY;
                         setVoiceDelivery(nextDelivery);
@@ -1294,10 +1318,10 @@ export default function AudioWorkspace() {
                     />
                   </div>
                   <div>
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">Language</span>
+                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.language}</span>
                     <OptionPillGroup
                       value={language}
-                      options={LANGUAGE_OPTIONS}
+                      options={languageOptions}
                       onChange={(next) => {
                         const nextLanguage = coerceAudioLanguage(next) ?? DEFAULT_LANGUAGE;
                         setLanguage(nextLanguage);
@@ -1309,8 +1333,8 @@ export default function AudioWorkspace() {
 
               {showMusicToggle ? (
                 <ToggleRow
-                  label="Music"
-                  description="Score on. Turn off for SFX-only, or SFX + voice."
+                  label={copy.controls.musicToggle.label}
+                  description={copy.controls.musicToggle.description}
                   checked={musicEnabled}
                   onChange={setMusicEnabled}
                 />
@@ -1318,8 +1342,8 @@ export default function AudioWorkspace() {
 
               {showExportToggle ? (
                 <ToggleRow
-                  label="Export audio file"
-                  description="Save a separate audio file too."
+                  label={copy.controls.exportToggle.label}
+                  description={copy.controls.exportToggle.description}
                   checked={exportAudioFile}
                   onChange={setExportAudioFile}
                 />
@@ -1328,16 +1352,19 @@ export default function AudioWorkspace() {
               <div className="rounded-card border border-border bg-bg/60 px-4 py-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Pricing</p>
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.pricing.eyebrow}</p>
                     <p className="mt-1 text-2xl font-semibold text-text-primary">
-                      {quote ? formatCurrency(quote.totalCents / 100, quote.currency) : 'Add required inputs'}
+                      {quote ? formatCurrency(quote.totalCents / 100, quote.currency, locale) : copy.pricing.missingInputs}
                     </p>
                     <p className="mt-1 text-sm text-text-secondary">
                       {quote
-                        ? `${formatOutputKind(currentOutputKind)} • ${estimatedDurationSec ?? '—'}s`
+                        ? formatCopy(copy.pricing.summary, {
+                            output: formatAudioOutputKind(copy, currentOutputKind),
+                            duration: `${estimatedDurationSec ?? '—'}s`,
+                          })
                         : sourceVideoRequired
-                          ? 'Add a source video.'
-                          : 'Set the required options.'}
+                          ? copy.pricing.missingSourceVideo
+                          : copy.pricing.missingOptions}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-3">
@@ -1348,11 +1375,13 @@ export default function AudioWorkspace() {
                       disabled={!canGenerate}
                       className="min-w-[180px]"
                     >
-                      {isGenerating ? 'Generating…' : 'Generate audio'}
+                      {isGenerating ? copy.pricing.generating : copy.pricing.generate}
                     </Button>
                     {quote ? (
                       <Button type="button" variant="outline" size="lg" disabled className="min-w-[180px]">
-                        This render: {formatCurrency(quote.totalCents / 100, quote.currency)}
+                        {formatCopy(copy.pricing.thisRender, {
+                          amount: formatCurrency(quote.totalCents / 100, quote.currency, locale),
+                        })}
                       </Button>
                     ) : null}
                   </div>
@@ -1381,11 +1410,11 @@ export default function AudioWorkspace() {
           <div className="relative z-10 flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-card border border-border bg-surface shadow-float">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <h2 className="text-lg font-semibold text-text-primary">Choose generated video</h2>
-                <p className="mt-1 text-sm text-text-secondary">Use one of your existing video renders as the source.</p>
+                <h2 className="text-lg font-semibold text-text-primary">{copy.picker.title}</h2>
+                <p className="mt-1 text-sm text-text-secondary">{copy.picker.description}</p>
               </div>
               <Button type="button" variant="ghost" size="sm" onClick={() => setGeneratedPickerOpen(false)}>
-                Close
+                {copy.picker.close}
               </Button>
             </div>
             <div className="overflow-y-auto p-5">
@@ -1409,7 +1438,7 @@ export default function AudioWorkspace() {
               ) : null}
               {!generatedVideosError && !generatedVideos.length && !isGeneratedVideosLoading ? (
                 <div className="rounded-card border border-border bg-bg/60 p-5 text-sm text-text-secondary">
-                  No generated videos found yet.
+                  {copy.picker.empty}
                 </div>
               ) : null}
               {generatedVideos.length ? (
@@ -1440,14 +1469,14 @@ export default function AudioWorkspace() {
                           <p className="min-w-0 truncate text-sm font-semibold text-text-primary">{video.label}</p>
                           {video.hasAudio ? (
                             <span className="rounded-full border border-border bg-bg px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-muted">
-                              Audio
+                              {copy.picker.audioBadge}
                             </span>
                           ) : null}
                         </div>
                         <p className="text-xs text-text-secondary">
-                          {video.durationSec ? `${video.durationSec}s` : 'Duration pending'}{video.aspectRatio ? ` • ${video.aspectRatio}` : ''}
+                          {video.durationSec ? `${video.durationSec}s` : copy.source.durationPending}{video.aspectRatio ? ` • ${video.aspectRatio}` : ''}
                         </p>
-                        <p className="text-xs text-text-muted">{formatDateTime(video.createdAt)}</p>
+                        <p className="text-xs text-text-muted">{formatDateTime(video.createdAt, locale)}</p>
                       </div>
                     </button>
                   ))}

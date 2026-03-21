@@ -1961,6 +1961,10 @@
       "walletLabel": "Wallet",
       "memberFallback": "Member",
       "signedIn": "Signed in",
+      "themeToggle": {
+        "toDark": "Switch to dark theme",
+        "toLight": "Switch to light theme"
+      },
       "primaryNav": "Primary navigation",
       "signOut": "Sign out",
       "createAccount": "Create account",
@@ -1980,12 +1984,17 @@
       "links": {
         "dashboard": "Dashboard",
         "generate": "Generate Video",
+        "generate-image": "Generate Image",
+        "generate-audio": "Generate Audio",
+        "tools": "Tools",
+        "library": "Library",
         "jobs": "Jobs",
         "billing": "Billing",
         "settings": "Settings"
       },
       "badges": {
-        "live": "LIVE"
+        "live": "LIVE",
+        "toolsBeta": "BETA"
       }
     },
     "languageToggle": {
@@ -2413,9 +2422,15 @@
       "title": "Jobs",
       "sections": {
         "video": "Video jobs",
+        "audio": "Audio jobs",
         "image": "Image jobs",
+        "character": "Character jobs",
+        "angle": "Angle jobs",
         "videoEmpty": "No video jobs yet.",
-        "imageEmpty": "No image jobs yet."
+        "audioEmpty": "No audio jobs yet.",
+        "imageEmpty": "No image jobs yet.",
+        "characterEmpty": "No character jobs yet.",
+        "angleEmpty": "No angle jobs yet."
       },
       "teams": {
         "title": "Teams",
@@ -2782,10 +2797,203 @@
       "characterEyebrow": "Reference tool",
       "characterTitle": "Consistent Character Builder",
       "characterBody": "Build a reusable character reference or character sheet before manually reusing it in later image or video workflows.",
+      "characterBadge": "V1",
       "angleEyebrow": "First frame tool",
       "angleTitle": "Angle / Perspective",
       "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
+      "angleBadge": "MVP",
       "open": "Open Tool"
+    },
+    "audio": {
+      "auth": {
+        "eyebrow": "Generate Audio",
+        "title": "Create an account to generate audio",
+        "body": "Build cinematic soundtracks, standalone music beds, or premium voice overs inside the MaxVideoAI workspace.",
+        "createAccount": "Create account",
+        "signIn": "Sign in"
+      },
+      "hero": {
+        "eyebrow": "Generate Audio",
+        "title": "Audio workspace"
+      },
+      "modes": {
+        "music_only": {
+          "label": "Music Only",
+          "description": "Score or ambience."
+        },
+        "voice_only": {
+          "label": "Voice Over Only",
+          "description": "Narration only."
+        },
+        "cinematic": {
+          "label": "Cinematic",
+          "description": "SFX + optional score."
+        },
+        "cinematic_voice": {
+          "label": "Cinematic + Voice",
+          "description": "SFX + score + VO."
+        }
+      },
+      "preview": {
+        "eyebrow": "Preview",
+        "title": "Latest output",
+        "audioReady": "Audio render ready",
+        "emptyTitle": "Ready for audio",
+        "emptyBody": "Pick a mode and render.",
+        "processingLabel": "Processing",
+        "loadingMessage": "Loading audio render…",
+        "processingMessage": "Processing audio render…",
+        "openVideoFile": "Open video file",
+        "openAudioFile": "Open audio file",
+        "outputKinds": {
+          "audio": "Audio output",
+          "both": "Video + audio",
+          "video": "Video output"
+        }
+      },
+      "source": {
+        "title": "Source video",
+        "required": "Needed for cinematic modes.",
+        "optional": "Optional for music or voice-only.",
+        "upload": "Upload video",
+        "uploading": "Uploading…",
+        "useGenerated": "Use generated",
+        "clear": "Clear",
+        "durationPending": "Duration pending",
+        "restoredLabel": "Restored source video",
+        "jobLabel": "Job {id}",
+        "sourceLabel": "{label} source",
+        "uploadDurationWarning": "The source video uploaded, but its duration could not be read in the browser.",
+        "selectedDurationWarning": "The selected video loaded, but its duration could not be confirmed in the browser."
+      },
+      "controls": {
+        "eyebrow": "Controls",
+        "title": "Audio setup",
+        "mood": "Mood",
+        "intensity": "Intensity",
+        "duration": "Duration",
+        "script": "Script",
+        "scriptVoiceOnlyPlaceholder": "Write the standalone voice over you want to render.",
+        "scriptCinematicPlaceholder": "Write the narration or dialogue that should sit on top of the cinematic mix.",
+        "estimatedDuration": "~{seconds}s estimated",
+        "voiceSample": "Voice sample",
+        "uploadSample": "Upload sample",
+        "cloneEnabled": "Voice clone enabled",
+        "defaultVoice": "Default voice",
+        "voiceType": "Voice type",
+        "voice": "Voice",
+        "delivery": "Delivery",
+        "language": "Language",
+        "moods": {
+          "epic": "Epic",
+          "tense": "Tense",
+          "intimate": "Intimate",
+          "dark": "Dark",
+          "dreamy": "Dreamy",
+          "sci-fi": "Sci-Fi",
+          "documentary": "Documentary"
+        },
+        "intensities": {
+          "subtle": "Subtle",
+          "standard": "Standard",
+          "intense": "Intense"
+        },
+        "voiceGenders": {
+          "female": "Female",
+          "male": "Male",
+          "neutral": "Neutral"
+        },
+        "voiceProfiles": {
+          "balanced": "Balanced",
+          "warm": "Warm",
+          "bright": "Bright",
+          "deep": "Deep"
+        },
+        "voiceDeliveries": {
+          "natural": "Natural",
+          "cinematic": "Cinematic",
+          "trailer": "Trailer",
+          "intimate": "Intimate"
+        },
+        "languages": {
+          "auto": "Auto",
+          "english": "EN",
+          "french": "FR",
+          "spanish": "ES",
+          "german": "DE"
+        },
+        "musicToggle": {
+          "label": "Music",
+          "description": "Score on. Turn off for SFX-only, or SFX + voice."
+        },
+        "exportToggle": {
+          "label": "Export audio file",
+          "description": "Save a separate audio file too."
+        }
+      },
+      "pricing": {
+        "eyebrow": "Pricing",
+        "missingInputs": "Add required inputs",
+        "missingSourceVideo": "Add a source video.",
+        "missingOptions": "Set the required options.",
+        "summary": "{output} • {duration}",
+        "generate": "Generate audio",
+        "generating": "Generating…",
+        "thisRender": "This render: {amount}"
+      },
+      "picker": {
+        "title": "Choose generated video",
+        "description": "Use one of your existing video renders as the source.",
+        "close": "Close",
+        "empty": "No generated videos found yet.",
+        "audioBadge": "Audio"
+      },
+      "rail": {
+        "eyebrow": "Latest renders",
+        "title": "Audio history",
+        "viewAll": "View all",
+        "loadFailed": "Failed to load latest renders.",
+        "retry": "Retry",
+        "empty": "No audio renders yet.",
+        "loadMore": "Load more",
+        "loading": "Loading…",
+        "open": "Open",
+        "file": "File",
+        "outputs": {
+          "videoAndAudio": "Video + audio",
+          "video": "Video render",
+          "audio": "Audio file",
+          "pending": "Pending render"
+        },
+        "statuses": {
+          "pending": "Pending",
+          "running": "Processing",
+          "completed": "Completed",
+          "failed": "Failed"
+        }
+      },
+      "messages": {
+        "loadGeneratedVideos": "Unable to load generated videos.",
+        "loadSourceJob": "Unable to load source job.",
+        "loadLatestJob": "Unable to load latest audio job.",
+        "sourceUploadFailed": "Source upload failed.",
+        "voiceUploadFailed": "Voice sample upload failed.",
+        "renderComplete": "Audio render complete.",
+        "generationFailed": "Audio generation failed.",
+        "processing": {
+          "soundDesign": "Generating cinematic sound design…",
+          "musicTrack": "Generating music track…",
+          "musicBed": "Generating music bed…",
+          "clonedVoice": "Generating cloned voice over…",
+          "voice": "Generating voice over…",
+          "masterAudio": "Mastering audio file…",
+          "finalMix": "Mixing final soundtrack…",
+          "uploadAudioRender": "Uploading audio render…",
+          "uploadAudioExport": "Uploading audio export…",
+          "uploadFinalRender": "Uploading final render…",
+          "complete": "Audio render complete."
+        }
+      }
     },
     "toolsAngle": {
       "disabledTitle": "Tools are disabled",
@@ -3174,6 +3382,33 @@
           }
         }
       }
+    }
+  },
+  "cookieBanner": {
+    "title": "Cookies & Privacy",
+    "body": "We use essential cookies to run the site. With your consent, we'll enable analytics to improve the product and advertising tags for campaign measurement. You can change your choices anytime.",
+    "actions": {
+      "acceptAll": "Accept all",
+      "rejectAll": "Reject all",
+      "manageChoices": "Manage choices",
+      "hideChoices": "Hide choices",
+      "savePreferences": "Save preferences",
+      "saving": "Saving…"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "analytics": {
+        "title": "Analytics cookies",
+        "body": "Help us measure usage and improve features."
+      },
+      "ads": {
+        "title": "Advertising cookies",
+        "body": "Measure campaigns and improve relevance."
+      }
+    },
+    "errors": {
+      "loadVersion": "Failed to load cookie policy version",
+      "save": "Unable to store your preferences."
     }
   },
   "auth": {

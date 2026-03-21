@@ -2,11 +2,14 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import deepmerge from 'deepmerge';
 import { useMemo } from 'react';
 
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { useInfiniteJobs } from '@/lib/api';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
+import { DEFAULT_AUDIO_WORKSPACE_COPY, formatAudioPackLabel, type AudioWorkspaceCopy } from './copy';
 
 type AudioLatestRendersRailProps = {
   activeJobId?: string | null;
@@ -14,10 +17,10 @@ type AudioLatestRendersRailProps = {
   variant?: 'desktop' | 'mobile';
 };
 
-function formatCurrency(amountCents?: number | null, currency = 'USD'): string | null {
+function formatCurrency(amountCents?: number | null, currency = 'USD', locale?: string): string | null {
   if (typeof amountCents !== 'number') return null;
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
     }).format(amountCents / 100);
@@ -26,42 +29,77 @@ function formatCurrency(amountCents?: number | null, currency = 'USD'): string |
   }
 }
 
-function formatDateTime(value: string): string {
+function formatDateTime(value: string, locale?: string): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(parsed);
 }
 
-function resolveAudioJobPrice(job: Job): string | null {
-  return formatCurrency(job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null, job.currency ?? job.pricingSnapshot?.currency ?? 'USD');
+function resolveAudioJobPrice(job: Job, locale?: string): string | null {
+  return formatCurrency(
+    job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null,
+    job.currency ?? job.pricingSnapshot?.currency ?? 'USD',
+    locale
+  );
 }
 
 function resolveThumb(job: Job): string {
   return job.thumbUrl ?? '/assets/frames/thumb-16x9.svg';
 }
 
-function resolveOutputLabel(job: Job): string {
-  if (job.videoUrl && job.audioUrl) return 'Video + audio';
-  if (job.videoUrl) return 'Video render';
-  if (job.audioUrl) return 'Audio file';
-  return 'Pending render';
+function resolveOutputLabel(job: Job, copy: AudioWorkspaceCopy): string {
+  if (job.videoUrl && job.audioUrl) return copy.rail.outputs.videoAndAudio;
+  if (job.videoUrl) return copy.rail.outputs.video;
+  if (job.audioUrl) return copy.rail.outputs.audio;
+  return copy.rail.outputs.pending;
+}
+
+function resolveJobLabel(job: Job, copy: AudioWorkspaceCopy): string {
+  const settingsSnapshot = (job as Job & { settingsSnapshot?: { pack?: string | null } | null }).settingsSnapshot;
+  const settingsPack =
+    settingsSnapshot && typeof settingsSnapshot === 'object' && 'pack' in settingsSnapshot
+      ? String(settingsSnapshot.pack ?? '')
+      : null;
+
+  return (
+    formatAudioPackLabel(copy, settingsPack) ??
+    formatAudioPackLabel(copy, job.engineLabel) ??
+    job.engineLabel
+  );
+}
+
+function resolveStatusLabel(job: Job, copy: AudioWorkspaceCopy): string {
+  const status = job.status ?? (job.videoUrl || job.audioUrl ? 'completed' : 'pending');
+  switch (status) {
+    case 'running':
+      return copy.rail.statuses.running;
+    case 'completed':
+      return copy.rail.statuses.completed;
+    case 'failed':
+      return copy.rail.statuses.failed;
+    default:
+      return copy.rail.statuses.pending;
+  }
 }
 
 function AudioJobCard({
   job,
   active,
   onSelect,
+  copy,
+  locale,
 }: {
   job: Job;
   active: boolean;
   onSelect: () => void;
+  copy: AudioWorkspaceCopy;
+  locale: string;
 }) {
-  const priceLabel = resolveAudioJobPrice(job);
+  const priceLabel = resolveAudioJobPrice(job, locale);
   const durationLabel = typeof job.durationSec === 'number' ? `${job.durationSec}s` : null;
-  const status = job.status ?? (job.videoUrl || job.audioUrl ? 'completed' : 'pending');
   const thumb = resolveThumb(job);
 
   return (
@@ -92,20 +130,20 @@ function AudioJobCard({
           </button>
         )}
         <div className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
-          {status}
+          {resolveStatusLabel(job, copy)}
         </div>
       </div>
       <div className="space-y-3 px-3 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-text-primary">{job.engineLabel}</p>
-            <p className="mt-1 text-xs text-text-secondary">{resolveOutputLabel(job)}</p>
+            <p className="truncate text-sm font-semibold text-text-primary">{resolveJobLabel(job, copy)}</p>
+            <p className="mt-1 text-xs text-text-secondary">{resolveOutputLabel(job, copy)}</p>
           </div>
           {priceLabel ? <span className="text-sm font-semibold text-text-primary">{priceLabel}</span> : null}
         </div>
         <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.12em] text-text-muted">
           {durationLabel ? <span>{durationLabel}</span> : null}
-          <span>{formatDateTime(job.createdAt)}</span>
+          <span>{formatDateTime(job.createdAt, locale)}</span>
         </div>
         {!job.videoUrl && job.audioUrl ? (
           <audio
@@ -117,15 +155,15 @@ function AudioJobCard({
         ) : null}
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onSelect}>
-            Open
+            {copy.rail.open}
           </Button>
           {job.videoUrl ? (
             <ButtonLink href={job.videoUrl} target="_blank" rel="noreferrer" variant="ghost" size="sm">
-              File
+              {copy.rail.file}
             </ButtonLink>
           ) : job.audioUrl ? (
             <ButtonLink href={job.audioUrl} target="_blank" rel="noreferrer" variant="ghost" size="sm">
-              File
+              {copy.rail.file}
             </ButtonLink>
           ) : null}
         </div>
@@ -139,6 +177,11 @@ export default function AudioLatestRendersRail({
   onSelectJob,
   variant = 'desktop',
 }: AudioLatestRendersRailProps) {
+  const { locale, t } = useI18n();
+  const rawCopy = t('workspace.audio', DEFAULT_AUDIO_WORKSPACE_COPY);
+  const copy = useMemo<AudioWorkspaceCopy>(() => {
+    return deepmerge<AudioWorkspaceCopy>(DEFAULT_AUDIO_WORKSPACE_COPY, (rawCopy ?? {}) as Partial<AudioWorkspaceCopy>);
+  }, [rawCopy]);
   const {
     data,
     error,
@@ -161,20 +204,20 @@ export default function AudioLatestRendersRail({
     <aside className={variant === 'desktop' ? 'flex h-full w-[320px] flex-col' : 'flex flex-col'}>
       <div className="flex items-center justify-between px-1 pb-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Latest renders</p>
-          <h2 className="mt-1 text-lg font-semibold text-text-primary">Audio history</h2>
+          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.rail.eyebrow}</p>
+          <h2 className="mt-1 text-lg font-semibold text-text-primary">{copy.rail.title}</h2>
         </div>
         <ButtonLink href="/jobs" variant="ghost" size="sm">
-          View all
+          {copy.rail.viewAll}
         </ButtonLink>
       </div>
       <div className={variant === 'desktop' ? 'flex-1 overflow-y-auto pr-1' : ''}>
         <div className="space-y-3">
           {error ? (
             <div className="rounded-card border border-border bg-surface p-4 text-sm text-state-warning">
-              Failed to load latest renders.
+              {copy.rail.loadFailed}
               <Button type="button" variant="outline" size="sm" className="ml-3" onClick={() => void mutate()}>
-                Retry
+                {copy.rail.retry}
               </Button>
             </div>
           ) : null}
@@ -191,7 +234,7 @@ export default function AudioLatestRendersRail({
           ) : null}
           {!error && !jobs.length && !isLoading ? (
             <div className="rounded-card border border-border bg-surface p-4 text-sm text-text-secondary">
-              No audio renders yet.
+              {copy.rail.empty}
             </div>
           ) : null}
           {jobs.map((job) => (
@@ -200,6 +243,8 @@ export default function AudioLatestRendersRail({
               job={job}
               active={activeJobId === job.jobId}
               onSelect={() => onSelectJob(job.jobId)}
+              copy={copy}
+              locale={locale}
             />
           ))}
         </div>
@@ -213,7 +258,7 @@ export default function AudioLatestRendersRail({
               disabled={isValidating}
               onClick={() => setSize((previous) => previous + 1)}
             >
-              {isValidating ? 'Loading…' : 'Load more'}
+              {isValidating ? copy.rail.loading : copy.rail.loadMore}
             </Button>
           </div>
         ) : null}
