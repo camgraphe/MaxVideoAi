@@ -58,3 +58,19 @@ export function resolveJobsRailVideo(group: GroupSummary): string | null {
   }
   return null;
 }
+
+export function resolveJobsRailAudio(group: GroupSummary): string | null {
+  const candidates: Array<string | null | undefined> = [
+    group.hero.audioUrl,
+    group.hero.job?.audioUrl,
+    ...group.members.map((member) => member.audioUrl),
+    ...group.members.map((member) => member.job?.audioUrl),
+  ];
+  for (const candidate of candidates) {
+    const audio = normalizeMediaUrl(candidate);
+    if (audio && !isPlaceholderMediaUrl(audio)) {
+      return audio;
+    }
+  }
+  return null;
+}

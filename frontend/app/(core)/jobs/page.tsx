@@ -19,7 +19,13 @@ import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { isPlaceholderMediaUrl } from '@/lib/media';
-import { resolveJobsRailPlaceholderThumb, resolveJobsRailThumb, resolveJobsRailVideo } from '@/lib/jobs-rail-thumb';
+import { AudioWaveformThumb } from '@/components/ui/AudioWaveformThumb';
+import {
+  resolveJobsRailAudio,
+  resolveJobsRailPlaceholderThumb,
+  resolveJobsRailThumb,
+  resolveJobsRailVideo,
+} from '@/lib/jobs-rail-thumb';
 import { Button } from '@/components/ui/Button';
 import type { Job } from '@/types/jobs';
 import type { JobSurface } from '@/types/billing';
@@ -805,6 +811,7 @@ function CollapsedGroupRail({
         const thumb = resolveJobsRailThumb(group);
         const fallbackThumb = resolveJobsRailPlaceholderThumb(group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null);
         const video = resolveJobsRailVideo(group);
+        const audio = resolveJobsRailAudio(group);
         return (
           <button
             key={group.id}
@@ -815,7 +822,18 @@ function CollapsedGroupRail({
             aria-label="Open render"
           >
             <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
-              <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
+              {video ? (
+                <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
+              ) : audio ? (
+                <AudioWaveformThumb
+                  seed={audio}
+                  thumbSrc={thumb !== fallbackThumb ? thumb : null}
+                  label={null}
+                  active={false}
+                />
+              ) : (
+                <RailThumb src={thumb} videoSrc={video} fallbackSrc={fallbackThumb} />
+              )}
               {group.count > 1 ? (
                 <div className="absolute bottom-2 right-2 rounded-full bg-surface-on-media-dark-55 px-2 py-0.5 text-xs font-semibold text-on-inverse">
                   ×{group.count}
