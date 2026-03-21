@@ -71,31 +71,30 @@ function AudioJobCard({
         active ? 'border-brand ring-1 ring-brand/30' : 'border-border hover:border-border-hover',
       ].join(' ')}
     >
-      <button type="button" className="block w-full text-left" onClick={onSelect}>
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-bg">
-          {job.videoUrl ? (
-            <video
-              src={job.videoUrl}
-              poster={thumb}
-              className="h-full w-full object-cover"
-              muted
-              playsInline
-              loop
-              preload="metadata"
-            />
-          ) : (
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-bg">
+        {job.videoUrl ? (
+          <video
+            controls
+            src={job.videoUrl}
+            poster={thumb}
+            className="h-full w-full object-cover"
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <button type="button" className="block h-full w-full text-left" onClick={onSelect}>
             <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_48%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))]">
               <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
               <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10">
                 <img src="/assets/icons/audio.svg" alt="" className="h-8 w-8 opacity-90" />
               </div>
             </div>
-          )}
-          <div className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
-            {status}
-          </div>
+          </button>
+        )}
+        <div className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+          {status}
         </div>
-      </button>
+      </div>
       <div className="space-y-3 px-3 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -108,17 +107,6 @@ function AudioJobCard({
           {durationLabel ? <span>{durationLabel}</span> : null}
           <span>{formatDateTime(job.createdAt)}</span>
         </div>
-        {job.videoUrl ? (
-          <video
-            controls
-            src={job.videoUrl}
-            poster={thumb}
-            className="w-full overflow-hidden rounded-input border border-border bg-bg"
-            playsInline
-            preload="metadata"
-            onClick={(event) => event.stopPropagation()}
-          />
-        ) : null}
         {!job.videoUrl && job.audioUrl ? (
           <audio
             controls
