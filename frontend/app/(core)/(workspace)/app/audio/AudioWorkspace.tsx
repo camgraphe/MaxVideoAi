@@ -507,6 +507,7 @@ export default function AudioWorkspace() {
   const voiceInputRef = useRef<HTMLInputElement | null>(null);
   const restoredQueryJobRef = useRef<string | null>(null);
   const latestRestoreAttemptedRef = useRef(false);
+  const manualWorkspaceOverrideRef = useRef(false);
 
   const queryJobId = searchParams?.get('job') ?? null;
   const packConfig = getAudioPackConfig(pack);
@@ -521,6 +522,7 @@ export default function AudioWorkspace() {
   const currentOutputKind: AudioOutputKind = packConfig.audioOnly ? 'audio' : exportAudioFile ? 'both' : 'video';
 
   const handlePackChange = useCallback((nextPack: AudioPackId) => {
+    manualWorkspaceOverrideRef.current = true;
     const nextConfig = getAudioPackConfig(nextPack);
     setPack(nextPack);
     setMusicEnabled(nextConfig.supportsMusicToggle ? nextConfig.defaultMusicEnabled : false);
@@ -574,6 +576,9 @@ export default function AudioWorkspace() {
   const restoreAudioJob = useCallback(
     async (jobId: string) => {
       const detail = await fetchJobDetail(jobId);
+      if (manualWorkspaceOverrideRef.current) {
+        return;
+      }
       const nextPack = coerceAudioPackId(detail.settingsSnapshot?.pack) ?? DEFAULT_PACK;
       const nextMood = coerceAudioMood(detail.settingsSnapshot?.mood) ?? DEFAULT_MOOD;
       const nextIntensity = coerceAudioIntensity(detail.settingsSnapshot?.intensity) ?? DEFAULT_INTENSITY;
@@ -693,6 +698,9 @@ export default function AudioWorkspace() {
           await restoreAudioJob(payload.jobId);
           return;
         }
+        if (manualWorkspaceOverrideRef.current) {
+          return;
+        }
         if (!payload.videoUrl) {
           throw new Error(payload.error ?? 'Unable to load source job.');
         }
@@ -740,6 +748,7 @@ export default function AudioWorkspace() {
         }
         const latestJob = payload.jobs.find((job) => job.surface === 'audio');
         if (!latestJob || cancelled) return;
+        if (manualWorkspaceOverrideRef.current) return;
         await restoreAudioJob(latestJob.jobId);
       })
       .catch((error) => {
@@ -846,6 +855,7 @@ export default function AudioWorkspace() {
   const handleSourceFileSelect = useCallback(async (fileList: FileList | null) => {
     const file = fileList?.[0];
     if (!file) return;
+    manualWorkspaceOverrideRef.current = true;
     setIsUploadingSource(true);
     setNotice(null);
     setResult(null);
@@ -876,6 +886,7 @@ export default function AudioWorkspace() {
   const handleVoiceFileSelect = useCallback(async (fileList: FileList | null) => {
     const file = fileList?.[0];
     if (!file) return;
+    manualWorkspaceOverrideRef.current = true;
     setIsUploadingVoice(true);
     setNotice(null);
     try {
@@ -892,6 +903,7 @@ export default function AudioWorkspace() {
   }, []);
 
   const handleSelectGeneratedVideo = useCallback(async (video: GeneratedSourceVideo) => {
+    manualWorkspaceOverrideRef.current = true;
     setNotice(null);
     const durationSec = video.durationSec ?? (await probeVideoDuration(video.url));
     setSourceVideo({
@@ -910,6 +922,7 @@ export default function AudioWorkspace() {
   }, []);
 
   const handleClearSourceVideo = useCallback(() => {
+    manualWorkspaceOverrideRef.current = true;
     setSourceVideo(null);
     setResult(null);
     setNotice(null);
@@ -993,6 +1006,7 @@ export default function AudioWorkspace() {
 
   const handleSelectLatestJob = useCallback(
     (jobId: string) => {
+      manualWorkspaceOverrideRef.current = false;
       void router.replace(`${pathname}?job=${encodeURIComponent(jobId)}`, { scroll: false });
     },
     [pathname, router]
@@ -1059,18 +1073,12 @@ export default function AudioWorkspace() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        disabled={isUploadingSource || queryJobLoading}
+                        disabled={isUploadingSource}
                         onClick={() => sourceInputRef.current?.click()}
                       >
                         {isUploadingSource ? 'Uploading…' : 'Upload video'}
                       </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={queryJobLoading}
-                        onClick={() => setGeneratedPickerOpen(true)}
-                      >
+                      <Button type="button" variant="outline" size="sm" onClick={() => setGeneratedPickerOpen(true)}>
                         Use generated
                       </Button>
                       {sourceVideo ? (
