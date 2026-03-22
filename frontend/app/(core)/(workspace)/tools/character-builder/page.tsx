@@ -7,21 +7,20 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Check,
   ChevronDown,
   Download,
   Loader2,
-  Pin,
-  PinOff,
   Sparkles,
   Upload,
   WandSparkles,
 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
@@ -57,7 +56,7 @@ import {
   REALISM_STYLE_OPTIONS,
   SKIN_TONE_OPTIONS,
 } from '@/lib/character-builder';
-import { runCharacterBuilderTool, saveImageToLibrary } from '@/lib/api';
+import { runCharacterBuilderTool, saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type {
@@ -108,6 +107,7 @@ type BillingProductResponse = {
 
 const DEFAULT_CHARACTER_COPY = {
   "auto": "Auto",
+  "custom": "Custom",
   "notSet": "Not set",
   "open": "Open",
   "choose": "Choose",
@@ -173,8 +173,9 @@ const DEFAULT_CHARACTER_COPY = {
     "customHairPlaceholder": "Describe the hair you want to preserve or generate",
     "customOutfit": "Custom outfit prompt",
     "customOutfitPlaceholder": "Describe the clothes or wardrobe you want to see",
+    "accessoriesFeatures": "Accessories & features",
     "realism": "Realism style",
-    "moreControls": "More controls",
+    "moreControls": "Advanced controls",
     "optional": "Optional",
     "setCount": "{count} set",
     "skinTone": "Skin tone",
@@ -185,6 +186,8 @@ const DEFAULT_CHARACTER_COPY = {
     "referenceStrength": "Reference strength",
     "accessories": "Accessories",
     "distinctiveFeatures": "Distinctive features",
+    "customDetails": "Custom details prompt",
+    "customDetailsPlaceholder": "Describe accessories, marks, features, or visible identity details",
     "advancedNotes": "Advanced notes",
     "advancedNotesPlaceholder": "Optional extra notes",
     "mustRemainVisible": "Must remain visible",
@@ -445,6 +448,16 @@ type PendingCharacterRun = {
   generateCount: 1 | 4;
 };
 
+type HistoricalCharacterGalleryItem = {
+  id: string;
+  jobId: string;
+  imageUrl: string;
+  thumbUrl: string;
+  engineLabel: string;
+  createdAt: string;
+  prompt: string | null;
+};
+
 const INITIAL_LOADING_REQUEST_COUNTS: LoadingRequestCounts = {
   'generate-1': 0,
   'generate-4': 0,
@@ -573,10 +586,10 @@ function readPersistedState(): CharacterBuilderState | null {
     return {
       ...base,
       ...parsed.state,
-      traits: {
+      traits: normalizeHairAndOutfitModes({
         ...base.traits,
         ...parsed.state.traits,
-      },
+      }),
       formatMode: normalizeCharacterFormatMode(parsed.state.formatMode, parsed.state.qualityMode ?? base.qualityMode),
       outputOptions: {
         ...base.outputOptions,
@@ -650,6 +663,30 @@ function removeReferenceImage(
   return referenceImages.filter((image) => image.role !== role);
 }
 
+function hasCustomHairSettings(traits: CharacterBuilderTraits): boolean {
+  if (typeof traits.customHairDescription === 'string' && traits.customHairDescription.trim().length > 0) {
+    return true;
+  }
+  return [traits.hairColor.value, traits.hairLength.value, traits.hairstyle.value].some(
+    (value) => typeof value === 'string' && value !== 'auto'
+  );
+}
+
+function hasCustomOutfitSettings(traits: CharacterBuilderTraits): boolean {
+  if (typeof traits.customOutfitDescription === 'string' && traits.customOutfitDescription.trim().length > 0) {
+    return true;
+  }
+  return typeof traits.outfitStyle.value === 'string' && traits.outfitStyle.value !== 'auto';
+}
+
+function normalizeHairAndOutfitModes(traits: CharacterBuilderTraits): CharacterBuilderTraits {
+  return {
+    ...traits,
+    hairEnabled: traits.hairEnabled !== false && hasCustomHairSettings(traits),
+    outfitEnabled: traits.outfitEnabled !== false && hasCustomOutfitSettings(traits),
+  };
+}
+
 function parseCharacterBuilderSnapshot(snapshot: unknown): Partial<CharacterBuilderState> | null {
   if (!snapshot || typeof snapshot !== 'object') return null;
   const record = snapshot as {
@@ -668,10 +705,10 @@ function parseCharacterBuilderSnapshot(snapshot: unknown): Partial<CharacterBuil
   return {
     sourceMode: builder.sourceMode ?? base.sourceMode,
     referenceImages: Array.isArray(builder.referenceImages) ? builder.referenceImages : [],
-    traits: {
+    traits: normalizeHairAndOutfitModes({
       ...base.traits,
       ...builder.traits,
-    },
+    }),
     outputMode: builder.outputMode ?? base.outputMode,
     consistencyMode: builder.consistencyMode ?? base.consistencyMode,
     referenceStrength: builder.referenceStrength ?? base.referenceStrength,
@@ -731,7 +768,7 @@ function getHairSummary(
   copy: CharacterCopy
 ): string {
   if (traits.hairEnabled === false) {
-    return copy.off;
+    return copy.auto;
   }
 
   const customSummary = summarizeCustomText(traits.customHairDescription);
@@ -764,7 +801,7 @@ function getOutfitSummary(
   copy: CharacterCopy
 ): string {
   if (traits.outfitEnabled === false) {
-    return copy.off;
+    return copy.auto;
   }
 
   const customSummary = summarizeCustomText(traits.customOutfitDescription);
@@ -787,6 +824,7 @@ function countConfiguredSecondaryControls(state: CharacterBuilderState, hasIdent
   count += traitValues.filter((value) => value != null && value !== 'auto').length;
   count += state.traits.accessories.length;
   count += state.traits.distinctiveFeatures.length;
+  if (state.traits.customDetailsDescription?.trim().length) count += 1;
   count += state.mustRemainVisible.length;
   if (state.consistencyMode !== 'balanced') count += 1;
   if (hasIdentityReference && state.referenceStrength && state.referenceStrength !== 'balanced') count += 1;
@@ -841,12 +879,18 @@ const REALISM_CARD_META: Record<string, { background: string; accent: string }> 
   },
 };
 
+const CHARACTER_SHEET_PREVIEW_URL =
+  'https://v3b.fal.media/files/b/0a92b5c0/8bHQSn-uSF9AYjCOFSVHk_K9kLmxhH.png';
+const PORTRAIT_REFERENCE_PREVIEW_URL =
+  'https://v3b.fal.media/files/b/0a931e48/bWz0ERHaJHWLDAUDrwFOU_7FrMKKm3.png';
+
 function VisualChoiceCard({
   selected,
   onClick,
   title,
   subtitle,
   media,
+  backgroundMedia,
   className,
 }: {
   selected: boolean;
@@ -854,6 +898,7 @@ function VisualChoiceCard({
   title: string;
   subtitle?: string;
   media?: ReactNode;
+  backgroundMedia?: ReactNode;
   className?: string;
 }) {
   return (
@@ -861,22 +906,32 @@ function VisualChoiceCard({
       type="button"
       onClick={onClick}
       className={clsx(
-        'group relative overflow-hidden rounded-[24px] border p-4 text-left transition',
+        'group isolate relative overflow-hidden rounded-[24px] border p-4 text-left transition',
         selected
-          ? 'border-brand bg-brand/5 shadow-card'
+          ? 'z-10 border-brand bg-brand/5 shadow-card'
           : 'border-border bg-surface hover:border-border-hover hover:bg-surface-hover hover:shadow-card',
         className
       )}
     >
+      {backgroundMedia ? <div className="absolute inset-0">{backgroundMedia}</div> : null}
+      {backgroundMedia ? (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/10" />
+      ) : null}
       {selected ? (
-        <span className="absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand text-on-brand">
+        <span className="absolute right-3 top-3 z-20 inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand text-on-brand shadow-[0_8px_18px_rgba(58,123,213,0.28)]">
           <Check className="h-3.5 w-3.5" />
         </span>
       ) : null}
-      {media ? <div className="mb-4">{media}</div> : null}
-      <div className="space-y-1">
-        <p className="text-sm font-semibold text-text-primary">{title}</p>
-        {subtitle ? <p className="text-xs text-text-secondary">{subtitle}</p> : null}
+      {media ? <div className="relative z-10 mb-4">{media}</div> : null}
+      <div className="relative z-10 space-y-1">
+        <p className={clsx('text-sm font-semibold', backgroundMedia ? 'text-white drop-shadow-sm' : 'text-text-primary')}>
+          {title}
+        </p>
+        {subtitle ? (
+          <p className={clsx('text-xs', backgroundMedia ? 'text-white/85 drop-shadow-sm' : 'text-text-secondary')}>
+            {subtitle}
+          </p>
+        ) : null}
       </div>
     </button>
   );
@@ -904,22 +959,22 @@ function IconChoiceCard({
       title={title}
       media={
         <div
-          className="flex h-16 items-center justify-between rounded-[18px] border border-border/80 bg-surface-2/80 px-4"
+          className="flex h-14 items-center justify-between rounded-[18px] border border-border/80 bg-surface-2/80 px-3.5"
           style={{ background }}
         >
           <div
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold"
             style={{ backgroundColor: `${accent}1f`, color: accent }}
           >
             {glyph}
           </div>
           <div className="flex items-end gap-1">
-            <span className="h-6 w-6 rounded-full bg-surface shadow-sm" />
-            <span className="h-8 w-8 rounded-[14px] bg-surface/80 shadow-sm" />
+            <span className="h-5 w-5 rounded-full bg-surface shadow-sm" />
+            <span className="h-7 w-7 rounded-[14px] bg-surface/80 shadow-sm" />
           </div>
         </div>
       }
-      className="min-h-[134px]"
+      className="min-h-[120px] w-full max-w-[172px]"
     />
   );
 }
@@ -944,24 +999,24 @@ function StyleChoiceCard({
       title={title}
       media={
         <div
-          className="relative h-20 overflow-hidden rounded-[18px] border border-border/80 bg-surface-2/80"
+          className="relative h-[72px] overflow-hidden rounded-[18px] border border-border/80 bg-surface-2/80"
           style={{ background }}
         >
           <div
-            className="absolute left-4 top-4 h-10 w-10 rounded-full"
+            className="absolute left-3 top-3 h-8 w-8 rounded-full"
             style={{ backgroundColor: `${accent}22` }}
           />
           <div
-            className="absolute bottom-4 left-5 h-10 w-12 rounded-[16px]"
+            className="absolute bottom-3 left-4 h-8 w-10 rounded-[16px]"
             style={{ backgroundColor: `${accent}cc` }}
           />
           <div className="absolute right-3 top-3 space-y-1">
-            <div className="h-2.5 w-10 rounded-full bg-surface/85" />
-            <div className="h-2.5 w-8 rounded-full bg-surface/65" />
+            <div className="h-2 w-9 rounded-full bg-surface/85" />
+            <div className="h-2 w-7 rounded-full bg-surface/65" />
           </div>
         </div>
       }
-      className="min-w-[140px]"
+      className="min-h-[120px] w-full max-w-[172px]"
     />
   );
 }
@@ -972,32 +1027,48 @@ function OutputPreviewCard({
   subtitle,
   mode,
   onClick,
+  compact = false,
 }: {
   selected: boolean;
   title: string;
   subtitle: string;
   mode: CharacterBuilderState['outputMode'];
   onClick: () => void;
+  compact?: boolean;
 }) {
-  const preview =
-    mode === 'portrait-reference' ? (
-      <div className="relative h-24 overflow-hidden rounded-[18px] border border-border/80 bg-surface-2/80">
-        <div className="absolute inset-x-5 top-4 h-14 rounded-[16px] border border-border/80 bg-surface/80" />
-        <div className="absolute left-1/2 top-6 h-8 w-8 -translate-x-1/2 rounded-full bg-brand/15" />
-        <div className="absolute left-1/2 top-12 h-8 w-10 -translate-x-1/2 rounded-[14px] bg-brand/20" />
-      </div>
-    ) : (
-      <div className="grid h-24 grid-cols-4 gap-2 rounded-[18px] border border-border/80 bg-surface-2/80 p-3">
-        {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="relative overflow-hidden rounded-[14px] border border-border bg-surface/75">
-            <div className="absolute left-1/2 top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-brand/15" />
-            <div className="absolute left-1/2 top-6 h-8 w-4 -translate-x-1/2 rounded-full bg-brand/20" />
-          </div>
-        ))}
-      </div>
+  return (
+      <VisualChoiceCard
+        selected={selected}
+        onClick={onClick}
+        title={title}
+        subtitle={subtitle}
+        backgroundMedia={
+          mode === 'character-sheet' ? (
+            <img
+              src={CHARACTER_SHEET_PREVIEW_URL}
+              alt={title}
+              className="h-full w-full object-cover object-top"
+              loading="lazy"
+            />
+          ) : mode === 'portrait-reference' ? (
+            <img
+              src={PORTRAIT_REFERENCE_PREVIEW_URL}
+              alt={title}
+              className="h-full w-full object-cover object-center"
+              loading="lazy"
+            />
+          ) : undefined
+        }
+        className={clsx(
+          compact ? 'min-w-0' : undefined,
+          mode === 'character-sheet' || mode === 'portrait-reference'
+            ? compact
+              ? 'flex h-[150px] flex-col justify-end bg-black/5'
+              : 'flex h-[260px] flex-col justify-end bg-black/5 md:h-[320px]'
+            : undefined
+        )}
+      />
     );
-
-  return <VisualChoiceCard selected={selected} onClick={onClick} title={title} subtitle={subtitle} media={preview} />;
 }
 
 function CharacterSummaryCard({
@@ -1115,6 +1186,358 @@ function CharacterSummaryCard({
         </div>
       </div>
     </Card>
+  );
+}
+
+function CharacterSnapshotDock({
+  identityReference,
+  hairSummary,
+  outfitSummary,
+  traits,
+  outputMode,
+  qualityMode,
+  formatMode,
+  genderOptions,
+  ageOptions,
+  realismOptions,
+  outputOptions,
+  qualityOptions,
+  copy,
+}: {
+  identityReference: CharacterBuilderReferenceImage | null;
+  hairSummary: string;
+  outfitSummary: string;
+  traits: CharacterBuilderTraits;
+  outputMode: CharacterBuilderState['outputMode'];
+  qualityMode: CharacterBuilderState['qualityMode'];
+  formatMode: CharacterBuilderState['formatMode'];
+  genderOptions: Array<{ id: string; label: string }>;
+  ageOptions: Array<{ id: string; label: string }>;
+  realismOptions: Array<{ id: string; label: string }>;
+  outputOptions: Array<{ id: string; label: string }>;
+  qualityOptions: Array<{ id: string; label: string }>;
+  copy: CharacterCopy;
+}) {
+  const hairSwatch =
+    traits.hairEnabled === false || Boolean(traits.customHairDescription?.trim())
+      ? null
+      : findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
+  const genderLabel = findChoiceLabel(genderOptions, traits.genderPresentation.value) ?? copy.open;
+  const ageLabel = findChoiceLabel(ageOptions, traits.ageRange.value) ?? copy.open;
+  const realismLabel = findChoiceLabel(realismOptions, traits.realismStyle) ?? copy.summary.photoreal;
+  const outputLabel = findChoiceLabel(outputOptions, outputMode) ?? copy.open;
+  const qualityLabel = findChoiceLabel(qualityOptions, qualityMode) ?? copy.open;
+  const formatLabel = getFormatDisplayLabel(copy, formatMode, qualityMode);
+
+  const chips = [
+    { label: copy.summary.identity, value: `${genderLabel} · ${ageLabel}` },
+    {
+      label: copy.summary.hair,
+      value: hairSummary === copy.notSet ? copy.open : hairSummary,
+      swatch: hairSwatch,
+    },
+    {
+      label: copy.summary.outfit,
+      value: outfitSummary === copy.notSet ? copy.open : outfitSummary,
+    },
+    { label: copy.summary.style, value: realismLabel },
+    { label: copy.summary.output, value: outputLabel },
+    { label: copy.summary.quality, value: qualityLabel },
+    { label: copy.summary.format, value: formatLabel ?? copy.options.format.standard.label },
+  ];
+
+  return (
+    <Card className="overflow-hidden border border-border bg-surface/95 p-4 shadow-[0_18px_48px_rgba(15,23,42,0.18)] backdrop-blur">
+      <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          {identityReference ? (
+            <img
+              src={identityReference.url}
+              alt={copy.references.identityTitle}
+              className="h-14 w-14 shrink-0 rounded-[18px] object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] border border-border bg-surface-2/80 text-[11px] font-semibold text-text-muted">
+              {copy.summary.builderBadge}
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{copy.summary.dna}</p>
+            <p className="mt-1 truncate text-sm font-semibold text-text-primary">{copy.summary.snapshot}</p>
+          </div>
+        </div>
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="flex min-w-max items-center gap-2">
+            {chips.map((chip) => (
+              <div
+                key={chip.label}
+                className="flex items-center gap-2 rounded-full border border-border bg-surface-2/80 px-3 py-2"
+              >
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{chip.label}</span>
+                <span className="flex items-center gap-1.5 text-sm font-medium text-text-primary">
+                  {'swatch' in chip && chip.swatch ? (
+                    <span
+                      className="h-3 w-3 rounded-full border border-black/10"
+                      style={{ backgroundColor: chip.swatch }}
+                    />
+                  ) : null}
+                  {chip.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function CharacterActionDock({
+  outputLabel,
+  qualityLabel,
+  formatLabel,
+  estimatedImageCostUsd,
+  qualityOptions,
+  selectedQuality,
+  onQualityChange,
+  onGenerateOne,
+  onGenerateFour,
+  loadingGenerateOne,
+  loadingGenerateFour,
+  copy,
+  compact = false,
+}: {
+  outputLabel: string;
+  qualityLabel: string;
+  formatLabel: string;
+  estimatedImageCostUsd: number | null;
+  qualityOptions: Array<{ id: string; label: string }>;
+  selectedQuality: CharacterBuilderState['qualityMode'];
+  onQualityChange: (value: CharacterBuilderState['qualityMode']) => void;
+  onGenerateOne: () => void;
+  onGenerateFour: () => void;
+  loadingGenerateOne: boolean;
+  loadingGenerateFour: boolean;
+  copy: CharacterCopy;
+  compact?: boolean;
+}) {
+  return (
+    <Card
+      className={clsx(
+        'border border-border bg-surface/95 shadow-[0_18px_48px_rgba(15,23,42,0.18)] backdrop-blur',
+        compact ? 'p-4' : 'p-4'
+      )}
+    >
+      <div className={clsx('flex gap-3', compact ? 'flex-col' : 'flex-col xl:flex-row xl:items-center xl:justify-between')}>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-text-primary">
+            {outputLabel} · {qualityLabel} · {formatLabel}
+          </p>
+          <p className="mt-1 text-xs text-text-secondary">
+            {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
+          </p>
+        </div>
+        <div className="inline-flex rounded-full border border-border bg-bg p-1">
+          {qualityOptions.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onQualityChange(option.id as CharacterBuilderState['qualityMode'])}
+              className={clsx(
+                'rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                selectedQuality === option.id
+                  ? 'bg-brand text-on-brand'
+                  : 'text-text-secondary hover:text-text-primary'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button onClick={onGenerateOne} className="flex-1 gap-2">
+          {loadingGenerateOne ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {copy.generatePanel.generateReference}
+        </Button>
+        <Button variant="outline" onClick={onGenerateFour} className="gap-2 px-4">
+          {loadingGenerateFour ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+          4x
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function CharacterBuilderStickyDock({
+  hairSummary,
+  outfitSummary,
+  traits,
+  outputMode,
+  qualityMode,
+  formatMode,
+  genderOptions,
+  ageOptions,
+  realismOptions,
+  outputOptions,
+  qualityOptions,
+  formatOptions,
+  estimatedImageCostUsd,
+  onQualityChange,
+  onFormatChange,
+  onGenerateOne,
+  onGenerateFour,
+  loadingGenerateOne,
+  loadingGenerateFour,
+  copy,
+  compact = false,
+}: {
+  identityReference: CharacterBuilderReferenceImage | null;
+  hairSummary: string;
+  outfitSummary: string;
+  traits: CharacterBuilderTraits;
+  outputMode: CharacterBuilderState['outputMode'];
+  qualityMode: CharacterBuilderState['qualityMode'];
+  formatMode: CharacterBuilderState['formatMode'];
+  genderOptions: Array<{ id: string; label: string }>;
+  ageOptions: Array<{ id: string; label: string }>;
+  realismOptions: Array<{ id: string; label: string }>;
+  outputOptions: Array<{ id: string; label: string }>;
+  qualityOptions: Array<{ id: string; label: string }>;
+  formatOptions: Array<{ id: string; label: string }>;
+  estimatedImageCostUsd: number | null;
+  onQualityChange: (value: CharacterBuilderState['qualityMode']) => void;
+  onFormatChange: (value: CharacterBuilderState['formatMode']) => void;
+  onGenerateOne: () => void;
+  onGenerateFour: () => void;
+  loadingGenerateOne: boolean;
+  loadingGenerateFour: boolean;
+  copy: CharacterCopy;
+  compact?: boolean;
+}) {
+  const hairSwatch =
+    traits.hairEnabled === false || Boolean(traits.customHairDescription?.trim())
+      ? null
+      : findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
+  const genderLabel = findChoiceLabel(genderOptions, traits.genderPresentation.value) ?? copy.open;
+  const ageLabel = findChoiceLabel(ageOptions, traits.ageRange.value) ?? copy.open;
+  const realismLabel = findChoiceLabel(realismOptions, traits.realismStyle) ?? copy.summary.photoreal;
+  const chips = [
+    { label: copy.summary.identity, value: `${genderLabel} · ${ageLabel}` },
+    { label: copy.summary.hair, value: hairSummary === copy.notSet ? copy.open : hairSummary, swatch: hairSwatch },
+    { label: copy.summary.outfit, value: outfitSummary === copy.notSet ? copy.open : outfitSummary },
+    { label: copy.summary.style, value: realismLabel },
+  ];
+
+  const renderInlineSegment = (
+    label: string,
+    options: Array<{ id: string; label: string }>,
+    value: string,
+    onChange: (value: string) => void
+  ) => (
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{label}</p>
+      <div className="inline-flex flex-wrap rounded-full border border-border/80 bg-bg/55 p-1">
+        {options.map((option) => {
+          const active = value === option.id;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onChange(option.id)}
+              className={clsx(
+                'rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-micro transition',
+                active
+                  ? 'bg-brand text-on-brand shadow-[0_10px_24px_rgba(58,123,213,0.18)]'
+                  : 'text-text-secondary hover:text-text-primary'
+              )}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={clsx(compact ? 'space-y-3' : 'space-y-4')}>
+      <div className="rounded-[22px] border border-border/80 bg-bg/45 p-2.5 sm:p-3">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          {chips.map((chip, index) => (
+            <div
+              key={chip.label}
+              className={clsx(
+                'min-w-0 rounded-[18px] px-3 py-2',
+                index > 0 && 'xl:border-l xl:border-border/70'
+              )}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{chip.label}</p>
+              <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-text-primary">
+                {'swatch' in chip && chip.swatch ? (
+                  <span className="h-2.5 w-2.5 rounded-full border border-black/10" style={{ backgroundColor: chip.swatch }} />
+                ) : null}
+                <span className="truncate">{chip.value}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        className={clsx(
+          compact
+            ? 'space-y-3'
+            : 'flex items-end justify-between gap-6'
+        )}
+      >
+        <div className={clsx(compact ? 'space-y-3' : 'flex flex-wrap items-end gap-6')}>
+          {renderInlineSegment(
+            copy.generatePanel.quality,
+            qualityOptions,
+            qualityMode,
+            (value) => onQualityChange(value as CharacterBuilderState['qualityMode'])
+          )}
+          {renderInlineSegment(
+            copy.generatePanel.format,
+            formatOptions,
+            formatMode,
+            (value) => onFormatChange(value as CharacterBuilderState['formatMode'])
+          )}
+        </div>
+
+        <div
+          className={clsx(
+            compact
+              ? 'space-y-3'
+              : 'ml-auto flex shrink-0 items-center gap-4'
+          )}
+        >
+          <div className={clsx(compact ? 'flex items-baseline justify-between' : 'text-right')}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              {copy.generatePanel.pricePerImage.replace('{price}', '').trim()}
+            </p>
+            <p className={clsx('font-semibold text-text-primary', compact ? 'text-lg' : 'mt-1 text-xl')}>
+              {formatUsd(estimatedImageCostUsd)}
+            </p>
+          </div>
+          <div className={clsx('flex items-center gap-2', compact ? 'justify-stretch' : '')}>
+            <Button onClick={onGenerateOne} className={clsx('gap-2', compact ? 'flex-1' : 'min-w-[220px] px-5')}>
+              {loadingGenerateOne ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {copy.generatePanel.generateReference}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={onGenerateFour}
+              className={clsx('gap-2', compact ? 'px-3' : 'min-w-[76px] px-4')}
+            >
+              {loadingGenerateFour ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+              4x
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1495,34 +1918,74 @@ function BuilderAccordionSection({
   summary,
   open,
   onToggle,
+  headerAction,
   children,
 }: {
   title: string;
   summary?: string | null;
   open: boolean;
   onToggle: () => void;
+  headerAction?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="rounded-[24px] border border-border bg-surface shadow-card">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left sm:px-5"
-      >
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-text-primary">{title}</p>
-          {summary ? <p className="mt-1 truncate text-xs text-text-secondary">{summary}</p> : null}
-        </div>
-        <ChevronDown
-          className={clsx(
-            'h-4 w-4 shrink-0 text-text-muted transition-transform',
-            open && 'rotate-180'
-          )}
-        />
-      </button>
+      <div className="flex items-center gap-3 px-4 py-4 sm:px-5">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex min-w-0 flex-1 items-center justify-between gap-4 text-left"
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-text-primary">{title}</p>
+            {summary ? <p className="mt-1 truncate text-xs text-text-secondary">{summary}</p> : null}
+          </div>
+          <ChevronDown
+            className={clsx(
+              'h-4 w-4 shrink-0 text-text-muted transition-transform',
+              open && 'rotate-180'
+            )}
+          />
+        </button>
+        {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
+      </div>
       {open ? <div className="border-t border-border px-4 py-4 sm:px-5">{children}</div> : null}
     </section>
+  );
+}
+
+type BuildLookSectionKey = 'identity' | 'hair' | 'outfit' | 'details' | 'style';
+
+function BuildLookCarouselCard({
+  title,
+  summary,
+  active,
+  accessory,
+  onClick,
+}: {
+  title: string;
+  summary: string;
+  active: boolean;
+  accessory?: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        'flex min-h-[82px] w-[220px] flex-col justify-between border-r border-border px-4 py-3 text-left transition last:border-r-0 md:min-w-0 md:flex-1',
+        active
+          ? 'bg-brand/[0.08]'
+          : 'bg-surface hover:bg-surface-hover'
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-semibold text-text-primary">{title}</p>
+        {accessory ? <div className="shrink-0" onClick={(event) => event.stopPropagation()}>{accessory}</div> : null}
+      </div>
+      <p className="mt-2 line-clamp-2 text-xs text-text-secondary">{summary}</p>
+    </button>
   );
 }
 
@@ -1534,6 +1997,7 @@ function ReferenceSlot({
   onRemove,
   disabled = false,
   removeLabel,
+  optionalLabel,
 }: {
   title: string;
   subtitle: string;
@@ -1542,6 +2006,7 @@ function ReferenceSlot({
   onRemove: () => void;
   disabled?: boolean;
   removeLabel: string;
+  optionalLabel?: string;
 }) {
   return (
     <div
@@ -1577,7 +2042,14 @@ function ReferenceSlot({
             <Upload className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-text-primary">{title}</p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-sm font-semibold text-text-primary">{title}</p>
+              {optionalLabel ? (
+                <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary">
+                  {optionalLabel}
+                </span>
+              ) : null}
+            </div>
             <p className="mt-1 text-xs text-text-secondary">{subtitle}</p>
           </div>
         </button>
@@ -1589,10 +2061,11 @@ function ReferenceSlot({
 function ResultCard({
   result,
   selected,
-  pinned,
-  allowPinning,
+  title,
+  subtitle,
+  badge,
+  onOpen,
   onSelect,
-  onPin,
   onDownload,
   onSave,
   onDuplicateSettings,
@@ -1601,10 +2074,11 @@ function ResultCard({
 }: {
   result: CharacterBuilderResult;
   selected: boolean;
-  pinned: boolean;
-  allowPinning: boolean;
+  title: string;
+  subtitle: string;
+  badge?: string | null;
+  onOpen: () => void;
   onSelect: () => void;
-  onPin: () => void;
   onDownload: () => void;
   onSave: () => void;
   onDuplicateSettings: () => void;
@@ -1614,60 +2088,69 @@ function ResultCard({
   return (
     <Card
       className={clsx(
-        'overflow-hidden border p-0 transition',
+        'overflow-hidden border bg-surface p-0 transition',
         selected ? 'border-brand shadow-[0_0_0_1px_rgba(11,107,255,0.2)]' : 'border-border'
       )}
     >
-      <button type="button" onClick={onSelect} className="block w-full text-left">
-        <img src={result.thumbUrl ?? result.url} alt={copy.resultCard.generatedAlt} className="h-48 w-full object-cover" />
-      </button>
-      <div className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{result.engineLabel}</p>
-            <p className="mt-1 text-sm font-semibold text-text-primary">{getResultActionLabel(copy, result.action)}</p>
+      <div className="relative">
+        <button type="button" onClick={onOpen} className="block w-full text-left">
+          <img src={result.thumbUrl ?? result.url} alt={copy.resultCard.generatedAlt} className="h-44 w-full object-cover" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent px-3 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-micro text-white/70">{subtitle}</p>
+            <p className="mt-1 text-sm font-semibold text-white">{title}</p>
           </div>
-          <div className="flex items-center gap-2">
-            {selected ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-1 text-[11px] font-semibold text-brand">
-                <Check className="h-3.5 w-3.5" />
-                {copy.resultCard.selected}
-              </span>
-            ) : null}
-            {pinned ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-1 text-[11px] font-semibold text-text-primary">
-                <Pin className="h-3.5 w-3.5" />
-                {copy.resultCard.base}
-              </span>
-            ) : null}
-          </div>
+        </button>
+        <div className="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+          {selected ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-semibold text-slate-900 shadow-sm">
+              <Check className="h-3.5 w-3.5" />
+              {copy.resultCard.selected}
+            </span>
+          ) : <span />}
+          {badge ? (
+            <span className="inline-flex items-center rounded-full bg-brand/90 px-2 py-1 text-[11px] font-semibold text-on-brand shadow-sm">
+              {badge}
+            </span>
+          ) : null}
         </div>
-        {selected ? (
-          <div className="flex flex-wrap gap-2">
-            {allowPinning ? (
-              <Button variant="outline" size="sm" onClick={onPin} className="gap-2">
-                {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-                {pinned ? copy.resultCard.unpinBase : copy.resultCard.useAsBase}
-              </Button>
-            ) : null}
-            <Button variant="outline" size="sm" onClick={onDownload} className="gap-2">
-              <Download className="h-4 w-4" />
-              {copy.resultCard.download}
-            </Button>
-            <Button variant="outline" size="sm" onClick={onSave} disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {copy.resultCard.save}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDuplicateSettings} className="gap-2">
-              <WandSparkles className="h-4 w-4" />
-              {copy.resultCard.duplicate}
-            </Button>
-          </div>
-        ) : (
-          <Button variant="outline" size="sm" onClick={onSelect}>
-            {copy.resultCard.select}
+      </div>
+      <div className="flex items-center justify-between gap-2 p-3">
+        <Button variant={selected ? 'primary' : 'outline'} size="sm" onClick={onSelect} className="min-w-[92px]">
+          {selected ? copy.resultCard.selected : copy.resultCard.select}
+        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDuplicateSettings}
+            className="h-9 w-9 px-0"
+            aria-label={copy.resultCard.duplicate}
+            title={copy.resultCard.duplicate}
+          >
+            <WandSparkles className="h-4 w-4" />
           </Button>
-        )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSave}
+            disabled={saving}
+            className="h-9 w-9 px-0"
+            aria-label={copy.resultCard.save}
+            title={copy.resultCard.save}
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDownload}
+            className="h-9 w-9 px-0"
+            aria-label={copy.resultCard.download}
+            title={copy.resultCard.download}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -1686,31 +2169,36 @@ function PendingResultCard({
 }) {
   return (
     <Card className="overflow-hidden border border-border bg-surface/90 p-0">
-      <div className="relative h-48 overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(11,107,255,0.14),_transparent_60%),linear-gradient(180deg,rgba(148,163,184,0.08),transparent)]">
+      <div className="relative h-44 overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(11,107,255,0.14),_transparent_60%),linear-gradient(180deg,rgba(148,163,184,0.08),transparent)]">
         <div className="absolute inset-0 animate-pulse bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_40%,rgba(11,107,255,0.08)_100%)]" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface shadow-card text-brand">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </span>
-          <div className="space-y-1">
-            <p className="text-sm font-semibold text-text-primary">{copy.resultCard.pending}</p>
-            <p className="text-xs text-text-secondary">{copy.resultCard.pendingBody}</p>
-          </div>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 via-slate-900/20 to-transparent px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-micro text-white/70">{subtitle}</p>
+          <p className="mt-1 text-sm font-semibold text-white">{title}</p>
         </div>
-      </div>
-      <div className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{subtitle}</p>
-            <p className="mt-1 text-sm font-semibold text-text-primary">{title}</p>
-          </div>
+        <div className="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-semibold text-slate-900 shadow-sm">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {copy.resultCard.pending}
+          </span>
           {badge ? (
-            <span className="inline-flex items-center rounded-full bg-brand/10 px-2 py-1 text-[11px] font-semibold text-brand">
+            <span className="inline-flex items-center rounded-full bg-brand/90 px-2 py-1 text-[11px] font-semibold text-on-brand shadow-sm">
               {badge}
             </span>
           ) : null}
         </div>
       </div>
+      <div className="p-3">
+        <p className="text-xs text-text-secondary">{copy.resultCard.pendingBody}</p>
+      </div>
+    </Card>
+  );
+}
+
+function EmptyResultsRail({ copy }: { copy: CharacterCopy }) {
+  return (
+    <Card className="border border-dashed border-border bg-bg/40 p-5">
+      <p className="text-sm font-semibold text-text-primary">{copy.top.resultsTitle}</p>
+      <p className="mt-2 text-sm text-text-secondary">{copy.resultCard.pendingBody}</p>
     </Card>
   );
 }
@@ -1726,22 +2214,20 @@ export default function CharacterBuilderPage() {
   const [state, setState] = useState<CharacterBuilderState>(() => createDefaultCharacterBuilderState());
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [hairOpen, setHairOpen] = useState(false);
-  const [buildSectionsOpen, setBuildSectionsOpen] = useState({
-    identity: true,
-    hair: false,
-    outfit: false,
-    style: false,
-  });
+  const [activeBuildSection, setActiveBuildSection] = useState<BuildLookSectionKey>('identity');
   const [showStyleReferenceSlot, setShowStyleReferenceSlot] = useState(false);
   const [mustRemainDraft, setMustRemainDraft] = useState('');
   const [loadingActions, setLoadingActions] = useState<LoadingRequestCounts>(INITIAL_LOADING_REQUEST_COUNTS);
   const [pendingRuns, setPendingRuns] = useState<PendingCharacterRun[]>([]);
   const [savingResultId, setSavingResultId] = useState<string | null>(null);
+  const [lightboxEntry, setLightboxEntry] = useState<MediaLightboxEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const identityFileRef = useRef<HTMLInputElement | null>(null);
   const styleFileRef = useRef<HTMLInputElement | null>(null);
+  const resultsScrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const resultsSentinelRef = useRef<HTMLDivElement | null>(null);
 
   const genderOptions = useMemo(
     () => GENDER_PRESENTATION_OPTIONS.map((option) => ({ ...option, label: copy.options.gender[option.id as keyof typeof copy.options.gender] ?? option.label })),
@@ -1840,10 +2326,15 @@ export default function CharacterBuilderPage() {
       })),
     [copy, state.qualityMode]
   );
+  const {
+    data: historicalJobPages,
+    stableJobs: historicalJobs,
+    setSize: setHistoricalSize,
+    isLoading: historicalJobsLoading,
+    isValidating: historicalJobsValidating,
+  } = useInfiniteJobs(18, { surface: 'character' });
 
   const flattenedResults = getFlattenedResults(state.runs);
-  const selectedResult = findResultById(state.runs, state.selectedResultId);
-  const pinnedResult = findResultById(state.runs, state.pinnedReferenceResultId);
   const outputModeLabelOptions = useMemo(
     () => outputModeOptions.map((option) => ({ id: option.id, label: option.label })),
     [outputModeOptions]
@@ -1856,15 +2347,52 @@ export default function CharacterBuilderPage() {
     () => formatOptions.map((option) => ({ id: option.id, label: option.label })),
     [formatOptions]
   );
+  const localResultUrls = useMemo(
+    () => new Set(flattenedResults.map((result) => result.url).filter((value): value is string => Boolean(value))),
+    [flattenedResults]
+  );
+  const historicalResults = useMemo<HistoricalCharacterGalleryItem[]>(() => {
+    return historicalJobs.flatMap<HistoricalCharacterGalleryItem>((job) => {
+      const renderIds = Array.isArray(job.renderIds) ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0) : [];
+      if (!renderIds.length) return [];
+      const renderThumbUrls = Array.isArray(job.renderThumbUrls)
+        ? job.renderThumbUrls.filter((value): value is string => typeof value === 'string' && value.length > 0)
+        : [];
+
+      return renderIds.reduce<HistoricalCharacterGalleryItem[]>((acc, imageUrl, index) => {
+        if (localResultUrls.has(imageUrl)) return acc;
+        acc.push({
+          id: `${job.jobId}:historical:${index + 1}`,
+          jobId: job.jobId,
+          imageUrl,
+          thumbUrl: renderThumbUrls[index] ?? imageUrl,
+          engineLabel: job.engineLabel,
+          createdAt: job.createdAt,
+          prompt: job.prompt ?? null,
+        });
+        return acc;
+      }, []);
+    });
+  }, [historicalJobs, localResultUrls]);
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
   const hasIdentityReference = Boolean(identityReference);
   const hasCompletedResults = flattenedResults.length > 0;
-  const hasResults = hasCompletedResults || pendingRuns.length > 0;
-  const hasMultipleResults = flattenedResults.length > 1;
+  const hasResults = hasCompletedResults || pendingRuns.length > 0 || historicalResults.length > 0;
   const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
+  const hairMode = state.traits.hairEnabled ? 'custom' : 'auto';
+  const outfitMode = state.traits.outfitEnabled ? 'custom' : 'auto';
   const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
   const outfitSummary = getOutfitSummary(state.traits, outfitOptions, copy);
+  const accessoriesFeaturesSummary = [
+    ...accessoryOptions.filter((option) => state.traits.accessories.includes(option.id)).map((option) => option.label),
+    ...distinctiveOptions
+      .filter((option) => state.traits.distinctiveFeatures.includes(option.id))
+      .map((option) => option.label),
+    summarizeCustomText(state.traits.customDetailsDescription),
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const identitySummary = `${findChoiceLabel(genderOptions, state.traits.genderPresentation.value) ?? copy.open} · ${findChoiceLabel(ageOptions, state.traits.ageRange.value) ?? copy.open}`;
   const realismSummary = findChoiceLabel(realismOptions, state.traits.realismStyle) ?? copy.summary.photoreal;
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
@@ -1885,23 +2413,14 @@ export default function CharacterBuilderPage() {
     billingProductData?.unitPriceCents != null
       ? Number(((billingProductData.unitPriceCents * getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) / 100).toFixed(2))
       : null;
-  const qualityLabel = findChoiceLabel(
-    qualityLabelOptions,
-    state.qualityMode
-  );
-  const formatLabel = getFormatDisplayLabel(copy, state.formatMode, state.qualityMode);
-  const outputLabel = findChoiceLabel(
-    outputModeLabelOptions,
-    state.outputMode
-  );
   const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
-
-  const toggleBuildSection = (section: keyof typeof buildSectionsOpen) => {
-    setBuildSectionsOpen((previous) => ({
-      ...previous,
-      [section]: !previous[section],
-    }));
-  };
+  const historicalLastPage = historicalJobPages?.[historicalJobPages.length - 1];
+  const historicalHasMore = Boolean(historicalLastPage?.nextCursor);
+  const historicalIsFetchingMore = historicalJobsValidating && Boolean(historicalJobPages?.length);
+  const loadMoreHistoricalResults = useCallback(() => {
+    if (!historicalHasMore || historicalJobsLoading || historicalIsFetchingMore) return;
+    void setHistoricalSize((current) => current + 1);
+  }, [historicalHasMore, historicalIsFetchingMore, historicalJobsLoading, setHistoricalSize]);
 
   useEffect(() => {
     const persisted = readPersistedState();
@@ -1962,6 +2481,52 @@ export default function CharacterBuilderPage() {
     };
   }, [copy.loadFromJobDone, hydrated, jobIdFromQuery]);
 
+  useEffect(() => {
+    const sentinel = resultsSentinelRef.current;
+    if (!sentinel || !historicalHasMore) return;
+
+    let previousY = 0;
+    let previousRatio = 0;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            (entry.boundingClientRect.y > previousY || entry.intersectionRatio > previousRatio)
+          ) {
+            loadMoreHistoricalResults();
+          }
+          previousY = entry.boundingClientRect.y;
+          previousRatio = entry.intersectionRatio;
+        });
+      },
+      {
+        root: resultsScrollContainerRef.current,
+        threshold: 0.2,
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [historicalHasMore, historicalResults.length, loadMoreHistoricalResults]);
+
+  useEffect(() => {
+    const scrollContainer = resultsScrollContainerRef.current;
+    if (!scrollContainer || !historicalHasMore) return undefined;
+
+    const maybeLoadMore = () => {
+      const remainingScroll = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
+      if (remainingScroll <= 320) {
+        loadMoreHistoricalResults();
+      }
+    };
+
+    maybeLoadMore();
+    scrollContainer.addEventListener('scroll', maybeLoadMore, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', maybeLoadMore);
+  }, [historicalHasMore, historicalResults.length, loadMoreHistoricalResults]);
+
   function updateTrait<K extends keyof Pick<
     CharacterBuilderTraits,
     | 'genderPresentation'
@@ -1987,7 +2552,8 @@ export default function CharacterBuilderPage() {
     }));
   }
 
-  function setHairEnabled(enabled: boolean) {
+  function setHairMode(mode: 'auto' | 'custom') {
+    const enabled = mode === 'custom';
     setState((previous) => ({
       ...previous,
       traits: {
@@ -1995,12 +2561,17 @@ export default function CharacterBuilderPage() {
         hairEnabled: enabled,
       },
     }));
+    if (enabled) {
+      setActiveBuildSection('hair');
+      return;
+    }
     if (!enabled) {
       setHairOpen(false);
     }
   }
 
-  function setOutfitEnabled(enabled: boolean) {
+  function setOutfitMode(mode: 'auto' | 'custom') {
+    const enabled = mode === 'custom';
     setState((previous) => ({
       ...previous,
       traits: {
@@ -2008,6 +2579,10 @@ export default function CharacterBuilderPage() {
         outfitEnabled: enabled,
       },
     }));
+    if (enabled) {
+      setActiveBuildSection('outfit');
+      return;
+    }
   }
 
   function toggleListValue(key: 'accessories' | 'distinctiveFeatures', value: string) {
@@ -2024,18 +2599,6 @@ export default function CharacterBuilderPage() {
         },
       };
     });
-  }
-
-  function updateSourceMode(sourceMode: CharacterBuilderState['sourceMode']) {
-    setState((previous) => ({
-      ...previous,
-      sourceMode,
-      referenceStrength: sourceMode === 'reference-image' ? previous.referenceStrength ?? 'balanced' : null,
-      traits: normalizeTraitsForSourceMode(previous.traits, sourceMode),
-    }));
-    if (sourceMode !== 'reference-image' && !styleReference) {
-      setShowStyleReferenceSlot(false);
-    }
   }
 
   async function handleUpload(role: CharacterBuilderReferenceImage['role'], file: File) {
@@ -2115,6 +2678,7 @@ export default function CharacterBuilderPage() {
     setStatusMessage(null);
     const loadingKey = getLoadingRequestKey(action, generateCount);
     const pendingRunId = `pending_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const requestTraits = normalizeHairAndOutfitModes(state.traits);
     const pendingRun: PendingCharacterRun = {
       id: pendingRunId,
       action,
@@ -2137,19 +2701,19 @@ export default function CharacterBuilderPage() {
         qualityMode: state.qualityMode,
         formatMode: state.formatMode,
         referenceImages: state.referenceImages,
-        traits: state.traits,
+        traits: requestTraits,
         outputOptions: state.outputOptions,
         advancedNotes: state.advancedNotes,
         mustRemainVisible: state.mustRemainVisible,
         generateCount: generateCount ?? 1,
-        selectedResultId: selectedResult?.id ?? null,
-        selectedResultUrl: selectedResult?.url ?? null,
-        pinnedReferenceResultId: pinnedResult?.id ?? null,
-        pinnedReferenceResultUrl: pinnedResult?.url ?? null,
+        selectedResultId: null,
+        selectedResultUrl: null,
+        pinnedReferenceResultId: null,
+        pinnedReferenceResultUrl: null,
         lineage: {
-          parentResultId: selectedResult?.id ?? null,
-          parentRunId: selectedResult?.runId ?? null,
-          pinnedReferenceResultId: pinnedResult?.id ?? null,
+          parentResultId: null,
+          parentRunId: null,
+          pinnedReferenceResultId: null,
         },
       });
 
@@ -2161,28 +2725,13 @@ export default function CharacterBuilderPage() {
       setState((previous) => {
         const nextRuns = [response.run!, ...previous.runs].slice(0, 12);
         const firstResultId = response.run!.results[0]?.id ?? null;
-        const refinementHistory =
-          action === 'generate' || !selectedResult
-            ? previous.refinementHistory
-            : [
-                {
-                  id: `refinement_${Date.now()}`,
-                  action,
-                  parentResultId: selectedResult.id,
-                  childRunId: response.run!.id,
-                  childResultIds: response.run!.results.map((result) => result.id),
-                  createdAt: response.run!.createdAt,
-                },
-                ...previous.refinementHistory,
-              ].slice(0, 24);
 
         return {
           ...previous,
           runs: nextRuns,
           selectedResultId: firstResultId,
-          pinnedReferenceResultId:
-            previous.pinnedReferenceResultId ?? (action === 'generate' ? firstResultId : previous.pinnedReferenceResultId),
-          refinementHistory,
+          pinnedReferenceResultId: null,
+          refinementHistory: previous.refinementHistory,
         };
       });
 
@@ -2222,109 +2771,223 @@ export default function CharacterBuilderPage() {
     }
   }
 
-  function renderFollowUpPanels() {
-    if (!hasCompletedResults) return null;
+  async function handleSaveHistoricalResult(item: HistoricalCharacterGalleryItem) {
+    setSavingResultId(item.id);
+    setError(null);
+    setStatusMessage(null);
+    try {
+      await saveImageToLibrary({
+        url: item.imageUrl,
+        jobId: item.jobId,
+        label: copy.generatePanel.portraitTitle,
+        source: 'character',
+      });
+      setStatusMessage(copy.savedToLibrary);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
+    } finally {
+      setSavingResultId(null);
+    }
+  }
 
-    return (
-      <div className="space-y-6">
-        {selectedResult ? (
-          <Card className="border border-border p-6">
-            <SectionTitle eyebrow={copy.followUp.selectedEyebrow} title={copy.followUp.selectedTitle} />
-            <img
-              src={selectedResult.thumbUrl ?? selectedResult.url}
-              alt={copy.followUp.selectedAlt}
-              className="mt-5 h-72 w-full rounded-card object-cover"
-            />
-            <div className="mt-4 space-y-2">
-              <p className="text-sm font-semibold text-text-primary">{selectedResult.engineLabel}</p>
-              <p className="text-xs text-text-secondary">
-                {selectedResult.action === 'generate'
-                  ? copy.followUp.baseReference
-                  : selectedResult.action === 'full-body-fix'
-                    ? copy.followUp.fullBodyRefinement
-                    : copy.followUp.lightingRefinement}
-              </p>
-            </div>
-            <div className="mt-4 rounded-card border border-border bg-bg/40 p-4 text-sm text-text-secondary">
-              {copy.followUp.importNote}
-            </div>
-          </Card>
-        ) : null}
+  async function handleDuplicateHistoricalSettings(item: HistoricalCharacterGalleryItem) {
+    setError(null);
+    setStatusMessage(null);
+    try {
+      const response = await authFetch(`/api/jobs/${encodeURIComponent(item.jobId)}`);
+      const payload = (await response.json().catch(() => null)) as
+        | { ok?: boolean; settingsSnapshot?: unknown; error?: string }
+        | null;
+      if (!response.ok || !payload?.ok || !payload.settingsSnapshot) {
+        throw new Error(payload?.error ?? copy.runFailed);
+      }
+      const snapshotState = parseCharacterBuilderSnapshot(payload.settingsSnapshot);
+      if (!snapshotState) {
+        throw new Error(copy.missingRun);
+      }
+      setState((previous) => ({
+        ...previous,
+        ...snapshotState,
+        selectedResultId: item.id,
+      }));
+      setAdvancedOpen(Boolean(snapshotState.advancedNotes));
+      setShowStyleReferenceSlot(Boolean(snapshotState.referenceImages?.some((image) => image.role === 'style')));
+      setStatusMessage(copy.duplicateDone);
+    } catch (duplicateError) {
+      setError(duplicateError instanceof Error ? duplicateError.message : copy.runFailed);
+    }
+  }
 
-        {hasMultipleResults ? (
-          <Card className="border border-border p-6">
-            <SectionTitle eyebrow={copy.followUp.pinnedEyebrow} title={copy.followUp.pinnedTitle} />
-            {pinnedResult ? (
-              <div className="mt-5 space-y-4">
-                <img
-                  src={pinnedResult.thumbUrl ?? pinnedResult.url}
-                  alt={copy.followUp.pinnedAlt}
-                  className="h-64 w-full rounded-card object-cover"
-                />
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-text-primary">{copy.followUp.pinnedLabel}</p>
-                    <p className="mt-1 text-xs text-text-secondary">{pinnedResult.engineLabel}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setState((previous) => ({
-                        ...previous,
-                        pinnedReferenceResultId: null,
-                      }))
-                    }
-                  >
-                    <PinOff className="h-4 w-4" />
-                    {copy.followUp.unpin}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-5 rounded-card border border-dashed border-border bg-bg/40 p-5 text-sm text-text-secondary">
-                {copy.followUp.pinEmpty}
-              </div>
-            )}
-          </Card>
-        ) : null}
-
-        {selectedResult ? (
-          <Card className="border border-border p-6">
-            <SectionTitle title={copy.followUp.refineTitle} />
-            <div className="mt-5 grid gap-3">
-              <Button
-                variant="outline"
-                onClick={() => void handleRun('full-body-fix')}
-                className="justify-start gap-2"
-              >
-                {isActionLoading('full-body-fix') ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <WandSparkles className="h-4 w-4" />
-                )}
-                {copy.followUp.fixFullBody}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => void handleRun('lighting-variant')}
-                className="justify-start gap-2"
-              >
-                {isActionLoading('lighting-variant') ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-                {copy.followUp.createLighting}
-              </Button>
+  function renderResultsGallery(variant: 'desktop' | 'mobile') {
+    if (!hasResults) {
+      return variant === 'desktop' ? <EmptyResultsRail copy={copy} /> : null;
+    }
+    const itemClassName = variant === 'desktop' ? '' : 'min-w-[280px] shrink-0 snap-start';
+    const items = (
+      <>
+        {pendingRuns.map((pendingRun) => {
+          const pendingOutputLabel =
+            findChoiceLabel(outputModeLabelOptions, pendingRun.outputMode) ?? copy.generatePanel.portraitTitle;
+          const pendingQualityLabel =
+            findChoiceLabel(qualityLabelOptions, pendingRun.qualityMode) ?? copy.options.quality.draft.label;
+          const pendingFormatLabel = getFormatDisplayLabel(copy, pendingRun.formatMode, pendingRun.qualityMode);
+          const subtitle = `${pendingOutputLabel} · ${pendingQualityLabel} · ${pendingFormatLabel}`;
+          const badge = pendingRun.generateCount === 4 ? '4x' : null;
+          return (
+            <div key={pendingRun.id} className={itemClassName}>
+              <PendingResultCard
+                title={getResultActionLabel(copy, pendingRun.action)}
+                subtitle={subtitle}
+                badge={badge}
+                copy={copy}
+              />
             </div>
-            <p className="mt-4 text-xs text-text-secondary">
-              {copy.followUp.refineFootnote}
-            </p>
-          </Card>
-        ) : null}
-      </div>
+          );
+        })}
+        {flattenedResults.map((result) => {
+          const run = state.runs.find((entry) => entry.id === result.runId);
+          const resultOutputLabel =
+            findChoiceLabel(outputModeLabelOptions, result.outputMode) ?? copy.generatePanel.portraitTitle;
+          const resultQualityLabel =
+            findChoiceLabel(qualityLabelOptions, result.qualityMode) ?? copy.options.quality.draft.label;
+          const resultFormatLabel = getFormatDisplayLabel(copy, run?.formatMode ?? 'standard', result.qualityMode);
+          const subtitle = `${resultOutputLabel} · ${resultQualityLabel} · ${resultFormatLabel}`;
+          const badge = run && run.results.length > 1 ? `${run.results.length}x` : null;
+
+          return (
+            <div key={result.id} className={itemClassName}>
+              <ResultCard
+                result={result}
+                selected={state.selectedResultId === result.id}
+                title={getResultActionLabel(copy, result.action)}
+                subtitle={subtitle}
+                badge={badge}
+                saving={savingResultId === result.id}
+                onOpen={() => {
+                  setState((previous) => ({
+                    ...previous,
+                    selectedResultId: result.id,
+                  }));
+                  setLightboxEntry({
+                    id: result.id,
+                    label: getResultActionLabel(copy, result.action),
+                    thumbUrl: result.url,
+                    mediaType: 'image',
+                    status: 'completed',
+                    engineLabel: result.engineLabel,
+                    createdAt: result.createdAt,
+                    jobId: result.jobId,
+                    prompt: run?.settingsSnapshot?.prompt ?? null,
+                  });
+                }}
+                onSelect={() =>
+                  setState((previous) => ({
+                    ...previous,
+                    selectedResultId: result.id,
+                  }))
+                }
+                onDownload={() =>
+                  triggerAppDownload(
+                    result.url,
+                    suggestDownloadFilename(result.url, `character-reference-${result.id.replace(/[^a-z0-9]+/gi, '-')}`)
+                  )
+                }
+                onSave={() => void handleSaveResult(result)}
+                onDuplicateSettings={() => {
+                  if (run?.settingsSnapshot) {
+                    applySettingsSnapshot(run.settingsSnapshot, result.id);
+                  }
+                }}
+                copy={copy}
+              />
+            </div>
+          );
+        })}
+        {historicalResults.map((item) => {
+          const createdLabel = (() => {
+            try {
+              return new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(item.createdAt));
+            } catch {
+              return item.createdAt;
+            }
+          })();
+
+          return (
+            <div key={item.id} className={itemClassName}>
+              <ResultCard
+                result={{
+                  id: item.id,
+                  runId: item.jobId,
+                  jobId: item.jobId,
+                  url: item.imageUrl,
+                  thumbUrl: item.thumbUrl,
+                  engineId: '',
+                  engineLabel: item.engineLabel,
+                  action: 'generate',
+                  outputMode: 'portrait-reference',
+                  qualityMode: state.qualityMode,
+                  createdAt: item.createdAt,
+                }}
+                selected={state.selectedResultId === item.id}
+                title={copy.resultCard.referenceOutput}
+                subtitle={`${item.engineLabel} · ${createdLabel}`}
+                saving={savingResultId === item.id}
+                onOpen={() => {
+                  setState((previous) => ({
+                    ...previous,
+                    selectedResultId: item.id,
+                  }));
+                  setLightboxEntry({
+                    id: item.id,
+                    label: copy.resultCard.referenceOutput,
+                    thumbUrl: item.imageUrl,
+                    mediaType: 'image',
+                    status: 'completed',
+                    engineLabel: item.engineLabel,
+                    createdAt: item.createdAt,
+                    jobId: item.jobId,
+                    prompt: item.prompt,
+                  });
+                }}
+                onSelect={() =>
+                  setState((previous) => ({
+                    ...previous,
+                    selectedResultId: item.id,
+                  }))
+                }
+                onDownload={() =>
+                  triggerAppDownload(
+                    item.imageUrl,
+                    suggestDownloadFilename(item.imageUrl, `character-reference-${item.id.replace(/[^a-z0-9]+/gi, '-')}`)
+                  )
+                }
+                onSave={() => void handleSaveHistoricalResult(item)}
+                onDuplicateSettings={() => void handleDuplicateHistoricalSettings(item)}
+                copy={copy}
+              />
+            </div>
+          );
+        })}
+      </>
     );
+
+    if (variant === 'desktop') {
+      return (
+        <div className="relative flex-1 min-h-0">
+          <div ref={resultsScrollContainerRef} className="scrollbar-rail h-full overflow-y-auto space-y-3 pr-4 pt-1">
+            {items}
+            {historicalHasMore ? <div ref={resultsSentinelRef} className="h-6" /> : null}
+            {historicalIsFetchingMore || historicalJobsLoading ? (
+              <div className="flex justify-center py-3 text-xs font-medium text-text-secondary">
+                {copy.resultCard.pending}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      );
+    }
+
+    return <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">{items}</div>;
   }
 
   if (authLoading || !hydrated) {
@@ -2335,7 +2998,7 @@ export default function CharacterBuilderPage() {
           <div className="hidden xl:block">
             <AppSidebar />
           </div>
-          <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-28 lg:p-7 lg:pb-32 xl:pb-7">
+          <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-80 lg:p-7 lg:pb-40 xl:pb-64">
             <div className="space-y-4 animate-pulse">
               <div className="h-40 rounded-card border border-border bg-surface" />
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_360px]">
@@ -2361,7 +3024,7 @@ export default function CharacterBuilderPage() {
           <div className="hidden xl:block">
             <AppSidebar />
           </div>
-          <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-28 lg:p-7 lg:pb-32 xl:pb-7">
+          <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-80 lg:p-7 lg:pb-40 xl:pb-64">
             <Card className="border border-border p-6">
               <h1 className="text-2xl font-semibold text-text-primary">{copy.disabledTitle}</h1>
               <p className="mt-2 text-sm text-text-secondary">{copy.disabledBody}</p>
@@ -2379,7 +3042,7 @@ export default function CharacterBuilderPage() {
         <div className="hidden xl:block">
           <AppSidebar />
         </div>
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-28 lg:p-7 lg:pb-32 xl:pb-7">
+        <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-80 lg:p-7 lg:pb-40 xl:pb-64">
           <div className="mx-auto w-full max-w-[1500px] space-y-6">
             <div>
               <ButtonLink
@@ -2401,136 +3064,185 @@ export default function CharacterBuilderPage() {
               <Card className="border border-border bg-surface p-4 text-sm text-text-secondary">{statusMessage}</Card>
             ) : null}
 
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_340px]">
-              <div className="space-y-6">
+            <div className="flex flex-col gap-6 xl:flex-row">
+              <div className="min-w-0 flex-1 space-y-6">
                 <Card className="overflow-visible border border-border p-6 lg:p-7">
                   <div className="space-y-6">
-                    <div className="xl:hidden">
-                      <CharacterSummaryCard
-                        identityReference={identityReference}
-                        hairSummary={hairSummary}
-                        outfitSummary={outfitSummary}
-                        traits={state.traits}
-                        outputMode={state.outputMode}
-                        qualityMode={state.qualityMode}
-                        formatMode={state.formatMode}
-                        genderOptions={genderOptions}
-                        ageOptions={ageOptions}
-                        realismOptions={realismOptions.map((option) => ({ id: option.id, label: option.label }))}
-                        outputOptions={outputModeOptions.map((option) => ({ id: option.id, label: option.label }))}
-                        qualityOptions={qualityOptions.map((option) => ({ id: option.id, label: option.label }))}
-                        formatOptions={formatLabelOptions}
-                        copy={copy}
-                      />
-                    </div>
-
                     <section className="space-y-4">
                       <SectionTitle title={copy.top.start} />
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <VisualChoiceCard
-                          selected={state.sourceMode === 'scratch'}
-                          onClick={() => updateSourceMode('scratch')}
-                          title={copy.sourceMode.scratchTitle}
-                          subtitle={copy.sourceMode.scratchBody}
-                          media={
-                            <div className="flex h-20 items-center justify-between rounded-[18px] border border-border/80 bg-surface-2/80 px-4">
-                              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand/15 text-brand">
-                                <Sparkles className="h-4 w-4" />
-                              </div>
-                              <div className="flex items-end gap-1">
-                                <span className="h-7 w-7 rounded-full bg-surface shadow-sm" />
-                                <span className="h-9 w-9 rounded-[16px] bg-surface/80 shadow-sm" />
-                              </div>
-                            </div>
+                      <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+                        <OutputPreviewCard
+                          selected={state.outputMode === 'character-sheet'}
+                          title={copy.generatePanel.sheetTitle}
+                          subtitle={copy.generatePanel.sheetBody}
+                          mode="character-sheet"
+                          onClick={() =>
+                            setState((previous) => ({
+                              ...previous,
+                              outputMode: 'character-sheet',
+                              outputOptions: {
+                                ...previous.outputOptions,
+                                fullBodyRequired: true,
+                              },
+                            }))
                           }
                         />
-                        <VisualChoiceCard
-                          selected={state.sourceMode === 'reference-image'}
-                          onClick={() => updateSourceMode('reference-image')}
-                          title={copy.sourceMode.imageTitle}
-                          subtitle={copy.sourceMode.imageBody}
-                          media={
-                            <div className="flex h-20 items-center justify-between rounded-[18px] border border-border/80 bg-surface-2/80 px-4">
-                              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                                <Upload className="h-4 w-4" />
-                              </div>
-                              <div className="rounded-[16px] border border-dashed border-emerald-300 bg-surface/85 px-3 py-2 text-[11px] font-semibold text-text-secondary">
-                                {copy.sourceMode.autoTraits}
-                              </div>
-                            </div>
+                        <OutputPreviewCard
+                          selected={state.outputMode === 'portrait-reference'}
+                          title={copy.generatePanel.portraitTitle}
+                          subtitle={copy.generatePanel.portraitBody}
+                          mode="portrait-reference"
+                          onClick={() =>
+                            setState((previous) => ({
+                              ...previous,
+                              outputMode: 'portrait-reference',
+                              outputOptions: {
+                                ...previous.outputOptions,
+                                fullBodyRequired: false,
+                              },
+                            }))
                           }
                         />
                       </div>
 
-                      {state.sourceMode === 'reference-image' ? (
-                        <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="grid gap-4 lg:grid-cols-2">
+                        <ReferenceSlot
+                          title={copy.references.identityTitle}
+                          subtitle={copy.references.identityBody}
+                          image={identityReference}
+                          onUpload={() => identityFileRef.current?.click()}
+                          removeLabel={copy.references.remove}
+                          optionalLabel={copy.sections.optional}
+                          onRemove={() =>
+                            setState((previous) => ({
+                              ...previous,
+                              sourceMode: previous.sourceMode === 'reference-image' ? 'scratch' : previous.sourceMode,
+                              referenceStrength: previous.sourceMode === 'reference-image' ? null : previous.referenceStrength,
+                              referenceImages: removeReferenceImage(previous.referenceImages, 'identity'),
+                              traits:
+                                previous.sourceMode === 'reference-image'
+                                  ? normalizeTraitsForSourceMode(previous.traits, 'scratch')
+                                  : previous.traits,
+                            }))
+                          }
+                        />
+                        {showStyleReferenceSlot || styleReference ? (
                           <ReferenceSlot
-                            title={copy.references.identityTitle}
-                            subtitle={copy.references.identityBody}
-                            image={identityReference}
-                            onUpload={() => identityFileRef.current?.click()}
+                            title={copy.references.styleTitle}
+                            subtitle={copy.references.styleBody}
+                            image={styleReference}
+                            onUpload={() => styleFileRef.current?.click()}
                             removeLabel={copy.references.remove}
-                            onRemove={() =>
+                            optionalLabel={copy.sections.optional}
+                            onRemove={() => {
+                              setShowStyleReferenceSlot(false);
                               setState((previous) => ({
                                 ...previous,
-                                sourceMode: previous.sourceMode === 'reference-image' ? 'scratch' : previous.sourceMode,
-                                referenceStrength: previous.sourceMode === 'reference-image' ? null : previous.referenceStrength,
-                                referenceImages: removeReferenceImage(previous.referenceImages, 'identity'),
-                                traits:
-                                  previous.sourceMode === 'reference-image'
-                                    ? normalizeTraitsForSourceMode(previous.traits, 'scratch')
-                                    : previous.traits,
-                              }))
-                            }
+                                referenceImages: removeReferenceImage(previous.referenceImages, 'style'),
+                              }));
+                            }}
                           />
-                          {showStyleReferenceSlot || styleReference ? (
-                            <ReferenceSlot
-                              title={copy.references.styleTitle}
-                              subtitle={copy.references.styleBody}
-                              image={styleReference}
-                              onUpload={() => styleFileRef.current?.click()}
-                              removeLabel={copy.references.remove}
-                              onRemove={() => {
-                                setShowStyleReferenceSlot(false);
-                                setState((previous) => ({
-                                  ...previous,
-                                  referenceImages: removeReferenceImage(previous.referenceImages, 'style'),
-                                }));
-                              }}
-                            />
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setShowStyleReferenceSlot(true)}
-                              className="flex min-h-[180px] flex-col items-center justify-center rounded-card border border-dashed border-border bg-bg/40 px-4 py-6 text-center transition hover:border-border-hover hover:bg-surface-hover"
-                            >
-                              <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
-                                <Upload className="h-5 w-5" />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowStyleReferenceSlot(true)}
+                            className="flex min-h-[180px] flex-col items-center justify-center rounded-card border border-dashed border-border bg-bg/40 px-4 py-6 text-center transition hover:border-border-hover hover:bg-surface-hover"
+                          >
+                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
+                              <Upload className="h-5 w-5" />
+                            </span>
+                            <div className="mt-3 flex items-center justify-center gap-2">
+                              <p className="text-sm font-semibold text-text-primary">{copy.references.addInspiration}</p>
+                              <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary">
+                                {copy.sections.optional}
                               </span>
-                              <p className="mt-3 text-sm font-semibold text-text-primary">{copy.references.addInspiration}</p>
-                              <p className="mt-1 text-xs text-text-secondary">{copy.references.addInspirationBody}</p>
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="rounded-card border border-border bg-bg/40 px-4 py-3 text-sm text-text-secondary">
-                          {copy.sourceMode.scratchNote}
-                        </div>
-                      )}
+                            </div>
+                            <p className="mt-1 text-xs text-text-secondary">{copy.references.addInspirationBody}</p>
+                          </button>
+                        )}
+                      </div>
                     </section>
 
                     <section className="space-y-4 border-t border-border pt-6">
                       <SectionTitle title={copy.top.buildLook} />
                       <div className="space-y-4">
-                        <BuilderAccordionSection
-                          title={copy.sections.gender}
-                          summary={identitySummary}
-                          open={buildSectionsOpen.identity}
-                          onToggle={() => toggleBuildSection('identity')}
-                        >
-                          <div className="space-y-4">
-                            <div className="space-y-3">
-                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="overflow-x-auto pb-2">
+                          <div className="flex min-w-max overflow-hidden rounded-[24px] border border-border bg-surface shadow-card md:min-w-0 md:w-full">
+                            <BuildLookCarouselCard
+                              title={copy.sections.gender}
+                              summary={identitySummary}
+                              active={activeBuildSection === 'identity'}
+                              onClick={() => setActiveBuildSection('identity')}
+                            />
+                            <BuildLookCarouselCard
+                              title={copy.sections.hair}
+                              summary={hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
+                              accessory={
+                                <div className="inline-flex rounded-full border border-border bg-bg p-1">
+                                  {(['auto', 'custom'] as const).map((mode) => (
+                                    <button
+                                      key={mode}
+                                      type="button"
+                                      onClick={() => setHairMode(mode)}
+                                      className={clsx(
+                                        'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro transition',
+                                        hairMode === mode
+                                          ? 'bg-brand text-on-brand'
+                                          : 'text-text-secondary hover:text-text-primary'
+                                      )}
+                                    >
+                                      {mode === 'auto' ? copy.auto : copy.custom}
+                                    </button>
+                                  ))}
+                                </div>
+                              }
+                              active={activeBuildSection === 'hair'}
+                              onClick={() => setActiveBuildSection('hair')}
+                            />
+                            <BuildLookCarouselCard
+                              title={copy.sections.outfit}
+                              summary={outfitSummary === copy.notSet ? copy.open : outfitSummary}
+                              accessory={
+                                <div className="inline-flex rounded-full border border-border bg-bg p-1">
+                                  {(['auto', 'custom'] as const).map((mode) => (
+                                    <button
+                                      key={mode}
+                                      type="button"
+                                      onClick={() => setOutfitMode(mode)}
+                                      className={clsx(
+                                        'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro transition',
+                                        outfitMode === mode
+                                          ? 'bg-brand text-on-brand'
+                                          : 'text-text-secondary hover:text-text-primary'
+                                      )}
+                                    >
+                                      {mode === 'auto' ? copy.auto : copy.custom}
+                                    </button>
+                                  ))}
+                                </div>
+                              }
+                              active={activeBuildSection === 'outfit'}
+                              onClick={() => setActiveBuildSection('outfit')}
+                            />
+                            <BuildLookCarouselCard
+                              title={copy.sections.accessoriesFeatures}
+                              summary={accessoriesFeaturesSummary || copy.open}
+                              active={activeBuildSection === 'details'}
+                              onClick={() => setActiveBuildSection('details')}
+                            />
+                            <BuildLookCarouselCard
+                              title={copy.sections.realism}
+                              summary={realismSummary}
+                              active={activeBuildSection === 'style'}
+                              onClick={() => setActiveBuildSection('style')}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="rounded-[24px] border border-border bg-surface shadow-card p-4 sm:p-5">
+                          {activeBuildSection === 'identity' ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-[repeat(auto-fit,minmax(148px,172px))] justify-center gap-3 xl:justify-start">
                                 {genderOptions.map((option) => {
                                   const meta = GENDER_CARD_META[option.id] ?? GENDER_CARD_META.custom;
                                   return (
@@ -2546,228 +3258,218 @@ export default function CharacterBuilderPage() {
                                   );
                                 })}
                               </div>
-                            </div>
 
-                            <div className="max-w-xl">
-                              <SegmentedControl
-                                label={copy.sections.age}
-                                options={ageOptions}
-                                value={state.traits.ageRange.value}
-                                onChange={(value) => updateTrait('ageRange', value)}
-                              />
-                            </div>
-
-                            {state.traits.genderPresentation.value === 'custom' ? (
-                              <Input
-                                value={state.traits.customGenderDescription ?? ''}
-                                onChange={(event) =>
-                                  setState((previous) => ({
-                                    ...previous,
-                                    traits: {
-                                      ...previous.traits,
-                                      customGenderDescription: event.target.value,
-                                    },
-                                  }))
-                                }
-                                placeholder={copy.sections.customGenderPlaceholder}
-                              />
-                            ) : null}
-                          </div>
-                        </BuilderAccordionSection>
-
-                        <BuilderAccordionSection
-                          title={copy.sections.hair}
-                          summary={hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
-                          open={buildSectionsOpen.hair}
-                          onToggle={() => toggleBuildSection('hair')}
-                        >
-                          <div className="relative space-y-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
-                              <div className="inline-flex rounded-full border border-border bg-bg p-1">
-                                {[true, false].map((enabled) => (
-                                  <button
-                                    key={enabled ? 'on' : 'off'}
-                                    type="button"
-                                    onClick={() => setHairEnabled(enabled)}
-                                    className={clsx(
-                                      'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                                      state.traits.hairEnabled === enabled
-                                        ? 'bg-brand text-on-brand'
-                                        : 'text-text-secondary hover:text-text-primary'
-                                    )}
-                                  >
-                                    {enabled ? copy.on : copy.off}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                            {state.traits.hairEnabled ? (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => setHairOpen((previous) => !previous)}
-                                  className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-surface px-4 py-4 text-left transition hover:border-border-hover hover:bg-surface-hover hover:shadow-card"
-                                >
-                                  <div className="flex min-w-0 items-center gap-4">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-surface-2/80">
-                                      <div className="space-y-1">
-                                        <div className="h-2 w-7 rounded-full bg-slate-500" />
-                                        <div className="h-2 w-5 rounded-full bg-slate-400" />
-                                        <div className="h-2 w-6 rounded-full bg-slate-300" />
-                                      </div>
-                                    </div>
-                                    <div className="min-w-0">
-                                      <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
-                                      <p className="truncate text-xs text-text-secondary">
-                                        {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <span className="rounded-full border border-border bg-surface-2/80 px-3 py-1 text-xs font-semibold text-text-secondary">
-                                    {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
-                                  </span>
-                                </button>
-                                <div className="space-y-2">
-                                  <label className="block text-sm font-semibold text-text-primary">{copy.sections.customHair}</label>
-                                  <Textarea
-                                    value={state.traits.customHairDescription ?? ''}
-                                    onChange={(event) =>
-                                      setState((previous) => ({
-                                        ...previous,
-                                        traits: {
-                                          ...previous.traits,
-                                          customHairDescription: event.target.value,
-                                        },
-                                      }))
-                                    }
-                                    placeholder={copy.sections.customHairPlaceholder}
-                                  />
-                                </div>
-                                <HairEditorPanel
-                                  open={hairOpen}
-                                  onClose={() => setHairOpen(false)}
-                                  sourceMode={state.sourceMode}
-                                  traits={state.traits}
-                                  onChange={(key, value) => updateTrait(key, value)}
-                                  hairColorOptions={hairColorOptions}
-                                  hairLengthOptions={hairLengthOptions}
-                                  hairstyleOptions={hairstyleOptions}
-                                  copy={copy}
+                              <div className="max-w-xl">
+                                <SegmentedControl
+                                  label={copy.sections.age}
+                                  options={ageOptions}
+                                  value={state.traits.ageRange.value}
+                                  onChange={(value) => updateTrait('ageRange', value)}
                                 />
-                              </>
-                            ) : (
-                              <div className="rounded-[20px] border border-dashed border-border bg-bg/40 px-4 py-4 text-sm text-text-secondary">
-                                {copy.off}
                               </div>
-                            )}
-                          </div>
-                        </BuilderAccordionSection>
 
-                        <BuilderAccordionSection
-                          title={copy.sections.outfit}
-                          summary={outfitSummary === copy.notSet ? copy.open : outfitSummary}
-                          open={buildSectionsOpen.outfit}
-                          onToggle={() => toggleBuildSection('outfit')}
-                        >
-                          <div className="space-y-3">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                              <label className="block text-sm font-semibold text-text-primary">{copy.sections.outfit}</label>
-                              <div className="inline-flex rounded-full border border-border bg-bg p-1">
-                                {[true, false].map((enabled) => (
-                                  <button
-                                    key={enabled ? 'on' : 'off'}
-                                    type="button"
-                                    onClick={() => setOutfitEnabled(enabled)}
-                                    className={clsx(
-                                      'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                                      state.traits.outfitEnabled === enabled
-                                        ? 'bg-brand text-on-brand'
-                                        : 'text-text-secondary hover:text-text-primary'
-                                    )}
-                                  >
-                                    {enabled ? copy.on : copy.off}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                            {state.traits.outfitEnabled ? (
-                              <>
-                                <div className="flex flex-wrap gap-2">
-                                  {outfitOptions.map((option) => {
-                                    const selected = state.traits.outfitStyle.value === option.id;
-                                    return (
-                                      <button
-                                        key={option.id}
-                                        type="button"
-                                        onClick={() => updateTrait('outfitStyle', selected ? '' : option.id)}
-                                        className={clsx(
-                                          'rounded-full border px-3 py-1.5 text-xs font-semibold transition',
-                                          selected
-                                            ? 'border-brand bg-brand text-on-brand'
-                                            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
-                                        )}
-                                      >
-                                        {option.label}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="block text-sm font-semibold text-text-primary">{copy.sections.customOutfit}</label>
-                                  <Textarea
-                                    value={state.traits.customOutfitDescription ?? ''}
-                                    onChange={(event) =>
-                                      setState((previous) => ({
-                                        ...previous,
-                                        traits: {
-                                          ...previous.traits,
-                                          customOutfitDescription: event.target.value,
-                                        },
-                                      }))
-                                    }
-                                    placeholder={copy.sections.customOutfitPlaceholder}
-                                  />
-                                </div>
-                              </>
-                            ) : (
-                              <div className="rounded-[20px] border border-dashed border-border bg-bg/40 px-4 py-4 text-sm text-text-secondary">
-                                {copy.off}
-                              </div>
-                            )}
-                          </div>
-                        </BuilderAccordionSection>
-
-                        <BuilderAccordionSection
-                          title={copy.sections.realism}
-                          summary={realismSummary}
-                          open={buildSectionsOpen.style}
-                          onToggle={() => toggleBuildSection('style')}
-                        >
-                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                            {realismOptions.map((option) => {
-                              const meta = REALISM_CARD_META[option.id];
-                              return (
-                                <StyleChoiceCard
-                                  key={option.id}
-                                  selected={state.traits.realismStyle === option.id}
-                                  title={option.label}
-                                  background={meta.background}
-                                  accent={meta.accent}
-                                  onClick={() =>
+                              {state.traits.genderPresentation.value === 'custom' ? (
+                                <Input
+                                  value={state.traits.customGenderDescription ?? ''}
+                                  onChange={(event) =>
                                     setState((previous) => ({
                                       ...previous,
                                       traits: {
                                         ...previous.traits,
-                                        realismStyle: option.id,
+                                        customGenderDescription: event.target.value,
                                       },
                                     }))
                                   }
+                                  placeholder={copy.sections.customGenderPlaceholder}
                                 />
-                              );
-                            })}
-                          </div>
-                        </BuilderAccordionSection>
+                              ) : null}
+                            </div>
+                          ) : null}
+
+                          {activeBuildSection === 'hair' ? (
+                            <div className="space-y-4">
+                              <div>
+                                <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
+                                <p className="mt-1 text-xs text-text-secondary">
+                                  {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
+                                </p>
+                              </div>
+
+                              {hairMode === 'custom' ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => setHairOpen((previous) => !previous)}
+                                    className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-surface px-4 py-4 text-left transition hover:border-border-hover hover:bg-surface-hover hover:shadow-card"
+                                  >
+                                    <div className="flex min-w-0 items-center gap-4">
+                                      <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-surface-2/80">
+                                        <div className="space-y-1">
+                                          <div className="h-2 w-7 rounded-full bg-slate-500" />
+                                          <div className="h-2 w-5 rounded-full bg-slate-400" />
+                                          <div className="h-2 w-6 rounded-full bg-slate-300" />
+                                        </div>
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
+                                        <p className="truncate text-xs text-text-secondary">
+                                          {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <span className="rounded-full border border-border bg-surface-2/80 px-3 py-1 text-xs font-semibold text-text-secondary">
+                                      {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
+                                    </span>
+                                  </button>
+                                  <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-text-primary">{copy.sections.customHair}</label>
+                                    <Textarea
+                                      value={state.traits.customHairDescription ?? ''}
+                                      onChange={(event) =>
+                                        setState((previous) => ({
+                                          ...previous,
+                                          traits: {
+                                            ...previous.traits,
+                                            customHairDescription: event.target.value,
+                                          },
+                                        }))
+                                      }
+                                      placeholder={copy.sections.customHairPlaceholder}
+                                    />
+                                  </div>
+                                  <HairEditorPanel
+                                    open={hairOpen}
+                                    onClose={() => setHairOpen(false)}
+                                    sourceMode={state.sourceMode}
+                                    traits={state.traits}
+                                    onChange={(key, value) => updateTrait(key, value)}
+                                    hairColorOptions={hairColorOptions}
+                                    hairLengthOptions={hairLengthOptions}
+                                    hairstyleOptions={hairstyleOptions}
+                                    copy={copy}
+                                  />
+                                </>
+                              ) : null}
+                            </div>
+                          ) : null}
+
+                          {activeBuildSection === 'outfit' ? (
+                            <div className="space-y-4">
+                              <div>
+                                <p className="text-sm font-semibold text-text-primary">{copy.sections.outfit}</p>
+                                <p className="mt-1 text-xs text-text-secondary">
+                                  {outfitSummary === copy.notSet ? copy.open : outfitSummary}
+                                </p>
+                              </div>
+
+                              {outfitMode === 'custom' ? (
+                                <>
+                                  <div className="flex flex-wrap gap-2">
+                                    {outfitOptions.map((option) => {
+                                      const selected = state.traits.outfitStyle.value === option.id;
+                                      return (
+                                        <button
+                                          key={option.id}
+                                          type="button"
+                                          onClick={() => updateTrait('outfitStyle', selected ? '' : option.id)}
+                                          className={clsx(
+                                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition',
+                                            selected
+                                              ? 'border-brand bg-brand text-on-brand'
+                                              : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
+                                          )}
+                                        >
+                                          {option.label}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                  <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-text-primary">{copy.sections.customOutfit}</label>
+                                    <Textarea
+                                      value={state.traits.customOutfitDescription ?? ''}
+                                      onChange={(event) =>
+                                        setState((previous) => ({
+                                          ...previous,
+                                          traits: {
+                                            ...previous.traits,
+                                            customOutfitDescription: event.target.value,
+                                          },
+                                        }))
+                                      }
+                                      placeholder={copy.sections.customOutfitPlaceholder}
+                                    />
+                                  </div>
+                                </>
+                              ) : null}
+                            </div>
+                          ) : null}
+
+                          {activeBuildSection === 'style' ? (
+                            <div className="grid grid-cols-[repeat(auto-fit,minmax(148px,172px))] justify-center gap-3 xl:justify-start">
+                              {realismOptions.map((option) => {
+                                const meta = REALISM_CARD_META[option.id];
+                                return (
+                                  <StyleChoiceCard
+                                    key={option.id}
+                                    selected={state.traits.realismStyle === option.id}
+                                    title={option.label}
+                                    background={meta.background}
+                                    accent={meta.accent}
+                                    onClick={() =>
+                                      setState((previous) => ({
+                                        ...previous,
+                                        traits: {
+                                          ...previous.traits,
+                                          realismStyle: option.id,
+                                        },
+                                      }))
+                                    }
+                                  />
+                                );
+                              })}
+                            </div>
+                          ) : null}
+
+                          {activeBuildSection === 'details' ? (
+                            <div className="space-y-4">
+                              <div>
+                                <p className="text-sm font-semibold text-text-primary">{copy.sections.accessoriesFeatures}</p>
+                                <p className="mt-1 text-xs text-text-secondary">
+                                  {accessoriesFeaturesSummary || copy.open}
+                                </p>
+                              </div>
+                              <MultiToggleGroup
+                                label={copy.sections.accessories}
+                                items={accessoryOptions}
+                                values={state.traits.accessories}
+                                onToggle={(value) => toggleListValue('accessories', value)}
+                              />
+                              <MultiToggleGroup
+                                label={copy.sections.distinctiveFeatures}
+                                items={distinctiveOptions}
+                                values={state.traits.distinctiveFeatures}
+                                onToggle={(value) => toggleListValue('distinctiveFeatures', value)}
+                              />
+                              <div className="space-y-2">
+                                <label className="block text-sm font-semibold text-text-primary">{copy.sections.customDetails}</label>
+                                <Textarea
+                                  value={state.traits.customDetailsDescription ?? ''}
+                                  onChange={(event) =>
+                                    setState((previous) => ({
+                                      ...previous,
+                                      traits: {
+                                        ...previous.traits,
+                                        customDetailsDescription: event.target.value,
+                                      },
+                                    }))
+                                  }
+                                  placeholder={copy.sections.customDetailsPlaceholder}
+                                />
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
 
                       <button
@@ -2853,19 +3555,6 @@ export default function CharacterBuilderPage() {
                               />
                             ) : null}
                           </div>
-
-                          <MultiToggleGroup
-                            label={copy.sections.accessories}
-                            items={accessoryOptions}
-                            values={state.traits.accessories}
-                            onToggle={(value) => toggleListValue('accessories', value)}
-                          />
-                          <MultiToggleGroup
-                            label={copy.sections.distinctiveFeatures}
-                            items={distinctiveOptions}
-                            values={state.traits.distinctiveFeatures}
-                            onToggle={(value) => toggleListValue('distinctiveFeatures', value)}
-                          />
 
                           <div className="grid gap-3 md:grid-cols-2">
                             {[
@@ -2953,112 +3642,45 @@ export default function CharacterBuilderPage() {
                           </div>
                         </div>
                       ) : null}
-                    </section>
 
-                    <section className="space-y-4 border-t border-border pt-6">
-                      <SectionTitle title={copy.top.generate} />
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <OutputPreviewCard
-                          selected={state.outputMode === 'portrait-reference'}
-                          title={copy.generatePanel.portraitTitle}
-                          subtitle={copy.generatePanel.portraitBody}
-                          mode="portrait-reference"
-                          onClick={() =>
+                      <div className="rounded-[24px] border border-border bg-surface/95 p-4 shadow-card">
+                        <CharacterBuilderStickyDock
+                          identityReference={identityReference}
+                          hairSummary={hairSummary}
+                          outfitSummary={outfitSummary}
+                          traits={state.traits}
+                          outputMode={state.outputMode}
+                          qualityMode={state.qualityMode}
+                          formatMode={state.formatMode}
+                          genderOptions={genderOptions}
+                          ageOptions={ageOptions}
+                          realismOptions={realismOptions.map((option) => ({ id: option.id, label: option.label }))}
+                          outputOptions={outputModeOptions.map((option) => ({ id: option.id, label: option.label }))}
+                          qualityOptions={qualityOptions.map((option) => ({ id: option.id, label: option.label }))}
+                          formatOptions={formatLabelOptions}
+                          estimatedImageCostUsd={estimatedImageCostUsd}
+                          onQualityChange={(value) =>
                             setState((previous) => ({
                               ...previous,
-                              outputMode: 'portrait-reference',
-                              outputOptions: {
-                                ...previous.outputOptions,
-                                fullBodyRequired: false,
-                              },
+                              qualityMode: value,
+                              formatMode: normalizeCharacterFormatMode(previous.formatMode, value),
                             }))
                           }
-                        />
-                        <OutputPreviewCard
-                          selected={state.outputMode === 'character-sheet'}
-                          title={copy.generatePanel.sheetTitle}
-                          subtitle={copy.generatePanel.sheetBody}
-                          mode="character-sheet"
-                          onClick={() =>
+                          onFormatChange={(value) =>
                             setState((previous) => ({
                               ...previous,
-                              outputMode: 'character-sheet',
-                              outputOptions: {
-                                ...previous.outputOptions,
-                                fullBodyRequired: true,
-                              },
+                              formatMode: normalizeCharacterFormatMode(value, previous.qualityMode),
                             }))
                           }
+                          onGenerateOne={() => void handleRun('generate', 1)}
+                          onGenerateFour={() => void handleRun('generate', 4)}
+                          loadingGenerateOne={isActionLoading('generate-1')}
+                          loadingGenerateFour={isActionLoading('generate-4')}
+                          copy={copy}
                         />
                       </div>
-
-                      <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-end">
-                        <SegmentedControl
-                          label={copy.generatePanel.quality}
-                          options={qualityOptions}
-                          value={state.qualityMode}
-                          onChange={(value) =>
-                            setState((previous) => ({
-                              ...previous,
-                              qualityMode: value as CharacterBuilderState['qualityMode'],
-                              formatMode: normalizeCharacterFormatMode(
-                                previous.formatMode,
-                                value as CharacterBuilderState['qualityMode']
-                              ),
-                            }))
-                          }
-                        />
-
-                        <div className="rounded-[24px] border border-border bg-surface p-4 shadow-card">
-                          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="space-y-2">
-                                <SegmentedControl
-                                  label={copy.generatePanel.format}
-                                  options={formatOptions}
-                                  value={state.formatMode}
-                                  onChange={(value) =>
-                                    setState((previous) => ({
-                                      ...previous,
-                                      formatMode: normalizeCharacterFormatMode(
-                                        value as CharacterBuilderState['formatMode'],
-                                        previous.qualityMode
-                                      ),
-                                    }))
-                                  }
-                                />
-                              <p className="text-sm font-medium text-text-primary">
-                                {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
-                              </p>
-                            </div>
-                            <div className="flex flex-col gap-2 sm:flex-row">
-                              <Button
-                                onClick={() => void handleRun('generate', 1)}
-                                className="gap-2"
-                              >
-                                {isActionLoading('generate-1') ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Sparkles className="h-4 w-4" />
-                                )}
-                                {copy.generatePanel.generateReference}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                onClick={() => void handleRun('generate', 4)}
-                                className="gap-2"
-                              >
-                                {isActionLoading('generate-4') ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <WandSparkles className="h-4 w-4" />
-                                )}
-                                {copy.generatePanel.generateFour}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </section>
+
                   </div>
 
                   <input
@@ -3078,154 +3700,36 @@ export default function CharacterBuilderPage() {
                 </Card>
 
                 {hasResults ? (
-                  <Card className="border border-border p-6">
+                  <Card className="border border-border p-5 xl:hidden">
                     <SectionTitle eyebrow={copy.top.resultsEyebrow} title={copy.top.resultsTitle} />
-                    <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                      {pendingRuns.map((pendingRun) => {
-                        const pendingOutputLabel =
-                          findChoiceLabel(outputModeLabelOptions, pendingRun.outputMode) ?? copy.generatePanel.portraitTitle;
-                        const pendingQualityLabel =
-                          findChoiceLabel(qualityLabelOptions, pendingRun.qualityMode) ?? copy.options.quality.draft.label;
-                        const pendingFormatLabel = getFormatDisplayLabel(copy, pendingRun.formatMode, pendingRun.qualityMode);
-                        const subtitle = `${pendingOutputLabel} · ${pendingQualityLabel} · ${pendingFormatLabel}`;
-                        const badge = pendingRun.generateCount === 4 ? '4x' : null;
-                        return (
-                          <PendingResultCard
-                            key={pendingRun.id}
-                            title={getResultActionLabel(copy, pendingRun.action)}
-                            subtitle={subtitle}
-                            badge={badge}
-                            copy={copy}
-                          />
-                        );
-                      })}
-                      {flattenedResults.map((result) => {
-                        const run = state.runs.find((entry) => entry.id === result.runId);
-                        return (
-                          <ResultCard
-                            key={result.id}
-                            result={result}
-                            selected={state.selectedResultId === result.id}
-                            pinned={state.pinnedReferenceResultId === result.id}
-                            allowPinning={hasMultipleResults}
-                            saving={savingResultId === result.id}
-                            onSelect={() =>
-                              setState((previous) => ({
-                                ...previous,
-                                selectedResultId: result.id,
-                              }))
-                            }
-                            onPin={() =>
-                              setState((previous) => ({
-                                ...previous,
-                                pinnedReferenceResultId:
-                                  previous.pinnedReferenceResultId === result.id ? null : result.id,
-                              }))
-                            }
-                            onDownload={() =>
-                              triggerAppDownload(
-                                result.url,
-                                suggestDownloadFilename(result.url, `character-reference-${result.id.replace(/[^a-z0-9]+/gi, '-')}`)
-                              )
-                            }
-                            onSave={() => void handleSaveResult(result)}
-                            onDuplicateSettings={() => {
-                              if (run?.settingsSnapshot) {
-                                applySettingsSnapshot(run.settingsSnapshot, result.id);
-                              }
-                            }}
-                            copy={copy}
-                          />
-                        );
-                      })}
-                    </div>
+                    <div className="mt-4">{renderResultsGallery('mobile')}</div>
                   </Card>
                 ) : null}
-                <div className="xl:hidden">{renderFollowUpPanels()}</div>
               </div>
 
-              <div className="hidden xl:block">
-                <div className="sticky top-6 space-y-6">
-                  <CharacterSummaryCard
-                    identityReference={identityReference}
-                    hairSummary={hairSummary}
-                    outfitSummary={outfitSummary}
-                    traits={state.traits}
-                    outputMode={state.outputMode}
-                    qualityMode={state.qualityMode}
-                    formatMode={state.formatMode}
-                    genderOptions={genderOptions}
-                    ageOptions={ageOptions}
-                    realismOptions={realismOptions.map((option) => ({ id: option.id, label: option.label }))}
-                    outputOptions={outputModeOptions.map((option) => ({ id: option.id, label: option.label }))}
-                    qualityOptions={qualityOptions.map((option) => ({ id: option.id, label: option.label }))}
-                    formatOptions={formatLabelOptions}
-                    copy={copy}
-                  />
-                  {renderFollowUpPanels()}
+              <div className="hidden xl:flex xl:w-[340px] xl:min-h-0 xl:flex-col">
+                <div className="sticky top-6 flex h-[calc(100vh-3rem)] min-h-0 w-full flex-col gap-4">
+                  <Card className="flex h-full min-h-0 flex-1 flex-col overflow-hidden border border-border p-5">
+                    <SectionTitle eyebrow={copy.top.resultsEyebrow} title={copy.top.resultsTitle} />
+                    <div className="mt-4 flex min-h-0 flex-1 flex-col">
+                      {renderResultsGallery('desktop')}
+                    </div>
+                  </Card>
                 </div>
               </div>
             </div>
           </div>
         </main>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur xl:hidden">
-        <div className="mx-auto flex w-full max-w-[960px] flex-col gap-3 px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-text-primary">
-                {outputLabel ?? copy.generatePanel.portraitTitle} · {qualityLabel ?? copy.options.quality.draft.label} · {formatLabel ?? copy.options.format.standard.label}
-              </p>
-              <p className="text-xs text-text-secondary">
-                {copy.generatePanel.pricePerImage.replace('{price}', formatUsd(estimatedImageCostUsd))}
-              </p>
-            </div>
-            <div className="inline-flex rounded-full border border-border bg-bg p-1">
-              {qualityOptions.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() =>
-                    setState((previous) => ({
-                      ...previous,
-                      qualityMode: option.id as CharacterBuilderState['qualityMode'],
-                      formatMode: normalizeCharacterFormatMode(
-                        previous.formatMode,
-                        option.id as CharacterBuilderState['qualityMode']
-                      ),
-                    }))
-                  }
-                  className={clsx(
-                    'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                    state.qualityMode === option.id
-                      ? 'bg-brand text-on-brand'
-                      : 'text-text-secondary hover:text-text-primary'
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => void handleRun('generate', 1)}
-              className="flex-1 gap-2"
-            >
-              {isActionLoading('generate-1') ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {copy.generatePanel.generateReference}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => void handleRun('generate', 4)}
-              className="gap-2 px-4"
-            >
-              {isActionLoading('generate-4') ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
-              4x
-            </Button>
-          </div>
-        </div>
-      </div>
+      {lightboxEntry ? (
+        <MediaLightbox
+          title={copy.top.resultsTitle}
+          subtitle={lightboxEntry.engineLabel ?? undefined}
+          prompt={lightboxEntry.prompt ?? null}
+          entries={[lightboxEntry]}
+          onClose={() => setLightboxEntry(null)}
+        />
+      ) : null}
     </div>
   );
 }

@@ -43,6 +43,7 @@ export interface CharacterBuilderTraits {
   outfitStyle: TraitValue<string>;
   accessories: string[];
   distinctiveFeatures: string[];
+  customDetailsDescription?: string;
   realismStyle: 'photoreal' | 'cinematic' | 'stylized' | 'animated';
 }
 

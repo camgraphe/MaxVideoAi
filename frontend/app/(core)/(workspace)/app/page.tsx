@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import deepmerge from 'deepmerge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
-import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } from '@/lib/api';
+import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -2975,23 +2975,64 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   );
 
   const handleSelectLibraryAsset = useCallback(
-    (field: EngineInputField, asset: UserAsset, slotIndex?: number) => {
+    async (field: EngineInputField, asset: UserAsset, slotIndex?: number) => {
+      let resolvedAsset = asset;
+
+      if (
+        field.type === 'image' &&
+        asset.kind === 'image' &&
+        asset.source === 'character'
+      ) {
+        try {
+          const host = new URL(asset.url).host.toLowerCase();
+          if (host === 'fal.media' || host.endsWith('.fal.media')) {
+            const mirrored = await saveImageToLibrary({
+              url: asset.url,
+              label:
+                field.label ??
+                asset.url.split('/').pop() ??
+                'Image',
+              source: asset.source,
+            });
+            resolvedAsset = {
+              ...asset,
+              id: mirrored.id,
+              url: mirrored.url,
+              width: mirrored.width ?? asset.width,
+              height: mirrored.height ?? asset.height,
+              size: mirrored.size ?? asset.size,
+              mime: mirrored.mime ?? asset.mime,
+              canDelete: true,
+            };
+            setAssetLibrary((previous) =>
+              previous.map((entry) =>
+                entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry
+              )
+            );
+          }
+        } catch (error) {
+          console.error('[assets] failed to mirror character library asset', error);
+          showNotice(error instanceof Error ? error.message : 'Unable to prepare this character asset. Try another image.');
+          return;
+        }
+      }
+
       const newAsset: ReferenceAsset = {
-        id: asset.id || `library_${Date.now().toString(36)}`,
+        id: resolvedAsset.id || `library_${Date.now().toString(36)}`,
         fieldId: field.id,
-        previewUrl: asset.url,
+        previewUrl: resolvedAsset.url,
         kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
         name:
-          asset.url.split('/').pop() ??
+          resolvedAsset.url.split('/').pop() ??
           (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
-        size: asset.size ?? 0,
+        size: resolvedAsset.size ?? 0,
         type:
-          asset.mime ??
+          resolvedAsset.mime ??
           (field.type === 'video' ? 'video/*' : field.type === 'audio' ? 'audio/*' : 'image/*'),
-        url: asset.url,
-        width: asset.width ?? null,
-        height: asset.height ?? null,
-        assetId: asset.id,
+        url: resolvedAsset.url,
+        width: resolvedAsset.width ?? null,
+        height: resolvedAsset.height ?? null,
+        assetId: resolvedAsset.id,
         status: 'ready' as const,
       };
 
@@ -6642,7 +6683,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           onRefresh={fetchAssetLibrary}
           onSelect={(asset) => {
             if (assetPickerTarget.kind === 'field') {
-              handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
+              void handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
               return;
             }
             handleSelectKlingLibraryAsset(assetPickerTarget, asset);

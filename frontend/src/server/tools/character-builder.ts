@@ -64,6 +64,7 @@ function getAspectRatio(
   includeCloseUps: boolean
 ): string {
   if (action === 'full-body-fix') return '2:3';
+  if (outputMode === 'portrait-reference') return '16:9';
   if (outputMode === 'character-sheet' && includeCloseUps) return '16:9';
   if (outputMode === 'character-sheet') return '3:2';
   return fullBodyRequired ? '2:3' : '4:5';
@@ -267,6 +268,9 @@ function buildTraitPrompt(traits: CharacterBuilderTraits, sourceMode: CharacterB
 
   traits.accessories.forEach((value) => pushValue(getAccessoryPrompt(value)));
   traits.distinctiveFeatures.forEach((value) => pushValue(getDistinctiveFeaturePrompt(value)));
+  if (trimString(traits.customDetailsDescription)) {
+    pushValue(trimString(traits.customDetailsDescription));
+  }
   pushValue(getRealismPrompt(traits.realismStyle));
 
   if (sourceMode === 'reference-image') {
@@ -384,6 +388,10 @@ function buildDetailLockBlock(input: CharacterBuilderRequest): string[] {
     );
   }
 
+  if (trimString(input.traits.customDetailsDescription)) {
+    blocks.push(`Preserve these extra visible details: ${trimString(input.traits.customDetailsDescription)}.`);
+  }
+
   if (detailTags.length) {
     blocks.push(`These details must remain visible: ${detailTags.join(', ')}.`);
   }
@@ -496,6 +504,7 @@ function sanitizeTraits(traits: CharacterBuilderRequest['traits'] | undefined): 
     outfitStyle: sanitizeTrait(traits.outfitStyle),
     accessories: uniqueStrings(Array.isArray(traits.accessories) ? traits.accessories : []),
     distinctiveFeatures: uniqueStrings(Array.isArray(traits.distinctiveFeatures) ? traits.distinctiveFeatures : []),
+    customDetailsDescription: trimString(traits.customDetailsDescription),
     realismStyle:
       traits.realismStyle === 'cinematic' ||
       traits.realismStyle === 'stylized' ||
