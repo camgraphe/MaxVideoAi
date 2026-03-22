@@ -29,6 +29,7 @@ import { Card } from '@/components/ui/Card';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { runAngleTool, saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
+import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { resolveAngleEngineForParams } from '@/lib/tools-angle';
@@ -523,12 +524,12 @@ function getUploadTooLargeMessage(copy: AngleCopy, maxMB: number): string {
 }
 
 async function uploadImage(file: File, copy: AngleCopy): Promise<UploadedImage> {
-  if (file.size > DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024) {
-    throw new Error(getUploadTooLargeMessage(copy, DEFAULT_UPLOAD_LIMIT_MB));
-  }
+  const preparedFile = await prepareImageFileForUpload(file, {
+    maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
+  });
 
   const formData = new FormData();
-  formData.set('file', file);
+  formData.set('file', preparedFile, preparedFile.name);
 
   const response = await authFetch('/api/uploads/image', {
     method: 'POST',

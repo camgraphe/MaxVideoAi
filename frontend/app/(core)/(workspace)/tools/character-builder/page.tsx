@@ -27,6 +27,7 @@ import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { authFetch } from '@/lib/authFetch';
+import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
@@ -579,12 +580,12 @@ function getUploadTooLargeMessage(copy: CharacterCopy, maxMB: number): string {
 }
 
 async function uploadImage(file: File, copy: CharacterCopy): Promise<UploadedAsset> {
-  if (file.size > DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024) {
-    throw new Error(getUploadTooLargeMessage(copy, DEFAULT_UPLOAD_LIMIT_MB));
-  }
+  const preparedFile = await prepareImageFileForUpload(file, {
+    maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
+  });
 
   const formData = new FormData();
-  formData.set('file', file);
+  formData.set('file', preparedFile, preparedFile.name);
 
   const response = await authFetch('/api/uploads/image', {
     method: 'POST',

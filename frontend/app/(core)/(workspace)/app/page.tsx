@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
+import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -378,8 +379,12 @@ function AssetLibraryModal({
       setImportError(null);
       setIsImporting(true);
       try {
+        const preparedFile =
+          assetType === 'image'
+            ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
+            : file;
         const formData = new FormData();
-        formData.append('file', file, file.name);
+        formData.append('file', preparedFile, preparedFile.name);
         const response = await authFetch(importEndpoint, {
           method: 'POST',
           body: formData,
@@ -3169,8 +3174,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       const upload = async () => {
         try {
+          const preparedFile =
+            field.type === 'image'
+              ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
+              : file;
           const formData = new FormData();
-          formData.append('file', file, file.name);
+          formData.append('file', preparedFile, preparedFile.name);
           const uploadEndpoint =
             field.type === 'video'
               ? '/api/uploads/video'
@@ -3383,8 +3392,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       const upload = async () => {
         try {
+          const preparedFile =
+            slot === 'video'
+              ? file
+              : await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 });
           const formData = new FormData();
-          formData.append('file', file, file.name);
+          formData.append('file', preparedFile, preparedFile.name);
           const uploadEndpoint = slot === 'video' ? '/api/uploads/video' : '/api/uploads/image';
           const response = await authFetch(uploadEndpoint, {
             method: 'POST',

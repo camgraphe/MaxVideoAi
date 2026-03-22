@@ -704,7 +704,7 @@ function AssetDropzone({
         return;
       }
       const maxSizeMB = field.type === 'image'
-        ? caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB
+        ? null
         : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
       if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
         onError?.(assetCopy.fileTooLarge(maxSizeMB));
@@ -714,13 +714,10 @@ function AssetDropzone({
     },
     [
       acceptFormats,
-      caps?.maxUploadMB,
       constraints.maxAudioSizeMB,
-      constraints.maxImageSizeMB,
       constraints.maxVideoSizeMB,
       field,
       limits.audioMaxMB,
-      limits.imageMaxMB,
       limits.videoMaxMB,
       onError,
       onSelect,

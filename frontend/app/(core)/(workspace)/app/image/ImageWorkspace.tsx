@@ -39,6 +39,7 @@ import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/co
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
 import { FEATURES } from '@/content/feature-flags';
 import {
@@ -1717,8 +1718,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         return next;
       });
       try {
+        const preparedFile = await prepareImageFileForUpload(file, {
+          maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
+        });
         const formData = new FormData();
-        formData.append('file', file, file.name);
+        formData.append('file', preparedFile, preparedFile.name);
         const response = await authFetch('/api/uploads/image', {
           method: 'POST',
           body: formData,
