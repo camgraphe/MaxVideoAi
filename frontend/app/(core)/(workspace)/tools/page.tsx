@@ -54,7 +54,7 @@ function ToolPreviewPanel({
 
 
 export default function ToolsPage() {
-  const { loading: authLoading, user } = useRequireAuth();
+  const { loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const { t } = useI18n();
   const copy = t('workspace.tools', DEFAULT_TOOLS_COPY) as typeof DEFAULT_TOOLS_COPY;
 
@@ -74,10 +74,6 @@ export default function ToolsPage() {
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   if (!FEATURES.workflows.toolsSection) {

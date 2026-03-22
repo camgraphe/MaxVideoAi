@@ -5,9 +5,11 @@
 import deepmerge from 'deepmerge';
 import clsx from 'clsx';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import useSWR from 'swr';
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -42,7 +44,7 @@ type UploadedImage = {
   width?: number | null;
   height?: number | null;
   name?: string | null;
-  source?: 'upload' | 'library' | 'paste';
+  source?: 'upload' | 'library' | 'paste' | 'example';
 };
 
 type LibraryAsset = {
@@ -94,6 +96,7 @@ const DEFAULT_ANGLE_COPY = {
   "sourceFromLibrary": "From Library",
   "sourceFromPaste": "From pasted URL",
   "sourceFromDevice": "Uploaded from device",
+  "sourceFromExample": "Public example",
   "replace": "Replace",
   "library": "Library",
   "remove": "Remove",
@@ -110,6 +113,7 @@ const DEFAULT_ANGLE_COPY = {
   "degreeUnit": "deg",
   "estimatedCost": "Estimated cost per run",
   "generate": "Generate",
+  "generateLocked": "Sign in to generate",
   "generating": "Generating...",
   "output": "Output",
   "outputTitle": "First frame preview",
@@ -157,6 +161,13 @@ const DEFAULT_ANGLE_COPY = {
   "generationFailed": "Generation failed",
   "angleOutputLabel": "Angle Output",
   "librarySaveFailed": "Library save failed",
+  "authGate": {
+    "title": "Create an account to generate angles",
+    "body": "Guests can explore the tool and browse public examples, but generation, uploads, and Library actions require an account.",
+    "primary": "Create account",
+    "secondary": "Sign in",
+    "close": "Close"
+  },
   "engines": {
     "flux-multiple-angles": {
       "label": "FLUX Multiple Angles",
@@ -177,6 +188,10 @@ const DEFAULT_ENGINE_ID = ENGINES[0]?.id ?? 'flux-multiple-angles';
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
   : 25;
+const ANGLE_GUEST_EXAMPLE_SOURCE_URL =
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp';
+const ANGLE_GUEST_EXAMPLE_OUTPUT_URL =
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
 const ANGLE_TOOL_STORAGE_KEY = 'maxvideoai.tools.angle.v1';
 const ANGLE_MULTI_OUTPUT_COUNT = 4;
 
@@ -223,6 +238,12 @@ function emitClientMetric(event: string, payload?: Record<string, unknown>) {
   } catch {
     // Ignore analytics transport failures.
   }
+}
+
+function isAuthRequiredError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as { status?: number; code?: string };
+  return record.status === 401 || record.code === 'auth_required' || record.code === 'UNAUTHORIZED';
 }
 
 function formatUsd(value: number | null | undefined): string {
@@ -287,6 +308,12 @@ function buildTextureProxyUrl(url: string | null | undefined): string | null {
   if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) return trimmed;
   if (trimmed.startsWith('/')) return trimmed;
   return `/api/media-proxy?url=${encodeURIComponent(trimmed)}`;
+}
+
+function getTextureCandidates(sourceImage: UploadedImage): string[] {
+  return [buildTextureProxyUrl(sourceImage.previewUrl), buildTextureProxyUrl(sourceImage.url)]
+    .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+    .filter((entry, index, array) => entry.length > 0 && array.indexOf(entry) === index);
 }
 
 function AngleOutputMosaic({
@@ -871,10 +898,7 @@ function useSourceTexture(urls: Array<string | null | undefined>) {
 }
 
 function AngleImageCard({ sourceImage }: { sourceImage: UploadedImage }) {
-  const texture = useSourceTexture([
-    buildTextureProxyUrl(sourceImage.previewUrl),
-    buildTextureProxyUrl(sourceImage.url),
-  ]);
+  const texture = useSourceTexture(getTextureCandidates(sourceImage));
   const aspect = useMemo(() => {
     if (sourceImage.width && sourceImage.height) {
       return sourceImage.width / sourceImage.height;
@@ -927,7 +951,9 @@ function AngleImageCard({ sourceImage }: { sourceImage: UploadedImage }) {
 }
 
 export default function AngleToolPage() {
-  const { loading: authLoading, user } = useRequireAuth();
+  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { locale, t } = useI18n();
   const rawCopy = t('workspace.toolsAngle', DEFAULT_ANGLE_COPY);
   const copy = useMemo<AngleCopy>(() => {
@@ -948,9 +974,21 @@ export default function AngleToolPage() {
   const [savingOutputUrl, setSavingOutputUrl] = useState<string | null>(null);
   const [sourceDragActive, setSourceDragActive] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [guestExampleDismissed, setGuestExampleDismissed] = useState(false);
   const [activeRecentJobId, setActiveRecentJobId] = useState<string | null>(null);
   const [activeRecentOutputIndex, setActiveRecentOutputIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const visitorSanitizedRef = useRef(false);
+  const loginRedirectTarget = useMemo(() => {
+    const base = pathname || '/tools/angle';
+    const search = searchParams?.toString();
+    return search ? `${base}?${search}` : base;
+  }, [pathname, searchParams]);
+
+  const openAuthGate = useCallback(() => {
+    setAuthModalOpen(true);
+  }, []);
 
   const selectedEngine = useMemo(() => ENGINES.find((engine) => engine.id === engineId) ?? ENGINES[0], [engineId]);
   const effectiveEngineId = useMemo(() => resolveAngleEngineForParams(engineId, params), [engineId, params]);
@@ -1069,6 +1107,46 @@ export default function AngleToolPage() {
   }, [engineId, generateBestAngles, params, result, safeMode, selectedOutputIndex, sourceImage, storageHydrated]);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      visitorSanitizedRef.current = false;
+      setGuestExampleDismissed(false);
+      return;
+    }
+    if (visitorSanitizedRef.current) return;
+    visitorSanitizedRef.current = true;
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(ANGLE_TOOL_STORAGE_KEY);
+      } catch {
+        // ignore storage failures
+      }
+    }
+    setSourceImage((previous) => {
+      cleanupSourcePreview(previous);
+      return null;
+    });
+    setResult(null);
+    setSelectedOutputIndex(0);
+    setError(null);
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    if (authLoading || user) return;
+    if (guestExampleDismissed) return;
+    if (sourceImage?.url) return;
+    setSourceImage({
+      id: 'guest-example:angle-stage',
+      url: ANGLE_GUEST_EXAMPLE_SOURCE_URL,
+      previewUrl: ANGLE_GUEST_EXAMPLE_SOURCE_URL,
+      width: 640,
+      height: 357,
+      name: copy.referenceName,
+      source: 'example',
+    });
+  }, [authLoading, user, guestExampleDismissed, sourceImage?.url, copy.referenceName]);
+
+  useEffect(() => {
     if (effectiveEngineId !== engineId) {
       setEngineId(effectiveEngineId);
     }
@@ -1101,6 +1179,10 @@ export default function AngleToolPage() {
 
   const handleSourceFile = async (file: File | null) => {
     if (!file) return;
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     const localPreviewUrl = URL.createObjectURL(file);
     setUploading(true);
     setError(null);
@@ -1187,6 +1269,10 @@ export default function AngleToolPage() {
   };
 
   const handleLibrarySelect = (asset: LibraryAsset) => {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     setSourceImage((previous) => {
       cleanupSourcePreview(previous);
       return {
@@ -1206,6 +1292,10 @@ export default function AngleToolPage() {
   };
 
   const handleGenerate = async () => {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     if (!sourceImage?.url) {
       setError(copy.missingSource);
       return;
@@ -1243,6 +1333,10 @@ export default function AngleToolPage() {
         params: response.applied,
       });
     } catch (runError) {
+      if (isAuthRequiredError(runError)) {
+        openAuthGate();
+        return;
+      }
       setError(runError instanceof Error ? runError.message : copy.generationFailed);
     } finally {
       setGenerating(false);
@@ -1250,6 +1344,10 @@ export default function AngleToolPage() {
   };
 
   const handleAddOutputToLibrary = async (url: string, jobId?: string | null) => {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     setSavingOutputUrl(url);
     try {
       await saveImageToLibrary({
@@ -1259,6 +1357,10 @@ export default function AngleToolPage() {
         source: 'angle',
       });
     } catch (saveError) {
+      if (isAuthRequiredError(saveError)) {
+        openAuthGate();
+        return;
+      }
       setError(saveError instanceof Error ? saveError.message : copy.librarySaveFailed);
     } finally {
       setSavingOutputUrl((current) => (current === url ? null : current));
@@ -1281,10 +1383,6 @@ export default function AngleToolPage() {
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   if (!FEATURES.workflows.toolsSection) {
@@ -1387,6 +1485,8 @@ export default function AngleToolPage() {
                                       ? `${sourceImage.width} x ${sourceImage.height}`
                                       : sourceImage.source === 'library'
                                         ? copy.sourceFromLibrary
+                                        : sourceImage.source === 'example'
+                                          ? copy.sourceFromExample
                                         : sourceImage.source === 'paste'
                                           ? copy.sourceFromPaste
                                           : copy.sourceFromDevice}
@@ -1398,7 +1498,13 @@ export default function AngleToolPage() {
                                     variant="outline"
                                     size="sm"
                                     className="gap-2"
-                                    onClick={() => fileInputRef.current?.click()}
+                                    onClick={() => {
+                                      if (!user) {
+                                        openAuthGate();
+                                        return;
+                                      }
+                                      fileInputRef.current?.click();
+                                    }}
                                     disabled={uploading}
                                   >
                                     {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -1409,7 +1515,13 @@ export default function AngleToolPage() {
                                     variant="outline"
                                     size="sm"
                                     className="gap-2"
-                                    onClick={() => setLibraryModalOpen(true)}
+                                    onClick={() => {
+                                      if (!user) {
+                                        openAuthGate();
+                                        return;
+                                      }
+                                      setLibraryModalOpen(true);
+                                    }}
                                   >
                                     <Images className="h-4 w-4" />
                                     {copy.library}
@@ -1426,6 +1538,9 @@ export default function AngleToolPage() {
                                       });
                                       setResult(null);
                                       setSelectedOutputIndex(0);
+                                      if (!user) {
+                                        setGuestExampleDismissed(true);
+                                      }
                                     }}
                                   >
                                     <X className="h-4 w-4" />
@@ -1449,7 +1564,13 @@ export default function AngleToolPage() {
                                   variant="outline"
                                   size="sm"
                                   className="gap-2"
-                                  onClick={() => fileInputRef.current?.click()}
+                                  onClick={() => {
+                                    if (!user) {
+                                      openAuthGate();
+                                      return;
+                                    }
+                                    fileInputRef.current?.click();
+                                  }}
                                   disabled={uploading}
                                 >
                                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -1460,7 +1581,13 @@ export default function AngleToolPage() {
                                   variant="outline"
                                   size="sm"
                                   className="gap-2"
-                                  onClick={() => setLibraryModalOpen(true)}
+                                  onClick={() => {
+                                    if (!user) {
+                                      openAuthGate();
+                                      return;
+                                    }
+                                    setLibraryModalOpen(true);
+                                  }}
                                 >
                                   <Images className="h-4 w-4" />
                                   {copy.library}
@@ -1548,13 +1675,13 @@ export default function AngleToolPage() {
 
                   <Button
                     type="button"
-                    variant="primary"
+                    variant={user ? 'primary' : 'outline'}
                     className="w-full gap-2"
-                    onClick={handleGenerate}
+                    onClick={user ? handleGenerate : openAuthGate}
                     disabled={generating || uploading || !sourceImage?.url}
                   >
                     {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
-                    {generating ? copy.generating : copy.generate}
+                    {generating ? copy.generating : user ? copy.generate : copy.generateLocked}
                   </Button>
 
                   {error ? <p className="text-sm text-error">{error}</p> : null}
@@ -1606,6 +1733,12 @@ export default function AngleToolPage() {
                       </div>
 
                     </>
+                  ) : !user && sourceImage?.source === 'example' ? (
+                    <div className="overflow-hidden rounded-card border border-border bg-bg">
+                      <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.12),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]">
+                        <img src={ANGLE_GUEST_EXAMPLE_OUTPUT_URL} alt="" className="max-h-[420px] w-full object-contain" />
+                      </div>
+                    </div>
                   ) : (
                     <div className="flex min-h-[420px] items-center justify-center rounded-card border border-dashed border-border bg-bg p-6 text-center">
                       <div>
@@ -1767,6 +1900,42 @@ export default function AngleToolPage() {
         onSelect={handleLibrarySelect}
         copy={copy}
       />
+      {authModalOpen ? (
+        <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6">
+          <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h2 className="text-base font-semibold text-text-primary">{copy.authGate.title}</h2>
+                <p className="mt-2 text-sm text-text-secondary">{copy.authGate.body}</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setAuthModalOpen(false)}
+                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
+                aria-label={copy.authGate.close}
+              >
+                {copy.authGate.close}
+              </Button>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
+                {copy.authGate.primary}
+              </ButtonLink>
+              <ButtonLink
+                href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
+                variant="outline"
+                size="sm"
+                className="px-4"
+              >
+                {copy.authGate.secondary}
+              </ButtonLink>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

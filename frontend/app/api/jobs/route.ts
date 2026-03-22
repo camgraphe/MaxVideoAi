@@ -12,7 +12,7 @@ import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
-import { listVisitorStarterJobs } from '@/server/visitor-workspace';
+import { listVisitorImageLikeJobs, listVisitorStarterJobs } from '@/server/visitor-workspace';
 import { deriveJobSurface, isImageLikeSurface, normalizeJobSurface } from '@/lib/job-surface';
 
 export const dynamic = 'force-dynamic';
@@ -268,7 +268,15 @@ export async function GET(req: NextRequest) {
   if (!userId) {
     if (VISITOR_WORKSPACE_ENABLED) {
       if (feedType === 'image' || (requestedSurface && isImageLikeSurface(requestedSurface))) {
-        return json({ ok: true, jobs: [], nextCursor: null });
+        const visitorSurface =
+          requestedSurface === 'image' || requestedSurface === 'angle' || requestedSurface === 'character'
+            ? requestedSurface
+            : 'image';
+        const jobs = await listVisitorImageLikeJobs(
+          limit,
+          visitorSurface
+        );
+        return json({ ok: true, jobs, nextCursor: null });
       }
       if (shouldUseStarterFallback(feedType, cursor)) {
         const jobs = await listVisitorStarterJobs(limit);

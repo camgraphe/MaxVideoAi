@@ -5,14 +5,15 @@
 import deepmerge from 'deepmerge';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Check,
   ChevronDown,
   Download,
+  Images,
   Loader2,
   Sparkles,
   Upload,
@@ -78,6 +79,23 @@ type UploadedAsset = {
   name?: string | null;
 };
 
+type CharacterLibraryAsset = {
+  id: string;
+  url: string;
+  mime?: string | null;
+  width?: number | null;
+  height?: number | null;
+  size?: number | null;
+  source?: string | null;
+  createdAt?: string;
+};
+
+type CharacterLibraryAssetsResponse = {
+  ok?: boolean;
+  assets?: CharacterLibraryAsset[];
+  error?: string;
+};
+
 type PersistedCharacterBuilderState = {
   version: number;
   state: CharacterBuilderState;
@@ -112,6 +130,7 @@ const DEFAULT_CHARACTER_COPY = {
   "open": "Open",
   "choose": "Choose",
   "done": "Done",
+  "close": "Close",
   "add": "Add",
   "on": "On",
   "off": "Off",
@@ -135,6 +154,13 @@ const DEFAULT_CHARACTER_COPY = {
   "savedToLibrary": "Saved to Library.",
   "saveToLibraryFailed": "Failed to save to Library.",
   "pricingError": "Unable to load tool pricing",
+  "authGate": {
+    "title": "Create an account to generate characters",
+    "body": "Guests can browse the builder and inspect public examples, but generation, uploads, and Library actions require an account.",
+    "primary": "Create account",
+    "secondary": "Sign in",
+    "close": "Close"
+  },
   "top": {
     "start": "Start",
     "buildLook": "Build the look",
@@ -158,6 +184,20 @@ const DEFAULT_CHARACTER_COPY = {
     "addInspiration": "Add inspiration image",
     "addInspirationBody": "Optional outfit or styling reference.",
     "remove": "Remove"
+  },
+  "library": {
+    "open": "Library",
+    "choose": "Choose from Library",
+    "body": "Use an uploaded or saved image as a reference.",
+    "error": "Failed to load library images",
+    "empty": "No images available in your library yet.",
+    "tabs": {
+      "all": "All",
+      "upload": "Uploads",
+      "generated": "Generated",
+      "character": "Character",
+      "angle": "Angle"
+    }
   },
   "sections": {
     "gender": "Gender presentation",
@@ -468,6 +508,12 @@ const INITIAL_LOADING_REQUEST_COUNTS: LoadingRequestCounts = {
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
   : 25;
+
+function isAuthRequiredError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as { status?: number; code?: string };
+  return record.status === 401 || record.code === 'auth_required' || record.code === 'UNAUTHORIZED';
+}
 
 function formatTemplate(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce((result, [key, value]) => {
@@ -1994,18 +2040,22 @@ function ReferenceSlot({
   subtitle,
   image,
   onUpload,
+  onOpenLibrary,
   onRemove,
   disabled = false,
   removeLabel,
+  libraryLabel,
   optionalLabel,
 }: {
   title: string;
   subtitle: string;
   image: CharacterBuilderReferenceImage | null;
   onUpload: () => void;
+  onOpenLibrary: () => void;
   onRemove: () => void;
   disabled?: boolean;
   removeLabel: string;
+  libraryLabel: string;
   optionalLabel?: string;
 }) {
   return (
@@ -2027,17 +2077,22 @@ function ReferenceSlot({
               <p className="mt-1 text-xs text-text-secondary">{image.name ?? subtitle}</p>
             </div>
           </button>
-          <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-            {removeLabel}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={onUpload}>
+              <Upload className="h-4 w-4" />
+              {title}
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={onOpenLibrary}>
+              <Images className="h-4 w-4" />
+              {libraryLabel}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+              {removeLabel}
+            </Button>
+          </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={onUpload}
-          disabled={disabled}
-          className="flex min-h-[180px] w-full flex-col items-center justify-center gap-3 text-center"
-        >
+        <div className="flex min-h-[180px] w-full flex-col items-center justify-center gap-3 text-center">
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
             <Upload className="h-5 w-5" />
           </span>
@@ -2052,8 +2107,160 @@ function ReferenceSlot({
             </div>
             <p className="mt-1 text-xs text-text-secondary">{subtitle}</p>
           </div>
-        </button>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button type="button" size="sm" onClick={onUpload} disabled={disabled}>
+              <Upload className="h-4 w-4" />
+              {title}
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={onOpenLibrary} disabled={disabled}>
+              <Images className="h-4 w-4" />
+              {libraryLabel}
+            </Button>
+          </div>
+        </div>
       )}
+    </div>
+  );
+}
+
+function isImageLibraryAsset(asset: CharacterLibraryAsset): boolean {
+  if (typeof asset.mime === 'string' && asset.mime.toLowerCase().startsWith('image/')) return true;
+  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(asset.url);
+}
+
+function CharacterReferenceLibraryModal({
+  open,
+  onClose,
+  onSelect,
+  copy,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (asset: CharacterLibraryAsset) => void;
+  copy: CharacterCopy;
+}) {
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
+  const swrKey = open
+    ? activeSource === 'all'
+      ? '/api/user-assets?limit=60'
+      : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`
+    : null;
+  const { data, error, isLoading } = useSWR<CharacterLibraryAssetsResponse>(swrKey, async (url: string) => {
+    const response = await authFetch(url);
+    const payload = (await response.json().catch(() => null)) as CharacterLibraryAssetsResponse | null;
+    if (!response.ok || !payload?.ok) {
+      throw new Error(copy.library.error);
+    }
+    return payload ?? { ok: true, assets: [] };
+  });
+
+  const assets = (data?.assets ?? []).filter(isImageLibraryAsset);
+
+  if (!open) return null;
+
+  const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={handleBackdropClick}
+    >
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-surface shadow-float">
+        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+          <div>
+            <h2 className="text-lg font-semibold text-text-primary">{copy.library.choose}</h2>
+            <p className="text-xs text-text-secondary">{copy.library.body}</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="self-start rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
+          >
+            {copy.close}
+          </Button>
+        </div>
+        <div className="border-b border-border px-4 py-3 sm:px-6">
+          <div
+            role="tablist"
+            aria-label={copy.library.open}
+            className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
+          >
+            {([
+              ['all', copy.library.tabs.all],
+              ['upload', copy.library.tabs.upload],
+              ['generated', copy.library.tabs.generated],
+              ['character', copy.library.tabs.character],
+              ['angle', copy.library.tabs.angle],
+            ] as const).map(([value, label]) => (
+              <Button
+                key={value}
+                type="button"
+                role="tab"
+                variant="ghost"
+                size="sm"
+                aria-selected={activeSource === value}
+                onClick={() => setActiveSource(value)}
+                className={clsx(
+                  'flex-1 rounded-none px-4 py-2',
+                  activeSource === value ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
+                )}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
+          {error ? (
+            <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
+              {error instanceof Error ? error.message : copy.library.error}
+            </div>
+          ) : isLoading && !assets.length ? (
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={`character-library-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
+                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
+                    <div className="skeleton absolute inset-0" />
+                  </div>
+                  <div className="border-t border-border px-4 py-3">
+                    <div className="h-3 w-24 rounded-full bg-skeleton" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : assets.length === 0 ? (
+            <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
+              {copy.library.empty}
+            </div>
+          ) : (
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+              {assets.map((asset) => (
+                <button
+                  key={asset.id}
+                  type="button"
+                  onClick={() => onSelect(asset)}
+                  className="overflow-hidden rounded-card border border-border bg-surface text-left transition hover:border-border-hover hover:shadow-card"
+                >
+                  <div className="relative aspect-square overflow-hidden bg-bg/50">
+                    <img src={asset.url} alt="" className="h-full w-full object-cover" />
+                  </div>
+                  <div className="border-t border-border px-4 py-3">
+                    <p className="truncate text-xs font-medium text-text-primary">
+                      {asset.source ?? copy.library.tabs.all}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -2204,23 +2411,26 @@ function EmptyResultsRail({ copy }: { copy: CharacterCopy }) {
 }
 
 export default function CharacterBuilderPage() {
-  const { loading: authLoading, user } = useRequireAuth();
+  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const { t } = useI18n();
   const rawCopy = t('workspace.characterBuilder', DEFAULT_CHARACTER_COPY);
   const copy = useMemo<CharacterCopy>(() => {
     return deepmerge(DEFAULT_CHARACTER_COPY, (rawCopy ?? {}) as Partial<CharacterCopy>);
   }, [rawCopy]);
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [state, setState] = useState<CharacterBuilderState>(() => createDefaultCharacterBuilderState());
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [hairOpen, setHairOpen] = useState(false);
   const [activeBuildSection, setActiveBuildSection] = useState<BuildLookSectionKey>('identity');
+  const [libraryModalRole, setLibraryModalRole] = useState<CharacterBuilderReferenceImage['role'] | null>(null);
   const [showStyleReferenceSlot, setShowStyleReferenceSlot] = useState(false);
   const [mustRemainDraft, setMustRemainDraft] = useState('');
   const [loadingActions, setLoadingActions] = useState<LoadingRequestCounts>(INITIAL_LOADING_REQUEST_COUNTS);
   const [pendingRuns, setPendingRuns] = useState<PendingCharacterRun[]>([]);
   const [savingResultId, setSavingResultId] = useState<string | null>(null);
   const [lightboxEntry, setLightboxEntry] = useState<MediaLightboxEntry | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -2228,6 +2438,15 @@ export default function CharacterBuilderPage() {
   const styleFileRef = useRef<HTMLInputElement | null>(null);
   const resultsScrollContainerRef = useRef<HTMLDivElement | null>(null);
   const resultsSentinelRef = useRef<HTMLDivElement | null>(null);
+  const visitorSanitizedRef = useRef(false);
+  const loginRedirectTarget = useMemo(() => {
+    const base = pathname || '/tools/character-builder';
+    const search = searchParams?.toString();
+    return search ? `${base}?${search}` : base;
+  }, [pathname, searchParams]);
+  const openAuthGate = useCallback(() => {
+    setAuthModalOpen(true);
+  }, []);
 
   const genderOptions = useMemo(
     () => GENDER_PRESENTATION_OPTIONS.map((option) => ({ ...option, label: copy.options.gender[option.id as keyof typeof copy.options.gender] ?? option.label })),
@@ -2444,6 +2663,34 @@ export default function CharacterBuilderPage() {
   }, [hydrated, state]);
 
   useEffect(() => {
+    if (authLoading || !hydrated) return;
+    if (user) {
+      visitorSanitizedRef.current = false;
+      return;
+    }
+    if (visitorSanitizedRef.current) return;
+    visitorSanitizedRef.current = true;
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(CHARACTER_BUILDER_STORAGE_KEY);
+      } catch {
+        // ignore storage failures
+      }
+    }
+    setState(createDefaultCharacterBuilderState());
+    setAdvancedOpen(false);
+    setHairOpen(false);
+    setShowStyleReferenceSlot(false);
+    setMustRemainDraft('');
+    setLoadingActions(INITIAL_LOADING_REQUEST_COUNTS);
+    setPendingRuns([]);
+    setSavingResultId(null);
+    setLightboxEntry(null);
+    setError(null);
+    setStatusMessage(null);
+  }, [authLoading, hydrated, user]);
+
+  useEffect(() => {
     const requestedJobId = jobIdFromQuery;
     if (!hydrated || !requestedJobId) return;
     const activeJobId: string = requestedJobId;
@@ -2602,6 +2849,10 @@ export default function CharacterBuilderPage() {
   }
 
   async function handleUpload(role: CharacterBuilderReferenceImage['role'], file: File) {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     setError(null);
     setStatusMessage(role === 'identity' ? copy.uploadIdentityStart : copy.uploadStyleStart);
 
@@ -2623,6 +2874,10 @@ export default function CharacterBuilderPage() {
       }));
       setStatusMessage(role === 'identity' ? copy.uploadIdentityDone : copy.uploadStyleDone);
     } catch (uploadError) {
+      if (isAuthRequiredError(uploadError)) {
+        openAuthGate();
+        return;
+      }
       setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
       setStatusMessage(null);
     }
@@ -2632,6 +2887,42 @@ export default function CharacterBuilderPage() {
     const file = fileList?.[0];
     if (!file) return;
     await handleUpload(role, file);
+  }
+
+  function handleLibrarySelect(asset: CharacterLibraryAsset) {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
+    const role = libraryModalRole;
+    if (!role) return;
+
+    const nextImage: CharacterBuilderReferenceImage = {
+      id: asset.id,
+      url: asset.url,
+      role,
+      width: asset.width ?? null,
+      height: asset.height ?? null,
+      name: null,
+    };
+
+    if (role === 'style') {
+      setShowStyleReferenceSlot(true);
+    }
+
+    setState((previous) => ({
+      ...previous,
+      sourceMode: role === 'identity' ? 'reference-image' : previous.sourceMode,
+      referenceStrength:
+        role === 'identity'
+          ? previous.referenceStrength ?? 'balanced'
+          : previous.referenceStrength,
+      referenceImages: updateReferenceImage(previous.referenceImages, nextImage),
+      traits: role === 'identity' ? normalizeTraitsForSourceMode(previous.traits, 'reference-image') : previous.traits,
+    }));
+    setLibraryModalRole(null);
+    setStatusMessage(role === 'identity' ? copy.uploadIdentityDone : copy.uploadStyleDone);
+    setError(null);
   }
 
   function addMustRemainTag() {
@@ -2674,6 +2965,10 @@ export default function CharacterBuilderPage() {
   }
 
   async function handleRun(action: CharacterBuilderAction, generateCount?: 1 | 4) {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     setError(null);
     setStatusMessage(null);
     const loadingKey = getLoadingRequestKey(action, generateCount);
@@ -2746,6 +3041,10 @@ export default function CharacterBuilderPage() {
       );
     } catch (runError) {
       setPendingRuns((previous) => previous.filter((entry) => entry.id !== pendingRunId));
+      if (isAuthRequiredError(runError)) {
+        openAuthGate();
+        return;
+      }
       setError(runError instanceof Error ? runError.message : copy.runFailed);
     } finally {
       setLoadingActions((previous) => decrementLoadingRequestCount(previous, loadingKey));
@@ -2753,6 +3052,10 @@ export default function CharacterBuilderPage() {
   }
 
   async function handleSaveResult(result: CharacterBuilderResult) {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     setSavingResultId(result.id);
     setError(null);
     setStatusMessage(null);
@@ -2765,6 +3068,10 @@ export default function CharacterBuilderPage() {
       });
       setStatusMessage(copy.savedToLibrary);
     } catch (saveError) {
+      if (isAuthRequiredError(saveError)) {
+        openAuthGate();
+        return;
+      }
       setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
     } finally {
       setSavingResultId(null);
@@ -2772,6 +3079,10 @@ export default function CharacterBuilderPage() {
   }
 
   async function handleSaveHistoricalResult(item: HistoricalCharacterGalleryItem) {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     setSavingResultId(item.id);
     setError(null);
     setStatusMessage(null);
@@ -2784,6 +3095,10 @@ export default function CharacterBuilderPage() {
       });
       setStatusMessage(copy.savedToLibrary);
     } catch (saveError) {
+      if (isAuthRequiredError(saveError)) {
+        openAuthGate();
+        return;
+      }
       setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
     } finally {
       setSavingResultId(null);
@@ -2791,6 +3106,10 @@ export default function CharacterBuilderPage() {
   }
 
   async function handleDuplicateHistoricalSettings(item: HistoricalCharacterGalleryItem) {
+    if (!user) {
+      openAuthGate();
+      return;
+    }
     setError(null);
     setStatusMessage(null);
     try {
@@ -2814,6 +3133,10 @@ export default function CharacterBuilderPage() {
       setShowStyleReferenceSlot(Boolean(snapshotState.referenceImages?.some((image) => image.role === 'style')));
       setStatusMessage(copy.duplicateDone);
     } catch (duplicateError) {
+      if (isAuthRequiredError(duplicateError)) {
+        openAuthGate();
+        return;
+      }
       setError(duplicateError instanceof Error ? duplicateError.message : copy.runFailed);
     }
   }
@@ -3012,10 +3335,6 @@ export default function CharacterBuilderPage() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   if (!FEATURES.workflows.toolsSection) {
     return (
       <div className="flex min-h-screen flex-col bg-bg">
@@ -3110,8 +3429,22 @@ export default function CharacterBuilderPage() {
                           title={copy.references.identityTitle}
                           subtitle={copy.references.identityBody}
                           image={identityReference}
-                          onUpload={() => identityFileRef.current?.click()}
+                          onUpload={() => {
+                            if (!user) {
+                              openAuthGate();
+                              return;
+                            }
+                            identityFileRef.current?.click();
+                          }}
+                          onOpenLibrary={() => {
+                            if (!user) {
+                              openAuthGate();
+                              return;
+                            }
+                            setLibraryModalRole('identity');
+                          }}
                           removeLabel={copy.references.remove}
+                          libraryLabel={copy.library.open}
                           optionalLabel={copy.sections.optional}
                           onRemove={() =>
                             setState((previous) => ({
@@ -3131,8 +3464,23 @@ export default function CharacterBuilderPage() {
                             title={copy.references.styleTitle}
                             subtitle={copy.references.styleBody}
                             image={styleReference}
-                            onUpload={() => styleFileRef.current?.click()}
+                            onUpload={() => {
+                              if (!user) {
+                                openAuthGate();
+                                return;
+                              }
+                              styleFileRef.current?.click();
+                            }}
+                            onOpenLibrary={() => {
+                              if (!user) {
+                                openAuthGate();
+                                return;
+                              }
+                              setShowStyleReferenceSlot(true);
+                              setLibraryModalRole('style');
+                            }}
                             removeLabel={copy.references.remove}
+                            libraryLabel={copy.library.open}
                             optionalLabel={copy.sections.optional}
                             onRemove={() => {
                               setShowStyleReferenceSlot(false);
@@ -3729,6 +4077,48 @@ export default function CharacterBuilderPage() {
           entries={[lightboxEntry]}
           onClose={() => setLightboxEntry(null)}
         />
+      ) : null}
+      <CharacterReferenceLibraryModal
+        open={libraryModalRole !== null}
+        onClose={() => setLibraryModalRole(null)}
+        onSelect={handleLibrarySelect}
+        copy={copy}
+      />
+      {authModalOpen ? (
+        <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6">
+          <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h2 className="text-base font-semibold text-text-primary">{copy.authGate.title}</h2>
+                <p className="mt-2 text-sm text-text-secondary">{copy.authGate.body}</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setAuthModalOpen(false)}
+                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
+                aria-label={copy.authGate.close}
+              >
+                {copy.authGate.close}
+              </Button>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
+                {copy.authGate.primary}
+              </ButtonLink>
+              <ButtonLink
+                href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
+                variant="outline"
+                size="sm"
+                className="px-4"
+              >
+                {copy.authGate.secondary}
+              </ButtonLink>
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );

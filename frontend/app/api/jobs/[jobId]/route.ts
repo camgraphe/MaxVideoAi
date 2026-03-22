@@ -9,7 +9,7 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
-import { getVisitorStarterJob } from '@/server/visitor-workspace';
+import { getVisitorImageLikeJob, getVisitorStarterJob } from '@/server/visitor-workspace';
 import { deriveJobSurface } from '@/lib/job-surface';
 
 export const dynamic = 'force-dynamic';
@@ -161,6 +161,39 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
           renderThumbUrls: visitorJob.renderThumbUrls ?? undefined,
           heroRenderId: visitorJob.heroRenderId ?? undefined,
           localKey: visitorJob.localKey ?? undefined,
+          message: undefined,
+          etaSeconds: undefined,
+          etaLabel: undefined,
+        });
+      }
+      const visitorImageJob = await getVisitorImageLikeJob(jobId);
+      if (visitorImageJob) {
+        return json({
+          ok: true,
+          jobId: visitorImageJob.jobId,
+          createdAt: visitorImageJob.createdAt,
+          status: 'completed',
+          progress: 100,
+          videoUrl: undefined,
+          audioUrl: undefined,
+          thumbUrl: visitorImageJob.thumbUrl ?? undefined,
+          aspectRatio: visitorImageJob.aspectRatio ?? undefined,
+          pricing: visitorImageJob.pricingSnapshot ?? undefined,
+          settingsSnapshot: undefined,
+          finalPriceCents: visitorImageJob.finalPriceCents ?? undefined,
+          currency: visitorImageJob.currency ?? 'USD',
+          paymentStatus: visitorImageJob.paymentStatus ?? 'curated',
+          vendorAccountId: undefined,
+          stripePaymentIntentId: undefined,
+          stripeChargeId: undefined,
+          batchId: undefined,
+          groupId: undefined,
+          iterationIndex: undefined,
+          iterationCount: undefined,
+          renderIds: visitorImageJob.renderIds ?? undefined,
+          renderThumbUrls: visitorImageJob.renderThumbUrls ?? undefined,
+          heroRenderId: visitorImageJob.heroRenderId ?? undefined,
+          localKey: visitorImageJob.localKey ?? undefined,
           message: undefined,
           etaSeconds: undefined,
           etaLabel: undefined,
