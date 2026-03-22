@@ -961,6 +961,9 @@ function VisualChoiceCard({
       )}
     >
       {backgroundMedia ? <div className="absolute inset-0">{backgroundMedia}</div> : null}
+      {backgroundMedia ? (
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[rgba(0,0,0,0.82)] via-[rgba(0,0,0,0.42)] to-transparent" />
+      ) : null}
       {selected ? (
         <span className="absolute right-3 top-3 z-20 inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand text-on-brand shadow-[0_8px_18px_rgba(58,123,213,0.28)]">
           <Check className="h-3.5 w-3.5" />
@@ -969,15 +972,16 @@ function VisualChoiceCard({
       {media ? <div className="relative z-10 mb-4">{media}</div> : null}
       <div
         className={clsx(
-          'relative z-10 space-y-1',
-          backgroundMedia ? 'absolute inset-x-4 bottom-4 rounded-[16px] bg-black/62 px-4 py-3 backdrop-blur-[2px]' : undefined
+          backgroundMedia
+            ? 'absolute inset-x-0 bottom-0 z-10 space-y-1 px-6 py-4'
+            : 'relative z-10 space-y-1'
         )}
       >
         <p className={clsx('text-sm font-semibold', backgroundMedia ? 'text-white' : 'text-text-primary')}>
           {title}
         </p>
         {subtitle ? (
-          <p className={clsx('text-xs', backgroundMedia ? 'text-white/82' : 'text-text-secondary')}>
+          <p className={clsx('text-xs', backgroundMedia ? 'text-white' : 'text-text-secondary')}>
             {subtitle}
           </p>
         ) : null}
