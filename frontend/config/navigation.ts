@@ -13,7 +13,7 @@ export type MarketingNavDropdown = {
   allLabelFallback: string;
 };
 
-export type MarketingTopNavKey = 'models' | 'examples' | 'compare' | 'pricing' | 'blog';
+export type MarketingTopNavKey = 'models' | 'examples' | 'tools' | 'compare' | 'pricing' | 'blog';
 
 export type MarketingTopNavLink = {
   key: MarketingTopNavKey;
@@ -24,6 +24,7 @@ export const MARKETING_TOP_NAV_LINKS: readonly MarketingTopNavLink[] = [
   { key: 'models', href: '/models' },
   { key: 'examples', href: '/examples' },
   { key: 'compare', href: '/ai-video-engines' },
+  { key: 'tools', href: '/tools' },
   { key: 'pricing', href: '/pricing' },
   { key: 'blog', href: '/blog' },
 ] as const;
@@ -43,6 +44,10 @@ const exampleLink = (slug: string): LocalizedLinkHref => ({
 const compareLink = (slug: string): LocalizedLinkHref => ({
   pathname: '/ai-video-engines/[slug]',
   params: { slug },
+});
+
+const toolLink = (slug: 'character-builder' | 'angle'): LocalizedLinkHref => ({
+  pathname: `/tools/${slug}`,
 });
 
 const blogLink = (slug: string): LocalizedLinkHref => ({
@@ -134,6 +139,11 @@ export const MARKETING_NAV_COMPARE: MarketingNavItem[] = COMPARE_MENU.map((item)
   href: compareLink(item.slug),
 }));
 
+export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
+  { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
+  { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
+];
+
 export const MARKETING_NAV_WORKFLOWS: MarketingNavItem[] = [
   { key: 'how', label: 'How it works', href: '/workflows#how-it-works' },
   { key: 'capabilities', label: 'What you can do', href: '/workflows#what-you-can-do' },
@@ -170,5 +180,11 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
     allHref: { pathname: '/ai-video-engines' },
     allLabelKey: 'nav.dropdown.allComparisons',
     allLabelFallback: 'All comparisons',
+  },
+  tools: {
+    items: MARKETING_NAV_TOOLS,
+    allHref: { pathname: '/tools' },
+    allLabelKey: 'nav.dropdown.allTools',
+    allLabelFallback: 'All tools',
   },
 };

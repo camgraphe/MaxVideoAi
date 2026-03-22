@@ -15,6 +15,10 @@
         "href": "/ai-video-engines"
       },
       {
+        "key": "tools",
+        "href": "/tools"
+      },
+      {
         "key": "pricing",
         "href": "/pricing"
       },
@@ -28,6 +32,7 @@
     "linkLabels": {
       "models": "Modèles",
       "examples": "Exemples",
+      "tools": "Outils",
       "compare": "Comparatifs",
       "pricing": "Tarifs",
       "docs": "Documentation",
@@ -37,6 +42,7 @@
       "allModels": "Tous les modèles",
       "allExamples": "Tous les exemples",
       "allComparisons": "Tous les comparatifs",
+      "allTools": "Tous les outils",
       "viewAll": "Voir tout",
       "models": {
         "items": {
@@ -85,6 +91,12 @@
           "seedance-1-5-pro-vs-veo-3-1": "Seedance 1.5 Pro vs Veo 3.1",
           "sora-2-vs-wan-2-6": "Sora 2 vs Wan 2.6",
           "ltx-2-vs-veo-3-1": "LTX-2 vs Veo 3.1"
+        }
+      },
+      "tools": {
+        "items": {
+          "character-builder": "Personnages IA cohérents",
+          "angle": "Changer l’angle caméra"
         }
       },
       "workflows": {
@@ -252,6 +264,7 @@
         "title": "Produit",
         "items": {
           "generate": "Générer",
+          "tools": "Outils",
           "pricing": "Tarifs",
           "docs": "Documentation",
           "models": "Tous les modèles"
@@ -3098,6 +3111,7 @@
       "open": "Ouvrir",
       "choose": "Choisir",
       "done": "Terminé",
+      "close": "Fermer",
       "add": "Ajouter",
       "on": "Activé",
       "off": "Désactivé",
@@ -3144,6 +3158,20 @@
         "addInspiration": "Ajouter une image d’inspiration",
         "addInspirationBody": "Référence optionnelle de tenue ou de styling.",
         "remove": "Retirer"
+      },
+      "library": {
+        "open": "Bibliothèque",
+        "choose": "Choisir depuis la bibliothèque",
+        "body": "Utilise une image importée ou sauvegardée comme référence.",
+        "error": "Impossible de charger les images de la bibliothèque",
+        "empty": "Aucune image disponible dans la bibliothèque pour le moment.",
+        "tabs": {
+          "all": "Tout",
+          "upload": "Uploads",
+          "generated": "Générées",
+          "character": "Personnage",
+          "angle": "Angle"
+        }
       },
       "sections": {
         "gender": "Présentation de genre",

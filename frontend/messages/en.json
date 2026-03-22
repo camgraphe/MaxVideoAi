@@ -15,6 +15,10 @@
         "href": "/ai-video-engines"
       },
       {
+        "key": "tools",
+        "href": "/tools"
+      },
+      {
         "key": "pricing",
         "href": "/pricing"
       },
@@ -28,6 +32,7 @@
     "linkLabels": {
       "models": "Models",
       "examples": "Examples",
+      "tools": "Tools",
       "compare": "Compare",
       "pricing": "Pricing",
       "docs": "Docs",
@@ -37,6 +42,7 @@
       "allModels": "All models",
       "allExamples": "All examples",
       "allComparisons": "All comparisons",
+      "allTools": "All tools",
       "viewAll": "View all",
       "models": {
         "items": {
@@ -85,6 +91,12 @@
           "seedance-1-5-pro-vs-veo-3-1": "Seedance 1.5 Pro vs Veo 3.1",
           "sora-2-vs-wan-2-6": "Sora 2 vs Wan 2.6",
           "ltx-2-vs-veo-3-1": "LTX-2 vs Veo 3.1"
+        }
+      },
+      "tools": {
+        "items": {
+          "character-builder": "Consistent Character AI",
+          "angle": "Change Camera Angle"
         }
       },
       "workflows": {
@@ -172,6 +184,7 @@
         "title": "Product",
         "items": {
           "generate": "Generate",
+          "tools": "Tools",
           "pricing": "Pricing",
           "docs": "Docs",
           "models": "All models"
@@ -3087,6 +3100,7 @@
       "open": "Open",
       "choose": "Choose",
       "done": "Done",
+      "close": "Close",
       "add": "Add",
       "on": "On",
       "off": "Off",
@@ -3133,6 +3147,20 @@
         "addInspiration": "Add inspiration image",
         "addInspirationBody": "Optional outfit or styling reference.",
         "remove": "Remove"
+      },
+      "library": {
+        "open": "Library",
+        "choose": "Choose from Library",
+        "body": "Use an uploaded or saved image as a reference.",
+        "error": "Failed to load library images",
+        "empty": "No images available in your library yet.",
+        "tabs": {
+          "all": "All",
+          "upload": "Uploads",
+          "generated": "Generated",
+          "character": "Character",
+          "angle": "Angle"
+        }
       },
       "sections": {
         "gender": "Gender presentation",

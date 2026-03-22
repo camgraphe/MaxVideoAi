@@ -11,13 +11,13 @@ export function canVisitorBrowseWorkspacePath(pathname: string): boolean {
   const normalized = pathname.replace(/\/+$/, '') || '/';
   return (
     normalized === '/app' ||
+    normalized === '/app/tools' ||
+    normalized === '/app/tools/angle' ||
+    normalized === '/app/tools/character-builder' ||
     normalized === '/dashboard' ||
     normalized === '/jobs' ||
     normalized === '/app/image' ||
     normalized === '/app/library' ||
-    normalized === '/tools' ||
-    normalized === '/tools/angle' ||
-    normalized === '/tools/character-builder' ||
     normalized === '/billing' ||
     normalized === '/settings'
   );

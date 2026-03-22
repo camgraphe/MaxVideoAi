@@ -2,6 +2,15 @@ import { cookies } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 import { defaultLocale, locales, type AppLocale } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
+import enMessages from '@/messages/en.json';
+import esMessages from '@/messages/es.json';
+import frMessages from '@/messages/fr.json';
+
+const LOCALE_MESSAGES = {
+  en: enMessages,
+  fr: frMessages,
+  es: esMessages,
+} satisfies Record<AppLocale, Record<string, unknown>>;
 
 function isAppLocale(candidate: string | undefined | null): candidate is AppLocale {
   if (!candidate) {
@@ -10,9 +19,8 @@ function isAppLocale(candidate: string | undefined | null): candidate is AppLoca
   return (locales as readonly string[]).includes(candidate);
 }
 
-async function loadMessages(locale: AppLocale) {
-  const messages = await import(`@/messages/${locale}.json`);
-  return messages.default;
+function loadMessages(locale: AppLocale) {
+  return LOCALE_MESSAGES[locale];
 }
 
 export default getRequestConfig(async ({ locale, requestLocale }) => {
@@ -27,6 +35,6 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
 
   return {
     locale: resolvedLocale,
-    messages: await loadMessages(resolvedLocale),
+    messages: loadMessages(resolvedLocale),
   };
 });

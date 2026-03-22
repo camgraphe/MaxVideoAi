@@ -134,7 +134,7 @@ function getAssetJobHref(asset: UserAsset): string | null {
   if (!asset.jobId) return null;
   if (asset.source === 'angle') return null;
   if (asset.source === 'character') {
-    return `/tools/character-builder?job=${encodeURIComponent(asset.jobId)}`;
+    return `/app/tools/character-builder?job=${encodeURIComponent(asset.jobId)}`;
   }
   if (asset.source === 'generated') {
     return `/app/image?job=${encodeURIComponent(asset.jobId)}`;

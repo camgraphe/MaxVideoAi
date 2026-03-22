@@ -15,6 +15,10 @@
         "href": "/ai-video-engines"
       },
       {
+        "key": "tools",
+        "href": "/tools"
+      },
+      {
         "key": "pricing",
         "href": "/pricing"
       },
@@ -28,6 +32,7 @@
     "linkLabels": {
       "models": "Modelos",
       "examples": "Ejemplos",
+      "tools": "Herramientas",
       "compare": "Comparativas",
       "pricing": "Precios",
       "docs": "Documentación",
@@ -37,6 +42,7 @@
       "allModels": "Todos los modelos",
       "allExamples": "Todos los ejemplos",
       "allComparisons": "Todas las comparativas",
+      "allTools": "Todas las herramientas",
       "viewAll": "Ver todo",
       "models": {
         "items": {
@@ -85,6 +91,12 @@
           "seedance-1-5-pro-vs-veo-3-1": "Seedance 1.5 Pro vs Veo 3.1",
           "sora-2-vs-wan-2-6": "Sora 2 vs Wan 2.6",
           "ltx-2-vs-veo-3-1": "LTX-2 vs Veo 3.1"
+        }
+      },
+      "tools": {
+        "items": {
+          "character-builder": "Personajes IA consistentes",
+          "angle": "Cambiar ángulo de cámara"
         }
       },
       "workflows": {
@@ -252,6 +264,7 @@
         "title": "Producto",
         "items": {
           "generate": "Generar",
+          "tools": "Herramientas",
           "pricing": "Precios",
           "docs": "Documentación",
           "models": "Todos los modelos"
@@ -3091,6 +3104,7 @@
       "open": "Abrir",
       "choose": "Elegir",
       "done": "Listo",
+      "close": "Cerrar",
       "add": "Agregar",
       "on": "Activado",
       "off": "Desactivado",
@@ -3137,6 +3151,20 @@
         "addInspiration": "Agregar imagen de inspiración",
         "addInspirationBody": "Referencia opcional de outfit o styling.",
         "remove": "Quitar"
+      },
+      "library": {
+        "open": "Biblioteca",
+        "choose": "Elegir desde la biblioteca",
+        "body": "Usa una imagen subida o guardada como referencia.",
+        "error": "No se pudieron cargar las imágenes de la biblioteca",
+        "empty": "Todavía no hay imágenes disponibles en tu biblioteca.",
+        "tabs": {
+          "all": "Todo",
+          "upload": "Uploads",
+          "generated": "Generadas",
+          "character": "Personaje",
+          "angle": "Ángulo"
+        }
       },
       "sections": {
         "gender": "Presentación de género",
