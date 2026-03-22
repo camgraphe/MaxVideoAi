@@ -927,9 +927,9 @@ const REALISM_CARD_META: Record<string, { background: string; accent: string }> 
 };
 
 const CHARACTER_SHEET_PREVIEW_URL =
-  'https://v3b.fal.media/files/b/0a92b5c0/8bHQSn-uSF9AYjCOFSVHk_K9kLmxhH.png';
+  'https://v3b.fal.media/files/b/0a933bb7/R64-QF4-arWq1SzqnpC3r_DPAtirIT.png';
 const PORTRAIT_REFERENCE_PREVIEW_URL =
-  'https://v3b.fal.media/files/b/0a931e48/bWz0ERHaJHWLDAUDrwFOU_7FrMKKm3.png';
+  'https://v3b.fal.media/files/b/0a933bb6/ZPDNLhxRWTb-BWCYSw4b2_MV73KIfo.png';
 
 function VisualChoiceCard({
   selected,
