@@ -4392,12 +4392,12 @@
         ]
       },
       "finalCta": {
-        "eyebrow": "Passer à l'action",
-        "title": "Construisez votre référence personnage réutilisable",
-        "body": "Créez le personnage une seule fois, puis réutilisez-le dans Image, vos retouches et votre préparation vidéo.",
+        "eyebrow": "Commencez par la référence",
+        "title": "Gardez le même personnage d'une scène à l'autre",
+        "body": "Générez une ancre portrait ou une planche à 8 panneaux, puis réutilisez cette même référence dans les prompts, les retouches et les workflows vidéo basés sur image fixe.",
         "primaryCta": "Ouvrir Character Builder",
-        "panelLeft": "Sortie réutilisable",
-        "panelRight": "Planche à 8 panneaux",
+        "panelLeft": "Personnage verrouillé",
+        "panelRight": "Prêt à réutiliser",
         "panelAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder."
       }
     }

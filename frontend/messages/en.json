@@ -4465,12 +4465,12 @@
         ]
       },
       "finalCta": {
-        "eyebrow": "Final CTA",
-        "title": "Build Your Reusable Character Reference",
-        "body": "Create the character once. Reuse it across images, edits, and video prep.",
+        "eyebrow": "Create the reference first",
+        "title": "Keep the Same Character Across Scenes, Stills, and Video",
+        "body": "Generate a portrait anchor or 8-panel sheet, then reuse that same reference in prompts, edits, and still-reference video workflows.",
         "primaryCta": "Open Character Builder",
-        "panelLeft": "Reusable output",
-        "panelRight": "8-panel sheet",
+        "panelLeft": "Locked character",
+        "panelRight": "Ready to reuse",
         "panelAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder."
       }
     }

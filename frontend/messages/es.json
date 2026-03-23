@@ -4386,12 +4386,12 @@
         ]
       },
       "finalCta": {
-        "eyebrow": "Para empezar",
-        "title": "Construye tu referencia de personaje reutilizable",
-        "body": "Crea el personaje una sola vez y reutilízalo en Image, en tus ediciones y en la preparación de video.",
+        "eyebrow": "Crea la referencia primero",
+        "title": "Mantén el mismo personaje de una escena a otra",
+        "body": "Genera un ancla de retrato o una hoja de 8 paneles y luego reutiliza esa misma referencia en prompts, ediciones y flujos de video basados en imagen fija.",
         "primaryCta": "Abrir Character Builder",
-        "panelLeft": "Salida reutilizable",
-        "panelRight": "Hoja de 8 paneles",
+        "panelLeft": "Personaje definido",
+        "panelRight": "Listo para reutilizar",
         "panelAlt": "Vista previa de una hoja de personaje IA reutilizable generada con Character Builder."
       }
     }
