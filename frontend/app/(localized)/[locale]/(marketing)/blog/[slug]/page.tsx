@@ -11,6 +11,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
+import { resolveDictionary } from '@/lib/i18n/server';
 
 interface Params {
   locale: AppLocale;
@@ -189,6 +190,14 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   if (!post) {
     notFound();
   }
+  const { dictionary } = await resolveDictionary({ locale });
+  const blogCopy = dictionary.blog;
+  const articleCopy = blogCopy.article ?? {
+    backLink: '← Back to blog',
+    relatedTitle: 'Related reading',
+    relatedBody: 'More workflow notes and engine breakdowns curated for you.',
+    relatedCta: 'Read article',
+  };
   if (post.slug !== slug) {
     const localizedPrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
     redirect(`${localizedPrefix}/blog/${post.slug}`);
@@ -293,7 +302,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     <div className="container-page max-w-5xl section">
       <div className="stack-gap-lg">
         <TextLink href="/blog" className="text-sm" linkComponent={Link}>
-          ← Back to blog
+          {articleCopy.backLink}
         </TextLink>
 
         <article className="overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur">
@@ -341,8 +350,8 @@ export default async function BlogPostPage({ params }: { params: Params }) {
         {relatedPosts.length ? (
           <section className="stack-gap">
             <div>
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Related reading</h2>
-              <p className="text-sm text-text-secondary">More launch notes and engine breakdowns curated for you.</p>
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{articleCopy.relatedTitle}</h2>
+              <p className="text-sm text-text-secondary">{articleCopy.relatedBody}</p>
             </div>
             <div className="grid grid-gap-sm md:grid-cols-3">
               {relatedPosts.map((related) => {
@@ -362,7 +371,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                       {...relatedLinkProps}
                       className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-link transition hover:text-link-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     >
-                      Read article <span aria-hidden>→</span>
+                      {articleCopy.relatedCta} <span aria-hidden>→</span>
                     </Link>
                   </article>
                 );

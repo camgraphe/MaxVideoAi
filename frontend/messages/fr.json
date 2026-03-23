@@ -1692,6 +1692,20 @@
       "eyebrow": "Journal workflow",
       "ctaLabel": "Dernier guide workflow →"
     },
+    "featured": {
+      "eyebrow": "À la une",
+      "title": "Commencez par l’article qui compte maintenant"
+    },
+    "recent": {
+      "eyebrow": "Articles récents",
+      "title": "D’autres guides, notes de workflow et analyses de modèles"
+    },
+    "article": {
+      "backLink": "← Retour au blog",
+      "relatedTitle": "À lire aussi",
+      "relatedBody": "D’autres notes de workflow et analyses utiles pour continuer.",
+      "relatedCta": "Lire l’article"
+    },
     "empty": "Articles de blog à venir.",
     "cta": "En savoir plus",
     "intro": {

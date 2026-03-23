@@ -1681,6 +1681,20 @@
       "eyebrow": "Workflow Journal",
       "ctaLabel": "Latest workflow guide →"
     },
+    "featured": {
+      "eyebrow": "Featured story",
+      "title": "Start with the post that matters now"
+    },
+    "recent": {
+      "eyebrow": "Recent posts",
+      "title": "More workflow notes, engine updates, and practical guides"
+    },
+    "article": {
+      "backLink": "← Back to blog",
+      "relatedTitle": "Related reading",
+      "relatedBody": "More workflow notes and engine breakdowns curated for you.",
+      "relatedCta": "Read article"
+    },
     "empty": "Blog posts coming soon.",
     "cta": "Read more",
     "intro": {

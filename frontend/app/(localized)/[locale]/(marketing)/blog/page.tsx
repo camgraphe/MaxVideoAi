@@ -154,6 +154,11 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   const faq = content.faq ?? DEFAULT_BLOG_FAQ;
   const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP, { englishPath: '/blog' });
   const baseReadMore = content.cta ?? 'Read more';
+  const featuredCopy = content.featured ?? { eyebrow: 'Featured story', title: 'Start with the post that matters now' };
+  const recentCopy = content.recent ?? {
+    eyebrow: 'Recent posts',
+    title: 'More workflow notes, engine updates, and practical guides',
+  };
   const formatReadMoreLabel = (title: string) => `${baseReadMore} — ${title}`;
 
   const articleListSchema = {
@@ -210,9 +215,9 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
         <section className="stack-gap">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-micro text-brand">Featured story</p>
+              <p className="text-xs font-semibold uppercase tracking-micro text-brand">{featuredCopy.eyebrow}</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
-                Start with the post that matters now
+                {featuredCopy.title}
               </h2>
             </div>
           </div>
@@ -272,9 +277,9 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
           <section className="stack-gap">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-micro text-brand">Recent posts</p>
+                <p className="text-xs font-semibold uppercase tracking-micro text-brand">{recentCopy.eyebrow}</p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
-                  More workflow notes, engine updates, and practical guides
+                  {recentCopy.title}
                 </h2>
               </div>
             </div>

@@ -1685,6 +1685,20 @@
       "eyebrow": "Producción y workflow",
       "ctaLabel": "Última guía de workflow →"
     },
+    "featured": {
+      "eyebrow": "Destacado",
+      "title": "Empieza por el artículo que importa ahora"
+    },
+    "recent": {
+      "eyebrow": "Artículos recientes",
+      "title": "Más guías prácticas, notas de workflow y análisis de modelos"
+    },
+    "article": {
+      "backLink": "← Volver al blog",
+      "relatedTitle": "Lecturas relacionadas",
+      "relatedBody": "Más notas de workflow y análisis útiles para seguir.",
+      "relatedCta": "Leer artículo"
+    },
     "empty": "Publicaciones del blog próximamente.",
     "cta": "Leer más",
     "intro": {
