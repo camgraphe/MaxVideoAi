@@ -15,17 +15,17 @@ const BLOG_META = {
   en: {
     title: 'Blog — MaxVideoAI',
     description:
-      'The MaxVideoAI blog covers Sora, Veo and Pika updates, prompt guides, pricing changes, and workflow tactics from real production teams using AI video engines.',
+      'Reference-first workflows, tool guides, model notes, and production learnings from teams building images and video with MaxVideoAI.',
   },
   fr: {
     title: 'Blog MaxVideoAI (FR)',
     description:
-      'Le blog MaxVideoAI suit l’actu Sora, Veo et Pika, partage des guides de prompts, des ajustements tarifaires et tactiques workflow d’équipes de production IA.',
+      'Workflows orientés référence, guides d’outils, notes sur les modèles et retours de production d’équipes qui créent images et vidéos avec MaxVideoAI.',
   },
   es: {
     title: 'Blog MaxVideoAI (ES)',
     description:
-      'El blog de MaxVideoAI cubre Sora, Veo y Pika con guías de prompts, avisos de precios y tácticas de flujo usadas por equipos que operan motores de video IA.',
+      'Workflows basados en referencias, guías de herramientas, notas sobre modelos y aprendizajes de producción de equipos que crean imágenes y video con MaxVideoAI.',
   },
 } satisfies Record<AppLocale, { title: string; description: string }>;
 

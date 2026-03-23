@@ -12,6 +12,7 @@ export interface ContentFrontMatter {
   date: string;
   updatedAt?: string;
   image?: string;
+  imagePosition?: string;
   keywords?: string[];
   slug: string;
   excerpt?: string;

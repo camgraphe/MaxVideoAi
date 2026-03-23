@@ -1680,27 +1680,27 @@
   },
   "blog": {
     "hero": {
-      "title": "El blog de MaxVideo AI.",
-      "subtitle": "Noticias sobre motores, historias de clientes, guías de prompts y buenas prácticas de precio antes de generar. Suscríbase en la aplicación para recibir actualizaciones en su resumen de cola.",
-      "eyebrow": "El diario del estudio",
-      "ctaLabel": "Últimas novedades de Sora →"
+      "title": "La bitácora de MaxVideoAI.",
+      "subtitle": "Workflows basados en referencias, guías de herramientas, notas sobre modelos y aprendizajes de producción para equipos que crean imágenes y video dentro de MaxVideoAI.",
+      "eyebrow": "Producción y workflow",
+      "ctaLabel": "Última guía de workflow →"
     },
     "empty": "Publicaciones del blog próximamente.",
     "cta": "Leer más",
     "intro": {
-      "lead": "El diario de MaxVideoAI recoge todo lo que aprendemos al rutear motores de video de vanguardia para producciones reales. Documentamos patrones de prompts, cambios de precio, variaciones de latencia y workflows para que las agencias sigan a tiempo cuando rotan los modelos.",
+      "lead": "La bitácora sigue cómo los equipos construyen referencias reutilizables, eligen la herramienta correcta y convierten una imagen aprobada en salidas de imagen o video más sólidas. Escribimos desde el uso real dentro de MaxVideoAI: referencias de personaje, pruebas de ángulo, decisiones de modelo y patrones de producción que sí resisten el ritmo de trabajo.",
       "cards": [
         {
-          "title": "Análisis de modelos",
-          "body": "Comparativas y notas de capacidades sobre Sora 2, Veo 3, Pika 2.2, MiniMax Hailuo 02 y los motores que vienen."
+          "title": "Workflows basados en referencias",
+          "body": "Cómo preparar una referencia de personaje, un primer frame o un still reutilizable antes de pasar a edición o video."
         },
         {
-          "title": "Tácticas de workflow",
-          "body": "Secuencias de prompts, integración de audio y guardarraíles de precios para historias de marca sin malgastar créditos."
+          "title": "Guías de herramientas",
+          "body": "Desgloses prácticos de Character Builder, Angle y de los flujos que convierten una imagen aprobada en salidas más útiles."
         },
         {
-          "title": "Historias de clientes",
-          "body": "Cómo estudios y marketers en Europa y Norteamérica despliegan el mismo brief en múltiples motores."
+          "title": "Notas sobre modelos",
+          "body": "Cuándo usar Nano Banana, Veo, Kling, Sora y el resto del model hub una vez que la referencia o el frame ya están listos."
         }
       ]
     },

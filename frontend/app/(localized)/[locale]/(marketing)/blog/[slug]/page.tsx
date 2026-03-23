@@ -307,7 +307,8 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                   priority
                   fetchPriority="high"
                   sizes="(min-width: 1024px) 960px, 100vw"
-                  className="object-cover object-center"
+                  className="object-cover"
+                  style={{ objectPosition: post.imagePosition ?? 'center' }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/90 via-60% to-surface/10" />
               </div>

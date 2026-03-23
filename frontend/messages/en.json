@@ -1676,27 +1676,27 @@
   },
   "blog": {
     "hero": {
-      "title": "The MaxVideo AI blog.",
-      "subtitle": "News on engines, customer stories, prompt guides, and price-before best practices. Subscribe in-app to get updates in your queue digest.",
-      "eyebrow": "The Studio Journal",
-      "ctaLabel": "Latest Sora coverage →"
+      "title": "The MaxVideoAI Journal.",
+      "subtitle": "Reference-first workflows, tool guides, model notes, and production lessons for teams building images and video inside MaxVideoAI.",
+      "eyebrow": "Workflow Journal",
+      "ctaLabel": "Latest workflow guide →"
     },
     "empty": "Blog posts coming soon.",
     "cta": "Read more",
     "intro": {
-      "lead": "MaxVideoAI’s journal covers everything we learn while routing frontier video engines for real production teams. We document prompt patterns, pricing changes, latency shifts, and the workflows that keep agencies on schedule when models rotate. Every story is written from live usage—not a press release.",
+      "lead": "The journal tracks how teams build reusable references, choose the right tool, and move from approved stills into stronger image and video outputs. We write from real usage inside MaxVideoAI: character references, camera-angle tests, model decisions, and production patterns that hold up under deadlines.",
       "cards": [
         {
-          "title": "Model deep dives",
-          "body": "Comparisons and capability notes for Sora 2, Veo 3, Pika 2.2, MiniMax Hailuo 02, and the engines queued next in our workspace."
+          "title": "Reference-first workflows",
+          "body": "How to build reusable character references, start frames, and still assets before moving into edits or video."
         },
         {
-          "title": "Workflow tactics",
-          "body": "Sequenced prompting, audio integration, and pricing guardrails that help teams ship branded stories without wasting credits."
+          "title": "Tool guides",
+          "body": "Practical breakdowns for Character Builder, Angle, and the workflows that turn one approved image into more usable outputs."
         },
         {
-          "title": "Customer stories",
-          "body": "How studios and marketers in Europe and North America deploy the same brief across multiple engines and keep review cycles moving."
+          "title": "Model notes",
+          "body": "When to use Nano Banana, Veo, Kling, Sora, and the rest of the model hub once the reference or frame is ready."
         }
       ]
     },
