@@ -3829,7 +3829,7 @@
         },
         "solution": {
           "label": "Solución",
-          "title": "Ajusta el punto de vista y sigue avanzando",
+          "title": "Mantén la imagen base, cambia el punto de vista",
           "body": "Angle te permite conservar la imagen fuente que ya validaste, generar un nuevo ángulo de cámara y seguir con la versión que mejor encaja en el siguiente paso.",
           "sourceAlt": "Imagen fuente usada antes de generar ángulos de cámara alternativos.",
           "outputAlt": "Vista en contrapicado generada a partir de la misma imagen fuente.",
@@ -4017,9 +4017,9 @@
               "alt": "Imagen de escena original para storyboard."
             },
             {
-              "label": "Tres cuartos",
-              "note": "Vista para el board",
-              "alt": "Encuadre alternativo para narrativa."
+              "label": "Tres cuartos alto",
+              "note": "Cámara más alta",
+              "alt": "Encuadre narrativo en tres cuartos con un ángulo de cámara más alto."
             },
             {
               "label": "Interfaz",

@@ -3904,7 +3904,7 @@
         },
         "solution": {
           "label": "Solution",
-          "title": "Change the viewpoint and keep moving",
+          "title": "Keep the source image, change the viewpoint",
           "body": "Angle lets you keep the source image you already trust, generate a new camera angle, and continue with the version that fits the next step.",
           "sourceAlt": "Source image used before generating alternate camera angles.",
           "outputAlt": "Alternate low-angle view generated from the same source image.",
@@ -4092,9 +4092,9 @@
               "alt": "Original scene still for storyboarding."
             },
             {
-              "label": "Three-quarter",
-              "note": "Board-ready frame",
-              "alt": "Alternative story frame."
+              "label": "High three-quarter",
+              "note": "Raised camera view",
+              "alt": "High three-quarter story frame."
             },
             {
               "label": "Workspace",

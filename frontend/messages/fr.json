@@ -3836,7 +3836,7 @@
         },
         "solution": {
           "label": "Solution",
-          "title": "Ajustez le point de vue et continuez",
+          "title": "Gardez l'image source, changez le point de vue",
           "body": "Angle vous permet de conserver l'image source déjà validée, de générer un nouvel angle de caméra, puis de poursuivre avec la version la plus adaptée à la suite.",
           "sourceAlt": "Image source utilisée avant de générer des angles de caméra alternatifs.",
           "outputAlt": "Vue en contre-plongée générée à partir de la même image source.",
@@ -4024,9 +4024,9 @@
               "alt": "Image de scène d'origine pour storyboard."
             },
             {
-              "label": "Trois-quarts",
-              "note": "Vue pour storyboard",
-              "alt": "Cadre alternatif pour la narration."
+              "label": "Trois-quarts plongé",
+              "note": "Caméra plus haute",
+              "alt": "Cadre narratif en trois-quarts avec angle de vue plus haut."
             },
             {
               "label": "Interface",
