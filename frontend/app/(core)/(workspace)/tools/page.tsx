@@ -8,12 +8,7 @@ import { Card } from '@/components/ui/Card';
 
 const CHARACTER_CARD_BACKGROUND_URL =
   '/assets/tools/character-builder-workspace.png';
-const ANGLE_CARD_BACKGROUND_URLS = [
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/79fe6fd7-60cf-4419-a143-a2cb52e9b762.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/cf9ff473-5f6f-4877-b5fd-aafc36bddeb8.webp',
-] as const;
+const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
 
 export const metadata: Metadata = buildSeoMetadata({
   locale: 'en',
@@ -103,7 +98,7 @@ export default function ToolsMarketingHubPage() {
             icon={<Sparkles className="h-5 w-5" />}
             eyebrow="Character consistency"
             title="Create reusable character references"
-            body="Turn one image into a reusable character sheet, a portrait anchor, or a multi-view turnaround before you branch into scenes, prompts, and motion."
+            body="Turn one image into an 8-panel character sheet with 4 full-body angles and 4 close-ups, or create a portrait anchor before you branch into scenes, prompts, and motion."
             href="/tools/character-builder"
             visual={
               <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
@@ -124,18 +119,14 @@ export default function ToolsMarketingHubPage() {
             body="Change viewpoint, explore alternative compositions, and generate motion-ready frames without rebuilding the whole image from scratch."
             href="/tools/angle"
             visual={
-              <div className="grid aspect-[16/10] grid-cols-2 gap-3">
-                {ANGLE_CARD_BACKGROUND_URLS.map((url, index) => (
-                  <div key={url} className="relative overflow-hidden rounded-[18px] border border-hairline bg-[#edf3f8]">
-                    <Image
-                      src={url}
-                      alt={`Alternative AI camera angle example ${index + 1}.`}
-                      fill
-                      sizes="240px"
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
+                <Image
+                  src={ANGLE_CARD_BACKGROUND_URL}
+                  alt="Angle workspace screenshot from MaxVideoAI."
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 520px"
+                  className="object-cover object-top"
+                />
               </div>
             }
           />

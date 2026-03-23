@@ -1,93 +1,270 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, ChevronRight, Play, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
-const CHARACTER_SHEET_PREVIEW_URL =
-  'https://v3b.fal.media/files/b/0a933bb7/R64-QF4-arWq1SzqnpC3r_DPAtirIT.png';
-const PORTRAIT_REFERENCE_PREVIEW_URL =
-  'https://v3b.fal.media/files/b/0a933bb6/ZPDNLhxRWTb-BWCYSw4b2_MV73KIfo.png';
+const CREATOR_PORTRAIT_URL =
+  'https://v3b.fal.media/files/b/0a931e48/bWz0ERHaJHWLDAUDrwFOU_7FrMKKm3.png';
+const REFERENCE_ASSET_PORTRAIT_URL =
+  'https://v3b.fal.media/files/b/0a9354bf/6jswQE7mDfBZzcMI6j1hD_AQ2sXgYY.png';
+
+const LATEST_CHARACTER_SHEET_ASSETS = [
+  {
+    url: 'https://v3b.fal.media/files/b/0a935305/aYrWen8QnYME2LcBPZ33t_w1WcVklb.png',
+    alt: 'Recent Character Builder character sheet render showing four full-body angles and four matching close-ups.',
+  },
+  {
+    url: 'https://v3b.fal.media/files/b/0a9352f9/DfeXOJDDOofcJnA_koAKi_ebpLqdWt.png',
+    alt: 'Recent coherent character sheet render from MaxVideoAI with multi-angle full-body views and close-ups.',
+  },
+  {
+    url: 'https://v3b.fal.media/files/b/0a9352ee/98KpFe5eSj8ZPHg_DosEg_8ZnLNqP7.png',
+    alt: 'Recent MaxVideoAI character sheet render combining four body angles and four close-up identity views.',
+  },
+  {
+    url: 'https://v3b.fal.media/files/b/0a9352e7/vPTrpWNZxJdPCTfIY-wBN_6P7khp0V.png',
+    alt: 'Recent reusable character sheet render with stable face, outfit, and silhouette across eight panels.',
+  },
+  {
+    url: 'https://v3b.fal.media/files/b/0a9352df/zD19EGRVnjzWMFdJRAvII_e5rhKPH6.png',
+    alt: 'Recent consistent character sheet render ready for Nano Banana and reference-based video workflows.',
+  },
+  {
+    url: 'https://v3b.fal.media/files/b/0a9352d7/hpI44AzthWfRCFVI1krRZ_SkBdr8pi.png',
+    alt: 'Recent Character Builder output showing an eight-panel reference sheet with coherent angles and close-ups.',
+  },
+] as const;
+
+const [LATEST_SHEET_1, LATEST_SHEET_2, LATEST_SHEET_3, LATEST_SHEET_4] = LATEST_CHARACTER_SHEET_ASSETS;
+
+const WORKFLOW_CHARACTER_SHEET_ASSET = {
+  url: 'https://v3b.fal.media/files/b/0a935305/aYrWen8QnYME2LcBPZ33t_w1WcVklb.png',
+  alt: 'Character Builder sheet used as the reusable reference asset across images and video workflows.',
+} as const;
+const WORKFLOW_NANO_BANANA_ASSET = {
+  url: 'https://v3b.fal.media/files/b/0a93538e/6K9vhOS91LPzVB5aEP9MV_gKcs9ukw.jpg',
+  alt: 'Nano Banana still created from the same character sheet reference.',
+} as const;
+const WORKFLOW_VIDEO_START_FRAME_ASSET = {
+  videoUrl: 'https://v3b.fal.media/files/b/0a93539e/DZA2waBj2_15D3zXsFkw3_9yIv4OrO.mp4',
+  url: 'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg',
+  alt: 'Video start frame generated from the Nano Banana still and the same character identity.',
+} as const;
+const COMICS_PREVIZ_USE_CASE_ASSET = {
+  url: 'https://v3b.fal.media/files/b/0a93550f/Ikc271a5TYieq_7qBQuVk_4KrRepo5.png',
+  alt: 'Reusable character reference prepared for comics panels and animation previz.',
+} as const;
+const MASCOT_USE_CASE_ASSET = {
+  url: 'https://v3b.fal.media/files/b/0a92b90f/1YEB8Ogqw4EkDI3bwK2qg_lYTqahLO.png',
+  alt: 'Brand mascot prepared as a reusable consistent character asset.',
+} as const;
+
 const CHARACTER_WORKSPACE_HERO_PATH = '/assets/tools/character-builder-workspace.png?hero=1';
-const CHARACTER_WORKSPACE_SCREENSHOT_PATH = '/assets/tools/character-builder-workspace.png';
+const SHEET_IMAGE_CLASSNAME = 'object-cover object-center scale-[1.08]';
 
-const PROOF_BULLETS = [
-  'Reuse the same character across scenes and prompts',
-  'Generate reference sheets and multi-view assets',
-  'Prepare stronger inputs for image-to-video workflows',
+const HERO_PROOF_BULLETS = [
+  'Start with one identity photo, optional outfit inspiration, or a scratch-built concept',
+  'Generate a reusable portrait anchor or an 8-panel character sheet',
+  'Reuse the same character across scenes, prompts, edits, and still-reference video workflows',
 ] as const;
 
-const STEPS = [
+const HOW_IT_WORKS_STEPS = [
   {
-    title: 'Upload a base character image or start from a concept',
-    body: 'Begin with one image you trust or describe the traits you want to preserve before you generate anything else.',
+    title: 'Start with a face reference, outfit cue, or scratch-built concept',
+    body: 'Use one identity photo, add optional wardrobe inspiration, or define the character from scratch.',
   },
   {
-    title: 'Generate a reusable reference sheet or character asset',
-    body: 'Turn that starting point into a character sheet, turnaround, or portrait anchor that stays useful after the first render.',
+    title: 'Generate a portrait anchor or 8-panel sheet',
+    body: 'Create either a tighter portrait reference or one coherent sheet with four full-body angles and four matching close-ups.',
   },
   {
-    title: 'Reuse it in later image prompts, scene variations, or image-to-video workflows',
-    body: 'Carry the same reference into follow-up scenes, ad concepts, storyboards, or motion-ready first frames inside MaxVideoAI.',
+    title: 'Reuse it across stills, edits, and video prep',
+    body: 'Carry the output back into prompts, image edits, Nano Banana, and still-reference video workflows.',
   },
 ] as const;
 
-const BENEFITS = [
+const INPUT_OPTIONS = [
+  'One identity photo',
+  'Optional outfit or style reference',
+  'Scratch-built character concept',
+] as const;
+
+const OUTPUT_OPTIONS = [
+  'Portrait anchor',
+  '8-panel character sheet',
+  'Reusable reference asset',
+] as const;
+
+const REUSE_OPTIONS = [
+  'Image prompts',
+  'Image edits',
+  'Nano Banana start-frame prep',
+  'Video engines that accept still references',
+] as const;
+
+const HOW_IT_WORKS_LABELS = ['Start with', 'Generate', 'Reuse in'] as const;
+const HOW_IT_WORKS_OPTIONS = [INPUT_OPTIONS, OUTPUT_OPTIONS, REUSE_OPTIONS] as const;
+
+const COMPARISON_COLUMNS = [
   {
-    title: 'Keep character identity stable',
-    body: 'A reusable visual anchor helps preserve facial traits, outfits, and proportions when prompts get more complex.',
+    eyebrow: 'Without Character Builder',
+    title: 'Every new scene has to re-solve the character',
+    tone: 'border-rose-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,245,245,0.96))]',
+    badgeTone: 'bg-rose-100 text-rose-700',
+    items: [
+      'Face, hair, and outfit drift between prompts',
+      'You spend more time correcting continuity',
+      'Video prep starts from a weaker still',
+    ],
   },
   {
-    title: 'Reduce prompt trial and error',
-    body: 'You spend less time restating the same identity and more time iterating on scene direction or storytelling.',
+    eyebrow: 'With Character Builder',
+    title: 'One reusable asset keeps the character grounded',
+    tone: 'border-emerald-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(239,253,245,0.96))]',
+    badgeTone: 'bg-emerald-100 text-emerald-700',
+    items: [
+      'Face, outfit, and silhouette stay aligned',
+      'Stills and edits hold up better across scenes',
+      'Video prep starts from a stronger still',
+    ],
+  },
+] as const;
+
+const OUTPUT_CARDS = [
+  {
+    eyebrow: 'Portrait anchor',
+    title: 'Reusable portrait anchor',
+    body:
+      'Best when you need a tight face reference for prompts, close-up edits, and recurring character work.',
+    src: CREATOR_PORTRAIT_URL,
+    alt: 'Reusable portrait anchor for consistent AI character generation.',
+    visualClassName: 'object-cover object-center',
+    visualTone: 'bg-[linear-gradient(180deg,#fff4ec,#ffffff)]',
   },
   {
-    title: 'Reuse assets across scenes',
-    body: 'The same reference can support comics, ads, YouTube series, branded content, and storyboard sequences.',
+    eyebrow: 'Character sheet generator',
+    title: '8-panel character sheet',
+    body:
+      'Best when you need one multi-angle reference for scenes, boards, edits, and video prep.',
+    src: LATEST_SHEET_3.url,
+    alt: LATEST_SHEET_3.alt,
+    visualClassName: SHEET_IMAGE_CLASSNAME,
+    visualTone: 'bg-[#f7f1ea]',
   },
   {
-    title: 'Build stronger first frames for video',
-    body: 'A clean reference gives image-to-video models a clearer starting point than a loosely described prompt alone.',
+    eyebrow: 'Motion prep',
+    title: 'Still for motion prep',
+    body:
+      'Best when the reference needs to become a cleaner still before video generation.',
+    src: WORKFLOW_NANO_BANANA_ASSET.url,
+    alt: WORKFLOW_NANO_BANANA_ASSET.alt,
+    visualClassName: 'object-cover object-center',
+    visualTone:
+      'bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_55%),linear-gradient(135deg,rgba(244,127,94,0.26),rgba(76,132,255,0.16))]',
   },
 ] as const;
 
 const WORKFLOW_LINKS = [
-  { href: '/app/image', label: 'Open Image Workspace' },
+  { href: '/app/image', label: 'Open Nano Banana in Image' },
   { href: '/app', label: 'Open Video Workspace' },
+  { href: '/models/nano-banana', label: 'Nano Banana' },
   { href: '/models/veo-3-1', label: 'Veo 3.1' },
   { href: '/models/kling-3-pro', label: 'Kling 3 Pro' },
-  { href: '/models/sora-2-pro', label: 'Sora 2 Pro' },
   { href: '/models', label: 'Browse Model Hub' },
   { href: '/examples', label: 'See Examples' },
+] as const;
+
+const USE_CASES = [
+  {
+    eyebrow: 'Story / Film',
+    number: '01',
+    title: 'Short films and story scenes',
+    body: 'Keep the lead recognizable across boards, scene variations, and first-frame planning before motion starts.',
+    src: WORKFLOW_VIDEO_START_FRAME_ASSET.url,
+    alt: 'Story scene still generated from a reusable character reference.',
+    imageClassName: 'object-cover object-center',
+    cardClassName: 'border-slate-800 bg-[linear-gradient(135deg,#0b1320,#162235)] text-white shadow-[0_32px_90px_rgba(15,23,42,0.18)]',
+    labelClassName: 'border-white/10 bg-white/5 text-slate-200',
+    bodyClassName: 'text-slate-300',
+  },
+  {
+    eyebrow: 'Ad / Commercial',
+    number: '02',
+    title: 'Recurring ad talent',
+    body: 'Reuse one spokesperson across campaign stills, alternate concepts, and reference-based video variants.',
+    src: REFERENCE_ASSET_PORTRAIT_URL,
+    alt: 'Commercial spokesperson portrait prepared as a reusable reference asset.',
+    imageClassName: 'object-cover object-[center_18%]',
+    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,241,236,0.96))]',
+    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    bodyClassName: 'text-text-secondary',
+  },
+  {
+    eyebrow: 'Mascot / Brand',
+    number: '03',
+    title: 'Brand mascots',
+    body: 'Keep one mascot stable across launches, promos, stills, and motion tests instead of rebuilding it each time.',
+    src: MASCOT_USE_CASE_ASSET.url,
+    alt: MASCOT_USE_CASE_ASSET.alt,
+    imageClassName: SHEET_IMAGE_CLASSNAME,
+    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,246,238,0.96))]',
+    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    bodyClassName: 'text-text-secondary',
+  },
+  {
+    eyebrow: 'Series / Creator',
+    number: '04',
+    title: 'Creator series',
+    body: 'Reuse the same host, avatar, or character every episode without losing face, outfit, or silhouette consistency.',
+    src: WORKFLOW_NANO_BANANA_ASSET.url,
+    alt: WORKFLOW_NANO_BANANA_ASSET.alt,
+    imageClassName: 'object-cover object-center',
+    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,246,251,0.96))]',
+    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    bodyClassName: 'text-text-secondary',
+  },
+  {
+    eyebrow: 'Previs / Comics',
+    number: '05',
+    title: 'Comics and animation previz',
+    body: 'Build one reusable character sheet for boards, panels, turnarounds, and previsualization work before animation.',
+    src: COMICS_PREVIZ_USE_CASE_ASSET.url,
+    alt: COMICS_PREVIZ_USE_CASE_ASSET.alt,
+    imageClassName: SHEET_IMAGE_CLASSNAME,
+    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,245,250,0.96))]',
+    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    bodyClassName: 'text-text-secondary',
+  },
 ] as const;
 
 const FAQS = [
   {
     question: 'What is consistent character AI?',
     answer:
-      'Consistent character AI is a workflow for turning one image or concept into a reusable character reference that keeps the same face, outfit, and silhouette more stable across later generations.',
+      'Consistent character AI means building a stable reference first so the same face, outfit, and silhouette hold up better across later scenes.',
   },
   {
     question: 'Can I create a character sheet from one image?',
     answer:
-      'Yes. You can start from one image and turn it into a reusable character sheet, portrait anchor, or turnaround-style reference for later prompts and scene work.',
+      'Yes. You can start from one image and generate an 8-panel sheet with four full-body angles and four matching close-ups.',
   },
   {
-    question: 'Does this help with image-to-video workflows?',
+    question: 'Can I use one face reference and one outfit reference?',
     answer:
-      'Yes. A stable reference gives image-to-video models a cleaner first frame and a better visual brief, which helps reduce drift across clips.',
+      'Yes. You can upload one identity reference, then add a second image to guide wardrobe or outfit direction.',
   },
   {
-    question: 'Can I create front, side, and back references?',
+    question: 'Can I start from scratch?',
     answer:
-      'Yes. The tool is designed to help you build front, side, and back style references, plus multi-view sheets you can reuse later.',
+      'Yes. You can build a portrait anchor or character sheet from a scratch-built concept when you do not have a source image.',
   },
   {
-    question: 'Is this useful for ads, stories, and branded content?',
+    question: 'Can I reuse this in image-to-video workflows?',
     answer:
-      'Yes. The workflow fits short films, recurring ad talent, creator series, mascots, comic planning, and branded visual systems where identity consistency matters.',
+      'Yes. You can reuse it in image prompts, Nano Banana start-frame prep, and video engines that support still references.',
   },
 ] as const;
 
@@ -108,13 +285,15 @@ function SectionHeader({
 }) {
   return (
     <div className="max-w-3xl stack-gap-sm">
-      <p
-        className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${
-          light ? 'text-slate-300' : 'text-text-muted'
+      <div
+        className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
+          light
+            ? 'border-white/12 bg-white/6 text-slate-200'
+            : 'border-hairline bg-surface text-text-muted shadow-[0_10px_24px_rgba(15,23,42,0.04)]'
         }`}
       >
         {eyebrow}
-      </p>
+      </div>
       <h2
         className={`text-3xl font-semibold tracking-tight sm:text-4xl ${
           light ? 'text-white' : 'text-text-primary'
@@ -152,44 +331,10 @@ function LinkChip({
 
 function HeroProofCard({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-hairline/80 bg-white/72 px-4 py-3 text-sm leading-6 text-text-secondary shadow-[0_14px_34px_rgba(15,23,42,0.04)] backdrop-blur-sm">
+    <div className="rounded-[20px] border border-hairline/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,253,0.9))] px-4 py-3 text-sm leading-6 text-text-primary shadow-[0_18px_42px_rgba(15,23,42,0.06)] backdrop-blur-sm">
       <div className="flex items-start gap-3">
         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-        <span>{children}</span>
-      </div>
-    </div>
-  );
-}
-
-function VisualThumb({
-  label,
-  note,
-  src = PORTRAIT_REFERENCE_PREVIEW_URL,
-  alt,
-  background,
-  imageClassName = 'object-cover object-center',
-}: {
-  label: string;
-  note: string;
-  src?: string;
-  alt: string;
-  background: string;
-  imageClassName?: string;
-}) {
-  return (
-    <div className="overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
-      <div className={`relative aspect-[4/5] ${background}`}>
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes="180px"
-          className={imageClassName}
-        />
-      </div>
-      <div className="space-y-1 px-3 py-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white">{label}</p>
-        <p className="text-xs leading-5 text-slate-300">{note}</p>
+        <span className="text-text-secondary">{children}</span>
       </div>
     </div>
   );
@@ -199,25 +344,24 @@ function HeroScreenshotPreview() {
   const callouts = [
     {
       label: '01',
-      title: 'Choose the output',
-      body: 'Switch between portrait anchor and character sheet before you generate.',
+      title: 'Choose your input',
+      body: 'Start with one identity photo, add optional outfit inspiration, or build the character from scratch.',
     },
     {
       label: '02',
-      title: 'Lock the asset',
-      body: 'Turn one source image into a reusable reference pack instead of re-solving identity later.',
+      title: 'Generate the asset',
+      body: 'Create a portrait anchor or one coherent 8-panel character sheet instead of re-solving identity later.',
     },
     {
       label: '03',
-      title: 'Move it downstream',
-      body: 'Reuse the same asset in image edits and image-to-video with a clearer first frame.',
+      title: 'Reuse it everywhere',
+      body: 'Bring the same reference back into prompts, edits, Nano Banana, and still-reference video workflows.',
     },
   ] as const;
 
   return (
     <div className="overflow-hidden rounded-t-[34px] rounded-b-[30px] border border-slate-900/12 bg-[linear-gradient(180deg,#07101b,#0d1b2d)] text-white shadow-[0_36px_120px_rgba(15,23,42,0.16)]">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300 sm:px-6">
-        <span>Actual tool screenshot</span>
+      <div className="flex items-center justify-end gap-3 border-b border-white/10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300 sm:px-6">
         <span>Character Builder workspace</span>
       </div>
       <div className="bg-[#e9eef5] p-4 sm:p-5">
@@ -227,10 +371,10 @@ function HeroScreenshotPreview() {
             <span className="h-2.5 w-2.5 rounded-full bg-[#facc15]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
             <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              choose output, anchor identity, generate
+              choose input, generate asset, reuse
             </span>
           </div>
-          <div className="relative aspect-[16/9]">
+          <div className="relative aspect-[16/9] bg-[#eef3f9]">
             <Image
               src={CHARACTER_WORKSPACE_HERO_PATH}
               alt="Full screenshot of the MaxVideoAI Character Builder workspace."
@@ -255,44 +399,11 @@ function HeroScreenshotPreview() {
   );
 }
 
-function OutputCard({
-  eyebrow,
-  title,
-  body,
-  visual,
-  className = '',
-  dark = false,
-}: {
-  eyebrow: string;
-  title: string;
-  body: string;
-  visual: ReactNode;
-  className?: string;
-  dark?: boolean;
-}) {
+function HowItWorksPill({ children }: { children: ReactNode }) {
   return (
-    <Card
-      className={`overflow-hidden p-0 ${
-        dark ? 'border-slate-800 bg-[#09111c] text-white' : 'border-hairline bg-surface'
-      } ${className}`}
-    >
-      <div
-        className={`border-b p-4 sm:p-5 ${
-          dark
-            ? 'border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))]'
-            : 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(247,249,252,0.96))]'
-        }`}
-      >
-        {visual}
-      </div>
-      <div className="stack-gap-sm p-6">
-        <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${dark ? 'text-slate-300' : 'text-text-muted'}`}>
-          {eyebrow}
-        </p>
-        <h3 className={`text-xl font-semibold ${dark ? 'text-white' : 'text-text-primary'}`}>{title}</h3>
-        <p className={`text-sm leading-7 ${dark ? 'text-slate-300' : 'text-text-secondary'}`}>{body}</p>
-      </div>
-    </Card>
+    <span className="inline-flex items-center rounded-full border border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+      {children}
+    </span>
   );
 }
 
@@ -317,11 +428,12 @@ export function CharacterBuilderLandingPage() {
       {
         '@type': 'ListItem',
         position: 3,
-        name: 'Consistent Character AI',
+        name: 'Character Builder',
         item: canonicalUrl,
       },
     ],
   };
+
   const softwareJsonLd = {
     '@context': 'https://schema.org',
     '@type': ['SoftwareApplication', 'WebApplication'],
@@ -330,12 +442,13 @@ export function CharacterBuilderLandingPage() {
     operatingSystem: 'Web',
     url: canonicalUrl,
     description:
-      'Create reusable AI character references and 3-view character sheets from one image before moving into image and video generation.',
+      'Create reusable portrait anchors and 8-panel AI character sheets from one image, optional outfit reference, or scratch, then reuse them across images, edits, and still-reference video workflows.',
     featureList: [
-      'Create a reusable character sheet from one image',
-      'Generate front, side, and back style references',
-      'Reuse the same character across scenes and prompts',
-      'Prepare stronger first frames for image-to-video workflows',
+      'Start from one identity photo, an optional outfit reference, or a scratch-built concept',
+      'Generate a reusable portrait anchor',
+      'Generate an 8-panel character sheet with four full-body angles and four matching close-ups',
+      'Reuse the same character reference across image prompts and image edits',
+      'Use the reference in Nano Banana and video engines that support still references',
     ],
     isPartOf: {
       '@type': 'WebSite',
@@ -343,13 +456,14 @@ export function CharacterBuilderLandingPage() {
       url: 'https://maxvideoai.com',
     },
   };
+
   const howToJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
-    name: 'How It Works',
+    name: 'How Character Builder Works',
     description:
-      'Build a reusable character reference before image generation and image-to-video.',
-    step: STEPS.map((step, index) => ({
+      'Create one reusable character reference asset for consistent AI images and still-reference video workflows.',
+    step: HOW_IT_WORKS_STEPS.map((step, index) => ({
       '@type': 'HowToStep',
       position: index + 1,
       name: step.title,
@@ -361,85 +475,78 @@ export function CharacterBuilderLandingPage() {
   return (
     <>
       <section className="relative overflow-hidden border-b border-hairline bg-[radial-gradient(circle_at_top_left,rgba(244,127,94,0.12),transparent_28%),radial-gradient(circle_at_right,rgba(76,132,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,252,0.96))]">
-        <div className="container-page relative max-w-[88rem] pb-0 pt-8 sm:pt-10 lg:pt-12">
-          <div className="max-w-4xl stack-gap-lg">
-            <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-              <Link href="/" className="transition hover:text-text-primary">
-                Home
-              </Link>
-              <ChevronRight className="h-3.5 w-3.5" />
-              <Link href="/tools" className="transition hover:text-text-primary">
-                Tools
-              </Link>
-              <ChevronRight className="h-3.5 w-3.5" />
-              <span className="font-semibold text-text-secondary">Consistent Character AI</span>
-            </nav>
+        <div className="container-page relative max-w-[88rem] pb-10 pt-8 sm:pb-12 sm:pt-10 lg:pb-12 lg:pt-12">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:items-start lg:gap-12">
+            <div className="max-w-4xl stack-gap-lg lg:pt-6">
+              <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[13px] text-slate-500">
+                <Link href="/" className="transition hover:text-text-primary">
+                  Home
+                </Link>
+                <ChevronRight className="h-3.5 w-3.5" />
+                <Link href="/tools" className="transition hover:text-text-primary">
+                  Tools
+                </Link>
+                <ChevronRight className="h-3.5 w-3.5" />
+                <span className="font-semibold text-slate-700">Character Builder</span>
+              </nav>
 
-            <div className="stack-gap-sm">
-              <div className="inline-flex w-fit items-center rounded-full border border-hairline bg-white/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-text-muted shadow-card">
-                Consistent Character Builder
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex w-fit items-center rounded-full border border-slate-200/90 bg-white/90 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-[0_16px_34px_rgba(15,23,42,0.06)]">
+                  Consistent Character AI Tool
+                </div>
+                <div className="inline-flex w-fit items-center rounded-full border border-[#e6b99b] bg-[#fff3ea] px-4 py-2 text-[11px] font-semibold text-[#a55a31] shadow-[0_14px_28px_rgba(244,127,94,0.08)]">
+                  Portrait anchor + 8-panel character sheet
+                </div>
               </div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a85a2f] sm:text-xs">
-                Build reusable reference assets before image-to-video.
-              </p>
+
+              <div className="stack-gap-sm">
+                <h1 className="max-w-[13ch] text-[clamp(3rem,5vw,4.8rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-slate-950">
+                  Create a reusable character reference for consistent AI images and video
+                </h1>
+                <p className="max-w-2xl text-[1.02rem] leading-8 text-slate-600 sm:text-lg">
+                  Upload one identity photo, add optional outfit inspiration, or start from scratch. Generate a reusable portrait
+                  anchor or 8-panel character sheet you can reuse across scenes, edits, and reference-based video workflows.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-1">
+                <ButtonLink href="/app/tools/character-builder" size="lg">
+                  Open Character Builder
+                  <ArrowRight className="h-4 w-4" />
+                </ButtonLink>
+              </div>
+
+              <div className="grid gap-3 xl:max-w-[40rem]">
+                {HERO_PROOF_BULLETS.map((item) => (
+                  <HeroProofCard key={item}>{item}</HeroProofCard>
+                ))}
+              </div>
             </div>
 
-            <div className="stack-gap-sm">
-              <h1 className="max-w-5xl text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl lg:text-[4rem] lg:leading-[1.02]">
-                Create Consistent AI Characters You Can Reuse Across Scenes
-              </h1>
-              <p className="max-w-3xl text-base leading-8 text-text-secondary sm:text-lg">
-                Build reusable character references, character sheets, and first-frame assets for cleaner image generation and
-                more stable image-to-video workflows.
-              </p>
+            <div className="lg:pt-12 xl:pt-14">
+              <HeroScreenshotPreview />
             </div>
-
-            <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/app/tools/character-builder" size="lg">
-                Open Tool
-                <ArrowRight className="h-4 w-4" />
-              </ButtonLink>
-              <ButtonLink href="/examples" variant="outline" size="lg">
-                See Example Outputs
-              </ButtonLink>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              {PROOF_BULLETS.map((item) => (
-                <HeroProofCard key={item}>{item}</HeroProofCard>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 sm:mt-10 lg:mt-12">
-            <HeroScreenshotPreview />
           </div>
         </div>
       </section>
 
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl">
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
             <Card className="overflow-hidden border-slate-800 bg-[linear-gradient(180deg,#0a1320,#101d2d)] p-0 text-white">
               <div className="border-b border-white/10 px-6 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Problem</p>
-                <h2 className="mt-3 text-3xl font-semibold tracking-tight">Why AI Characters Drift From One Scene to the Next</h2>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Why people need it</p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight">Why AI Characters Drift</h2>
               </div>
               <div className="stack-gap-sm px-6 py-6 text-sm leading-7 text-slate-300">
                 <p>
-                  AI images often change the face, outfit, accessories, or proportions from one generation to another. That makes
-                  storytelling, ads, comics, and image-to-video workflows harder than they should be.
+                  AI prompts can preserve the general idea of a character, but identity details still slip. Faces change, outfits mutate, and continuity gets weaker once you move from stills into video.
                 </p>
-                <p>
-                  When your first frame changes every time, prompt quality stops being the only issue. You also lose continuity,
-                  spend more time fixing details, and make motion generation less predictable.
-                </p>
-                <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <div className="mt-2 grid gap-3">
                   {[
-                    'Face and hair keep changing',
-                    'Outfit details drift between prompts',
-                    'Proportions stop matching across scenes',
-                    'Video first frames become less reliable',
+                    'Face and hair drift between scenes',
+                    'Wardrobe details stop matching',
+                    'Silhouette changes are harder to control',
                   ].map((item) => (
                     <div key={item} className="rounded-[20px] border border-white/10 bg-white/5 px-4 py-3">
                       <p className="text-sm font-medium text-white">{item}</p>
@@ -451,41 +558,38 @@ export function CharacterBuilderLandingPage() {
 
             <Card className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,244,239,0.98))] p-0">
               <div className="border-b border-hairline px-6 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Solution</p>
-                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">
-                  Build a Reusable Character Reference Before You Generate
-                </h2>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">What to use instead</p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">Build the reference before you build scenes</h2>
               </div>
               <div className="stack-gap-sm px-6 py-6 text-sm leading-7 text-text-secondary">
                 <p>
-                  Consistent Character Builder helps you create a reusable visual anchor from a single image or character concept.
-                  Use it as a character sheet, a reference image, or a starting asset for later image and video generation.
+                  Character Builder turns one input into a reusable portrait anchor or an 8-panel character sheet, so you have a concrete reference before you start generating scenes.
                 </p>
                 <p>
-                  Instead of rebuilding identity in every prompt, you start with a reusable reference that can travel into image
-                  variations, campaign iterations, and first-frame video workflows.
+                  Use the portrait when you need a tighter face anchor. Use the sheet when you need a broader multi-angle reference for prompts, edits, and video prep.
                 </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,0.72fr)_auto_minmax(0,1fr)] sm:items-center">
-                  <div className="rounded-[22px] border border-hairline bg-white p-3">
-                    <div className="relative aspect-[4/5] overflow-hidden rounded-[18px] bg-[#fff5ee]">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">Input portrait</p>
+                    <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] border border-hairline bg-[#f6efe8]">
                       <Image
-                        src={PORTRAIT_REFERENCE_PREVIEW_URL}
-                        alt="Portrait reference used as the base input for a reusable character pack."
+                        src={REFERENCE_ASSET_PORTRAIT_URL}
+                        alt="Portrait reference used as the base input for Character Builder."
                         fill
-                        sizes="260px"
-                        className="object-cover object-center"
+                        sizes="(min-width: 640px) 320px, 100vw"
+                        className="object-cover object-[center_18%]"
                       />
                     </div>
                   </div>
-                  <ArrowRight className="mx-auto h-5 w-5 text-brand" />
-                  <div className="rounded-[22px] border border-hairline bg-white p-3">
-                    <div className="relative aspect-[16/11] overflow-hidden rounded-[18px] bg-[#f8f2ea]">
-                    <Image
-                      src={CHARACTER_SHEET_PREVIEW_URL}
-                      alt="Character sheet output used as the reusable visual anchor."
-                      fill
-                      sizes="360px"
-                        className="object-contain p-4"
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">Reusable 8-panel sheet</p>
+                    <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] border border-hairline bg-[#f8f2ea]">
+                      <Image
+                        src={LATEST_SHEET_1.url}
+                        alt={LATEST_SHEET_1.alt}
+                        fill
+                        sizes="(min-width: 640px) 320px, 100vw"
+                        className={SHEET_IMAGE_CLASSNAME}
                       />
                     </div>
                   </div>
@@ -498,376 +602,240 @@ export function CharacterBuilderLandingPage() {
 
       <section className="border-t border-hairline bg-surface section">
         <div className="container-page max-w-6xl stack-gap-lg">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-start">
-            <div className="stack-gap-lg">
-              <SectionHeader
-                eyebrow="How it works"
-                title="How It Works"
-                body={
-                  <p>
-                    Start with a strong reference, lock the asset, then reuse it throughout the rest of your workflow.
-                  </p>
-                }
-              />
-              <div className="stack-gap-sm">
-                {STEPS.map((step, index) => (
-                  <Card
-                    key={step.title}
-                    id={`step-${index + 1}`}
-                    className="border-hairline bg-bg/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
-                  >
-                    <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
-                      {index + 1}
-                    </div>
-                    <h3 className="text-lg font-semibold text-text-primary">{step.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-text-secondary">{step.body}</p>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            <Card className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,251,0.96))] p-0">
-              <div className="border-b border-hairline px-5 py-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Inside the tool</p>
-                    <h3 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
-                      Build the asset before you branch into scenes
-                    </h3>
-                  </div>
-                  <div className="inline-flex items-center rounded-full border border-hairline bg-surface px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                    upload → generate → reuse
-                  </div>
-                </div>
-              </div>
-              <div className="p-5">
-                <div className="overflow-hidden rounded-[26px] border border-hairline bg-[#eef3f9]">
-                  <div className="flex items-center gap-1.5 border-b border-slate-300/60 px-4 py-3">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#f97316]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#facc15]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
-                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                      maxvideoai / character builder
-                    </span>
-                  </div>
-                  <div className="relative aspect-[16/11]">
-                    <Image
-                      src={CHARACTER_WORKSPACE_SCREENSHOT_PATH}
-                      alt="Character Builder workspace screenshot inside MaxVideoAI."
-                      fill
-                      sizes="(max-width: 1280px) 100vw, 620px"
-                      className="object-cover object-top bg-[#f6f9fc]"
-                    />
-                  </div>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  {['Reference portrait', 'Character sheet', 'Video-ready still'].map((item) => (
-                    <div key={item} className="rounded-[18px] border border-hairline bg-white px-4 py-3 text-center">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-bg section">
-        <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader
-            eyebrow="Outputs"
-            title="What You Can Generate"
+            eyebrow="How it works"
+            title="Create the reference, then carry it forward"
             body={
               <p>
-                Use these outputs as reusable assets before you move into prompt variations, image edits, or motion generation.
+                Start with a face, an outfit cue, or a scratch-built concept. Generate the output, then reuse it across stills, edits, and video prep.
               </p>
             }
           />
-          <div className="grid gap-4 lg:grid-cols-12">
-            <OutputCard
-              eyebrow="Reference asset"
-              title="3-view character sheet"
-              body="Create a clean character sheet AI asset that keeps the face, outfit, and overall silhouette stable."
-              className="lg:col-span-7"
-              visual={
-                <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] bg-[#f7f1ea]">
-                  <Image
-                    src={CHARACTER_SHEET_PREVIEW_URL}
-                    alt="3-view character sheet output with stable face, outfit, and silhouette."
-                    fill
-                    sizes="(max-width: 1280px) 100vw, 600px"
-                    className="object-contain p-5"
-                  />
-                </div>
-              }
-            />
-            <OutputCard
-              eyebrow="Portrait anchor"
-              title="Reusable reference portrait"
-              body="Generate a focused portrait reference you can bring back into image prompts whenever identity drift starts creeping in."
-              className="lg:col-span-5"
-              visual={
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[linear-gradient(180deg,#fff4ec,#ffffff)]">
-                  <Image
-                    src={PORTRAIT_REFERENCE_PREVIEW_URL}
-                    alt="Reusable portrait reference for consistent AI character generation."
-                    fill
-                    sizes="(max-width: 1280px) 100vw, 360px"
-                    className="object-cover object-center"
-                  />
-                </div>
-              }
-            />
-            <OutputCard
-              eyebrow="Reusable pack"
-              title="Reference asset ready to reuse"
-              body="Start with one clean pack, then move between portrait anchors, reusable sheets, and generation controls without rebuilding the workflow from scratch."
-              className="lg:col-span-5"
-              visual={
-                <div className="grid grid-cols-3 gap-3">
-                  <VisualThumb
-                    label="Portrait"
-                    note="Identity anchor"
-                    src={PORTRAIT_REFERENCE_PREVIEW_URL}
-                    alt="Portrait anchor for the reusable character reference."
-                    background="bg-[linear-gradient(180deg,#fde1d3,#fff4ed)]"
-                  />
-                  <VisualThumb
-                    label="Sheet"
-                    note="Multi-view pack"
-                    src={CHARACTER_SHEET_PREVIEW_URL}
-                    alt="Character sheet used as a reusable multi-view pack."
-                    background="bg-[linear-gradient(180deg,#f8f1e9,#fff9f3)]"
-                    imageClassName="object-contain p-2"
-                  />
-                  <VisualThumb
-                    label="Tool"
-                    note="Generate and export"
-                    src={CHARACTER_WORKSPACE_SCREENSHOT_PATH}
-                    alt="Character Builder screenshot crop showing the generation controls."
-                    background="bg-[linear-gradient(180deg,#dce8ff,#f7fbff)]"
-                    imageClassName="object-cover object-bottom"
-                  />
-                </div>
-              }
-            />
-            <OutputCard
-              eyebrow="Turnaround + motion prep"
-              title="Front / side / back turnaround to first frame"
-              body="Build the turnaround first, then carry the same reference into motion tests and image-to-video workflows with a cleaner first frame."
-              className="lg:col-span-7"
-              dark
-              visual={
-                <div className="grid gap-4 md:grid-cols-[minmax(0,0.82fr)_auto_minmax(0,1fr)] md:items-center">
-                  <div className="rounded-[20px] border border-white/10 bg-white/6 p-3">
-                    <div className="relative aspect-[16/11] overflow-hidden rounded-[18px] bg-[linear-gradient(180deg,#f8f1e9,#fefbf8)]">
-                      <Image
-                        src={CHARACTER_SHEET_PREVIEW_URL}
-                        alt="Turnaround-style character reference ready to be reused in later stages."
-                        fill
-                        sizes="420px"
-                        className="object-contain p-4"
-                      />
-                    </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            {HOW_IT_WORKS_STEPS.map((step, index) => (
+              <Card
+                key={step.title}
+                id={`step-${index + 1}`}
+                className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.95))] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)]"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${
+                      index === 0
+                        ? 'bg-[#f97316]/10 text-[#c45b2d]'
+                        : index === 1
+                          ? 'bg-brand/10 text-brand'
+                          : 'bg-[#4c84ff]/10 text-[#3564cc]'
+                    }`}
+                  >
+                    {(index + 1).toString().padStart(2, '0')}
                   </div>
-                  <ArrowRight className="mx-auto h-5 w-5 text-slate-300" />
-                  <div className="rounded-[20px] border border-white/10 bg-white/6 p-3">
-                    <div className="relative aspect-[16/11] overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_55%),linear-gradient(135deg,rgba(244,127,94,0.36),rgba(76,132,255,0.18))]">
-                      <Image
-                        src={PORTRAIT_REFERENCE_PREVIEW_URL}
-                        alt="First-frame visual prepared from the same consistent character reference."
-                        fill
-                        sizes="360px"
-                        className="object-cover object-center opacity-85"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#08111c] via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-full border border-white/15 bg-black/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white">
-                        <span>Motion-ready still</span>
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-900">
-                          <Play className="h-4 w-4 fill-current" />
-                        </span>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{HOW_IT_WORKS_LABELS[index]}</p>
+                </div>
+                <div
+                  className={`mt-4 h-1.5 w-14 rounded-full ${
+                    index === 0 ? 'bg-[#f3c2a5]' : index === 1 ? 'bg-[#d9c0b0]' : 'bg-[#c7d8ff]'
+                  }`}
+                />
+                <h3 className="mt-5 text-[1.55rem] font-semibold leading-[1.18] text-text-primary">{step.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-text-secondary">{step.body}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {HOW_IT_WORKS_OPTIONS[index].slice(0, index === 2 ? 2 : 3).map((item) => (
+                    <HowItWorksPill key={item}>{item}</HowItWorksPill>
+                  ))}
+                </div>
+              </Card>
+            ))}
+          </div>
+          <div className="rounded-[30px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,252,255,0.96))] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="max-w-2xl">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Why it works</p>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                  The reference handles continuity before you start changing scenes, so stills hold up better and video prep starts cleaner.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              {COMPARISON_COLUMNS.map((column) => (
+                <Card key={column.title} className={`overflow-hidden p-0 ${column.tone}`}>
+                  <div className="border-b border-current/10 px-4 py-3">
+                    <div className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${column.badgeTone}`}>
+                      {column.eyebrow}
+                    </div>
+                    <h3 className="mt-3 text-lg font-semibold tracking-tight text-text-primary">{column.title}</h3>
+                  </div>
+                  <div className="grid gap-2 px-4 py-4">
+                    {column.items.map((item) => (
+                      <div key={item} className="rounded-[16px] border border-hairline bg-white/80 px-4 py-2.5 text-sm leading-6 text-text-secondary">
+                        {item}
                       </div>
-                    </div>
+                    ))}
                   </div>
-                </div>
-              }
-            />
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       <section className="border-t border-hairline bg-surface section">
-        <div className="container-page max-w-6xl">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:items-start">
-            <div className="stack-gap-lg">
-              <SectionHeader
-                eyebrow="Benefits"
-                title="Why Creators Use It"
-                body={
-                  <p>
-                    This workflow is built to reduce avoidable regeneration and give you a cleaner starting point for the rest of
-                    the stack.
-                  </p>
-                }
-              />
-              <div className="grid gap-4 md:grid-cols-2">
-                {BENEFITS.map((benefit, index) => (
-                  <Card
-                    key={benefit.title}
-                    className="border-hairline bg-bg/90 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.05)]"
-                  >
-                    <div className="mb-5 flex items-center justify-between">
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
-                        {(index + 1).toString().padStart(2, '0')}
-                      </span>
-                      <Sparkles className="h-4 w-4 text-brand" />
+        <div className="container-page max-w-6xl stack-gap-lg">
+          <SectionHeader
+            eyebrow="Outputs and workflow"
+            title="Choose the output, then move into stills and video"
+            body={
+              <p>
+                Portrait anchors work best for close-ups and edits. The 8-panel sheet is the most reusable format. Once the output exists, it can move straight into Nano Banana and still-reference video workflows.
+              </p>
+            }
+          />
+          <div className="rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.96))] p-4 shadow-[0_28px_80px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)_minmax(0,0.96fr)] lg:items-stretch">
+              <Card className="overflow-hidden border-hairline bg-white p-0 shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
+                <div className="p-4">
+                  <div className={`relative aspect-[4/4.8] overflow-hidden rounded-[22px] ${OUTPUT_CARDS[0].visualTone}`}>
+                    <Image
+                      src={OUTPUT_CARDS[0].src}
+                      alt={OUTPUT_CARDS[0].alt}
+                      fill
+                      sizes="(max-width: 1280px) 100vw, 320px"
+                      className={OUTPUT_CARDS[0].visualClassName}
+                    />
+                  </div>
+                </div>
+                <div className="stack-gap-sm px-5 pb-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{OUTPUT_CARDS[0].eyebrow}</p>
+                  <h3 className="text-xl font-semibold text-text-primary">{OUTPUT_CARDS[0].title}</h3>
+                  <p className="text-sm leading-7 text-text-secondary">{OUTPUT_CARDS[0].body}</p>
+                  <div className="pt-1">
+                    <HowItWorksPill>Best for close-ups, prompts, and edits</HowItWorksPill>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="overflow-hidden border-[1.5px] border-[#f1d1bb] bg-[linear-gradient(180deg,#fff8f3,#fffefc)] p-0 shadow-[0_24px_60px_rgba(196,91,45,0.12)]">
+                <div className="flex items-center justify-between px-5 pt-5">
+                  <div className="inline-flex rounded-full border border-[#f4d8c6] bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b96135]">
+                    Most reusable
+                  </div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b96135]">4 full-body + 4 close-ups</span>
+                </div>
+                <div className="px-5 pb-5 pt-4">
+                  <div className={`relative aspect-[16/11] overflow-hidden rounded-[24px] ${OUTPUT_CARDS[1].visualTone}`}>
+                    <Image
+                      src={OUTPUT_CARDS[1].src}
+                      alt={OUTPUT_CARDS[1].alt}
+                      fill
+                      sizes="(max-width: 1280px) 100vw, 480px"
+                      className={OUTPUT_CARDS[1].visualClassName}
+                    />
+                  </div>
+                </div>
+                <div className="stack-gap-sm px-5 pb-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{OUTPUT_CARDS[1].eyebrow}</p>
+                  <h3 className="text-2xl font-semibold tracking-tight text-text-primary">{OUTPUT_CARDS[1].title}</h3>
+                  <p className="text-sm leading-7 text-text-secondary">{OUTPUT_CARDS[1].body}</p>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <HowItWorksPill>Stable face</HowItWorksPill>
+                    <HowItWorksPill>Stable outfit</HowItWorksPill>
+                    <HowItWorksPill>Stable silhouette</HowItWorksPill>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="overflow-hidden border-slate-800 bg-[linear-gradient(180deg,#0b1320,#101b2b)] p-0 text-white shadow-[0_26px_64px_rgba(15,23,42,0.16)]">
+                <div className="p-4">
+                  <div className="relative aspect-[16/11] overflow-hidden rounded-[22px] border border-white/10 bg-black">
+                    <Image
+                      src={OUTPUT_CARDS[2].src}
+                      alt={OUTPUT_CARDS[2].alt}
+                      fill
+                      sizes="(max-width: 1280px) 100vw, 360px"
+                      className={OUTPUT_CARDS[2].visualClassName}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#08111c]/80 via-transparent to-transparent" />
+                    <div className="absolute bottom-3 right-3 rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-100">
+                      Motion prep
                     </div>
-                    <h3 className="text-lg font-semibold text-text-primary">{benefit.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-text-secondary">{benefit.body}</p>
-                  </Card>
-                ))}
-              </div>
+                  </div>
+                </div>
+                <div className="stack-gap-sm px-5 pb-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{OUTPUT_CARDS[2].eyebrow}</p>
+                  <h3 className="text-xl font-semibold text-white">{OUTPUT_CARDS[2].title}</h3>
+                  <p className="text-sm leading-7 text-slate-300">{OUTPUT_CARDS[2].body}</p>
+                  <div className="pt-1">
+                    <HowItWorksPill>Best for Nano Banana and still-reference video</HowItWorksPill>
+                  </div>
+                </div>
+              </Card>
             </div>
-
-            <Card className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,242,236,0.96))] p-0">
-              <div className="border-b border-hairline px-6 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Who it is for</p>
-                <h3 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">
-                  Creator workflow and commercial workflow, both early in the pipeline
-                </h3>
-              </div>
-              <div className="grid gap-0 sm:grid-cols-2">
-                <div className="border-b border-hairline p-6 sm:border-b-0 sm:border-r">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">Creator / story</p>
-                  <h4 className="mt-3 text-xl font-semibold text-text-primary">Short films and scene continuity</h4>
-                  <p className="mt-3 text-sm leading-7 text-text-secondary">
-                    Lock your lead character once, then reuse the same reference pack as you test new scenes, moods, and shot plans.
-                  </p>
+            <div className="mt-6 rounded-[34px] border border-slate-800 bg-[linear-gradient(180deg,#0a1320,#101d2d)] p-5 text-white shadow-[0_32px_90px_rgba(15,23,42,0.16)] lg:p-6">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Reference workflow</p>
+                  <p className="mt-2 text-lg font-semibold tracking-[0.1em] text-white">Character Builder → Nano Banana → Video</p>
                 </div>
-                <div className="p-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">Commercial / agency</p>
-                  <h4 className="mt-3 text-xl font-semibold text-text-primary">Recurring talent and ad variations</h4>
-                  <p className="mt-3 text-sm leading-7 text-text-secondary">
-                    Keep spokespersons, mascots, or recurring characters aligned while you branch into multiple campaign versions.
-                  </p>
-                </div>
+                <p className="text-sm font-semibold tracking-[0.12em] text-slate-200">Sheet → Still → Video</p>
               </div>
-                <div className="border-t border-hairline p-5">
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-[22px] bg-[#f7f1ea]">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,0.82fr)_minmax(0,1.36fr)] lg:items-stretch">
+                <div className="rounded-[22px] border border-white/10 bg-[#111a28] p-3">
+                  <div className="relative aspect-[16/12] overflow-hidden rounded-[18px] bg-[#dfe8f4]">
                     <Image
-                      src={CHARACTER_SHEET_PREVIEW_URL}
-                      alt="Reusable character sheet used for creator and commercial workflows."
+                      src={WORKFLOW_CHARACTER_SHEET_ASSET.url}
+                      alt={WORKFLOW_CHARACTER_SHEET_ASSET.alt}
                       fill
-                      sizes="260px"
-                      className="object-contain p-4"
+                      sizes="(min-width: 1024px) 280px, 100vw"
+                      className={SHEET_IMAGE_CLASSNAME}
                     />
                   </div>
-                  <div className="relative aspect-[16/11] overflow-hidden rounded-[22px] bg-[#f7f1ea]">
+                  <div className="mt-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">01 · Character sheet</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">Lock the character before any motion work starts.</p>
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-[#111a28] p-3">
+                  <div className="relative aspect-[16/12] overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_55%),linear-gradient(135deg,rgba(244,127,94,0.26),rgba(76,132,255,0.16))]">
                     <Image
-                      src={CHARACTER_WORKSPACE_SCREENSHOT_PATH}
-                      alt="Character Builder workspace screenshot used as part of the reusable asset workflow."
+                      src={WORKFLOW_NANO_BANANA_ASSET.url}
+                      alt={WORKFLOW_NANO_BANANA_ASSET.alt}
                       fill
-                      sizes="420px"
-                      className="object-cover object-top"
+                      sizes="(min-width: 1024px) 280px, 100vw"
+                      className="object-cover object-center"
                     />
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">02 · Nano Banana still</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">Refine the same character into a cleaner still before animation.</p>
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-[#0f1826] p-3">
+                  <div className="overflow-hidden rounded-[18px] border border-white/10 bg-black">
+                    <video
+                      className="aspect-[16/12] w-full object-cover"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      poster={WORKFLOW_VIDEO_START_FRAME_ASSET.url}
+                    >
+                      <source src={WORKFLOW_VIDEO_START_FRAME_ASSET.videoUrl} type="video/mp4" />
+                    </video>
+                  </div>
+                  <div className="mt-4 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">03 · Video result</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">The same grounded identity carried into the final motion result.</p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-200">
+                      LTX 2.3 Pro
+                    </span>
                   </div>
                 </div>
               </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-[#09111c] section text-white">
-        <div className="container-page max-w-6xl">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
-            <div className="stack-gap-lg">
-              <SectionHeader
-                eyebrow="Workflow"
-                title="Use Character References Before Image-to-Video"
-                light
-                body={
-                  <>
-                    <p>
-                      Create a clean reference first, then bring it into your preferred image-to-video workflow. This makes it
-                      easier to keep facial traits, outfits, and proportions stable across clips.
-                    </p>
-                    <p>
-                      You can generate the reference in the builder, refine it in{' '}
-                      <Link href="/app/image" className="font-semibold text-white underline decoration-white/30 underline-offset-4">
-                        Image
-                      </Link>
-                      , then move into{' '}
-                      <Link href="/app" className="font-semibold text-white underline decoration-white/30 underline-offset-4">
-                        Video
-                      </Link>{' '}
-                      with a stronger first frame and a cleaner visual brief.
-                    </p>
-                  </>
-                }
-              />
-              <div className="flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 {WORKFLOW_LINKS.map((link) => (
                   <LinkChip key={link.href} href={link.href} label={link.label} dark />
                 ))}
-              </div>
-            </div>
-
-            <div className="rounded-[34px] border border-white/10 bg-white/5 p-5 shadow-[0_32px_90px_rgba(0,0,0,0.25)]">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
-                <span>Reference pipeline</span>
-                <span>Character Builder → Image → Video</span>
-              </div>
-              <div className="grid gap-4 md:grid-cols-[minmax(0,0.86fr)_auto_minmax(0,0.86fr)_auto_minmax(0,0.96fr)] md:items-center">
-                {[
-                  { title: 'Character Builder', body: 'Create the reusable sheet or portrait anchor.' },
-                  { title: 'Image', body: 'Refine the chosen still without rebuilding identity.' },
-                  { title: 'Video', body: 'Launch motion from a stronger first frame.' },
-                ].map((item, index) => (
-                  <div key={item.title} className="contents">
-                    <div className="rounded-[22px] border border-white/10 bg-black/20 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">{item.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-white">{item.body}</p>
-                    </div>
-                    {index < 2 ? <ArrowRight className="mx-auto hidden h-5 w-5 text-slate-400 md:block" /> : null}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-4">
-                <div className="grid gap-4 sm:grid-cols-[minmax(0,0.72fr)_auto_minmax(0,1fr)] sm:items-center">
-                  <div className="rounded-[18px] border border-white/10 bg-white/6 p-3">
-                    <div className="relative aspect-[4/5] overflow-hidden rounded-[14px] bg-[#dfe8f4]">
-                      <Image
-                        src={CHARACTER_WORKSPACE_SCREENSHOT_PATH}
-                        alt="Character Builder workspace showing the reference before image-to-video."
-                        fill
-                        sizes="220px"
-                        className="object-cover object-left-top"
-                      />
-                    </div>
-                  </div>
-                  <ArrowRight className="mx-auto h-5 w-5 text-slate-300" />
-                  <div className="rounded-[18px] border border-white/10 bg-white/6 p-3">
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-[14px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_55%),linear-gradient(135deg,rgba(244,127,94,0.36),rgba(76,132,255,0.18))]">
-                      <Image
-                        src={PORTRAIT_REFERENCE_PREVIEW_URL}
-                        alt="Video thumbnail concept based on the same consistent character reference."
-                        fill
-                        sizes="320px"
-                        className="object-cover object-center opacity-80"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#08111c] via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-full border border-white/15 bg-black/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white">
-                        <span>Stable first frame</span>
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-900">
-                          <Play className="h-4 w-4 fill-current" />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -878,102 +846,86 @@ export function CharacterBuilderLandingPage() {
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader
             eyebrow="Use cases"
-            title="Best Use Cases"
+            title="Where Reusable Character Consistency Matters"
             body={
               <p>
-                These workflows make sense anywhere you need more reliable assets before you commit budget to generation or
-                iteration.
+                One character can support creator, commercial, and planning workflows without losing continuity across multiple stills or shots.
               </p>
             }
           />
           <div className="grid gap-4 lg:grid-cols-12">
-            <Card className="overflow-hidden border-hairline bg-surface p-0 lg:col-span-6">
-              <div className="border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(247,249,252,0.96))] p-5">
-                <div className="grid grid-cols-3 gap-3">
-                  <VisualThumb
-                    label="Reference"
-                    note="Lead preserved"
-                    src={PORTRAIT_REFERENCE_PREVIEW_URL}
-                    alt="Portrait reference for a recurring lead character."
-                    background="bg-[linear-gradient(180deg,#fde1d3,#fff4ed)]"
-                  />
-                  <VisualThumb
-                    label="Sheet"
-                    note="Shot planning"
-                    src={CHARACTER_SHEET_PREVIEW_URL}
-                    alt="Character sheet used to plan multiple scenes."
-                    background="bg-[linear-gradient(180deg,#f8f1e9,#fff9f3)]"
-                    imageClassName="object-contain p-2"
-                  />
-                  <VisualThumb
-                    label="Tool"
-                    note="Iteration view"
-                    src={CHARACTER_WORKSPACE_SCREENSHOT_PATH}
-                    alt="Character Builder screenshot crop showing iterative controls."
-                    background="bg-[linear-gradient(180deg,#dce8ff,#f7fbff)]"
-                    imageClassName="object-cover object-top"
-                  />
+            <Card className={`overflow-hidden p-0 lg:col-span-7 ${USE_CASES[0].cardClassName}`}>
+              <div className="grid h-full gap-0 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+                <div className="flex flex-col justify-between p-6 sm:p-7">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${USE_CASES[0].labelClassName}`}>
+                      {USE_CASES[0].eyebrow}
+                    </div>
+                    <span className="text-sm font-semibold tracking-[0.14em] text-slate-300">{USE_CASES[0].number}</span>
+                  </div>
+                  <div className="mt-10">
+                    <h3 className="max-w-md text-3xl font-semibold tracking-tight text-white">{USE_CASES[0].title}</h3>
+                    <p className={`mt-4 max-w-md text-base leading-8 ${USE_CASES[0].bodyClassName}`}>{USE_CASES[0].body}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="stack-gap-sm p-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Creator / story</p>
-                <h3 className="text-xl font-semibold text-text-primary">Short films and story scenes</h3>
-                <p className="text-sm leading-7 text-text-secondary">
-                  Keep leads and recurring characters readable from shot to shot before you animate or cut sequences.
-                </p>
+                <div className="relative min-h-[280px] overflow-hidden bg-[#0e1725] lg:min-h-full">
+                  <Image
+                    src={USE_CASES[0].src}
+                    alt={USE_CASES[0].alt}
+                    fill
+                    sizes="(max-width: 1280px) 100vw, 640px"
+                    className={USE_CASES[0].imageClassName}
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,19,32,0.2),rgba(11,19,32,0)_38%,rgba(11,19,32,0.08))]" />
+                </div>
               </div>
             </Card>
 
-            <Card className="overflow-hidden border-hairline bg-surface p-0 lg:col-span-6">
-              <div className="border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(250,244,239,0.96))] p-5">
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,0.82fr)_minmax(0,1fr)]">
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-[22px] bg-[#dfe8f4]">
-                    <Image
-                      src={CHARACTER_WORKSPACE_SCREENSHOT_PATH}
-                      alt="Character Builder workspace used to prepare recurring ad talent references."
-                      fill
-                      sizes="220px"
-                      className="object-cover object-left-top"
-                    />
-                  </div>
-                  <div className="relative aspect-[16/11] overflow-hidden rounded-[22px] bg-[#f7f1ea]">
-                    <Image
-                      src={CHARACTER_SHEET_PREVIEW_URL}
-                      alt="Character sheet used for ad variations and branded content."
-                      fill
-                      sizes="340px"
-                      className="object-contain p-4"
-                    />
-                  </div>
-                </div>
+            <Card className={`overflow-hidden p-0 lg:col-span-5 ${USE_CASES[1].cardClassName}`}>
+              <div className="relative aspect-[4/3] overflow-hidden bg-[#f3ece4]">
+                <Image
+                  src={USE_CASES[1].src}
+                  alt={USE_CASES[1].alt}
+                  fill
+                  sizes="(max-width: 1280px) 100vw, 480px"
+                  className={USE_CASES[1].imageClassName}
+                />
               </div>
-              <div className="stack-gap-sm p-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Commercial / agency</p>
-                <h3 className="text-xl font-semibold text-text-primary">AI ad creatives with recurring talent</h3>
-                <p className="text-sm leading-7 text-text-secondary">
-                  Anchor the same character or spokesperson before you branch into multiple campaign variants.
-                </p>
+              <div className="p-6 sm:p-7">
+                <div className="flex items-center justify-between gap-3">
+                  <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${USE_CASES[1].labelClassName}`}>
+                    {USE_CASES[1].eyebrow}
+                  </div>
+                  <span className="text-sm font-semibold tracking-[0.14em] text-brand">{USE_CASES[1].number}</span>
+                </div>
+                <h3 className="mt-6 text-2xl font-semibold tracking-tight text-text-primary">{USE_CASES[1].title}</h3>
+                <p className={`mt-4 text-base leading-8 ${USE_CASES[1].bodyClassName}`}>{USE_CASES[1].body}</p>
               </div>
             </Card>
+          </div>
 
-            {[
-              {
-                title: 'YouTube and social series',
-                body: 'Build one reference asset for an ongoing format instead of re-solving identity every episode.',
-              },
-              {
-                title: 'Brand mascots',
-                body: 'Create a repeatable mascot reference that can survive changing prompts, scenes, and output styles.',
-              },
-              {
-                title: 'Comics and animation previsualization',
-                body: 'Use turnaround-style sheets and stable portraits to support boards, panels, and scene planning.',
-              },
-            ].map((useCase) => (
-              <Card key={useCase.title} className="border-hairline bg-surface p-5 lg:col-span-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Reusable asset workflow</p>
-                <h3 className="mt-3 text-lg font-semibold text-text-primary">{useCase.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-text-secondary">{useCase.body}</p>
+          <div className="grid gap-4 lg:grid-cols-12">
+            {USE_CASES.slice(2).map((useCase) => (
+              <Card key={useCase.title} className={`overflow-hidden p-0 lg:col-span-4 ${useCase.cardClassName}`}>
+                <div className="relative aspect-[16/10] overflow-hidden bg-[#f5efe8]">
+                  <Image
+                    src={useCase.src}
+                    alt={useCase.alt}
+                    fill
+                    sizes="(max-width: 1280px) 100vw, 360px"
+                    className={useCase.imageClassName}
+                  />
+                </div>
+                <div className="p-5 sm:p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${useCase.labelClassName}`}>
+                      {useCase.eyebrow}
+                    </div>
+                    <span className="text-sm font-semibold tracking-[0.14em] text-brand">{useCase.number}</span>
+                  </div>
+                  <h3 className="mt-5 text-xl font-semibold tracking-tight text-text-primary">{useCase.title}</h3>
+                  <p className={`mt-3 text-sm leading-7 ${useCase.bodyClassName}`}>{useCase.body}</p>
+                </div>
               </Card>
             ))}
           </div>
@@ -985,11 +937,7 @@ export function CharacterBuilderLandingPage() {
           <SectionHeader
             eyebrow="FAQ"
             title="Consistent Character AI FAQ"
-            body={
-              <p>
-                Short answers to the questions people ask before they start building a reusable image-to-video pipeline.
-              </p>
-            }
+            body={<p>Short answers to the most important questions before you build the reusable reference.</p>}
           />
           <div className="stack-gap-sm">
             {FAQS.map((faq) => (
@@ -1011,34 +959,30 @@ export function CharacterBuilderLandingPage() {
             <div className="grid gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
               <div className="stack-gap-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Final CTA</p>
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Build Your Character Reference</h2>
+                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Build Your Reusable Character Reference</h2>
                 <div className="max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">
                   <p>
-                    Create reusable character references before you generate. Turn one image into a reusable character sheet, keep
-                    the same character across scenes, prompts, and video workflows, and connect it back to the rest of MaxVideoAI.
+                    Create the character once, turn it into a portrait anchor or character sheet, then carry it into prompts, edits, and video prep.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <ButtonLink href="/app/tools/character-builder" size="lg" className="bg-white text-slate-950 hover:bg-slate-100">
                     Open Character Builder
                   </ButtonLink>
-                  <ButtonLink href="/tools" variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
-                    Browse Tools
-                  </ButtonLink>
                 </div>
               </div>
               <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-4">
                 <div className="mb-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
                   <span>Reusable output</span>
-                  <span>Character pack</span>
+                  <span>8-panel sheet</span>
                 </div>
                 <div className="relative aspect-[16/11] overflow-hidden rounded-[22px] bg-[linear-gradient(180deg,#f8f1e9,#fefbf8)]">
                   <Image
-                    src={CHARACTER_SHEET_PREVIEW_URL}
-                    alt="Consistent character sheet preview used in the final call to action."
+                    src={LATEST_SHEET_4.url}
+                    alt={LATEST_SHEET_4.alt}
                     fill
                     sizes="420px"
-                    className="object-contain p-4"
+                    className={SHEET_IMAGE_CLASSNAME}
                   />
                 </div>
               </div>
@@ -1047,7 +991,7 @@ export function CharacterBuilderLandingPage() {
         </div>
       </section>
 
-      <FAQSchema questions={FAQS.slice(0, 6)} />
+      <FAQSchema questions={[...FAQS]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(howToJsonLd) }} />

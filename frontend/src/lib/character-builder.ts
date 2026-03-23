@@ -35,7 +35,7 @@ export const CHARACTER_OUTPUT_OPTIONS: Array<{ id: CharacterBuilderOutputMode; l
   {
     id: 'character-sheet',
     label: 'Character sheet',
-    description: 'Full-body turnaround with clean multi-angle coverage.',
+    description: '4 full-body angles plus 4 matching close-ups in one sheet.',
   },
 ];
 

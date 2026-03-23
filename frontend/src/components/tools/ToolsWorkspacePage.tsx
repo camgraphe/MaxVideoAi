@@ -17,25 +17,20 @@ const DEFAULT_TOOLS_COPY = {
   "eyebrow": "Workspace",
   "title": "Tools",
   "subtitle": "Build reusable first-frame assets before launching image-to-video runs.",
-  "characterEyebrow": "Reference tool",
+  "characterEyebrow": "Character consistency",
   "characterTitle": "Consistent Character Builder",
-  "characterBody": "Build a reusable character reference or character sheet before manually reusing it in later image or video workflows.",
-  "characterBadge": "V1",
-  "angleEyebrow": "First frame tool",
+  "characterBody": "Build a portrait anchor or an 8-panel character sheet with 4 full-body angles and 4 close-ups before reusing it in later image or video workflows.",
+  "characterBadge": "8-panel sheet",
+  "angleEyebrow": "Perspective control",
   "angleTitle": "Angle / Perspective",
   "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
-  "angleBadge": "MVP",
+  "angleBadge": "New viewpoint",
   "open": "Open Tool"
 } as const;
 
 const CHARACTER_CARD_BACKGROUND_URL =
   '/assets/tools/character-builder-workspace.png';
-const ANGLE_CARD_BACKGROUND_URLS = [
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/79fe6fd7-60cf-4419-a143-a2cb52e9b762.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/cf9ff473-5f6f-4877-b5fd-aafc36bddeb8.webp',
-] as const;
+const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
 
 function ToolPreviewPanel({
   children,
@@ -143,15 +138,13 @@ export default function ToolsPage() {
 
               <Card className="overflow-hidden border border-border bg-surface p-0">
                 <ToolPreviewPanel className="aspect-[16/9] p-4">
-                  <div className="grid h-full grid-cols-2 gap-3">
-                    {ANGLE_CARD_BACKGROUND_URLS.map((url) => (
-                      <div
-                        key={url}
-                        className="overflow-hidden rounded-[16px] border border-border/80 bg-bg/70 p-2 shadow-[0_14px_30px_rgba(15,23,42,0.14)] backdrop-blur-sm"
-                      >
-                        <img src={url} alt="" className="h-full w-full rounded-[12px] object-contain" />
-                      </div>
-                    ))}
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
+                  <div className="relative flex h-full items-center justify-center rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
+                    <img
+                      src={ANGLE_CARD_BACKGROUND_URL}
+                      alt="Angle workspace preview"
+                      className="h-full w-full rounded-[14px] object-cover object-top"
+                    />
                   </div>
                 </ToolPreviewPanel>
                 <div className="p-5">

@@ -245,7 +245,7 @@ const DEFAULT_CHARACTER_COPY = {
       "portraitTitle": "Portrait reference",
       "portraitBody": "Face-forward portrait anchor",
     "sheetTitle": "Character sheet",
-    "sheetBody": "Multi-angle full-body sheet",
+    "sheetBody": "4 full-body views + 4 close-ups",
     "quality": "Quality",
     "format": "Format",
     "pricePerImage": "{price} per image",
@@ -419,7 +419,7 @@ const DEFAULT_CHARACTER_COPY = {
       },
       "character-sheet": {
         "label": "Character sheet",
-        "description": "Full-body turnaround with clean multi-angle coverage."
+        "description": "4 full-body angles plus 4 matching close-ups."
       }
     },
     "consistency": {
