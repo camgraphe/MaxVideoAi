@@ -4,7 +4,7 @@ import { TextLink } from '@/components/ui/TextLink';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Script from 'next/script';
-import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
+import { getContentEntries, getEntryBySlug, type ContentEntry } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions, locales } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -34,6 +34,45 @@ const BLOG_TITLE_OVERRIDES: Partial<Record<string, Partial<Record<AppLocale, str
 };
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 
+function getCanonicalBlogSlug(post: Pick<ContentEntry, 'slug' | 'canonicalSlug' | 'lang'>) {
+  return post.canonicalSlug ?? (post.lang === 'en' ? post.slug : post.slug);
+}
+
+async function getBlogPosts(locale: AppLocale) {
+  const localized = await getContentEntries(`content/${locale}/blog`);
+  if (locale === 'en') {
+    return localized;
+  }
+
+  const english = await getContentEntries('content/en/blog');
+  const merged = new Map<string, ContentEntry>();
+
+  english.forEach((post) => {
+    merged.set(getCanonicalBlogSlug(post), post);
+  });
+
+  localized.forEach((post) => {
+    merged.set(getCanonicalBlogSlug(post), post);
+  });
+
+  return Array.from(merged.values()).sort((a, b) => Date.parse(b.date ?? '') - Date.parse(a.date ?? ''));
+}
+
+function getBlogLinkProps(locale: AppLocale, post: Pick<ContentEntry, 'slug' | 'canonicalSlug' | 'lang'>) {
+  const canonicalSlug = getCanonicalBlogSlug(post);
+  const localizedSlug = locale === 'en' || post.lang === locale ? post.slug : null;
+
+  return localizedSlug
+    ? {
+        href: { pathname: '/blog/[slug]' as const, params: { slug: localizedSlug } },
+      }
+    : {
+        href: { pathname: '/blog/[slug]' as const, params: { slug: canonicalSlug } },
+        locale: 'en' as const,
+        hrefLang: 'en',
+      };
+}
+
 function toIsoDate(value?: string | null): string | undefined {
   if (!value) return undefined;
   const date = new Date(value);
@@ -49,10 +88,10 @@ async function getPost(locale: AppLocale, slug: string) {
   if (direct) {
     return direct;
   }
-  const entries = await getContentEntries(basePath);
+  const entries = await getBlogPosts(locale);
   const canonicalMatch = entries.find((entry) => {
     if (entry.slug === slug) return true;
-    if (entry.canonicalSlug && entry.canonicalSlug === slug) return true;
+    if (getCanonicalBlogSlug(entry) === slug) return true;
     if (!entry.canonicalSlug && entry.lang === 'en' && entry.slug === slug) return true;
     return false;
   });
@@ -78,7 +117,7 @@ async function findLocalizedSlugs(canonicalSlug: string) {
 export async function generateStaticParams(): Promise<Params[]> {
   const params: Params[] = [];
   for (const locale of locales) {
-    const entries = await getContentEntries(`content/${locale}/blog`);
+    const entries = await getBlogPosts(locale);
     entries.forEach((entry) => {
       params.push({ locale, slug: entry.slug });
     });
@@ -111,12 +150,16 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     slugMap[target] = `blog/${slugValue}`;
   };
   publishableLocales.forEach(ensureSlugFor);
-  ensureSlugFor(params.locale);
+  const hasLocalizedVersion = params.locale === 'en' || Boolean(localizedSlugs[params.locale]);
+  if (hasLocalizedVersion) {
+    ensureSlugFor(params.locale);
+  }
 
   const overrideTitle =
     BLOG_TITLE_OVERRIDES[canonicalSlug]?.[params.locale] ?? BLOG_TITLE_OVERRIDES[canonicalSlug]?.en ?? null;
   const defaultTitle = `${post.title} — MaxVideo AI`;
   const pageTitle = overrideTitle ?? defaultTitle;
+  const canonicalOverride = !hasLocalizedVersion ? `${SITE_BASE_URL}/blog/${canonicalSlug}` : undefined;
 
   const metadata = buildSeoMetadata({
     locale: params.locale,
@@ -125,9 +168,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     slugMap,
     englishPath: `/blog/${canonicalSlug}`,
     availableLocales: Array.from(publishableLocales),
+    canonicalOverride,
     image: post.image ?? '/og/price-before.png',
     imageAlt: post.title,
     ogType: 'article',
+    robots: !hasLocalizedVersion ? { index: false, follow: true } : undefined,
     openGraph: {
       ...(published ? { publishedTime: published } : {}),
       ...(lastModified ? { modifiedTime: lastModified, updatedTime: lastModified } : {}),
@@ -172,12 +217,15 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     slugMap[target] = `blog/${targetSlug}`;
   };
   publishableLocales.forEach(ensureSlugFor);
-  ensureSlugFor(locale);
+  const hasLocalizedVersion = locale === 'en' || Boolean(localizedSlugs[locale]);
+  if (hasLocalizedVersion) {
+    ensureSlugFor(locale);
+  }
   const metadataUrls = buildMetadataUrls(locale, slugMap, {
     englishPath: `/blog/${canonicalSlug}`,
     availableLocales: Array.from(publishableLocales),
   });
-  const canonicalUrl = metadataUrls.canonical;
+  const canonicalUrl = !hasLocalizedVersion ? `${SITE_BASE_URL}/blog/${canonicalSlug}` : metadataUrls.canonical;
   const breadcrumbLabels = getBreadcrumbLabels(locale);
   const blogListUrl = buildMetadataUrls(locale, BLOG_SLUG_MAP, { englishPath: '/blog' }).canonical;
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
@@ -209,7 +257,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   const publishedIso = toIsoDate(post.date) ?? post.date;
   const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;
   const demotedContent = post.content.replace(/<\/?h1>/gi, (match) => match.replace(/h1/i, 'h2'));
-  const relatedPool = (await getContentEntries(`content/${locale}/blog`)).filter((entry) => entry.slug !== post.slug);
+  const relatedPool = (await getBlogPosts(locale)).filter((entry) => getCanonicalBlogSlug(entry) !== canonicalSlug);
   const relatedPosts = relatedPool
     .sort((a, b) => Date.parse(b.date ?? '') - Date.parse(a.date ?? ''))
     .slice(0, 3);
@@ -296,26 +344,28 @@ export default async function BlogPostPage({ params }: { params: Params }) {
               <p className="text-sm text-text-secondary">More launch notes and engine breakdowns curated for you.</p>
             </div>
             <div className="grid grid-gap-sm md:grid-cols-3">
-              {relatedPosts.map((related) => (
-                <article key={related.slug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                    {new Date(related.date).toLocaleDateString(localeDateMap[locale], {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </p>
-                  <h3 className="mt-2 text-base font-semibold text-text-primary">{related.title}</h3>
-                  <p className="mt-2 text-sm text-text-secondary">{related.description}</p>
-                  <TextLink
-                    href={{ pathname: '/blog/[slug]', params: { slug: related.slug } }}
-                    className="mt-4 gap-1 text-sm"
-                    linkComponent={Link}
-                  >
-                    Read article <span aria-hidden>→</span>
-                  </TextLink>
-                </article>
-              ))}
+              {relatedPosts.map((related) => {
+                const relatedLinkProps = getBlogLinkProps(locale, related);
+                return (
+                  <article key={getCanonicalBlogSlug(related)} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                      {new Date(related.date).toLocaleDateString(localeDateMap[locale], {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                    <h3 className="mt-2 text-base font-semibold text-text-primary">{related.title}</h3>
+                    <p className="mt-2 text-sm text-text-secondary">{related.description}</p>
+                    <Link
+                      {...relatedLinkProps}
+                      className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-link transition hover:text-link-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    >
+                      Read article <span aria-hidden>→</span>
+                    </Link>
+                  </article>
+                );
+              })}
             </div>
           </section>
         ) : null}

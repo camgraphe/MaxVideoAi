@@ -2,16 +2,13 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
-import clsx from 'clsx';
-import { getContentEntries } from '@/lib/content/markdown';
+import { getContentEntries, type ContentEntry } from '@/lib/content/markdown';
 import { resolveDictionary } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
-import { ButtonLink } from '@/components/ui/Button';
-import { TextLink } from '@/components/ui/TextLink';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
@@ -34,12 +31,43 @@ const BLOG_META = {
 
 export const revalidate = 60 * 10;
 
+function getCanonicalBlogSlug(post: Pick<ContentEntry, 'slug' | 'canonicalSlug' | 'lang'>) {
+  return post.canonicalSlug ?? (post.lang === 'en' ? post.slug : post.slug);
+}
+
 async function getBlogPosts(locale: AppLocale) {
   const localized = await getContentEntries(`content/${locale}/blog`);
-  if (localized.length > 0 || locale === 'en') {
+  if (locale === 'en') {
     return localized;
   }
-  return getContentEntries('content/en/blog');
+
+  const english = await getContentEntries('content/en/blog');
+  const merged = new Map<string, ContentEntry>();
+
+  english.forEach((post) => {
+    merged.set(getCanonicalBlogSlug(post), post);
+  });
+
+  localized.forEach((post) => {
+    merged.set(getCanonicalBlogSlug(post), post);
+  });
+
+  return Array.from(merged.values()).sort((a, b) => Date.parse(b.date ?? '') - Date.parse(a.date ?? ''));
+}
+
+function getBlogLinkProps(locale: AppLocale, post: Pick<ContentEntry, 'slug' | 'canonicalSlug' | 'lang'>) {
+  const canonicalSlug = getCanonicalBlogSlug(post);
+  const localizedSlug = locale === 'en' || post.lang === locale ? post.slug : null;
+
+  return localizedSlug
+    ? {
+        href: { pathname: '/blog/[slug]' as const, params: { slug: localizedSlug } },
+      }
+    : {
+        href: { pathname: '/blog/[slug]' as const, params: { slug: canonicalSlug } },
+        locale: 'en' as const,
+        hrefLang: 'en',
+      };
 }
 
 function normalizeImageSrc(src?: string | null) {
@@ -152,157 +180,172 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   }
 
   const [featured, ...rest] = posts;
+  const featuredLinkProps = getBlogLinkProps(locale, featured);
 
   return (
     <main className="container-page max-w-6xl section">
       <div className="stack-gap-lg">
-        <header className="rounded-[32px] border border-hairline bg-surface/80 p-8 shadow-card backdrop-blur sm:p-12">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="sm:max-w-[62ch] stack-gap">
-              <p className="text-xs font-semibold uppercase tracking-micro text-brand">
-                {content.hero.eyebrow ?? 'The Studio Journal'}
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">
-                {content.hero.title}
-              </h1>
-              <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
-            </div>
-            <ButtonLink
-              href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }}
-              className="self-start shadow-card"
-              linkComponent={Link}
-            >
-              {content.hero.ctaLabel ?? 'Latest Sora coverage →'}
-            </ButtonLink>
+        <header className="overflow-hidden rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.96))] shadow-card">
+          <div className="stack-gap p-8 sm:p-10">
+            <p className="text-xs font-semibold uppercase tracking-micro text-brand">
+              {content.hero.eyebrow ?? 'The Studio Journal'}
+            </p>
+            <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">
+              {content.hero.title}
+            </h1>
+            <p className="max-w-[62ch] text-base leading-relaxed text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
           </div>
+          {(content.intro?.cards?.length ?? 0) > 0 ? (
+            <div className="grid gap-px border-t border-hairline bg-hairline lg:grid-cols-3">
+              {(content.intro?.cards ?? []).map((card) => (
+                <div key={card.title} className="bg-white/90 px-6 py-5 text-sm text-text-secondary">
+                  <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
+                  <p className="mt-2 leading-7">{card.body}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </header>
 
-        <section className="stack-gap-lg rounded-[28px] border border-hairline bg-surface/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
-          <p>{content.intro?.lead}</p>
-          <div className="grid grid-gap-sm lg:grid-cols-3">
-            {(content.intro?.cards ?? []).map((card) => (
-              <div key={card.title}>
-                <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
-                <p className="mt-2">{card.body}</p>
-              </div>
-            ))}
+        <section className="stack-gap">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-micro text-brand">Featured story</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+                Start with the post that matters now
+              </h2>
+            </div>
           </div>
-        </section>
 
-        <section className="grid grid-gap-lg lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
-          <article className="group relative overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
-            <div className="relative h-64 w-full overflow-hidden sm:h-80">
-              <Image
-                src={normalizeImageSrc(featured.image)}
-                alt={featured.title}
-                fill
-                priority
-                fetchPriority="high"
-                sizes="(min-width: 1280px) 720px, (min-width: 1024px) 600px, 100vw"
-                className="object-cover object-center transition duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0" />
-            </div>
-            <div className="stack-gap px-6 pb-8 pt-6 sm:px-10">
-              <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-brand">
-                <span className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
-                  {new Date(featured.date).toLocaleDateString(localeDateMap[locale], {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </span>
-                <div className="flex flex-wrap gap-2 text-text-muted">
-                  {featured.keywords?.slice(0, 2).map((keyword) => (
-                    <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
+          <article className="group overflow-hidden rounded-[30px] border border-hairline bg-surface/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
+            <div className="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-stretch">
+              <div className="relative min-h-[280px] overflow-hidden bg-bg sm:min-h-[360px]">
+                <Image
+                  src={normalizeImageSrc(featured.image)}
+                  alt={featured.title}
+                  fill
+                  priority
+                  fetchPriority="high"
+                  sizes="(min-width: 1280px) 760px, (min-width: 1024px) 60vw, 100vw"
+                  className="object-cover object-center transition duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent" />
               </div>
-              <div className="stack-gap-sm">
-                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                  <Link href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }} className="transition hover:text-brandHover">
-                    {featured.title}
-                  </Link>
-                </h2>
-                <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{featured.description}</p>
-              </div>
-              <TextLink
-                href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}
-                className="gap-2 text-sm"
-                linkComponent={Link}
-              >
-                {formatReadMoreLabel(featured.title)}
-                <span aria-hidden>→</span>
-              </TextLink>
-            </div>
-          </article>
-
-          <div className="stack-gap-lg">
-            {rest.map((post) => (
-              <article
-                key={post.slug}
-                className={clsx(
-                  'group flex flex-col gap-4 rounded-3xl border border-hairline bg-surface/90 p-6 shadow-card transition hover:-translate-y-1 hover:shadow-float',
-                  'sm:flex-row sm:items-center sm:p-7'
-                )}
-              >
-                <div className="relative h-32 w-full overflow-hidden rounded-2xl bg-bg sm:h-28 sm:w-40">
-                  <Image
-                    src={normalizeImageSrc(post.image)}
-                    alt={post.title ?? 'MaxVideoAI blog cover'}
-                    fill
-                    loading="lazy"
-                    decoding="async"
-                    sizes="160px"
-                    className="object-cover object-center transition duration-700 group-hover:scale-105"
-                  />
-                </div>
-                <div className="flex-1 stack-gap-sm">
-                  <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-micro text-text-muted">
-                    <span>
-                      {new Date(post.date).toLocaleDateString(localeDateMap[locale], {
+              <div className="flex flex-col justify-between px-6 py-6 sm:px-8 sm:py-8">
+                <div className="stack-gap">
+                  <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro">
+                    <span className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
+                      {new Date(featured.date).toLocaleDateString(localeDateMap[locale], {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
                       })}
                     </span>
-                    {post.keywords?.slice(0, 1).map((keyword) => (
-                      <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold text-brand">
+                    {featured.keywords?.slice(0, 2).map((keyword) => (
+                      <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold text-text-muted">
                         {keyword}
                       </span>
                     ))}
                   </div>
-                  <h3 className="text-xl font-semibold text-text-primary transition group-hover:text-brand">
-                    <Link href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}>{post.title}</Link>
-                  </h3>
-                  <p className="text-sm text-text-secondary">{post.description}</p>
-                  <TextLink
-                    href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}
-                    className="gap-1 text-sm"
-                    linkComponent={Link}
-                  >
-                    {formatReadMoreLabel(post.title ?? post.slug)}
-                    <span aria-hidden>→</span>
-                  </TextLink>
+                  <div className="stack-gap-sm">
+                    <h3 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                      <Link {...featuredLinkProps} className="transition hover:text-brandHover">
+                        {featured.title}
+                      </Link>
+                    </h3>
+                    <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{featured.description}</p>
+                  </div>
                 </div>
-              </article>
-            ))}
-          </div>
+                <Link
+                  {...featuredLinkProps}
+                  className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-link transition hover:text-link-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                >
+                  {formatReadMoreLabel(featured.title)}
+                  <span aria-hidden>→</span>
+                </Link>
+              </div>
+            </div>
+          </article>
         </section>
 
+        {rest.length > 0 ? (
+          <section className="stack-gap">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-micro text-brand">Recent posts</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+                  More workflow notes, engine updates, and practical guides
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {rest.map((post) => {
+                const postLinkProps = getBlogLinkProps(locale, post);
+                return (
+                  <article
+                    key={`${getCanonicalBlogSlug(post)}-${locale}`}
+                    className="group overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card transition hover:-translate-y-1 hover:shadow-float"
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden bg-bg">
+                      <Image
+                        src={normalizeImageSrc(post.image)}
+                        alt={post.title ?? 'MaxVideoAI blog cover'}
+                        fill
+                        loading="lazy"
+                        decoding="async"
+                        sizes="(min-width: 1280px) 360px, (min-width: 768px) 50vw, 100vw"
+                        className="object-cover object-center transition duration-700 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="stack-gap-sm px-5 py-5">
+                      <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-micro text-text-muted">
+                        <span>
+                          {new Date(post.date).toLocaleDateString(localeDateMap[locale], {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </span>
+                        {post.keywords?.slice(0, 1).map((keyword) => (
+                          <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold text-brand">
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                      <h3 className="line-clamp-2 text-xl font-semibold text-text-primary transition group-hover:text-brand">
+                        <Link {...postLinkProps}>{post.title}</Link>
+                      </h3>
+                      <p className="line-clamp-3 text-sm leading-7 text-text-secondary">{post.description}</p>
+                      <Link
+                        {...postLinkProps}
+                        className="inline-flex items-center gap-1 text-sm font-semibold text-link transition hover:text-link-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                      >
+                        {baseReadMore}
+                        <span aria-hidden>→</span>
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
         <section className="rounded-[28px] border border-hairline bg-surface/90 p-8 shadow-card sm:p-10">
-          <h2 className="text-lg font-semibold text-text-primary">{faq.title}</h2>
-          <dl className="mt-6 stack-gap-lg text-sm text-text-secondary">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-micro text-brand">FAQ</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">{faq.title}</h2>
+          </div>
+          <dl className="mt-6 grid gap-4 md:grid-cols-3">
             {faq.items.map((item) => (
-              <div key={item.question}>
+              <div key={item.question} className="rounded-[22px] border border-hairline bg-white/90 px-5 py-5 text-sm text-text-secondary">
                 <dt className="font-semibold text-text-primary">{item.question}</dt>
-                <dd className="mt-2">{renderPressEmail(item.answer)}</dd>
+                <dd className="mt-3 leading-7">{renderPressEmail(item.answer)}</dd>
               </div>
             ))}
           </dl>
-          {faq.footnote ? <p className="mt-4 text-xs text-text-muted">{renderPressEmail(faq.footnote)}</p> : null}
+          {faq.footnote ? <p className="mt-5 text-xs text-text-muted">{renderPressEmail(faq.footnote)}</p> : null}
         </section>
       </div>
 

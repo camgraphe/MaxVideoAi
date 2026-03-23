@@ -109,6 +109,10 @@ async function getContentEntriesUncached(root: string): Promise<ContentEntry[]> 
 }
 
 export async function getContentEntries(root: string): Promise<ContentEntry[]> {
+  if (process.env.NODE_ENV !== 'production') {
+    return getContentEntriesUncached(root);
+  }
+
   const existing = cachedEntriesByRoot.get(root);
   if (existing) {
     return existing();
