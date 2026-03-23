@@ -32,6 +32,21 @@ export const routing = defineRouting({
       fr: '/tarifs',
       es: '/precios',
     },
+    '/tools': {
+      en: '/tools',
+      fr: '/outils',
+      es: '/herramientas',
+    },
+    '/tools/angle': {
+      en: '/tools/angle',
+      fr: '/outils/angle',
+      es: '/herramientas/angle',
+    },
+    '/tools/character-builder': {
+      en: '/tools/character-builder',
+      fr: '/outils/character-builder',
+      es: '/herramientas/character-builder',
+    },
     '/examples': {
       en: '/examples',
       fr: '/galerie',

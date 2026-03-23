@@ -3782,5 +3782,697 @@
       "title": "Related comparisons",
       "subtitle": "Explore a few more popular side-by-side matchups."
     }
+  },
+  "toolMarketing": {
+    "hub": {
+      "meta": {
+        "title": "AI Pre-Production Tools for Image & Video Workflows",
+        "description": "Build reusable character references and stronger first frames before you generate. Explore MaxVideoAI tools for consistent character creation and AI camera angle control.",
+        "keywords": [
+          "ai pre production tools",
+          "image to video workflow tools",
+          "consistent character ai",
+          "change camera angle ai",
+          "first frame for ai video"
+        ]
+      },
+      "hero": {
+        "badge": "MaxVideoAI Tools",
+        "title": "Build Reusable Assets Before Image-to-Video",
+        "body": "These tools are built for the step before generation: lock the character, fix the angle, then carry stronger visual inputs into image creation, image-to-video, and the MaxVideoAI model hub.",
+        "primaryCta": "Consistent Character AI",
+        "secondaryCta": "Change Camera Angle with AI"
+      },
+      "cards": {
+        "character": {
+          "eyebrow": "Character consistency",
+          "title": "Create reusable character references",
+          "body": "Turn one image into an 8-panel character sheet with 4 full-body angles and 4 close-ups, or create a portrait anchor before you branch into scenes, prompts, and motion.",
+          "cta": "Explore Tool",
+          "imageAlt": "Character Builder workspace screenshot from MaxVideoAI."
+        },
+        "angle": {
+          "eyebrow": "Perspective control",
+          "title": "Generate stronger first frames from one image",
+          "body": "Change viewpoint, explore alternative compositions, and generate motion-ready frames without rebuilding the whole image from scratch.",
+          "cta": "Explore Tool",
+          "imageAlt": "Angle workspace screenshot from MaxVideoAI."
+        }
+      }
+    },
+    "angle": {
+      "meta": {
+        "title": "Change Camera Angle with AI | Generate New Views from One Image",
+        "description": "Upload one image, change camera angle without rebuilding the scene, and generate better first frames for image-to-video, storyboards, ads, and product shots.",
+        "keywords": [
+          "change camera angle ai",
+          "change image perspective ai",
+          "ai perspective generator",
+          "photo angle editor ai",
+          "camera angle control ai",
+          "ai camera angle generator",
+          "multiple angles from one image",
+          "first frame for ai video",
+          "image to video first frame"
+        ],
+        "imageAlt": "AI-generated alternate camera angles from one source image.",
+        "schemaName": "Change Camera Angle with AI",
+        "schemaDescription": "Upload one image, change camera angle without rebuilding the scene, and generate better first frames for image-to-video, storyboards, ads, and product shots.",
+        "schemaFeatures": [
+          "Change camera angle from one source image",
+          "Adjust rotation, tilt, and zoom",
+          "Compare multiple alternate views",
+          "Use the selected frame before image-to-video"
+        ],
+        "howToTitle": "How It Works",
+        "howToDescription": "Change camera angle from one image before moving into image-to-video."
+      },
+      "breadcrumb": {
+        "home": "Home",
+        "tools": "Tools",
+        "current": "Change Camera Angle with AI"
+      },
+      "hero": {
+        "eyebrow": "One image in. New camera angle out.",
+        "title": "Change Camera Angle Without Rebuilding the Image",
+        "body": "Generate alternate viewpoints from a single shot and keep the best result as your first frame before image-to-video.",
+        "primaryCta": "Open Tool",
+        "secondaryCta": "View Angle Examples",
+        "supportText": "Best when the subject is already right and only the viewpoint needs to change.",
+        "panel": {
+          "topLeft": "Source -> Angle -> Output",
+          "topRight": "Keep the image, shift the viewpoint",
+          "sourceLabel": "Source image",
+          "sourceAlt": "Source image before changing the camera angle.",
+          "outputLabel": "Selected output",
+          "outputAlt": "Alternate camera angle generated from the same source image.",
+          "controls": [
+            {
+              "title": "Rotation",
+              "note": "Shift left / right"
+            },
+            {
+              "title": "Tilt",
+              "note": "Raise / lower camera"
+            },
+            {
+              "title": "Zoom",
+              "note": "Tighten framing"
+            }
+          ],
+          "bullets": [
+            "Start from one usable image",
+            "Change the camera angle, not the whole concept",
+            "Keep the chosen frame before image-to-video"
+          ]
+        }
+      },
+      "problemSolution": {
+        "eyebrow": "Problem + solution",
+        "title": "One good image often starts from the wrong angle",
+        "body": "When the subject is already right, the faster move is to fix the viewpoint instead of regenerating the whole image.",
+        "problem": {
+          "label": "Problem",
+          "title": "The asset is close, but the shot is wrong",
+          "body": "The subject works, but camera height, framing, or perspective does not. Rebuilding from scratch costs time and risks consistency.",
+          "items": [
+            "The subject is right, but the framing feels flat",
+            "The storyboard needs a different camera height",
+            "The product needs a more commercial view",
+            "The opening video frame lacks direction"
+          ]
+        },
+        "solution": {
+          "label": "Solution",
+          "title": "Change the viewpoint and keep moving",
+          "body": "Angle lets you keep the source image you already trust, generate a new camera angle, and continue with the version that fits the next step.",
+          "sourceAlt": "Source image used before generating alternate camera angles.",
+          "outputAlt": "Alternate low-angle view generated from the same source image.",
+          "caption": "Use the better angle as a still, or take it straight into image-to-video."
+        }
+      },
+      "howItWorks": {
+        "eyebrow": "How it works",
+        "title": "Upload, aim, generate",
+        "body": "Three steps: bring in a usable image, steer the viewpoint, and keep the version that belongs in the next step.",
+        "steps": [
+          {
+            "title": "Upload one image",
+            "body": "Start from the frame, product shot, or scene still that already has the right subject."
+          },
+          {
+            "title": "Pick the viewpoint",
+            "body": "Use the angle picker plus rotation, tilt, and zoom to test cleaner framing fast."
+          },
+          {
+            "title": "Generate and continue",
+            "body": "Keep the angle that works, then move it into image edits, storyboards, ads, or video prep."
+          }
+        ]
+      },
+      "workspace": {
+        "eyebrow": "Workspace",
+        "title": "Everything important sits in one view",
+        "body": "The source image, angle controls, and outputs stay side by side so you can compare fast and pick the frame you want.",
+        "topLeft": "Angle workspace",
+        "topRight": "Source image + controls + outputs",
+        "windowLabel": "source image, angle picker, output review",
+        "imageAlt": "Full screenshot of the MaxVideoAI Angle workspace.",
+        "callouts": [
+          {
+            "title": "Source image",
+            "body": "Start from the frame you already trust."
+          },
+          {
+            "title": "Angle controls",
+            "body": "Adjust the angle picker, rotation, tilt, and zoom in one pass."
+          },
+          {
+            "title": "Output review",
+            "body": "Compare results before sending one into Image or Video."
+          }
+        ]
+      },
+      "outputsPipeline": {
+        "eyebrow": "Outputs + pipeline",
+        "title": "Choose the angle, then move it into the next step",
+        "body": "Generate one cleaner view or compare several. Once you have the frame you want, refine it in Image or use it before image-to-video.",
+        "cards": [
+          {
+            "eyebrow": "Composition shift",
+            "title": "Eye-level to low-angle",
+            "body": "Move a flat frame toward a more dramatic view when the subject needs more scale or authority.",
+            "sourceAlt": "Eye-level source image.",
+            "outputAlt": "Low-angle output generated from the same image."
+          },
+          {
+            "eyebrow": "Portrait framing",
+            "title": "Straight-on to three-quarter",
+            "body": "Turn a plain reference into a more usable story or ad frame from the same source image.",
+            "sourceAlt": "Original portrait angle.",
+            "outputAlt": "Three-quarter portrait view generated from the same source."
+          },
+          {
+            "eyebrow": "Angle set",
+            "title": "Compare several views from one image",
+            "body": "Generate a small set when you need to choose the option that best fits storyboards, product pages, or motion prep.",
+            "thumbs": [
+              {
+                "label": "Original",
+                "note": "Base frame",
+                "alt": "Source image before angle changes."
+              },
+              {
+                "label": "Low angle",
+                "note": "More scale",
+                "alt": "Low-angle output."
+              },
+              {
+                "label": "Three-quarter",
+                "note": "Story framing",
+                "alt": "Three-quarter view output."
+              },
+              {
+                "label": "High angle",
+                "note": "Top-down feel",
+                "alt": "Higher perspective output."
+              }
+            ]
+          }
+        ],
+        "pipeline": {
+          "label": "Angle pipeline",
+          "title": "Source -> Angle -> Image / Video",
+          "badge": "First-frame prep",
+          "steps": [
+            {
+              "title": "Source image",
+              "body": "Start from the frame or product shot that already works."
+            },
+            {
+              "title": "Selected angle",
+              "body": "Keep the version that fixes composition or camera height."
+            },
+            {
+              "title": "Image / Video",
+              "body": "Refine it in Image or use it as the first frame before motion."
+            }
+          ],
+          "linkSentence": {
+            "beforeImage": "Refine the chosen frame in",
+            "imageLabel": "Image",
+            "between": "or launch motion in",
+            "videoLabel": "Video",
+            "afterVideo": "once the opening composition is working."
+          },
+          "links": [
+            {
+              "href": "/app/image",
+              "label": "Open Image Workspace"
+            },
+            {
+              "href": "/app",
+              "label": "Open Video Workspace"
+            },
+            {
+              "href": "/models/veo-3-1",
+              "label": "Veo 3.1"
+            },
+            {
+              "href": "/models/kling-3-pro",
+              "label": "Kling 3 Pro"
+            },
+            {
+              "href": "/models",
+              "label": "Model Hub"
+            }
+          ],
+          "preview": {
+            "leftAlt": "Selected alternate angle used before video generation.",
+            "rightAlt": "Video thumbnail concept based on the chosen camera angle.",
+            "readyLabel": "Ready for motion"
+          }
+        }
+      },
+      "benefits": {
+        "eyebrow": "Benefits",
+        "title": "Why it matters",
+        "body": "This is a focused fix for viewpoint problems, which makes the next creative decision faster.",
+        "items": [
+          {
+            "title": "Less rework",
+            "body": "Fix the viewpoint without throwing away a source image that is already close."
+          },
+          {
+            "title": "Faster shot selection",
+            "body": "Compare alternate angles before you spend more time or budget on full regeneration."
+          },
+          {
+            "title": "Better image-to-video prep",
+            "body": "A cleaner first frame gives motion tools a clearer composition to build from."
+          },
+          {
+            "title": "More coverage from one asset",
+            "body": "Get extra product, portrait, or scene views from a single source image."
+          }
+        ]
+      },
+      "useCases": {
+        "eyebrow": "Use cases",
+        "title": "Where it fits best",
+        "body": "Best when the asset is nearly right and the next decision depends on camera angle, not on rebuilding the scene.",
+        "story": {
+          "eyebrow": "Story / film",
+          "title": "Storyboarding and previs",
+          "body": "Test perspective before you commit a shot to boards, edits, or an animatic.",
+          "thumbs": [
+            {
+              "label": "Original",
+              "note": "Scene still",
+              "alt": "Original scene still for storyboarding."
+            },
+            {
+              "label": "Three-quarter",
+              "note": "Board-ready frame",
+              "alt": "Alternative story frame."
+            },
+            {
+              "label": "Workspace",
+              "note": "Review pass",
+              "alt": "Angle workspace screenshot showing the first-frame workflow."
+            }
+          ]
+        },
+        "commerce": {
+          "eyebrow": "Commerce",
+          "title": "Product and ecommerce shots",
+          "body": "Turn one clean product image into multiple usable angles for listings, ads, or launch pages.",
+          "mockBeforeLabel": "Straight-on packshot",
+          "mockAfterLabel": "Three-quarter hero view"
+        },
+        "smallCases": [
+          {
+            "eyebrow": "Ad / creative",
+            "title": "Ad creative testing",
+            "body": "Test alternate camera views without rebuilding the whole concept."
+          },
+          {
+            "eyebrow": "Character / scene",
+            "title": "Character scene setup",
+            "body": "Choose a more readable frame before still edits or image-to-video."
+          }
+        ]
+      },
+      "faq": {
+        "eyebrow": "FAQ",
+        "title": "Camera Angle FAQ",
+        "body": "Short answers before you start.",
+        "items": [
+          {
+            "question": "Can AI change the camera angle of a photo?",
+            "answer": "Yes. You can generate alternate viewpoints from one source image instead of rebuilding the whole scene."
+          },
+          {
+            "question": "What goes in and what comes out?",
+            "answer": "You start with one image and generate one or more alternate views from it, ready for comparison or reuse."
+          },
+          {
+            "question": "Does this help before image-to-video generation?",
+            "answer": "Yes. It helps you choose a better starting frame before you move into motion."
+          },
+          {
+            "question": "Can I use this for product photos?",
+            "answer": "Yes. It works well for packshots, side angles, and stronger hero views from one product image."
+          },
+          {
+            "question": "Can I generate multiple angles from one image?",
+            "answer": "Yes. You can generate several views, compare them, and keep the one that fits the next step best."
+          }
+        ]
+      },
+      "finalCta": {
+        "eyebrow": "Final CTA",
+        "title": "Change the camera angle before you generate more",
+        "body": "Start with one usable image, create alternate views, and carry the best frame into Image or Video.",
+        "primaryCta": "Open Angle Tool",
+        "secondaryCta": "Browse Tools",
+        "panelLeft": "Selected angle",
+        "panelRight": "Ready for next step",
+        "panelAlt": "Selected alternate camera angle used in the final call to action."
+      }
+    },
+    "characterBuilder": {
+      "meta": {
+        "title": "Consistent Character AI Tool | Reusable Character References for Image & Video",
+        "description": "Create reusable portrait anchors and 8-panel AI character sheets from one photo, optional outfit reference, or scratch. Reuse the same character across scenes, edits, and still-reference video workflows.",
+        "keywords": [
+          "consistent character ai",
+          "ai character consistency",
+          "consistent character generator",
+          "ai consistent character",
+          "consistent ai characters",
+          "consistent character for video",
+          "character sheet ai",
+          "ai character sheet generator",
+          "character reference ai",
+          "character reference sheet ai",
+          "character turnaround ai",
+          "keep same character across scenes",
+          "same face same outfit ai",
+          "image to video character consistency"
+        ],
+        "imageAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder.",
+        "schemaName": "Consistent Character AI",
+        "schemaDescription": "Create reusable portrait anchors and 8-panel AI character sheets from one image, optional outfit reference, or scratch, then reuse them across images, edits, and still-reference video workflows.",
+        "schemaFeatures": [
+          "Start from one identity photo, an optional outfit reference, or a scratch-built concept",
+          "Generate a reusable portrait anchor",
+          "Generate an 8-panel character sheet with four full-body angles and four matching close-ups",
+          "Reuse the same character reference across image prompts and image edits",
+          "Use the reference in Nano Banana and video engines that support still references"
+        ],
+        "howToTitle": "How Character Builder Works",
+        "howToDescription": "Create one reusable character reference asset for consistent AI images and still-reference video workflows."
+      },
+      "breadcrumb": {
+        "home": "Home",
+        "tools": "Tools",
+        "current": "Character Builder"
+      },
+      "hero": {
+        "badge": "Consistent Character AI Tool",
+        "secondaryBadge": "Portrait anchor + 8-panel character sheet",
+        "title": "Create a reusable character reference for consistent AI images and video",
+        "body": "Upload one identity photo, add optional outfit inspiration, or start from scratch. Generate a reusable portrait anchor or 8-panel character sheet you can reuse across scenes, edits, and reference-based video workflows.",
+        "primaryCta": "Open Character Builder",
+        "proofs": [
+          "Start with one identity photo, optional outfit inspiration, or a scratch-built concept",
+          "Generate a reusable portrait anchor or an 8-panel character sheet",
+          "Reuse the same character across scenes, prompts, edits, and still-reference video workflows"
+        ],
+        "showcase": {
+          "topLabel": "Character Builder workspace",
+          "windowLabel": "choose input, generate asset, reuse",
+          "imageAlt": "Full screenshot of the MaxVideoAI Character Builder workspace.",
+          "callouts": [
+            {
+              "label": "01",
+              "title": "Choose your input",
+              "body": "Use one identity photo, add optional outfit inspiration, or start from scratch."
+            },
+            {
+              "label": "02",
+              "title": "Generate the asset",
+              "body": "Create a portrait anchor or one coherent 8-panel character sheet."
+            },
+            {
+              "label": "03",
+              "title": "Reuse it everywhere",
+              "body": "Bring the same reference into prompts, edits, Nano Banana, and still-reference video workflows."
+            }
+          ]
+        }
+      },
+      "why": {
+        "problemLabel": "Why people need it",
+        "problemTitle": "Why AI Characters Drift",
+        "problemBody": "Prompts can preserve the general idea of a character, but identity details still slip once you start generating multiple scenes.",
+        "problemItems": [
+          "Faces and hair change between scenes",
+          "Wardrobe details stop matching",
+          "Silhouette continuity becomes harder to hold"
+        ],
+        "solutionLabel": "What this tool creates",
+        "solutionTitle": "Character Builder creates the reference first",
+        "solutionBody": "Generate either a portrait anchor or an 8-panel character sheet, then bring that same reference back into prompts, edits, and still-reference video workflows.",
+        "portraitInputLabel": "Portrait input",
+        "portraitInputAlt": "Portrait reference used as the base input for Character Builder.",
+        "sheetLabel": "Reusable 8-panel sheet",
+        "sheetAlt": "Reusable 8-panel character sheet output generated from Character Builder."
+      },
+      "howItWorks": {
+        "eyebrow": "How it works",
+        "title": "Create the reference, then carry it forward",
+        "body": "Start with a face, an outfit cue, or a scratch-built concept. Generate the output, then bring it back into stills, edits, and video prep.",
+        "steps": [
+          {
+            "stepLabel": "Start with",
+            "title": "Start with a face, outfit cue, or scratch concept",
+            "body": "Use one identity photo, add optional style direction, or start without a source image.",
+            "pills": [
+              "One identity photo",
+              "Optional outfit reference"
+            ]
+          },
+          {
+            "stepLabel": "Generate",
+            "title": "Generate a portrait anchor or 8-panel sheet",
+            "body": "Create a tighter face reference or one coherent sheet with four body angles and four close-ups.",
+            "pills": [
+              "Portrait anchor",
+              "8-panel character sheet"
+            ]
+          },
+          {
+            "stepLabel": "Reuse in",
+            "title": "Reuse it in stills, edits, and video prep",
+            "body": "Bring the same reference into prompts, Nano Banana, and still-reference video tools.",
+            "pills": [
+              "Image prompts",
+              "Video prep"
+            ]
+          }
+        ],
+        "comparisonLabel": "Why it works",
+        "comparisonBody": "The reference does the continuity work before you start changing scenes.",
+        "comparisons": [
+          {
+            "eyebrow": "Without Character Builder",
+            "title": "Every new scene has to rebuild the character",
+            "items": [
+              "Face, hair, and outfit drift between prompts",
+              "You spend more time correcting continuity"
+            ]
+          },
+          {
+            "eyebrow": "With Character Builder",
+            "title": "One reference keeps the character grounded",
+            "items": [
+              "Face, outfit, and silhouette stay aligned",
+              "Stills and video prep start from a stronger base"
+            ]
+          }
+        ]
+      },
+      "outputsWorkflow": {
+        "eyebrow": "Outputs and workflow",
+        "title": "Choose the output, then move into stills and video",
+        "body": "Pick the output that fits the job, then carry it into Nano Banana or still-reference video workflows.",
+        "cards": [
+          {
+            "eyebrow": "Portrait anchor",
+            "title": "Reusable portrait anchor",
+            "body": "Best for close-ups, prompts, and recurring character work.",
+            "pills": [
+              "Close-ups and edits"
+            ],
+            "imageAlt": "Reusable portrait anchor for close-ups, prompts, and recurring character work."
+          },
+          {
+            "eyebrow": "Character sheet generator",
+            "title": "8-panel character sheet",
+            "body": "Best when one multi-angle reference has to travel across scenes, boards, edits, and video prep.",
+            "pills": [
+              "Multi-angle",
+              "Most reusable"
+            ],
+            "badge": "Most reusable",
+            "stats": "4 full-body + 4 close-ups",
+            "imageAlt": "8-panel character sheet output generated from Character Builder."
+          },
+          {
+            "eyebrow": "Video prep still",
+            "title": "Cleaner still for motion prep",
+            "body": "Best when the reference needs one cleaner still before motion starts.",
+            "pills": [
+              "Video prep"
+            ],
+            "badge": "Nano Banana still",
+            "imageAlt": "Cleaner still prepared from the same character reference before motion starts."
+          }
+        ],
+        "workflow": {
+          "label": "Reference workflow",
+          "title": "Character Builder -> Nano Banana -> Video",
+          "chainLabel": "Sheet -> Still -> Video",
+          "steps": [
+            {
+              "label": "01 · Character sheet",
+              "body": "Lock the character before motion starts.",
+              "imageAlt": "Character Builder sheet used as the reusable reference asset across images and video workflows."
+            },
+            {
+              "label": "02 · Nano Banana still",
+              "body": "Refine the same character into a cleaner still.",
+              "imageAlt": "Nano Banana still created from the same character sheet reference."
+            },
+            {
+              "label": "03 · Video result",
+              "body": "The same grounded identity carried into motion.",
+              "imageAlt": "Video start frame generated from the Nano Banana still and the same character identity."
+            }
+          ],
+          "videoBadge": "LTX 2.3 Pro",
+          "links": [
+            {
+              "href": "/app/image",
+              "label": "Open Nano Banana in Image"
+            },
+            {
+              "href": "/app",
+              "label": "Open Video Workspace"
+            },
+            {
+              "href": "/models/nano-banana",
+              "label": "Nano Banana"
+            },
+            {
+              "href": "/models/veo-3-1",
+              "label": "Veo 3.1"
+            },
+            {
+              "href": "/models/kling-3-pro",
+              "label": "Kling 3 Pro"
+            },
+            {
+              "href": "/models",
+              "label": "Browse Model Hub"
+            },
+            {
+              "href": "/examples",
+              "label": "See Examples"
+            }
+          ]
+        }
+      },
+      "useCases": {
+        "eyebrow": "Use cases",
+        "title": "Where Reusable Character Consistency Matters",
+        "body": "One character can support creator, commercial, and planning workflows without losing continuity across multiple stills or shots.",
+        "items": [
+          {
+            "eyebrow": "Story / Film",
+            "number": "01",
+            "title": "Short films and story scenes",
+            "body": "Keep the lead recognizable across boards, scene variations, and first-frame planning before motion starts.",
+            "imageAlt": "Story scene still generated from a reusable character reference."
+          },
+          {
+            "eyebrow": "Ad / Commercial",
+            "number": "02",
+            "title": "Recurring ad talent",
+            "body": "Reuse one spokesperson across campaign stills, alternate concepts, and reference-based video variants.",
+            "imageAlt": "Commercial spokesperson portrait prepared as a reusable reference asset."
+          },
+          {
+            "eyebrow": "Mascot / Brand",
+            "number": "03",
+            "title": "Brand mascots",
+            "body": "Keep one mascot stable across launches, promos, stills, and motion tests instead of rebuilding it each time.",
+            "imageAlt": "Brand mascot prepared as a reusable consistent character asset."
+          },
+          {
+            "eyebrow": "Series / Creator",
+            "number": "04",
+            "title": "Creator series",
+            "body": "Reuse the same host, avatar, or character every episode without losing face, outfit, or silhouette consistency.",
+            "imageAlt": "Creator series frame generated from a reusable character reference."
+          },
+          {
+            "eyebrow": "Previs / Comics",
+            "number": "05",
+            "title": "Comics and animation previz",
+            "body": "Build one reusable character sheet for boards, panels, turnarounds, and previsualization work before animation.",
+            "imageAlt": "Reusable character reference prepared for comics panels and animation previz."
+          }
+        ]
+      },
+      "faq": {
+        "eyebrow": "FAQ",
+        "title": "Consistent Character AI FAQ",
+        "body": "Short answers before you build the reference.",
+        "items": [
+          {
+            "question": "What is consistent character AI?",
+            "answer": "It means building one stable character reference so the same face, outfit, and silhouette hold up better later on."
+          },
+          {
+            "question": "Can I create a character sheet from one image?",
+            "answer": "Yes. You can start from one image and generate an 8-panel sheet with four full-body angles and four matching close-ups."
+          },
+          {
+            "question": "Can I use one face reference and one outfit reference?",
+            "answer": "Yes. You can pair one identity reference with a second image for wardrobe or outfit direction."
+          },
+          {
+            "question": "Can I start from scratch?",
+            "answer": "Yes. You can build a portrait anchor or character sheet from a scratch-built concept when you do not have a source image."
+          },
+          {
+            "question": "Can I reuse this in image-to-video workflows?",
+            "answer": "Yes. You can reuse it in prompts, Nano Banana start-frame prep, and video engines that support still references."
+          }
+        ]
+      },
+      "finalCta": {
+        "eyebrow": "Final CTA",
+        "title": "Build Your Reusable Character Reference",
+        "body": "Create the character once. Reuse it across images, edits, and video prep.",
+        "primaryCta": "Open Character Builder",
+        "panelLeft": "Reusable output",
+        "panelRight": "8-panel sheet",
+        "panelAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder."
+      }
+    }
   }
 }

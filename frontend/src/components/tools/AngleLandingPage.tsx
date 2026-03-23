@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { ArrowRight, CheckCircle2, ChevronRight, Play } from 'lucide-react';
+import type { Dictionary } from '@/lib/i18n/types';
+import { Link } from '@/i18n/navigation';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -16,113 +17,12 @@ const ANGLE_ALT_FOUR_URL =
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/cf9ff473-5f6f-4877-b5fd-aafc36bddeb8.webp';
 const ANGLE_WORKSPACE_SCREENSHOT_PATH = '/assets/tools/angle-workspace.png';
 
-const STEPS = [
-  {
-    title: 'Upload one image',
-    body: 'Start from the frame, product shot, or scene still that already has the right subject.',
-  },
-  {
-    title: 'Pick the viewpoint',
-    body: 'Use the angle picker plus rotation, tilt, and zoom to test cleaner framing fast.',
-  },
-  {
-    title: 'Generate and continue',
-    body: 'Keep the angle that works, then move it into image edits, storyboards, ads, or video prep.',
-  },
-] as const;
-
-const BENEFITS = [
-  {
-    title: 'Less rework',
-    body: 'Fix the viewpoint without throwing away a source image that is already close.',
-  },
-  {
-    title: 'Faster shot selection',
-    body: 'Compare alternate angles before you spend more time or budget on full regeneration.',
-  },
-  {
-    title: 'Better image-to-video prep',
-    body: 'A cleaner first frame gives motion tools a clearer composition to build from.',
-  },
-  {
-    title: 'More coverage from one asset',
-    body: 'Get extra product, portrait, or scene views from a single source image.',
-  },
-] as const;
-
-const WORKSPACE_CALLOUTS = [
-  {
-    title: 'Source image',
-    body: 'Start from the frame you already trust.',
-  },
-  {
-    title: 'Angle controls',
-    body: 'Adjust the angle picker, rotation, tilt, and zoom in one pass.',
-  },
-  {
-    title: 'Output review',
-    body: 'Compare results before sending one into Image or Video.',
-  },
-] as const;
-
-const PIPELINE_STEPS = [
-  {
-    title: 'Source image',
-    body: 'Start from the frame or product shot that already works.',
-  },
-  {
-    title: 'Selected angle',
-    body: 'Keep the version that fixes composition or camera height.',
-  },
-  {
-    title: 'Image / Video',
-    body: 'Refine it in Image or use it as the first frame before motion.',
-  },
-] as const;
-
-const WORKFLOW_LINKS = [
-  { href: '/app/image', label: 'Open Image Workspace' },
-  { href: '/app', label: 'Open Video Workspace' },
-  { href: '/models/veo-3-1', label: 'Veo 3.1' },
-  { href: '/models/kling-3-pro', label: 'Kling 3 Pro' },
-  { href: '/models', label: 'Model Hub' },
-] as const;
-
-const SMALL_USE_CASES = [
-  {
-    eyebrow: 'Ad / creative',
-    title: 'Ad creative testing',
-    body: 'Test alternate camera views without rebuilding the whole concept.',
-  },
-  {
-    eyebrow: 'Character / scene',
-    title: 'Character scene setup',
-    body: 'Choose a more readable frame before still edits or image-to-video.',
-  },
-] as const;
-
-const FAQS = [
-  {
-    question: 'Can AI change the camera angle of a photo?',
-    answer: 'Yes. You can generate alternate viewpoints from one source image instead of rebuilding the whole scene.',
-  },
-  {
-    question: 'What goes in and what comes out?',
-    answer: 'You start with one image and generate one or more alternate views from it, ready for comparison or reuse.',
-  },
-  {
-    question: 'Does this help before image-to-video generation?',
-    answer: 'Yes. It helps you choose a better starting frame before you move into motion.',
-  },
-  {
-    question: 'Can I use this for product photos?',
-    answer: 'Yes. It works well for packshots, side angles, and stronger hero views from one product image.',
-  },
-  {
-    question: 'Can I generate multiple angles from one image?',
-    answer: 'Yes. You can generate several views, compare them, and keep the one that fits the next step best.',
-  },
-] as const;
+type AngleLandingContent = Dictionary['toolMarketing']['angle'];
+type AngleThumbContent = {
+  label: string;
+  note: string;
+  alt: string;
+};
 
 function serializeJsonLd(data: object) {
   return JSON.stringify(data).replace(/</g, '\\u003c');
@@ -211,43 +111,45 @@ function AngleThumb({
   );
 }
 
-function ProductAngleMock() {
+function ProductAngleMock({
+  beforeLabel,
+  afterLabel,
+}: {
+  beforeLabel: string;
+  afterLabel: string;
+}) {
   return (
     <div className="rounded-[22px] border border-hairline bg-[linear-gradient(180deg,#f5f8fb,#ffffff)] p-4">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,0.8fr)_auto_minmax(0,1fr)] sm:items-center">
         <div className="rounded-[18px] border border-hairline bg-white p-4">
           <div className="mx-auto h-28 w-20 rounded-[22px] bg-[linear-gradient(180deg,#334155,#0f172a)] shadow-[0_18px_26px_rgba(15,23,42,0.14)]" />
-          <div className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">
-            Straight-on packshot
-          </div>
+          <div className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">{beforeLabel}</div>
         </div>
         <ArrowRight className="mx-auto h-4 w-4 text-brand" />
         <div className="rounded-[18px] border border-hairline bg-white p-4">
           <div className="mx-auto h-28 w-20 origin-bottom-left rotate-[-12deg] rounded-[22px] bg-[linear-gradient(180deg,#1d4ed8,#0f172a)] shadow-[24px_0_32px_rgba(15,23,42,0.16)]" />
-          <div className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">
-            Three-quarter hero view
-          </div>
+          <div className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">{afterLabel}</div>
         </div>
       </div>
     </div>
   );
 }
 
-function HeroAngleFlowPanel() {
+function HeroAngleFlowPanel({ content }: { content: AngleLandingContent['hero']['panel'] }) {
   return (
     <div className="overflow-hidden rounded-[36px] border border-slate-900/12 bg-[linear-gradient(180deg,#07101b,#0d1b2d)] text-white shadow-[0_42px_140px_rgba(15,23,42,0.18)]">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300 sm:px-7">
-        <span>Source → Angle → Output</span>
-        <span>Keep the image, shift the viewpoint</span>
+        <span>{content.topLeft}</span>
+        <span>{content.topRight}</span>
       </div>
       <div className="grid gap-5 p-6 sm:p-7 lg:p-8">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_180px_minmax(0,1.08fr)] lg:items-center">
           <div className="rounded-[28px] border border-white/10 bg-white/6 p-4">
-            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Source image</p>
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">{content.sourceLabel}</p>
             <div className="relative aspect-[5/4] overflow-hidden rounded-[22px] bg-[#dce7f3]">
               <Image
                 src={ANGLE_SOURCE_URL}
-                alt="Source image before changing the camera angle."
+                alt={content.sourceAlt}
                 fill
                 priority
                 sizes="(max-width: 1280px) 100vw, 520px"
@@ -260,27 +162,23 @@ function HeroAngleFlowPanel() {
               <ArrowRight className="h-5 w-5" />
             </div>
             <div className="grid w-full gap-2">
-              {[
-                ['Rotation', 'Shift left / right'],
-                ['Tilt', 'Raise / lower camera'],
-                ['Zoom', 'Tighten framing'],
-              ].map(([item, note]) => (
+              {content.controls.map((item) => (
                 <div
-                  key={item}
+                  key={item.title}
                   className="rounded-[18px] border border-white/10 bg-white/6 px-3 py-3 text-center"
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white">{item}</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-300">{note}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white">{item.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">{item.note}</p>
                 </div>
               ))}
             </div>
           </div>
           <div className="rounded-[28px] border border-white/10 bg-white/6 p-4">
-            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">Selected output</p>
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">{content.outputLabel}</p>
             <div className="relative aspect-[5/4] overflow-hidden rounded-[22px] bg-[#d9e6f3]">
               <Image
                 src={ANGLE_OUTPUT_URL}
-                alt="Alternate camera angle generated from the same source image."
+                alt={content.outputAlt}
                 fill
                 priority
                 sizes="(max-width: 1280px) 100vw, 560px"
@@ -290,11 +188,7 @@ function HeroAngleFlowPanel() {
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-3">
-          {[
-            'Start from one usable image',
-            'Change the camera angle, not the whole concept',
-            'Keep the chosen frame before image-to-video',
-          ].map((item) => (
+          {content.bullets.map((item) => (
             <div key={item} className="rounded-[20px] border border-white/10 bg-[rgba(255,255,255,0.05)] px-4 py-3">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
@@ -308,12 +202,12 @@ function HeroAngleFlowPanel() {
   );
 }
 
-function WorkspaceShowcase() {
+function WorkspaceShowcase({ content }: { content: AngleLandingContent['workspace'] }) {
   return (
     <div className="overflow-hidden rounded-[34px] border border-slate-900/12 bg-[linear-gradient(180deg,#07101b,#0d1b2d)] text-white shadow-[0_36px_120px_rgba(15,23,42,0.16)]">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300 sm:px-6">
-        <span>Angle workspace</span>
-        <span>Source image + controls + outputs</span>
+        <span>{content.topLeft}</span>
+        <span>{content.topRight}</span>
       </div>
       <div className="bg-[#e9eef5] p-4 sm:p-5">
         <div className="overflow-hidden rounded-[28px] border border-slate-300/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.12)]">
@@ -321,14 +215,12 @@ function WorkspaceShowcase() {
             <span className="h-2.5 w-2.5 rounded-full bg-[#f97316]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#facc15]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
-            <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              source image, angle picker, output review
-            </span>
+            <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{content.windowLabel}</span>
           </div>
           <div className="relative aspect-[16/9]">
             <Image
               src={ANGLE_WORKSPACE_SCREENSHOT_PATH}
-              alt="Full screenshot of the MaxVideoAI Angle workspace."
+              alt={content.imageAlt}
               fill
               sizes="(max-width: 1440px) 100vw, 1320px"
               className="object-cover object-top"
@@ -337,7 +229,7 @@ function WorkspaceShowcase() {
         </div>
       </div>
       <div className="grid gap-px bg-white/10 md:grid-cols-3">
-        {WORKSPACE_CALLOUTS.map((item) => (
+        {content.callouts.map((item) => (
           <div key={item.title} className="bg-[rgba(7,13,21,0.92)] px-5 py-4 sm:px-6 sm:py-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{item.title}</p>
             <p className="mt-2 text-sm leading-6 text-slate-300">{item.body}</p>
@@ -389,7 +281,7 @@ function OutputCard({
   );
 }
 
-export function AngleLandingPage() {
+export function AngleLandingPage({ content }: { content: AngleLandingContent }) {
   const canonicalUrl = 'https://maxvideoai.com/tools/angle';
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -398,19 +290,19 @@ export function AngleLandingPage() {
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Home',
+        name: content.breadcrumb.home,
         item: 'https://maxvideoai.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'Tools',
+        name: content.breadcrumb.tools,
         item: 'https://maxvideoai.com/tools',
       },
       {
         '@type': 'ListItem',
         position: 3,
-        name: 'Change Camera Angle with AI',
+        name: content.breadcrumb.current,
         item: canonicalUrl,
       },
     ],
@@ -418,18 +310,12 @@ export function AngleLandingPage() {
   const softwareJsonLd = {
     '@context': 'https://schema.org',
     '@type': ['SoftwareApplication', 'WebApplication'],
-    name: 'Change Camera Angle with AI',
+    name: content.meta.schemaName,
     applicationCategory: 'MultimediaApplication',
     operatingSystem: 'Web',
     url: canonicalUrl,
-    description:
-      'Upload one image, change camera angle without rebuilding the scene, and generate better first frames for image-to-video, storyboards, ads, and product shots.',
-    featureList: [
-      'Change camera angle from one source image',
-      'Adjust rotation, tilt, and zoom',
-      'Compare multiple alternate views',
-      'Use the selected frame before image-to-video',
-    ],
+    description: content.meta.schemaDescription,
+    featureList: content.meta.schemaFeatures,
     isPartOf: {
       '@type': 'WebSite',
       name: 'MaxVideoAI',
@@ -439,9 +325,9 @@ export function AngleLandingPage() {
   const howToJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
-    name: 'How It Works',
-    description: 'Change camera angle from one image before moving into image-to-video.',
-    step: STEPS.map((step, index) => ({
+    name: content.meta.howToTitle,
+    description: content.meta.howToDescription,
+    step: content.howItWorks.steps.map((step, index) => ({
       '@type': 'HowToStep',
       position: index + 1,
       name: step.title,
@@ -449,6 +335,35 @@ export function AngleLandingPage() {
       url: `${canonicalUrl}#step-${index + 1}`,
     })),
   };
+  const compositionCard = content.outputsPipeline.cards[0]! as {
+    eyebrow: string;
+    title: string;
+    body: string;
+    sourceAlt: string;
+    outputAlt: string;
+  };
+  const portraitCard = content.outputsPipeline.cards[1]! as {
+    eyebrow: string;
+    title: string;
+    body: string;
+    sourceAlt: string;
+    outputAlt: string;
+  };
+  const angleSetCard = content.outputsPipeline.cards[2]! as {
+    eyebrow: string;
+    title: string;
+    body: string;
+    thumbs: [AngleThumbContent, AngleThumbContent, AngleThumbContent, AngleThumbContent];
+  };
+  const originalAngleThumb = angleSetCard.thumbs[0]!;
+  const lowAngleThumb = angleSetCard.thumbs[1]!;
+  const threeQuarterAngleThumb = angleSetCard.thumbs[2]!;
+  const highAngleThumb = angleSetCard.thumbs[3]!;
+  const [storyOriginalThumb, storyThreeQuarterThumb, storyWorkspaceThumb] = content.useCases.story.thumbs as [
+    AngleThumbContent,
+    AngleThumbContent,
+    AngleThumbContent,
+  ];
 
   return (
     <>
@@ -458,50 +373,43 @@ export function AngleLandingPage() {
             <div className="max-w-4xl stack-gap-lg">
               <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
                 <Link href="/" className="transition hover:text-text-primary">
-                  Home
+                  {content.breadcrumb.home}
                 </Link>
                 <ChevronRight className="h-3.5 w-3.5" />
                 <Link href="/tools" className="transition hover:text-text-primary">
-                  Tools
+                  {content.breadcrumb.tools}
                 </Link>
                 <ChevronRight className="h-3.5 w-3.5" />
-                <span className="font-semibold text-text-secondary">Change Camera Angle with AI</span>
+                <span className="font-semibold text-text-secondary">{content.breadcrumb.current}</span>
               </nav>
 
               <div className="stack-gap-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f5d7a] sm:text-xs">
-                  One image in. New camera angle out.
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f5d7a] sm:text-xs">{content.hero.eyebrow}</p>
               </div>
 
               <div className="stack-gap-sm">
                 <h1 className="max-w-5xl text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl lg:text-[4.25rem] lg:leading-[0.98]">
-                  Change Camera Angle Without Rebuilding the Image
+                  {content.hero.title}
                 </h1>
-                <p className="max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
-                  Generate alternate viewpoints from a single shot and keep the best result as your first frame before
-                  image-to-video.
-                </p>
+                <p className="max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">{content.hero.body}</p>
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <ButtonLink href="/app/tools/angle" size="lg">
-                  Open Tool
+                <ButtonLink href="/app/tools/angle" linkComponent={Link} size="lg">
+                  {content.hero.primaryCta}
                   <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
-                <ButtonLink href="/examples" variant="outline" size="lg">
-                  View Angle Examples
+                <ButtonLink href="/examples" linkComponent={Link} variant="outline" size="lg">
+                  {content.hero.secondaryCta}
                 </ButtonLink>
               </div>
             </div>
 
             <div className="mt-2 sm:mt-4">
-              <p className="mb-4 text-sm font-medium text-text-secondary">
-                Best when the subject is already right and only the viewpoint needs to change.
-              </p>
+              <p className="mb-4 text-sm font-medium text-text-secondary">{content.hero.supportText}</p>
             </div>
 
-            <HeroAngleFlowPanel />
+            <HeroAngleFlowPanel content={content.hero.panel} />
           </div>
         </div>
       </section>
@@ -509,33 +417,21 @@ export function AngleLandingPage() {
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader
-            eyebrow="Problem + solution"
-            title="One good image often starts from the wrong angle"
-            body={
-              <p>
-                When the subject is already right, the faster move is to fix the viewpoint instead of regenerating the whole image.
-              </p>
-            }
+            eyebrow={content.problemSolution.eyebrow}
+            title={content.problemSolution.title}
+            body={<p>{content.problemSolution.body}</p>}
           />
 
           <div className="grid gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
             <Card className="overflow-hidden border-slate-800 bg-[linear-gradient(180deg,#0a1320,#101d2d)] p-0 text-white">
               <div className="border-b border-white/10 px-6 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Problem</p>
-                <h3 className="mt-3 text-3xl font-semibold tracking-tight">The asset is close, but the shot is wrong</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{content.problemSolution.problem.label}</p>
+                <h3 className="mt-3 text-3xl font-semibold tracking-tight">{content.problemSolution.problem.title}</h3>
               </div>
               <div className="stack-gap-sm px-6 py-6 text-sm leading-7 text-slate-300">
-                <p>
-                  The subject works, but camera height, framing, or perspective does not. Rebuilding from scratch costs time and
-                  risks consistency.
-                </p>
+                <p>{content.problemSolution.problem.body}</p>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    'The subject is right, but the framing feels flat',
-                    'The storyboard needs a different camera height',
-                    'The product needs a more commercial view',
-                    'The opening video frame lacks direction',
-                  ].map((item) => (
+                  {content.problemSolution.problem.items.map((item) => (
                     <div key={item} className="rounded-[20px] border border-white/10 bg-white/5 px-4 py-3">
                       <p className="text-sm font-medium text-white">{item}</p>
                     </div>
@@ -546,20 +442,17 @@ export function AngleLandingPage() {
 
             <Card className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(242,248,252,0.98))] p-0">
               <div className="border-b border-hairline px-6 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Solution</p>
-                <h3 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">Change the viewpoint and keep moving</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{content.problemSolution.solution.label}</p>
+                <h3 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">{content.problemSolution.solution.title}</h3>
               </div>
               <div className="stack-gap-sm px-6 py-6 text-sm leading-7 text-text-secondary">
-                <p>
-                  Angle lets you keep the source image you already trust, generate a new camera angle, and continue with the version
-                  that fits the next step.
-                </p>
+                <p>{content.problemSolution.solution.body}</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,0.72fr)_auto_minmax(0,1fr)] sm:items-center">
                   <div className="rounded-[22px] border border-hairline bg-white p-3">
                     <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-[#edf3f8]">
                       <Image
                         src={ANGLE_SOURCE_URL}
-                        alt="Source image used before generating alternate camera angles."
+                        alt={content.problemSolution.solution.sourceAlt}
                         fill
                         sizes="260px"
                         className="object-cover"
@@ -571,7 +464,7 @@ export function AngleLandingPage() {
                     <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-[#e8f0f8]">
                       <Image
                         src={ANGLE_OUTPUT_URL}
-                        alt="Alternate low-angle view generated from the same source image."
+                        alt={content.problemSolution.solution.outputAlt}
                         fill
                         sizes="360px"
                         className="object-cover"
@@ -579,9 +472,7 @@ export function AngleLandingPage() {
                     </div>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-text-primary">
-                  Use the better angle as a still, or take it straight into image-to-video.
-                </p>
+                <p className="text-sm font-medium text-text-primary">{content.problemSolution.solution.caption}</p>
               </div>
             </Card>
           </div>
@@ -591,17 +482,13 @@ export function AngleLandingPage() {
       <section className="border-t border-hairline bg-surface section">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader
-            eyebrow="How it works"
-            title="Upload, aim, generate"
-            body={
-              <p>
-                Three steps: bring in a usable image, steer the viewpoint, and keep the version that belongs in the next step.
-              </p>
-            }
+            eyebrow={content.howItWorks.eyebrow}
+            title={content.howItWorks.title}
+            body={<p>{content.howItWorks.body}</p>}
           />
 
           <div className="grid gap-4 md:grid-cols-3">
-            {STEPS.map((step, index) => (
+            {content.howItWorks.steps.map((step, index) => (
               <Card
                 key={step.title}
                 id={`step-${index + 1}`}
@@ -620,48 +507,41 @@ export function AngleLandingPage() {
 
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl stack-gap-lg">
-          <SectionHeader
-            eyebrow="Workspace"
-            title="Everything important sits in one view"
-            body={
-              <p>
-                The source image, angle controls, and outputs stay side by side so you can compare fast and pick the frame you want.
-              </p>
-            }
-          />
-          <WorkspaceShowcase />
+          <SectionHeader eyebrow={content.workspace.eyebrow} title={content.workspace.title} body={<p>{content.workspace.body}</p>} />
+          <WorkspaceShowcase content={content.workspace} />
         </div>
       </section>
 
       <section className="border-t border-hairline bg-[#09111c] section text-white">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader
-            eyebrow="Outputs + pipeline"
-            title="Choose the angle, then move it into the next step"
+            eyebrow={content.outputsPipeline.eyebrow}
+            title={content.outputsPipeline.title}
             light
-            body={
-              <p>
-                Generate one cleaner view or compare several. Once you have the frame you want, refine it in Image or use it before
-                image-to-video.
-              </p>
-            }
+            body={<p>{content.outputsPipeline.body}</p>}
           />
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:items-start">
             <div className="grid gap-4 md:grid-cols-2">
               <OutputCard
-                eyebrow="Composition shift"
-                title="Eye-level to low-angle"
-                body="Move a flat frame toward a more dramatic view when the subject needs more scale or authority."
+                eyebrow={compositionCard.eyebrow}
+                title={compositionCard.title}
+                body={compositionCard.body}
                 visual={
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-[#edf3f8]">
-                      <Image src={ANGLE_SOURCE_URL} alt="Eye-level source image." fill sizes="320px" className="object-cover" />
+                      <Image
+                        src={ANGLE_SOURCE_URL}
+                        alt={compositionCard.sourceAlt}
+                        fill
+                        sizes="320px"
+                        className="object-cover"
+                      />
                     </div>
                     <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-[#e8f0f8]">
                       <Image
                         src={ANGLE_OUTPUT_URL}
-                        alt="Low-angle output generated from the same image."
+                        alt={compositionCard.outputAlt}
                         fill
                         sizes="320px"
                         className="object-cover"
@@ -671,18 +551,24 @@ export function AngleLandingPage() {
                 }
               />
               <OutputCard
-                eyebrow="Portrait framing"
-                title="Straight-on to three-quarter"
-                body="Turn a plain reference into a more usable story or ad frame from the same source image."
+                eyebrow={portraitCard.eyebrow}
+                title={portraitCard.title}
+                body={portraitCard.body}
                 visual={
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-[#edf3f8]">
-                      <Image src={ANGLE_SOURCE_URL} alt="Original portrait angle." fill sizes="260px" className="object-cover" />
+                      <Image
+                        src={ANGLE_SOURCE_URL}
+                        alt={portraitCard.sourceAlt}
+                        fill
+                        sizes="260px"
+                        className="object-cover"
+                      />
                     </div>
                     <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-[#e8f0f8]">
                       <Image
                         src={ANGLE_ALT_THREE_URL}
-                        alt="Three-quarter portrait view generated from the same source."
+                        alt={portraitCard.outputAlt}
                         fill
                         sizes="260px"
                         className="object-cover"
@@ -692,38 +578,38 @@ export function AngleLandingPage() {
                 }
               />
               <OutputCard
-                eyebrow="Angle set"
-                title="Compare several views from one image"
-                body="Generate a small set when you need to choose the option that best fits storyboards, product pages, or motion prep."
+                eyebrow={angleSetCard.eyebrow}
+                title={angleSetCard.title}
+                body={angleSetCard.body}
                 className="md:col-span-2"
                 visual={
                   <div className="grid grid-cols-2 gap-3">
                     <AngleThumb
-                      label="Original"
-                      note="Base frame"
+                      label={originalAngleThumb.label}
+                      note={originalAngleThumb.note}
                       src={ANGLE_SOURCE_URL}
-                      alt="Source image before angle changes."
+                      alt={originalAngleThumb.alt}
                       background="bg-[#edf3f8]"
                     />
                     <AngleThumb
-                      label="Low angle"
-                      note="More scale"
+                      label={lowAngleThumb.label}
+                      note={lowAngleThumb.note}
                       src={ANGLE_OUTPUT_URL}
-                      alt="Low-angle output."
+                      alt={lowAngleThumb.alt}
                       background="bg-[#e8f0f8]"
                     />
                     <AngleThumb
-                      label="Three-quarter"
-                      note="Story framing"
+                      label={threeQuarterAngleThumb.label}
+                      note={threeQuarterAngleThumb.note}
                       src={ANGLE_ALT_THREE_URL}
-                      alt="Three-quarter view output."
+                      alt={threeQuarterAngleThumb.alt}
                       background="bg-[#e8f0f8]"
                     />
                     <AngleThumb
-                      label="High angle"
-                      note="Top-down feel"
+                      label={highAngleThumb.label}
+                      note={highAngleThumb.note}
                       src={ANGLE_ALT_FOUR_URL}
-                      alt="Higher perspective output."
+                      alt={highAngleThumb.alt}
                       background="bg-[#e8f0f8]"
                     />
                   </div>
@@ -735,24 +621,24 @@ export function AngleLandingPage() {
               <div className="border-b border-white/10 px-6 py-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Angle pipeline</p>
-                    <h3 className="mt-3 text-3xl font-semibold tracking-tight text-white">Source → Angle → Image / Video</h3>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{content.outputsPipeline.pipeline.label}</p>
+                    <h3 className="mt-3 text-3xl font-semibold tracking-tight text-white">{content.outputsPipeline.pipeline.title}</h3>
                   </div>
                   <div className="inline-flex items-center rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                    First-frame prep
+                    {content.outputsPipeline.pipeline.badge}
                   </div>
                 </div>
               </div>
 
               <div className="stack-gap-lg p-6">
                 <div className="stack-gap-sm">
-                  {PIPELINE_STEPS.map((item, index) => (
+                  {content.outputsPipeline.pipeline.steps.map((item, index) => (
                     <div key={item.title} className="stack-gap-sm">
                       <div className="rounded-[22px] border border-white/10 bg-black/20 p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">{item.title}</p>
                         <p className="mt-2 text-sm leading-6 text-white">{item.body}</p>
                       </div>
-                      {index < PIPELINE_STEPS.length - 1 ? (
+                      {index < content.outputsPipeline.pipeline.steps.length - 1 ? (
                         <div className="flex justify-center">
                           <ArrowRight className="h-4 w-4 rotate-90 text-slate-400" />
                         </div>
@@ -762,19 +648,19 @@ export function AngleLandingPage() {
                 </div>
 
                 <p className="text-sm leading-7 text-slate-300">
-                  Refine the chosen frame in{' '}
+                  {content.outputsPipeline.pipeline.linkSentence.beforeImage}{' '}
                   <Link href="/app/image" className="font-semibold text-white underline decoration-white/30 underline-offset-4">
-                    Image
+                    {content.outputsPipeline.pipeline.linkSentence.imageLabel}
                   </Link>{' '}
-                  or launch motion in{' '}
+                  {content.outputsPipeline.pipeline.linkSentence.between}{' '}
                   <Link href="/app" className="font-semibold text-white underline decoration-white/30 underline-offset-4">
-                    Video
+                    {content.outputsPipeline.pipeline.linkSentence.videoLabel}
                   </Link>{' '}
-                  once the opening composition is working.
+                  {content.outputsPipeline.pipeline.linkSentence.afterVideo}
                 </p>
 
                 <div className="flex flex-wrap gap-3">
-                  {WORKFLOW_LINKS.map((link) => (
+                  {content.outputsPipeline.pipeline.links.map((link) => (
                     <LinkChip key={link.href} href={link.href} label={link.label} dark />
                   ))}
                 </div>
@@ -785,7 +671,7 @@ export function AngleLandingPage() {
                       <div className="relative aspect-[4/3] overflow-hidden rounded-[14px] bg-[#dbe6f3]">
                         <Image
                           src={ANGLE_OUTPUT_URL}
-                          alt="Selected alternate angle used before video generation."
+                          alt={content.outputsPipeline.pipeline.preview.leftAlt}
                           fill
                           sizes="220px"
                           className="object-cover"
@@ -797,14 +683,14 @@ export function AngleLandingPage() {
                       <div className="relative aspect-[16/10] overflow-hidden rounded-[14px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_55%),linear-gradient(135deg,rgba(14,116,144,0.34),rgba(29,78,216,0.18))]">
                         <Image
                           src={ANGLE_OUTPUT_URL}
-                          alt="Video thumbnail concept based on the chosen camera angle."
+                          alt={content.outputsPipeline.pipeline.preview.rightAlt}
                           fill
                           sizes="320px"
                           className="object-cover opacity-85"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#08111c] via-transparent to-transparent" />
                         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-full border border-white/15 bg-black/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white">
-                          <span>Ready for motion</span>
+                          <span>{content.outputsPipeline.pipeline.preview.readyLabel}</span>
                           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-900">
                             <Play className="h-4 w-4 fill-current" />
                           </span>
@@ -821,18 +707,11 @@ export function AngleLandingPage() {
 
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl stack-gap-lg">
-          <SectionHeader
-            eyebrow="Benefits"
-            title="Why it matters"
-            body={<p>This is a focused fix for viewpoint problems, which makes the next creative decision faster.</p>}
-          />
+          <SectionHeader eyebrow={content.benefits.eyebrow} title={content.benefits.title} body={<p>{content.benefits.body}</p>} />
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {BENEFITS.map((benefit, index) => (
-              <Card
-                key={benefit.title}
-                className="border-hairline bg-surface p-6 shadow-[0_20px_50px_rgba(15,23,42,0.05)]"
-              >
+            {content.benefits.items.map((benefit, index) => (
+              <Card key={benefit.title} className="border-hairline bg-surface p-6 shadow-[0_20px_50px_rgba(15,23,42,0.05)]">
                 <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
                   {(index + 1).toString().padStart(2, '0')}
                 </div>
@@ -846,65 +725,58 @@ export function AngleLandingPage() {
 
       <section className="border-t border-hairline bg-surface section">
         <div className="container-page max-w-6xl stack-gap-lg">
-          <SectionHeader
-            eyebrow="Use cases"
-            title="Where it fits best"
-            body={
-              <p>Best when the asset is nearly right and the next decision depends on camera angle, not on rebuilding the scene.</p>
-            }
-          />
+          <SectionHeader eyebrow={content.useCases.eyebrow} title={content.useCases.title} body={<p>{content.useCases.body}</p>} />
 
           <div className="grid gap-4 lg:grid-cols-12">
             <Card className="overflow-hidden border-hairline bg-bg p-0 lg:col-span-6">
               <div className="border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(247,249,252,0.96))] p-5">
                 <div className="grid grid-cols-3 gap-3">
                   <AngleThumb
-                    label="Original"
-                    note="Scene still"
+                    label={storyOriginalThumb.label}
+                    note={storyOriginalThumb.note}
                     src={ANGLE_SOURCE_URL}
-                    alt="Original scene still for storyboarding."
+                    alt={storyOriginalThumb.alt}
                     background="bg-[#edf3f8]"
                   />
                   <AngleThumb
-                    label="Three-quarter"
-                    note="Board-ready frame"
+                    label={storyThreeQuarterThumb.label}
+                    note={storyThreeQuarterThumb.note}
                     src={ANGLE_ALT_THREE_URL}
-                    alt="Alternative story frame."
+                    alt={storyThreeQuarterThumb.alt}
                     background="bg-[#e8f0f8]"
                   />
                   <AngleThumb
-                    label="Workspace"
-                    note="Review pass"
+                    label={storyWorkspaceThumb.label}
+                    note={storyWorkspaceThumb.note}
                     src={ANGLE_WORKSPACE_SCREENSHOT_PATH}
-                    alt="Angle workspace screenshot showing the first-frame workflow."
+                    alt={storyWorkspaceThumb.alt}
                     background="bg-[#dce8ff]"
                     imageClassName="object-cover object-top"
                   />
                 </div>
               </div>
               <div className="stack-gap-sm p-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Story / film</p>
-                <h3 className="text-xl font-semibold text-text-primary">Storyboarding and previs</h3>
-                <p className="text-sm leading-7 text-text-secondary">
-                  Test perspective before you commit a shot to boards, edits, or an animatic.
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{content.useCases.story.eyebrow}</p>
+                <h3 className="text-xl font-semibold text-text-primary">{content.useCases.story.title}</h3>
+                <p className="text-sm leading-7 text-text-secondary">{content.useCases.story.body}</p>
               </div>
             </Card>
 
             <Card className="overflow-hidden border-hairline bg-bg p-0 lg:col-span-6">
               <div className="border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(241,247,252,0.96))] p-5">
-                <ProductAngleMock />
+                <ProductAngleMock
+                  beforeLabel={content.useCases.commerce.mockBeforeLabel}
+                  afterLabel={content.useCases.commerce.mockAfterLabel}
+                />
               </div>
               <div className="stack-gap-sm p-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Commerce</p>
-                <h3 className="text-xl font-semibold text-text-primary">Product and ecommerce shots</h3>
-                <p className="text-sm leading-7 text-text-secondary">
-                  Turn one clean product image into multiple usable angles for listings, ads, or launch pages.
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{content.useCases.commerce.eyebrow}</p>
+                <h3 className="text-xl font-semibold text-text-primary">{content.useCases.commerce.title}</h3>
+                <p className="text-sm leading-7 text-text-secondary">{content.useCases.commerce.body}</p>
               </div>
             </Card>
 
-            {SMALL_USE_CASES.map((useCase) => (
+            {content.useCases.smallCases.map((useCase) => (
               <Card key={useCase.title} className="border-hairline bg-bg p-6 lg:col-span-6">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{useCase.eyebrow}</p>
                 <h3 className="mt-3 text-xl font-semibold text-text-primary">{useCase.title}</h3>
@@ -917,9 +789,9 @@ export function AngleLandingPage() {
 
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-4xl stack-gap-lg">
-          <SectionHeader eyebrow="FAQ" title="Camera Angle FAQ" body={<p>Short answers before you start.</p>} />
+          <SectionHeader eyebrow={content.faq.eyebrow} title={content.faq.title} body={<p>{content.faq.body}</p>} />
           <div className="stack-gap-sm">
-            {FAQS.map((faq) => (
+            {content.faq.items.map((faq) => (
               <details
                 key={faq.question}
                 className="rounded-[24px] border border-hairline bg-surface p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]"
@@ -937,29 +809,40 @@ export function AngleLandingPage() {
           <Card className="overflow-hidden border-hairline bg-[linear-gradient(135deg,rgba(8,17,28,0.98),rgba(20,48,76,0.96))] p-0 text-white shadow-[0_32px_90px_rgba(15,23,42,0.28)]">
             <div className="grid gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
               <div className="stack-gap-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Final CTA</p>
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Change the camera angle before you generate more</h2>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{content.finalCta.eyebrow}</p>
+                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{content.finalCta.title}</h2>
                 <div className="max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">
-                  <p>Start with one usable image, create alternate views, and carry the best frame into Image or Video.</p>
+                  <p>{content.finalCta.body}</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <ButtonLink href="/app/tools/angle" size="lg" className="bg-white text-slate-950 hover:bg-slate-100">
-                    Open Angle Tool
+                  <ButtonLink
+                    href="/app/tools/angle"
+                    linkComponent={Link}
+                    size="lg"
+                    className="bg-white text-slate-950 hover:bg-slate-100"
+                  >
+                    {content.finalCta.primaryCta}
                   </ButtonLink>
-                  <ButtonLink href="/tools" variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
-                    Browse Tools
+                  <ButtonLink
+                    href="/tools"
+                    linkComponent={Link}
+                    variant="outline"
+                    size="lg"
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    {content.finalCta.secondaryCta}
                   </ButtonLink>
                 </div>
               </div>
               <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-4">
                 <div className="mb-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-                  <span>Selected angle</span>
-                  <span>Ready for next step</span>
+                  <span>{content.finalCta.panelLeft}</span>
+                  <span>{content.finalCta.panelRight}</span>
                 </div>
                 <div className="relative aspect-[4/3] overflow-hidden rounded-[22px] bg-[#dce7f3]">
                   <Image
                     src={ANGLE_OUTPUT_URL}
-                    alt="Selected alternate camera angle used in the final call to action."
+                    alt={content.finalCta.panelAlt}
                     fill
                     sizes="420px"
                     className="object-cover"
@@ -971,7 +854,7 @@ export function AngleLandingPage() {
         </div>
       </section>
 
-      <FAQSchema questions={[...FAQS]} />
+      <FAQSchema questions={[...content.faq.items]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(howToJsonLd) }} />

@@ -3708,5 +3708,697 @@
       "title": "Comparaciones relacionadas",
       "subtitle": "Explora más comparativas populares lado a lado."
     }
+  },
+  "toolMarketing": {
+    "hub": {
+      "meta": {
+        "title": "Herramientas de preproduccion con IA para flujos de imagen y video",
+        "description": "Crea referencias de personaje reutilizables y mejores primeros fotogramas antes de generar. Explora las herramientas de MaxVideoAI para consistencia de personaje y control de angulo de camara con IA.",
+        "keywords": [
+          "herramientas ia preproduccion",
+          "herramientas flujo image to video",
+          "personajes ia consistentes",
+          "cambiar angulo de camara ia",
+          "primer fotograma para video ia"
+        ]
+      },
+      "hero": {
+        "badge": "Herramientas MaxVideoAI",
+        "title": "Crea assets reutilizables antes de image-to-video",
+        "body": "Estas herramientas cubren el paso previo a la generacion: fija el personaje, corrige el angulo y lleva mejores inputs visuales a imagen, image-to-video y al hub de modelos de MaxVideoAI.",
+        "primaryCta": "Personajes IA consistentes",
+        "secondaryCta": "Cambiar angulo de camara con IA"
+      },
+      "cards": {
+        "character": {
+          "eyebrow": "Consistencia de personaje",
+          "title": "Crea referencias de personaje reutilizables",
+          "body": "Convierte una imagen en una hoja de personaje de 8 paneles con 4 angulos de cuerpo completo y 4 close-ups, o crea un ancla de retrato antes de pasar a escenas, prompts y movimiento.",
+          "cta": "Explorar herramienta",
+          "imageAlt": "Captura del espacio Character Builder en MaxVideoAI."
+        },
+        "angle": {
+          "eyebrow": "Control de perspectiva",
+          "title": "Genera mejores primeros fotogramas desde una imagen",
+          "body": "Cambia el punto de vista, prueba composiciones alternativas y genera fotogramas listos para movimiento sin reconstruir toda la imagen desde cero.",
+          "cta": "Explorar herramienta",
+          "imageAlt": "Captura del espacio Angle en MaxVideoAI."
+        }
+      }
+    },
+    "angle": {
+      "meta": {
+        "title": "Cambiar angulo de camara con IA | Genera nuevas vistas desde una imagen",
+        "description": "Sube una imagen, cambia el angulo de camara sin reconstruir la escena y consigue mejores primeros fotogramas para image-to-video, storyboards, anuncios y fotos de producto.",
+        "keywords": [
+          "cambiar angulo de camara ia",
+          "cambiar perspectiva imagen ia",
+          "generador de perspectiva ia",
+          "editor de angulo de foto ia",
+          "control de angulo de camara ia",
+          "varios angulos desde una imagen",
+          "primer fotograma para video ia",
+          "first frame image to video",
+          "primer fotograma image to video"
+        ],
+        "imageAlt": "Angulos de camara alternativos generados con IA desde una imagen fuente.",
+        "schemaName": "Cambiar angulo de camara con IA",
+        "schemaDescription": "Sube una imagen, cambia el angulo de camara sin reconstruir la escena y consigue mejores primeros fotogramas para image-to-video, storyboards, anuncios y fotos de producto.",
+        "schemaFeatures": [
+          "Cambiar el angulo de camara desde una imagen fuente",
+          "Ajustar rotacion, tilt y zoom",
+          "Comparar varias vistas alternativas",
+          "Usar el fotograma elegido antes de image-to-video"
+        ],
+        "howToTitle": "Como funciona",
+        "howToDescription": "Cambia el angulo de camara desde una imagen antes de pasar a image-to-video."
+      },
+      "breadcrumb": {
+        "home": "Inicio",
+        "tools": "Herramientas",
+        "current": "Cambiar angulo de camara con IA"
+      },
+      "hero": {
+        "eyebrow": "Entra una imagen. Sale un nuevo angulo.",
+        "title": "Cambia el angulo de camara sin reconstruir la imagen",
+        "body": "Genera puntos de vista alternativos desde una sola toma y conserva el mejor como primer fotograma antes de image-to-video.",
+        "primaryCta": "Abrir herramienta",
+        "secondaryCta": "Ver ejemplos de angulo",
+        "supportText": "Funciona mejor cuando el sujeto ya esta bien y solo debe cambiar el punto de vista.",
+        "panel": {
+          "topLeft": "Fuente -> angulo -> salida",
+          "topRight": "Conserva la imagen, cambia el punto de vista",
+          "sourceLabel": "Imagen fuente",
+          "sourceAlt": "Imagen fuente antes de cambiar el angulo de camara.",
+          "outputLabel": "Salida elegida",
+          "outputAlt": "Angulo de camara alternativo generado desde la misma imagen fuente.",
+          "controls": [
+            {
+              "title": "Rotacion",
+              "note": "Mover izquierda / derecha"
+            },
+            {
+              "title": "Tilt",
+              "note": "Subir / bajar la camara"
+            },
+            {
+              "title": "Zoom",
+              "note": "Cerrar el encuadre"
+            }
+          ],
+          "bullets": [
+            "Parte de una imagen ya util",
+            "Cambia el angulo de camara, no todo el concepto",
+            "Conserva el fotograma elegido antes de image-to-video"
+          ]
+        }
+      },
+      "problemSolution": {
+        "eyebrow": "Problema + solucion",
+        "title": "Una buena imagen suele empezar con el angulo equivocado",
+        "body": "Cuando el sujeto ya esta bien, lo mas rapido es corregir el punto de vista en lugar de regenerar toda la imagen.",
+        "problem": {
+          "label": "Problema",
+          "title": "El asset esta cerca, pero la toma no funciona",
+          "body": "El sujeto funciona, pero la altura de camara, el encuadre o la perspectiva no. Reconstruir desde cero cuesta tiempo y pone en riesgo la consistencia.",
+          "items": [
+            "El sujeto esta bien, pero el encuadre se siente plano",
+            "El storyboard necesita otra altura de camara",
+            "El producto necesita una vista mas comercial",
+            "El primer fotograma de video no tiene suficiente direccion"
+          ]
+        },
+        "solution": {
+          "label": "Solucion",
+          "title": "Cambia el punto de vista y sigue avanzando",
+          "body": "Angle te permite conservar la imagen fuente en la que confias, generar un nuevo angulo de camara y continuar con la version que encaja en el siguiente paso.",
+          "sourceAlt": "Imagen fuente usada antes de generar angulos de camara alternativos.",
+          "outputAlt": "Vista en contrapicado generada desde la misma imagen fuente.",
+          "caption": "Usa el mejor angulo como imagen fija o llevalo directo a image-to-video."
+        }
+      },
+      "howItWorks": {
+        "eyebrow": "Como funciona",
+        "title": "Subir, apuntar, generar",
+        "body": "Tres pasos: sube una imagen util, dirige el punto de vista y conserva la version que corresponde al siguiente paso.",
+        "steps": [
+          {
+            "title": "Sube una imagen",
+            "body": "Parte del fotograma, packshot o still de escena que ya tiene el sujeto correcto."
+          },
+          {
+            "title": "Elige el punto de vista",
+            "body": "Usa el selector de angulo junto con rotacion, tilt y zoom para probar un encuadre mas limpio rapido."
+          },
+          {
+            "title": "Genera y continua",
+            "body": "Conserva el angulo que funciona y luego llevalo a edicion de imagen, storyboard, anuncios o preparacion de video."
+          }
+        ]
+      },
+      "workspace": {
+        "eyebrow": "Workspace",
+        "title": "Todo lo importante queda en una sola vista",
+        "body": "La imagen fuente, los controles de angulo y las salidas quedan lado a lado para comparar rapido y elegir el fotograma correcto.",
+        "topLeft": "Workspace Angle",
+        "topRight": "Imagen fuente + controles + salidas",
+        "windowLabel": "imagen fuente, selector de angulo, revision de salida",
+        "imageAlt": "Captura completa del workspace Angle de MaxVideoAI.",
+        "callouts": [
+          {
+            "title": "Imagen fuente",
+            "body": "Parte del fotograma en el que ya confias."
+          },
+          {
+            "title": "Controles de angulo",
+            "body": "Ajusta el selector de angulo, la rotacion, el tilt y el zoom en una sola pasada."
+          },
+          {
+            "title": "Revision de salida",
+            "body": "Compara resultados antes de enviar uno a Image o Video."
+          }
+        ]
+      },
+      "outputsPipeline": {
+        "eyebrow": "Salidas + pipeline",
+        "title": "Elige el angulo y luego pasalo al siguiente paso",
+        "body": "Genera una vista mas limpia o compara varias. Cuando tengas el fotograma correcto, refinelo en Image o usalo antes de image-to-video.",
+        "cards": [
+          {
+            "eyebrow": "Cambio de composicion",
+            "title": "De nivel de ojos a contrapicado",
+            "body": "Lleva un encuadre plano a una vista mas dramatica cuando el sujeto necesita mas escala o autoridad.",
+            "sourceAlt": "Imagen fuente a nivel de ojos.",
+            "outputAlt": "Salida en contrapicado generada desde la misma imagen."
+          },
+          {
+            "eyebrow": "Encuadre de retrato",
+            "title": "De frente a tres cuartos",
+            "body": "Convierte una referencia simple en un fotograma mas util para historia o anuncio desde la misma imagen fuente.",
+            "sourceAlt": "Angulo de retrato original.",
+            "outputAlt": "Vista de retrato a tres cuartos generada desde la misma fuente."
+          },
+          {
+            "eyebrow": "Set de angulos",
+            "title": "Compara varias vistas desde una imagen",
+            "body": "Genera un set pequeno cuando necesitas elegir la opcion que mejor encaja con storyboard, pagina de producto o preparacion de motion.",
+            "thumbs": [
+              {
+                "label": "Original",
+                "note": "Fotograma base",
+                "alt": "Imagen fuente antes de los cambios de angulo."
+              },
+              {
+                "label": "Contrapicado",
+                "note": "Mas escala",
+                "alt": "Salida en contrapicado."
+              },
+              {
+                "label": "Tres cuartos",
+                "note": "Encuadre narrativo",
+                "alt": "Salida en tres cuartos."
+              },
+              {
+                "label": "Picado",
+                "note": "Lectura mas alta",
+                "alt": "Salida con perspectiva mas alta."
+              }
+            ]
+          }
+        ],
+        "pipeline": {
+          "label": "Pipeline de angulo",
+          "title": "Fuente -> angulo -> imagen / video",
+          "badge": "Prep de primer fotograma",
+          "steps": [
+            {
+              "title": "Imagen fuente",
+              "body": "Parte del fotograma o la foto de producto que ya funciona."
+            },
+            {
+              "title": "Angulo elegido",
+              "body": "Conserva la version que corrige la composicion o la altura de camara."
+            },
+            {
+              "title": "Imagen / Video",
+              "body": "Refinala en Image o usala como primer fotograma antes del movimiento."
+            }
+          ],
+          "linkSentence": {
+            "beforeImage": "Refina el fotograma elegido en",
+            "imageLabel": "Image",
+            "between": "o lanza el movimiento en",
+            "videoLabel": "Video",
+            "afterVideo": "cuando la composicion de apertura ya este lista."
+          },
+          "links": [
+            {
+              "href": "/app/image",
+              "label": "Abrir workspace Image"
+            },
+            {
+              "href": "/app",
+              "label": "Abrir workspace Video"
+            },
+            {
+              "href": "/models/veo-3-1",
+              "label": "Veo 3.1"
+            },
+            {
+              "href": "/models/kling-3-pro",
+              "label": "Kling 3 Pro"
+            },
+            {
+              "href": "/models",
+              "label": "Hub de modelos"
+            }
+          ],
+          "preview": {
+            "leftAlt": "Angulo alternativo elegido antes de la generacion de video.",
+            "rightAlt": "Concepto de thumbnail de video basado en el angulo elegido.",
+            "readyLabel": "Listo para motion"
+          }
+        }
+      },
+      "benefits": {
+        "eyebrow": "Beneficios",
+        "title": "Por que importa",
+        "body": "Es una solucion enfocada para problemas de punto de vista, lo que acelera la siguiente decision creativa.",
+        "items": [
+          {
+            "title": "Menos retrabajo",
+            "body": "Corrige el punto de vista sin tirar una imagen fuente que ya estaba cerca."
+          },
+          {
+            "title": "Seleccion de toma mas rapida",
+            "body": "Compara angulos alternativos antes de gastar mas tiempo o presupuesto en regeneracion completa."
+          },
+          {
+            "title": "Mejor preparacion para image-to-video",
+            "body": "Un primer fotograma mas limpio da a las herramientas de motion una composicion mas clara."
+          },
+          {
+            "title": "Mas cobertura desde un solo asset",
+            "body": "Consigue vistas extra de producto, retrato o escena desde una sola imagen fuente."
+          }
+        ]
+      },
+      "useCases": {
+        "eyebrow": "Casos de uso",
+        "title": "Donde mejor encaja",
+        "body": "Funciona mejor cuando el asset esta casi listo y la siguiente decision depende del angulo de camara, no de reconstruir la escena.",
+        "story": {
+          "eyebrow": "Historia / cine",
+          "title": "Storyboard y previs",
+          "body": "Prueba la perspectiva antes de comprometer una toma en boards, edits o un animatic.",
+          "thumbs": [
+            {
+              "label": "Original",
+              "note": "Still de escena",
+              "alt": "Still de escena original para storyboard."
+            },
+            {
+              "label": "Tres cuartos",
+              "note": "Fotograma listo para board",
+              "alt": "Fotograma alternativo para historia."
+            },
+            {
+              "label": "Workspace",
+              "note": "Revision",
+              "alt": "Captura del workspace Angle mostrando el flujo de primer fotograma."
+            }
+          ]
+        },
+        "commerce": {
+          "eyebrow": "Comercio",
+          "title": "Producto y ecommerce",
+          "body": "Convierte una foto de producto limpia en varios angulos utiles para listings, anuncios o paginas de lanzamiento.",
+          "mockBeforeLabel": "Packshot frontal",
+          "mockAfterLabel": "Vista hero a tres cuartos"
+        },
+        "smallCases": [
+          {
+            "eyebrow": "Ads / creativo",
+            "title": "Testing de creatividades",
+            "body": "Prueba vistas alternativas de camara sin reconstruir todo el concepto."
+          },
+          {
+            "eyebrow": "Personaje / escena",
+            "title": "Preparacion de escena de personaje",
+            "body": "Elige un fotograma mas legible antes de still edits o image-to-video."
+          }
+        ]
+      },
+      "faq": {
+        "eyebrow": "FAQ",
+        "title": "FAQ de angulo de camara",
+        "body": "Respuestas cortas antes de empezar.",
+        "items": [
+          {
+            "question": "¿La IA puede cambiar el angulo de camara de una foto?",
+            "answer": "Si. Puedes generar puntos de vista alternativos desde una sola imagen fuente en lugar de reconstruir toda la escena."
+          },
+          {
+            "question": "¿Que entra y que sale?",
+            "answer": "Empiezas con una imagen y generas una o varias vistas alternativas listas para comparar o reutilizar."
+          },
+          {
+            "question": "¿Esto ayuda antes de image-to-video?",
+            "answer": "Si. Te ayuda a elegir un mejor fotograma inicial antes de pasar a motion."
+          },
+          {
+            "question": "¿Puedo usarlo para fotos de producto?",
+            "answer": "Si. Funciona bien para packshots, angulos laterales y hero views mas fuertes desde una sola imagen de producto."
+          },
+          {
+            "question": "¿Puedo generar varios angulos desde una imagen?",
+            "answer": "Si. Puedes generar varias vistas, compararlas y conservar la que mejor encaje con el siguiente paso."
+          }
+        ]
+      },
+      "finalCta": {
+        "eyebrow": "CTA final",
+        "title": "Cambia el angulo de camara antes de generar mas",
+        "body": "Parte de una imagen util, crea vistas alternativas y lleva el mejor fotograma a Image o Video.",
+        "primaryCta": "Abrir Angle",
+        "secondaryCta": "Ver herramientas",
+        "panelLeft": "Angulo elegido",
+        "panelRight": "Listo para el siguiente paso",
+        "panelAlt": "Angulo de camara alternativo elegido en el CTA final."
+      }
+    },
+    "characterBuilder": {
+      "meta": {
+        "title": "Herramienta de personajes IA consistentes | Referencias reutilizables para imagen y video",
+        "description": "Crea anclas de retrato reutilizables y hojas de personaje IA de 8 paneles desde una foto, una referencia opcional de vestuario o desde cero. Reutiliza el mismo personaje entre escenas, edits y flujos de video basados en imagen fija.",
+        "keywords": [
+          "personajes ia consistentes",
+          "consistencia de personaje ia",
+          "generador de personajes consistentes",
+          "hoja de personaje ia",
+          "referencia de personaje ia",
+          "turnaround de personaje ia",
+          "mantener el mismo personaje entre escenas",
+          "consistencia de personaje image to video",
+          "generador hoja de personaje ia",
+          "referencia de personaje ia",
+          "hoja de referencia de personaje ia",
+          "turnaround de personaje ia",
+          "mismo personaje entre escenas",
+          "misma cara mismo vestuario ia"
+        ],
+        "imageAlt": "Preview de una hoja de personaje IA reutilizable generada con Character Builder.",
+        "schemaName": "Personajes IA consistentes",
+        "schemaDescription": "Crea anclas de retrato reutilizables y hojas de personaje IA de 8 paneles desde una imagen, una referencia opcional de vestuario o desde cero, y luego reutilizalas en imagen, edicion y flujos de video basados en imagen fija.",
+        "schemaFeatures": [
+          "Empezar desde una foto de identidad, una referencia opcional de vestuario o un concepto creado desde cero",
+          "Generar un ancla de retrato reutilizable",
+          "Generar una hoja de personaje de 8 paneles con cuatro angulos de cuerpo completo y cuatro close-ups que coinciden",
+          "Reutilizar la misma referencia de personaje en prompts y edits de imagen",
+          "Usar la referencia en Nano Banana y motores de video que aceptan still references"
+        ],
+        "howToTitle": "Como funciona Character Builder",
+        "howToDescription": "Crear un asset de referencia de personaje reutilizable para imagenes IA consistentes y flujos de video basados en still reference."
+      },
+      "breadcrumb": {
+        "home": "Inicio",
+        "tools": "Herramientas",
+        "current": "Character Builder"
+      },
+      "hero": {
+        "badge": "Herramienta de personajes IA consistentes",
+        "secondaryBadge": "Ancla de retrato + hoja de personaje de 8 paneles",
+        "title": "Crea una referencia de personaje reutilizable para imagenes y video con IA consistentes",
+        "body": "Sube una foto de identidad, agrega una inspiracion opcional de vestuario o empieza desde cero. Genera un ancla de retrato reutilizable o una hoja de personaje de 8 paneles para reutilizarla en escenas, edits y flujos de video basados en referencia.",
+        "primaryCta": "Abrir Character Builder",
+        "proofs": [
+          "Empieza con una foto de identidad, una inspiracion opcional de vestuario o un concepto creado desde cero",
+          "Genera un ancla de retrato reutilizable o una hoja de personaje de 8 paneles",
+          "Reutiliza el mismo personaje en escenas, prompts, edits y flujos de video basados en imagen fija"
+        ],
+        "showcase": {
+          "topLabel": "Workspace Character Builder",
+          "windowLabel": "elegir input, generar asset, reutilizar",
+          "imageAlt": "Captura completa del workspace Character Builder de MaxVideoAI.",
+          "callouts": [
+            {
+              "label": "01",
+              "title": "Elige tu input",
+              "body": "Usa una foto de identidad, agrega inspiracion opcional de vestuario o empieza desde cero."
+            },
+            {
+              "label": "02",
+              "title": "Genera el asset",
+              "body": "Crea un ancla de retrato o una hoja de personaje de 8 paneles coherente."
+            },
+            {
+              "label": "03",
+              "title": "Reutilizalo en todas partes",
+              "body": "Lleva la misma referencia a prompts, edits, Nano Banana y flujos de video basados en imagen fija."
+            }
+          ]
+        }
+      },
+      "why": {
+        "problemLabel": "Por que la gente lo necesita",
+        "problemTitle": "Por que los personajes IA se desalinean",
+        "problemBody": "Los prompts pueden conservar la idea general de un personaje, pero los detalles de identidad se escapan cuando empiezas a generar multiples escenas.",
+        "problemItems": [
+          "Los rostros y el cabello cambian entre escenas",
+          "Los detalles del vestuario dejan de coincidir",
+          "La continuidad de la silueta es mas dificil de mantener"
+        ],
+        "solutionLabel": "Lo que crea esta herramienta",
+        "solutionTitle": "Character Builder crea primero la referencia",
+        "solutionBody": "Genera un ancla de retrato o una hoja de personaje de 8 paneles y luego vuelve a usar esa misma referencia en prompts, edits y flujos de video basados en still reference.",
+        "portraitInputLabel": "Input de retrato",
+        "portraitInputAlt": "Referencia de retrato usada como input base en Character Builder.",
+        "sheetLabel": "Hoja reutilizable de 8 paneles",
+        "sheetAlt": "Salida de hoja de personaje de 8 paneles generada por Character Builder."
+      },
+      "howItWorks": {
+        "eyebrow": "Como funciona",
+        "title": "Crea la referencia y luego llevatela a todo el flujo",
+        "body": "Empieza con un rostro, una pista de vestuario o un concepto creado desde cero. Genera la salida y luego vuelve a usarla en imagen, edits y preparacion de video.",
+        "steps": [
+          {
+            "stepLabel": "Empezar con",
+            "title": "Empezar con un rostro, vestuario o concepto",
+            "body": "Usa una foto de identidad, agrega una direccion de estilo opcional o empieza sin imagen fuente.",
+            "pills": [
+              "Foto de identidad",
+              "Referencia opcional de vestuario"
+            ]
+          },
+          {
+            "stepLabel": "Generar",
+            "title": "Generar un ancla de retrato o una hoja de 8 paneles",
+            "body": "Crea una referencia facial mas cerrada o una hoja coherente con cuatro angulos de cuerpo completo y cuatro close-ups.",
+            "pills": [
+              "Ancla de retrato",
+              "Hoja de personaje de 8 paneles"
+            ]
+          },
+          {
+            "stepLabel": "Reutilizar en",
+            "title": "Reutilizar en imagen, edits y preparacion de video",
+            "body": "Lleva la misma referencia a prompts, Nano Banana y herramientas de video basadas en imagen fija.",
+            "pills": [
+              "Prompts de imagen",
+              "Prep de video"
+            ]
+          }
+        ],
+        "comparisonLabel": "Por que funciona",
+        "comparisonBody": "La referencia hace el trabajo de continuidad antes de empezar a cambiar escenas.",
+        "comparisons": [
+          {
+            "eyebrow": "Sin Character Builder",
+            "title": "Cada escena nueva tiene que reconstruir al personaje",
+            "items": [
+              "El rostro, el cabello y el vestuario se desalinean entre prompts",
+              "Pasas mas tiempo corrigiendo continuidad"
+            ]
+          },
+          {
+            "eyebrow": "Con Character Builder",
+            "title": "Una sola referencia mantiene al personaje estable",
+            "items": [
+              "Rostro, vestuario y silueta quedan alineados",
+              "Los stills y la preparacion de video parten de una base mas fuerte"
+            ]
+          }
+        ]
+      },
+      "outputsWorkflow": {
+        "eyebrow": "Salidas y flujo",
+        "title": "Elige la salida y luego pasa a imagenes y video",
+        "body": "Elige la salida que encaja con el trabajo y luego llevatela a Nano Banana o a flujos de video basados en still reference.",
+        "cards": [
+          {
+            "eyebrow": "Ancla de retrato",
+            "title": "Ancla de retrato reutilizable",
+            "body": "Ideal para close-ups, prompts y trabajo recurrente de personaje.",
+            "pills": [
+              "Close-ups y edits"
+            ],
+            "imageAlt": "Ancla de retrato reutilizable para close-ups, prompts y trabajo recurrente de personaje."
+          },
+          {
+            "eyebrow": "Generador de hoja de personaje",
+            "title": "Hoja de personaje de 8 paneles",
+            "body": "Ideal cuando una sola referencia multiangulo debe viajar por escenas, boards, edits y preparacion de video.",
+            "pills": [
+              "Multiangulo",
+              "La mas reutilizable"
+            ],
+            "badge": "La mas reutilizable",
+            "stats": "4 cuerpo completo + 4 close-ups",
+            "imageAlt": "Salida de hoja de personaje de 8 paneles generada por Character Builder."
+          },
+          {
+            "eyebrow": "Still para prep de video",
+            "title": "Still mas limpio para preparar motion",
+            "body": "Ideal cuando la referencia necesita un still mas limpio antes de empezar el movimiento.",
+            "pills": [
+              "Prep de video"
+            ],
+            "badge": "Still de Nano Banana",
+            "imageAlt": "Still mas limpio preparado desde la misma referencia de personaje antes del movimiento."
+          }
+        ],
+        "workflow": {
+          "label": "Flujo de referencia",
+          "title": "Character Builder -> Nano Banana -> Video",
+          "chainLabel": "Hoja -> still -> video",
+          "steps": [
+            {
+              "label": "01 · Hoja de personaje",
+              "body": "Fija al personaje antes de que empiece el movimiento.",
+              "imageAlt": "Hoja de Character Builder usada como asset de referencia reutilizable en imagen y video."
+            },
+            {
+              "label": "02 · Still de Nano Banana",
+              "body": "Refina el mismo personaje en un still mas limpio.",
+              "imageAlt": "Still de Nano Banana creado desde la misma referencia de hoja de personaje."
+            },
+            {
+              "label": "03 · Resultado de video",
+              "body": "La misma identidad estable llevada a motion.",
+              "imageAlt": "Fotograma inicial de video generado desde el still de Nano Banana con la misma identidad de personaje."
+            }
+          ],
+          "videoBadge": "LTX 2.3 Pro",
+          "links": [
+            {
+              "href": "/app/image",
+              "label": "Abrir Nano Banana en Image"
+            },
+            {
+              "href": "/app",
+              "label": "Abrir workspace Video"
+            },
+            {
+              "href": "/models/nano-banana",
+              "label": "Nano Banana"
+            },
+            {
+              "href": "/models/veo-3-1",
+              "label": "Veo 3.1"
+            },
+            {
+              "href": "/models/kling-3-pro",
+              "label": "Kling 3 Pro"
+            },
+            {
+              "href": "/models",
+              "label": "Explorar hub de modelos"
+            },
+            {
+              "href": "/examples",
+              "label": "Ver ejemplos"
+            }
+          ]
+        }
+      },
+      "useCases": {
+        "eyebrow": "Casos de uso",
+        "title": "Donde importa la consistencia reutilizable del personaje",
+        "body": "Un mismo personaje puede sostener flujos para creators, piezas comerciales y planificacion sin perder continuidad entre multiples stills o tomas.",
+        "items": [
+          {
+            "eyebrow": "Historia / cine",
+            "number": "01",
+            "title": "Cortos y escenas narrativas",
+            "body": "Mantiene reconocible al protagonista entre boards, variaciones de escena y planificacion del primer fotograma antes de motion.",
+            "imageAlt": "Still de escena narrativa generado desde una referencia de personaje reutilizable."
+          },
+          {
+            "eyebrow": "Ads / comercial",
+            "number": "02",
+            "title": "Talento publicitario recurrente",
+            "body": "Reutiliza el mismo portavoz entre stills de campana, conceptos alternativos y variantes de video basadas en referencia.",
+            "imageAlt": "Retrato de portavoz comercial preparado como referencia reutilizable."
+          },
+          {
+            "eyebrow": "Mascota / marca",
+            "number": "03",
+            "title": "Mascotas de marca",
+            "body": "Mantiene una misma mascota estable en lanzamientos, promos, stills y pruebas de motion en lugar de reconstruirla cada vez.",
+            "imageAlt": "Mascota de marca preparada como asset de personaje reutilizable y consistente."
+          },
+          {
+            "eyebrow": "Serie / creator",
+            "number": "04",
+            "title": "Series de creator",
+            "body": "Reutiliza el mismo host, avatar o personaje en cada episodio sin perder rostro, vestuario ni silueta.",
+            "imageAlt": "Fotograma de serie creator generado desde una referencia de personaje reutilizable."
+          },
+          {
+            "eyebrow": "Previs / comics",
+            "number": "05",
+            "title": "Comics y previz de animacion",
+            "body": "Construye una sola hoja de personaje reutilizable para boards, paneles, turnarounds y trabajo de previsualizacion antes de animar.",
+            "imageAlt": "Referencia de personaje reutilizable preparada para paneles de comics y previz de animacion."
+          }
+        ]
+      },
+      "faq": {
+        "eyebrow": "FAQ",
+        "title": "FAQ de personajes IA consistentes",
+        "body": "Respuestas cortas antes de construir la referencia.",
+        "items": [
+          {
+            "question": "¿Que es consistent character AI?",
+            "answer": "Es construir una referencia de personaje estable para que el mismo rostro, vestuario y silueta se mantengan mejor despues."
+          },
+          {
+            "question": "¿Puedo crear una hoja de personaje desde una imagen?",
+            "answer": "Si. Puedes partir de una imagen y generar una hoja de 8 paneles con cuatro angulos de cuerpo completo y cuatro close-ups que coinciden."
+          },
+          {
+            "question": "¿Puedo usar una referencia de rostro y otra de vestuario?",
+            "answer": "Si. Puedes combinar una referencia de identidad con una segunda imagen para direccion de vestuario o look."
+          },
+          {
+            "question": "¿Puedo empezar desde cero?",
+            "answer": "Si. Puedes construir un ancla de retrato o una hoja de personaje desde un concepto creado desde cero cuando no tienes una imagen fuente."
+          },
+          {
+            "question": "¿Puedo reutilizar esto en flujos image-to-video?",
+            "answer": "Si. Puedes reutilizarlo en prompts, prep de primer fotograma con Nano Banana y motores de video que soportan still references."
+          }
+        ]
+      },
+      "finalCta": {
+        "eyebrow": "CTA final",
+        "title": "Construye tu referencia de personaje reutilizable",
+        "body": "Crea el personaje una sola vez. Reutilizalo en imagen, edits y preparacion de video.",
+        "primaryCta": "Abrir Character Builder",
+        "panelLeft": "Salida reutilizable",
+        "panelRight": "Hoja de 8 paneles",
+        "panelAlt": "Preview de una hoja de personaje IA reutilizable generada con Character Builder."
+      }
+    }
   }
 }

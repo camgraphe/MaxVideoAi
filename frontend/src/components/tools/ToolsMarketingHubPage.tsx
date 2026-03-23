@@ -1,30 +1,15 @@
 import type { ReactNode } from 'react';
-import type { Metadata } from 'next';
 import Image from 'next/image';
 import { ArrowRight, Camera, Sparkles } from 'lucide-react';
-import { buildSeoMetadata } from '@/lib/seo/metadata';
+import type { Dictionary } from '@/lib/i18n/types';
+import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
-const CHARACTER_CARD_BACKGROUND_URL =
-  '/assets/tools/character-builder-workspace.png';
+const CHARACTER_CARD_BACKGROUND_URL = '/assets/tools/character-builder-workspace.png';
 const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
 
-export const metadata: Metadata = buildSeoMetadata({
-  locale: 'en',
-  title: 'AI Pre-Production Tools for Image & Video Workflows',
-  description:
-    'Build reusable character references and stronger first frames before you generate. Explore MaxVideoAI tools for consistent character creation and AI camera angle control.',
-  englishPath: '/tools',
-  availableLocales: ['en'],
-  keywords: [
-    'ai pre production tools',
-    'image to video workflow tools',
-    'consistent character ai',
-    'change camera angle ai',
-    'first frame for ai video',
-  ],
-});
+type ToolsMarketingHubContent = Dictionary['toolMarketing']['hub'];
 
 function ToolCard({
   icon,
@@ -32,6 +17,7 @@ function ToolCard({
   title,
   body,
   href,
+  cta,
   visual,
 }: {
   icon: ReactNode;
@@ -39,6 +25,7 @@ function ToolCard({
   title: string;
   body: string;
   href: string;
+  cta: string;
   visual: ReactNode;
 }) {
   return (
@@ -55,8 +42,8 @@ function ToolCard({
           </div>
         </div>
         <p className="text-sm leading-7 text-text-secondary">{body}</p>
-        <ButtonLink href={href} size="lg" className="w-fit">
-          Explore Tool
+        <ButtonLink href={href} linkComponent={Link} size="lg" className="w-fit">
+          {cta}
           <ArrowRight className="h-4 w-4" />
         </ButtonLink>
       </div>
@@ -64,29 +51,24 @@ function ToolCard({
   );
 }
 
-export default function ToolsMarketingHubPage() {
+export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubContent }) {
   return (
     <div className="bg-bg">
       <section className="section halo-hero">
         <div className="container-page max-w-6xl stack-gap-lg text-center">
           <div className="inline-flex w-fit self-center rounded-full border border-hairline bg-surface px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-text-muted shadow-card">
-            MaxVideoAI Tools
+            {content.hero.badge}
           </div>
           <div className="stack-gap-sm">
-            <h1 className="text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl">
-              Build Reusable Assets Before Image-to-Video
-            </h1>
-            <p className="mx-auto max-w-3xl text-base leading-8 text-text-secondary sm:text-lg">
-              These tools are built for the step before generation: lock the character, fix the angle, then carry stronger visual
-              inputs into image creation, image-to-video, and the MaxVideoAI model hub.
-            </p>
+            <h1 className="text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl">{content.hero.title}</h1>
+            <p className="mx-auto max-w-3xl text-base leading-8 text-text-secondary sm:text-lg">{content.hero.body}</p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
-            <ButtonLink href="/tools/character-builder" size="lg">
-              Consistent Character AI
+            <ButtonLink href="/tools/character-builder" linkComponent={Link} size="lg">
+              {content.hero.primaryCta}
             </ButtonLink>
-            <ButtonLink href="/tools/angle" variant="outline" size="lg">
-              Change Camera Angle with AI
+            <ButtonLink href="/tools/angle" linkComponent={Link} variant="outline" size="lg">
+              {content.hero.secondaryCta}
             </ButtonLink>
           </div>
         </div>
@@ -96,15 +78,16 @@ export default function ToolsMarketingHubPage() {
         <div className="container-page max-w-6xl grid gap-5 lg:grid-cols-2">
           <ToolCard
             icon={<Sparkles className="h-5 w-5" />}
-            eyebrow="Character consistency"
-            title="Create reusable character references"
-            body="Turn one image into an 8-panel character sheet with 4 full-body angles and 4 close-ups, or create a portrait anchor before you branch into scenes, prompts, and motion."
+            eyebrow={content.cards.character.eyebrow}
+            title={content.cards.character.title}
+            body={content.cards.character.body}
             href="/tools/character-builder"
+            cta={content.cards.character.cta}
             visual={
               <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
                 <Image
                   src={CHARACTER_CARD_BACKGROUND_URL}
-                  alt="Character Builder workspace screenshot from MaxVideoAI."
+                  alt={content.cards.character.imageAlt}
                   fill
                   sizes="(max-width: 1024px) 100vw, 520px"
                   className="object-cover object-top"
@@ -114,15 +97,16 @@ export default function ToolsMarketingHubPage() {
           />
           <ToolCard
             icon={<Camera className="h-5 w-5" />}
-            eyebrow="Perspective control"
-            title="Generate stronger first frames from one image"
-            body="Change viewpoint, explore alternative compositions, and generate motion-ready frames without rebuilding the whole image from scratch."
+            eyebrow={content.cards.angle.eyebrow}
+            title={content.cards.angle.title}
+            body={content.cards.angle.body}
             href="/tools/angle"
+            cta={content.cards.angle.cta}
             visual={
               <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
                 <Image
                   src={ANGLE_CARD_BACKGROUND_URL}
-                  alt="Angle workspace screenshot from MaxVideoAI."
+                  alt={content.cards.angle.imageAlt}
                   fill
                   sizes="(max-width: 1024px) 100vw, 520px"
                   className="object-cover object-top"
