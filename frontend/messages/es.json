@@ -3712,14 +3712,14 @@
   "toolMarketing": {
     "hub": {
       "meta": {
-        "title": "Herramientas de preproducción con IA para flujos de imagen y video",
-        "description": "Crea referencias de personaje reutilizables y mejores primeros fotogramas antes de generar. Explora las herramientas de MaxVideoAI para mantener la consistencia del personaje y ajustar el ángulo de cámara con IA.",
+        "title": "Herramientas de preproducción con IA para imagen y video",
+        "description": "Crea referencias de personaje reutilizables y mejores fotogramas iniciales antes de generar. Descubre las herramientas de MaxVideoAI para mantener personajes consistentes y ajustar el ángulo de cámara.",
         "keywords": [
-          "herramientas de preproducción con IA",
-          "flujo image-to-video",
+          "herramientas IA de preproducción",
+          "image-to-video",
           "personaje IA consistente",
-          "cambiar ángulo de cámara con IA",
-          "primer fotograma para video IA"
+          "cambiar ángulo de cámara IA",
+          "fotograma inicial para video IA"
         ]
       },
       "hero": {
@@ -3748,22 +3748,21 @@
     },
     "angle": {
       "meta": {
-        "title": "Cambiar ángulo de cámara con IA | Genera nuevas vistas desde una imagen",
-        "description": "Sube una imagen, cambia el ángulo de cámara sin reconstruir la escena y consigue un mejor primer fotograma para image-to-video, storyboards, anuncios y fotos de producto.",
+        "title": "Cambiar ángulo de cámara con IA | Nuevas vistas desde una imagen",
+        "description": "Sube una imagen, cambia el ángulo de cámara sin reconstruir la escena y consigue un mejor fotograma inicial para image-to-video, storyboards, anuncios y fotos de producto.",
         "keywords": [
-          "cambiar ángulo de cámara con IA",
-          "cambiar perspectiva de imagen con IA",
-          "generador de perspectiva IA",
-          "editor de ángulo de foto con IA",
-          "control de ángulo de cámara IA",
+          "cambiar ángulo de cámara IA",
+          "cambiar la perspectiva de una imagen con IA",
+          "generador de ángulo de cámara IA",
+          "editor de perspectiva de foto con IA",
+          "control de cámara IA",
           "varios ángulos desde una imagen",
-          "primer fotograma para video IA",
-          "first frame image-to-video",
-          "primer fotograma image-to-video"
+          "fotograma inicial image-to-video",
+          "first frame image-to-video"
         ],
         "imageAlt": "Ángulos de cámara alternativos generados con IA a partir de una imagen fuente.",
         "schemaName": "Cambiar ángulo de cámara con IA",
-        "schemaDescription": "Sube una imagen, cambia el ángulo de cámara sin reconstruir la escena y consigue un mejor primer fotograma para image-to-video, storyboards, anuncios y fotos de producto.",
+        "schemaDescription": "Sube una imagen, cambia el ángulo de cámara sin reconstruir la escena y consigue un mejor fotograma inicial para image-to-video, storyboards, anuncios y fotos de producto.",
         "schemaFeatures": [
           "Cambiar el ángulo de cámara a partir de una imagen fuente",
           "Ajustar rotación, inclinación y zoom",
@@ -4089,25 +4088,23 @@
     },
     "characterBuilder": {
       "meta": {
-        "title": "Herramienta de personajes IA consistentes | Referencias reutilizables para imagen y video",
-        "description": "Crea anclas de retrato reutilizables y hojas de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero. Reutiliza el mismo personaje entre escenas, ediciones y flujos de video basados en imagen fija.",
+        "title": "Personajes IA consistentes | Referencias reutilizables para imagen y video",
+        "description": "Crea un ancla de retrato o una hoja de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero. Reutiliza el mismo personaje en escenas, ediciones y flujos de video basados en imagen fija.",
         "keywords": [
           "personaje IA consistente",
           "consistencia de personaje IA",
-          "generador de personajes consistentes",
+          "generador de personaje consistente",
           "hoja de personaje IA",
           "referencia de personaje IA",
-          "turnaround de personaje IA",
           "mantener el mismo personaje entre escenas",
-          "consistencia de personaje image-to-video",
-          "generador de hoja de personaje IA",
-          "hoja de referencia de personaje IA",
+          "personaje consistente para video",
+          "image-to-video personaje consistente",
           "misma cara mismo vestuario IA",
-          "referencia de personaje para video"
+          "turnaround de personaje IA"
         ],
         "imageAlt": "Vista previa de una hoja de personaje IA reutilizable generada con Character Builder.",
         "schemaName": "Personajes IA consistentes",
-        "schemaDescription": "Crea anclas de retrato reutilizables y hojas de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero, y luego reutilízalas en Image, en edición y en flujos de video basados en imagen fija.",
+        "schemaDescription": "Crea un ancla de retrato o una hoja de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero, y luego reutilízala en escenas, ediciones y flujos de video basados en imagen fija.",
         "schemaFeatures": [
           "Empezar desde un retrato de referencia, una referencia opcional de vestuario o un concepto creado desde cero",
           "Generar un ancla de retrato reutilizable",
@@ -4116,7 +4113,7 @@
           "Usar la referencia en Nano Banana y en motores de video que aceptan imágenes fijas de referencia"
         ],
         "howToTitle": "Cómo funciona Character Builder",
-        "howToDescription": "Crea una referencia de personaje reutilizable para imágenes IA consistentes y flujos de video basados en imagen fija."
+        "howToDescription": "Crea una referencia de personaje reutilizable para mantener imágenes IA consistentes y preparar video desde una imagen fija."
       },
       "breadcrumb": {
         "home": "Inicio",
