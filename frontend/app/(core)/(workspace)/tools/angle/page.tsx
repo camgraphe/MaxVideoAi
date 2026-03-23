@@ -6,7 +6,7 @@ export const metadata: Metadata = buildSeoMetadata({
   locale: 'en',
   title: 'Change Camera Angle with AI | Generate New Views from One Image',
   description:
-    'Upload one image, change camera angle, and generate new perspectives with AI. Build better first frames for image-to-video, storyboards, ads, and product shots.',
+    'Upload one image, change camera angle without rebuilding the scene, and generate better first frames for image-to-video, storyboards, ads, and product shots.',
   englishPath: '/tools/angle',
   availableLocales: ['en'],
   keywords: [

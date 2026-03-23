@@ -58,7 +58,7 @@ const COMICS_PREVIZ_USE_CASE_ASSET = {
   alt: 'Reusable character reference prepared for comics panels and animation previz.',
 } as const;
 const MASCOT_USE_CASE_ASSET = {
-  url: 'https://v3b.fal.media/files/b/0a92b90f/1YEB8Ogqw4EkDI3bwK2qg_lYTqahLO.png',
+  url: 'https://v3b.fal.media/files/b/0a93562e/5o1aO2LCroDg-PWioialv_ujZx2Wou.png',
   alt: 'Brand mascot prepared as a reusable consistent character asset.',
 } as const;
 
@@ -73,16 +73,16 @@ const HERO_PROOF_BULLETS = [
 
 const HOW_IT_WORKS_STEPS = [
   {
-    title: 'Start with a face reference, outfit cue, or scratch-built concept',
-    body: 'Use one identity photo, add optional wardrobe inspiration, or define the character from scratch.',
+    title: 'Start with a face, outfit cue, or scratch concept',
+    body: 'Use one identity photo, add optional style direction, or start without a source image.',
   },
   {
     title: 'Generate a portrait anchor or 8-panel sheet',
-    body: 'Create either a tighter portrait reference or one coherent sheet with four full-body angles and four matching close-ups.',
+    body: 'Create a tighter face reference or one coherent sheet with four body angles and four close-ups.',
   },
   {
-    title: 'Reuse it across stills, edits, and video prep',
-    body: 'Carry the output back into prompts, image edits, Nano Banana, and still-reference video workflows.',
+    title: 'Reuse it in stills, edits, and video prep',
+    body: 'Bring the same reference into prompts, Nano Banana, and still-reference video tools.',
   },
 ] as const;
 
@@ -111,24 +111,22 @@ const HOW_IT_WORKS_OPTIONS = [INPUT_OPTIONS, OUTPUT_OPTIONS, REUSE_OPTIONS] as c
 const COMPARISON_COLUMNS = [
   {
     eyebrow: 'Without Character Builder',
-    title: 'Every new scene has to re-solve the character',
+    title: 'Every new scene has to rebuild the character',
     tone: 'border-rose-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,245,245,0.96))]',
     badgeTone: 'bg-rose-100 text-rose-700',
     items: [
       'Face, hair, and outfit drift between prompts',
       'You spend more time correcting continuity',
-      'Video prep starts from a weaker still',
     ],
   },
   {
     eyebrow: 'With Character Builder',
-    title: 'One reusable asset keeps the character grounded',
+    title: 'One reference keeps the character grounded',
     tone: 'border-emerald-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(239,253,245,0.96))]',
     badgeTone: 'bg-emerald-100 text-emerald-700',
     items: [
       'Face, outfit, and silhouette stay aligned',
-      'Stills and edits hold up better across scenes',
-      'Video prep starts from a stronger still',
+      'Stills and video prep start from a stronger base',
     ],
   },
 ] as const;
@@ -137,30 +135,27 @@ const OUTPUT_CARDS = [
   {
     eyebrow: 'Portrait anchor',
     title: 'Reusable portrait anchor',
-    body:
-      'Best when you need a tight face reference for prompts, close-up edits, and recurring character work.',
-    src: CREATOR_PORTRAIT_URL,
-    alt: 'Reusable portrait anchor for consistent AI character generation.',
+    body: 'Best for close-ups, prompts, and recurring character work.',
+    src: 'https://v3b.fal.media/files/b/0a935655/nJlY0mMASmclDhm6ywMDz_0bzxXv5K.png',
+    alt: 'Reusable portrait anchor for close-ups, prompts, and recurring character work.',
     visualClassName: 'object-cover object-center',
     visualTone: 'bg-[linear-gradient(180deg,#fff4ec,#ffffff)]',
   },
   {
     eyebrow: 'Character sheet generator',
     title: '8-panel character sheet',
-    body:
-      'Best when you need one multi-angle reference for scenes, boards, edits, and video prep.',
-    src: LATEST_SHEET_3.url,
-    alt: LATEST_SHEET_3.alt,
+    body: 'Best when one multi-angle reference has to travel across scenes, boards, edits, and video prep.',
+    src: 'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/5daf21e0-e99a-42e5-891a-eca3ba162344.webp',
+    alt: '8-panel character sheet output generated from Character Builder.',
     visualClassName: SHEET_IMAGE_CLASSNAME,
     visualTone: 'bg-[#f7f1ea]',
   },
   {
-    eyebrow: 'Motion prep',
-    title: 'Still for motion prep',
-    body:
-      'Best when the reference needs to become a cleaner still before video generation.',
-    src: WORKFLOW_NANO_BANANA_ASSET.url,
-    alt: WORKFLOW_NANO_BANANA_ASSET.alt,
+    eyebrow: 'Video prep still',
+    title: 'Cleaner still for motion prep',
+    body: 'Best when the reference needs one cleaner still before motion starts.',
+    src: 'https://v3b.fal.media/files/b/0a935643/1_y_Iw3TbDfMgsI9Kggki_XflHpwqR.jpg',
+    alt: 'Cleaner still prepared from the same character reference before motion starts.',
     visualClassName: 'object-cover object-center',
     visualTone:
       'bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_55%),linear-gradient(135deg,rgba(244,127,94,0.26),rgba(76,132,255,0.16))]',
@@ -219,8 +214,8 @@ const USE_CASES = [
     number: '04',
     title: 'Creator series',
     body: 'Reuse the same host, avatar, or character every episode without losing face, outfit, or silhouette consistency.',
-    src: WORKFLOW_NANO_BANANA_ASSET.url,
-    alt: WORKFLOW_NANO_BANANA_ASSET.alt,
+    src: 'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/8b29c715-842e-473c-a0d3-5ce8d6d6857f.webp',
+    alt: 'Creator series frame generated from a reusable character reference.',
     imageClassName: 'object-cover object-center',
     cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,246,251,0.96))]',
     labelClassName: 'border-hairline bg-white/80 text-text-muted',
@@ -244,7 +239,7 @@ const FAQS = [
   {
     question: 'What is consistent character AI?',
     answer:
-      'Consistent character AI means building a stable reference first so the same face, outfit, and silhouette hold up better across later scenes.',
+      'It means building one stable character reference so the same face, outfit, and silhouette hold up better later on.',
   },
   {
     question: 'Can I create a character sheet from one image?',
@@ -254,7 +249,7 @@ const FAQS = [
   {
     question: 'Can I use one face reference and one outfit reference?',
     answer:
-      'Yes. You can upload one identity reference, then add a second image to guide wardrobe or outfit direction.',
+      'Yes. You can pair one identity reference with a second image for wardrobe or outfit direction.',
   },
   {
     question: 'Can I start from scratch?',
@@ -264,7 +259,7 @@ const FAQS = [
   {
     question: 'Can I reuse this in image-to-video workflows?',
     answer:
-      'Yes. You can reuse it in image prompts, Nano Banana start-frame prep, and video engines that support still references.',
+      'Yes. You can reuse it in prompts, Nano Banana start-frame prep, and video engines that support still references.',
   },
 ] as const;
 
@@ -345,17 +340,17 @@ function HeroScreenshotPreview() {
     {
       label: '01',
       title: 'Choose your input',
-      body: 'Start with one identity photo, add optional outfit inspiration, or build the character from scratch.',
+      body: 'Use one identity photo, add optional outfit inspiration, or start from scratch.',
     },
     {
       label: '02',
       title: 'Generate the asset',
-      body: 'Create a portrait anchor or one coherent 8-panel character sheet instead of re-solving identity later.',
+      body: 'Create a portrait anchor or one coherent 8-panel character sheet.',
     },
     {
       label: '03',
       title: 'Reuse it everywhere',
-      body: 'Bring the same reference back into prompts, edits, Nano Banana, and still-reference video workflows.',
+      body: 'Bring the same reference into prompts, edits, Nano Banana, and still-reference video workflows.',
     },
   ] as const;
 
@@ -532,45 +527,40 @@ export function CharacterBuilderLandingPage() {
 
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl">
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-            <Card className="overflow-hidden border-slate-800 bg-[linear-gradient(180deg,#0a1320,#101d2d)] p-0 text-white">
-              <div className="border-b border-white/10 px-6 py-5">
+          <div className="overflow-hidden rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,254,0.96))] shadow-[0_28px_80px_rgba(15,23,42,0.05)]">
+            <div className="grid lg:grid-cols-[minmax(0,0.76fr)_minmax(0,1.24fr)]">
+              <div className="border-b border-white/10 bg-[linear-gradient(180deg,#0a1320,#101d2d)] px-6 py-6 text-white lg:border-b-0 lg:border-r lg:border-r-white/10">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Why people need it</p>
                 <h2 className="mt-3 text-3xl font-semibold tracking-tight">Why AI Characters Drift</h2>
-              </div>
-              <div className="stack-gap-sm px-6 py-6 text-sm leading-7 text-slate-300">
-                <p>
-                  AI prompts can preserve the general idea of a character, but identity details still slip. Faces change, outfits mutate, and continuity gets weaker once you move from stills into video.
+                <p className="mt-4 text-sm leading-7 text-slate-300">
+                  Prompts can preserve the general idea of a character, but identity details still slip once you start generating multiple scenes.
                 </p>
-                <div className="mt-2 grid gap-3">
+                <div className="mt-5 grid gap-3">
                   {[
-                    'Face and hair drift between scenes',
+                    'Faces and hair change between scenes',
                     'Wardrobe details stop matching',
-                    'Silhouette changes are harder to control',
+                    'Silhouette continuity becomes harder to hold',
                   ].map((item) => (
-                    <div key={item} className="rounded-[20px] border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-sm font-medium text-white">{item}</p>
+                    <div key={item} className="rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white">
+                      {item}
                     </div>
                   ))}
                 </div>
               </div>
-            </Card>
-
-            <Card className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,244,239,0.98))] p-0">
-              <div className="border-b border-hairline px-6 py-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">What to use instead</p>
-                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">Build the reference before you build scenes</h2>
-              </div>
-              <div className="stack-gap-sm px-6 py-6 text-sm leading-7 text-text-secondary">
-                <p>
-                  Character Builder turns one input into a reusable portrait anchor or an 8-panel character sheet, so you have a concrete reference before you start generating scenes.
-                </p>
-                <p>
-                  Use the portrait when you need a tighter face anchor. Use the sheet when you need a broader multi-angle reference for prompts, edits, and video prep.
-                </p>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="px-6 py-6">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">What this tool creates</p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">
+                  Character Builder creates the reference first
+                </h2>
+                <div className="mt-4 max-w-2xl text-sm leading-7 text-text-secondary">
+                  <p>
+                    Generate either a portrait anchor or an 8-panel character sheet, then bring that same reference back into prompts,
+                    edits, and still-reference video workflows.
+                  </p>
+                </div>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">Input portrait</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">Portrait input</p>
                     <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] border border-hairline bg-[#f6efe8]">
                       <Image
                         src={REFERENCE_ASSET_PORTRAIT_URL}
@@ -595,7 +585,7 @@ export function CharacterBuilderLandingPage() {
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </section>
@@ -607,67 +597,60 @@ export function CharacterBuilderLandingPage() {
             title="Create the reference, then carry it forward"
             body={
               <p>
-                Start with a face, an outfit cue, or a scratch-built concept. Generate the output, then reuse it across stills, edits, and video prep.
+                Start with a face, an outfit cue, or a scratch-built concept. Generate the output, then bring it back into stills, edits, and video prep.
               </p>
             }
           />
-          <div className="grid gap-4 lg:grid-cols-3">
-            {HOW_IT_WORKS_STEPS.map((step, index) => (
-              <Card
-                key={step.title}
-                id={`step-${index + 1}`}
-                className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.95))] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)]"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${
-                      index === 0
-                        ? 'bg-[#f97316]/10 text-[#c45b2d]'
-                        : index === 1
-                          ? 'bg-brand/10 text-brand'
-                          : 'bg-[#4c84ff]/10 text-[#3564cc]'
-                    }`}
-                  >
-                    {(index + 1).toString().padStart(2, '0')}
-                  </div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{HOW_IT_WORKS_LABELS[index]}</p>
-                </div>
+          <div className="rounded-[32px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,251,254,0.96))] p-4 shadow-[0_22px_56px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
+            <div className="grid gap-3 lg:grid-cols-3">
+              {HOW_IT_WORKS_STEPS.map((step, index) => (
                 <div
-                  className={`mt-4 h-1.5 w-14 rounded-full ${
-                    index === 0 ? 'bg-[#f3c2a5]' : index === 1 ? 'bg-[#d9c0b0]' : 'bg-[#c7d8ff]'
-                  }`}
-                />
-                <h3 className="mt-5 text-[1.55rem] font-semibold leading-[1.18] text-text-primary">{step.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-text-secondary">{step.body}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {HOW_IT_WORKS_OPTIONS[index].slice(0, index === 2 ? 2 : 3).map((item) => (
-                    <HowItWorksPill key={item}>{item}</HowItWorksPill>
-                  ))}
+                  key={step.title}
+                  id={`step-${index + 1}`}
+                  className="rounded-[24px] border border-hairline bg-white px-4 py-4 shadow-[0_14px_30px_rgba(15,23,42,0.04)]"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
+                        index === 0
+                          ? 'bg-[#f97316]/10 text-[#c45b2d]'
+                          : index === 1
+                            ? 'bg-brand/10 text-brand'
+                            : 'bg-[#4c84ff]/10 text-[#3564cc]'
+                      }`}
+                    >
+                      {(index + 1).toString().padStart(2, '0')}
+                    </div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{HOW_IT_WORKS_LABELS[index]}</p>
+                  </div>
+                  <h3 className="mt-4 text-xl font-semibold leading-tight text-text-primary">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">{step.body}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {HOW_IT_WORKS_OPTIONS[index].slice(0, 2).map((item) => (
+                      <HowItWorksPill key={item}>{item}</HowItWorksPill>
+                    ))}
+                  </div>
                 </div>
-              </Card>
-            ))}
-          </div>
-          <div className="rounded-[30px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,252,255,0.96))] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="max-w-2xl">
+              ))}
+            </div>
+            <div className="mt-4 grid gap-4 border-t border-hairline pt-4 lg:grid-cols-[minmax(0,0.5fr)_minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
+              <div className="max-w-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Why it works</p>
                 <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  The reference handles continuity before you start changing scenes, so stills hold up better and video prep starts cleaner.
+                  The reference does the continuity work before you start changing scenes.
                 </p>
               </div>
-            </div>
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
               {COMPARISON_COLUMNS.map((column) => (
                 <Card key={column.title} className={`overflow-hidden p-0 ${column.tone}`}>
                   <div className="border-b border-current/10 px-4 py-3">
                     <div className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${column.badgeTone}`}>
                       {column.eyebrow}
                     </div>
-                    <h3 className="mt-3 text-lg font-semibold tracking-tight text-text-primary">{column.title}</h3>
+                    <h3 className="mt-2 text-base font-semibold tracking-tight text-text-primary">{column.title}</h3>
                   </div>
-                  <div className="grid gap-2 px-4 py-4">
+                  <div className="grid gap-2 px-4 py-3">
                     {column.items.map((item) => (
-                      <div key={item} className="rounded-[16px] border border-hairline bg-white/80 px-4 py-2.5 text-sm leading-6 text-text-secondary">
+                      <div key={item} className="rounded-[16px] border border-hairline bg-white/80 px-4 py-2 text-sm leading-6 text-text-secondary">
                         {item}
                       </div>
                     ))}
@@ -679,14 +662,14 @@ export function CharacterBuilderLandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-surface section">
+      <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader
             eyebrow="Outputs and workflow"
             title="Choose the output, then move into stills and video"
             body={
               <p>
-                Portrait anchors work best for close-ups and edits. The 8-panel sheet is the most reusable format. Once the output exists, it can move straight into Nano Banana and still-reference video workflows.
+                Pick the output that fits the job, then carry it into Nano Banana or still-reference video workflows.
               </p>
             }
           />
@@ -707,9 +690,9 @@ export function CharacterBuilderLandingPage() {
                 <div className="stack-gap-sm px-5 pb-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{OUTPUT_CARDS[0].eyebrow}</p>
                   <h3 className="text-xl font-semibold text-text-primary">{OUTPUT_CARDS[0].title}</h3>
-                  <p className="text-sm leading-7 text-text-secondary">{OUTPUT_CARDS[0].body}</p>
+                  <p className="text-sm leading-6 text-text-secondary">{OUTPUT_CARDS[0].body}</p>
                   <div className="pt-1">
-                    <HowItWorksPill>Best for close-ups, prompts, and edits</HowItWorksPill>
+                    <HowItWorksPill>Close-ups and edits</HowItWorksPill>
                   </div>
                 </div>
               </Card>
@@ -735,11 +718,10 @@ export function CharacterBuilderLandingPage() {
                 <div className="stack-gap-sm px-5 pb-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{OUTPUT_CARDS[1].eyebrow}</p>
                   <h3 className="text-2xl font-semibold tracking-tight text-text-primary">{OUTPUT_CARDS[1].title}</h3>
-                  <p className="text-sm leading-7 text-text-secondary">{OUTPUT_CARDS[1].body}</p>
+                  <p className="text-sm leading-6 text-text-secondary">{OUTPUT_CARDS[1].body}</p>
                   <div className="flex flex-wrap gap-2 pt-1">
-                    <HowItWorksPill>Stable face</HowItWorksPill>
-                    <HowItWorksPill>Stable outfit</HowItWorksPill>
-                    <HowItWorksPill>Stable silhouette</HowItWorksPill>
+                    <HowItWorksPill>Multi-angle</HowItWorksPill>
+                    <HowItWorksPill>Most reusable</HowItWorksPill>
                   </div>
                 </div>
               </Card>
@@ -756,16 +738,16 @@ export function CharacterBuilderLandingPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#08111c]/80 via-transparent to-transparent" />
                     <div className="absolute bottom-3 right-3 rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-100">
-                      Motion prep
+                      Nano Banana still
                     </div>
                   </div>
                 </div>
                 <div className="stack-gap-sm px-5 pb-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{OUTPUT_CARDS[2].eyebrow}</p>
                   <h3 className="text-xl font-semibold text-white">{OUTPUT_CARDS[2].title}</h3>
-                  <p className="text-sm leading-7 text-slate-300">{OUTPUT_CARDS[2].body}</p>
+                  <p className="text-sm leading-6 text-slate-300">{OUTPUT_CARDS[2].body}</p>
                   <div className="pt-1">
-                    <HowItWorksPill>Best for Nano Banana and still-reference video</HowItWorksPill>
+                    <HowItWorksPill>Video prep</HowItWorksPill>
                   </div>
                 </div>
               </Card>
@@ -791,7 +773,7 @@ export function CharacterBuilderLandingPage() {
                   </div>
                   <div className="mt-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">01 · Character sheet</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">Lock the character before any motion work starts.</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">Lock the character before motion starts.</p>
                   </div>
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-[#111a28] p-3">
@@ -806,7 +788,7 @@ export function CharacterBuilderLandingPage() {
                   </div>
                   <div className="mt-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">02 · Nano Banana still</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">Refine the same character into a cleaner still before animation.</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">Refine the same character into a cleaner still.</p>
                   </div>
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-[#0f1826] p-3">
@@ -824,7 +806,7 @@ export function CharacterBuilderLandingPage() {
                   <div className="mt-4 flex items-start justify-between gap-4">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">03 · Video result</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-400">The same grounded identity carried into the final motion result.</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">The same grounded identity carried into motion.</p>
                     </div>
                     <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-200">
                       LTX 2.3 Pro
@@ -842,7 +824,7 @@ export function CharacterBuilderLandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg section">
+      <section className="border-t border-hairline bg-surface section">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader
             eyebrow="Use cases"
@@ -932,18 +914,18 @@ export function CharacterBuilderLandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-surface section">
+      <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-4xl stack-gap-lg">
           <SectionHeader
             eyebrow="FAQ"
             title="Consistent Character AI FAQ"
-            body={<p>Short answers to the most important questions before you build the reusable reference.</p>}
+            body={<p>Short answers before you build the reference.</p>}
           />
           <div className="stack-gap-sm">
             {FAQS.map((faq) => (
               <details
                 key={faq.question}
-                className="rounded-[24px] border border-hairline bg-bg/80 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]"
+                className="rounded-[24px] border border-hairline bg-surface/90 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]"
               >
                 <summary className="cursor-pointer list-none text-base font-semibold text-text-primary">{faq.question}</summary>
                 <p className="mt-4 text-sm leading-7 text-text-secondary">{faq.answer}</p>
@@ -953,7 +935,7 @@ export function CharacterBuilderLandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg section halo-workspace-bottom">
+      <section className="border-t border-hairline bg-surface section halo-workspace-bottom">
         <div className="container-page max-w-6xl">
           <Card className="overflow-hidden border-hairline bg-[linear-gradient(135deg,rgba(8,17,28,0.98),rgba(31,55,82,0.96))] p-0 text-white shadow-[0_32px_90px_rgba(15,23,42,0.28)]">
             <div className="grid gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
@@ -962,7 +944,7 @@ export function CharacterBuilderLandingPage() {
                 <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Build Your Reusable Character Reference</h2>
                 <div className="max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">
                   <p>
-                    Create the character once, turn it into a portrait anchor or character sheet, then carry it into prompts, edits, and video prep.
+                    Create the character once. Reuse it across images, edits, and video prep.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
