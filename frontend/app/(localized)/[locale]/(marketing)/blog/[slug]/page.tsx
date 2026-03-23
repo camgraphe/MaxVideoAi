@@ -35,6 +35,144 @@ const BLOG_TITLE_OVERRIDES: Partial<Record<string, Partial<Record<AppLocale, str
 };
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 
+type ArticleNextStep = {
+  eyebrow: string;
+  title: string;
+  body: string;
+  links: Array<{ href: string; label: string }>;
+};
+
+const BLOG_NEXT_STEPS: Partial<Record<string, Record<AppLocale, ArticleNextStep>>> = {
+  'how-to-create-consistent-ai-characters': {
+    en: {
+      eyebrow: 'Next step',
+      title: 'Use the character workflow',
+      body: 'Build the reference first, then move into the tighter sheet guide or the still and video workflow.',
+      links: [
+        { href: '/tools/character-builder', label: 'Open Character Builder' },
+        { href: '/blog/ai-character-sheet-generator', label: 'Read the 8-panel sheet guide' },
+        { href: '/app/image', label: 'Generate the source still in Image' },
+      ],
+    },
+    fr: {
+      eyebrow: 'Étape suivante',
+      title: 'Passez au workflow personnage',
+      body: 'Créez d’abord la référence, puis passez au guide de la fiche 8 panneaux ou au workflow image et vidéo.',
+      links: [
+        { href: '/tools/character-builder', label: 'Ouvrir Character Builder' },
+        { href: '/blog/ai-character-sheet-generator', label: 'Lire le guide de la fiche 8 panneaux' },
+        { href: '/app/image', label: 'Générer l’image source dans Image' },
+      ],
+    },
+    es: {
+      eyebrow: 'Siguiente paso',
+      title: 'Pasa al flujo del personaje',
+      body: 'Primero crea la referencia y luego pasa a la guía de la hoja de 8 paneles o al flujo de imagen y video.',
+      links: [
+        { href: '/tools/character-builder', label: 'Abrir Character Builder' },
+        { href: '/blog/ai-character-sheet-generator', label: 'Leer la guía de la hoja de 8 paneles' },
+        { href: '/app/image', label: 'Generar la imagen base en Image' },
+      ],
+    },
+  },
+  'ai-character-sheet-generator': {
+    en: {
+      eyebrow: 'Next step',
+      title: 'Turn the sheet into a reusable workflow',
+      body: 'Open the tool, go back to the broader consistency guide, or move the sheet into Nano Banana.',
+      links: [
+        { href: '/tools/character-builder', label: 'Open Character Builder' },
+        { href: '/blog/how-to-create-consistent-ai-characters', label: 'Read the broader consistency guide' },
+        { href: '/models/nano-banana', label: 'Use the sheet in Nano Banana' },
+      ],
+    },
+    fr: {
+      eyebrow: 'Étape suivante',
+      title: 'Transformez la fiche en vrai workflow',
+      body: 'Ouvrez l’outil, revenez au guide global de cohérence, ou passez la fiche dans Nano Banana.',
+      links: [
+        { href: '/tools/character-builder', label: 'Ouvrir Character Builder' },
+        { href: '/blog/how-to-create-consistent-ai-characters', label: 'Lire le guide global de cohérence' },
+        { href: '/models/nano-banana', label: 'Utiliser la fiche dans Nano Banana' },
+      ],
+    },
+    es: {
+      eyebrow: 'Siguiente paso',
+      title: 'Convierte la hoja en un flujo reutilizable',
+      body: 'Abre la herramienta, vuelve a la guía general de consistencia o lleva la hoja a Nano Banana.',
+      links: [
+        { href: '/tools/character-builder', label: 'Abrir Character Builder' },
+        { href: '/blog/how-to-create-consistent-ai-characters', label: 'Leer la guía general de consistencia' },
+        { href: '/models/nano-banana', label: 'Usar la hoja en Nano Banana' },
+      ],
+    },
+  },
+  'change-camera-angle-with-ai': {
+    en: {
+      eyebrow: 'Next step',
+      title: 'Keep the better angle moving',
+      body: 'Open the tool, compare it with the multi-angle guide, or refine the still before motion.',
+      links: [
+        { href: '/tools/angle', label: 'Open Angle' },
+        { href: '/blog/multiple-camera-angles-from-one-image', label: 'Read the multi-angle planning guide' },
+        { href: '/app/image', label: 'Continue in Image' },
+      ],
+    },
+    fr: {
+      eyebrow: 'Étape suivante',
+      title: 'Faites avancer le meilleur angle',
+      body: 'Ouvrez l’outil, comparez-le au guide multi-angle, ou affinez l’image avant le motion.',
+      links: [
+        { href: '/tools/angle', label: 'Ouvrir Angle' },
+        { href: '/blog/multiple-camera-angles-from-one-image', label: 'Lire le guide multi-angle' },
+        { href: '/app/image', label: 'Continuer dans Image' },
+      ],
+    },
+    es: {
+      eyebrow: 'Siguiente paso',
+      title: 'Haz avanzar el mejor ángulo',
+      body: 'Abre la herramienta, compárala con la guía multiángulo o afina la imagen antes del motion.',
+      links: [
+        { href: '/tools/angle', label: 'Abrir Angle' },
+        { href: '/blog/multiple-camera-angles-from-one-image', label: 'Leer la guía multiángulo' },
+        { href: '/app/image', label: 'Continuar en Image' },
+      ],
+    },
+  },
+  'multiple-camera-angles-from-one-image': {
+    en: {
+      eyebrow: 'Next step',
+      title: 'Move from exploration to selection',
+      body: 'Open the tool, revisit the single-angle correction guide, or browse examples before you commit the frame.',
+      links: [
+        { href: '/tools/angle', label: 'Open Angle' },
+        { href: '/blog/change-camera-angle-with-ai', label: 'Read the single-angle correction guide' },
+        { href: '/examples', label: 'Browse examples' },
+      ],
+    },
+    fr: {
+      eyebrow: 'Étape suivante',
+      title: 'Passez de l’exploration à la sélection',
+      body: 'Ouvrez l’outil, revenez au guide de correction d’un seul angle, ou parcourez des exemples avant de figer le frame.',
+      links: [
+        { href: '/tools/angle', label: 'Ouvrir Angle' },
+        { href: '/blog/change-camera-angle-with-ai', label: 'Lire le guide de correction d’un seul angle' },
+        { href: '/examples', label: 'Parcourir les exemples' },
+      ],
+    },
+    es: {
+      eyebrow: 'Siguiente paso',
+      title: 'Pasa de la exploración a la selección',
+      body: 'Abre la herramienta, vuelve a la guía de corrección de un solo ángulo o revisa ejemplos antes de fijar el frame.',
+      links: [
+        { href: '/tools/angle', label: 'Abrir Angle' },
+        { href: '/blog/change-camera-angle-with-ai', label: 'Leer la guía de corrección de un solo ángulo' },
+        { href: '/examples', label: 'Ver ejemplos' },
+      ],
+    },
+  },
+};
+
 function getCanonicalBlogSlug(post: Pick<ContentEntry, 'slug' | 'canonicalSlug' | 'lang'>) {
   return post.canonicalSlug ?? (post.lang === 'en' ? post.slug : post.slug);
 }
@@ -72,6 +210,10 @@ function getBlogLinkProps(locale: AppLocale, post: Pick<ContentEntry, 'slug' | '
         locale: 'en' as const,
         hrefLang: 'en',
       };
+}
+
+function getNextStepCopy(locale: AppLocale, canonicalSlug: string): ArticleNextStep | null {
+  return BLOG_NEXT_STEPS[canonicalSlug]?.[locale] ?? null;
 }
 
 function toIsoDate(value?: string | null): string | undefined {
@@ -270,6 +412,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   const relatedPosts = relatedPool
     .sort((a, b) => Date.parse(b.date ?? '') - Date.parse(a.date ?? ''))
     .slice(0, 3);
+  const nextStep = getNextStepCopy(locale, canonicalSlug);
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -346,6 +489,27 @@ export default async function BlogPostPage({ params }: { params: Params }) {
 
           <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
         </article>
+
+        {nextStep ? (
+          <section className="rounded-[28px] border border-hairline bg-surface/90 p-6 shadow-card sm:p-8">
+            <div className="max-w-3xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{nextStep.eyebrow}</p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">{nextStep.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-text-secondary sm:text-base">{nextStep.body}</p>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              {nextStep.links.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center rounded-full border border-hairline bg-bg px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {relatedPosts.length ? (
           <section className="stack-gap">

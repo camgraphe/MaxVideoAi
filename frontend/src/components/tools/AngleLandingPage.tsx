@@ -584,6 +584,46 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
         </div>
       </section>
 
+      <section className="border-t border-hairline bg-bg section">
+        <div className="container-page max-w-6xl stack-gap-lg">
+          <SectionHeader eyebrow={content.related.eyebrow} title={content.related.title} body={<p>{content.related.body}</p>} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card className="border-hairline bg-surface p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                {content.related.workflowTitle}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                {content.related.workflowLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="inline-flex items-center rounded-full border border-hairline bg-bg px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </Card>
+            <Card className="border-hairline bg-surface p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                {content.related.guidesTitle}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                {content.related.guideLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="inline-flex items-center rounded-full border border-hairline bg-bg px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-hairline bg-bg section halo-workspace-bottom">
         <div className="container-page max-w-6xl">
           <Card className="overflow-hidden border-hairline bg-[linear-gradient(135deg,rgba(8,17,28,0.98),rgba(20,48,76,0.96))] p-0 text-white shadow-[0_32px_90px_rgba(15,23,42,0.28)]">

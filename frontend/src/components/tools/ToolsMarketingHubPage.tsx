@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Camera, Sparkles } from 'lucide-react';
+import { ArrowRight, Camera, ImagePlus, Sparkles } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/types';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
+const IMAGE_CARD_BACKGROUND_URL =
+  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp';
 const CHARACTER_CARD_BACKGROUND_URL = '/assets/tools/character-builder-workspace.png';
 const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
 
@@ -75,7 +77,26 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
       </section>
 
       <section className="border-t border-hairline bg-surface section">
-        <div className="container-page max-w-6xl grid gap-5 lg:grid-cols-2">
+        <div className="container-page max-w-6xl grid gap-5 lg:grid-cols-3">
+          <ToolCard
+            icon={<ImagePlus className="h-5 w-5" />}
+            eyebrow={content.cards.image.eyebrow}
+            title={content.cards.image.title}
+            body={content.cards.image.body}
+            href="/app/image"
+            cta={content.cards.image.cta}
+            visual={
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
+                <Image
+                  src={IMAGE_CARD_BACKGROUND_URL}
+                  alt={content.cards.image.imageAlt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 520px"
+                  className="object-cover object-center"
+                />
+              </div>
+            }
+          />
           <ToolCard
             icon={<Sparkles className="h-5 w-5" />}
             eyebrow={content.cards.character.eyebrow}

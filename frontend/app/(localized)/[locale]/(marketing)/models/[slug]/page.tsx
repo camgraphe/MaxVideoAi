@@ -238,6 +238,51 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
   },
 };
 
+const PREP_LINK_VISUALS = {
+  '/app/image': {
+    imageSrc:
+      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp',
+    summary: {
+      en: 'Build or clean the source still first.',
+      fr: "Construisez ou nettoyez d'abord l'image source.",
+      es: 'Construye o limpia primero la imagen base.',
+    },
+    alt: {
+      en: 'Generate Image workspace example',
+      fr: 'Exemple du workspace Generate Image',
+      es: 'Ejemplo del espacio Generate Image',
+    },
+  },
+  '/tools/character-builder': {
+    imageSrc:
+      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/762032e6-d6f1-41cd-a1f3-690a60188a74.webp',
+    summary: {
+      en: 'Lock identity, outfit, and reference quality.',
+      fr: "Verrouillez l'identité, la tenue et la qualité de référence.",
+      es: 'Fija la identidad, el vestuario y la calidad de referencia.',
+    },
+    alt: {
+      en: 'Character Builder reference example',
+      fr: 'Exemple de référence Character Builder',
+      es: 'Ejemplo de referencia de Character Builder',
+    },
+  },
+  '/tools/angle': {
+    imageSrc:
+      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6cff997e-f531-455d-819f-a0481b4cda5c-tool_angle_57d123d8-acdd-4667-9ad4-fdb256313b6a-1.webp',
+    summary: {
+      en: 'Change the viewpoint before you spend video credits.',
+      fr: 'Changez le point de vue avant de dépenser des crédits vidéo.',
+      es: 'Cambia el punto de vista antes de gastar créditos de video.',
+    },
+    alt: {
+      en: 'Angle tool example',
+      fr: "Exemple de l'outil Angle",
+      es: 'Ejemplo de la herramienta Angle',
+    },
+  },
+} as const;
+
 type FocusVsCopy = { title: string; items: string[] };
 type FocusVsLocalizedCopy = Record<AppLocale, FocusVsCopy>;
 type FocusVsPair = {
@@ -3620,6 +3665,90 @@ function Sora2PageLayout({
   }));
   const faqTitle = copy.faqTitle ?? 'FAQ';
   const faqJsonLdEntries = faqList.slice(0, 6);
+  const prepLinksSection = (() => {
+    const isNanoBananaFamily =
+      engine.modelSlug === 'nano-banana' || engine.modelSlug === 'nano-banana-pro' || engine.modelSlug === 'nano-banana-2';
+    const isVideoPrepModel =
+      engine.modelSlug === 'veo-3-1' ||
+      engine.modelSlug === 'kling-3-pro' ||
+      engine.modelSlug === 'sora-2-pro' ||
+      engine.modelSlug === 'ltx-2-3-pro' ||
+      engine.modelSlug === 'ltx-2-3-fast';
+
+    if (!isNanoBananaFamily && !isVideoPrepModel) {
+      return null;
+    }
+
+    if (locale === 'fr') {
+      return isNanoBananaFamily
+        ? {
+            eyebrow: 'Avant de générer',
+            title: 'Préparez la référence avant l’edit',
+            body: 'Si l’image a d’abord besoin d’une référence personnage réutilisable ou d’un meilleur angle, réglez ça avant Nano Banana.',
+            links: [
+              { href: '/tools/character-builder', label: 'Créer une référence personnage réutilisable' },
+              { href: '/tools/angle', label: "Changer le point de vue avant l'edit" },
+              { href: '/app/image', label: 'Ouvrir Image' },
+            ],
+          }
+        : {
+            eyebrow: 'Avant de générer',
+            title: 'Préparez le frame avant la vidéo',
+            body: 'Verrouillez le personnage, corrigez l’angle ou construisez l’image source avant de dépenser des crédits en motion.',
+            links: [
+              { href: '/tools/character-builder', label: 'Conserver le même personnage' },
+              { href: '/tools/angle', label: 'Changer le point de vue avant la vidéo' },
+              { href: '/app/image', label: "Construire l'image source dans Image" },
+            ],
+          };
+    }
+
+    if (locale === 'es') {
+      return isNanoBananaFamily
+        ? {
+            eyebrow: 'Antes de generar',
+            title: 'Prepara la referencia antes del edit',
+            body: 'Si la imagen primero necesita una referencia de personaje reutilizable o un mejor ángulo, resuélvelo antes de Nano Banana.',
+            links: [
+              { href: '/tools/character-builder', label: 'Crear una referencia de personaje reutilizable' },
+              { href: '/tools/angle', label: 'Cambiar el punto de vista antes del edit' },
+              { href: '/app/image', label: 'Abrir Image' },
+            ],
+          }
+        : {
+            eyebrow: 'Antes de generar',
+            title: 'Prepara el frame antes del video',
+            body: 'Fija el personaje, corrige el ángulo o construye la imagen base antes de gastar créditos en motion.',
+            links: [
+              { href: '/tools/character-builder', label: 'Mantener el mismo personaje' },
+              { href: '/tools/angle', label: 'Cambiar el punto de vista antes del video' },
+              { href: '/app/image', label: 'Construir la imagen base en Image' },
+            ],
+          };
+    }
+
+    return isNanoBananaFamily
+      ? {
+          eyebrow: 'Before you generate',
+          title: 'Build the reference before the edit',
+          body: 'If the still needs a reusable character reference or a better viewpoint first, solve that before Nano Banana.',
+          links: [
+            { href: '/tools/character-builder', label: 'Build a reusable character reference' },
+            { href: '/tools/angle', label: 'Change the viewpoint before the edit' },
+            { href: '/app/image', label: 'Open Image' },
+          ],
+        }
+      : {
+          eyebrow: 'Before you generate',
+          title: 'Prepare the frame before video',
+          body: 'Lock the character, fix the viewpoint, or build the source still before you spend credits on motion.',
+          links: [
+            { href: '/tools/character-builder', label: 'Keep the character consistent' },
+            { href: '/tools/angle', label: 'Change the viewpoint before video' },
+            { href: '/app/image', label: 'Build the source still in Image' },
+          ],
+        };
+  })();
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -4218,6 +4347,58 @@ function Sora2PageLayout({
           )}
         </section>
 
+        {prepLinksSection ? (
+          <section
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
+          >
+            <div className="rounded-[28px] border border-hairline bg-surface/85 p-5 shadow-card sm:p-6">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                  {prepLinksSection.eyebrow}
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-text-primary sm:text-3xl">
+                  {prepLinksSection.title}
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-text-secondary sm:text-base">
+                  {prepLinksSection.body}
+                </p>
+              </div>
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                {prepLinksSection.links.map((item) => {
+                  const visual = PREP_LINK_VISUALS[item.href as keyof typeof PREP_LINK_VISUALS];
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="group overflow-hidden rounded-2xl border border-hairline bg-bg shadow-card transition hover:-translate-y-0.5 hover:border-text-muted"
+                    >
+                      {visual ? (
+                        <div className="relative aspect-[16/10] overflow-hidden bg-placeholder">
+                          <Image
+                            src={visual.imageSrc}
+                            alt={visual.alt[locale] ?? visual.alt.en}
+                            fill
+                            className="object-cover transition duration-300 group-hover:scale-[1.02]"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                        </div>
+                      ) : null}
+                      <div className="space-y-2 px-4 py-4">
+                        <h3 className="text-base font-semibold text-text-primary">{item.label}</h3>
+                        {visual ? (
+                          <p className="text-sm leading-relaxed text-text-secondary">
+                            {visual.summary[locale] ?? visual.summary.en}
+                          </p>
+                        ) : null}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {hasTipsSection ? (
           <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>

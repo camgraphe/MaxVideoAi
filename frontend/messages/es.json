@@ -379,6 +379,31 @@
       "title": "Todo reside en el espacio de trabajo.",
       "subtitle": "Composer, saldo, lista de tareas y galería permanecen uno junto al otro para que tu equipo se mantenga alineado."
     },
+    "toolsWorkflow": {
+      "eyebrow": "Flujo basado en referencias",
+      "title": "Prepara la imagen antes de generar el video",
+      "body": "Genera la imagen base, fija el personaje o corrige el ángulo antes de pasar a image-to-video y a la selección del modelo.",
+      "cards": {
+        "image": {
+          "eyebrow": "Image",
+          "title": "Crea la imagen base",
+          "body": "Arma el frame inicial en Image antes de pasar a ediciones, referencias o motion.",
+          "cta": "Abrir Image"
+        },
+        "character": {
+          "eyebrow": "Character Builder",
+          "title": "Fija la continuidad del personaje",
+          "body": "Crea un ancla de retrato o una hoja de 8 paneles antes de que el personaje tenga que sobrevivir a más de una escena.",
+          "cta": "Abrir Character Builder"
+        },
+        "angle": {
+          "eyebrow": "Angle",
+          "title": "Cambia el punto de vista",
+          "body": "Conserva la imagen fuente y genera un ángulo más fuerte antes del storyboard o del video.",
+          "cta": "Abrir Angle"
+        }
+      }
+    },
     "examplesCallout": {
       "eyebrow": "Galería en vivo",
       "title": "Ve cómo cada motor interpreta el mismo encargo.",
@@ -2655,6 +2680,13 @@
           "library": "Biblioteca",
           "replace": "Reemplazar",
           "remove": "Quitar"
+        },
+        "bridge": {
+          "eyebrow": "Antes de seguir",
+          "title": "¿Necesitas una referencia más sólida primero?",
+          "body": "Usa Character Builder cuando la identidad importa, o Angle cuando el sujeto está bien pero el punto de vista no.",
+          "characterCta": "¿Necesitas primero una referencia de personaje reutilizable?",
+          "angleCta": "¿Necesitas primero un mejor ángulo de cámara?"
         }
       },
       "history": {
@@ -3744,6 +3776,13 @@
         "secondaryCta": "Cambiar ángulo de cámara"
       },
       "cards": {
+        "image": {
+          "eyebrow": "Generate image",
+          "title": "Crea primero la imagen base",
+          "body": "Empieza el frame en Image antes de pasar a ediciones, referencias o motion.",
+          "cta": "Abrir Image",
+          "imageAlt": "Imagen fija generada en el workspace Image de MaxVideoAI antes del video."
+        },
         "character": {
           "eyebrow": "Consistencia del personaje",
           "title": "Crea referencias de personaje reutilizables",
@@ -3757,6 +3796,32 @@
           "body": "Cambia el punto de vista, prueba composiciones alternativas y genera fotogramas listos para movimiento sin rehacer toda la imagen.",
           "cta": "Explorar herramienta",
           "imageAlt": "Captura de la interfaz Angle de MaxVideoAI."
+        }
+      },
+      "bestStartingPoints": {
+        "eyebrow": "Mejores puntos de partida",
+        "title": "Construye el input visual correcto para el siguiente paso",
+        "body": "Usa estas entradas cuando necesites una imagen base, una referencia de personaje reutilizable o un mejor ángulo antes del video.",
+        "modelHubCta": "Explorar hub de modelos",
+        "cards": {
+          "image": {
+            "eyebrow": "Image",
+            "title": "Genera la imagen base",
+            "body": "Crea primero el frame base y luego llévalo a Character Builder, Angle o motion.",
+            "cta": "Abrir Image"
+          },
+          "character": {
+            "eyebrow": "Character Builder",
+            "title": "Crea una referencia de personaje reutilizable",
+            "body": "Fija rostro, vestuario y silueta antes de pasar a escenas o a la preparación para video.",
+            "cta": "Abrir Character Builder"
+          },
+          "angle": {
+            "eyebrow": "Angle",
+            "title": "Cambia el ángulo desde una imagen",
+            "body": "Conserva el frame que ya funciona y genera el punto de vista que encaja con el siguiente paso.",
+            "cta": "Abrir Angle"
+          }
         }
       }
     },
@@ -3974,6 +4039,10 @@
               "label": "Abrir espacio Video"
             },
             {
+              "href": "/models/ltx-2-3-pro",
+              "label": "LTX 2.3 Pro"
+            },
+            {
               "href": "/models/veo-3-1",
               "label": "Veo 3.1"
             },
@@ -4086,6 +4155,45 @@
           {
             "question": "¿Puedo generar varios ángulos desde una imagen?",
             "answer": "Sí. Puedes generar varias vistas, compararlas y conservar la que mejor encaje con el siguiente paso."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "Flujo relacionado",
+        "title": "Lleva el mejor frame al siguiente paso",
+        "body": "Cuando el ángulo ya funciona, refina la imagen, pásala a video o consulta las guías complementarias sobre corrección y exploración de ángulos.",
+        "workflowTitle": "Continuar con",
+        "workflowLinks": [
+          {
+            "href": "/app/image",
+            "label": "Refinar el frame en Image"
+          },
+          {
+            "href": "/models/ltx-2-3-pro",
+            "label": "Usar el frame en LTX 2.3 Pro"
+          },
+          {
+            "href": "/models/veo-3-1",
+            "label": "Usar el frame en Veo 3.1"
+          },
+          {
+            "href": "/models/kling-3-pro",
+            "label": "Usar el frame en Kling 3 Pro"
+          },
+          {
+            "href": "/examples",
+            "label": "Ver ejemplos"
+          }
+        ],
+        "guidesTitle": "Guías relacionadas",
+        "guideLinks": [
+          {
+            "href": "/blog/change-camera-angle-with-ai",
+            "label": "Corregir un ángulo débil"
+          },
+          {
+            "href": "/blog/multiple-camera-angles-from-one-image",
+            "label": "Explorar varios ángulos desde una imagen"
           }
         ]
       },
@@ -4312,6 +4420,10 @@
               "label": "Nano Banana"
             },
             {
+              "href": "/models/ltx-2-3-pro",
+              "label": "LTX 2.3 Pro"
+            },
+            {
               "href": "/models/veo-3-1",
               "label": "Veo 3.1"
             },
@@ -4396,6 +4508,45 @@
           {
             "question": "¿Puedo reutilizar esto en flujos image-to-video?",
             "answer": "Sí. Puedes reutilizarlo en prompts, en la preparación del primer fotograma con Nano Banana y en motores de video que aceptan imágenes fijas de referencia."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "Flujo relacionado",
+        "title": "Reutiliza la referencia en el resto del flujo",
+        "body": "Cuando el personaje ya está fijado, pasa a Image, Nano Banana o a los modelos de video sin reconstruir la identidad.",
+        "workflowTitle": "Continuar con",
+        "workflowLinks": [
+          {
+            "href": "/app/image",
+            "label": "Generar la imagen base en Image"
+          },
+          {
+            "href": "/models/nano-banana",
+            "label": "Preparar la start frame en Nano Banana"
+          },
+          {
+            "href": "/models/ltx-2-3-pro",
+            "label": "Pasar a video con LTX 2.3 Pro"
+          },
+          {
+            "href": "/models/veo-3-1",
+            "label": "Pasar a video con Veo 3.1"
+          },
+          {
+            "href": "/models/kling-3-pro",
+            "label": "Pasar a video con Kling 3 Pro"
+          }
+        ],
+        "guidesTitle": "Guías relacionadas",
+        "guideLinks": [
+          {
+            "href": "/blog/how-to-create-consistent-ai-characters",
+            "label": "Cómo crear personajes IA consistentes"
+          },
+          {
+            "href": "/blog/ai-character-sheet-generator",
+            "label": "Cuándo usar una hoja de 8 paneles"
           }
         ]
       },

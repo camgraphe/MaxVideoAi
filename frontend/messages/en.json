@@ -299,6 +299,31 @@
       "title": "Everything lives in the workspace.",
       "subtitle": "Composer, wallet, job history, and gallery stay side-by-side so your team stays aligned."
     },
+    "toolsWorkflow": {
+      "eyebrow": "Reference-first workflow",
+      "title": "Build the still before you generate the video",
+      "body": "Create the source frame, lock the character, or fix the viewpoint before you move into image-to-video and model selection.",
+      "cards": {
+        "image": {
+          "eyebrow": "Generate Image",
+          "title": "Create the source still",
+          "body": "Start the frame in Image before you branch into edits, references, or motion.",
+          "cta": "Open Image"
+        },
+        "character": {
+          "eyebrow": "Character Builder",
+          "title": "Lock character continuity",
+          "body": "Build a portrait anchor or 8-panel sheet before the character has to survive more than one scene.",
+          "cta": "Open Character Builder"
+        },
+        "angle": {
+          "eyebrow": "Angle",
+          "title": "Change the viewpoint",
+          "body": "Keep the source image and generate a stronger camera angle before storyboards or video.",
+          "cta": "Open Angle"
+        }
+      }
+    },
     "examplesCallout": {
       "eyebrow": "Live gallery",
       "title": "See how every engine routes the same brief.",
@@ -2388,6 +2413,13 @@
           "library": "Library",
           "replace": "Replace",
           "remove": "Remove"
+        },
+        "bridge": {
+          "eyebrow": "Before you branch out",
+          "title": "Need a stronger reference first?",
+          "body": "Use Character Builder when identity matters, or Angle when the subject is right and the viewpoint is not.",
+          "characterCta": "Need a reusable character reference first?",
+          "angleCta": "Need a better camera angle first?"
         }
       },
       "history": {
@@ -3818,6 +3850,13 @@
         "secondaryCta": "Change Camera Angle with AI"
       },
       "cards": {
+        "image": {
+          "eyebrow": "Generate image",
+          "title": "Create the still first",
+          "body": "Start the frame in Image before you branch into edits, references, or motion.",
+          "cta": "Open Image",
+          "imageAlt": "Still image generated in the MaxVideoAI Image workspace before video."
+        },
         "character": {
           "eyebrow": "Character consistency",
           "title": "Create reusable character references",
@@ -3831,6 +3870,32 @@
           "body": "Change viewpoint, explore alternative compositions, and generate motion-ready frames without rebuilding the whole image from scratch.",
           "cta": "Explore Tool",
           "imageAlt": "Angle workspace screenshot from MaxVideoAI."
+        }
+      },
+      "bestStartingPoints": {
+        "eyebrow": "Best starting points",
+        "title": "Build the right visual input for the next step",
+        "body": "Use these entry points when you need a source still, a reusable character reference, or a better camera angle before video.",
+        "modelHubCta": "Browse Model Hub",
+        "cards": {
+          "image": {
+            "eyebrow": "Image",
+            "title": "Generate the source still",
+            "body": "Create the base frame first, then carry it into Character Builder, Angle, or motion.",
+            "cta": "Open Image"
+          },
+          "character": {
+            "eyebrow": "Character Builder",
+            "title": "Build a reusable character reference",
+            "body": "Lock the face, outfit, and silhouette before you branch into scenes or video prep.",
+            "cta": "Open Character Builder"
+          },
+          "angle": {
+            "eyebrow": "Angle",
+            "title": "Change the camera angle from one image",
+            "body": "Keep the frame you already trust and generate the viewpoint that fits the next step.",
+            "cta": "Open Angle"
+          }
         }
       }
     },
@@ -4049,6 +4114,10 @@
               "label": "Open Video Workspace"
             },
             {
+              "href": "/models/ltx-2-3-pro",
+              "label": "LTX 2.3 Pro"
+            },
+            {
               "href": "/models/veo-3-1",
               "label": "Veo 3.1"
             },
@@ -4161,6 +4230,45 @@
           {
             "question": "Can I generate multiple angles from one image?",
             "answer": "Yes. You can generate several views, compare them, and keep the one that fits the next step best."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "Related workflow",
+        "title": "Carry the better frame into the next step",
+        "body": "Once the angle is right, refine the still, move into video, or read the companion guides for correction and coverage planning.",
+        "workflowTitle": "Continue with",
+        "workflowLinks": [
+          {
+            "href": "/app/image",
+            "label": "Refine the frame in Image"
+          },
+          {
+            "href": "/models/ltx-2-3-pro",
+            "label": "Use the frame in LTX 2.3 Pro"
+          },
+          {
+            "href": "/models/veo-3-1",
+            "label": "Use the frame in Veo 3.1"
+          },
+          {
+            "href": "/models/kling-3-pro",
+            "label": "Use the frame in Kling 3 Pro"
+          },
+          {
+            "href": "/examples",
+            "label": "Browse examples"
+          }
+        ],
+        "guidesTitle": "Related guides",
+        "guideLinks": [
+          {
+            "href": "/blog/change-camera-angle-with-ai",
+            "label": "Fix one weak viewpoint"
+          },
+          {
+            "href": "/blog/multiple-camera-angles-from-one-image",
+            "label": "Explore several angles from one image"
           }
         ]
       },
@@ -4391,6 +4499,10 @@
               "label": "Nano Banana"
             },
             {
+              "href": "/models/ltx-2-3-pro",
+              "label": "LTX 2.3 Pro"
+            },
+            {
               "href": "/models/veo-3-1",
               "label": "Veo 3.1"
             },
@@ -4475,6 +4587,45 @@
           {
             "question": "Can I reuse this in image-to-video workflows?",
             "answer": "Yes. You can reuse it in prompts, Nano Banana start-frame prep, and video engines that support still references."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "Related workflow",
+        "title": "Use the reference across the rest of the workflow",
+        "body": "Once the character is locked, move into Image, Nano Banana, or video models without rebuilding identity again.",
+        "workflowTitle": "Continue with",
+        "workflowLinks": [
+          {
+            "href": "/app/image",
+            "label": "Generate the still in Image"
+          },
+          {
+            "href": "/models/nano-banana",
+            "label": "Build the start frame in Nano Banana"
+          },
+          {
+            "href": "/models/ltx-2-3-pro",
+            "label": "Move into video with LTX 2.3 Pro"
+          },
+          {
+            "href": "/models/veo-3-1",
+            "label": "Move into video with Veo 3.1"
+          },
+          {
+            "href": "/models/kling-3-pro",
+            "label": "Move into video with Kling 3 Pro"
+          }
+        ],
+        "guidesTitle": "Related guides",
+        "guideLinks": [
+          {
+            "href": "/blog/how-to-create-consistent-ai-characters",
+            "label": "How to create consistent AI characters"
+          },
+          {
+            "href": "/blog/ai-character-sheet-generator",
+            "label": "When to use an 8-panel character sheet"
           }
         ]
       },

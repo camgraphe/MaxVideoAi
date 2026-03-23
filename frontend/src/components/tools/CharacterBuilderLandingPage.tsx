@@ -726,6 +726,34 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
         </div>
       </section>
 
+      <section className="border-t border-hairline bg-surface section">
+        <div className="container-page max-w-6xl stack-gap-lg">
+          <SectionHeader eyebrow={content.related.eyebrow} title={content.related.title} body={<p>{content.related.body}</p>} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card className="border-hairline bg-bg/90 p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                {content.related.workflowTitle}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                {content.related.workflowLinks.map((link) => (
+                  <LinkChip key={link.href} href={link.href} label={link.label} />
+                ))}
+              </div>
+            </Card>
+            <Card className="border-hairline bg-bg/90 p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                {content.related.guidesTitle}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                {content.related.guideLinks.map((link) => (
+                  <LinkChip key={link.href} href={link.href} label={link.label} />
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-hairline bg-surface section halo-workspace-bottom">
         <div className="container-page max-w-6xl">
           <Card className="overflow-hidden border-hairline bg-[linear-gradient(135deg,rgba(8,17,28,0.98),rgba(31,55,82,0.96))] p-0 text-white shadow-[0_32px_90px_rgba(15,23,42,0.28)]">

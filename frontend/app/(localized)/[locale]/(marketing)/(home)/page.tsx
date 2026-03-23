@@ -82,6 +82,49 @@ type HeroTileConfig = {
   adminPriceLabel?: string | null;
 };
 
+function ReferenceStartCard({
+  eyebrow,
+  title,
+  body,
+  href,
+  cta,
+  imageSrc,
+  imageAlt,
+}: {
+  eyebrow: string;
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+  imageSrc: string;
+  imageAlt: string;
+}) {
+  return (
+    <article className="group flex h-full flex-col overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
+      <div className="relative aspect-[1.08] overflow-hidden border-b border-hairline bg-surface-2">
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          fill
+          sizes="(max-width: 1024px) 100vw, 360px"
+          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/8 to-transparent" />
+        <span className="absolute left-4 top-4 rounded-full border border-white/18 bg-black/35 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/88 backdrop-blur-sm">
+          {eyebrow}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="text-2xl font-semibold tracking-tight text-text-primary">{title}</h3>
+        <p className="mt-3 text-sm leading-7 text-text-secondary">{body}</p>
+        <ButtonLink href={href} linkComponent={Link} variant="outline" size="lg" className="mt-6 w-fit">
+          {cta}
+        </ButtonLink>
+      </div>
+    </article>
+  );
+}
+
 const HERO_TILES: readonly HeroTileConfig[] = [
   {
     id: 'sora-2',
@@ -605,6 +648,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const pricing = home.pricing;
   const trust = home.trust;
   const waysSection = home.waysSection;
+  const toolsWorkflow = home.toolsWorkflow;
   const compareCopy = home.compare ?? null;
   const compareCarouselCopy = {
     ...(compareCopy ?? {}),
@@ -1096,6 +1140,49 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
                   </ul>
                 </article>
               ))}
+            </div>
+          </section>
+
+          <section className="container-page max-w-6xl">
+            <div className="rounded-[32px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
+              <div className="max-w-3xl">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                  {toolsWorkflow.eyebrow}
+                </span>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+                  {toolsWorkflow.title}
+                </h2>
+                <p className="mt-4 text-sm leading-7 text-text-secondary sm:text-base">{toolsWorkflow.body}</p>
+              </div>
+              <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                <ReferenceStartCard
+                  eyebrow={toolsWorkflow.cards.image.eyebrow}
+                  title={toolsWorkflow.cards.image.title}
+                  body={toolsWorkflow.cards.image.body}
+                  href="/app/image"
+                  cta={toolsWorkflow.cards.image.cta}
+                  imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp"
+                  imageAlt="Image workspace result prepared before video generation."
+                />
+                <ReferenceStartCard
+                  eyebrow={toolsWorkflow.cards.character.eyebrow}
+                  title={toolsWorkflow.cards.character.title}
+                  body={toolsWorkflow.cards.character.body}
+                  href="/tools/character-builder"
+                  cta={toolsWorkflow.cards.character.cta}
+                  imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/762032e6-d6f1-41cd-a1f3-690a60188a74.webp"
+                  imageAlt="Reusable character reference generated before prompts and video."
+                />
+                <ReferenceStartCard
+                  eyebrow={toolsWorkflow.cards.angle.eyebrow}
+                  title={toolsWorkflow.cards.angle.title}
+                  body={toolsWorkflow.cards.angle.body}
+                  href="/tools/angle"
+                  cta={toolsWorkflow.cards.angle.cta}
+                  imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6cff997e-f531-455d-819f-a0481b4cda5c-tool_angle_57d123d8-acdd-4667-9ad4-fdb256313b6a-1.webp"
+                  imageAlt="Alternate camera angle generated from one source image before video."
+                />
+              </div>
             </div>
           </section>
 

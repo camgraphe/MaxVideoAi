@@ -66,6 +66,7 @@ import {
 } from '@/lib/image/inputSchema';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobSurface } from '@/lib/job-surface';
+import { Link } from '@/i18n/navigation';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -141,6 +142,13 @@ interface ImageWorkspaceCopy {
       library: string;
       replace: string;
       remove: string;
+    };
+    bridge: {
+      eyebrow: string;
+      title: string;
+      body: string;
+      characterCta: string;
+      angleCta: string;
     };
   };
   history: {
@@ -299,6 +307,13 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       library: 'Library',
       replace: 'Replace',
       remove: 'Remove',
+    },
+    bridge: {
+      eyebrow: 'Before you branch out',
+      title: 'Need a stronger reference first?',
+      body: 'Use Character Builder when identity matters, or Angle when the subject is right and the viewpoint is not.',
+      characterCta: 'Need a reusable character reference first?',
+      angleCta: 'Need a better camera angle first?',
     },
   },
   history: {
@@ -2592,6 +2607,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     <Button type="submit" size="lg" className="w-full sm:w-auto shadow-card">
                       {resolvedCopy.runButton.idle}
                     </Button>
+                  </div>
+
+                  <div className="rounded-2xl border border-hairline bg-surface-2/70 p-4 shadow-card">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
+                      {resolvedCopy.composer.bridge.eyebrow}
+                    </p>
+                    <h3 className="mt-2 text-sm font-semibold text-text-primary">{resolvedCopy.composer.bridge.title}</h3>
+                    <p className="mt-2 text-xs leading-6 text-text-secondary">{resolvedCopy.composer.bridge.body}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <ButtonLink href="/tools/character-builder" linkComponent={Link} variant="outline" size="sm">
+                        {resolvedCopy.composer.bridge.characterCta}
+                      </ButtonLink>
+                      <ButtonLink href="/tools/angle" linkComponent={Link} variant="outline" size="sm">
+                        {resolvedCopy.composer.bridge.angleCta}
+                      </ButtonLink>
+                    </div>
                   </div>
 
                   <SectionDivider />

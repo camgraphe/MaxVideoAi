@@ -379,6 +379,31 @@
       "title": "Tout se trouve dans l'espace de travail.",
       "subtitle": "Composer, crédits, liste des rendus et galerie restent côte à côte pour garder votre équipe alignée."
     },
+    "toolsWorkflow": {
+      "eyebrow": "Workflow de référence",
+      "title": "Préparez le still avant de lancer la vidéo",
+      "body": "Générez l'image source, verrouillez le personnage ou corrigez l'angle avant de passer à l'image-to-video et au choix du modèle.",
+      "cards": {
+        "image": {
+          "eyebrow": "Image",
+          "title": "Créez le still source",
+          "body": "Créez le cadre de base dans Image avant de passer aux retouches, aux références ou au motion.",
+          "cta": "Ouvrir Image"
+        },
+        "character": {
+          "eyebrow": "Character Builder",
+          "title": "Verrouillez la continuité du personnage",
+          "body": "Créez une ancre portrait ou une fiche 8 panneaux avant que le personnage doive survivre à plus d'une scène.",
+          "cta": "Ouvrir Character Builder"
+        },
+        "angle": {
+          "eyebrow": "Angle",
+          "title": "Changez le point de vue",
+          "body": "Gardez l'image source et générez un angle plus fort avant le storyboard ou la vidéo.",
+          "cta": "Ouvrir Angle"
+        }
+      }
+    },
     "examplesCallout": {
       "eyebrow": "Galerie en direct",
       "title": "Voyez comment chaque moteur traite le même brief.",
@@ -2662,6 +2687,13 @@
           "library": "Bibliothèque",
           "replace": "Remplacer",
           "remove": "Retirer"
+        },
+        "bridge": {
+          "eyebrow": "Avant d'aller plus loin",
+          "title": "Besoin d'une meilleure référence d'abord ?",
+          "body": "Utilisez Character Builder quand l'identité compte, ou Angle quand le sujet est bon mais que le point de vue ne l'est pas.",
+          "characterCta": "Besoin d'une référence personnage réutilisable d'abord ?",
+          "angleCta": "Besoin d'un meilleur angle de caméra d'abord ?"
         }
       },
       "history": {
@@ -3751,6 +3783,13 @@
         "secondaryCta": "Changer l'angle de caméra"
       },
       "cards": {
+        "image": {
+          "eyebrow": "Generate image",
+          "title": "Créez d'abord le still",
+          "body": "Commencez le frame dans Image avant de passer aux retouches, aux références ou au motion.",
+          "cta": "Ouvrir Image",
+          "imageAlt": "Image fixe générée dans l'espace Image de MaxVideoAI avant la vidéo."
+        },
         "character": {
           "eyebrow": "Cohérence personnage",
           "title": "Créez des références personnage réutilisables",
@@ -3764,6 +3803,32 @@
           "body": "Changez le point de vue, testez d'autres compositions et obtenez des images prêtes pour le mouvement sans refaire tout le visuel.",
           "cta": "Explorer l'outil",
           "imageAlt": "Capture de l'interface Angle de MaxVideoAI."
+        }
+      },
+      "bestStartingPoints": {
+        "eyebrow": "Meilleurs points d'entrée",
+        "title": "Construisez le bon input visuel pour la suite",
+        "body": "Utilisez ces entrées quand il vous faut une image source, une référence personnage réutilisable ou un meilleur angle avant la vidéo.",
+        "modelHubCta": "Parcourir le hub de modèles",
+        "cards": {
+          "image": {
+            "eyebrow": "Image",
+            "title": "Générez le still source",
+            "body": "Créez d'abord le cadre de base, puis envoyez-le dans Character Builder, Angle ou le motion.",
+            "cta": "Ouvrir Image"
+          },
+          "character": {
+            "eyebrow": "Character Builder",
+            "title": "Créez une référence personnage réutilisable",
+            "body": "Verrouillez le visage, la tenue et la silhouette avant de passer aux scènes ou à la préparation vidéo.",
+            "cta": "Ouvrir Character Builder"
+          },
+          "angle": {
+            "eyebrow": "Angle",
+            "title": "Changez l'angle depuis une image",
+            "body": "Gardez le frame de départ et générez le point de vue qui convient à l'étape suivante.",
+            "cta": "Ouvrir Angle"
+          }
         }
       }
     },
@@ -3981,6 +4046,10 @@
               "label": "Ouvrir l'espace Video"
             },
             {
+              "href": "/models/ltx-2-3-pro",
+              "label": "LTX 2.3 Pro"
+            },
+            {
               "href": "/models/veo-3-1",
               "label": "Veo 3.1"
             },
@@ -4093,6 +4162,45 @@
           {
             "question": "Puis-je générer plusieurs angles à partir d'une image ?",
             "answer": "Oui. Vous pouvez générer plusieurs vues, les comparer et garder celle qui colle le mieux à l'étape suivante."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "Workflow lié",
+        "title": "Faites avancer le meilleur frame vers l'étape suivante",
+        "body": "Une fois l'angle trouvé, affinez le still, passez en vidéo, ou lisez les guides complémentaires sur la correction et l'exploration d'angles.",
+        "workflowTitle": "Continuer avec",
+        "workflowLinks": [
+          {
+            "href": "/app/image",
+            "label": "Affiner le frame dans Image"
+          },
+          {
+            "href": "/models/ltx-2-3-pro",
+            "label": "Utiliser le frame dans LTX 2.3 Pro"
+          },
+          {
+            "href": "/models/veo-3-1",
+            "label": "Utiliser le frame dans Veo 3.1"
+          },
+          {
+            "href": "/models/kling-3-pro",
+            "label": "Utiliser le frame dans Kling 3 Pro"
+          },
+          {
+            "href": "/examples",
+            "label": "Parcourir les exemples"
+          }
+        ],
+        "guidesTitle": "Guides liés",
+        "guideLinks": [
+          {
+            "href": "/blog/change-camera-angle-with-ai",
+            "label": "Corriger un angle faible"
+          },
+          {
+            "href": "/blog/multiple-camera-angles-from-one-image",
+            "label": "Explorer plusieurs angles depuis une image"
           }
         ]
       },
@@ -4318,6 +4426,10 @@
               "label": "Nano Banana"
             },
             {
+              "href": "/models/ltx-2-3-pro",
+              "label": "LTX 2.3 Pro"
+            },
+            {
               "href": "/models/veo-3-1",
               "label": "Veo 3.1"
             },
@@ -4402,6 +4514,45 @@
           {
             "question": "Puis-je réutiliser cela dans des workflows image-to-video ?",
             "answer": "Oui. Vous pouvez le réutiliser dans les prompts, dans la préparation du premier plan avec Nano Banana et dans les moteurs vidéo qui acceptent les images fixes de référence."
+          }
+        ]
+      },
+      "related": {
+        "eyebrow": "Workflow lié",
+        "title": "Réutilisez la référence dans le reste du workflow",
+        "body": "Une fois le personnage verrouillé, passez dans Image, Nano Banana ou les modèles vidéo sans reconstruire l'identité.",
+        "workflowTitle": "Continuer avec",
+        "workflowLinks": [
+          {
+            "href": "/app/image",
+            "label": "Générer le still dans Image"
+          },
+          {
+            "href": "/models/nano-banana",
+            "label": "Préparer la start frame dans Nano Banana"
+          },
+          {
+            "href": "/models/ltx-2-3-pro",
+            "label": "Passer en vidéo avec LTX 2.3 Pro"
+          },
+          {
+            "href": "/models/veo-3-1",
+            "label": "Passer en vidéo avec Veo 3.1"
+          },
+          {
+            "href": "/models/kling-3-pro",
+            "label": "Passer en vidéo avec Kling 3 Pro"
+          }
+        ],
+        "guidesTitle": "Guides liés",
+        "guideLinks": [
+          {
+            "href": "/blog/how-to-create-consistent-ai-characters",
+            "label": "Créer des personnages IA cohérents"
+          },
+          {
+            "href": "/blog/ai-character-sheet-generator",
+            "label": "Quand utiliser une fiche 8 panneaux"
           }
         ]
       },
