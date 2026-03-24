@@ -87,15 +87,20 @@ export const routing = defineRouting({
       fr: '/blog/[slug]',
       es: '/blog/[slug]',
     },
+    '/about': {
+      en: '/about',
+      fr: '/a-propos',
+      es: '/acerca-de',
+    },
     '/status': {
       en: '/status',
-      fr: '/status',
-      es: '/status',
+      fr: '/statut',
+      es: '/estado',
     },
     '/company': {
       en: '/company',
-      fr: '/company',
-      es: '/company',
+      fr: '/entreprise',
+      es: '/empresa',
     },
     '/legal/terms': {
       en: '/legal/terms',

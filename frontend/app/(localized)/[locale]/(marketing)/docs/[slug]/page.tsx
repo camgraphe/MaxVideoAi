@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
 import { defaultLocale, locales, localeRegions, type AppLocale } from '@/i18n/locales';
+import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 
@@ -83,8 +84,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const locale = params.locale ?? 'en';
   const { entry: doc, hasLocalizedVersion } = await getDocEntryWithFallback(locale, params.slug);
   if (!doc) {
+    const { dictionary, fallback } = await resolveDictionary({ locale });
     return {
-      title: 'Doc not found — MaxVideo AI',
+      title: dictionary.docs.meta.notFoundTitle || fallback.docs.meta.notFoundTitle,
     };
   }
   const seo = resolveLocalizedFallbackSeo({

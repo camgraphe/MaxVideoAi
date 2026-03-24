@@ -115,6 +115,12 @@ const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
 ];
 
 const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
+  '/fr/about': '/a-propos',
+  '/es/about': '/acerca-de',
+  '/fr/company': '/entreprise',
+  '/es/company': '/empresa',
+  '/fr/status': '/statut',
+  '/es/status': '/estado',
   // Compare AI video engines
   '/fr/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika':
     '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',

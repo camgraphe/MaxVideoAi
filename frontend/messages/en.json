@@ -1523,7 +1523,8 @@
     "meta": {
       "title": "Docs — Onboarding, Brand Safety, Refunds & API Webhooks",
       "description": "Start here for onboarding, price system and refunds. Learn about brand-safe filters and see webhook/API references. Deeper guides live in the authenticated workspace.",
-      "imageAlt": "Docs — MaxVideoAI"
+      "imageAlt": "Docs — MaxVideoAI",
+      "notFoundTitle": "Doc not found"
     },
     "hero": {
       "title": "Documentation",
@@ -4697,5 +4698,12 @@
         "panelAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder."
       }
     }
+  },
+  "notFound": {
+    "metaTitle": "Page not found",
+    "title": "Page not found",
+    "body": "We can't find that URL. It might be outdated, or it never existed. Use the links below to keep exploring MaxVideoAI.",
+    "homeLabel": "Back to homepage",
+    "modelsLabel": "Browse video models"
   }
 }

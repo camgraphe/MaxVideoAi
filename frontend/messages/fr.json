@@ -1534,7 +1534,8 @@
     "meta": {
       "title": "Docs — Onboarding, sécurité de marque, remboursements & webhooks API",
       "description": "Commencez ici pour l’onboarding, le système tarifaire et les remboursements. Découvrez les filtres brand-safe et les références webhook/API. Les guides avancés sont dans l’espace authentifié.",
-      "imageAlt": "Docs — MaxVideoAI"
+      "imageAlt": "Docs — MaxVideoAI",
+      "notFoundTitle": "Document introuvable"
     },
     "hero": {
       "title": "Documentation MaxVideoAI",
@@ -4708,5 +4709,12 @@
         "panelAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder."
       }
     }
+  },
+  "notFound": {
+    "metaTitle": "Page introuvable",
+    "title": "Page introuvable",
+    "body": "Nous ne trouvons pas cette URL. Elle est peut-etre obsolete ou n'a jamais existe. Utilisez les liens ci-dessous pour continuer a explorer MaxVideoAI.",
+    "homeLabel": "Retour a l'accueil",
+    "modelsLabel": "Voir les modeles video"
   }
 }

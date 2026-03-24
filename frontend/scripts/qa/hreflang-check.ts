@@ -28,6 +28,7 @@ const QA_PAGES: PageConfig[] = [
   { kind: 'slug', slugKey: 'blog', label: '/blog' },
   { kind: 'path', englishPath: '/tools/character-builder', label: '/tools/character-builder' },
   { kind: 'path', englishPath: '/docs/get-started', label: '/docs/get-started' },
+  { kind: 'path', englishPath: '/about', label: '/about' },
   { kind: 'path', englishPath: '/status', label: '/status' },
   { kind: 'path', englishPath: '/company', label: '/company' },
   { kind: 'path', englishPath: '/legal', label: '/legal' },
