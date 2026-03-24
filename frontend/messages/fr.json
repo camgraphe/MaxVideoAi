@@ -2009,25 +2009,47 @@
       "title": "Statut",
       "subtitle": "Indicateurs en direct pour la santé des files d'attente, les fournisseurs de routage et les systèmes de facturation. Abonnez-vous dans l'application pour les alertes d'incident."
     },
+    "overview": {
+      "paragraphs": [
+        "Les contrôles d’état se mettent à jour en continu à partir de la même télémétrie que nous utilisons pour router les rendus. Lorsqu’un moteur passe de « Opérationnel » à « Dégradé », MaxVideoAI bascule automatiquement le trafic vers la région disponible la plus rapide et publie un incident ci-dessous. Si une panne nécessite une action client, nous l’indiquons dans les notes d’incident avec les identifiants de jobs à relancer ou à rembourser.",
+        "Avant de contacter le support, vérifiez si le moteur concerné présente une perturbation et consultez l’historique des incidents. Vous pouvez aussi vous abonner au flux RSS ou au digest e-mail pour recevoir une alerte dès qu’un moteur est dégradé. Pour une escalade urgente, joignez l’ID du job et le nom du moteur afin que nous puissions tracer la file immédiatement."
+      ],
+      "quickReferencesTitle": "Repères rapides",
+      "quickReferences": [
+        {
+          "label": "Latence de file de rendu",
+          "body": "mise à jour en général toutes les 60 secondes."
+        },
+        {
+          "label": "Journal d’incidents",
+          "body": "chaque entrée inclut l’heure de début/fin, la cause racine et les actions correctives."
+        },
+        {
+          "label": "Support",
+          "prefix": "écrivez à",
+          "suffix": "avec le code incident + l’ID du job pour une prise en charge prioritaire."
+        }
+      ]
+    },
     "systems": [
       {
-        "name": "Engine routing",
-        "status": "Operational",
+        "name": "Routage des moteurs",
+        "status": "Opérationnel",
         "detail": "Tous les moteurs répondent dans les SLA."
       },
       {
-        "name": "Queue processing",
-        "status": "Operational",
+        "name": "Traitement des files",
+        "status": "Opérationnel",
         "detail": "Temps moyen de démarrage inférieur à 45 secondes."
       },
       {
-        "name": "Wallet + billing",
-        "status": "Operational",
+        "name": "Wallet + facturation",
+        "status": "Opérationnel",
         "detail": "Paiements, remboursements et reçus fonctionnent normalement."
       },
       {
         "name": "Callbacks & webhooks",
-        "status": "Degraded",
+        "status": "Dégradé",
         "detail": "Retards d'environ 2 minutes sur les retries webhook. En cours d'investigation."
       }
     ],
@@ -2036,9 +2058,10 @@
         "date": "2024-06-10",
         "title": "Latence du fournisseur Pika",
         "summary": "Retards dans la file Pika pendant 34 minutes. Des remboursements automatiques ont été déclenchés pour les rendus impactés.",
-        "status": "Resolved"
+        "status": "Résolu"
       }
-    ]
+    ],
+    "incidentsHeading": "Incidents"
   },
   "systemMessages": {
     "refundInitiated": "Votre paiement est en cours de remboursement. Il peut prendre 5–10 jours ouvrables pour apparaître sur votre relevé.",

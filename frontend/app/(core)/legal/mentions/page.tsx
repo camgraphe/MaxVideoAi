@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 type MentionsCopy = {
@@ -211,6 +212,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MentionsLegalesPage() {
   const locale = (await resolveLocale()) as AppLocale;
   const copy = COPY[locale] ?? COPY.en;
+  const privacyHref = localizePathFromEnglish(locale, '/legal/privacy');
 
   return (
     <div className="stack-gap-lg">
@@ -275,7 +277,7 @@ export default async function MentionsLegalesPage() {
           <h3 className="text-lg font-semibold text-text-primary">{copy.personalData.title}</h3>
           <p>
             {copy.personalData.prefix}{' '}
-            <Link href="/legal/privacy" className="text-brand underline hover:text-brandHover">
+            <Link href={privacyHref} className="text-brand underline hover:text-brandHover">
               {copy.personalData.privacyLinkLabel}
             </Link>
             {copy.personalData.middle}{' '}

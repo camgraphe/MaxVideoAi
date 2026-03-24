@@ -127,6 +127,8 @@ const companyAllowedFiles = new Set([
   'frontend/lib/seo/hreflang.ts',
   'frontend/next-sitemap.config.js',
   'frontend/middleware.ts',
+  'frontend/scripts/qa/hreflang-check.ts',
+  'frontend/scripts/qa/locale-surface-check.ts',
 ]);
 
 const frontendRoot = path.join(ROOT, 'frontend');

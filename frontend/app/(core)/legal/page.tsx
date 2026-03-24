@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getLegalDocuments } from '@/lib/legal';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
@@ -141,6 +142,10 @@ export default async function LegalIndexPage() {
   const locale = await resolveLocale();
   const copy = HERO_COPY[locale] ?? HERO_COPY.en;
   const documents = await getLegalDocuments(['terms', 'privacy', 'cookies']);
+  const localizedLinks = LINKS.map((entry) => ({
+    ...entry,
+    href: localizePathFromEnglish(locale, entry.href),
+  }));
   const renderEmailText = (text: string) => {
     if (!text.includes(EMAIL_TOKEN)) {
       return text;
@@ -182,7 +187,7 @@ export default async function LegalIndexPage() {
       </section>
 
       <ul className="space-y-4">
-        {LINKS.map((entry) => {
+        {localizedLinks.map((entry) => {
           const meta = entry.docKey ? documents[entry.docKey] : null;
           return (
             <li key={entry.href} className="rounded-card border border-border bg-surface p-5 shadow-card">

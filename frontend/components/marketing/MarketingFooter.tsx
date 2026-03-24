@@ -8,14 +8,22 @@ import engineCatalog from '@/config/engine-catalog.json';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
+type SupportedLocale = 'en' | 'fr' | 'es';
 
 const canonicalCompareSlug = (left: string, right: string) => [left, right].sort().join('-vs-');
 const OPEN_COOKIE_PREFERENCES_EVENT = 'consent:open-preferences';
 
+function localizeFooterPath(locale: SupportedLocale, englishPath: string) {
+  if (locale === 'en' || englishPath === '/') {
+    return locale === 'en' ? englishPath : `/${locale}`;
+  }
+  return `/${locale}${englishPath}`;
+}
+
 export function MarketingFooter() {
   const pathname = usePathname();
   const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   if (isCompanyTrustHub) {
     return null;
   }
@@ -34,6 +42,10 @@ export function MarketingFooter() {
   const isPolicyLink = (item: PolicyLink) => typeof item.href === 'string' && item.href.startsWith('/legal');
   const policyLinks = links.filter(isPolicyLink);
   const renderedPolicyLinks = policyLinks.length ? policyLinks : defaultPolicyLinks.filter(isPolicyLink);
+  const localizedPolicyLinks = renderedPolicyLinks.map((item) => ({
+    ...item,
+    href: item.href.startsWith('/legal') ? localizeFooterPath(locale, item.href) : item.href,
+  }));
 
   const engineItems = [
     { slug: 'sora-2', labelKey: 'footer.sections.engines.items.sora2', fallback: 'Sora 2' },
@@ -214,7 +226,7 @@ export function MarketingFooter() {
         <div className="border-t border-hairline pt-6">
           <p className={sectionTitleClass}>{policiesTitle}</p>
           <nav className="mt-3 flex flex-wrap gap-4" aria-label={policiesTitle}>
-            {renderedPolicyLinks.map((item) => (
+            {localizedPolicyLinks.map((item) => (
               <Link
                 key={`policy-${item.href}`}
                 href={item.href}

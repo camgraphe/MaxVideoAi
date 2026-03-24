@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
@@ -59,22 +60,23 @@ const HEADER_COPY: Record<AppLocale, { title: string; effective: string; company
   },
 };
 
-type AupBodyProps = { locale: AppLocale };
+type AupBodyProps = { locale: AppLocale; takedownHref: string };
 
-function AupArticle({ locale }: AupBodyProps) {
+function AupArticle({ locale, takedownHref }: AupBodyProps) {
   switch (locale) {
     case 'fr':
-      return <AupArticleFr />;
+      return <AupArticleFr takedownHref={takedownHref} />;
     case 'es':
-      return <AupArticleEs />;
+      return <AupArticleEs takedownHref={takedownHref} />;
     default:
-      return <AupArticleEn />;
+      return <AupArticleEn takedownHref={takedownHref} />;
   }
 }
 
 export default async function AcceptableUsePage() {
   const locale = await resolveLocale();
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
+  const takedownHref = localizePathFromEnglish(locale, '/legal/takedown');
   return (
     <div className="stack-gap-lg">
       <header className="stack-gap-sm">
@@ -92,12 +94,12 @@ export default async function AcceptableUsePage() {
         </p>
       </header>
 
-      <AupArticle locale={locale} />
+      <AupArticle locale={locale} takedownHref={takedownHref} />
     </div>
   );
 }
 
-function AupArticleEn() {
+function AupArticleEn({ takedownHref }: { takedownHref: string }) {
   return (
     <article className="space-y-4 text-base leading-relaxed text-text-secondary">
       <p>
@@ -131,7 +133,7 @@ function AupArticleEn() {
         <h2 className="text-lg font-semibold text-text-primary">Report abuse</h2>
         <p>
           If you believe content generated through MaxVideoAI breaches this policy or your rights, notify us via the{' '}
-          <Link href="/legal/takedown" className="text-brand underline hover:text-brandHover">
+          <Link href={takedownHref} className="text-brand underline hover:text-brandHover">
             Notice &amp; Takedown form
           </Link>{' '}
           or email{' '}
@@ -148,7 +150,7 @@ function AupArticleEn() {
   );
 }
 
-function AupArticleFr() {
+function AupArticleFr({ takedownHref }: { takedownHref: string }) {
   return (
     <article className="space-y-4 text-base leading-relaxed text-text-secondary">
       <p>
@@ -186,7 +188,7 @@ function AupArticleFr() {
         <h2 className="text-lg font-semibold text-text-primary">Signaler un abus</h2>
         <p>
           Si vous estimez qu’un contenu généré via MaxVideoAI viole cette politique ou vos droits, signalez-le via le{' '}
-          <Link href="/legal/takedown" className="text-brand underline hover:text-brandHover">
+          <Link href={takedownHref} className="text-brand underline hover:text-brandHover">
             formulaire Notification &amp; retrait
           </Link>{' '}
           ou écrivez à{' '}
@@ -203,7 +205,7 @@ function AupArticleFr() {
   );
 }
 
-function AupArticleEs() {
+function AupArticleEs({ takedownHref }: { takedownHref: string }) {
   return (
     <article className="space-y-4 text-base leading-relaxed text-text-secondary">
       <p>
@@ -241,7 +243,7 @@ function AupArticleEs() {
         <h2 className="text-lg font-semibold text-text-primary">Reporta abusos</h2>
         <p>
           Si crees que un contenido generado con MaxVideoAI vulnera esta política o tus derechos, notifícanos mediante el{' '}
-          <Link href="/legal/takedown" className="text-brand underline hover:text-brandHover">
+          <Link href={takedownHref} className="text-brand underline hover:text-brandHover">
             formulario de Notificación y retirada
           </Link>{' '}
           o escribe a{' '}

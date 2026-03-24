@@ -2002,25 +2002,47 @@
       "title": "Estado",
       "subtitle": "Indicadores en tiempo real de la salud de la cola, proveedores de enrutamiento y sistemas de facturación. Suscríbase dentro de la aplicación para recibir alertas de incidentes."
     },
+    "overview": {
+      "paragraphs": [
+        "Las comprobaciones de estado se actualizan continuamente a partir de la misma telemetría que usamos para enrutar renders. Cuando un motor pasa de « Operativo » a « Degradado », MaxVideoAI desvía automáticamente el tráfico a la región disponible más rápida y publica un incidente a continuación. Si una caída requiere acción del cliente, lo indicamos en las notas del incidente junto con los IDs de trabajos que podrían necesitar reintento o reembolso.",
+        "Antes de contactar con soporte, confirma si el motor que estás usando muestra una interrupción y revisa el historial de incidentes. También puedes suscribirte al RSS o al resumen por correo para recibir alertas en cuanto degrademos un motor. Para escalaciones urgentes, incluye el ID del trabajo y el nombre del motor para que podamos rastrear la cola al instante."
+      ],
+      "quickReferencesTitle": "Referencias rápidas",
+      "quickReferences": [
+        {
+          "label": "Latencia de la cola de render",
+          "body": "normalmente se actualiza cada 60 segundos."
+        },
+        {
+          "label": "Registro de incidentes",
+          "body": "cada entrada incluye hora de inicio/fin, causa raíz y pasos de mitigación."
+        },
+        {
+          "label": "Soporte",
+          "prefix": "escribe a",
+          "suffix": "con el código del incidente + el ID del trabajo para una respuesta prioritaria."
+        }
+      ]
+    },
     "systems": [
       {
-        "name": "Engine routing",
-        "status": "Operational",
+        "name": "Enrutamiento de motores",
+        "status": "Operativo",
         "detail": "Todos los motores responden dentro del SLA."
       },
       {
-        "name": "Queue processing",
-        "status": "Operational",
+        "name": "Procesamiento de colas",
+        "status": "Operativo",
         "detail": "Tiempo medio de arranque inferior a 45 segundos."
       },
       {
-        "name": "Wallet + billing",
-        "status": "Operational",
+        "name": "Billetera + facturación",
+        "status": "Operativo",
         "detail": "Pagos, reembolsos y recibos operan con normalidad."
       },
       {
-        "name": "Callbacks & webhooks",
-        "status": "Degraded",
+        "name": "Callbacks y webhooks",
+        "status": "Degradado",
         "detail": "Reintentos de webhooks con retraso de ~2 minutos. En investigación."
       }
     ],
@@ -2029,9 +2051,10 @@
         "date": "2024-06-10",
         "title": "Latencia del proveedor Pika",
         "summary": "Retrasos en la cola de Pika durante 34 minutos. Se dispararon reembolsos automáticos para los renders afectados.",
-        "status": "Resolved"
+        "status": "Resuelto"
       }
-    ]
+    ],
+    "incidentsHeading": "Incidentes"
   },
   "systemMessages": {
     "refundInitiated": "Se está reembolsando tu pago. Puede tardar entre 5–10 días laborables en aparecer en tu extracto.",

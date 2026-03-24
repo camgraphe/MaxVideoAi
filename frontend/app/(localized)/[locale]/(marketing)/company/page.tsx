@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
@@ -80,6 +81,10 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 export default function CompanyPage({ params }: { params: { locale: AppLocale } }) {
   const locale = params.locale;
   const copy = COMPANY_COPY[locale] ?? COMPANY_COPY.en;
+  const links = copy.links.map((entry) => ({
+    ...entry,
+    href: entry.href === '/legal' ? localizePathFromEnglish(locale, entry.href) : entry.href,
+  }));
 
   return (
     <div className="container-page max-w-4xl section">
@@ -90,7 +95,7 @@ export default function CompanyPage({ params }: { params: { locale: AppLocale } 
         </header>
         <section className="rounded-card border border-hairline bg-surface p-6 shadow-card sm:p-8">
           <ul className="space-y-4">
-            {copy.links.map((entry) => (
+            {links.map((entry) => (
               <li key={entry.href} className="rounded-card border border-border bg-surface-glass-90 p-5">
                 <Link href={entry.href} className="text-lg font-semibold text-brand transition hover:text-brandHover">
                   {entry.label}

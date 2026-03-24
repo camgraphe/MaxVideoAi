@@ -3,18 +3,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { localizedSlugs, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 
 type Locale = AppLocale;
 
 const RAW_BASE_URL = process.env.QA_BASE_URL ?? 'http://localhost:3000';
 const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') || 'http://localhost:3000';
+const EXPECTED_CANONICAL_BASE_URL = (process.env.QA_EXPECT_CANONICAL_BASE_URL ?? BASE_URL).replace(/\/+$/, '') || BASE_URL;
 const LOCALES: Locale[] = ['en', 'fr', 'es'];
 const EXPECTED_HREFLANGS = ['en', 'en-gb', 'fr-fr', 'es-419', 'x-default'] as const;
 
 type PageConfig =
   | { kind: 'home'; label: string }
   | { kind: 'slug'; slugKey: LocalizedSlugKey; label: string }
+  | { kind: 'path'; englishPath: string; label: string }
   | { kind: 'blog-post'; canonicalSlug: string; label: string };
 
 const QA_PAGES: PageConfig[] = [
@@ -23,6 +26,14 @@ const QA_PAGES: PageConfig[] = [
   { kind: 'slug', slugKey: 'models', label: '/models' },
   { kind: 'slug', slugKey: 'gallery', label: '/examples' },
   { kind: 'slug', slugKey: 'blog', label: '/blog' },
+  { kind: 'path', englishPath: '/tools/character-builder', label: '/tools/character-builder' },
+  { kind: 'path', englishPath: '/docs/get-started', label: '/docs/get-started' },
+  { kind: 'path', englishPath: '/status', label: '/status' },
+  { kind: 'path', englishPath: '/company', label: '/company' },
+  { kind: 'path', englishPath: '/legal', label: '/legal' },
+  { kind: 'path', englishPath: '/legal/privacy', label: '/legal/privacy' },
+  { kind: 'path', englishPath: '/legal/terms', label: '/legal/terms' },
+  { kind: 'path', englishPath: '/legal/mentions', label: '/legal/mentions' },
   { kind: 'blog-post', canonicalSlug: 'compare-ai-video-engines', label: '/blog/compare-ai-video-engines' },
 ];
 
@@ -47,6 +58,13 @@ function buildAbsoluteUrl(pathname: string) {
     return `${BASE_URL}/`;
   }
   return `${BASE_URL}${pathname}`;
+}
+
+function buildExpectedCanonicalUrl(pathname: string) {
+  if (!pathname || pathname === '/') {
+    return `${EXPECTED_CANONICAL_BASE_URL}/`;
+  }
+  return `${EXPECTED_CANONICAL_BASE_URL}${pathname}`;
 }
 
 function loadBlogSlugMap(locale: Locale) {
@@ -115,6 +133,15 @@ function resolvePaths(locale: Locale, page: PageConfig) {
     };
   }
 
+  if (page.kind === 'path') {
+    const localizedPath = localizePathFromEnglish(locale, page.englishPath);
+    return {
+      label: page.label,
+      canonicalPath: localizedPath,
+      requestPath: localizedPath,
+    };
+  }
+
   // blog post
   const localizedSlug = resolveBlogSlug(locale, page.canonicalSlug);
   const blogPath = `blog/${localizedSlug}`;
@@ -168,7 +195,7 @@ async function checkPage(locale: Locale, page: PageConfig) {
   const canonicalLinks = extractLinks(html, 'canonical');
   const canonicalHref = canonicalLinks[0]?.href;
   const normalizedCanonical = canonicalHref ? normalizeUrl(canonicalHref) : null;
-  const expectedCanonical = normalizeUrl(resolved.canonicalPath);
+  const expectedCanonical = normalizeUrl(buildExpectedCanonicalUrl(resolved.canonicalPath));
 
   const alternateLinks = extractLinks(html, 'alternate');
   const alternatesByLang = Object.fromEntries(

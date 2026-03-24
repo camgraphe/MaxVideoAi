@@ -37,8 +37,11 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   Operational: 'bg-[var(--success-bg)] text-[var(--success)]',
+  Opérationnel: 'bg-[var(--success-bg)] text-[var(--success)]',
+  Operativo: 'bg-[var(--success-bg)] text-[var(--success)]',
   Dégradé: 'bg-[var(--warning-bg)] text-[var(--warning)]',
   Degraded: 'bg-[var(--warning-bg)] text-[var(--warning)]',
+  Degradado: 'bg-[var(--warning-bg)] text-[var(--warning)]',
 };
 
 export default async function StatusPage() {
@@ -53,31 +56,21 @@ export default async function StatusPage() {
           <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
         </header>
         <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
-          <p>
-            Status checks refresh continuously from the same telemetry we use to route renders. When an engine moves from
-            “Operational” to “Degraded”, MaxVideoAI automatically shifts traffic to the fastest available region and posts
-            an incident below. If an outage requires customer action we flag it in the incident notes and reference the
-            job IDs that may need a retry or credit refund.
-          </p>
-          <p className="mt-4">
-            Before contacting support, confirm whether the engine you are using shows a disruption and review the incident
-            history. You can also subscribe to the RSS feed or email digest to receive alerts the moment we downgrade an
-            engine. For urgent escalations, include the job ID and engine name so we can trace the queue instantly.
-          </p>
+          <p>{content.overview.paragraphs[0]}</p>
+          <p className="mt-4">{content.overview.paragraphs[1]}</p>
           <div className="mt-5 rounded-card border border-dashed border-hairline bg-bg/70 p-4">
-            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Quick references</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{content.overview.quickReferencesTitle}</h2>
             <ul className="mt-3 list-disc space-y-1 pl-5">
               <li>
-                <span className="font-semibold text-text-primary">Render queue latency</span> — typically updates every 60 seconds.
+                <span className="font-semibold text-text-primary">{content.overview.quickReferences[0].label}</span> — {content.overview.quickReferences[0].body}
               </li>
               <li>
-                <span className="font-semibold text-text-primary">Incident log</span> — entries include start/end time, root cause,
-                and mitigation steps.
+                <span className="font-semibold text-text-primary">{content.overview.quickReferences[1].label}</span> — {content.overview.quickReferences[1].body}
               </li>
               <li>
-                <span className="font-semibold text-text-primary">Support</span> — email{' '}
+                <span className="font-semibold text-text-primary">{content.overview.quickReferences[2].label}</span> — {content.overview.quickReferences[2].prefix}{' '}
                 <ObfuscatedEmailLink user="support" domain="maxvideo.ai" label="support@maxvideo.ai" />{' '}
-                with incident code + job ID for a priority response.
+                {content.overview.quickReferences[2].suffix}
               </li>
             </ul>
           </div>
@@ -100,7 +93,7 @@ export default async function StatusPage() {
           ))}
         </section>
         <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">Incidents</h2>
+          <h2 className="text-lg font-semibold text-text-primary">{content.incidentsHeading}</h2>
           {content.incidents.map((incident) => (
             <article key={incident.date} className="mt-4 border-t border-hairline pt-4 first:border-none first:pt-0">
               <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{incident.date}</p>

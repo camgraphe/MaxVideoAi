@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveLocale } from '@/lib/i18n/server';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
@@ -69,16 +71,17 @@ type TermsBodyProps = {
   locale: AppLocale;
   version: string;
   effective: string | null;
+  subprocessorsHref: string;
 };
 
-function TermsArticle({ locale, version, effective }: TermsBodyProps) {
+function TermsArticle({ locale, version, effective, subprocessorsHref }: TermsBodyProps) {
   switch (locale) {
     case 'fr':
-      return <TermsArticleFr version={version} effective={effective} />;
+      return <TermsArticleFr version={version} effective={effective} subprocessorsHref={subprocessorsHref} />;
     case 'es':
-      return <TermsArticleEs version={version} effective={effective} />;
+      return <TermsArticleEs version={version} effective={effective} subprocessorsHref={subprocessorsHref} />;
     default:
-      return <TermsArticleEn version={version} effective={effective} />;
+      return <TermsArticleEn version={version} effective={effective} subprocessorsHref={subprocessorsHref} />;
   }
 }
 
@@ -88,6 +91,7 @@ export default async function TermsPage() {
   const version = document?.version ?? '2025-10-26';
   const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`, locale);
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
+  const subprocessorsHref = localizePathFromEnglish(locale, '/legal/subprocessors');
 
   return (
     <div className="stack-gap-lg">
@@ -119,12 +123,20 @@ export default async function TermsPage() {
         </p>
         <LegalVersionBadge docKey="terms" doc={document} locale={locale} />
       </header>
-      <TermsArticle locale={locale} version={version} effective={effective ?? version} />
+      <TermsArticle locale={locale} version={version} effective={effective ?? version} subprocessorsHref={subprocessorsHref} />
     </div>
   );
 }
 
-function TermsArticleEn({ version, effective }: { version: string; effective: string | null }) {
+function TermsArticleEn({
+  version,
+  effective,
+  subprocessorsHref,
+}: {
+  version: string;
+  effective: string | null;
+  subprocessorsHref: string;
+}) {
   return (
     <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
@@ -247,7 +259,11 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         <h3 className="text-lg font-semibold text-text-primary">9. Third-party services</h3>
         <p>
           We rely on trusted sub-processors to operate the Service, including Stripe (payments), hosting/CDN providers, object storage, databases, and AI
-          inference partners. See the Privacy Policy and the /legal/subprocessors notice for details.
+          inference partners. See the Privacy Policy and the{' '}
+          <Link href={subprocessorsHref} className="text-brand underline hover:text-brandHover">
+            sub-processor notice
+          </Link>{' '}
+          for details.
         </p>
       </section>
 
@@ -330,7 +346,15 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
   );
 }
 
-function TermsArticleFr({ version, effective }: { version: string; effective: string | null }) {
+function TermsArticleFr({
+  version,
+  effective,
+  subprocessorsHref,
+}: {
+  version: string;
+  effective: string | null;
+  subprocessorsHref: string;
+}) {
   return (
     <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
@@ -441,7 +465,11 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">9. Services tiers</h3>
         <p>
-          Nous nous appuyons sur des sous-traitants de confiance (Stripe pour les paiements, hébergeurs/CDN, stockage objet, bases de données, partenaires d’inférence IA). Consultez la Politique de confidentialité et la page /legal/subprocessors pour la liste détaillée.
+          Nous nous appuyons sur des sous-traitants de confiance (Stripe pour les paiements, hébergeurs/CDN, stockage objet, bases de données, partenaires d’inférence IA). Consultez la Politique de confidentialité et la{' '}
+          <Link href={subprocessorsHref} className="text-brand underline hover:text-brandHover">
+            liste détaillée des sous-traitants
+          </Link>
+          .
         </p>
       </section>
 
@@ -519,7 +547,15 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
   );
 }
 
-function TermsArticleEs({ version, effective }: { version: string; effective: string | null }) {
+function TermsArticleEs({
+  version,
+  effective,
+  subprocessorsHref,
+}: {
+  version: string;
+  effective: string | null;
+  subprocessorsHref: string;
+}) {
   return (
     <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
@@ -639,7 +675,11 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         <h3 className="text-lg font-semibold text-text-primary">9. Servicios de terceros</h3>
         <p>
           Dependemos de subencargados de confianza (Stripe para pagos, proveedores de hosting/CDN, almacenamiento, bases de datos, partners de inferencia). Consulta la
-          Política de privacidad y /legal/subprocessors para ver la lista actualizada.
+          Política de privacidad y la{' '}
+          <Link href={subprocessorsHref} className="text-brand underline hover:text-brandHover">
+            lista actualizada de subencargados
+          </Link>
+          .
         </p>
       </section>
 
