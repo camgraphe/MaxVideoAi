@@ -3621,6 +3621,84 @@
       "title": "{left} vs {right} — Specs & prix | MaxVideoAI",
       "titleFallback": "Moteurs vidéo IA — Specs & prix | MaxVideoAI",
       "description": "Comparez {left} vs {right} sur MaxVideoAI avec des prompts identiques, des specs clés et un scorecard sur 11 critères.",
+      "slugOverrides": {
+        "kling-2-6-pro-vs-ltx-2": {
+          "title": "Kling 2.6 Pro vs LTX-2 Pro — Vitesse ou qualité | MaxVideoAI",
+          "description": "Test face à face avec prompts identiques : qualité, vitesse, prix, modes et scorecard en 11 points. Choisissez le gagnant selon le cas d'usage."
+        },
+        "ltx-2-fast-vs-wan-2-6": {
+          "title": "LTX-2 Fast vs WAN 2.6 — Qualité, vitesse & coût | MaxVideoAI",
+          "description": "Comparez LTX-2 Fast vs WAN 2.6 avec les mêmes prompts, les specs clés, le prix et un scorecard en 11 points. Voyez vitesse/stabilité vs support vidéo→vidéo."
+        },
+        "veo-3-1-vs-veo-3-1-fast": {
+          "title": "Veo 3.1 vs Veo 3.1 Fast — Différences & coût | MaxVideoAI",
+          "description": "Comparez Veo 3.1 vs Veo 3.1 Fast : vitesse / temps de file, coût, durée max et qualité de sortie, testés avec des prompts identiques et un scorecard."
+        },
+        "wan-2-5-vs-wan-2-6": {
+          "title": "WAN 2.5 vs WAN 2.6 — Quoi de neuf + specs | MaxVideoAI",
+          "description": "Voyez ce qui change dans WAN 2.6 vs 2.5 : clips plus longs, sortie multi-plan, support vidéo→vidéo, prix et scorecard en 11 points avec prompts identiques."
+        },
+        "ltx-2-vs-wan-2-6": {
+          "title": "LTX-2 Pro vs WAN 2.6 — Qualité, modes & coût | MaxVideoAI",
+          "description": "Comparez LTX-2 Pro vs WAN 2.6 avec les mêmes prompts : qualité, mouvement, texte, modes, prix et scorecard en 11 points. Choisissez le meilleur pour votre workflow."
+        },
+        "ltx-2-fast-vs-wan-2-5": {
+          "title": "LTX-2 Fast vs WAN 2.5 — Qualité, vitesse & coût | MaxVideoAI",
+          "description": "Comparez LTX-2 Fast vs WAN 2.5 avec des prompts identiques, les specs clés, le prix et un scorecard en 11 points. Choisissez le meilleur moteur pour votre workflow."
+        },
+        "kling-3-pro-vs-wan-2-6": {
+          "title": "Kling 3 Pro vs WAN 2.6 — Qualité, audio & coût | MaxVideoAI",
+          "description": "Comparez Kling 3 Pro vs WAN 2.6 avec des prompts identiques : qualité, audio, vitesse, modes, prix et scorecard en 11 points."
+        },
+        "kling-3-pro-vs-veo-3-1": {
+          "title": "Kling 3 Pro vs Veo 3.1 — Qualité, vitesse & coût | MaxVideoAI",
+          "description": "Comparez Kling 3 Pro vs Google Veo 3.1 avec les mêmes prompts : qualité de sortie, vitesse, prix, modes et scorecard en 11 points."
+        },
+        "ltx-2-vs-veo-3-1-fast": {
+          "title": "LTX-2 Pro vs Veo 3.1 Fast — Vitesse ou qualité | MaxVideoAI",
+          "description": "Comparez LTX-2 Pro vs Veo 3.1 Fast : vitesse / temps de file, coût, durée max et qualité de sortie, testés avec des prompts identiques et un scorecard."
+        },
+        "ltx-2-vs-veo-3-1": {
+          "title": "LTX-2 Pro vs Veo 3.1 — Qualité, coût & modes | MaxVideoAI",
+          "description": "Comparez LTX-2 Pro vs Google Veo 3.1 avec des prompts identiques : qualité, réalisme du mouvement, lisibilité du texte, modes, prix et scorecard en 11 points."
+        },
+        "seedance-1-5-pro-vs-seedance-2-0": {
+          "title": "Seedance 1.5 Pro vs Seedance 2 — Quoi de neuf | MaxVideoAI",
+          "description": "Comparez Seedance 1.5 Pro vs Seedance 2.0 : différences clés, specs, prix et tests avec le même prompt via un scorecard en 11 points."
+        },
+        "seedance-1-5-pro-vs-veo-3-1": {
+          "title": "Seedance 1.5 Pro vs Veo 3.1 — Vitesse ou qualité | MaxVideoAI",
+          "description": "Comparez Seedance 1.5 Pro vs Google Veo 3.1 avec des prompts identiques : qualité cinéma, vitesse, prix, modes et scorecard en 11 points."
+        },
+        "ltx-2-vs-seedance-2-0": {
+          "title": "LTX-2 Pro vs Seedance 2 — Scores & prix | MaxVideoAI",
+          "description": "Comparez LTX-2 Pro vs Seedance 2.0 avec les mêmes prompts : qualité, vitesse, modes, prix et scorecard en 11 points pour choisir selon le cas d'usage."
+        },
+        "kling-3-standard-vs-veo-3-1": {
+          "title": "Kling 3 Std vs Veo 3.1 — Scores & prix | MaxVideoAI",
+          "description": "Comparez Kling 3 Standard vs Google Veo 3.1 avec des prompts identiques : qualité, vitesse, prix, modes et scorecard en 11 points."
+        },
+        "kling-3-pro-vs-sora-2": {
+          "title": "Kling 3 Pro vs Sora 2 — Scores & prix | MaxVideoAI",
+          "description": "Comparez Kling 3 Pro vs OpenAI Sora 2 avec des prompts identiques : qualité, vitesse, durée max, prix et scorecard en 11 points."
+        },
+        "sora-2-vs-sora-2-pro": {
+          "title": "Sora 2 vs Sora 2 Pro — Différences & coût | MaxVideoAI",
+          "description": "Comparez Sora 2 vs Sora 2 Pro : qualité de sortie, audio natif, résolution/durée max et prix, testés avec des prompts identiques et un scorecard."
+        },
+        "kling-3-pro-vs-kling-3-standard": {
+          "title": "Kling 3 Pro vs Kling 3 Std — Différences | MaxVideoAI",
+          "description": "Comparez Kling 3 Pro vs Kling 3 Standard : différences clés, specs, prix et tests avec le même prompt via un scorecard en 11 points."
+        },
+        "kling-2-6-pro-vs-seedance-2-0": {
+          "title": "Kling 2.6 Pro vs Seedance 2 — Scores & prix | MaxVideoAI",
+          "description": "Comparez Kling 2.6 Pro vs Seedance 2.0 avec des prompts identiques : qualité, audio, vitesse, prix et scorecard en 11 points."
+        },
+        "kling-3-standard-vs-ltx-2": {
+          "title": "Kling 3 Std vs LTX-2 Pro — Vitesse ou qualité | MaxVideoAI",
+          "description": "Comparez Kling 3 Standard vs LTX-2 Pro avec des prompts identiques : qualité, vitesse, prix, modes et scorecard en 11 points."
+        }
+      },
       "descriptionFallback": "Comparaison face à face des moteurs vidéo IA avec les métriques et repères MaxVideoAI."
     },
     "hero": {
@@ -3875,6 +3953,7 @@
           "générateur d'angle de caméra IA",
           "éditeur de perspective photo IA",
           "contrôle de caméra IA",
+          "générateur de perspective IA",
           "plusieurs angles à partir d'une image",
           "premier plan image-to-video",
           "first frame image-to-video"
@@ -4256,12 +4335,17 @@
           "personnage IA cohérent",
           "cohérence personnage IA",
           "générateur de personnage cohérent",
+          "personnages IA cohérents",
           "planche personnage IA",
+          "générateur de planche personnage IA",
           "référence personnage IA",
+          "feuille de référence personnage IA",
           "turnaround personnage IA",
           "cohérence personnage image-to-video",
+          "garder le même personnage entre les scènes",
           "même visage même tenue IA",
-          "référence personnage pour vidéo"
+          "référence personnage pour vidéo",
+          "personnage cohérent pour vidéo"
         ],
         "imageAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder.",
         "schemaName": "Personnages IA cohérents",

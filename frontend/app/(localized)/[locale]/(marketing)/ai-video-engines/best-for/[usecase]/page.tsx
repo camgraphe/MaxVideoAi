@@ -4,8 +4,9 @@ import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
-import { locales } from '@/i18n/locales';
+import { defaultLocale, locales } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 import { getEntryBySlug } from '@/lib/content/markdown';
 import engineCatalog from '@/config/engine-catalog.json';
 import compareConfig from '@/config/compare-config.json';
@@ -68,9 +69,15 @@ function getEntry(slug: string): BestForEntry | undefined {
 }
 
 async function getBestForEntry(locale: AppLocale, slug: string) {
-  const localized = await getEntryBySlug(`content/${locale}/best-for`, slug);
+  const localizedRoot = locale === defaultLocale ? 'content/en/best-for' : `content/${locale}/best-for`;
+  const localized = await getEntryBySlug(localizedRoot, slug);
   if (localized) return localized;
   return getEntryBySlug('content/en/best-for', slug);
+}
+
+async function getLocalizedBestForEntry(locale: AppLocale, slug: string) {
+  const localizedRoot = locale === defaultLocale ? 'content/en/best-for' : `content/${locale}/best-for`;
+  return getEntryBySlug(localizedRoot, slug);
 }
 
 async function resolveAvailableLocales(slug: string): Promise<AppLocale[]> {
@@ -97,19 +104,27 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   }
   const locale = params.locale ?? 'en';
   const entry = getEntry(params.usecase);
-  const content = await getBestForEntry(locale, params.usecase);
-  const availableLocales = await resolveAvailableLocales(params.usecase);
+  const localizedContent = await getLocalizedBestForEntry(locale, params.usecase);
+  const content = localizedContent ?? (await getEntryBySlug('content/en/best-for', params.usecase));
   const title = content?.title ?? entry?.title ?? 'Best for - MaxVideoAI';
   const description =
     content?.description ??
     (entry ? `Editorial guide to pick the best AI video engines for ${entry.title.toLowerCase()}.` : undefined) ??
     'Editorial guide to pick the best AI video engines by use case.';
+  const seo = resolveLocalizedFallbackSeo({
+    locale,
+    hasLocalizedVersion: locale === defaultLocale || Boolean(localizedContent),
+    englishPath: `/ai-video-engines/best-for/${params.usecase}`,
+    availableLocales: await resolveAvailableLocales(params.usecase),
+  });
   return buildSeoMetadata({
     locale,
     title: `${title} - MaxVideoAI`,
     description,
     englishPath: `/ai-video-engines/best-for/${params.usecase}`,
-    availableLocales,
+    availableLocales: seo.availableLocales,
+    canonicalOverride: seo.canonicalOverride,
+    robots: seo.robots,
   });
 }
 
@@ -119,6 +134,7 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
     notFound();
   }
   const locale = params.locale ?? 'en';
+  const content = await getBestForEntry(locale, entry.slug);
   const scores = await loadEngineScores();
   const topPicks = resolveTopPicks(entry, scores);
   return (
@@ -126,9 +142,9 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
       <div className="stack-gap-lg">
         <header className="stack-gap-sm">
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Best for</p>
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{entry.title}</h1>
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content?.title ?? entry.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">
-            Editorial guidance for picking the best AI video engines by use case.
+            {content?.description ?? 'Editorial guidance for picking the best AI video engines by use case.'}
           </p>
         </header>
 

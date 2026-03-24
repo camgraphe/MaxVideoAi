@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
-import { locales, localeRegions, type AppLocale } from '@/i18n/locales';
+import { defaultLocale, locales, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 
 interface Params {
   locale?: AppLocale;
@@ -12,21 +13,41 @@ interface Params {
 const DOCS_FALLBACK_ROOT = 'content/docs';
 
 async function getDocsEntriesForLocale(locale: AppLocale) {
-  const localizedRoot = `content/${locale}/docs`;
-  const localized = await getContentEntries(localizedRoot);
-  if (localized.length > 0) {
-    return localized;
+  if (locale === defaultLocale) {
+    return getContentEntries(DOCS_FALLBACK_ROOT);
   }
-  return getContentEntries(DOCS_FALLBACK_ROOT);
+
+  const [localized, english] = await Promise.all([
+    getContentEntries(`content/${locale}/docs`),
+    getContentEntries(DOCS_FALLBACK_ROOT),
+  ]);
+  const bySlug = new Map(localized.map((entry) => [entry.slug, entry]));
+  english.forEach((entry) => {
+    if (!bySlug.has(entry.slug)) {
+      bySlug.set(entry.slug, entry);
+    }
+  });
+  return Array.from(bySlug.values());
 }
 
-async function getDocEntryForLocale(locale: AppLocale, slug: string) {
-  const localizedRoot = `content/${locale}/docs`;
-  const localized = await getEntryBySlug(localizedRoot, slug);
-  if (localized) {
-    return localized;
+async function getLocalizedDocEntry(locale: AppLocale, slug: string) {
+  if (locale === defaultLocale) {
+    return getEntryBySlug(DOCS_FALLBACK_ROOT, slug);
   }
-  return getEntryBySlug(DOCS_FALLBACK_ROOT, slug);
+  return getEntryBySlug(`content/${locale}/docs`, slug);
+}
+
+async function getDocEntryWithFallback(locale: AppLocale, slug: string) {
+  const localized = await getLocalizedDocEntry(locale, slug);
+  if (localized) {
+    return { entry: localized, hasLocalizedVersion: true };
+  }
+
+  const fallback = await getEntryBySlug(DOCS_FALLBACK_ROOT, slug);
+  return {
+    entry: fallback,
+    hasLocalizedVersion: locale === defaultLocale,
+  };
 }
 
 async function resolveDocLocales(slug: string): Promise<AppLocale[]> {
@@ -60,13 +81,18 @@ export const dynamicParams = false;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const locale = params.locale ?? 'en';
-  const doc = await getDocEntryForLocale(locale, params.slug);
+  const { entry: doc, hasLocalizedVersion } = await getDocEntryWithFallback(locale, params.slug);
   if (!doc) {
     return {
       title: 'Doc not found — MaxVideo AI',
     };
   }
-  const availableLocales = await resolveDocLocales(doc.slug);
+  const seo = resolveLocalizedFallbackSeo({
+    locale,
+    hasLocalizedVersion,
+    englishPath: `/docs/${doc.slug}`,
+    availableLocales: await resolveDocLocales(doc.slug),
+  });
   return buildSeoMetadata({
     locale,
     title: `${doc.title} — MaxVideo AI Docs`,
@@ -75,14 +101,16 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     imageAlt: doc.title,
     ogType: 'article',
     englishPath: `/docs/${doc.slug}`,
-    availableLocales,
+    availableLocales: seo.availableLocales,
+    canonicalOverride: seo.canonicalOverride,
+    robots: seo.robots,
     keywords: doc.keywords,
   });
 }
 
 export default async function DocPage({ params }: { params: Params }) {
   const locale = params.locale ?? 'en';
-  const doc = await getDocEntryForLocale(locale, params.slug);
+  const { entry: doc } = await getDocEntryWithFallback(locale, params.slug);
   if (!doc) {
     notFound();
   }
