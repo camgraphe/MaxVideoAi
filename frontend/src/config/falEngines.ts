@@ -125,6 +125,7 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
   inputLimits: {
     imageMaxMB: 25,
     promptMaxChars: 2500,
+    promptMaxCharsSource: 'observed',
   },
   inputSchema: {
     required: [
@@ -796,6 +797,7 @@ const KLING_2_5_TURBO_ENGINE: EngineCaps = {
   inputLimits: {
     imageMaxMB: 25,
     promptMaxChars: 2500,
+    promptMaxCharsSource: 'observed',
   },
   inputSchema: {
     required: [
@@ -911,6 +913,7 @@ const KLING_2_6_PRO_ENGINE: EngineCaps = {
   inputLimits: {
     imageMaxMB: 25,
     promptMaxChars: 2500,
+    promptMaxCharsSource: 'observed',
   },
   inputSchema: {
     required: [
@@ -1042,6 +1045,7 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
   inputLimits: {
     imageMaxMB: 25,
     promptMaxChars: 2500,
+    promptMaxCharsSource: 'observed',
   },
   inputSchema: {
     required: [
@@ -1175,6 +1179,7 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
   inputLimits: {
     imageMaxMB: 25,
     promptMaxChars: 2500,
+    promptMaxCharsSource: 'observed',
   },
   inputSchema: {
     required: [
@@ -1559,6 +1564,8 @@ const WAN_2_5_ENGINE: EngineCaps = {
   inputLimits: {
     imageMaxMB: 25,
     videoMaxMB: 15,
+    promptMaxChars: 800,
+    promptMaxCharsSource: 'official',
   },
   inputSchema: {
     required: [
@@ -1691,6 +1698,8 @@ const WAN_2_6_ENGINE: EngineCaps = {
     imageMaxMB: 25,
     videoMaxMB: 30,
     videoMaxDurationSec: 30,
+    promptMaxChars: 800,
+    promptMaxCharsSource: 'official',
   },
   inputSchema: {
     required: [

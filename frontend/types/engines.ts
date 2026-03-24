@@ -71,6 +71,7 @@ export interface EngineInputLimits {
   audioMaxMB?: number;
   audioMaxDurationSec?: number;
   promptMaxChars?: number;
+  promptMaxCharsSource?: 'official' | 'observed';
 }
 
 export type EngineInputFieldType = 'text' | 'number' | 'enum' | 'image' | 'video' | 'audio' | 'boolean';

@@ -252,6 +252,25 @@ test('Kling 3 prompt length is capped before provider submission', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Wan prompt length follows documented provider limits', () => {
+  const invalid = validateRequest('wan-2-6', 't2v', {
+    prompt: 'x'.repeat(801),
+    duration: 5,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'prompt');
+
+  const valid = validateRequest('wan-2-5', 't2v', {
+    prompt: 'x'.repeat(800),
+    duration: 5,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(valid, OK);
+});
+
 test('LTX 2.3 registry exposes unified mode mapping', () => {
   const registry = listFalEngines();
   const ltx23 = registry.find((entry) => entry.id === 'ltx-2-3');
