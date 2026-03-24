@@ -489,12 +489,42 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       : locale === 'es'
         ? 'Explorar por marca'
         : 'Browse by brand';
+  const galleryUiCopy =
+    locale === 'fr'
+      ? {
+          prev: 'Précédent',
+          next: 'Suivant',
+          page: 'Page',
+          loadMore: 'Voir plus d’exemples',
+          loading: 'Chargement…',
+          noPreview: 'Aucun aperçu',
+          audioAvailable: 'Audio disponible à la lecture',
+        }
+      : locale === 'es'
+        ? {
+            prev: 'Anterior',
+            next: 'Siguiente',
+            page: 'Página',
+            loadMore: 'Ver más ejemplos',
+            loading: 'Cargando…',
+            noPreview: 'Sin vista previa',
+            audioAvailable: 'Audio disponible al reproducir',
+          }
+        : {
+            prev: 'Previous',
+            next: 'Next',
+            page: 'Page',
+            loadMore: 'Load more examples',
+            loading: 'Loading…',
+            noPreview: 'No preview',
+            audioAvailable: 'Audio available on playback',
+          };
   const paginationContent =
     (content as { pagination?: { prev?: string; next?: string; page?: string; loadMore?: string } })?.pagination ?? {};
-  const paginationPrevLabel = paginationContent.prev ?? 'Previous';
-  const paginationNextLabel = paginationContent.next ?? 'Next';
-  const paginationPageLabel = paginationContent.page ?? 'Page';
-  const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
+  const paginationPrevLabel = paginationContent.prev ?? galleryUiCopy.prev;
+  const paginationNextLabel = paginationContent.next ?? galleryUiCopy.next;
+  const paginationPageLabel = paginationContent.page ?? galleryUiCopy.page;
+  const loadMoreLabel = paginationContent.loadMore ?? galleryUiCopy.loadMore;
   const longDescription =
     locale === 'fr'
       ? "Parcourez des exemples de vidéo IA par marque, avec prompt, réglages, durée et prix par clip. Utilisez ce hub pour comparer mouvement, lumière et composition, puis ouvrez les pages modèles pour les caractéristiques, limites et détails de mode."
@@ -927,6 +957,9 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             <ExamplesGalleryGrid
               initialExamples={initialExamples}
               loadMoreLabel={loadMoreLabel}
+              loadingLabel={galleryUiCopy.loading}
+              noPreviewLabel={galleryUiCopy.noPreview}
+              audioAvailableLabel={galleryUiCopy.audioAvailable}
               sort={sort}
               engineFilter={selectedEngine?.toLowerCase() ?? null}
               initialOffset={nextOffsetStart}

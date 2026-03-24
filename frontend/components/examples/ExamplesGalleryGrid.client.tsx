@@ -44,6 +44,9 @@ type ExampleSort = 'playlist' | 'date-desc' | 'date-asc' | 'duration-asc' | 'dur
 export default function ExamplesGalleryGridClient({
   initialExamples,
   loadMoreLabel = 'Load more examples',
+  loadingLabel = 'Loading…',
+  noPreviewLabel = 'No preview',
+  audioAvailableLabel = 'Audio available on playback',
   sort,
   engineFilter,
   initialOffset,
@@ -52,6 +55,9 @@ export default function ExamplesGalleryGridClient({
 }: {
   initialExamples: ExampleGalleryVideo[];
   loadMoreLabel?: string;
+  loadingLabel?: string;
+  noPreviewLabel?: string;
+  audioAvailableLabel?: string;
   sort: ExampleSort;
   engineFilter?: string | null;
   initialOffset: number;
@@ -181,6 +187,8 @@ export default function ExamplesGalleryGridClient({
                     forceExclusivePlay={false}
                     enableTallCardLayout={false}
                     enableInlineVideo={isFirstVideo}
+                    noPreviewLabel={noPreviewLabel}
+                    audioAvailableLabel={audioAvailableLabel}
                     altText={altById.get(video.id) ?? getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })}
                   />
                 );
@@ -201,6 +209,8 @@ export default function ExamplesGalleryGridClient({
                     forceExclusivePlay={false}
                     enableTallCardLayout={shouldUseTallCardLayout}
                     enableInlineVideo
+                    noPreviewLabel={noPreviewLabel}
+                    audioAvailableLabel={audioAvailableLabel}
                     altText={altById.get(video.id) ?? getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })}
                   />
                 );
@@ -218,7 +228,7 @@ export default function ExamplesGalleryGridClient({
             disabled={isLoading}
             className="border-brand/40 text-brand shadow-card hover:border-brand hover:bg-brand/10"
           >
-            {isLoading ? 'Loading…' : loadMoreLabel}
+            {isLoading ? loadingLabel : loadMoreLabel}
           </Button>
         </div>
       ) : null}
@@ -233,6 +243,8 @@ function ExampleCard({
   forceExclusivePlay,
   enableTallCardLayout,
   enableInlineVideo,
+  noPreviewLabel,
+  audioAvailableLabel,
   altText,
 }: {
   video: ExampleGalleryVideo;
@@ -241,6 +253,8 @@ function ExampleCard({
   forceExclusivePlay: boolean;
   enableTallCardLayout: boolean;
   enableInlineVideo: boolean;
+  noPreviewLabel: string;
+  audioAvailableLabel: string;
   altText: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -367,10 +381,10 @@ function ExampleCard({
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-placeholder text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                  No preview
+                  {noPreviewLabel}
                 </div>
               )}
-              {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
+              {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label={audioAvailableLabel} /> : null}
             </div>
           </div>
         </div>

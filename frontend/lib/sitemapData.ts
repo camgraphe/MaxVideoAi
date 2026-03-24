@@ -19,6 +19,8 @@ import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
 export type SitemapEntry = {
   url: string;
   lastModified?: string;
+  englishPath: string;
+  locales?: AppLocale[];
 };
 
 const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'https://maxvideoai.com';
@@ -331,7 +333,7 @@ export async function getLocaleSitemapEntries(locale: AppLocale): Promise<Sitema
       return;
     }
     seen.add(url);
-    entries.push({ url, lastModified: formatLastModified(lastModified) });
+    entries.push({ url, lastModified: formatLastModified(lastModified), englishPath, locales: availableLocales });
   };
 
   canonicalEntries.forEach((entry) => {
@@ -349,12 +351,37 @@ export async function buildLocaleSitemapXml(locale: AppLocale): Promise<string> 
       if (entry.lastModified) {
         lines.push(`    <lastmod>${escapeXml(entry.lastModified)}</lastmod>`);
       }
+      const availableLocales = entry.locales?.length ? entry.locales : LOCALES;
+      const hrefByLocale = new Map(
+        availableLocales.map((availableLocale) => [
+          availableLocale,
+          buildAbsoluteUrl(localizePathFromEnglish(availableLocale, entry.englishPath)),
+        ] as const)
+      );
+      const xDefaultHref =
+        hrefByLocale.get(defaultLocale) ??
+        hrefByLocale.get(locale) ??
+        hrefByLocale.values().next().value ??
+        buildAbsoluteUrl(entry.englishPath);
+      const alternateLinks = HREFLANG_VARIANTS
+        .filter((variant) => hrefByLocale.has(variant.locale))
+        .map(
+          (variant) =>
+            `<xhtml:link rel="alternate" hreflang="${escapeXml(variant.hreflang)}" href="${escapeXml(
+              hrefByLocale.get(variant.locale) as string
+            )}" />`
+        )
+        .concat(
+          xDefaultHref ? [`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(xDefaultHref)}" />`] : []
+        )
+        .join('\n    ');
+      lines.push(`    ${alternateLinks}`);
       lines.push('  </url>');
       return lines.join('\n');
     })
     .join('\n');
 
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${body}\n</urlset>`;
 }
 
 export async function buildSitemapIndexXml(): Promise<string> {
