@@ -233,10 +233,14 @@ export function Composer({
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
   const multiPromptEnabled = Boolean(multiPrompt?.enabled);
+  const promptMaxChars = engine.inputLimits.promptMaxChars;
+  const promptCharCount = prompt.length;
+  const promptTooLong = !multiPromptEnabled && typeof promptMaxChars === 'number' && promptCharCount > promptMaxChars;
   const promptValueReady = multiPromptEnabled ? true : Boolean(prompt.trim());
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
     isLoading ||
+    promptTooLong ||
     (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue);
   const showSoraImageWarning = engine.id.startsWith('sora-2') && assetFields.some((entry) => entry.field.type === 'image');
@@ -445,9 +449,23 @@ export function Composer({
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholder}
                 rows={6}
-                className="w-full rounded-input border border-border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-invalid={promptTooLong || undefined}
+                className={clsx(
+                  'w-full rounded-input border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  promptTooLong ? 'border-error-border focus-visible:ring-error' : 'border-border'
+                )}
                 ref={textareaRef}
               />
+              {typeof promptMaxChars === 'number' ? (
+                <div
+                  className={clsx(
+                    'mt-2 flex justify-end text-[12px]',
+                    promptTooLong ? 'text-error' : 'text-text-muted'
+                  )}
+                >
+                  {promptCharCount}/{promptMaxChars} characters
+                </div>
+              ) : null}
             </div>
           )}
         </div>

@@ -3816,6 +3816,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     [voiceIdsInput]
   );
   const voiceControlEnabled = Boolean(isKlingV3 && voiceIds.length);
+  const promptMaxChars = !multiPromptActive ? (selectedEngine?.inputLimits.promptMaxChars ?? null) : null;
+  const promptCharLimitExceeded = typeof promptMaxChars === 'number' && prompt.length > promptMaxChars;
   const seedValue =
     typeof form?.seed === 'number' && Number.isFinite(form.seed) ? String(form.seed) : '';
   const cameraFixedValue = typeof form?.cameraFixed === 'boolean' ? form.cameraFixed : false;
@@ -4901,6 +4903,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       return;
     }
 
+    if (promptCharLimitExceeded && typeof promptMaxChars === 'number') {
+      const overflow = prompt.length - promptMaxChars;
+      showNotice(
+        `Prompt is ${overflow} character${overflow === 1 ? '' : 's'} over the ${promptMaxChars}-character limit for ${selectedEngine.label}.`
+      );
+      return;
+    }
+
     if (inputSchemaSummary.promptRequired && !trimmedPrompt) {
       showNotice('A prompt is required for this engine and mode.');
       return;
@@ -5757,6 +5767,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     multiPromptScenes,
     isKlingV3,
     isSeedance,
+    prompt.length,
+    promptCharLimitExceeded,
+    promptMaxChars,
     voiceIds,
     voiceControlEnabled,
     shotType,

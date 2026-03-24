@@ -233,6 +233,25 @@ test('Wan 2.6 R2V requires reference videos', () => {
   assert.equal(invalidLong.error?.field, 'duration');
 });
 
+test('Kling 3 prompt length is capped before provider submission', () => {
+  const invalid = validateRequest('kling-3-pro', 't2v', {
+    prompt: 'x'.repeat(2501),
+    duration: 5,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'prompt');
+
+  const valid = validateRequest('kling-3-standard', 't2v', {
+    prompt: 'x'.repeat(2500),
+    duration: 5,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(valid, OK);
+});
+
 test('LTX 2.3 registry exposes unified mode mapping', () => {
   const registry = listFalEngines();
   const ltx23 = registry.find((entry) => entry.id === 'ltx-2-3');

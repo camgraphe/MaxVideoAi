@@ -70,6 +70,7 @@ export interface EngineInputLimits {
   videoCodecs?: string[];
   audioMaxMB?: number;
   audioMaxDurationSec?: number;
+  promptMaxChars?: number;
 }
 
 export type EngineInputFieldType = 'text' | 'number' | 'enum' | 'image' | 'video' | 'audio' | 'boolean';

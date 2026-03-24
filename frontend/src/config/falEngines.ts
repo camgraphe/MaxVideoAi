@@ -124,6 +124,7 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
   },
   inputLimits: {
     imageMaxMB: 25,
+    promptMaxChars: 2500,
   },
   inputSchema: {
     required: [
@@ -794,6 +795,7 @@ const KLING_2_5_TURBO_ENGINE: EngineCaps = {
   params: {},
   inputLimits: {
     imageMaxMB: 25,
+    promptMaxChars: 2500,
   },
   inputSchema: {
     required: [
@@ -908,6 +910,7 @@ const KLING_2_6_PRO_ENGINE: EngineCaps = {
   },
   inputLimits: {
     imageMaxMB: 25,
+    promptMaxChars: 2500,
   },
   inputSchema: {
     required: [
@@ -1038,6 +1041,7 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
   },
   inputLimits: {
     imageMaxMB: 25,
+    promptMaxChars: 2500,
   },
   inputSchema: {
     required: [
@@ -1170,6 +1174,7 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
   },
   inputLimits: {
     imageMaxMB: 25,
+    promptMaxChars: 2500,
   },
   inputSchema: {
     required: [

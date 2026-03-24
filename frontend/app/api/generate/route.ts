@@ -1683,6 +1683,12 @@ async function rollbackPendingPayment(params: {
         : undefined;
   const sourceInputVideoUrl = videoUrls[0];
   const validationPayload: Record<string, unknown> = {};
+  if (prompt.length > 0) {
+    validationPayload.prompt = prompt;
+  }
+  if (multiPrompt?.length) {
+    validationPayload.multi_prompt = multiPrompt;
+  }
   if (supportsResolution) {
     validationPayload.resolution = effectiveResolution;
   }

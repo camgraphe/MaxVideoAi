@@ -1,5 +1,6 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
 import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
+import { listFalEngines } from '../../../../src/config/falEngines';
 
 type ValidationError = {
   code: string;
@@ -12,6 +13,11 @@ type ValidationError = {
 type ValidationResult =
   | { ok: true }
   | { ok: false; error: ValidationError };
+
+const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
+  acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
+  return acc;
+}, {});
 
 function normalizeDurationValue(value: unknown): number | string | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -41,6 +47,24 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
   }
 
   const normalizedMode: Mode = mode ?? 't2v';
+  const promptMaxChars = ENGINE_INPUT_LIMITS[engineId]?.promptMaxChars;
+  const rawPrompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : '';
+  const hasMultiPrompt =
+    Array.isArray(payload['multi_prompt']) &&
+    payload['multi_prompt'].some((entry) => entry && typeof entry === 'object' && typeof (entry as { prompt?: unknown }).prompt === 'string');
+
+  if (typeof promptMaxChars === 'number' && promptMaxChars > 0 && rawPrompt.length > promptMaxChars && !hasMultiPrompt) {
+    return {
+      ok: false,
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        field: 'prompt',
+        message: `Prompt must be at most ${promptMaxChars} characters`,
+        allowed: [promptMaxChars],
+        value: rawPrompt.length,
+      },
+    };
+  }
 
   if (normalizedMode === 'r2v') {
     const rawVideos = payload['video_urls'];
