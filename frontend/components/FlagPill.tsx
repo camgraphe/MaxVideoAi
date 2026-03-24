@@ -3,9 +3,11 @@ import clsx from 'clsx';
 type FlagPillProps = {
   live: boolean;
   className?: string;
+  liveLabel?: string;
+  soonLabel?: string;
 };
 
-export function FlagPill({ live, className }: FlagPillProps) {
+export function FlagPill({ live, className, liveLabel = 'Live', soonLabel = 'Coming soon' }: FlagPillProps) {
   return (
     <span
       className={clsx(
@@ -16,7 +18,7 @@ export function FlagPill({ live, className }: FlagPillProps) {
         className
       )}
     >
-      {live ? 'Live' : 'Coming soon'}
+      {live ? liveLabel : soonLabel}
     </span>
   );
 }

@@ -199,7 +199,8 @@
         }
       },
       "policies": {
-        "title": "Policies"
+        "title": "Policies",
+        "manageCookies": "Cookie settings"
       }
     },
     "crawlerNote": "MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility."
@@ -605,6 +606,8 @@
       "description": "Open the generator to see the exact price before you create a video.",
       "cta": "Open the generator"
     },
+    "liveLabel": "Live",
+    "comingSoonLabel": "Coming soon",
     "estimator": {
       "title": "Cost Estimator",
       "subtitle": "Choose the engine, duration, and resolution to see pricing before you queue the render. Charged only if it succeeds.",
@@ -612,12 +615,21 @@
       "walletLinkCta": "Open the generator",
       "chargedNote": "Charged only if render succeeds.",
       "audioIncluded": "Audio included by default.",
+      "configureLabel": "Configure",
+      "durationRangeLabel": "Available",
+      "joinWaitlist": "Join waitlist",
+      "requestAccess": "Request access",
+      "audioLabel": "Audio",
+      "audioOn": "On",
+      "audioOff": "Off",
+      "audioHint": "Price updates when audio is toggled.",
       "fields": {
         "engine": "Engine",
         "resolution": "Resolution",
         "duration": "Duration (seconds)",
         "memberStatus": "Member status"
       },
+      "engineLabel": "Engine",
       "estimateLabels": {
         "heading": "Estimate",
         "base": "Base",

@@ -279,7 +279,8 @@
         }
       },
       "policies": {
-        "title": "Politiques"
+        "title": "Politiques",
+        "manageCookies": "Paramètres des cookies"
       }
     },
     "crawlerNote": "MaxVideoAI autorise les robots IA (GPTBot, OAI-SearchBot, Google-Extended et CCBot) à indexer les pages modèles publiques et la documentation à des fins éducatives et de recherche."
@@ -685,6 +686,8 @@
       "description": "Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.",
       "cta": "Ouvrir le générateur"
     },
+    "liveLabel": "En ligne",
+    "comingSoonLabel": "À venir",
     "estimator": {
       "title": "Estimateur de coûts",
       "subtitle": "Choisissez le moteur, la durée et la résolution pour voir le prix avant de mettre le rendu en file d'attente. Facturé uniquement si le rendu réussit.",
@@ -692,12 +695,21 @@
       "walletLinkCta": "Ouvrir le générateur",
       "chargedNote": "Facturé uniquement si le rendu réussit.",
       "audioIncluded": "Audio inclus par défaut.",
+      "configureLabel": "Configurer",
+      "durationRangeLabel": "Disponible",
+      "joinWaitlist": "Rejoindre la liste d’attente",
+      "requestAccess": "Demander l’accès",
+      "audioLabel": "Audio",
+      "audioOn": "Oui",
+      "audioOff": "Non",
+      "audioHint": "Le prix se met à jour quand l’audio change.",
       "fields": {
         "engine": "Moteur",
         "resolution": "Résolution",
         "duration": "Durée (secondes)",
         "memberStatus": "Statut membre"
       },
+      "engineLabel": "Moteur",
       "estimateLabels": {
         "heading": "Estimation",
         "base": "Base",
@@ -809,7 +821,7 @@
       "subtitle": "Les remises se mettent à jour instantanément lorsque les administrateurs modifient les seuils dans Paramètres → Facturation → Niveaux de membres.",
       "tiers": [
         {
-          "name": "Member",
+          "name": "Membre",
           "requirement": "Statut par défaut — activé dès l’inscription.",
           "benefit": "Tarif standard. La pastille affiche « Prix membre »."
         },
@@ -1534,7 +1546,7 @@
   "docs": {
     "meta": {
       "title": "Docs — Onboarding, sécurité de marque, remboursements & webhooks API",
-      "description": "Commencez ici pour l’onboarding, le système tarifaire et les remboursements. Découvrez les filtres brand-safe et les références webhook/API. Les guides avancés sont dans l’espace authentifié.",
+      "description": "Commencez ici pour l’onboarding, le système tarifaire et les remboursements. Découvrez les filtres de sécurité de marque et les références webhook/API. Les guides avancés sont dans l’espace authentifié.",
       "imageAlt": "Docs — MaxVideoAI",
       "notFoundTitle": "Document introuvable"
     },
@@ -1563,13 +1575,13 @@
         "title": "Système tarifaire",
         "items": [
           "Prévisualisez le prix exact avant de générer. La pastille évolue selon durée, résolution et remises automatiques.",
-          "Les Starter Credits (10 $) et les statuts Member / Plus / Pro sont recalculés quotidiennement."
+          "Les Starter Credits (10 $) et les statuts Membre / Plus / Pro sont recalculés quotidiennement."
         ]
       },
       {
         "title": "Remboursements",
         "items": [
-          "Si un rendu échoue, votre wallet est recrédité en quelques minutes avec une note d’incident dans le job.",
+          "Si un rendu échoue, votre portefeuille est recrédité en quelques minutes avec une note d’incident dans le job.",
           "Les reçus détaillent moteur, durée, résolution et ID de job pour un transfert facile vers la finance.",
           {
             "type": "link",
@@ -1582,11 +1594,11 @@
         ]
       },
       {
-        "title": "Filtres brand-safe",
+        "title": "Filtres de sécurité de marque",
         "items": [
           "Nous bloquons par défaut prompts, imports et sorties risqués afin de rester conformes sans surveillance constante.",
           "Les cas sensibles passent en revue humaine avec piste d’audit et options d’escalade simples.",
-          "Les administrateurs peuvent demander des listes d’autorisation ou de blocage personnalisées par workspace."
+          "Les administrateurs peuvent demander des listes d’autorisation ou de blocage personnalisées par espace de travail."
         ]
       },
       {
@@ -1600,7 +1612,7 @@
     ],
     "apiNotice": {
       "public": "Résumé public ci-dessous.",
-      "private": "Les docs API complètes nécessitent une authentification dans le workspace."
+      "private": "Les docs API complètes nécessitent une authentification dans l’espace de travail."
     },
     "onboardingChecklist": {
       "title": "Checklist d’onboarding",
@@ -1609,14 +1621,14 @@
         "✅ Ajouter 1–3 prompts d’exemple et des assets de référence.",
         "✅ Définir les ratios par défaut et la préférence audio."
       ],
-      "note": "Vous pouvez modifier le brief à tout moment; les mises à jour s’appliquent à tout le workspace."
+      "note": "Vous pouvez modifier le brief à tout moment; les mises à jour s’appliquent à tout l’espace de travail."
     },
     "pricingCallout": "✅ Vous voyez toujours le prix avant de lancer un rendu.",
     "refundsTimeline": {
       "title": "Chronologie des remboursements",
       "steps": [
         "1) Le job échoue → le système signale l’incident.",
-        "2) Remboursement automatique → wallet crédité en quelques minutes.",
+        "2) Remboursement automatique → portefeuille crédité en quelques minutes.",
         "3) Reçu → relevé détaillé avec une courte note d’incident."
       ],
       "note": "Vous ne payez que les jobs réussis. Les remboursements apparaissent dans le feed et les reçus."
@@ -1627,11 +1639,11 @@
       "items": [
         "• Blocs par défaut : contenu illégal, sexuel explicite, haine/harcèlement, doxxing.",
         "• Vérifications média : uploads/rendus risqués mis en quarantaine pour revue.",
-        "• Contrôles admin : demander des allowlists ou mots-clés restreints par workspace."
+        "• Contrôles admin : demander des listes d’autorisation ou des mots-clés restreints par espace de travail."
       ],
       "note": "Les cas sensibles passent en revue humaine avec piste d’audit et options d’escalade."
     },
-    "safetyCallout": "⚠️ Certains usages sensibles peuvent exiger une allowlist admin ou une revue humaine.",
+    "safetyCallout": "⚠️ Certains usages sensibles peuvent exiger une liste d’autorisation admin ou une revue humaine.",
     "seeAlsoLabel": "Voir aussi :",
     "seeAlso": {
       "onboarding": [

@@ -14,11 +14,11 @@ const COMPANY_META: Record<AppLocale, { title: string; description: string }> = 
   },
   fr: {
     title: 'Entreprise & confiance — MaxVideoAI',
-    description: 'Retrouvez en un seul endroit les ressources entreprise, support, workflows, statut et légales.',
+    description: 'Retrouvez en un seul endroit les ressources entreprise, support, flux de travail, statut et légales.',
   },
   es: {
     title: 'Empresa y confianza — MaxVideoAI',
-    description: 'Consulta en un solo lugar recursos de empresa, soporte, workflows, estado y legales.',
+    description: 'Consulta en un solo lugar recursos de empresa, soporte, flujos de trabajo, estado y legales.',
   },
 };
 
@@ -47,7 +47,7 @@ const COMPANY_COPY: Record<
     links: [
       { href: '/about', label: 'À propos', description: 'Qui nous sommes et ce que nous construisons.' },
       { href: '/contact', label: 'Contact', description: 'Support, partenariats et demandes presse.' },
-      { href: '/workflows', label: 'Workflows', description: 'Comment les flux de production MaxVideoAI sont structurés.' },
+      { href: '/workflows', label: 'Flux de travail', description: 'Comment les flux de production MaxVideoAI sont structurés.' },
       { href: '/status', label: 'Statut', description: 'État du service en direct et historique des incidents.' },
       { href: '/legal', label: 'Centre juridique', description: 'Politiques, notifications et ressources conformité.' },
     ],
@@ -58,7 +58,7 @@ const COMPANY_COPY: Record<
     links: [
       { href: '/about', label: 'Acerca de', description: 'Quiénes somos y qué construimos.' },
       { href: '/contact', label: 'Contacto', description: 'Soporte, alianzas y solicitudes de prensa.' },
-      { href: '/workflows', label: 'Workflows', description: 'Cómo se estructuran los flujos de producción de MaxVideoAI.' },
+      { href: '/workflows', label: 'Flujos de trabajo', description: 'Cómo se estructuran los flujos de producción de MaxVideoAI.' },
       { href: '/status', label: 'Estado', description: 'Salud del servicio en vivo e historial de incidentes.' },
       { href: '/legal', label: 'Centro legal', description: 'Políticas, avisos y recursos de cumplimiento.' },
     ],

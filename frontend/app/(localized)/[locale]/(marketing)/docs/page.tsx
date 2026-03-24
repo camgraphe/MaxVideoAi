@@ -247,7 +247,11 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                 <section id="library" className="scroll-mt-28">
                   <h2 className="flex items-center gap-2 text-xl font-semibold text-text-primary">
                     {libraryCopy.heading ?? content.libraryHeading ?? 'Library'}
-                    <FlagPill live={FEATURES.docs.libraryDocs} />
+                    <FlagPill
+                      live={FEATURES.docs.libraryDocs}
+                      liveLabel={libraryCopy.liveLabel ?? 'Live'}
+                      soonLabel={libraryCopy.comingSoonLabel ?? 'Coming soon'}
+                    />
                     <span className="sr-only">
                       {FEATURES.docs.libraryDocs
                         ? libraryCopy.liveLabel ?? 'Live'

@@ -209,7 +209,7 @@
         "href": "/legal"
       }
     ],
-    "brandNote": "Centro independiente para video profesional con IA - precio antes de generar, mantente con los motores más recientes, un espacio de trabajo para cada plano. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
+    "brandNote": "Centro independiente para video profesional con IA: precio antes de generar, acceso a los motores más recientes y un espacio de trabajo para cada toma. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02 y más. Las marcas pertenecen a sus respectivos propietarios.",
     "languageLabel": "Idioma",
     "languages": [
       {
@@ -279,7 +279,8 @@
         }
       },
       "policies": {
-        "title": "Políticas"
+        "title": "Políticas",
+        "manageCookies": "Configuración de cookies"
       }
     },
     "crawlerNote": "MaxVideoAI permite que los rastreadores de IA (GPTBot, OAI-SearchBot, Google-Extended y CCBot) indexen las páginas públicas de modelos y la documentación con fines educativos y de investigación."
@@ -685,6 +686,8 @@
       "description": "Abre el generador para ver el precio exacto antes de crear el video.",
       "cta": "Abrir el generador"
     },
+    "liveLabel": "En vivo",
+    "comingSoonLabel": "Próximamente",
     "estimator": {
       "title": "Calculadora de costes",
       "subtitle": "Elige el motor, la duración y la resolución para ver el precio antes de poner el render en cola. Se cobra solo si tiene éxito.",
@@ -692,12 +695,21 @@
       "walletLinkCta": "Abrir el generador",
       "chargedNote": "Se carga solo si el render tiene éxito.",
       "audioIncluded": "Audio incluido por defecto.",
+      "configureLabel": "Configurar",
+      "durationRangeLabel": "Disponible",
+      "joinWaitlist": "Unirse a la lista de espera",
+      "requestAccess": "Solicitar acceso",
+      "audioLabel": "Audio",
+      "audioOn": "Sí",
+      "audioOff": "No",
+      "audioHint": "El precio se actualiza cuando cambias el audio.",
       "fields": {
         "engine": "Motor",
         "resolution": "Resolución",
         "duration": "Duración (segundos)",
         "memberStatus": "Estado de miembro"
       },
+      "engineLabel": "Motor",
       "estimateLabels": {
         "heading": "Estimación",
         "base": "Base",
@@ -799,7 +811,7 @@
       "description": "Aprobaciones basadas en roles, billeteras compartidas y entregas se implementarán próximamente. Únete a la beta para probar los controles de equipo antes.",
       "comingSoonNote": "Las funciones de equipos están en beta privada. Contacta con support@maxvideoai.com para unirte al despliegue.",
       "points": [
-        "Billeteras compartidos basados en roles con aprobaciones para finanzas, productores y stakeholders.",
+        "Billeteras compartidas basadas en roles con aprobaciones para finanzas, productores y stakeholders.",
         "Resúmenes diarios automatizados sobre gasto, reembolsos y salud de la cola.",
         "Entregas a Google Drive, OneDrive y Dropbox."
       ]
@@ -809,7 +821,7 @@
       "subtitle": "Los descuentos se actualizan al instante cuando los administradores editan los umbrales en Ajustes → Facturación → Niveles de miembro.",
       "tiers": [
         {
-          "name": "Member",
+          "name": "Miembro",
           "requirement": "Estado base aplicado automáticamente.",
           "benefit": "Tarifa estándar. La ficha muestra “Precio miembro”."
         },
@@ -1527,13 +1539,13 @@
   "docs": {
     "meta": {
       "title": "Docs — primeros pasos, seguridad de marca, reembolsos y webhooks API",
-      "description": "Empieza aquí con los primeros pasos, el sistema de precios y los reembolsos. Descubre los filtros brand-safe y las referencias de webhook/API. Las guías avanzadas viven dentro del workspace autenticado.",
+      "description": "Empieza aquí con los primeros pasos, el sistema de precios y los reembolsos. Descubre los filtros de seguridad de marca y las referencias de webhook/API. Las guías avanzadas viven dentro del espacio de trabajo autenticado.",
       "imageAlt": "Docs — MaxVideoAI",
       "notFoundTitle": "Documento no encontrado"
     },
     "hero": {
       "title": "Documentación",
-      "subtitle": "Empieza aquí con los primeros pasos, la seguridad de marca, los avisos de compatibilidad y las políticas de reembolso. Las guías de integración más detalladas están dentro del workspace autenticado."
+      "subtitle": "Empieza aquí con los primeros pasos, la seguridad de marca, los avisos de compatibilidad y las políticas de reembolso. Las guías de integración más detalladas están dentro del espacio de trabajo autenticado."
     },
     "toc": {
       "title": "En esta página",
@@ -1556,14 +1568,14 @@
         "title": "Sistema de precios",
         "items": [
           "Previsualiza el precio exacto antes de renderizar. La pastilla se ajusta con duración, resolución y descuentos automáticos.",
-          "Los Starter Credits (10 $) y los estados Member / Plus / Pro se recalculan a diario."
+          "Los Starter Credits (10 $) y los estados Miembro / Plus / Pro se recalculan a diario."
         ]
       },
       {
         "title": "Reembolsos",
         "items": [
-          "Si un render falla, tu wallet se reembolsa en cuestión de minutos e incluimos una nota breve del incidente.",
-          "Los recibos detallan motor, duración, resolución y el ID del job para entregarlo fácilmente a finanzas.",
+          "Si un render falla, tu billetera se reembolsa en cuestión de minutos e incluimos una nota breve del incidente.",
+          "Los recibos detallan motor, duración, resolución y el ID del trabajo para entregarlo fácilmente a finanzas.",
           {
             "type": "link",
             "before": "Para los detalles legales consulta ",
@@ -1575,11 +1587,11 @@
         ]
       },
       {
-        "title": "Filtros brand-safe",
+        "title": "Filtros de seguridad de marca",
         "items": [
           "Bloqueamos por defecto prompts, subidas y salidas riesgosas para que el equipo cumpla las políticas sin vigilancia extra.",
           "Los casos sensibles pasan a revisión humana con trazabilidad y opciones de escalado simples.",
-          "Los administradores pueden pedir listas personalizadas de permitidos o bloqueados por workspace."
+          "Los administradores pueden pedir listas personalizadas de elementos permitidos o bloqueados por espacio de trabajo."
         ]
       },
       {
@@ -1593,7 +1605,7 @@
     ],
     "apiNotice": {
       "public": "Resumen público disponible abajo.",
-      "private": "La documentación completa de la API requiere autenticación en el workspace."
+      "private": "La documentación completa de la API requiere autenticación en el espacio de trabajo."
     },
     "onboardingChecklist": {
       "title": "Checklist inicial",
@@ -1602,17 +1614,17 @@
         "✅ Añade 1–3 prompts de ejemplo y activos de referencia.",
         "✅ Define ratios por defecto y preferencia de audio."
       ],
-      "note": "Puedes editar el brief en cualquier momento; los cambios aplican a todo el workspace."
+      "note": "Puedes editar el brief en cualquier momento; los cambios aplican a todo el espacio de trabajo."
     },
     "pricingCallout": "✅ Siempre ves el precio antes de renderizar.",
     "refundsTimeline": {
       "title": "Cronología de reembolsos",
       "steps": [
         "1) El job falla → el sistema marca el incidente.",
-        "2) Reembolso automático → wallet acreditado en minutos.",
+        "2) Reembolso automático → billetera acreditada en minutos.",
         "3) Recibo → registro detallado con una breve nota del incidente."
       ],
-      "note": "Solo pagas por jobs exitosos. Los reembolsos aparecen en el feed y en los recibos."
+      "note": "Solo pagas por trabajos exitosos. Los reembolsos aparecen en el feed y en los recibos."
     },
     "refundsCallout": "✅ Los jobs fallidos se reembolsan automáticamente en minutos; los recibos incluyen una breve nota del incidente.",
     "safetyQuick": {
@@ -1620,11 +1632,11 @@
       "items": [
         "• Bloqueos por defecto: contenido ilegal, sexual explícito, odio/hostigamiento, doxxing.",
         "• Revisiones de medios: uploads/renders de riesgo se ponen en cuarentena para revisión.",
-        "• Controles admin: solicitar allowlists o palabras clave restringidas por workspace."
+        "• Controles admin: solicitar listas permitidas o palabras clave restringidas por espacio de trabajo."
       ],
       "note": "Los casos sensibles pasan a revisión humana con trazabilidad y opciones de escalado."
     },
-    "safetyCallout": "⚠️ Algunos casos sensibles pueden requerir una allowlist admin o revisión humana.",
+    "safetyCallout": "⚠️ Algunos casos sensibles pueden requerir una lista permitida administrada o revisión humana.",
     "seeAlsoLabel": "Ver también:",
     "seeAlso": {
       "onboarding": [

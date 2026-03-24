@@ -217,6 +217,9 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;
+  const liveLabel = content.liveLabel ?? (locale === 'fr' ? 'En ligne' : locale === 'es' ? 'En vivo' : 'Live');
+  const comingSoonLabel =
+    content.comingSoonLabel ?? (locale === 'fr' ? 'À venir' : locale === 'es' ? 'Próximamente' : 'Coming soon');
   const teams = content.teams;
   const member = content.member;
   const refunds = content.refunds;
@@ -464,7 +467,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
             <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
           </div>
           <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
-            <FlagPill live={FEATURES.pricing.publicCalculator} />
+            <FlagPill live={FEATURES.pricing.publicCalculator} liveLabel={liveLabel} soonLabel={comingSoonLabel} />
             <span>
               {content.estimator.walletLink}{' '}
               <Link href={generatorHref} prefetch={false} className="font-semibold text-brand hover:text-brandHover">
@@ -472,7 +475,9 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
               </Link>
               .
               {!FEATURES.pricing.publicCalculator ? (
-                <span className="ml-1 text-xs text-text-muted">(coming soon)</span>
+                <span className="ml-1 text-xs text-text-muted">
+                  ({locale === 'fr' ? 'à venir' : locale === 'es' ? 'próximamente' : 'coming soon'})
+                </span>
               ) : null}
             </span>
           </div>
@@ -519,7 +524,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {member.title}
-            <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
+            <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" liveLabel={liveLabel} soonLabel={comingSoonLabel} />
           </h2>
           <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
           <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
@@ -587,7 +592,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {teams.title}
-            <FlagPill live={FEATURES.pricing.teams} className="ml-3" />
+            <FlagPill live={FEATURES.pricing.teams} className="ml-3" liveLabel={liveLabel} soonLabel={comingSoonLabel} />
           </h2>
           <p className="mt-2 text-sm text-text-secondary">{teams.description}</p>
           {FEATURES.pricing.teams ? (
@@ -618,7 +623,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
                   <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
                   <span className="inline-flex flex-wrap items-center gap-2">
                     {item.text}
-                    <FlagPill live={item.live} />
+                    <FlagPill live={item.live} liveLabel={liveLabel} soonLabel={comingSoonLabel} />
                   </span>
                 </li>
               ))}

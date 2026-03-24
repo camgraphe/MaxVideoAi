@@ -528,7 +528,7 @@ function PrivacyArticleEs({
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">1. Alcance</h3>
         <p>
-          Cubre el tratamiento de datos dentro del workspace de MaxVideoAI: gestión de cuentas, facturación, analíticas, generación de contenido y soporte.
+          Cubre el tratamiento de datos dentro del espacio de trabajo de MaxVideoAI: gestión de cuentas, facturación, analíticas, generación de contenido y soporte.
         </p>
       </section>
 
@@ -539,7 +539,7 @@ function PrivacyArticleEs({
             <strong>Cuenta e identidad:</strong> nombre, e-mail, hash de contraseña, país/región, idioma.
           </li>
           <li>
-            <strong>Transacciones:</strong> operaciones del wallet, recargas, recibos (importe, divisa, impuestos, marcas de tiempo), IDs de trabajos.
+            <strong>Transacciones:</strong> operaciones de la billetera, recargas, recibos (importe, divisa, impuestos, marcas de tiempo), IDs de trabajos.
           </li>
           <li>
             <strong>Pagos:</strong> procesados por Stripe; guardamos identificadores y metadatos mínimos, nunca números completos de tarjeta.
