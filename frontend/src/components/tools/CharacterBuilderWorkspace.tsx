@@ -2202,18 +2202,20 @@ function BuildLookCarouselCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={clsx(
-        'relative flex min-h-[82px] w-[220px] flex-col justify-between border-r border-border px-4 py-3 text-left transition last:border-r-0 md:min-w-0 md:flex-1',
+        'relative flex min-h-[82px] w-[220px] flex-col justify-between border-r border-border px-4 py-3 text-left transition-colors last:border-r-0 md:min-w-0 md:flex-1',
         active
-          ? 'bg-[linear-gradient(180deg,rgba(58,123,213,0.14),rgba(58,123,213,0.08))] shadow-[inset_0_0_0_1px_rgba(58,123,213,0.18)]'
+          ? 'bg-[#e8f1ff] shadow-[inset_0_0_0_1px_rgba(58,123,213,0.24)]'
           : 'bg-surface hover:bg-surface-hover'
       )}
     >
+      {active ? <span className="absolute inset-x-0 top-0 h-[3px] bg-brand" aria-hidden /> : null}
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-semibold text-text-primary">{title}</p>
+        <p className={clsx('text-sm font-semibold', active ? 'text-brand' : 'text-text-primary')}>{title}</p>
         {accessory ? <div className="shrink-0" onClick={(event) => event.stopPropagation()}>{accessory}</div> : null}
       </div>
-      <p className={clsx('mt-2 line-clamp-2 text-xs', active ? 'text-text-primary/80' : 'text-text-secondary')}>
+      <p className={clsx('mt-2 line-clamp-2 text-xs', active ? 'text-brand/80' : 'text-text-secondary')}>
         {summary}
       </p>
     </button>
