@@ -82,7 +82,7 @@ export default async function PrivacyPage() {
   const locale = await resolveLocale();
   const document = await getLegalDocument('privacy');
   const version = document?.version ?? '2025-10-26';
-  const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`);
+  const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`, locale);
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
 
   return (
@@ -139,7 +139,7 @@ export default async function PrivacyPage() {
             className="font-medium"
           />
         </p>
-        <LegalVersionBadge docKey="privacy" doc={document} />
+        <LegalVersionBadge docKey="privacy" doc={document} locale={locale} />
       </header>
       <PrivacyArticle locale={locale} version={version} effective={effective ?? version} />
     </div>

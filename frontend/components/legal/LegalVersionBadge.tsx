@@ -1,14 +1,16 @@
+import type { AppLocale } from '@/i18n/locales';
 import type { LegalDocument, LegalDocumentKey } from '@/lib/legal';
 import { formatLegalDate } from '@/lib/legal';
 
 type LegalVersionBadgeProps = {
   docKey: LegalDocumentKey;
   doc: LegalDocument | null;
+  locale?: AppLocale;
 };
 
-export function LegalVersionBadge({ docKey, doc }: LegalVersionBadgeProps) {
+export function LegalVersionBadge({ docKey, doc, locale = 'en' }: LegalVersionBadgeProps) {
   const version = doc?.version ?? 'draft';
-  const publishedLabel = formatLegalDate(doc?.publishedAt) ?? (doc?.version ?? null);
+  const publishedLabel = formatLegalDate(doc?.publishedAt, locale) ?? (doc?.version ?? null);
 
   return (
     <p

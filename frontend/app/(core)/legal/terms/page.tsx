@@ -86,7 +86,7 @@ export default async function TermsPage() {
   const locale = await resolveLocale();
   const document = await getLegalDocument('terms');
   const version = document?.version ?? '2025-10-26';
-  const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`);
+  const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`, locale);
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
 
   return (
@@ -117,7 +117,7 @@ export default async function TermsPage() {
             className="font-medium"
           />
         </p>
-        <LegalVersionBadge docKey="terms" doc={document} />
+        <LegalVersionBadge docKey="terms" doc={document} locale={locale} />
       </header>
       <TermsArticle locale={locale} version={version} effective={effective ?? version} />
     </div>

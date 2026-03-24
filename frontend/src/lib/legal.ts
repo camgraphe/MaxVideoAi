@@ -1,4 +1,6 @@
 import { cache } from 'react';
+import type { AppLocale } from '@/i18n/locales';
+import { localeRegions } from '@/i18n/locales';
 import { isDatabaseConfigured, query } from '@/lib/db';
 
 export type LegalDocumentKey = 'terms' | 'privacy' | 'cookies';
@@ -55,11 +57,12 @@ export async function getLegalDocuments(keys: LegalDocumentKey[]): Promise<Recor
   return Object.fromEntries(entries) as Record<LegalDocumentKey, LegalDocument | null>;
 }
 
-export function formatLegalDate(value: Date | string | null | undefined): string | null {
+export function formatLegalDate(value: Date | string | null | undefined, locale: AppLocale = 'en'): string | null {
   if (!value) return null;
   const date = typeof value === 'string' ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
+  const region = localeRegions[locale] ?? localeRegions.en;
+  return new Intl.DateTimeFormat(region, { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
 }
 
 export async function getLegalDocumentUncached(key: LegalDocumentKey): Promise<LegalDocument | null> {

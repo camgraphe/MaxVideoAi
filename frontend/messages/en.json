@@ -1063,6 +1063,7 @@
     "note": "",
     "detail": {
       "backLabel": "← Back",
+      "renderLinkLabel": "View render →",
       "examplesLinkLabel": "See examples",
       "pricingLinkLabel": "Compare pricing",
       "overviewTitle": "Overview",
@@ -1086,7 +1087,8 @@
       "breadcrumb": {
         "home": "Home",
         "models": "Models"
-      }
+      },
+      "relatedModelCta": "View model →"
     },
     "listing": {
       "hero": {

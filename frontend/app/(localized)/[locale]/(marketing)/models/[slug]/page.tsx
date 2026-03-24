@@ -2723,6 +2723,8 @@ function buildVideoBoundaries(values: KeySpecValues | null): string[] {
 
 type DetailCopy = {
   backLabel: string;
+  renderLinkLabel: string;
+  relatedModelCta: string;
   examplesLinkLabel: string;
   pricingLinkLabel: string;
   overviewTitle: string;
@@ -2751,6 +2753,8 @@ type DetailCopy = {
 
 const DEFAULT_DETAIL_COPY: DetailCopy = {
   backLabel: '← Back to models',
+  renderLinkLabel: 'View render →',
+  relatedModelCta: 'View model →',
   examplesLinkLabel: 'See examples',
   pricingLinkLabel: 'Compare pricing',
   overviewTitle: 'Overview',
@@ -4627,6 +4631,7 @@ function MediaPreview({
   label,
   locale,
   audioBadgeLabel,
+  renderLinkLabel,
   promptLabel,
   promptLines = [],
   hideLabel = false,
@@ -4642,6 +4647,7 @@ function MediaPreview({
   label: string;
   locale: AppLocale;
   audioBadgeLabel?: string;
+  renderLinkLabel?: string;
   promptLabel?: string;
   promptLines?: string[];
   hideLabel?: boolean;
@@ -4681,6 +4687,8 @@ function MediaPreview({
         : `${media.label ?? label} pre-launch visual preview`
     : altText;
   const resolvedAudioBadgeLabel = audioBadgeLabel ?? (PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en).on;
+  const resolvedRenderLinkLabel =
+    renderLinkLabel ?? (locale === 'fr' ? 'Voir le rendu →' : locale === 'es' ? 'Ver render →' : 'View render →');
   const figureClassName = [
     'group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card',
     isVertical ? 'mx-auto max-w-sm' : '',
@@ -4771,7 +4779,7 @@ function MediaPreview({
         ) : null}
         {media.href ? (
           <TextLink href={media.href} className="gap-1 text-xs" linkComponent={Link}>
-            View render →
+            {resolvedRenderLinkLabel}
           </TextLink>
         ) : null}
       </figcaption>
@@ -4880,12 +4888,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
       return (a.marketingName ?? a.engine.label).localeCompare(b.marketingName ?? b.engine.label);
     })
     .slice(0, 3);
-  const relatedCopy = {
-    title: relatedContent.title ?? 'Explore other engines',
-    subtitle:
-      relatedContent.subtitle ?? 'Compare price tiers, latency, and prompt presets across the rest of the catalog.',
-    cta: relatedContent.cta ?? 'View model →',
-  };
 
   const detailCopy: DetailCopy = {
     ...DEFAULT_DETAIL_COPY,
@@ -4906,6 +4908,12 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ...DEFAULT_DETAIL_COPY.breadcrumb,
       ...(dictionary.models.detail?.breadcrumb ?? {}),
     },
+  };
+  const relatedCopy = {
+    title: relatedContent.title ?? 'Explore other engines',
+    subtitle:
+      relatedContent.subtitle ?? 'Compare price tiers, latency, and prompt presets across the rest of the catalog.',
+    cta: relatedContent.cta ?? detailCopy.relatedModelCta,
   };
 
   if (

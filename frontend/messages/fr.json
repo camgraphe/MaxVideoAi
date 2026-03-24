@@ -1147,6 +1147,7 @@
     "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
     "detail": {
       "backLabel": "← Retour",
+      "renderLinkLabel": "Voir le rendu →",
       "examplesLinkLabel": "Voir des exemples",
       "pricingLinkLabel": "Comparer les tarifs",
       "overviewTitle": "Aperçu",
@@ -1170,7 +1171,8 @@
       "breadcrumb": {
         "home": "Accueil",
         "models": "Modèles"
-      }
+      },
+      "relatedModelCta": "Voir le modèle →"
     },
     "listing": {
       "hero": {
@@ -4158,19 +4160,19 @@
               "label": "Ouvrir l'espace Video"
             },
             {
-              "href": "/models/ltx-2-3-pro",
+              "href": "/modeles/ltx-2-3-pro",
               "label": "LTX 2.3 Pro"
             },
             {
-              "href": "/models/veo-3-1",
+              "href": "/modeles/veo-3-1",
               "label": "Veo 3.1"
             },
             {
-              "href": "/models/kling-3-pro",
+              "href": "/modeles/kling-3-pro",
               "label": "Kling 3 Pro"
             },
             {
-              "href": "/models",
+              "href": "/modeles",
               "label": "Hub de modèles"
             }
           ],
@@ -4288,30 +4290,30 @@
             "label": "Affiner le frame dans Image"
           },
           {
-            "href": "/models/ltx-2-3-pro",
+            "href": "/modeles/ltx-2-3-pro",
             "label": "Utiliser le frame dans LTX 2.3 Pro"
           },
           {
-            "href": "/models/veo-3-1",
+            "href": "/modeles/veo-3-1",
             "label": "Utiliser le frame dans Veo 3.1"
           },
           {
-            "href": "/models/kling-3-pro",
+            "href": "/modeles/kling-3-pro",
             "label": "Utiliser le frame dans Kling 3 Pro"
           },
           {
-            "href": "/examples",
+            "href": "/galerie",
             "label": "Parcourir les exemples"
           }
         ],
         "guidesTitle": "Guides liés",
         "guideLinks": [
           {
-            "href": "/blog/change-camera-angle-with-ai",
+            "href": "/blog/lia-peut-elle-changer-langle-de-camera-dune-photo",
             "label": "Corriger un angle faible"
           },
           {
-            "href": "/blog/multiple-camera-angles-from-one-image",
+            "href": "/blog/explorer-plusieurs-angles-de-camera-a-partir-dune-image-approuvee",
             "label": "Explorer plusieurs angles depuis une image"
           }
         ]
@@ -4539,27 +4541,27 @@
               "label": "Ouvrir l'espace Video"
             },
             {
-              "href": "/models/nano-banana",
+              "href": "/modeles/nano-banana",
               "label": "Nano Banana"
             },
             {
-              "href": "/models/ltx-2-3-pro",
+              "href": "/modeles/ltx-2-3-pro",
               "label": "LTX 2.3 Pro"
             },
             {
-              "href": "/models/veo-3-1",
+              "href": "/modeles/veo-3-1",
               "label": "Veo 3.1"
             },
             {
-              "href": "/models/kling-3-pro",
+              "href": "/modeles/kling-3-pro",
               "label": "Kling 3 Pro"
             },
             {
-              "href": "/models",
+              "href": "/modeles",
               "label": "Parcourir le hub de modèles"
             },
             {
-              "href": "/examples",
+              "href": "/galerie",
               "label": "Voir des exemples"
             }
           ]
@@ -4645,30 +4647,30 @@
             "label": "Générer le still dans Image"
           },
           {
-            "href": "/models/nano-banana",
+            "href": "/modeles/nano-banana",
             "label": "Préparer la start frame dans Nano Banana"
           },
           {
-            "href": "/models/ltx-2-3-pro",
+            "href": "/modeles/ltx-2-3-pro",
             "label": "Passer en vidéo avec LTX 2.3 Pro"
           },
           {
-            "href": "/models/veo-3-1",
+            "href": "/modeles/veo-3-1",
             "label": "Passer en vidéo avec Veo 3.1"
           },
           {
-            "href": "/models/kling-3-pro",
+            "href": "/modeles/kling-3-pro",
             "label": "Passer en vidéo avec Kling 3 Pro"
           }
         ],
         "guidesTitle": "Guides liés",
         "guideLinks": [
           {
-            "href": "/blog/how-to-create-consistent-ai-characters",
+            "href": "/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video",
             "label": "Créer des personnages IA cohérents"
           },
           {
-            "href": "/blog/ai-character-sheet-generator",
+            "href": "/blog/generateur-de-fiche-personnage-ia",
             "label": "Quand utiliser une fiche 8 panneaux"
           }
         ]
