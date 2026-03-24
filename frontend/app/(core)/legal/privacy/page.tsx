@@ -7,17 +7,36 @@ import { resolveLocale } from '@/lib/i18n/server';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = (await resolveLocale()) as AppLocale;
-  return buildSeoMetadata({
-    locale,
+const METADATA_COPY: Record<AppLocale, { title: string; description: string; imageAlt: string }> = {
+  en: {
     title: 'Privacy Policy',
     description: 'How MaxVideoAI collects, uses, stores, and protects personal data.',
+    imageAlt: 'Privacy Policy overview.',
+  },
+  fr: {
+    title: 'Politique de confidentialité',
+    description: 'Comment MaxVideoAI collecte, utilise, conserve et protège les données personnelles.',
+    imageAlt: 'Aperçu de la politique de confidentialité.',
+  },
+  es: {
+    title: 'Política de privacidad',
+    description: 'Cómo MaxVideoAI recopila, utiliza, almacena y protege los datos personales.',
+    imageAlt: 'Resumen de la política de privacidad.',
+  },
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  const metadata = METADATA_COPY[locale] ?? METADATA_COPY.en;
+  return buildSeoMetadata({
+    locale,
+    title: metadata.title,
+    description: metadata.description,
     hreflangGroup: 'legalPrivacy',
     englishPath: '/legal/privacy',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',
-    imageAlt: 'Privacy Policy overview.',
+    imageAlt: metadata.imageAlt,
   });
 }
 

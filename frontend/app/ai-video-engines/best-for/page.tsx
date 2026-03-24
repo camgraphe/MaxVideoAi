@@ -9,7 +9,7 @@ export const generateMetadata = () => generateLocalizedMetadata({ params: { loca
 export default function BestForHubDefaultPage() {
   return (
     <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <BestForHubPage />
+      <BestForHubPage params={{ locale: DEFAULT_LOCALE }} />
     </LocaleLayout>
   );
 }

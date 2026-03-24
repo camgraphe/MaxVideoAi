@@ -8,10 +8,11 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await resolveLocale()) as AppLocale;
+  const copy = HERO_COPY[locale] ?? HERO_COPY.en;
   return buildSeoMetadata({
     locale,
-    title: 'Legal Center',
-    description: 'Access the latest MaxVideoAI legal documents and compliance resources.',
+    title: copy.title,
+    description: copy.description,
     hreflangGroup: 'legal',
     englishPath: '/legal',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],

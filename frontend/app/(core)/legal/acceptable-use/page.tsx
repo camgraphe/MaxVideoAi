@@ -5,17 +5,36 @@ import type { AppLocale } from '@/i18n/locales';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = (await resolveLocale()) as AppLocale;
-  return buildSeoMetadata({
-    locale,
+const METADATA_COPY: Record<AppLocale, { title: string; description: string; imageAlt: string }> = {
+  en: {
     title: 'Acceptable Use Policy',
     description: 'Rules that govern how MaxVideoAI may be used, including restrictions on abusive or illegal content.',
+    imageAlt: 'Acceptable Use Policy',
+  },
+  fr: {
+    title: 'Politique d’utilisation acceptable',
+    description: 'Règles encadrant l’usage de MaxVideoAI, y compris les restrictions liées aux contenus abusifs ou illicites.',
+    imageAlt: 'Politique d’utilisation acceptable',
+  },
+  es: {
+    title: 'Política de uso aceptable',
+    description: 'Reglas que rigen el uso de MaxVideoAI, incluidas las restricciones sobre contenido abusivo o ilegal.',
+    imageAlt: 'Política de uso aceptable',
+  },
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  const metadata = METADATA_COPY[locale] ?? METADATA_COPY.en;
+  return buildSeoMetadata({
+    locale,
+    title: metadata.title,
+    description: metadata.description,
     hreflangGroup: 'legalAcceptableUse',
     englishPath: '/legal/acceptable-use',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',
-    imageAlt: 'Acceptable Use Policy',
+    imageAlt: metadata.imageAlt,
   });
 }
 

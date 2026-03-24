@@ -14,6 +14,7 @@ import { getContentEntries } from '@/lib/content/markdown';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
+import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
 
 export type SitemapEntry = {
   url: string;
@@ -413,10 +414,14 @@ export async function buildModelsSitemapXml(): Promise<string> {
     const xDefaultHref =
       localizedEntries.find((entry) => entry.locale === defaultLocale)?.url ?? localizedEntries[0]?.url ?? buildAbsoluteUrl(englishPath);
     localizedEntries.forEach((record) => {
-      const alternateLinks = localizedEntries
+      const hrefByLocale = new Map(localizedEntries.map((entry) => [entry.locale, entry.url] as const));
+      const alternateLinks = HREFLANG_VARIANTS
+        .filter((variant) => hrefByLocale.has(variant.locale))
         .map(
-          (alt) =>
-            `<xhtml:link rel="alternate" hreflang="${escapeXml(alt.locale)}" href="${escapeXml(alt.url)}" />`
+          (variant) =>
+            `<xhtml:link rel="alternate" hreflang="${escapeXml(variant.hreflang)}" href="${escapeXml(
+              hrefByLocale.get(variant.locale) as string
+            )}" />`
         )
         .concat(
           xDefaultHref ? [`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(xDefaultHref)}" />`] : []
@@ -469,6 +474,9 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
   const dynamicTemplates = new Set<string>();
 
   templates.forEach((template) => {
+    if (template.template === '/ai-video-engines/best-for' && !(compareConfig.bestForPages ?? []).length) {
+      return;
+    }
     if (template.isDynamic) {
       dynamicTemplates.add(template.template);
       return;
@@ -504,7 +512,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
         return;
       }
       seen.add(normalizedPath);
-      entries.push({ ...entry, englishPath: normalizedPath });
+      entries.push({ ...entry, englishPath: normalizedPath, ...(entry.locales ? { locales: entry.locales } : {}) });
     });
   }
 
@@ -520,6 +528,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
     entries.push({
       ...extra,
       englishPath: normalizedPath,
+      ...(extra.locales ? { locales: extra.locales } : {}),
       lastModified: extra.lastModified ?? getRouteLastModified(normalizedPath),
     });
   });

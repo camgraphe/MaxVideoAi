@@ -5,17 +5,36 @@ import type { AppLocale } from '@/i18n/locales';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = (await resolveLocale()) as AppLocale;
-  return buildSeoMetadata({
-    locale,
+const METADATA_COPY: Record<AppLocale, { title: string; description: string; imageAlt: string }> = {
+  en: {
     title: 'Notice & Takedown',
     description: 'Report abusive or unlawful content generated through MaxVideoAI.',
+    imageAlt: 'Notice and takedown policy',
+  },
+  fr: {
+    title: 'Notification & retrait',
+    description: 'Signaler un contenu abusif ou illicite généré via MaxVideoAI.',
+    imageAlt: 'Politique de notification et retrait',
+  },
+  es: {
+    title: 'Notificación y retirada',
+    description: 'Reporta contenido abusivo o ilegal generado a través de MaxVideoAI.',
+    imageAlt: 'Política de notificación y retirada',
+  },
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  const metadata = METADATA_COPY[locale] ?? METADATA_COPY.en;
+  return buildSeoMetadata({
+    locale,
+    title: metadata.title,
+    description: metadata.description,
     hreflangGroup: 'legalTakedown',
     englishPath: '/legal/takedown',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',
-    imageAlt: 'Notice and takedown policy',
+    imageAlt: metadata.imageAlt,
   });
 }
 
