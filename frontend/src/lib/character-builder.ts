@@ -438,7 +438,9 @@ export function summarizeCharacterState(state: Pick<CharacterBuilderState, 'trai
   const gender = state.traits.genderPresentation.value;
   const age = state.traits.ageRange.value;
   const outfit = state.traits.outfitStyle.value;
-  const customOutfit = state.traits.customOutfitDescription?.trim();
+  const customOutfit = state.traits.customOutfitDescription?.trim() ?? '';
+  const hasCustomOutfit =
+    customOutfit.length > 0 || (typeof outfit === 'string' && outfit !== 'auto');
 
   const genderLabel = findTraitOption(GENDER_PRESENTATION_OPTIONS, gender)?.label;
   const ageLabel = findTraitOption(AGE_RANGE_OPTIONS, age)?.label;
@@ -446,7 +448,7 @@ export function summarizeCharacterState(state: Pick<CharacterBuilderState, 'trai
 
   if (genderLabel) parts.push(genderLabel);
   if (ageLabel) parts.push(ageLabel.toLowerCase());
-  if (state.traits.outfitEnabled) {
+  if (hasCustomOutfit) {
     if (customOutfit) {
       parts.push(customOutfit.length > 36 ? `${customOutfit.slice(0, 33).trim()}...` : customOutfit);
     } else if (outfitLabel) {

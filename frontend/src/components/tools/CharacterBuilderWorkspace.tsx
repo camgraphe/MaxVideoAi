@@ -731,8 +731,8 @@ function hasCustomOutfitSettings(traits: CharacterBuilderTraits): boolean {
 function normalizeHairAndOutfitModes(traits: CharacterBuilderTraits): CharacterBuilderTraits {
   return {
     ...traits,
-    hairEnabled: traits.hairEnabled !== false && hasCustomHairSettings(traits),
-    outfitEnabled: traits.outfitEnabled !== false && hasCustomOutfitSettings(traits),
+    hairEnabled: hasCustomHairSettings(traits),
+    outfitEnabled: hasCustomOutfitSettings(traits),
   };
 }
 
@@ -816,7 +816,7 @@ function getHairSummary(
   },
   copy: CharacterCopy
 ): string {
-  if (traits.hairEnabled === false) {
+  if (!hasCustomHairSettings(traits)) {
     return copy.auto;
   }
 
@@ -830,10 +830,6 @@ function getHairSummary(
     describeTraitValue(options.hairLength, traits.hairLength.value, copy),
     describeTraitValue(options.hairstyle, traits.hairstyle.value, copy),
   ];
-
-  if (values.every((value) => value === copy.auto)) {
-    return copy.summary.autoFromReference;
-  }
 
   const filteredValues = values.filter(
     (value, index, array) => value !== copy.notSet || array.every((entry) => entry === copy.notSet)
@@ -849,7 +845,7 @@ function getOutfitSummary(
   options: Array<{ id: string; label: string }>,
   copy: CharacterCopy
 ): string {
-  if (traits.outfitEnabled === false) {
+  if (!hasCustomOutfitSettings(traits)) {
     return copy.auto;
   }
 
@@ -1193,7 +1189,7 @@ function CharacterSummaryCard({
   copy: CharacterCopy;
 }) {
   const hairSwatch =
-    traits.hairEnabled === false || Boolean(traits.customHairDescription?.trim())
+    !hasCustomHairSettings(traits) || Boolean(traits.customHairDescription?.trim())
       ? null
       : findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
   const genderLabel = findChoiceLabel(genderOptions, traits.genderPresentation.value) ?? copy.open;
@@ -1309,7 +1305,7 @@ function CharacterSnapshotDock({
   copy: CharacterCopy;
 }) {
   const hairSwatch =
-    traits.hairEnabled === false || Boolean(traits.customHairDescription?.trim())
+    !hasCustomHairSettings(traits) || Boolean(traits.customHairDescription?.trim())
       ? null
       : findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
   const genderLabel = findChoiceLabel(genderOptions, traits.genderPresentation.value) ?? copy.open;
@@ -1506,7 +1502,7 @@ function CharacterBuilderStickyDock({
   compact?: boolean;
 }) {
   const hairSwatch =
-    traits.hairEnabled === false || Boolean(traits.customHairDescription?.trim())
+    !hasCustomHairSettings(traits) || Boolean(traits.customHairDescription?.trim())
       ? null
       : findChoiceSwatch(HAIR_COLOR_OPTIONS, traits.hairColor.value);
   const genderLabel = findChoiceLabel(genderOptions, traits.genderPresentation.value) ?? copy.open;
@@ -2648,8 +2644,6 @@ export default function CharacterBuilderPage() {
     () => serializeResettableCharacterBuilderState(state) !== serializeResettableCharacterBuilderState(resetState),
     [resetState, state]
   );
-  const hairMode = state.traits.hairEnabled ? 'custom' : 'auto';
-  const outfitMode = state.traits.outfitEnabled ? 'custom' : 'auto';
   const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
   const outfitSummary = getOutfitSummary(state.traits, outfitOptions, copy);
   const accessoriesFeaturesSummary = [
@@ -2836,49 +2830,28 @@ export default function CharacterBuilderPage() {
     | 'bodyBuild'
     | 'outfitStyle'
   >>(key: K, value: string | 'auto') {
-    setState((previous) => ({
-      ...previous,
-      traits: {
+    setState((previous) => {
+      const nextTraits = {
         ...previous.traits,
         [key]: {
           value,
           source: (value === 'auto' ? 'auto' : 'manual') as CharacterBuilderTraitSource,
         },
-      },
-    }));
-  }
+      } as CharacterBuilderTraits;
 
-  function setHairMode(mode: 'auto' | 'custom') {
-    const enabled = mode === 'custom';
-    setState((previous) => ({
-      ...previous,
-      traits: {
-        ...previous.traits,
-        hairEnabled: enabled,
-      },
-    }));
-    if (enabled) {
-      setActiveBuildSection('hair');
-      return;
-    }
-    if (!enabled) {
-      setHairOpen(false);
-    }
-  }
+      if (key === 'hairColor' || key === 'hairLength' || key === 'hairstyle') {
+        nextTraits.hairEnabled = hasCustomHairSettings(nextTraits);
+      }
 
-  function setOutfitMode(mode: 'auto' | 'custom') {
-    const enabled = mode === 'custom';
-    setState((previous) => ({
-      ...previous,
-      traits: {
-        ...previous.traits,
-        outfitEnabled: enabled,
-      },
-    }));
-    if (enabled) {
-      setActiveBuildSection('outfit');
-      return;
-    }
+      if (key === 'outfitStyle') {
+        nextTraits.outfitEnabled = hasCustomOutfitSettings(nextTraits);
+      }
+
+      return {
+        ...previous,
+        traits: nextTraits,
+      };
+    });
   }
 
   function toggleListValue(key: 'accessories' | 'distinctiveFeatures', value: string) {
@@ -3596,50 +3569,12 @@ export default function CharacterBuilderPage() {
                             <BuildLookCarouselCard
                               title={copy.sections.hair}
                               summary={hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
-                              accessory={
-                                <div className="inline-flex rounded-full border border-border bg-bg p-1">
-                                  {(['auto', 'custom'] as const).map((mode) => (
-                                    <button
-                                      key={mode}
-                                      type="button"
-                                      onClick={() => setHairMode(mode)}
-                                      className={clsx(
-                                        'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro transition',
-                                        hairMode === mode
-                                          ? 'bg-brand text-on-brand'
-                                          : 'text-text-secondary hover:text-text-primary'
-                                      )}
-                                    >
-                                      {mode === 'auto' ? copy.auto : copy.custom}
-                                    </button>
-                                  ))}
-                                </div>
-                              }
                               active={activeBuildSection === 'hair'}
                               onClick={() => setActiveBuildSection('hair')}
                             />
                             <BuildLookCarouselCard
                               title={copy.sections.outfit}
                               summary={outfitSummary === copy.notSet ? copy.open : outfitSummary}
-                              accessory={
-                                <div className="inline-flex rounded-full border border-border bg-bg p-1">
-                                  {(['auto', 'custom'] as const).map((mode) => (
-                                    <button
-                                      key={mode}
-                                      type="button"
-                                      onClick={() => setOutfitMode(mode)}
-                                      className={clsx(
-                                        'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro transition',
-                                        outfitMode === mode
-                                          ? 'bg-brand text-on-brand'
-                                          : 'text-text-secondary hover:text-text-primary'
-                                      )}
-                                    >
-                                      {mode === 'auto' ? copy.auto : copy.custom}
-                                    </button>
-                                  ))}
-                                </div>
-                              }
                               active={activeBuildSection === 'outfit'}
                               onClick={() => setActiveBuildSection('outfit')}
                             />
@@ -3714,61 +3649,63 @@ export default function CharacterBuilderPage() {
                                 </p>
                               </div>
 
-                              {hairMode === 'custom' ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => setHairOpen((previous) => !previous)}
-                                    className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-surface px-4 py-4 text-left transition hover:border-border-hover hover:bg-surface-hover hover:shadow-card"
-                                  >
-                                    <div className="flex min-w-0 items-center gap-4">
-                                      <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-surface-2/80">
-                                        <div className="space-y-1">
-                                          <div className="h-2 w-7 rounded-full bg-slate-500" />
-                                          <div className="h-2 w-5 rounded-full bg-slate-400" />
-                                          <div className="h-2 w-6 rounded-full bg-slate-300" />
-                                        </div>
-                                      </div>
-                                      <div className="min-w-0">
-                                        <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
-                                        <p className="truncate text-xs text-text-secondary">
-                                          {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
-                                        </p>
-                                      </div>
+                              <button
+                                type="button"
+                                onClick={() => setHairOpen((previous) => !previous)}
+                                className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-border bg-surface px-4 py-4 text-left transition hover:border-border-hover hover:bg-surface-hover hover:shadow-card"
+                              >
+                                <div className="flex min-w-0 items-center gap-4">
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-surface-2/80">
+                                    <div className="space-y-1">
+                                      <div className="h-2 w-7 rounded-full bg-slate-500" />
+                                      <div className="h-2 w-5 rounded-full bg-slate-400" />
+                                      <div className="h-2 w-6 rounded-full bg-slate-300" />
                                     </div>
-                                    <span className="rounded-full border border-border bg-surface-2/80 px-3 py-1 text-xs font-semibold text-text-secondary">
-                                      {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
-                                    </span>
-                                  </button>
-                                  <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-text-primary">{copy.sections.customHair}</label>
-                                    <Textarea
-                                      value={state.traits.customHairDescription ?? ''}
-                                      onChange={(event) =>
-                                        setState((previous) => ({
-                                          ...previous,
-                                          traits: {
-                                            ...previous.traits,
-                                            customHairDescription: event.target.value,
-                                          },
-                                        }))
-                                      }
-                                      placeholder={copy.sections.customHairPlaceholder}
-                                    />
                                   </div>
-                                  <HairEditorPanel
-                                    open={hairOpen}
-                                    onClose={() => setHairOpen(false)}
-                                    sourceMode={state.sourceMode}
-                                    traits={state.traits}
-                                    onChange={(key, value) => updateTrait(key, value)}
-                                    hairColorOptions={hairColorOptions}
-                                    hairLengthOptions={hairLengthOptions}
-                                    hairstyleOptions={hairstyleOptions}
-                                    copy={copy}
-                                  />
-                                </>
-                              ) : null}
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-text-primary">{copy.sections.hair}</p>
+                                    <p className="truncate text-xs text-text-secondary">
+                                      {hairSummary === copy.notSet ? copy.sections.hairOpenEditor : hairSummary}
+                                    </p>
+                                  </div>
+                                </div>
+                                <span className="rounded-full border border-border bg-surface-2/80 px-3 py-1 text-xs font-semibold text-text-secondary">
+                                  {hairOpen ? copy.sections.hairClose : copy.sections.hairEdit}
+                                </span>
+                              </button>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-semibold text-text-primary">{copy.sections.customHair}</label>
+                                <Textarea
+                                  value={state.traits.customHairDescription ?? ''}
+                                  onChange={(event) =>
+                                    setState((previous) => {
+                                      const nextTraits = {
+                                        ...previous.traits,
+                                        customHairDescription: event.target.value,
+                                      };
+                                      return {
+                                        ...previous,
+                                        traits: {
+                                          ...nextTraits,
+                                          hairEnabled: hasCustomHairSettings(nextTraits),
+                                        },
+                                      };
+                                    })
+                                  }
+                                  placeholder={copy.sections.customHairPlaceholder}
+                                />
+                              </div>
+                              <HairEditorPanel
+                                open={hairOpen}
+                                onClose={() => setHairOpen(false)}
+                                sourceMode={state.sourceMode}
+                                traits={state.traits}
+                                onChange={(key, value) => updateTrait(key, value)}
+                                hairColorOptions={hairColorOptions}
+                                hairLengthOptions={hairLengthOptions}
+                                hairstyleOptions={hairstyleOptions}
+                                copy={copy}
+                              />
                             </div>
                           ) : null}
 
@@ -3781,46 +3718,48 @@ export default function CharacterBuilderPage() {
                                 </p>
                               </div>
 
-                              {outfitMode === 'custom' ? (
-                                <>
-                                  <div className="flex flex-wrap gap-2">
-                                    {outfitOptions.map((option) => {
-                                      const selected = state.traits.outfitStyle.value === option.id;
-                                      return (
-                                        <button
-                                          key={option.id}
-                                          type="button"
-                                          onClick={() => updateTrait('outfitStyle', selected ? '' : option.id)}
-                                          className={clsx(
-                                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition',
-                                            selected
-                                              ? 'border-brand bg-brand text-on-brand'
-                                              : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
-                                          )}
-                                        >
-                                          {option.label}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                  <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-text-primary">{copy.sections.customOutfit}</label>
-                                    <Textarea
-                                      value={state.traits.customOutfitDescription ?? ''}
-                                      onChange={(event) =>
-                                        setState((previous) => ({
-                                          ...previous,
-                                          traits: {
-                                            ...previous.traits,
-                                            customOutfitDescription: event.target.value,
-                                          },
-                                        }))
-                                      }
-                                      placeholder={copy.sections.customOutfitPlaceholder}
-                                    />
-                                  </div>
-                                </>
-                              ) : null}
+                              <div className="flex flex-wrap gap-2">
+                                {outfitOptions.map((option) => {
+                                  const selected = state.traits.outfitStyle.value === option.id;
+                                  return (
+                                    <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => updateTrait('outfitStyle', selected ? 'auto' : option.id)}
+                                      className={clsx(
+                                        'rounded-full border px-3 py-1.5 text-xs font-semibold transition',
+                                        selected
+                                          ? 'border-brand bg-brand text-on-brand'
+                                          : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover'
+                                      )}
+                                    >
+                                      {option.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              <div className="space-y-2">
+                                <label className="block text-sm font-semibold text-text-primary">{copy.sections.customOutfit}</label>
+                                <Textarea
+                                  value={state.traits.customOutfitDescription ?? ''}
+                                  onChange={(event) =>
+                                    setState((previous) => {
+                                      const nextTraits = {
+                                        ...previous.traits,
+                                        customOutfitDescription: event.target.value,
+                                      };
+                                      return {
+                                        ...previous,
+                                        traits: {
+                                          ...nextTraits,
+                                          outfitEnabled: hasCustomOutfitSettings(nextTraits),
+                                        },
+                                      };
+                                    })
+                                  }
+                                  placeholder={copy.sections.customOutfitPlaceholder}
+                                />
+                              </div>
                             </div>
                           ) : null}
 

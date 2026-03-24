@@ -102,11 +102,19 @@ function buildConsistencyBlock(
 }
 
 function isHairEnabled(traits: CharacterBuilderTraits): boolean {
-  return traits.hairEnabled !== false;
+  return (
+    trimString(traits.customHairDescription).length > 0 ||
+    [traits.hairColor.value, traits.hairLength.value, traits.hairstyle.value].some(
+      (value) => typeof value === 'string' && value !== 'auto'
+    )
+  );
 }
 
 function isOutfitEnabled(traits: CharacterBuilderTraits): boolean {
-  return traits.outfitEnabled !== false;
+  return (
+    trimString(traits.customOutfitDescription).length > 0 ||
+    (typeof traits.outfitStyle.value === 'string' && traits.outfitStyle.value !== 'auto')
+  );
 }
 
 function getCustomHairDescription(traits: CharacterBuilderTraits): string {
@@ -492,14 +500,14 @@ function sanitizeTraits(traits: CharacterBuilderRequest['traits'] | undefined): 
     ageRange: sanitizeTrait(traits.ageRange),
     skinTone: sanitizeTrait(traits.skinTone),
     faceCues: sanitizeTrait(traits.faceCues),
-    hairEnabled: traits.hairEnabled !== false,
+    hairEnabled: isHairEnabled(traits),
     customHairDescription: trimString(traits.customHairDescription),
     hairColor: sanitizeTrait(traits.hairColor),
     hairLength: sanitizeTrait(traits.hairLength),
     hairstyle: sanitizeTrait(traits.hairstyle),
     eyeColor: sanitizeTrait(traits.eyeColor),
     bodyBuild: sanitizeTrait(traits.bodyBuild),
-    outfitEnabled: traits.outfitEnabled !== false,
+    outfitEnabled: isOutfitEnabled(traits),
     customOutfitDescription: trimString(traits.customOutfitDescription),
     outfitStyle: sanitizeTrait(traits.outfitStyle),
     accessories: uniqueStrings(Array.isArray(traits.accessories) ? traits.accessories : []),
