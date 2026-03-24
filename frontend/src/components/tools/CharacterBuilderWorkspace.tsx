@@ -52,6 +52,7 @@ import {
   HAIRSTYLE_OPTIONS,
   getAvailableCharacterFormatOptions,
   getCharacterFormatMultiplier,
+  getQualityEngineId,
   normalizeCharacterFormatMode,
   normalizeTraitsForSourceMode,
   OUTFIT_STYLE_OPTIONS,
@@ -484,11 +485,29 @@ type LoadingRequestKey = 'generate-1' | 'generate-4' | 'full-body-fix' | 'lighti
 type LoadingRequestCounts = Record<LoadingRequestKey, number>;
 type PendingCharacterRun = {
   id: string;
+  jobId: string;
+  createdAt: string;
   action: CharacterBuilderAction;
   outputMode: CharacterBuilderRun['outputMode'];
   qualityMode: CharacterBuilderRun['qualityMode'];
   formatMode: CharacterBuilderFormatMode;
   generateCount: 1 | 4;
+};
+
+type PersistedPendingCharacterRuns = {
+  version: 1;
+  runs: PendingCharacterRun[];
+};
+
+type CharacterJobPayload = {
+  ok?: boolean;
+  jobId?: string;
+  createdAt?: string;
+  status?: string | null;
+  renderIds?: string[] | null;
+  renderThumbUrls?: string[] | null;
+  settingsSnapshot?: unknown;
+  pricing?: CharacterBuilderRun['pricing'];
 };
 
 type HistoricalCharacterGalleryItem = {
@@ -511,6 +530,7 @@ const INITIAL_LOADING_REQUEST_COUNTS: LoadingRequestCounts = {
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
   : 25;
+const CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY = 'maxvideoai.character-builder.pending-runs.v1';
 
 function isAuthRequiredError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
@@ -654,6 +674,44 @@ function readPersistedState(): CharacterBuilderState | null {
   }
 }
 
+function readPersistedPendingRuns(): PendingCharacterRun[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = window.localStorage.getItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as PersistedPendingCharacterRuns | null;
+    if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.runs)) return [];
+    return parsed.runs.filter(
+      (entry): entry is PendingCharacterRun =>
+        Boolean(
+          entry &&
+            typeof entry.id === 'string' &&
+            entry.id.length &&
+            typeof entry.jobId === 'string' &&
+            entry.jobId.length &&
+            typeof entry.createdAt === 'string' &&
+            entry.createdAt.length
+        )
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writePersistedPendingRuns(runs: PendingCharacterRun[]) {
+  if (typeof window === 'undefined') return;
+  if (!runs.length) {
+    window.localStorage.removeItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY);
+    return;
+  }
+  const payload: PersistedPendingCharacterRuns = {
+    version: 1,
+    runs,
+  };
+  window.localStorage.setItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY, JSON.stringify(payload));
+}
+
 function writePersistedState(state: CharacterBuilderState) {
   if (typeof window === 'undefined') return;
   const payload: PersistedCharacterBuilderState = {
@@ -674,6 +732,91 @@ function getFlattenedResults(runs: CharacterBuilderRun[]): CharacterBuilderResul
 function findResultById(runs: CharacterBuilderRun[], resultId: string | null): CharacterBuilderResult | null {
   if (!resultId) return null;
   return getFlattenedResults(runs).find((result) => result.id === resultId) ?? null;
+}
+
+function getCharacterEngineLabel(qualityMode: CharacterBuilderRun['qualityMode']): string {
+  return getQualityEngineId(qualityMode) === 'nano-banana-pro' ? 'Nano Banana Pro' : 'Nano Banana 2';
+}
+
+function buildRecoveredRunFromJob(
+  pendingRun: PendingCharacterRun,
+  payload: CharacterJobPayload
+): CharacterBuilderRun | null {
+  const renderIds = Array.isArray(payload.renderIds)
+    ? payload.renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0)
+    : [];
+  if (!renderIds.length) return null;
+
+  const renderThumbUrls = Array.isArray(payload.renderThumbUrls)
+    ? payload.renderThumbUrls.filter((value): value is string => typeof value === 'string' && value.length > 0)
+    : [];
+  const snapshot =
+    payload.settingsSnapshot && typeof payload.settingsSnapshot === 'object'
+      ? (payload.settingsSnapshot as CharacterBuilderSettingsSnapshot)
+      : null;
+  const createdAt = payload.createdAt ?? pendingRun.createdAt;
+  const engineId = snapshot?.engineId ?? getQualityEngineId(pendingRun.qualityMode);
+  const engineLabel = snapshot?.engineLabel ?? getCharacterEngineLabel(pendingRun.qualityMode);
+  const runId = `character_run_${pendingRun.jobId}`;
+  const defaultBuilderState = createDefaultCharacterBuilderState();
+  const fallbackSnapshot: CharacterBuilderSettingsSnapshot = {
+    schemaVersion: 1,
+    surface: 'character-builder',
+    action: pendingRun.action,
+    engineId,
+    engineLabel,
+    inputMode: 't2i',
+    prompt: '',
+    builder: {
+      sourceMode: defaultBuilderState.sourceMode,
+      outputMode: pendingRun.outputMode,
+      consistencyMode: defaultBuilderState.consistencyMode,
+      referenceStrength: defaultBuilderState.referenceStrength,
+      qualityMode: pendingRun.qualityMode,
+      formatMode: pendingRun.formatMode,
+      referenceImages: defaultBuilderState.referenceImages,
+      traits: defaultBuilderState.traits,
+      outputOptions: defaultBuilderState.outputOptions,
+      advancedNotes: defaultBuilderState.advancedNotes,
+      mustRemainVisible: defaultBuilderState.mustRemainVisible,
+    },
+    lineage: {
+      parentResultId: null,
+      parentRunId: null,
+      pinnedReferenceResultId: null,
+    },
+  };
+
+  return {
+    id: runId,
+    jobId: pendingRun.jobId,
+    action: snapshot?.action ?? pendingRun.action,
+    outputMode: snapshot?.builder.outputMode ?? pendingRun.outputMode,
+    qualityMode: snapshot?.builder.qualityMode ?? pendingRun.qualityMode,
+    formatMode: normalizeCharacterFormatMode(snapshot?.builder.formatMode ?? pendingRun.formatMode, snapshot?.builder.qualityMode ?? pendingRun.qualityMode),
+    engineId,
+    engineLabel,
+    createdAt,
+    parentResultId: snapshot?.lineage?.parentResultId ?? null,
+    results: renderIds.map((url, index) => ({
+      id: `${pendingRun.jobId}:result:${index + 1}`,
+      runId,
+      jobId: pendingRun.jobId,
+      url,
+      thumbUrl: renderThumbUrls[index] ?? url,
+      engineId,
+      engineLabel,
+      action: snapshot?.action ?? pendingRun.action,
+      outputMode: snapshot?.builder.outputMode ?? pendingRun.outputMode,
+      qualityMode: snapshot?.builder.qualityMode ?? pendingRun.qualityMode,
+      createdAt,
+      parentResultId: snapshot?.lineage?.parentResultId ?? null,
+    })),
+    settingsSnapshot: snapshot ?? fallbackSnapshot,
+    pricing: payload.pricing,
+    requestId: pendingRun.jobId,
+    providerJobId: null,
+  };
 }
 
 function buildReferenceImage(
@@ -2060,9 +2203,9 @@ function BuildLookCarouselCard({
       type="button"
       onClick={onClick}
       className={clsx(
-        'flex min-h-[82px] w-[220px] flex-col justify-between border-r border-border px-4 py-3 text-left transition last:border-r-0 md:min-w-0 md:flex-1',
+        'relative flex min-h-[82px] w-[220px] flex-col justify-between border-r border-border px-4 py-3 text-left transition last:border-r-0 md:min-w-0 md:flex-1',
         active
-          ? 'bg-brand/[0.08]'
+          ? 'bg-[linear-gradient(180deg,rgba(58,123,213,0.14),rgba(58,123,213,0.08))] shadow-[inset_0_0_0_1px_rgba(58,123,213,0.18)]'
           : 'bg-surface hover:bg-surface-hover'
       )}
     >
@@ -2070,7 +2213,9 @@ function BuildLookCarouselCard({
         <p className="text-sm font-semibold text-text-primary">{title}</p>
         {accessory ? <div className="shrink-0" onClick={(event) => event.stopPropagation()}>{accessory}</div> : null}
       </div>
-      <p className="mt-2 line-clamp-2 text-xs text-text-secondary">{summary}</p>
+      <p className={clsx('mt-2 line-clamp-2 text-xs', active ? 'text-text-primary/80' : 'text-text-secondary')}>
+        {summary}
+      </p>
     </button>
   );
 }
@@ -2588,6 +2733,7 @@ export default function CharacterBuilderPage() {
   const {
     data: historicalJobPages,
     stableJobs: historicalJobs,
+    mutate: mutateHistoricalJobs,
     setSize: setHistoricalSize,
     isLoading: historicalJobsLoading,
     isValidating: historicalJobsValidating,
@@ -2691,6 +2837,10 @@ export default function CharacterBuilderPage() {
       setAdvancedOpen(Boolean(persisted.advancedNotes));
       setShowStyleReferenceSlot(Boolean(getRefByRole(persisted.referenceImages, 'style')));
     }
+    const pending = readPersistedPendingRuns();
+    if (pending.length) {
+      setPendingRuns(pending);
+    }
     setHydrated(true);
   }, []);
 
@@ -2706,6 +2856,11 @@ export default function CharacterBuilderPage() {
   }, [hydrated, state]);
 
   useEffect(() => {
+    if (!hydrated) return;
+    writePersistedPendingRuns(pendingRuns);
+  }, [hydrated, pendingRuns]);
+
+  useEffect(() => {
     if (authLoading || !hydrated) return;
     if (user) {
       visitorSanitizedRef.current = false;
@@ -2716,6 +2871,7 @@ export default function CharacterBuilderPage() {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.removeItem(CHARACTER_BUILDER_STORAGE_KEY);
+        window.localStorage.removeItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY);
       } catch {
         // ignore storage failures
       }
@@ -2732,6 +2888,76 @@ export default function CharacterBuilderPage() {
     setError(null);
     setStatusMessage(null);
   }, [authLoading, hydrated, user]);
+
+  useEffect(() => {
+    if (!hydrated || authLoading || !user || !pendingRuns.length) return undefined;
+
+    let cancelled = false;
+
+    async function syncPendingRuns() {
+      const completedRuns: CharacterBuilderRun[] = [];
+      const completedIds = new Set<string>();
+      const failedIds = new Set<string>();
+
+      await Promise.all(
+        pendingRuns.map(async (pendingRun) => {
+          try {
+            const response = await authFetch(`/api/jobs/${encodeURIComponent(pendingRun.jobId)}`);
+            const payload = (await response.json().catch(() => null)) as CharacterJobPayload | null;
+            if (!response.ok || !payload?.ok || cancelled) return;
+
+            const normalizedStatus = typeof payload.status === 'string' ? payload.status.toLowerCase() : '';
+            const recoveredRun = buildRecoveredRunFromJob(pendingRun, payload);
+            if (recoveredRun) {
+              completedRuns.push(recoveredRun);
+              completedIds.add(pendingRun.id);
+              return;
+            }
+
+            if (normalizedStatus === 'failed' || normalizedStatus === 'error' || normalizedStatus === 'cancelled' || normalizedStatus === 'canceled') {
+              failedIds.add(pendingRun.id);
+            }
+          } catch {
+            // ignore transient polling failures
+          }
+        })
+      );
+
+      if (cancelled) return;
+
+      if (completedIds.size || failedIds.size) {
+        setPendingRuns((previous) =>
+          previous.filter((entry) => !completedIds.has(entry.id) && !failedIds.has(entry.id))
+        );
+      }
+
+      if (completedRuns.length) {
+        setState((previous) => {
+          const seenJobIds = new Set(previous.runs.map((run) => run.jobId));
+          const freshRuns = completedRuns.filter((run) => !seenJobIds.has(run.jobId));
+          if (!freshRuns.length) return previous;
+          const nextRuns = [...freshRuns, ...previous.runs].slice(0, 12);
+          const firstResultId = freshRuns[0]?.results[0]?.id ?? previous.selectedResultId;
+          return {
+            ...previous,
+            runs: nextRuns,
+            selectedResultId: firstResultId,
+          };
+        });
+        void mutateHistoricalJobs(undefined, { revalidate: true });
+      }
+    }
+
+    void syncPendingRuns();
+    const intervalId = window.setInterval(() => {
+      void syncPendingRuns();
+    }, 8000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [authLoading, hydrated, mutateHistoricalJobs, pendingRuns, user]);
 
   useEffect(() => {
     const requestedJobId = jobIdFromQuery;
@@ -3005,10 +3231,16 @@ export default function CharacterBuilderPage() {
     setError(null);
     setStatusMessage(null);
     const loadingKey = getLoadingRequestKey(action, generateCount);
-    const pendingRunId = `pending_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const clientJobId =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? `img_${crypto.randomUUID()}`
+        : `img_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     const requestTraits = normalizeHairAndOutfitModes(state.traits);
+    const pendingCreatedAt = new Date().toISOString();
     const pendingRun: PendingCharacterRun = {
-      id: pendingRunId,
+      id: clientJobId,
+      jobId: clientJobId,
+      createdAt: pendingCreatedAt,
       action,
       outputMode: state.outputMode,
       qualityMode: state.qualityMode,
@@ -3021,6 +3253,7 @@ export default function CharacterBuilderPage() {
 
     try {
       const response = await runCharacterBuilderTool({
+        jobId: clientJobId,
         action,
         sourceMode: state.sourceMode,
         outputMode: state.outputMode,
@@ -3049,7 +3282,7 @@ export default function CharacterBuilderPage() {
         throw new Error(copy.missingRun);
       }
 
-      setPendingRuns((previous) => previous.filter((entry) => entry.id !== pendingRunId));
+      setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));
       setState((previous) => {
         const nextRuns = [response.run!, ...previous.runs].slice(0, 12);
         const firstResultId = response.run!.results[0]?.id ?? null;
@@ -3072,8 +3305,9 @@ export default function CharacterBuilderPage() {
             ? copy.runFullBodyDone
             : copy.runLightingDone
       );
+      void mutateHistoricalJobs(undefined, { revalidate: true });
     } catch (runError) {
-      setPendingRuns((previous) => previous.filter((entry) => entry.id !== pendingRunId));
+      setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));
       if (isAuthRequiredError(runError)) {
         openAuthGate();
         return;

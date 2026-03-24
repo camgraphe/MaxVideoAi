@@ -679,6 +679,7 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
       jobSurface: 'character',
       billingProductKey,
       body: {
+        jobId: trimString(input.jobId) || undefined,
         engineId,
         mode: inputMode,
         prompt,

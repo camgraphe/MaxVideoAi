@@ -54,6 +54,7 @@ export interface CharacterBuilderLineage {
 }
 
 export interface CharacterBuilderRequest {
+  jobId?: string | null;
   action: CharacterBuilderAction;
   sourceMode: CharacterBuilderSourceMode;
   outputMode: CharacterBuilderOutputMode;
