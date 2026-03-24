@@ -4,7 +4,23 @@
 
 @layer components {
   .blog-prose {
-    @apply prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-text-primary prose-h1:text-4xl prose-h1:leading-tight prose-h2:text-3xl prose-h3:text-2xl prose-p:leading-7 prose-a:text-brand prose-a:hover:text-brandHover prose-a:font-semibold prose-strong:text-text-primary prose-code:text-sm prose-code:font-medium prose-ul:list-disc prose-ol:list-decimal prose-li:marker:text-text-muted prose-img:rounded-[22px] prose-table:w-full prose-table:text-sm prose-hr:border-hairline;
+    --tw-prose-body: var(--text-secondary);
+    --tw-prose-headings: var(--text-primary);
+    --tw-prose-lead: var(--text-secondary);
+    --tw-prose-links: var(--link);
+    --tw-prose-bold: var(--text-primary);
+    --tw-prose-counters: var(--text-muted);
+    --tw-prose-bullets: var(--hairline);
+    --tw-prose-hr: var(--hairline);
+    --tw-prose-quotes: var(--text-primary);
+    --tw-prose-quote-borders: var(--border);
+    --tw-prose-captions: var(--text-muted);
+    --tw-prose-code: var(--text-primary);
+    --tw-prose-pre-code: var(--on-inverse);
+    --tw-prose-pre-bg: var(--surface-on-media-dark-80);
+    --tw-prose-th-borders: var(--hairline);
+    --tw-prose-td-borders: var(--hairline);
+    @apply prose max-w-none text-text-secondary prose-headings:font-semibold prose-headings:text-text-primary prose-h1:text-4xl prose-h1:leading-tight prose-h2:text-3xl prose-h3:text-2xl prose-p:leading-7 prose-a:text-brand prose-a:hover:text-brandHover prose-a:font-semibold prose-strong:text-text-primary prose-code:text-sm prose-code:font-medium prose-ul:list-disc prose-ol:list-decimal prose-li:text-text-secondary prose-li:marker:text-text-muted prose-img:rounded-[22px] prose-table:w-full prose-table:text-sm prose-th:text-text-primary prose-td:text-text-secondary prose-hr:border-hairline;
   }
 
   .blog-prose h2 {

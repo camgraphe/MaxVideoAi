@@ -60,11 +60,11 @@ type CharacterBuilderLandingContent = Dictionary['toolMarketing']['characterBuil
 
 const COMPARISON_STYLES = [
   {
-    tone: 'border-rose-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,245,245,0.96))]',
+    tone: 'character-builder-comparison character-builder-comparison--negative border-rose-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,245,245,0.96))]',
     badgeTone: 'bg-rose-100 text-rose-700',
   },
   {
-    tone: 'border-emerald-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(239,253,245,0.96))]',
+    tone: 'character-builder-comparison character-builder-comparison--positive border-emerald-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(239,253,245,0.96))]',
     badgeTone: 'bg-emerald-100 text-emerald-700',
   },
 ] as const;
@@ -80,29 +80,33 @@ const USE_CASE_VISUALS = [
   {
     src: REFERENCE_ASSET_PORTRAIT_URL,
     imageClassName: 'object-cover object-[center_18%]',
-    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,241,236,0.96))]',
-    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    cardClassName:
+      'character-builder-usecase-card border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,241,236,0.96))]',
+    labelClassName: 'character-builder-usecase-label border-hairline bg-white/80 text-text-muted',
     bodyClassName: 'text-text-secondary',
   },
   {
     src: MASCOT_USE_CASE_ASSET.url,
     imageClassName: SHEET_IMAGE_CLASSNAME,
-    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,246,238,0.96))]',
-    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    cardClassName:
+      'character-builder-usecase-card border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,246,238,0.96))]',
+    labelClassName: 'character-builder-usecase-label border-hairline bg-white/80 text-text-muted',
     bodyClassName: 'text-text-secondary',
   },
   {
     src: 'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/8b29c715-842e-473c-a0d3-5ce8d6d6857f.webp',
     imageClassName: 'object-cover object-center',
-    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,246,251,0.96))]',
-    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    cardClassName:
+      'character-builder-usecase-card border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,246,251,0.96))]',
+    labelClassName: 'character-builder-usecase-label border-hairline bg-white/80 text-text-muted',
     bodyClassName: 'text-text-secondary',
   },
   {
     src: COMICS_PREVIZ_USE_CASE_ASSET.url,
     imageClassName: SHEET_IMAGE_CLASSNAME,
-    cardClassName: 'border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,245,250,0.96))]',
-    labelClassName: 'border-hairline bg-white/80 text-text-muted',
+    cardClassName:
+      'character-builder-usecase-card border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,245,250,0.96))]',
+    labelClassName: 'character-builder-usecase-label border-hairline bg-white/80 text-text-muted',
     bodyClassName: 'text-text-secondary',
   },
 ] as const;
@@ -170,7 +174,7 @@ function LinkChip({
 
 function HeroProofCard({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[20px] border border-hairline/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,253,0.9))] px-4 py-3 text-sm leading-6 text-text-primary shadow-[0_18px_42px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+    <div className="rounded-[20px] border border-hairline/90 bg-surface/90 px-4 py-3 text-sm leading-6 text-text-primary shadow-[0_18px_42px_rgba(15,23,42,0.06)] backdrop-blur-sm">
       <div className="flex items-start gap-3">
         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
         <span className="text-text-secondary">{children}</span>
@@ -220,7 +224,7 @@ function HeroScreenshotPreview({ content }: { content: CharacterBuilderLandingCo
 
 function HowItWorksPill({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+    <span className="character-builder-pill inline-flex items-center rounded-full border border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
       {children}
     </span>
   );
@@ -294,12 +298,12 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
   const secondaryUseCase = content.useCases.items[1]!;
 
   return (
-    <>
-      <section className="relative overflow-hidden border-b border-hairline bg-[radial-gradient(circle_at_top_left,rgba(244,127,94,0.12),transparent_28%),radial-gradient(circle_at_right,rgba(76,132,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,252,0.96))]">
+    <div className="character-builder-page">
+      <section className="tool-hero-surface character-builder-hero relative overflow-hidden border-b border-hairline bg-[radial-gradient(circle_at_top_left,rgba(244,127,94,0.12),transparent_28%),radial-gradient(circle_at_right,rgba(76,132,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,252,0.96))]">
         <div className="container-page relative max-w-[88rem] pb-10 pt-8 sm:pb-12 sm:pt-10 lg:pb-12 lg:pt-12">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:items-start lg:gap-12">
             <div className="max-w-4xl stack-gap-lg lg:pt-6">
-              <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[13px] text-slate-500">
+              <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[13px] text-text-muted">
                 <Link href="/" className="transition hover:text-text-primary">
                   {content.breadcrumb.home}
                 </Link>
@@ -308,23 +312,23 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                   {content.breadcrumb.tools}
                 </Link>
                 <ChevronRight className="h-3.5 w-3.5" />
-                <span className="font-semibold text-slate-700">{content.breadcrumb.current}</span>
+                <span className="font-semibold text-text-secondary">{content.breadcrumb.current}</span>
               </nav>
 
               <div className="flex flex-wrap items-center gap-3">
-                <div className="inline-flex w-fit items-center rounded-full border border-slate-200/90 bg-white/90 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-[0_16px_34px_rgba(15,23,42,0.06)]">
+                <div className="tool-hero-pill inline-flex w-fit items-center rounded-full border border-slate-200/90 bg-white/90 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-[0_16px_34px_rgba(15,23,42,0.06)]">
                   {content.hero.badge}
                 </div>
-                <div className="inline-flex w-fit items-center rounded-full border border-[#e6b99b] bg-[#fff3ea] px-4 py-2 text-[11px] font-semibold text-[#a55a31] shadow-[0_14px_28px_rgba(244,127,94,0.08)]">
+                <div className="tool-hero-pill tool-hero-pill--accent inline-flex w-fit items-center rounded-full border border-[#e6b99b] bg-[#fff3ea] px-4 py-2 text-[11px] font-semibold text-[#a55a31] shadow-[0_14px_28px_rgba(244,127,94,0.08)]">
                   {content.hero.secondaryBadge}
                 </div>
               </div>
 
               <div className="stack-gap-sm">
-                <h1 className="max-w-[13ch] text-[clamp(3rem,5vw,4.8rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-slate-950">
+                <h1 className="max-w-[13ch] text-[clamp(3rem,5vw,4.8rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-text-primary">
                   {content.hero.title}
                 </h1>
-                <p className="max-w-2xl text-[1.02rem] leading-8 text-slate-600 sm:text-lg">{content.hero.body}</p>
+                <p className="max-w-2xl text-[1.02rem] leading-8 text-text-secondary sm:text-lg">{content.hero.body}</p>
               </div>
 
               <div className="flex flex-wrap gap-3 pt-1">
@@ -350,7 +354,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
 
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl">
-          <div className="overflow-hidden rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,254,0.96))] shadow-[0_28px_80px_rgba(15,23,42,0.05)]">
+          <div className="character-builder-panel overflow-hidden rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,254,0.96))] shadow-[0_28px_80px_rgba(15,23,42,0.05)]">
             <div className="grid lg:grid-cols-[minmax(0,0.76fr)_minmax(0,1.24fr)]">
               <div className="border-b border-white/10 bg-[linear-gradient(180deg,#0a1320,#101d2d)] px-6 py-6 text-white lg:border-b-0 lg:border-r lg:border-r-white/10">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{content.why.problemLabel}</p>
@@ -373,7 +377,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">{content.why.portraitInputLabel}</p>
-                    <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] border border-hairline bg-[#f6efe8]">
+                    <div className="tool-image-matte tool-image-matte--warm relative aspect-[16/11] overflow-hidden rounded-[24px] border border-hairline bg-[#f6efe8]">
                       <Image
                         src={REFERENCE_ASSET_PORTRAIT_URL}
                         alt={content.why.portraitInputAlt}
@@ -385,7 +389,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                   </div>
                   <div className="space-y-2">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">{content.why.sheetLabel}</p>
-                    <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] border border-hairline bg-[#f8f2ea]">
+                    <div className="tool-image-matte tool-image-matte--warm relative aspect-[16/11] overflow-hidden rounded-[24px] border border-hairline bg-[#f8f2ea]">
                       <Image
                         src={LATEST_SHEET_1.url}
                         alt={content.why.sheetAlt}
@@ -405,13 +409,13 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
       <section className="border-t border-hairline bg-surface section">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader eyebrow={content.howItWorks.eyebrow} title={content.howItWorks.title} body={<p>{content.howItWorks.body}</p>} />
-          <div className="rounded-[32px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,251,254,0.96))] p-4 shadow-[0_22px_56px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
+          <div className="character-builder-panel-soft rounded-[32px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,251,254,0.96))] p-4 shadow-[0_22px_56px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
             <div className="grid gap-3 lg:grid-cols-3">
               {content.howItWorks.steps.map((step, index) => (
                 <div
                   key={step.title}
                   id={`step-${index + 1}`}
-                  className="rounded-[24px] border border-hairline bg-white px-4 py-4 shadow-[0_14px_30px_rgba(15,23,42,0.04)]"
+                  className="character-builder-step-card rounded-[24px] border border-hairline bg-white px-4 py-4 shadow-[0_14px_30px_rgba(15,23,42,0.04)]"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div
@@ -452,7 +456,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                   </div>
                   <div className="grid gap-2 px-4 py-3">
                     {column.items.map((item) => (
-                      <div key={item} className="rounded-[16px] border border-hairline bg-white/80 px-4 py-2 text-sm leading-6 text-text-secondary">
+                      <div key={item} className="character-builder-inline-chip rounded-[16px] border border-hairline bg-white/80 px-4 py-2 text-sm leading-6 text-text-secondary">
                         {item}
                       </div>
                     ))}
@@ -471,9 +475,9 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
             title={content.outputsWorkflow.title}
             body={<p>{content.outputsWorkflow.body}</p>}
           />
-          <div className="rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.96))] p-4 shadow-[0_28px_80px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
+          <div className="character-builder-panel-soft rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.96))] p-4 shadow-[0_28px_80px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)_minmax(0,0.96fr)] lg:items-stretch">
-              <Card className="overflow-hidden border-hairline bg-white p-0 shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
+              <Card className="tool-surface-card overflow-hidden border-hairline bg-white p-0 shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
                 <div className="p-4">
                   <div className="relative aspect-[4/4.8] overflow-hidden rounded-[22px] bg-[linear-gradient(180deg,#fff4ec,#ffffff)]">
                     <Image
@@ -495,7 +499,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                 </div>
               </Card>
 
-              <Card className="overflow-hidden border-[1.5px] border-[#f1d1bb] bg-[linear-gradient(180deg,#fff8f3,#fffefc)] p-0 shadow-[0_24px_60px_rgba(196,91,45,0.12)]">
+              <Card className="tool-surface-card tool-surface-card--warm overflow-hidden border-[1.5px] border-[#f1d1bb] bg-[linear-gradient(180deg,#fff8f3,#fffefc)] p-0 shadow-[0_24px_60px_rgba(196,91,45,0.12)]">
                 <div className="flex items-center justify-between px-5 pt-5">
                   <div className="inline-flex rounded-full border border-[#f4d8c6] bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b96135]">
                     {sheetOutputCard.badge}
@@ -709,37 +713,10 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg section">
-        <div className="container-page max-w-4xl stack-gap-lg">
-          <SectionHeader eyebrow={content.faq.eyebrow} title={content.faq.title} body={<p>{content.faq.body}</p>} />
-          <div className="stack-gap-sm">
-            {content.faq.items.map((faq) => (
-              <details
-                key={faq.question}
-                className="rounded-[24px] border border-hairline bg-surface/90 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]"
-              >
-                <summary className="cursor-pointer list-none text-base font-semibold text-text-primary">{faq.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-text-secondary">{faq.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="border-t border-hairline bg-surface section">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader eyebrow={content.related.eyebrow} title={content.related.title} body={<p>{content.related.body}</p>} />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="border-hairline bg-bg/90 p-6">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
-                {content.related.workflowTitle}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                {content.related.workflowLinks.map((link) => (
-                  <LinkChip key={link.href} href={link.href} label={link.label} />
-                ))}
-              </div>
-            </Card>
+          <div className="grid gap-4">
             <Card className="border-hairline bg-bg/90 p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
                 {content.related.guidesTitle}
@@ -795,10 +772,27 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
         </div>
       </section>
 
+      <section className="border-t border-hairline bg-bg section">
+        <div className="container-page max-w-4xl stack-gap-lg">
+          <SectionHeader eyebrow={content.faq.eyebrow} title={content.faq.title} body={<p>{content.faq.body}</p>} />
+          <div className="stack-gap-sm">
+            {content.faq.items.map((faq) => (
+              <details
+                key={faq.question}
+                className="rounded-[24px] border border-hairline bg-surface/90 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]"
+              >
+                <summary className="cursor-pointer list-none text-base font-semibold text-text-primary">{faq.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-text-secondary">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <FAQSchema questions={[...content.faq.items]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(howToJsonLd) }} />
-    </>
+    </div>
   );
 }

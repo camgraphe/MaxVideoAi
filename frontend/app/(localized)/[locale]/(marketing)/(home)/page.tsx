@@ -9,10 +9,10 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { GenerateWaysMobileTabs } from '@/components/marketing/GenerateWaysMobileTabs';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { listFalEngines } from '@/config/falEngines';
 import { getHomepageSlotsCached, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { getImageAlt } from '@/lib/image-alt';
-import { listFalEngines } from '@/config/falEngines';
 import type { EngineCaps } from '@/types/engines';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -55,8 +55,8 @@ function ReferenceStartCard({
   imageAlt: string;
 }) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
-      <div className="relative aspect-[1.08] overflow-hidden border-b border-hairline bg-surface-2">
+    <article className="reference-start-card group flex h-full flex-col overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
+      <div className="reference-start-card__media relative aspect-[1.08] overflow-hidden border-b border-hairline bg-surface-2">
         <Image
           src={imageSrc}
           alt={imageAlt}
@@ -69,7 +69,7 @@ function ReferenceStartCard({
           {eyebrow}
         </span>
       </div>
-      <div className="flex flex-1 flex-col p-6">
+      <div className="reference-start-card__body flex flex-1 flex-col p-6">
         <h3 className="text-2xl font-semibold tracking-tight text-text-primary">{title}</h3>
         <p className="mt-3 text-sm leading-7 text-text-secondary">{body}</p>
         <ButtonLink href={href} linkComponent={Link} variant="outline" size="lg" className="mt-6 w-fit">
@@ -527,7 +527,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     { title: 'All your engines in one place.', body: 'Switch between Sora, Veo, Pika, MiniMax, and more without juggling dashboards.' },
   ];
   const whyCards = Array.isArray(home.whyCards) && home.whyCards.length ? home.whyCards : defaultWhyCards;
-  const ways = home.ways;
   const pricing = home.pricing;
   const trust = home.trust;
   const trustCards = Array.isArray(trust.cards)
@@ -546,7 +545,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const toolsWorkflow = home.toolsWorkflow;
   const generateWaysResources = home.generateWaysResources ?? {};
   const homepageSlots = await getHomepageSlotsCached();
-  const falEngines = listFalEngines();
   const heroLightboxCopy = HERO_LIGHTBOX_COPY_BY_LOCALE[locale] ?? HERO_LIGHTBOX_COPY_BY_LOCALE.en;
 
   const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
@@ -851,15 +849,9 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted sm:text-xs">
                 {startupFameLabel}
               </span>
-              <img
-                src="https://startupfa.me/badges/featured-badge-small.webp"
-                alt={startupFameLabel}
-                width={224}
-                height={36}
-                className="h-5 w-auto"
-                loading="lazy"
-                decoding="async"
-              />
+              <span className="inline-flex items-center rounded-full border border-[#d9d3cb] bg-[#f6f1ea] px-3 py-1 text-[11px] font-semibold text-[#5d4b37]">
+                Featured on Startup Fame
+              </span>
             </a>
           </div>
           <GenerateWaysMobileTabs items={generateWaysCards} />
@@ -1066,12 +1058,12 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               </span>
               <h3 className="mt-4 text-xl font-semibold text-text-primary">{trustCards[0]?.title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-text-secondary">{trustCards[0]?.body}</p>
-              <div className="mt-5 rounded-2xl border border-brand/10 bg-white/85 p-4 shadow-[0_16px_36px_-24px_rgba(47,91,191,0.45)] backdrop-blur-sm">
+              <div className="mt-5 rounded-2xl border border-brand/10 bg-surface p-4 shadow-[0_16px_36px_-24px_rgba(47,91,191,0.45)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
                 <div className="flex flex-wrap gap-2">
                   {trustQuote?.meta?.map((item) => (
                     <span
                       key={item}
-                      className="rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted"
+                      className="rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted dark:border-white/10 dark:bg-white/[0.06] dark:text-text-secondary"
                     >
                       {item}
                     </span>

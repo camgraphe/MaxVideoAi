@@ -85,11 +85,11 @@ function AngleThumb({
   imageClassName?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-[18px] border border-hairline bg-white">
+    <div className="angle-thumb-card overflow-hidden rounded-[18px] border border-hairline bg-white">
       <div className={`relative aspect-[4/3] ${background}`}>
         <Image src={src} alt={alt} fill sizes="180px" className={imageClassName} />
       </div>
-      <div className="space-y-1 px-3 py-2">
+      <div className="angle-thumb-copy space-y-1 px-3 py-2">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-primary">{label}</p>
         <p className="text-xs leading-5 text-text-secondary">{note}</p>
       </div>
@@ -105,9 +105,9 @@ function ProductAngleMock({
   afterLabel: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-hairline bg-[linear-gradient(180deg,#f5f8fb,#ffffff)] p-4">
+    <div className="angle-product-mock rounded-[22px] border border-hairline bg-[linear-gradient(180deg,#f5f8fb,#ffffff)] p-4">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,0.82fr)_auto_minmax(0,1fr)] sm:items-center">
-        <div className="rounded-[18px] border border-hairline bg-white p-3">
+        <div className="angle-product-mock__frame rounded-[18px] border border-hairline bg-white p-3">
           <div className="relative aspect-[4/3] overflow-hidden rounded-[16px] bg-[#edf3f8]">
             <Image
               src={ANGLE_SOURCE_URL}
@@ -120,7 +120,7 @@ function ProductAngleMock({
           <div className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">{beforeLabel}</div>
         </div>
         <ArrowRight className="mx-auto h-4 w-4 text-brand" />
-        <div className="rounded-[18px] border border-hairline bg-white p-3">
+        <div className="angle-product-mock__frame rounded-[18px] border border-hairline bg-white p-3">
           <div className="relative aspect-[4/3] overflow-hidden rounded-[16px] bg-[#e8f0f8]">
             <Image
               src={ANGLE_OUTPUT_URL}
@@ -246,17 +246,17 @@ const HOW_IT_WORKS_STEP_STYLES = [
   {
     badge: 'bg-[#fff2e8] text-[#c05a1b]',
     line: 'from-[#fb923c] via-[#fdba74] to-transparent',
-    card: 'bg-[linear-gradient(180deg,#ffffff,#fffaf5)]',
+    card: 'angle-how-step angle-how-step--1',
   },
   {
     badge: 'bg-[#edf4ff] text-[#2563eb]',
     line: 'from-[#60a5fa] via-[#93c5fd] to-transparent',
-    card: 'bg-[linear-gradient(180deg,#ffffff,#f7fbff)]',
+    card: 'angle-how-step angle-how-step--2',
   },
   {
     badge: 'bg-[#eef8ff] text-[#0f5d7a]',
     line: 'from-[#22d3ee] via-[#67e8f9] to-transparent',
-    card: 'bg-[linear-gradient(180deg,#ffffff,#f5fcff)]',
+    card: 'angle-how-step angle-how-step--3',
   },
 ] as const;
 
@@ -321,8 +321,8 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
   ];
 
   return (
-    <>
-      <section className="relative overflow-hidden border-b border-hairline bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.1),transparent_28%),radial-gradient(circle_at_right,rgba(59,130,246,0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,252,0.96))]">
+    <div className="angle-page">
+      <section className="tool-hero-surface angle-hero relative overflow-hidden border-b border-hairline bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.1),transparent_28%),radial-gradient(circle_at_right,rgba(59,130,246,0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,252,0.96))]">
         <div className="container-page relative max-w-7xl py-8 sm:py-10 lg:py-12">
           <div className="stack-gap-lg">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-10 xl:gap-12">
@@ -340,7 +340,7 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
                 </nav>
 
                 <div className="stack-gap-sm">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f5d7a] sm:text-xs">{content.hero.eyebrow}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand sm:text-xs">{content.hero.eyebrow}</p>
                 </div>
 
                 <div className="stack-gap-sm">
@@ -394,7 +394,7 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
               </div>
             </Card>
 
-            <Card className="overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(242,248,252,0.98))] p-0">
+            <Card className="angle-solution-card overflow-hidden border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(242,248,252,0.98))] p-0">
               <div className="border-b border-hairline px-6 py-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{content.problemSolution.solution.label}</p>
                 <h3 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">{content.problemSolution.solution.title}</h3>
@@ -402,8 +402,8 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
               <div className="stack-gap-sm px-6 py-6 text-sm leading-7 text-text-secondary">
                 <p>{content.problemSolution.solution.body}</p>
                 <div className="mt-3 grid justify-items-center gap-3 sm:grid-cols-[minmax(0,0.72fr)_auto_minmax(0,1fr)] sm:items-center sm:justify-items-stretch">
-                  <div className={`rounded-[22px] border border-hairline bg-white p-3 ${MOBILE_IMAGE_MAX_WIDTH}`}>
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-[#edf3f8]">
+                  <div className={`tool-surface-card rounded-[22px] border border-hairline bg-white p-3 ${MOBILE_IMAGE_MAX_WIDTH}`}>
+                    <div className="tool-image-matte relative aspect-[4/3] overflow-hidden rounded-[18px] bg-[#edf3f8]">
                       <Image
                         src={ANGLE_SOURCE_URL}
                         alt={content.problemSolution.solution.sourceAlt}
@@ -414,8 +414,8 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
                     </div>
                   </div>
                   <ArrowRight className="mx-auto h-5 w-5 text-brand" />
-                  <div className={`rounded-[22px] border border-hairline bg-white p-3 ${MOBILE_IMAGE_MAX_WIDTH}`}>
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-[#e8f0f8]">
+                  <div className={`tool-surface-card rounded-[22px] border border-hairline bg-white p-3 ${MOBILE_IMAGE_MAX_WIDTH}`}>
+                    <div className="tool-image-matte relative aspect-[4/3] overflow-hidden rounded-[18px] bg-[#e8f0f8]">
                       <Image
                         src={ANGLE_OUTPUT_URL}
                         alt={content.problemSolution.solution.outputAlt}
@@ -509,7 +509,7 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
 
           <div className="grid gap-4 lg:grid-cols-12">
             <Card className="overflow-hidden border-hairline bg-surface p-0 lg:col-span-6">
-              <div className="border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(247,249,252,0.96))] p-5">
+              <div className="angle-showcase-header border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(247,249,252,0.96))] p-5">
                 <div className="grid grid-cols-3 gap-3">
                   <AngleThumb
                     label={storyOriginalThumb.label}
@@ -543,7 +543,7 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
             </Card>
 
             <Card className="overflow-hidden border-hairline bg-surface p-0 lg:col-span-6">
-              <div className="border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(241,247,252,0.96))] p-5">
+              <div className="angle-showcase-header border-b border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(241,247,252,0.96))] p-5">
                 <ProductAngleMock
                   beforeLabel={content.useCases.commerce.mockBeforeLabel}
                   afterLabel={content.useCases.commerce.mockAfterLabel}
@@ -567,43 +567,10 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-surface section">
-        <div className="container-page max-w-4xl stack-gap-lg">
-          <SectionHeader eyebrow={content.faq.eyebrow} title={content.faq.title} body={<p>{content.faq.body}</p>} />
-          <div className="stack-gap-sm">
-            {content.faq.items.map((faq) => (
-              <details
-                key={faq.question}
-                className="rounded-[24px] border border-hairline bg-bg p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]"
-              >
-                <summary className="cursor-pointer list-none text-base font-semibold text-text-primary">{faq.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-text-secondary">{faq.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="border-t border-hairline bg-bg section">
         <div className="container-page max-w-6xl stack-gap-lg">
           <SectionHeader eyebrow={content.related.eyebrow} title={content.related.title} body={<p>{content.related.body}</p>} />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="border-hairline bg-surface p-6">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
-                {content.related.workflowTitle}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                {content.related.workflowLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="inline-flex items-center rounded-full border border-hairline bg-bg px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </Card>
+          <div className="grid gap-4">
             <Card className="border-hairline bg-surface p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
                 {content.related.guidesTitle}
@@ -681,10 +648,27 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
         </div>
       </section>
 
+      <section className="border-t border-hairline bg-surface section">
+        <div className="container-page max-w-4xl stack-gap-lg">
+          <SectionHeader eyebrow={content.faq.eyebrow} title={content.faq.title} body={<p>{content.faq.body}</p>} />
+          <div className="stack-gap-sm">
+            {content.faq.items.map((faq) => (
+              <details
+                key={faq.question}
+                className="rounded-[24px] border border-hairline bg-bg p-5 shadow-[0_20px_40px_rgba(15,23,42,0.04)]"
+              >
+                <summary className="cursor-pointer list-none text-base font-semibold text-text-primary">{faq.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-text-secondary">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <FAQSchema questions={[...content.faq.items]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(howToJsonLd) }} />
-    </>
+    </div>
   );
 }

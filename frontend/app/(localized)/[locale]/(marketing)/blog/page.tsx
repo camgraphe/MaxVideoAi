@@ -190,7 +190,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   return (
     <main className="container-page max-w-6xl section">
       <div className="stack-gap-lg">
-        <header className="overflow-hidden rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.96))] shadow-card">
+        <header className="overflow-hidden rounded-[34px] border border-hairline bg-gradient-to-b from-surface via-surface to-bg/80 shadow-card">
           <div className="stack-gap p-8 sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-micro text-brand">
               {content.hero.eyebrow ?? 'The Studio Journal'}
@@ -203,7 +203,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
           {(content.intro?.cards?.length ?? 0) > 0 ? (
             <div className="grid gap-px border-t border-hairline bg-hairline lg:grid-cols-3">
               {(content.intro?.cards ?? []).map((card) => (
-                <div key={card.title} className="bg-white/90 px-6 py-5 text-sm text-text-secondary">
+                <div key={card.title} className="bg-surface/95 px-6 py-5 text-sm text-text-secondary backdrop-blur">
                   <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
                   <p className="mt-2 leading-7">{card.body}</p>
                 </div>
@@ -344,7 +344,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
           </div>
           <dl className="mt-6 grid gap-4 md:grid-cols-3">
             {faq.items.map((item) => (
-              <div key={item.question} className="rounded-[22px] border border-hairline bg-white/90 px-5 py-5 text-sm text-text-secondary">
+              <div key={item.question} className="rounded-[22px] border border-hairline bg-surface-2/90 px-5 py-5 text-sm text-text-secondary backdrop-blur">
                 <dt className="font-semibold text-text-primary">{item.question}</dt>
                 <dd className="mt-3 leading-7">{renderPressEmail(item.answer)}</dd>
               </div>
