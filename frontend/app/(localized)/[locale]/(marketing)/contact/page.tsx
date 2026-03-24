@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
@@ -19,11 +20,11 @@ const CONTACT_META: Record<AppLocale, { title: string; description: string }> = 
   },
   fr: {
     title: 'Contact — MaxVideoAI',
-    description: "Contactez l’équipe MaxVideoAI pour le support, les partenariats ou l’onboarding entreprise.",
+    description: "Contactez l’équipe MaxVideoAI pour le support, les partenariats ou les demandes entreprise.",
   },
   es: {
     title: 'Contacto — MaxVideoAI',
-    description: 'Habla con el equipo de MaxVideoAI para soporte, alianzas o incorporación empresarial.',
+    description: 'Habla con el equipo de MaxVideoAI para soporte, alianzas o solicitudes para equipos.',
   },
 };
 
@@ -61,7 +62,7 @@ export default async function ContactPage({
   searchParams: Record<string, string | string[] | undefined>;
 }) {
   const locale = params.locale;
-  const { dictionary } = await resolveDictionary();
+  const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.contact;
   const statusHref = buildLocalizedPath(locale, STATUS_SLUG_MAP[locale] ?? STATUS_SLUG_MAP.en);
   const isSubmitted = isFlagged(searchParams.submitted);
@@ -71,6 +72,45 @@ export default async function ContactPage({
   const errorText =
     (content.form as { error?: string }).error ??
     'We could not send your message. Please try again or reach out via email.';
+  const intro = content.intro as
+    | {
+        body?: string;
+        cards?: {
+          productHelp?: { title?: string; body?: string };
+          partnerships?: { title?: string; body?: string };
+          press?: { title?: string; body?: string };
+        };
+      }
+    | undefined;
+  const faq = content.faq as
+    | {
+        title?: string;
+        items?: Array<{ question?: string; answer?: string }>;
+      }
+    | undefined;
+  const statusCard = content.statusCard as
+    | {
+        title?: string;
+        body?: string;
+        cta?: string;
+      }
+    | undefined;
+
+  const introCards = intro?.cards ?? {};
+  const faqItems = faq?.items ?? [];
+
+  function renderPlaceholderText(text?: string, email?: ReactNode) {
+    if (typeof text !== 'string') return text;
+    const token = text.includes('{link}') ? '{link}' : '{email}';
+    const [before, after] = text.split(token);
+    return (
+      <>
+        {before}
+        {email}
+        {after ?? ''}
+      </>
+    );
+  }
 
   return (
     <div className="container-page max-w-4xl section">
@@ -80,34 +120,24 @@ export default async function ContactPage({
           <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
         </header>
         <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
-          <p>
-            Talk to us about anything from enterprise onboarding to editorial coverage. Messages that include context—team
-            size, target models, deadline, or compliance requirements—reach the right specialist faster. Every request
-            receives a human reply; we do not outsource support or sales.
-          </p>
+          <p>{intro?.body}</p>
           <div className="mt-5 grid grid-gap-sm sm:grid-cols-3">
             <div>
-              <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Product help</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{introCards.productHelp?.title}</h2>
+              <p className="mt-2">{introCards.productHelp?.body}</p>
+            </div>
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{introCards.partnerships?.title}</h2>
               <p className="mt-2">
-                For issues with renders, billing, or engine routing, include the job ID and we will review the trace
-                directly in the workspace.
+                {renderPlaceholderText(
+                  introCards.partnerships?.body,
+                  <ObfuscatedEmailLink user="partners" domain="maxvideo.ai" label="partners@maxvideo.ai" />
+                )}
               </p>
             </div>
             <div>
-              <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Partnerships</h2>
-              <p className="mt-2">
-                Agencies and studios can request custom SLAs, shared wallets, or white-label docs through this form or by
-                emailing{' '}
-                <ObfuscatedEmailLink user="partners" domain="maxvideo.ai" label="partners@maxvideo.ai" />
-                .
-              </p>
-            </div>
-            <div>
-              <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Press</h2>
-              <p className="mt-2">
-                Journalists can ask for interview slots, product demos, or comment on frontier models. Please include your
-                publication and deadline.
-              </p>
+              <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{introCards.press?.title}</h2>
+              <p className="mt-2">{introCards.press?.body}</p>
             </div>
           </div>
         </section>
@@ -192,42 +222,21 @@ export default async function ContactPage({
           </div>
         </section>
         <section className="rounded-card border border-hairline bg-surface/90 p-6 shadow-card sm:p-8">
-          <h2 className="text-lg font-semibold text-text-primary">Contact FAQ</h2>
+          <h2 className="text-lg font-semibold text-text-primary">{faq?.title}</h2>
           <dl className="mt-5 stack-gap-lg text-sm text-text-secondary">
-            <div>
-              <dt className="font-semibold text-text-primary">How fast will someone reply?</dt>
-              <dd className="mt-2">
-                We answer during European and US business hours. Most support tickets receive a human response in under 12
-                hours, enterprise requests inside 24.
-              </dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-text-primary">Do you offer live demos?</dt>
-              <dd className="mt-2">
-                Yes—include your preferred time zone and the models you want to see. We run demos inside the MaxVideoAI
-                workspace so you can watch routing and pricing in real time.
-              </dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-text-primary">Where can I check service status?</dt>
-              <dd className="mt-2">
-                Visit the{' '}
-                <Link href={statusHref} className="font-semibold text-brand hover:text-brandHover">
-                  status page
-                </Link>{' '}
-                for current engine latency and incident history before opening a ticket.
-              </dd>
-            </div>
+            {faqItems.map((item) => (
+              <div key={item.question}>
+                <dt className="font-semibold text-text-primary">{item.question}</dt>
+                <dd className="mt-2">{renderPlaceholderText(item.answer, <Link href={statusHref} className="font-semibold text-brand hover:text-brandHover">{statusCard?.cta}</Link>)}</dd>
+              </div>
+            ))}
           </dl>
         </section>
         <section className="rounded-card border border-hairline bg-surface/90 p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">Check live engine status</h2>
-          <p className="mt-2 text-sm text-text-secondary">
-            Before opening a ticket, confirm whether an engine is already degraded. Status updates list latency, incident notes,
-            and mitigation steps so you can decide whether to retry or switch models.
-          </p>
+          <h2 className="text-lg font-semibold text-text-primary">{statusCard?.title}</h2>
+          <p className="mt-2 text-sm text-text-secondary">{statusCard?.body}</p>
           <TextLink href={statusHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
-            View status page <span aria-hidden>→</span>
+            {statusCard?.cta} <span aria-hidden>→</span>
           </TextLink>
         </section>
       </div>

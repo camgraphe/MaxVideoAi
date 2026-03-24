@@ -889,7 +889,7 @@
       "description": "Générez des vidéos IA dans un seul espace : choisissez un moteur, réglez la durée, la résolution et le format, prévisualisez le prix, générez jusqu'à 4 variantes, copiez les prompts et téléchargez."
     },
     "hero": {
-      "title": "Workflows",
+      "title": "Flux de travail",
       "subtitle": "Votre workflow vidéo IA reproductible : choisissez un moteur, réglez le plan, prévisualisez le prix et générez des variantes réutilisables.",
       "primaryCta": "Générer maintenant",
       "secondaryCta": "Voir des exemples",
@@ -948,6 +948,7 @@
     "examples": {
       "title": "Exemples (prompts réels réutilisables)",
       "subtitle": "Ouvrez un exemple -> réutilisez le prompt -> lancez-le dans /app.",
+      "viewLabel": "Voir",
       "items": [
         {
           "label": "Sora 2",
@@ -1896,6 +1897,23 @@
       "title": "Contactez l'équipe.",
       "subtitle": "Besoin d'assistance, d'intégration entreprise ou d'informations presse ? Envoyez-nous un message et nous répondrons dans un délai d'un jour ouvrable."
     },
+    "intro": {
+      "body": "Contactez-nous pour le support, les partenariats, les besoins entreprise ou les demandes éditoriales. Plus votre message contient du contexte sur l’équipe, les modèles visés, l’échéance ou les contraintes conformité, plus vite il arrive à la bonne personne. Chaque demande reçoit une réponse humaine.",
+      "cards": {
+        "productHelp": {
+          "title": "Aide produit",
+          "body": "Pour un problème de rendu, de facturation ou de routage moteur, joignez l’ID du job et nous relirons directement la trace dans le workspace."
+        },
+        "partnerships": {
+          "title": "Partenariats",
+          "body": "Les agences et studios peuvent demander des SLA sur mesure, des wallets partagés ou une documentation white-label via ce formulaire ou en écrivant à {email}."
+        },
+        "press": {
+          "title": "Presse",
+          "body": "Les journalistes peuvent demander une interview, une démo produit ou un commentaire sur les modèles de pointe. Merci d’indiquer votre média et votre échéance."
+        }
+      }
+    },
     "form": {
       "name": "Nom",
       "email": "E-mail",
@@ -1921,7 +1939,31 @@
       ],
       "message": "Message",
       "submit": "Envoyer le message",
-      "alt": "Préférez-vous l'e-mail ? Écrivez à {email}."
+      "alt": "Préférez-vous l'e-mail ? Écrivez à {email}.",
+      "success": "Message envoyé. Nous revenons vers vous rapidement.",
+      "error": "Le message n’a pas pu être envoyé. Réessayez ou contactez-nous par e-mail."
+    },
+    "faq": {
+      "title": "FAQ contact",
+      "items": [
+        {
+          "question": "Sous quel délai recevez-vous une réponse ?",
+          "answer": "Nous répondons pendant les heures ouvrées en Europe et aux États-Unis. La plupart des demandes support reçoivent une réponse humaine en moins de 12 heures, les demandes entreprise en moins de 24 heures."
+        },
+        {
+          "question": "Proposez-vous des démos en direct ?",
+          "answer": "Oui. Indiquez simplement votre fuseau horaire et les modèles que vous souhaitez voir. Nous réalisons les démos dans le workspace MaxVideoAI pour vous montrer le routage et les prix en temps réel."
+        },
+        {
+          "question": "Où vérifier l’état du service ?",
+          "answer": "Consultez la {link} pour vérifier la latence des moteurs et l’historique des incidents avant d’ouvrir un ticket."
+        }
+      ]
+    },
+    "statusCard": {
+      "title": "Vérifier l’état des moteurs en direct",
+      "body": "Avant d’ouvrir un ticket, vérifiez si un moteur est déjà dégradé. La page de statut liste les latences, les notes d’incident et les mesures d’atténuation pour vous aider à décider s’il faut relancer ou changer de modèle.",
+      "cta": "page de statut"
     }
   },
   "legal": {
@@ -1983,9 +2025,34 @@
     }
   },
   "changelog": {
+    "meta": {
+      "title": "Journal des modifications — MaxVideo AI",
+      "description": "Mises à jour transparentes sur les moteurs, les workflows et les performances de file."
+    },
     "hero": {
       "title": "Journal des modifications",
       "subtitle": "Chaque mise à jour de moteur, amélioration de flux de travail et ajustement de tarification — publié chaque semaine. Abonnez-vous dans l'application pour recevoir les alertes."
+    },
+    "intro": {
+      "paragraphs": [
+        "Nous publions les mises à jour MaxVideoAI par vagues courtes et régulières. Les nouveaux moteurs arrivent dès que les fournisseurs ouvrent l’accès, puis les améliorations de workflow suivent dans la foulée afin que les équipes puissent les adopter sans réapprendre la plateforme.",
+        "Utilisez ce journal pour savoir quand une capacité a été mise en ligne, confirmer une correction de latence ou partager une preuve de livraison avec vos parties prenantes. Quand une entrée touche à la facturation ou au routage, elle renvoie vers la documentation correspondante."
+      ],
+      "releaseTagsTitle": "Comment nous taguons les versions",
+      "releaseTags": [
+        {
+          "label": "Moteur",
+          "body": "nouveau modèle, changement de qualité ou évolution tarifaire."
+        },
+        {
+          "label": "Workflow",
+          "body": "amélioration UI, automatisation ou file d’attente."
+        },
+        {
+          "label": "Confiance",
+          "body": "ajustement de politique, d’audit ou de conformité."
+        }
+      ]
     },
     "entries": [
       {

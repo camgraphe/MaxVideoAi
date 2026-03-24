@@ -889,7 +889,7 @@
       "description": "Genera videos IA en un solo espacio: elige un motor, ajusta la duración, la resolución y el formato, previsualiza el precio, genera hasta 4 variantes, copia prompts y descarga."
     },
     "hero": {
-      "title": "Workflows",
+      "title": "Flujos de trabajo",
       "subtitle": "Tu flujo de trabajo de video IA repetible: elige un motor, ajusta el plano, previsualiza el precio y genera variantes reutilizables.",
       "primaryCta": "Generar ahora",
       "secondaryCta": "Ver ejemplos",
@@ -948,6 +948,7 @@
     "examples": {
       "title": "Ejemplos (prompts reales que puedes reutilizar)",
       "subtitle": "Abre un ejemplo -> reutiliza el prompt -> ejecútalo en /app.",
+      "viewLabel": "Ver",
       "items": [
         {
           "label": "Sora 2",
@@ -1887,7 +1888,24 @@
   "contact": {
     "hero": {
       "title": "Habla con el equipo.",
-      "subtitle": "¿Necesitas soporte, ayuda con la puesta en marcha empresarial o información de prensa? Déjanos un mensaje y te responderemos en un día hábil."
+      "subtitle": "¿Necesitas soporte, ayuda para tu equipo o información de prensa? Déjanos un mensaje y te responderemos en un día hábil."
+    },
+    "intro": {
+      "body": "Escríbenos para soporte, alianzas, necesidades de equipo o solicitudes editoriales. Si compartes contexto sobre tu equipo, los modelos que quieres usar, la fecha límite o los requisitos de cumplimiento, el mensaje llega antes a la persona adecuada. Cada solicitud recibe una respuesta humana.",
+      "cards": {
+        "productHelp": {
+          "title": "Ayuda de producto",
+          "body": "Si tienes un problema con renders, facturación o enrutamiento de motores, incluye el ID del trabajo y revisaremos la traza directamente en el workspace."
+        },
+        "partnerships": {
+          "title": "Alianzas",
+          "body": "Las agencias y estudios pueden solicitar SLA personalizados, billeteras compartidas o documentación white-label a través de este formulario o escribiendo a {email}."
+        },
+        "press": {
+          "title": "Prensa",
+          "body": "Los periodistas pueden pedir entrevistas, demos del producto o comentarios sobre modelos de frontera. Incluye tu publicación y la fecha límite."
+        }
+      }
     },
     "form": {
       "name": "Nombre",
@@ -1914,7 +1932,31 @@
       ],
       "message": "Mensaje",
       "submit": "Enviar mensaje",
-      "alt": "¿Prefieres escribirnos por correo? Escríbenos a {email}."
+      "alt": "¿Prefieres escribirnos por correo? Escríbenos a {email}.",
+      "success": "Mensaje enviado. Te responderemos en breve.",
+      "error": "No pudimos enviar tu mensaje. Vuelve a intentarlo o contáctanos por correo."
+    },
+    "faq": {
+      "title": "FAQ de contacto",
+      "items": [
+        {
+          "question": "¿Cuánto tardan en responder?",
+          "answer": "Respondemos en horario laboral de Europa y Estados Unidos. La mayoría de los tickets de soporte recibe una respuesta humana en menos de 12 horas y las solicitudes para equipos en menos de 24."
+        },
+        {
+          "question": "¿Ofrecen demos en vivo?",
+          "answer": "Sí. Solo indica tu zona horaria y los modelos que quieres ver. Hacemos las demos dentro del workspace de MaxVideoAI para que puedas seguir el enrutamiento y los precios en tiempo real."
+        },
+        {
+          "question": "¿Dónde reviso el estado del servicio?",
+          "answer": "Consulta la {link} para revisar la latencia de los motores y el historial de incidentes antes de abrir un ticket."
+        }
+      ]
+    },
+    "statusCard": {
+      "title": "Revisa el estado de los motores en vivo",
+      "body": "Antes de abrir un ticket, confirma si algún motor ya aparece degradado. La página de estado muestra latencia, notas de incidentes y pasos de mitigación para decidir si conviene reintentar o cambiar de modelo.",
+      "cta": "página de estado"
     }
   },
   "legal": {
@@ -1976,9 +2018,34 @@
     }
   },
   "changelog": {
+    "meta": {
+      "title": "Registro de cambios — MaxVideo AI",
+      "description": "Actualizaciones transparentes sobre motores, flujos de trabajo y rendimiento de las colas."
+    },
     "hero": {
       "title": "Registro de cambios",
       "subtitle": "Cada actualización de motor, mejora del flujo de trabajo y ajuste de precios se publica cada semana. Suscríbete desde la app para recibir alertas."
+    },
+    "intro": {
+      "paragraphs": [
+        "Publicamos las actualizaciones de MaxVideoAI en ciclos cortos y constantes. Las mejoras de motores aparecen en cuanto los proveedores abren acceso real y los cambios de workflow llegan en la misma semana para que los equipos adopten la novedad sin reaprender la plataforma.",
+        "Usa este registro para ver cuándo se activó una capacidad, confirmar una corrección de latencia o compartir una prueba de entrega con tu equipo. Si una entrada afecta a facturación o políticas de enrutamiento, enlaza directamente con la documentación correspondiente."
+      ],
+      "releaseTagsTitle": "Cómo etiquetamos las versiones",
+      "releaseTags": [
+        {
+          "label": "Motor",
+          "body": "nuevo modelo, cambio de calidad o variación de precio."
+        },
+        {
+          "label": "Flujo",
+          "body": "mejora de interfaz, automatización o cola."
+        },
+        {
+          "label": "Confianza",
+          "body": "ajuste de política, auditoría o cumplimiento."
+        }
+      ]
     },
     "entries": [
       {

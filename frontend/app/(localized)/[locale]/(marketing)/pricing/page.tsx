@@ -62,70 +62,140 @@ function formatCurrencyForLocale(locale: AppLocale, currency: string, amount: nu
   }).format(amount);
 }
 
-const DEFAULT_EXAMPLE_COSTS: ExampleCostsContent = {
-  title: 'Example costs',
-  subtitle: 'Realistic runs to help you plan. Prices update as engines evolve.',
-  labels: {
-    engine: 'Engine',
-    duration: 'Duration',
-    resolution: 'Resolution',
-    audio: 'Audio',
+const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
+  en: {
+    title: 'Example costs',
+    subtitle: 'Realistic runs to help you plan. Prices update as engines evolve.',
+    labels: { engine: 'Engine', duration: 'Duration', resolution: 'Resolution', audio: 'Audio' },
+    cards: [
+      {
+        title: 'Social clip (vertical)',
+        engine: 'Pika 2.2',
+        duration: '5s',
+        resolution: '1080×1920',
+        audio: 'Off',
+        note: 'Charged only if it succeeds.',
+        pricingScenario: { engineId: 'pika-text-to-video', durationSec: 5, resolution: '1080p', memberTier: 'member' },
+      },
+      {
+        title: 'Cinematic test (landscape)',
+        engine: 'Veo 3.1',
+        duration: '8s',
+        resolution: '1920×1080',
+        audio: 'On',
+        note: 'Price before you generate.',
+        pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+      },
+      {
+        title: 'Sora 2 narrative (voice-over)',
+        engine: 'Sora 2',
+        duration: '12s',
+        resolution: '1280×720',
+        audio: 'On',
+        note: 'Automatic refund on fail.',
+        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+      },
+    ],
   },
-  cards: [
-    {
-      title: 'Social clip (vertical)',
-      engine: 'Pika 2.2',
-      duration: '5s',
-      resolution: '1080×1920',
-      audio: 'Off',
-      note: 'Charged only if it succeeds.',
-      pricingScenario: {
-        engineId: 'pika-text-to-video',
-        durationSec: 5,
-        resolution: '1080p',
-        memberTier: 'member',
+  fr: {
+    title: 'Exemples de coûts',
+    subtitle: 'Runs réalistes pour planifier. Les prix évoluent avec les moteurs.',
+    labels: { engine: 'Moteur', duration: 'Durée', resolution: 'Résolution', audio: 'Audio' },
+    cards: [
+      {
+        title: 'Clip social (vertical)',
+        engine: 'Pika 2.2',
+        duration: '5 s',
+        resolution: '1080×1920',
+        audio: 'Silencieux',
+        note: 'Débité uniquement si le rendu aboutit.',
+        pricingScenario: { engineId: 'pika-text-to-video', durationSec: 5, resolution: '1080p', memberTier: 'member' },
       },
-    },
-    {
-      title: 'Cinematic test (landscape)',
-      engine: 'Veo 3.1',
-      duration: '8s',
-      resolution: '1920×1080',
-      audio: 'On',
-      note: 'Price before you generate.',
-      pricingScenario: {
-        engineId: 'veo-3-1',
-        durationSec: 8,
-        resolution: '1080p',
-        memberTier: 'member',
+      {
+        title: 'Test cinématographique (paysage)',
+        engine: 'Veo 3.1',
+        duration: '8 s',
+        resolution: '1920×1080',
+        audio: 'Inclus',
+        note: 'Prix affiché avant génération.',
+        pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
-    },
-    {
-      title: 'Sora 2 narrative (voice-over)',
-      engine: 'Sora 2',
-      duration: '12s',
-      resolution: '1280×720',
-      audio: 'On',
-      note: 'Automatic refund on fail.',
-      pricingScenario: {
-        engineId: 'sora-2',
-        durationSec: 12,
-        resolution: '720p',
-        memberTier: 'member',
+      {
+        title: 'Narratif Sora 2 (voice-over)',
+        engine: 'Sora 2',
+        duration: '12 s',
+        resolution: '1280×720',
+        audio: 'Inclus',
+        note: 'Remboursement automatique en cas d’échec.',
+        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
       },
-    },
-  ],
-} as const;
+    ],
+  },
+  es: {
+    title: 'Costos de ejemplo',
+    subtitle: 'Ejecuciones realistas para planificar. Los precios cambian cuando evolucionan los motores.',
+    labels: { engine: 'Motor', duration: 'Duración', resolution: 'Resolución', audio: 'Audio' },
+    cards: [
+      {
+        title: 'Clip social (vertical)',
+        engine: 'Pika 2.2',
+        duration: '5 s',
+        resolution: '1080×1920',
+        audio: 'Silencioso',
+        note: 'Se cobra solo si termina correctamente.',
+        pricingScenario: { engineId: 'pika-text-to-video', durationSec: 5, resolution: '1080p', memberTier: 'member' },
+      },
+      {
+        title: 'Test cinematográfico (horizontal)',
+        engine: 'Veo 3.1',
+        duration: '8 s',
+        resolution: '1920×1080',
+        audio: 'Incluido',
+        note: 'Precio visible antes de generar.',
+        pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+      },
+      {
+        title: 'Narrativa Sora 2 (voz en off)',
+        engine: 'Sora 2',
+        duration: '12 s',
+        resolution: '1280×720',
+        audio: 'Incluido',
+        note: 'Reembolso automático si falla.',
+        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+      },
+    ],
+  },
+};
 
-const DEFAULT_PRICE_FACTORS = {
-  title: 'What affects price',
-  points: [
-    'Duration scales linearly (4s / 8s / 12s).',
-    'Resolution increases cost at 1080p vs 720p.',
-    'Audio adds a small premium on supported engines.',
-    'Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate.',
-  ],
-} as const;
+const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[] }> = {
+  en: {
+    title: 'What affects price',
+    points: [
+      'Duration scales linearly (4s / 8s / 12s).',
+      'Resolution increases cost at 1080p vs 720p.',
+      'Audio adds a small premium on supported engines.',
+      'Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate.',
+    ],
+  },
+  fr: {
+    title: 'Ce qui influence le prix',
+    points: [
+      'La durée évolue linéairement (4 s / 8 s / 12 s).',
+      'La résolution augmente le coût en 1080p vs 720p.',
+      'L’audio ajoute une légère prime sur les moteurs compatibles.',
+      'Le niveau du moteur (Sora/Veo/Pika/MiniMax) fixe le tarif de base.',
+    ],
+  },
+  es: {
+    title: 'Qué afecta el precio',
+    points: [
+      'La duración escala de forma lineal (4 s / 8 s / 12 s).',
+      'La resolución incrementa el costo en 1080p frente a 720p.',
+      'El audio añade un pequeño recargo en los motores compatibles.',
+      'El nivel del motor (Sora/Veo/Pika/MiniMax) define la tarifa base.',
+    ],
+  },
+};
 
 const serializeJsonLd = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
 
@@ -282,21 +352,41 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     maximumFractionDigits: 0,
   });
   const memberCopy = {
-    requirementDefault: member.requirementDefault ?? 'Default status — applies automatically',
-    requirementThreshold: member.requirementThreshold ?? 'Admin threshold: {amount} (rolling 30 days)',
-    benefitBase: member.benefitBase ?? 'Baseline rate',
-    benefitDiscount: member.benefitDiscount ?? 'Save {percent}% on every render',
+    requirementDefault:
+      member.requirementDefault ??
+      (locale === 'fr'
+        ? 'Statut par défaut — appliqué automatiquement'
+        : locale === 'es'
+          ? 'Estado predefinido — se aplica automáticamente'
+          : 'Default status — applies automatically'),
+    requirementThreshold:
+      member.requirementThreshold ??
+      (locale === 'fr'
+        ? 'Seuil défini par l’admin : {amount} (30 jours glissants)'
+        : locale === 'es'
+          ? 'Umbral definido por el admin: {amount} (últimos 30 días)'
+          : 'Admin threshold: {amount} (rolling 30 days)'),
+    benefitBase:
+      member.benefitBase ??
+      (locale === 'fr' ? 'Tarif de base' : locale === 'es' ? 'Tarifa base' : 'Baseline rate'),
+    benefitDiscount:
+      member.benefitDiscount ??
+      (locale === 'fr'
+        ? 'Économisez {percent}% sur chaque rendu'
+        : locale === 'es'
+          ? 'Ahorra {percent}% en cada render'
+          : 'Save {percent}% on every render'),
   };
-  const exampleCosts = content.examples ?? DEFAULT_EXAMPLE_COSTS;
+  const exampleCosts = content.examples ?? DEFAULT_EXAMPLE_COSTS[locale];
   const exampleLabels = {
-    ...DEFAULT_EXAMPLE_COSTS.labels,
+    ...DEFAULT_EXAMPLE_COSTS[locale].labels,
     ...(exampleCosts.labels ?? {}),
   };
   const exampleCards: ExampleCardConfig[] =
     Array.isArray(exampleCosts.cards) && exampleCosts.cards.length
       ? (exampleCosts.cards as ExampleCardConfig[])
-      : DEFAULT_EXAMPLE_COSTS.cards;
-  const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS;
+      : DEFAULT_EXAMPLE_COSTS[locale].cards;
+  const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS[locale];
   const generatorHref = '/generate';
 
   const resolvedExampleCards: ExampleCardConfig[] = await Promise.all(
@@ -390,10 +480,10 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
         <section aria-labelledby="example-costs">
           <h2 id="example-costs" className="scroll-mt-28 text-2xl font-semibold text-text-primary sm:text-3xl">
-            {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS.title}
+            {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS[locale].title}
           </h2>
           <p className="mb-4 text-sm text-text-secondary">
-            {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS.subtitle}
+            {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS[locale].subtitle}
           </p>
           <div className="grid grid-cols-1 grid-gap-sm sm:grid-cols-3">
             {resolvedExampleCards.map((card) => (
@@ -469,16 +559,22 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </h2>
           <p className="mt-2">
             {content.calculator?.description ??
-              'Open the generator to see the exact price before you create a video.'}
+              (locale === 'fr'
+                ? 'Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.'
+                : locale === 'es'
+                  ? 'Abre el generador para ver el precio exacto antes de crear el video.'
+                  : 'Open the generator to see the exact price before you create a video.')}
           </p>
           <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm" linkComponent={Link}>
-            {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
+            {content.calculator?.cta ??
+              (locale === 'fr' ? 'Ouvrir le générateur' : locale === 'es' ? 'Abrir el generador' : 'Open the generator')}{' '}
+            <span aria-hidden>→</span>
           </TextLink>
         </section>
         {priceFactors.points?.length ? (
           <section aria-labelledby="price-factors">
             <h2 id="price-factors" className="text-2xl font-semibold text-text-primary sm:text-3xl">
-              {priceFactors.title ?? DEFAULT_PRICE_FACTORS.title}
+              {priceFactors.title ?? DEFAULT_PRICE_FACTORS[locale].title}
             </h2>
             <ul className="mt-2 space-y-1 text-sm text-text-secondary">
               {priceFactors.points.map((point) => (

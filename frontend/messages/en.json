@@ -864,6 +864,7 @@
     "examples": {
       "title": "Examples (real prompts you can reuse)",
       "subtitle": "Open an example -> reuse the prompt -> run it in /app.",
+      "viewLabel": "View",
       "items": [
         {
           "label": "Sora 2",
@@ -1885,6 +1886,23 @@
       "title": "Contact the team.",
       "subtitle": "Need support, enterprise onboarding, or press information? Send a note and we’ll reply within one business day."
     },
+    "intro": {
+      "body": "Talk to us about support, partnerships, enterprise setup, or editorial coverage. Messages that include context such as team size, target models, deadlines, or compliance requirements reach the right specialist faster. Every request gets a human reply.",
+      "cards": {
+        "productHelp": {
+          "title": "Product help",
+          "body": "For issues with renders, billing, or engine routing, include the job ID and we’ll review the trace directly in the workspace."
+        },
+        "partnerships": {
+          "title": "Partnerships",
+          "body": "Agencies and studios can request custom SLAs, shared wallets, or white-label docs through this form or by emailing {email}."
+        },
+        "press": {
+          "title": "Press",
+          "body": "Journalists can request interview slots, product demos, or commentary on frontier models. Please include your publication and deadline."
+        }
+      }
+    },
     "form": {
       "name": "Name",
       "email": "Email",
@@ -1910,7 +1928,31 @@
       ],
       "message": "Message",
       "submit": "Send message",
-      "alt": "Prefer email? Write to {email}."
+      "alt": "Prefer email? Write to {email}.",
+      "success": "Message sent. We’ll get back to you shortly.",
+      "error": "We couldn’t send your message. Please try again or reach out by email."
+    },
+    "faq": {
+      "title": "Contact FAQ",
+      "items": [
+        {
+          "question": "How fast will someone reply?",
+          "answer": "We answer during European and US business hours. Most support tickets receive a human response in under 12 hours, enterprise requests inside 24."
+        },
+        {
+          "question": "Do you offer live demos?",
+          "answer": "Yes. Include your preferred time zone and the models you want to see. We run demos inside the MaxVideoAI workspace so you can watch routing and pricing in real time."
+        },
+        {
+          "question": "Where can I check service status?",
+          "answer": "Visit the {email} for current engine latency and incident history before opening a ticket."
+        }
+      ]
+    },
+    "statusCard": {
+      "title": "Check live engine status",
+      "body": "Before opening a ticket, confirm whether an engine is already degraded. Status updates list latency, incident notes, and mitigation steps so you can decide whether to retry or switch models.",
+      "cta": "status page"
     }
   },
   "legal": {
@@ -1972,9 +2014,34 @@
     }
   },
   "changelog": {
+    "meta": {
+      "title": "Changelog — MaxVideo AI",
+      "description": "Transparent updates on engines, workflows, and queue performance."
+    },
     "hero": {
       "title": "Changelog",
       "subtitle": "Every engine update, workflow improvement, and pricing tweak — published weekly. Subscribe inside the app for alerts."
+    },
+    "intro": {
+      "paragraphs": [
+        "We ship updates to MaxVideoAI in tight release trains. Engine upgrades land as soon as providers open access, and workflow improvements follow the same week so production teams can adopt them without relearning the platform.",
+        "Use this log to trace when a capability became available, confirm latency fixes, or share proof of delivery with stakeholders. Entries that affect billing or routing policy link back to the relevant documentation."
+      ],
+      "releaseTagsTitle": "How we tag releases",
+      "releaseTags": [
+        {
+          "label": "Engine",
+          "body": "new models, quality shifts, or pricing moves."
+        },
+        {
+          "label": "Workflow",
+          "body": "UI, automation, or queue enhancements."
+        },
+        {
+          "label": "Trust",
+          "body": "policy, audit, or compliance adjustments."
+        }
+      ]
     },
     "entries": [
       {

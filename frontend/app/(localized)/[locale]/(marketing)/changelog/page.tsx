@@ -8,8 +8,12 @@ const CHANGELOG_SLUG_MAP = buildSlugMap('changelog');
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
-  const title = 'Changelog — MaxVideo AI';
-  const description = 'Transparent updates on engines, workflows, and queue performance.';
+  const { dictionary } = await resolveDictionary({ locale });
+  const content = dictionary.changelog as {
+    meta?: { title?: string; description?: string };
+  };
+  const title = content.meta?.title ?? 'Changelog — MaxVideo AI';
+  const description = content.meta?.description ?? 'Transparent updates on engines, workflows, and queue performance.';
 
   return buildSeoMetadata({
     locale,
@@ -22,9 +26,16 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function ChangelogPage() {
-  const { dictionary } = await resolveDictionary();
+export default async function ChangelogPage({ params }: { params: { locale: AppLocale } }) {
+  const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.changelog;
+  const intro = (content as {
+    intro?: {
+      paragraphs?: string[];
+      releaseTagsTitle?: string;
+      releaseTags?: Array<{ label?: string; body?: string }>;
+    };
+  }).intro;
 
   return (
     <div className="container-page max-w-4xl section">
@@ -34,23 +45,19 @@ export default async function ChangelogPage() {
           <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
         </header>
         <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
-          <p>
-            We ship updates to MaxVideoAI in tight release trains. Engine upgrades land as soon as providers open access,
-            and workflow improvements follow the same week so production teams can adopt them without re-learning the
-            platform. The changelog highlights what changed, why it matters, and any credentials or migration steps you
-            should prepare.
-          </p>
-          <p className="mt-4">
-            Looking for something specific? Use this log to trace when a capability became available, confirm latency
-            fixes, or share proof of delivery with your stakeholders. If an entry affects billing or routing policy it
-            will link directly to the documentation page so finance and compliance crews stay aligned.
-          </p>
+          {(intro?.paragraphs ?? []).map((paragraph) => (
+            <p key={paragraph} className="mt-4 first:mt-0">
+              {paragraph}
+            </p>
+          ))}
           <div className="mt-6 rounded-card border border-dashed border-hairline bg-bg/70 p-4">
-            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">How we tag releases</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{intro?.releaseTagsTitle}</h2>
             <ul className="mt-3 list-disc space-y-1 pl-5">
-              <li><span className="font-semibold text-text-primary">Engine</span> — new models, quality shifts, or pricing moves.</li>
-              <li><span className="font-semibold text-text-primary">Workflow</span> — UI, automation, or queue enhancements.</li>
-              <li><span className="font-semibold text-text-primary">Trust</span> — policy, audit, or compliance adjustments.</li>
+              {(intro?.releaseTags ?? []).map((item) => (
+                <li key={item.label}>
+                  <span className="font-semibold text-text-primary">{item.label}</span> — {item.body}
+                </li>
+              ))}
             </ul>
           </div>
         </section>

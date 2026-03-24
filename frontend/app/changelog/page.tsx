@@ -1,12 +1,12 @@
-import ChangelogPage from '../(localized)/[locale]/(marketing)/changelog/page';
+import ChangelogPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/changelog/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
-export { generateMetadata } from '../(localized)/[locale]/(marketing)/changelog/page';
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
 export default function ChangelogDefaultPage() {
   return (
     <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <ChangelogPage />
+      <ChangelogPage params={{ locale: DEFAULT_LOCALE }} />
     </LocaleLayout>
   );
 }
