@@ -6,6 +6,8 @@ import clsx from 'clsx';
 type GenerateWaysItem = {
   title: string;
   body: string;
+  imageSrc?: string;
+  imageAlt?: string;
 };
 
 export function GenerateWaysMobileTabs({ items }: { items: readonly GenerateWaysItem[] }) {
@@ -49,6 +51,12 @@ export function GenerateWaysMobileTabs({ items }: { items: readonly GenerateWays
         })}
       </div>
       <div className="mt-2 rounded-xl border border-hairline bg-transparent p-3" role="tabpanel">
+        {activeItem.imageSrc ? (
+          <div className="relative mb-3 overflow-hidden rounded-[14px] border border-hairline bg-surface">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={activeItem.imageSrc} alt={activeItem.imageAlt ?? activeItem.title} className="aspect-[16/10] w-full object-cover" />
+          </div>
+        ) : null}
         <p className="text-xs leading-relaxed text-text-secondary">{activeItem.body}</p>
       </div>
     </div>

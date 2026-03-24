@@ -382,7 +382,7 @@
     "toolsWorkflow": {
       "eyebrow": "Flujo basado en referencias",
       "title": "Prepara la imagen antes de generar el video",
-      "body": "Genera la imagen base, fija el personaje o corrige el ángulo antes de pasar a image-to-video y a la selección del modelo.",
+      "body": "Genera la imagen base, fija el personaje o corrige el ángulo antes de pasar al video.",
       "cards": {
         "image": {
           "eyebrow": "Image",
@@ -402,6 +402,20 @@
           "body": "Conserva la imagen fuente y genera un ángulo más fuerte antes del storyboard o del video.",
           "cta": "Abrir Angle"
         }
+      }
+    },
+    "generateWaysResources": {
+      "models": {
+        "eyebrow": "Modelos",
+        "title": "Revisa las páginas de modelo antes de elegir el motor",
+        "body": "Abre el hub de modelos para ver specs, límites, precios y notas de workflow antes de comprometerte con un motor.",
+        "cta": "Ver páginas de modelo"
+      },
+      "examples": {
+        "eyebrow": "Ejemplos",
+        "title": "Mira salidas reales antes de escribir el prompt",
+        "body": "Recorre la galería de examples para revisar prompts, resultados y motores antes de lanzar tu propio run.",
+        "cta": "Ver ejemplos"
       }
     },
     "examplesCallout": {
@@ -479,19 +493,37 @@
       ]
     },
     "pricing": {
-      "badge": "Precios",
-      "title": "Los Créditos iniciales desbloquean el espacio de trabajo completo.",
-      "body": "Recarga $10 y ejecuta tus primeras generaciones de inmediato. Añade $10 / $25 / $50 siempre que necesites más saldo.",
-      "link": "Ir a precios"
+      "badge": "Antes de generar",
+      "title": "Conoce el costo antes de comprometerte.",
+      "body": "MaxVideoAI se mantiene wallet-first entre motores: ves el precio antes de lanzar, los fallos se reembolsan automáticamente y controlas el gasto desde un solo espacio.",
+      "link": "Ver precios"
     },
     "trust": {
-      "badge": "Operaciones",
-      "points": [
-        "Hub independiente: conecta cuentas de proveedores existentes o usa las nuestras.",
-        "Reembolsos automáticos en renders fallidos con recibos detallados.",
-        "Correos diarios de estado mantienen a los equipos al tanto del gasto y la salud de la cola.",
-        "Las marcas y logotipos pertenecen a sus propietarios; los enrutamos de forma responsable."
-      ]
+      "cards": [
+        {
+          "eyebrow": "Precio visible",
+          "title": "Ve el costo antes de hacer clic en Generar",
+          "body": "Primero eliges el motor y los ajustes. El total se actualiza antes de lanzar."
+        },
+        {
+          "eyebrow": "Reembolsos automáticos",
+          "title": "Los renders fallidos devuelven créditos automáticamente",
+          "body": "Los créditos vuelven a tu saldo con un recibo detallado por cada fallo."
+        },
+        {
+          "eyebrow": "Control wallet-first",
+          "title": "Un solo espacio mantiene el gasto visible",
+          "body": "Recarga cuando lo necesites, usa tus cuentas de proveedores o las nuestras y sigue la cola en un solo lugar."
+        }
+      ],
+      "footnote": "3.000+ renders internos de prueba",
+      "quote": {
+        "eyebrow": "Ejemplo de cotización",
+        "value": "$0.47",
+        "status": "Visible antes de lanzar",
+        "meta": ["LTX 2.3 Pro", "6s", "1080P"],
+        "note": "La estimación se actualiza según el motor, la duración, la resolución y el audio."
+      }
     },
     "faq": {
       "title": "Preguntas frecuentes",
@@ -515,7 +547,7 @@
         }
       ]
     },
-    "priceChipSuffix": "Sin suscripción. Pago por uso.",
+    "priceChipSuffix": "Visible antes de lanzar.",
     "meta": {
       "title": "Generador de video con IA multi-motor — Pago por uso | MaxVideoAI",
       "description": "Compara Sora, Veo, Kling y más, y genera video con IA (texto a video, imagen a video o video a video). Precio antes de generar. Pago por uso."
@@ -552,7 +584,8 @@
     "pricingPreviewLabel": "Ver precios",
     "partners": {
       "eyebrow": "Socios",
-      "featuredOn": "Destacado en"
+      "featuredOn": "Destacado en",
+      "startupFameLabel": "Destacado en Startup Fame"
     },
     "seoContent": {
       "heroParagraph": "MaxVideoAI es un generador de video con IA multi-motor: comparas modelos y luego generas a partir de un prompt (instrucción) de texto, una imagen o un video existente. El costo se muestra antes de iniciar la generación para elegir el motor adecuado con confianza.",
@@ -563,22 +596,22 @@
       ],
       "definition": {
         "title": "¿Qué es un generador de video con IA?",
-        "body": "Un generador de video con IA crea clips usando inteligencia artificial: puede convertir una instrucción escrita (texto a video), animar una imagen fija (imagen a video) o transformar un video existente (video a video). Como cada modelo equilibra distinto la calidad del movimiento, la velocidad y la consistencia, comparar antes de generar ayuda a obtener mejores resultados y a controlar el costo."
+        "body": "Genera desde texto, anima una imagen o transforma un video existente en un solo workspace, con el precio visible antes de renderizar."
       },
       "generateWays": {
         "title": "Genera videos a tu manera",
         "items": [
           {
             "title": "Texto a video",
-            "body": "Escribe una instrucción (prompt), elige un modelo y genera videos con estilo cinematográfico, de producto, social o explicativo. Texto a video es ideal para prototipar rápido, preparar un storyboard o producir piezas en serie. Puedes probar variaciones y comparar qué motor interpreta mejor tu prompt."
+            "body": "Escribe un prompt y genera una escena nueva desde cero. Ideal para ideación, storyboards y primeras pruebas rápidas."
           },
           {
             "title": "Imagen a video",
-            "body": "Parte de una imagen y dale vida con movimiento, cámara y animación sutil, manteniendo el encuadre. Imagen a video funciona muy bien para personajes consistentes, visuales de producto y escenas de marca donde la composición importa. Es una forma práctica de pasar de diseño a motion sin perder dirección visual."
+            "body": "Parte de una imagen fija y añade movimiento sin perder la composición. Ideal para personajes, productos y escenas de marca."
           },
           {
             "title": "Video a video",
-            "body": "Sube un video y transfórmalo (estilo, ritmo, movimiento) conservando la estructura base. Video a video sirve para iterar rápido, generar variantes lado a lado y entregar alternativas sin volver a grabar cada escena."
+            "body": "Sube un video y cambia estilo, ritmo o movimiento sin empezar de cero. Ideal para variantes y pruebas creativas rápidas."
           }
         ]
       },

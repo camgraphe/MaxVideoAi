@@ -1,69 +1,24 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import Image, { getImageProps } from 'next/image';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
-import { PriceChip } from '@/components/marketing/PriceChip';
 import { ButtonLink } from '@/components/ui/Button';
 import { TextLink } from '@/components/ui/TextLink';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { GenerateWaysMobileTabs } from '@/components/marketing/GenerateWaysMobileTabs';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { PartnerBadges } from '@/components/marketing/PartnerBadges';
 import { getHomepageSlotsCached, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { getImageAlt } from '@/lib/image-alt';
 import { listFalEngines } from '@/config/falEngines';
-import type { CompareEngineEntry } from '@/components/marketing/CompareEnginesCarousel';
 import type { EngineCaps } from '@/types/engines';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
-import type { PricingRuleLite } from '@/lib/pricing-rules';
+import { computePricingSnapshot } from '@/lib/pricing';
 
 export const revalidate = 60;
-
-const ProofTabs = dynamic(
-  () =>
-    import('@/components/marketing/ProofTabs').then((mod) => ({
-      default: mod.ProofTabs,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="mx-auto mt-6 h-48 w-full max-w-6xl animate-pulse rounded-card bg-surface/40" aria-hidden />
-    ),
-  }
-);
-
-const CompareEnginesCarousel = dynamic(
-  () =>
-    import('@/components/marketing/CompareEnginesCarousel').then((mod) => ({
-      default: mod.CompareEnginesCarousel,
-    })),
-  {
-    ssr: false,
-    loading: () => <div className="mx-auto mt-10 h-64 w-full max-w-6xl animate-pulse rounded-card bg-surface/40" aria-hidden />,
-  }
-);
-
-const ExamplesOrbitCallout = dynamic(
-  () =>
-    import('@/components/marketing/ExamplesOrbitCallout').then((mod) => ({
-      default: mod.ExamplesOrbitCallout,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <section className="container-page section w-full max-w-6xl">
-        <div className="h-[380px] animate-pulse rounded-[40px] border border-hairline bg-surface/70 shadow-card" aria-hidden />
-      </section>
-    ),
-  }
-);
 
 type HeroTileConfig = {
   id: string;
@@ -109,8 +64,8 @@ function ReferenceStartCard({
           sizes="(max-width: 1024px) 100vw, 360px"
           className="object-cover transition duration-500 group-hover:scale-[1.03]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/8 to-transparent" />
-        <span className="absolute left-4 top-4 rounded-full border border-white/18 bg-black/35 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/88 backdrop-blur-sm">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,15,28,0.55)_0%,rgba(8,15,28,0.16)_24%,rgba(8,15,28,0)_42%),linear-gradient(0deg,rgba(8,15,28,0.44)_0%,rgba(8,15,28,0)_32%)]" />
+        <span className="absolute left-4 top-4 rounded-full border border-white/32 bg-[rgba(8,15,28,0.68)] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-[0_10px_24px_-14px_rgba(0,0,0,0.7)] backdrop-blur-md">
           {eyebrow}
         </span>
       </div>
@@ -231,45 +186,6 @@ const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
   'minimax-hailuo-02': 'minimax-hailuo-02',
 };
 
-const COMPARE_ENGINE_PRIORITY: readonly string[] = [
-  'sora-2',
-  'sora-2-pro',
-  'veo-3-1',
-  'veo-3-1-fast',
-  'ltx-2-fast',
-  'ltx-2',
-  'kling-3-standard',
-  'kling-3-pro',
-  'seedance-1-5-pro',
-  'seedance-2-0',
-  'kling-2-6-pro',
-  'pika-text-to-video',
-  'minimax-hailuo-02-text',
-];
-
-const COMPARE_ENGINE_META: Record<
-  string,
-  {
-    maxDuration: string;
-    audio: string;
-    bestFor: string;
-  }
-> = {
-  'sora-2': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Cinematic shots' },
-  'sora-2-pro': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Studio-grade Sora renders' },
-  'veo-3-1': { maxDuration: '8–12s', audio: 'Yes', bestFor: 'Ads & B-roll' },
-  'veo-3-1-fast': { maxDuration: '4–8s', audio: 'Yes', bestFor: 'Frame-to-frame bridges' },
-  'ltx-2-fast': { maxDuration: '6–20s', audio: 'Yes', bestFor: 'Rapid social clips' },
-  'ltx-2': { maxDuration: '6–10s', audio: 'Yes', bestFor: 'Premium product stories' },
-  'kling-3-standard': { maxDuration: '3–15s', audio: 'Yes', bestFor: 'Multi-shot cinematic sequences' },
-  'kling-3-pro': { maxDuration: '3–15s', audio: 'Yes', bestFor: 'Multi-shot cinematic control' },
-  'seedance-1-5-pro': { maxDuration: '4–12s', audio: 'Yes', bestFor: 'Camera-locked cinematic shots' },
-  'seedance-2-0': { maxDuration: '5–15s', audio: 'Yes', bestFor: 'Pre-launch multi-shot planning' },
-  'kling-2-6-pro': { maxDuration: '5–10s', audio: 'Yes', bestFor: 'Cinematic dialogue' },
-  'pika-text-to-video': { maxDuration: '5–10s', audio: 'No', bestFor: 'Prompts or image loops' },
-  'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'No', bestFor: 'Stylised text/image motion' },
-};
-
 const PRICE_PREFIX_BY_LOCALE: Record<AppLocale, string> = {
   en: 'from',
   fr: 'à partir de',
@@ -334,45 +250,6 @@ const HERO_LIGHTBOX_COPY_BY_LOCALE: Record<
   },
 };
 
-const COMPARE_BEST_FOR_BY_LOCALE: Partial<Record<AppLocale, Record<string, string>>> = {
-  fr: {
-    'sora-2': 'Plans cinématiques',
-    'sora-2-pro': 'Rendus Sora qualité studio',
-    'veo-3-1': 'Ads et B-roll',
-    'veo-3-1-fast': 'Transitions frame-to-frame',
-    'ltx-2-fast': 'Clips sociaux rapides',
-    'ltx-2': 'Histoires produit premium',
-    'kling-3-standard': 'Séquences ciné multi-plans',
-    'kling-3-pro': 'Contrôle ciné multi-plans',
-    'seedance-1-5-pro': 'Plans ciné à caméra verrouillée',
-    'seedance-2-0': 'Préparation multi-plans pré-lancement',
-    'kling-2-6-pro': 'Dialogue cinématique',
-    'pika-text-to-video': 'Prompts et boucles image',
-    'minimax-hailuo-02-text': 'Motion stylisé texte/image',
-  },
-  es: {
-    'sora-2': 'Tomas cinematográficas',
-    'sora-2-pro': 'Renders Sora de calidad estudio',
-    'veo-3-1': 'Anuncios y planos de apoyo',
-    'veo-3-1-fast': 'Transiciones entre fotogramas',
-    'ltx-2-fast': 'Clips sociales rápidos',
-    'ltx-2': 'Historias de producto premium',
-    'kling-3-standard': 'Secuencias cinemáticas multi-toma',
-    'kling-3-pro': 'Control cinemático multi-toma',
-    'seedance-1-5-pro': 'Tomas cinemáticas con cámara bloqueada',
-    'seedance-2-0': 'Planificación multi-toma en prelanzamiento',
-    'kling-2-6-pro': 'Diálogo cinematográfico',
-    'pika-text-to-video': 'Prompts y bucles desde imagen',
-    'minimax-hailuo-02-text': 'Animación estilizada desde texto o imagen',
-  },
-};
-
-const AUDIO_VALUE_BY_LOCALE: Record<AppLocale, { yes: string; no: string }> = {
-  en: { yes: 'Yes', no: 'No' },
-  fr: { yes: 'Oui', no: 'Non' },
-  es: { yes: 'Sí', no: 'No' },
-};
-
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'home.meta' });
@@ -409,15 +286,15 @@ const DEFINITION_BLOCK_COPY =
 const GENERATE_WAYS_COPY = [
   {
     title: 'Text-to-Video AI',
-    body: 'Write a clear prompt, choose a model, and generate videos in cinematic, product, social, or explainer styles without rebuilding your process each time. Text-to-video works well for rapid ideation, storyboard drafts, and high-velocity content creation when speed matters. Teams can test variations quickly, compare prompt fidelity across engines, and move from concept to usable clips faster than traditional production timelines.',
+    body: 'Write a prompt and generate new scenes from scratch. Best for ideation, storyboards, and fast first passes.',
   },
   {
     title: 'Image-to-Video AI',
-    body: 'Start from a still image and bring it to life with motion, camera movement, and subtle animation while keeping your original composition intact. Image-to-video is useful for consistent characters, product visuals, and brand scenes where control over layout is important. It is also a practical bridge between design and motion, letting you keep visual direction steady while generating multiple creative variants for review.',
+    body: 'Start from a still and add motion while keeping the composition grounded. Best for character, product, and brand-led shots.',
   },
   {
     title: 'Video-to-Video AI',
-    body: 'Upload existing footage and transform it with a new look, pacing, or motion behavior while preserving your base scene structure. Video-to-video is effective for stylization, iterative versions, and fast creative exploration when you need multiple outputs from one source clip. It helps teams test directions side by side, keep production agile, and deliver alternatives without re-shooting every sequence from scratch.',
+    body: 'Upload footage and change style, pacing, or motion behavior without starting over. Best for alternate versions and rapid creative testing.',
   },
 ] as const;
 
@@ -461,7 +338,7 @@ function MiniFAQ({ faq }: MiniFaqProps) {
       : fallback.items;
 
   return (
-    <section aria-labelledby="mini-faq-heading" className="container-page section max-w-6xl">
+    <section aria-labelledby="mini-faq-heading" className="container-page section max-w-[1200px]">
       <div className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
         <h2 id="mini-faq-heading" className="text-xl font-semibold text-text-primary">
           {resolvedTitle}
@@ -569,15 +446,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const home = dictionary.home;
-  const pricingRules = await listPricingRules();
-  const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
-    id: rule.id,
-    engineId: rule.engineId ?? null,
-    resolution: rule.resolution ?? null,
-    marginPercent: rule.marginPercent,
-    marginFlatCents: rule.marginFlatCents,
-    currency: rule.currency ?? 'USD',
-  }));
   const seoDescription =
     home.meta?.description ??
     'Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly.';
@@ -597,29 +465,48 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const worksWithSuffix = home.worksWith?.moreLabel ?? null;
   const heroScreenshot = home.heroScreenshot;
   const pricingPreviewLabel = home.pricingPreviewLabel ?? 'Preview pricing';
-  const partnerEyebrow = home.partners?.eyebrow ?? 'Partners';
-  const featuredOnTitle = home.partners?.featuredOn ?? 'Featured on';
+  const startupFameLabel = home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
   const seoContent = home.seoContent ?? {};
   const heroSeoParagraph = seoContent.heroParagraph ?? HERO_SEO_PARAGRAPH;
   const heroMicroPoints =
     Array.isArray(seoContent.heroPoints) && seoContent.heroPoints.length
       ? seoContent.heroPoints
       : HERO_MICRO_POINTS;
-  const definitionTitle = seoContent.definition?.title ?? 'What is an AI video generator?';
   const definitionBody = seoContent.definition?.body ?? DEFINITION_BLOCK_COPY;
   const generateWaysTitle = seoContent.generateWays?.title ?? 'Generate videos your way';
   const generateWaysItems =
     Array.isArray(seoContent.generateWays?.items) && seoContent.generateWays.items.length
       ? seoContent.generateWays.items
       : GENERATE_WAYS_COPY;
+  const generateWaysCards = generateWaysItems.map((item, index) => {
+    const visuals = [
+      {
+        imageSrc: 'https://v3b.fal.media/files/b/0a92ef89/pnoNbRn5PCLOiRFxqTIp5_yMdhmu89.jpg',
+        imageAlt: 'Text-to-video example still.',
+      },
+      {
+        imageSrc: 'https://v3b.fal.media/files/b/0a92ed4c/Qv-Gu3HgGLdZTP-Guq6wn_gm2TaSRT.jpg',
+        imageAlt: 'Image-to-video reference still.',
+      },
+      {
+        imageSrc: 'https://v3b.fal.media/files/b/0a935643/1_y_Iw3TbDfMgsI9Kggki_XflHpwqR.jpg',
+        imageAlt: 'Video-to-video example still.',
+      },
+    ][index] ?? {
+      imageSrc: 'https://v3b.fal.media/files/b/0a92ef89/pnoNbRn5PCLOiRFxqTIp5_yMdhmu89.jpg',
+      imageAlt: 'AI video example still.',
+    };
+    return {
+      ...item,
+      ...visuals,
+    };
+  });
+  const compactHeroPoints = heroMicroPoints.slice(0, 2);
   const compareSeo = seoContent.compare ?? {};
   const compareSeoTitle = compareSeo.title ?? 'Compare AI video models - before you render';
   const compareSeoBody =
     compareSeo.body ??
     'MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every render.';
-  const compareSeoWorksWith =
-    compareSeo.worksWith ??
-    'Works with Sora 2, Veo 3.1, LTX-2, Kling 3, Wan 2.6, Seedance 1.5, Pika 2.2, Hailuo 02, Nano Banana, and more.';
   const compareSeoLinks =
     Array.isArray(compareSeo.popularLinks) && compareSeo.popularLinks.length
       ? compareSeo.popularLinks.filter((item): item is { label: string; slug: string } => {
@@ -629,10 +516,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const compareSeoAllLabel = compareSeo.seeAllLabel ?? 'See all AI video engine comparisons';
   const compareSeoImageAlt =
     compareSeo.imageAlt ?? 'MaxVideoAI comparison page screenshot showing two AI engines side by side.';
-  const compareCarouselIntro =
-    compareSeo.carouselIntro ??
-    'Compare AI video models by capabilities, limits, and best-fit use cases, or';
-  const compareCarouselLinkLabel = compareSeo.carouselLinkLabel ?? 'browse all AI video engine comparisons';
   const faqSeo = seoContent.faq;
   const localizedFaq =
     faqSeo && Array.isArray(faqSeo.items) && faqSeo.items.length
@@ -647,39 +530,24 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const ways = home.ways;
   const pricing = home.pricing;
   const trust = home.trust;
-  const waysSection = home.waysSection;
+  const trustCards = Array.isArray(trust.cards)
+    ? (trust.cards as Array<{ eyebrow: string; title: string; body: string }>)
+    : [];
+  const trustQuote =
+    trust.quote && typeof trust.quote === 'object'
+      ? (trust.quote as {
+          eyebrow?: string;
+          value?: string;
+          status?: string;
+          meta?: string[];
+          note?: string;
+        })
+      : null;
   const toolsWorkflow = home.toolsWorkflow;
-  const compareCopy = home.compare ?? null;
-  const compareCarouselCopy = {
-    ...(compareCopy ?? {}),
-    viewModel: dictionary.workspace?.generate?.engineSelect?.modal?.viewModel,
-    viewExamples: dictionary.workspace?.generate?.engineSelect?.modal?.viewExamples,
-  };
+  const generateWaysResources = home.generateWaysResources ?? {};
   const homepageSlots = await getHomepageSlotsCached();
   const falEngines = listFalEngines();
-  const compareEngineIndex = new Map(falEngines.map((entry) => [entry.modelSlug, entry]));
-  const compareBestForMap = COMPARE_BEST_FOR_BY_LOCALE[locale] ?? {};
-  const audioValues = AUDIO_VALUE_BY_LOCALE[locale] ?? AUDIO_VALUE_BY_LOCALE.en;
   const heroLightboxCopy = HERO_LIGHTBOX_COPY_BY_LOCALE[locale] ?? HERO_LIGHTBOX_COPY_BY_LOCALE.en;
-  const compareEngines = COMPARE_ENGINE_PRIORITY.map((slug) => {
-    const entry = compareEngineIndex.get(slug);
-    if (!entry) {
-      return null;
-    }
-    const baseMeta = COMPARE_ENGINE_META[slug] ?? null;
-    return {
-      engine: entry,
-      meta: baseMeta
-        ? {
-            ...baseMeta,
-            audio: baseMeta.audio === 'Yes' ? audioValues.yes : audioValues.no,
-            bestFor: compareBestForMap[slug] ?? baseMeta.bestFor,
-          }
-        : null,
-    };
-  })
-    .filter(Boolean)
-    .map((item) => item as CompareEngineEntry);
 
   const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
     const slot = homepageSlots.hero.find((entry) => entry.key === key);
@@ -759,36 +627,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
         )
       : {};
 
-  const examplesCalloutCopy = home.examplesCallout ?? {
-    eyebrow: 'Live gallery',
-    title: 'See how every engine routes the same brief.',
-    subtitle: 'Watch real renders orbit the CTA and jump straight into the Examples page to clone settings for your own project.',
-    cta: 'Browse live examples',
-  };
-
-  const orbitEngineMap = new Map<string, { id: string; label: string; brandId?: string }>();
-  heroTileConfigs.forEach((tile) => {
-    const engineConfig = falEngines.find((entry) => {
-      const normalized = normalizeEngineId(entry.id) ?? entry.id;
-      return entry.id === tile.engineId || normalized === tile.engineId;
-    });
-    orbitEngineMap.set(tile.engineId, {
-      id: tile.engineId,
-      label: engineConfig?.engine.label ?? tile.label,
-      brandId: engineConfig?.engine.brandId ?? engineConfig?.brandId,
-    });
-  });
-  falEngines.forEach((entry) => {
-    if (!orbitEngineMap.has(entry.id)) {
-      orbitEngineMap.set(entry.id, {
-        id: entry.id,
-        label: entry.engine.label,
-        brandId: entry.engine.brandId ?? entry.brandId,
-      });
-    }
-  });
-  const orbitEngines = Array.from(orbitEngineMap.values()).slice(0, 6);
-
   const softwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -830,7 +668,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   };
   return (
     <div>
-      <section className="container-page section max-w-6xl flex flex-col items-center gap-3 pt-4 pb-5 text-center sm:gap-6 sm:pt-10 sm:pb-12 lg:gap-8 lg:pt-12 lg:pb-14 halo-hero">
+      <section className="container-page section max-w-[1200px] flex flex-col items-center gap-3 pt-4 pb-5 text-center sm:gap-6 sm:pt-10 sm:pb-12 lg:gap-8 lg:pt-12 lg:pb-14 halo-hero">
         <div className="mx-auto grid w-full max-w-[330px] grid-cols-2 gap-1.5 px-2 sm:flex sm:w-auto sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center sm:gap-4 sm:px-0">
           {badges.map((badge, index) => (
             <span
@@ -902,10 +740,13 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
             />
           ))}
         </div>
-        <div className="scrollbar-rail flex w-full gap-2 overflow-x-auto pb-1 text-left sm:grid sm:gap-3 sm:overflow-visible sm:grid-cols-2 lg:grid-cols-3">
-          {heroMicroPoints.map((point) => (
-            <div key={point} className="min-w-[220px] shrink-0 rounded-xl border border-hairline bg-surface/70 p-2.5 shadow-card sm:min-w-0 sm:rounded-card sm:p-4">
-              <p className="line-clamp-2 text-xs font-medium leading-relaxed text-text-primary sm:line-clamp-none sm:text-sm">{point}</p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {compactHeroPoints.map((point) => (
+            <div
+              key={point}
+              className="inline-flex items-center rounded-pill border border-hairline bg-surface/70 px-3 py-1.5 text-[11px] font-medium text-text-primary shadow-card sm:text-xs"
+            >
+              {point}
             </div>
           ))}
         </div>
@@ -917,7 +758,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       </section>
 
       <section className="border-t border-hairline bg-surface text-text-secondary section-compact">
-        <div className="container-page flex max-w-6xl flex-col items-center gap-4 text-center">
+        <div className="container-page flex max-w-[1200px] flex-col items-center gap-4 text-center">
           <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
             {worksWith.label}
           </span>
@@ -948,49 +789,21 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg section-compact">
-        <div className="container-page max-w-6xl stack-gap">
-          <article className="rounded-2xl border border-hairline bg-transparent p-4 sm:p-5 stack-gap-sm">
-            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">{definitionTitle}</h2>
-            <p className="text-sm leading-relaxed text-text-secondary">{definitionBody}</p>
-          </article>
-
-          <article className="stack-gap-sm">
-            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">{generateWaysTitle}</h2>
-            <GenerateWaysMobileTabs items={generateWaysItems} />
-            <div className="hidden sm:grid sm:grid-gap lg:grid-cols-3">
-              {generateWaysItems.map((item) => (
-                <div key={item.title} className="rounded-xl border border-hairline bg-transparent p-4">
-                  <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.body}</p>
-                </div>
-              ))}
-            </div>
-            <a
-              href="https://startupfa.me/s/maxvideoai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mx-auto w-fit text-xs font-medium text-text-muted underline underline-offset-2 transition hover:text-text-primary"
-            >
-              View on Startup Fame
-            </a>
-          </article>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-surface section pt-10 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-0 halo-workspace-left">
-        <div className="container-page flex max-w-7xl flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-stretch">
-          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
+      <section className="border-t border-hairline bg-bg section py-10 sm:py-12 lg:py-16 halo-workspace-left">
+        <div className="container-page flex max-w-[1200px] flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-center">
+          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[38%] lg:pr-4">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
-            <div className="relative w-full overflow-hidden rounded-t-[16px] shadow-float lg:hidden">
-              <Image
-                src="/assets/marketing/app-dashboard.webp"
-                alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
-                width={3072}
-                height={2170}
-                sizes="100vw"
-                className="w-full h-auto"
-              />
+            <div className="rounded-[22px] border border-hairline bg-surface p-2 shadow-float lg:hidden">
+              <div className="relative w-full overflow-hidden rounded-[16px]">
+                <Image
+                  src="/assets/marketing/app-dashboard.webp"
+                  alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
+                  width={1679}
+                  height={1127}
+                  sizes="100vw"
+                  className="h-auto w-full"
+                />
+              </div>
             </div>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
             <ButtonLink
@@ -1003,38 +816,190 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               {workspaceCtaLabel}
             </ButtonLink>
           </div>
-          <div className="relative hidden w-full max-w-6xl lg:block lg:w-[65%] lg:max-w-none lg:self-end">
-            <div className="overflow-hidden rounded-t-[16px] shadow-float">
-              <Image
-                src="/assets/marketing/app-dashboard.webp"
-                alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
-                width={3072}
-                height={2170}
-                sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
-                priority
-                className="w-full h-auto"
-              />
+          <div className="relative hidden w-full lg:ml-auto lg:block lg:w-[62%]">
+            <div className="rounded-[24px] border border-hairline bg-surface p-2 shadow-float">
+              <div className="overflow-hidden rounded-[18px]">
+                <Image
+                  src="/assets/marketing/app-dashboard.webp"
+                  alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
+                  width={1679}
+                  height={1127}
+                  sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
+                  priority
+                  className="h-auto w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg section pt-10 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-0">
-        <div className="container-page flex max-w-7xl flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row-reverse lg:items-stretch">
-          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{compareSeoTitle}</h2>
-            <div className="relative w-full overflow-hidden rounded-t-[16px] lg:hidden">
-              <Image
-                src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
-                alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
-                width={2278}
-                height={1928}
-                sizes="100vw"
-                className="w-full h-auto"
+      <section className="border-t border-hairline bg-surface section-compact">
+        <div className="container-page max-w-[1200px] stack-gap-lg">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div className="max-w-3xl">
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{generateWaysTitle}</h2>
+              <p className="mt-3 text-sm leading-relaxed text-text-secondary sm:text-base">{definitionBody}</p>
+            </div>
+            <a
+              href="https://startupfa.me/s/maxvideoai?utm_source=maxvideoai.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-wrap items-center justify-center gap-3 rounded-pill border border-hairline bg-bg px-4 py-2 transition hover:border-text-muted hover:bg-surface/80 lg:justify-self-end"
+              aria-label={startupFameLabel}
+            >
+              <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted sm:text-xs">
+                {startupFameLabel}
+              </span>
+              <img
+                src="https://startupfa.me/badges/featured-badge-small.webp"
+                alt={startupFameLabel}
+                width={224}
+                height={36}
+                className="h-5 w-auto"
+                loading="lazy"
+                decoding="async"
               />
+            </a>
+          </div>
+          <GenerateWaysMobileTabs items={generateWaysCards} />
+          <div className="hidden gap-4 sm:grid lg:grid-cols-3">
+            {generateWaysCards.map((item, index) => (
+              <div
+                key={item.title}
+                className="rounded-[22px] border border-hairline bg-bg px-5 py-5 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.18)]"
+              >
+                <div className="relative -mx-2 -mt-2 mb-4 overflow-hidden rounded-[16px] border border-hairline bg-surface">
+                  <Image
+                    src={item.imageSrc}
+                    alt={item.imageAlt}
+                    width={1200}
+                    height={750}
+                    sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+                    className="aspect-[16/10] w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
+                </div>
+                <span className="inline-flex rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 text-base font-semibold text-text-primary">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-[20px] border border-hairline bg-bg px-4 py-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-3">
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+                    {generateWaysResources.models?.eyebrow ?? 'Models'}
+                  </span>
+                  <p className="mt-2 text-sm text-text-secondary">
+                    {generateWaysResources.models?.body ??
+                      'Open the model hub for specs, limits, pricing, and workflow notes before you commit to one engine.'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {heroTileConfigs.slice(0, 3).map((tile) =>
+                    tile.modelHref ? (
+                      <Link
+                        key={`home-model-link-${tile.id}`}
+                        href={tile.modelHref}
+                        className="inline-flex items-center rounded-pill border border-hairline bg-surface px-3 py-1.5 text-sm font-medium text-text-primary transition hover:border-text-muted hover:bg-surface/80"
+                      >
+                        {tile.label}
+                      </Link>
+                    ) : null
+                  )}
+                  <Link
+                    href={{ pathname: '/models' }}
+                    className="inline-flex items-center rounded-pill border border-brand/30 bg-brand/5 px-3 py-1.5 text-sm font-medium text-brand transition hover:border-brand/50 hover:bg-brand/10 hover:text-brandHover"
+                  >
+                    {generateWaysResources.models?.cta ?? 'Browse model pages'}
+                  </Link>
+                </div>
+              </div>
+              <div className="h-px w-full bg-hairline lg:h-14 lg:w-px" />
+              <div className="flex flex-col items-start gap-3 lg:min-w-[260px]">
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+                    {generateWaysResources.examples?.eyebrow ?? 'Examples'}
+                  </span>
+                  <p className="mt-2 text-sm text-text-secondary">
+                    {generateWaysResources.examples?.body ??
+                      'Browse the examples gallery to review prompts, outputs, and engine choices before you launch your own run.'}
+                  </p>
+                </div>
+                <ButtonLink href="/examples" linkComponent={Link} variant="outline" size="md" className="w-fit">
+                  {generateWaysResources.examples?.cta ?? 'Browse examples'}
+                </ButtonLink>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-hairline bg-bg section">
+        <div className="container-page max-w-[1200px] stack-gap-lg">
+          <div className="max-w-3xl">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+              {toolsWorkflow.eyebrow}
+            </span>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+              {toolsWorkflow.title}
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-text-secondary sm:text-base">{toolsWorkflow.body}</p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <ReferenceStartCard
+              eyebrow={toolsWorkflow.cards.image.eyebrow}
+              title={toolsWorkflow.cards.image.title}
+              body={toolsWorkflow.cards.image.body}
+              href="/app/image"
+              cta={toolsWorkflow.cards.image.cta}
+              imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp"
+              imageAlt="Image workspace result prepared before video generation."
+            />
+            <ReferenceStartCard
+              eyebrow={toolsWorkflow.cards.character.eyebrow}
+              title={toolsWorkflow.cards.character.title}
+              body={toolsWorkflow.cards.character.body}
+              href="/tools/character-builder"
+              cta={toolsWorkflow.cards.character.cta}
+              imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/762032e6-d6f1-41cd-a1f3-690a60188a74.webp"
+              imageAlt="Reusable character reference generated before prompts and video."
+            />
+            <ReferenceStartCard
+              eyebrow={toolsWorkflow.cards.angle.eyebrow}
+              title={toolsWorkflow.cards.angle.title}
+              body={toolsWorkflow.cards.angle.body}
+              href="/tools/angle"
+              cta={toolsWorkflow.cards.angle.cta}
+              imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6cff997e-f531-455d-819f-a0481b4cda5c-tool_angle_57d123d8-acdd-4667-9ad4-fdb256313b6a-1.webp"
+              imageAlt="Alternate camera angle generated from one source image before video."
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-hairline bg-surface section py-10 sm:py-12 lg:py-16">
+        <div className="container-page flex max-w-[1200px] flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row-reverse lg:items-center">
+          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[38%] lg:pl-4">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{compareSeoTitle}</h2>
+            <div className="rounded-[22px] border border-hairline bg-bg p-2 shadow-float lg:hidden">
+              <div className="relative w-full overflow-hidden rounded-[16px]">
+                <Image
+                  src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
+                  alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
+                  width={2278}
+                  height={1928}
+                  sizes="100vw"
+                  className="h-auto w-full"
+                />
+              </div>
             </div>
             <p className="text-sm leading-relaxed text-text-secondary sm:text-base">{compareSeoBody}</p>
-            <p className="text-sm text-text-secondary">{compareSeoWorksWith}</p>
             <div className="flex flex-wrap gap-3 text-sm">
               {compareSeoLinks.map((item) => (
                 <Link
@@ -1053,194 +1018,103 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               </Link>
             </div>
           </div>
-          <div className="relative hidden w-full max-w-6xl lg:block lg:w-[65%] lg:max-w-none lg:self-end">
-            <div className="overflow-hidden rounded-t-[16px]">
-              <Image
-                src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
-                alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
-                width={2278}
-                height={1928}
-                sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
-                className="w-full h-auto"
-              />
+          <div className="relative hidden w-full lg:block lg:w-[62%]">
+            <div className="rounded-[24px] border border-hairline bg-bg p-2 shadow-float">
+              <div className="overflow-hidden rounded-[18px]">
+                <Image
+                  src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
+                  alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
+                  width={2278}
+                  height={1928}
+                  sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
+                  className="h-auto w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </section>
-      <section className="border-t border-hairline bg-surface section">
-        <div className="stack-gap-lg">
-          <section id="how-it-works" className="container-page max-w-7xl scroll-mt-32">
-            <ProofTabs pricingRules={pricingRulesLite} />
-          </section>
-
-          <section className="container-page max-w-6xl">
-            <div className="grid grid-gap lg:grid-cols-3">
-              {whyCards.map((item) => (
-                <article key={item.title} className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-                  <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
-                  <p className="mt-3 text-sm text-text-secondary">{item.body}</p>
-                </article>
-              ))}
-            </div>
-          </section>
+        <div className="container-page mt-8 max-w-[1200px]">
+          <div className="grid gap-3 md:grid-cols-3">
+            {whyCards.map((item) => (
+              <article key={item.title} className="rounded-2xl border border-hairline bg-bg p-4 shadow-card">
+                <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.body}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="border-t border-hairline bg-bg section">
-        <ExamplesOrbitCallout
-          engines={orbitEngines}
-          heading={examplesCalloutCopy.title}
-          description={examplesCalloutCopy.subtitle ?? ''}
-          ctaLabel={examplesCalloutCopy.cta}
-          eyebrow={examplesCalloutCopy.eyebrow}
-        />
-      </section>
+        <div className="container-page max-w-[1200px]">
+          <div className="max-w-3xl">
+            <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+              {pricing.badge}
+            </span>
+            <h2 className="mt-4 text-balance text-3xl font-semibold text-text-primary sm:text-4xl">
+              {pricing.title}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-text-secondary sm:text-lg">
+              {pricing.body}
+            </p>
+          </div>
 
-      <section className="border-t border-hairline bg-surface section">
-        <div className="container-page mb-4 max-w-6xl text-center">
-          <p className="text-sm text-text-secondary">
-            {compareCarouselIntro}{' '}
-            <Link href={{ pathname: '/ai-video-engines' }} className="underline underline-offset-2">
-              {compareCarouselLinkLabel}
-            </Link>
-            .
-          </p>
-        </div>
-        <CompareEnginesCarousel engines={compareEngines} copy={compareCarouselCopy} />
-      </section>
-
-      <section className="border-t border-hairline bg-bg section halo-workspace-bottom">
-        <div className="stack-gap-lg">
-          <section className="container-page max-w-6xl">
-            <div className="mb-6 flex items-center justify-center gap-4">
-              <div className="text-center">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                  {waysSection.eyebrow}
-                </span>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
-                  {waysSection.title}
-                </h2>
-                <p className="mt-3 text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
-              </div>
-            </div>
-            <div className="grid grid-gap lg:grid-cols-2">
-              {ways.map((item) => (
-                <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-surface p-6 shadow-card">
-                  <div>
-                    <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{item.title}</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-text-primary">{item.description}</h3>
-                  <ul className="space-y-2 text-sm text-text-secondary">
-                    {item.bullets.map((bullet) => (
-                      <li key={bullet} className="flex items-start gap-2">
-                        <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="container-page max-w-6xl">
-            <div className="rounded-[32px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
-              <div className="max-w-3xl">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                  {toolsWorkflow.eyebrow}
-                </span>
-                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
-                  {toolsWorkflow.title}
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-text-secondary sm:text-base">{toolsWorkflow.body}</p>
-              </div>
-              <div className="mt-8 grid gap-4 lg:grid-cols-3">
-                <ReferenceStartCard
-                  eyebrow={toolsWorkflow.cards.image.eyebrow}
-                  title={toolsWorkflow.cards.image.title}
-                  body={toolsWorkflow.cards.image.body}
-                  href="/app/image"
-                  cta={toolsWorkflow.cards.image.cta}
-                  imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp"
-                  imageAlt="Image workspace result prepared before video generation."
-                />
-                <ReferenceStartCard
-                  eyebrow={toolsWorkflow.cards.character.eyebrow}
-                  title={toolsWorkflow.cards.character.title}
-                  body={toolsWorkflow.cards.character.body}
-                  href="/tools/character-builder"
-                  cta={toolsWorkflow.cards.character.cta}
-                  imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/762032e6-d6f1-41cd-a1f3-690a60188a74.webp"
-                  imageAlt="Reusable character reference generated before prompts and video."
-                />
-                <ReferenceStartCard
-                  eyebrow={toolsWorkflow.cards.angle.eyebrow}
-                  title={toolsWorkflow.cards.angle.title}
-                  body={toolsWorkflow.cards.angle.body}
-                  href="/tools/angle"
-                  cta={toolsWorkflow.cards.angle.cta}
-                  imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6cff997e-f531-455d-819f-a0481b4cda5c-tool_angle_57d123d8-acdd-4667-9ad4-fdb256313b6a-1.webp"
-                  imageAlt="Alternate camera angle generated from one source image before video."
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="container-page max-w-6xl">
-            <div className="grid grid-gap lg:grid-cols-[1.2fr_1fr]">
-              <article className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-                <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                  {pricing.badge}
-                </span>
-                <h3 className="mt-4 text-xl font-semibold text-text-primary">{pricing.title}</h3>
-                <p className="mt-3 text-sm text-text-secondary">{pricing.body}</p>
-                <div className="mt-5">
-                  <PriceChip
-                    {...DEFAULT_MARKETING_SCENARIO}
-                    suffix={home.priceChipSuffix}
-                    pricingRules={pricingRulesLite}
-                  />
+          <div className="mt-8 grid gap-3 lg:grid-cols-[1.24fr_0.96fr]">
+            <article className="rounded-card border border-hairline bg-gradient-to-br from-brand/5 via-surface to-surface p-6 shadow-card">
+              <span className="rounded-pill border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand">
+                {trustCards[0]?.eyebrow}
+              </span>
+              <h3 className="mt-4 text-xl font-semibold text-text-primary">{trustCards[0]?.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-text-secondary">{trustCards[0]?.body}</p>
+              <div className="mt-5 rounded-2xl border border-brand/10 bg-white/85 p-4 shadow-[0_16px_36px_-24px_rgba(47,91,191,0.45)] backdrop-blur-sm">
+                <div className="flex flex-wrap gap-2">
+                  {trustQuote?.meta?.map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted"
+                    >
+                      {item}
+                    </span>
+                  ))}
                 </div>
-                <TextLink href={{ pathname: '/pricing' }} className="mt-6 text-sm" linkComponent={Link}>
+                <div className="mt-4 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+                      {trustQuote?.eyebrow}
+                    </p>
+                    <p className="mt-1 text-3xl font-semibold tracking-tight text-text-primary">{trustQuote?.value}</p>
+                  </div>
+                  <p className="max-w-[12rem] text-right text-sm font-medium leading-6 text-text-secondary">
+                    {trustQuote?.status}
+                  </p>
+                </div>
+                {trustQuote?.note ? (
+                  <p className="mt-3 text-xs leading-5 text-text-muted">{trustQuote.note}</p>
+                ) : null}
+              </div>
+              <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-text-muted">
+                <TextLink href={{ pathname: '/pricing' }} className="text-sm" linkComponent={Link}>
                   {pricing.link}
                 </TextLink>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  3,000+ internal test renders · automatic refunds on failures · wallet-first billing
-                </p>
-              </article>
-              <article className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-                <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                  {trust.badge}
-                </span>
-                <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
-                  {trust.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2">
-                      <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </div>
-          </section>
-        </div>
-      </section>
-      <section className="border-t border-hairline bg-surface section">
-        <div className="container-page max-w-6xl">
-          <div className="rounded-card border border-hairline bg-surface/70 p-6 text-center shadow-card">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-              {partnerEyebrow}
-            </p>
-            <h2 className="mt-2 text-lg font-semibold text-text-primary">
-              {featuredOnTitle}
-            </h2>
-            <div className="mt-4 flex justify-center">
-              <PartnerBadges className="justify-center opacity-90 transition hover:opacity-100" />
+                {trust.footnote ? <span className="text-xs uppercase tracking-micro text-text-muted">{trust.footnote}</span> : null}
+              </div>
+            </article>
+
+            <div className="grid gap-3">
+              {trustCards.slice(1).map((card) => (
+                <article key={card.title} className="rounded-card border border-hairline bg-surface p-6 shadow-card">
+                  <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                    {card.eyebrow}
+                  </span>
+                  <h3 className="mt-4 text-lg font-semibold text-text-primary">{card.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-text-secondary">{card.body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </div>
       </section>
-      <section className="border-t border-hairline bg-bg">
+      <section className="border-t border-hairline bg-surface">
         <MiniFAQ faq={localizedFaq} />
       </section>
       <Script id="software-jsonld" type="application/ld+json">

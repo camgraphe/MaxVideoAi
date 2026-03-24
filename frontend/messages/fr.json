@@ -382,7 +382,7 @@
     "toolsWorkflow": {
       "eyebrow": "Workflow de référence",
       "title": "Préparez le still avant de lancer la vidéo",
-      "body": "Générez l'image source, verrouillez le personnage ou corrigez l'angle avant de passer à l'image-to-video et au choix du modèle.",
+      "body": "Générez l'image source, verrouillez le personnage ou corrigez l'angle avant de passer à la vidéo.",
       "cards": {
         "image": {
           "eyebrow": "Image",
@@ -402,6 +402,20 @@
           "body": "Gardez l'image source et générez un angle plus fort avant le storyboard ou la vidéo.",
           "cta": "Ouvrir Angle"
         }
+      }
+    },
+    "generateWaysResources": {
+      "models": {
+        "eyebrow": "Modèles",
+        "title": "Consultez les pages modèle avant de choisir le moteur",
+        "body": "Ouvrez le hub models pour voir specs, limites, prix et notes de workflow avant de vous engager sur un moteur.",
+        "cta": "Voir les pages modèle"
+      },
+      "examples": {
+        "eyebrow": "Exemples",
+        "title": "Vérifiez de vrais rendus avant d’écrire le prompt",
+        "body": "Parcourez la galerie Examples pour voir les prompts, les sorties et les choix de moteurs avant de lancer votre propre run.",
+        "cta": "Voir les exemples"
       }
     },
     "examplesCallout": {
@@ -479,19 +493,37 @@
       ]
     },
     "pricing": {
-      "badge": "Tarifs",
-      "title": "Les Crédits de démarrage débloquent l’espace de travail complet.",
-      "body": "Chargez $10 et lancez vos premiers rendus immédiatement. Ajoutez $10 / $25 / $50 chaque fois que vous avez besoin de recharger votre portefeuille.",
+      "badge": "Avant de lancer",
+      "title": "Connaissez le coût avant de vous engager.",
+      "body": "MaxVideoAI reste wallet-first sur tous les moteurs : le prix est visible avant lancement, les échecs sont remboursés automatiquement et vous gardez vos dépenses sous contrôle dans un seul espace.",
       "link": "Voir les tarifs"
     },
     "trust": {
-      "badge": "Opérations",
-      "points": [
-        "Hub indépendant — connectez vos comptes fournisseurs existants ou utilisez les nôtres.",
-        "Remboursements automatiques pour les rendus échoués avec reçus détaillés.",
-        "Des e-mails d’état quotidiens permettent aux équipes de suivre les dépenses et la santé de la file d’attente.",
-        "Les marques et logos appartiennent à leurs propriétaires ; nous gérons le routage de manière responsable."
-      ]
+      "cards": [
+        {
+          "eyebrow": "Prix visible",
+          "title": "Voyez le coût avant de cliquer sur Générer",
+          "body": "Choisissez d’abord le moteur et les réglages. Le total se met à jour avant le lancement."
+        },
+        {
+          "eyebrow": "Remboursement automatique",
+          "title": "Les rendus échoués recréditent automatiquement",
+          "body": "Les crédits reviennent sur votre portefeuille avec un reçu détaillé pour chaque échec."
+        },
+        {
+          "eyebrow": "Contrôle wallet-first",
+          "title": "Un seul espace pour garder les dépenses visibles",
+          "body": "Rechargez quand nécessaire, utilisez vos comptes fournisseurs ou les nôtres, et gardez la file d’attente en vue."
+        }
+      ],
+      "footnote": "3 000+ rendus de test internes",
+      "quote": {
+        "eyebrow": "Exemple de devis",
+        "value": "$0.47",
+        "status": "Visible avant lancement",
+        "meta": ["LTX 2.3 Pro", "6s", "1080P"],
+        "note": "L’estimation se met à jour selon le moteur, la durée, la résolution et l’audio."
+      }
     },
     "faq": {
       "title": "FAQ",
@@ -515,7 +547,7 @@
         }
       ]
     },
-    "priceChipSuffix": "Sans abonnement. Paiement à l’usage.",
+    "priceChipSuffix": "Visible avant lancement.",
     "meta": {
       "title": "Générateur de vidéos IA multi-moteurs — Tarifs à l’usage | MaxVideoAI",
       "description": "Comparez Sora, Veo, Kling... puis générez en texte-vers-vidéo, image-vers-vidéo ou vidéo-vers-vidéo. Prix affiché avant de lancer. Tarifs à l’usage."
@@ -552,7 +584,8 @@
     "pricingPreviewLabel": "Prévisualiser les tarifs",
     "partners": {
       "eyebrow": "Partenaires",
-      "featuredOn": "Vu sur"
+      "featuredOn": "Vu sur",
+      "startupFameLabel": "Vu sur Startup Fame"
     },
     "seoContent": {
       "heroParagraph": "MaxVideoAI est un générateur de vidéos IA multi-moteurs : comparez les modèles, puis générez à partir d’une consigne (prompt), d’une image ou d’une vidéo existante. Le coût est affiché avant le rendu, pour choisir le bon moteur en toute confiance.",
@@ -563,22 +596,22 @@
       ],
       "definition": {
         "title": "Qu’est-ce qu’un générateur de vidéos IA ?",
-        "body": "Un générateur de vidéos IA crée des clips grâce à l’intelligence artificielle : soit à partir d’une consigne écrite (texte-vers-vidéo), soit en animant une image (image-vers-vidéo), soit en transformant une vidéo existante (vidéo-vers-vidéo). Comme chaque modèle fait des compromis différents (qualité du mouvement, vitesse, cohérence), comparer avant de lancer le rendu aide à obtenir un meilleur résultat… et à mieux maîtriser le coût."
+        "body": "Générez depuis un prompt, animez un still ou transformez une vidéo existante dans un seul espace, avec le prix visible avant le rendu."
       },
       "generateWays": {
         "title": "Générez des vidéos à votre façon",
         "items": [
           {
             "title": "Texte-vers-vidéo",
-            "body": "Rédigez une consigne (prompt), choisissez un modèle, et générez des vidéos en style cinématique, produit, social ou explicatif. Le texte-vers-vidéo est parfait pour prototyper vite, préparer un storyboard, ou produire en série quand la rapidité compte. Vous pouvez tester plusieurs variantes et comparer la fidélité aux consignes selon les moteurs."
+            "body": "Rédigez un prompt et générez une nouvelle scène depuis zéro. Idéal pour l’idéation, le storyboard et les premiers tests rapides."
           },
           {
             "title": "Image-vers-vidéo",
-            "body": "Partez d’une image et donnez-lui vie avec du mouvement, des déplacements de caméra et une animation subtile, tout en conservant la composition d’origine. L’image-vers-vidéo est idéale pour garder des personnages cohérents, des visuels produit stables et une direction artistique maîtrisée (motion design compris)."
+            "body": "Partez d’un still et ajoutez du mouvement sans perdre la composition. Idéal pour les personnages, les produits et les scènes de marque."
           },
           {
             "title": "Vidéo-vers-vidéo",
-            "body": "Importez une vidéo et transformez-la (style, rythme, mouvement) tout en conservant la structure de base. Le vidéo-vers-vidéo est utile pour itérer rapidement, faire des variantes côte à côte et livrer plusieurs options sans devoir tout refilmer."
+            "body": "Importez une vidéo et changez son style, son rythme ou son mouvement sans repartir de zéro. Idéal pour les variantes et les tests créatifs rapides."
           }
         ]
       },

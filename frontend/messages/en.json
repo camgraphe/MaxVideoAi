@@ -302,7 +302,7 @@
     "toolsWorkflow": {
       "eyebrow": "Reference-first workflow",
       "title": "Build the still before you generate the video",
-      "body": "Create the source frame, lock the character, or fix the viewpoint before you move into image-to-video and model selection.",
+      "body": "Create the source frame, lock the character, or fix the viewpoint before you move into video.",
       "cards": {
         "image": {
           "eyebrow": "Generate Image",
@@ -322,6 +322,20 @@
           "body": "Keep the source image and generate a stronger camera angle before storyboards or video.",
           "cta": "Open Angle"
         }
+      }
+    },
+    "generateWaysResources": {
+      "models": {
+        "eyebrow": "Models",
+        "title": "Review model pages before you choose the engine",
+        "body": "Open the model hub for specs, limits, pricing, and workflow notes before you commit to one engine.",
+        "cta": "Browse model pages"
+      },
+      "examples": {
+        "eyebrow": "Examples",
+        "title": "Check real outputs before you start prompting",
+        "body": "Browse the examples gallery to review prompts, outputs, and engine choices before you launch your own run.",
+        "cta": "Browse examples"
       }
     },
     "examplesCallout": {
@@ -399,19 +413,37 @@
       ]
     },
     "pricing": {
-      "badge": "Pricing",
-      "title": "Starter Credits unlock the full workspace.",
-      "body": "Load $10 and run your first renders immediately. Add $10 / $25 / $50 whenever you need more wallet balance.",
-      "link": "Go to pricing"
+      "badge": "Before you render",
+      "title": "Know the cost before you commit.",
+      "body": "MaxVideoAI stays wallet-first across engines: the quote is visible before launch, failed jobs auto-refund, and you keep spend under control from one workspace.",
+      "link": "See pricing"
     },
     "trust": {
-      "badge": "Operations",
-      "points": [
-        "Independent hub — plug in existing provider accounts or use ours.",
-        "Automatic refunds on failed renders with itemised receipts.",
-        "Daily status emails keep teams on top of spend and queue health.",
-        "Trademarks and logos belong to their owners; we route responsibly."
-      ]
+      "cards": [
+        {
+          "eyebrow": "Live quote",
+          "title": "See the cost before you click Generate",
+          "body": "Pick the engine and settings first. The total updates before the render starts."
+        },
+        {
+          "eyebrow": "Automatic refunds",
+          "title": "Failed jobs return credits automatically",
+          "body": "Refunds land back in your wallet with an itemised receipt for each failed render."
+        },
+        {
+          "eyebrow": "Wallet-first control",
+          "title": "One workspace keeps spend visible",
+          "body": "Top up when needed, use your provider accounts or ours, and keep queue health in view."
+        }
+      ],
+      "footnote": "3,000+ internal test renders",
+      "quote": {
+        "eyebrow": "Example quote",
+        "value": "$0.47",
+        "status": "Shown before launch",
+        "meta": ["LTX 2.3 Pro", "6s", "1080P"],
+        "note": "The estimate updates with engine, duration, resolution, and audio."
+      }
     },
     "faq": {
       "title": "FAQ",
@@ -435,7 +467,7 @@
         }
       ]
     },
-    "priceChipSuffix": "No subscription. Pay-as-you-go.",
+    "priceChipSuffix": "Shown before you launch.",
     "meta": {
       "title": "Multi-engine AI video generator – Pay-as-you-go | MaxVideoAI",
       "description": "Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly."
@@ -472,7 +504,8 @@
     "pricingPreviewLabel": "Preview pricing",
     "partners": {
       "eyebrow": "Partners",
-      "featuredOn": "Featured on"
+      "featuredOn": "Featured on",
+      "startupFameLabel": "Featured on Startup Fame"
     },
     "seoContent": {
       "heroParagraph": "MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every render so you can pick the right engine with confidence.",
@@ -483,22 +516,22 @@
       ],
       "definition": {
         "title": "What is an AI video generator?",
-        "body": "An AI video generator creates clips with artificial intelligence. You can turn text prompts into video, animate still images (image-to-video), or transform existing footage (video-to-video). Because each model balances quality, speed, and consistency differently, comparing models before you render helps you pick the right one for each shot."
+        "body": "Create from text, animate a still, or transform existing footage in one workspace, with pricing visible before you render."
       },
       "generateWays": {
         "title": "Generate videos your way",
         "items": [
           {
             "title": "Text-to-Video AI",
-            "body": "Write a clear prompt, choose a model, and generate videos in cinematic, product, social, or explainer styles without rebuilding your process each time. Text-to-video works well for rapid ideation, storyboard drafts, and high-velocity content creation when speed matters. Teams can test variations quickly, compare prompt fidelity across engines, and move from concept to usable clips faster than traditional production timelines."
+            "body": "Write a prompt and generate new scenes from scratch. Best for ideation, storyboards, and fast first passes."
           },
           {
             "title": "Image-to-Video AI",
-            "body": "Start from a still image and bring it to life with motion, camera movement, and subtle animation while keeping your original composition intact. Image-to-video is useful for consistent characters, product visuals, and brand scenes where control over layout is important. It is also a practical bridge between design and motion, letting you keep visual direction steady while generating multiple creative variants for review."
+            "body": "Start from a still and add motion while keeping the composition grounded. Best for character, product, and brand-led shots."
           },
           {
             "title": "Video-to-Video AI",
-            "body": "Upload existing footage and transform it with a new look, pacing, or motion behavior while preserving your base scene structure. Video-to-video is effective for stylization, iterative versions, and fast creative exploration when you need multiple outputs from one source clip. It helps teams test directions side by side, keep production agile, and deliver alternatives without re-shooting every sequence from scratch."
+            "body": "Upload footage and change style, pacing, or motion behavior without starting over. Best for alternate versions and rapid creative testing."
           }
         ]
       },
