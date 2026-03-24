@@ -3308,6 +3308,8 @@
       "savedToLibrary": "Saved to Library.",
       "saveToLibraryFailed": "Failed to save to Library.",
       "pricingError": "Unable to load tool pricing",
+      "reset": "Reset",
+      "resetDone": "Builder settings reset to defaults.",
       "top": {
         "start": "Start",
         "buildLook": "Build the look",

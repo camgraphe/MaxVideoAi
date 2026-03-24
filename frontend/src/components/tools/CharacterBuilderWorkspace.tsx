@@ -155,6 +155,8 @@ const DEFAULT_CHARACTER_COPY = {
   "savedToLibrary": "Saved to Library.",
   "saveToLibraryFailed": "Failed to save to Library.",
   "pricingError": "Unable to load tool pricing",
+  "reset": "Reset",
+  "resetDone": "Builder settings reset to defaults.",
   "authGate": {
     "title": "Create an account to generate characters",
     "body": "Guests can browse the builder and inspect public examples, but generation, uploads, and Library actions require an account.",
@@ -882,6 +884,41 @@ function countConfiguredSecondaryControls(state: CharacterBuilderState, hasIdent
   if (!state.outputOptions.avoid3dRenderLook) count += 1;
 
   return count;
+}
+
+function buildResetCharacterBuilderState(state: CharacterBuilderState): CharacterBuilderState {
+  const defaults = createDefaultCharacterBuilderState(state.sourceMode);
+  return {
+    ...state,
+    traits: defaults.traits,
+    outputMode: defaults.outputMode,
+    consistencyMode: defaults.consistencyMode,
+    referenceStrength: defaults.referenceStrength,
+    qualityMode: defaults.qualityMode,
+    formatMode: defaults.formatMode,
+    outputOptions: defaults.outputOptions,
+    advancedNotes: defaults.advancedNotes,
+    mustRemainVisible: defaults.mustRemainVisible,
+    selectedResultId: null,
+    pinnedReferenceResultId: null,
+  };
+}
+
+function serializeResettableCharacterBuilderState(state: CharacterBuilderState): string {
+  return JSON.stringify({
+    sourceMode: state.sourceMode,
+    traits: state.traits,
+    outputMode: state.outputMode,
+    consistencyMode: state.consistencyMode,
+    referenceStrength: state.referenceStrength,
+    qualityMode: state.qualityMode,
+    formatMode: state.formatMode,
+    outputOptions: state.outputOptions,
+    advancedNotes: state.advancedNotes,
+    mustRemainVisible: state.mustRemainVisible,
+    selectedResultId: state.selectedResultId,
+    pinnedReferenceResultId: state.pinnedReferenceResultId,
+  });
 }
 
 const GENDER_CARD_META: Record<string, { glyph: string; background: string; accent: string }> = {
@@ -2606,6 +2643,11 @@ export default function CharacterBuilderPage() {
   const hasCompletedResults = flattenedResults.length > 0;
   const hasResults = hasCompletedResults || pendingRuns.length > 0 || historicalResults.length > 0;
   const secondaryControlsCount = countConfiguredSecondaryControls(state, hasIdentityReference);
+  const resetState = useMemo(() => buildResetCharacterBuilderState(state), [state]);
+  const canResetBuilder = useMemo(
+    () => serializeResettableCharacterBuilderState(state) !== serializeResettableCharacterBuilderState(resetState),
+    [resetState, state]
+  );
   const hairMode = state.traits.hairEnabled ? 'custom' : 'auto';
   const outfitMode = state.traits.outfitEnabled ? 'custom' : 'auto';
   const hairSummary = getHairSummary(state.traits, { hairColor: hairColorOptions, hairLength: hairLengthOptions, hairstyle: hairstyleOptions }, copy);
@@ -2854,6 +2896,17 @@ export default function CharacterBuilderPage() {
       };
     });
   }
+
+  const handleResetBuilder = useCallback(() => {
+    setState(resetState);
+    setAdvancedOpen(false);
+    setHairOpen(false);
+    setActiveBuildSection('identity');
+    setShowStyleReferenceSlot(Boolean(getRefByRole(resetState.referenceImages, 'style')));
+    setMustRemainDraft('');
+    setError(null);
+    setStatusMessage(copy.resetDone);
+  }, [copy.resetDone, resetState]);
 
   async function handleUpload(role: CharacterBuilderReferenceImage['role'], file: File) {
     if (!user) {
@@ -3519,7 +3572,18 @@ export default function CharacterBuilderPage() {
                     </section>
 
                     <section className="space-y-4 border-t border-border pt-6">
-                      <SectionTitle title={copy.top.buildLook} />
+                      <SectionTitle title={copy.top.buildLook}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleResetBuilder}
+                          disabled={!canResetBuilder}
+                          className="shrink-0"
+                        >
+                          {copy.reset}
+                        </Button>
+                      </SectionTitle>
                       <div className="space-y-4">
                         <div className="overflow-x-auto pb-2">
                           <div className="flex min-w-max overflow-hidden rounded-[24px] border border-border bg-surface shadow-card md:min-w-0 md:w-full">

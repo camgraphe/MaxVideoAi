@@ -3312,6 +3312,8 @@
       "savedToLibrary": "Guardado en la biblioteca.",
       "saveToLibraryFailed": "No se pudo guardar en la biblioteca.",
       "pricingError": "No se pudo cargar el pricing de la herramienta",
+      "reset": "Restablecer",
+      "resetDone": "Los ajustes del builder volvieron a sus valores por defecto.",
       "top": {
         "start": "Inicio",
         "buildLook": "Construir el look",
