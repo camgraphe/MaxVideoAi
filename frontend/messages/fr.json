@@ -1211,7 +1211,7 @@
           },
           {
             "title": "Modèles image",
-            "description": "Ouvrez le hub image pour les stills, les edits et les workflows guidés par références."
+            "description": "Ouvrez le hub image pour les images fixes, les retouches et les workflows guidés par références."
           },
           {
             "title": "Limites et formats",
@@ -1222,8 +1222,8 @@
             "description": "Séparez les moteurs facturés à la seconde des modèles facturés à l’image."
           },
           {
-            "title": "Pages modèle et guidance",
-            "description": "Ouvrez chaque fiche pour les prompts, notes de workflow et limites détaillées."
+            "title": "Pages modèle et repères",
+            "description": "Ouvrez chaque fiche pour les prompts, les notes utiles et les limites détaillées."
           }
         ]
       },
@@ -1247,7 +1247,7 @@
         "faq": [
           {
             "question": "Faut-il commencer par le hub vidéo ou le hub image ?",
-            "answer": "Utilisez le hub vidéo pour les workflows de mouvement et les pages de comparaison. Utilisez le hub image pour les stills, les edits, les limites de références et les prix par image."
+            "answer": "Utilisez le hub vidéo pour les workflows de mouvement et les pages de comparaison. Utilisez le hub image pour les images fixes, les retouches, les limites de références et les prix par image."
           },
           {
             "question": "Tous les modèles du catalogue sont-ils des modèles vidéo ?",
@@ -1259,13 +1259,13 @@
           },
           {
             "question": "Où comparer les moteurs vidéo côte à côte ?",
-            "answer": "Utilisez le comparatif vidéo pour les comparaisons face à face. Les modèles image s’appuient aujourd’hui sur leurs fiches détaillées plutôt que sur ce compare hub."
+            "answer": "Utilisez le comparatif vidéo pour les comparaisons face à face. Les modèles image s’appuient aujourd’hui sur leurs fiches détaillées plutôt que sur ce hub comparatif."
           }
         ]
       },
       "cta": {
         "title": "Commencez par le bon hub média",
-        "subtitle": "Ouvrez le hub vidéo ou image quand vous voulez des filtres, une copy et des prochaines étapes alignés sur ce workflow.",
+        "subtitle": "Ouvrez le hub vidéo ou image quand vous voulez des filtres, des textes et des prochaines étapes alignés sur ce workflow.",
         "pills": [
           "Modèles vidéo",
           "Modèles image",
@@ -1398,9 +1398,9 @@
           "ltx-2": "itération rapide avec motion réactive",
           "ltx-2-fast": "tests rapides et itération express",
           "minimax-hailuo-02-text": "tests de concepts économiques",
-          "nano-banana": "storyboards et workflows still-first",
-          "nano-banana-pro": "stills de campagne et edits typographiques",
-          "nano-banana-2": "stills guidés et edits grand format"
+          "nano-banana": "storyboards et workflows centrés sur l’image fixe",
+          "nano-banana-pro": "visuels de campagne et retouches typographiques",
+          "nano-banana-2": "images fixes guidées et retouches grand format"
         },
         "capabilityKeywords": {
           "T2V": "texte‑vers‑vidéo",
@@ -2225,7 +2225,7 @@
         },
         "fpsSuffix": "{value} i/s",
         "promptStrength": "Intensité du prompt",
-        "guidance": "Guidance",
+        "guidance": "Guidage",
         "inputInfluence": "Influence de l’entrée",
         "cfgScale": "Cfg scale",
         "extend": {

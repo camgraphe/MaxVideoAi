@@ -267,16 +267,16 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       heroSubhead: "Passez en revue les capacités image fixe, les contraintes d'édition et les prix par image avant génération.",
       heroBullets: [
         'Vérifiez create/edit, limites de références et options de résolution.',
-        "Utilisez l’Image Lab quand vous êtes prêt à générer des stills ou des edits guidés.",
+        "Utilisez l’Image Lab quand vous êtes prêt à générer des images fixes ou des retouches guidées.",
       ],
       gridSrTitle: "Modèles d'image IA avec specs, limites et prix sur MaxVideoAI",
-      bridgeText: "Utilisez les cartes modèle pour valider les workflows image, les contraintes d'edit et le prix avant choix.",
+      bridgeText: "Utilisez les cartes modèle pour valider les workflows image, les contraintes de retouche et le prix avant choix.",
       chooseOutcomeTitle: "Choisir par workflow d'image fixe",
       chooseOutcomeSubtitle: "Partez de create vs edit, des besoins en références, de la taille de sortie et du prix par image.",
       reliabilityTitle: "Contrôles qui comptent pour l'image",
       reliabilitySubtitle: "Validez limites de références, contrôles de sortie et prix avant de lancer vos runs image.",
       ctaTitle: 'Lancez une génération image en quelques secondes',
-      ctaSubtitle: "Choisissez un modèle image ci-dessus, puis ouvrez l’Image Lab pour générer brouillons, finals ou edits.",
+      ctaSubtitle: "Choisissez un modèle image ci-dessus, puis ouvrez l’Image Lab pour générer des brouillons, des versions finales ou des retouches.",
       ctaPills: ['Prix par image', 'Limites de références', 'Options de résolution'],
       ctaMicrocopy: "Specs image • Tarifs live • Workflows guidés par références",
       ctaPrimaryLabel: "Ouvrir l'Image Lab",
@@ -300,17 +300,17 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       heroTitle: 'Modelos IA (specs, límites y precios)',
       heroSubhead: 'Explora modelos de video e imagen en un solo catálogo y luego entra en el hub específico que necesites.',
       heroBullets: [
-        'Abre cualquier modelo para ver specs, precios y guía de workflow.',
+        'Abre cualquier modelo para ver especificaciones, precios y guía de workflow.',
         'Usa hubs por categoría para separar con claridad los usos de video e imagen.',
       ],
       gridSrTitle: 'Modelos IA de video e imagen con specs, límites y precios en MaxVideoAI',
-      bridgeText: 'Usa las tarjetas de modelo para validar capacidades y luego entra en el hub de video o imagen para afinar la shortlist.',
+      bridgeText: 'Usa las tarjetas de modelo para validar capacidades y luego entra en el hub de video o imagen para afinar la selección.',
       chooseOutcomeTitle: 'Elige primero una familia de modelos',
       chooseOutcomeSubtitle: 'Empieza por el medio que quieres generar y luego filtra por límites y precio.',
       reliabilityTitle: 'Comprobaciones útiles antes de lanzar',
       reliabilitySubtitle: 'Valida encaje de capacidades, restricciones de salida y exposición de coste antes de fijar el workflow.',
       ctaTitle: 'Empieza por el hub de media correcto',
-      ctaSubtitle: 'Abre el hub de video o imagen cuando quieras filtros, copy y siguientes pasos alineados al workflow.',
+      ctaSubtitle: 'Abre el hub de video o imagen cuando quieras filtros, textos y siguientes pasos alineados al workflow.',
       ctaPills: ['Modelos de video', 'Modelos de imagen', 'Precios en vivo'],
       ctaMicrocopy: 'Navegación por categoría • Precios en vivo • Restricciones por modelo',
       ctaPrimaryLabel: 'Abrir modelos de video',
@@ -341,7 +341,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
       reliabilityTitle: 'Comprobaciones que importan en video',
       reliabilitySubtitle: 'Valida encaje del workflow, restricciones de salida y señales de precio antes de renderizar.',
       ctaTitle: 'Empieza a generar video en segundos',
-      ctaSubtitle: 'Elige un modelo de video arriba y luego genera o compara motores shortlistados.',
+      ctaSubtitle: 'Elige un modelo de video arriba y luego genera o compara motores preseleccionados.',
       ctaPills: ['Precios de video', 'Límites runtime', 'Referencias de prompt'],
       ctaMicrocopy: 'Specs de video • Precios en vivo • Referencias de salidas reales',
       ctaPrimaryLabel: 'Abrir workspace de video',
@@ -359,21 +359,21 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
     image: {
       metaTitle: 'Modelos de imagen IA: specs, límites y precios | MaxVideoAI',
       metaDescription:
-        'Revisa modelos de imagen IA por modo de generación, referencias, resolución y precio por imagen antes de crear stills.',
+        'Revisa modelos de imagen IA por modo de generación, referencias, resolución y precio por imagen antes de crear imágenes fijas.',
       heroTitle: 'Modelos de imagen IA (specs, límites y precios)',
       heroSubhead: 'Revisa capacidades de imagen fija, restricciones de edición y precio por imagen antes de generar.',
       heroBullets: [
         'Comprueba create/edit, límites de referencias y opciones de resolución.',
-        'Usa el Image Lab cuando estés listo para generar stills o edits guiados.',
+        'Usa Image Lab cuando estés listo para generar imágenes fijas o hacer ediciones guiadas.',
       ],
       gridSrTitle: 'Modelos de imagen IA con specs, límites y precios en MaxVideoAI',
-      bridgeText: 'Usa las tarjetas de modelo para revisar workflows de imagen, límites de edit y precio antes de elegir.',
+      bridgeText: 'Usa las tarjetas de modelo para revisar flujos de imagen, límites de edición y precio antes de elegir.',
       chooseOutcomeTitle: 'Elige por workflow de imagen fija',
       chooseOutcomeSubtitle: 'Empieza por create vs edit, necesidades de referencia, tamaño de salida y precio por imagen.',
       reliabilityTitle: 'Comprobaciones que importan en imagen',
       reliabilitySubtitle: 'Valida límites de referencias, controles de salida y precios antes de lanzar runs de imagen.',
-      ctaTitle: 'Empieza a generar stills en segundos',
-      ctaSubtitle: 'Elige un modelo de imagen arriba y luego abre el Image Lab para drafts, finales o edits.',
+      ctaTitle: 'Empieza a generar imágenes en segundos',
+      ctaSubtitle: 'Elige un modelo de imagen arriba y luego abre Image Lab para crear borradores, versiones finales o ediciones.',
       ctaPills: ['Precio por imagen', 'Límites de referencias', 'Opciones de resolución'],
       ctaMicrocopy: 'Specs de imagen • Precios en vivo • Workflows guiados por referencias',
       ctaPrimaryLabel: 'Abrir Image Lab',
@@ -1235,9 +1235,9 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               title: activeLocale === 'fr' ? 'Texte→image' : activeLocale === 'es' ? 'Texto→imagen' : 'Text-to-image',
               description:
                 activeLocale === 'fr'
-                  ? "Repérez les modèles pour générer des stills sans références d'entrée."
+                  ? "Repérez les modèles pour générer des images fixes sans références d'entrée."
                   : activeLocale === 'es'
-                    ? 'Identifica modelos para generar stills sin referencias de entrada.'
+                    ? 'Identifica modelos para generar imágenes fijas sin referencias de entrada.'
                     : 'Shortlist models for still generation without source references.',
               engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
               icon: Film,
@@ -1246,9 +1246,9 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               title: activeLocale === 'fr' ? 'Édition guidée par image' : activeLocale === 'es' ? 'Edición guiada por imagen' : 'Image-guided editing',
               description:
                 activeLocale === 'fr'
-                  ? "Vérifiez quels modèles gèrent le mieux les références et les edits multi-image."
+                  ? "Vérifiez quels modèles gèrent le mieux les références et les retouches multi-image."
                   : activeLocale === 'es'
-                    ? 'Comprueba qué modelos manejan mejor referencias y edits multiimagen.'
+                    ? 'Comprueba qué modelos manejan mejor las referencias y la edición con varias imágenes.'
                     : 'Check which models best support references and multi-image edits.',
               engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
               icon: Clapperboard,
@@ -1287,12 +1287,12 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               icon: Wand2,
             },
             {
-              title: activeLocale === 'fr' ? 'Pages modèle et guidance' : activeLocale === 'es' ? 'Páginas de modelo y guidance' : 'Model pages and guidance',
+              title: activeLocale === 'fr' ? 'Pages modèle et repères' : activeLocale === 'es' ? 'Páginas de modelo y guía' : 'Model pages and guidance',
               description:
                 activeLocale === 'fr'
-                  ? 'Ouvrez les fiches modèle pour les prompts, tips et contraintes détaillées.'
+                  ? 'Ouvrez les fiches modèle pour les prompts, les repères utiles et les contraintes détaillées.'
                   : activeLocale === 'es'
-                    ? 'Abre las fichas de modelo para prompts, tips y restricciones detalladas.'
+                    ? 'Abre las fichas de modelo para prompts, recomendaciones y restricciones detalladas.'
                     : 'Open model profiles for prompts, tips, and detailed constraints.',
               engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
               icon: Copy,
@@ -1303,9 +1303,9 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               title: activeLocale === 'fr' ? 'Modèles vidéo' : activeLocale === 'es' ? 'Modelos de video' : 'Video models',
               description:
                 activeLocale === 'fr'
-                  ? 'Passez aux moteurs vidéo pour le rendu, le compare hub et les workflows de mouvement.'
+                  ? 'Passez aux moteurs vidéo pour le rendu, le comparateur et les workflows de mouvement.'
                   : activeLocale === 'es'
-                    ? 'Pasa a motores de video para render, compare hub y workflows de movimiento.'
+                    ? 'Pasa a motores de video para renderizar, comparar y piloter tus flujos de movimiento.'
                     : 'Jump to the video hub for rendering, compare pages, and motion workflows.',
               engines: ['sora-2', 'veo-3-1', 'kling-3-standard'],
               icon: Film,
@@ -1314,9 +1314,9 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               title: activeLocale === 'fr' ? "Modèles d'image" : activeLocale === 'es' ? 'Modelos de imagen' : 'Image models',
               description:
                 activeLocale === 'fr'
-                  ? "Ouvrez le hub image pour les stills, edits et workflows guidés par références."
+                  ? "Ouvrez le hub image pour les images fixes, les retouches et les workflows guidés par références."
                   : activeLocale === 'es'
-                    ? 'Abre el hub de imagen para stills, edits y workflows guiados por referencias.'
+                    ? 'Abre el hub de imagen para imágenes fijas, ediciones y flujos guiados por referencias.'
                     : 'Open the image hub for stills, edits, and reference-led workflows.',
               engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
               icon: Clapperboard,

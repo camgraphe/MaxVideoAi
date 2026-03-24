@@ -64,7 +64,7 @@ const FIXTURES: Fixture[] = [
     expectedStatus: 404,
     requiredTextByLocale: {
       fr: ['Page introuvable'],
-      es: ['Pagina no encontrada'],
+      es: ['Página no encontrada'],
     },
     forbiddenTextByLocale: {
       fr: ['Page not found', 'Back to homepage', 'Browse video models'],

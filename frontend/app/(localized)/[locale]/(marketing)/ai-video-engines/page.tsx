@@ -382,8 +382,8 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       enginesTitle: 'Elegir motores para comparar',
       enginesIntro: 'Solo especificaciones útiles para comparar. El detalle completo queda en cada página de modelo.',
       enginesToggle: 'Mostrar catálogo de motores ({count})',
-      enginesToggleHintClosed: 'Haz clic para desplegar',
-      enginesToggleHintOpen: 'Haz clic para plegar',
+      enginesToggleHintClosed: 'Abrir lista',
+      enginesToggleHintOpen: 'Ocultar lista',
       allComparisonsTitle: 'Todas las comparativas',
       allComparisonsIntro:
         'Primero verás comparativas estratégicas, luego podrás buscar en el catálogo canónico completo. ¿Necesitas cumplimiento? Revisa nuestras notas.',

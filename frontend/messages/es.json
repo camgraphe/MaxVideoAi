@@ -191,7 +191,7 @@
       },
       {
         "question": "¿Cuánto se tarda en arrancar un proyecto con Sora 2?",
-        "answer": "La mayoría de equipos empiezan a hacer prompts en dos días laborables. Disponemos de plantillas de onboarding y presets Veo o Pika de apoyo hasta que se activa Sora."
+        "answer": "La mayoría de equipos empieza a escribir prompts en dos días laborables. Compartimos plantillas de primeros pasos y presets de apoyo para Veo o Pika mientras se activa Sora."
       },
       {
         "question": "¿Puedo seguir los cambios de los modelos sin revisar toda la documentación?",
@@ -317,7 +317,7 @@
     },
     "heroScreenshot": {
       "title": "Todo en una sola vista.",
-      "body": "El Composer, el precio en tiempo real, la galería y la cola de renders quedan juntos: ajustas el prompt, comparas resultados y sigues el progreso sin salir de la pantalla.",
+      "body": "El Composer, el precio en tiempo real, la galería y las colas de generación quedan en una misma vista: ajustas el prompt, comparas resultados y sigues el progreso sin salir de la pantalla.",
       "alt": "Espacio de trabajo de MaxVideo AI que muestra el Composer, el precio en tiempo real y la vista previa de la galería en un único panel."
     },
     "proofTabs": [
@@ -877,7 +877,7 @@
       }
     ],
     "priceChipSuffix": "Precio antes de generar.",
-    "priceChipPrefix": "Esta renderización",
+    "priceChipPrefix": "Esta generación",
     "meta": {
       "title": "Precios de video IA — Pago por uso | MaxVideoAI",
       "description": "Ver precio antes de generar. Compara costes (Sora, Veo, Kling, Pika). Paga solo por renders completados — sin suscripción. Precios por clip."
@@ -1207,11 +1207,11 @@
         "tiles": [
           {
             "title": "Modelos de video",
-            "description": "Abre el hub de video para workflows de render, páginas comparativas y motores orientados al movimiento."
+            "description": "Abre el hub de video para flujos de render, páginas comparativas y motores orientados al movimiento."
           },
           {
             "title": "Modelos de imagen",
-            "description": "Abre el hub de imagen para stills, edits y workflows guiados por referencias."
+            "description": "Abre el hub de imagen para imágenes fijas, ediciones y flujos guiados por referencias."
           },
           {
             "title": "Límites y formatos",
@@ -1222,18 +1222,18 @@
             "description": "Separa motores cobrados por segundo de modelos cobrados por imagen."
           },
           {
-            "title": "Páginas de modelo y guidance",
+            "title": "Páginas de modelo y guía",
             "description": "Abre cada ficha para prompts, notas de workflow y límites detallados."
           }
         ]
       },
       "reliability": {
         "title": "Comprobaciones útiles antes de lanzar",
-        "subtitle": "Valida tipo de media, restricciones de salida y lógica de facturación antes de elegir workflow.",
+        "subtitle": "Valida el tipo de contenido, las restricciones de salida y la lógica de facturación antes de elegir un flujo.",
         "items": [
           {
             "title": "Tipo de media",
-            "body": "Separa motores de video de modelos de imagen antes de revisar specs o coste."
+            "body": "Separa motores de video de modelos de imagen antes de revisar especificaciones o costo."
           },
           {
             "title": "Límites y formatos",
@@ -1247,7 +1247,7 @@
         "faq": [
           {
             "question": "¿Debo empezar por el hub de video o el de imagen?",
-            "answer": "Usa el hub de video para workflows de movimiento y páginas comparativas. Usa el hub de imagen para stills, edits, límites de referencias y precio por imagen."
+            "answer": "Usa el hub de video para flujos de movimiento y páginas comparativas. Usa el hub de imagen para imágenes fijas, ediciones, límites de referencias y precio por imagen."
           },
           {
             "question": "¿Todos los modelos de este catálogo son de video?",
@@ -1259,13 +1259,13 @@
           },
           {
             "question": "¿Dónde comparo motores de video lado a lado?",
-            "answer": "Usa el hub comparativo de video para comparaciones directas. Los modelos de imagen dependen hoy de sus páginas de detalle en lugar del compare hub."
+            "answer": "Usa el hub comparativo de video para comparaciones directas. Los modelos de imagen dependen hoy de sus páginas de detalle en lugar del hub comparativo."
           }
         ]
       },
       "cta": {
         "title": "Empieza por el hub de media correcto",
-        "subtitle": "Abre el hub de video o imagen cuando quieras filtros, copy y siguientes pasos alineados al workflow.",
+        "subtitle": "Abre el hub de video o imagen cuando quieras filtros, textos y siguientes pasos alineados al workflow.",
         "pills": [
           "Modelos de video",
           "Modelos de imagen",
@@ -1398,9 +1398,9 @@
           "ltx-2": "iteración rápida con motion responsivo",
           "ltx-2-fast": "tests rápidos e iteración veloz",
           "minimax-hailuo-02-text": "tests de concepto económicos",
-          "nano-banana": "storyboards y workflows still-first",
-          "nano-banana-pro": "stills de campaña y ediciones tipográficas",
-          "nano-banana-2": "stills guiados y ediciones en formatos amplios"
+          "nano-banana": "storyboards y flujos centrados en imagen fija",
+          "nano-banana-pro": "imágenes de campaña y ediciones tipográficas",
+          "nano-banana-2": "imágenes fijas guiadas y ediciones en formatos amplios"
         },
         "capabilityKeywords": {
           "T2V": "texto a video",
@@ -1525,18 +1525,18 @@
   },
   "docs": {
     "meta": {
-      "title": "Docs — Onboarding, seguridad de marca, reembolsos y webhooks API",
-      "description": "Empieza aquí para onboarding, sistema de precios y reembolsos. Descubre los filtros brand-safe y las referencias de webhook/API. Las guías avanzadas viven en el workspace autenticado.",
+      "title": "Docs — primeros pasos, seguridad de marca, reembolsos y webhooks API",
+      "description": "Empieza aquí con los primeros pasos, el sistema de precios y los reembolsos. Descubre los filtros brand-safe y las referencias de webhook/API. Las guías avanzadas viven dentro del workspace autenticado.",
       "imageAlt": "Docs — MaxVideoAI",
       "notFoundTitle": "Documento no encontrado"
     },
     "hero": {
       "title": "Documentación",
-      "subtitle": "Comience aquí para la incorporación, la seguridad de marca, los avisos de compatibilidad y las políticas de reembolso. Las guías de integración más detalladas están en el espacio de trabajo autenticado."
+      "subtitle": "Empieza aquí con los primeros pasos, la seguridad de marca, los avisos de compatibilidad y las políticas de reembolso. Las guías de integración más detalladas están dentro del workspace autenticado."
     },
     "toc": {
       "title": "En esta página",
-      "onboarding": "Onboarding",
+      "onboarding": "Primeros pasos",
       "pricing": "Sistema de precios",
       "refunds": "Reembolsos",
       "safety": "Seguridad de marca",
@@ -1595,7 +1595,7 @@
       "private": "La documentación completa de la API requiere autenticación en el workspace."
     },
     "onboardingChecklist": {
-      "title": "Checklist de onboarding",
+      "title": "Checklist inicial",
       "items": [
         "✅ Completa el brief de marca (tono, objetivos, entregables).",
         "✅ Añade 1–3 prompts de ejemplo y activos de referencia.",
@@ -1703,9 +1703,9 @@
     },
     "lastUpdatedLabel": "Última actualización:",
     "jsonLd": {
-      "collectionName": "Docs — Onboarding, seguridad de marca, reembolsos y webhooks API",
+      "collectionName": "Docs — primeros pasos, seguridad de marca, reembolsos y webhooks API",
       "hasPart": {
-        "onboarding": "Onboarding",
+        "onboarding": "Primeros pasos",
         "pricing": "Sistema de precios",
         "refunds": "Reembolsos",
         "safety": "Seguridad de marca",
@@ -1875,25 +1875,25 @@
   "about": {
     "hero": {
       "title": "Confianza discreta para equipos de video con IA.",
-      "subtitle": "MaxVideo AI es el núcleo independiente para la producción de video con IA. Enrutamos al motor adecuado para cada plano, mostramos el precio antes de generar y mantenemos a su equipo en control sin bloqueo de proveedor."
+      "subtitle": "MaxVideo AI es el núcleo independiente para la producción de video con IA. Enrutamos al motor adecuado para cada plano, mostramos el precio antes de generar y mantenemos a tu equipo en control sin bloqueo de proveedor."
     },
     "paragraphs": [
       "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
       "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
       "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle."
     ],
-    "note": "Las marcas registradas y signos de servicio son propiedad de sus respectivos propietarios. MaxVideo AI se mantiene independiente para que usted pueda mantenerse al día sin cambiar de plataforma."
+    "note": "Las marcas registradas y signos de servicio son propiedad de sus respectivos propietarios. MaxVideo AI se mantiene independiente para que puedas mantenerte al día sin cambiar de plataforma."
   },
   "contact": {
     "hero": {
-      "title": "Contacte con el equipo.",
-      "subtitle": "¿Necesita soporte, incorporación empresarial o información de prensa? Envíe una nota y le responderemos en un día laborable."
+      "title": "Habla con el equipo.",
+      "subtitle": "¿Necesitas soporte, ayuda con la puesta en marcha empresarial o información de prensa? Déjanos un mensaje y te responderemos en un día hábil."
     },
     "form": {
       "name": "Nombre",
       "email": "Correo electrónico",
       "topic": "Asunto",
-      "selectPlaceholder": "Seleccione un tema",
+      "selectPlaceholder": "Elige un tema",
       "topics": [
         {
           "value": "support",
@@ -1914,7 +1914,7 @@
       ],
       "message": "Mensaje",
       "submit": "Enviar mensaje",
-      "alt": "¿Prefiere el correo electrónico? Escriba a {email}."
+      "alt": "¿Prefieres escribirnos por correo? Escríbenos a {email}."
     }
   },
   "legal": {
@@ -1978,7 +1978,7 @@
   "changelog": {
     "hero": {
       "title": "Registro de cambios",
-      "subtitle": "Cada actualización de motor, mejora del flujo de trabajo y ajuste de precios — publicado semanalmente. Suscríbase dentro de la aplicación para recibir alertas."
+      "subtitle": "Cada actualización de motor, mejora del flujo de trabajo y ajuste de precios se publica cada semana. Suscríbete desde la app para recibir alertas."
     },
     "entries": [
       {
@@ -2001,12 +2001,12 @@
   "status": {
     "hero": {
       "title": "Estado",
-      "subtitle": "Indicadores en tiempo real de la salud de la cola, proveedores de enrutamiento y sistemas de facturación. Suscríbase dentro de la aplicación para recibir alertas de incidentes."
+      "subtitle": "Indicadores en tiempo real del estado de las colas, los proveedores de enrutamiento y los sistemas de facturación. Suscríbete desde la app para recibir alertas de incidentes."
     },
     "overview": {
       "paragraphs": [
-        "Las comprobaciones de estado se actualizan continuamente a partir de la misma telemetría que usamos para enrutar renders. Cuando un motor pasa de « Operativo » a « Degradado », MaxVideoAI desvía automáticamente el tráfico a la región disponible más rápida y publica un incidente a continuación. Si una caída requiere acción del cliente, lo indicamos en las notas del incidente junto con los IDs de trabajos que podrían necesitar reintento o reembolso.",
-        "Antes de contactar con soporte, confirma si el motor que estás usando muestra una interrupción y revisa el historial de incidentes. También puedes suscribirte al RSS o al resumen por correo para recibir alertas en cuanto degrademos un motor. Para escalaciones urgentes, incluye el ID del trabajo y el nombre del motor para que podamos rastrear la cola al instante."
+        "Las comprobaciones de estado se actualizan de forma continua con la misma telemetría que usamos para enrutar renders. Cuando un motor pasa de «Operativo» a «Degradado», MaxVideoAI desvía automáticamente el tráfico a la región disponible más rápida y publica un incidente debajo. Si una caída exige una acción de tu parte, lo indicamos en las notas del incidente junto con los IDs de los trabajos que podrían necesitar reintento o reembolso.",
+        "Antes de contactar con soporte, confirma si el motor que estás usando muestra una interrupción y revisa el historial de incidentes. También puedes suscribirte al RSS o al resumen por correo para recibir alertas en cuanto degrademos un motor. Para escalaciones urgentes, incluye el ID del trabajo y el nombre del motor para que podamos rastrear el problema al instante."
       ],
       "quickReferencesTitle": "Referencias rápidas",
       "quickReferences": [
@@ -2058,7 +2058,7 @@
     "incidentsHeading": "Incidentes"
   },
   "systemMessages": {
-    "refundInitiated": "Se está reembolsando tu pago. Puede tardar entre 5–10 días laborables en aparecer en tu extracto.",
+    "refundInitiated": "Se está reembolsando tu pago. Normalmente aparece en tu extracto en 5–10 días laborables.",
     "partialRefund": "Hemos emitido un reembolso parcial de {refundedAmount}. El restante {remainingAmount} permanecerá en tu extracto.",
     "paymentRetried": "Hemos reintentado tu pago de forma segura; no se te cobrará dos veces."
   },
@@ -2218,7 +2218,7 @@
         },
         "fpsSuffix": "{value} fps",
         "promptStrength": "Fuerza del prompt",
-        "guidance": "Guidance",
+        "guidance": "Guía",
         "inputInfluence": "Influencia de la entrada",
         "cfgScale": "Cfg scale",
         "extend": {
@@ -2389,7 +2389,7 @@
             ]
           },
           "minimax-hailuo-02-text": {
-            "description": "Hailuo 02 Standard soporta prompts estilizados o stills animados con el optimizador integrado.",
+            "description": "Hailuo 02 Standard soporta prompts estilizados o imágenes fijas animadas con el optimizador integrado.",
             "badges": [
               "Optimizador de prompts",
               "Entrada de imagen",
@@ -4704,9 +4704,9 @@
     }
   },
   "notFound": {
-    "metaTitle": "Pagina no encontrada",
-    "title": "Pagina no encontrada",
-    "body": "No encontramos esa URL. Puede estar desactualizada o no haber existido nunca. Usa los enlaces de abajo para seguir explorando MaxVideoAI.",
+    "metaTitle": "Página no encontrada",
+    "title": "Página no encontrada",
+    "body": "No encontramos esa URL. Es posible que ya no exista o que nunca haya existido. Usa los enlaces de abajo para seguir explorando MaxVideoAI.",
     "homeLabel": "Volver al inicio",
     "modelsLabel": "Ver modelos de video"
   }
