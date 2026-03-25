@@ -139,42 +139,21 @@ function mergeEngine(
 
 async function getConfiguredEnginesForBase(
   baseEngines: EngineCaps[],
-  includeDisabled = false
+  includeDisabled = false,
+  options?: { bootstrap?: boolean }
 ): Promise<EngineCaps[]> {
   if (!process.env.DATABASE_URL) {
     return includeDisabled ? baseEngines.map(cloneEngine) : baseEngines.map(cloneEngine);
   }
 
-  await ensureBillingSchema();
-  await ensureEngineSettingsSeed();
+  const bootstrap = options?.bootstrap !== false;
+  if (bootstrap) {
+    await ensureBillingSchema();
+    await ensureEngineSettingsSeed();
+  }
   const [settingsMap, overridesMap] = await Promise.all([
     fetchEngineSettings(),
     fetchEngineOverrides(),
-  ]);
-
-  return baseEngines
-    .map((engine) => mergeEngine(engine, settingsMap, overridesMap))
-    .filter((entry) => includeDisabled || !entry.disabled)
-    .map((entry) => entry.engine);
-}
-
-async function getPublicConfiguredEnginesForBase(
-  baseEngines: EngineCaps[],
-  includeDisabled = false
-): Promise<EngineCaps[]> {
-  if (!process.env.DATABASE_URL) {
-    return baseEngines.map(cloneEngine);
-  }
-
-  const [settingsMap, overridesMap] = await Promise.all([
-    fetchEngineSettings().catch((error) => {
-      console.warn('[engines] public settings lookup failed, falling back to base registry', error);
-      return new Map<string, EngineSettingsRecord>();
-    }),
-    fetchEngineOverrides().catch((error) => {
-      console.warn('[engines] public overrides lookup failed, falling back to base registry', error);
-      return new Map<string, EngineOverride>();
-    }),
   ]);
 
   return baseEngines
@@ -196,7 +175,7 @@ export async function getPublicConfiguredEnginesByCategory(
   includeDisabled = false
 ): Promise<EngineCaps[]> {
   const baseEngines = getBaseEnginesByCategory(category);
-  return getPublicConfiguredEnginesForBase(baseEngines, includeDisabled);
+  return getConfiguredEnginesForBase(baseEngines, includeDisabled, { bootstrap: false });
 }
 
 export async function getConfiguredEngines(includeDisabled = false): Promise<EngineCaps[]> {

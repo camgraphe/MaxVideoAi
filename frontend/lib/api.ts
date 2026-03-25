@@ -17,6 +17,7 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/im
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 import type { JobSurface } from '@/types/billing';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
+import { getBaseEnginesByCategory } from '@/lib/engines';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -208,73 +209,30 @@ function scheduleStatusRetry(jobId: string, attempt: number): void {
 
 type EngineCategory = 'video' | 'image' | 'all';
 
-type EngineAveragesResponse = {
-  averages?: Record<string, number | null>;
-};
-
-type UseEnginesOptions = {
-  includeAverages?: boolean;
-};
-
-export function useEngines(category: EngineCategory = 'video', options?: UseEnginesOptions) {
-  const includeAverages = options?.includeAverages !== false;
+export function useEngines(category: EngineCategory = 'video') {
   const query = category === 'video' ? '' : `?category=${encodeURIComponent(category)}`;
-  const enginesQuery = useSWR<EnginesResponse>(
+  const fallbackEngines = getBaseEnginesByCategory(category);
+  return useSWR<EnginesResponse>(
     `static-engines:${category}`,
     async () => {
-      const response = await fetch(`/api/engines${query}`, {
-        credentials: 'include',
-      });
-      const data = (await response.json().catch(() => null)) as
-        | { engines?: EnginesResponse['engines']; error?: string }
-        | null;
-      if (!response.ok) {
-        throw new Error(data?.error ?? `Engines request failed: ${response.status}`);
+      try {
+        const response = await fetch(`/api/engines${query}`, { credentials: 'include' });
+        const data = (await response.json().catch(() => null)) as
+          | { engines?: EnginesResponse['engines']; error?: string }
+          | null;
+        if (!response.ok) {
+          throw new Error(data?.error ?? `Engines request failed: ${response.status}`);
+        }
+        return { engines: data?.engines ?? fallbackEngines };
+      } catch {
+        return { engines: fallbackEngines };
       }
-      return { engines: data?.engines ?? [] };
     },
     {
       dedupingInterval: 5 * 60 * 1000,
+      fallbackData: { engines: fallbackEngines },
     }
   );
-
-  const averagesQuery = useSWR<EngineAveragesResponse>(
-    !includeAverages || category === 'image' ? null : `engine-averages:${category}`,
-    async () => {
-      const response = await fetch(`/api/engines/averages${query}`, {
-        credentials: 'include',
-      });
-      const data = (await response.json().catch(() => null)) as
-        | (EngineAveragesResponse & { error?: string })
-        | null;
-      if (!response.ok) {
-        throw new Error(data?.error ?? `Engine averages request failed: ${response.status}`);
-      }
-      return { averages: data?.averages ?? {} };
-    },
-    {
-      dedupingInterval: 60 * 1000,
-    }
-  );
-
-  const mergedData =
-    enginesQuery.data == null
-      ? enginesQuery.data
-      : {
-          engines: enginesQuery.data.engines.map((engine) => ({
-            ...engine,
-            avgDurationMs:
-              averagesQuery.data?.averages && Object.prototype.hasOwnProperty.call(averagesQuery.data.averages, engine.id)
-                ? averagesQuery.data.averages[engine.id] ?? null
-                : engine.avgDurationMs ?? null,
-          })),
-        };
-
-  return {
-    ...enginesQuery,
-    data: mergedData,
-    isLoading: enginesQuery.isLoading,
-  };
 }
 
 type JobFeedType = 'video' | 'image' | 'all';

@@ -6178,10 +6178,38 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       ? singlePrice * form.iterations
       : singlePrice;
   const currency = preflight?.currency ?? 'USD';
-  const showNoEnginesState = !enginesError && !isLoading && engines.length === 0;
-  const showWorkspaceBootSkeleton =
-    !enginesError && !showNoEnginesState && (isLoading || (engines.length > 0 && (!selectedEngine || !form)));
-  const showWorkspaceContent = !enginesError && !showNoEnginesState && !showWorkspaceBootSkeleton;
+
+  if (!authChecked) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
+        Checking session…
+      </main>
+    );
+  }
+
+  if (isLoading && engines.length === 0) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
+        Loading engines…
+      </main>
+    );
+  }
+
+  if (enginesError && engines.length === 0) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg text-state-warning">
+        {workspaceCopy.errors.loadEngines}: {enginesError.message}
+      </main>
+    );
+  }
+
+  if (!selectedEngine || !form) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
+        {workspaceCopy.errors.noEngines}
+      </main>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -6191,60 +6219,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           <AppSidebar />
           <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
             <main className="flex flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
-            {enginesError ? (
-              <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning shadow-card">
-                {workspaceCopy.errors.loadEngines}: {enginesError.message}
-              </div>
-            ) : null}
-            {notice && showWorkspaceContent ? (
+            {notice && (
               <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
                 {notice}
               </div>
-            ) : null}
-            {showNoEnginesState ? (
-              <div className="rounded-card border border-border bg-surface px-5 py-6 text-sm text-text-secondary shadow-card">
-                {workspaceCopy.errors.noEngines}
-              </div>
-            ) : showWorkspaceBootSkeleton ? (
-              <div className="stack-gap-lg">
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-                  <div className="rounded-card border border-border bg-surface p-5 shadow-card">
-                    <div className="skeleton h-10 w-full rounded-full" />
-                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                      <div className="skeleton h-11 rounded-full" />
-                      <div className="skeleton h-11 rounded-full" />
-                      <div className="skeleton h-11 rounded-full" />
-                    </div>
-                    <div className="mt-4 skeleton h-[260px] rounded-card" />
-                  </div>
-                  <div className="rounded-card border border-border bg-surface p-5 shadow-card">
-                    <div className="skeleton h-6 w-32 rounded-full" />
-                    <div className="mt-4 space-y-3">
-                      <div className="skeleton h-14 rounded-card" />
-                      <div className="skeleton h-14 rounded-card" />
-                      <div className="skeleton h-14 rounded-card" />
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-card border border-border bg-surface p-5 shadow-card">
-                  <div className="skeleton h-5 w-40 rounded-full" />
-                  <div className="mt-4 grid grid-gap-sm sm:grid-cols-2">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <div key={`workspace-boot-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
-                        <div className="relative overflow-hidden rounded-card">
-                          <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                            <div className="skeleton absolute inset-0" />
-                          </div>
-                        </div>
-                        <div className="border-t border-border bg-surface-glass-70 px-3 py-2">
-                          <div className="h-3 w-24 rounded-full bg-skeleton" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : showWorkspaceContent && selectedEngine && form ? (
+            )}
             <div className="stack-gap-lg">
               {showCenterGallery ? (
                 normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
@@ -6532,10 +6511,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 variant="advanced"
               />
             </div>
-            ) : null}
           </main>
         </div>
-        {isDesktopLayout && showWorkspaceContent && selectedEngine && (
+        {isDesktopLayout && (
           <div className="flex w-[320px] justify-end pl-2 pr-0 py-4">
             <GalleryRail
               engine={selectedEngine}
@@ -6548,7 +6526,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           </div>
         )}
       </div>
-      {!isDesktopLayout && showWorkspaceContent && selectedEngine && (
+      {!isDesktopLayout && (
         <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
           <GalleryRail
             engine={selectedEngine}
