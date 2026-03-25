@@ -194,8 +194,6 @@ const ANGLE_GUEST_EXAMPLE_SOURCE_URL =
 const ANGLE_GUEST_EXAMPLE_OUTPUT_URL =
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
 const ANGLE_TOOL_STORAGE_KEY = 'maxvideoai.tools.angle.v1';
-const ANGLE_MULTI_OUTPUT_COUNT = 4;
-
 type PersistedAngleToolState = {
   version: 1;
   engineId: AngleToolEngineId;
@@ -245,11 +243,6 @@ function isAuthRequiredError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
   const record = error as { status?: number; code?: string };
   return record.status === 401 || record.code === 'auth_required' || record.code === 'UNAUTHORIZED';
-}
-
-function formatUsd(value: number | null | undefined): string {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
-  return `$${value.toFixed(4)}`;
 }
 
 function formatUsdCompact(value: number | null | undefined): string {
@@ -993,10 +986,6 @@ export default function AngleToolPage() {
 
   const selectedEngine = useMemo(() => ENGINES.find((engine) => engine.id === engineId) ?? ENGINES[0], [engineId]);
   const effectiveEngineId = useMemo(() => resolveAngleEngineForParams(engineId, params), [engineId, params]);
-  const effectiveEngine = useMemo(
-    () => ENGINES.find((engine) => engine.id === effectiveEngineId) ?? selectedEngine,
-    [effectiveEngineId, selectedEngine]
-  );
   const negativeTiltActive = params.tilt < 0;
   const tiltFillPercent = useMemo(() => ((params.tilt + 30) / 60) * 100, [params.tilt]);
   const tiltTrackStyle = useMemo(
@@ -1007,7 +996,6 @@ export default function AngleToolPage() {
     }),
     [negativeTiltActive, tiltFillPercent]
   );
-  const requestedOutputCount = generateBestAngles && effectiveEngine?.supportsMultiOutput ? ANGLE_MULTI_OUTPUT_COUNT : 1;
   const billingProductKey = getAngleBillingProductKey(effectiveEngineId, generateBestAngles);
 
   const { data: billingProductData } = useSWR(

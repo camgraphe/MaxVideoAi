@@ -586,12 +586,13 @@ export default function BillingPage() {
     return () => {
       canceled = true;
     };
-  }, [session, normalizedChargeCurrency, walletQuoteError]);
+  }, [authLoading, session, normalizedChargeCurrency, walletQuoteError]);
 
   // no FX preview when using Checkout redirection
 
   // Detect Stripe mode for badge
   useEffect(() => {
+    if (authLoading) return;
     let mounted = true;
     fetch('/api/stripe-mode')
       .then((r) => r.json())
@@ -600,7 +601,7 @@ export default function BillingPage() {
     return () => {
       mounted = false;
     };
-  }, [copy.toasts.cancelled, copy.toasts.success]);
+  }, [authLoading]);
 
   // Show toast on return from Checkout
   useEffect(() => {

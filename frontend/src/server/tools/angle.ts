@@ -17,7 +17,6 @@ import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/li
 import {
   applyCinemaSafeParams,
   buildBestAngleVariantParams,
-  estimateAngleCostUsd,
   mapTiltForEngine,
   normalizeRotation,
   resolveAngleEngineForParams,
@@ -33,7 +32,6 @@ import type {
 import type { PricingSnapshot } from '@/types/engines';
 
 const TOOL_EVENT_NAME = 'tool_angle_generate';
-const DISPLAY_CURRENCY = 'USD';
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 const ANGLE_SURFACE = 'angle' as const;
 const ANGLE_MULTI_OUTPUT_COUNT = 4;
@@ -476,8 +474,7 @@ function extractActualCostUsd(payload: unknown): number | null {
 function buildFalInput(
   engine: AngleToolEngineDefinition,
   imageUrl: string,
-  params: { rotation: number; tilt: number; zoom: number },
-  options?: { generateBestAngles?: boolean }
+  params: { rotation: number; tilt: number; zoom: number }
 ) {
   const horizontalAngle = Math.round(normalizeRotation(params.rotation));
   const verticalAngle = Math.round(mapTiltForEngine(engine.id, params.tilt));
@@ -696,9 +693,6 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
 
   const chargedUsd = Number((pricing.totalCents / 100).toFixed(4));
   const chargedCredits = usdToCredits(chargedUsd) ?? 1;
-  const providerCostEstimateUsd = Number(
-    (estimateAngleCostUsd(engine.id, input.imageWidth, input.imageHeight) * requestedOutputCount).toFixed(4)
-  );
   const settingsSnapshot = buildAngleSettingsSnapshot({
     engine,
     imageUrl: input.imageUrl,

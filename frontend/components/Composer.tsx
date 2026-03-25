@@ -732,13 +732,14 @@ function AssetDropzone({
     },
     [
       acceptFormats,
-      constraints.maxAudioSizeMB,
+      assetCopy,
       constraints.maxVideoSizeMB,
       field,
-      limits.audioMaxMB,
+      limits.audioMaxDurationSec,
       limits.videoMaxMB,
       onError,
       onSelect,
+      readMediaDuration,
     ]
   );
 
@@ -807,6 +808,7 @@ function AssetDropzone({
     constraints.maxVideoSizeMB,
     field.maxCount,
     field.maxDurationSec,
+    field.id,
     field.minDurationSec,
     field.minCount,
     field.type,

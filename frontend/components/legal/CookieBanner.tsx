@@ -324,7 +324,7 @@ export function CookieBanner() {
         setLocalAnalyticsFlag(false);
       }
     }
-  }, []);
+  }, [copy.errors.loadVersion]);
 
   useEffect(() => {
     void bootstrap();
@@ -388,7 +388,7 @@ export function CookieBanner() {
         setFetchState('idle');
       }
     },
-    [consent, version]
+    [consent, copy.errors.save, version]
   );
 
   const handleAcceptAll = () => {

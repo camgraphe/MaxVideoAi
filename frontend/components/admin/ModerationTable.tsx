@@ -103,7 +103,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
     return { total, nonIndexable, archivedCount };
   }, [displayItems, items]);
 
-  const mutateVideo = (id: string, updates: Partial<ModerationVideo>) => {
+  const mutateVideo = useCallback((id: string, updates: Partial<ModerationVideo>) => {
     setItems((current) =>
       current.map((item) =>
         item.id === id
@@ -114,39 +114,42 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
           : item
       )
     );
-  };
+  }, []);
 
   const removeVideo = useCallback((id: string) => {
     setItems((current) => current.filter((item) => item.id !== id));
   }, [setItems]);
 
-  const updateVisibility = (video: ModerationVideo, visibility: 'public' | 'private', indexable: boolean) => {
-    startTransition(async () => {
-      setError(null);
-      mutateVideo(video.id, { visibility, indexable, archived: false });
-      try {
-        const res = await authFetch(`/api/admin/videos/${video.id}/visibility`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visibility, indexable }),
-        });
-        if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
+  const updateVisibility = useCallback(
+    (video: ModerationVideo, visibility: 'public' | 'private', indexable: boolean) => {
+      startTransition(async () => {
+        setError(null);
+        mutateVideo(video.id, { visibility, indexable, archived: false });
+        try {
+          const res = await authFetch(`/api/admin/videos/${video.id}/visibility`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ visibility, indexable }),
+          });
+          if (!res.ok) {
+            throw new Error(`Request failed with status ${res.status}`);
+          }
+          const json = await res.json().catch(() => ({ ok: false }));
+          if (!json?.ok) {
+            throw new Error(json?.error ?? 'Unknown error');
+          }
+          if (visibility !== 'public') {
+            removeVideo(video.id);
+          }
+        } catch (err) {
+          console.error('[moderation] update failed', err);
+          setError(err instanceof Error ? err.message : 'Failed to update visibility');
+          mutateVideo(video.id, video);
         }
-        const json = await res.json().catch(() => ({ ok: false }));
-        if (!json?.ok) {
-          throw new Error(json?.error ?? 'Unknown error');
-        }
-        if (visibility !== 'public') {
-          removeVideo(video.id);
-        }
-      } catch (err) {
-        console.error('[moderation] update failed', err);
-        setError(err instanceof Error ? err.message : 'Failed to update visibility');
-        mutateVideo(video.id, video);
-      }
-    });
-  };
+      });
+    },
+    [mutateVideo, removeVideo, startTransition]
+  );
 
   const handleLoadMore = useCallback(async () => {
     if (!nextCursor || isLoadingMore) return;
@@ -495,7 +498,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
         </>
       );
     },
-    [deletingId, handleDeleteVideo, isPending]
+    [deletingId, handleDeleteVideo, isPending, updateVisibility]
   );
 
   const renderPlaylistControls = useCallback(

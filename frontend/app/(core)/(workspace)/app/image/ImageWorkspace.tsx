@@ -2068,6 +2068,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       selectedEngine,
       outputFormat,
       outputFormatField,
+      readyReferenceUrls,
       thinkingLevel,
       thinkingLevelField,
       mutateJobs,
