@@ -83,7 +83,7 @@ export function GalleryRail({
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
   const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: feedType });
-  const { data: enginesData } = useEngines();
+  const { data: enginesData } = useEngines('video', { includeAverages: false });
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => {
     if (Array.isArray(stableJobs) && stableJobs.length) return stableJobs;

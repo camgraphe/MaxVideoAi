@@ -177,7 +177,7 @@ export default function DashboardPage() {
   const copy = t('workspace.dashboard', DEFAULT_DASHBOARD_COPY) as DashboardCopy;
   const router = useRouter();
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
-  const { data: enginesData, error: enginesError } = useEngines();
+  const { data: enginesData, error: enginesError } = useEngines('video', { includeAverages: false });
   const { data: imageEnginesData } = useEngines('image');
   const {
     data: jobsPages,
@@ -715,10 +715,6 @@ export default function DashboardPage() {
     },
     [copy.quickStarts.defaultTitle, pushTemplateEntry]
   );
-
-  if (authLoading) {
-    return null;
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">

@@ -158,12 +158,45 @@ async function getConfiguredEnginesForBase(
     .map((entry) => entry.engine);
 }
 
+async function getPublicConfiguredEnginesForBase(
+  baseEngines: EngineCaps[],
+  includeDisabled = false
+): Promise<EngineCaps[]> {
+  if (!process.env.DATABASE_URL) {
+    return baseEngines.map(cloneEngine);
+  }
+
+  const [settingsMap, overridesMap] = await Promise.all([
+    fetchEngineSettings().catch((error) => {
+      console.warn('[engines] public settings lookup failed, falling back to base registry', error);
+      return new Map<string, EngineSettingsRecord>();
+    }),
+    fetchEngineOverrides().catch((error) => {
+      console.warn('[engines] public overrides lookup failed, falling back to base registry', error);
+      return new Map<string, EngineOverride>();
+    }),
+  ]);
+
+  return baseEngines
+    .map((engine) => mergeEngine(engine, settingsMap, overridesMap))
+    .filter((entry) => includeDisabled || !entry.disabled)
+    .map((entry) => entry.engine);
+}
+
 export async function getConfiguredEnginesByCategory(
   category: EngineCategory = 'video',
   includeDisabled = false
 ): Promise<EngineCaps[]> {
   const baseEngines = getBaseEnginesByCategory(category);
   return getConfiguredEnginesForBase(baseEngines, includeDisabled);
+}
+
+export async function getPublicConfiguredEnginesByCategory(
+  category: EngineCategory = 'video',
+  includeDisabled = false
+): Promise<EngineCaps[]> {
+  const baseEngines = getBaseEnginesByCategory(category);
+  return getPublicConfiguredEnginesForBase(baseEngines, includeDisabled);
 }
 
 export async function getConfiguredEngines(includeDisabled = false): Promise<EngineCaps[]> {

@@ -110,7 +110,7 @@ export default function JobsPage() {
       },
     };
   }, [rawCopy]);
-  const { data: enginesData } = useEngines('all');
+  const { data: enginesData } = useEngines('all', { includeAverages: false });
   const {
     data: videoData,
     error: videoError,
@@ -523,10 +523,6 @@ export default function JobsPage() {
     },
     [handleGroupOpen]
   );
-
-  if (authLoading) {
-    return null;
-  }
 
   const sections = [
     {

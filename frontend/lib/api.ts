@@ -208,12 +208,23 @@ function scheduleStatusRetry(jobId: string, attempt: number): void {
 
 type EngineCategory = 'video' | 'image' | 'all';
 
-export function useEngines(category: EngineCategory = 'video') {
+type EngineAveragesResponse = {
+  averages?: Record<string, number | null>;
+};
+
+type UseEnginesOptions = {
+  includeAverages?: boolean;
+};
+
+export function useEngines(category: EngineCategory = 'video', options?: UseEnginesOptions) {
+  const includeAverages = options?.includeAverages !== false;
   const query = category === 'video' ? '' : `?category=${encodeURIComponent(category)}`;
-  return useSWR<EnginesResponse>(
+  const enginesQuery = useSWR<EnginesResponse>(
     `static-engines:${category}`,
     async () => {
-      const response = await authFetch(`/api/engines${query}`);
+      const response = await fetch(`/api/engines${query}`, {
+        credentials: 'include',
+      });
       const data = (await response.json().catch(() => null)) as
         | { engines?: EnginesResponse['engines']; error?: string }
         | null;
@@ -226,6 +237,44 @@ export function useEngines(category: EngineCategory = 'video') {
       dedupingInterval: 5 * 60 * 1000,
     }
   );
+
+  const averagesQuery = useSWR<EngineAveragesResponse>(
+    !includeAverages || category === 'image' ? null : `engine-averages:${category}`,
+    async () => {
+      const response = await fetch(`/api/engines/averages${query}`, {
+        credentials: 'include',
+      });
+      const data = (await response.json().catch(() => null)) as
+        | (EngineAveragesResponse & { error?: string })
+        | null;
+      if (!response.ok) {
+        throw new Error(data?.error ?? `Engine averages request failed: ${response.status}`);
+      }
+      return { averages: data?.averages ?? {} };
+    },
+    {
+      dedupingInterval: 60 * 1000,
+    }
+  );
+
+  const mergedData =
+    enginesQuery.data == null
+      ? enginesQuery.data
+      : {
+          engines: enginesQuery.data.engines.map((engine) => ({
+            ...engine,
+            avgDurationMs:
+              averagesQuery.data?.averages && Object.prototype.hasOwnProperty.call(averagesQuery.data.averages, engine.id)
+                ? averagesQuery.data.averages[engine.id] ?? null
+                : engine.avgDurationMs ?? null,
+          })),
+        };
+
+  return {
+    ...enginesQuery,
+    data: mergedData,
+    isLoading: enginesQuery.isLoading,
+  };
 }
 
 type JobFeedType = 'video' | 'image' | 'all';
