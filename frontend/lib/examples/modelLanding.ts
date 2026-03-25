@@ -285,15 +285,15 @@ const EN_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
 
 const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
   sora: {
-    subtitle: 'Exemples Sora orientés rendu cinématique, prompts réutilisables et réglages concrets.',
+    subtitle: 'Exemples Sora pensés pour un rendu cinématique, des prompts réutilisables et des réglages directement exploitables.',
     intro:
-      'Cette page rassemble des exemples Sora utilisables en production, avec prompts, durée et format déjà observés dans des rendus réels. L’objectif est de vous aider à reproduire des sorties cohérentes sans mélanger des comportements d’autres moteurs.',
+      'Cette page rassemble des exemples Sora réellement exploitables en production, avec prompts, durées et formats observés sur des rendus concrets. L’objectif est de vous aider à reproduire des résultats cohérents sans mélanger les logiques propres aux autres moteurs.',
     promptPatterns:
-      'Commencez par l’intention du plan, puis précisez caméra, mouvement et lumière. Les prompts courts et structurés restent les plus fiables.',
+      'Commencez par l’intention du plan, puis précisez la caméra, le mouvement et la lumière. Les prompts courts, structurés et bien hiérarchisés restent les plus fiables.',
     strengthsLimits:
-      'Sora est souvent performant sur les plans cinématiques et la cohérence visuelle. Les limites dépendent du mode et du contexte de rendu.',
+      'Sora est souvent très solide sur les plans cinématiques et la cohérence visuelle. Les limites dépendent ensuite du mode utilisé et du contexte de rendu.',
     pricingNotes:
-      'Le coût varie selon durée, résolution et options. Vérifiez le prix par clip avant de lancer des lots.',
+      'Le coût varie selon la durée, la résolution et les options activées. Vérifiez le prix par clip avant de lancer plusieurs variantes.',
     faq: [
       {
         question: 'Quels prompts fonctionnent le mieux avec Sora ?',
@@ -310,18 +310,18 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   veo: {
-    subtitle: 'Exemples Veo orientés contrôle du cadrage, mouvement et workflows avec références.',
+    subtitle: 'Exemples Veo pensés pour le contrôle du cadrage, du mouvement et des usages avec référence.',
     intro:
-      'Cette page Veo se concentre sur des patterns de prompts et de réglages utiles pour des rendus réguliers. Elle sert de base opérationnelle pour des variations pub, des plans de marque et des séquences courtes.',
+      'Cette page Veo se concentre sur des structures de prompts et des réglages utiles pour obtenir des rendus plus réguliers. Elle sert de base opérationnelle pour des variations publicitaires, des plans de marque et des séquences courtes où le cadrage doit rester maîtrisé.',
     promptPatterns:
-      'Décrivez d’abord l’objectif du plan, puis la caméra et l’ambiance. En mode référence, gardez les contraintes explicites.',
+      'Décrivez d’abord l’objectif du plan, puis la caméra et l’ambiance. En usage avec référence, gardez des contraintes explicites et faciles à relire.',
     strengthsLimits:
-      'Veo apporte généralement un bon contrôle de cadrage et de mouvement sur des clips courts. Les capacités varient selon le mode actif.',
+      'Veo offre généralement un bon niveau de contrôle sur le cadrage et le mouvement sur des clips courts. Les capacités varient selon le mode actif et le type d’entrée.',
     pricingNotes:
-      'Comparez les coûts avec des presets identiques (durée/résolution) pour isoler la différence moteur.',
+      'Comparez les coûts avec des presets identiques en durée et résolution pour isoler la vraie différence entre moteurs.',
     faq: [
       {
-        question: 'Ces exemples Veo sont-ils adaptés aux workflows image ?',
+        question: 'Ces exemples Veo sont-ils adaptés aux usages avec image de référence ?',
         answer: 'Oui, plusieurs exemples sont pensés pour un usage texte + référence.',
       },
       {
@@ -335,13 +335,13 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   wan: {
-    subtitle: 'Exemples Wan pour séquences structurées, transitions propres et itération guidée.',
+    subtitle: 'Exemples Wan pensés pour des séquences structurées, des transitions propres et une continuité guidée.',
     intro:
-      'Les exemples Wan de cette page sont pensés pour des séquences courtes à beats clairs et transitions maîtrisées. Ils servent de point de départ concret avant clonage en production.',
+      'Les exemples Wan de cette page sont pensés pour des séquences courtes à temps forts lisibles et transitions maîtrisées. Ils servent de point de départ concret avant clonage en production, surtout quand le rythme compte autant que le rendu final.',
     promptPatterns:
-      'Utilisez des prompts en 2 à 3 beats: setup, action, conclusion. La formulation explicite des transitions améliore la stabilité.',
+      'Utilisez des prompts en 2 ou 3 temps: mise en place, action, conclusion. Une formulation explicite des transitions améliore souvent la stabilité.',
     strengthsLimits:
-      'Wan fonctionne bien sur des plans structurés et des variations de continuité courtes. Gardez des scènes simples pour limiter la dérive.',
+      'Wan fonctionne bien sur des plans structurés et des variations courtes avec continuité. Gardez des scènes simples pour limiter la dérive.',
     pricingNotes:
       'Commencez par un test court à paramètres cibles, puis élargissez aux variantes validées.',
     faq: [
@@ -351,7 +351,7 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
       },
       {
         question: 'Peut-on adapter Wan aux formats verticaux ?',
-        answer: 'Oui, en conservant la logique motion puis en ajustant le cadrage.',
+        answer: 'Oui, en conservant la logique de mouvement puis en ajustant le cadrage.',
       },
       {
         question: 'Quelle méthode de test prix pour Wan ?',
@@ -360,13 +360,13 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   kling: {
-    subtitle: 'Exemples Kling pour motion stylisé, itération rapide et prompts réutilisables.',
+    subtitle: 'Exemples Kling pensés pour un mouvement stylisé, une itération rapide et des prompts réutilisables.',
     intro:
-      'Cette page Kling regroupe des exemples concrets pour produire des variantes social, produit et cinématiques avec un cadre de prompts stable. Elle reste volontairement spécifique au moteur.',
+      'Cette page Kling regroupe des exemples concrets pour produire des variantes réseaux sociaux, produit et cinématiques à partir d’une structure de prompt stable. Elle reste volontairement centrée sur le moteur lui-même pour éviter de brouiller la lecture avec des logiques trop génériques.',
     promptPatterns:
-      'Privilégiez des verbes d’action directs, une scène simple et une instruction caméra unique.',
+      'Privilégiez des verbes d’action directs, une scène simple et une seule consigne caméra par plan.',
     strengthsLimits:
-      'Kling est efficace pour des rendus stylisés et des itérations rapides. Trop d’objectifs visuels dans un prompt peut dégrader la stabilité.',
+      'Kling est efficace pour des rendus stylisés et des itérations rapides. Trop d’objectifs visuels empilés dans un même prompt peuvent nuire à la stabilité.',
     pricingNotes:
       'Pour comparer Kling correctement, conservez exactement la même durée et résolution entre moteurs.',
     faq: [
@@ -375,8 +375,8 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
         answer: 'Des prompts courts avec un objectif visuel principal et une caméra explicite.',
       },
       {
-        question: 'Ces exemples Kling conviennent-ils aux creatives ads ?',
-        answer: 'Oui, ils sont conçus pour être clonés puis adaptés à vos variantes.',
+        question: 'Ces exemples Kling conviennent-ils à des créas publicitaires ?',
+        answer: 'Oui, ils sont pensés pour servir de base à des créas publicitaires puis être adaptés à vos variantes.',
       },
       {
         question: 'Comment comparer le coût Kling ?',
@@ -385,9 +385,9 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   seedance: {
-    subtitle: 'Exemples Seedance orientés mouvement contrôlé et cadrage prévisible.',
+    subtitle: 'Exemples Seedance pensés pour un mouvement contrôlé et un cadrage prévisible.',
     intro:
-      'Les exemples Seedance ci-dessous servent de base pour des plans publicitaires, reveals produit et séquences de marque avec caméra stable. Le but est de faciliter la réutilisation rapide.',
+      'Les exemples Seedance ci-dessous servent de base pour des plans publicitaires, des reveals produit et des séquences de marque avec caméra stable. Le but est d’accélérer la réutilisation sans repartir de zéro.',
     promptPatterns:
       'Un objectif de plan clair, puis contraintes caméra/environnement. Les prompts compacts donnent les résultats les plus réguliers.',
     strengthsLimits:
@@ -410,19 +410,19 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   ltx: {
-    subtitle: 'Exemples LTX sur toute la famille, des drafts legacy rapides jusqu’aux workflows LTX 2.3 Pro avec audio, Extend et Retake.',
+    subtitle: 'Exemples LTX sur toute la famille, des brouillons rapides hérités jusqu’aux flux LTX 2.3 Pro avec audio, Extend et Retake.',
     intro:
-      'Cette page réunit toute la famille LTX au même endroit. Elle regroupe LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro et LTX 2.0 Fast pour comparer vitesse, structure de prompt, cadrage et profondeur de workflow avant de choisir la bonne base.',
+      'Cette page réunit toute la famille LTX au même endroit. Elle regroupe LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro et LTX 2.0 Fast pour comparer la vitesse, la structure de prompt, le cadrage et la richesse du flux de travail avant de choisir la bonne base.',
     promptPatterns:
-      'Utilisez des prompts concis avec un sujet clair, une action principale et une seule instruction caméra. Les exemples LTX se comparent mieux quand le brief reste stable et que seule la variante moteur change.',
+      'Utilisez des prompts concis avec un sujet clair, une action principale et une seule instruction caméra. Les exemples LTX se comparent mieux quand la consigne reste stable et que seule la variante de modèle change.',
     strengthsLimits:
-      'La famille LTX fonctionne bien pour l’itération rapide et des cadrages reproductibles. LTX 2.3 Pro ajoute l’audio piloté, Extend et Retake, tandis que LTX 2.0 reste une entrée legacy importante avec un historique d’exemples déjà bien référencé.',
+      'La famille LTX fonctionne bien pour l’itération rapide et des cadrages reproductibles. LTX 2.3 Pro ajoute l’audio piloté, Extend et Retake, tandis que LTX 2.0 reste une base historique utile avec un volume d’exemples déjà bien référencé.',
     pricingNotes:
-      'Gardez un preset de référence fixe pour comparer les coûts, puis comparez les variantes à durée et résolution identiques. Cela aide à voir quand les workflows 2.3 justifient un coût supérieur à LTX 2 legacy.',
+      'Gardez un preset de référence fixe pour comparer les coûts, puis comparez les variantes à durée et résolution identiques. Cela aide à voir quand les flux 2.3 justifient réellement un coût supérieur à LTX 2.',
     faq: [
       {
-        question: 'Quand faut-il commencer par le hub d’exemples LTX ?',
-        answer: 'Quand vous voulez comparer toute la famille LTX, des drafts legacy rapides aux workflows LTX 2.3 Pro avec audio, Extend et Retake.',
+        question: 'Quand faut-il commencer par la page d’exemples LTX ?',
+        answer: 'Quand vous voulez comparer toute la famille LTX, depuis les brouillons rapides hérités jusqu’aux flux LTX 2.3 Pro avec audio, Extend et Retake.',
       },
       {
         question: 'Comment améliorer la cohérence entre variantes LTX ?',
@@ -435,22 +435,22 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   pika: {
-    subtitle: 'Exemples Pika pour boucles courtes, style social et montage rapide.',
+    subtitle: 'Exemples Pika pensés pour des boucles courtes, un style social affirmé et un montage rapide.',
     intro:
-      'Cette page Pika cible les formats courts stylisés. Elle permet de cloner des patterns motion efficaces puis d’ajuster sujet et style sans refaire tout le setup.',
+      'Cette page Pika cible les formats courts et stylisés. Elle permet de cloner des schémas de mouvement efficaces puis d’ajuster le sujet et le style sans refaire tout le setup.',
     promptPatterns:
-      'Style d’abord, action principale ensuite, puis instruction caméra concise.',
+      'Commencez par le style, ajoutez ensuite l’action principale, puis une consigne de caméra concise.',
     strengthsLimits:
-      'Pika est souvent performant pour des boucles sociales rapides. Évitez les prompts surchargés pour réduire l’instabilité.',
+      'Pika est souvent performant pour des boucles sociales rapides et des visuels très stylisés. Évitez les prompts surchargés pour réduire l’instabilité.',
     pricingNotes:
       'Le coût reste plus prévisible avec des durées courtes et des presets constants.',
     faq: [
       {
         question: 'Comment réutiliser efficacement un exemple Pika ?',
-        answer: 'Clonez le pattern motion, puis ajustez seulement sujet et direction artistique.',
+        answer: 'Clonez le schéma de mouvement, puis ajustez seulement le sujet et la direction artistique.',
       },
       {
-        question: 'Ces exemples Pika conviennent-ils aux variantes social ads ?',
+        question: 'Ces exemples Pika conviennent-ils aux variantes pour réseaux sociaux ?',
         answer: 'Oui, ils sont pensés pour des déclinaisons rapides.',
       },
       {
@@ -460,15 +460,15 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   hailuo: {
-    subtitle: 'Exemples Hailuo pour drafts économiques, tests motion et itération progressive.',
+    subtitle: 'Exemples Hailuo pensés pour des brouillons économiques, des tests de mouvement et une itération progressive.',
     intro:
-      'Cette page Hailuo est orientée exploration à faible coût avant passage sur des moteurs premium. Elle sert à valider des idées de mouvement et de composition rapidement.',
+      'Cette page Hailuo est pensée pour une phase d’exploration à faible coût avant passage sur des moteurs premium. Elle sert à valider rapidement des idées de mouvement et de composition sans immobiliser trop de budget.',
     promptPatterns:
-      'Privilégiez des prompts courts orientés action + intention caméra.',
+      'Privilégiez des prompts courts centrés sur l’action et l’intention caméra.',
     strengthsLimits:
-      'Hailuo est utile pour des passes conceptuelles et tests motion. Pour des scènes complexes, avancez par étapes courtes.',
+      'Hailuo est utile pour des passes conceptuelles et des tests de mouvement. Pour des scènes complexes, avancez par étapes courtes afin de garder le contrôle.',
     pricingNotes:
-      'Utilisez Hailuo comme baseline de draft, puis upscale/reroutez les variantes gagnantes.',
+      'Utilisez Hailuo comme base de brouillon, puis montez en qualité ou redirigez les variantes gagnantes vers un moteur premium.',
     faq: [
       {
         question: 'Pourquoi utiliser Hailuo avant un moteur premium ?',
@@ -488,15 +488,15 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
 
 const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
   sora: {
-    subtitle: 'Ejemplos de Sora con enfoque cinematográfico, prompts reutilizables y ajustes claros.',
+    subtitle: 'Ejemplos de Sora pensados para un acabado cinematográfico, prompts reutilizables y ajustes realmente útiles.',
     intro:
-      'Esta página reúne ejemplos reales de Sora para clonar y ajustar en producción. El objetivo es ayudarte a repetir resultados con más consistencia usando prompts, duración y formato ya probados.',
+      'Esta página reúne ejemplos reales de Sora para clonar y ajustar en producción. La idea es ayudarte a repetir resultados con más consistencia usando prompts, duraciones y formatos que ya demostraron funcionar.',
     promptPatterns:
-      'Define primero la intención del plano, luego cámara, movimiento e iluminación. Los prompts cortos y estructurados suelen funcionar mejor.',
+      'Define primero la intención de la toma, luego la cámara, el movimiento y la iluminación. Los prompts cortos, estructurados y bien jerarquizados suelen responder mejor.',
     strengthsLimits:
-      'Sora suele destacar en coherencia cinematográfica y movimiento pulido. Los límites dependen del modo y del contexto de render.',
+      'Sora suele destacar por su coherencia cinematográfica y por un movimiento más pulido. Los límites dependen del modo y del contexto de render.',
     pricingNotes:
-      'El precio cambia por duración, resolución y opciones activas. Revisa el coste por clip antes de escalar.',
+      'El precio cambia según la duración, la resolución y las opciones activas. Revisa el costo por clip antes de escalar.',
     faq: [
       {
         question: '¿Qué prompts funcionan mejor en Sora?',
@@ -513,18 +513,18 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   veo: {
-    subtitle: 'Ejemplos de Veo orientados a control de encuadre, movimiento y referencias.',
+    subtitle: 'Ejemplos de Veo pensados para controlar el encuadre, el movimiento y los trabajos con referencia.',
     intro:
-      'Esta página de Veo se centra en patrones de prompt y ajustes prácticos para conseguir resultados más estables. Es una base operativa para variantes de anuncios, tomas de marca y secuencias cortas.',
+      'Esta página de Veo se centra en patrones de prompt y ajustes prácticos para conseguir resultados más estables. Sirve como base operativa para variantes publicitarias, tomas de marca y secuencias cortas donde el encuadre debe mantenerse bajo control.',
     promptPatterns:
-      'Empieza por el objetivo del plano y luego concreta cámara y ambiente. En workflows con referencia, mantén las restricciones explícitas.',
+      'Empieza por el objetivo de la toma y luego concreta la cámara y el ambiente. En trabajos con referencia, conviene dejar las restricciones bien explícitas y fáciles de revisar.',
     strengthsLimits:
-      'Veo suele ofrecer buen control de encuadre y movimiento en clips cortos. Las capacidades varían según el modo activo.',
+      'Veo suele ofrecer buen control de encuadre y movimiento en clips cortos. Las capacidades varían según el modo activo y el tipo de entrada.',
     pricingNotes:
-      'Compara costes con presets iguales de duración y resolución para obtener señales limpias.',
+      'Compara costos con presets iguales en duración y resolución para obtener una lectura más limpia.',
     faq: [
       {
-        question: '¿Estos ejemplos de Veo sirven para workflows con imagen?',
+        question: '¿Estos ejemplos de Veo sirven para flujos con imagen de referencia?',
         answer: 'Sí, varios ejemplos están pensados para uso texto + referencia.',
       },
       {
@@ -538,11 +538,11 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   wan: {
-    subtitle: 'Ejemplos de Wan para secuencias estructuradas, transiciones limpias y consistencia.',
+    subtitle: 'Ejemplos de Wan pensados para secuencias estructuradas, transiciones limpias y continuidad guiada.',
     intro:
-      'Los ejemplos de Wan de esta página están diseñados para secuencias cortas con beats claros y transiciones controladas. Son un punto de partida operativo antes de clonar en producción.',
+      'Los ejemplos de Wan de esta página están pensados para secuencias cortas con beats claros y transiciones controladas. Funcionan como punto de partida operativo antes de clonar en producción, sobre todo cuando el ritmo importa tanto como el acabado final.',
     promptPatterns:
-      'Usa prompts en 2-3 beats: inicio, acción y cierre. Las transiciones explícitas mejoran la estabilidad.',
+      'Usa prompts en 2 o 3 beats: arranque, acción y cierre. Las transiciones explícitas suelen mejorar la estabilidad.',
     strengthsLimits:
       'Wan funciona bien en secuencias cortas estructuradas y continuidad guiada por referencia. Mantén escenas simples para reducir deriva.',
     pricingNotes:
@@ -563,13 +563,13 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   kling: {
-    subtitle: 'Ejemplos de Kling para movimiento estilizado, iteración rápida y prompts reutilizables.',
+    subtitle: 'Ejemplos de Kling pensados para movimiento estilizado, iteración rápida y prompts realmente reutilizables.',
     intro:
-      'Esta página de Kling agrupa ejemplos prácticos para producir variantes sociales, de producto y creativas con un marco de prompt estable. Se mantiene específica del motor para evitar solapamiento con el hub.',
+      'Esta página de Kling agrupa ejemplos prácticos para producir variantes de redes sociales, producto y piezas cinematográficas con una estructura de prompt estable. Se mantiene específica del motor para no mezclar señales con la página general.',
     promptPatterns:
-      'Prioriza verbos de acción directos, una escena simple y una instrucción de cámara por toma.',
+      'Prioriza verbos de acción directos, una escena simple y una sola instrucción de cámara por toma.',
     strengthsLimits:
-      'Kling suele rendir bien en motion estilizado y ciclos rápidos. Demasiados objetivos visuales en un prompt reducen estabilidad.',
+      'Kling suele responder bien en movimiento estilizado y ciclos rápidos de iteración. Demasiados objetivos visuales en un solo prompt reducen la estabilidad.',
     pricingNotes:
       'Para comparar Kling de forma justa, usa duración y resolución idénticas entre motores.',
     faq: [
@@ -578,8 +578,8 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
         answer: 'Prompts cortos con un objetivo visual principal y cámara explícita.',
       },
       {
-        question: '¿Estos ejemplos de Kling sirven para creatividades de anuncios?',
-        answer: 'Sí, están pensados para clonarse y adaptarse rápidamente.',
+        question: '¿Estos ejemplos de Kling sirven para piezas publicitarias?',
+        answer: 'Sí, están pensados para clonarse rápido y adaptarse a distintas variantes de campaña.',
       },
       {
         question: '¿Cómo comparo coste en Kling?',
@@ -588,9 +588,9 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   seedance: {
-    subtitle: 'Ejemplos de Seedance para movimiento controlado y encuadre predecible.',
+    subtitle: 'Ejemplos de Seedance pensados para movimiento controlado y un encuadre predecible.',
     intro:
-      'Los ejemplos de Seedance en esta página sirven como base para tomas de anuncios, reveals de producto y secuencias de marca con cámara estable. El objetivo es acelerar la reutilización.',
+      'Los ejemplos de Seedance en esta página sirven como base para tomas publicitarias, reveals de producto y secuencias de marca con cámara estable. El objetivo es acelerar la reutilización sin volver a empezar cada vez.',
     promptPatterns:
       'Define una acción central y luego restricciones de cámara y entorno. Los prompts compactos suelen dar resultados más estables.',
     strengthsLimits:
@@ -613,19 +613,19 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   ltx: {
-    subtitle: 'Ejemplos de toda la familia LTX, desde borradores legacy rápidos hasta workflows LTX 2.3 Pro con audio, Extend y Retake.',
+    subtitle: 'Ejemplos de toda la familia LTX, desde borradores heredados rápidos hasta flujos LTX 2.3 Pro con audio, Extend y Retake.',
     intro:
-      'Esta página reúne toda la familia LTX en un solo lugar. Agrupa LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro y LTX 2.0 Fast para comparar velocidad, estructura de prompt, encuadre y profundidad de workflow antes de elegir la mejor base.',
+      'Esta página reúne toda la familia LTX en un solo lugar. Agrupa LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro y LTX 2.0 Fast para comparar velocidad, estructura de prompt, encuadre y amplitud del flujo de trabajo antes de elegir la mejor base.',
     promptPatterns:
-      'Usa prompts concisos con un sujeto claro, una acción principal y una sola instrucción de cámara. Los ejemplos LTX se comparan mejor cuando el brief se mantiene estable y solo cambia la variante del modelo.',
+      'Usa prompts concisos con un sujeto claro, una acción principal y una sola instrucción de cámara. Los ejemplos LTX se comparan mejor cuando la consigna se mantiene estable y solo cambia la variante del modelo.',
     strengthsLimits:
-      'La familia LTX funciona bien para iteración rápida y encuadres repetibles. LTX 2.3 Pro añade generación guiada por audio, Extend y Retake, mientras que LTX 2.0 sigue siendo una entrada legacy importante con histórico de ejemplos ya posicionado.',
+      'La familia LTX funciona bien para iteración rápida y encuadres repetibles. LTX 2.3 Pro suma generación guiada por audio, Extend y Retake, mientras que LTX 2.0 sigue siendo una base histórica útil con un volumen de ejemplos ya bien posicionado.',
     pricingNotes:
-      'Mantén un preset base fijo y compara variantes con la misma duración y resolución. Así se ve mejor cuándo los workflows 2.3 justifican más coste frente a LTX 2 legacy.',
+      'Mantén un preset base fijo y compara variantes con la misma duración y resolución. Así se ve mejor cuándo los flujos 2.3 justifican un mayor costo frente a LTX 2.',
     faq: [
       {
-        question: '¿Cuándo conviene empezar por el hub de ejemplos LTX?',
-        answer: 'Cuando quieres comparar toda la familia LTX, desde borradores legacy rápidos hasta workflows LTX 2.3 Pro con audio, Extend y Retake.',
+        question: '¿Cuándo conviene empezar por la página de ejemplos LTX?',
+        answer: 'Cuando quieres comparar toda la familia LTX, desde borradores heredados rápidos hasta flujos LTX 2.3 Pro con audio, Extend y Retake.',
       },
       {
         question: '¿Cómo mejoro consistencia entre variantes LTX?',
@@ -638,13 +638,13 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   pika: {
-    subtitle: 'Ejemplos de Pika para loops cortos, estilo social y edición ágil.',
+    subtitle: 'Ejemplos de Pika pensados para loops cortos, un estilo social marcado y una edición ágil.',
     intro:
-      'Esta página de Pika se centra en formatos cortos y estilizados. Permite clonar patrones de motion probados y ajustar sujeto/estilo sin rehacer toda la configuración.',
+      'Esta página de Pika se centra en formatos cortos y estilizados. Permite clonar patrones de movimiento ya probados y ajustar sujeto y estilo sin rehacer toda la configuración.',
     promptPatterns:
-      'Empieza por el estilo, define la acción principal y añade una instrucción breve de cámara.',
+      'Empieza por el estilo, suma la acción principal y cierra con una instrucción breve de cámara.',
     strengthsLimits:
-      'Pika suele funcionar bien para loops sociales rápidos. Evita prompts sobrecargados para reducir inestabilidad.',
+      'Pika suele funcionar bien para loops rápidos y piezas muy pensadas para redes. Evita prompts sobrecargados para reducir la inestabilidad.',
     pricingNotes:
       'El coste es más predecible con duraciones cortas y presets constantes.',
     faq: [
@@ -653,7 +653,7 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
         answer: 'Clona el patrón de movimiento y cambia primero sujeto y estilo.',
       },
       {
-        question: '¿Estos ejemplos de Pika sirven para variantes de social ads?',
+        question: '¿Estos ejemplos de Pika sirven para variantes de anuncios en redes sociales?',
         answer: 'Sí, están pensados para iteraciones rápidas.',
       },
       {
@@ -663,15 +663,15 @@ const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
     ],
   },
   hailuo: {
-    subtitle: 'Ejemplos de Hailuo para borradores económicos, test de movimiento e iteración progresiva.',
+    subtitle: 'Ejemplos de Hailuo pensados para borradores económicos, pruebas de movimiento e iteración progresiva.',
     intro:
-      'Esta página de Hailuo está orientada a exploración de bajo coste antes de pasar a motores premium. Sirve para validar ideas de movimiento y composición con rapidez.',
+      'Esta página de Hailuo está pensada para una etapa de exploración de bajo costo antes de pasar a motores premium. Sirve para validar ideas de movimiento y composición con rapidez sin comprometer demasiado presupuesto.',
     promptPatterns:
-      'Prioriza prompts cortos centrados en acción y dirección de cámara.',
+      'Prioriza prompts cortos centrados en la acción y la dirección de cámara.',
     strengthsLimits:
-      'Hailuo es útil para pases conceptuales y tests de motion. En escenas complejas, trabaja por pasos cortos.',
+      'Hailuo es útil para pases conceptuales y pruebas de movimiento. En escenas complejas, conviene trabajar por pasos cortos.',
     pricingNotes:
-      'Úsalo como baseline de borrador y escala solo las variantes que funcionen.',
+      'Úsalo como base de borrador y escala solo las variantes que de verdad funcionen.',
     faq: [
       {
         question: '¿Por qué usar Hailuo antes de un motor premium?',
@@ -740,7 +740,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: 'Où comparer les specs et limites des modèles ?',
-        answer: 'Utilisez les pages modèles pour les specs/limites et le hub moteurs pour la décision par use case.',
+        answer: 'Utilisez les pages modèles pour les caractéristiques et limites, et la page moteurs pour choisir selon le cas d’usage.',
       },
       {
         question: 'Comment choisir le bon moteur pour ce plan ?',
@@ -769,7 +769,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: '¿Dónde comparo specs y límites por modelo?',
-        answer: 'Usa las páginas de modelos para specs/límites y el hub de motores para decisiones por caso de uso.',
+        answer: 'Usa las páginas de modelos para ver características y límites, y la página de motores para decidir según el caso de uso.',
       },
       {
         question: '¿Cómo elijo el motor correcto para esta toma?',

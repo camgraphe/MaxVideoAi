@@ -15,10 +15,13 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { ExamplesHeroVideo } from '@/components/examples/ExamplesHeroVideo.client';
 import {
   getExampleModelLanding,
   getHubExamplesFaq,
 } from '@/lib/examples/modelLanding';
+import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -93,16 +96,13 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
 const PREFERRED_ENGINE_ORDER = ['sora', 'kling', 'veo', 'wan', 'seedance', 'ltx', 'pika', 'hailuo'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
-const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
-  sora: { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
-  veo: { bg: 'var(--engine-google-veo-bg)', text: 'var(--engine-google-veo-ink)' },
-  pika: { bg: 'var(--engine-pika-bg)', text: 'var(--engine-pika-ink)' },
-  hailuo: { bg: 'var(--engine-minimax-bg)', text: 'var(--engine-minimax-ink)' },
-  seedance: { bg: 'var(--engine-bytedance-bg)', text: 'var(--engine-bytedance-ink)' },
-  kling: { bg: 'var(--engine-kling-bg)', text: 'var(--engine-kling-ink)' },
-  wan: { bg: 'var(--engine-wan-bg)', text: 'var(--engine-wan-ink)' },
-  ltx: { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
-};
+function getEngineAccentOutlineStyle(brandId?: string) {
+  if (!brandId) return undefined;
+  return {
+    borderColor: `var(--engine-${brandId}-bg)`,
+    boxShadow: `inset 0 0 0 1px var(--engine-${brandId}-bg)`,
+  };
+}
 
 const ENGINE_MODEL_LINKS_BY_GROUP: Record<string, string[]> = {
   sora: ['sora-2-pro', 'sora-2'],
@@ -420,6 +420,74 @@ function compactLeadCopy(value: string, maxChars = 130): string {
   return `${normalized.slice(0, end).trim()}...`;
 }
 
+function buildMainVideoHeroLine(locale: AppLocale, modelLabel: string, specificLine?: string | null): string {
+  const normalizedSpecificLine = specificLine?.replace(/\s+/g, ' ').trim();
+  if (normalizedSpecificLine) {
+    return compactLeadCopy(normalizedSpecificLine, 110);
+  }
+  if (locale === 'fr') {
+    return `Exemple de video AI ${modelLabel} avec prompt, reglages, duree, format et prix.`;
+  }
+  if (locale === 'es') {
+    return `Ejemplo de video con IA de ${modelLabel} con prompt, ajustes, duracion, formato y precio.`;
+  }
+  return `${modelLabel} AI video example with prompt, settings, duration, aspect ratio, and pricing.`;
+}
+
+function buildMainVideoSchemaDescription(
+  locale: AppLocale,
+  modelLabel: string,
+  prompt: string | null | undefined,
+  aspectRatio: string | null | undefined,
+  durationSec: number | null | undefined
+): string {
+  const aspect = aspectRatio ?? 'Auto';
+  const duration = Math.max(1, Math.round(Number(durationSec ?? 0) || 1));
+  const promptSummary = prompt ? compactLeadCopy(prompt, 160) : null;
+
+  if (locale === 'fr') {
+    return promptSummary
+      ? `Exemple de video AI ${modelLabel} en ${aspect}, duree ${duration}s. Prompt: ${promptSummary}`
+      : `Exemple de video AI ${modelLabel} en ${aspect}, duree ${duration}s.`;
+  }
+  if (locale === 'es') {
+    return promptSummary
+      ? `Ejemplo de video con IA de ${modelLabel} en ${aspect}, duracion ${duration}s. Prompt: ${promptSummary}`
+      : `Ejemplo de video con IA de ${modelLabel} en ${aspect}, duracion ${duration}s.`;
+  }
+  return promptSummary
+    ? `${modelLabel} AI video example in ${aspect}, duration ${duration}s. Prompt: ${promptSummary}`
+    : `${modelLabel} AI video example in ${aspect}, duration ${duration}s.`;
+}
+
+function toDurationIso(seconds?: number | null): string {
+  const safe = Math.max(1, Math.round(Number(seconds ?? 0) || 1));
+  return `PT${safe}S`;
+}
+
+function getAspectRatioStyle(aspectRatio?: string | null): string {
+  if (!aspectRatio) return '16 / 9';
+  const [width, height] = aspectRatio.split(':').map(Number);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || height <= 0) {
+    return '16 / 9';
+  }
+  return `${width} / ${height}`;
+}
+
+function isPortraitAspectRatio(aspectRatio?: string | null): boolean {
+  if (!aspectRatio) return false;
+  const [width, height] = aspectRatio.split(':').map(Number);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || height <= 0) {
+    return false;
+  }
+  return width / height < 1;
+}
+
+function getVideoMimeType(videoUrl?: string | null): string {
+  const normalized = (videoUrl ?? '').toLowerCase();
+  return normalized.includes('.webm') ? 'video/webm' : 'video/mp4';
+}
+
 type EngineFilterOption = {
   id: string;
   key: string;
@@ -527,9 +595,9 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const loadMoreLabel = paginationContent.loadMore ?? galleryUiCopy.loadMore;
   const longDescription =
     locale === 'fr'
-      ? "Parcourez des exemples de vidéo IA par marque, avec prompt, réglages, durée et prix par clip. Utilisez ce hub pour comparer mouvement, lumière et composition, puis ouvrez les pages modèles pour les caractéristiques, limites et détails de mode."
+      ? "Parcourez des exemples de vidéo IA par marque, avec prompt, réglages, durée et prix par clip. Utilisez cette page pour comparer mouvement, lumière et composition, puis ouvrez les pages modèles pour les caractéristiques, limites et détails de mode."
       : locale === 'es'
-        ? 'Explora ejemplos de video con IA por marca, con prompt, ajustes, duración y precio por clip. Usa este hub para revisar movimiento, luz y composición, y abre las páginas de modelos para ver especificaciones, límites y detalles por modo.'
+        ? 'Explora ejemplos de video con IA por marca, con prompt, ajustes, duración y precio por clip. Usa esta página para revisar movimiento, luz y composición, y abre las páginas de modelos para ver especificaciones, límites y detalles por modo.'
         : 'Browse AI video examples by model, including prompt, settings, duration, and price per clip. Use this hub to review motion, lighting, and composition across brands, then open model pages for specs, limits, and mode details.';
   const HERO_BODY_FALLBACK =
     'Browse AI video examples by model with prompt, format, duration, and price per clip. Use filters to review outputs and open model pages for specs and limits.';
@@ -538,9 +606,10 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const heroTitle = modelLanding?.heroTitle ?? content.hero.title;
   const heroSubtitle = modelLanding?.heroSubtitle ?? content.hero.subtitle;
   const heroBody = modelLanding?.intro ?? hubHeroBody;
+  const heroLead = compactLeadCopy(heroBody, modelLanding ? 120 : 152);
   const modelLandingSections = modelLanding?.sections.map((section) => ({
     ...section,
-    body: compactLeadCopy(section.body, 118),
+    body: compactLeadCopy(section.body, 86),
   }));
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
@@ -724,13 +793,27 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       sourceIndex: index,
     };
   });
-  const initialExamples = clientVideos.slice(0, 12);
+  const showModelHero = isModelLanding && currentPage === 1 && sort === DEFAULT_SORT;
+  const playableHeroCard = showModelHero ? pickFirstPlayableVideo(clientVideos) : null;
+  const mainVideoIndex = playableHeroCard ? clientVideos.indexOf(playableHeroCard) : -1;
+  const mainVideo =
+    mainVideoIndex >= 0
+      ? {
+          video: videos[mainVideoIndex],
+          card: clientVideos[mainVideoIndex],
+        }
+      : null;
+  const galleryVideos = mainVideo ? videos.filter((_, index) => index !== mainVideoIndex) : videos;
+  const galleryClientVideos = mainVideo ? clientVideos.filter((_, index) => index !== mainVideoIndex) : clientVideos;
+  const initialExamples = galleryClientVideos.slice(0, 12);
   const initialMaxIndex = initialExamples.reduce((max, video) => Math.max(max, video.sourceIndex ?? -1), -1);
   const pageOffsetStart = offset;
   const pageOffsetEnd = offset + allVideos.length;
-  const nextOffsetStart = pageOffsetStart + Math.max(0, initialMaxIndex + 1);
+  const consumedMaxIndex = Math.max(mainVideo?.card.sourceIndex ?? -1, initialMaxIndex);
+  const nextOffsetStart = pageOffsetStart + Math.max(0, consumedMaxIndex + 1);
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
+  const showGallerySection = galleryClientVideos.length > 0 || nextOffsetStart < pageOffsetEnd;
   const buildQueryParams = (
     nextSort: ExampleSort,
     engineValue: string | null,
@@ -776,7 +859,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     };
   };
 
-  const itemListElements = videos.map((video, index) => {
+  const itemListElements = galleryVideos.map((video, index) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
       const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
       const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
@@ -797,6 +880,58 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const canonicalUrl = modelLanding
     ? `${SITE}${galleryBasePath}/${modelLanding.slug}`
     : baseExamplesUrl;
+  const mainVideoModelLabel = modelLanding?.label ?? selectedOption?.label ?? mainVideo?.card.engineLabel ?? 'Model';
+  const mainVideoTitle =
+    mainVideo?.video.promptExcerpt ||
+    mainVideo?.video.prompt ||
+    `${mainVideoModelLabel} example video`;
+  const mainVideoPromptFull = mainVideo?.video.prompt?.trim() || null;
+  const mainVideoHeroLine = mainVideo
+    ? buildMainVideoHeroLine(
+        locale as AppLocale,
+        mainVideoModelLabel,
+        modelLanding?.heroSubtitle ?? modelLanding?.summary ?? null
+      )
+    : null;
+  const mainVideoDescription = mainVideo
+    ? buildMainVideoSchemaDescription(
+        locale as AppLocale,
+        mainVideoModelLabel,
+        mainVideo.video.promptExcerpt ?? mainVideo.video.prompt,
+        mainVideo.video.aspectRatio ?? mainVideo.card.aspectRatio,
+        mainVideo.video.durationSec
+      )
+    : null;
+  const mainVideoThumbnailUrl = mainVideo
+    ? toAbsoluteUrl(mainVideo.video.thumbUrl ?? mainVideo.card.rawPosterUrl ?? null)
+    : null;
+  const mainVideoContentUrl = mainVideo ? toAbsoluteUrl(mainVideo.video.videoUrl ?? null) : null;
+  const mainVideoPoster = mainVideo?.card.optimizedPosterUrl ?? mainVideo?.card.rawPosterUrl ?? null;
+  const mainVideoAspectRatio = getAspectRatioStyle(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
+  const mainVideoIsPortrait = isPortraitAspectRatio(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
+  const mainVideoMimeType = getVideoMimeType(mainVideoContentUrl);
+  const mainVideoJsonLd =
+    mainVideo && mainVideoDescription && mainVideoThumbnailUrl
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'VideoObject',
+          name: mainVideoHeroLine?.replace(/\.$/, '') ?? mainVideoTitle,
+          description: mainVideoDescription,
+          thumbnailUrl: [mainVideoThumbnailUrl],
+          uploadDate: new Date(mainVideo.video.createdAt).toISOString(),
+          duration: toDurationIso(mainVideo.video.durationSec),
+          contentUrl: mainVideoContentUrl ?? undefined,
+          publisher: {
+            '@type': 'Organization',
+            name: 'MaxVideoAI',
+            url: SITE,
+            logo: {
+              '@type': 'ImageObject',
+              url: `${SITE}/favicon-512.png`,
+            },
+          },
+        }
+      : null;
   const breadcrumbLabels = getBreadcrumbLabels(appLocale);
   const breadcrumbItems = [
     {
@@ -852,22 +987,195 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             text: item.answer,
           },
         })),
-      }
-    : null;
+        }
+      : null;
+  const mainVideoCopy =
+    locale === 'fr'
+      ? {
+          openExample: "Ouvrir l'exemple",
+          audioOn: 'Audio activé',
+          fullPrompt: 'Prompt complet',
+        }
+      : locale === 'es'
+        ? {
+            openExample: 'Abrir ejemplo',
+            audioOn: 'Audio activado',
+            fullPrompt: 'Prompt completo',
+          }
+        : {
+            openExample: 'Open example',
+            audioOn: 'Audio on',
+            fullPrompt: 'Full prompt',
+          };
 
   return (
     <>
-      <main className="container-page max-w-7xl section">
+      {engineFilterOptions.length ? (
+        <div className="sticky top-16 z-30 -mt-px border-b border-hairline bg-surface">
+          <div className="container-page max-w-6xl">
+            <nav
+              aria-label={browseByModelLabel}
+              className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-4 sm:py-2"
+            >
+              <span className="shrink-0 pl-1 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                {browseByModelLabel}
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="grid grid-cols-5 gap-1 rounded-xl bg-surface-2/70 p-1 sm:min-w-0 sm:grid-flow-col sm:auto-cols-fr sm:grid-cols-none">
+                  <Link
+                    href={buildEngineFilterHref(null)}
+                    scroll={false}
+                    className={clsx(
+                      'flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:px-3 sm:text-sm',
+                      selectedEngine
+                        ? 'text-text-secondary hover:bg-surface hover:text-text-primary'
+                        : 'bg-surface text-text-primary shadow-sm ring-1 ring-black/5'
+                    )}
+                  >
+                    {engineFilterAllLabel}
+                  </Link>
+                  {engineFilterOptions.map((engine) => {
+                    const isActive = selectedEngine === engine.id;
+                    const activeAccentStyle = isActive ? getEngineAccentOutlineStyle(engine.brandId) : undefined;
+                    return (
+                      <Link
+                        key={engine.id}
+                        href={buildEngineFilterHref(engine.id)}
+                        scroll={false}
+                        className={clsx(
+                          'flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:px-3 sm:text-sm',
+                          isActive
+                            ? 'bg-surface text-text-primary shadow-sm ring-1 ring-black/5'
+                            : 'text-text-secondary hover:bg-surface hover:text-text-primary'
+                        )}
+                        style={activeAccentStyle}
+                      >
+                        {engine.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+      ) : null}
+
+      <main
+        className={clsx(
+          'container-page max-w-7xl',
+          engineFilterOptions.length ? 'pb-[var(--section-padding-y)] pt-4 sm:pt-6' : 'section'
+        )}
+      >
         <div className="stack-gap-lg">
-          <section className="halo-hero halo-hero-offset stack-gap-lg text-center">
+          <section className="halo-hero stack-gap-sm text-center sm:stack-gap-md">
             <header className="mx-auto max-w-3xl stack-gap-sm text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
               <p className="text-base leading-relaxed text-text-secondary">{heroSubtitle}</p>
-              <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
+              <p className="mx-auto max-w-2xl text-sm leading-relaxed text-text-secondary/90">{heroLead}</p>
             </header>
+          </section>
 
-            {isModelLanding && selectedEngine && modelLinks.length ? (
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-secondary">
+          {mainVideo && mainVideoContentUrl ? (
+            <section className="mx-auto w-full max-w-[920px]">
+              <article className="group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card">
+                <div
+                  className="relative overflow-hidden bg-surface-on-media-dark-5"
+                  style={{ aspectRatio: mainVideoIsPortrait ? '16 / 9' : mainVideoAspectRatio }}
+                >
+                  {mainVideoIsPortrait && mainVideoPoster ? (
+                    <>
+                      <div
+                        className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl"
+                        style={{ backgroundImage: `url(${mainVideoPoster})` }}
+                        aria-hidden
+                      />
+                      <div className="absolute inset-0 bg-black/30" aria-hidden />
+                    </>
+                  ) : null}
+
+                  <div
+                    className={clsx(
+                      'relative h-full w-full',
+                      mainVideoIsPortrait ? 'flex items-center justify-center p-3 sm:p-4' : ''
+                    )}
+                  >
+                    <ExamplesHeroVideo
+                      className={clsx(
+                        mainVideoIsPortrait
+                          ? 'relative z-10 h-full w-auto max-w-full rounded-[18px] object-contain shadow-[0_18px_48px_rgba(15,23,42,0.28)]'
+                          : 'h-full w-full object-cover'
+                      )}
+                      src={mainVideoContentUrl}
+                      type={mainVideoMimeType}
+                      poster={mainVideoPoster ?? undefined}
+                      ariaLabel={mainVideoTitle}
+                    />
+                  </div>
+                  {mainVideo.video.hasAudio ? (
+                    <AudioEqualizerBadge tone="light" size="sm" label={mainVideoCopy.audioOn} />
+                  ) : null}
+                </div>
+
+                <div className="space-y-2.5 px-5 py-4 text-left sm:px-6 sm:py-4.5">
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                    {mainVideo.card.modelHref ? (
+                      <Link href={mainVideo.card.modelHref} className="hover:text-text-primary">
+                        {mainVideo.card.engineLabel}
+                      </Link>
+                    ) : (
+                      <span>{mainVideo.card.engineLabel}</span>
+                    )}
+                    <span>
+                      {mainVideo.video.aspectRatio ?? 'Auto'} · {mainVideo.video.durationSec}s
+                    </span>
+                    {mainVideo.card.priceLabel ? (
+                      <span className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-text-secondary">
+                        {mainVideo.card.priceLabel}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <h2 className="text-lg font-semibold leading-snug text-text-primary sm:text-xl">
+                    {mainVideoHeroLine}
+                  </h2>
+
+                  {mainVideoPromptFull ? (
+                    <details className="group">
+                      <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-micro text-text-muted transition hover:text-text-primary">
+                        {mainVideoCopy.fullPrompt}
+                      </summary>
+                      <p className="mt-2 text-sm leading-relaxed text-text-secondary whitespace-pre-line">
+                        {mainVideoPromptFull}
+                      </p>
+                    </details>
+                  ) : null}
+
+                  <div className="flex flex-wrap items-center gap-3 pt-0.5">
+                    <Link
+                      href={mainVideo.card.href}
+                      className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-bg transition hover:opacity-90"
+                    >
+                      {mainVideoCopy.openExample}
+                    </Link>
+                    {mainVideo.card.modelHref ? (
+                      <Link
+                        href={mainVideo.card.modelHref}
+                        className="inline-flex items-center rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                      >
+                        {mainVideo.card.engineLabel}
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+              </article>
+            </section>
+          ) : null}
+
+          {isModelLanding && selectedEngine && modelLinks.length ? (
+            <section className="mx-auto max-w-5xl">
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-text-secondary">
                 <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{modelPagesLabel}</span>
                 {modelLinks.map((model) => (
                   <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
@@ -878,95 +1186,57 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   {pricingLinkLabel}
                 </Link>
               </div>
-            ) : null}
-          </section>
-
-          {modelLandingSections?.length ? (
-            <section className="w-full overflow-x-auto pb-1">
-              <div className="inline-flex w-max min-w-full justify-center gap-2 px-1">
-                {modelLandingSections.map((section) => (
-                  <article
-                    key={section.title}
-                    className="inline-flex min-w-[230px] max-w-[280px] items-center rounded-2xl border border-hairline/80 bg-surface/85 px-3 py-2.5 text-center shadow-sm"
-                  >
-                    <div className="min-w-0">
-                      <h2 className="text-[11px] font-semibold leading-tight text-text-primary">{section.title}</h2>
-                      <p
-                        className="mt-1 text-[11px] leading-snug text-text-secondary/90"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {section.body}
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </div>
             </section>
           ) : null}
 
-          <section className="flex flex-wrap items-center justify-center gap-4 text-xs text-text-secondary">
-            {engineFilterOptions.length ? (
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <span className="font-semibold uppercase tracking-micro text-text-muted">{browseByModelLabel}</span>
-                <div className="flex flex-wrap items-center justify-center gap-1">
-                  <Link
-                    href={buildEngineFilterHref(null)}
-                    scroll={false}
-                    className={clsx(
-                      'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      selectedEngine
-                        ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                        : 'border-hairline bg-surface-2 text-text-primary shadow-card'
-                    )}
-                  >
-                    {engineFilterAllLabel}
-                  </Link>
-                  {engineFilterOptions.map((engine) => {
-                    const isActive = selectedEngine === engine.id;
-                    const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
-                    return (
-                      <Link
-                        key={engine.id}
-                        href={buildEngineFilterHref(engine.id)}
-                        scroll={false}
-                        className={clsx(
-                          'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                          isActive
-                            ? 'border-transparent bg-text-primary text-bg shadow-card'
-                            : palette
-                              ? 'border border-surface-on-media-dark-10 hover:opacity-90'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                        )}
-                        style={!isActive && palette ? { backgroundColor: palette.bg, color: palette.text } : undefined}
-                      >
-                        {engine.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </section>
+          {modelLandingSections?.length ? (
+            <section className="grid gap-3 md:grid-cols-3">
+              {modelLandingSections.map((section) => (
+                <article
+                  key={section.title}
+                  className="rounded-[20px] border border-hairline/80 bg-surface/85 px-4 py-4 text-left shadow-sm"
+                >
+                  <div className="min-w-0">
+                    <h2 className="text-sm font-semibold leading-tight text-text-primary">{section.title}</h2>
+                    <p
+                      className="mt-2 text-xs leading-relaxed text-text-secondary/90"
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {section.body}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </section>
+          ) : null}
 
-          <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
-            <ExamplesGalleryGrid
-              initialExamples={initialExamples}
-              loadMoreLabel={loadMoreLabel}
-              loadingLabel={galleryUiCopy.loading}
-              noPreviewLabel={galleryUiCopy.noPreview}
-              audioAvailableLabel={galleryUiCopy.audioAvailable}
-              sort={sort}
-              engineFilter={selectedEngine?.toLowerCase() ?? null}
-              initialOffset={nextOffsetStart}
-              pageOffsetEnd={pageOffsetEnd}
-              locale={locale}
-            />
-          </section>
+          {showGallerySection ? (
+            <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
+              <ExamplesGalleryGrid
+                initialExamples={initialExamples}
+                loadMoreLabel={loadMoreLabel}
+                loadingLabel={galleryUiCopy.loading}
+                noPreviewLabel={galleryUiCopy.noPreview}
+                audioAvailableLabel={galleryUiCopy.audioAvailable}
+                sort={sort}
+                engineFilter={selectedEngine?.toLowerCase() ?? null}
+                initialOffset={nextOffsetStart}
+                pageOffsetEnd={pageOffsetEnd}
+                locale={locale}
+              />
+            </section>
+          ) : null}
+
+          {modelLanding && heroLead !== heroBody ? (
+            <section className="mx-auto max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+              <p>{heroBody}</p>
+            </section>
+          ) : null}
 
           {totalPages > 1 ? (
             <nav className="flex flex-col items-center justify-between gap-4 rounded-[24px] border border-hairline bg-surface/70 px-4 py-4 text-sm text-text-secondary sm:flex-row">
@@ -1096,6 +1366,13 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             type="application/ld+json"
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJson) }}
+          />
+        ) : null}
+        {mainVideoJsonLd ? (
+          <script
+            type="application/ld+json"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(mainVideoJsonLd) }}
           />
         ) : null}
         {faqJsonLd ? (
