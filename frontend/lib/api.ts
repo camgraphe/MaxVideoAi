@@ -209,11 +209,22 @@ function scheduleStatusRetry(jobId: string, attempt: number): void {
 
 type EngineCategory = 'video' | 'image' | 'all';
 
-export function useEngines(category: EngineCategory = 'video') {
-  const query = category === 'video' ? '' : `?category=${encodeURIComponent(category)}`;
+type UseEnginesOptions = {
+  includeAverages?: boolean;
+};
+
+export function useEngines(category: EngineCategory = 'video', options?: UseEnginesOptions) {
+  const params = new URLSearchParams();
+  if (category !== 'video') {
+    params.set('category', category);
+  }
+  if (options?.includeAverages) {
+    params.set('includeAverages', '1');
+  }
+  const query = params.size > 0 ? `?${params.toString()}` : '';
   const fallbackEngines = getBaseEnginesByCategory(category);
   return useSWR<EnginesResponse>(
-    `static-engines:${category}`,
+    `static-engines:${category}:${options?.includeAverages ? 'avg' : 'base'}`,
     async () => {
       try {
         const response = await fetch(`/api/engines${query}`, { credentials: 'include' });
