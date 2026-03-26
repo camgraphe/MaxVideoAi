@@ -2818,13 +2818,6 @@
           "library": "Biblioteca",
           "replace": "Reemplazar",
           "remove": "Quitar"
-        },
-        "bridge": {
-          "eyebrow": "Antes de seguir",
-          "title": "¿Necesitas una referencia más sólida primero?",
-          "body": "Usa Character Builder cuando la identidad importa, o Angle cuando el sujeto está bien pero el punto de vista no.",
-          "characterCta": "¿Necesitas primero una referencia de personaje reutilizable?",
-          "angleCta": "¿Necesitas primero un mejor ángulo de cámara?"
         }
       },
       "history": {

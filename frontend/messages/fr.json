@@ -2825,13 +2825,6 @@
           "library": "Bibliothèque",
           "replace": "Remplacer",
           "remove": "Retirer"
-        },
-        "bridge": {
-          "eyebrow": "Avant d'aller plus loin",
-          "title": "Besoin d'une meilleure référence d'abord ?",
-          "body": "Utilisez Character Builder quand l'identité compte, ou Angle quand le sujet est bon mais que le point de vue ne l'est pas.",
-          "characterCta": "Besoin d'une référence personnage réutilisable d'abord ?",
-          "angleCta": "Besoin d'un meilleur angle de caméra d'abord ?"
         }
       },
       "history": {

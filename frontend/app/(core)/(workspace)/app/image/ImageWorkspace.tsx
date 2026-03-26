@@ -143,13 +143,6 @@ interface ImageWorkspaceCopy {
       replace: string;
       remove: string;
     };
-    bridge: {
-      eyebrow: string;
-      title: string;
-      body: string;
-      characterCta: string;
-      angleCta: string;
-    };
   };
   history: {
     eyebrow: string;
@@ -307,13 +300,6 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       library: 'Library',
       replace: 'Replace',
       remove: 'Remove',
-    },
-    bridge: {
-      eyebrow: 'Before you branch out',
-      title: 'Need a stronger reference first?',
-      body: 'Use Character Builder when identity matters, or Angle when the subject is right and the viewpoint is not.',
-      characterCta: 'Need a reusable character reference first?',
-      angleCta: 'Need a better camera angle first?',
     },
   },
   history: {
@@ -1977,7 +1963,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       }
       setError(null);
       setStatusMessage(null);
-      const pendingId = `pending-${crypto.randomUUID()}`;
+      const pendingId = `img_${crypto.randomUUID()}`;
       const pendingCreatedAt = Date.now();
       setPendingGroups((prev) => [
         buildPendingGroup({
@@ -2001,6 +1987,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           return Number.isFinite(parsed) ? Math.round(parsed) : undefined;
         })();
         const response = await runImageGeneration({
+          jobId: pendingId,
           engineId: selectedEngine.id,
           mode,
           prompt: trimmedPrompt,
@@ -2609,24 +2596,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       {resolvedCopy.runButton.idle}
                     </Button>
                   </div>
-
-                  <div className="rounded-2xl border border-hairline bg-surface-2/70 p-4 shadow-card">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
-                      {resolvedCopy.composer.bridge.eyebrow}
-                    </p>
-                    <h3 className="mt-2 text-sm font-semibold text-text-primary">{resolvedCopy.composer.bridge.title}</h3>
-                    <p className="mt-2 text-xs leading-6 text-text-secondary">{resolvedCopy.composer.bridge.body}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <ButtonLink href="/tools/character-builder" linkComponent={Link} variant="outline" size="sm">
-                        {resolvedCopy.composer.bridge.characterCta}
-                      </ButtonLink>
-                      <ButtonLink href="/tools/angle" linkComponent={Link} variant="outline" size="sm">
-                        {resolvedCopy.composer.bridge.angleCta}
-                      </ButtonLink>
-                    </div>
-                  </div>
-
-                  <SectionDivider />
 
                   <section className="stack-gap-sm">
                     <div className="flex flex-wrap items-baseline justify-between gap-4">

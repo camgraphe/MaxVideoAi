@@ -2551,13 +2551,6 @@
           "library": "Library",
           "replace": "Replace",
           "remove": "Remove"
-        },
-        "bridge": {
-          "eyebrow": "Before you branch out",
-          "title": "Need a stronger reference first?",
-          "body": "Use Character Builder when identity matters, or Angle when the subject is right and the viewpoint is not.",
-          "characterCta": "Need a reusable character reference first?",
-          "angleCta": "Need a better camera angle first?"
         }
       },
       "history": {
