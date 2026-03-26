@@ -18,7 +18,7 @@ const MODEL_PATH_REGEX = /^\/models\/([^/]+)\/?$/i;
 export const HREFLANG_VARIANTS: Array<{ hreflang: string; locale: AppLocale }> = [
   { hreflang: 'en', locale: 'en' },
   { hreflang: 'fr', locale: 'fr' },
-  { hreflang: 'es-419', locale: 'es' },
+  { hreflang: 'es', locale: 'es' },
 ];
 
 const modelLocaleCache = new Map<string, Set<AppLocale>>();

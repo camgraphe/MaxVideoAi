@@ -14,6 +14,7 @@ const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') || 'http://localhost:3000';
 const EXPECTED_CANONICAL_BASE_URL = (process.env.QA_EXPECT_CANONICAL_BASE_URL ?? BASE_URL).replace(/\/+$/, '') || BASE_URL;
 const LOCALES: Locale[] = ['en', 'fr', 'es'];
 const EXPECTED_HREFLANGS = [...HREFLANG_VARIANTS.map((variant) => variant.hreflang), 'x-default'];
+const SUPPORTED_HREFLANG_PATTERN = /^[a-z]{2}(?:-[A-Za-z]{4})?(?:-[A-Za-z]{2})?$/;
 
 type PageConfig =
   | { kind: 'home'; label: string }
@@ -202,6 +203,12 @@ function findDuplicateAlternateTargets(alternatesByLang: Record<string, string>)
     .map(([href, languages]) => ({ href, languages }));
 }
 
+function validateHreflangVariants() {
+  const invalid = HREFLANG_VARIANTS.filter((variant) => !SUPPORTED_HREFLANG_PATTERN.test(variant.hreflang));
+  if (invalid.length > 0) {
+    throw new Error(`Unsupported hreflang variants: ${invalid.map((variant) => variant.hreflang).join(', ')}`);
+  }
+}
 async function checkPage(locale: Locale, page: PageConfig) {
   const resolved = resolvePaths(locale, page);
   const url = buildAbsoluteUrl(resolved.requestPath);
@@ -239,6 +246,7 @@ async function checkPage(locale: Locale, page: PageConfig) {
 }
 
 async function main() {
+  validateHreflangVariants();
   const results: Array<{ url: string; issues: string[]; label: string }> = [];
   for (const locale of LOCALES) {
     for (const page of QA_PAGES) {

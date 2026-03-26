@@ -260,7 +260,7 @@ module.exports = {
     const alternateRefs = [
       { href: buildLocaleHref('en', englishPath), hreflang: 'en' },
       { href: buildLocaleHref('fr', englishPath), hreflang: 'fr' },
-      { href: buildLocaleHref('es', englishPath), hreflang: 'es-419' },
+      { href: buildLocaleHref('es', englishPath), hreflang: 'es' },
       { href: buildLocaleHref('en', englishPath), hreflang: 'x-default' },
     ];
 
