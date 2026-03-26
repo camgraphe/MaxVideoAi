@@ -163,8 +163,6 @@ export function SettingsControls({
   onResolutionChange,
   aspectRatio,
   onAspectRatioChange,
-  fps,
-  onFpsChange,
   mode,
   iterations,
   onIterationsChange,
@@ -283,16 +281,6 @@ export function SettingsControls({
     if (isLtxFastLong) return base.filter((value) => value === '1080p');
     return base;
   }, [caps?.resolution, engine.resolutions, isLtxFastLong]);
-
-  const fpsOptions = useMemo(() => {
-    const base = Array.isArray(caps?.fps)
-      ? caps.fps
-      : typeof caps?.fps === 'number'
-        ? [caps.fps]
-        : engine.fps;
-    if (isLtxFastLong) return base.filter((value) => value === 25);
-    return base;
-  }, [caps?.fps, engine.fps, isLtxFastLong]);
 
   const aspectOptions = useMemo(() => {
     if (caps) {

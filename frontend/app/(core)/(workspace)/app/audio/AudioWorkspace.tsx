@@ -468,7 +468,6 @@ export default function AudioWorkspace() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<AudioResultState | null>(null);
   const [activeJob, setActiveJob] = useState<ActiveAudioJobState | null>(null);
-  const [queryJobLoading, setQueryJobLoading] = useState(false);
   const [generatedPickerOpen, setGeneratedPickerOpen] = useState(false);
   const [generatedVideos, setGeneratedVideos] = useState<GeneratedSourceVideo[]>([]);
   const [isGeneratedVideosLoading, setIsGeneratedVideosLoading] = useState(false);
@@ -713,7 +712,6 @@ export default function AudioWorkspace() {
     if (restoredQueryJobRef.current === queryJobId) return;
     restoredQueryJobRef.current = queryJobId;
     let cancelled = false;
-    setQueryJobLoading(true);
     setNotice(null);
     fetchJobDetail(queryJobId)
       .then(async (payload) => {
@@ -747,23 +745,16 @@ export default function AudioWorkspace() {
           setNotice(resolveUiErrorMessage(error, copy.messages.loadSourceJob, ['Unable to load job.']));
         }
       })
-      .finally(() => {
-        if (!cancelled) {
-          setQueryJobLoading(false);
-        }
-      });
-
     return () => {
       cancelled = true;
     };
-  }, [queryJobId, restoreAudioJob, user]);
+  }, [copy, queryJobId, restoreAudioJob, user]);
 
   useEffect(() => {
     if (queryJobId || !user) return;
     if (latestRestoreAttemptedRef.current) return;
     latestRestoreAttemptedRef.current = true;
     let cancelled = false;
-    setQueryJobLoading(true);
     authFetch('/api/jobs?surface=audio&limit=12')
       .then(async (response) => {
         const payload = (await response.json().catch(() => null)) as
@@ -784,16 +775,10 @@ export default function AudioWorkspace() {
           console.warn('[audio] latest job restore failed', error);
         }
       })
-      .finally(() => {
-        if (!cancelled) {
-          setQueryJobLoading(false);
-        }
-      });
-
     return () => {
       cancelled = true;
     };
-  }, [copy.messages.loadLatestJob, queryJobId, restoreAudioJob, user]);
+  }, [copy, queryJobId, restoreAudioJob, user]);
 
   useEffect(() => {
     if (!activeJob || (activeJob.status !== 'pending' && activeJob.status !== 'running')) {
