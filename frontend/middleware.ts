@@ -147,6 +147,11 @@ const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
   '/fr/blog/las-actualizaciones-de-veo-3-traen-controles-cinematograficos':
     '/blog/les-mises-a-jour-de-veo-3-apportent-des-controles-cinematographiques',
   '/blog/las-actualizaciones-de-veo-3-traen-controles-cinematograficos': '/blog/veo-3-updates',
+  // Localized blog posts that were previously crawled without locale prefixes.
+  '/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video':
+    '/fr/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video',
+  '/blog/como-crear-personajes-de-ia-coherentes-en-imagenes-y-video':
+    '/es/blog/como-crear-personajes-de-ia-coherentes-en-imagenes-y-video',
 };
 
 const handleI18nRouting = createMiddleware({
