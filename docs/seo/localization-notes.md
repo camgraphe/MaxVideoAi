@@ -2,7 +2,9 @@
 
 ## Spanish (`es`)
 
-- Treat the Spanish locale as **LATAM-neutral** (es-419) across marketing pages, workspace UI, and metadata.
+- Treat the Spanish locale as **LATAM-neutral** in copy and product positioning.
+- Use generic `es` for `hreflang` and `<html lang>`.
+- Only use `es-419` in metadata fields that support broader locale tags when we explicitly want LatAm-neutral regional labeling.
 - Use vocabulary that feels natural in Mexico, Colombia, Argentina, Chile, and the broader U.S. Hispanic market (e.g., `video`, `billetera`, `celular`, `ustedes`).
 - Avoid region-specific terms from Spain such as `vídeo`, `monedero`, `móvil`, `ordenador`, or `vosotros` in new copy or translations.
 - When adding new strings to `frontend/messages/es.json`, `content/es/**`, or `content/models/es/**`, follow this tone guide and keep the spelling without accent marks on “video”.

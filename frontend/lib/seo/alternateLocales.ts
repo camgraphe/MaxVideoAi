@@ -13,13 +13,12 @@ import {
 const BLOG_PATH_REGEX = /^\/blog\/([^/]+)\/?$/i;
 const MODEL_PATH_REGEX = /^\/models\/([^/]+)\/?$/i;
 
+// Keep a single hreflang target per locale to avoid multiple language codes
+// resolving to the same URL.
 export const HREFLANG_VARIANTS: Array<{ hreflang: string; locale: AppLocale }> = [
   { hreflang: 'en', locale: 'en' },
-  { hreflang: 'en-gb', locale: 'en' },
   { hreflang: 'fr', locale: 'fr' },
-  { hreflang: 'fr-fr', locale: 'fr' },
   { hreflang: 'es', locale: 'es' },
-  { hreflang: 'es-419', locale: 'es' },
 ];
 
 const modelLocaleCache = new Map<string, Set<AppLocale>>();
