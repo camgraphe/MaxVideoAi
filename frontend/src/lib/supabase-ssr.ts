@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import type { NextRequest, NextResponse } from 'next/server';
 import { createServerClient, type CookieOptionsWithName } from '@supabase/ssr';
+import { readBearerAccessToken } from '@/lib/request-auth';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -84,9 +85,21 @@ export async function updateSession(req: NextRequest, res: NextResponse) {
   return { supabase, userId, error };
 }
 
-export async function getRouteAuthContext(_req?: NextRequest) {
-  void _req;
+export async function getRouteAuthContext(req?: NextRequest) {
   const supabase = createSupabaseRouteClient();
+  const accessToken = readBearerAccessToken(req?.headers);
+
+  if (accessToken) {
+    const [{ data: sessionData }, { data: userData }] = await Promise.all([
+      supabase.auth.getSession(),
+      supabase.auth.getUser(accessToken),
+    ]);
+    const tokenUserId = userData.user?.id ?? null;
+    if (tokenUserId) {
+      return { supabase, session: sessionData.session ?? null, userId: tokenUserId };
+    }
+  }
+
   const [{ data: sessionData }, { data: userData }] = await Promise.all([
     supabase.auth.getSession(),
     supabase.auth.getUser(),
