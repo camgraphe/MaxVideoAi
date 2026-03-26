@@ -2638,7 +2638,7 @@ const COMPARE_PRIORITY_BY_MODEL: Record<string, string[]> = {
   'pika-text-to-video': ['seedance-2-0', 'minimax-hailuo-02-text', 'ltx-2-fast'],
   'seedance-1-5-pro': ['seedance-2-0', 'kling-3-pro', 'sora-2'],
   'seedance-2-0': ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
-  'ltx-2-3-pro': ['ltx-2-3-fast', 'veo-3-1', 'sora-2'],
+  'ltx-2-3-pro': ['ltx-2-3-fast', 'ltx-2-fast', 'sora-2'],
   'ltx-2-3-fast': ['ltx-2-3-pro', 'veo-3-1-fast', 'ltx-2-fast'],
 };
 

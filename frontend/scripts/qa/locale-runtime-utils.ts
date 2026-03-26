@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
 import type { AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
+import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
 
 export const RAW_BASE_URL = process.env.QA_BASE_URL ?? 'http://localhost:3000';
 export const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') || 'http://localhost:3000';
 export const EXPECTED_CANONICAL_BASE_URL =
   (process.env.QA_EXPECT_CANONICAL_BASE_URL ?? BASE_URL).replace(/\/+$/, '') || BASE_URL;
 const BASE_ORIGIN = new URL(`${BASE_URL}/`).origin;
-const EXPECTED_HREFLANGS = ['en', 'en-gb', 'fr-fr', 'es-419', 'x-default'] as const;
+const EXPECTED_HREFLANGS = [...HREFLANG_VARIANTS.map((variant) => variant.hreflang), 'x-default'];
 
 export type LocaleFixture = {
   englishPath: string;
@@ -156,6 +157,22 @@ function checkCanonicalAndHreflang(page: PageAnalysis) {
   if (missing.length > 0) {
     issues.push(`missing hreflang: ${missing.join(', ')}`);
   }
+
+  const languagesByHref = new Map<string, string[]>();
+  Object.entries(page.alternatesByLang).forEach(([hreflang, href]) => {
+    if (hreflang === 'x-default') {
+      return;
+    }
+    const languages = languagesByHref.get(href) ?? [];
+    languages.push(hreflang);
+    languagesByHref.set(href, languages);
+  });
+
+  Array.from(languagesByHref.entries())
+    .filter(([, languages]) => languages.length > 1)
+    .forEach(([href, languages]) => {
+      issues.push(`duplicate hreflang target ${href} reused by ${languages.join(', ')}`);
+    });
   return issues;
 }
 

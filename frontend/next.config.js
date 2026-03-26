@@ -138,6 +138,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/fr/modeles/pika-2-2',
+        destination: '/fr/modeles/pika-text-to-video',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/pika-2-2',
+        destination: '/es/modelos/pika-text-to-video',
+        permanent: true,
+      },
+      {
         source: '/models/google-veo-3-fast',
         destination: '/models/veo-3-1-fast',
         permanent: true,

@@ -5,6 +5,7 @@ import matter from 'gray-matter';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { localizedSlugs, type LocalizedSlugKey } from '@/lib/i18nSlugs';
+import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
 
 type Locale = AppLocale;
 
@@ -12,7 +13,7 @@ const RAW_BASE_URL = process.env.QA_BASE_URL ?? 'http://localhost:3000';
 const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') || 'http://localhost:3000';
 const EXPECTED_CANONICAL_BASE_URL = (process.env.QA_EXPECT_CANONICAL_BASE_URL ?? BASE_URL).replace(/\/+$/, '') || BASE_URL;
 const LOCALES: Locale[] = ['en', 'fr', 'es'];
-const EXPECTED_HREFLANGS = ['en', 'en-gb', 'fr-fr', 'es-419', 'x-default'] as const;
+const EXPECTED_HREFLANGS = [...HREFLANG_VARIANTS.map((variant) => variant.hreflang), 'x-default'];
 
 type PageConfig =
   | { kind: 'home'; label: string }
@@ -185,6 +186,22 @@ function extractLinks(html: string, rel: 'canonical' | 'alternate') {
   return results;
 }
 
+function findDuplicateAlternateTargets(alternatesByLang: Record<string, string>) {
+  const languagesByHref = new Map<string, string[]>();
+  Object.entries(alternatesByLang).forEach(([hreflang, href]) => {
+    if (hreflang === 'x-default') {
+      return;
+    }
+    const languages = languagesByHref.get(href) ?? [];
+    languages.push(hreflang);
+    languagesByHref.set(href, languages);
+  });
+
+  return Array.from(languagesByHref.entries())
+    .filter(([, languages]) => languages.length > 1)
+    .map(([href, languages]) => ({ href, languages }));
+}
+
 async function checkPage(locale: Locale, page: PageConfig) {
   const resolved = resolvePaths(locale, page);
   const url = buildAbsoluteUrl(resolved.requestPath);
@@ -206,6 +223,7 @@ async function checkPage(locale: Locale, page: PageConfig) {
   );
 
   const missingHreflang = EXPECTED_HREFLANGS.filter((lang) => !alternatesByLang[lang]);
+  const duplicateAlternateTargets = findDuplicateAlternateTargets(alternatesByLang);
 
   const issues: string[] = [];
   if (!normalizedCanonical || normalizedCanonical !== expectedCanonical) {
@@ -214,6 +232,9 @@ async function checkPage(locale: Locale, page: PageConfig) {
   if (missingHreflang.length > 0) {
     issues.push(`missing hreflang: ${missingHreflang.join(', ')}`);
   }
+  duplicateAlternateTargets.forEach(({ href, languages }) => {
+    issues.push(`duplicate hreflang target ${href} reused by ${languages.join(', ')}`);
+  });
   return { url, issues, label: resolved.label };
 }
 

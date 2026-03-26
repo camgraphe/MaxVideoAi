@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -22,6 +23,39 @@ const ABOUT_META: Record<AppLocale, { title: string; description: string }> = {
   },
 };
 
+const ABOUT_LINKS: Record<
+  AppLocale,
+  {
+    prefix: string;
+    links: Array<{ href: string; label: string }>;
+  }
+> = {
+  en: {
+    prefix: 'Related pages:',
+    links: [
+      { href: '/company', label: 'Company & Trust' },
+      { href: '/workflows', label: 'Workflows' },
+      { href: '/docs', label: 'Docs' },
+    ],
+  },
+  fr: {
+    prefix: 'Pages liées :',
+    links: [
+      { href: '/company', label: 'Entreprise & confiance' },
+      { href: '/workflows', label: 'Flux de travail' },
+      { href: '/docs', label: 'Docs' },
+    ],
+  },
+  es: {
+    prefix: 'Páginas relacionadas:',
+    links: [
+      { href: '/company', label: 'Empresa y confianza' },
+      { href: '/workflows', label: 'Flujos de trabajo' },
+      { href: '/docs', label: 'Docs' },
+    ],
+  },
+};
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const metaCopy = ABOUT_META[locale] ?? ABOUT_META.en;
@@ -37,9 +71,10 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function AboutPage() {
-  const { dictionary } = await resolveDictionary();
+export default async function AboutPage({ params }: { params: { locale: AppLocale } }) {
+  const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.about;
+  const related = ABOUT_LINKS[params.locale] ?? ABOUT_LINKS.en;
 
   return (
     <div className="container-page max-w-4xl section">
@@ -58,6 +93,18 @@ export default async function AboutPage() {
         <aside className="rounded-card border border-hairline bg-surface p-6 shadow-card text-sm text-text-muted">
           {content.note}
         </aside>
+
+        <p className="text-sm text-text-muted">
+          <span className="font-medium text-text-secondary">{related.prefix}</span>{' '}
+          {related.links.map((item, index) => (
+            <span key={item.href}>
+              <Link href={item.href} className="underline underline-offset-2 hover:text-text-primary">
+                {item.label}
+              </Link>
+              {index < related.links.length - 1 ? ' · ' : null}
+            </span>
+          ))}
+        </p>
       </div>
     </div>
   );

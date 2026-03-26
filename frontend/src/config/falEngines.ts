@@ -5018,9 +5018,23 @@ export function getFalEngineById(id: string): FalEngineEntry | undefined {
   return FAL_ENGINE_REGISTRY.find((entry) => entry.id === id);
 }
 
+const LEGACY_MODEL_SLUG_ALIASES: Record<string, string> = {
+  'ltx-2-3': 'ltx-2-3-pro',
+  'pika-2-2': 'pika-text-to-video',
+  'pika-image-to-video': 'pika-text-to-video',
+};
+
 export function getFalEngineBySlug(slug: string): FalEngineEntry | undefined {
-  if (slug === 'ltx-2-3') {
-    return FAL_ENGINE_REGISTRY.find((entry) => entry.modelSlug === 'ltx-2-3-pro');
+  const normalized = slug.trim().toLowerCase();
+  const canonicalSlug = LEGACY_MODEL_SLUG_ALIASES[normalized] ?? normalized;
+
+  const directMatch = FAL_ENGINE_REGISTRY.find((entry) => entry.modelSlug.toLowerCase() === canonicalSlug);
+  if (directMatch) {
+    return directMatch;
   }
-  return FAL_ENGINE_REGISTRY.find((entry) => entry.modelSlug === slug);
+
+  return FAL_ENGINE_REGISTRY.find((entry) => {
+    const aliases = getEngineAliases(entry).map((alias) => alias.trim().toLowerCase());
+    return aliases.includes(normalized);
+  });
 }

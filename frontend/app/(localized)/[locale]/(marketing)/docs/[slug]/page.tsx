@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Link } from '@/i18n/navigation';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
 import { defaultLocale, locales, localeRegions, type AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -116,11 +117,28 @@ export default async function DocPage({ params }: { params: Params }) {
   if (!doc) {
     notFound();
   }
+  const docs = await getDocsEntriesForLocale(locale);
+  const currentIndex = docs.findIndex((entry) => entry.slug === doc.slug);
+  const neighborDocs = [
+    currentIndex > 0 ? docs[currentIndex - 1] : null,
+    currentIndex >= 0 && currentIndex < docs.length - 1 ? docs[currentIndex + 1] : null,
+  ].filter((entry): entry is (typeof docs)[number] => Boolean(entry));
+  const relatedDocs = [
+    ...neighborDocs,
+    ...docs.filter((entry) => entry.slug !== doc.slug && !neighborDocs.some((neighbor) => neighbor.slug === entry.slug)),
+  ].slice(0, 3);
   const dateLocale = localeRegions[locale] ?? 'en-US';
+  const overviewLabel =
+    locale === 'fr' ? 'Vue d’ensemble Docs' : locale === 'es' ? 'Resumen de Docs' : 'Docs overview';
 
   return (
     <div className="container-page max-w-3xl section">
       <article className="stack-gap-lg">
+        <nav aria-label="Breadcrumb" className="text-sm text-text-muted">
+          <Link href="/docs" className="underline underline-offset-2 hover:text-text-primary">
+            {overviewLabel}
+          </Link>
+        </nav>
         <header className="stack-gap-sm">
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
             {new Date(doc.date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -129,6 +147,25 @@ export default async function DocPage({ params }: { params: Params }) {
           <p className="text-base leading-relaxed text-text-secondary">{doc.description}</p>
         </header>
         <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: doc.content }} />
+        {relatedDocs.length ? (
+          <p className="text-sm text-text-muted">
+            <Link href="/docs" className="underline underline-offset-2 hover:text-text-primary">
+              {overviewLabel}
+            </Link>
+            {' · '}
+            {relatedDocs.map((entry, index) => (
+              <span key={entry.slug}>
+                <Link
+                  href={{ pathname: '/docs/[slug]', params: { slug: entry.slug } }}
+                  className="underline underline-offset-2 hover:text-text-primary"
+                >
+                  {entry.title}
+                </Link>
+                {index < relatedDocs.length - 1 ? ' · ' : null}
+              </span>
+            ))}
+          </p>
+        ) : null}
       </article>
     </div>
   );

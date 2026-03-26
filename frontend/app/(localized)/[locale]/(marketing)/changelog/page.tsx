@@ -1,10 +1,44 @@
 import type { Metadata } from 'next';
+import { Link } from '@/i18n/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 const CHANGELOG_SLUG_MAP = buildSlugMap('changelog');
+
+const CHANGELOG_LINKS: Record<
+  AppLocale,
+  {
+    prefix: string;
+    links: Array<{ href: string; label: string }>;
+  }
+> = {
+  en: {
+    prefix: 'Related pages:',
+    links: [
+      { href: '/status', label: 'Status' },
+      { href: '/docs', label: 'Docs' },
+      { href: '/company', label: 'Company & Trust' },
+    ],
+  },
+  fr: {
+    prefix: 'Pages liées :',
+    links: [
+      { href: '/status', label: 'Statut' },
+      { href: '/docs', label: 'Docs' },
+      { href: '/company', label: 'Entreprise & confiance' },
+    ],
+  },
+  es: {
+    prefix: 'Páginas relacionadas:',
+    links: [
+      { href: '/status', label: 'Estado' },
+      { href: '/docs', label: 'Docs' },
+      { href: '/company', label: 'Empresa y confianza' },
+    ],
+  },
+};
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -29,6 +63,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 export default async function ChangelogPage({ params }: { params: { locale: AppLocale } }) {
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.changelog;
+  const related = CHANGELOG_LINKS[params.locale] ?? CHANGELOG_LINKS.en;
   const intro = (content as {
     intro?: {
       paragraphs?: string[];
@@ -70,6 +105,18 @@ export default async function ChangelogPage({ params }: { params: { locale: AppL
             </article>
           ))}
         </section>
+
+        <p className="text-sm text-text-muted">
+          <span className="font-medium text-text-secondary">{related.prefix}</span>{' '}
+          {related.links.map((item, index) => (
+            <span key={item.href}>
+              <Link href={item.href} className="underline underline-offset-2 hover:text-text-primary">
+                {item.label}
+              </Link>
+              {index < related.links.length - 1 ? ' · ' : null}
+            </span>
+          ))}
+        </p>
       </div>
     </div>
   );

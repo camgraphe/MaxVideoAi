@@ -575,7 +575,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       (engineId.includes('/') ? null : engineId);
     const detailHref = video?.id ? `/video/${encodeURIComponent(video.id)}` : null;
     const generateHref = video?.id ? `/app?from=${encodeURIComponent(video.id)}` : null;
-    const modelHref = canonicalSlug ? `/models/${encodeURIComponent(canonicalSlug)}` : null;
+    const canonicalModelSlug = canonicalSlug ? normalizeEngineId(canonicalSlug) ?? canonicalSlug : null;
+    const modelHref = canonicalModelSlug ? `/models/${encodeURIComponent(canonicalModelSlug)}` : null;
     const detailMeta = video
       ? {
           prompt: truncateText(video.promptExcerpt ?? video.prompt ?? null, 140),

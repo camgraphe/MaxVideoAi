@@ -24,6 +24,7 @@ const ENGINE_ID_ALIASES = (() => {
     'veo3-fast': 'veo-3-1-fast',
     'pika22': 'pika-text-to-video',
     'pika-22': 'pika-text-to-video',
+    'pika-2-2': 'pika-text-to-video',
     'kling25': 'kling-2-5-turbo',
     'kling-25': 'kling-2-5-turbo',
     'kling-2-5': 'kling-2-5-turbo',

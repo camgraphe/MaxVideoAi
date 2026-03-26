@@ -55,14 +55,24 @@ export function getLocalizedUrl(locale: AppLocale, englishPath: string): string 
 export function getHreflangAlternates(englishPath: string, options?: MetadataUrlOptions) {
   const normalizedEnglish = normalizeEnglishPath(englishPath) ?? '/';
   const publishable = new Set<AppLocale>((options?.availableLocales ?? locales) as AppLocale[]);
+  const localizedHrefByLocale = new Map<AppLocale, string>();
   const languages: Record<string, string> = {};
 
   publishable.forEach((locale) => {
-    languages[locale] = getLocalizedUrl(locale, normalizedEnglish);
+    localizedHrefByLocale.set(locale, getLocalizedUrl(locale, normalizedEnglish));
   });
 
-  const xDefaultHref =
-    languages[defaultLocale] ?? getLocalizedUrl(defaultLocale, normalizedEnglish);
+  HREFLANG_VARIANTS.forEach((variant) => {
+    if (!publishable.has(variant.locale)) {
+      return;
+    }
+    const href = localizedHrefByLocale.get(variant.locale);
+    if (href) {
+      languages[variant.hreflang] = href;
+    }
+  });
+
+  const xDefaultHref = localizedHrefByLocale.get(defaultLocale) ?? getLocalizedUrl(defaultLocale, normalizedEnglish);
   languages['x-default'] = xDefaultHref;
 
   const alternates = Object.entries(languages).map(([hreflang, href]) => ({ hreflang, href }));

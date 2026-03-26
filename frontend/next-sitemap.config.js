@@ -259,10 +259,7 @@ module.exports = {
     const loc = `${SITE_URL}${normalizedPath === '/' ? '/' : normalizedPath}`;
     const alternateRefs = [
       { href: buildLocaleHref('en', englishPath), hreflang: 'en' },
-      { href: buildLocaleHref('en', englishPath), hreflang: 'en-gb' },
       { href: buildLocaleHref('fr', englishPath), hreflang: 'fr' },
-      { href: buildLocaleHref('fr', englishPath), hreflang: 'fr-fr' },
-      { href: buildLocaleHref('es', englishPath), hreflang: 'es' },
       { href: buildLocaleHref('es', englishPath), hreflang: 'es-419' },
       { href: buildLocaleHref('en', englishPath), hreflang: 'x-default' },
     ];

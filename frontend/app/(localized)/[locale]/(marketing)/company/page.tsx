@@ -36,8 +36,10 @@ const COMPANY_COPY: Record<
     links: [
       { href: '/about', label: 'About', description: 'Who we are and what we build.' },
       { href: '/contact', label: 'Contact', description: 'Support, partnerships, and press requests.' },
+      { href: '/docs', label: 'Docs', description: 'Onboarding, refunds, and brand-safety references.' },
       { href: '/workflows', label: 'Workflows', description: 'How MaxVideoAI production flows are structured.' },
       { href: '/status', label: 'Status', description: 'Live service health and incident history.' },
+      { href: '/changelog', label: 'Changelog', description: 'Recent product, engine, and queue updates.' },
       { href: '/legal', label: 'Legal center', description: 'Policies, notices, and compliance resources.' },
     ],
   },
@@ -47,8 +49,10 @@ const COMPANY_COPY: Record<
     links: [
       { href: '/about', label: 'À propos', description: 'Qui nous sommes et ce que nous construisons.' },
       { href: '/contact', label: 'Contact', description: 'Support, partenariats et demandes presse.' },
+      { href: '/docs', label: 'Docs', description: 'Références onboarding, remboursements et brand safety.' },
       { href: '/workflows', label: 'Flux de travail', description: 'Comment les flux de production MaxVideoAI sont structurés.' },
       { href: '/status', label: 'Statut', description: 'État du service en direct et historique des incidents.' },
+      { href: '/changelog', label: 'Changelog', description: 'Dernières mises à jour produit, moteurs et files.' },
       { href: '/legal', label: 'Centre juridique', description: 'Politiques, notifications et ressources conformité.' },
     ],
   },
@@ -58,8 +62,10 @@ const COMPANY_COPY: Record<
     links: [
       { href: '/about', label: 'Acerca de', description: 'Quiénes somos y qué construimos.' },
       { href: '/contact', label: 'Contacto', description: 'Soporte, alianzas y solicitudes de prensa.' },
+      { href: '/docs', label: 'Docs', description: 'Referencias de onboarding, reembolsos y brand safety.' },
       { href: '/workflows', label: 'Flujos de trabajo', description: 'Cómo se estructuran los flujos de producción de MaxVideoAI.' },
       { href: '/status', label: 'Estado', description: 'Salud del servicio en vivo e historial de incidentes.' },
+      { href: '/changelog', label: 'Changelog', description: 'Actualizaciones recientes de producto, motores y colas.' },
       { href: '/legal', label: 'Centro legal', description: 'Políticas, avisos y recursos de cumplimiento.' },
     ],
   },

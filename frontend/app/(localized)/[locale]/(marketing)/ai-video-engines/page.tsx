@@ -815,7 +815,11 @@ export default async function AiVideoEnginesPage() {
             </Link>
             .
           </p>
-          <ComparisonsDirectory entries={allComparisonEntries} labels={copy.listLabels} />
+          <ComparisonsDirectory
+            entries={allComparisonEntries}
+            labels={copy.listLabels}
+            initialCount={allComparisonEntries.length}
+          />
         </section>
 
         <section className="stack-gap">

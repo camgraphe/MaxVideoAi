@@ -121,6 +121,10 @@ const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
   '/es/company': '/empresa',
   '/fr/status': '/statut',
   '/es/status': '/estado',
+  '/fr/models/pika-2-2': '/modeles/pika-text-to-video',
+  '/fr/modeles/pika-2-2': '/modeles/pika-text-to-video',
+  '/es/models/pika-2-2': '/modelos/pika-text-to-video',
+  '/es/modelos/pika-2-2': '/modelos/pika-text-to-video',
   // Compare AI video engines
   '/fr/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika':
     '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',

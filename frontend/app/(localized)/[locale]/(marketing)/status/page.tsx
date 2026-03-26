@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -44,9 +45,43 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   Degradado: 'bg-[var(--warning-bg)] text-[var(--warning)]',
 };
 
-export default async function StatusPage() {
-  const { dictionary } = await resolveDictionary();
+const STATUS_LINKS: Record<
+  AppLocale,
+  {
+    prefix: string;
+    links: Array<{ href: string; label: string }>;
+  }
+> = {
+  en: {
+    prefix: 'See also:',
+    links: [
+      { href: '/docs', label: 'Docs' },
+      { href: '/changelog', label: 'Changelog' },
+      { href: '/company', label: 'Company & Trust' },
+    ],
+  },
+  fr: {
+    prefix: 'Voir aussi :',
+    links: [
+      { href: '/docs', label: 'Docs' },
+      { href: '/changelog', label: 'Changelog' },
+      { href: '/company', label: 'Entreprise & confiance' },
+    ],
+  },
+  es: {
+    prefix: 'Ver también:',
+    links: [
+      { href: '/docs', label: 'Docs' },
+      { href: '/changelog', label: 'Changelog' },
+      { href: '/company', label: 'Empresa y confianza' },
+    ],
+  },
+};
+
+export default async function StatusPage({ params }: { params: { locale: AppLocale } }) {
+  const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.status;
+  const related = STATUS_LINKS[params.locale] ?? STATUS_LINKS.en;
 
   return (
     <div className="container-page max-w-4xl section">
@@ -105,6 +140,18 @@ export default async function StatusPage() {
             </article>
           ))}
         </section>
+
+        <p className="text-sm text-text-muted">
+          <span className="font-medium text-text-secondary">{related.prefix}</span>{' '}
+          {related.links.map((item, index) => (
+            <span key={item.href}>
+              <Link href={item.href} className="underline underline-offset-2 hover:text-text-primary">
+                {item.label}
+              </Link>
+              {index < related.links.length - 1 ? ' · ' : null}
+            </span>
+          ))}
+        </p>
       </div>
     </div>
   );
