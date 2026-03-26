@@ -252,6 +252,47 @@ test('Kling 3 prompt length is capped before provider submission', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Kling 3 i2v enforces valid element inputs before provider submission', () => {
+  const basePayload = {
+    prompt: 'Animate this still',
+    image_url: 'https://example.com/frame.png',
+    duration: 5,
+    resolution: '1080p',
+    aspect_ratio: '9:16',
+  };
+
+  const referenceOnly = validateRequest('kling-3-pro', 'i2v', {
+    ...basePayload,
+    elements: [{ referenceImageUrls: ['https://example.com/ref.png'] }],
+  });
+  assert.equal(referenceOnly.ok, false);
+  assert.equal(referenceOnly.error?.field, 'elements');
+
+  const frontalOnly = validateRequest('kling-3-pro', 'i2v', {
+    ...basePayload,
+    elements: [{ frontalImageUrl: 'https://example.com/front.png' }],
+  });
+  assert.equal(frontalOnly.ok, false);
+  assert.equal(frontalOnly.error?.field, 'elements');
+
+  const imagePair = validateRequest('kling-3-pro', 'i2v', {
+    ...basePayload,
+    elements: [
+      {
+        frontalImageUrl: 'https://example.com/front.png',
+        referenceImageUrls: ['https://example.com/ref.png'],
+      },
+    ],
+  });
+  assert.deepEqual(imagePair, OK);
+
+  const videoOnly = validateRequest('kling-3-pro', 'i2v', {
+    ...basePayload,
+    elements: [{ videoUrl: 'https://example.com/ref.mp4' }],
+  });
+  assert.deepEqual(videoOnly, OK);
+});
+
 test('Wan prompt length follows documented provider limits', () => {
   const invalid = validateRequest('wan-2-6', 't2v', {
     prompt: 'x'.repeat(801),

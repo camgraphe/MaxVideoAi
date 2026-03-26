@@ -5180,8 +5180,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         if (videoUrl) {
           videoCount += 1;
         }
-        if (!frontalUrl && referenceUrls.length === 0) {
-          showNotice('Each Kling element needs at least one image before generating.');
+        const hasImageSet = Boolean(frontalUrl && referenceUrls.length > 0);
+        const hasVideoReference = Boolean(videoUrl);
+        if (!hasImageSet && !hasVideoReference) {
+          showNotice('Each Kling element needs a frontal image plus at least one reference image, or one video reference.');
           return;
         }
         collected.push({

@@ -533,6 +533,7 @@ export function SettingsControls({
                     ? 'border-brand bg-brand text-on-brand'
                     : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                 )}
+                aria-label={`${controlsCopy.audio.label}: ${audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}`}
                 aria-pressed={audioEnabled}
               >
                 {audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}

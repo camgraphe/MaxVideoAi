@@ -29,6 +29,61 @@ function normalizeDurationValue(value: unknown): number | string | undefined {
   return undefined;
 }
 
+function validateKlingElements(payload: Record<string, unknown>): ValidationResult {
+  const rawElements = payload['elements'];
+  if (!Array.isArray(rawElements)) {
+    return { ok: true };
+  }
+
+  for (let index = 0; index < rawElements.length; index += 1) {
+    const rawEntry = rawElements[index];
+    if (!rawEntry || typeof rawEntry !== 'object') {
+      continue;
+    }
+
+    const entry = rawEntry as Record<string, unknown>;
+    const frontalImageUrl =
+      typeof entry.frontalImageUrl === 'string' && entry.frontalImageUrl.trim().length
+        ? entry.frontalImageUrl.trim()
+        : typeof entry.frontal_image_url === 'string' && entry.frontal_image_url.trim().length
+          ? entry.frontal_image_url.trim()
+          : '';
+    const referenceImageUrlsRaw = Array.isArray(entry.referenceImageUrls)
+      ? entry.referenceImageUrls
+      : Array.isArray(entry.reference_image_urls)
+        ? entry.reference_image_urls
+        : [];
+    const referenceImageUrls = referenceImageUrlsRaw
+      .map((value) => (typeof value === 'string' ? value.trim() : ''))
+      .filter(Boolean);
+    const videoUrl =
+      typeof entry.videoUrl === 'string' && entry.videoUrl.trim().length
+        ? entry.videoUrl.trim()
+        : typeof entry.video_url === 'string' && entry.video_url.trim().length
+          ? entry.video_url.trim()
+          : '';
+
+    if (!frontalImageUrl && referenceImageUrls.length === 0 && !videoUrl) {
+      continue;
+    }
+
+    const hasImageSet = Boolean(frontalImageUrl && referenceImageUrls.length > 0);
+    const hasVideoReference = Boolean(videoUrl);
+    if (!hasImageSet && !hasVideoReference) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'elements',
+          message: `Kling element ${index + 1} needs a frontal image plus at least one reference image, or one video reference.`,
+        },
+      };
+    }
+  }
+
+  return { ok: true };
+}
+
 export function validateRequest(engineId: string, mode: Mode | undefined, payload: Record<string, unknown>): ValidationResult {
   const capsKey: EngineCapsKey | undefined = resolveEngineCapsKey(engineId, mode);
   if (!capsKey) {
@@ -64,6 +119,13 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         value: rawPrompt.length,
       },
     };
+  }
+
+  if (engineId.startsWith('kling-3') && normalizedMode === 'i2v') {
+    const klingElementsValidation = validateKlingElements(payload);
+    if (!klingElementsValidation.ok) {
+      return klingElementsValidation;
+    }
   }
 
   if (normalizedMode === 'r2v') {

@@ -1728,6 +1728,9 @@ async function rollbackPendingPayment(params: {
   if (resolvedAudioUrl) {
     validationPayload.audio_url = resolvedAudioUrl;
   }
+  if (elements?.length) {
+    validationPayload.elements = elements;
+  }
 
   const needsImage = mode === 'i2v' || mode === 'i2i';
   const needsAudio = mode === 'a2v';

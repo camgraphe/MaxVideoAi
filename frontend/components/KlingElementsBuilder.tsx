@@ -159,7 +159,9 @@ export function KlingElementsBuilder({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Elements (Kling v3)</h3>
-          <p className="text-[12px] text-text-muted">Add frontal + reference images, optional video per element.</p>
+          <p className="text-[12px] text-text-muted">
+            Use a frontal image plus at least one reference image, or a video reference, for each element.
+          </p>
         </div>
         <Button
           type="button"
@@ -203,7 +205,7 @@ export function KlingElementsBuilder({
                 }
               />
               <AssetSlot
-                label="Video (optional)"
+                label="Video reference"
                 asset={element.video}
                 accept="video/*"
                 onSelect={(file) => onAddAsset(element.id, 'video', file)}

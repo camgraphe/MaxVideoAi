@@ -198,9 +198,9 @@ function localizePricePrefix(label: string, locale: AppLocale): string {
 }
 
 const HERO_AUDIO_BADGE_BY_LOCALE: Record<AppLocale, string> = {
-  en: 'Audio enabled',
-  fr: 'Audio activé',
-  es: 'Audio activado',
+  en: 'Audio available. Preview plays muted on this page.',
+  fr: 'Audio disponible. La prévisualisation est lue sans son sur cette page.',
+  es: 'Audio disponible. La vista previa se reproduce sin sonido en esta página.',
 };
 
 const HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE: Record<AppLocale, string> = {
