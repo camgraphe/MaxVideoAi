@@ -7,7 +7,7 @@ export const defaultLocale: AppLocale = 'en';
 export const localeLabels: Record<AppLocale, string> = {
   en: 'English',
   fr: 'Français',
-  es: 'Español (LatAm)',
+  es: 'Español',
 };
 
 export const localeRegions: Record<AppLocale, string> = {

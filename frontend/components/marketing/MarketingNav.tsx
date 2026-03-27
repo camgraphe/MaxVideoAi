@@ -30,7 +30,8 @@ export function MarketingNav() {
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const desktopDropdownCloseTimeout = useRef<number | null>(null);
-  const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
+  const brand = t('nav.brand', 'MaxVideoAI') ?? 'MaxVideoAI';
+  const compactBrand = brand.replace(/\s+/g, '');
   const maybeLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : MARKETING_TOP_NAV_LINKS;
   const login = t('nav.login', 'Log in');
@@ -246,12 +247,12 @@ export function MarketingNav() {
     <>
     <header className="sticky top-0 z-40 border-b border-hairline bg-surface">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 lg:hidden"
+            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 lg:hidden"
             aria-label={t('nav.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -263,17 +264,17 @@ export function MarketingNav() {
           </Button>
           <Link
             href="/"
-            className="flex items-center gap-2 text-lg font-semibold tracking-tight text-text-primary whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className="flex items-center gap-1.5 text-text-primary whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:gap-2"
           >
             <Image
               src="/assets/branding/logo-mark.svg"
               alt="MaxVideoAI"
               width={28}
               height={28}
-              className="h-7 w-7"
+              className="h-7 w-7 shrink-0"
               priority
             />
-            <span className="hidden sm:inline">{brand}</span>
+            <span className="text-sm font-semibold tracking-tight sm:text-lg">{compactBrand}</span>
           </Link>
           <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary lg:flex">
             {links.map((item) => {

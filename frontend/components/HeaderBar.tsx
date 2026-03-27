@@ -435,12 +435,12 @@ export function HeaderBar() {
           'border-b border-border bg-surface'
         )}
       >
-        <div className="flex items-center gap-4 md:gap-6">
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
+            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
             aria-label={t('workspace.header.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -538,7 +538,7 @@ export function HeaderBar() {
             <Link
               href="/billing"
               prefetch={false}
-              className="flex h-9 items-center gap-1.5 rounded-input border border-hairline bg-surface/80 px-2 py-1 uppercase tracking-micro transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-auto sm:gap-2 sm:px-3"
+              className="flex h-9 items-center gap-1 rounded-input px-1 py-1 text-text-primary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 sm:border sm:border-hairline sm:bg-surface/80 sm:px-2 sm:hover:border-border-hover sm:hover:bg-surface-hover lg:gap-2 lg:px-3"
               aria-describedby={walletPromptOpen ? walletPromptId : undefined}
               onFocus={openWalletPrompt}
               onBlur={scheduleWalletPromptClose}
@@ -872,9 +872,9 @@ export function HeaderBar() {
 function LogoMark() {
   const { t } = useI18n();
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
-      <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} priority />
-      <span className="hidden text-lg font-semibold tracking-tight text-text-primary sm:inline">MaxVideo AI</span>
+    <Link href="/" className="flex items-center gap-1.5 sm:gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
+      <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} className="shrink-0" priority />
+      <span className="text-sm font-semibold tracking-tight text-text-primary sm:text-lg">MaxVideoAI</span>
     </Link>
   );
 }
