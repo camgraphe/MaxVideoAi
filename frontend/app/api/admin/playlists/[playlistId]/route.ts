@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
-import { deletePlaylist, updatePlaylist, getPlaylistItems } from '@/server/playlists';
+import { deletePlaylist, getPlaylist, getPlaylistItems, isPlaylistLockedError, updatePlaylist } from '@/server/playlists';
 
 type RouteParams = {
   params: {
@@ -26,8 +26,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   }
 
   try {
+    const playlist = await getPlaylist(playlistId);
     const items = await getPlaylistItems(playlistId);
-    return NextResponse.json({ ok: true, items });
+    if (!playlist) {
+      return NextResponse.json({ ok: false, error: 'Playlist not found' }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, playlist, items });
   } catch (error) {
     console.error('[admin/playlists/:id] failed to fetch items', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
@@ -79,6 +83,9 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     });
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (isPlaylistLockedError(error)) {
+      return NextResponse.json({ ok: false, error: error.message }, { status: 409 });
+    }
     console.error('[admin/playlists/:id] failed to update', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }
@@ -104,6 +111,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     await deletePlaylist(playlistId);
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (isPlaylistLockedError(error)) {
+      return NextResponse.json({ ok: false, error: error.message }, { status: 409 });
+    }
     console.error('[admin/playlists/:id] failed to delete', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }

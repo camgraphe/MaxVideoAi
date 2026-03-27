@@ -1,10 +1,13 @@
 "use client";
 
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState, useTransition, type DragEvent } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, useTransition, type DragEvent, type FormEvent, type ReactNode } from 'react';
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
+
+type PlaylistKind = 'core' | 'model' | 'draft';
+
 type PlaylistSummary = {
   id: string;
   slug: string;
@@ -14,6 +17,12 @@ type PlaylistSummary = {
   createdAt: string;
   updatedAt: string;
   itemCount: number;
+  siteVisibleCount: number;
+  withVideoAssetCount: number;
+  lastAddedAt: string | null;
+  kind: PlaylistKind;
+  isLocked: boolean;
+  usageTargets: string[];
 };
 
 type PlaylistItemRecord = {
@@ -26,6 +35,11 @@ type PlaylistItemRecord = {
   videoUrl?: string | null;
   engineLabel?: string | null;
   aspectRatio?: string | null;
+  prompt?: string | null;
+  durationSec?: number | null;
+  visibility: 'public' | 'private';
+  indexable: boolean;
+  isPublishedOnSite: boolean;
 };
 
 type PlaylistsManagerProps = {
@@ -35,6 +49,7 @@ type PlaylistsManagerProps = {
 };
 
 type EditablePlaylist = PlaylistSummary & { dirty?: boolean; loading?: boolean };
+type DropPlacement = 'before' | 'after';
 
 const PLACEHOLDER_MAP: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
@@ -42,30 +57,181 @@ const PLACEHOLDER_MAP: Record<string, string> = {
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
 
+const GROUP_LABELS: Record<PlaylistKind, string> = {
+  core: 'Core surfaces',
+  model: 'Model collections',
+  draft: 'Draft / empty',
+};
+
 function getPlaceholderThumb(aspectRatio?: string | null): string {
   const key = (aspectRatio ?? '').trim();
   return PLACEHOLDER_MAP[key] ?? '/assets/frames/thumb-16x9.svg';
 }
 
+function formatDate(value?: string | null): string {
+  if (!value) return 'Never';
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
+}
+
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+
+function compareDatesDescending(a?: string | null, b?: string | null) {
+  const aTime = a ? Date.parse(a) : Number.NaN;
+  const bTime = b ? Date.parse(b) : Number.NaN;
+  const safeA = Number.isFinite(aTime) ? aTime : 0;
+  const safeB = Number.isFinite(bTime) ? bTime : 0;
+  return safeB - safeA;
+}
+
+function getPlaylistPriority(playlist: Pick<EditablePlaylist, 'kind' | 'slug' | 'usageTargets'>) {
+  if (playlist.usageTargets.includes('starter-tab')) {
+    return 0;
+  }
+  if (playlist.usageTargets.includes('examples-hub')) {
+    return 1;
+  }
+  return 2;
+}
+
+function comparePlaylists(a: EditablePlaylist, b: EditablePlaylist) {
+  const kindWeight: Record<PlaylistKind, number> = { core: 0, model: 1, draft: 2 };
+  if (kindWeight[a.kind] !== kindWeight[b.kind]) {
+    return kindWeight[a.kind] - kindWeight[b.kind];
+  }
+  const priorityDelta = getPlaylistPriority(a) - getPlaylistPriority(b);
+  if (priorityDelta !== 0) {
+    return priorityDelta;
+  }
+  if (a.itemCount !== b.itemCount) {
+    return b.itemCount - a.itemCount;
+  }
+  const lastAddedDelta = compareDatesDescending(a.lastAddedAt, b.lastAddedAt);
+  if (lastAddedDelta !== 0) {
+    return lastAddedDelta;
+  }
+  return a.name.localeCompare(b.name) || a.slug.localeCompare(b.slug);
+}
+
+function sortPlaylists(playlists: EditablePlaylist[]): EditablePlaylist[] {
+  return [...playlists].sort(comparePlaylists);
+}
+
+function getUsageLabel(target: string): string {
+  if (target === 'starter-tab') return 'Starter tab';
+  if (target === 'examples-hub') return 'Examples hub';
+  if (target.startsWith('model-page:')) {
+    return `Model page · ${target.slice('model-page:'.length)}`;
+  }
+  return target;
+}
+
+function summarizePlaylist(playlist: PlaylistSummary): string {
+  if (!playlist.itemCount) return 'Empty collection';
+  return `${playlist.itemCount} items · ${playlist.siteVisibleCount} live · ${playlist.withVideoAssetCount} with video`;
+}
+
+function buildPlaylistUpdateFromItems(playlist: EditablePlaylist, items: PlaylistItemRecord[]): EditablePlaylist {
+  const lastAddedAt = items.reduce<string | null>((latest, item) => {
+    if (!latest) return item.createdAt;
+    return compareDatesDescending(item.createdAt, latest) < 0 ? latest : item.createdAt;
+  }, null);
+
+  return {
+    ...playlist,
+    itemCount: items.length,
+    siteVisibleCount: items.filter((item) => item.isPublishedOnSite).length,
+    withVideoAssetCount: items.filter((item) => Boolean(item.videoUrl)).length,
+    lastAddedAt,
+  };
+}
+
+function sortItemsForDisplay(items: PlaylistItemRecord[]): PlaylistItemRecord[] {
+  return [...items].sort((a, b) => {
+    if (a.orderIndex !== b.orderIndex) {
+      return b.orderIndex - a.orderIndex;
+    }
+    return compareDatesDescending(a.createdAt, b.createdAt);
+  });
+}
+
+function StatusPill({
+  tone,
+  children,
+}: {
+  tone: 'neutral' | 'ok' | 'warn';
+  children: ReactNode;
+}) {
+  const classes =
+    tone === 'ok'
+      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
+      : tone === 'warn'
+        ? 'border-warning-border/60 bg-warning-bg/20 text-warning'
+        : 'border-border bg-bg text-text-secondary';
+
+  return <span className={clsx('inline-flex rounded-full border px-2 py-1 text-[11px] font-semibold', classes)}>{children}</span>;
+}
+
 export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialItems }: PlaylistsManagerProps) {
-  const [playlists, setPlaylists] = useState<EditablePlaylist[]>(initialPlaylists);
+  const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
   const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
-  const [items, setItems] = useState<PlaylistItemRecord[]>(initialItems);
+  const [items, setItems] = useState<PlaylistItemRecord[]>(() => sortItemsForDisplay(initialItems));
   const [isItemsDirty, setItemsDirty] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [dropAtEnd, setDropAtEnd] = useState(false);
+  const [dropPlacement, setDropPlacement] = useState<DropPlacement>('before');
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const selectedPlaylist = useMemo(() => playlists.find((p) => p.id === selectedId) ?? null, [playlists, selectedId]);
+  const [showDraftCollections, setShowDraftCollections] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createSlug, setCreateSlug] = useState('');
+  const [createDescription, setCreateDescription] = useState('');
+  const dragGhostRef = useRef<HTMLElement | null>(null);
+  const draggingIdRef = useRef<string | null>(null);
+  const dropPlacementRef = useRef<DropPlacement>('before');
 
   useEffect(() => {
-    setPlaylists(initialPlaylists);
+    setPlaylists(sortPlaylists(initialPlaylists));
     setSelectedId(initialPlaylistId);
-    setItems(initialItems);
+    setItems(sortItemsForDisplay(initialItems));
     setItemsDirty(false);
     setDraggingId(null);
-  }, [initialPlaylists, initialPlaylistId, initialItems]);
+    setDropTargetId(null);
+    setDropAtEnd(false);
+    setDropPlacement('before');
+    draggingIdRef.current = null;
+    dropPlacementRef.current = 'before';
+  }, [initialItems, initialPlaylistId, initialPlaylists]);
+
+  const selectedPlaylist = useMemo(
+    () => playlists.find((playlist) => playlist.id === selectedId) ?? null,
+    [playlists, selectedId]
+  );
+
+  const groupedPlaylists = useMemo(
+    () => ({
+      core: playlists.filter((playlist) => playlist.kind === 'core'),
+      model: playlists.filter((playlist) => playlist.kind === 'model'),
+      draft: playlists.filter((playlist) => playlist.kind === 'draft'),
+    }),
+    [playlists]
+  );
 
   const refreshPlaylistItems = useCallback((playlistId: string) => {
     startTransition(async () => {
@@ -73,43 +239,64 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         const res = await authFetch(`/api/admin/playlists/${playlistId}`);
         if (!res.ok) throw new Error(`Failed to load items (${res.status})`);
         const json = await res.json().catch(() => ({ ok: false }));
-        if (!json?.ok) throw new Error(json?.error ?? 'Unable to load playlist items');
-        const list = json.items as PlaylistItemRecord[];
-        setItems(list);
+        if (!json?.ok || !Array.isArray(json.items)) {
+          throw new Error(json?.error ?? 'Unable to load collection items');
+        }
+
+        const nextItems = json.items as PlaylistItemRecord[];
+        const nextPlaylist = json.playlist as PlaylistSummary | undefined;
+        setItems(sortItemsForDisplay(nextItems));
         setPlaylists((current) =>
-          current.map((playlist) =>
-            playlist.id === playlistId
-              ? { ...playlist, itemCount: list.length }
-              : playlist
+          sortPlaylists(
+            current.map((playlist) => {
+              if (playlist.id !== playlistId) return playlist;
+              const merged = nextPlaylist ? { ...playlist, ...nextPlaylist } : playlist;
+              return { ...buildPlaylistUpdateFromItems(merged, nextItems), dirty: false, loading: false };
+            })
           )
         );
         setItemsDirty(false);
-      } catch (err) {
-        console.error('[PlaylistsManager] load items failed', err);
-        setError(err instanceof Error ? err.message : 'Failed to load playlist items');
+        setDropTargetId(null);
+        setDropAtEnd(false);
+        setDropPlacement('before');
+        draggingIdRef.current = null;
+        dropPlacementRef.current = 'before';
+      } catch (loadError) {
+        console.error('[PlaylistsManager] load items failed', loadError);
+        setError(loadError instanceof Error ? loadError.message : 'Failed to load collection items');
       }
     });
   }, []);
 
+  useEffect(() => {
+    if (selectedPlaylist?.kind === 'draft') {
+      setShowDraftCollections(true);
+    }
+  }, [selectedPlaylist?.kind]);
+
   const handleSelectPlaylist = useCallback(
     (playlistId: string) => {
       setSelectedId(playlistId);
+      setFeedback(null);
+      setError(null);
       refreshPlaylistItems(playlistId);
     },
     [refreshPlaylistItems]
   );
 
   const handleFieldChange = useCallback(
-    (playlistId: string, field: 'name' | 'slug' | 'description' | 'isPublic', value: string | boolean) => {
+    (playlistId: string, field: 'name' | 'slug' | 'description', value: string) => {
       setPlaylists((current) =>
-        current.map((playlist) =>
-          playlist.id === playlistId
-            ? {
-                ...playlist,
-                [field === 'isPublic' ? 'isPublic' : field]: value,
-                dirty: true,
-              }
-            : playlist
+        sortPlaylists(
+          current.map((playlist) =>
+            playlist.id === playlistId
+              ? {
+                  ...playlist,
+                  [field]: value,
+                  dirty: true,
+                }
+              : playlist
+          )
         )
       );
     },
@@ -118,41 +305,45 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
 
   const handleSavePlaylist = useCallback(
     (playlistId: string) => {
-      const playlist = playlists.find((p) => p.id === playlistId);
-      if (!playlist) return;
+      const playlist = playlists.find((entry) => entry.id === playlistId);
+      if (!playlist || playlist.isLocked) return;
+
       startTransition(async () => {
         try {
           setFeedback(null);
           setError(null);
           setPlaylists((current) =>
-            current.map((p) => (p.id === playlistId ? { ...p, loading: true } : p))
+            current.map((entry) => (entry.id === playlistId ? { ...entry, loading: true } : entry))
           );
           const res = await authFetch(`/api/admin/playlists/${playlistId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              name: playlist.name,
-              slug: playlist.slug,
-              description: playlist.description,
-              isPublic: playlist.isPublic,
+              name: playlist.name.trim(),
+              slug: playlist.slug.trim(),
+              description: playlist.description?.trim() ? playlist.description.trim() : null,
             }),
           });
-          if (!res.ok) throw new Error(`Failed to save playlist (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
-          if (!json?.ok) throw new Error(json?.error ?? 'Save failed');
-          setFeedback('Playlist saved');
+          if (!res.ok || !json?.ok) {
+            throw new Error(json?.error ?? `Failed to save collection (${res.status})`);
+          }
+
+          setFeedback('Collection details saved');
           setPlaylists((current) =>
-            current.map((p) =>
-              p.id === playlistId
-                ? { ...p, dirty: false, loading: false, updatedAt: new Date().toISOString() }
-                : p
+            sortPlaylists(
+              current.map((entry) =>
+                entry.id === playlistId
+                  ? { ...entry, dirty: false, loading: false, updatedAt: new Date().toISOString() }
+                  : entry
+              )
             )
           );
-        } catch (err) {
-          console.error('[PlaylistsManager] save playlist failed', err);
-          setError(err instanceof Error ? err.message : 'Failed to save playlist');
+        } catch (saveError) {
+          console.error('[PlaylistsManager] save playlist failed', saveError);
+          setError(saveError instanceof Error ? saveError.message : 'Failed to save collection');
           setPlaylists((current) =>
-            current.map((p) => (p.id === playlistId ? { ...p, loading: false } : p))
+            current.map((entry) => (entry.id === playlistId ? { ...entry, loading: false } : entry))
           );
         }
       });
@@ -160,98 +351,87 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     [playlists]
   );
 
-  const handleCreatePlaylist = useCallback(() => {
-    const slug = prompt('Slug (e.g. starter)');
-    if (!slug) return;
-    const name = prompt('Display name', slug) ?? slug;
-    startTransition(async () => {
-      try {
-        setFeedback(null);
-        setError(null);
-        const res = await authFetch('/api/admin/playlists', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug, name }),
-        });
-        if (!res.ok) throw new Error(`Failed to create playlist (${res.status})`);
-        const json = await res.json().catch(() => ({ ok: false }));
-        if (!json?.ok || !json.playlist) throw new Error(json?.error ?? 'Create failed');
-        const playlist = json.playlist as PlaylistSummary;
-        setPlaylists((current) => [{ ...playlist, dirty: false }, ...current]);
-        setSelectedId(playlist.id);
-        setItems([]);
-        setItemsDirty(false);
-        setFeedback('Playlist created');
-      } catch (err) {
-        console.error('[PlaylistsManager] create playlist failed', err);
-        setError(err instanceof Error ? err.message : 'Failed to create playlist');
-      }
-    });
-  }, []);
+  const handleCreatePlaylist = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const name = createName.trim();
+      const slug = createSlug.trim();
+      if (!name || !slug) return;
+
+      startTransition(async () => {
+        try {
+          setFeedback(null);
+          setError(null);
+          const res = await authFetch('/api/admin/playlists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name,
+              slug,
+              description: createDescription.trim() ? createDescription.trim() : null,
+            }),
+          });
+          const json = await res.json().catch(() => ({ ok: false }));
+          if (!res.ok || !json?.ok || !json.playlist) {
+            throw new Error(json?.error ?? `Failed to create collection (${res.status})`);
+          }
+
+          const playlist = json.playlist as PlaylistSummary;
+          setPlaylists((current) => sortPlaylists([{ ...playlist, dirty: false, loading: false }, ...current]));
+          setSelectedId(playlist.id);
+          setItems([]);
+          setItemsDirty(false);
+          setShowCreateForm(false);
+          setCreateName('');
+          setCreateSlug('');
+          setCreateDescription('');
+          setFeedback('Collection created');
+        } catch (createError) {
+          console.error('[PlaylistsManager] create playlist failed', createError);
+          setError(createError instanceof Error ? createError.message : 'Failed to create collection');
+        }
+      });
+    },
+    [createDescription, createName, createSlug]
+  );
 
   const handleDeletePlaylist = useCallback(
     (playlistId: string) => {
-      if (!confirm('Delete this playlist?')) return;
+      const playlist = playlists.find((entry) => entry.id === playlistId);
+      if (!playlist || playlist.isLocked) return;
+      if (!window.confirm(`Delete collection "${playlist.name}"?`)) return;
+
       startTransition(async () => {
         try {
           setFeedback(null);
           setError(null);
           const res = await authFetch(`/api/admin/playlists/${playlistId}`, { method: 'DELETE' });
-          if (!res.ok) throw new Error(`Failed to delete playlist (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
-          if (!json?.ok) throw new Error(json?.error ?? 'Delete failed');
-          let nextId: string | null = null;
+          if (!res.ok || !json?.ok) {
+            throw new Error(json?.error ?? `Failed to delete collection (${res.status})`);
+          }
+
+          let nextSelectedId: string | null = null;
           setPlaylists((current) => {
-            const filtered = current.filter((p) => p.id !== playlistId);
-            nextId = filtered[0]?.id ?? null;
+            const filtered = current.filter((entry) => entry.id !== playlistId);
+            nextSelectedId = filtered.find((entry) => entry.kind !== 'draft')?.id ?? filtered[0]?.id ?? null;
             return filtered;
           });
-          if (selectedId === playlistId) {
-            setSelectedId(nextId);
-            if (nextId) {
-              refreshPlaylistItems(nextId);
-            } else {
-              setItems([]);
-            }
-          }
-          setFeedback('Playlist deleted');
-        } catch (err) {
-          console.error('[PlaylistsManager] delete playlist failed', err);
-          setError(err instanceof Error ? err.message : 'Failed to delete playlist');
-        }
-      });
-    },
-    [refreshPlaylistItems, selectedId]
-  );
 
-  const handleAddVideo = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      if (!selectedId) return;
-      const formData = new FormData(event.currentTarget);
-      const videoId = (formData.get('videoId') as string | null)?.trim();
-      if (!videoId) return;
-      event.currentTarget.reset();
-      startTransition(async () => {
-        try {
-          setError(null);
-          const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoId }),
-          });
-          if (!res.ok) throw new Error(`Failed to add video (${res.status})`);
-          const json = await res.json().catch(() => ({ ok: false }));
-          if (!json?.ok) throw new Error(json?.error ?? 'Add failed');
-          refreshPlaylistItems(selectedId);
-          setFeedback('Video added to playlist');
-        } catch (err) {
-          console.error('[PlaylistsManager] add video failed', err);
-          setError(err instanceof Error ? err.message : 'Failed to add video');
+          setSelectedId(nextSelectedId);
+          if (nextSelectedId) {
+            refreshPlaylistItems(nextSelectedId);
+          } else {
+            setItems([]);
+          }
+          setFeedback('Collection deleted');
+        } catch (deleteError) {
+          console.error('[PlaylistsManager] delete playlist failed', deleteError);
+          setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete collection');
         }
       });
     },
-    [refreshPlaylistItems, selectedId]
+    [playlists, refreshPlaylistItems]
   );
 
   const handleRemoveVideo = useCallback(
@@ -259,98 +439,166 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       if (!selectedId) return;
       startTransition(async () => {
         try {
+          setFeedback(null);
           setError(null);
-          const res = await authFetch(
-            `/api/admin/playlists/${selectedId}/items?videoId=${encodeURIComponent(videoId)}`,
-            {
-              method: 'DELETE',
-            }
-          );
-          if (!res.ok) throw new Error(`Failed to remove video (${res.status})`);
+          const res = await authFetch(`/api/admin/playlists/${selectedId}/items?videoId=${encodeURIComponent(videoId)}`, {
+            method: 'DELETE',
+          });
           const json = await res.json().catch(() => ({ ok: false }));
-          if (!json?.ok) throw new Error(json?.error ?? 'Remove failed');
+          if (!res.ok || !json?.ok) {
+            throw new Error(json?.error ?? `Failed to remove clip (${res.status})`);
+          }
           refreshPlaylistItems(selectedId);
-          setFeedback('Video removed from playlist');
-        } catch (err) {
-          console.error('[PlaylistsManager] remove video failed', err);
-          setError(err instanceof Error ? err.message : 'Failed to remove video');
+          setFeedback('Clip removed from collection');
+        } catch (removeError) {
+          console.error('[PlaylistsManager] remove video failed', removeError);
+          setError(removeError instanceof Error ? removeError.message : 'Failed to remove clip');
         }
       });
     },
     [refreshPlaylistItems, selectedId]
   );
 
-  const moveItem = useCallback(
-    (videoId: string, direction: -1 | 1) => {
-      setItems((current) => {
-        const index = current.findIndex((item) => item.videoId === videoId);
-        if (index === -1) return current;
-        const target = index + direction;
-        if (target < 0 || target >= current.length) return current;
-        const next = [...current];
-        const [removed] = next.splice(index, 1);
-        next.splice(target, 0, removed);
-        return next.map((item, idx) => ({ ...item, orderIndex: idx }));
-      });
-      setItemsDirty(true);
-    },
-    []
-  );
-
-  const commitDragMove = useCallback((fromId: string, toId: string | null) => {
+  const commitDragMove = useCallback((fromId: string, toId: string | null, placement: DropPlacement = 'before') => {
     setItems((current) => {
       const fromIndex = current.findIndex((item) => item.videoId === fromId);
       if (fromIndex === -1) return current;
       const next = [...current];
       const [moved] = next.splice(fromIndex, 1);
-      const insertIndex =
-        toId !== null ? next.findIndex((item) => item.videoId === toId) : next.length;
-      const targetIndex = insertIndex === -1 ? next.length : insertIndex;
+      const insertIndex = toId ? next.findIndex((item) => item.videoId === toId) : next.length;
+      const targetIndex =
+        insertIndex === -1 ? next.length : placement === 'after' ? insertIndex + 1 : insertIndex;
       next.splice(targetIndex, 0, moved);
-      return next.map((item, idx) => ({ ...item, orderIndex: idx }));
+      return next.map((item, orderIndex) => ({ ...item, orderIndex }));
     });
     setItemsDirty(true);
   }, []);
 
-  const handleDragStart = useCallback((event: DragEvent<HTMLTableRowElement>, videoId: string) => {
+  const clearDragGhost = useCallback(() => {
+    if (dragGhostRef.current) {
+      dragGhostRef.current.remove();
+      dragGhostRef.current = null;
+    }
+  }, []);
+
+  const handleDragStart = useCallback((event: DragEvent<HTMLElement>, videoId: string) => {
+    clearDragGhost();
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', videoId);
+    const source = event.currentTarget;
+    const ghost = source.cloneNode(true) as HTMLElement;
+    ghost.style.position = 'fixed';
+    ghost.style.top = '-10000px';
+    ghost.style.left = '-10000px';
+    ghost.style.width = `${source.clientWidth}px`;
+    ghost.style.pointerEvents = 'none';
+    ghost.style.opacity = '0.92';
+    ghost.style.transform = 'scale(0.98)';
+    ghost.style.boxShadow = '0 24px 60px rgba(0, 0, 0, 0.28)';
+    ghost.style.borderRadius = '20px';
+    ghost.style.overflow = 'hidden';
+    ghost.style.zIndex = '9999';
+    document.body.appendChild(ghost);
+    dragGhostRef.current = ghost;
+    event.dataTransfer.setDragImage(ghost, source.clientWidth / 2, 32);
+    draggingIdRef.current = videoId;
+    dropPlacementRef.current = 'before';
     setDraggingId(videoId);
-  }, []);
+    setDropTargetId(null);
+    setDropAtEnd(false);
+    setDropPlacement('before');
+  }, [clearDragGhost]);
 
   const handleDragEnd = useCallback(() => {
+    clearDragGhost();
+    draggingIdRef.current = null;
+    dropPlacementRef.current = 'before';
     setDraggingId(null);
-  }, []);
+    setDropTargetId(null);
+    setDropAtEnd(false);
+    setDropPlacement('before');
+  }, [clearDragGhost]);
 
-  const handleRowDragOver = useCallback((event: DragEvent<HTMLTableRowElement>) => {
+  const handleDragOver = useCallback((event: DragEvent<HTMLElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
+    if (event.target === event.currentTarget) {
+      dropPlacementRef.current = 'after';
+      setDropTargetId(null);
+      setDropAtEnd(true);
+      setDropPlacement('after');
+    }
   }, []);
 
-  const handleDropOnRow = useCallback(
-    (event: DragEvent<HTMLTableRowElement>, targetVideoId: string) => {
+  const handleDropOnCard = useCallback(
+    (event: DragEvent<HTMLElement>, targetVideoId: string) => {
       event.preventDefault();
-      event.stopPropagation();
-      if (!draggingId || draggingId === targetVideoId) return;
-      commitDragMove(draggingId, targetVideoId);
+      const activeDraggingId = draggingIdRef.current;
+      if (!activeDraggingId || activeDraggingId === targetVideoId) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const nextPlacement: DropPlacement =
+        event.clientY >= rect.top + rect.height / 2 ? 'after' : 'before';
+      commitDragMove(activeDraggingId, targetVideoId, nextPlacement);
+      draggingIdRef.current = null;
+      dropPlacementRef.current = 'before';
       setDraggingId(null);
+      setDropTargetId(null);
+      setDropAtEnd(false);
+      setDropPlacement('before');
     },
-    [commitDragMove, draggingId]
+    [commitDragMove]
   );
 
-  const handleTableDragOver = useCallback((event: DragEvent<HTMLTableSectionElement>) => {
-    event.preventDefault();
-  }, []);
-
   const handleDropAtEnd = useCallback(
-    (event: DragEvent<HTMLTableSectionElement>) => {
+    (event: DragEvent<HTMLElement>) => {
       if (event.target !== event.currentTarget) return;
       event.preventDefault();
-      if (!draggingId) return;
-      commitDragMove(draggingId, null);
+      const activeDraggingId = draggingIdRef.current;
+      if (!activeDraggingId) return;
+      commitDragMove(activeDraggingId, null, 'after');
+      draggingIdRef.current = null;
+      dropPlacementRef.current = 'before';
       setDraggingId(null);
+      setDropTargetId(null);
+      setDropAtEnd(false);
+      setDropPlacement('before');
     },
-    [commitDragMove, draggingId]
+    [commitDragMove]
+  );
+
+  const renderDropPlaceholder = useCallback(
+    (key: string, targetVideoId: string | null, placement: DropPlacement) => (
+      <div
+        key={key}
+        onDragOver={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          event.dataTransfer.dropEffect = 'move';
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const activeDraggingId = draggingIdRef.current;
+          if (!activeDraggingId) return;
+          commitDragMove(activeDraggingId, targetVideoId, placement);
+          draggingIdRef.current = null;
+          dropPlacementRef.current = 'before';
+          setDraggingId(null);
+          setDropTargetId(null);
+          setDropAtEnd(false);
+          setDropPlacement('before');
+        }}
+        className="rounded-card border-2 border-dashed border-brand/55 bg-brand/5 p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.02)]"
+      >
+        <div className="flex aspect-video items-center justify-center rounded-card border border-white/30 bg-gradient-to-br from-brand/10 to-brand/5 text-center">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand/80">Drop here</p>
+            <p className="text-xs text-text-muted">New gallery position</p>
+          </div>
+        </div>
+      </div>
+    ),
+    [commitDragMove]
   );
 
   const handleSaveItems = useCallback(() => {
@@ -358,43 +606,105 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     startTransition(async () => {
       try {
         setError(null);
-        const payload = items.map((item) => ({ videoId: item.videoId, pinned: item.pinned }));
+        const payload = [...items].reverse().map((item) => ({ videoId: item.videoId, pinned: item.pinned }));
         const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error(`Failed to save order (${res.status})`);
         const json = await res.json().catch(() => ({ ok: false }));
-        if (!json?.ok) throw new Error(json?.error ?? 'Save failed');
+        if (!res.ok || !json?.ok) {
+          throw new Error(json?.error ?? `Failed to save order (${res.status})`);
+        }
         setItemsDirty(false);
-        setFeedback('Playlist order saved');
-      } catch (err) {
-        console.error('[PlaylistsManager] save items failed', err);
-        setError(err instanceof Error ? err.message : 'Failed to save playlist items');
+        setFeedback('Collection order saved');
+      } catch (saveError) {
+        console.error('[PlaylistsManager] save items failed', saveError);
+        setError(saveError instanceof Error ? saveError.message : 'Failed to save collection order');
       }
     });
   }, [items, selectedId]);
 
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold text-text-primary">Playlist curation</h1>
-          <p className="text-sm text-text-secondary">
-            Control the Starter tab and other public collections surfaced in the gallery.
+    <div className={clsx('space-y-8', isItemsDirty && 'pb-28')}>
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Admin</p>
+          <h1 className="text-3xl font-semibold text-text-primary">Collections curation</h1>
+          <p className="max-w-3xl text-sm text-text-secondary">
+            Curate the starter surface, examples hub, and model collections with a visual workflow. Runtime collections are
+            locked for metadata and can only be edited through their clips and order.
           </p>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleCreatePlaylist}
-          disabled={isPending}
-          className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card hover:brightness-105"
-        >
-          + New playlist
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDraftCollections((current) => !current)}
+          >
+            {showDraftCollections ? 'Hide draft / empty' : `Show draft / empty (${groupedPlaylists.draft.length})`}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setShowCreateForm((current) => !current)}
+          >
+            {showCreateForm ? 'Close new collection' : '+ New collection'}
+          </Button>
+        </div>
       </header>
+
+      {showCreateForm ? (
+        <section className="rounded-card border border-border bg-surface p-5 shadow-card">
+          <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_minmax(0,1.5fr)_auto]" onSubmit={handleCreatePlaylist}>
+            <label className="text-sm">
+              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Name</span>
+              <input
+                type="text"
+                value={createName}
+                onChange={(event) => {
+                  const nextName = event.target.value;
+                  setCreateName(nextName);
+                  if (!createSlug.trim()) {
+                    setCreateSlug(slugify(nextName));
+                  }
+                }}
+                className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="Homepage holiday edits"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Slug</span>
+              <input
+                type="text"
+                value={createSlug}
+                onChange={(event) => setCreateSlug(slugify(event.target.value))}
+                className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="homepage-holiday-edits"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Description</span>
+              <input
+                type="text"
+                value={createDescription}
+                onChange={(event) => setCreateDescription(event.target.value)}
+                className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="Optional internal note"
+              />
+            </label>
+            <div className="flex items-end gap-2">
+              <Button type="submit" size="sm" disabled={isPending || !createName.trim() || !createSlug.trim()}>
+                Create
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => setShowCreateForm(false)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </section>
+      ) : null}
 
       {feedback ? (
         <div className="rounded-card border border-success-border bg-success-bg px-4 py-3 text-sm text-success">
@@ -407,266 +717,293 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         </div>
       ) : null}
 
-      <div className="grid grid-gap lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="stack-gap-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Playlists</h2>
-          <div className="space-y-2">
-            {playlists.map((playlist) => {
-              const isActive = playlist.id === selectedId;
-              return (
-                <Button
-                  key={playlist.id}
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className={clsx(
-                    'min-h-0 h-auto w-full rounded-card px-4 py-3 text-left',
-                    isActive
-                      ? 'border-brand bg-surface-2 text-text-primary'
-                      : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                  )}
-                  onClick={() => handleSelectPlaylist(playlist.id)}
-                  disabled={isPending}
-                >
-                  <div className="flex items-center justify-between gap-4 text-sm font-semibold">
-                    <span>{playlist.name}</span>
-                    {playlist.dirty ? <span className="text-xs text-warning">Unsaved</span> : null}
-                  </div>
-                  <p className="mt-1 text-xs text-text-muted">
-                    {playlist.slug} · {playlist.itemCount} item{playlist.itemCount === 1 ? '' : 's'}
-                  </p>
-                </Button>
-              );
-            })}
-            {playlists.length === 0 ? (
-              <div className="rounded-card border border-dashed border-hairline bg-surface p-6 text-center text-sm text-text-secondary">
-                No playlists yet. Create one to get started.
-              </div>
-            ) : null}
-          </div>
+      <div className="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+        <aside className="space-y-6">
+          {(['core', 'model', 'draft'] as PlaylistKind[]).map((kind) => {
+            if (kind === 'draft' && !showDraftCollections) {
+              return null;
+            }
+            const entries = groupedPlaylists[kind];
+            if (!entries.length) return null;
+
+            return (
+              <section key={kind} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS[kind]}</h2>
+                  <span className="text-xs text-text-muted">{entries.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {entries.map((playlist) => {
+                    const isActive = playlist.id === selectedId;
+                    return (
+                      <button
+                        key={playlist.id}
+                        type="button"
+                        onClick={() => handleSelectPlaylist(playlist.id)}
+                        className={clsx(
+                          'w-full rounded-card border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+                          isActive
+                            ? 'border-brand bg-surface-2 shadow-card'
+                            : 'border-hairline bg-surface hover:border-text-muted hover:bg-surface-2'
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 space-y-1">
+                            <p className="truncate text-sm font-semibold text-text-primary">{playlist.name}</p>
+                            <p className="truncate text-xs text-text-muted">{playlist.slug}</p>
+                          </div>
+                          {playlist.isLocked ? <StatusPill tone="neutral">Locked</StatusPill> : null}
+                        </div>
+                        <p className="mt-3 text-xs text-text-secondary">{summarizePlaylist(playlist)}</p>
+                        <p className="mt-1 text-[11px] text-text-muted">Last added: {formatDate(playlist.lastAddedAt)}</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {playlist.usageTargets.map((target) => (
+                            <StatusPill key={target} tone={playlist.kind === 'core' ? 'ok' : 'neutral'}>
+                              {getUsageLabel(target)}
+                            </StatusPill>
+                          ))}
+                          {playlist.kind === 'draft' && !playlist.itemCount ? (
+                            <StatusPill tone="warn">Empty placeholder</StatusPill>
+                          ) : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
         </aside>
 
-        <section className="stack-gap-lg">
+        <section className="space-y-6">
           {selectedPlaylist ? (
-            <div className="rounded-card border border-border bg-surface p-6 shadow-card space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-text-primary">Playlist details</h2>
-                  <p className="text-sm text-text-secondary">Update name, slug, or visibility defaults.</p>
+            <>
+              <section className="rounded-card border border-border bg-surface p-6 shadow-card">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-lg font-semibold text-text-primary">{selectedPlaylist.name}</h2>
+                      <StatusPill tone={selectedPlaylist.kind === 'core' ? 'ok' : selectedPlaylist.kind === 'model' ? 'neutral' : 'warn'}>
+                        {selectedPlaylist.kind === 'core' ? 'Core surface' : selectedPlaylist.kind === 'model' ? 'Model collection' : 'Draft'}
+                      </StatusPill>
+                      {selectedPlaylist.isLocked ? <StatusPill tone="neutral">Locked by runtime</StatusPill> : null}
+                    </div>
+                    <p className="text-sm text-text-secondary">
+                      {selectedPlaylist.isLocked
+                        ? 'This collection powers a live runtime surface. You can curate clips and order, but metadata is read-only here.'
+                        : 'Editable collection metadata. Clips and ordering are managed separately below.'}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {!selectedPlaylist.isLocked ? (
+                      <>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeletePlaylist(selectedPlaylist.id)}
+                          disabled={isPending}
+                        >
+                          Delete collection
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => handleSavePlaylist(selectedPlaylist.id)}
+                          disabled={!selectedPlaylist.dirty || isPending}
+                        >
+                          Save details
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="rounded-input border-error-border bg-error-bg px-3 py-1 text-xs font-semibold uppercase tracking-micro text-error hover:bg-error-bg hover:text-error"
-                  onClick={() => handleDeletePlaylist(selectedPlaylist.id)}
-                  disabled={isPending}
-                >
-                  Delete
-                </Button>
-              </div>
 
-              <div className="grid grid-gap-sm sm:grid-cols-2">
-                <label className="text-sm">
-                  <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Name</span>
-                  <input
-                    type="text"
-                    value={selectedPlaylist.name}
-                    onChange={(event) => handleFieldChange(selectedPlaylist.id, 'name', event.target.value)}
-                    className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <label className="text-sm">
+                    <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Name</span>
+                    <input
+                      type="text"
+                      value={selectedPlaylist.name}
+                      onChange={(event) => handleFieldChange(selectedPlaylist.id, 'name', event.target.value)}
+                      disabled={selectedPlaylist.isLocked}
+                      className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-surface-2 disabled:text-text-muted"
+                    />
+                  </label>
+                  <label className="text-sm">
+                    <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Slug</span>
+                    <input
+                      type="text"
+                      value={selectedPlaylist.slug}
+                      onChange={(event) => handleFieldChange(selectedPlaylist.id, 'slug', slugify(event.target.value))}
+                      disabled={selectedPlaylist.isLocked}
+                      className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-surface-2 disabled:text-text-muted"
+                    />
+                  </label>
+                </div>
+
+                <label className="mt-4 block text-sm">
+                  <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Description</span>
+                  <textarea
+                    value={selectedPlaylist.description ?? ''}
+                    onChange={(event) => handleFieldChange(selectedPlaylist.id, 'description', event.target.value)}
+                    disabled={selectedPlaylist.isLocked}
+                    rows={3}
+                    className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-surface-2 disabled:text-text-muted"
                   />
                 </label>
-                <label className="text-sm">
-                  <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Slug</span>
-                  <input
-                    type="text"
-                    value={selectedPlaylist.slug}
-                    onChange={(event) => handleFieldChange(selectedPlaylist.id, 'slug', event.target.value)}
-                    className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                </label>
-              </div>
-              <label className="block text-sm">
-                <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Description (optional)</span>
-                <textarea
-                  value={selectedPlaylist.description ?? ''}
-                  onChange={(event) => handleFieldChange(selectedPlaylist.id, 'description', event.target.value)}
-                  rows={3}
-                  className="mt-1 w-full rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-              </label>
-              <label className="flex items-center gap-2 text-sm text-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={selectedPlaylist.isPublic}
-                  onChange={(event) => handleFieldChange(selectedPlaylist.id, 'isPublic', event.target.checked)}
-                />
-                Public playlist (visible on gallery tabs)
-              </label>
-              <Button
-                type="button"
-                size="sm"
-                className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand hover:brightness-105"
-                onClick={() => handleSavePlaylist(selectedPlaylist.id)}
-                disabled={!selectedPlaylist.dirty || isPending}
-              >
-                Save details
-              </Button>
-            </div>
+
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  <div className="rounded-card border border-hairline bg-bg px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Items</p>
+                    <p className="mt-2 text-lg font-semibold text-text-primary">{selectedPlaylist.itemCount}</p>
+                  </div>
+                  <div className="rounded-card border border-hairline bg-bg px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Live on site</p>
+                    <p className="mt-2 text-lg font-semibold text-text-primary">{selectedPlaylist.siteVisibleCount}</p>
+                  </div>
+                  <div className="rounded-card border border-hairline bg-bg px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Last added</p>
+                    <p className="mt-2 text-sm font-semibold text-text-primary">{formatDate(selectedPlaylist.lastAddedAt)}</p>
+                  </div>
+                </div>
+
+                {selectedPlaylist.usageTargets.length ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {selectedPlaylist.usageTargets.map((target) => (
+                      <StatusPill key={target} tone="neutral">
+                        {getUsageLabel(target)}
+                      </StatusPill>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+
+              <section className="rounded-card border border-border bg-surface p-6 shadow-card">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-text-primary">Collection items</h2>
+                    <p className="text-sm text-text-secondary">
+                      Drag clips with the mouse, then save the live gallery order.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSaveItems}
+                    disabled={!isItemsDirty || isPending}
+                    className={clsx(isItemsDirty && 'shadow-card ring-2 ring-brand/20')}
+                  >
+                    Save order
+                  </Button>
+                </div>
+
+                {items.length ? (
+                  <div
+                    className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDropAtEnd}
+                  >
+                    {items.map((item, index) => (
+                      <Fragment key={item.videoId}>
+                        {draggingId && dropTargetId === item.videoId && dropPlacement === 'before'
+                          ? renderDropPlaceholder(`placeholder-before-${item.videoId}`, item.videoId, 'before')
+                          : null}
+                        <article
+                          draggable
+                          onDragStart={(event) => handleDragStart(event, item.videoId)}
+                          onDragEnd={handleDragEnd}
+                          onDragOver={(event) => {
+                            handleDragOver(event);
+                            const activeDraggingId = draggingIdRef.current;
+                            if (!activeDraggingId || activeDraggingId === item.videoId) return;
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            const nextPlacement: DropPlacement =
+                              event.clientY >= rect.top + rect.height / 2 ? 'after' : 'before';
+                            dropPlacementRef.current = nextPlacement;
+                            setDropTargetId(item.videoId);
+                            setDropAtEnd(false);
+                            setDropPlacement(nextPlacement);
+                          }}
+                          onDrop={(event) => handleDropOnCard(event, item.videoId)}
+                          className={clsx(
+                            'overflow-hidden rounded-card border border-hairline bg-bg shadow-card transition cursor-grab active:cursor-grabbing',
+                            draggingId === item.videoId && 'scale-[0.985] opacity-35'
+                          )}
+                        >
+                          <div className="relative aspect-video overflow-hidden bg-placeholder">
+                            <Image
+                              src={item.thumbUrl || getPlaceholderThumb(item.aspectRatio)}
+                              alt={`Thumbnail for ${item.videoId}`}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                            <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-black/70 via-black/25 to-transparent p-3">
+                              <StatusPill tone="neutral">#{index + 1}</StatusPill>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRemoveVideo(item.videoId)}
+                                disabled={isPending}
+                                className="min-h-[32px] rounded-full border-white/35 bg-black/35 px-2.5 text-white hover:border-white/60 hover:bg-black/50 hover:text-white"
+                                aria-label={`Remove ${item.engineLabel ?? item.videoId} from collection`}
+                              >
+                                <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-current">
+                                  <path d="M7.5 2.5h5a1 1 0 0 1 1 1V5H17a.75.75 0 0 1 0 1.5h-.64l-.62 9.23A2 2 0 0 1 13.75 17.5h-7.5a2 2 0 0 1-1.99-1.77L3.64 6.5H3A.75.75 0 0 1 3 5h3.5V3.5a1 1 0 0 1 1-1Zm4.5 2.5V4h-4v1h4Zm-3 3.25a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 1.5 0v-5Zm3.5-.75a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z" />
+                                </svg>
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="px-4 py-4">
+                            <p className="truncate text-sm font-semibold text-text-primary">
+                              {item.engineLabel ?? 'Unknown model'}
+                            </p>
+                          </div>
+                        </article>
+                        {draggingId && dropTargetId === item.videoId && dropPlacement === 'after'
+                          ? renderDropPlaceholder(`placeholder-after-${item.videoId}`, item.videoId, 'after')
+                          : null}
+                      </Fragment>
+                    ))}
+                    {draggingId && dropAtEnd ? renderDropPlaceholder('placeholder-end', null, 'after') : null}
+                  </div>
+                ) : (
+                  <div className="mt-5 rounded-card border border-dashed border-hairline bg-bg px-4 py-8 text-center text-sm text-text-secondary">
+                    This collection is empty. Add clips from moderation, then reorder them here.
+                  </div>
+                )}
+              </section>
+            </>
           ) : (
-            <div className="rounded-card border border-dashed border-hairline bg-surface p-8 text-center text-sm text-text-secondary">
-              Select a playlist to edit.
+            <div className="rounded-card border border-dashed border-hairline bg-surface p-10 text-center text-sm text-text-secondary">
+              Select a collection from the left rail to start curating.
             </div>
           )}
-
-          {selectedPlaylist ? (
-            <div className="rounded-card border border-border bg-surface p-6 shadow-card space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-text-primary">Playlist items</h2>
-                  <p className="text-sm text-text-secondary">
-                    Add videos by job ID and arrange their order as displayed in the gallery.
-                  </p>
-                  <p className="text-xs text-text-muted">Drag rows or use the arrow buttons, then save the order.</p>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="rounded-pill border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary"
-                  onClick={handleSaveItems}
-                  disabled={!isItemsDirty || isPending}
-                >
-                  Save order
-                </Button>
-              </div>
-
-              <form className="flex flex-wrap items-center gap-2" onSubmit={handleAddVideo}>
-                <input
-                  type="text"
-                  name="videoId"
-                  placeholder="job_..."
-                  className="flex-1 min-w-[200px] rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  disabled={isPending}
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="rounded-pill bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-micro text-on-brand hover:brightness-105"
-                  disabled={isPending}
-                >
-                  Add video
-                </Button>
-              </form>
-
-              <div className="overflow-hidden rounded-card border border-border">
-                <table className="min-w-full divide-y divide-border text-sm">
-                  <thead className="bg-bg text-xs uppercase tracking-micro text-text-muted">
-                    <tr>
-              <th className="px-4 py-3 text-left">Order</th>
-              <th className="px-4 py-3 text-left">Video</th>
-              <th className="px-4 py-3" aria-label="Actions" />
-            </tr>
-          </thead>
-          <tbody
-            className="divide-y divide-border"
-            onDragOver={handleTableDragOver}
-            onDrop={handleDropAtEnd}
-          >
-            {items.map((item, index) => (
-              <tr
-                key={item.videoId}
-                draggable
-                onDragStart={(event) => handleDragStart(event, item.videoId)}
-                onDragOver={handleRowDragOver}
-                onDrop={(event) => handleDropOnRow(event, item.videoId)}
-                onDragEnd={handleDragEnd}
-                className={clsx(
-                  'cursor-grab transition',
-                  isPending && 'opacity-90',
-                  draggingId === item.videoId && 'cursor-grabbing opacity-60'
-                )}
-                aria-grabbed={draggingId === item.videoId}
-              >
-                <td className="px-4 py-3 text-xs text-text-secondary">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base leading-none text-text-muted" aria-hidden>
-                      ⋮⋮
-                    </span>
-                    <span>{index + 1}</span>
-                    <span className="sr-only">Drag to reorder</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-4">
-                    <div className="h-16 w-28 overflow-hidden rounded border border-border bg-placeholder">
-                      <Image
-                        src={item.thumbUrl || getPlaceholderThumb(item.aspectRatio)}
-                        alt={`Thumbnail for ${item.videoId}`}
-                        width={112}
-                        height={64}
-                        className="h-full w-full object-cover"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="min-w-0 space-y-1">
-                      <div className="truncate font-mono text-xs text-text-primary">{item.videoId}</div>
-                      {item.engineLabel ? (
-                        <div className="truncate text-xs text-text-muted">{item.engineLabel}</div>
-                      ) : null}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-2 text-xs">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="rounded-input border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
-                      onClick={() => moveItem(item.videoId, -1)}
-                      disabled={index === 0 || isPending}
-                    >
-                      ↑
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="rounded-input border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
-                      onClick={() => moveItem(item.videoId, 1)}
-                      disabled={index === items.length - 1 || isPending}
-                    >
-                      ↓
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="rounded-input border-hairline px-2 py-1 text-error hover:border-error-border hover:text-error"
-                      onClick={() => handleRemoveVideo(item.videoId)}
-                      disabled={isPending}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {items.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="px-4 py-6 text-center text-sm text-text-secondary">
-                          Playlist is empty. Add video IDs to populate it.
-                        </td>
-                      </tr>
-                    ) : null}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : null}
         </section>
       </div>
+
+      {selectedPlaylist && isItemsDirty ? (
+        <div className="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4">
+          <div className="pointer-events-auto flex w-full max-w-xl items-center justify-between gap-4 rounded-full border border-brand/30 bg-surface/95 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-text-primary">Order changed</p>
+              <p className="truncate text-xs text-text-secondary">{selectedPlaylist.name}</p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSaveItems}
+              disabled={isPending}
+              className="shrink-0 shadow-card ring-2 ring-brand/20"
+            >
+              Save order
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
