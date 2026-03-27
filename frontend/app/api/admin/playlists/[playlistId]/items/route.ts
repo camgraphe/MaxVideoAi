@@ -3,7 +3,7 @@ import { isDatabaseConfigured } from '@/lib/db';
 import { submitToIndexNow } from '@/lib/indexnow';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import {
-  appendPlaylistItem,
+  appendPlaylistItemAndPublish,
   removePlaylistItem,
   reorderPlaylistItems,
 } from '@/server/playlists';
@@ -48,9 +48,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    await appendPlaylistItem(playlistId, videoId);
+    const video = await appendPlaylistItemAndPublish(playlistId, videoId);
     await submitToIndexNow('/examples');
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, video });
   } catch (error) {
     console.error('[admin/playlists/:id/items] failed to append', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });

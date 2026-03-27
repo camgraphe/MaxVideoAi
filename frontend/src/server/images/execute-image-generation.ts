@@ -15,7 +15,6 @@ import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import type { PricingSnapshot } from '@/types/engines';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
-import { ensureUserPreferences } from '@/server/preferences';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
@@ -1099,21 +1098,8 @@ export async function executeImageGeneration({
   const vendorAccountId = pricing.vendorAccountId ?? engine.vendorAccountId ?? null;
   const applicationFeeCents = getPlatformFeeCents(pricing);
 
-  let defaultAllowIndex = true;
-  try {
-    const prefs = await ensureUserPreferences(userId);
-    defaultAllowIndex = prefs.defaultAllowIndex;
-  } catch (error) {
-    console.warn('[images] unable to read user preferences', error);
-  }
-
-  const visibility = body.visibility === 'public' ? 'public' : 'private';
-  const indexable =
-    typeof body.allowIndex === 'boolean'
-      ? body.allowIndex
-      : typeof body.indexable === 'boolean'
-        ? body.indexable
-        : defaultAllowIndex;
+  const visibility: 'public' | 'private' = 'private';
+  const indexable = false;
 
   const settingsSnapshotJson = JSON.stringify(
     settingsSnapshot ??

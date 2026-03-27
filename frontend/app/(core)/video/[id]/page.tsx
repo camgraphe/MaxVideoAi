@@ -17,7 +17,7 @@ import { getFalEngineById, getFalEngineBySlug, type FalEngineEntry } from '@/con
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { ButtonLink } from '@/components/ui/Button';
-import { getSeoWatchVideoMeta } from '@/lib/video-seo';
+import { getSeoWatchVideoMetaById } from '@/server/video-seo';
 
 type PageProps = {
   params: { id: string };
@@ -364,7 +364,7 @@ function buildSeoContent(video: GalleryVideo, copy: VideoPageCopy, locale: AppLo
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const watchMeta = getSeoWatchVideoMeta(params.id);
+  const watchMeta = await getSeoWatchVideoMetaById(params.id);
   const video = await fetchVideo(params.id);
   const { locale, dictionary } = await resolveDictionary(watchMeta ? { locale: 'en' } : undefined);
   const copy = resolveVideoCopy(dictionary);
@@ -425,7 +425,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function VideoPage({ params, searchParams }: PageProps) {
-  const watchMeta = getSeoWatchVideoMeta(params.id);
+  const watchMeta = await getSeoWatchVideoMetaById(params.id);
   const video = await fetchVideo(params.id);
   if (!video) notFound();
 

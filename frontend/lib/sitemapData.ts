@@ -15,7 +15,7 @@ import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
-import { getSeoWatchVideos } from '@/lib/video-seo';
+import { listSeoWatchVideos } from '@/server/video-seo';
 
 export type SitemapEntry = {
   url: string;
@@ -125,18 +125,10 @@ const parsedTolerance = Number(process.env.SITEMAP_LOCALE_TOLERANCE ?? '3');
 const LOCALE_MISMATCH_TOLERANCE = Number.isFinite(parsedTolerance) && parsedTolerance >= 0 ? parsedTolerance : 3;
 const FAIL_ON_LOCALE_MISMATCH = process.env.SITEMAP_LOCALE_FAIL_ON_MISMATCH === 'true';
 
-let canonicalEntryPromise: Promise<CanonicalPathEntry[]> | null = null;
-
-const EXTRA_CANONICAL_PATHS: CanonicalPathEntry[] = [
+const BASE_EXTRA_CANONICAL_PATHS: CanonicalPathEntry[] = [
   { englishPath: '/legal/cookies-list', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/mentions', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/subprocessors', locales: ['en', 'fr', 'es'] },
-  ...getSeoWatchVideos().map((entry) => ({
-    englishPath: `/video/${entry.id}`,
-    lastModified: formatLastModified(entry.publishedAt),
-    locales: ['en'] as AppLocale[],
-    disableAlternates: true,
-  })),
 ];
 
 function loadAppPathsManifest(): Record<string, string> {
@@ -510,10 +502,7 @@ function getModelsSitemapLastModified(): string | undefined {
 export { LOCALES, LOCALE_SITEMAP_PATHS };
 
 async function getCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
-  if (!canonicalEntryPromise) {
-    canonicalEntryPromise = resolveCanonicalPathEntries();
-  }
-  return canonicalEntryPromise;
+  return resolveCanonicalPathEntries();
 }
 
 async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
@@ -565,7 +554,17 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
     });
   }
 
-  EXTRA_CANONICAL_PATHS.forEach((extra) => {
+  const extraCanonicalPaths: CanonicalPathEntry[] = [
+    ...BASE_EXTRA_CANONICAL_PATHS,
+    ...(await listSeoWatchVideos()).map((entry) => ({
+      englishPath: `/video/${entry.id}`,
+      lastModified: formatLastModified(entry.publishedAt),
+      locales: ['en'] as AppLocale[],
+      disableAlternates: true,
+    })),
+  ];
+
+  extraCanonicalPaths.forEach((extra) => {
     if (!extra?.englishPath) {
       return;
     }

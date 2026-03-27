@@ -13,7 +13,6 @@ import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import dynamic from 'next/dynamic';
-import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -152,8 +151,6 @@ export default function JobsPage() {
     mutate: mutateAngle,
   } = useInfiniteJobs(24, { surface: 'angle' });
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
-  const { data: preferences } = useUserPreferences(!authLoading && Boolean(user));
-  const defaultAllowIndex = preferences?.defaultAllowIndex ?? true;
 
   const videoPages = videoData ?? [];
   const audioPages = audioData ?? [];
@@ -702,7 +699,6 @@ export default function JobsPage() {
           group={viewerGroup}
           onClose={() => setActiveGroupId(null)}
           onRefreshJob={handleRefreshJob}
-          defaultAllowIndex={defaultAllowIndex}
         />
       ) : null}
     </div>

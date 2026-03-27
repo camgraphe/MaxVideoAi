@@ -41,7 +41,6 @@ import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import type { Job } from '@/types/jobs';
-import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
@@ -1420,8 +1419,6 @@ export default function Page() {
   const [userId, setUserId] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [hydratedForScope, setHydratedForScope] = useState<string | null>(null);
-  const { data: userPreferences } = useUserPreferences(Boolean(userId));
-  const defaultAllowIndex = userPreferences?.defaultAllowIndex ?? true;
 
   const [form, setForm] = useState<FormState | null>(null);
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
@@ -5207,9 +5204,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           .map((scene) => ({ prompt: scene.prompt.trim(), duration: Math.round(scene.duration || 0) }))
       : undefined;
 
-    const allowIndex = defaultAllowIndex ?? true;
-    const visibilityPreference: 'public' | 'private' = allowIndex ? 'public' : 'private';
-
     const runIteration = async (iterationIndex: number) => {
       const isImageDrivenMode = activeMode === 'i2v' || activeMode === 'i2i';
       const isVeoFirstLast =
@@ -5410,7 +5404,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const safetyChecker =
           typeof form.safetyChecker === 'boolean' ? form.safetyChecker : undefined;
 
-        const generatePayload = {
+        const generatePayload: Parameters<typeof runGenerate>[0] = {
           engineId: selectedEngine.id,
           prompt: trimmedPrompt,
           mode: activeMode,
@@ -5459,9 +5453,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           message: friendlyMessage,
           etaSeconds,
           etaLabel,
-          visibility: visibilityPreference,
-          allowIndex,
-          indexable: allowIndex,
+          visibility: 'private',
+          indexable: false,
           ...(isLumaRay2 ? { loop: Boolean(form.loop) } : {}),
         };
         const res = await runGenerate(generatePayload, token ? { token } : undefined);
@@ -5752,7 +5745,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     uiLocale,
     workflowCopy,
     capability,
-    defaultAllowIndex,
     workspaceCopy.wallet.insufficient,
     workspaceCopy.wallet.insufficientWithAmount,
     cfgScale,
@@ -6546,7 +6538,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           group={viewerGroup}
           onClose={() => setViewerTarget(null)}
           onRefreshJob={handleRefreshJob}
-          defaultAllowIndex={defaultAllowIndex}
         />
       ) : null}
       {topUpModal && (

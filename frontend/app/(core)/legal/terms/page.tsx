@@ -214,8 +214,8 @@ function TermsArticleEn({
             template pages, case studies, or other marketing placements.
           </li>
           <li>
-            <strong>Privacy controls.</strong> You can mark renders as private within your workspace to limit distribution. If a privacy toggle is not
-            available for a specific feature, you may request delisting or deletion by emailing{' '}
+            <strong>Privacy controls.</strong> New renders are private by default. Public publishing, site-wide indexing, and any Video SEO rollout are
+            managed by MaxVideoAI through an internal review workflow. If you need a public render delisted, deindexed, or deleted, email{' '}
             <ObfuscatedEmailLink
               user="support"
               domain="maxvideoai.com"
@@ -426,7 +426,7 @@ function TermsArticleFr({
             <strong>Licence sur les médias générés.</strong> Pour chaque sortie produite via MaxVideoAI, vous nous accordez une licence mondiale, non exclusive, gratuite, transférable et sous-licenciable pour héberger, reproduire, indexer, afficher et utiliser ces vidéos afin (a) d’exploiter le Service, (b) d’améliorer le routage, les protections et les modèles, (c) de mener des enquêtes sécurité/abus et (d) de présenter la galerie Examples, les pages modèles, études de cas ou supports marketing.
           </li>
           <li>
-            <strong>Contrôles de confidentialité.</strong> Vous pouvez marquer un rendu comme privé afin de limiter sa diffusion. Si aucune option n’est disponible pour une fonctionnalité donnée, vous pouvez demander la désindexation ou la suppression par e-mail à{' '}
+            <strong>Contrôles de confidentialité.</strong> Les nouveaux rendus sont privés par défaut. La publication publique, l’indexation site-wide et l’éventuelle inclusion dans le rollout Video SEO sont gérées par MaxVideoAI via un workflow interne de revue. Si vous souhaitez désindexer, retirer d’un moteur ou supprimer un rendu public, vous pouvez écrire à{' '}
             <ObfuscatedEmailLink
               user="support"
               domain="maxvideoai.com"
@@ -631,8 +631,7 @@ function TermsArticleEs({
             acciones de marketing.
           </li>
           <li>
-            <strong>Controles de privacidad.</strong> Puedes marcar los renders como privados para limitar su difusión. Si no existe un control de privacidad para cierta
-            función, puedes solicitar la desindexación o eliminación enviando un correo a{' '}
+            <strong>Controles de privacidad.</strong> Los nuevos renders son privados por defecto. La publicación pública, la indexación general del sitio y cualquier inclusión en el rollout de Video SEO son gestionadas por MaxVideoAI mediante un flujo interno de revisión. Si necesitas retirar, desindexar o eliminar un render público, puedes escribir a{' '}
             <ObfuscatedEmailLink
               user="support"
               domain="maxvideoai.com"

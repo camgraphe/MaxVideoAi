@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { normalizeMediaUrl } from '@/lib/media';
 
@@ -186,18 +186,34 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
 
 export async function appendPlaylistItem(playlistId: string, videoId: string): Promise<void> {
   await ensureBillingSchema();
-  const rows = await query<{ max: number }>(
-    `SELECT COALESCE(MAX(order_index), 0) AS max FROM playlist_items WHERE playlist_id = $1`,
-    [playlistId]
-  );
-  const nextOrder = Number(rows[0]?.max ?? 0) + 1;
-  await query(
-    `INSERT INTO playlist_items (playlist_id, video_id, order_index)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (playlist_id, video_id)
-     DO UPDATE SET order_index = EXCLUDED.order_index, pinned = FALSE`,
-    [playlistId, videoId, nextOrder]
-  );
+  await appendPlaylistItemWithExecutor({ query }, playlistId, videoId);
+}
+
+export async function appendPlaylistItemAndPublish(playlistId: string, videoId: string): Promise<{
+  visibility: 'public' | 'private';
+  indexable: boolean;
+}> {
+  await ensureBillingSchema();
+  return withDbTransaction(async (executor) => {
+    await appendPlaylistItemWithExecutor(executor, playlistId, videoId);
+    const rows = await executor.query<{ visibility: string | null; indexable: boolean | null }>(
+      `UPDATE app_jobs
+         SET visibility = 'public',
+             indexable = TRUE,
+             updated_at = NOW()
+       WHERE job_id = $1
+       RETURNING visibility, indexable`,
+      [videoId]
+    );
+    const updated = rows[0];
+    if (!updated) {
+      throw new Error('Video not found');
+    }
+    return {
+      visibility: updated.visibility === 'private' ? 'private' : 'public',
+      indexable: Boolean(updated.indexable ?? true),
+    };
+  });
 }
 
 export async function removePlaylistItem(playlistId: string, videoId: string): Promise<void> {
@@ -228,5 +244,20 @@ export async function reorderPlaylistItems(
     `INSERT INTO playlist_items (playlist_id, video_id, order_index, pinned)
      VALUES ${inserts.join(', ')}`,
     values
+  );
+}
+
+async function appendPlaylistItemWithExecutor(executor: QueryExecutor, playlistId: string, videoId: string): Promise<void> {
+  const rows = await executor.query<{ max: number }>(
+    `SELECT COALESCE(MAX(order_index), 0) AS max FROM playlist_items WHERE playlist_id = $1`,
+    [playlistId]
+  );
+  const nextOrder = Number(rows[0]?.max ?? 0) + 1;
+  await executor.query(
+    `INSERT INTO playlist_items (playlist_id, video_id, order_index)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (playlist_id, video_id)
+     DO UPDATE SET order_index = EXCLUDED.order_index, pinned = FALSE`,
+    [playlistId, videoId, nextOrder]
   );
 }

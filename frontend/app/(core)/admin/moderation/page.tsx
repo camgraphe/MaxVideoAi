@@ -2,6 +2,9 @@ import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { ModerationTable, type ModerationVideo } from '@/components/admin/ModerationTable';
 
+type ModerationBucket = 'not-published' | 'published' | 'all';
+type ModerationSurface = 'video' | 'image' | 'audio' | 'character' | 'angle';
+
 function getBaseUrl() {
   const headerStore = headers();
   const forwardedProto = headerStore.get('x-forwarded-proto');
@@ -29,8 +32,13 @@ function getBaseUrl() {
 
 type PendingFetchResult = { videos: ModerationVideo[]; nextCursor: string | null };
 
-async function fetchPendingVideos(cookieHeader: string | undefined): Promise<PendingFetchResult> {
-  const res = await fetch(`${getBaseUrl()}/api/admin/videos/pending?limit=30`, {
+async function fetchPendingVideos(
+  cookieHeader: string | undefined,
+  bucket: ModerationBucket,
+  surface: ModerationSurface
+): Promise<PendingFetchResult> {
+  const params = new URLSearchParams({ limit: '30', bucket, surface });
+  const res = await fetch(`${getBaseUrl()}/api/admin/videos/pending?${params.toString()}`, {
     cache: 'no-store',
     headers: cookieHeader ? { cookie: cookieHeader } : undefined,
   }).catch(() => null);
@@ -61,10 +69,12 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminModerationPage() {
   const cookieHeader = cookies().toString();
-  const { videos, nextCursor } = await fetchPendingVideos(cookieHeader).catch((error) => {
+  const initialBucket: ModerationBucket = 'not-published';
+  const initialSurface: ModerationSurface = 'video';
+  const { videos, nextCursor } = await fetchPendingVideos(cookieHeader, initialBucket, initialSurface).catch((error) => {
     console.error('[admin/moderation] failed to fetch pending videos', error);
     return { videos: [] as ModerationVideo[], nextCursor: null };
   });
 
-  return <ModerationTable videos={videos} initialCursor={nextCursor} />;
+  return <ModerationTable videos={videos} initialCursor={nextCursor} initialBucket={initialBucket} initialSurface={initialSurface} />;
 }

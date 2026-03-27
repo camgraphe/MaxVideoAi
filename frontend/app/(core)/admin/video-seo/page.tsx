@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/Button';
 import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
-import { getSeoWatchVideos, type SeoWatchVideoMeta } from '@/lib/video-seo';
+import { listSeoWatchVideos, type SeoWatchVideoMeta } from '@/server/video-seo';
 import { getVideosByIds, type GalleryVideo } from '@/server/videos';
 
 export const dynamic = 'force-dynamic';
@@ -29,7 +29,7 @@ type WatchRow = {
 };
 
 export default async function AdminVideoSeoPage() {
-  const watchEntries = getSeoWatchVideos();
+  const watchEntries = await listSeoWatchVideos();
   const videoMap = await getVideosByIds(watchEntries.map((entry) => entry.id));
   const rows = watchEntries.map((entry) => buildWatchRow(entry, videoMap.get(entry.id) ?? null));
 
@@ -46,7 +46,7 @@ export default async function AdminVideoSeoPage() {
           <h1 className="mt-1 text-3xl font-semibold text-text-primary">Video SEO watch pages</h1>
           <p className="mt-2 text-sm text-text-secondary">
             Operational view of the curated <code className="font-mono text-xs">/video/[id]</code> shortlist currently
-            eligible for sitemap submission and video indexation.
+            eligible for the Google Video rollout, including sitemap submission and watch-page indexation.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -71,7 +71,7 @@ export default async function AdminVideoSeoPage() {
         <SummaryCard
           label="Ready now"
           value={numberFormatter.format(readyCount)}
-          helper="Public, indexable, with video + thumbnail"
+          helper="Public, discovery on, with video + thumbnail"
           tone={issueCount ? 'warn' : 'ok'}
         />
         <SummaryCard
@@ -99,7 +99,8 @@ export default async function AdminVideoSeoPage() {
           <div className="rounded-card border border-surface-on-media-30 bg-surface px-4 py-3 text-sm text-text-secondary">
             <p className="font-semibold text-text-primary">Source of truth</p>
             <p className="mt-1">
-              Curated in code, surfaced here with live DB status so the team can inspect the exact pages exposed to Google.
+              The rollout is currently read-only and mirrors the fixed hero watchlist. Admin can audit these pages here, but changing the rollout
+              itself still requires a code update.
             </p>
           </div>
         </div>
@@ -181,7 +182,7 @@ export default async function AdminVideoSeoPage() {
                           {row.video?.visibility === 'public' ? 'Public' : 'Private or missing'}
                         </StatusPill>
                         <StatusPill tone={row.video?.indexable ? 'ok' : 'warn'}>
-                          {row.video?.indexable ? 'Indexable' : 'Indexing off'}
+                          {row.video?.indexable ? 'Discovery on' : 'Discovery off'}
                         </StatusPill>
                         <StatusPill tone={row.video?.videoUrl ? 'ok' : 'warn'}>{row.video?.videoUrl ? 'Video asset' : 'Missing video'}</StatusPill>
                         <StatusPill tone={row.video?.thumbUrl ? 'ok' : 'warn'}>
@@ -240,8 +241,8 @@ export default async function AdminVideoSeoPage() {
                       <StatusPill tone="neutral">{row.entry.engineFamily}</StatusPill>
                       <p className="text-sm text-text-secondary">{row.entry.reasonForSelection}</p>
                       <p className="text-xs text-text-muted">
-                        Keep this page in the rollout only if it remains visually strong, public, indexable, and editorially
-                        useful.
+                        Keep this page in the rollout only if it remains visually strong, public, discovery-on, and editorially useful. Removing it
+                        here only affects the Google Video rollout.
                       </p>
                     </div>
                   </td>
@@ -263,7 +264,7 @@ function buildWatchRow(entry: SeoWatchVideoMeta, video: GalleryVideo | null): Wa
     issues.push('Video missing from app_jobs.');
   } else {
     if (video.visibility !== 'public') issues.push(`Visibility is ${video.visibility}.`);
-    if (!video.indexable) issues.push('Indexable flag is disabled.');
+    if (!video.indexable) issues.push('Public discovery is disabled.');
     if (!video.videoUrl) issues.push('Video asset URL is missing.');
     if (!video.thumbUrl) issues.push('Thumbnail URL is missing.');
   }

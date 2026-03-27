@@ -18,7 +18,6 @@ import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsse
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
-import { ensureUserPreferences } from '@/server/preferences';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
 import {
   getLumaRay2DurationInfo,
@@ -920,27 +919,8 @@ export async function POST(req: NextRequest) {
 
   const vendorAccountId = connectMode ? pricing.vendorAccountId ?? engine.vendorAccountId ?? null : null;
   const applicationFeeCents = getPlatformFeeCents(pricing);
-  let defaultAllowIndex = true;
-  if (userId) {
-    try {
-      const prefs = await ensureUserPreferences(String(userId));
-      defaultAllowIndex = prefs.defaultAllowIndex;
-    } catch (error) {
-      console.warn('[api/generate] unable to read user preferences for indexing', error);
-    }
-  }
-  const requestedVisibility =
-    typeof body.visibility === 'string' && body.visibility.trim().length
-      ? body.visibility.trim().toLowerCase()
-      : null;
-  const visibility: 'public' | 'private' = requestedVisibility === 'public' ? 'public' : 'private';
-  const requestedIndexable =
-    typeof body.indexable === 'boolean'
-      ? body.indexable
-      : typeof body.allowIndex === 'boolean'
-        ? body.allowIndex
-        : undefined;
-  const indexable = requestedIndexable ?? defaultAllowIndex;
+  const visibility: 'public' | 'private' = 'private';
+  const indexable = false;
 
 type PendingReceipt = {
   userId: string;

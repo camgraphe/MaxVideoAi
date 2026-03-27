@@ -1,15 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
-import { authFetch } from '@/lib/authFetch';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 
 interface GroupViewerModalProps {
   group: VideoGroup | null;
   onClose: () => void;
   onRefreshJob?: (jobId: string) => Promise<void> | void;
-  defaultAllowIndex?: boolean;
   onSaveToLibrary?: (entry: MediaLightboxEntry) => Promise<void>;
 }
 
@@ -21,13 +19,7 @@ function isVideo(item: VideoItem): boolean {
   return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
 }
 
-export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowIndex, onSaveToLibrary }: GroupViewerModalProps) {
-  const [indexingOverrides, setIndexingOverrides] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    setIndexingOverrides({});
-  }, [group?.id]);
-
+export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary }: GroupViewerModalProps) {
   const entries: MediaLightboxEntry[] = useMemo(() => {
     if (!group) return [];
     return group.items.map((item, index) => {
@@ -38,14 +30,12 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
       const rawStatus = typeof item.meta?.status === 'string' ? String(item.meta.status) : undefined;
       const jobIdMeta = typeof item.meta?.jobId === 'string' ? String(item.meta.jobId) : null;
       const jobId = item.jobId ?? jobIdMeta ?? item.id;
-      const overrideIndex = jobId ? indexingOverrides[jobId] : undefined;
       const baseIndexable =
         typeof item.indexable === 'boolean'
           ? item.indexable
           : typeof item.meta?.indexable === 'boolean'
             ? (item.meta.indexable as boolean)
             : undefined;
-      const indexable = typeof overrideIndex === 'boolean' ? overrideIndex : baseIndexable;
       const status: MediaLightboxEntry['status'] = (() => {
         if (!rawStatus) return undefined;
         const normalized = rawStatus.toLowerCase();
@@ -75,7 +65,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
         engineLabel,
         durationSec: item.durationSec,
         createdAt: group.createdAt,
-        indexable,
+        indexable: baseIndexable,
         visibility: item.visibility ?? (typeof item.meta?.visibility === 'string' ? (item.meta.visibility as 'public' | 'private') : undefined),
         hasAudio:
           typeof item.hasAudio === 'boolean'
@@ -93,37 +83,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
               : 'image',
       };
     });
-  }, [group, indexingOverrides]);
-
-  const handleToggleIndexable = useCallback(
-    async (entry: MediaLightboxEntry, nextIndexable: boolean) => {
-      const jobId = entry.jobId ?? entry.id;
-      if (!jobId) {
-        throw new Error('Missing video identifier');
-      }
-      const res = await authFetch(`/api/videos/${encodeURIComponent(jobId)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ indexable: nextIndexable }),
-      });
-      const json = await res.json().catch(() => null);
-      if (!res.ok || !json?.ok) {
-        throw new Error((json && typeof json.error === 'string' && json.error) || 'Failed to update indexing');
-      }
-      setIndexingOverrides((current) => ({
-        ...current,
-        [jobId]: nextIndexable,
-      }));
-      if (onRefreshJob) {
-        try {
-          await onRefreshJob(jobId);
-        } catch (error) {
-          console.warn('[GroupViewerModal] refresh after indexing toggle failed', error);
-        }
-      }
-    },
-    [onRefreshJob]
-  );
+  }, [group]);
 
   const metadata = useMemo(() => {
     if (!group) return [];
@@ -167,8 +127,6 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
             }
           : undefined
       }
-      allowIndexingControls={Boolean(defaultAllowIndex)}
-      onToggleIndexable={defaultAllowIndex ? handleToggleIndexable : undefined}
       onSaveToLibrary={onSaveToLibrary}
     />
   );

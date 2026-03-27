@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getVideosByIds } from '@/server/videos';
-import { getSeoWatchVideos } from '@/lib/video-seo';
+import { listSeoWatchVideos } from '@/server/video-seo';
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
 
@@ -37,7 +37,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
 
   try {
     await ensureBillingSchema();
-    const watchVideos = getSeoWatchVideos();
+    const watchVideos = await listSeoWatchVideos();
     const videoMap = await getVideosByIds(watchVideos.map((entry) => entry.id));
 
     const urls = watchVideos

@@ -2863,7 +2863,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       <GroupViewerModal
         group={viewerGroup}
         onClose={closeViewer}
-        defaultAllowIndex={false}
         onSaveToLibrary={handleSaveVariantToLibrary}
       />
     ) : null}

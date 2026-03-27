@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useMarketingPreference } from '@/hooks/useMarketingPreference';
 import { FEATURES } from '@/content/feature-flags';
 import type { User } from '@supabase/supabase-js';
@@ -47,13 +46,13 @@ const DEFAULT_SETTINGS_COPY = {
   },
   privacy: {
     title: 'Privacy & Safety',
-    allowIndexLabel: 'Allow indexing by default',
-    allowIndexDescription:
-      'New videos can appear in the gallery, sitemap, and search previews. You can still uncheck individual renders from their detail view.',
-    saving: 'Saving preference…',
-    disableHint:
-      'Disable this toggle if you prefer every render to stay private by default. Published videos will keep their current visibility until you change them individually.',
-    preferenceError: 'Failed to update preference',
+    summary:
+      'New renders are private by default. Public publishing and search exposure are handled through the MaxVideoAI review workflow.',
+    reviewNote:
+      'If the team promotes a render publicly, it can still stay out of the video SEO rollout unless it is explicitly curated as a watch page.',
+    supportPrefix: 'If you need a public render delisted or removed, contact ',
+    supportEmail: 'support@maxvideoai.com',
+    supportSuffix: ' and the team will review the request.',
   },
   notifications: {
     title: 'Notifications',
@@ -90,50 +89,11 @@ export default function SettingsPage() {
     return deepmerge(DEFAULT_SETTINGS_COPY, rawCopy as Partial<SettingsCopy>);
   }, [rawCopy]);
   const isGuest = !user;
-  const {
-    data: preferences,
-    isLoading: prefsLoading,
-    error: preferencesError,
-    mutate: mutatePreferences,
-  } = useUserPreferences(!authLoading && Boolean(user));
-  const [prefSaving, setPrefSaving] = useState(false);
-  const [prefError, setPrefError] = useState<string | null>(null);
-
-  const handleDefaultIndexChange = useCallback(
-    async (next: boolean) => {
-      if (prefSaving) return;
-      setPrefSaving(true);
-      setPrefError(null);
-      try {
-        const res = await authFetch('/api/user/preferences', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ defaultAllowIndex: next }),
-        });
-        const json = await res.json().catch(() => null);
-        if (!res.ok || !json?.ok) {
-          throw new Error(json?.error ?? 'Failed to update preference');
-        }
-        await mutatePreferences(
-          (current) => (current ? { ...current, defaultAllowIndex: next } : current),
-          false
-        );
-      } catch (error) {
-        const message = error instanceof Error ? error.message : copy.privacy.preferenceError;
-        setPrefError(message);
-        console.error('[settings] default index update failed', error);
-      } finally {
-        setPrefSaving(false);
-      }
-    },
-    [prefSaving, mutatePreferences, copy.privacy.preferenceError]
-  );
 
   if (authLoading) {
     return null;
   }
 
-  const preferencesLoadError = preferencesError instanceof Error ? preferencesError.message : null;
   const teamsLive = FEATURES.workflows.approvals && FEATURES.workflows.budgetControls;
   const notificationsLive = FEATURES.notifications.center;
 
@@ -170,20 +130,7 @@ export default function SettingsPage() {
 
           {tab === 'account' && <AccountTab user={user} copy={copy.account} />}
           {tab === 'team' && <TeamTab live={teamsLive} copy={copy.team} />}
-          {tab === 'privacy' && (
-            <PrivacyTab
-              defaultAllowIndex={preferences?.defaultAllowIndex}
-              loading={prefsLoading}
-              saving={prefSaving}
-              loadError={preferencesLoadError}
-              error={prefError}
-              guest={isGuest}
-              copy={copy.privacy}
-              onToggleIndexing={(value) => {
-                void handleDefaultIndexChange(value);
-              }}
-            />
-          )}
+          {tab === 'privacy' && <PrivacyTab guest={isGuest} copy={copy.privacy} />}
           {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} guest={isGuest} />}
         </main>
       </div>
@@ -335,50 +282,36 @@ function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) 
 }
 
 function PrivacyTab({
-  defaultAllowIndex,
-  loading,
-  saving,
-  loadError,
-  error,
   guest,
-  onToggleIndexing,
   copy,
 }: {
-  defaultAllowIndex?: boolean | null;
-  loading: boolean;
-  saving: boolean;
-  loadError?: string | null;
-  error: string | null;
   guest: boolean;
-  onToggleIndexing: (next: boolean) => void;
   copy: SettingsCopy['privacy'];
 }) {
-  const allowIndex = defaultAllowIndex ?? true;
-  const isDisabled = guest || loading || saving || Boolean(loadError);
-
   return (
     <section className="rounded-card border border-border bg-surface p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="space-y-4 text-sm text-text-secondary">
         <div className="rounded-card border border-hairline bg-bg px-4 py-3">
-          <label className="flex items-start gap-4">
-            <input
-              type="checkbox"
-              className="mt-1 h-4 w-4 rounded border border-border accent-brand"
-              checked={allowIndex}
-              onChange={(event) => onToggleIndexing(event.target.checked)}
-              disabled={isDisabled}
-            />
-            <span>
-              <span className="block font-medium text-text-primary">{copy.allowIndexLabel}</span>
-              <span className="mt-1 block text-xs text-text-muted">{copy.allowIndexDescription}</span>
-            </span>
-          </label>
-          {saving ? <p className="mt-2 text-xs text-text-muted">{copy.saving}</p> : null}
-          {loadError ? <p className="mt-2 text-xs text-state-warning">{loadError}</p> : null}
-          {error ? <p className="mt-2 text-xs text-state-warning">{error}</p> : null}
+          <p className="text-sm text-text-primary">{copy.summary}</p>
+          <p className="mt-2 text-xs text-text-muted">{copy.reviewNote}</p>
+          {guest ? (
+            <p className="mt-2 text-xs text-text-muted">
+              Sign in to manage your workspace and request visibility changes for existing renders.
+            </p>
+          ) : null}
         </div>
-        <p className="text-xs text-text-muted">{copy.disableHint}</p>
+        <p className="text-xs text-text-muted">
+          {copy.supportPrefix}
+          <ObfuscatedEmailLink
+            user="support"
+            domain="maxvideoai.com"
+            label={copy.supportEmail}
+            placeholder="support [at] maxvideoai.com"
+            className="underline underline-offset-2"
+          />
+          {copy.supportSuffix}
+        </p>
       </div>
     </section>
   );
