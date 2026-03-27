@@ -50,6 +50,7 @@ type PlaylistsManagerProps = {
 
 type EditablePlaylist = PlaylistSummary & { dirty?: boolean; loading?: boolean };
 type DropPlacement = 'before' | 'after';
+type FutureCollectionSection = 'image' | 'audio' | 'character' | 'angle';
 
 const PLACEHOLDER_MAP: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
@@ -61,6 +62,13 @@ const GROUP_LABELS: Record<PlaylistKind, string> = {
   core: 'Core surfaces',
   model: 'Model collections',
   draft: 'Draft / empty',
+};
+
+const FUTURE_SECTION_LABELS: Record<FutureCollectionSection, string> = {
+  image: 'Image',
+  audio: 'Audio',
+  character: 'Character',
+  angle: 'Angle',
 };
 
 function getPlaceholderThumb(aspectRatio?: string | null): string {
@@ -198,6 +206,13 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDraftCollections, setShowDraftCollections] = useState(false);
+  const [showModelCollections, setShowModelCollections] = useState(true);
+  const [expandedFutureSections, setExpandedFutureSections] = useState<Record<FutureCollectionSection, boolean>>({
+    image: false,
+    audio: false,
+    character: false,
+    angle: false,
+  });
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createSlug, setCreateSlug] = useState('');
@@ -725,14 +740,40 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
             }
             const entries = groupedPlaylists[kind];
             if (!entries.length) return null;
+            const isCollapsible = kind === 'model';
+            const isExpanded = kind === 'model' ? showModelCollections : true;
 
             return (
               <section key={kind} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS[kind]}</h2>
+                <div className="flex items-center justify-between gap-3">
+                  {isCollapsible ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowModelCollections((current) => !current)}
+                      className="flex min-w-0 items-center gap-2 text-left"
+                    >
+                      <svg
+                        viewBox="0 0 20 20"
+                        aria-hidden="true"
+                        className={clsx('h-4 w-4 text-text-muted transition-transform', isExpanded ? 'rotate-90' : 'rotate-0')}
+                      >
+                        <path
+                          d="M7.5 5.5 12 10l-4.5 4.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                        />
+                      </svg>
+                      <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS[kind]}</h2>
+                    </button>
+                  ) : (
+                    <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS[kind]}</h2>
+                  )}
                   <span className="text-xs text-text-muted">{entries.length}</span>
                 </div>
-                <div className="space-y-2">
+                {isExpanded ? <div className="space-y-2">
                   {entries.map((playlist) => {
                     const isActive = playlist.id === selectedId;
                     return (
@@ -769,7 +810,49 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                       </button>
                     );
                   })}
+                </div> : null}
+              </section>
+            );
+          })}
+
+          {(Object.keys(FUTURE_SECTION_LABELS) as FutureCollectionSection[]).map((section) => {
+            const expanded = expandedFutureSections[section];
+            return (
+              <section key={section} className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpandedFutureSections((current) => ({
+                        ...current,
+                        [section]: !current[section],
+                      }))
+                    }
+                    className="flex min-w-0 items-center gap-2 text-left"
+                  >
+                    <svg
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                      className={clsx('h-4 w-4 text-text-muted transition-transform', expanded ? 'rotate-90' : 'rotate-0')}
+                    >
+                      <path
+                        d="M7.5 5.5 12 10l-4.5 4.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.8"
+                      />
+                    </svg>
+                    <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{FUTURE_SECTION_LABELS[section]}</h2>
+                  </button>
+                  <span className="text-xs text-text-muted">0</span>
                 </div>
+                {expanded ? (
+                  <div className="rounded-card border border-dashed border-hairline bg-surface px-4 py-4 text-sm text-text-secondary">
+                    No collections yet.
+                  </div>
+                ) : null}
               </section>
             );
           })}
