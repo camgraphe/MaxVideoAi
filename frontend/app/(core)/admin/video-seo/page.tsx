@@ -146,6 +146,12 @@ export default async function AdminVideoSeoPage() {
                       <p className="max-w-md text-sm text-text-secondary">{row.entry.intro}</p>
                       <div className="space-y-1 text-xs text-text-muted">
                         <p>
+                          Source surface:{' '}
+                          <Link href={row.entry.sourcePath} prefetch={false} className="font-medium text-text-primary hover:underline">
+                            {row.entry.sourceLabel}
+                          </Link>
+                        </p>
+                        <p>
                           Public URL:{' '}
                           <a href={row.watchUrl} className="font-mono text-[11px] text-text-primary hover:underline">
                             {row.watchUrl}
