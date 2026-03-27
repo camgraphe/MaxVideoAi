@@ -19,7 +19,7 @@ import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navig
 export function MarketingNav() {
   const pathname = usePathname();
   const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -36,6 +36,9 @@ export function MarketingNav() {
   const login = t('nav.login', 'Log in');
   const cta = t('nav.cta', 'Start a render');
   const generateLabel = t('nav.generate', 'Generate');
+  const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
+  const ctaLabelMobile = locale === 'fr' ? 'Lancer' : locale === 'es' ? 'Generar' : 'Render';
+  const generateLabelMobile = locale === 'fr' ? 'Generer' : locale === 'es' ? 'Generar' : 'Generate';
   const isAuthenticated = Boolean(email);
   const themeStorageKey = 'mv-theme';
 
@@ -270,7 +273,7 @@ export function MarketingNav() {
               className="h-7 w-7"
               priority
             />
-            <span>{brand}</span>
+            <span className="hidden sm:inline">{brand}</span>
           </Link>
           <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary lg:flex">
             {links.map((item) => {
@@ -354,7 +357,7 @@ export function MarketingNav() {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-3 whitespace-nowrap">
+        <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3">
           <div className="hidden items-center gap-1 md:flex">
             <LanguageToggle variant="icon" />
             <Button
@@ -375,9 +378,10 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                className="inline-flex h-9 items-center rounded-pill border border-hairline px-3 text-xs font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
               >
-                {generateLabel}
+                <span className="sm:hidden">{generateLabelMobile}</span>
+                <span className="hidden sm:inline">{generateLabel}</span>
               </Link>
               <div className="relative">
                 <Button
@@ -459,16 +463,18 @@ export function MarketingNav() {
             <>
               <Link
                 href="/login?next=/app"
-                className="inline-flex whitespace-nowrap text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                className="inline-flex text-xs font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
               >
-                {login}
+                <span className="sm:hidden">{loginLabelMobile}</span>
+                <span className="hidden sm:inline">{login}</span>
               </Link>
               <Link
                 href="/app"
                 prefetch={false}
-                  className="inline-flex items-center whitespace-nowrap rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                  className="inline-flex h-9 items-center whitespace-nowrap rounded-pill bg-brand px-3 text-xs font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
               >
-                {cta}
+                <span className="sm:hidden">{ctaLabelMobile}</span>
+                <span className="hidden sm:inline">{cta}</span>
               </Link>
             </>
           )}

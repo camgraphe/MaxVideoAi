@@ -64,7 +64,7 @@ const GUEST_MOBILE_NAV_ICONS = {
 } as const;
 
 export function HeaderBar() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
   const [authResolved, setAuthResolved] = useState(false);
@@ -84,6 +84,8 @@ export function HeaderBar() {
   const themeStorageKey = 'mv-theme';
   const loginLabel = t('nav.login', 'Log in');
   const ctaLabel = t('nav.cta', 'Start a render');
+  const createAccountMobile = locale === 'fr' ? 'Creer' : locale === 'es' ? 'Crear' : 'Create';
+  const signInMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Sign in';
   const themeToggleLabel =
     theme === 'dark'
       ? t('workspace.header.themeToggle.toLight', 'Switch to light theme')
@@ -531,18 +533,18 @@ export function HeaderBar() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-text-muted">
+        <div className="flex items-center gap-2 text-xs text-text-muted sm:gap-3">
           <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
             <Link
               href="/billing"
               prefetch={false}
-              className="flex items-center gap-2 rounded-input border border-hairline bg-surface/80 px-3 py-1 uppercase tracking-micro transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-9 items-center gap-1.5 rounded-input border border-hairline bg-surface/80 px-2 py-1 uppercase tracking-micro transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-auto sm:gap-2 sm:px-3"
               aria-describedby={walletPromptOpen ? walletPromptId : undefined}
               onFocus={openWalletPrompt}
               onBlur={scheduleWalletPromptClose}
             >
               <UIIcon icon={Wallet} size={16} className="text-text-primary" />
-              <span className="text-sm font-semibold tracking-normal text-text-primary">
+              <span className="text-xs font-semibold tracking-normal text-text-primary sm:text-sm">
                 {wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...'}
               </span>
             </Link>
@@ -667,21 +669,23 @@ export function HeaderBar() {
               )}
             </div>
           ) : authResolved ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <ButtonLink
                 href="/login"
                 size="sm"
-                className="h-10 px-3 shadow-card"
+                className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
               >
-                {t('workspace.header.createAccount', 'Create account')}
+                <span className="sm:hidden">{createAccountMobile}</span>
+                <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
               </ButtonLink>
               <ButtonLink
                 href="/login?mode=signin"
                 variant="outline"
                 size="sm"
-                className="h-10 px-3"
+                className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
               >
-                {t('workspace.header.signIn', 'Sign in')}
+                <span className="sm:hidden">{signInMobile}</span>
+                <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>
               </ButtonLink>
             </div>
           ) : (
@@ -870,7 +874,7 @@ function LogoMark() {
   return (
     <Link href="/" className="flex items-center gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
       <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} priority />
-      <span className="text-lg font-semibold tracking-tight text-text-primary">MaxVideo AI</span>
+      <span className="hidden text-lg font-semibold tracking-tight text-text-primary sm:inline">MaxVideo AI</span>
     </Link>
   );
 }
