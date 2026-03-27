@@ -52,6 +52,7 @@ type EnsureThumbnailOptions = {
   userId?: string | null;
   videoUrl: string;
   aspectRatio?: string | null;
+  seekSec?: number | null;
   force?: boolean;
   existingThumbUrl?: string | null;
 };
@@ -70,7 +71,7 @@ export function isPlaceholderThumbnail(url?: string | null): boolean {
 }
 
 export async function ensureJobThumbnail(options: EnsureThumbnailOptions): Promise<string | null> {
-  const { jobId, userId, videoUrl, aspectRatio, existingThumbUrl, force = false } = options;
+  const { jobId, userId, videoUrl, aspectRatio, seekSec, existingThumbUrl, force = false } = options;
   if (!videoUrl || !jobId) return null;
   if (!isCaptureEnabled()) return null;
 
@@ -85,6 +86,7 @@ export async function ensureJobThumbnail(options: EnsureThumbnailOptions): Promi
       userId: userId ?? undefined,
       videoUrl,
       aspectRatio: aspectRatio ?? undefined,
+      seekSec: typeof seekSec === 'number' ? seekSec : undefined,
     });
     if (!upload) return null;
     return normalizeMediaUrl(upload.url) ?? upload.url;
@@ -99,6 +101,7 @@ async function captureThumbnailFromVideo(params: {
   userId?: string;
   videoUrl: string;
   aspectRatio?: string;
+  seekSec?: number;
 }): Promise<UploadResult | null> {
   if (!isCaptureEnabled()) {
     return null;
@@ -126,7 +129,10 @@ async function captureThumbnailFromVideo(params: {
     const buffer = Buffer.from(await response.arrayBuffer());
     await writeFile(inputPath, buffer);
 
-    const seeks = [1.5, 0.5, 0];
+    const seeks =
+      typeof params.seekSec === 'number' && Number.isFinite(params.seekSec)
+        ? [Math.max(0, params.seekSec)]
+        : [1.5, 0.5, 0];
     let success = false;
     for (const seek of seeks) {
       try {

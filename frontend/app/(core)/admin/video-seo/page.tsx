@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ButtonLink } from '@/components/ui/Button';
+import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { getSeoWatchVideos, type SeoWatchVideoMeta } from '@/lib/video-seo';
 import { getVideosByIds, type GalleryVideo } from '@/server/videos';
@@ -131,7 +131,13 @@ export default async function AdminVideoSeoPage() {
                   className={row.isReady ? 'border-t border-surface-on-media-25' : 'border-t border-warning-border/40 bg-warning-bg/20'}
                 >
                   <td className="px-5 py-4 align-top">
-                    <PreviewCell video={row.video} title={row.entry.seoTitle} />
+                    <VideoThumbnailEditor
+                      videoId={row.entry.id}
+                      title={row.entry.seoTitle}
+                      engineLabel={row.video?.engineLabel ?? row.entry.engineLabel}
+                      initialThumbUrl={row.video?.thumbUrl ?? null}
+                      videoUrl={row.video?.videoUrl ?? null}
+                    />
                   </td>
                   <td className="px-5 py-4 align-top">
                     <div className="space-y-2">
@@ -275,30 +281,6 @@ function buildWatchRow(entry: SeoWatchVideoMeta, video: GalleryVideo | null): Wa
 
 function buildWatchPath(id: string): string {
   return `/video/${encodeURIComponent(id)}`;
-}
-
-function PreviewCell({ video, title }: { video: GalleryVideo | null; title: string }) {
-  if (!video?.thumbUrl) {
-    return (
-      <div className="flex h-20 w-36 items-center justify-center rounded-card border border-dashed border-warning-border/60 bg-warning-bg/20 px-3 text-center text-xs text-warning">
-        Missing thumbnail
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      <Image
-        src={video.thumbUrl}
-        alt={title}
-        width={144}
-        height={80}
-        className="h-20 w-36 rounded-card object-cover shadow-card"
-        unoptimized
-      />
-      <p className="max-w-36 truncate text-xs text-text-muted">{video.engineLabel}</p>
-    </div>
-  );
 }
 
 function SummaryCard({
