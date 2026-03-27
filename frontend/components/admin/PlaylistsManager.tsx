@@ -155,7 +155,7 @@ function summarizePlaylist(playlist: PlaylistSummary): string {
 function buildPlaylistUpdateFromItems(playlist: EditablePlaylist, items: PlaylistItemRecord[]): EditablePlaylist {
   const lastAddedAt = items.reduce<string | null>((latest, item) => {
     if (!latest) return item.createdAt;
-    return compareDatesDescending(item.createdAt, latest) < 0 ? latest : item.createdAt;
+    return compareDatesDescending(item.createdAt, latest) < 0 ? item.createdAt : latest;
   }, null);
 
   return {

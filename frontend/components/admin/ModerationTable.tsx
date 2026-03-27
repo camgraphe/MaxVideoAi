@@ -419,7 +419,7 @@ export function ModerationTable({
     async (video: ModerationVideo, playlistId: string) => {
       if (!playlistId) return;
       const existing = playlistAssignmentsRef.current[video.id] ?? [];
-      if (existing.some((entry) => entry.id === playlistId) && video.isPublishedOnSite) {
+      if (existing.some((entry) => entry.id === playlistId)) {
         const playlistName = getPlaylistName(playlistId);
         updateStatusMessage(video.id, { loading: false, message: `Already in ${playlistName}`, error: null });
         scheduleStatusClear(video.id, 'message', `Already in ${playlistName}`, 2000);
@@ -432,20 +432,12 @@ export function ModerationTable({
         const response = await authFetch(`/api/admin/playlists/${playlistId}/items`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId: video.id, publishOnSite: true }),
+          body: JSON.stringify({ videoId: video.id }),
         });
         const json = await response.json().catch(() => null);
         if (!response.ok || !json?.ok) {
           throw new Error(json?.error ?? 'Failed to assign playlist');
         }
-        const publishedVideo: ModerationVideo | null =
-          json?.video && typeof json.video === 'object'
-            ? {
-                ...video,
-                visibility: json.video.visibility === 'private' ? 'private' : 'public',
-                indexable: Boolean(json.video.indexable ?? true),
-              }
-            : null;
         setPlaylistAssignments((prev) => {
           const current = prev[video.id] ?? [];
           if (current.some((entry) => entry.id === playlistId)) {
@@ -456,18 +448,7 @@ export function ModerationTable({
             [video.id]: [...current, { id: playlistId, name: playlistName }],
           };
         });
-        if (publishedVideo) {
-          publishedVideo.publicationState = resolvePublicationState(publishedVideo);
-          publishedVideo.isPublishedOnSite = publishedVideo.publicationState === 'published';
-          publishedVideo.hasLegacyMismatch = publishedVideo.publicationState === 'legacy-mismatch';
-          setItems((current) => {
-            if (!matchesBucket(publishedVideo, bucket)) {
-              return current.filter((item) => item.id !== video.id);
-            }
-            return current.map((item) => (item.id === video.id ? publishedVideo : item));
-          });
-        }
-        const successMessage = publishedVideo ? `Added to ${playlistName} and published on site` : `Added to ${playlistName}`;
+        const successMessage = `Added to ${playlistName}`;
         updateStatusMessage(video.id, { loading: false, message: successMessage, error: null });
         scheduleStatusClear(video.id, 'message', successMessage);
       } catch (assignError) {
@@ -480,7 +461,7 @@ export function ModerationTable({
         }
       }
     },
-    [bucket, getPlaylistName, scheduleStatusClear, updateStatusMessage]
+    [getPlaylistName, scheduleStatusClear, updateStatusMessage]
   );
 
   const handleRemoveFromPlaylist = useCallback(

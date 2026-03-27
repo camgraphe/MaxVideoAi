@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { submitToIndexNow } from '@/lib/indexnow';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
-import {
-  appendPlaylistItem,
-  appendPlaylistItemAndPublish,
-  removePlaylistItem,
-  reorderPlaylistItems,
-} from '@/server/playlists';
+import { appendPlaylistItem, removePlaylistItem, reorderPlaylistItems } from '@/server/playlists';
 
 type RouteParams = {
   params: {
@@ -42,17 +37,16 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   } catch {
     body = undefined;
   }
-  const payload = parseJson<{ videoId?: string; publishOnSite?: boolean }>(body);
+  const payload = parseJson<{ videoId?: string }>(body);
   const videoId = payload?.videoId?.trim();
   if (!videoId) {
     return NextResponse.json({ ok: false, error: 'Missing videoId' }, { status: 400 });
   }
-  const publishOnSite = Boolean(payload?.publishOnSite);
 
   try {
-    const video = publishOnSite ? await appendPlaylistItemAndPublish(playlistId, videoId) : (await appendPlaylistItem(playlistId, videoId), null);
+    await appendPlaylistItem(playlistId, videoId);
     await submitToIndexNow('/examples');
-    return NextResponse.json({ ok: true, video });
+    return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/playlists/:id/items] failed to append', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });

@@ -1,4 +1,4 @@
-import { query, type QueryExecutor, withDbTransaction } from '@/lib/db';
+import { query, type QueryExecutor } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getIndexablePlaylistSlugs } from '@/server/indexing';
 
@@ -404,32 +404,6 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
 
 export async function appendPlaylistItem(playlistId: string, videoId: string): Promise<void> {
   await appendPlaylistItemWithExecutor({ query }, playlistId, videoId);
-}
-
-export async function appendPlaylistItemAndPublish(
-  playlistId: string,
-  videoId: string
-): Promise<{ visibility: 'public' | 'private'; indexable: boolean }> {
-  return withDbTransaction(async (executor) => {
-    await appendPlaylistItemWithExecutor(executor, playlistId, videoId);
-    const rows = await executor.query<{ visibility: string | null; indexable: boolean | null }>(
-      `UPDATE app_jobs
-         SET visibility = 'public',
-             indexable = TRUE,
-             updated_at = NOW()
-       WHERE job_id = $1
-       RETURNING visibility, indexable`,
-      [videoId]
-    );
-    const updated = rows[0];
-    if (!updated) {
-      throw new Error('Video not found');
-    }
-    return {
-      visibility: updated.visibility === 'private' ? 'private' : 'public',
-      indexable: Boolean(updated.indexable ?? true),
-    };
-  });
 }
 
 export async function removePlaylistItem(playlistId: string, videoId: string): Promise<void> {
