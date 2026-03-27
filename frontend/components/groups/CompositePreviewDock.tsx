@@ -403,7 +403,7 @@ export function CompositePreviewDock({
           size="sm"
           variant="ghost"
           onClick={handleOpenModal}
-          disabled={!group}
+          disabled={!group || !onOpenModal}
           className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={controls.modal.aria}
           title={controls.modal.label}

@@ -36,7 +36,13 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
-import type { VideoGroup, VideoItem, ResultProvider } from '@/types/video-groups';
+import type { VideoGroup } from '@/types/video-groups';
+import {
+  mapSelectedPreviewToGroup,
+  mapSharedVideoToGroup,
+  type SelectedVideoPreview,
+  type SharedVideoPreview,
+} from '@/lib/video-preview-group';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
@@ -75,18 +81,7 @@ function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: st
   }
 }
 
-type SharedVideoPayload = {
-  id: string;
-  engineId: string;
-  engineLabel: string;
-  durationSec: number;
-  prompt: string;
-  promptExcerpt?: string;
-  thumbUrl?: string;
-  videoUrl?: string;
-  aspectRatio?: string;
-  createdAt: string;
-};
+type SharedVideoPayload = SharedVideoPreview;
 
 function coerceNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -144,49 +139,6 @@ function normalizeSharedVideoPayload(raw: SharedVideoPayload): SharedVideoPayloa
   return {
     ...raw,
     durationSec,
-  };
-}
-
-function toVideoAspect(value?: string | null): VideoItem['aspect'] {
-  switch (value) {
-    case '9:16':
-      return '9:16';
-    case '1:1':
-      return '1:1';
-    default:
-      return '16:9';
-  }
-}
-
-function mapSharedVideoToGroup(video: SharedVideoPayload, provider: ResultProvider): VideoGroup {
-  const aspect = toVideoAspect(video.aspectRatio);
-  const url = video.videoUrl ?? video.thumbUrl ?? '';
-  const item: VideoItem = {
-    id: video.id,
-    url,
-    aspect,
-    thumb: video.thumbUrl ?? undefined,
-    jobId: video.id,
-    durationSec: video.durationSec,
-    engineId: video.engineId,
-    meta: {
-      mediaType: video.videoUrl ? 'video' : 'image',
-      prompt: video.prompt,
-      engineLabel: video.engineLabel,
-    },
-  };
-
-  return {
-    id: `shared-${video.id}`,
-    items: [item],
-    layout: 'x1',
-    createdAt: video.createdAt,
-    provider,
-    status: 'ready',
-    heroItemId: item.id,
-    meta: {
-      source: 'gallery',
-    },
   };
 }
 
@@ -1620,24 +1572,7 @@ useEffect(() => {
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPayload | null>(null);
-  const [selectedPreview, setSelectedPreview] = useState<{
-    localKey?: string;
-    batchId?: string;
-    iterationIndex?: number;
-    iterationCount?: number;
-    id?: string;
-    videoUrl?: string;
-    aspectRatio?: string;
-    thumbUrl?: string;
-    progress?: number;
-    status?: 'pending' | 'completed' | 'failed';
-    message?: string;
-    priceCents?: number;
-    currency?: string;
-    etaSeconds?: number;
-    etaLabel?: string;
-    prompt?: string;
-  } | null>(null);
+  const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
   const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
@@ -2544,6 +2479,8 @@ useEffect(() => {
     return activeVideoGroups.find((group) => group.id === activeGroupId) ?? activeVideoGroups[0] ?? null;
   }, [activeVideoGroups, activeGroupId, compositeOverride]);
   const compositeGroup = compositeOverride ?? activeVideoGroup ?? null;
+  const selectedPreviewGroup = useMemo(() => mapSelectedPreviewToGroup(selectedPreview, provider), [selectedPreview, provider]);
+  const displayCompositeGroup = compositeGroup ?? selectedPreviewGroup ?? null;
 
   useEffect(() => {
     if (compositeOverrideSummary) {
@@ -6257,8 +6194,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 )
               ) : null}
               <CompositePreviewDock
-                group={compositeGroup}
-                isLoading={isGenerationLoading && !compositeGroup}
+                group={displayCompositeGroup}
+                isLoading={isGenerationLoading && !displayCompositeGroup}
                 copyPrompt={sharedVideoSettings ? null : sharedPrompt}
                 onCopyPrompt={sharedVideoSettings ? undefined : sharedPrompt ? handleCopySharedPrompt : undefined}
                 showTitle={false}
