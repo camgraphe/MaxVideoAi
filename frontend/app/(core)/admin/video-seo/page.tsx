@@ -32,7 +32,7 @@ export default async function AdminVideoSeoPage() {
   const watchRows = await listSeoWatchVideoRows();
   const rows = watchRows.map((row) => buildWatchRow(row));
 
-  const readyCount = watchRows.filter((row) => row.isEligible).length;
+  const readyCount = rows.filter((row) => row.isReady).length;
   const issueCount = rows.length - readyCount;
   const liveAssetCount = rows.filter((row) => Boolean(row.video?.videoUrl)).length;
   const engineFamilies = new Set(rows.map((row) => row.entry.engineFamily)).size;

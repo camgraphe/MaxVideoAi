@@ -65,5 +65,9 @@ export async function getSeoWatchVideoMetaById(id?: string | null): Promise<SeoW
 
 export async function getSeoWatchStates(videoIds: string[]): Promise<Map<string, boolean>> {
   const uniqueIds = Array.from(new Set(videoIds.filter(Boolean)));
-  return new Map(uniqueIds.map((videoId) => [videoId, BASE_WATCH_VIDEO_MAP.has(videoId)] as const));
+  if (!uniqueIds.length) {
+    return new Map();
+  }
+  const videoMap = await getVideosByIds(uniqueIds);
+  return new Map(uniqueIds.map((videoId) => [videoId, isEligibleSeoWatchVideo(videoMap.get(videoId) ?? null)] as const));
 }

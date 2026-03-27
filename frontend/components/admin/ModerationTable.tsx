@@ -5,7 +5,6 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { TARGET_MODERATION_PLAYLIST_SLUGS } from '@/config/playlists';
 import { authFetch } from '@/lib/authFetch';
 import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 
@@ -13,6 +12,7 @@ type PlaylistOption = {
   id: string;
   name: string;
   slug: string;
+  usageTargets?: string[];
 };
 
 type PlaylistTag = {
@@ -57,7 +57,6 @@ type ModerationTableProps = {
 
 type ModerationViewMode = 'wall' | 'table';
 
-const TARGET_PLAYLIST_SLUGS = new Set<string>(TARGET_MODERATION_PLAYLIST_SLUGS as readonly string[]);
 const FAILURE_STATES = new Set(['failed', 'error', 'errored', 'cancelled', 'canceled', 'aborted']);
 const BUCKET_OPTIONS: Array<{ id: ModerationBucket; label: string; helper: string }> = [
   { id: 'not-published', label: 'Not published', helper: 'Anything not yet published on the site' },
@@ -246,8 +245,8 @@ export function ModerationTable({
 
   const orderedPlaylists = useMemo(() => {
     return [...playlists].sort((a, b) => {
-      const aTarget = TARGET_PLAYLIST_SLUGS.has(a.slug);
-      const bTarget = TARGET_PLAYLIST_SLUGS.has(b.slug);
+      const aTarget = Boolean(a.usageTargets?.length);
+      const bTarget = Boolean(b.usageTargets?.length);
       if (aTarget && !bTarget) return -1;
       if (bTarget && !aTarget) return 1;
       return a.name.localeCompare(b.name);
@@ -273,10 +272,11 @@ export function ModerationTable({
         }
         if (cancelled) return;
         setPlaylists(
-          (json.playlists as Array<{ id: string; name: string; slug: string }>).map((playlist) => ({
+          (json.playlists as Array<{ id: string; name: string; slug: string; usageTargets?: string[] }>).map((playlist) => ({
             id: playlist.id,
             name: playlist.name,
             slug: playlist.slug,
+            usageTargets: Array.isArray(playlist.usageTargets) ? playlist.usageTargets : [],
           }))
         );
       } catch (playlistError) {
@@ -588,7 +588,7 @@ export function ModerationTable({
               const disabled = assignedPlaylists.some((entry) => entry.id === playlist.id);
               return (
                 <option key={playlist.id} value={playlist.id} disabled={disabled}>
-                  {TARGET_PLAYLIST_SLUGS.has(playlist.slug) ? '★ ' : ''}
+                  {playlist.usageTargets?.length ? '★ ' : ''}
                   {playlist.name}
                 </option>
               );
