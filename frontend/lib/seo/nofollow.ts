@@ -1,5 +1,7 @@
 type HrefLike = string | { pathname?: string | null } | null | undefined;
 
+import { isSeoWatchVideoPath } from '@/lib/video-seo';
+
 const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z0-9+\-.]*:|\/\/)/i;
 const NOFOLLOW_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/connect'];
 const NOFOLLOW_VIDEO_PREFIX = '/video';
@@ -23,6 +25,9 @@ function extractHrefPath(href: HrefLike): string | null {
 export function shouldNofollowHref(href: HrefLike): boolean {
   const path = extractHrefPath(href);
   if (!path) return false;
+  if (isSeoWatchVideoPath(path)) {
+    return false;
+  }
   const normalized = path.toLowerCase();
   if (normalized === NOFOLLOW_VIDEO_PREFIX || normalized.startsWith(`${NOFOLLOW_VIDEO_PREFIX}/`)) {
     return true;

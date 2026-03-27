@@ -49,6 +49,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { id: 'moderation', label: 'Moderation', href: '/admin/moderation', icon: 'moderation' },
       { id: 'playlists', label: 'Playlists', href: '/admin/playlists', icon: 'playlists' },
+      { id: 'video-seo', label: 'Video SEO', href: '/admin/video-seo', icon: 'examples' },
       { id: 'homepage', label: 'Homepage programming', href: '/admin/home', icon: 'homepage' },
     ],
   },

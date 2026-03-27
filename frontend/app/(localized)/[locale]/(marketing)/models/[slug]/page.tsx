@@ -37,7 +37,8 @@ import { SoraPromptingTabs } from '@/components/marketing/SoraPromptingTabs.clie
 import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import { SpecDetailsGrid, type SpecDetailsSection } from '@/components/marketing/SpecDetailsGrid.client';
 import { ModelHeroMedia } from '@/components/marketing/ModelHeroMedia.client';
-import { getExamplesHref } from '@/lib/examples-links';
+import { getExamplesHref, resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { getSeoWatchVideosForEngine } from '@/lib/video-seo';
 import {
   Box,
   ArrowLeftRight,
@@ -3758,8 +3759,26 @@ function Sora2PageLayout({
   const statusLabels = resolveSpecStatusLabels(locale);
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
-  const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
-  const durationIso = heroMedia.durationSec ? `PT${Math.round(heroMedia.durationSec)}S` : undefined;
+  const featuredWatchPages = getSeoWatchVideosForEngine({
+    engineSlug: engine.modelSlug,
+    engineFamily: resolveExampleCanonicalSlug(engine.modelSlug),
+    limit: 3,
+  });
+  const featuredWatchCopy =
+    locale === 'fr'
+      ? {
+          title: 'Watch pages a la une',
+          body: 'Rendus choisis pour servir de vraies pages de lecture video, avec un maillage direct depuis cette fiche modele.',
+        }
+      : locale === 'es'
+        ? {
+            title: 'Watch pages destacadas',
+            body: 'Renders seleccionados para funcionar como paginas de reproduccion fuertes desde esta ficha de modelo.',
+          }
+        : {
+            title: 'Featured watch pages',
+            body: 'Curated renders selected to work as strong watch pages, linked directly from this model page.',
+          };
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
   const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
@@ -3821,19 +3840,6 @@ function Sora2PageLayout({
     },
     productSchema,
     softwareSchema,
-    heroVideoAbsolute
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'VideoObject',
-          name: heroTitle,
-          description: heroMedia.prompt ?? pageDescription,
-          thumbnailUrl: heroPosterAbsolute ? [heroPosterAbsolute] : undefined,
-          contentUrl: heroVideoAbsolute,
-          uploadDate: new Date().toISOString(),
-          duration: durationIso,
-          inLanguage,
-        }
-      : null,
     {
       '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
@@ -4072,6 +4078,26 @@ function Sora2PageLayout({
                         })}
                       </ul>
                     ) : null}
+                  </div>
+                ) : null}
+                {featuredWatchPages.length ? (
+                  <div className="space-y-3 rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card">
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-text-primary">{featuredWatchCopy.title}</p>
+                      <p className="text-xs leading-relaxed text-text-secondary">{featuredWatchCopy.body}</p>
+                    </div>
+                    <div className="grid gap-2">
+                      {featuredWatchPages.map((entry) => (
+                        <Link
+                          key={entry.id}
+                          href={`/video/${encodeURIComponent(entry.id)}?from=${encodeURIComponent(new URL(canonical).pathname)}`}
+                          className="rounded-xl border border-hairline bg-bg px-3 py-2 transition hover:border-text-muted hover:bg-surface-2"
+                        >
+                          <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.engineLabel}</p>
+                          <p className="mt-1 text-sm font-semibold text-text-primary">{entry.seoTitle}</p>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
               </div>

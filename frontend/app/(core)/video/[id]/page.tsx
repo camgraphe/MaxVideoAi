@@ -17,6 +17,7 @@ import { getFalEngineById, getFalEngineBySlug, type FalEngineEntry } from '@/con
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { ButtonLink } from '@/components/ui/Button';
+import { getSeoWatchVideoMeta } from '@/lib/video-seo';
 
 type PageProps = {
   params: { id: string };
@@ -363,8 +364,9 @@ function buildSeoContent(video: GalleryVideo, copy: VideoPageCopy, locale: AppLo
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const watchMeta = getSeoWatchVideoMeta(params.id);
   const video = await fetchVideo(params.id);
-  const { locale, dictionary } = await resolveDictionary();
+  const { locale, dictionary } = await resolveDictionary(watchMeta ? { locale: 'en' } : undefined);
   const copy = resolveVideoCopy(dictionary);
   if (!isRenderable(video)) {
     const canonical = `${SITE}/video/${encodeURIComponent(params.id)}`;
@@ -381,17 +383,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const promptHeading =
     video.promptExcerpt ||
     video.prompt ||
-    `${engineLabel} example (${video.durationSec ?? 'short'}s)`;
+      `${engineLabel} example (${video.durationSec ?? 'short'}s)`;
   const metaPrimary = `${promptHeading} · ${engineLabel} [${formatJobSuffix(video.id)}]`;
-  const metaTitle = buildMetaTitle(metaPrimary);
-  const description = seoContent.description;
+  const metaTitle = buildMetaTitle(watchMeta?.seoTitle ?? metaPrimary);
+  const description = watchMeta ? formatPrompt(`${watchMeta.intro} ${video.promptExcerpt || video.prompt || ''}`, 300) : seoContent.description;
   const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
   const thumbnail = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? canonical;
   const metadata: Metadata = {
     title: metaTitle,
     description,
-    robots: { index: false, follow: true },
+    robots: { index: Boolean(watchMeta), follow: true },
     alternates: { canonical },
     openGraph: {
       type: 'video.other',
@@ -423,10 +425,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function VideoPage({ params, searchParams }: PageProps) {
+  const watchMeta = getSeoWatchVideoMeta(params.id);
   const video = await fetchVideo(params.id);
   if (!video) notFound();
 
-  const { locale, dictionary } = await resolveDictionary();
+  const { locale, dictionary } = await resolveDictionary(watchMeta ? { locale: 'en' } : undefined);
   const copy = resolveVideoCopy(dictionary);
   const supportedLocale = locale as SupportedLocale;
   const examplesPath = localizePathFromEnglish(supportedLocale, '/examples');
@@ -484,7 +487,8 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const engineEntry = resolveEngineEntry(video.engineId);
   const engineLabel = video.engineLabel ?? copy.hero.titleFallback;
   const heroHeading = video.promptExcerpt || video.prompt || engineLabel;
-  const heroTitle = engineLabel || heroHeading || copy.hero.titleFallback;
+  const heroTitle = watchMeta?.seoTitle ?? engineLabel ?? heroHeading ?? copy.hero.titleFallback;
+  const heroIntro = watchMeta?.intro ?? renderTemplate(copy.hero.intro, { engine: engineLabel });
   const engineDescription = engineEntry?.seo?.description ?? copy.details.engineDescriptionFallback;
   const engineSlug = toCanonicalModelSlug(engineEntry?.modelSlug ?? normalizeEngineId(video.engineId ?? '') ?? '');
   const engineLink = engineSlug
@@ -511,30 +515,29 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
     containerStyle.margin = '0 auto';
   }
 
-  const videoJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'VideoObject',
-    name:
-      video.promptExcerpt ||
-      video.prompt ||
-      `${video.engineLabel ?? 'MaxVideoAI'} example`,
-    description: seoContent.paragraph,
-    thumbnailUrl: [thumbnailUrl],
-    uploadDate: new Date(video.createdAt).toISOString(),
-    duration: toDurationIso(video.durationSec),
-    contentUrl: videoUrl,
-    embedUrl: canonical,
-    caption: prompt && prompt !== seoContent.paragraph ? prompt : undefined,
-    publisher: {
-      '@type': 'Organization',
-      name: 'MaxVideoAI',
-      url: SITE,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${SITE}/favicon-512.png`,
-      },
-    },
-  };
+  const videoJsonLd = watchMeta
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'VideoObject',
+        name: watchMeta.seoTitle,
+        description: formatPrompt(`${watchMeta.intro} ${video.promptExcerpt || video.prompt || ''}`, 300),
+        thumbnailUrl: [thumbnailUrl],
+        uploadDate: new Date(video.createdAt).toISOString(),
+        duration: toDurationIso(video.durationSec),
+        contentUrl: videoUrl,
+        embedUrl: canonical,
+        caption: prompt && prompt !== seoContent.paragraph ? prompt : undefined,
+        publisher: {
+          '@type': 'Organization',
+          name: 'MaxVideoAI',
+          url: SITE,
+          logo: {
+            '@type': 'ImageObject',
+            url: `${SITE}/favicon-512.png`,
+          },
+        },
+      }
+    : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -569,6 +572,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
                   ) : null}
                 </div>
                 <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">{heroTitle}</h1>
+                <p className="max-w-3xl text-sm leading-relaxed text-text-secondary sm:text-base">{heroIntro}</p>
               </div>
               <div className="flex flex-col items-start gap-1 sm:items-end sm:text-right">
                 <span className="text-[11px] text-text-secondary">{copy.recreate.microcopy}</span>
@@ -718,9 +722,11 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
           </div>
         </section>
       </article>
-      <Script id={`video-jsonld-${video.id}`} type="application/ld+json">
-        {JSON.stringify(videoJsonLd)}
-      </Script>
+      {videoJsonLd ? (
+        <Script id={`video-jsonld-${video.id}`} type="application/ld+json">
+          {JSON.stringify(videoJsonLd)}
+        </Script>
+      ) : null}
     </div>
   );
 }

@@ -22,6 +22,7 @@ import {
   getHubExamplesFaq,
 } from '@/lib/examples/modelLanding';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
+import { getSeoWatchVideosForEngine } from '@/lib/video-seo';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -432,37 +433,6 @@ function buildMainVideoHeroLine(locale: AppLocale, modelLabel: string, specificL
     return `Ejemplo de video con IA de ${modelLabel} con prompt, ajustes, duracion, formato y precio.`;
   }
   return `${modelLabel} AI video example with prompt, settings, duration, aspect ratio, and pricing.`;
-}
-
-function buildMainVideoSchemaDescription(
-  locale: AppLocale,
-  modelLabel: string,
-  prompt: string | null | undefined,
-  aspectRatio: string | null | undefined,
-  durationSec: number | null | undefined
-): string {
-  const aspect = aspectRatio ?? 'Auto';
-  const duration = Math.max(1, Math.round(Number(durationSec ?? 0) || 1));
-  const promptSummary = prompt ? compactLeadCopy(prompt, 160) : null;
-
-  if (locale === 'fr') {
-    return promptSummary
-      ? `Exemple de video AI ${modelLabel} en ${aspect}, duree ${duration}s. Prompt: ${promptSummary}`
-      : `Exemple de video AI ${modelLabel} en ${aspect}, duree ${duration}s.`;
-  }
-  if (locale === 'es') {
-    return promptSummary
-      ? `Ejemplo de video con IA de ${modelLabel} en ${aspect}, duracion ${duration}s. Prompt: ${promptSummary}`
-      : `Ejemplo de video con IA de ${modelLabel} en ${aspect}, duracion ${duration}s.`;
-  }
-  return promptSummary
-    ? `${modelLabel} AI video example in ${aspect}, duration ${duration}s. Prompt: ${promptSummary}`
-    : `${modelLabel} AI video example in ${aspect}, duration ${duration}s.`;
-}
-
-function toDurationIso(seconds?: number | null): string {
-  const safe = Math.max(1, Math.round(Number(seconds ?? 0) || 1));
-  return `PT${safe}S`;
 }
 
 function getAspectRatioStyle(aspectRatio?: string | null): string {
@@ -880,6 +850,24 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const canonicalUrl = modelLanding
     ? `${SITE}${galleryBasePath}/${modelLanding.slug}`
     : baseExamplesUrl;
+  const featuredWatchPages = modelLanding
+    ? getSeoWatchVideosForEngine({ engineFamily: modelLanding.slug, limit: 3 })
+    : [];
+  const featuredWatchCopy =
+    locale === 'fr'
+      ? {
+          title: 'Watch pages a la une',
+          body: 'Liens directs vers des rendus choisis pour servir de vraies pages de lecture video.',
+        }
+      : locale === 'es'
+        ? {
+            title: 'Watch pages destacadas',
+            body: 'Enlaces directos a renders seleccionados para funcionar como paginas de reproduccion fuertes.',
+          }
+        : {
+            title: 'Featured watch pages',
+            body: 'Direct links to curated renders selected to behave like true video watch pages.',
+          };
   const mainVideoModelLabel = modelLanding?.label ?? selectedOption?.label ?? mainVideo?.card.engineLabel ?? 'Model';
   const mainVideoTitle =
     mainVideo?.video.promptExcerpt ||
@@ -893,45 +881,11 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
         modelLanding?.heroSubtitle ?? modelLanding?.summary ?? null
       )
     : null;
-  const mainVideoDescription = mainVideo
-    ? buildMainVideoSchemaDescription(
-        locale as AppLocale,
-        mainVideoModelLabel,
-        mainVideo.video.promptExcerpt ?? mainVideo.video.prompt,
-        mainVideo.video.aspectRatio ?? mainVideo.card.aspectRatio,
-        mainVideo.video.durationSec
-      )
-    : null;
-  const mainVideoThumbnailUrl = mainVideo
-    ? toAbsoluteUrl(mainVideo.video.thumbUrl ?? mainVideo.card.rawPosterUrl ?? null)
-    : null;
   const mainVideoContentUrl = mainVideo ? toAbsoluteUrl(mainVideo.video.videoUrl ?? null) : null;
   const mainVideoPoster = mainVideo?.card.optimizedPosterUrl ?? mainVideo?.card.rawPosterUrl ?? null;
   const mainVideoAspectRatio = getAspectRatioStyle(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
   const mainVideoIsPortrait = isPortraitAspectRatio(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
   const mainVideoMimeType = getVideoMimeType(mainVideoContentUrl);
-  const mainVideoJsonLd =
-    mainVideo && mainVideoDescription && mainVideoThumbnailUrl
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'VideoObject',
-          name: mainVideoHeroLine?.replace(/\.$/, '') ?? mainVideoTitle,
-          description: mainVideoDescription,
-          thumbnailUrl: [mainVideoThumbnailUrl],
-          uploadDate: new Date(mainVideo.video.createdAt).toISOString(),
-          duration: toDurationIso(mainVideo.video.durationSec),
-          contentUrl: mainVideoContentUrl ?? undefined,
-          publisher: {
-            '@type': 'Organization',
-            name: 'MaxVideoAI',
-            url: SITE,
-            logo: {
-              '@type': 'ImageObject',
-              url: `${SITE}/favicon-512.png`,
-            },
-          },
-        }
-      : null;
   const breadcrumbLabels = getBreadcrumbLabels(appLocale);
   const breadcrumbItems = [
     {
@@ -1173,6 +1127,28 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             </section>
           ) : null}
 
+          {featuredWatchPages.length ? (
+            <section className="rounded-[22px] border border-hairline bg-surface/85 p-5 shadow-card">
+              <div className="space-y-1">
+                <h2 className="text-base font-semibold text-text-primary">{featuredWatchCopy.title}</h2>
+                <p className="text-sm text-text-secondary">{featuredWatchCopy.body}</p>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {featuredWatchPages.map((entry) => (
+                  <Link
+                    key={entry.id}
+                    href={`/video/${encodeURIComponent(entry.id)}?from=${encodeURIComponent(new URL(canonicalUrl).pathname)}`}
+                    className="rounded-2xl border border-hairline bg-bg px-4 py-3 transition hover:border-text-muted hover:bg-surface-2"
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.engineLabel}</p>
+                    <p className="mt-1 text-sm font-semibold text-text-primary">{entry.seoTitle}</p>
+                    <p className="mt-2 text-sm text-text-secondary">{entry.intro}</p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           {isModelLanding && selectedEngine && modelLinks.length ? (
             <section className="mx-auto max-w-5xl">
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-text-secondary">
@@ -1366,13 +1342,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             type="application/ld+json"
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJson) }}
-          />
-        ) : null}
-        {mainVideoJsonLd ? (
-          <script
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(mainVideoJsonLd) }}
           />
         ) : null}
         {faqJsonLd ? (

@@ -646,25 +646,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     description: seoDescription,
     url: 'https://maxvideoai.com',
   };
-  const videoJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'VideoObject',
-    name: 'MaxVideoAI - Generate cinematic AI video',
-    description: 'Create watermark-free AI videos with Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, and Hunyuan Image.',
-    thumbnailUrl: ['https://maxvideoai.com/og/price-before.png'],
-    uploadDate: '2025-10-01T12:00:00+00:00',
-    duration: 'PT45S',
-    contentUrl: 'https://maxvideoai.com/hero/sora2.mp4',
-    embedUrl: 'https://maxvideoai.com/',
-    publisher: {
-      '@type': 'Organization',
-      name: 'MaxVideoAI',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://maxvideoai.com/favicon-512.png',
-      },
-    },
-  };
   return (
     <div>
       <section className="container-page section max-w-[1200px] flex flex-col items-center gap-3 pt-4 pb-5 text-center sm:gap-6 sm:pt-10 sm:pb-12 lg:gap-8 lg:pt-12 lg:pb-14 halo-hero">
@@ -1112,9 +1093,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       </section>
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
-      </Script>
-      <Script id="home-video-jsonld" type="application/ld+json">
-        {JSON.stringify(videoJsonLd)}
       </Script>
       <Script
         id="home-organization-jsonld"

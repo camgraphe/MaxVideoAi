@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
-import { EXAMPLES_HERO_SELECTION_LIMIT, pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
-import { listExamplesPage } from '@/server/videos';
+import { getVideosByIds } from '@/server/videos';
+import { getSeoWatchVideos } from '@/lib/video-seo';
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
 
@@ -27,8 +26,8 @@ function formatSitemapDate(value?: string | number | Date | null): string | null
   return date.toISOString().slice(0, 10);
 }
 
-function buildExamplesLoc(slug: string): string {
-  return `${SITE}/examples/${slug}`;
+function buildVideoLoc(id: string): string {
+  return `${SITE}/video/${encodeURIComponent(id)}`;
 }
 
 export async function generateVideoSitemapResponse(): Promise<NextResponse> {
@@ -38,47 +37,30 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
 
   try {
     await ensureBillingSchema();
-    const heroEntries = await Promise.all(
-      MARKETING_EXAMPLE_SLUGS.map(async (slug) => {
-        try {
-          const page = await listExamplesPage({
-            sort: 'playlist',
-            limit: EXAMPLES_HERO_SELECTION_LIMIT,
-            offset: 0,
-            engineGroup: slug,
-          });
-          const video = pickFirstPlayableVideo(page.items);
-          if (!video?.videoUrl) {
-            return null;
-          }
-          return {
-            loc: buildExamplesLoc(slug),
-            video,
-          };
-        } catch (error) {
-          console.warn(`[sitemap-video] failed to resolve hero video for "${slug}"`, error);
+    const watchVideos = getSeoWatchVideos();
+    const videoMap = await getVideosByIds(watchVideos.map((entry) => entry.id));
+
+    const urls = watchVideos
+      .map((entry) => {
+        const video = videoMap.get(entry.id);
+        if (!video?.videoUrl || video.visibility !== 'public' || !video.indexable) {
+          console.warn(`[sitemap-video] skipped invalid watch page "${entry.id}"`);
           return null;
         }
-      })
-    );
-
-    const urls = heroEntries
-      .filter((entry): entry is NonNullable<(typeof heroEntries)[number]> => Boolean(entry))
-      .map(({ loc, video }) => {
+        const loc = buildVideoLoc(entry.id);
         const escapedLoc = escapeXml(loc);
-        const lastModified = formatSitemapDate(video.createdAt);
+        const lastModified = formatSitemapDate(entry.publishedAt || video.createdAt);
 
         const parts = ['<url>', `<loc>${escapedLoc}</loc>`];
         if (lastModified) {
           parts.push(`<lastmod>${escapeXml(lastModified)}</lastmod>`);
         }
 
-        const summary = video.prompt.replace(/\s+/g, ' ').trim();
-        const description = summary.length > 280 ? `${summary.slice(0, 279)}…` : summary;
+        const description = entry.intro.replace(/\s+/g, ' ').trim();
         const duration = Math.max(0, Math.floor(video.durationSec ?? 0));
-        const publicationDate = new Date(video.createdAt).toISOString();
+        const publicationDate = new Date(entry.publishedAt || video.createdAt).toISOString();
         const thumbUrl = video.thumbUrl ?? video.videoUrl ?? loc;
-        const keywords = [video.engineLabel, video.aspectRatio ?? 'auto', 'MaxVideoAI']
+        const keywords = [entry.engineLabel, entry.engineFamily, video.aspectRatio ?? 'auto', 'MaxVideoAI']
           .map((keyword) => `<video:tag>${escapeXml(keyword)}</video:tag>`)
           .join('');
 
@@ -86,9 +68,9 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
           [
             '<video:video>',
             `<video:thumbnail_loc>${escapeXml(thumbUrl)}</video:thumbnail_loc>`,
-            `<video:title>${escapeXml(`${video.engineLabel} · ${duration}s`)}</video:title>`,
+            `<video:title>${escapeXml(entry.seoTitle)}</video:title>`,
             `<video:description>${escapeXml(description)}</video:description>`,
-            `<video:content_loc>${escapeXml(video.videoUrl ?? loc)}</video:content_loc>`,
+            `<video:content_loc>${escapeXml(video.videoUrl)}</video:content_loc>`,
             `<video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`,
             `<video:duration>${duration}</video:duration>`,
             keywords,
@@ -98,6 +80,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
         );
         return parts.join('');
       })
+      .filter((entry): entry is string => Boolean(entry))
       .join('');
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n${urls}\n</urlset>`;

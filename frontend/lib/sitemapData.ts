@@ -15,12 +15,14 @@ import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
+import { getSeoWatchVideos } from '@/lib/video-seo';
 
 export type SitemapEntry = {
   url: string;
   lastModified?: string;
   englishPath: string;
   locales?: AppLocale[];
+  disableAlternates?: boolean;
 };
 
 const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'https://maxvideoai.com';
@@ -108,6 +110,7 @@ type CanonicalPathEntry = {
   englishPath: string;
   lastModified?: string;
   locales?: AppLocale[];
+  disableAlternates?: boolean;
 };
 
 type RouteTemplate = {
@@ -128,6 +131,12 @@ const EXTRA_CANONICAL_PATHS: CanonicalPathEntry[] = [
   { englishPath: '/legal/cookies-list', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/mentions', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/subprocessors', locales: ['en', 'fr', 'es'] },
+  ...getSeoWatchVideos().map((entry) => ({
+    englishPath: `/video/${entry.id}`,
+    lastModified: formatLastModified(entry.publishedAt),
+    locales: ['en'] as AppLocale[],
+    disableAlternates: true,
+  })),
 ];
 
 function loadAppPathsManifest(): Record<string, string> {
@@ -323,7 +332,12 @@ export async function getLocaleSitemapEntries(locale: AppLocale): Promise<Sitema
   const entries: SitemapEntry[] = [];
   const canonicalEntries = await getCanonicalPathEntries();
 
-  const addLocalizedPath = (englishPath: string, lastModified?: string, availableLocales?: AppLocale[]) => {
+  const addLocalizedPath = (
+    englishPath: string,
+    lastModified?: string,
+    availableLocales?: AppLocale[],
+    disableAlternates?: boolean
+  ) => {
     if (availableLocales && !availableLocales.includes(locale)) {
       return;
     }
@@ -333,11 +347,17 @@ export async function getLocaleSitemapEntries(locale: AppLocale): Promise<Sitema
       return;
     }
     seen.add(url);
-    entries.push({ url, lastModified: formatLastModified(lastModified), englishPath, locales: availableLocales });
+    entries.push({
+      url,
+      lastModified: formatLastModified(lastModified),
+      englishPath,
+      locales: availableLocales,
+      disableAlternates,
+    });
   };
 
   canonicalEntries.forEach((entry) => {
-    addLocalizedPath(entry.englishPath, entry.lastModified, entry.locales);
+    addLocalizedPath(entry.englishPath, entry.lastModified, entry.locales, entry.disableAlternates);
   });
 
   return entries;
@@ -351,31 +371,33 @@ export async function buildLocaleSitemapXml(locale: AppLocale): Promise<string> 
       if (entry.lastModified) {
         lines.push(`    <lastmod>${escapeXml(entry.lastModified)}</lastmod>`);
       }
-      const availableLocales = entry.locales?.length ? entry.locales : LOCALES;
-      const hrefByLocale = new Map(
-        availableLocales.map((availableLocale) => [
-          availableLocale,
-          buildAbsoluteUrl(localizePathFromEnglish(availableLocale, entry.englishPath)),
-        ] as const)
-      );
-      const xDefaultHref =
-        hrefByLocale.get(defaultLocale) ??
-        hrefByLocale.get(locale) ??
-        hrefByLocale.values().next().value ??
-        buildAbsoluteUrl(entry.englishPath);
-      const alternateLinks = HREFLANG_VARIANTS
-        .filter((variant) => hrefByLocale.has(variant.locale))
-        .map(
-          (variant) =>
-            `<xhtml:link rel="alternate" hreflang="${escapeXml(variant.hreflang)}" href="${escapeXml(
-              hrefByLocale.get(variant.locale) as string
-            )}" />`
-        )
-        .concat(
-          xDefaultHref ? [`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(xDefaultHref)}" />`] : []
-        )
-        .join('\n    ');
-      lines.push(`    ${alternateLinks}`);
+      if (!entry.disableAlternates) {
+        const availableLocales = entry.locales?.length ? entry.locales : LOCALES;
+        const hrefByLocale = new Map(
+          availableLocales.map((availableLocale) => [
+            availableLocale,
+            buildAbsoluteUrl(localizePathFromEnglish(availableLocale, entry.englishPath)),
+          ] as const)
+        );
+        const xDefaultHref =
+          hrefByLocale.get(defaultLocale) ??
+          hrefByLocale.get(locale) ??
+          hrefByLocale.values().next().value ??
+          buildAbsoluteUrl(entry.englishPath);
+        const alternateLinks = HREFLANG_VARIANTS
+          .filter((variant) => hrefByLocale.has(variant.locale))
+          .map(
+            (variant) =>
+              `<xhtml:link rel="alternate" hreflang="${escapeXml(variant.hreflang)}" href="${escapeXml(
+                hrefByLocale.get(variant.locale) as string
+              )}" />`
+          )
+          .concat(
+            xDefaultHref ? [`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(xDefaultHref)}" />`] : []
+          )
+          .join('\n    ');
+        lines.push(`    ${alternateLinks}`);
+      }
       lines.push('  </url>');
       return lines.join('\n');
     })
@@ -556,6 +578,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       ...extra,
       englishPath: normalizedPath,
       ...(extra.locales ? { locales: extra.locales } : {}),
+      ...(typeof extra.disableAlternates === 'boolean' ? { disableAlternates: extra.disableAlternates } : {}),
       lastModified: extra.lastModified ?? getRouteLastModified(normalizedPath),
     });
   });

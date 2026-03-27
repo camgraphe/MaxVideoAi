@@ -24,6 +24,11 @@ const SECTION_GROUPS: Array<{
         href: '/admin/playlists',
       },
       {
+        title: 'Video SEO watch pages',
+        description: 'Inspect the curated /video rollout, public links, and runtime blockers before pushing pages to Google.',
+        href: '/admin/video-seo',
+      },
+      {
         title: 'Homepage programming',
         description: 'Schedule hero creatives and featured rails for the marketing homepage.',
         href: '/admin/home',
