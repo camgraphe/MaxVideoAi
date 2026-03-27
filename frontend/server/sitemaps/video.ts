@@ -37,7 +37,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
     const watchVideos = await listEligibleSeoWatchVideos();
 
     const urls = watchVideos
-      .map(({ entry, video }) => {
+      .map(({ entry, video, signals }) => {
         const loc = buildVideoLoc(entry.id);
         const escapedLoc = escapeXml(loc);
         const lastModified = formatSitemapDate(entry.publishedAt || video.createdAt);
@@ -47,12 +47,19 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
           parts.push(`<lastmod>${escapeXml(lastModified)}</lastmod>`);
         }
 
-        const description = entry.intro.replace(/\s+/g, ' ').trim();
-        const duration = Math.max(0, Math.floor(video.durationSec ?? 0));
+        const description = signals.metaDescription.replace(/\s+/g, ' ').trim();
+        const duration = Math.max(0, Math.floor(signals.durationSec ?? video.durationSec ?? 0));
         const publicationDate = new Date(entry.publishedAt || video.createdAt).toISOString();
         const contentUrl = video.videoUrl ?? loc;
         const thumbUrl = video.thumbUrl ?? video.videoUrl ?? loc;
-        const keywords = [entry.engineLabel, entry.engineFamily, video.aspectRatio ?? 'auto', 'MaxVideoAI']
+        const keywords = [
+          signals.engineLabel,
+          signals.exampleFamilyLabel ?? entry.engineFamily,
+          ...(signals.capabilityTags ?? []),
+          ...(signals.styleTags ?? []),
+          signals.aspectRatio ?? video.aspectRatio ?? 'auto',
+          'MaxVideoAI',
+        ]
           .filter((keyword): keyword is string => Boolean(keyword && keyword.trim().length))
           .map((keyword) => `<video:tag>${escapeXml(keyword)}</video:tag>`)
           .join('');
@@ -61,7 +68,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
           [
             '<video:video>',
             `<video:thumbnail_loc>${escapeXml(thumbUrl)}</video:thumbnail_loc>`,
-            `<video:title>${escapeXml(entry.seoTitle)}</video:title>`,
+            `<video:title>${escapeXml(signals.title)}</video:title>`,
             `<video:description>${escapeXml(description)}</video:description>`,
             `<video:content_loc>${escapeXml(contentUrl)}</video:content_loc>`,
             `<video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`,

@@ -11,6 +11,20 @@ export type SeoWatchVideoConfig = {
   reasonForSelection: string;
   priority: number;
   publishedAt: string;
+  watchPageEligible?: boolean;
+  videoPrimaryIntent?:
+    | 'image-to-video'
+    | 'first-last-frame'
+    | 'multi-shot'
+    | 'camera-motion'
+    | 'product-ad'
+    | 'audio-enabled'
+    | 'prompt-example';
+  exampleFamily?: string;
+  styleTags?: string[];
+  capabilityTags?: string[];
+  seoTitleOverride?: string;
+  seoSummaryOverride?: string;
 };
 
 export const VIDEO_SEO_WATCHLIST: readonly SeoWatchVideoConfig[] = [

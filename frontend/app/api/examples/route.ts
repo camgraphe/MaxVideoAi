@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
-import { ensureBillingSchema } from '@/lib/schema';
 import { listExamplesPage, type ExampleSort, type GalleryVideo } from '@/server/videos';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { listFalEngines } from '@/config/falEngines';
@@ -10,6 +9,10 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 
 export const dynamic = 'force-dynamic';
+
+const CACHE_CONTROL_HEADER = 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400';
+const HERO_POSTER_OPTIONS = { width: 1080, quality: 60 } as const;
+const GALLERY_POSTER_OPTIONS = { width: 640, quality: 56 } as const;
 
 function parseSort(raw: string | null): ExampleSort {
   switch (raw) {
@@ -212,7 +215,8 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
-    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
+    heroPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, HERO_POSTER_OPTIONS) : null,
+    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, GALLERY_POSTER_OPTIONS) : null,
     rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio ?? null),
     videoUrl: video.videoUrl ?? null,
     modelHref,
@@ -225,7 +229,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    await ensureBillingSchema();
     const url = new URL(req.url);
     const sort = parseSort(url.searchParams.get('sort'));
     const limit = Math.min(120, Math.max(1, Number(url.searchParams.get('limit') ?? '60')));
@@ -240,7 +243,7 @@ export async function GET(req: NextRequest) {
     const page = await listExamplesPage({ sort, limit, offset, engineGroup: engineFilter || undefined });
     const items = page.items;
     const cards = items.map((video) => toExampleCard(video, locale));
-    return NextResponse.json({
+    const response = NextResponse.json({
       ok: true,
       cards,
       total: page.total,
@@ -248,6 +251,8 @@ export async function GET(req: NextRequest) {
       offset: page.offset,
       hasMore: page.hasMore,
     });
+    response.headers.set('Cache-Control', CACHE_CONTROL_HEADER);
+    return response;
   } catch (error) {
     console.error('[api/examples] failed', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });

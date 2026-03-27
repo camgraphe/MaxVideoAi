@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { permanentRedirect } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
@@ -84,9 +84,13 @@ const ENGINE_META = (() => {
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const MODEL_SLUG_MAP = buildSlugMap('models');
+const COMPARE_SLUG_MAP = buildSlugMap('compare');
 const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS);
 const DEFAULT_SORT: ExampleSort = 'playlist';
 const EXAMPLES_PAGE_SIZE = 60;
+const INITIAL_GALLERY_BATCH = 8;
+const HERO_POSTER_OPTIONS = { width: 1080, quality: 60 } as const;
+const GALLERY_POSTER_OPTIONS = { width: 640, quality: 56 } as const;
 const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page', '__engineFromPath']);
 const POSTER_PLACEHOLDERS: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
@@ -141,6 +145,17 @@ function buildModelHref(locale: AppLocale, slug: string): string {
   return `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
 }
 
+function buildCompareHref(locale: AppLocale, slug: string): string {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const segment = COMPARE_SLUG_MAP[locale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
+  return `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
+}
+
+function buildPricingHref(locale: AppLocale): string {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  return `${prefix}/pricing`.replace(/\/{2,}/g, '/');
+}
+
 function formatModelSlugLabel(slug: string): string {
   return slug
     .split('-')
@@ -170,9 +185,6 @@ function appendTrackingParams(
     }
   });
 }
-
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
 
 const ENGINE_FILTER_GROUPS: Record<
   string,
@@ -706,10 +718,10 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     return {
       slug,
       label,
-      href: { pathname: '/models/[slug]' as const, params: { slug } },
+      href: buildModelHref(locale as AppLocale, slug),
     };
   });
-  const pricingPath = { pathname: '/pricing' };
+  const pricingPath = buildPricingHref(locale as AppLocale);
   const modelPagesLabel =
     locale === 'fr'
       ? 'Pages modèles concernées'
@@ -755,7 +767,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       aspectRatio: video.aspectRatio ?? null,
       durationSec: video.durationSec,
       hasAudio: video.hasAudio,
-      optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
+      heroPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, HERO_POSTER_OPTIONS) : null,
+      optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, GALLERY_POSTER_OPTIONS) : null,
       rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
       videoUrl: video.videoUrl ?? null,
       modelHref,
@@ -774,7 +787,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       : null;
   const galleryVideos = mainVideo ? videos.filter((_, index) => index !== mainVideoIndex) : videos;
   const galleryClientVideos = mainVideo ? clientVideos.filter((_, index) => index !== mainVideoIndex) : clientVideos;
-  const initialExamples = galleryClientVideos.slice(0, 12);
+  const initialExamples = galleryClientVideos.slice(0, INITIAL_GALLERY_BATCH);
   const initialMaxIndex = initialExamples.reduce((max, video) => Math.max(max, video.sourceIndex ?? -1), -1);
   const pageOffsetStart = offset;
   const pageOffsetEnd = offset + allVideos.length;
@@ -863,7 +876,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       )
     : null;
   const mainVideoContentUrl = mainVideo ? toAbsoluteUrl(mainVideo.video.videoUrl ?? null) : null;
-  const mainVideoPoster = mainVideo?.card.optimizedPosterUrl ?? mainVideo?.card.rawPosterUrl ?? null;
+  const mainVideoPoster =
+    mainVideo?.card.heroPosterUrl ?? mainVideo?.card.optimizedPosterUrl ?? mainVideo?.card.rawPosterUrl ?? null;
   const mainVideoAspectRatio = getAspectRatioStyle(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
   const mainVideoIsPortrait = isPortraitAspectRatio(mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null);
   const mainVideoMimeType = getVideoMimeType(mainVideoContentUrl);
@@ -961,6 +975,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   <Link
                     href={buildEngineFilterHref(null)}
                     scroll={false}
+                    prefetch={false}
                     className={clsx(
                       'flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:px-3 sm:text-sm',
                       selectedEngine
@@ -978,6 +993,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                         key={engine.id}
                         href={buildEngineFilterHref(engine.id)}
                         scroll={false}
+                        prefetch={false}
                         className={clsx(
                           'flex h-9 items-center justify-center whitespace-nowrap rounded-lg px-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:px-3 sm:text-sm',
                           isActive
@@ -1045,6 +1061,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                       src={mainVideoContentUrl}
                       type={mainVideoMimeType}
                       poster={mainVideoPoster ?? undefined}
+                      posterFit={mainVideoIsPortrait ? 'contain' : 'cover'}
                       ariaLabel={mainVideoTitle}
                     />
                   </div>
@@ -1231,7 +1248,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             </h2>
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
               <Link
-                href={{ pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } }}
+                href={buildModelHref(appLocale, 'veo-3-1-fast')}
                 className="font-semibold text-brand hover:text-brandHover"
               >
                 {locale === 'fr'
@@ -1241,7 +1258,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                     : 'View Veo 3.1 Fast profile'}
               </Link>
               <Link
-                href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }}
+                href={buildModelHref(appLocale, 'seedance-2-0')}
                 className="font-semibold text-brand hover:text-brandHover"
               >
                 {locale === 'fr'
@@ -1251,7 +1268,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                     : 'View Seedance 2.0 profile'}
               </Link>
               <Link
-                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } }}
+                href={buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1')}
                 className="font-semibold text-brand hover:text-brandHover"
               >
                 {locale === 'fr'
@@ -1261,7 +1278,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                     : 'Compare Kling 3 Pro vs Veo 3.1'}
               </Link>
               <Link
-                href={{ pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-sora-2' } }}
+                href={buildCompareHref(appLocale, 'seedance-2-0-vs-sora-2')}
                 className="font-semibold text-brand hover:text-brandHover"
               >
                 {locale === 'fr'

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type ExamplesHeroVideoProps = {
   src: string;
@@ -8,6 +8,7 @@ type ExamplesHeroVideoProps = {
   poster?: string | null;
   className?: string;
   ariaLabel: string;
+  posterFit?: 'cover' | 'contain';
 };
 
 function shouldDisableHeroAutoplay(): boolean {
@@ -21,8 +22,28 @@ function shouldDisableHeroAutoplay(): boolean {
   return Boolean(connection.connection?.saveData);
 }
 
-export function ExamplesHeroVideo({ src, type, poster, className, ariaLabel }: ExamplesHeroVideoProps) {
+export function ExamplesHeroVideo({
+  src,
+  type,
+  poster,
+  className,
+  ariaLabel,
+  posterFit = 'cover',
+}: ExamplesHeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [showPosterOverlay, setShowPosterOverlay] = useState(Boolean(poster));
+  const posterStyle = useMemo(
+    () =>
+      poster
+        ? {
+            backgroundImage: `url(${poster})`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: posterFit,
+          }
+        : undefined,
+    [poster, posterFit]
+  );
 
   useEffect(() => {
     const node = videoRef.current;
@@ -30,11 +51,20 @@ export function ExamplesHeroVideo({ src, type, poster, className, ariaLabel }: E
 
     let inView = true;
     let reduceMotion = shouldDisableHeroAutoplay();
+    let loadingRequested = false;
+    setShowPosterOverlay(Boolean(poster));
 
     const syncPlayback = () => {
       if (!node) return;
       if (reduceMotion || !inView || document.visibilityState === 'hidden') {
         node.pause();
+        return;
+      }
+      if (node.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        if (!loadingRequested) {
+          loadingRequested = true;
+          node.load();
+        }
         return;
       }
       const playPromise = node.play();
@@ -62,7 +92,15 @@ export function ExamplesHeroVideo({ src, type, poster, className, ariaLabel }: E
     const handleVisibilityChange = () => {
       syncPlayback();
     };
+    const handleLoadedData = () => {
+      syncPlayback();
+    };
+    const handlePlaying = () => {
+      setShowPosterOverlay(false);
+    };
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    node.addEventListener('loadeddata', handleLoadedData);
+    node.addEventListener('playing', handlePlaying);
 
     syncPlayback();
 
@@ -70,23 +108,36 @@ export function ExamplesHeroVideo({ src, type, poster, className, ariaLabel }: E
       observer.disconnect();
       mediaQuery?.removeEventListener?.('change', handleMotionChange);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      node.removeEventListener('loadeddata', handleLoadedData);
+      node.removeEventListener('playing', handlePlaying);
       node.pause();
     };
-  }, []);
+  }, [poster]);
 
   return (
-    <video
-      ref={videoRef}
-      className={className}
-      muted
-      loop
-      controls
-      preload="metadata"
-      playsInline
-      poster={poster ?? undefined}
-      aria-label={ariaLabel}
-    >
-      <source src={src} type={type} />
-    </video>
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-surface-on-media-dark-5">
+      {poster && showPosterOverlay ? (
+        <div
+          aria-hidden="true"
+          className={`${className ?? ''} pointer-events-none absolute inset-0 z-10 transition-opacity duration-300`}
+          style={posterStyle}
+        />
+      ) : null}
+      <video
+        ref={videoRef}
+        className={`${className ?? ''} absolute inset-0 z-20 transition-opacity duration-300 ${
+          showPosterOverlay ? 'opacity-0' : 'opacity-100'
+        }`}
+        muted
+        loop
+        controls
+        preload="none"
+        playsInline
+        poster={poster ?? undefined}
+        aria-label={ariaLabel}
+      >
+        <source src={src} type={type} />
+      </video>
+    </div>
   );
 }

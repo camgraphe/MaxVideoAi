@@ -26,6 +26,13 @@ type WatchRow = {
   watchUrl: string;
   auditPath: string;
   isReady: boolean;
+  generatedTitle: string;
+  generatedIntro: string;
+  parentPath: string | null;
+  parentLabel: string | null;
+  relatedCount: number;
+  completenessScore: number;
+  differentiationScore: number;
 };
 
 export default async function AdminVideoSeoPage() {
@@ -133,7 +140,7 @@ export default async function AdminVideoSeoPage() {
                   <td className="px-5 py-4 align-top">
                     <VideoThumbnailEditor
                       videoId={row.entry.id}
-                      title={row.entry.seoTitle}
+                      title={row.generatedTitle}
                       engineLabel={row.video?.engineLabel ?? row.entry.engineLabel}
                       initialThumbUrl={row.video?.thumbUrl ?? null}
                       videoUrl={row.video?.videoUrl ?? null}
@@ -143,13 +150,13 @@ export default async function AdminVideoSeoPage() {
                     <div className="space-y-2">
                       <div>
                         <Link href={row.watchPath} prefetch={false} className="font-semibold text-text-primary hover:underline">
-                          {row.entry.seoTitle}
+                          {row.generatedTitle}
                         </Link>
                         <p className="mt-1 text-xs text-text-muted">
                           {row.entry.engineLabel} · Priority {row.entry.priority}
                         </p>
                       </div>
-                      <p className="max-w-md text-sm text-text-secondary">{row.entry.intro}</p>
+                      <p className="max-w-md text-sm text-text-secondary">{row.generatedIntro}</p>
                       <div className="space-y-1 text-xs text-text-muted">
                         <p>
                           Source surface:{' '}
@@ -169,6 +176,14 @@ export default async function AdminVideoSeoPage() {
                             {row.entry.id}
                           </code>
                         </p>
+                        {row.parentPath ? (
+                          <p>
+                            Parent hub:{' '}
+                            <Link href={row.parentPath} prefetch={false} className="font-medium text-text-primary hover:underline">
+                              {row.parentLabel ?? row.parentPath}
+                            </Link>
+                          </p>
+                        ) : null}
                         <p>Published target: {formatDate(row.entry.publishedAt)}</p>
                       </div>
                     </div>
@@ -193,6 +208,8 @@ export default async function AdminVideoSeoPage() {
                         <p>Aspect ratio: {row.video?.aspectRatio ?? 'Unknown'}</p>
                         <p>Duration: {formatDuration(row.video?.durationSec)}</p>
                         <p>Audio: {row.video?.hasAudio ? 'Yes' : 'No'}</p>
+                        <p>Completeness: {row.completenessScore}/100</p>
+                        <p>Differentiation: {row.differentiationScore}/100</p>
                       </div>
                       {row.issues.length ? (
                         <ul className="space-y-1 text-xs text-warning">
@@ -238,6 +255,7 @@ export default async function AdminVideoSeoPage() {
                   <td className="px-5 py-4 align-top">
                     <div className="max-w-sm space-y-2">
                       <StatusPill tone="neutral">{row.entry.engineFamily}</StatusPill>
+                      <StatusPill tone={row.relatedCount >= 3 ? 'ok' : 'neutral'}>{row.relatedCount} related</StatusPill>
                       <p className="text-sm text-text-secondary">{row.entry.reasonForSelection}</p>
                       <p className="text-xs text-text-muted">
                         Keep this page in the rollout only if it remains visually strong, public, discovery-on, and editorially useful. Removing it
@@ -255,9 +273,11 @@ export default async function AdminVideoSeoPage() {
   );
 }
 
-function buildWatchRow({ entry, video, isEligible }: SeoWatchVideoRow): WatchRow {
+function buildWatchRow({ entry, video, isEligible, signals, related }: SeoWatchVideoRow): WatchRow {
   const watchPath = buildWatchPath(entry.id);
   const issues: string[] = [];
+  const generatedSignals = signals;
+  const relatedCount = related.length;
 
   if (!video) {
     issues.push('Video missing from app_jobs.');
@@ -266,6 +286,12 @@ function buildWatchRow({ entry, video, isEligible }: SeoWatchVideoRow): WatchRow
     if (!video.indexable) issues.push('Public discovery is disabled.');
     if (!video.videoUrl) issues.push('Video asset URL is missing.');
     if (!video.thumbUrl) issues.push('Thumbnail URL is missing.');
+  }
+  if (generatedSignals?.auditNotes?.length) {
+    issues.push(...generatedSignals.auditNotes);
+  }
+  if (generatedSignals?.stabilityWarnings?.length) {
+    issues.push(...generatedSignals.stabilityWarnings);
   }
 
   return {
@@ -276,6 +302,13 @@ function buildWatchRow({ entry, video, isEligible }: SeoWatchVideoRow): WatchRow
     watchUrl: `${SITE_ORIGIN}${watchPath}`,
     auditPath: `/admin/jobs?jobId=${encodeURIComponent(entry.id)}`,
     isReady: isEligible && issues.length === 0,
+    generatedTitle: generatedSignals?.title ?? entry.seoTitle,
+    generatedIntro: generatedSignals?.intro ?? entry.intro,
+    parentPath: generatedSignals?.parentPath ?? null,
+    parentLabel: generatedSignals?.parentLabel ?? null,
+    relatedCount,
+    completenessScore: generatedSignals?.completenessScore ?? 0,
+    differentiationScore: generatedSignals?.differentiationScore ?? 0,
   };
 }
 

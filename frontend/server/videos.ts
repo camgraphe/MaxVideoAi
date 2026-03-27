@@ -24,6 +24,7 @@ type VideoRow = {
   final_price_cents: number | null;
   currency: string | null;
   pricing_snapshot: PricingSnapshot | null;
+  settings_snapshot?: unknown;
   order_index?: number | null;
 };
 
@@ -46,6 +47,7 @@ export type GalleryVideo = {
   finalPriceCents?: number | null;
   currency?: string | null;
   pricingSnapshot?: PricingSnapshot;
+  settingsSnapshot?: unknown;
   playlistOrder?: number | null;
 };
 
@@ -75,6 +77,7 @@ function mapRow(row: VideoRow): GalleryVideo {
     finalPriceCents: row.final_price_cents ?? undefined,
     currency: row.currency ?? undefined,
     pricingSnapshot: row.pricing_snapshot ?? undefined,
+    settingsSnapshot: row.settings_snapshot ?? undefined,
     playlistOrder: typeof row.order_index === 'number' ? row.order_index : null,
   };
 }
@@ -99,9 +102,24 @@ const BASE_SELECT = `
   FROM app_jobs
 `;
 
+const BASE_SELECT_WITH_SETTINGS = `
+  SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
+         aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
+         final_price_cents, currency, pricing_snapshot, settings_snapshot
+  FROM app_jobs
+`;
+
 export async function getVideoById(videoId: string): Promise<GalleryVideo | null> {
   const rows = await query<VideoRow>(
     `${BASE_SELECT} WHERE job_id = $1 LIMIT 1`,
+    [videoId]
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export async function getSeoVideoById(videoId: string): Promise<GalleryVideo | null> {
+  const rows = await query<VideoRow>(
+    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = $1 LIMIT 1`,
     [videoId]
   );
   return rows[0] ? mapRow(rows[0]) : null;
@@ -114,6 +132,22 @@ export async function getVideosByIds(videoIds: string[]): Promise<Map<string, Ga
   const uniqueIds = Array.from(new Set(videoIds));
   const rows = await query<VideoRow>(
     `${BASE_SELECT} WHERE job_id = ANY($1::text[])`,
+    [uniqueIds]
+  );
+  const map = new Map<string, GalleryVideo>();
+  rows.forEach((row) => {
+    map.set(row.job_id, mapRow(row));
+  });
+  return map;
+}
+
+export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string, GalleryVideo>> {
+  if (!videoIds.length) {
+    return new Map();
+  }
+  const uniqueIds = Array.from(new Set(videoIds));
+  const rows = await query<VideoRow>(
+    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = ANY($1::text[])`,
     [uniqueIds]
   );
   const map = new Map<string, GalleryVideo>();

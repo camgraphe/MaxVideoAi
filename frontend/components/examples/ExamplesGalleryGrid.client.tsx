@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Link } from '@/i18n/navigation';
+import Link from 'next/link';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
@@ -22,6 +22,7 @@ export type ExampleGalleryVideo = {
   aspectRatio: string | null;
   durationSec: number;
   hasAudio: boolean;
+  heroPosterUrl?: string | null;
   optimizedPosterUrl?: string | null;
   rawPosterUrl?: string | null;
   videoUrl?: string | null;
@@ -30,14 +31,14 @@ export type ExampleGalleryVideo = {
   sourceIndex?: number;
 };
 
-const INITIAL_BATCH = 12;
 const BATCH_SIZE = 8;
-const LANDSCAPE_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
-const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
+const INITIAL_MOBILE_BATCH = 4;
+const INITIAL_DESKTOP_BATCH = 8;
+const LANDSCAPE_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw';
+const PORTRAIT_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw';
 const DEFAULT_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_LANDSCAPE_HEIGHT_PERCENT = 100 / DEFAULT_LANDSCAPE_RATIO;
 const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT * 2).toFixed(3));
-const LH_POSTER_SRC = '/examples/lcp-poster.webp';
 
 type ExampleSort = 'playlist' | 'date-desc' | 'date-asc' | 'duration-asc' | 'duration-desc' | 'engine-asc';
 
@@ -64,52 +65,36 @@ export default function ExamplesGalleryGridClient({
   pageOffsetEnd: number;
   locale: string;
 }) {
-  const isLighthouse = useMemo(() => detectLighthouse(), []);
   const [isMobile, setIsMobile] = useState(false);
   const baseAll = useMemo(() => dedupe(initialExamples), [initialExamples]);
   const columnCount = useColumnCount();
   const [nextOffset, setNextOffset] = useState(() => initialOffset);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() => {
-    if (isLighthouse) return baseAll.slice(0, 1);
-    return baseAll.slice(0, INITIAL_BATCH);
-  });
+  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() =>
+    baseAll.slice(0, INITIAL_DESKTOP_BATCH)
+  );
 
   // Reset batches when the filtered dataset changes (e.g., engine filter navigation).
   useEffect(() => {
-    if (isLighthouse) {
-      setVisibleVideos(baseAll.slice(0, 1));
-      setNextOffset(initialOffset);
-      return;
-    }
-    setVisibleVideos(baseAll.slice(0, INITIAL_BATCH));
+    const nextInitialBatch = isMobile ? INITIAL_MOBILE_BATCH : INITIAL_DESKTOP_BATCH;
+    setVisibleVideos(baseAll.slice(0, nextInitialBatch));
     setNextOffset(initialOffset);
-  }, [baseAll, isLighthouse, initialOffset]);
+  }, [baseAll, initialOffset, isMobile]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsMobile(window.matchMedia('(max-width: 639px)').matches);
-    }
-
-    if (!isLighthouse) return;
-    if (typeof PerformanceObserver === 'undefined') return;
-    const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        // eslint-disable-next-line no-console
-        console.warn('[lh-longtask]', {
-          name: entry.name,
-          duration: entry.duration,
-          startTime: entry.startTime,
-        });
-      }
-    });
-    observer.observe({ type: 'longtask', buffered: true });
-    return () => observer.disconnect();
-  }, [isLighthouse]);
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(max-width: 639px)');
+    const syncViewport = () => setIsMobile(mediaQuery.matches);
+    syncViewport();
+    mediaQuery.addEventListener?.('change', syncViewport);
+    return () => {
+      mediaQuery.removeEventListener?.('change', syncViewport);
+    };
+  }, []);
 
   const handleLoadMore = async () => {
-    if (isLighthouse || isLoading) return;
+    if (isLoading) return;
     if (nextOffset >= pageOffsetEnd) return;
     setIsLoading(true);
     try {
@@ -170,12 +155,12 @@ export default function ExamplesGalleryGridClient({
   }, [locale, visibleVideos]);
   const shouldUseTallCardLayout = !isMobile;
   const firstVisibleId = visibleVideos[0]?.id;
-  const hasMore = !isLighthouse && nextOffset < pageOffsetEnd;
+  const hasMore = nextOffset < pageOffsetEnd;
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="space-y-3 p-3 sm:space-y-4 sm:p-6">
       {isMobile ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {visibleVideos.map((video) => {
             const isFirstVideo = video.id === firstVisibleId;
             return (
@@ -183,16 +168,19 @@ export default function ExamplesGalleryGridClient({
                 key={video.id}
                 video={video}
                 isFirst={isFirstVideo}
-                    isLighthouse={isLighthouse}
-                    forceExclusivePlay={false}
-                    enableTallCardLayout={false}
-                    enableInlineVideo={isFirstVideo}
-                    noPreviewLabel={noPreviewLabel}
-                    audioAvailableLabel={audioAvailableLabel}
-                    altText={altById.get(video.id) ?? getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })}
-                  />
-                );
-              })}
+                forceExclusivePlay={false}
+                enableTallCardLayout={false}
+                enableInlineVideo={false}
+                showRecreateLink={false}
+                noPreviewLabel={noPreviewLabel}
+                audioAvailableLabel={audioAvailableLabel}
+                altText={
+                  altById.get(video.id) ??
+                  getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })
+                }
+              />
+            );
+          })}
         </div>
       ) : (
         <div className={masonryStyles.masonry}>
@@ -205,10 +193,10 @@ export default function ExamplesGalleryGridClient({
                     key={video.id}
                     video={video}
                     isFirst={isFirstVideo}
-                    isLighthouse={isLighthouse}
                     forceExclusivePlay={false}
                     enableTallCardLayout={shouldUseTallCardLayout}
                     enableInlineVideo
+                    showRecreateLink
                     noPreviewLabel={noPreviewLabel}
                     audioAvailableLabel={audioAvailableLabel}
                     altText={altById.get(video.id) ?? getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })}
@@ -239,20 +227,20 @@ export default function ExamplesGalleryGridClient({
 function ExampleCard({
   video,
   isFirst,
-  isLighthouse,
   forceExclusivePlay,
   enableTallCardLayout,
   enableInlineVideo,
+  showRecreateLink,
   noPreviewLabel,
   audioAvailableLabel,
   altText,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
-  isLighthouse: boolean;
   forceExclusivePlay: boolean;
   enableTallCardLayout: boolean;
   enableInlineVideo: boolean;
+  showRecreateLink: boolean;
   noPreviewLabel: string;
   audioAvailableLabel: string;
   altText: string;
@@ -260,16 +248,13 @@ function ExampleCard({
   const [isHovered, setIsHovered] = useState(false);
   const [inView, setInView] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
-  const [posterLoaded, setPosterLoaded] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const lastPlayRef = useRef<() => void>();
-  const lastPauseRef = useRef<() => void>();
 
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
-  const shouldLoadVideo = enableInlineVideo && !isLighthouse && inView && posterLoaded && Boolean(video.videoUrl);
+  const shouldLoadVideo = enableInlineVideo && inView && Boolean(video.videoUrl);
   const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
   const mediaPaddingPercent = Number((100 / rawAspect).toFixed(3));
   const tallCardEnabled = enableTallCardLayout && isPortrait;
@@ -278,10 +263,6 @@ function ExampleCard({
     : `${mediaPaddingPercent}%`;
 
   useEffect(() => {
-    if (isLighthouse) {
-      setInView(false);
-      return;
-    }
     const node = cardRef.current;
     if (!node) return;
     const observer = new IntersectionObserver(
@@ -293,7 +274,7 @@ function ExampleCard({
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [isLighthouse]);
+  }, []);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -321,18 +302,14 @@ function ExampleCard({
       }
     };
     void play();
-    lastPlayRef.current = () => {
-      void play();
-    };
-    lastPauseRef.current = () => {
-      node.pause();
-    };
     return () => {
       node.pause();
     };
   }, [shouldPlay, forceExclusivePlay]);
 
-  const posterSrc = isLighthouse ? LH_POSTER_SRC : video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
+  // Let next/image optimize the original poster once instead of wrapping a
+  // pre-optimized /_next/image URL and breaking the request.
+  const posterSrc = video.rawPosterUrl ?? null;
 
   return (
     <div
@@ -344,11 +321,10 @@ function ExampleCard({
       <Link
         href={video.href}
         className="absolute inset-0 z-0"
-        aria-label={isLighthouse ? 'AI video example preview' : undefined}
-        prefetch={!isLighthouse}
-        tabIndex={isLighthouse ? -1 : 0}
+        aria-label={altText}
+        prefetch={false}
       />
-      <div className="relative z-10 pointer-events-none">
+      <div className="pointer-events-none relative z-10">
         <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-surface-on-media-dark-5')}>
           <div className="relative w-full" style={{ paddingBottom: mediaPadding }}>
             <div className="absolute inset-0">
@@ -371,13 +347,9 @@ function ExampleCard({
                   alt={altText}
                   fill
                   className="h-full w-full object-cover object-center"
-                  priority={isLighthouse || isFirst}
-                  fetchPriority={isLighthouse || isFirst ? 'high' : undefined}
-                  loading={isLighthouse || isFirst ? 'eager' : 'lazy'}
                   decoding="async"
                   sizes={posterSizes}
-                  quality={isLighthouse ? 40 : 60}
-                  onLoadingComplete={() => setPosterLoaded(true)}
+                  quality={52}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-placeholder text-[11px] font-semibold uppercase tracking-micro text-text-muted">
@@ -388,10 +360,10 @@ function ExampleCard({
             </div>
           </div>
         </div>
-        <div className="space-y-1 px-4 py-3 text-left">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+        <div className="space-y-1 px-3 py-2.5 text-left sm:px-4 sm:py-3">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold uppercase tracking-micro text-text-muted sm:gap-2 sm:text-xs">
             {video.modelHref ? (
-              <Link href={video.modelHref} className="pointer-events-auto hover:text-text-primary">
+              <Link href={video.modelHref} prefetch={false} className="pointer-events-auto hover:text-text-primary">
                 {video.engineLabel}
               </Link>
             ) : (
@@ -399,16 +371,16 @@ function ExampleCard({
             )}
             {video.priceLabel ? <span className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-text-secondary">{video.priceLabel}</span> : null}
           </div>
-          <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
-          <p className="text-[11px] text-text-secondary">
+          <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary sm:text-sm">{video.prompt}</p>
+          <p className="text-[10px] text-text-secondary sm:text-[11px]">
             {video.aspectRatio ?? 'Auto'} · {video.durationSec}s {videoReady ? '· Playing' : ''}
           </p>
-          {video.recreateHref ? (
+          {showRecreateLink && video.recreateHref ? (
             <div className="pt-1">
               <Link
                 href={video.recreateHref}
-                className="pointer-events-auto text-[11px] font-semibold text-brand transition hover:text-brand-hover"
                 prefetch={false}
+                className="pointer-events-auto text-[11px] font-semibold text-brand transition hover:text-brand-hover"
               >
                 Recreate this shot →
               </Link>
@@ -496,17 +468,4 @@ function useColumnCount() {
   }, []);
 
   return count;
-}
-
-function detectLighthouse() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = navigator.userAgent || '';
-  if (ua.includes('Chrome-Lighthouse')) return true;
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('lh-mode') === '1') return true;
-  } catch {
-    /* ignore */
-  }
-  return false;
 }
