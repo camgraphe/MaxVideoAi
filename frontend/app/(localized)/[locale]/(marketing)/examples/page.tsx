@@ -22,7 +22,6 @@ import {
   getHubExamplesFaq,
 } from '@/lib/examples/modelLanding';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
-import { getSeoWatchVideosForEngine } from '@/lib/video-seo';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -850,24 +849,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const canonicalUrl = modelLanding
     ? `${SITE}${galleryBasePath}/${modelLanding.slug}`
     : baseExamplesUrl;
-  const featuredWatchPages = modelLanding
-    ? getSeoWatchVideosForEngine({ engineFamily: modelLanding.slug, limit: 3 })
-    : [];
-  const featuredWatchCopy =
-    locale === 'fr'
-      ? {
-          title: 'Watch pages a la une',
-          body: 'Liens directs vers des rendus choisis pour servir de vraies pages de lecture video.',
-        }
-      : locale === 'es'
-        ? {
-            title: 'Watch pages destacadas',
-            body: 'Enlaces directos a renders seleccionados para funcionar como paginas de reproduccion fuertes.',
-          }
-        : {
-            title: 'Featured watch pages',
-            body: 'Direct links to curated renders selected to behave like true video watch pages.',
-          };
   const mainVideoModelLabel = modelLanding?.label ?? selectedOption?.label ?? mainVideo?.card.engineLabel ?? 'Model';
   const mainVideoTitle =
     mainVideo?.video.promptExcerpt ||
@@ -1124,28 +1105,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   </div>
                 </div>
               </article>
-            </section>
-          ) : null}
-
-          {featuredWatchPages.length ? (
-            <section className="rounded-[22px] border border-hairline bg-surface/85 p-5 shadow-card">
-              <div className="space-y-1">
-                <h2 className="text-base font-semibold text-text-primary">{featuredWatchCopy.title}</h2>
-                <p className="text-sm text-text-secondary">{featuredWatchCopy.body}</p>
-              </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {featuredWatchPages.map((entry) => (
-                  <Link
-                    key={entry.id}
-                    href={`/video/${encodeURIComponent(entry.id)}?from=${encodeURIComponent(new URL(canonicalUrl).pathname)}`}
-                    className="rounded-2xl border border-hairline bg-bg px-4 py-3 transition hover:border-text-muted hover:bg-surface-2"
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.engineLabel}</p>
-                    <p className="mt-1 text-sm font-semibold text-text-primary">{entry.seoTitle}</p>
-                    <p className="mt-2 text-sm text-text-secondary">{entry.intro}</p>
-                  </Link>
-                ))}
-              </div>
             </section>
           ) : null}
 

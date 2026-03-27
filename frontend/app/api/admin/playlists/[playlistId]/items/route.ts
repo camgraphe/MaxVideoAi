@@ -3,6 +3,7 @@ import { isDatabaseConfigured } from '@/lib/db';
 import { submitToIndexNow } from '@/lib/indexnow';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import {
+  appendPlaylistItem,
   appendPlaylistItemAndPublish,
   removePlaylistItem,
   reorderPlaylistItems,
@@ -41,14 +42,15 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   } catch {
     body = undefined;
   }
-  const payload = parseJson<{ videoId?: string }>(body);
+  const payload = parseJson<{ videoId?: string; publishOnSite?: boolean }>(body);
   const videoId = payload?.videoId?.trim();
   if (!videoId) {
     return NextResponse.json({ ok: false, error: 'Missing videoId' }, { status: 400 });
   }
+  const publishOnSite = Boolean(payload?.publishOnSite);
 
   try {
-    const video = await appendPlaylistItemAndPublish(playlistId, videoId);
+    const video = publishOnSite ? await appendPlaylistItemAndPublish(playlistId, videoId) : (await appendPlaylistItem(playlistId, videoId), null);
     await submitToIndexNow('/examples');
     return NextResponse.json({ ok: true, video });
   } catch (error) {

@@ -15,7 +15,7 @@ import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
-import { listSeoWatchVideos } from '@/server/video-seo';
+import { listEligibleSeoWatchVideos } from '@/server/video-seo';
 
 export type SitemapEntry = {
   url: string;
@@ -556,9 +556,9 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
 
   const extraCanonicalPaths: CanonicalPathEntry[] = [
     ...BASE_EXTRA_CANONICAL_PATHS,
-    ...(await listSeoWatchVideos()).map((entry) => ({
+    ...(await listEligibleSeoWatchVideos()).map(({ entry, video }) => ({
       englishPath: `/video/${entry.id}`,
-      lastModified: formatLastModified(entry.publishedAt),
+      lastModified: formatLastModified(entry.publishedAt || video.createdAt),
       locales: ['en'] as AppLocale[],
       disableAlternates: true,
     })),

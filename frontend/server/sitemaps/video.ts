@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
-import { ensureBillingSchema } from '@/lib/schema';
-import { getVideosByIds } from '@/server/videos';
-import { listSeoWatchVideos } from '@/server/video-seo';
+import { listEligibleSeoWatchVideos } from '@/server/video-seo';
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
 
@@ -36,17 +34,10 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
   }
 
   try {
-    await ensureBillingSchema();
-    const watchVideos = await listSeoWatchVideos();
-    const videoMap = await getVideosByIds(watchVideos.map((entry) => entry.id));
+    const watchVideos = await listEligibleSeoWatchVideos();
 
     const urls = watchVideos
-      .map((entry) => {
-        const video = videoMap.get(entry.id);
-        if (!video?.videoUrl || video.visibility !== 'public' || !video.indexable) {
-          console.warn(`[sitemap-video] skipped invalid watch page "${entry.id}"`);
-          return null;
-        }
+      .map(({ entry, video }) => {
         const loc = buildVideoLoc(entry.id);
         const escapedLoc = escapeXml(loc);
         const lastModified = formatSitemapDate(entry.publishedAt || video.createdAt);
@@ -59,8 +50,10 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
         const description = entry.intro.replace(/\s+/g, ' ').trim();
         const duration = Math.max(0, Math.floor(video.durationSec ?? 0));
         const publicationDate = new Date(entry.publishedAt || video.createdAt).toISOString();
+        const contentUrl = video.videoUrl ?? loc;
         const thumbUrl = video.thumbUrl ?? video.videoUrl ?? loc;
         const keywords = [entry.engineLabel, entry.engineFamily, video.aspectRatio ?? 'auto', 'MaxVideoAI']
+          .filter((keyword): keyword is string => Boolean(keyword && keyword.trim().length))
           .map((keyword) => `<video:tag>${escapeXml(keyword)}</video:tag>`)
           .join('');
 
@@ -70,7 +63,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
             `<video:thumbnail_loc>${escapeXml(thumbUrl)}</video:thumbnail_loc>`,
             `<video:title>${escapeXml(entry.seoTitle)}</video:title>`,
             `<video:description>${escapeXml(description)}</video:description>`,
-            `<video:content_loc>${escapeXml(video.videoUrl)}</video:content_loc>`,
+            `<video:content_loc>${escapeXml(contentUrl)}</video:content_loc>`,
             `<video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`,
             `<video:duration>${duration}</video:duration>`,
             keywords,
@@ -80,7 +73,6 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
         );
         return parts.join('');
       })
-      .filter((entry): entry is string => Boolean(entry))
       .join('');
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n${urls}\n</urlset>`;

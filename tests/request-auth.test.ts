@@ -12,14 +12,24 @@ test('readBearerAccessToken extracts a bearer token', () => {
   assert.equal(token, 'test-token-123');
 });
 
-test('readBearerAccessToken accepts a raw authorization token', () => {
+test('readBearerAccessToken rejects a raw authorization token', () => {
   const token = readBearerAccessToken(
     new Headers({
       authorization: 'raw-token-456',
     })
   );
 
-  assert.equal(token, 'raw-token-456');
+  assert.equal(token, null);
+});
+
+test('readBearerAccessToken rejects a non-bearer authorization scheme', () => {
+  const token = readBearerAccessToken(
+    new Headers({
+      authorization: 'Basic abc123',
+    })
+  );
+
+  assert.equal(token, null);
 });
 
 test('readBearerAccessToken returns null when the header is missing', () => {

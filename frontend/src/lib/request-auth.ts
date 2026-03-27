@@ -6,6 +6,7 @@ export function readBearerAccessToken(headers: HeaderReader): string | null {
     return null;
   }
 
-  const token = raw.replace(/^Bearer\s+/i, '').trim();
+  const match = raw.match(/^Bearer\s+(.+)$/i);
+  const token = match?.[1]?.trim() ?? '';
   return token.length ? token : null;
 }

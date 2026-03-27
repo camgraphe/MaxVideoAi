@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/Button';
 import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
-import { listSeoWatchVideos, type SeoWatchVideoMeta } from '@/server/video-seo';
-import { getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { listSeoWatchVideoRows, type SeoWatchVideoMeta, type SeoWatchVideoRow } from '@/server/video-seo';
+import type { GalleryVideo } from '@/server/videos';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,11 +29,10 @@ type WatchRow = {
 };
 
 export default async function AdminVideoSeoPage() {
-  const watchEntries = await listSeoWatchVideos();
-  const videoMap = await getVideosByIds(watchEntries.map((entry) => entry.id));
-  const rows = watchEntries.map((entry) => buildWatchRow(entry, videoMap.get(entry.id) ?? null));
+  const watchRows = await listSeoWatchVideoRows();
+  const rows = watchRows.map((row) => buildWatchRow(row));
 
-  const readyCount = rows.filter((row) => row.isReady).length;
+  const readyCount = watchRows.filter((row) => row.isEligible).length;
   const issueCount = rows.length - readyCount;
   const liveAssetCount = rows.filter((row) => Boolean(row.video?.videoUrl)).length;
   const engineFamilies = new Set(rows.map((row) => row.entry.engineFamily)).size;
@@ -256,7 +255,7 @@ export default async function AdminVideoSeoPage() {
   );
 }
 
-function buildWatchRow(entry: SeoWatchVideoMeta, video: GalleryVideo | null): WatchRow {
+function buildWatchRow({ entry, video, isEligible }: SeoWatchVideoRow): WatchRow {
   const watchPath = buildWatchPath(entry.id);
   const issues: string[] = [];
 
@@ -276,7 +275,7 @@ function buildWatchRow(entry: SeoWatchVideoMeta, video: GalleryVideo | null): Wa
     watchPath,
     watchUrl: `${SITE_ORIGIN}${watchPath}`,
     auditPath: `/admin/jobs?jobId=${encodeURIComponent(entry.id)}`,
-    isReady: issues.length === 0,
+    isReady: isEligible && issues.length === 0,
   };
 }
 

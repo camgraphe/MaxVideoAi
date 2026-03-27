@@ -432,7 +432,7 @@ export function ModerationTable({
         const response = await authFetch(`/api/admin/playlists/${playlistId}/items`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId: video.id }),
+          body: JSON.stringify({ videoId: video.id, publishOnSite: true }),
         });
         const json = await response.json().catch(() => null);
         if (!response.ok || !json?.ok) {
