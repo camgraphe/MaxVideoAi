@@ -233,14 +233,14 @@ export default async function VideoPage({ params }: PageProps) {
       </nav>
 
       <article className="relative space-y-8">
-        <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-surface-on-media-15 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-4 shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
+        <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-4 shadow-[0_20px_48px_rgba(15,23,42,0.08)] dark:border-white/10 dark:shadow-[0_24px_56px_rgba(0,0,0,0.3)]">
           <div className="border-b border-hairline pb-4">
             <div className="space-y-2.5">
               <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
                 {signals.badges.map((badge) => (
                   <span
                     key={badge}
-                    className="rounded-full border border-white/70 bg-white/90 px-2.5 py-1 text-[10px] text-text-secondary shadow-[0_8px_18px_rgba(15,23,42,0.05)]"
+                    className="rounded-full border border-hairline bg-surface-glass-90 px-2.5 py-1 text-[10px] text-text-secondary shadow-[0_8px_18px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/5 dark:shadow-none"
                   >
                     {badge}
                   </span>
@@ -284,7 +284,7 @@ export default async function VideoPage({ params }: PageProps) {
             </video>
           </div>
 
-          <div className="mt-3 rounded-[22px] border border-hairline bg-white/90 p-3">
+          <div className="mt-3 rounded-[22px] border border-hairline bg-surface-glass-90 p-3 dark:border-white/10 dark:bg-white/5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-secondary">Prompt</p>
@@ -292,7 +292,7 @@ export default async function VideoPage({ params }: PageProps) {
               </div>
               <CopyPromptButton prompt={signals.promptText} copyLabel="Copy prompt" copiedLabel="Copied!" />
             </div>
-            <details className="group mt-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
+            <details className="group mt-3 rounded-2xl border border-border bg-surface-2 px-3 py-2.5 dark:border-white/10 dark:bg-white/5">
               <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary transition hover:text-text-primary">
                 <span className="group-open:hidden">Show full prompt</span>
                 <span className="hidden group-open:inline">Hide full prompt</span>
@@ -309,11 +309,11 @@ export default async function VideoPage({ params }: PageProps) {
 
           <div className="grid items-start gap-2.5 sm:gap-3 xl:grid-cols-2">
             <div className="space-y-2.5 sm:space-y-3">
-              <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
+              <div className="rounded-[20px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] dark:border-white/10 dark:shadow-[0_18px_36px_rgba(0,0,0,0.24)] sm:rounded-[24px] sm:p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Workflow</p>
                 <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
                   {signals.whatThisShows.map((item, index) => (
-                    <div key={`${item}-${index}`} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3 sm:py-3">
+                    <div key={`${item}-${index}`} className="rounded-xl border border-border bg-surface px-2.5 py-2.5 dark:border-white/10 dark:bg-white/5 sm:rounded-2xl sm:px-3 sm:py-3">
                       <p className="text-[12px] font-medium leading-4.5 text-text-primary sm:text-[13px] sm:leading-5">{item}</p>
                     </div>
                   ))}
@@ -321,17 +321,17 @@ export default async function VideoPage({ params }: PageProps) {
               </div>
 
               {hasControls ? (
-                <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
+                <div className="rounded-[20px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] dark:border-white/10 dark:shadow-[0_18px_36px_rgba(0,0,0,0.24)] sm:rounded-[24px] sm:p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Controls</p>
                   <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
                     {signals.promptRows.map((row) => (
-                      <div key={row.key} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3">
+                      <div key={row.key} className="rounded-xl border border-border bg-surface px-2.5 py-2.5 dark:border-white/10 dark:bg-white/5 sm:rounded-2xl sm:px-3">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">{row.label}</p>
                         <p className="mt-1 text-[12px] font-medium leading-4.5 text-text-primary sm:mt-1.5 sm:text-[13px] sm:leading-5">{row.value}</p>
                       </div>
                     ))}
                     {signals.inputRows.map((row) => (
-                      <div key={row.key} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3">
+                      <div key={row.key} className="rounded-xl border border-border bg-surface px-2.5 py-2.5 dark:border-white/10 dark:bg-white/5 sm:rounded-2xl sm:px-3">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">{row.label}</p>
                         <p className="mt-1 text-[12px] font-medium leading-4.5 text-text-primary sm:mt-1.5 sm:text-[13px] sm:leading-5">{row.value}</p>
                       </div>
@@ -340,7 +340,7 @@ export default async function VideoPage({ params }: PageProps) {
                 </div>
               ) : null}
 
-              <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
+              <div className="rounded-[20px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] dark:border-white/10 dark:shadow-[0_18px_36px_rgba(0,0,0,0.24)] sm:rounded-[24px] sm:p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Engine</p>
                 <h3 className="mt-1 text-base font-semibold text-text-primary">{signals.engineLabel}</h3>
                 <p className="mt-1.5 line-clamp-2 text-[12px] leading-5 text-text-secondary sm:mt-2 sm:text-[13px] sm:leading-6 sm:line-clamp-none">
@@ -349,7 +349,7 @@ export default async function VideoPage({ params }: PageProps) {
                 {signals.engineBadges.length ? (
                   <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
                     {signals.engineBadges.map((badge) => (
-                      <div key={badge} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-[11px] font-medium text-text-primary sm:rounded-2xl sm:px-3 sm:text-[12px]">
+                      <div key={badge} className="rounded-xl border border-border bg-surface px-2.5 py-2.5 text-[11px] font-medium text-text-primary dark:border-white/10 dark:bg-white/5 sm:rounded-2xl sm:px-3 sm:text-[12px]">
                         {badge}
                       </div>
                     ))}
@@ -360,7 +360,7 @@ export default async function VideoPage({ params }: PageProps) {
                     <Link
                       href={signals.modelPath}
                       prefetch={false}
-                      className="inline-flex items-center justify-center rounded-pill bg-text-primary px-4 py-2.5 text-[13px] font-semibold text-on-inverse transition hover:bg-text-primary/90"
+                      className="inline-flex items-center justify-center rounded-pill bg-text-primary px-4 py-2.5 text-[13px] font-semibold text-surface transition hover:bg-text-primary/90 dark:text-bg"
                     >
                       {signals.modelLabel}
                     </Link>
@@ -369,7 +369,7 @@ export default async function VideoPage({ params }: PageProps) {
                     <Link
                       href={signals.parentPath}
                       prefetch={false}
-                      className="inline-flex items-center justify-center rounded-pill border border-hairline bg-white px-4 py-2.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                      className="inline-flex items-center justify-center rounded-pill border border-hairline bg-surface px-4 py-2.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                     >
                       {signals.parentLabel}
                     </Link>
@@ -379,11 +379,11 @@ export default async function VideoPage({ params }: PageProps) {
             </div>
 
             <div className="space-y-2.5 sm:space-y-3">
-              <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
+              <div className="rounded-[20px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] dark:border-white/10 dark:shadow-[0_18px_36px_rgba(0,0,0,0.24)] sm:rounded-[24px] sm:p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Specs</p>
                 <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
                   {signals.detailRows.map((row) => (
-                    <div key={row.key} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3">
+                    <div key={row.key} className="rounded-xl border border-border bg-surface px-2.5 py-2.5 dark:border-white/10 dark:bg-white/5 sm:rounded-2xl sm:px-3">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">{row.label}</p>
                       <p className="mt-1 text-[13px] font-semibold leading-5 text-text-primary sm:mt-1.5 sm:text-[15px]">{row.value}</p>
                     </div>
@@ -395,7 +395,7 @@ export default async function VideoPage({ params }: PageProps) {
         </section>
 
         {related.length ? (
-          <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-surface-on-media-15 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] [content-visibility:auto] [contain-intrinsic-size:420px]">
+          <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:shadow-[0_22px_48px_rgba(0,0,0,0.28)] [content-visibility:auto] [contain-intrinsic-size:420px]">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-base font-semibold text-text-primary">Related examples</h2>
             </div>
@@ -403,7 +403,7 @@ export default async function VideoPage({ params }: PageProps) {
               {related.map((item) => (
                 <article
                   key={item.id}
-                  className="overflow-hidden rounded-[20px] border border-surface-on-media-15 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(15,23,42,0.09)]"
+                  className="overflow-hidden rounded-[20px] border border-border bg-surface shadow-[0_12px_28px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(15,23,42,0.09)] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_16px_34px_rgba(0,0,0,0.24)] dark:hover:shadow-[0_22px_44px_rgba(0,0,0,0.32)]"
                 >
                   <Link href={item.href} prefetch={false} className="block">
                     <div className="relative aspect-video bg-surface-on-media-dark-5">
@@ -427,7 +427,7 @@ export default async function VideoPage({ params }: PageProps) {
           </section>
         ) : null}
 
-        <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,252,0.96))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] [content-visibility:auto] [contain-intrinsic-size:260px]">
+        <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:shadow-[0_22px_48px_rgba(0,0,0,0.28)] [content-visibility:auto] [contain-intrinsic-size:260px]">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-micro text-text-secondary">Recreate</p>
@@ -443,7 +443,7 @@ export default async function VideoPage({ params }: PageProps) {
                   <Link
                     href={signals.parentPath}
                     prefetch={false}
-                    className="inline-flex items-center rounded-pill border border-hairline px-3.5 py-2 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                    className="inline-flex items-center rounded-pill border border-hairline bg-surface px-3.5 py-2 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                   >
                     {signals.parentLabel}
                   </Link>
@@ -452,7 +452,7 @@ export default async function VideoPage({ params }: PageProps) {
                   <Link
                     href={signals.modelPath}
                     prefetch={false}
-                    className="inline-flex items-center rounded-pill border border-hairline px-3.5 py-2 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                    className="inline-flex items-center rounded-pill border border-hairline bg-surface px-3.5 py-2 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                   >
                     {signals.modelLabel}
                   </Link>
