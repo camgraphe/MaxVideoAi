@@ -135,7 +135,10 @@ export default async function VideoPage({ params }: PageProps) {
 
   const { video, signals, related, isEligible } = page;
   const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
-  const playbackPoster = buildOptimizedPosterUrl(video.thumbUrl ?? FALLBACK_POSTER) ?? video.thumbUrl ?? FALLBACK_POSTER;
+  const playbackPoster =
+    buildOptimizedPosterUrl(video.thumbUrl ?? FALLBACK_POSTER, { width: 1200, quality: 72 }) ??
+    video.thumbUrl ??
+    FALLBACK_POSTER;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const aspect = parseAspectRatio(signals.aspectRatio ?? video.aspectRatio);
@@ -145,7 +148,7 @@ export default async function VideoPage({ params }: PageProps) {
   if (!isRenderable(page)) {
     return (
       <div className="mx-auto max-w-3xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-        <Link href={backHref} className="text-xs font-semibold uppercase tracking-micro text-text-muted hover:text-text-primary">
+        <Link href={backHref} prefetch={false} className="text-xs font-semibold uppercase tracking-micro text-text-secondary hover:text-text-primary">
           Back
         </Link>
         <div className="mt-6 rounded-card border border-border bg-surface px-6 py-10 text-center shadow-sm">
@@ -154,7 +157,7 @@ export default async function VideoPage({ params }: PageProps) {
             This video is no longer available. It may have been removed or the primary asset is missing.
           </p>
           <div className="mt-6 flex justify-center">
-            <ButtonLink href={backHref} size="sm">
+            <ButtonLink href={backHref} size="sm" prefetch={false}>
               Browse examples
             </ButtonLink>
           </div>
@@ -211,21 +214,14 @@ export default async function VideoPage({ params }: PageProps) {
 
   return (
     <div className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-20 pt-10 sm:px-6 lg:px-8">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-[-10%] top-12 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(67,97,238,0.12),rgba(67,97,238,0))] blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-[-8%] top-44 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(16,185,129,0.08),rgba(16,185,129,0))] blur-3xl"
-      />
+      <link rel="preload" as="image" href={playbackPoster} fetchPriority="high" />
       <nav aria-label="Breadcrumb" className="mb-6">
-        <ol className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+        <ol className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
           {signals.breadcrumbs.map((crumb, index) => (
             <li key={`${crumb.label}-${index}`} className="inline-flex items-center gap-2">
               {index > 0 ? <span aria-hidden>/</span> : null}
               {crumb.href ? (
-                <Link href={crumb.href} className="font-medium hover:text-text-primary">
+                <Link href={crumb.href} prefetch={false} className="font-medium hover:text-text-primary">
                   {crumb.label}
                 </Link>
               ) : (
@@ -240,7 +236,7 @@ export default async function VideoPage({ params }: PageProps) {
         <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-surface-on-media-15 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-4 shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
           <div className="border-b border-hairline pb-4">
             <div className="space-y-2.5">
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
                 {signals.badges.map((badge) => (
                   <span
                     key={badge}
@@ -256,6 +252,7 @@ export default async function VideoPage({ params }: PageProps) {
                 {signals.parentPath ? (
                   <Link
                     href={signals.parentPath}
+                    prefetch={false}
                     className="inline-flex items-center rounded-full border border-hairline px-3.5 py-1.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
                   >
                     {signals.parentLabel}
@@ -264,6 +261,7 @@ export default async function VideoPage({ params }: PageProps) {
                 {signals.modelPath ? (
                   <Link
                     href={signals.modelPath}
+                    prefetch={false}
                     className="inline-flex items-center rounded-full border border-hairline px-3.5 py-1.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
                   >
                     {signals.modelLabel}
@@ -279,7 +277,7 @@ export default async function VideoPage({ params }: PageProps) {
               poster={playbackPoster}
               className="h-full w-full object-contain"
               playsInline
-              preload="metadata"
+              preload="none"
               style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
             >
               <source src={video.videoUrl} type="video/mp4" />
@@ -289,13 +287,13 @@ export default async function VideoPage({ params }: PageProps) {
           <div className="mt-3 rounded-[22px] border border-hairline bg-white/90 p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">Prompt</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-secondary">Prompt</p>
                 <p className="mt-1 text-[13px] leading-5 text-text-secondary">{signals.promptPreview}</p>
               </div>
               <CopyPromptButton prompt={signals.promptText} copyLabel="Copy prompt" copiedLabel="Copied!" />
             </div>
             <details className="group mt-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
-              <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted transition hover:text-text-primary">
+              <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary transition hover:text-text-primary">
                 <span className="group-open:hidden">Show full prompt</span>
                 <span className="hidden group-open:inline">Hide full prompt</span>
               </summary>
@@ -312,7 +310,7 @@ export default async function VideoPage({ params }: PageProps) {
           <div className="grid items-start gap-2.5 sm:gap-3 xl:grid-cols-2">
             <div className="space-y-2.5 sm:space-y-3">
               <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">Workflow</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Workflow</p>
                 <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
                   {signals.whatThisShows.map((item, index) => (
                     <div key={`${item}-${index}`} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3 sm:py-3">
@@ -324,17 +322,17 @@ export default async function VideoPage({ params }: PageProps) {
 
               {hasControls ? (
                 <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">Controls</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Controls</p>
                   <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
                     {signals.promptRows.map((row) => (
                       <div key={row.key} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{row.label}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">{row.label}</p>
                         <p className="mt-1 text-[12px] font-medium leading-4.5 text-text-primary sm:mt-1.5 sm:text-[13px] sm:leading-5">{row.value}</p>
                       </div>
                     ))}
                     {signals.inputRows.map((row) => (
                       <div key={row.key} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{row.label}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">{row.label}</p>
                         <p className="mt-1 text-[12px] font-medium leading-4.5 text-text-primary sm:mt-1.5 sm:text-[13px] sm:leading-5">{row.value}</p>
                       </div>
                     ))}
@@ -343,7 +341,7 @@ export default async function VideoPage({ params }: PageProps) {
               ) : null}
 
               <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">Engine</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Engine</p>
                 <h3 className="mt-1 text-base font-semibold text-text-primary">{signals.engineLabel}</h3>
                 <p className="mt-1.5 line-clamp-2 text-[12px] leading-5 text-text-secondary sm:mt-2 sm:text-[13px] sm:leading-6 sm:line-clamp-none">
                   {signals.engineDescription}
@@ -361,6 +359,7 @@ export default async function VideoPage({ params }: PageProps) {
                   {signals.modelPath ? (
                     <Link
                       href={signals.modelPath}
+                      prefetch={false}
                       className="inline-flex items-center justify-center rounded-pill bg-text-primary px-4 py-2.5 text-[13px] font-semibold text-on-inverse transition hover:bg-text-primary/90"
                     >
                       {signals.modelLabel}
@@ -369,6 +368,7 @@ export default async function VideoPage({ params }: PageProps) {
                   {signals.parentPath ? (
                     <Link
                       href={signals.parentPath}
+                      prefetch={false}
                       className="inline-flex items-center justify-center rounded-pill border border-hairline bg-white px-4 py-2.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
                     >
                       {signals.parentLabel}
@@ -380,11 +380,11 @@ export default async function VideoPage({ params }: PageProps) {
 
             <div className="space-y-2.5 sm:space-y-3">
               <div className="rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-3 shadow-[0_14px_30px_rgba(15,23,42,0.06)] sm:rounded-[24px] sm:p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">Specs</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-secondary">Specs</p>
                 <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
                   {signals.detailRows.map((row) => (
                     <div key={row.key} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 sm:rounded-2xl sm:px-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{row.label}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">{row.label}</p>
                       <p className="mt-1 text-[13px] font-semibold leading-5 text-text-primary sm:mt-1.5 sm:text-[15px]">{row.value}</p>
                     </div>
                   ))}
@@ -395,7 +395,7 @@ export default async function VideoPage({ params }: PageProps) {
         </section>
 
         {related.length ? (
-          <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-surface-on-media-15 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+          <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-surface-on-media-15 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.94))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] [content-visibility:auto] [contain-intrinsic-size:420px]">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-base font-semibold text-text-primary">Related examples</h2>
             </div>
@@ -405,18 +405,18 @@ export default async function VideoPage({ params }: PageProps) {
                   key={item.id}
                   className="overflow-hidden rounded-[20px] border border-surface-on-media-15 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(15,23,42,0.09)]"
                 >
-                  <Link href={item.href} className="block">
+                  <Link href={item.href} prefetch={false} className="block">
                     <div className="relative aspect-video bg-surface-on-media-dark-5">
                       {item.thumbUrl ? (
                         <Image src={item.thumbUrl} alt={item.title} fill className="object-cover" sizes="(min-width: 1280px) 260px, (min-width: 768px) 40vw, 100vw" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-micro text-text-muted">
+                        <div className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-micro text-text-secondary">
                           No preview
                         </div>
                       )}
                     </div>
                     <div className="space-y-1.5 px-3.5 py-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">{item.reason}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-micro text-text-secondary">{item.reason}</p>
                       <h3 className="text-[13px] font-semibold leading-5 text-text-primary">{item.title}</h3>
                       <p className="line-clamp-2 text-[12px] leading-5 text-text-secondary">{item.subtitle}</p>
                     </div>
@@ -427,21 +427,22 @@ export default async function VideoPage({ params }: PageProps) {
           </section>
         ) : null}
 
-        <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,252,0.96))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+        <section className="mx-auto w-full max-w-5xl rounded-[26px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,252,0.96))] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] [content-visibility:auto] [contain-intrinsic-size:260px]">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">Recreate</p>
+              <p className="text-[10px] font-semibold uppercase tracking-micro text-text-secondary">Recreate</p>
               <h2 className="mt-1 text-lg font-semibold text-text-primary">Load this render in the workspace</h2>
               <p className="mt-2 max-w-2xl text-[13px] leading-6 text-text-secondary">
                 Start from the same prompt and settings, then remix duration, aspect ratio, references, or audio.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <ButtonLink href={signals.recreatePath}>
+                <ButtonLink href={signals.recreatePath} prefetch={false}>
                   Recreate in workspace
                 </ButtonLink>
                 {signals.parentPath ? (
                   <Link
                     href={signals.parentPath}
+                    prefetch={false}
                     className="inline-flex items-center rounded-pill border border-hairline px-3.5 py-2 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
                   >
                     {signals.parentLabel}
@@ -450,6 +451,7 @@ export default async function VideoPage({ params }: PageProps) {
                 {signals.modelPath ? (
                   <Link
                     href={signals.modelPath}
+                    prefetch={false}
                     className="inline-flex items-center rounded-pill border border-hairline px-3.5 py-2 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
                   >
                     {signals.modelLabel}
