@@ -79,6 +79,32 @@ const EXACT_PATH_REDIRECTS: Record<string, string> = {
   '/models/pika-image-video': '/models/pika-text-to-video',
 };
 const GONE_MARKETING_PATHS = new Set(['/a']);
+const NON_PREFIXED_LOCALIZED_EXAMPLES_PREFIXES = {
+  fr: '/galerie',
+  es: '/galeria',
+} as const;
+const NON_PREFIXED_LOCALIZED_BLOG_SLUGS = {
+  fr: new Set([
+    'acceder-a-sora-2-sans-invitation',
+    'comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
+    'comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video',
+    'explorer-plusieurs-angles-de-camera-a-partir-dune-image-approuvee',
+    'generateur-de-fiche-personnage-ia',
+    'invites-sequencees-sora-2-avec-son-et-image-de-marque',
+    'les-mises-a-jour-de-veo-3-apportent-des-controles-cinematographiques',
+    'lia-peut-elle-changer-langle-de-camera-dune-photo',
+  ]),
+  es: new Set([
+    'accede-a-sora-2-sin-invitacion',
+    'como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika',
+    'como-crear-personajes-de-ia-coherentes-en-imagenes-y-video',
+    'como-explorar-multiples-angulos-de-camara-desde-una-imagen-aprobada',
+    'generador-de-fichas-de-personaje-con-ia',
+    'indicaciones-secuenciadas-de-sora-2-con-sonido-e-identidad-de-marca',
+    'la-ia-puede-cambiar-el-angulo-de-camara-de-una-foto',
+    'las-actualizaciones-de-veo-3-traen-controles-cinematograficos',
+  ]),
+} as const;
 const QUERY_PARAM_STRIP_PREFIXES = [
   '/models',
   '/pricing',
@@ -360,6 +386,10 @@ export async function middleware(req: NextRequest) {
 
   pathname = normalizedPathname;
   localeFromPath = extractLocaleFromPathname(pathname);
+  const nonPrefixedLocalizedRedirect = resolveNonPrefixedLocalizedMarketingRedirect(req, pathname);
+  if (nonPrefixedLocalizedRedirect) {
+    return finalizeResponse(nonPrefixedLocalizedRedirect, hasLogoutIntentCookie);
+  }
   const isAdminRoute = pathname.toLowerCase() === '/admin' || pathname.toLowerCase().startsWith('/admin/');
   const appNoindex = shouldMarkAppNoindex(pathname);
   const trackingNoindex = shouldMarkTrackingNoindex(req, pathname, isAdminRoute);
@@ -692,6 +722,43 @@ function resolveLangParamRedirect(req: NextRequest, pathname: string): NextRespo
   redirectUrl.pathname = localizedPath;
   redirectUrl.searchParams.delete('lang');
   return NextResponse.redirect(redirectUrl, 301);
+}
+
+function resolveNonPrefixedLocalizedMarketingRedirect(req: NextRequest, pathname: string): NextResponse | null {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return null;
+  }
+
+  for (const [locale, prefix] of Object.entries(NON_PREFIXED_LOCALIZED_EXAMPLES_PREFIXES) as Array<
+    [Exclude<AppLocale, 'en'>, string]
+  >) {
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = `/${locale}${pathname}`;
+      return NextResponse.redirect(redirectUrl, 301);
+    }
+  }
+
+  if (!pathname.startsWith('/blog/')) {
+    return null;
+  }
+
+  const slug = pathname.slice('/blog/'.length);
+  if (!slug || slug.includes('/')) {
+    return null;
+  }
+
+  for (const [locale, slugs] of Object.entries(NON_PREFIXED_LOCALIZED_BLOG_SLUGS) as Array<
+    [Exclude<AppLocale, 'en'>, Set<string>]
+  >) {
+    if (slugs.has(slug)) {
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = `/${locale}/blog/${slug}`;
+      return NextResponse.redirect(redirectUrl, 301);
+    }
+  }
+
+  return null;
 }
 
 function resolveQueryAllowlist(pathWithoutLocale: string): Set<string> | null {
