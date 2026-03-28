@@ -8,6 +8,7 @@ import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
 import { updateSession } from '@/lib/supabase-ssr';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
+import { isSeoWatchVideoPath } from '@/lib/video-seo';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 
 const NEXT_LOCALE_COOKIE = 'NEXT_LOCALE';
@@ -639,7 +640,9 @@ function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, isAdminRo
 function shouldMarkAppNoindex(pathname: string): boolean {
   const normalized = pathname.toLowerCase();
   if (normalized.startsWith('/video/')) {
-    return true;
+    // Keep the generic watch pages out of the index, but let the curated rollout
+    // control robots state through page metadata.
+    return !isSeoWatchVideoPath(normalized);
   }
   return APP_NOINDEX_PREFIXES.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`));
 }
