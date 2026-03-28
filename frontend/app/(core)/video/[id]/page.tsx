@@ -181,6 +181,8 @@ export default async function VideoPage({ params }: PageProps) {
     ? {
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
+        url: canonical,
+        mainEntityOfPage: canonical,
         name: signals.title,
         description: signals.videoDescription,
         thumbnailUrl: [thumbnailUrl],
@@ -213,9 +215,9 @@ export default async function VideoPage({ params }: PageProps) {
     : null;
 
   return (
-    <div className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-20 pt-10 sm:px-6 lg:px-8">
+    <div className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8">
       <link rel="preload" as="image" href={playbackPoster} fetchPriority="high" />
-      <nav aria-label="Breadcrumb" className="mb-6">
+      <nav aria-label="Breadcrumb" className="mb-4">
         <ol className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
           {signals.breadcrumbs.map((crumb, index) => (
             <li key={`${crumb.label}-${index}`} className="inline-flex items-center gap-2">
@@ -234,44 +236,13 @@ export default async function VideoPage({ params }: PageProps) {
 
       <article className="relative space-y-8">
         <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-border bg-[linear-gradient(180deg,var(--surface-glass-95),var(--surface-2))] p-4 shadow-[0_20px_48px_rgba(15,23,42,0.08)] dark:border-white/10 dark:shadow-[0_24px_56px_rgba(0,0,0,0.3)]">
-          <div className="border-b border-hairline pb-4">
-            <div className="space-y-2.5">
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-                {signals.badges.map((badge) => (
-                  <span
-                    key={badge}
-                    className="rounded-full border border-hairline bg-surface-glass-90 px-2.5 py-1 text-[10px] text-text-secondary shadow-[0_8px_18px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/5 dark:shadow-none"
-                  >
-                    {badge}
-                  </span>
-                ))}
-              </div>
+          <div className="space-y-3">
+            <div className="space-y-2">
               <h1 className="text-[1.65rem] font-semibold tracking-tight text-text-primary sm:text-[2rem]">{signals.title}</h1>
-              <p className="max-w-3xl text-[13px] leading-6 text-text-secondary sm:text-sm">{signals.intro}</p>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {signals.parentPath ? (
-                  <Link
-                    href={signals.parentPath}
-                    prefetch={false}
-                    className="inline-flex items-center rounded-full border border-hairline px-3.5 py-1.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
-                  >
-                    {signals.parentLabel}
-                  </Link>
-                ) : null}
-                {signals.modelPath ? (
-                  <Link
-                    href={signals.modelPath}
-                    prefetch={false}
-                    className="inline-flex items-center rounded-full border border-hairline px-3.5 py-1.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
-                  >
-                    {signals.modelLabel}
-                  </Link>
-                ) : null}
-              </div>
             </div>
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-[24px] border border-hairline bg-black" style={containerStyle}>
+          <div className="mt-3 overflow-hidden rounded-[24px] border border-hairline bg-black" style={containerStyle}>
             <video
               controls
               poster={playbackPoster}
@@ -284,7 +255,45 @@ export default async function VideoPage({ params }: PageProps) {
             </video>
           </div>
 
-          <div className="mt-3 rounded-[22px] border border-hairline bg-surface-glass-90 p-3 dark:border-white/10 dark:bg-white/5">
+          <div className="mt-4 grid gap-3 border-t border-hairline pt-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+            <div className="space-y-3">
+              {signals.badges.length ? (
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                  {signals.badges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="rounded-full border border-hairline bg-surface-glass-90 px-2.5 py-1 text-[10px] text-text-secondary shadow-[0_8px_18px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/5 dark:shadow-none"
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <p className="max-w-3xl text-[13px] leading-6 text-text-secondary sm:text-sm">{signals.intro}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 lg:justify-end">
+              {signals.parentPath ? (
+                <Link
+                  href={signals.parentPath}
+                  prefetch={false}
+                  className="inline-flex items-center rounded-full border border-hairline px-3.5 py-1.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                >
+                  {signals.parentLabel}
+                </Link>
+              ) : null}
+              {signals.modelPath ? (
+                <Link
+                  href={signals.modelPath}
+                  prefetch={false}
+                  className="inline-flex items-center rounded-full border border-hairline px-3.5 py-1.5 text-[13px] font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
+                >
+                  {signals.modelLabel}
+                </Link>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-[22px] border border-hairline bg-surface-glass-90 p-3 dark:border-white/10 dark:bg-white/5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-secondary">Prompt</p>

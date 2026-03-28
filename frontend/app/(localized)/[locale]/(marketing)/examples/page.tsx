@@ -941,18 +941,24 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const mainVideoCopy =
     locale === 'fr'
       ? {
+          preview: 'Aperçu',
           openExample: "Ouvrir l'exemple",
+          openWatchPage: 'Ouvrir la page vidéo',
           audioOn: 'Audio activé',
           fullPrompt: 'Prompt complet',
         }
       : locale === 'es'
         ? {
+            preview: 'Vista previa',
             openExample: 'Abrir ejemplo',
+            openWatchPage: 'Abrir la página del video',
             audioOn: 'Audio activado',
             fullPrompt: 'Prompt completo',
           }
         : {
+            preview: 'Preview',
             openExample: 'Open example',
+            openWatchPage: 'Open watch page',
             audioOn: 'Audio on',
             fullPrompt: 'Full prompt',
           };
@@ -1031,44 +1037,63 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
           {mainVideo && mainVideoContentUrl ? (
             <section className="mx-auto w-full max-w-[920px]">
               <article className="group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card">
-                <div
-                  className="relative overflow-hidden bg-surface-on-media-dark-5"
-                  style={{ aspectRatio: mainVideoIsPortrait ? '16 / 9' : mainVideoAspectRatio }}
+                <Link
+                  href={mainVideo.card.href}
+                  className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  aria-label={`${mainVideoCopy.openWatchPage}: ${mainVideoTitle}`}
                 >
-                  {mainVideoIsPortrait && mainVideoPoster ? (
-                    <>
-                      <div
-                        className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl"
-                        style={{ backgroundImage: `url(${mainVideoPoster})` }}
-                        aria-hidden
-                      />
-                      <div className="absolute inset-0 bg-black/30" aria-hidden />
-                    </>
-                  ) : null}
-
                   <div
-                    className={clsx(
-                      'relative h-full w-full',
-                      mainVideoIsPortrait ? 'flex items-center justify-center p-3 sm:p-4' : ''
-                    )}
+                    className="relative overflow-hidden bg-surface-on-media-dark-5"
+                    style={{ aspectRatio: mainVideoIsPortrait ? '16 / 9' : mainVideoAspectRatio }}
                   >
-                    <ExamplesHeroVideo
+                    {mainVideoIsPortrait && mainVideoPoster ? (
+                      <>
+                        <div
+                          className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl"
+                          style={{ backgroundImage: `url(${mainVideoPoster})` }}
+                          aria-hidden
+                        />
+                        <div className="absolute inset-0 bg-black/30" aria-hidden />
+                      </>
+                    ) : null}
+
+                    <div className="absolute left-3 top-3 z-30 inline-flex items-center rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-micro text-white shadow-sm">
+                      {mainVideoCopy.preview}
+                    </div>
+
+                    <div
                       className={clsx(
-                        mainVideoIsPortrait
-                          ? 'relative z-10 h-full w-auto max-w-full rounded-[18px] object-contain shadow-[0_18px_48px_rgba(15,23,42,0.28)]'
-                          : 'h-full w-full object-cover'
+                        'relative h-full w-full',
+                        mainVideoIsPortrait ? 'flex items-center justify-center p-3 sm:p-4' : ''
                       )}
-                      src={mainVideoContentUrl}
-                      type={mainVideoMimeType}
-                      poster={mainVideoPoster ?? undefined}
-                      posterFit={mainVideoIsPortrait ? 'contain' : 'cover'}
-                      ariaLabel={mainVideoTitle}
-                    />
+                    >
+                      <ExamplesHeroVideo
+                        className={clsx(
+                          mainVideoIsPortrait
+                            ? 'relative z-10 h-full w-auto max-w-full rounded-[18px] object-contain shadow-[0_18px_48px_rgba(15,23,42,0.28)]'
+                            : 'h-full w-full object-cover'
+                        )}
+                        src={mainVideoContentUrl}
+                        type={mainVideoMimeType}
+                        poster={mainVideoPoster ?? undefined}
+                        posterFit={mainVideoIsPortrait ? 'contain' : 'cover'}
+                        ariaLabel={mainVideoTitle}
+                        ariaHidden
+                        controls={false}
+                      />
+                    </div>
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/15 to-transparent px-3 py-3">
+                      {mainVideo.video.hasAudio ? (
+                        <AudioEqualizerBadge tone="light" size="sm" label={mainVideoCopy.audioOn} />
+                      ) : (
+                        <span />
+                      )}
+                      <span className="inline-flex items-center rounded-full bg-white/92 px-3 py-1.5 text-[11px] font-semibold text-black shadow-sm">
+                        {mainVideoCopy.openWatchPage}
+                      </span>
+                    </div>
                   </div>
-                  {mainVideo.video.hasAudio ? (
-                    <AudioEqualizerBadge tone="light" size="sm" label={mainVideoCopy.audioOn} />
-                  ) : null}
-                </div>
+                </Link>
 
                 <div className="space-y-2.5 px-5 py-4 text-left sm:px-6 sm:py-4.5">
                   <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">

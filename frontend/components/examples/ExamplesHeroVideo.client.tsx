@@ -8,6 +8,8 @@ type ExamplesHeroVideoProps = {
   poster?: string | null;
   className?: string;
   ariaLabel: string;
+  ariaHidden?: boolean;
+  controls?: boolean;
   posterFit?: 'cover' | 'contain';
 };
 
@@ -28,6 +30,8 @@ export function ExamplesHeroVideo({
   poster,
   className,
   ariaLabel,
+  ariaHidden = false,
+  controls = true,
   posterFit = 'cover',
 }: ExamplesHeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -126,15 +130,18 @@ export function ExamplesHeroVideo({
       <video
         ref={videoRef}
         className={`${className ?? ''} absolute inset-0 z-20 transition-opacity duration-300 ${
+          controls ? '' : ' pointer-events-none'
+        } ${
           showPosterOverlay ? 'opacity-0' : 'opacity-100'
         }`}
         muted
         loop
-        controls
+        controls={controls}
         preload="none"
         playsInline
         poster={poster ?? undefined}
         aria-label={ariaLabel}
+        aria-hidden={ariaHidden || undefined}
       >
         <source src={src} type={type} />
       </video>
