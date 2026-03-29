@@ -21,9 +21,29 @@ type PrepareImageFileOptions = {
   maxDimension?: number;
 };
 
+const KNOWN_IMAGE_FILE_EXTENSIONS = new Set([
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'gif',
+  'bmp',
+  'avif',
+  'heic',
+  'heif',
+  'tif',
+  'tiff',
+]);
+
 function clampPositiveInt(value: number, fallback: number): number {
   if (!Number.isFinite(value) || value <= 0) return fallback;
   return Math.max(1, Math.round(value));
+}
+
+function isLikelyImageFile(file: File): boolean {
+  if (file.type.startsWith('image/')) return true;
+  const extension = file.name.split('.').pop()?.trim().toLowerCase() ?? '';
+  return KNOWN_IMAGE_FILE_EXTENSIONS.has(extension);
 }
 
 function buildOutputFileName(file: File, mime: string): string {
@@ -114,7 +134,7 @@ export async function prepareImageFileForUpload(
   file: File,
   options: PrepareImageFileOptions
 ): Promise<File> {
-  if (!file.type.startsWith('image/')) return file;
+  if (!isLikelyImageFile(file)) return file;
 
   const maxBytes = clampPositiveInt(options.maxBytes, 25 * 1024 * 1024);
   const maxDimension = clampPositiveInt(

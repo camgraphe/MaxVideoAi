@@ -144,6 +144,16 @@ export function translateError(context: ErrorTranslationInput): TranslatedError 
         'IMAGE_UPLOAD_FAILED',
         'Image upload failed. Please try re-uploading the file, use a smaller image, or export the photo again from your device.'
       ),
+    FILE_TOO_LARGE: () =>
+      resolve(
+        'FILE_TOO_LARGE',
+        'This file is too large to import. Please choose a smaller image or export a reduced version from your device.'
+      ),
+    UNSUPPORTED_TYPE: () =>
+      resolve(
+        'UNSUPPORTED_TYPE',
+        'This image format could not be imported. Please try another photo or export it again from your device as a standard image.'
+      ),
   };
 
   if (normalizedCode && mapByCode[normalizedCode]) {

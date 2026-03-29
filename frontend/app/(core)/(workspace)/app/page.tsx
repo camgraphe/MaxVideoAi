@@ -7,6 +7,7 @@ import type { FormEvent, ChangeEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
+import { translateError } from '@/lib/error-messages';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -250,6 +251,22 @@ function normalizeEngineToken(value?: string | null): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
+function resolveUploadErrorMessage(
+  assetType: 'image' | 'video' | 'audio',
+  status: number,
+  errorCode: unknown,
+  fallback: string
+): string {
+  if (assetType === 'image') {
+    return translateError({
+      code: typeof errorCode === 'string' ? errorCode : null,
+      status,
+      message: fallback,
+    }).message;
+  }
+  return typeof errorCode === 'string' ? errorCode : fallback;
+}
+
 function matchesEngineToken(engine: EngineCaps, token: string): boolean {
   if (!token) return false;
   if (normalizeEngineToken(engine.id) === token) return true;
@@ -342,7 +359,7 @@ function AssetLibraryModal({
         });
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload?.ok || !payload?.asset?.url) {
-          const message = typeof payload?.error === 'string' ? payload.error : importFailedLabel;
+          const message = resolveUploadErrorMessage(assetType, response.status, payload?.error, importFailedLabel);
           throw new Error(message);
         }
 
@@ -3126,7 +3143,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           });
           const payload = await response.json().catch(() => null);
           if (!response.ok || !payload?.ok) {
-            throw new Error(typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED');
+            throw new Error(resolveUploadErrorMessage(field.type, response.status, payload?.error, 'Upload failed'));
           }
           const assetResponse = payload.asset as {
             id: string;
@@ -3339,7 +3356,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           });
           const payload = await response.json().catch(() => null);
           if (!response.ok || !payload?.ok) {
-            throw new Error(typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED');
+            throw new Error(
+              resolveUploadErrorMessage(slot === 'video' ? 'video' : 'image', response.status, payload?.error, 'Upload failed')
+            );
           }
           const assetResponse = payload.asset as {
             id: string;
