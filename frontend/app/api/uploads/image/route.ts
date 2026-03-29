@@ -64,13 +64,13 @@ export async function POST(req: NextRequest) {
   }
 
   const arrayBuffer = await blob.arrayBuffer();
-  const originalBuffer = Buffer.from(arrayBuffer);
+  const originalBuffer: Buffer = Buffer.from(arrayBuffer);
 
   if (!originalBuffer.length) {
     return NextResponse.json({ ok: false, error: 'EMPTY_FILE' }, { status: 400 });
   }
 
-  let uploadBuffer = originalBuffer;
+  let uploadBuffer: Buffer = originalBuffer;
   let uploadMime = declaredMime && declaredMime.startsWith('image/') ? declaredMime : inferredMime;
   let uploadFileName = blob.name;
   let normalizedFromMime: string | null = null;
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       } else {
         pipeline = pipeline.jpeg({ quality: 90, mozjpeg: true });
       }
-      uploadBuffer = await pipeline.toBuffer();
+      uploadBuffer = Buffer.from(await pipeline.toBuffer());
       normalizedFromMime = uploadMime;
       uploadMime = targetMime;
       uploadFileName = normalizeUploadFileName(blob.name, targetMime);

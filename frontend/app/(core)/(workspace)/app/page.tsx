@@ -252,7 +252,7 @@ function normalizeEngineToken(value?: string | null): string {
 }
 
 function resolveUploadErrorMessage(
-  assetType: 'image' | 'video' | 'audio',
+  assetType: string,
   status: number,
   errorCode: unknown,
   fallback: string
