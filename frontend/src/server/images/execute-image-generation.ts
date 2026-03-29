@@ -1,5 +1,6 @@
 import { ApiError, ValidationError } from '@fal-ai/client';
 import { randomUUID } from 'crypto';
+import sharp from 'sharp';
 import { listFalEngines } from '@/config/falEngines';
 import type {
   CharacterReferenceSelection,
@@ -18,7 +19,14 @@ import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
-import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured, recordUserAsset } from '@/server/storage';
+import {
+  createSignedDownloadUrl,
+  extractStorageKeyFromUrl,
+  isAllowedAssetHost,
+  isStorageConfigured,
+  recordUserAsset,
+  uploadImageToStorage,
+} from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, parseStoredImageRenders, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import {
@@ -45,6 +53,10 @@ const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
+const NORMALIZED_REFERENCE_FETCH_TIMEOUT_MS = Number.parseInt(
+  process.env.NORMALIZED_REFERENCE_FETCH_TIMEOUT_MS ?? '12000',
+  10
+);
 
 type PendingReceipt = {
   userId: string;
@@ -264,6 +276,129 @@ async function getStoredAssetMimeByUrl(userId: string, urls: string[]): Promise<
     console.warn('[images] unable to inspect stored asset formats', error);
     return new Map();
   }
+}
+
+function isReferenceImageSupported(
+  allowedFormats: string[],
+  url: string,
+  storedAssetMimeByUrl: Map<string, string>
+): boolean {
+  const storedMime = storedAssetMimeByUrl.get(url) ?? null;
+  const supportedByMime = isSupportedImageMime(allowedFormats, storedMime);
+  if (supportedByMime != null) {
+    return supportedByMime;
+  }
+  const inferredFormat = inferImageFormatFromUrl(url);
+  if (!inferredFormat) {
+    return true;
+  }
+  return isSupportedImageFormat(allowedFormats, inferredFormat);
+}
+
+function pickNormalizedReferenceMime(allowedFormats: string[], hasAlpha: boolean): string | null {
+  const formats = new Set(allowedFormats.map((entry) => entry.trim().toLowerCase()).filter(Boolean));
+  const supportsJpeg = formats.has('jpg') || formats.has('jpeg');
+  const supportsPng = formats.has('png');
+  const supportsWebp = formats.has('webp');
+  const supportsAvif = formats.has('avif');
+
+  if (hasAlpha) {
+    if (supportsWebp) return 'image/webp';
+    if (supportsPng) return 'image/png';
+    if (supportsJpeg) return 'image/jpeg';
+    if (supportsAvif) return 'image/avif';
+    return null;
+  }
+
+  if (supportsJpeg) return 'image/jpeg';
+  if (supportsWebp) return 'image/webp';
+  if (supportsPng) return 'image/png';
+  if (supportsAvif) return 'image/avif';
+  return null;
+}
+
+async function fetchBufferFromUrl(url: string, timeoutMs: number): Promise<Buffer> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`source fetch failed (${response.status})`);
+    }
+    const payload = await response.arrayBuffer();
+    const buffer = Buffer.from(payload);
+    if (!buffer.length) {
+      throw new Error('source image is empty');
+    }
+    return buffer;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function normalizeReferenceImageForEngine(params: {
+  userId: string;
+  url: string;
+  supportedFormats: string[];
+  engineId: string;
+}): Promise<{ url: string; mime: string }> {
+  if (!isAllowedAssetHost(params.url)) {
+    throw new Error('reference host is not eligible for server-side normalization');
+  }
+
+  const storageKey = extractStorageKeyFromUrl(params.url);
+  const sourceUrl =
+    storageKey && isStorageConfigured()
+      ? await createSignedDownloadUrl(storageKey, { expiresInSeconds: SIGNED_REFERENCE_URL_TTL_SECONDS })
+      : params.url;
+
+  const sourceBuffer = await fetchBufferFromUrl(sourceUrl, NORMALIZED_REFERENCE_FETCH_TIMEOUT_MS);
+  const metadata = await sharp(sourceBuffer, { failOn: 'none' }).metadata();
+  const targetMime = pickNormalizedReferenceMime(params.supportedFormats, metadata.hasAlpha === true);
+  if (!targetMime) {
+    throw new Error('no compatible target mime available for normalization');
+  }
+
+  let pipeline = sharp(sourceBuffer, { failOn: 'none' }).rotate();
+  if (targetMime === 'image/jpeg') {
+    pipeline = pipeline.jpeg({ quality: 90, mozjpeg: true });
+  } else if (targetMime === 'image/png') {
+    pipeline = pipeline.png();
+  } else if (targetMime === 'image/webp') {
+    pipeline = pipeline.webp({ quality: 90 });
+  } else if (targetMime === 'image/avif') {
+    pipeline = pipeline.avif({ quality: 72 });
+  }
+
+  const normalizedBuffer = await pipeline.toBuffer();
+  const upload = await uploadImageToStorage({
+    data: normalizedBuffer,
+    mime: targetMime,
+    userId: params.userId,
+    fileName: params.url.split('/').pop() ?? 'reference-image',
+    prefix: 'normalized-references',
+  });
+
+  try {
+    await recordUserAsset({
+      userId: params.userId,
+      url: upload.url,
+      mime: upload.mime,
+      width: upload.width,
+      height: upload.height,
+      size: upload.size,
+      source: 'normalized_reference',
+      metadata: {
+        originalUrl: params.url,
+        engineId: params.engineId,
+        supportedFormats: params.supportedFormats,
+      },
+    });
+  } catch (error) {
+    console.warn('[images] failed to record normalized reference asset', error);
+  }
+
+  return { url: upload.url, mime: upload.mime };
 }
 
 function extractImages(payload: unknown): GeneratedImage[] {
@@ -887,10 +1022,10 @@ export async function executeImageGeneration({
   const imageUrls = rawImageUrls
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry) => entry.length);
-  const characterReferences = sanitizeCharacterReferences(body.characterReferences);
+  let characterReferences = sanitizeCharacterReferences(body.characterReferences);
   const characterReferenceUrls = characterReferences.map((entry) => entry.imageUrl);
-  const normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
-  const combinedImageUrls = [...characterReferenceUrls, ...normalizedImageUrls];
+  let normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
+  let combinedImageUrls = [...characterReferenceUrls, ...normalizedImageUrls];
   const effectivePrompt = buildCharacterReferencePrompt(prompt, characterReferences);
   const invalidImageUrl = combinedImageUrls.find((entry) => !/^https?:\/\//i.test(entry));
   if (invalidImageUrl) {
@@ -910,18 +1045,61 @@ export async function executeImageGeneration({
   const supportedReferenceFormats = getSupportedImageFormats(engine);
   if (supportedReferenceFormats.length && combinedImageUrls.length) {
     const storedAssetMimeByUrl = await getStoredAssetMimeByUrl(userId, combinedImageUrls);
-    const invalidImageFormatUrl = combinedImageUrls.find((entry) => {
-      const storedMime = storedAssetMimeByUrl.get(entry) ?? null;
-      const supportedByMime = isSupportedImageMime(supportedReferenceFormats, storedMime);
-      if (supportedByMime != null) {
-        return !supportedByMime;
+    const normalizedReferenceByUrl = new Map<string, { url: string; mime: string }>();
+
+    for (const referenceUrl of [...new Set(combinedImageUrls)]) {
+      if (isReferenceImageSupported(supportedReferenceFormats, referenceUrl, storedAssetMimeByUrl)) {
+        continue;
       }
-      const inferredFormat = inferImageFormatFromUrl(entry);
-      if (!inferredFormat) {
-        return false;
+
+      try {
+        const normalizedReference = await normalizeReferenceImageForEngine({
+          userId,
+          url: referenceUrl,
+          supportedFormats: supportedReferenceFormats,
+          engineId: engine.id,
+        });
+        normalizedReferenceByUrl.set(referenceUrl, normalizedReference);
+        storedAssetMimeByUrl.set(normalizedReference.url, normalizedReference.mime);
+      } catch (error) {
+        const reason = error instanceof Error && error.message ? error.message : 'Unable to normalize reference image.';
+        console.warn('[images] failed to normalize reference image for engine', {
+          engineId: engine.id,
+          url: referenceUrl,
+          reason,
+        });
+        fail(
+          mode,
+          'image_normalization_failed',
+          'Reference image could not be converted to a format supported by this engine.',
+          422,
+          { allowed: supportedReferenceFormats, url: referenceUrl, reason },
+          {
+            engineId: engineEntry.id,
+            engineLabel: engineEntry.marketingName,
+          }
+        );
       }
-      return !isSupportedImageFormat(supportedReferenceFormats, inferredFormat);
-    });
+    }
+
+    if (normalizedReferenceByUrl.size) {
+      characterReferences = characterReferences.map((entry) => ({
+        ...entry,
+        imageUrl: normalizedReferenceByUrl.get(entry.imageUrl)?.url ?? entry.imageUrl,
+      }));
+      normalizedImageUrls = normalizedImageUrls.map(
+        (entry) => normalizedReferenceByUrl.get(entry)?.url ?? entry
+      );
+      const currentCharacterReferenceUrls = new Set(characterReferences.map((entry) => entry.imageUrl));
+      combinedImageUrls = [
+        ...characterReferences.map((entry) => entry.imageUrl),
+        ...normalizedImageUrls.filter((url) => !currentCharacterReferenceUrls.has(url)),
+      ];
+    }
+
+    const invalidImageFormatUrl = combinedImageUrls.find(
+      (entry) => !isReferenceImageSupported(supportedReferenceFormats, entry, storedAssetMimeByUrl)
+    );
     if (invalidImageFormatUrl) {
       fail(
         mode,

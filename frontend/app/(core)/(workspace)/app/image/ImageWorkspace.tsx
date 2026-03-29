@@ -44,7 +44,6 @@ import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
 import { FEATURES } from '@/content/feature-flags';
 import {
   formatSupportedImageFormatsLabel,
-  getImageAcceptAttribute,
   getSupportedImageFormats,
   inferImageFormatFromUrl,
   isSupportedImageFormat,
@@ -66,7 +65,6 @@ import {
 } from '@/lib/image/inputSchema';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobSurface } from '@/lib/job-surface';
-import { Link } from '@/i18n/navigation';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -606,10 +604,6 @@ function formatCharacterReferenceDate(value?: string | null): string {
   return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-function SectionDivider() {
-  return <div className="my-6 border-t border-surface-on-media-60" role="presentation" />;
-}
-
 function SelectGroup({
   label,
   options,
@@ -853,10 +847,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   );
   const supportedReferenceFormatsLabel = useMemo(
     () => formatSupportedImageFormatsLabel(supportedReferenceFormats),
-    [supportedReferenceFormats]
-  );
-  const referenceInputAccept = useMemo(
-    () => getImageAcceptAttribute(supportedReferenceFormats),
     [supportedReferenceFormats]
   );
   const outputFormatField = useMemo(
@@ -1699,10 +1689,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setError(resolvedCopy.errors.onlyImages);
         return;
       }
-      if (!isSupportedReferenceAsset(file.type, file.name)) {
-        showUnsupportedFormatError();
-        return;
-      }
       const tempUrl = URL.createObjectURL(file);
       const slotId = crypto.randomUUID();
       setReferenceSlots((previous) => {
@@ -1794,12 +1780,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     },
     [
       cleanupSlotPreview,
-      isSupportedReferenceAsset,
       resolvedCopy.errors.onlyImages,
       resolvedCopy.errors.uploadFailed,
       resolvedCopy.errors.fileTooLarge,
       resolvedCopy.errors.unauthorized,
-      showUnsupportedFormatError,
     ]
   );
 
@@ -2705,7 +2689,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         >
                           <input
                             type="file"
-                            accept={referenceInputAccept}
+                            accept="image/*"
                             ref={(element) => {
                               fileInputRefs.current[index] = element;
                             }}

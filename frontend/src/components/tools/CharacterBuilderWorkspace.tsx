@@ -3837,14 +3837,14 @@ export default function CharacterBuilderPage() {
                   <input
                     ref={identityFileRef}
                     type="file"
-                    accept="image/png,image/jpeg,image/webp"
+                    accept="image/*"
                     className="hidden"
                     onChange={(event) => void triggerUpload('identity', event.target.files)}
                   />
                   <input
                     ref={styleFileRef}
                     type="file"
-                    accept="image/png,image/jpeg,image/webp"
+                    accept="image/*"
                     className="hidden"
                     onChange={(event) => void triggerUpload('style', event.target.files)}
                   />

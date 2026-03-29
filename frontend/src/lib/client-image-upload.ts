@@ -34,17 +34,22 @@ function buildOutputFileName(file: File, mime: string): string {
 
 async function decodeImageFile(file: File): Promise<DecodeResult> {
   if (typeof createImageBitmap === 'function') {
-    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
-    return {
-      width: bitmap.width,
-      height: bitmap.height,
-      draw: (ctx, width, height) => {
-        ctx.drawImage(bitmap, 0, 0, width, height);
-      },
-      dispose: () => {
-        bitmap.close();
-      },
-    };
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      return {
+        width: bitmap.width,
+        height: bitmap.height,
+        draw: (ctx, width, height) => {
+          ctx.drawImage(bitmap, 0, 0, width, height);
+        },
+        dispose: () => {
+          bitmap.close();
+        },
+      };
+    } catch {
+      // Some mobile formats, especially iPhone HEIC/HEIF variants, can render
+      // in <img> even when createImageBitmap rejects them.
+    }
   }
 
   const objectUrl = URL.createObjectURL(file);
@@ -117,7 +122,18 @@ export async function prepareImageFileForUpload(
     DEFAULT_MAX_IMAGE_DIMENSION
   );
 
-  const decoded = await decodeImageFile(file);
+  let decoded: DecodeResult;
+  try {
+    decoded = await decodeImageFile(file);
+  } catch {
+    // Import should accept the widest range of images possible. If the browser
+    // cannot decode the file for client-side transcoding but the original file
+    // already fits the upload cap, let the server store the original asset.
+    if (file.size <= maxBytes) {
+      return file;
+    }
+    throw new Error('Unable to process this image in the browser before upload.');
+  }
   try {
     let targetWidth = decoded.width;
     let targetHeight = decoded.height;

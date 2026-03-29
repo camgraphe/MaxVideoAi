@@ -142,7 +142,7 @@ export function translateError(context: ErrorTranslationInput): TranslatedError 
     IMAGE_UPLOAD_FAILED: () =>
       resolve(
         'IMAGE_UPLOAD_FAILED',
-        'Image upload failed. Please try with a different file. Try re-uploading, use a smaller file, or a common format (PNG/JPG).'
+        'Image upload failed. Please try re-uploading the file, use a smaller image, or export the photo again from your device.'
       ),
   };
 

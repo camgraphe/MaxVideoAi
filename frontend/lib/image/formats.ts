@@ -9,7 +9,9 @@ const MIME_TO_FORMATS: Record<string, string[]> = {
   'image/avif': ['avif'],
   'image/gif': ['gif'],
   'image/heic': ['heic', 'heif'],
+  'image/heic-sequence': ['heic', 'heif'],
   'image/heif': ['heic', 'heif'],
+  'image/heif-sequence': ['heic', 'heif'],
   'image/jpeg': ['jpg', 'jpeg'],
   'image/jpg': ['jpg', 'jpeg'],
   'image/pjpeg': ['jpg', 'jpeg'],
@@ -107,7 +109,9 @@ export function getImageAcceptAttribute(allowedFormats: string[]): string {
       accept.add('.heic');
       accept.add('.heif');
       accept.add('image/heic');
+      accept.add('image/heic-sequence');
       accept.add('image/heif');
+      accept.add('image/heif-sequence');
       continue;
     }
     accept.add(`.${format}`);
