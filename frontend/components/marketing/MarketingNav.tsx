@@ -465,6 +465,10 @@ export function MarketingNav() {
               <Link
                 href="/login?next=/app"
                 className="inline-flex text-xs font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
+                data-analytics-event="cta_click"
+                data-analytics-cta-name="marketing_nav_login"
+                data-analytics-cta-location="marketing_nav_desktop"
+                data-analytics-target-family="auth"
               >
                 <span className="sm:hidden">{loginLabelMobile}</span>
                 <span className="hidden sm:inline">{login}</span>
@@ -472,7 +476,11 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                  className="inline-flex h-9 items-center whitespace-nowrap rounded-pill bg-brand px-3 text-xs font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
+                className="inline-flex h-9 items-center whitespace-nowrap rounded-pill bg-brand px-3 text-xs font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
+                data-analytics-event="cta_click"
+                data-analytics-cta-name="marketing_nav_start_app"
+                data-analytics-cta-location="marketing_nav_desktop"
+                data-analytics-target-family="workspace"
               >
                 <span className="sm:hidden">{ctaLabelMobile}</span>
                 <span className="hidden sm:inline">{cta}</span>
@@ -610,6 +618,10 @@ export function MarketingNav() {
                   href="/login?next=/app"
                   className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
+                  data-analytics-event="cta_click"
+                  data-analytics-cta-name="marketing_nav_login"
+                  data-analytics-cta-location="marketing_nav_mobile"
+                  data-analytics-target-family="auth"
                 >
                   {login}
                 </Link>
@@ -618,6 +630,10 @@ export function MarketingNav() {
                   prefetch={false}
                   className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
+                  data-analytics-event="cta_click"
+                  data-analytics-cta-name="marketing_nav_start_app"
+                  data-analytics-cta-location="marketing_nav_mobile"
+                  data-analytics-target-family="workspace"
                 >
                   {cta}
                 </Link>

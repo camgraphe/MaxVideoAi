@@ -330,25 +330,31 @@ export default function BillingPage() {
   const buildTopupAnalyticsPayload = useCallback(
     (amountCents: number | null | undefined, chargeCurrency: string): Record<string, unknown> => {
       const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
+      const normalizedAmount = Number.isFinite(amountCents) ? Math.max(0, Math.round(Number(amountCents))) : 0;
       const payload: Record<string, unknown> = {
+        route_family: 'billing',
         payment_provider: 'stripe',
         payment_flow: 'checkout',
         charge_currency: normalizedChargeCurrency,
+        wallet_amount_usd: normalizedAmount > 0 ? normalizedAmount / 100 : undefined,
+        wallet_amount_cents: normalizedAmount > 0 ? normalizedAmount : undefined,
+        credits_amount: normalizedAmount > 0 ? normalizedAmount / 100 : undefined,
       };
-      const normalizedAmount = Number.isFinite(amountCents) ? Math.max(0, Math.round(Number(amountCents))) : 0;
       if (normalizedAmount <= 0) {
         return payload;
       }
       const tier = USD_TOPUP_TIERS.find((entry) => entry.amountCents === normalizedAmount);
       const quote = topupQuotes[normalizedAmount];
-      payload.value = normalizedAmount / 100;
-      payload.currency = 'USD';
       payload.topup_amount_usd = normalizedAmount / 100;
       payload.topup_amount_cents = normalizedAmount;
       payload.topup_tier_id = tier?.id ?? 'custom';
       payload.topup_tier_label = tier?.label ?? 'Custom';
       payload.settlement_currency = quote?.currency ?? normalizedChargeCurrency;
       payload.settlement_amount_minor = quote?.amountMinor ?? undefined;
+      if (quote?.currency && typeof quote.amountMinor === 'number' && Number.isFinite(quote.amountMinor)) {
+        payload.value = quote.amountMinor / 100;
+        payload.currency = quote.currency;
+      }
       return payload;
     },
     [topupQuotes]

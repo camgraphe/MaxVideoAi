@@ -351,7 +351,17 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <ButtonLink href="/app/tools/angle" linkComponent={Link} size="lg">
+                  <ButtonLink
+                    href="/app/tools/angle"
+                    linkComponent={Link}
+                    size="lg"
+                    data-analytics-event="tool_cta_click"
+                    data-analytics-cta-name="angle_try_tool_hero"
+                    data-analytics-cta-location="tool_angle_hero"
+                    data-analytics-tool-name="angle"
+                    data-analytics-tool-surface="public"
+                    data-analytics-target-family="app_tools"
+                  >
                     {content.hero.primaryCta}
                     <ArrowRight className="h-4 w-4" />
                   </ButtonLink>
@@ -607,6 +617,12 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
                     linkComponent={Link}
                     size="lg"
                     className="bg-white text-slate-950 hover:bg-slate-100"
+                    data-analytics-event="tool_cta_click"
+                    data-analytics-cta-name="angle_try_tool_final"
+                    data-analytics-cta-location="tool_angle_final"
+                    data-analytics-tool-name="angle"
+                    data-analytics-tool-surface="public"
+                    data-analytics-target-family="app_tools"
                   >
                     {content.finalCta.primaryCta}
                   </ButtonLink>

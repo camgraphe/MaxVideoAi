@@ -28,6 +28,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { runAngleTool, saveImageToLibrary, useInfiniteJobs } from '@/lib/api';
+import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
@@ -231,12 +232,7 @@ function sanitizeParams(params: AngleToolNumericParams): AngleToolNumericParams 
 }
 
 function emitClientMetric(event: string, payload?: Record<string, unknown>) {
-  if (typeof window === 'undefined') return;
-  try {
-    window.dispatchEvent(new CustomEvent('mvai:analytics', { detail: { event, payload } }));
-  } catch {
-    // Ignore analytics transport failures.
-  }
+  dispatchAnalyticsEvent(event, payload);
 }
 
 function isAuthRequiredError(error: unknown): boolean {
@@ -1293,6 +1289,17 @@ export default function AngleToolPage() {
     setGenerating(true);
     setError(null);
 
+    emitClientMetric('tool_start', {
+      tool_name: 'angle',
+      tool_surface: 'workspace',
+      logged_in: true,
+      engine: engineId,
+      generate_best_angles: generateBestAngles,
+      rotation: params.rotation,
+      tilt: params.tilt,
+      zoom: params.zoom,
+    });
+
     try {
       const normalizedParams = sanitizeParams(params);
       const resolvedEngineId = resolveAngleEngineForParams(engineId, normalizedParams);
@@ -1310,16 +1317,18 @@ export default function AngleToolPage() {
       setResult(response);
       setSelectedOutputIndex(0);
 
-      emitClientMetric('tool_angle_generate', {
-        engineId: response.engineId,
-        latencyMs: response.latencyMs,
-        estimatedCostUsd: response.pricing.estimatedCostUsd,
-        actualCostUsd: response.pricing.actualCostUsd ?? null,
-        estimatedCredits: response.pricing.estimatedCredits,
-        actualCredits: response.pricing.actualCredits ?? null,
-        generateBestAngles,
-        requestedOutputCount: response.requestedOutputCount,
-        params: response.applied,
+      emitClientMetric('tool_complete', {
+        tool_name: 'angle',
+        tool_surface: 'workspace',
+        logged_in: true,
+        engine: response.engineId,
+        latency_ms: response.latencyMs,
+        estimated_cost_usd: response.pricing.estimatedCostUsd,
+        actual_cost_usd: response.pricing.actualCostUsd ?? null,
+        estimated_credits: response.pricing.estimatedCredits,
+        actual_credits: response.pricing.actualCredits ?? null,
+        generate_best_angles: generateBestAngles,
+        output_count: response.requestedOutputCount,
       });
     } catch (runError) {
       if (isAuthRequiredError(runError)) {

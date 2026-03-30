@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
 import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
+import GA4EventBridge from '@/components/analytics/GA4EventBridge';
 import GA4RouteTracker from '@/components/analytics/GA4RouteTracker';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
@@ -79,6 +80,7 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
     <>
       <ConsentModeBootstrap />
       <GA4RouteTracker />
+      <GA4EventBridge />
       <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
         <SWRProvider>
           <LocaleSync />

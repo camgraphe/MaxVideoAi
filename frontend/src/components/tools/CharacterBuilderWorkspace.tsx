@@ -26,6 +26,7 @@ import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { authFetch } from '@/lib/authFetch';
+import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -123,6 +124,10 @@ type BillingProductResponse = {
   };
   error?: string;
 };
+
+function emitClientMetric(event: string, payload?: Record<string, unknown>) {
+  dispatchAnalyticsEvent(event, payload);
+}
 
 const DEFAULT_CHARACTER_COPY = {
   "auto": "Auto",
@@ -2810,6 +2815,18 @@ export default function CharacterBuilderPage() {
     setLoadingActions((previous) => incrementLoadingRequestCount(previous, loadingKey));
     setPendingRuns((previous) => [pendingRun, ...previous].slice(0, 12));
 
+    emitClientMetric('tool_start', {
+      tool_name: 'character_builder',
+      tool_surface: 'workspace',
+      logged_in: true,
+      action: action.replace(/-/g, '_'),
+      source_mode: state.sourceMode,
+      output_mode: state.outputMode.replace(/-/g, '_'),
+      quality_mode: state.qualityMode,
+      format_mode: state.formatMode.replace(/-/g, '_'),
+      generate_count: generateCount ?? 1,
+    });
+
     try {
       const response = await runCharacterBuilderTool({
         jobId: clientJobId,
@@ -2864,6 +2881,18 @@ export default function CharacterBuilderPage() {
             ? copy.runFullBodyDone
             : copy.runLightingDone
       );
+      emitClientMetric('tool_complete', {
+        tool_name: 'character_builder',
+        tool_surface: 'workspace',
+        logged_in: true,
+        action: action.replace(/-/g, '_'),
+        source_mode: state.sourceMode,
+        output_mode: state.outputMode.replace(/-/g, '_'),
+        quality_mode: state.qualityMode,
+        format_mode: state.formatMode.replace(/-/g, '_'),
+        generate_count: generateCount ?? 1,
+        result_count: response.run.results.length,
+      });
       void mutateHistoricalJobs(undefined, { revalidate: true });
     } catch (runError) {
       setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));

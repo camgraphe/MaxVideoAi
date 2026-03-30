@@ -51,6 +51,7 @@ import type { Job } from '@/types/jobs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
+import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
@@ -1002,12 +1003,7 @@ function isInsufficientFundsError(error: unknown): error is GenerateClientError 
 }
 
 function emitClientMetric(event: string, payload?: Record<string, unknown>) {
-  if (typeof window === 'undefined') return;
-  try {
-    window.dispatchEvent(new CustomEvent('mvai:analytics', { detail: { event, payload } }));
-  } catch {
-    // swallow errors if analytics transport is unavailable
-  }
+  dispatchAnalyticsEvent(event, payload);
 }
 
 interface FormState {
@@ -5413,6 +5409,21 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           indexable: false,
           ...(isLumaRay2 ? { loop: Boolean(form.loop) } : {}),
         };
+
+        emitClientMetric('generation_started', {
+          local_key: localKey,
+          batch_id: batchId,
+          group_id: batchId,
+          iteration_index: iterationIndex,
+          iteration_count: iterationCount,
+          batch_size: iterationCount,
+          engine: selectedEngine.id,
+          mode: activeMode,
+          duration_sec: resolvedDurationSeconds,
+          payment_mode: paymentMode,
+          has_audio: Boolean(form.audio),
+        });
+
         const res = await runGenerate(generatePayload, token ? { token } : undefined);
 
         const resolvedJobId = res.jobId ?? id;
@@ -5623,6 +5634,20 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
       } catch (error) {
         stopProgressTracking();
+        emitClientMetric('generation_failed', {
+          local_key: localKey,
+          batch_id: batchId,
+          group_id: batchId,
+          iteration_index: iterationIndex,
+          iteration_count: iterationCount,
+          engine: selectedEngine.id,
+          mode: activeMode,
+          error_code:
+            error && typeof error === 'object' && typeof (error as { code?: unknown }).code === 'string'
+              ? (error as { code: string }).code
+              : 'generation_request_failed',
+          error_message: error instanceof Error ? error.message : 'Generation failed',
+        });
         let fallbackBatchId: string | null = null;
         setRenders((prev) => {
           const next = prev.filter((r) => r.localKey !== localKey);

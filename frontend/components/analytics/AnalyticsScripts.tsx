@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
+import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 const Clarity = dynamic(() => import('@/components/analytics/Clarity').then((mod) => mod.Clarity), { ssr: false });
 const GoogleAds = dynamic(() => import('@/components/analytics/GoogleAds').then((mod) => mod.GoogleAds), {
@@ -12,25 +13,6 @@ const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then((
   ssr: false,
 });
 
-const PRIVATE_PATH_PREFIXES = [
-  '/admin',
-  '/dashboard',
-  '/generate',
-  '/jobs',
-  '/settings',
-  '/billing',
-  '/app',
-  '/connect',
-  '/api',
-  '/auth',
-  '/studio',
-  '/login',
-];
-
-function isPrivatePath(pathname: string): boolean {
-  return PRIVATE_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-}
-
 export function AnalyticsScripts() {
   const pathname = usePathname();
 
@@ -38,7 +20,8 @@ export function AnalyticsScripts() {
     return null;
   }
 
-  if (isPrivatePath(pathname)) {
+  const routeContext = getAnalyticsRouteContext(pathname);
+  if (routeContext.family !== 'marketing' && routeContext.family !== 'public_tools') {
     return null;
   }
 

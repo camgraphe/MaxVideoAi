@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Script from 'next/script';
+import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 const GA_ID =
   process.env.NEXT_PUBLIC_GA_ID ??
@@ -41,7 +43,9 @@ type ConsentEventDetail = {
 };
 
 export default function ConsentModeBootstrap() {
+  const pathname = usePathname();
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
+  const routeContext = getAnalyticsRouteContext(pathname);
 
   useEffect(() => {
     const syncFromStorage = () => setAnalyticsConsentGranted(hasConsent());
@@ -72,6 +76,7 @@ export default function ConsentModeBootstrap() {
   if (!GA_ID) return null;
   if (DISABLE_GA) return null;
   if (isLighthouseRun()) return null;
+  if (routeContext.excludedFromGa4) return null;
   if (!analyticsConsentGranted) return null;
 
   return (

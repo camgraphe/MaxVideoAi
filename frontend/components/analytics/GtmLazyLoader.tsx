@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 const GTM_ID =
   process.env.NEXT_PUBLIC_GTM_ID ??
@@ -54,7 +56,9 @@ export function GtmLazyLoader({
   consentStorageKey = 'mv-consent-analytics',
   consentGrantedValue = 'granted',
 }: GtmLazyLoaderProps = {}) {
+  const pathname = usePathname();
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
+  const routeContext = getAnalyticsRouteContext(pathname);
 
   useEffect(() => {
     const syncFromStorage = () => {
@@ -94,6 +98,9 @@ export function GtmLazyLoader({
     if (DISABLE_GTM || isLighthouseRun()) {
       return;
     }
+    if (routeContext.excludedFromGa4) {
+      return;
+    }
     if (!analyticsConsentGranted) {
       return;
     }
@@ -116,7 +123,7 @@ export function GtmLazyLoader({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [analyticsConsentGranted, delayMs]);
+  }, [analyticsConsentGranted, delayMs, routeContext.excludedFromGa4]);
 
   return null;
 }

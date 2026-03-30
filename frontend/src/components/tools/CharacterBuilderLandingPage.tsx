@@ -332,7 +332,17 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
               </div>
 
               <div className="flex flex-wrap gap-3 pt-1">
-                <ButtonLink href="/app/tools/character-builder" linkComponent={Link} size="lg">
+                <ButtonLink
+                  href="/app/tools/character-builder"
+                  linkComponent={Link}
+                  size="lg"
+                  data-analytics-event="tool_cta_click"
+                  data-analytics-cta-name="character_builder_try_tool_hero"
+                  data-analytics-cta-location="tool_character_builder_hero"
+                  data-analytics-tool-name="character_builder"
+                  data-analytics-tool-surface="public"
+                  data-analytics-target-family="app_tools"
+                >
                   {content.hero.primaryCta}
                   <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
@@ -747,6 +757,12 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                     linkComponent={Link}
                     size="lg"
                     className="bg-white text-slate-950 hover:bg-slate-100"
+                    data-analytics-event="tool_cta_click"
+                    data-analytics-cta-name="character_builder_try_tool_final"
+                    data-analytics-cta-location="tool_character_builder_final"
+                    data-analytics-tool-name="character_builder"
+                    data-analytics-tool-surface="public"
+                    data-analytics-target-family="app_tools"
                   >
                     {content.finalCta.primaryCta}
                   </ButtonLink>

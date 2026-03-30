@@ -114,6 +114,10 @@ type TopupTrackingMetadata = {
   walletCurrency: string | null;
 };
 
+function minorToMajorAmount(amountMinor: number): number {
+  return amountMinor / 100;
+}
+
 function readMetadataString(metadata: Stripe.Metadata | null | undefined, key: string): string | null {
   const value = metadata?.[key];
   if (typeof value !== 'string') return null;
@@ -185,17 +189,18 @@ async function handleChargeRefunded(event: Stripe.Event) {
     return;
   }
 
-  const currency = (metadata.walletCurrency ?? charge.currency ?? 'usd').toUpperCase();
+  const currency = (charge.currency ?? metadata.walletCurrency ?? 'usd').toUpperCase();
   await sendGa4Event({
     name: 'topup_refunded',
     clientId: metadata.gaClientId,
     userId: metadata.userId,
     params: {
-      value: refundDeltaCents / 100,
+      value: minorToMajorAmount(refundDeltaCents),
       currency,
-      refund_amount_usd: refundDeltaCents / 100,
+      refund_amount_major: minorToMajorAmount(refundDeltaCents),
       refund_amount_cents: refundDeltaCents,
       refunded_total_cents: currentAmountRefunded,
+      wallet_currency: metadata.walletCurrency ?? undefined,
       payment_provider: 'stripe',
       stripe_charge_id: charge.id,
       stripe_payment_intent_id:
@@ -531,12 +536,18 @@ async function recordTopup({
         typeof metadataRecord.topup_tier_label === 'string' ? metadataRecord.topup_tier_label : null;
       const fxSource = typeof metadataRecord.fx_source === 'string' ? metadataRecord.fx_source : null;
       const transactionId = paymentIntentId ?? chargeId ?? `topup_${rows[0].id}`;
+      const purchaseValueMinor = normalizedSettlementAmount ?? normalizedWalletAmount;
+      const purchaseCurrency = settlementCurrencyUpper;
       const commonParams = {
-        value: normalizedWalletAmount / 100,
-        currency: walletCurrencyUpper,
+        value: minorToMajorAmount(purchaseValueMinor),
+        currency: purchaseCurrency,
+        wallet_currency: walletCurrencyUpper,
+        wallet_amount_usd: minorToMajorAmount(normalizedWalletAmount),
+        wallet_amount_cents: normalizedWalletAmount,
+        credits_amount: minorToMajorAmount(normalizedWalletAmount),
         topup_amount_usd: normalizedWalletAmount / 100,
         topup_amount_cents: normalizedWalletAmount,
-        settlement_amount_minor: normalizedSettlementAmount ?? normalizedWalletAmount,
+        settlement_amount_minor: purchaseValueMinor,
         settlement_currency: settlementCurrencyUpper,
         payment_provider: 'stripe',
         payment_flow: 'checkout',

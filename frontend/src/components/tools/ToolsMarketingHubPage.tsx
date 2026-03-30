@@ -21,6 +21,9 @@ function ToolCard({
   href,
   cta,
   visual,
+  toolName,
+  targetFamily,
+  ctaLocation,
 }: {
   icon: ReactNode;
   eyebrow: string;
@@ -29,6 +32,9 @@ function ToolCard({
   href: string;
   cta: string;
   visual: ReactNode;
+  toolName: string;
+  targetFamily: string;
+  ctaLocation: string;
 }) {
   return (
     <Card className="overflow-hidden border-hairline bg-surface p-0">
@@ -44,7 +50,18 @@ function ToolCard({
           </div>
         </div>
         <p className="text-sm leading-7 text-text-secondary">{body}</p>
-        <ButtonLink href={href} linkComponent={Link} size="lg" className="w-fit">
+        <ButtonLink
+          href={href}
+          linkComponent={Link}
+          size="lg"
+          className="w-fit"
+          data-analytics-event="tool_cta_click"
+          data-analytics-cta-name={`${toolName}_hub_card`}
+          data-analytics-cta-location={ctaLocation}
+          data-analytics-tool-name={toolName}
+          data-analytics-tool-surface="public"
+          data-analytics-target-family={targetFamily}
+        >
           {cta}
           <ArrowRight className="h-4 w-4" />
         </ButtonLink>
@@ -66,10 +83,31 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
             <p className="mx-auto max-w-3xl text-base leading-8 text-text-secondary sm:text-lg">{content.hero.body}</p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
-            <ButtonLink href="/tools/character-builder" linkComponent={Link} size="lg">
+            <ButtonLink
+              href="/tools/character-builder"
+              linkComponent={Link}
+              size="lg"
+              data-analytics-event="tool_cta_click"
+              data-analytics-cta-name="character_builder_hub_hero_primary"
+              data-analytics-cta-location="tools_hub_hero"
+              data-analytics-tool-name="character_builder"
+              data-analytics-tool-surface="public"
+              data-analytics-target-family="public_tools"
+            >
               {content.hero.primaryCta}
             </ButtonLink>
-            <ButtonLink href="/tools/angle" linkComponent={Link} variant="outline" size="lg">
+            <ButtonLink
+              href="/tools/angle"
+              linkComponent={Link}
+              variant="outline"
+              size="lg"
+              data-analytics-event="tool_cta_click"
+              data-analytics-cta-name="angle_hub_hero_secondary"
+              data-analytics-cta-location="tools_hub_hero"
+              data-analytics-tool-name="angle"
+              data-analytics-tool-surface="public"
+              data-analytics-target-family="public_tools"
+            >
               {content.hero.secondaryCta}
             </ButtonLink>
           </div>
@@ -85,6 +123,9 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
             body={content.cards.image.body}
             href="/app/image"
             cta={content.cards.image.cta}
+            toolName="image"
+            targetFamily="workspace"
+            ctaLocation="tools_hub_card_image"
             visual={
               <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
                 <Image
@@ -104,6 +145,9 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
             body={content.cards.character.body}
             href="/tools/character-builder"
             cta={content.cards.character.cta}
+            toolName="character_builder"
+            targetFamily="public_tools"
+            ctaLocation="tools_hub_card_character_builder"
             visual={
               <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
                 <Image
@@ -123,6 +167,9 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
             body={content.cards.angle.body}
             href="/tools/angle"
             cta={content.cards.angle.cta}
+            toolName="angle"
+            targetFamily="public_tools"
+            ctaLocation="tools_hub_card_angle"
             visual={
               <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#eef3fa]">
                 <Image
