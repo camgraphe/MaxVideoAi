@@ -1,4 +1,6 @@
 import type { LocalizedLinkHref } from '@/i18n/navigation';
+import { getModelFamilyDefinition } from '@/config/model-families';
+import { getExampleNavFamilyIds } from '@/lib/model-families';
 
 export type MarketingNavItem = {
   key: string;
@@ -71,16 +73,13 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'minimax-hailuo-02-text', label: 'MiniMax Hailuo 02' },
 ];
 
-const EXAMPLES_MENU: LabeledSlug[] = [
-  { slug: 'sora', label: 'Sora 2 Pro' },
-  { slug: 'kling', label: 'Kling 3 Pro' },
-  { slug: 'veo', label: 'Veo 3.1' },
-  { slug: 'wan', label: 'Wan 2.6' },
-  { slug: 'seedance', label: 'Seedance 1.5 Pro' },
-  { slug: 'ltx', label: 'LTX' },
-  { slug: 'pika', label: 'Pika 2.2' },
-  { slug: 'hailuo', label: 'MiniMax Hailuo 02' },
-];
+const EXAMPLES_MENU: LabeledSlug[] = getExampleNavFamilyIds()
+  .map((familyId) => getModelFamilyDefinition(familyId))
+  .filter((family): family is NonNullable<typeof family> => Boolean(family))
+  .map((family) => ({
+    slug: family.id,
+    label: family.navLabel,
+  }));
 
 const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'sora-2-vs-veo-3-1', label: 'Sora 2 vs Veo 3.1' },
@@ -92,34 +91,6 @@ const COMPARE_MENU: LabeledSlug[] = [
 ];
 
 export const MARKETING_MODEL_SLUGS = MODEL_MENU.map((item) => item.slug);
-export const MARKETING_EXAMPLE_CANONICAL_SLUGS = EXAMPLES_MENU.map((item) => item.slug);
-export const MARKETING_EXAMPLE_SLUGS = [
-  ...EXAMPLES_MENU.map((item) => item.slug),
-  'sora-2',
-  'sora-2-pro',
-  'veo-3-1',
-  'veo-3-1-fast',
-  'veo-3-1-first-last',
-  'veo-3-1-first-last-fast',
-  'kling-2-5-turbo',
-  'kling-2-6-pro',
-  'kling-3-standard',
-  'kling-3-pro',
-  'wan-2-5',
-  'wan-2-6',
-  'seedance-1-5-pro',
-  'ltx',
-  'ltx-2-3',
-  'ltx-2-3-pro',
-  'ltx-2-3-fast',
-  'ltx-2',
-  'ltx-2-fast',
-  'pika-text-to-video',
-  'pika-image-to-video',
-  'pika-2-2',
-  'minimax-hailuo-02-text',
-  'minimax-hailuo-02-image',
-];
 
 export const MARKETING_NAV_MODELS: MarketingNavItem[] = MODEL_MENU.map((item) => ({
   key: item.slug,

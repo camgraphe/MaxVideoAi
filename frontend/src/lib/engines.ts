@@ -22,17 +22,6 @@ export function normalizeMemberTier(value?: string | null): MemberTier {
 }
 
 const ENGINE_BLOCKLIST = new Set(['dev-sim', 'developer', 'developer-simulator']);
-const ENGINE_DISCOVERY_PRIORITY = new Map<string, number>([
-  ['sora-2', 0],
-  ['sora-2-pro', 1],
-  ['veo-3-1', 2],
-  ['veo-3-1-fast', 3],
-  ['pika-text-to-video', 4],
-  ['minimax-hailuo-02-text', 5],
-  ['nano-banana-2', 6],
-  ['nano-banana-pro', 7],
-  ['nano-banana', 8],
-]);
 
 const MODEL_PRIORITY_ENTRIES = getModelRoster().map(
   (entry, index) => [String(entry.engineId).toLowerCase(), index] as [string, number]
@@ -41,6 +30,7 @@ const MODEL_PRIORITY = new Map<string, number>(MODEL_PRIORITY_ENTRIES);
 const DEFAULT_PRIORITY = MODEL_PRIORITY_ENTRIES.length;
 
 const REGISTRY_ENTRIES = listFalEngines();
+const REGISTRY_META_BY_ID = new Map(REGISTRY_ENTRIES.map((entry) => [entry.id, entry]));
 const REGISTRY_BY_CATEGORY = {
   video: REGISTRY_ENTRIES.filter((entry) => (entry.category ?? 'video') === 'video'),
   image: REGISTRY_ENTRIES.filter((entry) => (entry.category ?? 'video') === 'image'),
@@ -49,11 +39,12 @@ const REGISTRY_BY_CATEGORY = {
 
 function buildBaseEngines(entries: typeof REGISTRY_ENTRIES): EngineCaps[] {
   return entries
+    .filter((entry) => entry.surfaces.app.enabled)
     .map((entry) => cloneEngine(entry.engine))
     .filter((engine) => !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase()))
     .sort((a, b) => {
-      const aDiscoveryPriority = ENGINE_DISCOVERY_PRIORITY.get(a.id.toLowerCase());
-      const bDiscoveryPriority = ENGINE_DISCOVERY_PRIORITY.get(b.id.toLowerCase());
+      const aDiscoveryPriority = REGISTRY_META_BY_ID.get(a.id)?.surfaces.app.discoveryRank;
+      const bDiscoveryPriority = REGISTRY_META_BY_ID.get(b.id)?.surfaces.app.discoveryRank;
       if (aDiscoveryPriority != null || bDiscoveryPriority != null) {
         if (aDiscoveryPriority == null) return 1;
         if (bDiscoveryPriority == null) return -1;

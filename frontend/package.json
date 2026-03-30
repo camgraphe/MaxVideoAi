@@ -18,6 +18,7 @@
     "i18n:check": "tsx scripts/validate-keys.ts",
     "i18n:blog": "tsx scripts/translate-blog.ts",
     "i18n:models": "tsx scripts/translate-models.ts",
+    "models:scaffold": "tsx --tsconfig tsconfig.scripts.json scripts/scaffold-model-page.ts",
     "sitemap:ping": "tsx scripts/ping-sitemaps.ts",
     "qa:hreflang": "tsx scripts/qa/hreflang-check.ts",
     "qa:canonical-host": "tsx scripts/qa/canonical-host-guard.ts",

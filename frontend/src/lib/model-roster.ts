@@ -1,4 +1,5 @@
-import { listFalEngines, type EngineLogoPolicy } from '@/config/falEngines';
+import modelRoster from '@/config/model-roster.json';
+import type { EngineLogoPolicy } from '@/config/falEngines';
 
 export type LogoPolicy = EngineLogoPolicy;
 export type ModelAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
@@ -13,18 +14,18 @@ export interface ModelRosterEntry {
   availability: ModelAvailability;
   logoPolicy: LogoPolicy;
   billingNote?: string;
+  surfaces?: {
+    modelPage?: {
+      indexable?: boolean;
+      includeInSitemap?: boolean;
+    };
+  };
 }
 
-const rosterEntries: ModelRosterEntry[] = listFalEngines().map((engine) => ({
-  engineId: engine.id,
-  marketingName: engine.marketingName,
-  brandId: engine.brandId,
-  modelSlug: engine.modelSlug,
-  family: engine.family,
-  versionLabel: engine.versionLabel ?? '',
-  availability: engine.availability,
-  logoPolicy: engine.logoPolicy,
-  billingNote: engine.billingNote,
+const rosterEntries = (modelRoster as ModelRosterEntry[]).map((entry) => ({
+  ...entry,
+  family: entry.family,
+  surfaces: entry.surfaces,
 }));
 
 const rosterBySlug = new Map<string, ModelRosterEntry>();

@@ -7,6 +7,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
+import { getExampleFamilyDescriptor, getExampleFamilyPrimaryModelSlug } from '@/lib/model-families';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,34 +76,6 @@ const ENGINE_LINK_ALIASES = (() => {
   return map;
 })();
 
-const ENGINE_FILTER_GROUPS: Record<string, { id: string; label: string; brandId?: string }> = {
-  sora: { id: 'sora', label: 'Sora 2', brandId: 'openai' },
-  'sora-2': { id: 'sora', label: 'Sora 2', brandId: 'openai' },
-  'sora-2-pro': { id: 'sora', label: 'Sora 2', brandId: 'openai' },
-  veo: { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  pika: { id: 'pika', label: 'Pika', brandId: 'pika' },
-  kling: { id: 'kling', label: 'Kling', brandId: 'kling' },
-  wan: { id: 'wan', label: 'Wan', brandId: 'wan' },
-  seedance: { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
-  hailuo: { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
-  ltx: { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'ltx-2-3': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'ltx-2': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-};
-
-const ENGINE_MODEL_LINKS: Record<string, string> = {
-  sora: 'sora-2-pro',
-  veo: 'veo-3-1',
-  seedance: 'seedance-1-5-pro',
-  kling: 'kling-3-pro',
-  wan: 'wan-2-6',
-  pika: 'pika-text-to-video',
-  hailuo: 'minimax-hailuo-02-text',
-  ltx: 'ltx-2',
-  'ltx-2-3': 'ltx-2',
-  'ltx-2': 'ltx-2',
-};
-
 const POSTER_PLACEHOLDERS: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
   '16:9': '/assets/frames/thumb-16x9.svg',
@@ -124,40 +97,9 @@ function resolveEngineLinkId(engineId: string | null | undefined): string | null
 
 function resolveFilterDescriptor(
   canonicalEngineId: string,
-  engineMeta: { label?: string; brandId?: string } | null,
-  fallbackLabel?: string | null
+  engineMeta: { brandId?: string } | null
 ) {
-  const normalized = canonicalEngineId.trim().toLowerCase();
-  const directMatch = ENGINE_FILTER_GROUPS[normalized];
-  let group = directMatch;
-
-  if (!group) {
-    if (normalized.startsWith('veo-3') || normalized.startsWith('veo3')) {
-      group = ENGINE_FILTER_GROUPS['veo'];
-    } else if (normalized.startsWith('sora-2') || normalized.startsWith('sora')) {
-      group = ENGINE_FILTER_GROUPS['sora'];
-    } else if (normalized.startsWith('pika')) {
-      group = ENGINE_FILTER_GROUPS['pika'];
-    } else if (normalized.includes('hailuo')) {
-      group = ENGINE_FILTER_GROUPS['hailuo'];
-    } else if (normalized.startsWith('kling')) {
-      group = ENGINE_FILTER_GROUPS['kling'];
-    } else if (normalized.startsWith('wan')) {
-      group = ENGINE_FILTER_GROUPS['wan'];
-    } else if (normalized.startsWith('seedance')) {
-      group = ENGINE_FILTER_GROUPS['seedance'];
-    } else if (normalized === 'ltx' || normalized.startsWith('ltx-2-3')) {
-      group = ENGINE_FILTER_GROUPS.ltx;
-    } else if (normalized.startsWith('ltx-2')) {
-      group = ENGINE_FILTER_GROUPS.ltx;
-    }
-  }
-
-  const targetId = group?.id ?? normalized;
-  const targetOverride = ENGINE_FILTER_GROUPS[targetId];
-  const label = group?.label ?? targetOverride?.label ?? engineMeta?.label ?? fallbackLabel ?? canonicalEngineId;
-  const brandId = group?.brandId ?? targetOverride?.brandId ?? engineMeta?.brandId;
-  return { id: targetId, label, brandId };
+  return getExampleFamilyDescriptor(canonicalEngineId, { brandId: engineMeta?.brandId }) ?? null;
 }
 
 function formatPrice(priceCents: number | null | undefined, currency: string | null | undefined): string | null {
@@ -198,10 +140,10 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
   const canonicalEngineId = resolveEngineLinkId(video.engineId);
   const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
   const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
-  const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel) : null;
+  const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta) : null;
   const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
   const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
-  const modelSlug = engineMeta?.modelSlug ?? (descriptor ? ENGINE_MODEL_LINKS[descriptor.id.toLowerCase()] : null);
+  const modelSlug = engineMeta?.modelSlug ?? (descriptor ? getExampleFamilyPrimaryModelSlug(descriptor.id) : null);
   const modelHref = modelSlug ? buildModelHref(locale, modelSlug) : null;
   return {
     id: video.id,

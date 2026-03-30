@@ -3,10 +3,10 @@ import ExamplesModelPage, {
 } from '../../(localized)/[locale]/(marketing)/examples/[model]/page';
 import LocaleLayout from '../../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../../default-locale-wrapper';
-import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
+import { getMarketingExampleRouteSlugs } from '@/lib/model-families';
 
 export function generateStaticParams() {
-  return MARKETING_EXAMPLE_SLUGS.map((model) => ({ model }));
+  return getMarketingExampleRouteSlugs().map((model) => ({ model }));
 }
 
 export const generateMetadata = ({

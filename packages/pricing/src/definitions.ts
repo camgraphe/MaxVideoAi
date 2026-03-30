@@ -123,6 +123,9 @@ export function buildPricingDefinitionsFromFixtures(): PricingEngineDefinition[]
   const definitions: PricingEngineDefinition[] = [];
 
   for (const entry of engines) {
+    if (!entry.surfaces.pricing.includeInEstimator) {
+      continue;
+    }
     const engine = entry.engine as EngineCaps | undefined;
     if (!engine?.id) {
       continue;

@@ -1,7 +1,13 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { listFalEngines, type FalEngineEntry } from '../frontend/src/config/falEngines';
+import { getModelFamilyExamplesPageConfig } from '../frontend/config/model-families';
+import { type ModelFamilyExamplesPageConfig } from '../frontend/config/model-publication';
+import {
+  hasExplicitFalEngineSurfaces,
+  listFalEngines,
+  type FalEngineEntry,
+} from '../frontend/src/config/falEngines';
 import { getEngineCatalogOverrides, type EngineCatalogOverride, type EngineCatalogFeature } from '../frontend/src/config/engineCatalog.overrides';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -14,9 +20,13 @@ type EngineCatalogEntry = {
   marketingName: string;
   provider: string;
   brandId: string;
+  family?: string;
+  familyExamplesPage?: ModelFamilyExamplesPageConfig | null;
   versionLabel?: string;
   availability: string;
   logoPolicy: string;
+  surfaces: FalEngineEntry['surfaces'];
+  surfacesSource: 'explicit' | 'default';
   engine: FalEngineEntry['engine'];
   modes: FalEngineEntry['modes'];
   features: Record<string, EngineCatalogFeature>;
@@ -49,15 +59,20 @@ function buildDefaultFeatures(engine: FalEngineEntry): Record<string, EngineCata
 
 function toCatalogEntry(engine: FalEngineEntry, override?: EngineCatalogOverride): EngineCatalogEntry {
   const features = mergeFeatures(buildDefaultFeatures(engine), override?.features);
+  const familyExamplesPage = engine.family ? getModelFamilyExamplesPageConfig(engine.family) : null;
   return {
     engineId: engine.id,
     modelSlug: engine.modelSlug,
     marketingName: override?.marketingName ?? engine.marketingName,
     provider: engine.provider,
     brandId: engine.brandId,
+    family: engine.family,
+    familyExamplesPage,
     versionLabel: override?.versionLabel ?? engine.versionLabel ?? undefined,
     availability: engine.availability,
     logoPolicy: engine.logoPolicy,
+    surfaces: engine.surfaces,
+    surfacesSource: hasExplicitFalEngineSurfaces(engine.id) ? 'explicit' : 'default',
     engine: engine.engine,
     modes: engine.modes,
     features,

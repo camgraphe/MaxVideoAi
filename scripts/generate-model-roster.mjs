@@ -86,9 +86,16 @@ function computeRosterEntry(entry) {
     marketingName,
     brandId,
     modelSlug,
+    family: typeof entry.family === 'string' && entry.family.trim().length ? entry.family.trim() : undefined,
     versionLabel: normalizeVersionLabel(entry),
     availability: normalizeAvailability(entry.availability, engineId),
     logoPolicy,
+    surfaces: {
+      modelPage: {
+        indexable: entry?.surfaces?.modelPage?.indexable !== false,
+        includeInSitemap: entry?.surfaces?.modelPage?.includeInSitemap !== false,
+      },
+    },
   };
 }
 
@@ -109,11 +116,27 @@ function ensureNoShrink(currentRoster, generatedRoster) {
 }
 
 function toCsv(rows) {
-  const header = ['engineId', 'marketingName', 'brandId', 'modelSlug', 'versionLabel', 'availability', 'logoPolicy'];
+  const header = [
+    'engineId',
+    'marketingName',
+    'brandId',
+    'modelSlug',
+    'family',
+    'versionLabel',
+    'availability',
+    'logoPolicy',
+    'modelPageIndexable',
+    'modelPageInSitemap',
+  ];
   const lines = [header.join(',')];
   rows.forEach((row) => {
     const values = header.map((key) => {
-      const value = row[key] ?? '';
+      const value =
+        key === 'modelPageIndexable'
+          ? row?.surfaces?.modelPage?.indexable ?? ''
+          : key === 'modelPageInSitemap'
+            ? row?.surfaces?.modelPage?.includeInSitemap ?? ''
+            : row[key] ?? '';
       const needsQuotes = typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'));
       if (!needsQuotes) return value;
       return `"${value.replace(/"/g, '""')}"`;

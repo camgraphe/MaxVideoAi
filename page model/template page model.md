@@ -146,12 +146,18 @@ Encourage iterative prompting and comparing with adjacent engines in the same UI
 
 ### Implementation guide (EN base → ES Latam, FR, JSON, wiring)
 
-- **Fill this template in EN**: create `page model/{{engine}}.md` as the source doc with real specs/prompts/CTAs.  
-- **Create locale JSON**: add `content/models/en/{{engine}}.json`, `content/models/es/{{engine}}.json` (ES Latam), and `content/models/fr/{{engine}}.json` with finalized copy and CTAs. Mirror keys/structure already used in other model JSON files.  
+- **Use the onboarding flow first**: run `npm run model:setup -- --from <existing-model-slug> --slug {{engine}} --name "{{Engine Name}}" --family <family-id>` from the repo root. This clones the live marketing JSON shape into `content/models/{en,fr,es}/{{engine}}.json`, generates the engine/family stubs, and writes a launch packet in `docs/model-launch/{{engine}}.md`.  
+- **`model:scaffold` is now a low-level helper**: use it only when you explicitly want just the JSON clone without the publication scaffolding.  
+- **Treat this markdown as planning, not as the source of truth**: the production page is driven by `content/models/{locale}/{{engine}}.json`, not by `page model/{{engine}}.md`. Use this document to outline the copy, then edit the scaffolded JSON directly.  
+- **Replace the borrowed content**: after scaffolding, overwrite specs, prompts, FAQs, gallery copy, compare links, and all engine-specific claims so the new page no longer describes the template model.  
 - **Hook into the model page**: ensure the slug (`{{engine}}`) matches the expected path in `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx` and any config entries.  
-- **Examples filter**: if you want the gallery to show relevant clips, make sure the engine slug is usable via `/examples/{{engine}}` and that playlists/indexable videos include that engine.  
+- **Family wiring is now the key step**: add the engine in `frontend/src/config/falEngines.ts`, set its `family`, and declare `surfaces`. If the family already exists, examples routing and the gallery resolver follow automatically. If it is a brand new family, add one entry in `frontend/config/model-families.ts` with `examplesPage.stage: "hidden"` by default so nav/sitemap/canonical exposure does not expand accidentally.  
+- **Examples copy is intentionally frozen**: a model can belong to a family without changing `/examples/<family>` copy/meta. Only add the slug to `publishedModelSlugs` when you want the family landing page to mention it.  
+- **Compare is intentionally manual**: routes can exist, but hub/sitemap publication only happens if `surfaces.compare.includeInHub` and `surfaces.compare.publishedPairs` are filled on purpose.  
+- **Regenerate shared catalog data**: run `npm run engine:catalog` after changing `falEngines.ts` so catalog-based pages and audits see the right family metadata.  
+- **Examples filter**: if you want the gallery to show relevant clips, make sure indexable videos actually use that engine/family; the examples routing now resolves by family automatically.  
 - **Translations**: avoid idioms; keep sentences short to ease FR + ES localization. If you add new strings outside the JSON, update translation files accordingly.  
-- **QA before publish**: validate hero CTAs, compare link (if pro variant), gallery renders, SEO/meta, and that JSON-LD on `/video/[id]` pages reflects the new engine’s outputs.  
+- **QA before publish**: run `npm run model:generate:write` then `npm run models:audit`, validate hero CTAs, compare link (if published), gallery renders, SEO/meta, and confirm that JSON-LD on `/video/[id]` pages reflects the new engine’s outputs.  
 - Ensure any demo prompt has a corresponding real clip in the gallery if shown.
 
 ---

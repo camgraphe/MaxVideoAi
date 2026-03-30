@@ -4,197 +4,351 @@
     "marketingName": "Seedance 1.5 Pro",
     "brandId": "bytedance",
     "modelSlug": "seedance-1-5-pro",
+    "family": "seedance",
     "versionLabel": "v1.5 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "seedance-2-0",
     "marketingName": "Seedance 2.0",
     "brandId": "bytedance",
     "modelSlug": "seedance-2-0",
+    "family": "seedance",
     "versionLabel": "2.0",
     "availability": "waitlist",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "nano-banana",
     "marketingName": "Nano Banana (Image Generation)",
     "brandId": "google",
     "modelSlug": "nano-banana",
+    "family": "nano-banana",
     "versionLabel": "Nano",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "nano-banana-2",
     "marketingName": "Nano Banana 2",
     "brandId": "google",
     "modelSlug": "nano-banana-2",
+    "family": "nano-banana",
     "versionLabel": "2",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "nano-banana-pro",
     "marketingName": "Nano Banana Pro",
     "brandId": "google",
     "modelSlug": "nano-banana-pro",
+    "family": "nano-banana",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "veo-3-1",
     "marketingName": "Google Veo 3.1",
     "brandId": "google-veo",
     "modelSlug": "veo-3-1",
+    "family": "veo",
     "versionLabel": "3.1",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "veo-3-1-fast",
     "marketingName": "Google Veo 3.1 Fast",
     "brandId": "google-veo",
     "modelSlug": "veo-3-1-fast",
+    "family": "veo",
     "versionLabel": "3.1 Fast",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "veo-3-1-first-last",
     "marketingName": "Google Veo 3.1 First/Last Frame",
     "brandId": "google-veo",
     "modelSlug": "veo-3-1-first-last",
+    "family": "veo",
     "versionLabel": "3.1",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "kling-2-5-turbo",
     "marketingName": "Kling 2.5 Turbo",
     "brandId": "kling",
     "modelSlug": "kling-2-5-turbo",
+    "family": "kling",
     "versionLabel": "2.5 Turbo",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "kling-2-6-pro",
     "marketingName": "Kling 2.6 Pro",
     "brandId": "kling",
     "modelSlug": "kling-2-6-pro",
+    "family": "kling",
     "versionLabel": "v2.6 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "kling-3-pro",
     "marketingName": "Kling 3 Pro",
     "brandId": "kling",
     "modelSlug": "kling-3-pro",
+    "family": "kling",
     "versionLabel": "v3 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "kling-3-standard",
     "marketingName": "Kling 3 Standard",
     "brandId": "kling",
     "modelSlug": "kling-3-standard",
+    "family": "kling",
     "versionLabel": "v3 Standard",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "ltx-2-3-fast",
     "marketingName": "LTX 2.3 Fast",
     "brandId": "lightricks",
     "modelSlug": "ltx-2-3-fast",
+    "family": "ltx",
     "versionLabel": "2.3 Fast",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "ltx-2-3",
     "marketingName": "LTX 2.3 Pro",
     "brandId": "lightricks",
     "modelSlug": "ltx-2-3-pro",
+    "family": "ltx",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "ltx-2-fast",
     "marketingName": "LTX Video 2.0 Fast",
     "brandId": "lightricks",
     "modelSlug": "ltx-2-fast",
+    "family": "ltx",
     "versionLabel": "Fast",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "ltx-2",
     "marketingName": "LTX Video 2.0 Pro",
     "brandId": "lightricks",
     "modelSlug": "ltx-2",
+    "family": "ltx",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard",
     "brandId": "minimax",
     "modelSlug": "minimax-hailuo-02-text",
+    "family": "hailuo",
     "versionLabel": "Standard",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "sora-2",
     "marketingName": "OpenAI Sora 2",
     "brandId": "openai",
     "modelSlug": "sora-2",
+    "family": "sora",
     "versionLabel": "2",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "sora-2-pro",
     "marketingName": "OpenAI Sora 2 Pro",
     "brandId": "openai",
     "modelSlug": "sora-2-pro",
+    "family": "sora",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "pika-text-to-video",
     "marketingName": "Pika 2.2 Text & Image to Video",
     "brandId": "pika",
     "modelSlug": "pika-text-to-video",
+    "family": "pika",
     "versionLabel": "2.2",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "wan-2-5",
     "marketingName": "Wan 2.5 Text & Image to Video",
     "brandId": "wan",
     "modelSlug": "wan-2-5",
+    "family": "wan",
     "versionLabel": "Preview",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   },
   {
     "engineId": "wan-2-6",
     "marketingName": "Wan 2.6 Text & Image to Video",
     "brandId": "wan",
     "modelSlug": "wan-2-6",
+    "family": "wan",
     "versionLabel": "2.6",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
   }
 ]

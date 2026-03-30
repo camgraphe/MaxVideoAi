@@ -38,6 +38,7 @@ import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import { SpecDetailsGrid, type SpecDetailsSection } from '@/components/marketing/SpecDetailsGrid.client';
 import { ModelHeroMedia } from '@/components/marketing/ModelHeroMedia.client';
 import { getExamplesHref } from '@/lib/examples-links';
+import { getSuggestedOpponentSlugs } from '@/lib/compare-hub/data';
 import {
   Box,
   ArrowLeftRight,
@@ -2631,17 +2632,6 @@ const DEFAULT_VIDEO_SAFETY = [
 
 const DEFAULT_GENERIC_SAFETY = DEFAULT_VIDEO_SAFETY;
 
-const COMPARE_PRIORITY_BY_MODEL: Record<string, string[]> = {
-  'veo-3-1': ['kling-3-pro', 'veo-3-1-fast', 'sora-2'],
-  'kling-3-pro': ['veo-3-1', 'sora-2', 'seedance-1-5-pro'],
-  'sora-2': ['veo-3-1', 'kling-3-pro', 'seedance-2-0'],
-  'pika-text-to-video': ['seedance-2-0', 'minimax-hailuo-02-text', 'ltx-2-fast'],
-  'seedance-1-5-pro': ['seedance-2-0', 'kling-3-pro', 'sora-2'],
-  'seedance-2-0': ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
-  'ltx-2-3-pro': ['ltx-2-3-fast', 'ltx-2-fast', 'sora-2'],
-  'ltx-2-3-fast': ['ltx-2-3-pro', 'veo-3-1-fast', 'ltx-2-fast'],
-};
-
 function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
   const filtered = allEngines.filter((entry) => {
     if (entry.modelSlug === currentSlug) return false;
@@ -2662,7 +2652,7 @@ function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, l
     usedFamilies.add(familyKey);
   };
 
-  const priorityTargets = COMPARE_PRIORITY_BY_MODEL[currentSlug] ?? [];
+  const priorityTargets = getSuggestedOpponentSlugs(currentSlug, limit);
   for (const targetSlug of priorityTargets) {
     const target = filteredBySlug.get(targetSlug);
     if (!target) continue;
@@ -3126,7 +3116,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     imageAlt: title,
     ogType: 'article',
     robots: {
-      index: true,
+      index: engine.surfaces.modelPage.indexable,
       follow: true,
     },
   });
@@ -3241,7 +3231,7 @@ function pickDemoMedia(
   return null;
 }
 
-async function renderSoraModelPage({
+async function renderMarketingModelPage({
   engine,
   detailCopy,
   localizedContent,
@@ -3456,7 +3446,7 @@ async function renderSoraModelPage({
     : [];
 
   return (
-    <Sora2PageLayout
+    <MarketingModelPageLayout
       backLabel={detailCopy.backLabel}
       pricingLinkLabel={detailCopy.pricingLinkLabel}
       localizedContent={localizedContent}
@@ -3483,7 +3473,7 @@ async function renderSoraModelPage({
   );
 }
 
-function Sora2PageLayout({
+function MarketingModelPageLayout({
   engine,
   backLabel,
   pricingLinkLabel,
@@ -4784,30 +4774,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
     permanentRedirect(`/${localizedModelsBase}/${engine.modelSlug}`.replace(/\/{2,}/g, '/'));
   }
 
-  if (
-    slug === 'sora-2' ||
-    slug === 'sora-2-pro' ||
-    slug === 'veo-3-1' ||
-    slug === 'veo-3-1-fast' ||
-    slug === 'veo-3-1-first-last' ||
-    slug === 'pika-text-to-video' ||
-    slug === 'wan-2-5' ||
-    slug === 'wan-2-6' ||
-    slug === 'kling-2-5-turbo' ||
-    slug === 'minimax-hailuo-02-text' ||
-    slug === 'ltx-2' ||
-    slug === 'ltx-2-fast' ||
-    slug === 'ltx-2-3-pro' ||
-    slug === 'ltx-2-3-fast' ||
-    slug === 'kling-2-6-pro' ||
-    slug === 'kling-3-standard' ||
-    slug === 'seedance-1-5-pro' ||
-    slug === 'seedance-2-0' ||
-    slug === 'kling-3-pro' ||
-    slug === 'nano-banana' ||
-    slug === 'nano-banana-pro' ||
-    slug === 'nano-banana-2'
-  ) {
+  {
+    // Default every model slug to the canonical marketing renderer so new launches
+    // do not silently fall back to the older, thinner detail page.
     const activeLocale = routeLocale ?? 'en';
     const { dictionary } = await resolveDictionary();
     const detailCopy: DetailCopy = {
@@ -4815,556 +4784,12 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ...(dictionary.models.detail ?? {}),
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
-    const localizedContent = await getEngineLocalized(slug, activeLocale);
-    return await renderSoraModelPage({
+    const localizedContent = await getEngineLocalized(engine.modelSlug, activeLocale);
+    return await renderMarketingModelPage({
       engine,
       detailCopy,
       localizedContent,
       locale: activeLocale,
     });
   }
-
-  const { dictionary } = await resolveDictionary();
-  const activeLocale = routeLocale ?? 'en';
-  if (process.env.NODE_ENV === 'development') {
-    console.info('[models/page] locale debug', { slug, routeLocale, activeLocale });
-  }
-  const modelsBase = (MODELS_BASE_PATH_MAP[activeLocale as AppLocale] ?? 'models').replace(/^\/+|\/+$/g, '');
-  const localizeModelsPath = (targetSlug?: string) => {
-    const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
-    return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
-  };
-  const compareBase = (COMPARE_BASE_PATH_MAP[activeLocale as AppLocale] ?? 'ai-video-engines').replace(
-    /^\/+|\/+$/g,
-    ''
-  );
-  const localizeComparePath = (pairSlug: string, orderSlug?: string) => {
-    return buildCanonicalComparePath({ compareBase, pairSlug, orderSlug });
-  };
-  const normalizeHeroCtaHref = (href?: string | null): LocalizedLinkHref | null => {
-    if (!href) return null;
-    const examplesHref = resolveExamplesHrefFromRaw(href);
-    if (examplesHref) return examplesHref;
-    const nonLocalizedHref = resolveNonLocalizedHref(href);
-    if (nonLocalizedHref) return nonLocalizedHref;
-    if (href.startsWith('/models')) {
-      return localizeModelsPath(href.replace(/^\/models\/?/, ''));
-    }
-    return href;
-  };
-  const localizedContent = await getEngineLocalized(engine.modelSlug, activeLocale);
-  const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
-  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
-  const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, {
-    englishPath: `/models/${engine.modelSlug}`,
-    availableLocales: publishableLocales,
-  });
-  const allEngines = listFalEngines();
-  const rankEngine = (entry: FalEngineEntry) => (entry.family === engine.family ? 0 : 1);
-  type RelatedCopyContent = { title?: string; subtitle?: string; cta?: string };
-  const relatedContent = (dictionary.models as typeof dictionary.models & { related?: RelatedCopyContent }).related ?? {};
-  const relatedEngines = allEngines
-    .filter((entry) => entry.modelSlug !== engine.modelSlug)
-    .sort((a, b) => {
-      const familyDiff = rankEngine(a) - rankEngine(b);
-      if (familyDiff !== 0) {
-        return familyDiff;
-      }
-      return (a.marketingName ?? a.engine.label).localeCompare(b.marketingName ?? b.engine.label);
-    })
-    .slice(0, 3);
-
-  const detailCopy: DetailCopy = {
-    ...DEFAULT_DETAIL_COPY,
-    ...(dictionary.models.detail ?? {}),
-    overview: {
-      ...DEFAULT_DETAIL_COPY.overview,
-      ...(dictionary.models.detail?.overview ?? {}),
-    },
-    logoPolicies: {
-      ...DEFAULT_DETAIL_COPY.logoPolicies,
-      ...(dictionary.models.detail?.logoPolicies ?? {}),
-    },
-    buttons: {
-      ...DEFAULT_DETAIL_COPY.buttons,
-      ...(dictionary.models.detail?.buttons ?? {}),
-    },
-    breadcrumb: {
-      ...DEFAULT_DETAIL_COPY.breadcrumb,
-      ...(dictionary.models.detail?.breadcrumb ?? {}),
-    },
-  };
-  const relatedCopy = {
-    title: relatedContent.title ?? 'Explore other engines',
-    subtitle:
-      relatedContent.subtitle ?? 'Compare price tiers, latency, and prompt presets across the rest of the catalog.',
-    cta: relatedContent.cta ?? detailCopy.relatedModelCta,
-  };
-
-  if (
-    engine.modelSlug === 'nano-banana' ||
-    engine.modelSlug === 'nano-banana-pro' ||
-    engine.modelSlug === 'nano-banana-2'
-  ) {
-    detailCopy.overviewTitle = 'Overview';
-  }
-  const marketingName = localizedContent.marketingName ?? engine.marketingName;
-  const versionLabel = localizedContent.versionLabel ?? engine.versionLabel;
-  const seoDescription = localizedContent.seo.description ?? engine.seo.description ?? null;
-  const overviewSummary = localizedContent.overview ?? seoDescription;
-  const heroContent = localizedContent.hero;
-  const introText = heroContent?.intro ?? overviewSummary;
-  const bestUseCases = localizedContent.bestUseCases;
-  const bestUseCaseItems = normalizeBestUseCaseItems(bestUseCases?.items ?? [], activeLocale);
-  const technicalOverview = localizedContent.technicalOverview ?? [];
-  const technicalOverviewTitle = localizedContent.technicalOverviewTitle ?? 'Technical overview';
-  const promptStructure = localizedContent.promptStructure;
-  const tips = localizedContent.tips;
-  const compareLink = localizedContent.compareLink;
-  const compareLinkHref =
-    compareLink?.href ? normalizeHeroCtaHref(compareLink.href) ?? compareLink.href : null;
-  const heroPrimaryCta = heroContent?.ctaPrimary;
-  const heroPrimaryHref = heroPrimaryCta?.href ? normalizeHeroCtaHref(heroPrimaryCta.href) ?? heroPrimaryCta.href : null;
-  const secondaryCtas = heroContent?.secondaryLinks ?? [];
-  const normalizedSecondaryCtas = secondaryCtas.map((cta) => ({
-    ...cta,
-    href: cta?.href ? normalizeHeroCtaHref(cta.href) ?? cta.href : cta?.href,
-  }));
-  const brand = PARTNER_BRAND_MAP.get(engine.brandId);
-  const promptEntries =
-    localizedContent.prompts.length > 0
-      ? localizedContent.prompts
-      : engine.prompts.map(({ title, prompt, notes }) => ({ title, prompt, notes }));
-  const faqEntries =
-    localizedContent.faqs.length > 0
-      ? localizedContent.faqs
-      : (engine.faqs ?? []).map(({ question, answer }) => ({ question, answer }));
-  const pricingNotes = localizedContent.pricingNotes ?? null;
-  const localizedCanonicalRaw = metadataUrls.canonical;
-  const localizedCanonicalUrl = localizedCanonicalRaw.replace(/\/+$/, '') || localizedCanonicalRaw;
-  const canonicalUrl = localizedCanonicalUrl;
-  const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
-  const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
-  const inLanguage = localeRegions[activeLocale] ?? 'en-US';
-  const localePathPrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale].replace(/^\/+/, '')}` : '';
-  const homePathname = localePathPrefix || '/';
-  const localizedHomeUrl = homePathname === '/' ? `${SITE}/` : `${SITE}${homePathname}`;
-  const localizedModelsSlug = (MODELS_BASE_PATH_MAP[activeLocale] ?? 'models').replace(/^\/+/, '');
-  const modelsPathname =
-    homePathname === '/'
-      ? `/${localizedModelsSlug}`
-      : `${homePathname.replace(/\/+$/, '')}/${localizedModelsSlug}`.replace(/\/{2,}/g, '/');
-  const localizedModelsUrl = `${SITE}${modelsPathname}`;
-  const breadcrumbLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: detailCopy.breadcrumb.home,
-        item: localizedHomeUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: detailCopy.breadcrumb.models,
-        item: localizedModelsUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: breadcrumbTitle,
-        item: localizedCanonicalUrl,
-      },
-    ],
-  };
-  const platformPriceInfo = detailCopy.overview.platformPrice
-    ? {
-        label: detailCopy.overview.platformPrice,
-        href: '/generate',
-      }
-    : null;
-  const examplesLinkHref = getExamplesHref(engine.modelSlug ?? slug) ?? { pathname: '/examples' };
-  const pricingLinkHref = { pathname: '/pricing' };
-
-  const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
-  const heroPosterAbsolute = toAbsoluteUrl(heroPosterSrc);
-  const heroTitle = heroContent?.title ?? marketingName ?? slug;
-  const pageDescription = introText ?? seoDescription ?? heroTitle;
-  const productSchema = buildProductSchema({
-    engine,
-    canonical: canonicalUrl,
-    description: pageDescription ?? breadcrumbTitle,
-    heroTitle,
-    heroPosterAbsolute,
-  });
-  const softwareSchema = buildSoftwareSchema({
-    engine,
-    canonical: canonicalUrl,
-    description: pageDescription ?? breadcrumbTitle,
-    heroTitle,
-  });
-  const schemaPayloads = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: heroTitle,
-      description: pageDescription ?? breadcrumbTitle,
-      url: canonicalUrl,
-      inLanguage,
-    },
-    productSchema,
-    softwareSchema,
-    breadcrumbLd,
-  ].filter(Boolean) as object[];
-  const hasSpecs = true;
-  const hasTextSection = Boolean(promptStructure) || promptEntries.length > 0;
-  const hasTipsSection = Boolean(tips?.items && tips.items.length);
-  const hasFaqSection = faqEntries.length > 0;
-  const faqJsonLdEntries = faqEntries.slice(0, 6);
-  const tocItems = [
-    { id: 'specs', label: 'Specs', visible: hasSpecs },
-    { id: 'text-to-video', label: 'Text to Video', visible: hasTextSection },
-    { id: 'tips', label: 'Tips', visible: hasTipsSection },
-    { id: 'faq', label: 'FAQ', visible: hasFaqSection },
-  ].filter((item) => item.visible);
-  const textAnchorId = 'text-to-video';
-  const attachTextIdToPromptStructure = Boolean(promptStructure);
-  const launchHref = engine.type === 'image' ? '/app/image' : '/app';
-
-  return (
-    <>
-      {schemaPayloads.map((schema, index) => (
-        <script
-          key={`schema-${index}`}
-          id={`model-detail-jsonld-${index}`}
-          type="application/ld+json"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
-        />
-      ))}
-      <div className="container-page max-w-4xl section">
-        <div className="stack-gap-lg">
-          <div className="stack-gap-sm">
-            <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
-              {detailCopy.backLabel}
-            </Link>
-            <header className="stack-gap-sm">
-              <div className="flex flex-wrap items-center gap-4">
-                {brand && engine.logoPolicy === 'logoAllowed' ? (
-                  <span className="flex items-center">
-                    <Image src={brand.assets.light.svg} alt={`${marketingName} logo`} width={140} height={32} className="h-9 w-auto dark:hidden" />
-                    <Image src={brand.assets.dark.svg} alt={`${marketingName} logo`} width={140} height={32} className="hidden h-9 w-auto dark:inline-flex" />
-                  </span>
-                ) : null}
-                <div>
-                  <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                    {heroContent?.title ?? marketingName}
-                  </h2>
-                  {versionLabel ? (
-                    <p className="text-sm uppercase tracking-micro text-text-muted">{versionLabel}</p>
-                  ) : null}
-                </div>
-              </div>
-              {introText ? <p className="text-sm text-text-secondary">{introText}</p> : null}
-            </header>
-          </div>
-
-          <div className="stack-gap-sm">
-            {(heroPrimaryCta?.label || secondaryCtas.length) ? (
-              <div className="flex flex-wrap gap-4">
-                {heroPrimaryCta?.label && heroPrimaryHref ? (
-                  <ButtonLink
-                    href={heroPrimaryHref}
-                    size="lg"
-                    className="shadow-card"
-                    linkComponent={Link}
-                  >
-                    {heroPrimaryCta.label}
-                  </ButtonLink>
-                ) : null}
-                {normalizedSecondaryCtas
-                  .filter(
-                    (cta): cta is { label: string; href: LocalizedLinkHref } =>
-                      Boolean(cta.label && cta.href)
-                  )
-                  .map((cta) => {
-                    const hrefKey = typeof cta.href === 'string' ? cta.href : cta.href.pathname ?? '';
-                    return (
-                      <ButtonLink
-                        key={`${hrefKey}-${cta.label}`}
-                        href={cta.href}
-                        variant="outline"
-                        size="lg"
-                        linkComponent={Link}
-                      >
-                        {cta.label}
-                      </ButtonLink>
-                    );
-                  })}
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-4 text-sm">
-              <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                {detailCopy.examplesLinkLabel}
-              </Link>
-              <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                {detailCopy.pricingLinkLabel}
-              </Link>
-            </div>
-          </div>
-
-      {tocItems.length ? (
-        <nav
-          className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-          aria-label="Model page navigation"
-        >
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {tocItems.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-        </nav>
-      ) : null}
-
-      {bestUseCaseItems.length ? (
-        <section className="space-y-1.5 rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card">
-          <h2 className="text-xs font-semibold text-text-primary">{bestUseCases?.title ?? 'Best use cases'}</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {bestUseCaseItems.map((item, index) => {
-              const Icon = item.icon ? BEST_USE_CASE_ICON_MAP[item.icon] : null;
-              return (
-                <Chip
-                  key={`${item.title}-${index}`}
-                  variant="outline"
-                  className="px-2.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-text-secondary"
-                >
-                  {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
-                  <span>{item.title}</span>
-                </Chip>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      {technicalOverview.length ? (
-        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">{technicalOverviewTitle}</h2>
-          <div className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
-            {technicalOverview.map((entry, index) => (
-              <article key={`${entry.label ?? index}-${entry.body}`} className="space-y-1">
-                {entry.label ? <strong className="block text-text-primary">{entry.label}</strong> : null}
-                {entry.body ? <p>{entry.body}</p> : null}
-                {entry.link?.href && entry.link?.label ? (
-                  <a
-                    href={entry.link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs font-semibold text-brand hover:text-brandHover"
-                  >
-                    {entry.link.label}
-                  </a>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {promptStructure ? (
-        <section
-          id={attachTextIdToPromptStructure ? textAnchorId : undefined}
-          className="rounded-card border border-hairline bg-surface p-6 shadow-card"
-        >
-          <h2 className="text-lg font-semibold text-text-primary">{promptStructure.title ?? 'Prompt structure'}</h2>
-          {promptStructure.quote ? (
-            <blockquote className="mt-3 border-l-2 border-hairline pl-3 text-sm text-text-secondary italic">
-              {promptStructure.quote}
-            </blockquote>
-          ) : null}
-          {promptStructure.description ? (
-            <p className="mt-3 text-sm text-text-secondary">{promptStructure.description}</p>
-          ) : null}
-          {promptStructure.steps && promptStructure.steps.length ? (
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
-              {promptStructure.steps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
-      ) : null}
-
-      {tips?.items && tips.items.length ? (
-        <section id="tips" className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">{tips.title ?? 'Tips & tricks'}</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
-            {tips.items.map((tip) => (
-              <li key={tip}>{tip}</li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {compareLink?.href && compareLink.label ? (
-        <p className="text-sm text-text-secondary">
-          {compareLink.before ?? ''}
-          <Link href={compareLinkHref ?? compareLink.href} className="font-semibold text-brand hover:text-brandHover">
-            {compareLink.label}
-          </Link>
-          {compareLink.after ?? ''}
-        </p>
-      ) : null}
-
-      <section id="specs" className="stack-gap">
-        <div className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">{detailCopy.overviewTitle}</h2>
-          <dl className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
-            <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.brand}</dt>
-              <dd>{brand ? brand.label : engine.brandId}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.engineId}</dt>
-              <dd>{engine.id}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.slug}</dt>
-              <dd>{localizeModelsPath(engine.modelSlug)}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.logoPolicy}</dt>
-              <dd>{detailCopy.logoPolicies[engine.logoPolicy as keyof DetailCopy['logoPolicies']] ?? detailCopy.logoPolicies.textOnly}</dd>
-            </div>
-            {platformPriceInfo ? (
-              <div className="sm:col-span-2">
-                <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.platformPrice}</dt>
-                <dd>
-                  <Link
-                    href={platformPriceInfo.href}
-                    prefetch={false}
-                    className="text-sm font-semibold text-brand hover:text-brandHover"
-                  >
-                    {platformPriceInfo.label}
-                  </Link>
-                </dd>
-              </div>
-            ) : null}
-          </dl>
-          {pricingNotes ? <p className="mt-3 text-xs text-text-muted">{pricingNotes}</p> : null}
-        </div>
-      </section>
-
-      {promptEntries.length > 0 && (
-        <section
-          id={!attachTextIdToPromptStructure ? textAnchorId : undefined}
-          className="stack-gap"
-        >
-          <h2 className="text-lg font-semibold text-text-primary">{detailCopy.promptsTitle}</h2>
-          <div className="grid grid-gap-sm sm:grid-cols-2">
-            {promptEntries.map((entry) => (
-              <article key={entry.title} className="rounded-card border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-card">
-                <h3 className="text-sm font-semibold text-text-primary">{entry.title}</h3>
-                <p className="mt-1 text-sm text-text-secondary">{entry.prompt}</p>
-                {entry.notes ? <p className="mt-2 text-xs text-text-muted">{entry.notes}</p> : null}
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {faqEntries.length > 0 && (
-        <section id="faq" className="stack-gap">
-          <h2 className="text-lg font-semibold text-text-primary">{detailCopy.faqTitle}</h2>
-          <div className="stack-gap-sm text-sm text-text-secondary">
-            {faqEntries.map(({ question, answer }) => (
-              <article key={question} className="rounded-card border border-hairline bg-surface p-4 shadow-card">
-                <h3 className="text-sm font-semibold text-text-primary">{question}</h3>
-                <p className="mt-1 text-sm text-text-secondary">{answer}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-      <FAQSchema questions={faqJsonLdEntries} />
-
-      {relatedEngines.length ? (
-        <section className="stack-gap">
-          <div className="stack-gap-sm">
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{relatedCopy.title}</h2>
-            <p className="text-sm text-text-secondary">{relatedCopy.subtitle}</p>
-          </div>
-          <div className="grid grid-gap-sm md:grid-cols-3">
-            {relatedEngines.map((candidate) => {
-              const label = candidate.marketingName ?? candidate.engine.label;
-              const ctaLabel = (() => {
-                if (slug === 'ltx-2') {
-                  if (candidate.modelSlug === 'ltx-2-fast') return 'Compare LTX-2 Pro vs Fast';
-                  if (candidate.modelSlug === 'sora-2') return 'Explore Sora 2';
-                  if (candidate.modelSlug === 'sora-2-pro') return 'Explore Sora 2 Pro';
-                }
-                return `Try ${label}`;
-              })();
-              const compareDisabled =
-                COMPARE_EXCLUDED_SLUGS.has(slug) || COMPARE_EXCLUDED_SLUGS.has(candidate.modelSlug);
-              const compareSlug = [slug, candidate.modelSlug].sort().join('-vs-');
-              const compareHref = compareDisabled
-                ? localizeModelsPath(candidate.modelSlug)
-                : CANONICAL_ONLY_COMPARE_SLUGS.has(compareSlug)
-                  ? localizeComparePath(compareSlug)
-                  : localizeComparePath(compareSlug, slug);
-              const linkLabel = compareDisabled ? relatedCopy.cta : ctaLabel;
-              return (
-                <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-text-primary">{label}</h3>
-                  <p className="mt-2 text-sm text-text-secondary">
-                    {candidate.seo?.description ?? 'Latency, pricing, and prompt guides are documented on the detail page.'}
-                  </p>
-                  <TextLink
-                    href={compareHref}
-                    className="mt-4 gap-1 text-sm"
-                    linkComponent={Link}
-                  >
-                    {linkLabel} <span aria-hidden>→</span>
-                  </TextLink>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      <div className="flex flex-wrap gap-4">
-        <ButtonLink
-          href="/app"
-          prefetch={false}
-          variant="outline"
-          linkComponent={Link}
-        >
-          {detailCopy.buttons.pricing}
-        </ButtonLink>
-        <ButtonLink
-          href={launchHref}
-          prefetch={false}
-          className="shadow-card"
-          linkComponent={Link}
-        >
-          {detailCopy.buttons.launch}
-        </ButtonLink>
-      </div>
-
-        </div>
-    </div>
-  </>
-);
 }

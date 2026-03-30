@@ -1,4 +1,10 @@
 import type { EngineCaps, EngineAvailability, Mode } from '../../types/engines';
+import {
+  buildDefaultModelPublicationSurfaces,
+  mergeModelPublicationSurfaces,
+  type ModelPublicationSurfaces,
+  type PartialModelPublicationSurfaces,
+} from '../../config/model-publication';
 
 export type EngineLogoPolicy = 'logoAllowed' | 'textOnly';
 
@@ -93,6 +99,11 @@ export interface FalEngineEntry {
   pricingHint?: FalEnginePricingHint;
   promptExample?: string;
   category?: 'video' | 'image' | 'audio' | 'multimodal';
+  surfaces: ModelPublicationSurfaces;
+}
+
+interface RawFalEngineEntry extends Omit<FalEngineEntry, 'surfaces'> {
+  surfaces?: PartialModelPublicationSurfaces;
 }
 
 const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
@@ -2923,7 +2934,7 @@ const NANO_BANANA_2_ENGINE: EngineCaps = {
   brandId: 'google',
 };
 
-export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
+const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'sora-2',
     modelSlug: 'sora-2',
@@ -4025,6 +4036,11 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       amountCents: 0,
       label: 'Pricing confirmed at launch',
     },
+    surfaces: {
+      compare: {
+        suggestOpponents: ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
+      },
+    },
     promptExample:
       'Three-shot cinematic sequence, 15 seconds total, director-style camera language, realistic physics, synchronized dialogue and ambience, 16:9.',
   },
@@ -4981,8 +4997,28 @@ promptExample:
   },
 ];
 
+function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
+  const defaults = buildDefaultModelPublicationSurfaces({
+    id: entry.id,
+    modelSlug: entry.modelSlug,
+    family: entry.family,
+    category: entry.category,
+  });
+
+  return {
+    ...entry,
+    surfaces: mergeModelPublicationSurfaces(defaults, entry.surfaces),
+  };
+}
+
+export const FAL_ENGINE_REGISTRY: readonly FalEngineEntry[] = RAW_FAL_ENGINE_REGISTRY.map(materializeFalEngineEntry);
+
 export function listFalEngines(): FalEngineEntry[] {
   return FAL_ENGINE_REGISTRY.slice();
+}
+
+export function hasExplicitFalEngineSurfaces(engineId: string): boolean {
+  return Boolean(RAW_FAL_ENGINE_REGISTRY.find((entry) => entry.id === engineId)?.surfaces);
 }
 
 export function getEngineAliases(entry: FalEngineEntry): string[] {

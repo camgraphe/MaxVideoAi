@@ -75,20 +75,6 @@ const ENGINE_VARIANT_SORT_ORDER = new Map<string, number>([
   ['ltx-2-3', 0],
   ['ltx-2-3-fast', 1],
 ]);
-const ENGINE_DISCOVERY_PRIORITY = [
-  'sora-2',
-  'sora-2-pro',
-  'veo-3-1',
-  'veo-3-1-fast',
-  'pika-text-to-video',
-  'minimax-hailuo-02-text',
-  'nano-banana-2',
-  'nano-banana-pro',
-  'nano-banana',
-] as const;
-const ENGINE_DISCOVERY_PRIORITY_INDEX = new Map<string, number>(
-  ENGINE_DISCOVERY_PRIORITY.map((id, index) => [id, index])
-);
 const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
 const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v'];
@@ -139,6 +125,10 @@ function formatAvgDuration(value: number | null | undefined): string | null {
   const seconds = value / 1000;
   const precision = seconds < 10 ? 1 : 0;
   return `${seconds.toFixed(precision)}s`;
+}
+
+function getEngineDiscoveryRank(engineId: string, registryMeta: EngineRegistryMeta | null): number {
+  return registryMeta?.meta.get(engineId)?.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER;
 }
 
 interface EngineSelectProps {
@@ -263,12 +253,12 @@ export function EngineSelect({
         if (variantOrderB == null) return -1;
         if (variantOrderA !== variantOrderB) return variantOrderA - variantOrderB;
       }
-      const priorityOrderA = ENGINE_DISCOVERY_PRIORITY_INDEX.get(a.id);
-      const priorityOrderB = ENGINE_DISCOVERY_PRIORITY_INDEX.get(b.id);
-      if (priorityOrderA != null || priorityOrderB != null) {
-        if (priorityOrderA == null) return 1;
-        if (priorityOrderB == null) return -1;
-        if (priorityOrderA !== priorityOrderB) return priorityOrderA - priorityOrderB;
+      const priorityOrderA = getEngineDiscoveryRank(a.id, registryMeta);
+      const priorityOrderB = getEngineDiscoveryRank(b.id, registryMeta);
+      if (priorityOrderA !== priorityOrderB) {
+        if (priorityOrderA === Number.MAX_SAFE_INTEGER) return 1;
+        if (priorityOrderB === Number.MAX_SAFE_INTEGER) return -1;
+        return priorityOrderA - priorityOrderB;
       }
       const orderA = order?.get(a.id) ?? Number.MAX_SAFE_INTEGER;
       const orderB = order?.get(b.id) ?? Number.MAX_SAFE_INTEGER;
@@ -303,22 +293,14 @@ export function EngineSelect({
 
   const variantEngines = useMemo(() => {
     if (!selectedEngine) return [];
-    if (SORA_ENGINE_SET.has(selectedEngine.id)) {
-      return availableEngines.filter((entry) => SORA_ENGINE_SET.has(entry.id));
-    }
-    if (VEO_ENGINE_SET.has(selectedEngine.id)) {
-      return availableEngines.filter((entry) => VEO_ENGINE_SET.has(entry.id));
-    }
-    if (KLING_3_ENGINE_SET.has(selectedEngine.id)) {
-      return availableEngines.filter((entry) => KLING_3_ENGINE_SET.has(entry.id));
-    }
-    if (LTX_2_3_ENGINE_SET.has(selectedEngine.id)) {
-      return LTX_2_3_ENGINE_IDS
-        .map((id) => availableEngines.find((entry) => entry.id === id))
-        .filter((entry): entry is EngineCaps => Boolean(entry));
+    const selectedVariantGroup = selectedMeta?.surfaces.app.variantGroup;
+    if (selectedVariantGroup) {
+      return availableEngines.filter(
+        (entry) => registryMeta?.meta.get(entry.id)?.surfaces.app.variantGroup === selectedVariantGroup
+      );
     }
     return [];
-  }, [availableEngines, selectedEngine]);
+  }, [availableEngines, registryMeta, selectedEngine, selectedMeta]);
 
   const showVariantSelector = variantEngines.length > 1;
 
@@ -329,7 +311,7 @@ export function EngineSelect({
 
   const getVariantLabel = useCallback(
     (entry: EngineCaps) => {
-      const override = ENGINE_VARIANT_LABEL_OVERRIDES[entry.id];
+      const override = registryMeta?.meta.get(entry.id)?.surfaces.app.variantLabel ?? ENGINE_VARIANT_LABEL_OVERRIDES[entry.id];
       if (override) return override;
       const meta = registryMeta?.meta.get(entry.id);
       return meta?.cardTitle ?? meta?.marketingName ?? entry.label ?? entry.id;
@@ -1032,8 +1014,8 @@ function BrowseEnginesModal({
         return haystack.includes(searchValue);
       })
       .sort((a, b) => {
-        const aPriority = ENGINE_DISCOVERY_PRIORITY_INDEX.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-        const bPriority = ENGINE_DISCOVERY_PRIORITY_INDEX.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        const aPriority = engineMeta?.get(a.id)?.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER;
+        const bPriority = engineMeta?.get(b.id)?.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER;
         if (aPriority !== bPriority) {
           return aPriority - bPriority;
         }

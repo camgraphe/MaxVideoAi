@@ -3,7 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import modelRoster from '@/config/model-roster.json';
-import { MARKETING_EXAMPLE_CANONICAL_SLUGS } from '@/config/navigation';
+import { INDEXED_MARKETING_EXAMPLE_CANONICAL_SLUGS } from '@/config/model-families';
 import {
   BLOG_ENTRIES,
   BLOG_SLUG_MAP,
@@ -440,7 +440,7 @@ export async function buildModelsSitemapXml(): Promise<string> {
   const entries: string[] = [];
 
   modelRoster.forEach((model) => {
-    if (!model?.modelSlug) {
+    if (!model?.modelSlug || model?.surfaces?.modelPage?.includeInSitemap === false) {
       return;
     }
     const englishPath = `/models/${model.modelSlug}`;
@@ -485,7 +485,7 @@ export async function buildModelsSitemapXml(): Promise<string> {
 function getModelsSitemapLastModified(): string | undefined {
   let latest: string | undefined;
   modelRoster.forEach((model) => {
-    if (!model?.modelSlug) {
+    if (!model?.modelSlug || model?.surfaces?.modelPage?.includeInSitemap === false) {
       return;
     }
     const lastModified = getModelLastModified(model.modelSlug);
@@ -740,12 +740,12 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
     }));
   },
   '/examples/[model]': async () =>
-    MARKETING_EXAMPLE_CANONICAL_SLUGS.map((model) => ({
+    INDEXED_MARKETING_EXAMPLE_CANONICAL_SLUGS.map((model) => ({
       englishPath: `/examples/${model}`,
     })),
   '/models/[slug]': async () =>
     modelRoster
-      .filter((model) => Boolean(model?.modelSlug))
+      .filter((model) => Boolean(model?.modelSlug) && model?.surfaces?.modelPage?.includeInSitemap !== false)
       .map((model) => ({
         englishPath: `/models/${model.modelSlug}`,
         lastModified: getModelLastModified(model.modelSlug),

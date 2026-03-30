@@ -1,5 +1,6 @@
 import { query } from '@/lib/db';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getIndexablePlaylistSlugs, removeVideosFromIndexablePlaylists } from '@/server/indexing';
 import type { PricingSnapshot } from '@/types/engines';
@@ -268,15 +269,7 @@ function resolveExampleGroupId(engineId: string | null | undefined): string | nu
   if (!engineId) return null;
   const normalized = (normalizeEngineId(engineId) ?? engineId).trim().toLowerCase();
   if (!normalized) return null;
-  if (normalized.startsWith('veo-3') || normalized.startsWith('veo3') || normalized === 'veo') return 'veo';
-  if (normalized.startsWith('sora-2') || normalized.startsWith('sora2') || normalized === 'sora') return 'sora';
-  if (normalized.startsWith('pika')) return 'pika';
-  if (normalized.includes('hailuo')) return 'hailuo';
-  if (normalized.startsWith('kling') || normalized.includes('kling-video')) return 'kling';
-  if (normalized.startsWith('wan') || normalized.includes('wan/')) return 'wan';
-  if (normalized.startsWith('seedance')) return 'seedance';
-  if (normalized === 'ltx' || normalized.startsWith('ltx-2') || normalized.includes('ltx-2')) return 'ltx';
-  return normalized;
+  return resolveExampleCanonicalSlug(normalized) ?? normalized;
 }
 
 function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): GalleryVideo[] {

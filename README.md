@@ -19,6 +19,34 @@ Explore model pages, specs, workflows, and pricing across the full engine catalo
 
 https://maxvideoai.com/models
 
+### Add a new model page
+
+Use the onboarding flow instead of starting from a thin template:
+
+```bash
+npm run model:setup -- --from kling-3-pro --slug your-new-model --name "Your New Model" --family kling
+npm run engine:catalog
+npm run model:generate:write
+npm run models:audit
+```
+
+`model:setup` writes the marketing JSON scaffold in `content/models/{en,fr,es}/your-new-model.json`, generates an engine stub, emits a family stub if needed, and writes a launch packet in `docs/model-launch/` with the manual Codex checklist for copy, translations, examples publication, compare publication, and pricing decisions.
+
+If the model belongs to an existing family:
+
+- add the engine in `frontend/src/config/falEngines.ts`
+- set its `family` and `surfaces` explicitly
+- app discovery and pricing estimator update automatically
+- examples family routing keeps working, but canonical `/examples/<family>` copy stays stable until `publishedModelSlugs` is updated intentionally
+- compare routes remain possible, but hub/sitemap publication only happens if `surfaces.compare` is filled intentionally
+
+If this is a brand new family:
+
+- add the engine in `frontend/src/config/falEngines.ts` with its new `family`
+- add one family entry in `frontend/config/model-families.ts`
+- keep `examplesPage.stage: "hidden"` by default to avoid accidental nav/sitemap/canonical expansion
+- promote the family later by switching `examplesPage.stage` and filling `publishedModelSlugs`
+
 ### Example cluster: LTX pages
 
 #### LTX examples (prompts + settings)

@@ -17,6 +17,7 @@ import compareConfig from '@/config/compare-config.json';
 import { COMPARE_SHOWDOWNS } from '@/config/compare-showdowns';
 import { listFalEngines } from '@/config/falEngines';
 import engineCatalog from '@/config/engine-catalog.json';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { ButtonLink } from '@/components/ui/Button';
 import { CompareEngineSelector } from './CompareEngineSelector.client';
 import { CompareScoreboard } from './CompareScoreboard.client';
@@ -1038,6 +1039,9 @@ export async function generateMetadata({
     : descriptionFallback;
 
   let robots: Metadata['robots'] | undefined;
+  if (!isPublishedComparisonSlug(canonicalSlug)) {
+    robots = { index: false, follow: true };
+  }
   if (resolved) {
     const keySpecs = await loadEngineKeySpecs();
     const leftKeySpecs = keySpecs.get(resolved.left.modelSlug)?.keySpecs ?? undefined;
@@ -1385,6 +1389,7 @@ export default async function CompareDetailPage({
       const resolvedPair = resolveEngines(pairSlug);
       if (!resolvedPair) return null;
       const canonicalPair = getCanonicalCompareSlug(pairSlug)?.canonicalSlug ?? pairSlug;
+      if (!isPublishedComparisonSlug(canonicalPair)) return null;
       return {
         href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalPair } },
         label: `${formatEngineName(resolvedPair.left)} vs ${formatEngineName(resolvedPair.right)}`,

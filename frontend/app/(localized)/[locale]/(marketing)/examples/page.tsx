@@ -6,7 +6,6 @@ import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
-import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -17,11 +16,18 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ExamplesHeroVideo } from '@/components/examples/ExamplesHeroVideo.client';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import {
   getExampleModelLanding,
   getHubExamplesFaq,
 } from '@/lib/examples/modelLanding';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
+import {
+  getExampleFamilyDescriptor,
+  getExampleFamilyIds,
+  getExampleFamilyModelSlugs,
+  getExampleFamilyPrimaryModelSlug,
+} from '@/lib/model-families';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -85,7 +91,6 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_U
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const MODEL_SLUG_MAP = buildSlugMap('models');
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
-const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS);
 const DEFAULT_SORT: ExampleSort = 'playlist';
 const EXAMPLES_PAGE_SIZE = 60;
 const INITIAL_GALLERY_BATCH = 8;
@@ -97,7 +102,7 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
-const PREFERRED_ENGINE_ORDER = ['sora', 'kling', 'veo', 'wan', 'seedance', 'ltx', 'pika', 'hailuo'];
+const PREFERRED_ENGINE_ORDER = getExampleFamilyIds();
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 function getEngineAccentOutlineStyle(brandId?: string) {
@@ -108,30 +113,15 @@ function getEngineAccentOutlineStyle(brandId?: string) {
   };
 }
 
-const ENGINE_MODEL_LINKS_BY_GROUP: Record<string, string[]> = {
-  sora: ['sora-2-pro', 'sora-2'],
-  veo: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-first-last'],
-  seedance: ['seedance-1-5-pro'],
-  kling: ['kling-3-pro', 'kling-3-standard', 'kling-2-6-pro', 'kling-2-5-turbo'],
-  wan: ['wan-2-6', 'wan-2-5'],
-  pika: ['pika-text-to-video'],
-  hailuo: ['minimax-hailuo-02-text'],
-  ltx: ['ltx-2', 'ltx-2-fast', 'ltx-2-3-pro', 'ltx-2-3-fast'],
-};
+const ENGINE_MODEL_LINKS_BY_GROUP: Record<string, string[]> = Object.fromEntries(
+  PREFERRED_ENGINE_ORDER.map((familyId) => [familyId, getExampleFamilyModelSlugs(familyId)])
+);
 const ENGINE_MODEL_LINKS: Record<string, string> = Object.fromEntries(
-  Object.entries(ENGINE_MODEL_LINKS_BY_GROUP).map(([key, slugs]) => [key, slugs[0]])
+  PREFERRED_ENGINE_ORDER.flatMap((familyId) => {
+    const primarySlug = getExampleFamilyPrimaryModelSlug(familyId);
+    return primarySlug ? [[familyId, primarySlug]] : [];
+  })
 ) as Record<string, string>;
-
-const ENGINE_EXAMPLE_LINKS: Record<string, string> = {
-  sora: 'sora',
-  veo: 'veo',
-  kling: 'kling',
-  wan: 'wan',
-  seedance: 'seedance',
-  pika: 'pika',
-  hailuo: 'hailuo',
-  ltx: 'ltx',
-};
 
 function getPlaceholderPoster(aspect?: string | null): string {
   if (!aspect) return POSTER_PLACEHOLDERS['16:9'];
@@ -186,84 +176,6 @@ function appendTrackingParams(
   });
 }
 
-const ENGINE_FILTER_GROUPS: Record<
-  string,
-  {
-    id: string;
-    label: string;
-    brandId?: string;
-  }
-> = {
-  sora: { id: 'sora', label: 'Sora' },
-  'sora-2': { id: 'sora', label: 'Sora' },
-  'sora-2-pro': { id: 'sora', label: 'Sora' },
-  'veo-3-1': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  'veo-3-1-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  'veo-3-1-first-last': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  'veo-3-1-first-last-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  'veo-3': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  'veo-3-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  veo: { id: 'veo', label: 'Veo', brandId: 'google-veo' },
-  'minimax-hailuo-02-text': { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
-  'minimax-hailuo-02-image': { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
-  'minimax-hailuo-02': { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
-  hailuo: { id: 'hailuo', label: 'Hailuo', brandId: 'minimax' },
-  'pika-text-to-video': { id: 'pika', label: 'Pika', brandId: 'pika' },
-  'pika-image-to-video': { id: 'pika', label: 'Pika', brandId: 'pika' },
-  'pika-2-2': { id: 'pika', label: 'Pika', brandId: 'pika' },
-  pika: { id: 'pika', label: 'Pika', brandId: 'pika' },
-  'kling-2-5-turbo': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'kling-2-6-pro': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'kling-3-standard': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'kling-3-pro': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'seedance-1-5-pro': { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
-  seedance: { id: 'seedance', label: 'Seedance', brandId: 'bytedance' },
-  kling: { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v2.5-turbo/pro/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v2.5-turbo/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v2.6/pro/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v2.6/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v3/pro/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v3/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v3/standard/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/kling-video/v3/standard/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
-  'fal-ai/bytedance/seedance/v1.5/pro/text-to-video': {
-    id: 'seedance',
-    label: 'Seedance',
-    brandId: 'bytedance',
-  },
-  'fal-ai/bytedance/seedance/v1.5/pro/image-to-video': {
-    id: 'seedance',
-    label: 'Seedance',
-    brandId: 'bytedance',
-  },
-  ltx: { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'ltx-2-3-fast': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'ltx-2-3': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'ltx-2-3-pro': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2.3/text-to-video': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2.3/image-to-video': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2.3/audio-to-video': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2.3/extend-video': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2.3/retake-video': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2.3/text-to-video/fast': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2.3/image-to-video/fast': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'ltx-2-fast': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'ltx-2': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2/text-to-video': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2/image-to-video': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2/text-to-video/fast': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'fal-ai/ltx-2/image-to-video/fast': { id: 'ltx', label: 'LTX', brandId: 'lightricks' },
-  'wan-2-5': { id: 'wan', label: 'Wan', brandId: 'wan' },
-  'wan-2-6': { id: 'wan', label: 'Wan', brandId: 'wan' },
-  'wan/v2.6/text-to-video': { id: 'wan', label: 'Wan', brandId: 'wan' },
-  'wan/v2.6/image-to-video': { id: 'wan', label: 'Wan', brandId: 'wan' },
-  'wan/v2.6/reference-to-video': { id: 'wan', label: 'Wan', brandId: 'wan' },
-  wan: { id: 'wan', label: 'Wan', brandId: 'wan' },
-};
-
 function toAbsoluteUrl(url?: string | null): string | null {
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -287,7 +199,7 @@ function resolveCanonicalEngineParam(raw: string | string[] | undefined): string
   if (!engineParamValue) return '';
   const canonicalEngineParam = normalizeEngineId(engineParamValue) ?? engineParamValue;
   const engineMeta = ENGINE_META.get(canonicalEngineParam.toLowerCase()) ?? null;
-  const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta, canonicalEngineParam);
+  const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta);
   return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
 }
 
@@ -297,21 +209,8 @@ function resolveEngineLabel(raw: string | string[] | undefined): string | null {
   if (!engineParamValue) return null;
   const canonicalEngineParam = normalizeEngineId(engineParamValue) ?? engineParamValue;
   const engineMeta = ENGINE_META.get(canonicalEngineParam.toLowerCase()) ?? null;
-  const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta, canonicalEngineParam);
+  const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta);
   return descriptor?.label ?? engineMeta?.label ?? canonicalEngineParam;
-}
-
-function resolveExampleCanonicalSlug(engineId: string | null | undefined): string | null {
-  if (!engineId) return null;
-  const normalized = engineId.trim().toLowerCase();
-  const canonical = normalizeEngineId(normalized) ?? normalized;
-  const engineMeta = ENGINE_META.get(canonical.toLowerCase()) ?? null;
-  const descriptor = resolveFilterDescriptor(canonical, engineMeta, canonical);
-  const groupId = descriptor?.id?.toLowerCase() ?? canonical.toLowerCase();
-  const exampleSlug =
-    ENGINE_EXAMPLE_LINKS[groupId] ?? ENGINE_EXAMPLE_LINKS[canonical.toLowerCase()] ?? null;
-  if (!exampleSlug) return null;
-  return EXAMPLE_MODEL_SLUG_SET.has(exampleSlug) ? exampleSlug : null;
 }
 
 export async function generateMetadata({
@@ -479,39 +378,9 @@ type EngineFilterOption = {
 
 function resolveFilterDescriptor(
   canonicalEngineId: string | null | undefined,
-  engineMeta: { label?: string; brandId?: string | undefined } | null,
-  fallbackLabel?: string | null
+  engineMeta: { brandId?: string | undefined } | null
 ): { id: string; label: string; brandId?: string } | null {
-  if (!canonicalEngineId) return null;
-  const normalized = canonicalEngineId.trim().toLowerCase();
-  const directMatch = ENGINE_FILTER_GROUPS[normalized];
-  let group = directMatch;
-
-  if (!group) {
-    if (normalized.startsWith('veo-3') || normalized.startsWith('veo3')) {
-      group = ENGINE_FILTER_GROUPS['veo'];
-    } else if (normalized.startsWith('sora-2') || normalized.startsWith('sora')) {
-      group = ENGINE_FILTER_GROUPS['sora'];
-    } else if (normalized.startsWith('pika')) {
-      group = ENGINE_FILTER_GROUPS['pika'];
-    } else if (normalized.includes('hailuo')) {
-      group = ENGINE_FILTER_GROUPS['hailuo'];
-    } else if (normalized.startsWith('kling')) {
-      group = ENGINE_FILTER_GROUPS['kling'];
-    } else if (normalized.startsWith('wan')) {
-      group = ENGINE_FILTER_GROUPS['wan'];
-    } else if (normalized === 'ltx' || normalized.startsWith('ltx-2-3')) {
-      group = ENGINE_FILTER_GROUPS.ltx;
-    } else if (normalized.startsWith('ltx-2')) {
-      group = ENGINE_FILTER_GROUPS.ltx;
-    }
-  }
-
-  const targetId = group?.id ?? normalized;
-  const targetOverride = ENGINE_FILTER_GROUPS[targetId];
-  const label = group?.label ?? targetOverride?.label ?? engineMeta?.label ?? fallbackLabel ?? canonicalEngineId;
-  const brandId = group?.brandId ?? targetOverride?.brandId ?? engineMeta?.brandId;
-  return { id: targetId, label, brandId };
+  return getExampleFamilyDescriptor(canonicalEngineId, { brandId: engineMeta?.brandId }) ?? null;
 }
 
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
@@ -672,7 +541,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     if (!canonicalEngineId) return acc;
     const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-    const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+    const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta);
     if (!descriptor) return acc;
     const filterKey = descriptor.id.toLowerCase();
     const existing = acc.get(filterKey);
@@ -696,7 +565,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     if (existing) {
       return existing;
     }
-    const base = ENGINE_FILTER_GROUPS[preferredId] ?? { id: preferredId, label: preferredId };
+    const base = getExampleFamilyDescriptor(preferredId) ?? { id: preferredId, label: preferredId, brandId: undefined };
     return {
       id: base.id,
       key,
@@ -737,7 +606,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
           const canonicalEngineId = resolveEngineLinkId(video.engineId);
           if (!canonicalEngineId) return null;
           const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-          const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+          const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta);
           if (!descriptor) return null;
           if (descriptor.id.toLowerCase() !== selectedEngine.toLowerCase()) return null;
           return { video, index };
@@ -749,7 +618,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
     const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
-    const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel) : null;
+    const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta) : null;
     const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
     const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
     const modelSlug =

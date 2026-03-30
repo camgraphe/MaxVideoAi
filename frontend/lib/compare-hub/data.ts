@@ -10,6 +10,7 @@ export type HubEngine = {
   modelSlug: string;
   marketingName: string;
   provider: string;
+  family?: string;
   availability: string;
   status: string;
   modes: string[];
@@ -60,7 +61,17 @@ export type HubUseCaseBucket = {
   pairs: HubPair[];
 };
 
-type CatalogEngine = (typeof engineCatalog)[number];
+type CatalogEngine = (typeof engineCatalog)[number] & {
+  family?: string;
+  surfaces?: {
+    compare?: {
+      suggestOpponents?: string[];
+      publishedPairs?: string[];
+      includeInHub?: boolean;
+    };
+  };
+};
+
 type HubEngineFilterOptions = {
   includeLimited?: boolean;
   includeWaitlist?: boolean;
@@ -69,6 +80,39 @@ type HubEngineFilterOptions = {
 
 const hubConfig = compareHubConfig as CompareHubConfig;
 const catalogEntries = engineCatalog as CatalogEngine[];
+const catalogBySlug = new Map(catalogEntries.map((entry) => [entry.modelSlug, entry]));
+
+function normalizeList(values: string[] | undefined): string[] {
+  if (!Array.isArray(values)) return [];
+  return Array.from(
+    new Set(values.filter((value): value is string => typeof value === 'string' && value.trim().length > 0))
+  );
+}
+
+function getCompareSurface(entry: CatalogEngine | undefined) {
+  return entry?.surfaces?.compare;
+}
+
+function getPublishedOpponentSlugs(entry: CatalogEngine | undefined): string[] {
+  return normalizeList(getCompareSurface(entry)?.publishedPairs);
+}
+
+function buildPublishedComparisonSlugSet(entries: CatalogEngine[]): Set<string> {
+  const validSlugs = new Set(entries.map((entry) => entry.modelSlug).filter(Boolean));
+  const published = new Set<string>();
+
+  entries.forEach((entry) => {
+    if (!entry?.modelSlug) return;
+    getPublishedOpponentSlugs(entry).forEach((opponentSlug) => {
+      if (!validSlugs.has(opponentSlug) || opponentSlug === entry.modelSlug) return;
+      published.add(buildCanonicalCompareSlug(entry.modelSlug, opponentSlug));
+    });
+  });
+
+  return published;
+}
+
+const PUBLISHED_COMPARISON_SLUGS = buildPublishedComparisonSlugSet(catalogEntries);
 
 function normalizeMode(mode: string): string {
   if (mode === 'r2v') return 'v2v';
@@ -118,6 +162,7 @@ function resolveMaxResolution(resolutions: string[] | undefined): { label: strin
 
 function isHubEligibleEngine(entry: CatalogEngine, options: HubEngineFilterOptions = {}): boolean {
   if (!entry?.modelSlug || EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug)) return false;
+  if (getCompareSurface(entry)?.includeInHub !== true) return false;
   const status = String(entry.engine?.status ?? '').toLowerCase();
   if (!ELIGIBLE_STATUSES.has(status)) return false;
   const availability = String(entry.availability ?? '').toLowerCase();
@@ -143,6 +188,12 @@ export function buildCanonicalCompareSlug(leftSlug: string, rightSlug: string): 
   return `${left}-vs-${right}`;
 }
 
+export function canonicalizePublishedCompareSlug(slug: string): string {
+  const [leftSlug, rightSlug] = slug.split('-vs-');
+  if (!leftSlug || !rightSlug) return slug;
+  return buildCanonicalCompareSlug(leftSlug, rightSlug);
+}
+
 export function buildCompareRoute(leftSlug: string, rightSlug: string): CompareRoute {
   const { leftSlug: canonicalLeft, rightSlug: canonicalRight } = canonicalizeComparePair(leftSlug, rightSlug);
   const slug = `${canonicalLeft}-vs-${canonicalRight}`;
@@ -150,6 +201,14 @@ export function buildCompareRoute(leftSlug: string, rightSlug: string): CompareR
     slug,
     order: canonicalLeft === leftSlug ? undefined : leftSlug,
   };
+}
+
+export function isPublishedComparisonSlug(slug: string): boolean {
+  return PUBLISHED_COMPARISON_SLUGS.has(canonicalizePublishedCompareSlug(slug));
+}
+
+export function getPublishedComparisonSlugs(): string[] {
+  return Array.from(PUBLISHED_COMPARISON_SLUGS).sort((a, b) => a.localeCompare(b, 'en'));
 }
 
 export function getHubEngines(options: HubEngineFilterOptions = {}): HubEngine[] {
@@ -162,6 +221,7 @@ export function getHubEngines(options: HubEngineFilterOptions = {}): HubEngine[]
         modelSlug: entry.modelSlug,
         marketingName: entry.marketingName,
         provider: entry.provider,
+        family: entry.family,
         availability: String(entry.availability ?? 'unknown'),
         status: String(entry.engine?.status ?? 'unknown'),
         modes,
@@ -226,7 +286,7 @@ export function getPopularComparisons(engines: HubEngine[] = getHubEngines()): H
   return hubConfig.popularComparisons
     .map((entry) => {
       const pair = buildPair(entry.left, entry.right, enginesBySlug);
-      if (!pair) return null;
+      if (!pair || !isPublishedComparisonSlug(pair.slug)) return null;
       return {
         ...pair,
         tags: Array.isArray(entry.tags) ? entry.tags.slice(0, 3) : [],
@@ -242,7 +302,10 @@ export function getUseCaseBuckets(engines: HubEngine[] = getHubEngines()): HubUs
       const pairs = dedupePairs(
         bucket.pairs
           .map((entry) => buildPair(entry.left, entry.right, enginesBySlug))
-          .filter((entry): entry is HubPair => Boolean(entry))
+          .filter((entry): entry is HubPair => {
+            if (!entry) return false;
+            return isPublishedComparisonSlug(entry.slug);
+          })
       );
       if (!pairs.length) return null;
       return {
@@ -253,32 +316,57 @@ export function getUseCaseBuckets(engines: HubEngine[] = getHubEngines()): HubUs
     .filter((entry): entry is HubUseCaseBucket => Boolean(entry));
 }
 
+export function getSuggestedOpponentSlugs(engineSlug: string, maxCount = 3): string[] {
+  const current = catalogBySlug.get(engineSlug);
+  const selected: string[] = [];
+  const used = new Set<string>();
+  const add = (slug: string | null | undefined) => {
+    if (!slug || slug === engineSlug || used.has(slug) || !catalogBySlug.has(slug)) return;
+    used.add(slug);
+    selected.push(slug);
+  };
+
+  normalizeList(getCompareSurface(current)?.suggestOpponents).forEach(add);
+  if (selected.length >= maxCount) return selected.slice(0, maxCount);
+
+  const compareCapableEngines = getHubEngines({
+    includeLimited: true,
+    includeWaitlist: true,
+  });
+  const currentFamily = current?.family?.trim().toLowerCase();
+  compareCapableEngines
+    .filter((engine) => engine.family?.trim().toLowerCase() === currentFamily)
+    .forEach((engine) => add(engine.modelSlug));
+
+  if (selected.length < maxCount) {
+    getPublishedOpponentSlugs(current).forEach(add);
+  }
+
+  if (selected.length < maxCount) {
+    compareCapableEngines.forEach((engine) => add(engine.modelSlug));
+  }
+
+  if (selected.length < maxCount) {
+    normalizeList(hubConfig.opponentOverrides?.[engineSlug]).forEach(add);
+  }
+
+  return selected.slice(0, maxCount);
+}
+
 export function getSuggestedOpponents(
   engineSlug: string,
   engines: HubEngine[] = getHubEngines(),
   maxCount = 3
 ): HubEngine[] {
   const enginesBySlug = new Map(engines.map((engine) => [engine.modelSlug, engine]));
-  const overrideSlugs = hubConfig.opponentOverrides?.[engineSlug] ?? [];
-  const fromOverrides = overrideSlugs
+  return getSuggestedOpponentSlugs(engineSlug, maxCount)
     .map((slug) => enginesBySlug.get(slug))
     .filter((entry): entry is HubEngine => entry != null)
-    .filter((entry) => entry.modelSlug !== engineSlug);
-
-  if (fromOverrides.length >= maxCount) {
-    return fromOverrides.slice(0, maxCount);
-  }
-
-  const fallback = engines
-    .filter((engine) => engine.modelSlug !== engineSlug)
-    .filter((engine) => !fromOverrides.some((entry) => entry.modelSlug === engine.modelSlug))
-    .slice(0, maxCount - fromOverrides.length);
-
-  return [...fromOverrides, ...fallback].slice(0, maxCount);
+    .slice(0, maxCount);
 }
 
 export function getRankedComparisonPairs(engines: HubEngine[] = getHubEngines()): HubPair[] {
-  const allPairs = getAllCanonicalPairs(engines);
+  const allPairs = getAllCanonicalPairs(engines).filter((pair) => isPublishedComparisonSlug(pair.slug));
   const allBySlug = new Map(allPairs.map((pair) => [pair.slug, pair]));
 
   const prioritizedSeeds: HubPair[] = [
@@ -296,11 +384,5 @@ export function getRankedComparisonPairs(engines: HubEngine[] = getHubEngines())
 }
 
 export function getHubComparisonSlugsForSitemap(): string[] {
-  return getAllCanonicalPairs(
-    getHubEngines({
-      includeLimited: true,
-      includeWaitlist: true,
-      includeUnavailable: true,
-    })
-  ).map((pair) => pair.slug);
+  return getPublishedComparisonSlugs();
 }

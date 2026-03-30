@@ -51,6 +51,9 @@ const MEMBER_ORDER: MemberTier[] = ['Member', 'Plus', 'Pro'];
 const MIN_DURATION_SEC = 2;
 const FAL_ENGINE_REGISTRY = listFalEngines();
 const FAL_ENGINE_ORDER = new Map<string, number>(FAL_ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
+const FAL_ENGINE_DISCOVERY_RANK = new Map(
+  FAL_ENGINE_REGISTRY.map((entry) => [entry.id, entry.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER])
+);
 const SUPPORTED_MODES = new Set<Mode>(['t2v', 'i2v', 't2i', 'i2i']);
 const PER_IMAGE_ENGINE_CONFIG = new Map<
   string,
@@ -420,6 +423,9 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
   const engineOptions = useMemo(() => {
     const options: EngineOption[] = [];
     FAL_ENGINE_REGISTRY.forEach((entry) => {
+      if (!entry.surfaces.pricing.includeInEstimator) {
+        return;
+      }
       const engineCaps = entry.engine;
       if (!engineCaps) {
         return;
@@ -448,24 +454,9 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
       }
     });
 
-    const preferredOrder = [
-      'sora-2',
-      'sora-2-pro',
-      'veo-3-1',
-      'veo-3-1-fast',
-      'veo-3-1-first-last',
-      'veo-3-1-first-last-fast',
-      'pika-text-to-video',
-      'minimax-hailuo-02-text',
-      'nano-banana-2',
-      'nano-banana-pro',
-      'nano-banana',
-    ];
-    const preferredIndex = new Map<string, number>(preferredOrder.map((id, index) => [id, index]));
-
     return options.sort((a, b) => {
-      const prefA = preferredIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-      const prefB = preferredIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+      const prefA = FAL_ENGINE_DISCOVERY_RANK.get(a.baseEngineId) ?? Number.MAX_SAFE_INTEGER;
+      const prefB = FAL_ENGINE_DISCOVERY_RANK.get(b.baseEngineId) ?? Number.MAX_SAFE_INTEGER;
       if (prefA !== prefB) return prefA - prefB;
       const orderA = a.sortIndex;
       const orderB = b.sortIndex;

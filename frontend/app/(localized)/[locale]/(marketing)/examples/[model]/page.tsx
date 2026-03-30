@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
@@ -9,10 +8,11 @@ import { listExamplesPage } from '@/server/videos';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { getExampleModelLanding } from '@/lib/examples/modelLanding';
 import { EXAMPLES_HERO_SELECTION_LIMIT, pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
+import { getExampleFamilyPageConfig, getMarketingExampleRouteSlugs } from '@/lib/model-families';
 import ExamplesPage from '../page';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
-const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS.map((slug) => slug.toLowerCase()));
+const EXAMPLE_MODEL_SLUG_SET = new Set(getMarketingExampleRouteSlugs().map((slug) => slug.toLowerCase()));
 const DEFAULT_SORT = 'playlist';
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const ALLOWED_MODEL_QUERY_KEYS = new Set(['sort', 'page']);
@@ -23,7 +23,7 @@ export const revalidate = 60;
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return locales.flatMap((locale) => MARKETING_EXAMPLE_SLUGS.map((model) => ({ locale, model })));
+  return locales.flatMap((locale) => getMarketingExampleRouteSlugs().map((model) => ({ locale, model })));
 }
 
 function normalizeExampleSlug(value: string): string {
@@ -108,7 +108,8 @@ export async function generateMetadata({
   });
   const heroVideo = pickFirstPlayableVideo(heroResult.items);
   const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/price-before.png`;
-  const noindex = shouldNoindex(searchParams ?? {});
+  const familyPageConfig = getExampleFamilyPageConfig(canonical);
+  const noindex = shouldNoindex(searchParams ?? {}) || familyPageConfig?.stage === 'public_noindex';
 
   return buildSeoMetadata({
     locale: params.locale,

@@ -5,9 +5,66 @@
     "marketingName": "OpenAI Sora 2",
     "provider": "OpenAI",
     "brandId": "openai",
+    "family": "sora",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "sora-2-pro",
+        "sora-2"
+      ]
+    },
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "veo-3-1",
+          "kling-3-pro",
+          "seedance-2-0"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 0,
+        "variantGroup": "sora",
+        "variantLabel": "Standard"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "sora-2",
       "label": "OpenAI Sora 2",
@@ -217,9 +274,62 @@
     "marketingName": "OpenAI Sora 2 Pro",
     "provider": "OpenAI",
     "brandId": "openai",
+    "family": "sora",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "sora-2-pro",
+        "sora-2"
+      ]
+    },
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 1,
+        "variantGroup": "sora",
+        "variantLabel": "Pro"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "sora-2-pro",
       "label": "OpenAI Sora 2 Pro",
@@ -441,9 +551,67 @@
     "marketingName": "Google Veo 3.1",
     "provider": "Google",
     "brandId": "google-veo",
+    "family": "veo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-first-last"
+      ]
+    },
     "versionLabel": "3.1",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "kling-3-pro",
+          "veo-3-1-fast",
+          "sora-2"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 2,
+        "variantGroup": "veo-3-1",
+        "variantLabel": "Standard"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "veo-3-1",
       "label": "Google Veo 3.1",
@@ -701,9 +869,67 @@
     "marketingName": "Google Veo 3.1 Fast",
     "provider": "Google",
     "brandId": "google-veo",
+    "family": "veo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-first-last"
+      ]
+    },
     "versionLabel": "3.1 Fast",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "ltx-2-fast",
+          "ltx-2-3-fast",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 3,
+        "variantGroup": "veo-3-1",
+        "variantLabel": "Fast"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "veo-3-1-fast",
       "label": "Google Veo 3.1 Fast",
@@ -964,9 +1190,60 @@
     "marketingName": "Google Veo 3.1 First/Last Frame",
     "provider": "Google",
     "brandId": "google-veo",
+    "family": "veo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-first-last"
+      ]
+    },
     "versionLabel": "3.1",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "veo-3-1-first-last",
       "label": "Google Veo 3.1 First/Last Frame",
@@ -1218,9 +1495,63 @@
     "marketingName": "Pika 2.2 Text & Image to Video",
     "provider": "Pika",
     "brandId": "pika",
+    "family": "pika",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "pika-text-to-video"
+      ]
+    },
     "versionLabel": "2.2",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "seedance-2-0",
+          "minimax-hailuo-02-text",
+          "ltx-2-fast"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 4
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "pika-text-to-video",
       "label": "Pika 2.2 Text & Image to Video",
@@ -1265,7 +1596,9 @@
         }
       },
       "inputLimits": {
-        "imageMaxMB": 25
+        "imageMaxMB": 25,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
       },
       "inputSchema": {
         "required": [
@@ -1471,9 +1804,61 @@
     "marketingName": "Kling 2.5 Turbo",
     "provider": "Kling by Kuaishou",
     "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ]
+    },
     "versionLabel": "2.5 Turbo",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "kling-2-5-turbo",
       "label": "Kling 2.5 Turbo",
@@ -1508,7 +1893,9 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 25
+        "imageMaxMB": 25,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
       },
       "inputSchema": {
         "required": [
@@ -1728,9 +2115,61 @@
     "marketingName": "Kling 2.6 Pro",
     "provider": "Kling by Kuaishou",
     "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ]
+    },
     "versionLabel": "v2.6 Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "kling-2-6-pro",
       "label": "Kling 2.6 Pro",
@@ -1770,7 +2209,9 @@
         }
       },
       "inputLimits": {
-        "imageMaxMB": 25
+        "imageMaxMB": 25,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
       },
       "inputSchema": {
         "required": [
@@ -1975,9 +2416,67 @@
     "marketingName": "Kling 3 Pro",
     "provider": "Kling by Kuaishou",
     "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ]
+    },
     "versionLabel": "v3 Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "veo-3-1",
+          "sora-2",
+          "seedance-1-5-pro"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "kling-3",
+        "variantLabel": "Pro"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "kling-3-pro",
       "label": "Kling 3 Pro",
@@ -2017,7 +2516,9 @@
         }
       },
       "inputLimits": {
-        "imageMaxMB": 25
+        "imageMaxMB": 25,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
       },
       "inputSchema": {
         "required": [
@@ -2259,9 +2760,63 @@
     "marketingName": "Kling 3 Standard",
     "provider": "Kling by Kuaishou",
     "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ]
+    },
     "versionLabel": "v3 Standard",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "kling-3",
+        "variantLabel": "Standard"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "kling-3-standard",
       "label": "Kling 3 Standard",
@@ -2301,7 +2856,9 @@
         }
       },
       "inputLimits": {
-        "imageMaxMB": 25
+        "imageMaxMB": 25,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
       },
       "inputSchema": {
         "required": [
@@ -2543,9 +3100,62 @@
     "marketingName": "Seedance 1.5 Pro",
     "provider": "ByteDance",
     "brandId": "bytedance",
+    "family": "seedance",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "seedance-1-5-pro"
+      ]
+    },
     "versionLabel": "v1.5 Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "seedance-2-0",
+          "kling-3-pro",
+          "sora-2"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "seedance-1-5-pro",
       "label": "Seedance 1.5 Pro",
@@ -2858,9 +3468,62 @@
     "marketingName": "Seedance 2.0",
     "provider": "ByteDance",
     "brandId": "bytedance",
+    "family": "seedance",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "seedance-1-5-pro"
+      ]
+    },
     "versionLabel": "2.0",
     "availability": "waitlist",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "sora-2",
+          "pika-text-to-video",
+          "seedance-1-5-pro"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "explicit",
     "engine": {
       "id": "seedance-2-0",
       "label": "Seedance 2.0",
@@ -3090,9 +3753,59 @@
     "marketingName": "Wan 2.5 Text & Image to Video",
     "provider": "Wan",
     "brandId": "wan",
+    "family": "wan",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "wan-2-6",
+        "wan-2-5"
+      ]
+    },
     "versionLabel": "Preview",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "wan-2-5",
       "label": "Wan 2.5 Text & Image to Video",
@@ -3128,7 +3841,9 @@
       "params": {},
       "inputLimits": {
         "imageMaxMB": 25,
-        "videoMaxMB": 15
+        "videoMaxMB": 15,
+        "promptMaxChars": 800,
+        "promptMaxCharsSource": "official"
       },
       "inputSchema": {
         "required": [
@@ -3348,9 +4063,63 @@
     "marketingName": "Wan 2.6 Text & Image to Video",
     "provider": "Wan",
     "brandId": "wan",
+    "family": "wan",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "wan-2-6",
+        "wan-2-5"
+      ]
+    },
     "versionLabel": "2.6",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "sora-2",
+          "veo-3-1",
+          "ltx-2-fast"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "wan-2-6",
       "label": "Wan 2.6 Text & Image to Video",
@@ -3389,7 +4158,9 @@
       "inputLimits": {
         "imageMaxMB": 25,
         "videoMaxMB": 30,
-        "videoMaxDurationSec": 30
+        "videoMaxDurationSec": 30,
+        "promptMaxChars": 800,
+        "promptMaxCharsSource": "official"
       },
       "inputSchema": {
         "required": [
@@ -3672,9 +4443,59 @@
     "marketingName": "MiniMax Hailuo 02 Standard",
     "provider": "MiniMax",
     "brandId": "minimax",
+    "family": "hailuo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "minimax-hailuo-02-text"
+      ]
+    },
     "versionLabel": "Standard",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 5
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "minimax-hailuo-02-text",
       "label": "MiniMax Hailuo 02 Standard",
@@ -3905,9 +4726,67 @@
     "marketingName": "LTX 2.3 Fast",
     "provider": "Lightricks",
     "brandId": "lightricks",
+    "family": "ltx",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "ltx-2",
+        "ltx-2-fast",
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
+    },
     "versionLabel": "2.3 Fast",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "ltx-2-3-pro",
+          "veo-3-1-fast",
+          "ltx-2-fast"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "ltx-2-3",
+        "variantLabel": "Fast"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "ltx-2-3-fast",
       "label": "LTX 2.3 Fast",
@@ -4211,9 +5090,65 @@
     "marketingName": "LTX 2.3 Pro",
     "provider": "Lightricks",
     "brandId": "lightricks",
+    "family": "ltx",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "ltx-2",
+        "ltx-2-fast",
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
+    },
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "ltx-2-3-fast",
+          "ltx-2-fast",
+          "sora-2"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "ltx-2-3",
       "label": "LTX 2.3 Pro",
@@ -4701,9 +5636,65 @@
     "marketingName": "LTX Video 2.0 Fast",
     "provider": "Lightricks",
     "brandId": "lightricks",
+    "family": "ltx",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "ltx-2",
+        "ltx-2-fast",
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
+    },
     "versionLabel": "Fast",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "veo-3-1-fast",
+          "wan-2-5",
+          "ltx-2-3-fast"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "ltx-2-fast",
       "label": "LTX Video 2.0 Fast",
@@ -4954,9 +5945,61 @@
     "marketingName": "LTX Video 2.0 Pro",
     "provider": "Lightricks",
     "brandId": "lightricks",
+    "family": "ltx",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "ltx-2",
+        "ltx-2-fast",
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
+    },
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-first-last",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "ltx-2",
       "label": "LTX Video 2.0 Pro",
@@ -5192,9 +6235,34 @@
     "marketingName": "Nano Banana (Image Generation)",
     "provider": "Google",
     "brandId": "google",
+    "family": "nano-banana",
+    "familyExamplesPage": null,
     "versionLabel": "Nano",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 8
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "nano-banana",
       "label": "Nano Banana",
@@ -5423,9 +6491,34 @@
     "marketingName": "Nano Banana Pro",
     "provider": "Google",
     "brandId": "google",
+    "family": "nano-banana",
+    "familyExamplesPage": null,
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 7
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "nano-banana-pro",
       "label": "Nano Banana Pro",
@@ -5694,9 +6787,34 @@
     "marketingName": "Nano Banana 2",
     "provider": "Google",
     "brandId": "google",
+    "family": "nano-banana",
+    "familyExamplesPage": null,
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 6
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "default",
     "engine": {
       "id": "nano-banana-2",
       "label": "Nano Banana 2",

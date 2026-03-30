@@ -1,4 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
+import { getModelFamilyDefinition, type ModelFamilyId } from '@/config/model-families';
+import { getExampleFamilyIds, getExampleFamilyVariantLabels } from '@/lib/model-families';
 
 export type ExampleFaqItem = {
   question: string;
@@ -24,52 +26,7 @@ export type ExampleModelLanding = {
   faqItems: ExampleFaqItem[];
 };
 
-const CANONICAL_SLUGS = ['sora', 'veo', 'wan', 'kling', 'seedance', 'ltx', 'pika', 'hailuo'] as const;
-type CanonicalSlug = (typeof CANONICAL_SLUGS)[number];
-
-const MODEL_LABELS: Record<AppLocale, Record<CanonicalSlug, string>> = {
-  en: {
-    sora: 'Sora',
-    veo: 'Veo',
-    wan: 'Wan',
-    kling: 'Kling',
-    seedance: 'Seedance',
-    ltx: 'LTX',
-    pika: 'Pika',
-    hailuo: 'Hailuo',
-  },
-  fr: {
-    sora: 'Sora',
-    veo: 'Veo',
-    wan: 'Wan',
-    kling: 'Kling',
-    seedance: 'Seedance',
-    ltx: 'LTX',
-    pika: 'Pika',
-    hailuo: 'Hailuo',
-  },
-  es: {
-    sora: 'Sora',
-    veo: 'Veo',
-    wan: 'Wan',
-    kling: 'Kling',
-    seedance: 'Seedance',
-    ltx: 'LTX',
-    pika: 'Pika',
-    hailuo: 'Hailuo',
-  },
-};
-
-const MODEL_VARIANTS_BY_SLUG: Record<CanonicalSlug, string[]> = {
-  sora: ['OpenAI Sora 2 Pro', 'OpenAI Sora 2'],
-  veo: ['Google Veo 3.1', 'Google Veo 3.1 Fast', 'Google Veo 3.1 First/Last'],
-  wan: ['Wan 2.6 Text & Image to Video', 'Wan 2.5 Text & Image to Video'],
-  kling: ['Kling 3 Pro', 'Kling 3 Standard', 'Kling 2.6 Pro', 'Kling 2.5 Turbo'],
-  seedance: ['Seedance 1.5 Pro'],
-  ltx: ['LTX 2.3 Pro', 'LTX 2.3 Fast', 'LTX Video 2.0 Pro', 'LTX Video 2.0 Fast'],
-  pika: ['Pika 2.2 Text & Image to Video'],
-  hailuo: ['MiniMax Hailuo 02 Standard'],
-};
+type CanonicalSlug = ModelFamilyId;
 
 type LocalizedModelDescriptor = {
   subtitle: string;
@@ -80,7 +37,7 @@ type LocalizedModelDescriptor = {
   faq: ExampleFaqItem[];
 };
 
-const EN_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
+const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = {
   sora: {
     subtitle: 'Cinematic examples, reusable prompts, and shot-level settings for Sora workflows.',
     intro:
@@ -283,7 +240,7 @@ const EN_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
   },
 };
 
-const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
+const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = {
   sora: {
     subtitle: 'Exemples Sora pensés pour un rendu cinématique, des prompts réutilisables et des réglages directement exploitables.',
     intro:
@@ -486,7 +443,7 @@ const FR_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
   },
 };
 
-const ES_MODEL_DATA: Record<CanonicalSlug, LocalizedModelDescriptor> = {
+const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = {
   sora: {
     subtitle: 'Ejemplos de Sora pensados para un acabado cinematográfico, prompts reutilizables y ajustes realmente útiles.',
     intro:
@@ -784,16 +741,15 @@ export function getHubExamplesFaq(locale: AppLocale): { title: string; items: Ex
 }
 
 export function getCanonicalExampleModelSlugs(): CanonicalSlug[] {
-  return [...CANONICAL_SLUGS];
+  return getExampleFamilyIds();
 }
 
-export function getExampleModelLabel(locale: AppLocale, slug: string): string | null {
+export function getExampleModelLabel(_locale: AppLocale, slug: string): string | null {
   const normalized = slug.trim().toLowerCase() as CanonicalSlug;
-  if (!CANONICAL_SLUGS.includes(normalized)) return null;
-  return (MODEL_LABELS[locale] ?? MODEL_LABELS.en)[normalized];
+  return getModelFamilyDefinition(normalized)?.label ?? null;
 }
 
-function getLocalizedModelData(locale: AppLocale): Record<CanonicalSlug, LocalizedModelDescriptor> {
+function getLocalizedModelData(locale: AppLocale): Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> {
   if (locale === 'fr') return FR_MODEL_DATA;
   if (locale === 'es') return ES_MODEL_DATA;
   return EN_MODEL_DATA;
@@ -807,13 +763,89 @@ function formatLocalizedList(locale: AppLocale, items: string[]): string {
   return `${items.slice(0, -1).join(', ')}, ${conjunction} ${items[items.length - 1]}`;
 }
 
+function buildGenericLocalizedModelData(
+  locale: AppLocale,
+  label: string,
+  variantsSentence: string
+): LocalizedModelDescriptor {
+  if (locale === 'fr') {
+    return {
+      subtitle: `Exemples ${label} sur toute la famille, avec prompts réutilisables, réglages et repères de prix.`,
+      intro: `Utilisez cette page pour relire des exemples ${label} avant de lancer de nouveaux rendus. ${variantsSentence} Comparez mouvement, cadrage, durée et prix par clip, puis ouvrez les pages modèles liées pour les specs et limites propres à chaque mode.`,
+      promptPatterns: `Les exemples ${label} sont plus fiables quand le prompt sépare sujet, mouvement caméra, environnement et durée. Commencez par un clip court, puis itérez sur le cadrage et le mouvement.`,
+      strengthsLimits: `Cette galerie sert à comparer comment la famille ${label} gère le mouvement, la composition et la cohérence. Les capacités changent encore selon le modèle et le mode, donc validez le workflow exact sur la page modèle avant de passer en production.`,
+      pricingNotes: `Le prix par clip varie selon le modèle, la durée, la résolution et le mode. Gardez le même brief pour comparer correctement coût et qualité dans la famille ${label}.`,
+      faq: [
+        {
+          question: `Quand utiliser la page d’exemples ${label} ?`,
+          answer: `Quand vous voulez comparer rapidement plusieurs variantes ${label} avant de choisir la meilleure page modèle pour produire.`,
+        },
+        {
+          question: `Est-ce que tous les modèles ${label} se comportent pareil ?`,
+          answer: `Non. La famille partage une logique commune, mais les durées, modes, résolutions et coûts restent spécifiques à chaque modèle.`,
+        },
+        {
+          question: `Comment choisir le bon modèle ${label} ?`,
+          answer: `Commencez par les exemples pour voir le rendu, puis ouvrez les pages modèles liées pour confirmer les specs, limites et prix.`,
+        },
+      ],
+    };
+  }
+
+  if (locale === 'es') {
+    return {
+      subtitle: `Ejemplos de ${label} en toda la familia, con prompts reutilizables, ajustes y referencias de precio.`,
+      intro: `Usa esta página para revisar ejemplos de ${label} antes de lanzar nuevos renders. ${variantsSentence} Compara movimiento, encuadre, duración y precio por clip, y luego abre las páginas de modelo relacionadas para ver límites y especificaciones por modo.`,
+      promptPatterns: `Los ejemplos de ${label} funcionan mejor cuando el prompt separa sujeto, movimiento de cámara, entorno y duración. Empieza con clips cortos y luego ajusta encuadre y movimiento.`,
+      strengthsLimits: `La galería te ayuda a comparar cómo la familia ${label} maneja movimiento, composición y consistencia. Las capacidades siguen variando por modelo y modo, así que valida el flujo exacto en la página del modelo antes de escalar producción.`,
+      pricingNotes: `El precio por clip cambia según modelo, duración, resolución y modo. Mantén el mismo brief para comparar bien coste y calidad dentro de la familia ${label}.`,
+      faq: [
+        {
+          question: `¿Cuándo usar la página de ejemplos de ${label}?`,
+          answer: `Úsala cuando quieras comparar rápidamente varias variantes de ${label} antes de elegir la mejor página de modelo para producir.`,
+        },
+        {
+          question: `¿Todos los modelos de ${label} se comportan igual?`,
+          answer: `No. La familia comparte una lógica común, pero duración, modos, resolución y coste siguen dependiendo de cada modelo.`,
+        },
+        {
+          question: `¿Cómo elijo el modelo correcto de ${label}?`,
+          answer: `Empieza por los ejemplos para ver el resultado y luego abre las páginas de modelo relacionadas para validar límites, especificaciones y precio.`,
+        },
+      ],
+    };
+  }
+
+  return {
+    subtitle: `${label} examples across the full family, with reusable prompts, settings, and pricing signals.`,
+    intro: `Use this page to review ${label} examples before launching new renders. ${variantsSentence} Compare motion, framing, duration, and price per clip, then open the related model pages for mode-specific specs and limits.`,
+    promptPatterns: `${label} examples usually work best when prompts separate subject, camera movement, environment, and timing. Start with short clips, then iterate on framing and motion once the baseline looks right.`,
+    strengthsLimits: `This gallery helps you compare how the ${label} family handles motion, composition, and consistency. Capabilities still vary by model and mode, so confirm the exact workflow on the related model pages before scaling production.`,
+    pricingNotes: `Per-clip pricing changes by model, duration, resolution, and mode. Keep a stable brief so you can compare cost and quality across the ${label} family.`,
+    faq: [
+      {
+        question: `When should I use the ${label} examples page?`,
+        answer: `Use it when you want to compare multiple ${label} variants quickly before choosing the best model page for production.`,
+      },
+      {
+        question: `Do all ${label} models behave the same way?`,
+        answer: `No. They share a family baseline, but duration, modes, resolution, and cost still vary by model.`,
+      },
+      {
+        question: `How do I choose the right ${label} model?`,
+        answer: `Start with examples to judge output quality, then open the related model pages to confirm specs, limits, and pricing.`,
+      },
+    ],
+  };
+}
+
 export function getExampleModelLanding(locale: AppLocale, slug: string): ExampleModelLanding | null {
   const normalized = slug.trim().toLowerCase() as CanonicalSlug;
-  if (!CANONICAL_SLUGS.includes(normalized)) return null;
+  const family = getModelFamilyDefinition(normalized);
+  if (!family) return null;
 
-  const label = (MODEL_LABELS[locale] ?? MODEL_LABELS.en)[normalized];
-  const localized = getLocalizedModelData(locale)[normalized];
-  const variants = MODEL_VARIANTS_BY_SLUG[normalized] ?? [];
+  const label = family.label;
+  const variants = getExampleFamilyVariantLabels(normalized);
   const variantsList = formatLocalizedList(locale, variants);
   const variantsSentence =
     variantsList.length > 0
@@ -827,6 +859,7 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
         : locale === 'es'
           ? `Esta página reúne varios modelos de ${label}.`
           : `This page includes multiple ${label} models.`;
+  const localized = getLocalizedModelData(locale)[normalized] ?? buildGenericLocalizedModelData(locale, label, variantsSentence);
   const metaTitle =
     locale === 'fr'
       ? `Exemples vidéo IA ${label} (prompts + réglages) | MaxVideoAI`
