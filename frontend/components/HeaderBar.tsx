@@ -78,6 +78,12 @@ export function HeaderBar() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const avatarRef = useRef<HTMLButtonElement>(null);
+
+  const handleAdminNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    setAccountMenuOpen(false);
+    event.preventDefault();
+    window.location.assign('/admin');
+  };
   const menuRef = useRef<HTMLDivElement>(null);
   const walletPromptCloseTimeout = useRef<number | null>(null);
   const walletPromptId = useId();
@@ -649,7 +655,7 @@ export function HeaderBar() {
                         href="/admin"
                         role="menuitem"
                         className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        onClick={() => setAccountMenuOpen(false)}
+                        onClick={handleAdminNavigation}
                       >
                         <span>Admin</span>
                       </Link>

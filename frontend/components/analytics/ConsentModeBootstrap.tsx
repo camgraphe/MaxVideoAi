@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
+import { suppressLoadedAnalyticsForExcludedRoute } from '@/lib/analytics-client';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 const GA_ID =
@@ -46,6 +47,11 @@ export default function ConsentModeBootstrap() {
   const pathname = usePathname();
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
   const routeContext = getAnalyticsRouteContext(pathname);
+
+  useEffect(() => {
+    if (!routeContext.excludedFromGa4) return;
+    suppressLoadedAnalyticsForExcludedRoute({ gaId: GA_ID });
+  }, [routeContext.excludedFromGa4]);
 
   useEffect(() => {
     const syncFromStorage = () => setAnalyticsConsentGranted(hasConsent());

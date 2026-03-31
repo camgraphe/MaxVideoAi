@@ -43,6 +43,12 @@ export function MarketingNav() {
   const isAuthenticated = Boolean(email);
   const themeStorageKey = 'mv-theme';
 
+  const handleAdminNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    setAccountMenuOpen(false);
+    event.preventDefault();
+    window.location.assign('/admin');
+  };
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const stored = window.localStorage.getItem(themeStorageKey);
@@ -440,7 +446,7 @@ export function MarketingNav() {
                           href="/admin"
                           prefetch={false}
                           className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          onClick={() => setAccountMenuOpen(false)}
+                          onClick={handleAdminNavigation}
                         >
                           <span>Admin</span>
                         </Link>

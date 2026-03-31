@@ -19,6 +19,7 @@ declare global {
   interface Window {
     __mvaiRecentAnalyticsEvents?: Record<string, number>;
     __mvaiGoogleAdsConfiguredIds?: Record<string, boolean>;
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -93,4 +94,44 @@ export function shouldDispatchRecentAnalyticsEvent(eventKey: string, ttlMs = REC
 
   registry[eventKey] = now;
   return true;
+}
+
+export function suppressLoadedAnalyticsForExcludedRoute({
+  gaId,
+}: {
+  gaId?: string;
+} = {}): void {
+  if (typeof window === 'undefined') return;
+
+  const helpers = window as typeof window & Record<string, unknown>;
+
+  if (gaId) {
+    helpers[`ga-disable-${gaId}`] = true;
+  }
+
+  try {
+    delete helpers.__mvaiGoogleAdsConfiguredIds;
+  } catch {
+    helpers.__mvaiGoogleAdsConfiguredIds = undefined;
+  }
+
+  try {
+    delete helpers.gtag;
+  } catch {
+    helpers.gtag = undefined;
+  }
+
+  const loadedScripts = document.querySelectorAll<HTMLScriptElement>(
+    [
+      'script#ga-init',
+      'script#gcm-default',
+      'script[src*="googletagmanager.com/gtag/js"]',
+      'script[src*="googletagmanager.com/gtm.js"]',
+      'script[src*="googlesyndication.com"]',
+    ].join(',')
+  );
+
+  loadedScripts.forEach((script) => {
+    script.parentNode?.removeChild(script);
+  });
 }
