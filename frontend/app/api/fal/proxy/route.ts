@@ -43,5 +43,5 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function OPTIONS(request: NextRequest) {
-  return runWithGuard(request, falRoute.handler);
+  return runWithGuard(request, falRoute.GET);
 }
