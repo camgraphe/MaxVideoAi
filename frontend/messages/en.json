@@ -19,10 +19,6 @@
         "href": "/tools"
       },
       {
-        "key": "image",
-        "href": "/app/image"
-      },
-      {
         "key": "pricing",
         "href": "/pricing"
       },
@@ -101,7 +97,8 @@
       "tools": {
         "items": {
           "character-builder": "Consistent Character AI",
-          "angle": "Change Camera Angle"
+          "angle": "Change Camera Angle",
+          "image": "Generate image"
         }
       },
       "workflows": {
@@ -188,8 +185,6 @@
       "product": {
         "title": "Product",
         "items": {
-          "generate": "Generate",
-          "generateImage": "Generate image",
           "tools": "Tools",
           "pricing": "Pricing",
           "docs": "Docs",

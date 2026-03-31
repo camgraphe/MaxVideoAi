@@ -15,7 +15,7 @@ export type MarketingNavDropdown = {
   allLabelFallback: string;
 };
 
-export type MarketingTopNavKey = 'models' | 'examples' | 'tools' | 'image' | 'compare' | 'pricing' | 'blog';
+export type MarketingTopNavKey = 'models' | 'examples' | 'tools' | 'compare' | 'pricing' | 'blog';
 
 export type MarketingTopNavLink = {
   key: MarketingTopNavKey;
@@ -27,7 +27,6 @@ export const MARKETING_TOP_NAV_LINKS: readonly MarketingTopNavLink[] = [
   { key: 'examples', href: '/examples' },
   { key: 'compare', href: '/ai-video-engines' },
   { key: 'tools', href: '/tools' },
-  { key: 'image', href: '/app/image' },
   { key: 'pricing', href: '/pricing' },
   { key: 'blog', href: '/blog' },
 ] as const;
@@ -119,6 +118,7 @@ export const MARKETING_NAV_COMPARE: MarketingNavItem[] = COMPARE_MENU.map((item)
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
+  { key: 'image', label: 'Generate image', href: '/app/image' },
 ];
 
 export const MARKETING_NAV_WORKFLOWS: MarketingNavItem[] = [

@@ -124,12 +124,6 @@ export function MarketingFooter() {
   }));
 
   const productLinks: FooterLink[] = [
-    { key: 'generate', label: labelFor('footer.sections.product.items.generate', 'Generate'), href: '/app' },
-    {
-      key: 'generateImage',
-      label: labelFor('footer.sections.product.items.generateImage', 'Generate image'),
-      href: '/app/image',
-    },
     { key: 'tools', label: labelFor('footer.sections.product.items.tools', 'Tools'), href: { pathname: '/tools' } },
     { key: 'pricing', label: labelFor('footer.sections.product.items.pricing', 'Pricing'), href: { pathname: '/pricing' } },
     { key: 'docs', label: labelFor('footer.sections.product.items.docs', 'Docs'), href: { pathname: '/docs' } },
