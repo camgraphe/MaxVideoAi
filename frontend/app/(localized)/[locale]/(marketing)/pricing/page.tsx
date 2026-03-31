@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
-import dynamic from 'next/dynamic';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput, type PricingScenario } from '@/lib/pricing-scenarios';
 import { FEATURES } from '@/content/feature-flags';
@@ -20,12 +19,9 @@ import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { TextLink } from '@/components/ui/TextLink';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
+import { DeferredPriceEstimator } from '@/components/marketing/DeferredPriceEstimator';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
-
-const PriceEstimator = dynamic(
-  () => import('@/components/marketing/PriceEstimator').then((mod) => mod.PriceEstimator)
-);
 
 export const revalidate = 60 * 10;
 
@@ -464,7 +460,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
         <section id="estimator" className="scroll-mt-28">
           <div className="mx-auto max-w-4xl">
-            <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
+            <DeferredPriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
           </div>
           <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
             <FlagPill live={FEATURES.pricing.publicCalculator} liveLabel={liveLabel} soonLabel={comingSoonLabel} />

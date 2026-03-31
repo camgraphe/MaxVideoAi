@@ -1,10 +1,15 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
+
+const HeroMediaLightbox = dynamic(
+  () => import('@/components/marketing/HeroMediaLightbox.client').then((mod) => mod.HeroMediaLightbox)
+);
 
 interface HeroMediaTileProps {
   label: string;
@@ -73,6 +78,20 @@ export function HeroMediaTile({
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const idleIdRef = useRef<number | null>(null);
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearScheduledVideoLoad = () => {
+    if (typeof window === 'undefined') return;
+    if (idleIdRef.current != null && 'cancelIdleCallback' in window) {
+      window.cancelIdleCallback(idleIdRef.current);
+      idleIdRef.current = null;
+    }
+    if (timeoutIdRef.current != null) {
+      globalThis.clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -85,50 +104,52 @@ export function HeroMediaTile({
 
   useEffect(() => {
     if (prefersReducedMotion) {
+      clearScheduledVideoLoad();
       setShouldRenderVideo(false);
       setIsVideoReady(false);
       return;
     }
     if (typeof window === 'undefined') return;
     const node = containerRef.current;
+    const scheduleVideoLoad = () => {
+      if (shouldRenderVideo) return;
+      clearScheduledVideoLoad();
+      const load = () => {
+        idleIdRef.current = null;
+        timeoutIdRef.current = null;
+        setShouldRenderVideo(true);
+      };
+      if ('requestIdleCallback' in window) {
+        idleIdRef.current = window.requestIdleCallback(load, { timeout: 1200 });
+        return;
+      }
+      timeoutIdRef.current = globalThis.setTimeout(load, 160);
+    };
     if (!node) {
-      setShouldRenderVideo(true);
-      return;
+      scheduleVideoLoad();
+      return clearScheduledVideoLoad;
     }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          setShouldRenderVideo(true);
+          scheduleVideoLoad();
           observer.disconnect();
         }
       },
       { rootMargin: '200px' }
     );
     observer.observe(node);
-    return () => observer.disconnect();
-  }, [prefersReducedMotion]);
+    return () => {
+      observer.disconnect();
+      clearScheduledVideoLoad();
+    };
+  }, [prefersReducedMotion, shouldRenderVideo]);
 
   useEffect(() => {
     if (!shouldRenderVideo) {
       setIsVideoReady(false);
     }
   }, [shouldRenderVideo]);
-
-  useEffect(() => {
-    if (!lightboxOpen) return;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setLightboxOpen(false);
-      }
-    };
-    document.addEventListener('keydown', handleKey);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [lightboxOpen]);
 
   const content = (
     <figure className="group relative w-full overflow-hidden rounded-[28px] border border-preview-outline-idle bg-surface shadow-card">
@@ -224,105 +245,19 @@ export function HeroMediaTile({
       {card}
       {overlay}
       {lightboxOpen && detailHref ? (
-        <div
-          className="fixed inset-0 z-[180] flex items-center justify-center bg-surface-on-media-dark-80 px-4 py-8"
-          role="dialog"
-          aria-modal="true"
-          aria-label={(lightboxCopy?.dialogAria ?? '{label} preview').replace('{label}', label)}
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setLightboxOpen(false);
-            }
-          }}
-        >
-          <div
-            className="relative w-full max-w-4xl rounded-[32px] border border-surface-on-media-20 bg-surface-glass-95 p-4 text-left shadow-float"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4 border-b border-hairline pb-4 pr-14">
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                  <span>{detailMeta?.engineLabel ?? label}</span>
-                  {modelHref ? (
-                    <Link
-                      href={modelHref}
-                      className="inline-flex items-center gap-1 rounded-full bg-surface-glass-90 px-2 py-0.5 text-[11px] font-semibold text-brand shadow-sm transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <span>{lightboxCopy?.modelPage ?? 'Model page'}</span>
-                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-                        <path
-                          d="M4 12L12 4M5 4h7v7"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </Link>
-                  ) : null}
-                </div>
-                <h3 className="text-xl font-semibold text-text-primary">{label}</h3>
-                {detailMeta?.prompt ? (
-                  <p className="text-sm text-text-secondary">{detailMeta.prompt}</p>
-                ) : null}
-                <p className="text-xs font-medium text-text-muted">
-                  {priceLabel}
-                  {typeof detailMeta?.durationSec === 'number' ? ` · ${detailMeta.durationSec}s` : null}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {generateHref ? (
-                  <Link
-                    href={generateHref}
-                    prefetch={false}
-                    className="inline-flex rounded-pill bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-micro text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {lightboxCopy?.generateLikeThis ?? 'Generate like this'}
-                  </Link>
-                ) : null}
-                <Link
-                  href={detailHref}
-                  className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {lightboxCopy?.viewDetails ?? 'View details'}
-                </Link>
-              </div>
-            </div>
-            <div className="mt-4 overflow-hidden rounded-3xl border border-hairline bg-black">
-              <video
-                key={videoSrc}
-                className="h-full w-full object-contain"
-                controls
-                autoPlay
-                muted
-                playsInline
-                preload="metadata"
-                poster={posterSrc}
-                aria-label={alt}
-              >
-                <source src={videoSrc} type="video/mp4" />
-              </video>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => setLightboxOpen(false)}
-              className="absolute right-4 top-4 h-11 w-11 min-h-0 rounded-full bg-surface-glass-95 p-0 text-text-primary shadow-lg ring-1 ring-border hover:bg-surface"
-              aria-label={lightboxCopy?.closePreview ?? 'Close preview'}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path
-                  d="M18 6L6 18M6 6l12 12"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Button>
-          </div>
-        </div>
+        <HeroMediaLightbox
+          label={label}
+          priceLabel={priceLabel}
+          alt={alt}
+          detailHref={detailHref}
+          generateHref={generateHref}
+          modelHref={modelHref}
+          detailMeta={detailMeta}
+          videoSrc={videoSrc}
+          posterSrc={posterSrc}
+          lightboxCopy={lightboxCopy}
+          onClose={() => setLightboxOpen(false)}
+        />
       ) : null}
     </div>
   );

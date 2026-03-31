@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import clsx from 'clsx';
 
-type GenerateWaysItem = {
+export type GenerateWaysItem = {
   title: string;
   body: string;
   imageSrc?: string;

@@ -41,7 +41,7 @@ interface EngineOption {
   showDuration: boolean;
 }
 
-interface PriceEstimatorProps {
+export interface PriceEstimatorProps {
   variant?: 'full' | 'lite';
   pricingRules?: PricingRuleLite[];
   enginePricingOverrides?: Record<string, EnginePricingDetails | null | undefined>;

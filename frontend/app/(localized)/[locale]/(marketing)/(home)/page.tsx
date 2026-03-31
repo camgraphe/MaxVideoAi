@@ -7,7 +7,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { TextLink } from '@/components/ui/TextLink';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
-import { GenerateWaysMobileTabs } from '@/components/marketing/GenerateWaysMobileTabs';
+import { DeferredGenerateWaysMobileTabs } from '@/components/marketing/DeferredGenerateWaysMobileTabs';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { listFalEngines } from '@/config/falEngines';
 import { getHomepageSlotsCached, HERO_SLOT_KEYS } from '@/server/homepage';
@@ -873,7 +873,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               </span>
             </a>
           </div>
-          <GenerateWaysMobileTabs items={generateWaysCards} />
+          <DeferredGenerateWaysMobileTabs items={generateWaysCards} />
           <div className="hidden gap-4 sm:grid lg:grid-cols-3">
             {generateWaysCards.map((item, index) => (
               <div
