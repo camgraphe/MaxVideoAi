@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
-import { defaultLocale, locales, localeRegions, type AppLocale } from '@/i18n/locales';
+import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
+import { defaultLocale, localePathnames, locales, localeRegions, type AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 
@@ -13,6 +16,26 @@ interface Params {
 }
 
 const DOCS_FALLBACK_ROOT = 'content/docs';
+const DOCS_SLUG_MAP = buildSlugMap('docs');
+
+function toIsoDate(value?: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function toAbsoluteUrl(value?: string | null): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+  const normalized = value.startsWith('/') ? value : `/${value}`;
+  return `${SITE_BASE_URL}${normalized}`;
+}
 
 async function getDocsEntriesForLocale(locale: AppLocale) {
   if (locale === defaultLocale) {
@@ -113,7 +136,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function DocPage({ params }: { params: Params }) {
   const locale = params.locale ?? 'en';
-  const { entry: doc } = await getDocEntryWithFallback(locale, params.slug);
+  const { entry: doc, hasLocalizedVersion } = await getDocEntryWithFallback(locale, params.slug);
   if (!doc) {
     notFound();
   }
@@ -130,6 +153,77 @@ export default async function DocPage({ params }: { params: Params }) {
   const dateLocale = localeRegions[locale] ?? 'en-US';
   const overviewLabel =
     locale === 'fr' ? 'Vue d’ensemble Docs' : locale === 'es' ? 'Resumen de Docs' : 'Docs overview';
+  const availableLocales = await resolveDocLocales(doc.slug);
+  const seo = resolveLocalizedFallbackSeo({
+    locale,
+    hasLocalizedVersion,
+    englishPath: `/docs/${doc.slug}`,
+    availableLocales,
+  });
+  const metadataUrls = buildMetadataUrls(locale, DOCS_SLUG_MAP, {
+    englishPath: `/docs/${doc.slug}`,
+    availableLocales: seo.availableLocales,
+  });
+  const docsIndexUrl = buildMetadataUrls(locale, DOCS_SLUG_MAP, { englishPath: '/docs' }).canonical;
+  const canonicalUrl = seo.canonicalOverride ?? metadataUrls.canonical;
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
+  const publishedIso = toIsoDate(doc.date) ?? doc.date;
+  const modifiedIso = toIsoDate(doc.updatedAt ?? doc.date) ?? publishedIso;
+  const docJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: doc.title,
+    description: doc.description,
+    url: canonicalUrl,
+    datePublished: publishedIso,
+    dateModified: modifiedIso,
+    inLanguage: localeRegions[locale],
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalUrl,
+    },
+    isPartOf: {
+      '@type': 'CollectionPage',
+      '@id': docsIndexUrl,
+      name: overviewLabel,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'MaxVideoAI',
+      url: SITE_BASE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_BASE_URL}/favicon-512.png`,
+      },
+    },
+    ...(doc.image ? { image: toAbsoluteUrl(doc.image) } : {}),
+    ...(doc.keywords?.length ? { keywords: doc.keywords } : {}),
+  };
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: locale === 'fr' ? 'Accueil' : locale === 'es' ? 'Inicio' : 'Home',
+        item: homeUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: overviewLabel,
+        item: docsIndexUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: doc.title,
+        item: canonicalUrl,
+      },
+    ],
+  };
 
   return (
     <div className="container-page max-w-3xl section">
@@ -167,6 +261,20 @@ export default async function DocPage({ params }: { params: Params }) {
           </p>
         ) : null}
       </article>
+      <Script id={`docs-breadcrumb-${locale}-${doc.slug}-jsonld`} type="application/ld+json">
+        {JSON.stringify(breadcrumbJsonLd)}
+      </Script>
+      <Script id={`docs-article-${locale}-${doc.slug}-jsonld`} type="application/ld+json">
+        {JSON.stringify(docJsonLd)}
+      </Script>
+      {doc.structuredData?.map((json, index) => (
+        <Script
+          key={`docs-jsonld-${doc.slug}-${index}`}
+          id={`docs-jsonld-${doc.slug}-${index}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: json }}
+        />
+      ))}
     </div>
   );
 }
