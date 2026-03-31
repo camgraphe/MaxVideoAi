@@ -1682,7 +1682,11 @@ export default function AngleToolPage() {
                     {generating ? copy.generating : user ? copy.generate : copy.generateLocked}
                   </Button>
 
-                  {error ? <p className="text-sm text-error">{error}</p> : null}
+                  {error ? (
+                    <p role="alert" className="text-sm text-error">
+                      {error}
+                    </p>
+                  ) : null}
                 </div>
               </Card>
 

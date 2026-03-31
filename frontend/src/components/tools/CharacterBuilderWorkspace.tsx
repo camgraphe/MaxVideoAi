@@ -3232,10 +3232,14 @@ export default function CharacterBuilderPage() {
             </div>
 
             {error ? (
-              <Card className="border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{error}</Card>
+              <Card role="alert" className="border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                {error}
+              </Card>
             ) : null}
             {statusMessage ? (
-              <Card className="border border-border bg-surface p-4 text-sm text-text-secondary">{statusMessage}</Card>
+              <Card role="status" aria-live="polite" className="border border-border bg-surface p-4 text-sm text-text-secondary">
+                {statusMessage}
+              </Card>
             ) : null}
 
             <div className="flex flex-col gap-6 xl:flex-row">

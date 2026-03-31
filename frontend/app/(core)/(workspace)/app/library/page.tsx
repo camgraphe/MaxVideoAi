@@ -15,6 +15,7 @@ import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type UserAsset = {
   id: string;
@@ -34,6 +35,13 @@ type AssetsResponse = {
 };
 
 interface LibraryCopy {
+  auth: {
+    eyebrow: string;
+    title: string;
+    body: string;
+    createAccount: string;
+    signIn: string;
+  };
   hero: {
     title: string;
     subtitle: string;
@@ -68,6 +76,13 @@ interface LibraryCopy {
 }
 
 const DEFAULT_LIBRARY_COPY: LibraryCopy = {
+  auth: {
+    eyebrow: 'Workspace',
+    title: 'Create your workspace account',
+    body: 'Sign in to access your saved assets, downloads, and reusable references.',
+    createAccount: 'Create account',
+    signIn: 'Sign in',
+  },
   hero: {
     title: 'Library',
     subtitle: 'Import, organize, and reuse reference assets.',
@@ -147,25 +162,25 @@ function getAssetJobHref(asset: UserAsset): string | null {
 export default function LibraryPage() {
   const toolsEnabled = FEATURES.workflows.toolsSection;
   const { t } = useI18n();
+  const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const rawCopy = t('workspace.library', DEFAULT_LIBRARY_COPY);
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
+  const assetsKey = user
+    ? activeSource === 'all'
+      ? '/api/user-assets?limit=200'
+      : `/api/user-assets?limit=200&source=${encodeURIComponent(activeSource)}`
+    : null;
   const {
     data: assetsData,
     error: assetsError,
     isLoading: assetsLoading,
     mutate: mutateAssets,
-  } = useSWR<AssetsResponse>(
-    activeSource === 'all'
-      ? '/api/user-assets?limit=200'
-      : `/api/user-assets?limit=200&source=${encodeURIComponent(activeSource)}`,
-    fetcher,
-    {
-      dedupingInterval: 60_000,
-    }
-  );
+  } = useSWR<AssetsResponse>(assetsKey, fetcher, {
+    dedupingInterval: 60_000,
+  });
   const assets = useMemo(
     () =>
       (assetsData?.assets ?? []).filter((asset) =>
@@ -230,139 +245,166 @@ export default function LibraryPage() {
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>
-              <p className="text-sm text-text-secondary">{copy.hero.subtitle}</p>
+          {authLoading ? (
+            <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
+              <div className="h-4 w-24 rounded bg-surface-2" />
+              <div className="mt-4 h-10 w-64 rounded bg-surface-2" />
+              <div className="mt-3 h-4 w-96 rounded bg-surface-2" />
             </div>
-            <div className="flex gap-2 text-sm text-text-secondary">
-              <ButtonLink href="/app/image" prefetch={false} variant="outline" size="md" className="px-3">
-                {copy.hero.ctas.image}
-              </ButtonLink>
-              <ButtonLink href="/app" prefetch={false} variant="outline" size="md" className="px-3">
-                {copy.hero.ctas.video}
-              </ButtonLink>
-            </div>
-          </div>
-
-          <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
-            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center justify-between gap-4 sm:justify-start">
-                <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
-                <span className="text-xs text-text-secondary">{assetCountLabel}</span>
+          ) : !user ? (
+            <section className="mx-auto max-w-3xl rounded-card border border-border bg-surface p-8 shadow-card">
+              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.auth.eyebrow}</p>
+              <h1 className="mt-3 text-2xl font-semibold text-text-primary">{copy.auth.title}</h1>
+              <p className="mt-3 text-sm text-text-secondary">{copy.auth.body}</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <ButtonLink href="/login" size="sm">
+                  {copy.auth.createAccount}
+                </ButtonLink>
+                <ButtonLink href="/login?mode=signin" variant="outline" size="sm">
+                  {copy.auth.signIn}
+                </ButtonLink>
+              </div>
+            </section>
+          ) : (
+            <>
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>
+                  <p className="text-sm text-text-secondary">{copy.hero.subtitle}</p>
+                </div>
+                <div className="flex gap-2 text-sm text-text-secondary">
+                  <ButtonLink href="/app/image" prefetch={false} variant="outline" size="md" className="px-3">
+                    {copy.hero.ctas.image}
+                  </ButtonLink>
+                  <ButtonLink href="/app" prefetch={false} variant="outline" size="md" className="px-3">
+                    {copy.hero.ctas.video}
+                  </ButtonLink>
+                </div>
               </div>
 
-              <div
-                role="tablist"
-                aria-label="Library image filters"
-                className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary sm:w-auto"
-              >
-                {availableSources.map((source) => (
-                  <Button
-                    key={source}
-                    type="button"
-                    role="tab"
-                    variant={activeSource === source ? 'primary' : 'ghost'}
-                    size="sm"
-                    aria-selected={activeSource === source}
-                    onClick={() => {
-                      setActiveSource(source);
-                      setDeleteError(null);
-                      setDeletingId(null);
-                    }}
-                    className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                      activeSource === source ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
-                    }`}
-                  >
-                    {copy.tabs[source]}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {deleteError ? (
-              <div className="mb-4 rounded-input border border-state-warning/50 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">
-                {deleteError}
-              </div>
-            ) : null}
-
-            {assetsLoading && assets.length === 0 ? (
-              <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <div key={`asset-skeleton-${index}`} className="rounded-card border border-hairline bg-surface-glass-60">
-                    <div className="relative aspect-square rounded-t-card bg-placeholder">
-                      <div className="skeleton absolute inset-0" />
-                    </div>
-                    <div className="border-t border-border px-4 py-3">
-                      <div className="h-3 w-28 rounded bg-skeleton" />
-                    </div>
+              <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
+                <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center justify-between gap-4 sm:justify-start">
+                    <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
+                    <span className="text-xs text-text-secondary">{assetCountLabel}</span>
                   </div>
-                ))}
-              </div>
-            ) : assetsError ? (
-              <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-                {copy.assets.loadError}
-              </div>
-            ) : assets.length === 0 ? (
-              <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-                {emptyLabel || copy.assets.empty}
-              </div>
-            ) : (
-              <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
-                {assets.map((asset) => (
-                  <article key={asset.id} className="rounded-card border border-border bg-surface shadow-card">
-                    <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
-                      <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                    </div>
-                    <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">
-                      <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assets.assetFallback}</p>
-                      <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
-                      {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
-                      <div className="flex items-center gap-2">
-                        {getAssetJobHref(asset) ? (
-                          <ButtonLink
-                            href={getAssetJobHref(asset) ?? '#'}
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
-                            aria-label={copy.assets.useSettingsButton}
-                          >
-                            <span>{copy.assets.useSettingsButton}</span>
-                          </ButtonLink>
-                        ) : null}
-                        <ButtonLink
-                          linkComponent="a"
-                          href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, asset.url.split('/').pop() ?? 'asset'))}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
-                          aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
-                        >
-                          <Download className="h-3.5 w-3.5" aria-hidden />
-                          <span>{copy.assets.downloadButton}</span>
-                        </ButtonLink>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteAsset(asset.id)}
-                          disabled={deletingId === asset.id}
-                          className="h-8 w-8 min-h-0 rounded-full border border-state-warning/40 bg-state-warning/10 p-0 text-state-warning hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
-                          aria-label={copy.assets.deleteButton}
-                        >
-                          {deletingId === asset.id ? (
-                            <span className="text-[10px] font-semibold">{copy.assets.deleting}</span>
-                          ) : (
-                            <Trash2 className="h-4 w-4" aria-hidden />
-                          )}
-                        </Button>
+
+                  <div
+                    role="tablist"
+                    aria-label="Library image filters"
+                    className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary sm:w-auto"
+                  >
+                    {availableSources.map((source) => (
+                      <Button
+                        key={source}
+                        type="button"
+                        role="tab"
+                        variant={activeSource === source ? 'primary' : 'ghost'}
+                        size="sm"
+                        aria-selected={activeSource === source}
+                        onClick={() => {
+                          setActiveSource(source);
+                          setDeleteError(null);
+                          setDeletingId(null);
+                        }}
+                        className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
+                          activeSource === source ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
+                        }`}
+                      >
+                        {copy.tabs[source]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {deleteError ? (
+                  <div
+                    role="alert"
+                    className="mb-4 rounded-input border border-state-warning/50 bg-state-warning/10 px-3 py-2 text-sm text-state-warning"
+                  >
+                    {deleteError}
+                  </div>
+                ) : null}
+
+                {assetsLoading && assets.length === 0 ? (
+                  <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 8 }).map((_, index) => (
+                      <div key={`asset-skeleton-${index}`} className="rounded-card border border-hairline bg-surface-glass-60">
+                        <div className="relative aspect-square rounded-t-card bg-placeholder">
+                          <div className="skeleton absolute inset-0" />
+                        </div>
+                        <div className="border-t border-border px-4 py-3">
+                          <div className="h-3 w-28 rounded bg-skeleton" />
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
+                    ))}
+                  </div>
+                ) : assetsError ? (
+                  <div role="alert" className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
+                    {copy.assets.loadError}
+                  </div>
+                ) : assets.length === 0 ? (
+                  <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
+                    {emptyLabel || copy.assets.empty}
+                  </div>
+                ) : (
+                  <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
+                    {assets.map((asset) => (
+                      <article key={asset.id} className="rounded-card border border-border bg-surface shadow-card">
+                        <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
+                          <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">
+                          <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assets.assetFallback}</p>
+                          <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
+                          {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
+                          <div className="flex items-center gap-2">
+                            {getAssetJobHref(asset) ? (
+                              <ButtonLink
+                                href={getAssetJobHref(asset) ?? '#'}
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
+                                aria-label={copy.assets.useSettingsButton}
+                              >
+                                <span>{copy.assets.useSettingsButton}</span>
+                              </ButtonLink>
+                            ) : null}
+                            <ButtonLink
+                              linkComponent="a"
+                              href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, asset.url.split('/').pop() ?? 'asset'))}
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
+                              aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
+                            >
+                              <Download className="h-3.5 w-3.5" aria-hidden />
+                              <span>{copy.assets.downloadButton}</span>
+                            </ButtonLink>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteAsset(asset.id)}
+                              disabled={deletingId === asset.id}
+                              className="h-8 w-8 min-h-0 rounded-full border border-state-warning/40 bg-state-warning/10 p-0 text-state-warning hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
+                              aria-label={copy.assets.deleteButton}
+                            >
+                              {deletingId === asset.id ? (
+                                <span className="text-[10px] font-semibold">{copy.assets.deleting}</span>
+                              ) : (
+                                <Trash2 className="h-4 w-4" aria-hidden />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </>
+          )}
         </main>
       </div>
     </div>

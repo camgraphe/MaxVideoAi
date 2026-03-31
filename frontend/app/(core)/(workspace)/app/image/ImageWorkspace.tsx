@@ -2429,7 +2429,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 <Card className="stack-gap-lg p-5">
                   <div className="stack-gap-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-text-primary">{resolvedCopy.composer.promptLabel}</span>
+                      <label htmlFor="prompt" className="text-sm font-medium text-text-primary">
+                        {resolvedCopy.composer.promptLabel}
+                      </label>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
                         <span>{promptCharCount}</span>
                         <Chip
@@ -2471,17 +2473,17 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   </div>
 
                   {error ? (
-                    <p className="rounded-card border border-state-warning/40 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">
+                    <p role="alert" className="rounded-card border border-state-warning/40 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">
                       {error}
                     </p>
                   ) : null}
 
                   {inProgressMessage ? (
-                    <p className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
+                    <p role="status" aria-live="polite" className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
                       {inProgressMessage}
                     </p>
                   ) : statusMessage ? (
-                    <p className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
+                    <p role="status" aria-live="polite" className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
                       {statusMessage}
                     </p>
                   ) : null}
