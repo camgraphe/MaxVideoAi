@@ -19,6 +19,7 @@ const FALLBACK_THUMB = `${SITE}/og/price-before.png`;
 const FALLBACK_POSTER = `${SITE}/og/price-before.png`;
 const TITLE_SUFFIX = ' — MaxVideoAI';
 const META_TITLE_LIMIT = 60;
+const TRAILING_BRAND_SUFFIX = /\s+[—-]\s*MaxVideo\s*AI\s*$/i;
 
 const getWatchPageData = cache(async (id: string) => getVideoWatchPageDataById(id));
 type WatchPageData = NonNullable<Awaited<ReturnType<typeof getVideoWatchPageDataById>>>;
@@ -35,9 +36,18 @@ function truncateForMeta(title: string, limit: number) {
   return `${slice.trim()}…`;
 }
 
+function normalizeTitlePrimary(primary: string) {
+  let normalized = primary.trim();
+  while (TRAILING_BRAND_SUFFIX.test(normalized)) {
+    normalized = normalized.replace(TRAILING_BRAND_SUFFIX, '').trim();
+  }
+  return normalized;
+}
+
 function buildMetaTitle(primary: string) {
   const available = Math.max(10, META_TITLE_LIMIT - TITLE_SUFFIX.length);
-  const safePrimary = primary && primary.trim().length ? primary.trim() : 'Video example';
+  const normalizedPrimary = primary ? normalizeTitlePrimary(primary) : '';
+  const safePrimary = normalizedPrimary.length ? normalizedPrimary : 'Video example';
   return `${truncateForMeta(safePrimary, available)}${TITLE_SUFFIX}`;
 }
 
@@ -88,7 +98,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!isRenderable(page)) {
     return {
-      title: `Video unavailable${TITLE_SUFFIX}`,
+      title: { absolute: `Video unavailable${TITLE_SUFFIX}` },
       description: 'This video is no longer available on MaxVideoAI.',
       robots: { index: false, follow: true },
       alternates: { canonical },
@@ -105,7 +115,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const height = aspect ? 720 : 720;
 
   return {
-    title: metaTitle,
+    title: { absolute: metaTitle },
     description,
     robots: { index: isEligible, follow: true },
     alternates: { canonical },

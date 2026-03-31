@@ -217,7 +217,7 @@ export default async function MentionsLegalesPage() {
   return (
     <div className="stack-gap-lg">
       <header className="stack-gap-sm">
-        <h2 className="text-xl font-semibold text-text-primary">{copy.heading}</h2>
+        <h1 className="text-xl font-semibold text-text-primary">{copy.heading}</h1>
         <p className="text-sm text-text-secondary">{copy.intro}</p>
       </header>
 

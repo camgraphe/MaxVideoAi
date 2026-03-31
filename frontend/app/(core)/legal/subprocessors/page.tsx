@@ -236,7 +236,7 @@ export default async function SubprocessorsPage() {
   return (
     <div className="stack-gap-lg">
       <header className="stack-gap-sm">
-        <h2 className="text-xl font-semibold text-text-primary">{copy.title}</h2>
+        <h1 className="text-xl font-semibold text-text-primary">{copy.title}</h1>
         <p className="text-sm text-text-secondary">{copy.intro}</p>
         <p className="text-sm text-text-secondary">{copy.lastUpdated}</p>
       </header>

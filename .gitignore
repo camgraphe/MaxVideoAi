@@ -41,3 +41,6 @@ private/
 
 # Local audit reports
 .reports/
+.playwright-cli/
+output/playwright/
+output/internal-link-audit-live.json

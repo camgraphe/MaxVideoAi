@@ -197,9 +197,12 @@ function formatEngineShortName(entry: EngineCatalogEntry): string {
 function formatEngineMetaName(entry: EngineCatalogEntry): string {
   let name = formatEngineName(entry);
   name = name.replace(/^(openai|google|minimax)\s+/i, '');
+  name = name.replace(/\bVideo\s+(\d+(?:\.\d+)?)/i, '$1');
+  name = name.replace(/\b(\d+)\.0\b/g, '$1');
   name = name.replace(/\s+text\s*&\s*image\s+to\s+video$/i, '');
   name = name.replace(/\s+text\s+to\s+video$/i, '');
   name = name.replace(/\s+image\s+to\s+video$/i, '');
+  name = name.replace(/\s+First\/Last Frame$/i, ' First/Last');
   name = name.replace(/\s+standard$/i, '');
   name = name.replace(/\s+text$/i, '');
   return name.trim();
