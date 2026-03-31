@@ -19,6 +19,10 @@
         "href": "/tools"
       },
       {
+        "key": "image",
+        "href": "/app/image"
+      },
+      {
         "key": "pricing",
         "href": "/pricing"
       },
@@ -33,6 +37,7 @@
       "models": "Models",
       "examples": "Examples",
       "tools": "Tools",
+      "image": "Generate image",
       "compare": "Compare",
       "pricing": "Pricing",
       "docs": "Docs",
@@ -184,6 +189,7 @@
         "title": "Product",
         "items": {
           "generate": "Generate",
+          "generateImage": "Generate image",
           "tools": "Tools",
           "pricing": "Pricing",
           "docs": "Docs",
