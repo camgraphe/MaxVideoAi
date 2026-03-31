@@ -62,15 +62,15 @@
       },
       "examples": {
         "items": {
-          "sora": "Sora 2 Pro",
+          "sora": "Sora",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
-          "kling": "Kling 3 Pro",
-          "veo": "Veo 3.1",
-          "wan": "Wan 2.6",
-          "seedance": "Seedance 1.5 Pro",
-          "pika": "Pika 2.2",
-          "hailuo": "MiniMax Hailuo 02",
+          "kling": "Kling",
+          "veo": "Veo",
+          "wan": "Wan",
+          "seedance": "Seedance",
+          "pika": "Pika",
+          "hailuo": "Hailuo",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
           "kling-3-pro": "Kling 3 Pro",
@@ -175,10 +175,14 @@
       "examples": {
         "title": "Real examples",
         "items": {
-          "sora2": "Sora 2 examples",
+          "sora": "Sora examples",
           "kling": "Kling examples",
-          "veo3_1": "Veo 3.1 examples",
+          "veo": "Veo examples",
           "ltx": "LTX examples",
+          "wan": "Wan examples",
+          "seedance": "Seedance examples",
+          "hailuo": "Hailuo examples",
+          "pika": "Pika examples",
           "all": "All examples"
         }
       },

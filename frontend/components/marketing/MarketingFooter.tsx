@@ -5,6 +5,7 @@ import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import engineCatalog from '@/config/engine-catalog.json';
+import { MARKETING_FOOTER_EXAMPLES } from '@/config/navigation';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
@@ -110,18 +111,18 @@ export function MarketingFooter() {
       href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalCompareSlug(item.left, item.right) } },
     }));
 
-  const exampleItems = [
-    { slug: 'sora', labelKey: 'footer.sections.examples.items.sora2', fallback: 'Sora 2 examples' },
-    { slug: 'kling', labelKey: 'footer.sections.examples.items.kling', fallback: 'Kling examples' },
-    { slug: 'veo', labelKey: 'footer.sections.examples.items.veo3_1', fallback: 'Veo 3.1 examples' },
-    { slug: 'ltx', labelKey: 'footer.sections.examples.items.ltx', fallback: 'LTX examples' },
-    { slug: null, labelKey: 'footer.sections.examples.items.all', fallback: 'All examples' },
+  const exampleLinks: FooterLink[] = [
+    ...MARKETING_FOOTER_EXAMPLES.map((item) => ({
+      key: item.key,
+      label: labelFor(`footer.sections.examples.items.${item.key}`, `${item.label} examples`),
+      href: item.href,
+    })),
+    {
+      key: 'all',
+      label: labelFor('footer.sections.examples.items.all', 'All examples'),
+      href: { pathname: '/examples' },
+    },
   ];
-  const exampleLinks: FooterLink[] = exampleItems.map((item) => ({
-    key: item.slug ?? 'all',
-    label: labelFor(item.labelKey, item.fallback),
-    href: item.slug ? { pathname: '/examples/[model]', params: { model: item.slug } } : { pathname: '/examples' },
-  }));
 
   const productLinks: FooterLink[] = [
     { key: 'tools', label: labelFor('footer.sections.product.items.tools', 'Tools'), href: { pathname: '/tools' } },

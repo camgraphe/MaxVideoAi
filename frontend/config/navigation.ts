@@ -78,12 +78,30 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'minimax-hailuo-02-text', label: 'MiniMax Hailuo 02' },
 ];
 
-const EXAMPLES_MENU: LabeledSlug[] = getExampleNavFamilyIds()
+const EXAMPLE_FAMILY_PRIORITY = ['kling', 'veo', 'ltx', 'wan', 'seedance', 'hailuo', 'pika', 'sora'] as const;
+const FOOTER_EXAMPLE_FAMILIES = ['kling', 'veo', 'ltx', 'wan'] as const;
+const AVAILABLE_EXAMPLE_FAMILY_IDS = getExampleNavFamilyIds();
+const EXAMPLE_FAMILY_PRIORITY_SET = new Set<string>(EXAMPLE_FAMILY_PRIORITY);
+
+const ORDERED_EXAMPLE_FAMILY_IDS = [
+  ...EXAMPLE_FAMILY_PRIORITY.filter((familyId) => AVAILABLE_EXAMPLE_FAMILY_IDS.includes(familyId)),
+  ...AVAILABLE_EXAMPLE_FAMILY_IDS.filter((familyId) => !EXAMPLE_FAMILY_PRIORITY_SET.has(familyId)),
+];
+
+const EXAMPLES_MENU: LabeledSlug[] = ORDERED_EXAMPLE_FAMILY_IDS
   .map((familyId) => getModelFamilyDefinition(familyId))
   .filter((family): family is NonNullable<typeof family> => Boolean(family))
   .map((family) => ({
     slug: family.id,
-    label: family.navLabel,
+    label: family.label,
+  }));
+
+const FOOTER_EXAMPLES_MENU: LabeledSlug[] = FOOTER_EXAMPLE_FAMILIES
+  .map((familyId) => getModelFamilyDefinition(familyId))
+  .filter((family): family is NonNullable<typeof family> => Boolean(family))
+  .map((family) => ({
+    slug: family.id,
+    label: family.label,
   }));
 
 const COMPARE_MENU: LabeledSlug[] = [
@@ -104,6 +122,12 @@ export const MARKETING_NAV_MODELS: MarketingNavItem[] = MODEL_MENU.map((item) =>
 }));
 
 export const MARKETING_NAV_EXAMPLES: MarketingNavItem[] = EXAMPLES_MENU.map((item) => ({
+  key: item.slug,
+  label: item.label,
+  href: exampleLink(item.slug),
+}));
+
+export const MARKETING_FOOTER_EXAMPLES: MarketingNavItem[] = FOOTER_EXAMPLES_MENU.map((item) => ({
   key: item.slug,
   label: item.label,
   href: exampleLink(item.slug),
