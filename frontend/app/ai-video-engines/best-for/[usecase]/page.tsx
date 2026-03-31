@@ -4,7 +4,6 @@ import BestForDetailPage, {
   generateMetadata as generateLocalizedMetadata,
   generateStaticParams as generateLocalizedStaticParams,
 } from '../../../(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/page';
-import LocaleLayout from '../../../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../../../default-locale-wrapper';
 
 export { dynamicParams };
@@ -22,9 +21,5 @@ export const generateMetadata = ({ params }: { params: { usecase: string } }): P
   });
 
 export default function BestForDetailDefaultPage({ params }: { params: { usecase: string } }) {
-  return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <BestForDetailPage params={{ locale: DEFAULT_LOCALE, usecase: params.usecase }} />
-    </LocaleLayout>
-  );
+  return <BestForDetailPage params={{ locale: DEFAULT_LOCALE, usecase: params.usecase }} />;
 }

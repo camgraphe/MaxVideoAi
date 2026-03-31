@@ -50,10 +50,19 @@ export function MarketingFooter() {
   const engineItems = [
     { slug: 'sora-2', labelKey: 'footer.sections.engines.items.sora2', fallback: 'Sora 2' },
     { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
+    { slug: 'seedance-2-0', labelKey: 'footer.sections.engines.items.seedance2_0', fallback: 'Seedance 2.0' },
+    { slug: 'kling-2-6-pro', labelKey: 'footer.sections.engines.items.kling2_6_pro', fallback: 'Kling 2.6 Pro' },
     { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
     { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
+    {
+      slug: 'veo-3-1-first-last',
+      labelKey: 'footer.sections.engines.items.veo3_1_first_last',
+      fallback: 'Veo 3.1 First/Last',
+    },
     { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
     { slug: 'seedance-1-5-pro', labelKey: 'footer.sections.engines.items.seedance1_5pro', fallback: 'Seedance 1.5 Pro' },
+    { slug: 'nano-banana-pro', labelKey: 'footer.sections.engines.items.nano_banana_pro', fallback: 'Nano Banana Pro' },
+    { slug: 'nano-banana-2', labelKey: 'footer.sections.engines.items.nano_banana_2', fallback: 'Nano Banana 2' },
   ];
   const engineLinks: FooterLink[] = engineItems
     .filter((item) => modelSlugSet.has(item.slug))
