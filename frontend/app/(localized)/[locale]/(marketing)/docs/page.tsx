@@ -24,6 +24,24 @@ async function getDocsEntries(locale: AppLocale) {
   return getContentEntries('content/docs');
 }
 
+function resolveDocsLastUpdated(entries: Array<{ updatedAt?: string; date: string }>): string | null {
+  let latestTimestamp = Number.NEGATIVE_INFINITY;
+
+  for (const entry of entries) {
+    const source = entry.updatedAt ?? entry.date;
+    const timestamp = Date.parse(source);
+    if (Number.isFinite(timestamp) && timestamp > latestTimestamp) {
+      latestTimestamp = timestamp;
+    }
+  }
+
+  if (!Number.isFinite(latestTimestamp)) {
+    return null;
+  }
+
+  return new Date(latestTimestamp).toISOString().slice(0, 10);
+}
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
@@ -75,6 +93,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
   const feedbackCopy = content.feedback ?? {};
   const jsonLdCopy = content.jsonLd ?? {};
   const lastUpdatedLabel = content.lastUpdatedLabel ?? 'Last updated:';
+  const lastUpdatedDate = resolveDocsLastUpdated(docs);
   const apiNoticeLabel = FEATURES.docs.apiPublicRefs ? apiNotice.public : apiNotice.private;
 
   return (
@@ -315,9 +334,11 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
               </div>
             </div>
           </section>
-          <p className="text-xs text-text-muted">
-            {lastUpdatedLabel} {new Date().toISOString().slice(0, 10)}
-          </p>
+          {lastUpdatedDate ? (
+            <p className="text-xs text-text-muted">
+              {lastUpdatedLabel} {lastUpdatedDate}
+            </p>
+          ) : null}
         </div>
         <script
           type="application/ld+json"

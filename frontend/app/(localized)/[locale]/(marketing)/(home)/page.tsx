@@ -192,9 +192,46 @@ const PRICE_PREFIX_BY_LOCALE: Record<AppLocale, string> = {
   es: 'desde',
 };
 
-function localizePricePrefix(label: string, locale: AppLocale): string {
+const PRICE_FORMAT_LOCALE_BY_LOCALE: Record<AppLocale, string> = {
+  en: CURRENCY_LOCALE,
+  fr: 'fr-FR',
+  es: 'es-ES',
+};
+
+const CURRENCY_CODE_BY_SYMBOL: Record<string, string> = {
+  $: 'USD',
+  '€': 'EUR',
+  '£': 'GBP',
+};
+
+function normalizeAdminPriceLabel(label: string, locale: AppLocale): string | null {
+  const compactLabel = label.replace(/\s+/g, ' ').trim();
+  if (!compactLabel) {
+    return null;
+  }
+
+  const withoutPrefix = compactLabel.replace(/^(from|à partir de|desde)\s+/i, '').trim();
+  const symbolMatch = withoutPrefix.match(/^([$€£])\s*([0-9]+(?:[.,][0-9]{1,2})?)$/);
+  const codeMatch = withoutPrefix.match(/^([0-9]+(?:[.,][0-9]{1,2})?)\s*(USD|EUR|GBP)$/i);
+  const currency = symbolMatch
+    ? CURRENCY_CODE_BY_SYMBOL[symbolMatch[1] ?? '']
+    : codeMatch?.[2]?.toUpperCase() ?? null;
+  const amountRaw = symbolMatch?.[2] ?? codeMatch?.[1] ?? null;
+  const amount = amountRaw ? Number(amountRaw.replace(',', '.')) : Number.NaN;
+
+  if (!currency || !Number.isFinite(amount)) {
+    return null;
+  }
+
   const targetPrefix = PRICE_PREFIX_BY_LOCALE[locale] ?? PRICE_PREFIX_BY_LOCALE.en;
-  return label.replace(/^from\s+/i, `${targetPrefix} `);
+  const numberLocale = PRICE_FORMAT_LOCALE_BY_LOCALE[locale] ?? CURRENCY_LOCALE;
+  const formattedAmount = new Intl.NumberFormat(numberLocale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+  return `${targetPrefix} ${formattedAmount}`;
 }
 
 const HERO_AUDIO_BADGE_BY_LOCALE: Record<AppLocale, string> = {
@@ -556,7 +593,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
     const videoPosterSrc = buildOptimizedPoster(posterSrc);
     const rawAdminPriceLabel = slot?.subtitle?.trim() || null;
-    const adminPriceLabel = rawAdminPriceLabel ? localizePricePrefix(rawAdminPriceLabel, locale) : null;
+    const adminPriceLabel = rawAdminPriceLabel ? normalizeAdminPriceLabel(rawAdminPriceLabel, locale) : null;
     const promptSummary = truncateText(video?.promptExcerpt ?? video?.prompt ?? slot?.subtitle ?? null, 80);
     const alt = getImageAlt({
       kind: 'renderThumb',
