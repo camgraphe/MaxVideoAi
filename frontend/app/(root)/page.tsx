@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import LocaleLayout from '../(localized)/[locale]/layout';
 import HomePage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/(home)/page';
+import DefaultMarketingLayout from '../default-marketing-layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
 export const revalidate = 60;
@@ -11,8 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootPage() {
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <DefaultMarketingLayout>
       <HomePage params={{ locale: DEFAULT_LOCALE }} />
-    </LocaleLayout>
+    </DefaultMarketingLayout>
   );
 }

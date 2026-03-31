@@ -1,7 +1,7 @@
 import BlogPostPage, {
   generateMetadata as generateLocalizedMetadata,
 } from '../../(localized)/[locale]/(marketing)/blog/[slug]/page';
-import LocaleLayout from '../../(localized)/[locale]/layout';
+import DefaultMarketingLayout from '../../default-marketing-layout';
 import { DEFAULT_LOCALE } from '../../default-locale-wrapper';
 import { getContentEntries } from '@/lib/content/markdown';
 
@@ -16,8 +16,8 @@ export const generateMetadata = ({ params }: { params: { slug: string } }) =>
 export default function BlogPostDefaultPage({ params }: { params: { slug: string } }) {
   const resolvedParams = { locale: DEFAULT_LOCALE, slug: params.slug };
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <DefaultMarketingLayout>
       <BlogPostPage params={resolvedParams} />
-    </LocaleLayout>
+    </DefaultMarketingLayout>
   );
 }

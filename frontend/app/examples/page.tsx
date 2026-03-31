@@ -1,5 +1,5 @@
 import ExamplesPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/examples/page';
-import LocaleLayout from '../(localized)/[locale]/layout';
+import DefaultMarketingLayout from '../default-marketing-layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
 export const generateMetadata = ({
@@ -10,8 +10,8 @@ export const generateMetadata = ({
 
 export default function ExamplesDefaultPage(props: { searchParams?: Record<string, string | string[] | undefined> }) {
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <DefaultMarketingLayout>
       <ExamplesPage searchParams={props.searchParams ?? {}} />
-    </LocaleLayout>
+    </DefaultMarketingLayout>
   );
 }

@@ -1,13 +1,13 @@
 import ContactPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/contact/page';
-import LocaleLayout from '../(localized)/[locale]/layout';
+import DefaultMarketingLayout from '../default-marketing-layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
 export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
 export default function ContactDefaultPage() {
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <DefaultMarketingLayout>
       <ContactPage params={{ locale: DEFAULT_LOCALE }} searchParams={{}} />
-    </LocaleLayout>
+    </DefaultMarketingLayout>
   );
 }
