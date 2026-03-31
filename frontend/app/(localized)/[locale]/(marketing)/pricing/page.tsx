@@ -19,7 +19,7 @@ import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { TextLink } from '@/components/ui/TextLink';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
-import { DeferredPriceEstimator } from '@/components/marketing/DeferredPriceEstimator';
+import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
@@ -460,7 +460,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
         <section id="estimator" className="scroll-mt-28">
           <div className="mx-auto max-w-4xl">
-            <DeferredPriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
+            <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
           </div>
           <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
             <FlagPill live={FEATURES.pricing.publicCalculator} liveLabel={liveLabel} soonLabel={comingSoonLabel} />
