@@ -24,6 +24,7 @@ import {
   type ComposerAttachment,
   type AssetFieldConfig,
   type AssetFieldRole,
+  type ComposerPromotedAction,
   type MultiPromptScene,
 } from '@/components/Composer';
 import { KlingElementsBuilder, type KlingElementState, type KlingElementAsset } from '@/components/KlingElementsBuilder';
@@ -689,6 +690,8 @@ const STANDARD_ENGINE_FIELD_IDS = new Set([
   'cfgscale',
   'loop',
 ]);
+
+const PROMOTED_WORKFLOW_FIELD_IDS = new Set(['enhanceprompt', 'autofix']);
 
 function isModeValue(value: unknown): value is Mode {
   return (
@@ -4515,7 +4518,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!selectedEngine) return undefined;
     const explicitModes =
       selectedEngine.id === 'ltx-2-3'
-        ? (['extend', 'retake'] as const)
+        ? (['extend'] as const)
         : selectedEngine.id === 'veo-3-1'
           ? (['ref2v', 'extend'] as const)
           : selectedEngine.id === 'veo-3-1-fast'
@@ -4537,6 +4540,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         })),
     ];
   }, [audioWorkflowLocked, selectedEngine, uiLocale, workflowCopy]);
+
+  const showRetakeWorkflowAction = Boolean(selectedEngine?.id === 'ltx-2-3' && selectedEngine.modes.includes('retake'));
 
   const composerWorkflowNotice = useMemo(() => {
     if (!selectedEngine || !referenceInputStatus.hasAudio) return null;
@@ -4658,7 +4663,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!schema) {
       return {
         assetFields: [] as AssetFieldConfig[],
-        genericFields: [] as Array<{ field: EngineInputField; required: boolean }>,
+        promotedFields: [] as Array<{ field: EngineInputField; required: boolean }>,
+        secondaryFields: [] as Array<{ field: EngineInputField; required: boolean }>,
         promptField: undefined as EngineInputField | undefined,
         promptRequired: true,
         negativePromptField: undefined as EngineInputField | undefined,
@@ -4687,7 +4693,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     };
 
     const assetFields: AssetFieldConfig[] = [];
-    const genericFields: Array<{ field: EngineInputField; required: boolean }> = [];
+    const promotedFields: Array<{ field: EngineInputField; required: boolean }> = [];
+    const secondaryFields: Array<{ field: EngineInputField; required: boolean }> = [];
     let promptField: EngineInputField | undefined;
     let promptFieldOrigin: 'required' | 'optional' | undefined;
     let negativePromptField: EngineInputField | undefined;
@@ -4734,7 +4741,17 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           return;
         }
         if (!STANDARD_ENGINE_FIELD_IDS.has(normalizedId)) {
-          genericFields.push({ field: localizedField, required });
+          const isPromotedBooleanToggle =
+            PROMOTED_WORKFLOW_FIELD_IDS.has(normalizedId) &&
+            localizedField.type === 'enum' &&
+            Array.isArray(localizedField.values) &&
+            localizedField.values.includes('true') &&
+            localizedField.values.includes('false');
+          if (isPromotedBooleanToggle) {
+            promotedFields.push({ field: localizedField, required });
+            return;
+          }
+          secondaryFields.push({ field: localizedField, required });
         }
       });
     };
@@ -4749,7 +4766,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     return {
       assetFields,
-      genericFields,
+      promotedFields,
+      secondaryFields,
       promptField,
       promptRequired,
       negativePromptField,
@@ -4757,10 +4775,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     };
   }, [selectedEngine, activeMode, allowsUnifiedVeoFirstLast, uiLocale]);
 
+  const extraInputFields = useMemo(
+    () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
+    [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
+  );
+
   useEffect(() => {
     setForm((current) => {
       if (!current) return current;
-      const allowedFieldIds = new Set(inputSchemaSummary.genericFields.map(({ field }) => field.id));
+      const allowedFieldIds = new Set(extraInputFields.map(({ field }) => field.id));
       const nextExtraInputValues = Object.entries(current.extraInputValues).reduce<Record<string, unknown>>((acc, [key, value]) => {
         if (allowedFieldIds.has(key)) {
           acc[key] = value;
@@ -4772,7 +4795,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       }
       return { ...current, extraInputValues: nextExtraInputValues };
     });
-  }, [inputSchemaSummary.genericFields]);
+  }, [extraInputFields]);
 
   useEffect(() => {
     setInputAssets((previous) => {
@@ -4883,6 +4906,28 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, []);
 
+  const composerPromotedActions = useMemo<ComposerPromotedAction[]>(() => {
+    if (!form) return [];
+    return inputSchemaSummary.promotedFields.map(({ field }) => {
+      const normalizedId = normalizeFieldId(field.id);
+      const currentValue = parseBooleanInput(form.extraInputValues[field.id] ?? field.default);
+      const active = currentValue ?? false;
+      const tooltip =
+        field.description ??
+        (normalizedId === 'enhanceprompt'
+          ? 'Improve the prompt before sending it to the model.'
+          : 'Let the workflow apply safe automatic fixes when supported.');
+      return {
+        id: field.id,
+        label: field.label,
+        tooltip,
+        active,
+        icon: normalizedId === 'autofix' ? 'shield' : 'sparkles',
+        onToggle: () => handleExtraInputValueChange(field, active ? 'false' : 'true'),
+      };
+    });
+  }, [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields]);
+
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine || !authChecked) return;
     const { data } = await supabase.auth.getSession();
@@ -4945,7 +4990,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       return;
     }
 
-    const missingGenericField = inputSchemaSummary.genericFields.find(({ field, required }) => {
+    const missingGenericField = extraInputFields.find(({ field, required }) => {
       if (!required) return false;
       const value = normalizeExtraInputValue(field, form.extraInputValues[field.id] ?? field.default);
       return value === undefined;
@@ -5145,7 +5190,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const endImageUrl =
       inputsPayload?.find((attachment) => attachment.slotId === 'end_image_url' && typeof attachment.url === 'string')
         ?.url ?? undefined;
-    const extraInputValues = inputSchemaSummary.genericFields.reduce<Record<string, unknown>>((acc, { field }) => {
+    const extraInputValues = extraInputFields.reduce<Record<string, unknown>>((acc, { field }) => {
       const normalized = normalizeExtraInputValue(field, form.extraInputValues[field.id] ?? field.default);
       if (normalized !== undefined) {
         acc[field.id] = normalized;
@@ -5786,6 +5831,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     writeScopedStorage,
     mutateLatestJobs,
     inputSchemaSummary,
+    extraInputFields,
     inputAssets,
     authChecked,
     setActiveGroupId,
@@ -6357,6 +6403,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 activeManualMode={activeManualMode}
                 onModeToggle={handleComposerModeToggle}
                 workflowNotice={composerWorkflowNotice}
+                promotedActions={composerPromotedActions}
                 assetFields={inputSchemaSummary.assetFields}
                 assets={composerAssets}
                 onAssetAdd={handleAssetAdd}
@@ -6382,23 +6429,54 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 disableGenerate={multiPromptInvalid || audioWorkflowUnsupported}
                 extraFields={
                   <>
-                    {inputSchemaSummary.genericFields.length ? (
-                      <div className="rounded-card border border-border bg-surface-glass-70 p-4">
-                        <div className="mb-3">
-                          <h3 className="text-sm font-semibold text-text-primary">{workflowCopy.workflowOptionsTitle}</h3>
+                    {showRetakeWorkflowAction ? (
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Edit workflow</p>
+                          <p className="text-xs text-text-secondary">Use retake when you want to reinterpret an existing clip.</p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={form.mode === 'retake' ? 'primary' : 'outline'}
+                          onClick={() => handleComposerModeToggle(form.mode === 'retake' ? null : 'retake')}
+                          disabled={audioWorkflowLocked}
+                          title={audioWorkflowLocked ? workflowCopy.removeAudioToUnlock : undefined}
+                          className="min-h-0 h-auto rounded-full px-3 py-2 text-[11px] font-semibold tracking-micro"
+                        >
+                          {getLocalizedModeLabel('retake', uiLocale)}
+                        </Button>
+                      </div>
+                    ) : null}
+                    {isKlingV3 && activeMode === 'i2v' ? (
+                      <KlingElementsBuilder
+                        elements={klingElements}
+                        onAddElement={handleKlingElementAdd}
+                        onRemoveElement={handleKlingElementRemove}
+                        onAddAsset={handleKlingElementAssetAdd}
+                        onRemoveAsset={handleKlingElementAssetRemove}
+                        onOpenLibrary={handleOpenKlingAssetLibrary}
+                      />
+                    ) : null}
+                    {inputSchemaSummary.secondaryFields.length ? (
+                      <div className="space-y-3">
+                        <div>
+                          <h3 className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                            {workflowCopy.workflowOptionsTitle}
+                          </h3>
                           <p className="text-xs text-text-secondary">{workflowCopy.workflowOptionsSubtitle}</p>
                         </div>
-                        <div className="grid gap-3 md:grid-cols-2">
-                          {inputSchemaSummary.genericFields.map(({ field, required }) => {
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                          {inputSchemaSummary.secondaryFields.map(({ field, required }) => {
                             const fieldValue = form.extraInputValues[field.id] ?? field.default ?? '';
                             const label = `${field.label}${required ? ' *' : ''}`;
                             if (field.type === 'enum') {
                               const values = Array.isArray(field.values) ? field.values : [];
                               return (
-                                <label key={field.id} className="flex flex-col gap-1">
-                                  <span className="text-xs font-medium text-text-secondary">{label}</span>
+                                <label key={field.id} className="flex flex-col gap-1.5">
+                                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
                                   <select
-                                    className="h-11 rounded-xl border border-border bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-brand"
+                                    className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-brand"
                                     value={String(fieldValue ?? '')}
                                     onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
                                   >
@@ -6417,8 +6495,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                             }
                             if (field.type === 'number') {
                               return (
-                                <label key={field.id} className="flex flex-col gap-1">
-                                  <span className="text-xs font-medium text-text-secondary">{label}</span>
+                                <label key={field.id} className="flex flex-col gap-1.5">
+                                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
                                   <Input
                                     type="number"
                                     value={fieldValue === '' || fieldValue == null ? '' : String(fieldValue)}
@@ -6434,14 +6512,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                               );
                             }
                             return (
-                              <label key={field.id} className="flex flex-col gap-1 md:col-span-2">
-                                <span className="text-xs font-medium text-text-secondary">{label}</span>
+                              <label key={field.id} className="flex flex-col gap-1.5 md:col-span-2 xl:col-span-3">
+                                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
                                 <textarea
                                   value={typeof fieldValue === 'string' ? fieldValue : ''}
                                   onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
                                   placeholder={typeof field.default === 'string' ? field.default : ''}
                                   rows={3}
-                                  className="min-h-[92px] rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none transition focus:border-brand"
+                                  className="min-h-[88px] rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none transition focus:border-brand"
                                 />
                                 {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
                               </label>
@@ -6450,16 +6528,55 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                         </div>
                       </div>
                     ) : null}
-                    {isKlingV3 && activeMode === 'i2v' ? (
-                      <KlingElementsBuilder
-                        elements={klingElements}
-                        onAddElement={handleKlingElementAdd}
-                        onRemoveElement={handleKlingElementRemove}
-                        onAddAsset={handleKlingElementAssetAdd}
-                        onRemoveAsset={handleKlingElementAssetRemove}
-                        onOpenLibrary={handleOpenKlingAssetLibrary}
-                      />
-                    ) : null}
+                    <SettingsControls
+                      engine={selectedEngine}
+                      caps={capability}
+                      durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
+                      durationOption={form.durationOption ?? null}
+                      onDurationChange={handleDurationChange}
+                      numFrames={form.numFrames ?? undefined}
+                      onNumFramesChange={handleFramesChange}
+                      resolution={form.resolution}
+                      onResolutionChange={handleResolutionChange}
+                      aspectRatio={form.aspectRatio}
+                      onAspectRatioChange={handleAspectRatioChange}
+                      fps={form.fps}
+                      onFpsChange={handleFpsChange}
+                      mode={submissionMode}
+                      showAudioControl={supportsAudioToggle}
+                      audioEnabled={form.audio}
+                      audioControlDisabled={voiceControlEnabled}
+                      audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
+                      onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
+                      showLoopControl={selectedEngine.id === 'lumaRay2'}
+                      loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
+                      onLoopChange={(next) =>
+                        setForm((current) => (current ? { ...current, loop: next } : current))
+                      }
+                      showExtendControl={false}
+                      seedLocked={form.seedLocked}
+                      onSeedLockedChange={(seedLocked) =>
+                        setForm((current) => (current ? { ...current, seedLocked } : current))
+                      }
+                      cfgScale={cfgScale}
+                      onCfgScaleChange={(value) => setCfgScale(value)}
+                      durationManaged={multiPromptActive}
+                      durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
+                      showKlingV3Controls={isKlingV3}
+                      klingShotType={shotType}
+                      onKlingShotTypeChange={(value) => setShotType(value)}
+                      voiceIdsValue={voiceIdsInput}
+                      onVoiceIdsChange={(value) => setVoiceIdsInput(value)}
+                      voiceControlActive={voiceControlEnabled}
+                      showSeedanceControls={isSeedance}
+                      seedValue={seedValue}
+                      onSeedChange={handleSeedChange}
+                      cameraFixed={cameraFixedValue}
+                      onCameraFixedChange={handleCameraFixedChange}
+                      safetyChecker={safetyCheckerValue}
+                      onSafetyCheckerChange={handleSafetyCheckerChange}
+                      variant="advanced"
+                    />
                   </>
                 }
                 settingsBar={
@@ -6467,17 +6584,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     engine={selectedEngine}
                     mode={submissionMode}
                     caps={capability}
-                    durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
-                    durationOption={form.durationOption ?? null}
-                    onDurationChange={handleDurationChange}
-                    numFrames={form.numFrames ?? undefined}
-                    onNumFramesChange={handleFramesChange}
-                    resolution={form.resolution}
-                    onResolutionChange={handleResolutionChange}
-                    fps={form.fps}
-                    onFpsChange={handleFpsChange}
-                    aspectRatio={form.aspectRatio}
-                    onAspectRatioChange={handleAspectRatioChange}
                     iterations={form.iterations}
                     onIterationsChange={(iterations) =>
                       setForm((current) => {
@@ -6488,70 +6594,24 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                         return next;
                       })
                     }
+                    durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
+                    durationOption={form.durationOption ?? null}
+                    onDurationChange={handleDurationChange}
+                    numFrames={form.numFrames ?? undefined}
+                    onNumFramesChange={handleFramesChange}
+                    resolution={form.resolution}
+                    onResolutionChange={handleResolutionChange}
+                    aspectRatio={form.aspectRatio}
+                    onAspectRatioChange={handleAspectRatioChange}
                     showAudioControl={supportsAudioToggle}
                     audioEnabled={form.audio}
                     audioControlDisabled={voiceControlEnabled}
                     audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
                     onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
-                    showLoopControl={selectedEngine.id === 'lumaRay2'}
-                    loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
-                    onLoopChange={(next) =>
-                      setForm((current) => (current ? { ...current, loop: next } : current))
-                    }
                     durationManaged={multiPromptActive}
                     durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
                   />
                 }
-              />
-              <SettingsControls
-                engine={selectedEngine}
-                caps={capability}
-                durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
-                durationOption={form.durationOption ?? null}
-                onDurationChange={handleDurationChange}
-                numFrames={form.numFrames ?? undefined}
-                onNumFramesChange={handleFramesChange}
-                resolution={form.resolution}
-                onResolutionChange={handleResolutionChange}
-                aspectRatio={form.aspectRatio}
-                onAspectRatioChange={handleAspectRatioChange}
-                fps={form.fps}
-                onFpsChange={handleFpsChange}
-                mode={submissionMode}
-                iterations={form.iterations}
-                showAudioControl={supportsAudioToggle}
-                audioEnabled={form.audio}
-                audioControlDisabled={voiceControlEnabled}
-                audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
-                onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
-                showLoopControl={selectedEngine.id === 'lumaRay2'}
-                loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
-                onLoopChange={(next) =>
-                  setForm((current) => (current ? { ...current, loop: next } : current))
-                }
-                showExtendControl={false}
-                seedLocked={form.seedLocked}
-                onSeedLockedChange={(seedLocked) =>
-                  setForm((current) => (current ? { ...current, seedLocked } : current))
-                }
-                cfgScale={cfgScale}
-                onCfgScaleChange={(value) => setCfgScale(value)}
-                durationManaged={multiPromptActive}
-                durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
-                showKlingV3Controls={isKlingV3}
-                klingShotType={shotType}
-                onKlingShotTypeChange={(value) => setShotType(value)}
-                voiceIdsValue={voiceIdsInput}
-                onVoiceIdsChange={(value) => setVoiceIdsInput(value)}
-                voiceControlActive={voiceControlEnabled}
-                showSeedanceControls={isSeedance}
-                seedValue={seedValue}
-                onSeedChange={handleSeedChange}
-                cameraFixed={cameraFixedValue}
-                onCameraFixedChange={handleCameraFixedChange}
-                safetyChecker={safetyCheckerValue}
-                onSafetyCheckerChange={handleSafetyCheckerChange}
-                variant="advanced"
               />
             </div>
           </main>

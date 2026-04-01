@@ -163,6 +163,8 @@ export function SettingsControls({
   onResolutionChange,
   aspectRatio,
   onAspectRatioChange,
+  fps,
+  onFpsChange,
   mode,
   iterations,
   onIterationsChange,
@@ -289,10 +291,20 @@ export function SettingsControls({
     }
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
+  const fpsOptions = useMemo(() => {
+    const base = Array.isArray(caps?.fps)
+      ? caps.fps
+      : typeof caps?.fps === 'number'
+        ? [caps.fps]
+        : engine.fps;
+    if (isLtxFastLong) return base.filter((value) => value === 25);
+    return base;
+  }, [caps?.fps, engine.fps, isLtxFastLong]);
 
   const resolutionLocked = Boolean(caps?.resolutionLocked);
   const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
+  const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
   const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean');
   const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle;
@@ -303,6 +315,314 @@ export function SettingsControls({
       : internalCfgScale ?? engine.params.cfg_scale?.default ?? 0.5;
 
   const audioNotice = audioControlNote ?? (audioIncluded ? controlsCopy.core.audioIncluded : null);
+
+  const advancedHasContent = Boolean(
+    showFpsControl ||
+      (showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange) ||
+      !showSeedanceControls ||
+      engine.params.promptStrength ||
+      engine.params.guidance ||
+      (mode === 'i2v' && engine.params.initInfluence) ||
+      (showExtendControl && engine.extend) ||
+      engine.keyframes ||
+      showKlingV3Controls ||
+      showSeedanceControls ||
+      engine.params.cfg_scale
+  );
+
+  if (variant === 'advanced') {
+    if (!advancedHasContent) return null;
+
+    return (
+      <div className="space-y-3">
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="min-h-0 h-auto w-full justify-between px-0 py-0 text-left font-normal"
+          onClick={() => setIsAdvancedOpen((prev) => !prev)}
+          aria-expanded={isAdvancedOpen}
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+            {controlsCopy.advancedTitle}
+          </span>
+          <svg
+            className={clsx('h-4 w-4 text-text-muted transition-transform', isAdvancedOpen ? 'rotate-180' : 'rotate-0')}
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Button>
+        {isAdvancedOpen ? (
+          <div className="space-y-4 rounded-input border border-border bg-surface-glass-60 p-3">
+            {(showFpsControl || (showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange)) ? (
+              <div className="grid gap-3 md:grid-cols-3">
+                {showFpsControl ? (
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">FPS</span>
+                    <div className="flex flex-wrap gap-2">
+                      {fpsOptions.map((option) => (
+                        <Button
+                          key={option}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onFpsChange(option)}
+                          className={clsx(
+                            'min-h-0 h-auto px-2.5 py-1 text-[12px]',
+                            option === fps
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {(controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option))}
+                        </Button>
+                      ))}
+                    </div>
+                  </label>
+                ) : null}
+                {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange ? (
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.loop.label}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[true, false].map((option) => (
+                        <Button
+                          key={option ? 'loop-on' : 'loop-off'}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onLoopChange(option)}
+                          className={clsx(
+                            'min-h-0 h-auto px-2.5 py-1 text-[12px]',
+                            option === loopEnabled
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option ? controlsCopy.loop.on : controlsCopy.loop.off}
+                        </Button>
+                      ))}
+                    </div>
+                  </label>
+                ) : null}
+              </div>
+            ) : null}
+
+            {!showSeedanceControls ? (
+              <div className="grid gap-3 md:grid-cols-[minmax(0,220px)_auto] md:items-end">
+                <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
+                  <input
+                    type="number"
+                    placeholder={controlsCopy.seed.placeholder}
+                    value={seed}
+                    onChange={(e) => setSeed(e.currentTarget.value)}
+                    className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </label>
+                <label className="inline-flex min-h-[40px] items-center gap-2 text-[13px] text-text-secondary">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(seedLocked)}
+                    onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
+                  />
+                  <span>{controlsCopy.seed.lock}</span>
+                </label>
+              </div>
+            ) : null}
+
+            {engine.params.promptStrength ? (
+              <div className="space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.promptStrength}</span>
+                <RangeWithInput
+                  value={promptStrength ?? engine.params.promptStrength.default ?? 0.5}
+                  min={engine.params.promptStrength.min ?? 0}
+                  max={engine.params.promptStrength.max ?? 1}
+                  step={engine.params.promptStrength.step ?? 0.05}
+                  onChange={(value) => setPromptStrength(value)}
+                />
+              </div>
+            ) : null}
+
+            {engine.params.guidance ? (
+              <div className="space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.guidance}</span>
+                <RangeWithInput
+                  value={guidance ?? engine.params.guidance.default ?? 0.5}
+                  min={engine.params.guidance.min ?? 0}
+                  max={engine.params.guidance.max ?? 1}
+                  step={engine.params.guidance.step ?? 0.05}
+                  onChange={(value) => setGuidance(value)}
+                />
+              </div>
+            ) : null}
+
+            {mode === 'i2v' && engine.params.initInfluence ? (
+              <div className="space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.inputInfluence}</span>
+                <RangeWithInput
+                  value={initInfluence ?? engine.params.initInfluence.default ?? 0.5}
+                  min={engine.params.initInfluence.min ?? 0}
+                  max={engine.params.initInfluence.max ?? 1}
+                  step={engine.params.initInfluence.step ?? 0.05}
+                  onChange={(value) => setInitInfluence(value)}
+                />
+              </div>
+            ) : null}
+
+            {showExtendControl && engine.extend ? (
+              <div className="space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.extend.label}</span>
+                <div className="flex flex-wrap items-center gap-2 text-[13px] text-text-secondary">
+                  <span>{controlsCopy.extend.action}</span>
+                  <input type="number" min={1} max={30} defaultValue={5} className="h-10 w-20 rounded-input border border-border bg-surface px-2 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                  <span>{controlsCopy.extend.unit}</span>
+                </div>
+              </div>
+            ) : null}
+
+            {engine.keyframes ? <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div> : null}
+
+            {showKlingV3Controls ? (
+              <div className="space-y-3">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Kling v3 controls</span>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Shot type</span>
+                    <div className="flex flex-wrap gap-2">
+                      {(['customize', 'intelligent'] as const).map((option) => (
+                        <Button
+                          key={option}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={mode === 'i2v'}
+                          onClick={() => {
+                            if (mode === 'i2v') return;
+                            onKlingShotTypeChange?.(option);
+                          }}
+                          className={clsx(
+                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+                            option === klingShotType
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option}
+                        </Button>
+                      ))}
+                    </div>
+                    {mode === 'i2v' ? (
+                      <span className="text-[11px] text-text-muted">Shot type is locked to customize for image-to-video.</span>
+                    ) : null}
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
+                    <input
+                      type="text"
+                      placeholder="voice_1, voice_2"
+                      value={voiceIdsValue}
+                      onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
+                      className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
+                    {voiceControlActive ? (
+                      <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
+                    ) : null}
+                  </label>
+                </div>
+              </div>
+            ) : null}
+
+            {showSeedanceControls ? (
+              <div className="space-y-3">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Seedance advanced</span>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Seed</span>
+                    <input
+                      type="number"
+                      placeholder="-1 for random"
+                      value={seedValue}
+                      onChange={(e) => onSeedChange?.(e.currentTarget.value)}
+                      className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <span className="text-[11px] text-text-muted">Use -1 for random.</span>
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Camera fixed</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[true, false].map((option) => (
+                        <Button
+                          key={option ? 'camera-on' : 'camera-off'}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onCameraFixedChange?.(option)}
+                          className={clsx(
+                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+                            option === cameraFixed
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option ? 'On' : 'Off'}
+                        </Button>
+                      ))}
+                    </div>
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Safety checker</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[true, false].map((option) => (
+                        <Button
+                          key={option ? 'safety-on' : 'safety-off'}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onSafetyCheckerChange?.(option)}
+                          className={clsx(
+                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+                            option === safetyChecker
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option ? 'On' : 'Off'}
+                        </Button>
+                      ))}
+                    </div>
+                  </label>
+                </div>
+              </div>
+            ) : null}
+
+            {engine.params.cfg_scale ? (
+              <div className="space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.cfgScale}</span>
+                <RangeWithInput
+                  value={effectiveCfgScale}
+                  min={engine.params.cfg_scale.min ?? 0}
+                  max={engine.params.cfg_scale.max ?? 1}
+                  step={engine.params.cfg_scale.step ?? 0.01}
+                  onChange={(value) => {
+                    if (onCfgScaleChange) {
+                      onCfgScaleChange(value);
+                    } else {
+                      setInternalCfgScale(value);
+                    }
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <Card className="space-y-4 p-4">

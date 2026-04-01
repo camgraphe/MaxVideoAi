@@ -19,6 +19,7 @@ interface SelectMenuProps {
   className?: string;
   hideChevron?: boolean;
   buttonClassName?: string;
+  menuPlacement?: 'bottom' | 'top';
   searchable?: boolean;
   searchPlaceholder?: string;
   filterText?: (option: SelectOption) => string;
@@ -50,6 +51,7 @@ export function SelectMenu({
   className,
   hideChevron = false,
   buttonClassName,
+  menuPlacement = 'bottom',
   searchable = false,
   searchPlaceholder = 'Search...',
   filterText,
@@ -218,7 +220,12 @@ export function SelectMenu({
         ) : null}
       </Button>
       {open ? (
-        <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur">
+        <div
+          className={clsx(
+            'absolute left-0 right-0 z-[50] max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur',
+            menuPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2'
+          )}
+        >
           {searchable ? (
             <div className="px-1 pb-1">
               <input

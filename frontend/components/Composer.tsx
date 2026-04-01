@@ -7,7 +7,6 @@ import type { Ref, ChangeEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, Mode, PreflightResponse } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
-import { Chip } from '@/components/ui/Chip';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
@@ -51,6 +50,16 @@ type ComposerModeToggle = {
   disabledReason?: string;
 };
 
+export type ComposerPromotedAction = {
+  id: string;
+  label: string;
+  tooltip?: string;
+  active: boolean;
+  icon: 'sparkles' | 'shield';
+  onToggle: () => void;
+  disabled?: boolean;
+};
+
 interface Props {
   engine: EngineCaps;
   caps?: CapabilityCaps;
@@ -81,6 +90,7 @@ interface Props {
   modeToggles?: ComposerModeToggle[];
   activeManualMode?: Mode | null;
   onModeToggle?: (mode: Mode | null) => void;
+  promotedActions?: ComposerPromotedAction[];
   multiPrompt?: {
     enabled: boolean;
     scenes: MultiPromptScene[];
@@ -168,6 +178,7 @@ export function Composer({
   modeToggles,
   activeManualMode,
   onModeToggle,
+  promotedActions,
   multiPrompt,
   extraFields,
   disableGenerate,
@@ -309,140 +320,159 @@ export function Composer({
     setIsButtonAnimating(false);
   }, [isLoading]);
 
+  const resolvedGenerateLabel = isLoading ? composerCopy.button.loading : composerCopy.button.idle;
+
   return (
-    <Card className="stack-gap-lg p-5">
+    <Card className="overflow-visible border-border/90 p-4 md:p-5">
       <div className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
-              {modeToggles && modeToggles.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  {modeToggles.map((entry) => {
-                    const active = activeManualMode === entry.mode;
-                    return (
-                      <Button
-                        key={entry.mode ?? 'base'}
-                        type="button"
-                        size="sm"
-                        variant={active ? 'primary' : 'outline'}
-                        onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
-                        disabled={entry.disabled}
-                        title={entry.disabledReason}
-                        className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-micro"
-                      >
-                        {entry.label}
-                      </Button>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-              {multiPrompt && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={multiPromptEnabled ? 'primary' : 'outline'}
-                  onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
-                  className="min-h-0 h-auto px-3 py-1.5 text-[11px] uppercase tracking-micro"
-                >
-                  {multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'}
-                </Button>
-              )}
-              {formattedPrice && (
-                <Chip
-                  variant="outline"
-                  className="chip-price px-3 py-1.5 font-semibold shadow-sm"
-                >
-                  {composerCopy.priceLabel.replace('{amount}', formattedPrice)}
-                </Chip>
-              )}
-              {memberDiscount && memberDiscount.amountCents > 0 && (
-                <Chip className="px-3 py-1.5 text-brand" variant="outline">
-                  {composerCopy.memberLabel.replace(
-                    '{percent}',
-                    String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
-                  )}
-                </Chip>
-              )}
-            </div>
-          </div>
-          {promptDescription && (
-            <p className="text-[12px] text-text-muted">{promptDescription}</p>
-          )}
-          {workflowNotice ? (
-            <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary">
-              {workflowNotice}
-            </div>
-          ) : null}
-          {multiPromptEnabled && multiPrompt ? (
-            <div className="space-y-3">
-              {multiPrompt.scenes.map((scene, index) => (
-                <div
-                  key={scene.id}
-                  className="rounded-input border border-border bg-surface p-3 text-sm text-text-secondary"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Scene {index + 1}</span>
-                    {multiPrompt.scenes.length > 1 && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => multiPrompt.onRemoveScene(scene.id)}
-                        className="min-h-0 h-auto px-2 py-1 text-[11px]"
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                  <textarea
-                    value={scene.prompt}
-                    onChange={(event) => multiPrompt.onUpdateScene(scene.id, { prompt: event.currentTarget.value })}
-                    placeholder={`Scene ${index + 1} prompt`}
-                    rows={3}
-                    className="mt-2 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                  <div className="mt-2 flex items-center gap-2 text-[12px] text-text-muted">
-                    <span>Duration (s)</span>
-                    <input
-                      type="number"
-                      min={multiPrompt.minDurationSec}
-                      max={multiPrompt.maxDurationSec}
-                      value={scene.duration}
-                      onChange={(event) =>
-                        multiPrompt.onUpdateScene(scene.id, {
-                          duration: Math.max(0, Math.round(Number(event.currentTarget.value))),
-                        })
-                      }
-                      className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-xs text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                  </div>
-                </div>
-              ))}
-              <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-text-muted">
-                <span>
-                  Total: {multiPrompt.totalDurationSec}s · Min {multiPrompt.minDurationSec}s · Max {multiPrompt.maxDurationSec}s
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={multiPrompt.onAddScene}
-                  className="min-h-0 h-auto px-3 py-1.5 text-[11px] uppercase tracking-micro"
-                >
-                  + Scene
-                </Button>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1 space-y-3">
+            {modeToggles && modeToggles.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {modeToggles.map((entry) => {
+                  const active = activeManualMode === entry.mode;
+                  return (
+                    <Button
+                      key={entry.mode ?? 'base'}
+                      type="button"
+                      size="sm"
+                      variant={active ? 'primary' : 'outline'}
+                      onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
+                      disabled={entry.disabled}
+                      title={entry.disabledReason}
+                      className="min-h-0 h-10 rounded-2xl px-4 py-0 text-[12px] font-semibold"
+                    >
+                      {entry.label}
+                    </Button>
+                  );
+                })}
               </div>
-              {multiPrompt.error && (
-                <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[12px] text-error">
-                  {multiPrompt.error}
-                </div>
+            ) : null}
+            {(promptDescription || workflowNotice) && (
+              <div className="space-y-1">
+                {promptDescription ? <p className="text-[12px] text-text-muted">{promptDescription}</p> : null}
+                {workflowNotice ? (
+                  <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary">
+                    {workflowNotice}
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+            <div
+              className={clsx(
+                'overflow-visible rounded-[28px] border bg-surface',
+                promptTooLong ? 'border-error-border' : 'border-border'
               )}
+            >
+            <div className="flex flex-wrap items-start justify-between gap-3 px-4 pb-2 pt-4">
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</span>
+                {typeof promptMaxChars === 'number' ? (
+                  <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
+                    {promptCharCount}/{promptMaxChars}
+                  </div>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {multiPrompt ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={multiPromptEnabled ? 'primary' : 'outline'}
+                    onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
+                    className="min-h-0 h-8 rounded-full px-3 py-0 text-[10px] font-semibold uppercase tracking-micro"
+                  >
+                    {multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'}
+                  </Button>
+                ) : null}
+                {promotedActions?.map((action) => (
+                  <Button
+                    key={action.id}
+                    type="button"
+                    size="sm"
+                    variant={action.active ? 'primary' : 'outline'}
+                    onClick={action.onToggle}
+                    disabled={action.disabled}
+                    title={action.tooltip ?? action.label}
+                    aria-label={action.tooltip ?? action.label}
+                    aria-pressed={action.active}
+                    className="min-h-0 h-8 w-8 rounded-full px-0 py-0"
+                  >
+                    {renderPromotedActionIcon(action.icon)}
+                  </Button>
+                ))}
+              </div>
             </div>
-          ) : (
-            <div className="relative">
+            {multiPromptEnabled && multiPrompt ? (
+              <div className="space-y-3 px-4 pb-4">
+                {multiPrompt.scenes.map((scene, index) => (
+                  <div
+                    key={scene.id}
+                    className="rounded-input border border-border bg-surface p-3 text-sm text-text-secondary"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] uppercase tracking-micro text-text-muted">Scene {index + 1}</span>
+                      {multiPrompt.scenes.length > 1 && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => multiPrompt.onRemoveScene(scene.id)}
+                          className="min-h-0 h-auto px-2 py-1 text-[11px]"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    <textarea
+                      value={scene.prompt}
+                      onChange={(event) => multiPrompt.onUpdateScene(scene.id, { prompt: event.currentTarget.value })}
+                      placeholder={`Scene ${index + 1} prompt`}
+                      rows={3}
+                      className="mt-2 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <div className="mt-2 flex items-center gap-2 text-[12px] text-text-muted">
+                      <span>Duration (s)</span>
+                      <input
+                        type="number"
+                        min={multiPrompt.minDurationSec}
+                        max={multiPrompt.maxDurationSec}
+                        value={scene.duration}
+                        onChange={(event) =>
+                          multiPrompt.onUpdateScene(scene.id, {
+                            duration: Math.max(0, Math.round(Number(event.currentTarget.value))),
+                          })
+                        }
+                        className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-xs text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-text-muted">
+                  <span>
+                    Total: {multiPrompt.totalDurationSec}s · Min {multiPrompt.minDurationSec}s · Max {multiPrompt.maxDurationSec}s
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={multiPrompt.onAddScene}
+                    className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[11px] uppercase tracking-micro"
+                  >
+                    + Scene
+                  </Button>
+                </div>
+                {multiPrompt.error ? (
+                  <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[12px] text-error">
+                    {multiPrompt.error}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
               <textarea
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
@@ -450,84 +480,65 @@ export function Composer({
                 rows={6}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
-                  'w-full rounded-input border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  promptTooLong ? 'border-error-border focus-visible:ring-error' : 'border-border'
+                  'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0',
+                  promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
                 ref={textareaRef}
               />
-              {typeof promptMaxChars === 'number' ? (
-                <div
-                  className={clsx(
-                    'mt-2 flex justify-end text-[12px]',
-                    promptTooLong ? 'text-error' : 'text-text-muted'
-                  )}
-                >
-                  {promptCharCount}/{promptMaxChars} characters
-                </div>
-              ) : null}
-            </div>
-          )}
-        </div>
+            )}
 
-        {(settingsBar || onGenerate) && (
-          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
-            {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
-            {onGenerate ? (
-              <Button
-                type="button"
-                size="md"
-                disabled={isGenerateDisabled}
-                className={clsx(
-                  'relative w-full shrink-0 px-5 py-3 uppercase tracking-micro sm:w-auto',
-                  'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
-                  'border border-brand shadow-card',
-                  'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                  isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
-                  isGenerateDisabled ? '' : 'active:scale-[0.97]'
-                )}
-                onClick={handleGenerateClick}
-              >
-                <span className="relative z-10">{isLoading ? composerCopy.button.loading : composerCopy.button.idle}</span>
-                <span
-                  aria-hidden
-                  className={clsx(
-                    'pointer-events-none absolute inset-0 rounded-input bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
-                    isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
-                  )}
-                />
-              </Button>
+            {(settingsBar || onGenerate) ? (
+              <div className="border-t border-border/70 px-4 py-3">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
+                  {onGenerate ? (
+                    <div className="flex shrink-0 flex-col gap-2 lg:items-end">
+                      {memberDiscount && memberDiscount.amountCents > 0 ? (
+                        <span className="text-[11px] text-text-muted">
+                          {composerCopy.memberLabel.replace(
+                            '{percent}',
+                            String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
+                          )}
+                        </span>
+                      ) : null}
+                      <Button
+                        type="button"
+                        size="md"
+                        disabled={isGenerateDisabled}
+                        className={clsx(
+                          'relative w-full min-w-[220px] justify-between gap-4 overflow-hidden rounded-[24px] px-5 py-3 text-left',
+                          'transform-gpu transition-transform duration-200 ease-out',
+                          'border border-brand shadow-card',
+                          'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
+                          isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
+                          isGenerateDisabled ? '' : 'active:scale-[0.97]',
+                          formattedPrice ? 'sm:min-w-[260px]' : ''
+                        )}
+                        onClick={handleGenerateClick}
+                      >
+                        <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
+                        {formattedPrice ? (
+                          <span className="relative z-10 inline-flex items-center rounded-full border border-current/15 bg-surface-on-media-20 px-3 py-1 text-sm font-semibold normal-case">
+                            {formattedPrice}
+                          </span>
+                        ) : null}
+                        <span
+                          aria-hidden
+                          className={clsx(
+                            'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
+                            isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                          )}
+                        />
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             ) : null}
           </div>
-        )}
+        </div>
 
-        {error && (
-          <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[13px] text-error whitespace-pre-line">
-            {error}
-          </div>
-        )}
-
-        {negativePromptField && (
-          <div className="space-y-1">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[12px] uppercase tracking-micro text-text-muted">{negativePromptLabel}</span>
-              {negativePromptRequired && (
-                <span className="text-[11px] text-text-muted/80">{composerCopy.negativePrompt.requiredHint}</span>
-              )}
-            </div>
-            <input
-              type="text"
-              value={negativePrompt ?? ''}
-              onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
-              placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
-              className="w-full rounded-input border border-border bg-surface px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            {negativePromptDescription && (
-              <p className="text-[12px] text-text-muted">{negativePromptDescription}</p>
-            )}
-          </div>
-        )}
-
-        {assetFields.length > 0 && (
+        {assetFields.length > 0 ? (
           <div className="space-y-2">
             <div
               className={clsx(
@@ -564,18 +575,80 @@ export function Composer({
               </p>
             ) : null}
           </div>
-        )}
+        ) : null}
 
-        {extraFields ? <div className="space-y-2">{extraFields}</div> : null}
+        {negativePromptField ? (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{negativePromptLabel}</span>
+              {negativePromptRequired ? (
+                <span className="text-[11px] text-text-muted/80">{composerCopy.negativePrompt.requiredHint}</span>
+              ) : null}
+            </div>
+            <input
+              type="text"
+              value={negativePrompt ?? ''}
+              onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
+              placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
+              className="h-11 w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[13px] text-error whitespace-pre-line">
+            {error}
+          </div>
+        ) : null}
+
+        {extraFields ? <div className="space-y-4 border-t border-border/70 pt-4">{extraFields}</div> : null}
       </div>
-      {messages && messages.length > 0 && (
-        <ul className="space-y-1 text-xs text-text-muted">
+      {messages && messages.length > 0 ? (
+        <ul className="mt-4 space-y-1 text-xs text-text-muted">
           {messages.map((message) => (
             <li key={message}>• {message}</li>
           ))}
         </ul>
-      )}
+      ) : null}
     </Card>
+  );
+}
+
+function renderPromotedActionIcon(icon: ComposerPromotedAction['icon']) {
+  if (icon === 'shield') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <path
+          d="M10 2.5 4.5 4.8v4.6c0 3.3 2 6.2 5.1 7.5l.4.1.4-.1c3.1-1.3 5.1-4.2 5.1-7.5V4.8L10 2.5Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m7.8 10.1 1.5 1.5 3-3.2"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+      <path
+        d="M10 2.8 11.6 6l3.5.5-2.6 2.5.6 3.5L10 10.9 6.9 12.5l.6-3.5-2.6-2.5 3.5-.5L10 2.8Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

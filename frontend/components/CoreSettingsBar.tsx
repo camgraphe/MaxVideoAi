@@ -13,6 +13,8 @@ interface CoreSettingsBarProps {
   engine: EngineCaps;
   mode: Mode;
   caps?: CapabilityCaps;
+  iterations?: number;
+  onIterationsChange?: (value: number) => void;
   durationSec: number;
   durationOption?: number | string | null;
   onDurationChange: (value: number | string) => void;
@@ -20,20 +22,13 @@ interface CoreSettingsBarProps {
   onNumFramesChange?: (value: number) => void;
   resolution: string;
   onResolutionChange: (value: string) => void;
-  fps: number;
-  onFpsChange: (value: number) => void;
   aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
-  iterations?: number;
-  onIterationsChange?: (value: number) => void;
   showAudioControl?: boolean;
   audioEnabled?: boolean;
   onAudioChange?: (value: boolean) => void;
   audioControlDisabled?: boolean;
   audioControlNote?: string;
-  showLoopControl?: boolean;
-  loopEnabled?: boolean;
-  onLoopChange?: (value: boolean) => void;
   durationManaged?: boolean;
   durationManagedLabel?: string;
 }
@@ -76,15 +71,107 @@ function matchesDurationOptionValue(option: DurationOptionMeta, raw: number | st
   return Math.abs(option.value - seconds) < 0.001;
 }
 
-function SelectGroup({
-  label,
+function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'audio' | 'iterations' }) {
+  if (kind === 'duration') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M10 6.5v4l2.8 1.8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === 'resolution') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <rect x="3.5" y="4.5" width="13" height="11" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M7 9.8h6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === 'aspect') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <rect x="3.5" y="5.5" width="13" height="9" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 8v4m4-4v4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === 'iterations') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <path
+          d="M6 6.5h8a2.5 2.5 0 1 1 0 5H7.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m9.2 8.8-2.7 2.7 2.7 2.7"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  if (kind === 'audio') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <path
+          d="M4.5 11.8H7l4 3.2V5L7 8.2H4.5z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M13.3 8a3.4 3.4 0 0 1 0 4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M15.5 6.2a6 6 0 0 1 0 7.6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+      <path d="M5 11.5V8.2a5 5 0 0 1 10 0v3.3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M5.2 12.5h-.7A1.5 1.5 0 0 1 3 11V9.8a1.5 1.5 0 0 1 1.5-1.5h.7v4.2Zm10.3 0h.7A1.5 1.5 0 0 0 17 11V9.8a1.5 1.5 0 0 0-1.5-1.5h-.7v4.2Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function createInlineLabel(kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio', label: string) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <ControlIcon kind={kind} />
+      <span className="truncate">{label}</span>
+    </span>
+  );
+}
+
+function InlineSelectControl({
+  kind,
   options,
   value,
   onChange,
   disabled,
   className,
 }: {
-  label: string;
+  kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio';
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
   value: string | number | boolean;
   onChange: (value: string | number | boolean) => void;
@@ -93,9 +180,19 @@ function SelectGroup({
 }) {
   if (!options.length) return null;
   return (
-    <div className={clsx('flex min-w-0 flex-col gap-1', className)}>
-      <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
-      <SelectMenu options={options} value={value} onChange={onChange} disabled={disabled} />
+    <div className={clsx('min-w-0', className)}>
+      <SelectMenu
+        options={options.map((option) => ({
+          ...option,
+          label: createInlineLabel(kind, String(option.label)),
+        }))}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        className="min-w-0"
+        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none"
+        menuPlacement="top"
+      />
     </div>
   );
 }
@@ -104,6 +201,8 @@ export function CoreSettingsBar({
   engine,
   mode,
   caps,
+  iterations = 1,
+  onIterationsChange,
   durationSec,
   durationOption,
   onDurationChange,
@@ -111,20 +210,13 @@ export function CoreSettingsBar({
   onNumFramesChange,
   resolution,
   onResolutionChange,
-  fps,
-  onFpsChange,
   aspectRatio,
   onAspectRatioChange,
-  iterations,
-  onIterationsChange,
   showAudioControl = false,
   audioEnabled,
   onAudioChange,
   audioControlDisabled = false,
   audioControlNote,
-  showLoopControl = false,
-  loopEnabled,
-  onLoopChange,
   durationManaged = false,
   durationManagedLabel,
 }: CoreSettingsBarProps) {
@@ -133,6 +225,14 @@ export function CoreSettingsBar({
     | Partial<typeof DEFAULT_CONTROLS_COPY>
     | undefined;
   const controlsCopy = useMemo(() => mergeControlsCopy(localizedControls), [localizedControls]);
+  const iterationOptions = useMemo(
+    () =>
+      [1, 2, 3, 4].map((value) => ({
+        value,
+        label: `${value}x`,
+      })),
+    []
+  );
 
   const frameOptions = useMemo(() => (caps?.frames && caps.frames.length ? caps.frames : null), [caps?.frames]);
   const enumeratedDurationOptions = useMemo(() => {
@@ -161,24 +261,6 @@ export function CoreSettingsBar({
     }
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
-  const fpsOptions = useMemo(() => {
-    const base = Array.isArray(caps?.fps)
-      ? caps.fps
-      : typeof caps?.fps === 'number'
-        ? [caps.fps]
-        : engine.fps;
-    if (isLtxFastLong) return base.filter((value) => value === 25);
-    return base;
-  }, [caps?.fps, engine.fps, isLtxFastLong]);
-
-  const durationLabel = controlsCopy.duration.optionsLabel ?? 'Duration';
-  const framesLabel = controlsCopy.frames.label ?? 'Frames';
-  const resolutionLabel = controlsCopy.resolution.label ?? 'Resolution';
-  const fpsLabel = 'FPS';
-  const aspectLabel = controlsCopy.aspect.label ?? 'Aspect';
-  const iterationsLabel = controlsCopy.iterationsLabel ?? 'Iterations';
-  const audioLabel = controlsCopy.audio.label ?? 'Audio';
-  const loopLabel = controlsCopy.loop.label ?? 'Loop';
   const resolvedDurationManagedLabel = durationManagedLabel ?? controlsCopy.duration.managed;
 
   const durationOptions =
@@ -231,10 +313,15 @@ export function CoreSettingsBar({
   });
 
   const showResolutionControl = resolutionOptions.length > 0 && !caps?.resolutionLocked;
-  const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
   const showAspectControl = aspectOptions.length > 0;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl;
-  const audioNotice = audioControlNote ?? (audioIncluded ? controlsCopy.core.audioIncluded : null);
+  const audioSelectLocked = audioIncluded || !showAudioControl || audioControlDisabled;
+  const audioValue = audioIncluded ? true : showAudioControl ? Boolean(audioEnabled) : false;
+  const audioOptions = [
+    { value: true, label: controlsCopy.audio.on },
+    { value: false, label: controlsCopy.audio.off },
+  ];
+  const audioNotice = audioIncluded ? null : audioControlNote ?? null;
   const durationRangeOptions = durationRange
     ? Array.from({ length: engine.maxDurationSec - durationRange.min + 1 }, (_, index) => {
         const value = durationRange.min + index;
@@ -243,17 +330,18 @@ export function CoreSettingsBar({
     : [];
 
   return (
-    <div className="min-w-0 flex-1">
-      <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+    <div className="min-w-0 flex-1 space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
         {durationManaged ? (
-          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-6">
-            <div className="rounded-input border border-dashed border-border bg-surface-glass-60 px-3 py-2 text-[11px] uppercase tracking-micro text-text-muted">
-              {resolvedDurationManagedLabel}
-            </div>
+          <div
+            className="inline-flex min-h-[40px] items-center rounded-full border border-dashed border-border bg-surface-glass-60 px-3 text-[11px] font-semibold uppercase tracking-micro text-text-muted"
+            title={resolvedDurationManagedLabel}
+          >
+            {resolvedDurationManagedLabel}
           </div>
         ) : frameOptions || (enumeratedDurationOptions && enumeratedDurationOptions.length) ? (
-          <SelectGroup
-            label={frameOptions ? framesLabel : durationLabel}
+          <InlineSelectControl
+            kind="duration"
             options={durationOptions}
             value={durationValue}
             onChange={(value) => {
@@ -265,91 +353,67 @@ export function CoreSettingsBar({
             }}
           />
         ) : durationRange ? (
-          <SelectGroup
-            label={controlsCopy.duration.rangeLabel ?? 'Duration'}
+          <InlineSelectControl
+            kind="duration"
             options={durationRangeOptions}
             value={durationSec}
             onChange={(value) => onDurationChange(Number(value))}
           />
         ) : null}
 
-        {showResolutionControl && (
-          <SelectGroup
-            label={resolutionLabel}
+        {showResolutionControl ? (
+          <InlineSelectControl
+            kind="resolution"
             options={resolutionOptionsList}
             value={resolution}
             onChange={(value) => onResolutionChange(String(value))}
           />
-        )}
+        ) : null}
 
-        {showFpsControl && (
-          <SelectGroup
-            label={fpsLabel}
-            options={fpsOptions.map((option) => ({
-              value: option,
-              label: (controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option)),
-            }))}
-            value={fps}
-            onChange={(value) => onFpsChange(Number(value))}
-          />
-        )}
-
-        {showAspectControl && (
-          <SelectGroup
-            label={aspectLabel}
+        {showAspectControl ? (
+          <InlineSelectControl
+            kind="aspect"
             options={aspectOptionsList}
             value={aspectRatio}
             onChange={(value) => onAspectRatioChange(String(value))}
           />
-        )}
+        ) : null}
 
-        {onIterationsChange && (
-          <SelectGroup
-            label={iterationsLabel}
-            options={[1, 2, 3, 4].map((value) => ({ value, label: `x${value}` }))}
-            value={Math.max(1, iterations ?? 1)}
+        <InlineSelectControl
+          kind="audio"
+          options={audioOptions}
+          value={audioValue}
+          onChange={(value) => {
+            if (audioSelectLocked || typeof onAudioChange !== 'function') return;
+            onAudioChange(Boolean(value));
+          }}
+          disabled={audioSelectLocked}
+        />
+
+        {onIterationsChange ? (
+          <InlineSelectControl
+            kind="iterations"
+            options={iterationOptions}
+            value={iterations}
             onChange={(value) => onIterationsChange(Number(value))}
           />
-        )}
-
-        {showAudioControl && typeof audioEnabled === 'boolean' && onAudioChange && (
-          <SelectGroup
-            label={audioLabel}
-            options={[
-              { value: true, label: controlsCopy.audio.on },
-              { value: false, label: controlsCopy.audio.off },
-            ]}
-            value={audioEnabled}
-            onChange={(value) => onAudioChange(Boolean(value))}
-            disabled={audioControlDisabled}
-          />
-        )}
-
-        {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange && (
-          <SelectGroup
-            label={loopLabel}
-            options={[
-              { value: true, label: controlsCopy.loop.on },
-              { value: false, label: controlsCopy.loop.off },
-            ]}
-            value={loopEnabled}
-            onChange={(value) => onLoopChange(Boolean(value))}
-          />
-        )}
-        {audioNotice && (
-          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-6">
-            <span className="inline-flex items-center rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[10px] font-semibold uppercase tracking-micro text-text-secondary">
-              {audioNotice}
-            </span>
-          </div>
-        )}
+        ) : null}
       </div>
-      {isLtxFastLong && (
-        <p className="mt-2 text-[10px] text-text-muted">
-          LTX Fast: durations above 10s are limited to 1080p / 25 fps. Switch back to 10s or less to unlock
-          1440p, 4K, and 24/48/50 fps.
-        </p>
-      )}
+      {audioNotice || isLtxFastLong ? (
+        <div className="flex flex-wrap items-center gap-3 text-[11px] text-text-muted">
+          {audioNotice ? (
+            <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1 font-semibold">
+              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+              <span>{audioNotice}</span>
+            </span>
+          ) : null}
+          {isLtxFastLong ? (
+            <span>
+              LTX Fast: durations above 10s are limited to 1080p / 25 fps.
+            </span>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
