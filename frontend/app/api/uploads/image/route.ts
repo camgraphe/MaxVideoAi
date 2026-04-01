@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import sharp from 'sharp';
 import { uploadImageToStorage, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { ensureAssetSchema } from '@/lib/schema';
+import { query } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
@@ -131,6 +134,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
+  const contentSha256 = createHash('sha256').update(uploadBuffer).digest('hex');
+  await ensureAssetSchema();
+
+  const existingAssets = await query<{
+    asset_id: string;
+    url: string;
+    mime_type: string | null;
+    width: number | null;
+    height: number | null;
+    size_bytes: string | number | null;
+  }>(
+    `SELECT asset_id, url, mime_type, width, height, size_bytes
+     FROM user_assets
+     WHERE user_id = $1
+       AND source = 'upload'
+       AND metadata->>'contentSha256' = $2
+     ORDER BY created_at DESC
+     LIMIT 1`,
+    [userId, contentSha256]
+  );
+
+  if (existingAssets.length > 0) {
+    const [asset] = existingAssets;
+    return NextResponse.json({
+      ok: true,
+      asset: {
+        id: asset.asset_id,
+        url: asset.url,
+        width: asset.width,
+        height: asset.height,
+        size: typeof asset.size_bytes === 'string' ? Number(asset.size_bytes) : asset.size_bytes,
+        mime: asset.mime_type,
+        name: blob.name,
+      },
+    });
+  }
+
   let uploadResult;
   try {
     uploadResult = await uploadImageToStorage({
@@ -158,6 +198,7 @@ export async function POST(req: NextRequest) {
         originalName: blob.name,
         originalMime: declaredMime,
         normalizedFromMime,
+        contentSha256,
       },
     });
 

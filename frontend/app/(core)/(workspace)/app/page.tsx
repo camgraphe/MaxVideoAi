@@ -10,7 +10,6 @@ import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
@@ -55,6 +54,7 @@ import { readLastKnownUserId } from '@/lib/last-known';
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -348,7 +348,6 @@ function AssetLibraryModal({
           : copyAssetLibrary.empty;
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleImportChange = useCallback(
@@ -403,31 +402,9 @@ function AssetLibraryModal({
     },
     [assetType, importEndpoint, importFailedLabel, onSelect]
   );
-  const formatSize = (bytes?: number | null) => {
-    if (!bytes || bytes <= 0) return null;
-    if (bytes >= 1024 * 1024) {
-      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    }
-    if (bytes >= 1024) {
-      return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-    return `${bytes} B`;
-  };
   const sourceOptions = assetType === 'video'
     ? (['all', 'upload', 'generated'] as const)
     : (['all', 'upload', 'generated', 'character', 'angle'] as const);
-  const filteredAssets = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    if (!normalizedQuery) return assets;
-    return assets.filter((asset) => {
-      const dimensions = asset.width && asset.height ? `${asset.width}x${asset.height}` : '';
-      const haystack = [asset.id, asset.url, asset.source, asset.mime, asset.createdAt, dimensions]
-        .filter((value): value is string => typeof value === 'string' && value.length > 0)
-        .join(' ')
-        .toLowerCase();
-      return haystack.includes(normalizedQuery);
-    });
-  }, [assets, searchQuery]);
   const searchPlaceholder =
     copyAssetLibrary.searchPlaceholder ??
     (uiLocale === 'fr' ? 'Rechercher des assets…' : uiLocale === 'es' ? 'Buscar assets…' : 'Search assets…');
@@ -457,251 +434,125 @@ function AssetLibraryModal({
       copyAssetLibrary.shortcuts?.characterBuilder ??
       (uiLocale === 'fr' ? 'Character Builder' : uiLocale === 'es' ? 'Character Builder' : 'Character builder'),
   };
-  const filteredEmptyLabel = searchQuery.trim().length
-    ? emptySearchLabel
-    : emptyLabel ?? (assetType === 'video' ? 'No saved videos yet.' : 'No saved images yet.');
-
-  useEffect(() => {
-    setSearchQuery('');
-  }, [assetType, source]);
+  const browserToolLinks =
+    assetType === 'image'
+      ? [
+          { href: '/app/image', label: shortcutLabels.createImage },
+          { href: '/app/tools/angle', label: shortcutLabels.changeAngle },
+          { href: '/app/tools/character-builder', label: shortcutLabels.characterBuilder },
+        ]
+      : [];
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-50 px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-4">
       <div className="absolute inset-0" role="presentation" onClick={onClose} />
-      <div className="relative z-10 flex h-[92svh] w-full max-w-[1240px] flex-col overflow-y-auto overscroll-contain rounded-[24px] border border-border/70 bg-surface shadow-float sm:h-[84vh] sm:flex-row sm:overflow-hidden sm:rounded-[28px]">
-        <input
-          ref={importInputRef}
-          type="file"
-          accept={importAccept}
-          className="sr-only"
-          onChange={handleImportChange}
-        />
-        <aside className="flex w-full shrink-0 flex-col border-b border-border/70 bg-surface-2/80 p-4 sm:w-[280px] sm:border-b-0 sm:border-r sm:p-5">
-          <div className="relative">
-            <svg aria-hidden viewBox="0 0 20 20" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted">
-              <circle cx="8.5" cy="8.5" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-              <path d="m12 12 4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.currentTarget.value)}
-              placeholder={searchPlaceholder}
-              className="h-11 w-full rounded-[16px] border border-border/70 bg-surface pl-10 pr-3 text-sm text-text-primary shadow-inner placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </div>
-
-          <div className="mt-4 space-y-2 sm:mt-6">
-            <p className="px-2 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-              {sourcesTitle}
-            </p>
-            <div
-              role="tablist"
-              aria-label="Library asset filters"
-              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:block sm:space-y-1 sm:overflow-visible sm:px-0 sm:pb-0"
+      <input
+        ref={importInputRef}
+        type="file"
+        accept={importAccept}
+        className="sr-only"
+        onChange={handleImportChange}
+      />
+      <AssetLibraryBrowser
+        className="relative z-10 h-[92svh] max-w-[1240px] sm:h-[84vh]"
+        title={copyAssetLibrary.title}
+        subtitle={fieldLabel}
+        assetType={assetType}
+        assets={assets}
+        isLoading={isLoading}
+        error={importError ?? error}
+        source={source}
+        availableSources={[...sourceOptions]}
+        sourceLabels={copyAssetLibrary.tabs}
+        onSourceChange={onSourceChange}
+        searchPlaceholder={searchPlaceholder}
+        sourcesTitle={sourcesTitle}
+        emptyLabel={emptyLabel ?? (assetType === 'video' ? 'No saved videos yet.' : 'No saved images yet.')}
+        emptySearchLabel={emptySearchLabel}
+        toolsTitle={assetType === 'image' ? toolsTitle : undefined}
+        toolsDescription={assetType === 'image' ? toolsDescription : undefined}
+        toolLinks={browserToolLinks}
+        headerActions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+              disabled={isImporting}
+              onClick={() => importInputRef.current?.click()}
             >
-              {sourceOptions.map((option) => {
-                const active = source === option;
-                const label = copyAssetLibrary.tabs[option];
-                return (
-                  <Button
-                    key={option}
-                    type="button"
-                    role="tab"
-                    variant={active ? 'primary' : 'ghost'}
-                    size="sm"
-                    aria-selected={active}
-                    onClick={() => onSourceChange(option)}
-                    className={clsx(
-                      'h-10 min-w-max shrink-0 justify-center rounded-full px-4 text-sm font-semibold sm:h-11 sm:w-full sm:min-w-0 sm:justify-start sm:rounded-[16px]',
-                      active ? 'shadow-card' : 'text-text-secondary hover:bg-surface hover:text-text-primary'
-                    )}
-                  >
-                    {label}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {assetType === 'image' ? (
-            <div className="mt-5 space-y-3 sm:mt-8">
-              <div className="px-2">
-                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                  {toolsTitle}
-                </p>
-                <p className="mt-1 hidden text-xs text-text-secondary sm:block">
-                  {toolsDescription}
-                </p>
-              </div>
-              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:block sm:space-y-1 sm:overflow-visible sm:px-0 sm:pb-0">
-                <ButtonLink
-                  href="/app/image"
+              {isImporting ? importingLabel : importLabel}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+              onClick={() => onRefresh(source)}
+            >
+              {copyAssetLibrary.refresh}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-10 w-10 rounded-full border border-transparent px-0 text-text-secondary hover:border-border hover:bg-surface-2 hover:text-text-primary sm:ml-auto"
+              onClick={onClose}
+              aria-label={copyAssetLibrary.close}
+            >
+              <svg aria-hidden viewBox="0 0 20 20" className="h-4.5 w-4.5">
+                <path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </Button>
+          </>
+        }
+        renderAssetActions={(asset) => {
+          const isDeleting = deletingAssetId === asset.id;
+          const canDelete = asset.canDelete !== false && !asset.id.startsWith('job:');
+          return (
+            <>
+              {canDelete ? (
+                <Button
+                  type="button"
+                  variant="outline"
                   size="sm"
-                  variant="ghost"
-                  className="h-10 min-w-max shrink-0 justify-center rounded-full px-4 text-sm font-semibold text-text-secondary hover:bg-surface hover:text-text-primary sm:h-11 sm:w-full sm:min-w-0 sm:justify-start sm:rounded-[16px]"
+                  className={clsx(
+                    'min-h-[34px] flex-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro focus-visible:ring-error-border sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
+                    isDeleting
+                      ? 'border-error-border bg-error-bg text-error opacity-70'
+                      : 'border-error-border bg-error-bg text-error hover:border-error-border hover:bg-error-bg'
+                  )}
+                  onClick={() => {
+                    const result = onDelete(asset);
+                    if (result && typeof result.then === 'function') {
+                      void result.catch(() => {
+                        // errors handled upstream
+                      });
+                    }
+                  }}
+                  disabled={isDeleting}
                 >
-                  {shortcutLabels.createImage}
-                </ButtonLink>
-                <ButtonLink
-                  href="/app/tools/angle"
-                  size="sm"
-                  variant="ghost"
-                  className="h-10 min-w-max shrink-0 justify-center rounded-full px-4 text-sm font-semibold text-text-secondary hover:bg-surface hover:text-text-primary sm:h-11 sm:w-full sm:min-w-0 sm:justify-start sm:rounded-[16px]"
-                >
-                  {shortcutLabels.changeAngle}
-                </ButtonLink>
-                <ButtonLink
-                  href="/app/tools/character-builder"
-                  size="sm"
-                  variant="ghost"
-                  className="h-10 min-w-max shrink-0 justify-center rounded-full px-4 text-sm font-semibold text-text-secondary hover:bg-surface hover:text-text-primary sm:h-11 sm:w-full sm:min-w-0 sm:justify-start sm:rounded-[16px]"
-                >
-                  {shortcutLabels.characterBuilder}
-                </ButtonLink>
-              </div>
-            </div>
-          ) : null}
-        </aside>
-
-        <div className="flex min-w-0 flex-1 flex-col bg-surface sm:min-h-0">
-          <div className="flex flex-col gap-3 border-b border-border/70 bg-surface-glass-90 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-6 sm:py-5">
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-text-primary">{copyAssetLibrary.title}</h2>
-              <p className="text-sm text-text-secondary">{fieldLabel}</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  {isDeleting ? 'Deleting…' : 'Delete'}
+                </Button>
+              ) : null}
               <Button
                 type="button"
-                variant="outline"
+                onClick={() => onSelect(asset)}
+                disabled={isDeleting}
+                variant="primary"
                 size="sm"
-                className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-                disabled={isImporting}
-                onClick={() => importInputRef.current?.click()}
+                className={clsx(
+                  'min-h-[34px] flex-1 rounded-full border-brand px-2.5 py-1 text-[11px] uppercase tracking-micro sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
+                  isDeleting ? 'opacity-60' : 'hover:bg-brandHover'
+                )}
               >
-                {isImporting ? importingLabel : importLabel}
+                Use
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-                onClick={() => onRefresh(source)}
-              >
-                {copyAssetLibrary.refresh}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-10 w-10 rounded-full border border-transparent px-0 text-text-secondary hover:border-border hover:bg-surface-2 hover:text-text-primary sm:ml-auto"
-                onClick={onClose}
-                aria-label={copyAssetLibrary.close}
-              >
-                <svg aria-hidden viewBox="0 0 20 20" className="h-4.5 w-4.5">
-                  <path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-visible bg-surface-2/35 p-4 sm:min-h-0 sm:overflow-y-auto sm:p-6">
-          {importError ? (
-            <div className="mb-3 rounded-input border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
-              {importError}
-            </div>
-          ) : null}
-          {error ? (
-            <div className="rounded-input border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
-              {error}
-            </div>
-          ) : isLoading ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-[var(--grid-gap-sm)] xl:grid-cols-3">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={`asset-skeleton-${index}`} className="h-28 rounded-card border border-border bg-placeholder sm:h-40" aria-hidden>
-                  <div className="skeleton h-full w-full" />
-                </div>
-              ))}
-            </div>
-          ) : filteredAssets.length === 0 ? (
-            <div className="rounded-input border border-border/70 bg-surface-glass-80 px-4 py-6 text-center text-sm text-text-secondary">
-              {filteredEmptyLabel}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-[var(--grid-gap-sm)] xl:grid-cols-3">
-              {filteredAssets.map((asset) => {
-                const dimensions = asset.width && asset.height ? `${asset.width}×${asset.height}` : null;
-                const sizeLabel = formatSize(asset.size);
-                const isDeleting = deletingAssetId === asset.id;
-                const canDelete = asset.canDelete !== false && !asset.id.startsWith('job:');
-                return (
-                  <div key={asset.id} className="overflow-hidden rounded-card border border-border/70 bg-surface shadow-card transition hover:border-text-primary/60">
-                    <div className="relative bg-placeholder" style={{ aspectRatio: '16 / 9' }}>
-                      {asset.kind === 'video' ? (
-                        <video src={asset.url} controls className="h-full w-full bg-black object-cover" />
-                      ) : (
-                        <Image
-                          src={asset.url}
-                          alt="Reference"
-                          fill
-                          className="object-cover"
-                          sizes="(min-width: 1024px) 400px, (min-width: 640px) 300px, 100vw"
-                        />
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2 border-t border-border/70 bg-surface-glass-90 px-2.5 py-2 text-[11px] text-text-secondary sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-3 sm:text-[12px]">
-                      <div className="flex min-w-0 flex-col gap-1">
-                        {dimensions && <span>{dimensions}</span>}
-                        {sizeLabel && <span>{sizeLabel}</span>}
-                      </div>
-                      <div className="flex w-full items-center gap-2 sm:w-auto">
-                        {canDelete ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className={clsx(
-                              'min-h-[34px] flex-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro focus-visible:ring-error-border sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
-                              isDeleting
-                                ? 'border-error-border bg-error-bg text-error opacity-70'
-                                : 'border-error-border bg-error-bg text-error hover:border-error-border hover:bg-error-bg'
-                            )}
-                            onClick={() => {
-                              const result = onDelete(asset);
-                              if (result && typeof result.then === 'function') {
-                                void result.catch(() => {
-                                  // errors handled upstream
-                                });
-                              }
-                            }}
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? 'Deleting…' : 'Delete'}
-                          </Button>
-                        ) : null}
-                        <Button
-                          type="button"
-                          onClick={() => onSelect(asset)}
-                          disabled={isDeleting}
-                          variant="primary"
-                          size="sm"
-                          className={clsx(
-                            'min-h-[34px] flex-1 rounded-full border-brand px-2.5 py-1 text-[11px] uppercase tracking-micro sm:min-h-[36px] sm:flex-none sm:px-3 sm:text-[12px]',
-                            isDeleting ? 'opacity-60' : 'hover:bg-brandHover'
-                          )}
-                        >
-                          Use
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        </div>
-      </div>
+            </>
+          );
+        }}
+      />
     </div>
   );
 }

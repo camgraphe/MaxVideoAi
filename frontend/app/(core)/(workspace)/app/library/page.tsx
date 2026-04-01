@@ -4,17 +4,21 @@ export const dynamic = 'force-dynamic';
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import type { ChangeEvent } from 'react';
 import useSWR from 'swr';
 import deepmerge from 'deepmerge';
 import { Download, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
+import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
+import { translateError } from '@/lib/error-messages';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type UserAsset = {
@@ -49,6 +53,17 @@ interface LibraryCopy {
       image: string;
       video: string;
     };
+  };
+  browser: {
+    searchPlaceholder: string;
+    sourcesTitle: string;
+    toolsTitle: string;
+    toolsDescription: string;
+    emptySearch: string;
+    import: string;
+    importing: string;
+    importFailed: string;
+    refresh: string;
   };
   tabs: {
     all: string;
@@ -90,6 +105,17 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
       image: 'Generate image',
       video: 'Generate video',
     },
+  },
+  browser: {
+    searchPlaceholder: 'Search assets…',
+    sourcesTitle: 'Library',
+    toolsTitle: 'Create or transform',
+    toolsDescription: 'Open another workspace to prepare a better source before importing it here.',
+    emptySearch: 'No assets match this search.',
+    import: 'Import',
+    importing: 'Importing…',
+    importFailed: 'Import failed. Please try again.',
+    refresh: 'Refresh',
   },
   tabs: {
     all: 'All images',
@@ -138,11 +164,12 @@ const fetcher = async (url: string): Promise<AssetsResponse> => {
   return json;
 };
 
-function formatFileSize(bytes?: number | null): string {
-  if (!bytes || bytes <= 0) return '—';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+function resolveImageUploadErrorMessage(status: number, errorCode: unknown, fallback: string): string {
+  return translateError({
+    code: typeof errorCode === 'string' ? errorCode : null,
+    status,
+    message: fallback,
+  }).message;
 }
 
 function getAssetJobHref(asset: UserAsset): string | null {
@@ -188,8 +215,19 @@ export default function LibraryPage() {
       ),
     [assetsData?.assets, toolsEnabled]
   );
+  const browserAssets = useMemo(
+    () =>
+      assets.map((asset) => ({
+        ...asset,
+        kind: 'image' as const,
+      })),
+    [assets]
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const availableSources = useMemo(
     () =>
       toolsEnabled
@@ -208,12 +246,55 @@ export default function LibraryPage() {
         : activeSource === 'angle'
             ? copy.assets.emptyAngle
         : copy.assets.empty;
+  const toolLinks = toolsEnabled
+    ? [
+        { href: '/app/image', label: copy.hero.ctas.image },
+        { href: '/app/tools/angle', label: copy.tabs.angle.replace(/ assets?$/i, '') || 'Angle' },
+        { href: '/app/tools/character-builder', label: copy.tabs.character.replace(/ assets?$/i, '') || 'Character' },
+      ]
+    : [{ href: '/app/image', label: copy.hero.ctas.image }];
 
   useEffect(() => {
     if (!availableSources.some((source) => source === activeSource)) {
       setActiveSource('all');
     }
   }, [activeSource, availableSources]);
+
+  const handleImportChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.currentTarget.files?.[0] ?? null;
+      event.currentTarget.value = '';
+      if (!file) return;
+
+      setImportError(null);
+      setIsImporting(true);
+      try {
+        const preparedFile = await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 });
+        const formData = new FormData();
+        formData.append('file', preparedFile, preparedFile.name);
+        const response = await authFetch('/api/uploads/image', {
+          method: 'POST',
+          body: formData,
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok || !payload?.asset?.url) {
+          const message = resolveImageUploadErrorMessage(response.status, payload?.error, copy.browser.importFailed);
+          throw new Error(message);
+        }
+
+        if (activeSource !== 'all' && activeSource !== 'upload') {
+          setActiveSource('upload');
+        } else {
+          await mutateAssets();
+        }
+      } catch (error) {
+        setImportError(error instanceof Error ? error.message : copy.browser.importFailed);
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [activeSource, copy.browser.importFailed, mutateAssets]
+  );
 
   const handleDeleteAsset = useCallback(
     async (assetId: string) => {
@@ -244,7 +325,7 @@ export default function LibraryPage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:overflow-hidden lg:p-7">
           {authLoading ? (
             <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
               <div className="h-4 w-24 rounded bg-surface-2" />
@@ -267,142 +348,118 @@ export default function LibraryPage() {
             </section>
           ) : (
             <>
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>
-                  <p className="text-sm text-text-secondary">{copy.hero.subtitle}</p>
-                </div>
-                <div className="flex gap-2 text-sm text-text-secondary">
-                  <ButtonLink href="/app/image" prefetch={false} variant="outline" size="md" className="px-3">
-                    {copy.hero.ctas.image}
-                  </ButtonLink>
-                  <ButtonLink href="/app" prefetch={false} variant="outline" size="md" className="px-3">
-                    {copy.hero.ctas.video}
-                  </ButtonLink>
-                </div>
-              </div>
-
-              <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
-                <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center justify-between gap-4 sm:justify-start">
-                    <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
-                    <span className="text-xs text-text-secondary">{assetCountLabel}</span>
-                  </div>
-
-                  <div
-                    role="tablist"
-                    aria-label="Library image filters"
-                    className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary sm:w-auto"
-                  >
-                    {availableSources.map((source) => (
+              <div className="pb-8 lg:h-full lg:min-h-0 lg:pb-0">
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={handleImportChange}
+                />
+                <AssetLibraryBrowser
+                  layout="page"
+                  title={copy.hero.title}
+                  subtitle={copy.hero.subtitle}
+                  countLabel={assetCountLabel}
+                  assetType="image"
+                  assets={browserAssets}
+                  isLoading={assetsLoading && browserAssets.length === 0}
+                  error={importError ?? deleteError ?? (assetsError ? copy.assets.loadError : null)}
+                  source={activeSource}
+                  availableSources={[...availableSources]}
+                  sourceLabels={copy.tabs}
+                  onSourceChange={(source) => {
+                    setActiveSource(source);
+                    setDeleteError(null);
+                    setDeletingId(null);
+                    setImportError(null);
+                  }}
+                  searchPlaceholder={copy.browser.searchPlaceholder}
+                  sourcesTitle={copy.browser.sourcesTitle}
+                  emptyLabel={emptyLabel || copy.assets.empty}
+                  emptySearchLabel={copy.browser.emptySearch}
+                  toolsTitle={copy.browser.toolsTitle}
+                  toolsDescription={copy.browser.toolsDescription}
+                  toolLinks={toolLinks}
+                  headerActions={
+                    <>
                       <Button
-                        key={source}
                         type="button"
-                        role="tab"
-                        variant={activeSource === source ? 'primary' : 'ghost'}
+                        variant="outline"
                         size="sm"
-                        aria-selected={activeSource === source}
-                        onClick={() => {
-                          setActiveSource(source);
-                          setDeleteError(null);
-                          setDeletingId(null);
-                        }}
-                        className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                          activeSource === source ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
-                        }`}
+                        className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+                        disabled={isImporting}
+                        onClick={() => importInputRef.current?.click()}
                       >
-                        {copy.tabs[source]}
+                        {isImporting ? copy.browser.importing : copy.browser.import}
                       </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {deleteError ? (
-                  <div
-                    role="alert"
-                    className="mb-4 rounded-input border border-state-warning/50 bg-state-warning/10 px-3 py-2 text-sm text-state-warning"
-                  >
-                    {deleteError}
-                  </div>
-                ) : null}
-
-                {assetsLoading && assets.length === 0 ? (
-                  <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 8 }).map((_, index) => (
-                      <div key={`asset-skeleton-${index}`} className="rounded-card border border-hairline bg-surface-glass-60">
-                        <div className="relative aspect-square rounded-t-card bg-placeholder">
-                          <div className="skeleton absolute inset-0" />
-                        </div>
-                        <div className="border-t border-border px-4 py-3">
-                          <div className="h-3 w-28 rounded bg-skeleton" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : assetsError ? (
-                  <div role="alert" className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-                    {copy.assets.loadError}
-                  </div>
-                ) : assets.length === 0 ? (
-                  <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-                    {emptyLabel || copy.assets.empty}
-                  </div>
-                ) : (
-                  <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
-                    {assets.map((asset) => (
-                      <article key={asset.id} className="rounded-card border border-border bg-surface shadow-card">
-                        <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
-                          <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                        </div>
-                        <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">
-                          <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assets.assetFallback}</p>
-                          <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
-                          {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
-                          <div className="flex items-center gap-2">
-                            {getAssetJobHref(asset) ? (
-                              <ButtonLink
-                                href={getAssetJobHref(asset) ?? '#'}
-                                variant="outline"
-                                size="sm"
-                                className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
-                                aria-label={copy.assets.useSettingsButton}
-                              >
-                                <span>{copy.assets.useSettingsButton}</span>
-                              </ButtonLink>
-                            ) : null}
-                            <ButtonLink
-                              linkComponent="a"
-                              href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, asset.url.split('/').pop() ?? 'asset'))}
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
-                              aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
-                            >
-                              <Download className="h-3.5 w-3.5" aria-hidden />
-                              <span>{copy.assets.downloadButton}</span>
-                            </ButtonLink>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteAsset(asset.id)}
-                              disabled={deletingId === asset.id}
-                              className="h-8 w-8 min-h-0 rounded-full border border-state-warning/40 bg-state-warning/10 p-0 text-state-warning hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
-                              aria-label={copy.assets.deleteButton}
-                            >
-                              {deletingId === asset.id ? (
-                                <span className="text-[10px] font-semibold">{copy.assets.deleting}</span>
-                              ) : (
-                                <Trash2 className="h-4 w-4" aria-hidden />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+                        onClick={() => {
+                          setDeleteError(null);
+                          setImportError(null);
+                          void mutateAssets();
+                        }}
+                      >
+                        {copy.browser.refresh}
+                      </Button>
+                      <ButtonLink href="/app/image" prefetch={false} variant="outline" size="sm" className="rounded-full px-3 text-sm">
+                        {copy.hero.ctas.image}
+                      </ButtonLink>
+                      <ButtonLink href="/app" prefetch={false} variant="outline" size="sm" className="rounded-full px-3 text-sm">
+                        {copy.hero.ctas.video}
+                      </ButtonLink>
+                    </>
+                  }
+                  renderAssetMeta={(asset) =>
+                    asset.createdAt ? <span className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</span> : null
+                  }
+                  renderAssetActions={(asset) => (
+                    <>
+                      {getAssetJobHref(asset) ? (
+                        <ButtonLink
+                          href={getAssetJobHref(asset) ?? '#'}
+                          variant="outline"
+                          size="sm"
+                          className="min-h-[34px] flex-1 gap-1 rounded-full border-border/70 bg-surface px-2.5 py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary sm:min-h-[36px] sm:flex-none sm:px-3"
+                          aria-label={copy.assets.useSettingsButton}
+                        >
+                          <span>{copy.assets.useSettingsButton}</span>
+                        </ButtonLink>
+                      ) : null}
+                      <ButtonLink
+                        linkComponent="a"
+                        href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, asset.url.split('/').pop() ?? 'asset'))}
+                        variant="outline"
+                        size="sm"
+                        className="min-h-[34px] flex-1 gap-1 rounded-full border-border/70 bg-surface px-2.5 py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary sm:min-h-[36px] sm:flex-none sm:px-3"
+                        aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
+                      >
+                        <Download className="h-3.5 w-3.5" aria-hidden />
+                        <span>{copy.assets.downloadButton}</span>
+                      </ButtonLink>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteAsset(asset.id)}
+                        disabled={deletingId === asset.id}
+                        className="h-9 w-9 min-h-0 rounded-full border border-state-warning/40 bg-state-warning/10 p-0 text-state-warning hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label={copy.assets.deleteButton}
+                      >
+                        {deletingId === asset.id ? (
+                          <span className="text-[10px] font-semibold">{copy.assets.deleting}</span>
+                        ) : (
+                          <Trash2 className="h-4 w-4" aria-hidden />
+                        )}
+                      </Button>
+                    </>
+                  )}
+                />
+              </div>
             </>
           )}
         </main>

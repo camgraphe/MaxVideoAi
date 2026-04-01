@@ -166,8 +166,6 @@ export function SettingsControls({
   onResolutionChange,
   aspectRatio,
   onAspectRatioChange,
-  fps,
-  onFpsChange,
   mode,
   iterations,
   onIterationsChange,
@@ -297,20 +295,9 @@ export function SettingsControls({
     }
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
-  const fpsOptions = useMemo(() => {
-    const base = Array.isArray(caps?.fps)
-      ? caps.fps
-      : typeof caps?.fps === 'number'
-        ? [caps.fps]
-        : engine.fps;
-    if (isLtxFastLong) return base.filter((value) => value === 25);
-    return base;
-  }, [caps?.fps, engine.fps, isLtxFastLong]);
-
   const resolutionLocked = Boolean(caps?.resolutionLocked);
   const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
-  const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
   const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean');
   const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle;
