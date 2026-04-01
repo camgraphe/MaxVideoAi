@@ -407,10 +407,12 @@ export default function LibraryPage() {
                         {copy.browser.refresh}
                       </Button>
                       <ButtonLink href="/app/image" prefetch={false} variant="outline" size="sm" className="rounded-full px-3 text-sm">
-                        {copy.hero.ctas.image}
+                        <span className="lg:hidden">Image</span>
+                        <span className="hidden lg:inline">{copy.hero.ctas.image}</span>
                       </ButtonLink>
                       <ButtonLink href="/app" prefetch={false} variant="outline" size="sm" className="rounded-full px-3 text-sm">
-                        {copy.hero.ctas.video}
+                        <span className="lg:hidden">Video</span>
+                        <span className="hidden lg:inline">{copy.hero.ctas.video}</span>
                       </ButtonLink>
                     </>
                   }
@@ -427,7 +429,8 @@ export default function LibraryPage() {
                           className="min-h-[34px] flex-1 gap-1 rounded-full border-border/70 bg-surface px-2.5 py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary sm:min-h-[36px] sm:flex-none sm:px-3"
                           aria-label={copy.assets.useSettingsButton}
                         >
-                          <span>{copy.assets.useSettingsButton}</span>
+                          <span className="lg:hidden">Use</span>
+                          <span className="hidden lg:inline">{copy.assets.useSettingsButton}</span>
                         </ButtonLink>
                       ) : null}
                       <ButtonLink
@@ -439,7 +442,7 @@ export default function LibraryPage() {
                         aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
                       >
                         <Download className="h-3.5 w-3.5" aria-hidden />
-                        <span>{copy.assets.downloadButton}</span>
+                        <span className="hidden md:inline">{copy.assets.downloadButton}</span>
                       </ButtonLink>
                       <Button
                         type="button"
