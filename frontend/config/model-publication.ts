@@ -77,7 +77,6 @@ export const LEGACY_SURFACELESS_MODEL_SLUGS = [
   'sora-2-pro',
   'veo-3-1',
   'veo-3-1-fast',
-  'veo-3-1-first-last',
   'wan-2-5',
   'wan-2-6',
 ] as const;
@@ -99,7 +98,6 @@ export const LEGACY_COMPARE_INDEXED_ENGINE_SLUGS = [
   'sora-2-pro',
   'veo-3-1',
   'veo-3-1-fast',
-  'veo-3-1-first-last',
   'wan-2-5',
   'wan-2-6',
 ] as const;

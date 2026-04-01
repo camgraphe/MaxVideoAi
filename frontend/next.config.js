@@ -158,12 +158,42 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/models/veo-3-1-first-last',
+        destination: '/models/veo-3-1',
+        permanent: true,
+      },
+      {
+        source: '/models/veo-3-1-first-last-fast',
+        destination: '/models/veo-3-1-fast',
+        permanent: true,
+      },
+      {
         source: '/fr/modeles/veo-3-fast',
         destination: '/fr/modeles/veo-3-1-fast',
         permanent: true,
       },
       {
+        source: '/fr/modeles/veo-3-1-first-last',
+        destination: '/fr/modeles/veo-3-1',
+        permanent: true,
+      },
+      {
+        source: '/fr/modeles/veo-3-1-first-last-fast',
+        destination: '/fr/modeles/veo-3-1-fast',
+        permanent: true,
+      },
+      {
         source: '/es/modelos/veo-3-fast',
+        destination: '/es/modelos/veo-3-1-fast',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/veo-3-1-first-last',
+        destination: '/es/modelos/veo-3-1',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/veo-3-1-first-last-fast',
         destination: '/es/modelos/veo-3-1-fast',
         permanent: true,
       },

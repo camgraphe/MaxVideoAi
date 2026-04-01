@@ -3,14 +3,14 @@
   "versionLabel": "3.1",
   "seo": {
     "title": "Veo 3.1 – AI Text-to-Video & Image-to-Video with Native Audio",
-    "description": "Generate 4–8s cinematic videos in 720p/1080p with Veo 3.1. Text or image input, framing presets, native audio toggle, seeds, extend, and pay-as-you-go pricing in MaxVideoAI.",
+    "description": "Generate 4–8s cinematic videos in 720p/1080p with Veo 3.1. Text, start-image animation, multi-reference stills, optional last-frame guidance, extend, native audio toggle, and pay-as-you-go pricing in MaxVideoAI.",
     "image": "/hero/veo3.jpg"
   },
-  "overview": "Veo 3.1 in MaxVideoAI: 4–8s clips at 720p/1080p, text or image input, framing and tone presets, native audio on/off, seeds and Extend, pay-per-second pricing.",
+  "overview": "Veo 3.1 in MaxVideoAI: 4–8s clips at 720p/1080p with text, start-image, multi-reference, optional last-frame control, and extend workflows, framing and tone presets, native audio on/off, and pay-per-second pricing.",
   "hero": {
-    "title": "Veo 3.1 – AI Text-to-Video & Image-to-Video in MaxVideoAI (720p/1080p, 4–8s)",
-    "intro": "Directable, cinematic clips from text or images — with sound that matches the scene.",
-    "badge": "720p/1080p · 4–8s · Text or Image input",
+    "title": "Veo 3.1 – AI Video from Text, Start Image & References",
+    "intro": "Directable cinematic clips from text, a start image, multi-reference stills, or a start+last-frame pair — with sound that matches the scene.",
+    "badge": "720p/1080p · 4–8s · Text, start image, references & extend",
     "ctaPrimary": {
       "label": "Start generating with Veo 3.1",
       "href": "/app?engine=veo-3-1"
@@ -19,6 +19,10 @@
       {
         "label": "Compare Veo 3.1 vs Veo 3.1 Fast →",
         "href": "/models/veo-3-1-fast"
+      },
+      {
+        "label": "Open Generate + Last frame →",
+        "href": "/app?engine=veo-3-1"
       }
     ]
   },
@@ -63,11 +67,11 @@
     },
     {
       "label": "Formats",
-      "body": "16:9, 9:16 or 1:1; all supported in Text→Video and Image→Video"
+      "body": "16:9, 9:16 or 1:1; supported across text runs, start-image shots, and start+last-frame renders"
     },
     {
       "label": "Inputs",
-      "body": "Text prompts; up to 4 reference stills (PNG/JPG/WebP); Image→Video from a single still"
+      "body": "Text prompts; Generate Video from text or one start image; optional last-frame guidance; up to 4 reference stills; Extend from an existing video"
     },
     {
       "label": "Audio",
@@ -99,6 +103,7 @@
     "title": "Tips & limits",
     "items": [
       "Use framing presets and motion cues to keep Veo predictable",
+      "Add a Last frame when the opening and ending compositions must stay locked",
       "Leverage native audio for first-pass sound; toggle off for cheap silent drafts",
       "Keep sequences focused (2–3 beats) and reuse references for identity",
       "Extend strong shots for longer arcs; stitch clips in your editor",
@@ -142,9 +147,9 @@
     }
   ],
   "custom": {
-    "heroDesc1": "Generate short, cinematic videos with Google DeepMind's Veo 3.1 directly inside your MaxVideoAI workspace. Text-to-video, image-to-video, framing presets, and native audio with transparent per-second pricing.",
-    "heroDesc2": "Describe the scene, choose 4, 6 or 8 seconds, pick 16:9, 9:16 or 1:1, decide whether you want native audio, and let Veo 3.1 deliver polished footage for ads, explainers, campaigns, and client work.",
-    "heroSupportLine": "Built for brand hero shots, polished product reveals, and repeatable campaign variants.",
+    "heroDesc1": "Generate short, cinematic videos with Google DeepMind's Veo 3.1 directly inside your MaxVideoAI workspace. Text-to-video, start-image animation, reference-to-video, optional last-frame guidance, extend, and native audio live in one engine.",
+    "heroDesc2": "Describe the scene, choose 4, 6 or 8 seconds, pick 16:9, 9:16 or 1:1, decide whether you want native audio, then generate from text, add a Start image, switch to Reference for multi-image control, or add a Last frame when you need a locked ending.",
+    "heroSupportLine": "Built for brand hero shots, guided start-to-end transitions, polished product reveals, and repeatable campaign variants.",
     "whyTitle": "Why Veo 3.1 is powerful",
     "heroHighlights": [
       "Directable framing||Strong composition and camera language for repeatable shots.",
@@ -185,10 +190,10 @@
     "whatFlowTitle": "MaxVideoAI wraps all of this in a simple flow:",
     "whatFlowSteps": [
       "1. Pick Veo 3.1 as the engine.",
-      "2. Choose Text → Video or Image → Video.",
-      "3. Set duration (4/6/8 s), aspect ratio, and resolution (720p or 1080p).",
-      "4. Choose framing/tone presets, then paste a structured prompt.",
-      "5. See the final price per clip before you generate.",
+      "2. Generate from text or add a Start image.",
+      "3. Add a Last frame only when the ending composition must stay locked.",
+      "4. Switch to Reference when you need 1–4 stills for identity or styling.",
+      "5. Set duration (4/6/8 s), aspect ratio, and resolution (720p or 1080p).",
       "6. Compare against other engines in the same GUI."
     ],
     "specTitle": "Real Specs – Veo 3.1 in MaxVideoAI (720p/1080p, 4–8s)",

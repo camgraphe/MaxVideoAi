@@ -667,9 +667,8 @@ function clampDescription(value: string, maxLength = 110) {
 const USE_CASE_MAP: Record<string, string> = {
   'sora-2': 'cinematic scenes and character continuity',
   'sora-2-pro': 'studio-grade cinematic shots and hero scenes',
-  'veo-3-1': 'ad-ready shots and precise framing control',
-  'veo-3-1-fast': 'fast ad cuts and rapid iteration',
-  'veo-3-1-first-last': 'storyboard-driven shots with fixed frames',
+  'veo-3-1': 'ad-ready shots with reference, first/last and extend control',
+  'veo-3-1-fast': 'fast ad cuts with first/last and extend workflows',
   'seedance-1-5-pro': 'cinematic motion with camera lock',
   'kling-2-6-pro': 'motion-realistic cinematic clips',
   'kling-3-standard': 'multi-shot cinematic sequences with voice control',
@@ -971,7 +970,6 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     'seedance-2-0',
     'seedance-1-5-pro',
     'veo-3-1-fast',
-    'veo-3-1-first-last',
     'pika-text-to-video',
     'wan-2-6',
     'wan-2-5',
@@ -1207,7 +1205,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
           {
             title: outcomeCopy[2]?.title ?? 'Video-to-video and extension support',
             description: outcomeCopy[2]?.description ?? 'Identify models that support continuation or edit-style workflows.',
-            engines: ['wan-2-6', 'kling-3-standard', 'kling-3-pro', 'veo-3-1-first-last'],
+            engines: ['wan-2-6', 'kling-3-standard', 'kling-3-pro', 'veo-3-1'],
             icon: Timer,
           },
           {

@@ -82,6 +82,8 @@ function humanizeModes(modes: string[]) {
     .map((mode) => {
       if (mode === 't2v') return 'T2V';
       if (mode === 'i2v') return 'I2V';
+      if (mode === 'ref2v') return 'REF';
+      if (mode === 'fl2v') return 'F/L';
       if (mode === 'v2v' || mode === 'r2v') return 'V2V';
       return mode.toUpperCase();
     })

@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-03-06",
+  "last_updated": "2026-04-01",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -14,7 +14,7 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported",
-        "firstLastFrame": "Not supported",
+        "firstLastFrame": "Supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Not supported",
         "maxResolution": "720p (1280×720 landscape; 720×1280 portrait)",
@@ -50,7 +50,7 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Supported",
-        "firstLastFrame": "Not supported",
+        "firstLastFrame": "Supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Not supported",
         "maxResolution": "1792×1024",
@@ -77,22 +77,25 @@
       "modelSlug": "veo-3-1",
       "sources": [
         "https://maxvideoai.com/models/veo-3-1",
-        "https://ai.google.dev/gemini-api/docs/video",
-        "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/generate-videos",
-        "https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting-guide-for-veo-3-1"
+        "https://fal.ai/models/fal-ai/veo3.1",
+        "https://fal.ai/models/fal-ai/veo3.1/image-to-video",
+        "https://fal.ai/models/fal-ai/veo3.1/reference-to-video",
+        "https://fal.ai/models/fal-ai/veo3.1/first-last-frame-to-video",
+        "https://fal.ai/models/fal-ai/veo3.1/extend-video"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported",
-        "firstLastFrame": "Not supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
+        "videoToVideo": "Supported (extend / retake workflows)",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported (multi reference stills)",
+        "referenceVideo": "Supported (source clip for extend / retake)",
         "maxResolution": "1080p",
         "maxDuration": "8s",
         "aspectRatios": [
           "16:9",
-          "9:16"
+          "9:16",
+          "1:1"
         ],
         "fpsOptions": [
           "24 fps"
@@ -112,55 +115,24 @@
       "modelSlug": "veo-3-1-fast",
       "sources": [
         "https://maxvideoai.com/models/veo-3-1-fast",
-        "https://ai.google.dev/gemini-api/docs/video",
-        "https://replicate.com/google/veo-3.1-fast"
+        "https://fal.ai/models/fal-ai/veo3.1/fast",
+        "https://fal.ai/models/fal-ai/veo3.1/fast/image-to-video",
+        "https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video",
+        "https://fal.ai/models/fal-ai/veo3.1/fast/extend-video"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported",
-        "firstLastFrame": "Not supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Supported",
-        "maxResolution": "1080p",
-        "maxDuration": "8s",
-        "aspectRatios": [
-          "16:9",
-          "9:16"
-        ],
-        "fpsOptions": [
-          "24 fps"
-        ],
-        "outputFormats": [
-          "MP4"
-        ],
-        "audioOutput": "Supported",
-        "nativeAudioGeneration": "Supported",
-        "lipSync": "Supported",
-        "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)",
-        "releaseDate": "Oct 2025"
-      }
-    },
-    {
-      "modelSlug": "veo-3-1-first-last",
-      "sources": [
-        "https://maxvideoai.com/models/veo-3-1-first-last",
-        "https://ai.google.dev/gemini-api/docs/video",
-        "https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting-guide-for-veo-3-1"
-      ],
-      "keySpecs": {
-        "textToVideo": "Not supported",
-        "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
+        "videoToVideo": "Supported (extend / retake workflows)",
         "firstLastFrame": "Supported",
-        "referenceImageStyle": "Supported",
-        "referenceVideo": "Not supported",
+        "referenceImageStyle": "Supported (single start image)",
+        "referenceVideo": "Supported (source clip for extend / retake)",
         "maxResolution": "1080p",
         "maxDuration": "8s",
         "aspectRatios": [
           "16:9",
-          "9:16"
+          "9:16",
+          "1:1"
         ],
         "fpsOptions": [
           "24 fps"

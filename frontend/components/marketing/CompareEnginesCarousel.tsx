@@ -48,9 +48,14 @@ type CompareEnginesCarouselProps = {
 };
 
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
-  'veo-3-1-first-last': {
-    i2v: 'Standard',
-    i2i: 'Fast',
+  'veo-3-1': {
+    ref2v: 'Reference',
+    fl2v: 'First/Last',
+    extend: 'Extend',
+  },
+  'veo-3-1-fast': {
+    fl2v: 'First/Last',
+    extend: 'Extend',
   },
   'kling-2-5-turbo': {
     t2v: 'Pro · Text',
@@ -79,8 +84,12 @@ function getModeLabel(
 }
 
 function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
-  if (engineId === 'veo-3-1-first-last') {
-    const order: Mode[] = ['i2i', 'i2v'];
+  if (engineId === 'veo-3-1') {
+    const order: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend'];
+    return order.filter((mode) => modes.includes(mode));
+  }
+  if (engineId === 'veo-3-1-fast') {
+    const order: Mode[] = ['t2v', 'i2v', 'fl2v', 'extend'];
     return order.filter((mode) => modes.includes(mode));
   }
   return modes;

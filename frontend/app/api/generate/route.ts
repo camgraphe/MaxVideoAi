@@ -39,7 +39,7 @@ const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
-type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'i2i' | 'r2v' | 'a2v' | 'extend' | 'retake'>;
+type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'r2v' | 'a2v' | 'extend' | 'retake'>;
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -113,6 +113,8 @@ function isVideoMode(value: unknown): value is VideoMode {
   return (
     value === 't2v' ||
     value === 'i2v' ||
+    value === 'ref2v' ||
+    value === 'fl2v' ||
     value === 'i2i' ||
     value === 'r2v' ||
     value === 'a2v' ||
@@ -1646,6 +1648,51 @@ async function rollbackPendingPayment(params: {
     processedAttachments.find((attachment) => attachment.slotId === 'first_frame_url')?.url?.trim() ?? undefined;
   const lastFrameUrl =
     processedAttachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ?? undefined;
+  const attachmentPrimaryImageUrl =
+    processedAttachments.find((attachment) => {
+      if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
+      return (
+        attachment.slotId === 'image_url' ||
+        attachment.slotId === 'input_image' ||
+        attachment.slotId === 'image'
+      );
+    })?.url?.trim() ?? undefined;
+  const requestedPrimaryImageUrl =
+    soraRequest?.mode === 'i2v'
+      ? soraRequest.image_url
+      : typeof body.imageUrl === 'string' && body.imageUrl.trim().length
+        ? body.imageUrl.trim()
+        : typeof body.image_url === 'string' && body.image_url.trim().length
+          ? body.image_url.trim()
+          : attachmentPrimaryImageUrl;
+  const referenceImagesInput = Array.isArray(body.referenceImages)
+    ? body.referenceImages
+    : Array.isArray(body.reference_images)
+      ? body.reference_images
+      : null;
+  const attachmentReferenceImageUrls = processedAttachments
+    .filter((attachment) => {
+      if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
+      return (
+        attachment.slotId === 'image_urls' ||
+        attachment.slotId === 'reference_images' ||
+        attachment.slotId === 'reference_image_urls'
+      );
+    })
+    .map((attachment) => attachment.url!.trim())
+    .filter((url) => url.length > 0);
+  const normalizedReferenceImages = Array.from(
+    new Set(
+      [
+        ...(Array.isArray(referenceImagesInput)
+          ? referenceImagesInput
+              .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
+              .filter((value): value is string => value.length > 0)
+          : []),
+        ...attachmentReferenceImageUrls,
+      ]
+    )
+  );
   const videoUrls = processedAttachments
     .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
     .map((attachment) => attachment.url!.trim())
@@ -1656,11 +1703,10 @@ async function rollbackPendingPayment(params: {
     .filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
   const resolvedAudioUrl = rawAudioUrl ?? audioUrls[0] ?? undefined;
   const initialImageUrl =
-    soraRequest?.mode === 'i2v'
-      ? soraRequest.image_url
-      : typeof body.imageUrl === 'string' && body.imageUrl.trim().length
-        ? body.imageUrl.trim()
-        : undefined;
+    mode === 'i2v' || mode === 'i2i'
+      ? requestedPrimaryImageUrl
+      : undefined;
+  const resolvedFirstFrameUrl = mode === 'fl2v' ? firstFrameUrl ?? requestedPrimaryImageUrl : firstFrameUrl;
   const sourceInputVideoUrl = videoUrls[0];
   const validationPayload: Record<string, unknown> = {};
   if (prompt.length > 0) {
@@ -1693,11 +1739,14 @@ async function rollbackPendingPayment(params: {
     validationPayload._uploadedFileMB = maxUploadedBytes / (1024 * 1024);
   }
 
-  if (firstFrameUrl) {
-    validationPayload.first_frame_url = firstFrameUrl;
+  if (resolvedFirstFrameUrl) {
+    validationPayload.first_frame_url = resolvedFirstFrameUrl;
   }
   if (lastFrameUrl) {
     validationPayload.last_frame_url = lastFrameUrl;
+  }
+  if (mode === 'ref2v' && normalizedReferenceImages.length) {
+    validationPayload.image_urls = normalizedReferenceImages;
   }
   if (mode === 'r2v' && videoUrls.length) {
     validationPayload.video_urls = videoUrls;
@@ -1713,6 +1762,8 @@ async function rollbackPendingPayment(params: {
   }
 
   const needsImage = mode === 'i2v' || mode === 'i2i';
+  const needsReferenceImages = mode === 'ref2v';
+  const needsFirstLastFrames = mode === 'fl2v';
   const needsAudio = mode === 'a2v';
   if (isLumaRay2 && mode === 'i2v') {
     if (!initialImageUrl) {
@@ -1724,7 +1775,7 @@ async function rollbackPendingPayment(params: {
     }
     validationPayload.image_url = initialImageUrl;
   } else if (needsImage) {
-    if (!initialImageUrl && !firstFrameUrl && !lastFrameUrl) {
+    if (!initialImageUrl) {
       logMetric('rejected', {
         errorCode: 'IMAGE_URL_REQUIRED',
         meta: { engineId: engine.id, mode },
@@ -1733,6 +1784,28 @@ async function rollbackPendingPayment(params: {
     }
     if (initialImageUrl) {
       validationPayload.image_url = initialImageUrl;
+    }
+  } else if (needsReferenceImages) {
+    if (!normalizedReferenceImages.length) {
+      logMetric('rejected', {
+        errorCode: 'IMAGE_URL_REQUIRED',
+        meta: { engineId: engine.id, mode },
+      });
+      return NextResponse.json(
+        { ok: false, error: 'Reference images are required for this engine mode' },
+        { status: 400 }
+      );
+    }
+  } else if (needsFirstLastFrames) {
+    if (!resolvedFirstFrameUrl || !lastFrameUrl) {
+      logMetric('rejected', {
+        errorCode: 'IMAGE_URL_REQUIRED',
+        meta: { engineId: engine.id, mode },
+      });
+      return NextResponse.json(
+        { ok: false, error: 'Both first and last frames are required for this engine mode' },
+        { status: 400 }
+      );
     }
   } else if (mode === 'r2v') {
     if (!videoUrls.length) {
@@ -1910,17 +1983,6 @@ async function rollbackPendingPayment(params: {
         ? '/assets/frames/thumb-1x1.svg'
         : '/assets/frames/thumb-16x9.svg';
 
-  const referenceImagesInput = Array.isArray(body.referenceImages)
-    ? body.referenceImages
-    : Array.isArray(body.reference_images)
-      ? body.reference_images
-      : null;
-  const normalizedReferenceImages = Array.isArray(referenceImagesInput)
-    ? referenceImagesInput
-        .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
-        .filter((value): value is string => value.length > 0)
-    : undefined;
-
   const falInputs =
     processedAttachments.length > 0
       ? processedAttachments.map((attachment) => ({
@@ -1937,12 +1999,12 @@ async function rollbackPendingPayment(params: {
         }))
       : undefined;
   const falInputSummary = {
-    primaryImageUrl: initialImageUrl ?? null,
+    primaryImageUrl: initialImageUrl ?? resolvedFirstFrameUrl ?? null,
     primaryAudioUrl: resolvedAudioUrl ?? null,
     referenceImageCount: Array.isArray(normalizedReferenceImages) ? normalizedReferenceImages.length : 0,
     referenceVideoCount: videoUrls.length,
     referenceAudioCount: audioUrls.length,
-    hasFirstFrame: Boolean(firstFrameUrl),
+    hasFirstFrame: Boolean(resolvedFirstFrameUrl),
     hasLastFrame: Boolean(lastFrameUrl),
     inputSlots:
       falInputs?.map((attachment) => ({
@@ -1965,9 +2027,9 @@ async function rollbackPendingPayment(params: {
     mode,
     apiKey: typeof body.apiKey === 'string' ? body.apiKey : undefined,
     idempotencyKey: jobId,
-    imageUrl: initialImageUrl,
+    imageUrl: needsImage ? initialImageUrl : needsFirstLastFrames ? resolvedFirstFrameUrl : undefined,
     audioUrl: resolvedAudioUrl,
-    referenceImages: normalizedReferenceImages,
+    referenceImages: normalizedReferenceImages.length ? normalizedReferenceImages : undefined,
     inputs: falInputs,
     soraRequest: soraRequest ?? undefined,
     jobId,
@@ -2031,11 +2093,11 @@ async function rollbackPendingPayment(params: {
       extraInputValues: Object.keys(validatedExtraInputValues).length ? validatedExtraInputValues : null,
     },
     refs: {
-      imageUrl: initialImageUrl ?? null,
+      imageUrl: initialImageUrl ?? resolvedFirstFrameUrl ?? null,
       audioUrl: resolvedAudioUrl ?? null,
       referenceImages: normalizedReferenceImages ?? null,
       videoUrls: videoUrls.length ? videoUrls : null,
-      firstFrameUrl: firstFrameUrl ?? null,
+      firstFrameUrl: resolvedFirstFrameUrl ?? null,
       lastFrameUrl: lastFrameUrl ?? null,
       endImageUrl: endImageUrl ?? null,
       elements: elements ?? null,

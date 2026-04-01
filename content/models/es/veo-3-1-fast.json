@@ -3,14 +3,14 @@
   "versionLabel": "3.1 Fast",
   "seo": {
     "title": "Veo 3.1 Fast (4–8s, 1080p) — especificaciones, precio y audio opcional",
-    "description": "Veo 3.1 Fast en MaxVideoAI: clips de 4–8s en 720p/1080p desde texto o imágenes, con audio opcional. Compara el precio por segundo vs Veo 3.1 y genera con la billetera en todo el mundo.",
+    "description": "Veo 3.1 Fast en MaxVideoAI: clips de 4–8s en 720p/1080p desde texto, imagen inicial, guiado opcional con último frame o Extend, con audio opcional. Compara el precio por segundo vs Veo 3.1 y genera con la billetera.",
     "image": "/hero/veo3.jpg"
   },
-  "overview": "Veo 3.1 Fast es el nivel de velocidad y costo de la familia Veo: clips de 4–8 s, 720p/1080p, entrada de texto o imagen, presets de encuadre/tono, audio nativo opcional y precio por segundo para pruebas rápidas.",
+  "overview": "Veo 3.1 Fast es el nivel de velocidad y costo de la familia Veo: clips de 4–8 s, 720p/1080p, workflows de texto, imagen inicial, control opcional con último frame y Extend, presets de encuadre/tono, audio nativo opcional y precio por segundo para pruebas rápidas.",
   "hero": {
     "title": "Veo 3.1 Fast – Video IA de alta velocidad con audio opcional",
-    "intro": "Clips cinematográficos de 4–8s en 720p/1080p a menor costo — audio opcional para probar en volumen.",
-    "badge": "720p/1080p · 4–8 s · Entrada de texto o imagen",
+    "intro": "Clips cinematográficos de 4–8s en 720p/1080p a menor costo desde texto, imagen inicial o tomas guiadas por último frame — audio opcional para probar en volumen.",
+    "badge": "720p/1080p · 4–8 s · Texto, imagen inicial, último frame y Extend",
     "ctaPrimary": {
       "label": "Probar Veo 3.1 Fast",
       "href": "/app?engine=veo-3-1-fast"
@@ -19,6 +19,10 @@
       {
         "label": "Comparar Veo 3.1 Fast vs Veo 3.1 →",
         "href": "/models/veo-3-1"
+      },
+      {
+        "label": "Abrir Generate + último frame →",
+        "href": "/app?engine=veo-3-1-fast"
       }
     ]
   },
@@ -63,11 +67,11 @@
     },
     {
       "label": "Formatos",
-      "body": "16:9 y 9:16 (no 1:1 en este nivel)"
+      "body": "16:9, 9:16 o 1:1; el 1:1 está disponible en generaciones desde texto y renders con último frame"
     },
     {
       "label": "Entradas",
-      "body": "Texto → Video; Imagen → Video desde un solo still"
+      "body": "Texto → Video; Generate Video desde una sola imagen inicial; guiado opcional con último frame; Extend desde un video existente"
     },
     {
       "label": "Audio",
@@ -92,7 +96,7 @@
       "Movimiento de cámara a lo largo de 4–8 segundos",
       "Luz y mood (día, neón, oficina cálida, etc.)",
       "Audio (opcional): ambiente + VO corta, o indica “sin diálogo”",
-      "Formato y duración (16:9 o 9:16; 4/6/8 s)"
+      "Formato y duración (16:9, 9:16 o 1:1 cuando esté disponible; 4/6/8 s)"
     ]
   },
   "tips": {
@@ -126,7 +130,7 @@
     },
     {
       "q": "¿Veo 3.1 Fast admite vertical?",
-      "a": "Sí. Veo 3.1 Fast admite 16:9 y 9:16 en 720p o 1080p; elige 9:16 para placements mobile‑first."
+      "a": "Sí. Veo 3.1 Fast admite 16:9, 9:16 y 1:1 en 720p o 1080p. Elige 9:16 para placements mobile‑first y 1:1 para recortes cuadrados."
     },
     {
       "q": "¿Puedo reutilizar prompts de Veo 3.1 en Fast?",
@@ -142,9 +146,9 @@
     }
   ],
   "custom": {
-    "heroDesc1": "Veo 3.1 Fast lleva el motor cinematográfico de DeepMind a un precio menor y con turnaround más rápido — ideal para tests rápidos y loops sociales.",
-    "heroDesc2": "Parte de un brief corto o una imagen de referencia, elige 4/6/8 segundos, selecciona 16:9 o 9:16, activa audio y genera clips lo bastante rápido para A/B testear varias ideas en una sesión.",
-    "heroSupportLine": "Ideal para explorar hooks, ángulos y ritmo rápido antes de regenerar los ganadores en Veo 3.1.",
+    "heroDesc1": "Veo 3.1 Fast lleva el motor cinematográfico de DeepMind a un precio menor y con turnaround más rápido, ideal para tests rápidos, finales guiados y loops sociales.",
+    "heroDesc2": "Parte de un brief corto o una imagen inicial, añade un último frame solo si necesitas guiar el final, o extiende un clip existente, luego elige 4/6/8 segundos, 16:9, 9:16 o 1:1 cuando esté disponible, activa audio si lo necesitas y genera clips lo bastante rápido para A/B testear varias ideas en una sesión.",
+    "heroSupportLine": "Ideal para explorar hooks, finales guiados y ritmo rápido antes de regenerar los ganadores en Veo 3.1.",
     "whyTitle": "Por qué Veo 3.1 Fast es potente",
     "heroHighlights": [
       "Optimizado para velocidad + workflows de negocio||Hecho para generación de anuncios programáticos y pruebas creativas a escala.",
@@ -185,10 +189,10 @@
     "whatFlowTitle": "Flujo MaxVideoAI:",
     "whatFlowSteps": [
       "1. Elige Veo 3.1 Fast como motor.",
-      "2. Selecciona Texto → Video o Imagen → Video.",
-      "3. Configura duración, orientación y resolución.",
-      "4. Activa/desactiva el audio.",
-      "5. Pega un prompt corto y sensorial.",
+      "2. Parte de texto o añade una imagen inicial.",
+      "3. Añade un último frame solo cuando necesites guiar el final.",
+      "4. Configura duración, orientación y resolución.",
+      "5. Activa/desactiva el audio y luego pega un prompt corto y sensorial.",
       "6. Revisa el precio en vivo y renderiza."
     ],
     "specTitle": "Specs reales — Veo 3.1 Fast en MaxVideoAI (720p/1080p, 4–8 s)",

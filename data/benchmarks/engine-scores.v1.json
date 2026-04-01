@@ -197,20 +197,6 @@
       "pricing": 9.0
     },
     {
-      "modelSlug": "veo-3-1-first-last",
-      "fidelity": 7.8,
-      "visualQuality": 7.5,
-      "motion": 7.2,
-      "consistency": 6.2,
-      "anatomy": 8.0,
-      "textRendering": 7.0,
-      "lipsyncQuality": 8.5,
-      "sequencingQuality": 7.2,
-      "controllability": 8.6,
-      "speedStability": 6.8,
-      "pricing": 7.5
-    },
-    {
       "modelSlug": "ltx-2-fast",
       "fidelity": 6.2,
       "visualQuality": 5.7,

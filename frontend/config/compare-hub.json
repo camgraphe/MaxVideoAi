@@ -99,7 +99,7 @@
     {
       "id": "image-to-video",
       "pairs": [
-        { "left": "sora-2", "right": "veo-3-1-first-last" },
+        { "left": "sora-2", "right": "veo-3-1" },
         { "left": "wan-2-6", "right": "veo-3-1" },
         { "left": "ltx-2-3-fast", "right": "ltx-2-3-pro" },
         { "left": "ltx-2", "right": "minimax-hailuo-02-text" }

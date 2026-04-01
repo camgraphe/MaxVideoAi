@@ -20,18 +20,13 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'veo-3-1': {
     description:
-      'Veo 3.1 now handles direct prompts or reference stills. Swap between text-to-video and image-to-video without leaving the queue.',
-    badges: ['Text prompts', 'Multi reference', 'Audio native'],
+      'Veo 3.1 now handles prompts, single-image animation, multi-reference guidance, first/last bridging, and clip extension in one engine.',
+    badges: ['Text prompts', 'Reference mode', 'Audio native'],
   },
   'veo-3-1-fast': {
     description:
-      'Veo 3.1 Fast now handles quick text prompts or single-image animations with optional audio.',
-    badges: ['Text prompts', 'Image-to-video', 'Audio option'],
-  },
-  'veo-3-1-first-last': {
-    description:
-      'Upload first and last frames, describe the bridge, and toggle between Veo 3.1 and Veo 3.1 Fast for the transition.',
-    badges: ['Two frames', 'Audio option', 'Standard & Fast'],
+      'Veo 3.1 Fast now handles quick prompts, image-to-video, first/last transitions, and extend runs with optional audio.',
+    badges: ['Text prompts', 'First/Last', 'Audio option'],
   },
   'minimax-hailuo-02-text': {
     description:

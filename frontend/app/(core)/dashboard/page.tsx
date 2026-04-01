@@ -35,7 +35,7 @@ const STORAGE_KEYS = {
   imageForm: 'maxvideoai.image.composer.v1',
   templates: 'maxvideoai.dashboard.templates.v1',
 } as const;
-const MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v'];
+const MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend', 'a2v', 'retake', 'r2v'];
 const IMAGE_MODE_OPTIONS: Mode[] = ['t2i', 'i2i'];
 const IN_PROGRESS_POLL_MS = 5000;
 const IN_PROGRESS_LIMIT = 8;
@@ -66,6 +66,8 @@ const DEFAULT_DASHBOARD_COPY = {
   modes: {
     t2v: 'T2V',
     i2v: 'I2V',
+    ref2v: 'REF',
+    fl2v: 'F/L',
     a2v: 'A2V',
     extend: 'Extend',
     retake: 'Retake',

@@ -11,7 +11,10 @@
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "ref2v",
+        "fl2v",
+        "extend"
       ],
       "maxDurationSec": 8,
       "resolutions": [
@@ -55,6 +58,62 @@
             ],
             "requiredInModes": [
               "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 4,
+            "source": "either"
+          },
+          {
+            "id": "first_frame_url",
+            "type": "image",
+            "label": "First frame",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "last_frame_url",
+            "type": "image",
+            "label": "Last frame",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
             ],
             "minCount": 1,
             "maxCount": 1,
@@ -287,7 +346,9 @@
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "fl2v",
+        "extend"
       ],
       "maxDurationSec": 10,
       "resolutions": [
@@ -329,6 +390,48 @@
             ],
             "requiredInModes": [
               "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "first_frame_url",
+            "type": "image",
+            "label": "First frame",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "last_frame_url",
+            "type": "image",
+            "label": "Last frame",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
             ],
             "minCount": 1,
             "maxCount": 1,
@@ -438,155 +541,6 @@
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
       "brandId": "wan"
-    },
-    {
-      "id": "veo-3-1-first-last",
-      "label": "Google Veo 3.1 First/Last Frame",
-      "provider": "Google",
-      "version": "3.1",
-      "status": "live",
-      "latencyTier": "standard",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "i2v",
-        "i2i"
-      ],
-      "maxDurationSec": 8,
-      "resolutions": [
-        "720p",
-        "1080p"
-      ],
-      "aspectRatios": [
-        "auto",
-        "16:9",
-        "9:16",
-        "1:1"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "imageMaxMB": 12
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          },
-          {
-            "id": "first_frame_url",
-            "type": "image",
-            "label": "First frame",
-            "modes": [
-              "i2v",
-              "i2i"
-            ],
-            "requiredInModes": [
-              "i2v",
-              "i2i"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          },
-          {
-            "id": "last_frame_url",
-            "type": "image",
-            "label": "Last frame",
-            "modes": [
-              "i2v",
-              "i2i"
-            ],
-            "requiredInModes": [
-              "i2v",
-              "i2i"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration",
-            "values": [
-              "8s"
-            ],
-            "default": "8s"
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "auto",
-              "9:16",
-              "16:9",
-              "1:1"
-            ],
-            "default": "auto"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "720p",
-              "1080p"
-            ],
-            "default": "720p"
-          },
-          {
-            "id": "generate_audio",
-            "type": "enum",
-            "label": "Generate audio",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
-          }
-        ],
-        "constraints": {
-          "supportedFormats": [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp"
-          ]
-        }
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 40
-        },
-        "addons": {
-          "audio_off": {
-            "perSecondCents": -20
-          }
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.4,
-        "currency": "USD",
-        "notes": "$0.40/s with audio, $0.20/s audio off"
-      },
-      "updatedAt": "2025-02-14T00:00:00Z",
-      "ttlSec": 600,
-      "brandId": "google-veo"
     },
     {
       "id": "veo-3-1",

@@ -643,9 +643,8 @@
       },
       "descriptions": {
         "sora-2": "Text/image remix with native audio.",
-        "veo-3-1": "Swap between text-to-video prompts or multi-image reference control.",
-        "veo-3-1-first-last": "Bridge first & last frames with Veo 3.1 or its Fast variant.",
-        "veo-3-1-first-last-fast": "Route First/Last runs through Veo 3.1 Fast for cheaper iterations.",
+        "veo-3-1": "Run text, start-image, reference, last-frame, and extend controls in one engine.",
+        "veo-3-1-fast": "Use Veo 3.1 Fast for quick text, start-image, last-frame, and extend passes.",
         "pika-text-to-video": "Quick social loops with captions and remix-friendly settings.",
         "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero render."
       },
@@ -1029,21 +1028,15 @@
       },
       "veo-3-1": {
         "displayName": "Google Veo 3.1",
-        "description": "Reference-to-video control with multi-image subject guidance.",
+        "description": "Reference stills, Generate Video from a start image, optional last-frame control, and extend in one model.",
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Veo 3.1"
       },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Fast",
-        "description": "Run fast text prompts or animate a single reference image with optional audio.",
+        "description": "Run fast text prompts, start-image animation, optional last-frame control, and extend workflows with optional audio.",
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Veo 3.1 Fast"
-      },
-      "veo-3-1-first-last": {
-        "displayName": "Google Veo 3.1 First/Last Frame",
-        "description": "Upload first & last frames, describe the motion, and bridge them with Veo 3.1 or Veo 3.1 Fast.",
-        "priceBefore": "Live pricing updates inside the Generate workspace.",
-        "versionLabel": "First/Last"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Text & Image to Video",
@@ -1321,9 +1314,8 @@
         "useCases": {
           "sora-2": "cinematic scenes and character continuity",
           "sora-2-pro": "studio-grade cinematic shots and hero scenes",
-          "veo-3-1": "ad-ready shots and precise framing control",
-          "veo-3-1-fast": "fast ad cuts and rapid iteration",
-          "veo-3-1-first-last": "storyboard-driven shots with fixed frames",
+          "veo-3-1": "ad-ready shots with references, last-frame control, and extend",
+          "veo-3-1-fast": "fast ad cuts with start-image, last-frame, and extend control",
           "kling-2-6-pro": "motion-realistic cinematic clips",
           "kling-2-5-turbo": "fast iterations with stable prompt adherence",
           "wan-2-6": "structured prompts with clean transitions",
@@ -2453,19 +2445,11 @@
             ]
           },
           "veo-3-1-fast": {
-            "description": "Veo 3.1 Fast now handles quick text prompts or single-image animations with optional audio.",
+            "description": "Veo 3.1 Fast now handles quick text prompts, start-image animation, optional last-frame control, and extend runs with optional audio.",
             "badges": [
               "Text prompts",
-              "Image-to-video",
+              "Last frame",
               "Audio option"
-            ]
-          },
-          "veo-3-1-first-last": {
-            "description": "Upload first and last frames, describe the bridge, and toggle between Veo 3.1 and Veo 3.1 Fast for the transition.",
-            "badges": [
-              "Two frames",
-              "Audio option",
-              "Standard & Fast"
             ]
           },
           "minimax-hailuo-02-text": {

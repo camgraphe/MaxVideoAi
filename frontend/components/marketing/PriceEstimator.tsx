@@ -438,20 +438,6 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
       if (baseOption && baseOption.availability !== 'paused') {
         options.push(baseOption);
       }
-      if (entry.id === 'veo-3-1-first-last') {
-        const fastPricingCaps = pricingEngineMap.get('veo-3-1-fast') ?? engineCaps;
-        const fastOption = buildEngineOption(entry, engineCaps, fastPricingCaps, kernel, descriptions, {
-          idOverride: 'veo-3-1-first-last-fast',
-          labelOverride: `${entry.marketingName} (Fast)`,
-          descriptionOverride:
-            descriptions['veo-3-1-first-last-fast'] ?? descriptions[entry.id] ?? entry.seo.description ?? entry.marketingName,
-          pricingEngineId: 'veo-3-1-fast',
-          sortIndexOverride: (FAL_ENGINE_ORDER.get(entry.id) ?? Number.MAX_SAFE_INTEGER) + 0.1,
-        }, pricingRules);
-        if (fastOption && fastOption.availability !== 'paused') {
-          options.push(fastOption);
-        }
-      }
     });
 
     return options.sort((a, b) => {

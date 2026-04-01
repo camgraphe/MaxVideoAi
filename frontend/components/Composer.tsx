@@ -123,8 +123,7 @@ const DEFAULT_COMPOSER_COPY = {
   assetSlots: {
     imageCtaLabel: 'Generate reference images',
     imageCtaHref: '/app/image',
-    referenceWarning:
-      'Veo 3.1 models treat this image as art direction and may reshape faces/outfits. For stricter face fidelity, try Pika 2.2 Image→Video or Kling 2.5 Turbo.',
+    referenceWarning: '',
   },
   shortcuts: {
     generate: 'Cmd+Enter • Generate',

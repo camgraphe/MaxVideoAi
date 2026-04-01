@@ -22,11 +22,6 @@ const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
     posterUrl: '/hero/veo3.jpg',
     hasAudio: true,
   },
-  'veo-3-1-first-last': {
-    videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/veo31-flf2v-output.mp4',
-    posterUrl: '/hero/veo3.jpg',
-    hasAudio: true,
-  },
   'pika-text-to-video': {
     videoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
     posterUrl: '/hero/pika-22.jpg',

@@ -249,6 +249,10 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
     switch (payload.mode) {
       case 'i2v':
         return 'image-to-video';
+      case 'ref2v':
+        return 'reference-to-video';
+      case 'fl2v':
+        return 'first-last-frame-to-video';
       case 'a2v':
         return 'audio-to-video';
       case 'extend':
@@ -259,13 +263,6 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
         return 'text-to-video';
     }
   })();
-
-  if (payload.engineId === 'veo-3-1-first-last') {
-    if (payload.mode === 'i2i') {
-      return 'fal-ai/veo3.1/fast/first-last-frame-to-video';
-    }
-    return 'fal-ai/veo3.1/first-last-frame-to-video';
-  }
 
   if (payload.engineId === 'sora-2') {
     return `fal-ai/sora-2/${mode}`;
@@ -442,6 +439,9 @@ async function generateViaFal(
 
   const arrayCollectors = new Map<string, Set<string>>();
   const expectsSingleSourceVideo = payload.mode === 'extend' || payload.mode === 'retake';
+  const expectsImageArray = payload.mode === 'ref2v';
+  const expectsFirstLastFrames = payload.mode === 'fl2v';
+  const forbidsPrimaryImage = payload.mode === 'ref2v';
   const addToArray = (key: string, value: string) => {
     if (!arrayCollectors.has(key)) {
       arrayCollectors.set(key, new Set());
@@ -498,6 +498,12 @@ async function generateViaFal(
       continue;
     }
     if (slotId === 'input_image' || slotId === 'image' || slotId === 'image_url') {
+      if (expectsFirstLastFrames) {
+        if (!requestBody.first_frame_url) {
+          requestBody.first_frame_url = urlCandidate;
+        }
+        continue;
+      }
       requestBody[slotId] = urlCandidate;
       continue;
     }
@@ -528,21 +534,25 @@ async function generateViaFal(
   const referenceImages = payload.referenceImages ?? [];
   referenceImages.forEach((url) => {
     const trimmed = url.trim();
-    if (trimmed) addToArray('reference_images', trimmed);
+    if (!trimmed) return;
+    addToArray(expectsImageArray ? 'image_urls' : 'reference_images', trimmed);
   });
 
   for (const [key, values] of arrayCollectors.entries()) {
     requestBody[key] = Array.from(values);
   }
 
-  if (!primaryImageUrl) {
+  if (!primaryImageUrl && !forbidsPrimaryImage && !expectsFirstLastFrames) {
     const referenceArray = requestBody.reference_images as string[] | undefined;
     if (referenceArray?.length) {
       primaryImageUrl = referenceArray[0];
     }
   }
 
-  if (!requestBody.image_url && primaryImageUrl) {
+  if (!requestBody.first_frame_url && primaryImageUrl && expectsFirstLastFrames) {
+    requestBody.first_frame_url = primaryImageUrl;
+  }
+  if (!requestBody.image_url && primaryImageUrl && !forbidsPrimaryImage && !expectsFirstLastFrames) {
     requestBody.image_url = primaryImageUrl;
   }
   if (!requestBody.audio_url && primaryAudioUrl) {

@@ -61,7 +61,9 @@ const MODE_LABELS: Record<UiLocale, Record<Mode, string>> = {
   en: {
     t2v: 'Text → Video',
     i2v: 'Image → Video',
-    r2v: 'Reference → Video',
+    ref2v: 'Reference → Video',
+    fl2v: 'First/Last',
+    r2v: 'Video → Video',
     a2v: 'Audio → Video',
     extend: 'Extend Video',
     retake: 'Retake Video',
@@ -71,7 +73,9 @@ const MODE_LABELS: Record<UiLocale, Record<Mode, string>> = {
   fr: {
     t2v: 'Texte → Vidéo',
     i2v: 'Image → Vidéo',
-    r2v: 'Référence → Vidéo',
+    ref2v: 'Références → Vidéo',
+    fl2v: 'Première / Dernière image',
+    r2v: 'Vidéo → Vidéo',
     a2v: 'Audio → Vidéo',
     extend: 'Étendre la vidéo',
     retake: 'Retake vidéo',
@@ -81,7 +85,9 @@ const MODE_LABELS: Record<UiLocale, Record<Mode, string>> = {
   es: {
     t2v: 'Texto → Video',
     i2v: 'Imagen → Video',
-    r2v: 'Referencia → Video',
+    ref2v: 'Referencias → Video',
+    fl2v: 'Primer / Último frame',
+    r2v: 'Video → Video',
     a2v: 'Audio → Video',
     extend: 'Extender video',
     retake: 'Retake de video',

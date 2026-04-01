@@ -140,7 +140,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Google Veo wordmark',
       dark: 'Google Veo wordmark (inverse)',
     },
-    engineIds: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-first-last'],
+    engineIds: ['veo-3-1', 'veo-3-1-fast'],
   },
   {
     id: 'pika',

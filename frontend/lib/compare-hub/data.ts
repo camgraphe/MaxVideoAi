@@ -3,7 +3,7 @@ import engineCatalog from '@/config/engine-catalog.json';
 
 const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
 const ELIGIBLE_STATUSES = new Set(['live', 'early_access']);
-const VIDEO_MODES = new Set(['t2v', 'i2v', 'v2v', 'r2v']);
+const VIDEO_MODES = new Set(['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend']);
 const LEGACY_UNAVAILABLE = new Set(['paused']);
 
 export type HubEngine = {
@@ -116,6 +116,7 @@ const PUBLISHED_COMPARISON_SLUGS = buildPublishedComparisonSlugSet(catalogEntrie
 
 function normalizeMode(mode: string): string {
   if (mode === 'r2v') return 'v2v';
+  if (mode === 'ref2v' || mode === 'fl2v') return 'i2v';
   return mode;
 }
 

@@ -694,6 +694,8 @@ function isModeValue(value: unknown): value is Mode {
   return (
     value === 't2v' ||
     value === 'i2v' ||
+    value === 'ref2v' ||
+    value === 'fl2v' ||
     value === 'r2v' ||
     value === 'a2v' ||
     value === 'extend' ||
@@ -807,7 +809,6 @@ function resolveNumberFieldDefault(engine: EngineCaps, mode: Mode, fieldId: stri
 
 function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
   if (candidate && engine.modes.includes(candidate)) return candidate;
-  if (engine.id === 'veo-3-1-first-last' && engine.modes.includes('i2i')) return 'i2i';
   return engine.modes[0] ?? 't2v';
 }
 
@@ -1335,6 +1336,8 @@ function serializePendingRenders(renders: LocalRender[]): string | null {
 }
 
 const DEBOUNCE_MS = 200;
+const PRIMARY_IMAGE_SLOT_IDS = ['image_url', 'input_image', 'image'] as const;
+const UNIFIED_VEO_FIRST_LAST_ENGINE_IDS = new Set(['veo-3-1', 'veo-3-1-fast']);
 
 export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
@@ -1488,6 +1491,12 @@ const requestedEngineId = useMemo(() => {
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
 }, [searchParams]);
+const requestedMode = useMemo<Mode | null>(() => {
+  const value = searchParams?.get('mode');
+  if (!value) return null;
+  const trimmed = value.trim().toLowerCase();
+  return isModeValue(trimmed) ? trimmed : null;
+}, [searchParams]);
 const resolvedRequestedEngineId = useMemo(() => {
   if (!requestedEngineId) return null;
   const normalized = requestedEngineId.trim().toLowerCase();
@@ -1518,15 +1527,18 @@ const hydratedJobRef = useRef<string | null>(null);
 const preserveStoredDraftRef = useRef<boolean>(false);
 const requestedEngineOverrideIdRef = useRef<string | null>(null);
 const requestedEngineOverrideTokenRef = useRef<string | null>(null);
+const requestedModeOverrideRef = useRef<Mode | null>(null);
 
 useEffect(() => {
   if (!resolvedRequestedEngineId) return;
   requestedEngineOverrideIdRef.current = resolvedRequestedEngineId;
   requestedEngineOverrideTokenRef.current = requestedEngineToken;
-}, [resolvedRequestedEngineId, requestedEngineToken]);
+  requestedModeOverrideRef.current = requestedMode;
+}, [resolvedRequestedEngineId, requestedEngineToken, requestedMode]);
 
 const effectiveRequestedEngineId = resolvedRequestedEngineId ?? requestedEngineOverrideIdRef.current;
 const effectiveRequestedEngineToken = requestedEngineToken ?? requestedEngineOverrideTokenRef.current;
+const effectiveRequestedMode = requestedMode ?? requestedModeOverrideRef.current;
 
 useEffect(() => {
   if (typeof window === 'undefined') return;
@@ -1864,7 +1876,7 @@ useEffect(() => {
             : null) ??
           null;
         if (requestedEngine) {
-          const preferredMode = getPreferredEngineMode(requestedEngine, nextForm?.mode ?? null);
+          const preferredMode = getPreferredEngineMode(requestedEngine, effectiveRequestedMode ?? nextForm?.mode ?? null);
           const normalizedPrevious = nextForm
             ? { ...nextForm, engineId: requestedEngine.id, mode: preferredMode }
             : null;
@@ -1906,7 +1918,7 @@ useEffect(() => {
             });
           }
         } else if (!storedFormRaw) {
-          const preferredMode: Mode = 't2v';
+          const preferredMode: Mode = effectiveRequestedMode ?? 't2v';
           const base: FormState = {
             engineId: effectiveRequestedEngineId,
             mode: preferredMode,
@@ -1942,7 +1954,7 @@ useEffect(() => {
       }
       if (!nextForm) {
         const engine = engines[0];
-        nextForm = coerceFormState(engine, getPreferredEngineMode(engine), null);
+        nextForm = coerceFormState(engine, getPreferredEngineMode(engine, effectiveRequestedMode), null);
       }
       setForm(nextForm);
 
@@ -1987,6 +1999,7 @@ useEffect(() => {
     setMemberTier,
     storageScope,
     effectiveRequestedEngineId,
+    effectiveRequestedMode,
     effectiveRequestedEngineToken,
     requestedJobId,
   ]);
@@ -3803,8 +3816,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const engineModeOptions = useMemo<Mode[] | undefined>(() => {
     if (!selectedEngine) return undefined;
-    if (selectedEngine.id === 'veo-3-1-first-last') {
-      const order: Mode[] = ['i2i', 'i2v'];
+    if (selectedEngine.id === 'veo-3-1') {
+      const order: Mode[] = ['ref2v', 'extend'];
+      const available = order.filter((value) => selectedEngine.modes.includes(value));
+      return available.length ? available : undefined;
+    }
+    if (selectedEngine.id === 'veo-3-1-fast') {
+      const order: Mode[] = ['extend'];
       const available = order.filter((value) => selectedEngine.modes.includes(value));
       return available.length ? available : undefined;
     }
@@ -3813,7 +3831,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       const available = order.filter((value) => selectedEngine.modes.includes(value));
       return available.length ? available : undefined;
     }
-    const preferredOrder: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
+    const preferredOrder: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
     const available = preferredOrder.filter((value) => selectedEngine.modes.includes(value));
     return available.length ? available : undefined;
   }, [selectedEngine]);
@@ -4309,13 +4327,18 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
     return { hasImage, hasVideo, hasAudio };
   }, [inputAssets]);
+  const hasPrimaryImageInput = useMemo(() => {
+    return PRIMARY_IMAGE_SLOT_IDS.some((fieldId) =>
+      (inputAssets[fieldId] ?? []).some((asset) => asset?.kind === 'image')
+    );
+  }, [inputAssets]);
+  const hasLastFrameInput = useMemo(() => {
+    return (inputAssets['last_frame_url'] ?? []).some((asset) => asset?.kind === 'image');
+  }, [inputAssets]);
 
   const implicitMode = useMemo<Mode>(() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
     const modes = selectedEngine.modes;
-    if (selectedEngine.id === 'veo-3-1-first-last') {
-      return getPreferredEngineMode(selectedEngine, form?.mode);
-    }
     if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
     if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
     if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
@@ -4331,18 +4354,37 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!selectedEngine) return null;
     if (referenceInputStatus.hasAudio) return null;
     const currentMode = form?.mode ?? null;
-    if ((currentMode === 'extend' || currentMode === 'retake') && selectedEngine.modes.includes(currentMode)) {
+    if (
+      (currentMode === 'ref2v' ||
+        currentMode === 'extend' ||
+        currentMode === 'retake') &&
+      selectedEngine.modes.includes(currentMode)
+    ) {
       return currentMode;
     }
     return null;
   }, [form?.mode, referenceInputStatus.hasAudio, selectedEngine]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
+  const allowsUnifiedVeoFirstLast = useMemo(() => {
+    return Boolean(
+      selectedEngine &&
+        UNIFIED_VEO_FIRST_LAST_ENGINE_IDS.has(selectedEngine.id) &&
+        activeManualMode === null &&
+        (activeMode === 't2v' || activeMode === 'i2v')
+    );
+  }, [activeManualMode, activeMode, selectedEngine]);
+  const submissionMode = useMemo<Mode>(() => {
+    if (allowsUnifiedVeoFirstLast && hasPrimaryImageInput && hasLastFrameInput) {
+      return 'fl2v';
+    }
+    return activeMode;
+  }, [activeMode, allowsUnifiedVeoFirstLast, hasLastFrameInput, hasPrimaryImageInput]);
   const effectiveDurationSec = useMemo(() => {
     if (multiPromptActive) return multiPromptTotalSec;
-    if (activeMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
+    if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
     return form?.durationSec ?? 0;
-  }, [multiPromptActive, multiPromptTotalSec, activeMode, primaryAudioDurationSec, form?.durationSec]);
+  }, [multiPromptActive, multiPromptTotalSec, submissionMode, primaryAudioDurationSec, form?.durationSec]);
 
   useEffect(() => {
     if (!selectedEngine || !form) return;
@@ -4364,13 +4406,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const capability = useMemo(() => {
     if (!selectedEngine) return undefined;
-    return getEngineCaps(selectedEngine.id, activeMode) ?? undefined;
-  }, [selectedEngine, activeMode]);
+    return getEngineCaps(selectedEngine.id, submissionMode) ?? undefined;
+  }, [selectedEngine, submissionMode]);
 
   const generateAudioField = useMemo(() => {
     if (!selectedEngine) return null;
-    return findGenerateAudioField(selectedEngine, activeMode);
-  }, [selectedEngine, activeMode]);
+    return findGenerateAudioField(selectedEngine, submissionMode);
+  }, [selectedEngine, submissionMode]);
 
   const supportsAudioToggle =
     Boolean(selectedEngine && capability?.audioToggle && generateAudioField && supportsAudioPricingToggle(selectedEngine));
@@ -4389,6 +4431,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       if (!nextEngine) return;
       requestedEngineOverrideIdRef.current = null;
       requestedEngineOverrideTokenRef.current = null;
+      requestedModeOverrideRef.current = null;
       preserveStoredDraftRef.current = false;
       setForm((current) => {
         const candidate = current ?? null;
@@ -4449,12 +4492,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!authChecked) return;
     if (hydratedForScope !== storageScope) return;
     if (!matchesEngineToken(selectedEngine, requestedEngineToken)) return;
-    if (!searchString.includes('engine=')) return;
+    if (!searchString.includes('engine=') && !(requestedMode && searchString.includes('mode='))) return;
     const params = new URLSearchParams(searchString);
     params.delete('engine');
+    if (requestedMode) {
+      params.delete('mode');
+    }
     const next = params.toString();
     router.replace(next ? `/app?${next}` : '/app');
-  }, [requestedEngineToken, selectedEngine, searchString, router, authChecked, hydratedForScope, storageScope]);
+  }, [requestedEngineToken, requestedMode, selectedEngine, searchString, router, authChecked, hydratedForScope, storageScope]);
 
   const handleModeChange = useCallback(
     (mode: Mode) => {
@@ -4466,13 +4512,22 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   );
 
   const composerModeToggles = useMemo(() => {
-    if (selectedEngine?.id !== 'ltx-2-3') return undefined;
+    if (!selectedEngine) return undefined;
+    const explicitModes =
+      selectedEngine.id === 'ltx-2-3'
+        ? (['extend', 'retake'] as const)
+        : selectedEngine.id === 'veo-3-1'
+          ? (['ref2v', 'extend'] as const)
+          : selectedEngine.id === 'veo-3-1-fast'
+            ? (['extend'] as const)
+            : null;
+    if (!explicitModes) return undefined;
     const disabledReason = audioWorkflowLocked
       ? workflowCopy.removeAudioToUnlock
       : undefined;
     return [
       { mode: null, label: workflowCopy.generateVideo },
-      ...(['extend', 'retake'] as const)
+      ...explicitModes
         .filter((mode) => selectedEngine.modes.includes(mode))
         .map((mode) => ({
           mode,
@@ -4488,7 +4543,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (audioWorkflowUnsupported) {
       return workflowCopy.audioUnsupported;
     }
-    if (selectedEngine.id === 'ltx-2-3') {
+    if (selectedEngine.id === 'ltx-2-3' || selectedEngine.id === 'veo-3-1' || selectedEngine.id === 'veo-3-1-fast') {
       return workflowCopy.audioLocked;
     }
     return workflowCopy.audioLockedFallback;
@@ -4590,6 +4645,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const resolveAssetFieldRole = (field: EngineInputField, required: boolean): AssetFieldRole => {
     const id = (field.id ?? '').toLowerCase();
     if (id.includes('first_frame') || id.includes('last_frame') || id.includes('end_image')) return 'frame';
+    if (id === 'image_urls' || id.endsWith('_image_urls')) return 'reference';
     if (id.includes('reference')) return 'reference';
     if (id === 'image_url' || id === 'input_image') return 'primary';
     if (required && field.type === 'image') return 'primary';
@@ -4615,6 +4671,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       Boolean(selectedEngine?.modes?.some((mode) => mode === 'i2v' || mode === 'r2v' || mode === 'a2v'));
     const appliesToMode = (field: EngineInputField) => {
       if (!field.modes || field.modes.includes(activeMode)) return true;
+      if (allowsUnifiedVeoFirstLast && field.id === 'last_frame_url' && field.modes.includes('fl2v')) return true;
+      if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
       if (!allowsCrossModeAssets) return false;
       if (field.type === 'image' && field.modes.includes('i2v')) return true;
       if (field.type === 'video' && field.modes.includes('r2v')) return true;
@@ -4697,7 +4755,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       negativePromptField,
       negativePromptRequired,
     };
-  }, [selectedEngine, activeMode, uiLocale]);
+  }, [selectedEngine, activeMode, allowsUnifiedVeoFirstLast, uiLocale]);
 
   useEffect(() => {
     setForm((current) => {
@@ -5080,7 +5138,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           .filter((url, index, self) => self.indexOf(url) === index)
       : [];
 
-    const primaryImageUrl = primaryAttachment?.url ?? referenceImageUrls[0];
+    const primaryImageUrl =
+      primaryAttachment?.url ?? (activeMode === 'i2v' || activeMode === 'i2i' ? referenceImageUrls[0] : undefined);
     const primaryAudioUrl =
       inputsPayload?.find((attachment) => attachment.kind === 'audio' && typeof attachment.url === 'string')?.url ?? undefined;
     const endImageUrl =
@@ -5157,43 +5216,49 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       : undefined;
 
     const runIteration = async (iterationIndex: number) => {
-      const isImageDrivenMode = activeMode === 'i2v' || activeMode === 'i2i';
-      const isVeoFirstLast =
-        isImageDrivenMode
-        && (selectedEngine.id === 'veo-3-1-first-last' || selectedEngine.id === 'veo-3-1-first-last-fast');
-      const firstFrameAttachment = isVeoFirstLast
-        ? inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url')
+      const isImageDrivenMode = submissionMode === 'i2v' || submissionMode === 'i2i';
+      const isReferenceImageMode = submissionMode === 'ref2v';
+      const isFirstLastMode = submissionMode === 'fl2v';
+      const firstFrameAttachment = isFirstLastMode
+        ? (inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url') ?? primaryAttachment)
         : null;
-      const lastFrameAttachment = isVeoFirstLast
+      const lastFrameAttachment = isFirstLastMode
         ? inputsPayload?.find((attachment) => attachment.slotId === 'last_frame_url')
         : null;
-      const hasFirstLastFrames = Boolean(firstFrameAttachment && lastFrameAttachment);
 
-      if (isImageDrivenMode && !primaryImageUrl && !hasFirstLastFrames) {
+      if (allowsUnifiedVeoFirstLast && hasLastFrameInput && !primaryImageUrl) {
+        showNotice('Add a start image before using Last frame with Veo.');
+        return;
+      }
+      if (isImageDrivenMode && !primaryImageUrl) {
         const guardMessage = selectedEngine.id.startsWith('sora-2')
           ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
           : `Add at least one ${primaryAssetFieldLabel.toLowerCase()} (URL or upload) before running this mode.`;
         showNotice(guardMessage);
         return;
       }
-      const isVideoDrivenMode = activeMode === 'r2v';
+      if (isReferenceImageMode && referenceImageUrls.length === 0) {
+        showNotice('Add 1–4 reference images before running Reference → Video.');
+        return;
+      }
+      const isVideoDrivenMode = submissionMode === 'r2v';
       if (isVideoDrivenMode && referenceVideoUrls.length === 0) {
         showNotice('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
         return;
       }
-      const isAudioDrivenMode = activeMode === 'a2v';
+      const isAudioDrivenMode = submissionMode === 'a2v';
       if (isAudioDrivenMode && !primaryAudioUrl) {
         showNotice('Add an audio file before running Audio → Video.');
         return;
       }
-      const isExtendOrRetakeMode = activeMode === 'extend' || activeMode === 'retake';
+      const isExtendOrRetakeMode = submissionMode === 'extend' || submissionMode === 'retake';
       if (isExtendOrRetakeMode && referenceVideoUrls.length === 0) {
-        showNotice(workflowCopy.addSourceVideo(getLocalizedModeLabel(activeMode, uiLocale)));
+        showNotice(workflowCopy.addSourceVideo(getLocalizedModeLabel(submissionMode, uiLocale)));
         return;
       }
-      if (isVeoFirstLast) {
+      if (isFirstLastMode) {
         if (!firstFrameAttachment || !lastFrameAttachment) {
-          showNotice('Upload both a first and last frame before generating with Veo First/Last.');
+          showNotice('Upload both a start image and last frame before generating with Veo.');
           return;
         }
         const sameSource =
@@ -5359,7 +5424,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const generatePayload: Parameters<typeof runGenerate>[0] = {
           engineId: selectedEngine.id,
           prompt: trimmedPrompt,
-          mode: activeMode,
+          mode: submissionMode,
           durationSec: resolvedDurationSeconds,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
@@ -5418,7 +5483,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           iteration_count: iterationCount,
           batch_size: iterationCount,
           engine: selectedEngine.id,
-          mode: activeMode,
+          mode: submissionMode,
           duration_sec: resolvedDurationSeconds,
           payment_mode: paymentMode,
           has_audio: Boolean(form.audio),
@@ -5641,7 +5706,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           iteration_index: iterationIndex,
           iteration_count: iterationCount,
           engine: selectedEngine.id,
-          mode: activeMode,
+          mode: submissionMode,
           error_code:
             error && typeof error === 'object' && typeof (error as { code?: unknown }).code === 'string'
               ? (error as { code: string }).code
@@ -5710,6 +5775,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     audioWorkflowUnsupported,
     form,
     activeMode,
+    submissionMode,
     effectivePrompt,
     effectiveDurationSec,
     negativePrompt,
@@ -5735,6 +5801,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     referenceAssetFieldIds,
     genericImageFieldIds,
     frameAssetFieldIds,
+    allowsUnifiedVeoFirstLast,
+    hasLastFrameInput,
     supportsAudioToggle,
     multiPromptActive,
     multiPromptInvalid,
@@ -5788,7 +5856,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     const payload: PreflightRequest = {
       engine: form.engineId,
-      mode: activeMode,
+      mode: submissionMode,
       durationSec: effectiveDurationSec,
       resolution: form.resolution as PreflightRequest['resolution'],
       aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'],
@@ -5825,7 +5893,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       canceled = true;
       clearTimeout(timeout);
     };
-  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle, effectiveDurationSec, voiceControlEnabled, activeMode]);
+  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle, effectiveDurationSec, voiceControlEnabled, submissionMode]);
 
   const handleQuadTileAction = useCallback(
     (action: QuadTileAction, tile: QuadPreviewTile) => {
@@ -6397,7 +6465,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 settingsBar={
                   <CoreSettingsBar
                     engine={selectedEngine}
-                    mode={activeMode}
+                    mode={submissionMode}
                     caps={capability}
                     durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
                     durationOption={form.durationOption ?? null}
@@ -6449,7 +6517,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 onAspectRatioChange={handleAspectRatioChange}
                 fps={form.fps}
                 onFpsChange={handleFpsChange}
-                mode={activeMode}
+                mode={submissionMode}
                 iterations={form.iterations}
                 showAudioControl={supportsAudioToggle}
                 audioEnabled={form.audio}

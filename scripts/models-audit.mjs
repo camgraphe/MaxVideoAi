@@ -48,7 +48,6 @@ const GRANDFATHERED_DEFAULT_SURFACE_SLUGS = new Set([
   'sora-2-pro',
   'veo-3-1',
   'veo-3-1-fast',
-  'veo-3-1-first-last',
   'wan-2-5',
   'wan-2-6',
 ]);

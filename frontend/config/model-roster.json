@@ -112,22 +112,6 @@
     }
   },
   {
-    "engineId": "veo-3-1-first-last",
-    "marketingName": "Google Veo 3.1 First/Last Frame",
-    "brandId": "google-veo",
-    "modelSlug": "veo-3-1-first-last",
-    "family": "veo",
-    "versionLabel": "3.1",
-    "availability": "available",
-    "logoPolicy": "textOnly",
-    "surfaces": {
-      "modelPage": {
-        "indexable": true,
-        "includeInSitemap": true
-      }
-    }
-  },
-  {
     "engineId": "kling-2-5-turbo",
     "marketingName": "Kling 2.5 Turbo",
     "brandId": "kling",

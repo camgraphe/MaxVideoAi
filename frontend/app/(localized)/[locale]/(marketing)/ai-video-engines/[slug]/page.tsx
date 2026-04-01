@@ -448,6 +448,41 @@ function resolveModeSupported(entry: EngineCatalogEntry, mode: string) {
   return modes.includes(mode) ? 'Supported' : 'Not supported';
 }
 
+function resolveVideoToVideoSupport(entry: EngineCatalogEntry) {
+  const modes = entry.engine?.modes ?? [];
+  if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v')) return 'Supported';
+  if (modes.includes('extend') || modes.includes('retake')) {
+    return 'Supported (extend / retake workflows)';
+  }
+  return 'Not supported';
+}
+
+function resolveFirstLastSupport(entry: EngineCatalogEntry) {
+  const modes = entry.engine?.modes ?? [];
+  if (modes.includes('fl2v')) return 'Supported';
+  if (entry.engine?.keyframes != null) return resolveStatus(entry.engine.keyframes);
+  return modes.length ? 'Not supported' : 'Data pending';
+}
+
+function resolveReferenceImageSupport(entry: EngineCatalogEntry) {
+  const modes = entry.engine?.modes ?? [];
+  if (!modes.length) return 'Data pending';
+  if (modes.includes('ref2v') || modes.includes('r2v')) return 'Supported (multi reference stills)';
+  if (modes.includes('i2v')) return 'Supported (single start image)';
+  return 'Not supported';
+}
+
+function resolveReferenceVideoSupport(entry: EngineCatalogEntry) {
+  const modes = entry.engine?.modes ?? [];
+  if (!modes.length) return 'Data pending';
+  if (modes.includes('r2v')) return 'Supported';
+  if (modes.includes('extend') || modes.includes('retake')) {
+    return 'Supported (source clip for extend / retake)';
+  }
+  return 'Not supported';
+}
+
 function isPending(value: string) {
   return value.trim().toLowerCase() === 'data pending';
 }
@@ -456,10 +491,10 @@ function buildSpecValues(entry: EngineCatalogEntry, specs: Record<string, unknow
   return {
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(entry, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(entry, 'i2v')),
-    videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveModeSupported(entry, 'v2v')),
-    firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveStatus(entry.engine?.keyframes)),
-    referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveModeSupported(entry, 'r2v')),
-    referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', 'Data pending'),
+    videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveVideoToVideoSupport(entry)),
+    firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveFirstLastSupport(entry)),
+    referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveReferenceImageSupport(entry)),
+    referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', resolveReferenceVideoSupport(entry)),
     maxResolution: resolveKeySpecValue(specs, 'maxResolution', formatMaxResolution(entry)),
     maxDuration: resolveKeySpecValue(specs, 'maxDuration', formatDuration(entry)),
     aspectRatios: resolveKeySpecValue(specs, 'aspectRatios', formatAspectRatios(entry)),
@@ -683,6 +718,13 @@ function localizeSpecDetailValue(
   }
   if (lower === 'single start image') {
     return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
+  }
+  if (lower === 'multi reference stills') {
+    return locale === 'fr'
+      ? 'plusieurs stills de référence'
+      : locale === 'es'
+        ? 'varios stills de referencia'
+        : normalized;
   }
   if (lower === 'source clip for extend / retake') {
     return locale === 'fr'

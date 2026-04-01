@@ -134,15 +134,15 @@ test('Veo 3.1 Fast I2V requires image_url', () => {
   assert.deepEqual(valid, OK);
 });
 
-test('Veo 3.1 First/Last requires both frames', () => {
-  const missing = validateRequest('veo-3-1-first-last', 'i2v', {
+test('Veo 3.1 FL2V requires both frames', () => {
+  const missing = validateRequest('veo-3-1', 'fl2v', {
     prompt: 'Bridge frames',
     duration: '8s',
   });
   assert.equal(missing.ok, false);
   assert.equal(missing.error?.field, 'first_frame_url');
 
-  const partial = validateRequest('veo-3-1-first-last', 'i2v', {
+  const partial = validateRequest('veo-3-1', 'fl2v', {
     prompt: 'Bridge frames',
     first_frame_url: 'https://example.com/frame1.png',
     duration: '8s',
@@ -150,7 +150,52 @@ test('Veo 3.1 First/Last requires both frames', () => {
   assert.equal(partial.ok, false);
   assert.equal(partial.error?.field, 'last_frame_url');
 
-  const valid = validateRequest('veo-3-1-first-last', 'i2v', {
+  const valid = validateRequest('veo-3-1', 'fl2v', {
+    prompt: 'Bridge frames',
+    first_frame_url: 'https://example.com/frame1.png',
+    last_frame_url: 'https://example.com/frame2.png',
+    duration: '8s',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Veo 3.1 FL2V rejects identical frames', () => {
+  const invalid = validateRequest('veo-3-1', 'fl2v', {
+    prompt: 'Bridge frames',
+    first_frame_url: 'https://example.com/frame.png',
+    last_frame_url: 'https://example.com/frame.png',
+    duration: '8s',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'last_frame_url');
+});
+
+test('Veo 3.1 REF2V requires reference images', () => {
+  const invalid = validateRequest('veo-3-1', 'ref2v', {
+    prompt: 'Keep the subject consistent',
+    duration: '8s',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'image_urls');
+
+  const valid = validateRequest('veo-3-1', 'ref2v', {
+    prompt: 'Keep the subject consistent',
+    image_urls: ['https://example.com/ref-1.png', 'https://example.com/ref-2.png'],
+    duration: '8s',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Veo 3.1 Fast FL2V requires both frames', () => {
+  const invalid = validateRequest('veo-3-1-fast', 'fl2v', {
+    prompt: 'Bridge frames',
+    first_frame_url: 'https://example.com/frame1.png',
+    duration: '8s',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'last_frame_url');
+
+  const valid = validateRequest('veo-3-1-fast', 'fl2v', {
     prompt: 'Bridge frames',
     first_frame_url: 'https://example.com/frame1.png',
     last_frame_url: 'https://example.com/frame2.png',

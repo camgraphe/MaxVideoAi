@@ -723,9 +723,8 @@
       },
       "descriptions": {
         "sora-2": "Remix texte/image avec audio natif.",
-        "veo-3-1": "Passez d’un prompt texte à la référence multi-image sans changer de moteur.",
-        "veo-3-1-first-last": "Reliez deux frames avec Veo 3.1 ou sa version Fast.",
-        "veo-3-1-first-last-fast": "Faites transiter First/Last par Veo 3.1 Fast pour itérer à moindre coût.",
+        "veo-3-1": "Un seul moteur pour texte, image de départ, multi-référence, dernière image et extend.",
+        "veo-3-1-fast": "Veo 3.1 Fast pour des passes texte, image de départ, dernière image et extend moins chères.",
         "pika-text-to-video": "Boucles sociales rapides avec légendes et paramètres adaptés au remix.",
         "minimax-hailuo-02-text": "Brouillons optimisés par prompt avant le rendu principal."
       },
@@ -1119,15 +1118,9 @@
       },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Fast",
-        "description": "Prompts texte rapides ou animation d’une image de référence unique, audio optionnel.",
+        "description": "Prompts rapides, animation depuis image de départ, contrôle par dernière image et extend avec audio optionnel.",
         "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Veo 3.1 Fast"
-      },
-      "veo-3-1-first-last": {
-        "displayName": "Google Veo 3.1 First/Last",
-        "description": "Téléversez des frames de début et de fin pour créer des transitions cinématiques avec audio optionnel.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
-        "versionLabel": "First/Last"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Texte & Image→Vidéo",
@@ -1405,9 +1398,8 @@
         "useCases": {
           "sora-2": "scènes ciné et continuité personnage",
           "sora-2-pro": "plans ciné premium et scènes hero",
-          "veo-3-1": "plans pub et cadrage précis",
-          "veo-3-1-fast": "cuts pub rapides et itération express",
-          "veo-3-1-first-last": "plans storyboard avec frames fixes",
+          "veo-3-1": "plans pub avec références, contrôle dernière image et extend",
+          "veo-3-1-fast": "cuts pub rapides avec image de départ, dernière image et extend",
           "kling-2-6-pro": "clips ciné au mouvement réaliste",
           "kling-2-5-turbo": "itérations rapides avec bonne adhérence prompt",
           "wan-2-6": "prompts structurés et transitions propres",
@@ -2464,19 +2456,11 @@
             ]
           },
           "veo-3-1-fast": {
-            "description": "Veo 3.1 Fast gère vos prompts rapides ou l’animation d’une seule image, audio optionnel compris.",
+            "description": "Veo 3.1 Fast gère prompts rapides, animation depuis image de départ, contrôle par dernière image et extend avec audio optionnel.",
             "badges": [
               "Prompts texte",
-              "Image→vidéo",
+              "Dernière image",
               "Option audio"
-            ]
-          },
-          "veo-3-1-first-last": {
-            "description": "Uploadez premier et dernier frame, décrivez la transition et basculez entre Veo 3.1 et la variante Fast.",
-            "badges": [
-              "Deux images",
-              "Option audio",
-              "Standard & Fast"
             ]
           },
           "minimax-hailuo-02-text": {

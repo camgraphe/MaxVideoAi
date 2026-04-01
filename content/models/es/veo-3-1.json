@@ -3,14 +3,14 @@
   "versionLabel": "3.1",
   "seo": {
     "title": "Veo 3.1 – Texto→Video e Imagen→Video con audio nativo",
-    "description": "Genera videos cinematográficos de 4–8 s en 720p/1080p con Veo 3.1. Entrada de texto o imagen, presets de encuadre, audio nativo on/off, seeds, Extend y precio por segundo en MaxVideoAI.",
+    "description": "Genera videos cinematográficos de 4–8 s en 720p/1080p con Veo 3.1. Texto, animación desde imagen inicial, referencias multiimagen, guiado opcional con último frame, Extend, audio nativo on/off y precio por segundo en MaxVideoAI.",
     "image": "/hero/veo3.jpg"
   },
-  "overview": "Veo 3.1 en MaxVideoAI: clips de 4–8 s en 720p/1080p, entrada texto o imagen, presets de encuadre/tono, audio nativo on/off, seeds y Extend, precio por segundo.",
+  "overview": "Veo 3.1 en MaxVideoAI: clips de 4–8 s en 720p/1080p con workflows de texto, imagen inicial, multi-referencia, control opcional con último frame y Extend, presets de encuadre/tono, audio nativo on/off y precio por segundo.",
   "hero": {
-    "title": "Veo 3.1 – Texto→Video e Imagen→Video en MaxVideoAI (720p/1080p, 4–8 s)",
-    "intro": "Clips cinematográficos y directables desde texto o imágenes — con sonido que encaja con la escena.",
-    "badge": "720p/1080p · 4–8 s · Entrada de texto o imagen",
+    "title": "Veo 3.1 – Video IA desde texto, imagen inicial y referencias",
+    "intro": "Clips cinematográficos y directables desde texto, una imagen inicial, stills de referencia o una pareja de imagen inicial + último frame — con sonido que encaja con la escena.",
+    "badge": "720p/1080p · 4–8 s · Texto, imagen inicial, referencias y Extend",
     "ctaPrimary": {
       "label": "Generar con Veo 3.1",
       "href": "/app?engine=veo-3-1"
@@ -19,6 +19,10 @@
       {
         "label": "Comparar Veo 3.1 vs Veo 3.1 Fast →",
         "href": "/models/veo-3-1-fast"
+      },
+      {
+        "label": "Abrir Generate + último frame →",
+        "href": "/app?engine=veo-3-1"
       }
     ]
   },
@@ -63,11 +67,11 @@
     },
     {
       "label": "Formatos",
-      "body": "16:9, 9:16 o 1:1; compatibles en Texto→Video e Imagen→Video"
+      "body": "16:9, 9:16 o 1:1; compatibles en generaciones desde texto, imagen inicial y renders con último frame"
     },
     {
       "label": "Entradas",
-      "body": "Prompts de texto; hasta 4 stills de referencia (PNG/JPG/WebP); Imagen→Video desde un solo still"
+      "body": "Prompts de texto; Generate Video desde texto o una imagen inicial; guiado opcional con último frame; hasta 4 stills de referencia; Extend desde un video existente"
     },
     {
       "label": "Audio",
@@ -142,9 +146,9 @@
     }
   ],
   "custom": {
-    "heroDesc1": "Genera videos cortos y cinematográficos con Google DeepMind Veo 3.1 directamente en tu workspace de MaxVideoAI. Texto→Video, Imagen→Video, presets de encuadre y audio nativo con precio claro por segundo.",
-    "heroDesc2": "Describe la escena, elige 4, 6 u 8 segundos, selecciona 16:9, 9:16 o 1:1, decide si quieres audio nativo y deja que Veo 3.1 entregue tomas pulidas para anuncios, explainers, campañas y trabajo con clientes.",
-    "heroSupportLine": "Hecho para tomas hero de marca, revelaciones de producto pulidas y variantes de campaña repetibles.",
+    "heroDesc1": "Genera videos cortos y cinematográficos con Google DeepMind Veo 3.1 directamente en tu workspace de MaxVideoAI. Texto→Video, animación desde imagen inicial, referencia→video, guiado opcional con último frame, presets de encuadre y audio nativo viven en un solo motor.",
+    "heroDesc2": "Describe la escena, elige 4, 6 u 8 segundos, selecciona 16:9, 9:16 o 1:1, decide si quieres audio nativo y luego genera desde texto, añade una imagen inicial, cambia a Referencia para controlar identidad/estilo o suma un último frame cuando el final deba quedar bloqueado.",
+    "heroSupportLine": "Hecho para tomas hero de marca, transiciones guiadas de inicio a fin, revelaciones de producto pulidas y variantes de campaña repetibles.",
     "whyTitle": "Por qué Veo 3.1 es potente",
     "heroHighlights": [
       "Encuadre directable||Composición sólida y lenguaje de cámara para tomas repetibles.",
@@ -185,10 +189,10 @@
     "whatFlowTitle": "MaxVideoAI lo encapsula en un flujo simple:",
     "whatFlowSteps": [
       "1. Elige Veo 3.1 como motor.",
-      "2. Selecciona Texto → Video o Imagen → Video.",
-      "3. Configura duración (4/6/8 s), formato y resolución (720p o 1080p).",
-      "4. Elige presets de encuadre/tono y pega un prompt estructurado.",
-      "5. Ve el precio final por clip antes de generar.",
+      "2. Genera desde texto o añade una imagen inicial.",
+      "3. Añade un último frame solo cuando la composición final deba quedar bloqueada.",
+      "4. Cambia a Referencia cuando necesites 1–4 stills para identidad o estilo.",
+      "5. Configura duración (4/6/8 s), formato y resolución (720p o 1080p).",
       "6. Compara con otros motores en la misma interfaz."
     ],
     "specTitle": "Specs reales — Veo 3.1 en MaxVideoAI (720p/1080p, 4–8 s)",

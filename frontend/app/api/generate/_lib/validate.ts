@@ -180,7 +180,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     }
   }
 
-  if (engineId === 'veo-3-1-first-last' && (normalizedMode === 'i2v' || normalizedMode === 'i2i')) {
+  if (normalizedMode === 'fl2v') {
     const firstFrame = typeof payload['first_frame_url'] === 'string' ? payload['first_frame_url'].trim() : '';
     if (!firstFrame) {
       return {
@@ -200,6 +200,45 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
           code: 'ENGINE_CONSTRAINT',
           field: 'last_frame_url',
           message: 'Last frame is required for this engine',
+        },
+      };
+    }
+    if (firstFrame === lastFrame) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'last_frame_url',
+          message: 'First and last frames must be different images',
+        },
+      };
+    }
+  } else if (normalizedMode === 'ref2v') {
+    const rawImages = payload['image_urls'];
+    const imageUrls = Array.isArray(rawImages)
+      ? rawImages.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
+      : typeof rawImages === 'string' && rawImages.trim().length
+        ? [rawImages.trim()]
+        : [];
+    if (!imageUrls.length) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'image_urls',
+          message: 'Reference images are required for this engine mode',
+        },
+      };
+    }
+    if (imageUrls.length > 4) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'image_urls',
+          message: 'Up to 4 reference images are supported',
+          allowed: [1, 4],
+          value: imageUrls.length,
         },
       };
     }

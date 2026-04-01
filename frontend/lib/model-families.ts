@@ -23,11 +23,7 @@ type FamilyPageConfig = NonNullable<ReturnType<typeof getModelFamilyExamplesPage
 const FAL_ENGINES = listFalEngines();
 const ENGINE_LABEL_BY_MODEL_SLUG = new Map(FAL_ENGINES.map((entry) => [entry.modelSlug, entry.marketingName]));
 const MODEL_FAMILY_LIST: readonly ModelFamilyDefinition[] = MODEL_FAMILIES;
-const EXAMPLE_VARIANT_LABEL_OVERRIDES: Partial<Record<ModelFamilyId, Partial<Record<string, string>>>> = {
-  veo: {
-    'veo-3-1-first-last': 'Google Veo 3.1 First/Last',
-  },
-};
+const EXAMPLE_VARIANT_LABEL_OVERRIDES: Partial<Record<ModelFamilyId, Partial<Record<string, string>>>> = {};
 
 function unique(values: string[]): string[] {
   return Array.from(new Set(values.filter((value) => value.trim().length > 0)));

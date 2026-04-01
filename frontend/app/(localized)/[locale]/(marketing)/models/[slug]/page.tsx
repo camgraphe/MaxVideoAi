@@ -115,7 +115,6 @@ const CANONICAL_ONLY_COMPARE_SLUGS = new Set([
   'pika-text-to-video-vs-sora-2-pro',
   'pika-text-to-video-vs-wan-2-6',
   'pika-text-to-video-vs-veo-3-1-fast',
-  'pika-text-to-video-vs-veo-3-1-first-last',
   'pika-text-to-video-vs-seedance-1-5-pro',
 ]);
 
@@ -827,64 +826,6 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
           'Tipografía y layouts limpios',
           'Familias de producto consistentes',
           'Finales en alta resolución para campañas',
-        ],
-      },
-    },
-  },
-  {
-    slugA: 'veo-3-1-first-last',
-    slugB: 'veo-3-1',
-    nameA: 'Veo 3.1 First/Last',
-    nameB: 'Veo 3.1',
-    copyA: {
-      en: {
-        title: 'Use Veo 3.1 First/Last when you want:',
-        items: [
-          'Two-frame control for start/end locked shots',
-          'Smooth transitions between keyframes',
-          'Continuity on layout and identity',
-        ],
-      },
-      fr: {
-        title: 'Utilisez Veo 3.1 First/Last quand vous voulez :',
-        items: [
-          'Contrôle à deux frames pour plans start/end verrouillés',
-          'Transitions fluides entre keyframes',
-          'Continuité sur layout et identité',
-        ],
-      },
-      es: {
-        title: 'Usa Veo 3.1 First/Last cuando quieras:',
-        items: [
-          'Control de dos fotogramas para planos start/end bloqueados',
-          'Transiciones suaves entre keyframes',
-          'Continuidad en layout e identidad',
-        ],
-      },
-    },
-    copyB: {
-      en: {
-        title: 'Use Veo 3.1 when you need:',
-        items: [
-          'General-purpose cinematic clips',
-          'More flexible shot variation',
-          'Broader use cases beyond transitions',
-        ],
-      },
-      fr: {
-        title: 'Utilisez Veo 3.1 quand vous avez besoin :',
-        items: [
-          'Clips cinématographiques généralistes',
-          'Variation de plans plus flexible',
-          'Cas d’usage plus larges au-delà des transitions',
-        ],
-      },
-      es: {
-        title: 'Usa Veo 3.1 cuando necesites:',
-        items: [
-          'Clips cinematográficos de propósito general',
-          'Variación de planos más flexible',
-          'Casos de uso más amplios más allá de transiciones',
         ],
       },
     },
@@ -2155,6 +2096,41 @@ function resolveModeSupported(engineCaps: EngineCaps | undefined, mode: Mode | '
   return modes.includes(mode as Mode) ? 'Supported' : 'Not supported';
 }
 
+function resolveVideoToVideoSupport(engineCaps: EngineCaps | undefined) {
+  const modes = engineCaps?.modes ?? [];
+  if (!modes.length) return 'Data pending';
+  if (modes.some((mode) => String(mode) === 'v2v')) return 'Supported';
+  if (modes.includes('extend') || modes.includes('retake')) {
+    return 'Supported (extend / retake workflows)';
+  }
+  return 'Not supported';
+}
+
+function resolveFirstLastSupport(engineCaps: EngineCaps | undefined) {
+  const modes = engineCaps?.modes ?? [];
+  if (modes.includes('fl2v')) return 'Supported';
+  if (engineCaps?.keyframes != null) return resolveStatus(engineCaps.keyframes);
+  return modes.length ? 'Not supported' : 'Data pending';
+}
+
+function resolveReferenceImageSupport(engineCaps: EngineCaps | undefined) {
+  const modes = engineCaps?.modes ?? [];
+  if (!modes.length) return 'Data pending';
+  if (modes.includes('ref2v') || modes.includes('r2v')) return 'Supported (multi reference stills)';
+  if (modes.includes('i2v')) return 'Supported (single start image)';
+  return 'Not supported';
+}
+
+function resolveReferenceVideoSupport(engineCaps: EngineCaps | undefined) {
+  const modes = engineCaps?.modes ?? [];
+  if (!modes.length) return 'Data pending';
+  if (modes.includes('r2v')) return 'Supported';
+  if (modes.includes('extend') || modes.includes('retake')) {
+    return 'Supported (source clip for extend / retake)';
+  }
+  return 'Not supported';
+}
+
 function formatMaxResolution(engineCaps: EngineCaps | undefined) {
   const resolutions = engineCaps?.resolutions ?? [];
   if (!resolutions.length) return 'Data pending';
@@ -2269,10 +2245,10 @@ function buildSpecValues(
     imageToImage: resolveKeySpecValue(specs, 'imageToImage', resolveModeSupported(engineCaps, 'i2i')),
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(engineCaps, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(engineCaps, 'i2v')),
-    videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveModeSupported(engineCaps, 'v2v')),
-    firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveStatus(engineCaps?.keyframes)),
-    referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveModeSupported(engineCaps, 'r2v')),
-    referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', 'Data pending'),
+    videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveVideoToVideoSupport(engineCaps)),
+    firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveFirstLastSupport(engineCaps)),
+    referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveReferenceImageSupport(engineCaps)),
+    referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', resolveReferenceVideoSupport(engineCaps)),
     maxResolution: resolveKeySpecValue(
       specs,
       'maxResolution',
@@ -2331,6 +2307,13 @@ function localizeSpecStatus(value: string, locale: AppLocale): string {
   }
   if (lower === 'single start image') {
     return locale === 'fr' ? 'une seule image de départ' : locale === 'es' ? 'una sola imagen inicial' : normalized;
+  }
+  if (lower === 'multi reference stills') {
+    return locale === 'fr'
+      ? 'plusieurs stills de référence'
+      : locale === 'es'
+        ? 'varios stills de referencia'
+        : normalized;
   }
   if (lower === 'source clip for extend / retake') {
     return locale === 'fr'
@@ -3750,7 +3733,7 @@ function MarketingModelPageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = ['veo-3-1-first-last', 'nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
+  const hideExamplesSection = ['nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
   const galleryPreviewAlts = dedupeAltsInList(
     galleryVideos.slice(0, 6).map((video, index) => ({
@@ -4764,13 +4747,19 @@ function MediaPreview({
 
 export default async function ModelDetailPage({ params }: PageParams) {
   const { slug, locale: routeLocale } = params;
+  const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
+  if (slug === 'veo-3-1-first-last') {
+    permanentRedirect(`/${localizedModelsBase}/veo-3-1`.replace(/\/{2,}/g, '/'));
+  }
+  if (slug === 'veo-3-1-first-last-fast') {
+    permanentRedirect(`/${localizedModelsBase}/veo-3-1-fast`.replace(/\/{2,}/g, '/'));
+  }
   const engine = getFalEngineBySlug(slug);
   if (!engine) {
     notFound();
   }
 
   if (slug !== engine.modelSlug) {
-    const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
     permanentRedirect(`/${localizedModelsBase}/${engine.modelSlug}`.replace(/\/{2,}/g, '/'));
   }
 

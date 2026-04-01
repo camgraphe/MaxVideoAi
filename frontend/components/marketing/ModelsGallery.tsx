@@ -745,7 +745,7 @@ function ModelCard({
   const priceNoteBorderDark = `color-mix(in srgb, ${accent} 16%, #334155 84%)`;
   const ctaBorder = 'rgba(255,255,255,0.12)';
   const ctaBorderDark = `color-mix(in srgb, ${accent} 20%, rgba(255,255,255,0.14) 80%)`;
-  const compareLabelExceptions = new Set(['veo-3-1-first-last', 'kling-2-5-turbo']);
+  const compareLabelExceptions = new Set(['kling-2-5-turbo']);
   const hideCompare = card.label.length > 14 && !compareLabelExceptions.has(card.id);
   const secondarySpecValueClass =
     'mt-1 min-h-[2.3rem] tabular-nums font-semibold leading-tight tracking-[-0.03em] text-slate-950 dark:text-white';

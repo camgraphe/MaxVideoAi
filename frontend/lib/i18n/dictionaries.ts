@@ -639,21 +639,15 @@ const en: Dictionary = {
       },
       'veo-3-1': {
         displayName: 'Google Veo 3.1',
-        description: 'Reference-to-video control with multi-image subject guidance.',
+        description: 'Text, image, reference, first/last, and extend workflows in one Veo workspace.',
         priceBefore: 'Live pricing updates inside the Generate workspace.',
         versionLabel: 'Veo 3.1',
       },
       'veo-3-1-fast': {
         displayName: 'Google Veo 3.1 Fast',
-        description: 'Run fast text prompts or animate a single reference image with optional audio.',
+        description: 'Fast text, image, first/last, and extend workflows with optional audio.',
         priceBefore: 'Live pricing updates inside the Generate workspace.',
         versionLabel: 'Veo 3.1 Fast',
-      },
-      'veo-3-1-first-last': {
-        displayName: 'Google Veo 3.1 First/Last Frame',
-        description: 'Upload first & last frames, describe the bridge, and animate with Veo 3.1 or Veo 3.1 Fast.',
-        priceBefore: 'Live pricing updates inside the Generate workspace.',
-        versionLabel: 'First/Last',
       },
       'pika-text-to-video': {
         displayName: 'Pika 2.2 · Text & Image to Video',

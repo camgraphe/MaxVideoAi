@@ -54,17 +54,6 @@ async function ensureEngineRegistryMeta(): Promise<EngineRegistryMeta> {
   return engineRegistryMetaPromise;
 }
 
-const SORA_ENGINE_IDS = ['sora-2', 'sora-2-pro'] as const;
-const SORA_ENGINE_SET = new Set<string>(SORA_ENGINE_IDS);
-const VEO_ENGINE_IDS = ['veo-3-1', 'veo-3-1-fast'] as const;
-const VEO_ENGINE_SET = new Set<string>(VEO_ENGINE_IDS);
-const KLING_3_ENGINE_IDS = ['kling-3-standard', 'kling-3-pro'] as const;
-const KLING_3_ENGINE_SET = new Set<string>(KLING_3_ENGINE_IDS);
-const LTX_2_3_ENGINE_IDS = ['ltx-2-3', 'ltx-2-3-fast'] as const;
-const LTX_2_3_ENGINE_SET = new Set<string>(LTX_2_3_ENGINE_IDS);
-const MODE_VARIANT_ENGINE_IDS = ['veo-3-1-first-last'] as const;
-const MODE_VARIANT_ENGINE_SET = new Set<string>(MODE_VARIANT_ENGINE_IDS);
-
 const ENGINE_VARIANT_LABEL_OVERRIDES: Record<string, string> = {
   'kling-3-standard': 'Standard',
   'kling-3-pro': 'Pro',
@@ -77,12 +66,17 @@ const ENGINE_VARIANT_SORT_ORDER = new Map<string, number>([
 ]);
 const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
-const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'r2v'];
+const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend', 'a2v', 'retake', 'r2v'];
 
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
-  'veo-3-1-first-last': {
-    i2v: 'Standard',
-    i2i: 'Fast',
+  'veo-3-1': {
+    ref2v: 'Reference',
+    fl2v: 'First/Last',
+    extend: 'Extend',
+  },
+  'veo-3-1-fast': {
+    fl2v: 'First/Last',
+    extend: 'Extend',
   },
   'kling-2-5-turbo': {
     t2v: 'Pro · Text',
@@ -113,8 +107,12 @@ function getModeLabel(
 }
 
 function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
-  if (engineId === 'veo-3-1-first-last') {
-    const order: Mode[] = ['i2i', 'i2v'];
+  if (engineId === 'veo-3-1') {
+    const order: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend'];
+    return order.filter((mode) => modes.includes(mode));
+  }
+  if (engineId === 'veo-3-1-fast') {
+    const order: Mode[] = ['t2v', 'i2v', 'fl2v', 'extend'];
     return order.filter((mode) => modes.includes(mode));
   }
   return modes;
@@ -383,8 +381,7 @@ export function EngineSelect({
   }, [modeOptions]);
 
   const modeVariantOptions = useMemo(() => {
-    if (!selectedEngine || !MODE_VARIANT_ENGINE_SET.has(selectedEngine.id)) return [];
-    return displayedModeOptions.filter((option) => selectedEngine.modes.includes(option));
+    return [];
   }, [displayedModeOptions, selectedEngine]);
 
   const showModeVariantSelector = modeVariantOptions.length > 1;

@@ -48,7 +48,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -313,7 +312,6 @@
           "sora-2",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -557,8 +555,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "veo-3-1",
-        "veo-3-1-fast",
-        "veo-3-1-first-last"
+        "veo-3-1-fast"
       ]
     },
     "versionLabel": "3.1",
@@ -595,7 +592,6 @@
           "sora-2",
           "sora-2-pro",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -623,7 +619,10 @@
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "ref2v",
+        "fl2v",
+        "extend"
       ],
       "maxDurationSec": 8,
       "resolutions": [
@@ -631,6 +630,7 @@
         "1080p"
       ],
       "aspectRatios": [
+        "auto",
         "16:9",
         "9:16",
         "1:1"
@@ -657,12 +657,72 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
+            "description": "Use one still image as the starting frame for the shot.",
             "modes": [
               "i2v"
             ],
             "requiredInModes": [
               "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 4,
+            "source": "either"
+          },
+          {
+            "id": "first_frame_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Opening frame for the shot.",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "last_frame_url",
+            "type": "image",
+            "label": "Last frame",
+            "description": "Target ending image for the shot.",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Extend an existing Veo render from a source clip URL or upload.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
             ],
             "minCount": 1,
             "maxCount": 1,
@@ -749,6 +809,17 @@
               "false"
             ],
             "default": "true"
+          },
+          {
+            "id": "duration",
+            "type": "number",
+            "label": "Extension duration (seconds)",
+            "modes": [
+              "extend"
+            ],
+            "min": 1,
+            "max": 30,
+            "default": 5
           }
         ],
         "constraints": {
@@ -816,7 +887,7 @@
       },
       {
         "mode": "i2v",
-        "falModelId": "fal-ai/veo3.1/reference-to-video",
+        "falModelId": "fal-ai/veo3.1/image-to-video",
         "ui": {
           "modes": [
             "i2v"
@@ -843,7 +914,93 @@
             "png",
             "webp"
           ],
-          "maxUploadMB": 12
+          "maxUploadMB": 12,
+          "notes": "Animate a single still while keeping the prompt and optional native audio aligned to one source image."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "fal-ai/veo3.1/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "8s"
+            ],
+            "default": "8s"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 12,
+          "notes": "Attach multiple stills to preserve identity, styling, and wardrobe across the full shot."
+        }
+      },
+      {
+        "mode": "fl2v",
+        "falModelId": "fal-ai/veo3.1/first-last-frame-to-video",
+        "ui": {
+          "modes": [
+            "fl2v"
+          ],
+          "duration": {
+            "options": [
+              "4s",
+              "6s",
+              "8s"
+            ],
+            "default": "8s"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 12,
+          "notes": "Bridge two keyframes with Veo 3.1 while the prompt defines motion, pacing, and camera path."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "fal-ai/veo3.1/extend-video",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 5
+          },
+          "maxUploadMB": 30,
+          "audioToggle": true,
+          "notes": "Extend an existing Veo 3.1 clip from a source render without switching engines."
         }
       }
     ],
@@ -875,8 +1032,7 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "veo-3-1",
-        "veo-3-1-fast",
-        "veo-3-1-first-last"
+        "veo-3-1-fast"
       ]
     },
     "versionLabel": "3.1 Fast",
@@ -913,7 +1069,6 @@
           "sora-2",
           "sora-2-pro",
           "veo-3-1",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -941,7 +1096,9 @@
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "fl2v",
+        "extend"
       ],
       "maxDurationSec": 8,
       "resolutions": [
@@ -976,12 +1133,58 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
+            "description": "Use one still image as the starting frame for the shot.",
             "modes": [
               "i2v"
             ],
             "requiredInModes": [
               "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "first_frame_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Opening frame for the shot.",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "last_frame_url",
+            "type": "image",
+            "label": "Last frame",
+            "description": "Target ending image for the shot.",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Extend an existing Veo Fast render from a source clip URL or upload.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
             ],
             "minCount": 1,
             "maxCount": 1,
@@ -1068,6 +1271,17 @@
               "false"
             ],
             "default": "true"
+          },
+          {
+            "id": "duration",
+            "type": "number",
+            "label": "Extension duration (seconds)",
+            "modes": [
+              "extend"
+            ],
+            "min": 1,
+            "max": 30,
+            "default": 5
           }
         ],
         "constraints": {
@@ -1164,7 +1378,60 @@
             "png",
             "webp"
           ],
-          "maxUploadMB": 12
+          "maxUploadMB": 12,
+          "notes": "Animate one still quickly while keeping Veo Fast native audio optional."
+        }
+      },
+      {
+        "mode": "fl2v",
+        "falModelId": "fal-ai/veo3.1/fast/first-last-frame-to-video",
+        "ui": {
+          "modes": [
+            "fl2v"
+          ],
+          "duration": {
+            "options": [
+              "4s",
+              "6s",
+              "8s"
+            ],
+            "default": "8s"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 12,
+          "notes": "Use two keyframes for faster start-to-end bridging while keeping Veo Fast pricing and latency."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "fal-ai/veo3.1/fast/extend-video",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 5
+          },
+          "maxUploadMB": 30,
+          "audioToggle": true,
+          "notes": "Extend an existing Veo 3.1 Fast clip without leaving the Fast workflow."
         }
       }
     ],
@@ -1183,311 +1450,6 @@
       }
     },
     "bestFor": "Fast iterations"
-  },
-  {
-    "engineId": "veo-3-1-first-last",
-    "modelSlug": "veo-3-1-first-last",
-    "marketingName": "Google Veo 3.1 First/Last Frame",
-    "provider": "Google",
-    "brandId": "google-veo",
-    "family": "veo",
-    "familyExamplesPage": {
-      "stage": "indexed",
-      "showInNav": true,
-      "publishedModelSlugs": [
-        "veo-3-1",
-        "veo-3-1-fast",
-        "veo-3-1-first-last"
-      ]
-    },
-    "versionLabel": "3.1",
-    "availability": "available",
-    "logoPolicy": "textOnly",
-    "surfaces": {
-      "modelPage": {
-        "indexable": true,
-        "includeInSitemap": true
-      },
-      "examples": {
-        "includeInFamilyResolver": true,
-        "includeInFamilyCopy": true
-      },
-      "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [
-          "kling-2-5-turbo",
-          "kling-2-6-pro",
-          "kling-3-pro",
-          "kling-3-standard",
-          "ltx-2",
-          "ltx-2-3-fast",
-          "ltx-2-3-pro",
-          "ltx-2-fast",
-          "minimax-hailuo-02-text",
-          "pika-text-to-video",
-          "seedance-1-5-pro",
-          "seedance-2-0",
-          "sora-2",
-          "sora-2-pro",
-          "veo-3-1",
-          "veo-3-1-fast",
-          "wan-2-5",
-          "wan-2-6"
-        ],
-        "includeInHub": true
-      },
-      "app": {
-        "enabled": true
-      },
-      "pricing": {
-        "includeInEstimator": true
-      }
-    },
-    "surfacesSource": "default",
-    "engine": {
-      "id": "veo-3-1-first-last",
-      "label": "Google Veo 3.1 First/Last Frame",
-      "provider": "Google",
-      "version": "3.1",
-      "status": "live",
-      "latencyTier": "standard",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "i2v",
-        "i2i"
-      ],
-      "maxDurationSec": 8,
-      "resolutions": [
-        "720p",
-        "1080p"
-      ],
-      "aspectRatios": [
-        "auto",
-        "9:16",
-        "16:9",
-        "1:1"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "imageMaxMB": 12
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          },
-          {
-            "id": "first_frame_url",
-            "type": "image",
-            "label": "First frame",
-            "modes": [
-              "i2v",
-              "i2i"
-            ],
-            "requiredInModes": [
-              "i2v",
-              "i2i"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          },
-          {
-            "id": "last_frame_url",
-            "type": "image",
-            "label": "Last frame",
-            "modes": [
-              "i2v",
-              "i2i"
-            ],
-            "requiredInModes": [
-              "i2v",
-              "i2i"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration",
-            "values": [
-              "4s",
-              "6s",
-              "8s"
-            ],
-            "default": "8s",
-            "min": 4,
-            "max": 8
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "auto",
-              "9:16",
-              "16:9",
-              "1:1"
-            ],
-            "default": "auto"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "720p",
-              "1080p"
-            ],
-            "default": "720p"
-          },
-          {
-            "id": "generate_audio",
-            "type": "enum",
-            "label": "Generate audio",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
-          }
-        ],
-        "constraints": {
-          "supportedFormats": [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp"
-          ]
-        }
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 40
-        },
-        "addons": {
-          "audio_off": {
-            "perSecondCents": -20
-          }
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.4,
-        "currency": "USD",
-        "notes": "$0.40/s with audio, $0.20/s audio off"
-      },
-      "updatedAt": "2025-02-14T00:00:00Z",
-      "ttlSec": 600,
-      "providerMeta": {
-        "provider": "google-veo",
-        "modelSlug": "fal-ai/veo3.1/first-last-frame-to-video"
-      },
-      "availability": "available",
-      "brandId": "google-veo"
-    },
-    "modes": [
-      {
-        "mode": "i2v",
-        "falModelId": "fal-ai/veo3.1/first-last-frame-to-video",
-        "ui": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              "4s",
-              "6s",
-              "8s"
-            ],
-            "default": "8s"
-          },
-          "resolution": [
-            "720p",
-            "1080p"
-          ],
-          "aspectRatio": [
-            "auto",
-            "9:16",
-            "16:9",
-            "1:1"
-          ],
-          "audioToggle": true,
-          "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp"
-          ],
-          "maxUploadMB": 12
-        }
-      },
-      {
-        "mode": "i2i",
-        "falModelId": "fal-ai/veo3.1/fast/first-last-frame-to-video",
-        "ui": {
-          "modes": [
-            "i2i"
-          ],
-          "duration": {
-            "options": [
-              "4s",
-              "6s",
-              "8s"
-            ],
-            "default": "8s"
-          },
-          "resolution": [
-            "720p",
-            "1080p"
-          ],
-          "aspectRatio": [
-            "auto",
-            "9:16",
-            "16:9",
-            "1:1"
-          ],
-          "audioToggle": true,
-          "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp"
-          ],
-          "maxUploadMB": 12
-        }
-      }
-    ],
-    "features": {
-      "audio": {
-        "value": true
-      },
-      "motionControls": {
-        "value": false
-      },
-      "keyframes": {
-        "value": false
-      },
-      "extend": {
-        "value": false
-      }
-    }
   },
   {
     "engineId": "pika-text-to-video",
@@ -1537,7 +1499,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -1563,7 +1524,10 @@
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "ref2v",
+        "fl2v",
+        "extend"
       ],
       "maxDurationSec": 10,
       "resolutions": [
@@ -1610,7 +1574,8 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
+            "description": "Use one still image as the starting frame for the shot.",
             "modes": [
               "i2v"
             ],
@@ -1845,7 +1810,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -2156,7 +2120,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -2461,7 +2424,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -2801,7 +2763,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -3142,7 +3103,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -3510,7 +3470,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -3793,7 +3752,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-6"
         ],
         "includeInHub": true
@@ -4107,7 +4065,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5"
         ],
         "includeInHub": true
@@ -4481,7 +4438,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -4731,10 +4687,10 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "ltx-2",
-        "ltx-2-fast",
         "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
       ]
     },
     "versionLabel": "2.3 Fast",
@@ -4771,7 +4727,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -5095,10 +5050,10 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "ltx-2",
-        "ltx-2-fast",
         "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
       ]
     },
     "versionLabel": "Pro",
@@ -5135,7 +5090,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -5641,10 +5595,10 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "ltx-2",
-        "ltx-2-fast",
         "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
       ]
     },
     "versionLabel": "Fast",
@@ -5681,7 +5635,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
@@ -5950,10 +5903,10 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "ltx-2",
-        "ltx-2-fast",
         "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
       ]
     },
     "versionLabel": "Pro",
@@ -5986,7 +5939,6 @@
           "sora-2-pro",
           "veo-3-1",
           "veo-3-1-fast",
-          "veo-3-1-first-last",
           "wan-2-5",
           "wan-2-6"
         ],
