@@ -284,6 +284,15 @@ export function Composer({
     });
   }, [assetFields, engine.id]);
   const useLtxAssetGridLayout = engine.id.startsWith('ltx-2-3');
+  const assetFieldLayoutClass = useMemo(() => {
+    if (!useLtxAssetGridLayout) {
+      return 'flex flex-wrap gap-4';
+    }
+    if (orderedAssetFields.length >= 4) {
+      return 'grid gap-4 md:grid-cols-2 xl:grid-cols-4';
+    }
+    return 'grid gap-4 md:grid-cols-2 xl:grid-cols-3';
+  }, [orderedAssetFields.length, useLtxAssetGridLayout]);
   const promptPlaceholder = hasReferenceImage
     ? composerCopy.prompt.placeholderWithImage ?? composerCopy.prompt.placeholder
     : composerCopy.prompt.placeholder;
@@ -545,7 +554,7 @@ export function Composer({
             <div
               className={clsx(
                 'text-sm',
-                useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2 xl:grid-cols-3' : 'flex flex-wrap gap-4'
+                assetFieldLayoutClass
               )}
             >
               {orderedAssetFields.map(({ field, required, role }) => (
@@ -915,12 +924,21 @@ function AssetDropzone({
     .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
     .join('\n');
   const fullBleedSingleAsset = slotAssets.length === 1 && slotAssets[0] != null && slotAssets[0]?.kind !== 'audio';
+  const multiSlotGridClass =
+    slotAssets.length >= 4
+      ? 'grid-cols-2 lg:grid-cols-4'
+      : slotAssets.length === 3
+        ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+        : slotAssets.length <= 1
+          ? 'grid-cols-1'
+          : 'grid-cols-1 sm:grid-cols-2';
+  const shouldLimitSoloWidth = isSoloField && slotAssets.length === 1;
 
   return (
     <div
       className={clsx(
         'flex min-w-[260px]',
-        isSoloField ? 'w-full flex-none sm:max-w-[640px]' : 'flex-1'
+        shouldLimitSoloWidth ? 'w-full flex-none sm:max-w-[640px]' : 'w-full flex-1'
       )}
     >
       <div
@@ -963,7 +981,7 @@ function AssetDropzone({
           className={clsx(
             'grid gap-2',
             fullBleedSingleAsset && 'h-full',
-            slotAssets.length <= 1 ? 'sm:grid-cols-1' : 'sm:grid-cols-2'
+            multiSlotGridClass
           )}
         >
           {slotAssets.map((asset, index) => {

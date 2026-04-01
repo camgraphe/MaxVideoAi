@@ -6566,76 +6566,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                         onOpenLibrary={handleOpenKlingAssetLibrary}
                       />
                     ) : null}
-                    {inputSchemaSummary.secondaryFields.length ? (
-                      <div className="space-y-3">
-                        <div>
-                          <h3 className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                            {workflowCopy.workflowOptionsTitle}
-                          </h3>
-                          <p className="text-xs text-text-secondary">{workflowCopy.workflowOptionsSubtitle}</p>
-                        </div>
-                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                          {inputSchemaSummary.secondaryFields.map(({ field, required }) => {
-                            const fieldValue = form.extraInputValues[field.id] ?? field.default ?? '';
-                            const label = `${field.label}${required ? ' *' : ''}`;
-                            if (field.type === 'enum') {
-                              const values = Array.isArray(field.values) ? field.values : [];
-                              return (
-                                <label key={field.id} className="flex flex-col gap-1.5">
-                                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-                                  <select
-                                    className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-brand"
-                                    value={String(fieldValue ?? '')}
-                                    onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
-                                  >
-                                    <option value="">
-                                      {required ? workflowCopy.selectOption : workflowCopy.defaultOption}
-                                    </option>
-                                    {values.map((value) => (
-                                      <option key={`${field.id}-${value}`} value={String(value)}>
-                                        {String(value)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
-                                </label>
-                              );
-                            }
-                            if (field.type === 'number') {
-                              return (
-                                <label key={field.id} className="flex flex-col gap-1.5">
-                                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-                                  <Input
-                                    type="number"
-                                    value={fieldValue === '' || fieldValue == null ? '' : String(fieldValue)}
-                                    onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
-                                    placeholder={
-                                      typeof field.default === 'number' || typeof field.default === 'string'
-                                        ? String(field.default)
-                                        : ''
-                                    }
-                                  />
-                                  {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
-                                </label>
-                              );
-                            }
-                            return (
-                              <label key={field.id} className="flex flex-col gap-1.5 md:col-span-2 xl:col-span-3">
-                                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-                                <textarea
-                                  value={typeof fieldValue === 'string' ? fieldValue : ''}
-                                  onChange={(event) => handleExtraInputValueChange(field, event.target.value)}
-                                  placeholder={typeof field.default === 'string' ? field.default : ''}
-                                  rows={3}
-                                  className="min-h-[88px] rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none transition focus:border-brand"
-                                />
-                                {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : null}
                     <SettingsControls
                       engine={selectedEngine}
                       caps={capability}
@@ -6683,6 +6613,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onCameraFixedChange={handleCameraFixedChange}
                       safetyChecker={safetyCheckerValue}
                       onSafetyCheckerChange={handleSafetyCheckerChange}
+                      advancedFields={inputSchemaSummary.secondaryFields}
+                      advancedFieldValues={form.extraInputValues}
+                      onAdvancedFieldChange={handleExtraInputValueChange}
                       variant="advanced"
                     />
                   </>
@@ -6711,6 +6644,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     onResolutionChange={handleResolutionChange}
                     aspectRatio={form.aspectRatio}
                     onAspectRatioChange={handleAspectRatioChange}
+                    fps={form.fps}
+                    onFpsChange={handleFpsChange}
                     showAudioControl={supportsAudioToggle}
                     audioEnabled={form.audio}
                     audioControlDisabled={voiceControlEnabled}

@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, Ref } from 'react';
-import type { EngineCaps, Mode } from '@/types/engines';
+import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -60,6 +60,9 @@ interface Props {
   onCameraFixedChange?: (value: boolean) => void;
   safetyChecker?: boolean;
   onSafetyCheckerChange?: (value: boolean) => void;
+  advancedFields?: Array<{ field: EngineInputField; required: boolean }>;
+  advancedFieldValues?: Record<string, unknown>;
+  onAdvancedFieldChange?: (field: EngineInputField, value: string) => void;
   variant?: 'full' | 'advanced';
 }
 
@@ -197,6 +200,9 @@ export function SettingsControls({
   onCameraFixedChange,
   safetyChecker = true,
   onSafetyCheckerChange,
+  advancedFields = [],
+  advancedFieldValues = {},
+  onAdvancedFieldChange,
   variant = 'full',
 }: Props) {
   const { t } = useI18n();
@@ -315,10 +321,10 @@ export function SettingsControls({
       : internalCfgScale ?? engine.params.cfg_scale?.default ?? 0.5;
 
   const audioNotice = audioControlNote ?? (audioIncluded ? controlsCopy.core.audioIncluded : null);
+  const hasGenericAdvancedFields = advancedFields.length > 0 && typeof onAdvancedFieldChange === 'function';
 
   const advancedHasContent = Boolean(
-    showFpsControl ||
-      (showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange) ||
+    (showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange) ||
       !showSeedanceControls ||
       engine.params.promptStrength ||
       engine.params.guidance ||
@@ -327,8 +333,67 @@ export function SettingsControls({
       engine.keyframes ||
       showKlingV3Controls ||
       showSeedanceControls ||
-      engine.params.cfg_scale
+      engine.params.cfg_scale ||
+      hasGenericAdvancedFields
   );
+
+  const renderGenericAdvancedField = ({ field, required }: { field: EngineInputField; required: boolean }) => {
+    const fieldValue = advancedFieldValues[field.id] ?? field.default ?? '';
+    const label = `${field.label}${required ? ' *' : ''}`;
+    if (field.type === 'enum') {
+      const values = Array.isArray(field.values) ? field.values : [];
+      return (
+        <label key={field.id} className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
+          <select
+            className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-brand"
+            value={String(fieldValue ?? '')}
+            onChange={(event) => onAdvancedFieldChange?.(field, event.target.value)}
+          >
+            <option value="">—</option>
+            {values.map((value) => (
+              <option key={`${field.id}-${value}`} value={String(value)}>
+                {String(value)}
+              </option>
+            ))}
+          </select>
+          {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
+        </label>
+      );
+    }
+    if (field.type === 'number') {
+      return (
+        <label key={field.id} className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
+          <input
+            type="number"
+            value={fieldValue === '' || fieldValue == null ? '' : String(fieldValue)}
+            onChange={(event) => onAdvancedFieldChange?.(field, event.target.value)}
+            placeholder={
+              typeof field.default === 'number' || typeof field.default === 'string'
+                ? String(field.default)
+                : ''
+            }
+            className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
+        </label>
+      );
+    }
+    return (
+      <label key={field.id} className="flex flex-col gap-1.5 md:col-span-2 xl:col-span-3">
+        <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
+        <textarea
+          value={fieldValue === '' || fieldValue == null ? '' : String(fieldValue)}
+          onChange={(event) => onAdvancedFieldChange?.(field, event.target.value)}
+          placeholder={typeof field.default === 'string' ? field.default : ''}
+          rows={3}
+          className="min-h-[92px] rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none transition focus:border-brand"
+        />
+        {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
+      </label>
+    );
+  };
 
   if (variant === 'advanced') {
     if (!advancedHasContent) return null;
@@ -358,56 +423,30 @@ export function SettingsControls({
         </Button>
         {isAdvancedOpen ? (
           <div className="space-y-4 rounded-input border border-border bg-surface-glass-60 p-3">
-            {(showFpsControl || (showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange)) ? (
+            {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange ? (
               <div className="grid gap-3 md:grid-cols-3">
-                {showFpsControl ? (
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">FPS</span>
-                    <div className="flex flex-wrap gap-2">
-                      {fpsOptions.map((option) => (
-                        <Button
-                          key={option}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onFpsChange(option)}
-                          className={clsx(
-                            'min-h-0 h-auto px-2.5 py-1 text-[12px]',
-                            option === fps
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {(controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option))}
-                        </Button>
-                      ))}
-                    </div>
-                  </label>
-                ) : null}
-                {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange ? (
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.loop.label}</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[true, false].map((option) => (
-                        <Button
-                          key={option ? 'loop-on' : 'loop-off'}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onLoopChange(option)}
-                          className={clsx(
-                            'min-h-0 h-auto px-2.5 py-1 text-[12px]',
-                            option === loopEnabled
-                              ? 'border-brand bg-brand text-on-brand'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          )}
-                        >
-                          {option ? controlsCopy.loop.on : controlsCopy.loop.off}
-                        </Button>
-                      ))}
-                    </div>
-                  </label>
-                ) : null}
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.loop.label}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {[true, false].map((option) => (
+                      <Button
+                        key={option ? 'loop-on' : 'loop-off'}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onLoopChange(option)}
+                        className={clsx(
+                          'min-h-0 h-auto px-2.5 py-1 text-[12px]',
+                          option === loopEnabled
+                            ? 'border-brand bg-brand text-on-brand'
+                            : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                        )}
+                      >
+                        {option ? controlsCopy.loop.on : controlsCopy.loop.off}
+                      </Button>
+                    ))}
+                  </div>
+                </label>
               </div>
             ) : null}
 
@@ -485,6 +524,12 @@ export function SettingsControls({
             ) : null}
 
             {engine.keyframes ? <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div> : null}
+
+            {hasGenericAdvancedFields ? (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {advancedFields.map(renderGenericAdvancedField)}
+              </div>
+            ) : null}
 
             {showKlingV3Controls ? (
               <div className="space-y-3">

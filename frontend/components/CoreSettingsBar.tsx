@@ -24,6 +24,8 @@ interface CoreSettingsBarProps {
   onResolutionChange: (value: string) => void;
   aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
+  fps: number;
+  onFpsChange: (value: number) => void;
   showAudioControl?: boolean;
   audioEnabled?: boolean;
   onAudioChange?: (value: boolean) => void;
@@ -71,7 +73,7 @@ function matchesDurationOptionValue(option: DurationOptionMeta, raw: number | st
   return Math.abs(option.value - seconds) < 0.001;
 }
 
-function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'audio' | 'iterations' }) {
+function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'audio' | 'iterations' | 'fps' }) {
   if (kind === 'duration') {
     return (
       <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
@@ -146,6 +148,20 @@ function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'a
       </svg>
     );
   }
+  if (kind === 'fps') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <path
+          d="M4 10h3l1.4-3.2L11 13l1.6-3H16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
   return (
     <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
       <path d="M5 11.5V8.2a5 5 0 0 1 10 0v3.3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -154,7 +170,7 @@ function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'a
   );
 }
 
-function createInlineLabel(kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio', label: string) {
+function createInlineLabel(kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio' | 'fps', label: string) {
   return (
     <span className="inline-flex items-center gap-2">
       <ControlIcon kind={kind} />
@@ -171,7 +187,7 @@ function InlineSelectControl({
   disabled,
   className,
 }: {
-  kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio';
+  kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio' | 'fps';
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
   value: string | number | boolean;
   onChange: (value: string | number | boolean) => void;
@@ -212,6 +228,8 @@ export function CoreSettingsBar({
   onResolutionChange,
   aspectRatio,
   onAspectRatioChange,
+  fps,
+  onFpsChange,
   showAudioControl = false,
   audioEnabled,
   onAudioChange,
@@ -261,6 +279,15 @@ export function CoreSettingsBar({
     }
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
+  const fpsOptions = useMemo(() => {
+    const base = Array.isArray(caps?.fps)
+      ? caps.fps
+      : typeof caps?.fps === 'number'
+        ? [caps.fps]
+        : engine.fps;
+    if (isLtxFastLong) return base.filter((value) => value === 25);
+    return base;
+  }, [caps?.fps, engine.fps, isLtxFastLong]);
   const resolvedDurationManagedLabel = durationManagedLabel ?? controlsCopy.duration.managed;
 
   const durationOptions =
@@ -314,6 +341,7 @@ export function CoreSettingsBar({
 
   const showResolutionControl = resolutionOptions.length > 0 && !caps?.resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
+  const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl;
   const audioSelectLocked = audioIncluded || !showAudioControl || audioControlDisabled;
   const audioValue = audioIncluded ? true : showAudioControl ? Boolean(audioEnabled) : false;
@@ -321,6 +349,10 @@ export function CoreSettingsBar({
     { value: true, label: controlsCopy.audio.on },
     { value: false, label: controlsCopy.audio.off },
   ];
+  const fpsOptionsList = fpsOptions.map((option) => ({
+    value: option,
+    label: (controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option)),
+  }));
   const audioNotice = audioIncluded ? null : audioControlNote ?? null;
   const durationRangeOptions = durationRange
     ? Array.from({ length: engine.maxDurationSec - durationRange.min + 1 }, (_, index) => {
@@ -376,6 +408,15 @@ export function CoreSettingsBar({
             options={aspectOptionsList}
             value={aspectRatio}
             onChange={(value) => onAspectRatioChange(String(value))}
+          />
+        ) : null}
+
+        {showFpsControl ? (
+          <InlineSelectControl
+            kind="fps"
+            options={fpsOptionsList}
+            value={fps}
+            onChange={(value) => onFpsChange(Number(value))}
           />
         ) : null}
 
