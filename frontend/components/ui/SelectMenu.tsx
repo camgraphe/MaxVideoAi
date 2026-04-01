@@ -27,7 +27,7 @@ interface SelectMenuProps {
 }
 
 const BUTTON_BASE =
-  'inline-flex w-full min-w-[140px] items-center justify-between gap-2 rounded-input border border-hairline bg-surface px-3 py-2 text-[12px] text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'inline-flex w-full min-w-[140px] items-center justify-between gap-2 rounded-input border border-hairline bg-surface px-3 py-2 text-[12px] text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-white/[0.06] dark:text-white/92 dark:shadow-none dark:hover:border-white/16 dark:hover:bg-white/[0.09]';
 
 function findNextEnabled(options: SelectOption[], start: number, delta: number): number {
   if (!options.length) return -1;
@@ -222,7 +222,7 @@ export function SelectMenu({
       {open ? (
         <div
           className={clsx(
-            'absolute left-0 right-0 z-[50] max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur',
+            'absolute left-0 right-0 z-[50] max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur dark:border-white/10 dark:bg-[#121a25]/95 dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
             menuPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2'
           )}
         >
@@ -233,7 +233,7 @@ export function SelectMenu({
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full rounded-input border border-hairline bg-bg px-2 py-1 text-[12px] text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-input border border-hairline bg-bg px-2 py-1 text-[12px] text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35"
               />
             </div>
           ) : null}
@@ -262,10 +262,10 @@ export function SelectMenu({
                     className={clsx(
                       'min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-left',
                       option.disabled
-                        ? 'cursor-not-allowed text-text-muted/60'
-                        : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary',
-                      isSelected && !option.disabled && 'bg-surface-2 text-text-primary',
-                      isHighlighted && !option.disabled && !isSelected && 'bg-surface-2'
+                        ? 'cursor-not-allowed text-text-muted/60 dark:text-white/25'
+                        : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/70 dark:hover:bg-white/[0.08] dark:hover:text-white',
+                      isSelected && !option.disabled && 'bg-surface-2 text-text-primary dark:bg-white/[0.12] dark:text-white',
+                      isHighlighted && !option.disabled && !isSelected && 'bg-surface-2 dark:bg-white/[0.08]'
                     )}
                   >
                     <span className="min-w-0 flex-1">

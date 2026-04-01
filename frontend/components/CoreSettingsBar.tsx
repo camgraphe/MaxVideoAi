@@ -206,7 +206,7 @@ function InlineSelectControl({
         onChange={onChange}
         disabled={disabled}
         className="min-w-0"
-        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none"
+        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]"
         menuPlacement="top"
       />
     </div>

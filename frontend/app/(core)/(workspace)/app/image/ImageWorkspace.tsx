@@ -7,20 +7,20 @@ import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
-import { Check, UserRound, Users } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type {
   FormEvent,
-  DragEvent as ReactDragEvent,
-  ClipboardEvent as ReactClipboardEvent,
   MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { GalleryRail } from '@/components/GalleryRail';
-import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
-import { SelectMenu } from '@/components/ui/SelectMenu';
+import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
+import { ImageSettingsBar } from '@/components/ImageSettingsBar';
+import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
+import { AssetLibraryBrowser, type AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { supabase } from '@/lib/supabaseClient';
@@ -391,7 +391,6 @@ const MAX_REFERENCE_SLOTS = MAX_REFERENCE_IMAGES;
 const DEFAULT_VISIBLE_REFERENCE_SLOTS = 4;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
 const DESKTOP_RAIL_MIN_WIDTH = 1088;
-const NANO_BANANA_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
   : 25;
@@ -577,8 +576,11 @@ type AssetsResponse = {
   assets: LibraryAsset[];
 };
 
-type CharacterPickerModalState = {
+type ImageLibraryModalState = {
   open: boolean;
+  slotIndex: number | null;
+  selectionMode: 'reference' | 'character';
+  initialSource: AssetLibrarySource;
 };
 
 type PricingEstimateResponse = {
@@ -602,40 +604,6 @@ function formatCharacterReferenceDate(value?: string | null): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return 'Recent';
   return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-function SelectGroup({
-  label,
-  options,
-  value,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  options: { value: string | number | boolean; label: string }[];
-  value: string | number | boolean;
-  onChange: (value: string | number | boolean) => void;
-  disabled?: boolean;
-}) {
-  if (!options.length) return null;
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
-      <SelectMenu options={options} value={value} onChange={onChange} disabled={disabled} />
-    </div>
-  );
-}
-
-function formatCurrency(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 3,
-    }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(3)}`;
-  }
 }
 
 function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
@@ -766,13 +734,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
-  const [libraryModal, setLibraryModal] = useState<{ open: boolean; slotIndex: number | null }>({
+  const [libraryModal, setLibraryModal] = useState<ImageLibraryModalState>({
     open: false,
     slotIndex: null,
+    selectionMode: 'reference',
+    initialSource: 'all',
   });
-  const [characterPickerModal, setCharacterPickerModal] = useState<CharacterPickerModalState>({ open: false });
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const fileInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [
     priceEstimateKey,
     setPriceEstimateKey,
@@ -800,8 +768,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     () => engines.find((engine) => engine.id === engineId) ?? engines[0],
     [engineId, engines]
   );
-  const selectedEngineIsNanoBanana = Boolean(selectedEngine && NANO_BANANA_ENGINE_IDS.has(selectedEngine.id));
-  const autoModeFromReferences = selectedEngineIsNanoBanana;
+  const autoModeFromReferences = Boolean(
+    selectedEngine && selectedEngine.modes.includes('t2i') && selectedEngine.modes.includes('i2i')
+  );
   const selectedEngineCaps = selectedEngine?.engineCaps ?? engines[0]?.engineCaps;
   const imageCountField = useMemo(
     () => getImageInputField(selectedEngineCaps ?? null, 'num_images', mode),
@@ -1052,7 +1021,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const {
     data: pricingData,
     error: pricingError,
-    isValidating: pricingValidating,
   } = useSWR(
     priceEstimateKey,
     async ([, engineId, requestMode, count, requestResolution, requestEnableWebSearch]) => {
@@ -1079,16 +1047,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   );
 
   const pricingSnapshot = pricingData?.pricing ?? null;
-
-  const estimatedCostLabel = useMemo(() => {
-    if (pricingSnapshot) {
-      const currency = pricingSnapshot.currency ?? selectedEngine?.currency ?? 'USD';
-      return formatCurrency(pricingSnapshot.totalCents / 100, currency);
-    }
-    if (!selectedEngine) return '$0.00';
-    const estimate = selectedEngine.pricePerImage * numImages;
-    return formatCurrency(estimate, selectedEngine.currency);
-  }, [numImages, pricingSnapshot, selectedEngine]);
 
   const {
     data: jobPages,
@@ -1163,14 +1121,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     () => visibleReferenceSlots.some((slot) => Boolean(slot)) || activeCharacterReferenceUrls.length > 0,
     [activeCharacterReferenceUrls.length, visibleReferenceSlots]
   );
-  const referenceNoteText = autoModeFromReferences
-    ? 'Add a reference or character and Nano Banana switches to Edit automatically.'
-    : resolvedCopy.composer.referenceNote;
-  const showReferenceMissingWarning =
-    mode === 'i2i' &&
-    referenceMinRequired > 0 &&
-    combinedReferenceUrls.length < referenceMinRequired &&
-    (!autoModeFromReferences || !hasAnyReferenceSelection);
+  const referenceNoteText = resolvedCopy.composer.referenceNote;
 
   useEffect(() => {
     if (!selectedEngine || !autoModeFromReferences) return;
@@ -1810,47 +1761,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [cleanupSlotPreview, isSupportedReferenceAsset, showUnsupportedFormatError]
   );
 
-  const handleSlotDrop = useCallback(
-    (event: ReactDragEvent<HTMLDivElement>, index: number) => {
-      event.preventDefault();
-      const files = event.dataTransfer.files;
-      if (files && files.length) {
-        void handleReferenceFile(index, files[0]);
-        return;
-      }
-      const uri = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
-      if (uri && /^https?:\/\//i.test(uri.trim())) {
-        handleReferenceUrl(index, uri.trim(), 'paste');
-      }
-    },
-    [handleReferenceFile, handleReferenceUrl]
-  );
-
-  const handleSlotPaste = useCallback(
-    (event: ReactClipboardEvent<HTMLDivElement>, index: number) => {
-      const clipboard = event.clipboardData;
-      if (!clipboard) return;
-      const items = clipboard.items;
-      for (let i = 0; i < items.length; i += 1) {
-        const item = items[i];
-        if (item.kind === 'file' && item.type.startsWith('image/')) {
-          event.preventDefault();
-          const file = item.getAsFile();
-          void handleReferenceFile(index, file);
-          return;
-        }
-      }
-      const text = clipboard.getData('text/plain');
-      if (text && /^https?:\/\//i.test(text.trim())) {
-        event.preventDefault();
-        handleReferenceUrl(index, text.trim(), 'paste');
-      }
-    },
-    [handleReferenceFile, handleReferenceUrl]
-  );
-
   const handleLibrarySelect = useCallback(
     (asset: LibraryAsset) => {
+      if (libraryModal.selectionMode === 'character') {
+        return;
+      }
       if (!isSupportedReferenceAsset(asset.mime, asset.url)) {
         showUnsupportedFormatError();
         return;
@@ -1863,7 +1778,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         }
       }
       if (slotIndex >= referenceSlotLimit) {
-        setLibraryModal({ open: false, slotIndex: null });
+        setLibraryModal({ open: false, slotIndex: null, selectionMode: 'reference', initialSource: 'all' });
         return;
       }
       const index = slotIndex;
@@ -1882,12 +1797,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         };
         return next;
       });
-      setLibraryModal({ open: false, slotIndex: null });
+      setLibraryModal({ open: false, slotIndex: null, selectionMode: 'reference', initialSource: 'all' });
     },
     [
       canCollapseReferenceSlots,
       cleanupSlotPreview,
       isSupportedReferenceAsset,
+      libraryModal.selectionMode,
       libraryModal.slotIndex,
       referenceSlotLimit,
       referenceSlots,
@@ -1895,14 +1811,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     ]
   );
 
-  const triggerFileDialog = useCallback((index: number) => {
-    const target = fileInputRefs.current[index];
-    target?.click();
-  }, []);
-
   const openLibraryForSlot = useCallback(
     (index: number) => {
-      setLibraryModal({ open: true, slotIndex: index });
+      setLibraryModal({ open: true, slotIndex: index, selectionMode: 'reference', initialSource: 'all' });
     },
     []
   );
@@ -1928,8 +1839,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   }, []);
 
   const handleRun = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
+    async (event?: FormEvent<HTMLFormElement> | null) => {
+      event?.preventDefault();
       if (!selectedEngine) return;
       const { data } = await supabase.auth.getSession();
       if (!data.session?.access_token) {
@@ -2045,11 +1956,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       mutateJobs,
     ]
   );
-
-  const handlePreset = useCallback((preset: PromptPreset) => {
-    setPrompt(preset.prompt);
-    setMode(preset.mode);
-  }, []);
 
   const handleCopy = useCallback((url: string) => {
     if (!navigator?.clipboard) {
@@ -2227,7 +2133,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const savedAsset = (savedAssets?.[0] as LibraryAsset | undefined) ?? null;
   const isInLibrary = Boolean(savedAsset?.id);
 
-  const promptCharCount = formatTemplate(resolvedCopy.composer.charCount, { count: prompt.length });
   const inProgressMessage = useMemo(() => {
     const count = pendingGroups.length;
     if (count <= 0) return null;
@@ -2300,10 +2205,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const showEnableWebSearchControl = Boolean(enableWebSearchField);
   const showThinkingLevelControl = Boolean(thinkingLevelField) && thinkingLevelSelectOptions.length > 0;
   const showLimitGenerationsControl = Boolean(limitGenerationsField);
-  const promptPlaceholder =
-    mode === 'i2i'
-      ? resolvedCopy.composer.promptPlaceholderWithImage ?? resolvedCopy.composer.promptPlaceholder
-      : resolvedCopy.composer.promptPlaceholder;
   const compositePreviewEntry: ImageCompositePreviewEntry | null = previewEntry
     ? {
         id: previewEntry.id,
@@ -2315,8 +2216,79 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         images: previewEntry.images,
       }
     : null;
-  const composerPriceLabelTemplate = t('workspace.generate.composer.priceLabel', 'This render: {amount}') as string;
-  const composerPriceLabel = composerPriceLabelTemplate.replace('{amount}', estimatedCostLabel);
+  const estimatedCostAmount = pricingSnapshot
+    ? pricingSnapshot.totalCents / 100
+    : (selectedEngine?.pricePerImage ?? 0) * numImages;
+  const estimatedCostCurrency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
+  const advancedSettingsTitle = t('workspace.generate.controls.advancedTitle', 'Advanced settings') as string;
+  const characterHeaderAction = useMemo(() => {
+    if (!supportsCharacterReferences) return null;
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={(event) => {
+          event.stopPropagation();
+          setLibraryModal({
+            open: true,
+            slotIndex: null,
+            selectionMode: 'character',
+            initialSource: 'character',
+          });
+        }}
+        className="min-h-0 h-7 gap-1.5 rounded-full px-2.5 py-0 text-[11px] font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+      >
+        <Plus className="h-3.5 w-3.5 text-brand" />
+        <span>{resolvedCopy.composer.characterButton}</span>
+      </Button>
+    );
+  }, [resolvedCopy.composer.characterButton, supportsCharacterReferences]);
+  const referenceAssetFields = useMemo<AssetFieldConfig[]>(() => {
+    if (referenceSlotLimit <= 0) return [];
+    return [
+      {
+        field: {
+          id: 'reference_images',
+          type: 'image',
+          label: resolvedCopy.composer.referenceLabel,
+          description: `${referenceHelperText}. ${referenceNoteText}`,
+          minCount: mode === 'i2i' ? referenceMinRequired : 0,
+          maxCount: displayedReferenceSlotCount,
+        },
+        required: mode === 'i2i' && referenceMinRequired > 0,
+        role: 'reference',
+        headerAction: characterHeaderAction,
+      },
+    ];
+  }, [
+    characterHeaderAction,
+    displayedReferenceSlotCount,
+    mode,
+    referenceHelperText,
+    referenceMinRequired,
+    referenceNoteText,
+    referenceSlotLimit,
+    resolvedCopy.composer.referenceLabel,
+  ]);
+  const composerReferenceAssets = useMemo<Record<string, (ComposerAttachment | null)[]>>(
+    () => ({
+      reference_images: displayedReferenceSlots.map((slot) =>
+        slot
+          ? {
+              kind: 'image',
+              name: slot.name ?? slot.url.split('/').pop() ?? resolvedCopy.composer.referenceSlotNameFallback,
+              size: 0,
+              type: 'image/*',
+              previewUrl: slot.previewUrl ?? slot.url,
+              status: slot.status,
+            }
+          : null
+      ),
+    }),
+    [displayedReferenceSlots, resolvedCopy.composer.referenceSlotNameFallback]
+  );
+  const composerError = error ?? pricingError?.message ?? null;
 
   if (!selectedEngine || !selectedEngineCaps) {
     return (
@@ -2415,7 +2387,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       t2i: resolvedCopy.modeTabs.generate,
                       i2i: resolvedCopy.modeTabs.edit,
                     }}
-                    showModeSelect={!autoModeFromReferences}
+                    showModeSelect={false}
                     modeLayout="stacked"
                     showBillingNote={false}
                     variant="bar"
@@ -2425,382 +2397,100 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 }
               />
 
-              <form onSubmit={handleRun}>
-                <Card className="stack-gap-lg p-5">
-                  <div className="stack-gap-sm">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <label htmlFor="prompt" className="text-sm font-medium text-text-primary">
-                        {resolvedCopy.composer.promptLabel}
-                      </label>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-                        <span>{promptCharCount}</span>
-                        <Chip
-                          variant={pricingValidating ? 'ghost' : 'outline'}
-                          className="chip-price px-3 py-1.5 font-semibold shadow-sm"
-                        >
-                          {pricingValidating ? resolvedCopy.engine.priceCalculating : composerPriceLabel}
-                        </Chip>
-                      </div>
-                    </div>
-                    {showReferenceMissingWarning ? (
-                      <p className="text-[12px] text-state-warning">{resolvedCopy.errors.referenceMissing}</p>
-                    ) : null}
-                    {pricingError ? <p className="text-[12px] text-state-warning">{pricingError.message}</p> : null}
-                    <textarea
-                      id="prompt"
-                      className="w-full rounded-input border border-border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder={promptPlaceholder}
-                      value={prompt}
-                      onChange={(event) => setPrompt(event.target.value)}
-                      rows={6}
+              <form onSubmit={handleRun} className="space-y-4">
+                {inProgressMessage ? (
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success"
+                  >
+                    {inProgressMessage}
+                  </p>
+                ) : statusMessage ? (
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success"
+                  >
+                    {statusMessage}
+                  </p>
+                ) : null}
+
+                <Composer
+                  engine={selectedEngineCaps}
+                  prompt={prompt}
+                  onPromptChange={setPrompt}
+                  price={estimatedCostAmount}
+                  currency={estimatedCostCurrency}
+                  isLoading={false}
+                  error={composerError ?? undefined}
+                  promptField={{
+                    id: 'prompt',
+                    type: 'text',
+                    label: resolvedCopy.composer.promptLabel,
+                  }}
+                  promptRequired
+                  promptPlaceholder={resolvedCopy.composer.promptPlaceholder}
+                  promptPlaceholderWithAsset={
+                    resolvedCopy.composer.promptPlaceholderWithImage ?? resolvedCopy.composer.promptPlaceholder
+                  }
+                  assetFields={referenceAssetFields}
+                  assets={composerReferenceAssets}
+                  onAssetAdd={(_, file, slotIndex = 0) => {
+                    void handleReferenceFile(slotIndex, file);
+                  }}
+                  onAssetRemove={(_, index) => handleRemoveReferenceSlot(index)}
+                  onAssetUrlSelect={(_, url, slotIndex) => handleReferenceUrl(slotIndex, url, 'paste')}
+                  onOpenLibrary={(_, index) => openLibraryForSlot(index)}
+                  onNotice={setError}
+                  settingsBar={
+                    <ImageSettingsBar
+                      numImages={
+                        showNumImagesControl
+                          ? {
+                              value: numImages,
+                              options: imageCountOptions,
+                              onChange: setNumImagesPreset,
+                            }
+                          : undefined
+                      }
+                      aspectRatio={
+                        showAspectRatioControl
+                          ? {
+                              value: aspectRatio ?? String(aspectRatioSelectOptions[0]?.value ?? ''),
+                              options: aspectRatioSelectOptions,
+                              onChange: setAspectRatio,
+                            }
+                          : undefined
+                      }
+                      resolution={
+                        showResolutionControl
+                          ? {
+                              value: resolution ?? String(resolutionSelectOptions[0]?.value ?? ''),
+                              options: resolutionSelectOptions,
+                              onChange: setResolution,
+                              disabled: isResolutionLocked,
+                            }
+                          : undefined
+                      }
+                      outputFormat={
+                        showOutputFormatControl
+                          ? {
+                              value: outputFormat ?? String(outputFormatSelectOptions[0]?.value ?? ''),
+                              options: outputFormatSelectOptions,
+                              onChange: setOutputFormat,
+                            }
+                          : undefined
+                      }
                     />
-                    {selectedEngine.prompts.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedEngine.prompts.map((preset) => (
-                          <Button
-                            key={`${preset.title}-${preset.mode}`}
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePreset(preset)}
-                            className="min-h-0 h-auto rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
-                          >
-                            {preset.title}
-                          </Button>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {error ? (
-                    <p role="alert" className="rounded-card border border-state-warning/40 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">
-                      {error}
-                    </p>
-                  ) : null}
-
-                  {inProgressMessage ? (
-                    <p role="status" aria-live="polite" className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
-                      {inProgressMessage}
-                    </p>
-                  ) : statusMessage ? (
-                    <p role="status" aria-live="polite" className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
-                      {statusMessage}
-                    </p>
-                  ) : null}
-
-                  <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
-                    <div className="min-w-0 flex-1">
-                      <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                        {showNumImagesControl ? (
-                          <SelectGroup
-                            label={resolvedCopy.composer.numImagesLabel}
-                            options={imageCountOptions}
-                            value={numImages}
-                            onChange={(value) => setNumImagesPreset(Number(value))}
-                          />
-                        ) : null}
-                        {showAspectRatioControl ? (
-                          <SelectGroup
-                            label={resolvedCopy.composer.aspectRatioLabel}
-                            options={aspectRatioSelectOptions}
-                            value={aspectRatio ?? aspectRatioSelectOptions[0]?.value ?? ''}
-                            onChange={(value) => setAspectRatio(String(value))}
-                          />
-                        ) : null}
-                        {showResolutionControl ? (
-                          <SelectGroup
-                            label={resolvedCopy.composer.resolutionLabel}
-                            options={resolutionSelectOptions}
-                            value={resolution ?? resolutionSelectOptions[0]?.value ?? ''}
-                            onChange={(value) => setResolution(String(value))}
-                            disabled={isResolutionLocked}
-                          />
-                        ) : null}
-                        {showOutputFormatControl ? (
-                          <SelectGroup
-                            label={resolvedCopy.composer.outputFormatLabel}
-                            options={outputFormatSelectOptions}
-                            value={outputFormat ?? outputFormatSelectOptions[0]?.value ?? ''}
-                            onChange={(value) => setOutputFormat(String(value))}
-                          />
-                        ) : null}
-                        {showThinkingLevelControl ? (
-                          <SelectGroup
-                            label={resolvedCopy.composer.thinkingLevelLabel}
-                            options={thinkingLevelSelectOptions}
-                            value={thinkingLevel ?? thinkingLevelSelectOptions[0]?.value ?? ''}
-                            onChange={(value) => setThinkingLevel(String(value))}
-                          />
-                        ) : null}
-                        {showEnableWebSearchControl ? (
-                          <SelectGroup
-                            label={resolvedCopy.composer.enableWebSearchLabel}
-                            options={booleanSelectOptions}
-                            value={enableWebSearch}
-                            onChange={(value) => setEnableWebSearch(Boolean(value))}
-                          />
-                        ) : null}
-                        {showLimitGenerationsControl ? (
-                          <SelectGroup
-                            label={resolvedCopy.composer.limitGenerationsLabel}
-                            options={booleanSelectOptions}
-                            value={limitGenerations}
-                            onChange={(value) => setLimitGenerations(Boolean(value))}
-                          />
-                        ) : null}
-                        {showSeedControl ? (
-                          <label className="flex min-w-0 flex-col gap-1">
-                            <span className="text-[10px] uppercase tracking-micro text-text-muted">
-                              {resolvedCopy.composer.seedLabel}
-                            </span>
-                            <input
-                              type="number"
-                              inputMode="numeric"
-                              step={1}
-                              placeholder={resolvedCopy.composer.seedPlaceholder}
-                              value={seed}
-                              onChange={(event) => setSeed(event.target.value)}
-                              className="min-h-[42px] rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            />
-                          </label>
-                        ) : null}
-                      </div>
-                      {(showAspectRatioControl || showResolutionControl || showOutputFormatControl || showEnableWebSearchControl || showThinkingLevelControl || showLimitGenerationsControl) ? (
-                        <div className="mt-2 flex flex-col gap-1 text-[11px] text-text-secondary">
-                          {showAspectRatioControl && aspectRatioSelectOptions.some((option) => option.value === 'auto') ? (
-                            <p>{resolvedCopy.composer.aspectRatioAutoNote}</p>
-                          ) : null}
-                          {showResolutionControl ? <p>{resolvedCopy.composer.resolutionHint}</p> : null}
-                          {showOutputFormatControl ? <p>{resolvedCopy.composer.outputFormatHint}</p> : null}
-                          {showEnableWebSearchControl ? <p>{resolvedCopy.composer.enableWebSearchHint}</p> : null}
-                          {showThinkingLevelControl ? <p>{resolvedCopy.composer.thinkingLevelHint}</p> : null}
-                          {showLimitGenerationsControl ? <p>{resolvedCopy.composer.limitGenerationsHint}</p> : null}
-                        </div>
-                      ) : null}
-                    </div>
-                    <Button type="submit" size="lg" className="w-full sm:w-auto shadow-card">
-                      {resolvedCopy.runButton.idle}
-                    </Button>
-                  </div>
-
-                  <section className="stack-gap-sm">
-                    <div className="flex flex-wrap items-baseline justify-between gap-4">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                          {resolvedCopy.composer.referenceLabel}
-                        </p>
-                        <p className="text-[10px] text-text-secondary">{referenceHelperText}</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={referenceSlotLimit === 0}
-                          onClick={() => setLibraryModal({ open: true, slotIndex: null })}
-                          className="rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
-                        >
-                          {resolvedCopy.composer.referenceButton}
-                        </Button>
-                        {supportsCharacterReferences ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCharacterPickerModal({ open: true })}
-                            className="gap-2 rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
-                          >
-                            <Users className="h-3.5 w-3.5" />
-                            {resolvedCopy.composer.characterButton}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                    {!supportsCharacterReferences && selectedCharacterReferences.length ? (
-                      <p className="text-xs text-text-secondary">{resolvedCopy.composer.characterHiddenNotice}</p>
-                    ) : null}
-                    {hasHiddenCharacterReferences && supportsCharacterReferences ? (
-                      <p className="text-xs text-text-secondary">
-                        {formatTemplate(resolvedCopy.composer.characterLimitNotice, {
-                          count: effectiveCharacterReferences.length,
-                          suffix: effectiveCharacterReferences.length === 1 ? '' : 's',
-                        })}
-                      </p>
-                    ) : null}
-                    <div className="grid grid-gap-sm sm:grid-cols-2">
-                      {selectedCharacterReferences.map((reference, index) => {
-                        const isActiveCharacter = activeCharacterReferenceIds.has(reference.id);
-                        return (
-                          <div
-                            key={`character-slot-${reference.id}`}
-                            className={clsx(
-                              'group relative flex aspect-[2/1] flex-col overflow-hidden rounded-2xl border border-solid bg-surface shadow-card transition',
-                              isActiveCharacter ? 'border-text-muted' : 'border-border opacity-80'
-                            )}
-                          >
-                            <img
-                              src={reference.thumbUrl ?? reference.imageUrl}
-                              alt=""
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
-                            />
-                            <div className="absolute left-2 top-2">
-                              <Chip
-                                variant={isActiveCharacter ? 'accent' : 'ghost'}
-                                className={clsx(
-                                  'border-none px-2.5 py-1 text-[10px] uppercase tracking-[0.16em]',
-                                  isActiveCharacter ? '' : 'bg-surface-on-media-dark-60 text-on-inverse'
-                                )}
-                              >
-                                {`Character ${index + 1}`}
-                              </Chip>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeCharacterReference(reference.id)}
-                              className="absolute right-2 top-2 min-h-0 h-auto rounded-full bg-surface-on-media-dark-65 px-2 py-0.5 text-[11px] font-semibold text-on-inverse shadow hover:bg-surface-on-media-dark-70"
-                              aria-label="Remove character reference"
-                            >
-                              ×
-                            </Button>
-                            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-surface-on-media-dark-55 px-2 py-1 text-[10px] text-on-inverse">
-                              <span className="truncate">{getCharacterReferenceLabel(reference)}</span>
-                              <span className="shrink-0 text-on-inverse/80">
-                                {isActiveCharacter ? formatCharacterReferenceDate(reference.createdAt) : 'Saved'}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {displayedReferenceSlots.map((slot, index) => (
-                        <div
-                          key={`slot-${index}`}
-                          onDragOver={(event) => {
-                            event.preventDefault();
-                            event.dataTransfer.dropEffect = 'copy';
-                          }}
-                          onDrop={(event) => handleSlotDrop(event, index)}
-                          onPaste={(event) => handleSlotPaste(event, index)}
-                        className={clsx(
-                          'group relative flex aspect-[2/1] flex-col overflow-hidden rounded-2xl border border-dashed border-hairline bg-surface-glass-80 text-center text-[11px] text-text-secondary transition',
-                          slot && 'border-solid border-text-muted bg-surface shadow-card'
-                        )}
-                        >
-                          <input
-                            type="file"
-                            accept="image/*"
-                            ref={(element) => {
-                              fileInputRefs.current[index] = element;
-                            }}
-                            className="sr-only"
-                            onChange={(event) => {
-                              const file = event.target.files?.[0] ?? null;
-                              event.target.value = '';
-                              void handleReferenceFile(index, file);
-                            }}
-                          />
-                          {slot ? (
-                            <>
-                              <img
-                                src={slot.previewUrl ?? slot.url}
-                                alt=""
-                                className="h-full w-full object-cover"
-                                referrerPolicy="no-referrer"
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveReferenceSlot(index)}
-                                className="absolute right-2 top-2 min-h-0 h-auto rounded-full bg-surface-on-media-dark-65 px-2 py-0.5 text-[11px] font-semibold text-on-inverse shadow hover:bg-surface-on-media-dark-70"
-                                aria-label={resolvedCopy.composer.referenceSlotActions.remove}
-                              >
-                                ×
-                              </Button>
-                              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-surface-on-media-dark-55 px-2 py-1 text-[10px] text-on-inverse">
-                                <span className="truncate">
-                                  {slot.name ?? slot.source ?? resolvedCopy.composer.referenceSlotNameFallback}
-                                </span>
-                                <div className="flex gap-1">
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => triggerFileDialog(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-on-inverse hover:bg-surface-on-media-30"
-                                  >
-                                    {resolvedCopy.composer.referenceSlotActions.replace}
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => openLibraryForSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-on-inverse hover:bg-surface-on-media-30"
-                                  >
-                                    {resolvedCopy.composer.referenceSlotActions.library}
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-on-inverse hover:bg-surface-on-media-30"
-                                  >
-                                    {resolvedCopy.composer.referenceSlotActions.remove}
-                                  </Button>
-                                </div>
-                              </div>
-                              {slot.status === 'uploading' ? (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-on-media-dark-50 px-3 text-center text-xs font-semibold text-on-inverse">
-                                  <span>{resolvedCopy.general.uploading}</span>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-25 px-3 py-1 text-[11px] font-semibold text-on-inverse hover:bg-surface-on-media-40"
-                                  >
-                                    {resolvedCopy.general.cancelUpload}
-                                  </Button>
-                                </div>
-                              ) : null}
-                            </>
-                          ) : (
-                            <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-[11px] text-text-secondary">
-                              <span className="text-text-primary">
-                                {formatTemplate(resolvedCopy.composer.referenceSlotLabel, { index: index + 1 })}
-                              </span>
-                              <p className="text-[10px] leading-tight text-text-muted">{resolvedCopy.composer.referenceSlotHint}</p>
-                              <div className="flex flex-wrap justify-center gap-2 text-[10px]">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => triggerFileDialog(index)}
-                                  className="min-h-0 h-auto rounded-full border-border px-3 py-1 font-semibold text-text-primary"
-                                >
-                                  {resolvedCopy.composer.referenceSlotActions.upload}
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openLibraryForSlot(index)}
-                                  className="min-h-0 h-auto rounded-full border-border px-3 py-1 font-semibold text-text-primary"
-                                >
-                                  {resolvedCopy.composer.referenceSlotActions.library}
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {canCollapseReferenceSlots ? (
+                  }
+                  onGenerate={() => {
+                    void handleRun();
+                  }}
+                  generateLabel={resolvedCopy.runButton.idle}
+                  generateLoadingLabel={resolvedCopy.runButton.running}
+                  afterAssets={
+                    canCollapseReferenceSlots ? (
                       <div className="flex justify-center">
                         <Button
                           type="button"
@@ -2812,10 +2502,124 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                           {referenceToggleLabel}
                         </Button>
                       </div>
-                    ) : null}
-                    <p className="mt-2 text-xs text-text-secondary">{referenceNoteText}</p>
-                  </section>
-                </Card>
+                    ) : null
+                  }
+                  extraFields={
+                    <div className="space-y-6">
+                      {(selectedCharacterReferences.length > 0 || hasHiddenCharacterReferences) ? (
+                        <section className="space-y-3">
+                          {hasHiddenCharacterReferences && supportsCharacterReferences ? (
+                            <p className="text-xs text-text-secondary">
+                              {formatTemplate(resolvedCopy.composer.characterLimitNotice, {
+                                count: effectiveCharacterReferences.length,
+                                suffix: effectiveCharacterReferences.length === 1 ? '' : 's',
+                              })}
+                            </p>
+                          ) : !supportsCharacterReferences && selectedCharacterReferences.length ? (
+                            <p className="text-xs text-text-secondary">{resolvedCopy.composer.characterHiddenNotice}</p>
+                          ) : null}
+
+                          {selectedCharacterReferences.length ? (
+                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                              {selectedCharacterReferences.map((reference, index) => {
+                                const isActiveCharacter = activeCharacterReferenceIds.has(reference.id);
+                                return (
+                                  <div
+                                    key={`character-slot-${reference.id}`}
+                                    className={clsx(
+                                      'group relative aspect-[4/3] overflow-hidden rounded-[20px] border bg-surface shadow-card transition',
+                                      isActiveCharacter ? 'border-text-muted' : 'border-border opacity-80'
+                                    )}
+                                  >
+                                    <img
+                                      src={reference.thumbUrl ?? reference.imageUrl}
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                      loading="lazy"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                    <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/55 via-black/18 to-transparent" />
+                                    <div className="absolute left-3 top-3">
+                                      <Chip
+                                        variant={isActiveCharacter ? 'accent' : 'ghost'}
+                                        className={clsx(
+                                          'border-none px-2.5 py-1 text-[10px] uppercase tracking-[0.16em]',
+                                          isActiveCharacter ? '' : 'bg-surface-on-media-dark-60 text-on-inverse'
+                                        )}
+                                      >
+                                        {`Character ${index + 1}`}
+                                      </Chip>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeCharacterReference(reference.id)}
+                                      className="absolute right-3 top-3 h-9 w-9 rounded-full border border-white/30 bg-black/62 p-0 text-white shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur transition hover:bg-black/78 focus-visible:ring-2 focus-visible:ring-white/70"
+                                      aria-label="Remove character reference"
+                                    >
+                                      ×
+                                    </Button>
+                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/18 to-transparent px-3 py-3 text-[11px] text-on-inverse">
+                                      <span className="truncate">{getCharacterReferenceLabel(reference)}</span>
+                                      <span className="shrink-0 text-on-inverse/80">
+                                        {isActiveCharacter ? formatCharacterReferenceDate(reference.createdAt) : 'Saved'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : null}
+                        </section>
+                      ) : null}
+
+                      <ImageAdvancedSettings
+                        title={advancedSettingsTitle}
+                        seed={
+                          showSeedControl
+                            ? {
+                                label: resolvedCopy.composer.seedLabel,
+                                placeholder: resolvedCopy.composer.seedPlaceholder,
+                                value: seed,
+                                onChange: setSeed,
+                              }
+                            : undefined
+                        }
+                        thinkingLevel={
+                          showThinkingLevelControl
+                            ? {
+                                label: resolvedCopy.composer.thinkingLevelLabel,
+                                value: thinkingLevel ?? String(thinkingLevelSelectOptions[0]?.value ?? ''),
+                                options: thinkingLevelSelectOptions,
+                                onChange: setThinkingLevel,
+                              }
+                            : undefined
+                        }
+                        enableWebSearch={
+                          showEnableWebSearchControl
+                            ? {
+                                label: resolvedCopy.composer.enableWebSearchLabel,
+                                value: enableWebSearch,
+                                options: booleanSelectOptions,
+                                onChange: setEnableWebSearch,
+                              }
+                            : undefined
+                        }
+                        limitGenerations={
+                          showLimitGenerationsControl
+                            ? {
+                                label: resolvedCopy.composer.limitGenerationsLabel,
+                                value: limitGenerations,
+                                options: booleanSelectOptions,
+                                onChange: setLimitGenerations,
+                              }
+                            : undefined
+                        }
+                      />
+                    </div>
+                  }
+                />
               </form>
             </div>
           </main>
@@ -2891,22 +2695,18 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       {libraryModal.open ? (
       <ImageLibraryModal
         open={libraryModal.open}
-        onClose={() => setLibraryModal({ open: false, slotIndex: null })}
+        onClose={() => setLibraryModal({ open: false, slotIndex: null, selectionMode: 'reference', initialSource: 'all' })}
         onSelect={handleLibrarySelect}
+        onToggleCharacter={toggleCharacterReference}
+        selectedCharacterReferences={selectedCharacterReferences}
+        characterSelectionLimit={characterSelectionLimit}
         copy={resolvedCopy.library}
+        characterCopy={resolvedCopy.characterPicker}
+        selectionMode={libraryModal.selectionMode}
+        initialSource={libraryModal.initialSource}
         supportedFormats={supportedReferenceFormats}
         supportedFormatsLabel={supportedReferenceFormatsLabel}
         toolsEnabled={toolsEnabled}
-      />
-    ) : null}
-      {characterPickerModal.open ? (
-      <CharacterPickerModal
-        open={characterPickerModal.open}
-        onClose={() => setCharacterPickerModal({ open: false })}
-        onToggle={toggleCharacterReference}
-        selectedReferences={selectedCharacterReferences}
-        maxSelectable={characterSelectionLimit}
-        copy={resolvedCopy.characterPicker}
       />
     ) : null}
     </>
@@ -2917,7 +2717,13 @@ function ImageLibraryModal({
   open,
   onClose,
   onSelect,
+  onToggleCharacter,
+  selectedCharacterReferences,
+  characterSelectionLimit,
   copy,
+  characterCopy,
+  selectionMode,
+  initialSource,
   supportedFormats,
   supportedFormatsLabel,
   toolsEnabled,
@@ -2925,19 +2731,40 @@ function ImageLibraryModal({
   open: boolean;
   onClose: () => void;
   onSelect: (asset: LibraryAsset) => void;
+  onToggleCharacter: (reference: CharacterReferenceSelection) => void;
+  selectedCharacterReferences: CharacterReferenceSelection[];
+  characterSelectionLimit: number;
   copy: ImageWorkspaceCopy['library'];
+  characterCopy: ImageWorkspaceCopy['characterPicker'];
+  selectionMode: 'reference' | 'character';
+  initialSource: AssetLibrarySource;
   supportedFormats: string[];
   supportedFormatsLabel: string;
   toolsEnabled: boolean;
 }) {
-  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
-  const swrKey = open
-    ? activeSource === 'all'
-      ? '/api/user-assets?limit=60'
-      : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`
-    : null;
+  const { t } = useI18n();
+  const [activeSource, setActiveSource] = useState<AssetLibrarySource>(initialSource);
+  const isCharacterMode = selectionMode === 'character';
+  const swrKey = !open
+    ? null
+    : isCharacterMode
+      ? '/api/character-references?limit=60'
+      : activeSource === 'all'
+        ? '/api/user-assets?limit=60'
+        : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`;
   const { data, error, isLoading } = useSWR(swrKey, async (url: string) => {
     const response = await authFetch(url);
+    if (isCharacterMode) {
+      const payload = (await response.json().catch(() => null)) as CharacterReferencesResponse | null;
+      if (!response.ok || !payload?.ok) {
+        let message: string | undefined;
+        if (payload && typeof payload.error === 'string') {
+          message = payload.error;
+        }
+        throw new Error(message ?? 'Failed to load character references');
+      }
+      return payload.characters;
+    }
     const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
     if (!response.ok || !payload?.ok) {
       let message: string | undefined;
@@ -2952,27 +2779,38 @@ function ImageLibraryModal({
     return payload.assets;
   });
 
-  const assets = useMemo(
-    () =>
-      (data ?? []).filter((asset) =>
-        toolsEnabled ? true : asset.source !== 'character' && asset.source !== 'angle'
-      ),
-    [data, toolsEnabled]
+  useEffect(() => {
+    if (!open) return;
+    setActiveSource(initialSource);
+  }, [initialSource, open]);
+
+  const assets = useMemo(() => {
+    if (isCharacterMode) return [];
+    return (((data ?? []) as LibraryAsset[])).filter((asset) =>
+      toolsEnabled ? true : asset.source !== 'character' && asset.source !== 'angle'
+    );
+  }, [data, isCharacterMode, toolsEnabled]);
+  const characters = useMemo(
+    () => (isCharacterMode ? (((data ?? []) as CharacterReferenceSelection[])) : []),
+    [data, isCharacterMode]
   );
   const availableSources = useMemo(
     () =>
-      toolsEnabled
-        ? (['all', 'upload', 'generated', 'character', 'angle'] as const)
-        : (['all', 'upload', 'generated'] as const),
-    [toolsEnabled]
+      isCharacterMode
+        ? (['character'] as const satisfies readonly AssetLibrarySource[])
+        : toolsEnabled
+        ? (['all', 'upload', 'generated', 'character', 'angle'] as const satisfies readonly AssetLibrarySource[])
+        : (['all', 'upload', 'generated'] as const satisfies readonly AssetLibrarySource[]),
+    [isCharacterMode, toolsEnabled]
   );
 
   useEffect(() => {
     if (!availableSources.some((source) => source === activeSource)) {
-      setActiveSource('all');
+      setActiveSource(initialSource);
     }
-  }, [activeSource, availableSources]);
+  }, [activeSource, availableSources, initialSource]);
   const compatibilityByAssetId = useMemo(() => {
+    if (isCharacterMode) return new Map<string, boolean>();
     const entries = assets.map((asset) => {
       if (!supportedFormats.length) {
         return [asset.id, true] as const;
@@ -2985,181 +2823,72 @@ function ImageLibraryModal({
       return [asset.id, inferredFormat ? isSupportedImageFormat(supportedFormats, inferredFormat) : true] as const;
     });
     return new Map(entries);
-  }, [assets, supportedFormats]);
+  }, [assets, isCharacterMode, supportedFormats]);
 
-  if (!open) {
-    return null;
-  }
+  const compatibleAssets = useMemo(
+    () => (isCharacterMode ? [] : assets.filter((asset) => compatibilityByAssetId.get(asset.id) !== false)),
+    [assets, compatibilityByAssetId, isCharacterMode]
+  );
+  const browserAssets = useMemo(
+    () => {
+      if (isCharacterMode) {
+        return characters.map((character) => ({
+          id: character.id,
+          url: character.thumbUrl ?? character.imageUrl,
+          kind: 'image' as const,
+          source: 'character',
+          createdAt: character.createdAt ?? undefined,
+        }));
+      }
+      return compatibleAssets.map((asset) => ({
+        ...asset,
+        kind: 'image' as const,
+      }));
+    },
+    [characters, compatibleAssets, isCharacterMode]
+  );
+  const characterMap = useMemo(() => new Map(characters.map((character) => [character.id, character])), [characters]);
+  const selectedCharacterIds = useMemo(
+    () => new Set(selectedCharacterReferences.map((reference) => reference.id)),
+    [selectedCharacterReferences]
+  );
   const emptyLabel =
-    activeSource === 'generated'
-      ? copy.modal.emptyGenerated
-      : activeSource === 'upload'
-        ? copy.modal.emptyUploads
-        : activeSource === 'character'
-          ? copy.modal.emptyCharacter
-          : activeSource === 'angle'
-            ? copy.modal.emptyAngle
-        : copy.modal.empty;
-  const supportedFormatsHint =
-    supportedFormats.length && supportedFormatsLabel.length
+    isCharacterMode
+      ? characterCopy.empty
+      : compatibleAssets.length === 0 && assets.length > 0
+      ? copy.modal.emptyCompatible
+      : activeSource === 'generated'
+        ? copy.modal.emptyGenerated
+        : activeSource === 'upload'
+          ? copy.modal.emptyUploads
+          : activeSource === 'character'
+            ? copy.modal.emptyCharacter
+            : activeSource === 'angle'
+              ? copy.modal.emptyAngle
+              : copy.modal.empty;
+  const supportedFormatsHint = isCharacterMode
+    ? formatTemplate(characterCopy.limitLabel, {
+        count: characterSelectionLimit,
+        suffix: characterSelectionLimit === 1 ? '' : 's',
+      })
+    : supportedFormats.length && supportedFormatsLabel.length
       ? formatTemplate(copy.supportedFormats, { formats: supportedFormatsLabel })
       : null;
+  const toolLinks = toolsEnabled
+    ? [
+        { href: '/app/image', label: 'Create image' },
+        { href: '/app/tools/angle', label: 'Change angle' },
+        { href: '/app/tools/character-builder', label: 'Character builder' },
+      ]
+    : [{ href: '/app/image', label: 'Create image' }];
+  const searchPlaceholder = t('workspace.library.browser.searchPlaceholder', 'Search assets…') as string;
+  const sourcesTitle = t('workspace.library.browser.sourcesTitle', 'Library') as string;
+  const toolsTitle = t('workspace.library.browser.toolsTitle', 'Create or transform') as string;
+  const toolsDescription = t(
+    'workspace.library.browser.toolsDescription',
+    'Open another workspace to prepare a better source before importing it here.'
+  ) as string;
 
-  const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) {
-      onClose();
-    }
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={handleBackdropClick}
-    >
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-surface shadow-float">
-        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
-          <div>
-            <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>
-            <p className="text-xs text-text-secondary">{copy.modal.description}</p>
-            {supportedFormatsHint ? <p className="mt-1 text-xs text-text-muted">{supportedFormatsHint}</p> : null}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            className="self-start rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
-          >
-            {copy.modal.close}
-          </Button>
-        </div>
-        <div className="border-b border-border px-4 py-3 sm:px-6">
-          <div
-            role="tablist"
-            aria-label="Library image filters"
-            className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
-          >
-            {availableSources.map((source) => (
-              <Button
-                key={source}
-                type="button"
-                role="tab"
-                variant="ghost"
-                size="sm"
-                aria-selected={activeSource === source}
-                onClick={() => setActiveSource(source)}
-                className={clsx(
-                  'flex-1 rounded-none px-4 py-2',
-                  activeSource === source
-                    ? 'bg-brand text-on-brand hover:bg-brand'
-                    : 'text-text-secondary hover:bg-surface'
-                )}
-              >
-                {copy.tabs[source]}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
-          {error ? (
-            <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-              {copy.modal.error}
-            </div>
-          ) : isLoading && !assets.length ? (
-            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div key={`library-modal-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
-                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
-                    <div className="skeleton absolute inset-0" />
-                  </div>
-                  <div className="border-t border-border px-4 py-3">
-                    <div className="h-3 w-24 rounded-full bg-skeleton" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : assets.length === 0 ? (
-            <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-              {emptyLabel}
-            </div>
-          ) : (
-            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {assets.map((asset) => {
-                const isCompatible = compatibilityByAssetId.get(asset.id) !== false;
-                return (
-                  <button
-                    key={asset.id}
-                    type="button"
-                    onClick={() => {
-                      if (isCompatible) onSelect(asset);
-                    }}
-                    disabled={!isCompatible}
-                    className={clsx(
-                      'group block w-full overflow-hidden rounded-card border border-border bg-surface text-left shadow-card transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                      isCompatible ? 'hover:border-text-primary' : 'cursor-not-allowed opacity-60'
-                    )}
-                  >
-                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
-                    <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                    {isCompatible ? (
-                      <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-on-inverse group-hover:flex">
-                        {copy.overlay}
-                      </div>
-                    ) : (
-                      <div className="absolute inset-x-3 bottom-3 rounded-full bg-surface-on-media-dark-60 px-3 py-1 text-center text-[11px] font-semibold text-on-inverse">
-                        {copy.unsupported}
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
-                    <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assetFallback}</p>
-                    {!isCompatible ? <p className="text-state-warning">{copy.unsupported}</p> : null}
-                    {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
-                  </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CharacterPickerModal({
-  open,
-  onClose,
-  onToggle,
-  selectedReferences,
-  maxSelectable,
-  copy,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onToggle: (reference: CharacterReferenceSelection) => void;
-  selectedReferences: CharacterReferenceSelection[];
-  maxSelectable: number;
-  copy: ImageWorkspaceCopy['characterPicker'];
-}) {
-  const swrKey = open ? '/api/character-references?limit=60' : null;
-  const { data, error, isLoading } = useSWR(swrKey, async (url: string) => {
-    const response = await authFetch(url);
-    const payload = (await response.json().catch(() => null)) as CharacterReferencesResponse | null;
-    if (!response.ok || !payload?.ok) {
-      let message: string | undefined;
-      if (payload && typeof payload.error === 'string') {
-        message = payload.error;
-      }
-      throw new Error(message ?? 'Failed to load character references');
-    }
-    return payload.characters;
-  });
-
-  const characters = useMemo(() => data ?? [], [data]);
-  const selectedIds = useMemo(() => new Set(selectedReferences.map((reference) => reference.id)), [selectedReferences]);
   const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       onClose();
@@ -3177,98 +2906,86 @@ function CharacterPickerModal({
       aria-modal="true"
       onMouseDown={handleBackdropClick}
     >
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-modal border border-border bg-surface shadow-float">
-        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
-          <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
-              <UserRound className="h-3.5 w-3.5" />
-              Characters
-            </div>
-            <h2 className="mt-2 text-lg font-semibold text-text-primary">{copy.title}</h2>
-            <p className="text-xs text-text-secondary">{copy.description}</p>
-            <p className="mt-1 text-xs text-text-muted">
-              {formatTemplate(copy.limitLabel, { count: maxSelectable, suffix: maxSelectable === 1 ? '' : 's' })}
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            className="self-start rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
-          >
-            {copy.done}
-          </Button>
-        </div>
-        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
-          {error ? (
-            <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-              {error instanceof Error ? error.message : copy.empty}
-            </div>
-          ) : isLoading && !characters.length ? (
-            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div key={`character-modal-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-t-card bg-placeholder">
-                    <div className="skeleton absolute inset-0" />
-                  </div>
-                  <div className="border-t border-border px-4 py-3">
-                    <div className="h-3 w-24 rounded-full bg-skeleton" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : characters.length === 0 ? (
-            <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-              {copy.empty}
-            </div>
-          ) : (
-            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {characters.map((character) => {
-                const isSelected = selectedIds.has(character.id);
-                const isDisabled = !isSelected && selectedReferences.length >= maxSelectable;
+      <div className="h-[92svh] w-full max-w-6xl overflow-hidden sm:h-[84vh]">
+        <AssetLibraryBrowser
+          assetType="image"
+          layout="modal"
+          title={isCharacterMode ? characterCopy.title : copy.modal.title}
+          subtitle={supportedFormatsHint ?? (isCharacterMode ? characterCopy.description : copy.modal.description)}
+          assets={browserAssets}
+          isLoading={isLoading}
+          error={error ? (isCharacterMode ? (error instanceof Error ? error.message : characterCopy.empty) : copy.modal.error) : null}
+          source={activeSource}
+          availableSources={availableSources}
+          sourceLabels={copy.tabs}
+          onSourceChange={setActiveSource}
+          searchPlaceholder={searchPlaceholder}
+          sourcesTitle={sourcesTitle}
+          toolsTitle={toolsEnabled ? toolsTitle : undefined}
+          toolsDescription={toolsEnabled ? toolsDescription : undefined}
+          toolLinks={toolLinks}
+          emptyLabel={emptyLabel}
+          emptySearchLabel={copy.modal.empty}
+          headerActions={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg"
+            >
+              {copy.modal.close}
+            </Button>
+          }
+          renderAssetActions={(asset) => (
+            isCharacterMode ? (
+              (() => {
+                const character = characterMap.get(asset.id);
+                if (!character) return null;
+                const isSelected = selectedCharacterIds.has(character.id);
+                const isDisabled = !isSelected && selectedCharacterReferences.length >= characterSelectionLimit;
                 return (
-                  <button
-                    key={character.id}
+                  <Button
                     type="button"
-                    onClick={() => onToggle(character)}
+                    size="sm"
+                    variant={isSelected ? 'primary' : 'outline'}
                     disabled={isDisabled}
-                    className={clsx(
-                      'group block w-full overflow-hidden rounded-card border bg-surface text-left shadow-card transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                      isSelected ? 'border-brand ring-2 ring-brand/20' : 'border-border hover:border-text-primary',
-                      isDisabled && 'cursor-not-allowed opacity-60'
-                    )}
+                    onClick={() => onToggleCharacter(character)}
+                    className="min-h-0 h-9 rounded-full px-3 text-[11px] font-semibold"
                   >
-                    <div className="relative aspect-[4/5] overflow-hidden rounded-t-card bg-placeholder">
-                      <img
-                        src={character.thumbUrl ?? character.imageUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute inset-x-3 top-3 flex items-center justify-between">
-                        <Chip variant={isSelected ? 'accent' : 'outline'} className="border-none bg-surface-on-media-dark-60 text-on-inverse">
-                          {isSelected ? copy.selected : copy.select}
-                        </Chip>
-                        {isSelected ? (
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand text-on-brand shadow-card">
-                            <Check className="h-4 w-4" />
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="min-w-0 space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
-                      <p className="truncate text-sm font-medium text-text-primary">{getCharacterReferenceLabel(character)}</p>
-                      <p>{formatCharacterReferenceDate(character.createdAt)}</p>
-                      <p className="truncate text-text-muted">{character.engineLabel ?? 'Character Builder'}</p>
-                    </div>
-                  </button>
+                    {isSelected ? characterCopy.selected : characterCopy.select}
+                  </Button>
                 );
-              })}
-            </div>
+              })()
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => onSelect(asset as LibraryAsset)}
+                className="min-h-0 h-9 rounded-full px-3 text-[11px] font-semibold"
+              >
+                {copy.overlay}
+              </Button>
+            )
           )}
-        </div>
+          renderAssetMeta={(asset) =>
+            isCharacterMode ? (
+              (() => {
+                const character = characterMap.get(asset.id);
+                if (!character) return null;
+                return (
+                  <>
+                    <span>{formatCharacterReferenceDate(character.createdAt)}</span>
+                    <span>{getCharacterReferenceLabel(character)}</span>
+                  </>
+                );
+              })()
+            ) : asset.createdAt ? (
+              <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
+            ) : null
+          }
+        />
       </div>
     </div>
   );

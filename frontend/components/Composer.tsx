@@ -3,45 +3,27 @@
 
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
-import type { Ref, ChangeEvent, DragEvent, ReactNode } from 'react';
-import { Trash2 } from 'lucide-react';
+import type { Ref, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, Mode, PreflightResponse } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import {
+  AssetDropzone,
+  type AssetFieldConfig,
+  type AssetFieldRole,
+  type AssetSlotAttachment,
+  type AssetUploadMeta,
+} from '@/components/AssetDropzone';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
-
-const VEO_REFERENCE_WARNING_ENGINES = new Set(['veo-3-1', 'veo-3-1-fast']);
-
-export type ComposerAttachment = {
-  kind: 'image' | 'video' | 'audio';
-  name: string;
-  size: number;
-  type: string;
-  previewUrl: string;
-  status?: 'uploading' | 'ready' | 'error';
-  error?: string;
-};
-
-export type AssetFieldRole = 'primary' | 'reference' | 'frame' | 'generic';
-
-export type AssetFieldConfig = {
-  field: EngineInputField;
-  required: boolean;
-  role?: AssetFieldRole;
-};
+export type ComposerAttachment = AssetSlotAttachment;
+export type { AssetFieldConfig, AssetFieldRole, AssetUploadMeta };
 
 export type MultiPromptScene = {
   id: string;
   prompt: string;
   duration: number;
-};
-
-type AssetUploadMeta = {
-  durationSec?: number;
 };
 
 type ComposerModeToggle = {
@@ -79,6 +61,8 @@ interface Props {
   preflight?: PreflightResponse | null;
   promptField?: EngineInputField;
   promptRequired: boolean;
+  promptPlaceholder?: string;
+  promptPlaceholderWithAsset?: string;
   negativePromptField?: EngineInputField;
   negativePromptRequired?: boolean;
   assetFields: AssetFieldConfig[];
@@ -87,6 +71,7 @@ interface Props {
   onAssetRemove?: (field: EngineInputField, index: number) => void;
   onNotice?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
+  onAssetUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   settingsBar?: ReactNode;
   modeToggles?: ComposerModeToggle[];
   activeManualMode?: Mode | null;
@@ -105,8 +90,11 @@ interface Props {
     error?: string | null;
   } | null;
   extraFields?: ReactNode;
+  afterAssets?: ReactNode;
   disableGenerate?: boolean;
   workflowNotice?: string | null;
+  generateLabel?: string;
+  generateLoadingLabel?: string;
 }
 
 const DEFAULT_COMPOSER_COPY = {
@@ -167,6 +155,8 @@ export function Composer({
   preflight,
   promptField,
   promptRequired,
+  promptPlaceholder,
+  promptPlaceholderWithAsset,
   negativePromptField,
   negativePromptRequired = false,
   assetFields,
@@ -175,6 +165,7 @@ export function Composer({
   onAssetRemove,
   onNotice,
   onOpenLibrary,
+  onAssetUrlSelect,
   settingsBar,
   modeToggles,
   activeManualMode,
@@ -182,8 +173,11 @@ export function Composer({
   promotedActions,
   multiPrompt,
   extraFields,
+  afterAssets,
   disableGenerate,
   workflowNotice,
+  generateLabel,
+  generateLoadingLabel,
 }: Props) {
   const { t } = useI18n();
   const composerCopy = useMemo<ComposerCopy>(() => {
@@ -293,9 +287,9 @@ export function Composer({
     }
     return 'grid gap-4 md:grid-cols-2 xl:grid-cols-3';
   }, [orderedAssetFields.length, useLtxAssetGridLayout]);
-  const promptPlaceholder = hasReferenceImage
-    ? composerCopy.prompt.placeholderWithImage ?? composerCopy.prompt.placeholder
-    : composerCopy.prompt.placeholder;
+  const promptPlaceholderValue = hasReferenceImage
+    ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
+    : promptPlaceholder ?? composerCopy.prompt.placeholder;
 
   const triggerButtonAnimation = useCallback(() => {
     if (animationTimeoutRef.current) {
@@ -330,10 +324,12 @@ export function Composer({
     setIsButtonAnimating(false);
   }, [isLoading]);
 
-  const resolvedGenerateLabel = isLoading ? composerCopy.button.loading : composerCopy.button.idle;
+  const resolvedGenerateLabel = isLoading
+    ? generateLoadingLabel ?? composerCopy.button.loading
+    : generateLabel ?? composerCopy.button.idle;
 
   return (
-    <Card className="overflow-visible border-border/90 p-4 md:p-5">
+    <Card className="overflow-visible border-border/85 p-4 md:p-5 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]">
       <div className="space-y-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
@@ -350,7 +346,7 @@ export function Composer({
                       onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
                       disabled={entry.disabled}
                       title={entry.disabledReason}
-                      className="min-h-0 h-10 rounded-2xl px-4 py-0 text-[12px] font-semibold"
+                      className="min-h-0 h-10 rounded-2xl px-4 py-0 text-[12px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
                     >
                       {entry.label}
                     </Button>
@@ -361,8 +357,8 @@ export function Composer({
             {(promptDescription || workflowNotice) && (
               <div className="space-y-1">
                 {promptDescription ? <p className="text-[12px] text-text-muted">{promptDescription}</p> : null}
-                {workflowNotice ? (
-                  <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary">
+                    {workflowNotice ? (
+                  <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary dark:border-white/8 dark:bg-white/[0.04] dark:text-white/70">
                     {workflowNotice}
                   </div>
                 ) : null}
@@ -374,7 +370,8 @@ export function Composer({
         <div className="space-y-3">
             <div
               className={clsx(
-                'overflow-visible rounded-[28px] border bg-surface',
+                'overflow-visible rounded-[28px] border bg-surface dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.94),rgba(19,28,38,0.98))]',
+                'dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]',
                 promptTooLong ? 'border-error-border' : 'border-border'
               )}
             >
@@ -394,7 +391,7 @@ export function Composer({
                     size="sm"
                     variant={multiPromptEnabled ? 'primary' : 'outline'}
                     onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
-                    className="min-h-0 h-8 rounded-full px-3 py-0 text-[10px] font-semibold uppercase tracking-micro"
+                    className="min-h-0 h-8 rounded-full px-3 py-0 text-[10px] font-semibold uppercase tracking-micro dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
                   >
                     {multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'}
                   </Button>
@@ -410,7 +407,7 @@ export function Composer({
                     title={action.tooltip ?? action.label}
                     aria-label={action.tooltip ?? action.label}
                     aria-pressed={action.active}
-                    className="min-h-0 h-8 rounded-full px-2.5 py-0 text-[10px] font-semibold"
+                    className="min-h-0 h-8 rounded-full px-2.5 py-0 text-[10px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
                   >
                     <span className="shrink-0">{renderPromotedActionIcon(action.icon)}</span>
                     <span className="whitespace-nowrap">{action.label}</span>
@@ -423,7 +420,7 @@ export function Composer({
                 {multiPrompt.scenes.map((scene, index) => (
                   <div
                     key={scene.id}
-                    className="rounded-input border border-border bg-surface p-3 text-sm text-text-secondary"
+                    className="rounded-input border border-border bg-surface p-3 text-sm text-text-secondary dark:border-white/8 dark:bg-white/[0.04] dark:text-white/72"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[12px] uppercase tracking-micro text-text-muted">Scene {index + 1}</span>
@@ -444,7 +441,7 @@ export function Composer({
                       onChange={(event) => multiPrompt.onUpdateScene(scene.id, { prompt: event.currentTarget.value })}
                       placeholder={`Scene ${index + 1} prompt`}
                       rows={3}
-                      className="mt-2 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="mt-2 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.03] dark:text-white dark:placeholder:text-white/35"
                     />
                     <div className="mt-2 flex items-center gap-2 text-[12px] text-text-muted">
                       <span>Duration (s)</span>
@@ -458,7 +455,7 @@ export function Composer({
                             duration: Math.max(0, Math.round(Number(event.currentTarget.value))),
                           })
                         }
-                        className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-xs text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-xs text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.03] dark:text-white"
                       />
                     </div>
                   </div>
@@ -487,11 +484,11 @@ export function Composer({
               <textarea
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
-                placeholder={promptPlaceholder}
+                placeholder={promptPlaceholderValue}
                 rows={6}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
-                  'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0',
+                  'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
                 ref={textareaRef}
@@ -499,7 +496,7 @@ export function Composer({
             )}
 
             {(settingsBar || onGenerate) ? (
-              <div className="border-t border-border/70 px-4 py-3">
+              <div className="border-t border-border/65 px-4 py-3 dark:border-white/[0.06]">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                   {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
                   {onGenerate ? (
@@ -529,7 +526,14 @@ export function Composer({
                       >
                         <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
                         {formattedPrice ? (
-                          <span className="relative z-10 inline-flex items-center rounded-full border border-current/15 bg-surface-on-media-20 px-3 py-1 text-sm font-semibold normal-case">
+                          <span
+                            className={clsx(
+                              'relative z-10 inline-flex items-center rounded-full px-3.5 py-1 text-sm font-semibold normal-case backdrop-blur',
+                              isGenerateDisabled
+                                ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
+                                : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
+                            )}
+                          >
                             {formattedPrice}
                           </span>
                         ) : null}
@@ -557,7 +561,7 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              {orderedAssetFields.map(({ field, required, role }) => (
+              {orderedAssetFields.map(({ field, required, role, headerAction }) => (
                 <AssetDropzone
                   key={field.id}
                   engine={engine}
@@ -567,10 +571,12 @@ export function Composer({
                   isSoloField={orderedAssetFields.length === 1}
                   role={role}
                   assets={assets[field.id] ?? []}
+                  headerAction={headerAction}
                   onSelect={onAssetAdd}
                   onRemove={onAssetRemove}
                   onError={onNotice}
                   onOpenLibrary={onOpenLibrary}
+                  onUrlSelect={onAssetUrlSelect}
                   referenceWarning={composerCopy.assetSlots.referenceWarning}
                 />
               ))}
@@ -581,6 +587,7 @@ export function Composer({
                 <span className="font-semibold uppercase tracking-micro text-[11px] text-text-muted">OpenAI</span>
               </p>
             ) : null}
+            {afterAssets}
           </div>
         ) : null}
 
@@ -597,7 +604,7 @@ export function Composer({
               value={negativePrompt ?? ''}
               onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
               placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
-              className="h-11 w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35"
             />
           </div>
         ) : null}
@@ -608,7 +615,7 @@ export function Composer({
           </div>
         ) : null}
 
-        {extraFields ? <div className="space-y-4 border-t border-border/70 pt-4">{extraFields}</div> : null}
+        {extraFields ? <div className="space-y-4 border-t border-border/65 pt-4 dark:border-white/[0.06]">{extraFields}</div> : null}
       </div>
       {messages && messages.length > 0 ? (
         <ul className="mt-4 space-y-1 text-xs text-text-muted">
@@ -656,486 +663,5 @@ function renderPromotedActionIcon(icon: ComposerPromotedAction['icon']) {
         strokeLinejoin="round"
       />
     </svg>
-  );
-}
-
-interface AssetDropzoneProps {
-  engine: EngineCaps;
-  caps?: CapabilityCaps;
-  field: EngineInputField;
-  required: boolean;
-  isSoloField?: boolean;
-  role?: AssetFieldRole;
-  assets: (ComposerAttachment | null)[];
-  onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
-  onRemove?: (field: EngineInputField, index: number) => void;
-  onError?: (message: string) => void;
-  onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
-  referenceWarning?: string;
-}
-
-function AssetDropzone({
-  engine,
-  caps,
-  field,
-  required,
-  isSoloField = false,
-  role = 'generic',
-  assets,
-  onSelect,
-  onRemove,
-  onError,
-  onOpenLibrary,
-  referenceWarning,
-}: AssetDropzoneProps) {
-  const { locale } = useI18n();
-  const assetCopy = useMemo(() => getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale)), [locale]);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const maxCount = field.maxCount ?? 0;
-  const minCount = required ? (field.minCount ?? 1) : 0;
-  const acceptFormats = useMemo(
-    () => caps?.acceptsImageFormats?.map((format) => format.toLowerCase()) ?? [],
-    [caps?.acceptsImageFormats]
-  );
-  const accept = (() => {
-    if (field.type === 'image') {
-      return acceptFormats.length
-        ? acceptFormats.map((ext) => `.${ext.replace(/^\./, '').toLowerCase()}`).join(',')
-        : 'image/*';
-    }
-    if (field.type === 'audio') {
-      return 'audio/*';
-    }
-    return 'video/*';
-  })();
-  const limits = engine.inputLimits;
-  const constraints = engine.inputSchema?.constraints ?? {};
-  const readMediaDuration = useCallback((file: File, type: 'audio' | 'video') => {
-    return new Promise<number | null>((resolve) => {
-      if (typeof window === 'undefined') {
-        resolve(null);
-        return;
-      }
-      const objectUrl = URL.createObjectURL(file);
-      const element = document.createElement(type);
-      const cleanup = () => {
-        URL.revokeObjectURL(objectUrl);
-        element.removeAttribute('src');
-        element.load?.();
-      };
-      element.preload = 'metadata';
-      element.onloadedmetadata = () => {
-        const duration = Number.isFinite(element.duration) ? element.duration : null;
-        cleanup();
-        resolve(duration);
-      };
-      element.onerror = () => {
-        cleanup();
-        resolve(null);
-      };
-      element.src = objectUrl;
-    });
-  }, []);
-  const hideRequiredSlotCopy =
-    field.type === 'image' &&
-    (role === 'primary' || role === 'reference') &&
-    engine.modes.includes('t2v') &&
-    engine.modes.includes('i2v');
-
-  const slotCount = useMemo(() => {
-    if (maxCount > 0) return maxCount;
-    return Math.max(minCount, assets.length + 1, 1);
-  }, [assets.length, maxCount, minCount]);
-
-  const slotAssets = useMemo(() => {
-    const list = [...assets];
-    if (list.length < slotCount) {
-      for (let i = list.length; i < slotCount; i += 1) {
-        list.push(null);
-      }
-    }
-    return list;
-  }, [assets, slotCount]);
-
-  const handleFile = useCallback(
-    async (file: File, slotIndex: number) => {
-      if (!onSelect) return;
-      if (field.type === 'image') {
-        if (!file.type.startsWith('image/')) {
-          onError?.(assetCopy.dropImageFile);
-          return;
-        }
-        if (acceptFormats.length) {
-          const ext = file.name.split('.').pop()?.toLowerCase();
-          if (!ext || !acceptFormats.includes(ext)) {
-            onError?.(assetCopy.formatNotSupported(acceptFormats.map((entry) => entry.toUpperCase()).join(', ')));
-            return;
-          }
-        }
-      }
-      if (field.type === 'video' && !file.type.startsWith('video/')) {
-        onError?.(assetCopy.dropVideoFile);
-        return;
-      }
-      if (field.type === 'audio' && !file.type.startsWith('audio/')) {
-        onError?.(assetCopy.dropAudioFile);
-        return;
-      }
-      if (field.type === 'audio') {
-        const duration = await readMediaDuration(file, 'audio');
-        if (duration == null) {
-          onError?.(assetCopy.unableToReadAudioDuration);
-          return;
-        }
-        const minDurationSec = field.minDurationSec;
-        const maxDurationSec = field.maxDurationSec ?? limits.audioMaxDurationSec;
-        if (typeof minDurationSec === 'number' && duration < minDurationSec) {
-          onError?.(assetCopy.audioMinDuration(minDurationSec));
-          return;
-        }
-        if (typeof maxDurationSec === 'number' && duration > maxDurationSec) {
-          onError?.(assetCopy.audioMaxDuration(maxDurationSec));
-          return;
-        }
-        onSelect(field, file, slotIndex, { durationSec: duration });
-        return;
-      }
-      const maxSizeMB = field.type === 'image'
-        ? null
-        : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
-      if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
-        onError?.(assetCopy.fileTooLarge(maxSizeMB));
-        return;
-      }
-      onSelect(field, file, slotIndex);
-    },
-    [
-      acceptFormats,
-      assetCopy,
-      constraints.maxVideoSizeMB,
-      field,
-      limits.audioMaxDurationSec,
-      limits.videoMaxMB,
-      onError,
-      onSelect,
-      readMediaDuration,
-    ]
-  );
-
-  const onInputChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>, slotIndex: number) => {
-      const file = event.target.files?.[0];
-      event.target.value = '';
-      if (!file) return;
-      await handleFile(file, slotIndex);
-    },
-    [handleFile]
-  );
-
-  const handleDrop = useCallback(
-    async (event: DragEvent<HTMLDivElement>, slotIndex: number) => {
-      event.preventDefault();
-      const file = event.dataTransfer.files?.[0];
-      if (!file) return;
-      await handleFile(file, slotIndex);
-    },
-    [handleFile]
-  );
-
-  const helperLines = useMemo(() => {
-    const lines: string[] = [];
-    if (field.type === 'image') {
-      if (acceptFormats.length) {
-        lines.push(assetCopy.formats(acceptFormats.map((ext) => ext.toUpperCase()).join(', ')));
-      } else {
-        lines.push(assetCopy.formats('PNG, JPG, WebP'));
-      }
-      const maxImage = caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB;
-      if (maxImage) lines.push(assetCopy.mbMax(maxImage));
-    } else if (field.type === 'video') {
-      lines.push(assetCopy.formats('MP4, MOV'));
-      const maxVideo = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
-      if (maxVideo) lines.push(assetCopy.mbMax(maxVideo));
-      if (limits.videoMaxDurationSec) lines.push(assetCopy.secondsMax(limits.videoMaxDurationSec));
-    } else {
-      lines.push(assetCopy.formats('MP3, WAV, M4A'));
-      const maxAudio = constraints.maxAudioSizeMB ?? limits.audioMaxMB ?? limits.videoMaxMB;
-      if (maxAudio) lines.push(assetCopy.mbMax(maxAudio));
-      const minAudioDuration = field.minDurationSec;
-      const maxAudioDuration = field.maxDurationSec ?? limits.audioMaxDurationSec;
-      if (typeof minAudioDuration === 'number' && typeof maxAudioDuration === 'number') {
-        lines.push(assetCopy.secondsRequired(minAudioDuration, maxAudioDuration));
-      } else if (typeof maxAudioDuration === 'number') {
-        lines.push(assetCopy.secondsMax(maxAudioDuration));
-      }
-      if (field.id === 'audio_url') {
-        lines.push(assetCopy.videoLengthFollowsAudio);
-      }
-    }
-    if (field.maxCount && field.maxCount > 1) {
-      lines.push(assetCopy.upToFiles(field.maxCount));
-    }
-    if (field.minCount && field.minCount > 1) {
-      lines.push(assetCopy.atLeastFiles(field.minCount));
-    }
-    return lines;
-  }, [
-    acceptFormats,
-    caps?.maxUploadMB,
-    constraints.maxAudioSizeMB,
-    constraints.maxImageSizeMB,
-    constraints.maxVideoSizeMB,
-    field.maxCount,
-    field.maxDurationSec,
-    field.id,
-    field.minDurationSec,
-    field.minCount,
-    field.type,
-    limits.audioMaxDurationSec,
-    limits.audioMaxMB,
-    limits.imageMaxMB,
-    limits.videoMaxDurationSec,
-    limits.videoMaxMB,
-    assetCopy,
-  ]);
-
-  const fieldTitle =
-    role === 'primary'
-      ? field.label ?? assetCopy.primaryImageFallback
-      : role === 'reference'
-        ? field.label ?? assetCopy.additionalReferencesFallback
-        : role === 'frame'
-          ? field.label ?? assetCopy.frameFallback
-          : field.label;
-  const roleDescription =
-    role === 'primary'
-      ? assetCopy.primaryRoleDescription
-      : role === 'reference'
-        ? assetCopy.referenceRoleDescription
-        : role === 'frame'
-          ? assetCopy.frameRoleDescription
-          : null;
-  const detailsTooltip = [
-    roleDescription,
-    field.description,
-    referenceWarning && role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id) ? referenceWarning : null,
-    helperLines.length ? helperLines.join(' • ') : null,
-  ]
-    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    .join('\n');
-  const fullBleedSingleAsset = slotAssets.length === 1 && slotAssets[0] != null && slotAssets[0]?.kind !== 'audio';
-  const multiSlotGridClass =
-    slotAssets.length >= 4
-      ? 'grid-cols-2 lg:grid-cols-4'
-      : slotAssets.length === 3
-        ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
-        : slotAssets.length <= 1
-          ? 'grid-cols-1'
-          : 'grid-cols-1 sm:grid-cols-2';
-  const shouldLimitSoloWidth = isSoloField && slotAssets.length === 1;
-
-  return (
-    <div
-      className={clsx(
-        'flex min-w-[260px]',
-        shouldLimitSoloWidth ? 'w-full flex-none sm:max-w-[640px]' : 'w-full flex-1'
-      )}
-    >
-      <div
-        className={clsx(
-          'flex w-full flex-col rounded-input border border-dashed border-border bg-surface-glass-80 text-text-secondary',
-          fullBleedSingleAsset ? 'relative min-h-[260px] overflow-hidden' : 'gap-4 p-4'
-        )}
-      >
-        <div className={clsx('flex items-center gap-2', fullBleedSingleAsset && 'absolute left-4 top-4 z-10')}>
-          <span
-            className={clsx(
-              'text-sm font-medium',
-              fullBleedSingleAsset ? 'text-on-inverse drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]' : 'text-text-primary'
-            )}
-          >
-            {fieldTitle}
-          </span>
-          {detailsTooltip ? (
-            <button
-              type="button"
-              className={clsx(
-                'inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] transition',
-                fullBleedSingleAsset
-                  ? 'border border-surface-on-media-25 bg-surface-on-media-dark-35 text-on-inverse backdrop-blur hover:bg-surface-on-media-dark-50'
-                  : 'border border-border/80 text-text-muted hover:border-text-muted hover:text-text-primary'
-              )}
-              title={detailsTooltip}
-              aria-label={detailsTooltip}
-            >
-              <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
-                <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M10 9.1V13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                <circle cx="10" cy="6.5" r="0.9" fill="currentColor" />
-              </svg>
-            </button>
-          ) : null}
-        </div>
-
-        <div
-          className={clsx(
-            'grid gap-2',
-            fullBleedSingleAsset && 'h-full',
-            multiSlotGridClass
-          )}
-        >
-          {slotAssets.map((asset, index) => {
-            const slotRequired = index < minCount;
-            const showRequiredHint = slotRequired && engine.id !== 'wan-2-6' && !hideRequiredSlotCopy;
-            const canOpenLibrary = Boolean(onOpenLibrary && (field.type === 'image' || field.type === 'video'));
-            const flattenSlotSurface = slotAssets.length === 1;
-            const filledSingleSlot = flattenSlotSurface && asset != null;
-            const allowClick = asset == null || asset?.kind !== 'audio';
-            return (
-              <div
-                key={`${field.id}-slot-${index}`}
-                className={clsx(
-                  'relative flex w-full flex-col justify-center overflow-hidden text-center text-[12px] text-text-muted transition',
-                  filledSingleSlot
-                    ? fullBleedSingleAsset
-                      ? 'min-h-[260px] h-full rounded-none border-0 bg-transparent'
-                      : 'min-h-[228px] rounded-[20px] border border-border/60 bg-surface'
-                    : flattenSlotSurface
-                    ? 'min-h-[132px] rounded-[18px] border-0 bg-transparent'
-                    : 'h-40 rounded-[18px] border border-border/60 bg-surface/80',
-                  allowClick
-                    ? filledSingleSlot
-                      ? 'cursor-pointer hover:border-brand/50'
-                      : flattenSlotSurface
-                      ? 'cursor-pointer hover:bg-surface-2/70'
-                      : 'cursor-pointer hover:border-brand/50 hover:bg-surface-2'
-                    : 'cursor-default'
-                )}
-                onClick={() => {
-                  if (!allowClick) return;
-                  if (asset) {
-                    if (canOpenLibrary) {
-                      onOpenLibrary?.(field, index);
-                      return;
-                    }
-                    const input = inputRefs.current[index];
-                    if (input) input.click();
-                    return;
-                  }
-                  if (canOpenLibrary) {
-                    onOpenLibrary?.(field, index);
-                    return;
-                  }
-                  const input = inputRefs.current[index];
-                  if (input) input.click();
-                }}
-                title={asset ? undefined : canOpenLibrary ? assetCopy.selectAsset : assetCopy.upload}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                }}
-                onDrop={(event) => {
-                  handleDrop(event, index);
-                }}
-              >
-                <input
-                  ref={(element) => {
-                    inputRefs.current[index] = element;
-                  }}
-                  type="file"
-                  accept={accept}
-                  className="sr-only"
-                  onChange={(event) => onInputChange(event, index)}
-                />
-                {asset ? (
-                  <>
-                    {fullBleedSingleAsset ? (
-                      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-24 bg-gradient-to-b from-black/55 via-black/18 to-transparent" />
-                    ) : null}
-                    {asset.kind === 'image' ? (
-                      <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full bg-surface object-cover" />
-                    ) : asset.kind === 'audio' ? (
-                      <div className="absolute inset-0 flex items-center justify-center bg-surface p-4">
-                        <audio src={asset.previewUrl} controls className="w-full" />
-                      </div>
-                    ) : (
-                      <>
-                        <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-cover" />
-                        <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
-                      </>
-                    )}
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="absolute right-3 top-3 z-10 h-9 w-9 rounded-full border border-white/30 bg-black/62 p-0 text-white shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur transition hover:bg-black/78 focus-visible:ring-2 focus-visible:ring-white/70"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onRemove?.(field, index);
-                      }}
-                      aria-label={assetCopy.remove}
-                      title={assetCopy.remove}
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden />
-                    </Button>
-                    {asset.status === 'uploading' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-surface-on-media-dark-50 px-3 text-xs font-medium uppercase tracking-widest text-on-inverse">
-                        {assetCopy.uploading}
-                      </div>
-                    )}
-                    {asset.status === 'error' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-on-media-dark-60 px-4 text-center text-xs text-on-inverse">
-                        <span>{asset.error ?? assetCopy.uploadFailed}</span>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="min-h-0 h-auto rounded-full bg-surface px-3 py-1 text-[11px] font-medium text-text-primary shadow-none hover:bg-surface"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onRemove?.(field, index);
-                          }}
-                        >
-                          {assetCopy.remove}
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-4 px-4 text-center">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border/75 bg-surface-2/80 text-text-secondary">
-                      <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
-                        <path
-                          d="M10 4.5v11m-5.5-5.5h11"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
-                    {showRequiredHint && <span className="text-[10px] text-warning">{assetCopy.neededBeforeGenerating}</span>}
-                    <div className="flex w-full items-center justify-center gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="min-h-0 h-auto rounded-full border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          const input = inputRefs.current[index];
-                          if (input) input.click();
-                        }}
-                      >
-                        {assetCopy.upload}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
   );
 }

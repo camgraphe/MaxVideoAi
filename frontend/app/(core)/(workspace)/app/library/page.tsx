@@ -321,11 +321,11 @@ export default function LibraryPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-bg lg:h-[100dvh]">
       <HeaderBar />
-      <div className="flex flex-1 min-w-0">
+      <div className="flex min-h-0 flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:overflow-hidden lg:p-7">
+        <main className="flex-1 min-w-0 p-5 lg:min-h-0 lg:overflow-hidden lg:p-7">
           {authLoading ? (
             <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
               <div className="h-4 w-24 rounded bg-surface-2" />
@@ -348,7 +348,7 @@ export default function LibraryPage() {
             </section>
           ) : (
             <>
-              <div className="pb-8 lg:h-full lg:min-h-0 lg:pb-0">
+              <div className="pb-8 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:pb-0">
                 <input
                   ref={importInputRef}
                   type="file"

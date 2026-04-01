@@ -36,7 +36,7 @@ interface AssetLibraryBrowserProps {
   isLoading: boolean;
   error?: string | null;
   source: AssetLibrarySource;
-  availableSources: AssetLibrarySource[];
+  availableSources: readonly AssetLibrarySource[];
   sourceLabels: Partial<Record<AssetLibrarySource, string>>;
   onSourceChange: (source: AssetLibrarySource) => void;
   headerActions?: ReactNode;
@@ -139,7 +139,7 @@ export function AssetLibraryBrowser({
     <div
       className={clsx(
         isPageLayout
-          ? 'flex w-full flex-col gap-4 lg:h-full lg:min-h-0'
+          ? 'flex w-full flex-col gap-4 lg:min-h-0 lg:flex-1'
           : 'flex h-full w-full flex-col overflow-y-auto overscroll-contain rounded-[24px] border border-border/70 bg-surface shadow-float lg:overflow-hidden lg:rounded-[28px]',
         className
       )}
@@ -168,7 +168,7 @@ export function AssetLibraryBrowser({
 
       <div
         className={clsx(
-          isPageLayout ? 'flex w-full flex-col gap-4 lg:h-full lg:min-h-0 lg:flex-row lg:gap-8' : 'flex min-h-0 flex-1 flex-col lg:flex-row'
+          isPageLayout ? 'flex w-full flex-col gap-4 lg:min-h-0 lg:flex-1 lg:flex-row lg:gap-8' : 'flex min-h-0 flex-1 flex-col lg:flex-row'
         )}
       >
         <aside
@@ -263,11 +263,12 @@ export function AssetLibraryBrowser({
             isPageLayout ? 'bg-transparent lg:min-h-0 lg:overflow-hidden' : 'bg-surface lg:min-h-0'
           )}
         >
-
           <div
             className={clsx(
               'flex-1 overflow-visible',
-              isPageLayout ? 'lg:min-h-0 lg:overflow-y-auto lg:pr-2' : 'bg-surface-2/35 p-4 lg:min-h-0 lg:overflow-y-auto lg:p-6'
+              isPageLayout
+                ? 'lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-2'
+                : 'bg-surface-2/35 p-4 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:p-6'
             )}
           >
             {error ? (
