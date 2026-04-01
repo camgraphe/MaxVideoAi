@@ -4,10 +4,11 @@
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import type { Ref, ChangeEvent, DragEvent, ReactNode } from 'react';
+import { Trash2 } from 'lucide-react';
 import type { EngineCaps, EngineInputField, Mode, PreflightResponse } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -400,9 +401,10 @@ export function Composer({
                     title={action.tooltip ?? action.label}
                     aria-label={action.tooltip ?? action.label}
                     aria-pressed={action.active}
-                    className="min-h-0 h-8 w-8 rounded-full px-0 py-0"
+                    className="min-h-0 h-8 rounded-full px-2.5 py-0 text-[10px] font-semibold"
                   >
-                    {renderPromotedActionIcon(action.icon)}
+                    <span className="shrink-0">{renderPromotedActionIcon(action.icon)}</span>
+                    <span className="whitespace-nowrap">{action.label}</span>
                   </Button>
                 ))}
               </div>
@@ -553,17 +555,13 @@ export function Composer({
                   caps={caps}
                   field={field}
                   required={required}
+                  isSoloField={orderedAssetFields.length === 1}
                   role={role}
                   assets={assets[field.id] ?? []}
                   onSelect={onAssetAdd}
                   onRemove={onAssetRemove}
                   onError={onNotice}
                   onOpenLibrary={onOpenLibrary}
-                  assetSlotCta={
-                    field.type === 'image'
-                      ? { href: composerCopy.assetSlots.imageCtaHref, label: composerCopy.assetSlots.imageCtaLabel }
-                      : undefined
-                  }
                   referenceWarning={composerCopy.assetSlots.referenceWarning}
                 />
               ))}
@@ -657,13 +655,13 @@ interface AssetDropzoneProps {
   caps?: CapabilityCaps;
   field: EngineInputField;
   required: boolean;
+  isSoloField?: boolean;
   role?: AssetFieldRole;
   assets: (ComposerAttachment | null)[];
   onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
-  assetSlotCta?: { href: string; label: string };
   referenceWarning?: string;
 }
 
@@ -672,13 +670,13 @@ function AssetDropzone({
   caps,
   field,
   required,
+  isSoloField = false,
   role = 'generic',
   assets,
   onSelect,
   onRemove,
   onError,
   onOpenLibrary,
-  assetSlotCta,
   referenceWarning,
 }: AssetDropzoneProps) {
   const { locale } = useI18n();
@@ -892,68 +890,128 @@ function AssetDropzone({
     assetCopy,
   ]);
 
+  const fieldTitle =
+    role === 'primary'
+      ? field.label ?? assetCopy.primaryImageFallback
+      : role === 'reference'
+        ? field.label ?? assetCopy.additionalReferencesFallback
+        : role === 'frame'
+          ? field.label ?? assetCopy.frameFallback
+          : field.label;
+  const roleDescription =
+    role === 'primary'
+      ? assetCopy.primaryRoleDescription
+      : role === 'reference'
+        ? assetCopy.referenceRoleDescription
+        : role === 'frame'
+          ? assetCopy.frameRoleDescription
+          : null;
+  const detailsTooltip = [
+    roleDescription,
+    field.description,
+    referenceWarning && role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id) ? referenceWarning : null,
+    helperLines.length ? helperLines.join(' • ') : null,
+  ]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .join('\n');
+  const fullBleedSingleAsset = slotAssets.length === 1 && slotAssets[0] != null && slotAssets[0]?.kind !== 'audio';
+
   return (
-    <div className="flex min-w-[260px] flex-1">
-      <div className="flex w-full flex-col gap-4 rounded-input border border-dashed border-border bg-surface-glass-80 p-4 text-text-secondary">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <span className="text-sm font-medium text-text-primary">
-              {role === 'primary'
-                ? field.label ?? assetCopy.primaryImageFallback
-                : role === 'reference'
-                  ? field.label ?? assetCopy.additionalReferencesFallback
-                  : role === 'frame'
-                    ? field.label ?? assetCopy.frameFallback
-                    : field.label}
-            </span>
-            {(role === 'primary' || role === 'reference' || role === 'frame' || field.description) && (
-              <p className="text-[11px] text-text-muted">
-                {role === 'primary'
-                  ? assetCopy.primaryRoleDescription
-                  : role === 'reference'
-                    ? assetCopy.referenceRoleDescription
-                    : role === 'frame'
-                      ? assetCopy.frameRoleDescription
-                      : null}
-                {field.description ? ` ${field.description}` : ''}
-              </p>
+    <div
+      className={clsx(
+        'flex min-w-[260px]',
+        isSoloField ? 'w-full flex-none sm:max-w-[640px]' : 'flex-1'
+      )}
+    >
+      <div
+        className={clsx(
+          'flex w-full flex-col rounded-input border border-dashed border-border bg-surface-glass-80 text-text-secondary',
+          fullBleedSingleAsset ? 'relative min-h-[260px] overflow-hidden' : 'gap-4 p-4'
+        )}
+      >
+        <div className={clsx('flex items-center gap-2', fullBleedSingleAsset && 'absolute left-4 top-4 z-10')}>
+          <span
+            className={clsx(
+              'text-sm font-medium',
+              fullBleedSingleAsset ? 'text-on-inverse drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]' : 'text-text-primary'
             )}
-            {referenceWarning && role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id) && (
-              <p className="mt-1 text-[11px] text-state-warning">{referenceWarning}</p>
-            )}
-          </div>
-          <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', required ? 'border-brand text-brand' : 'border-border text-text-muted')}>
-            {required ? assetCopy.required : assetCopy.optional}
+          >
+            {fieldTitle}
           </span>
+          {detailsTooltip ? (
+            <button
+              type="button"
+              className={clsx(
+                'inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] transition',
+                fullBleedSingleAsset
+                  ? 'border border-surface-on-media-25 bg-surface-on-media-dark-35 text-on-inverse backdrop-blur hover:bg-surface-on-media-dark-50'
+                  : 'border border-border/80 text-text-muted hover:border-text-muted hover:text-text-primary'
+              )}
+              title={detailsTooltip}
+              aria-label={detailsTooltip}
+            >
+              <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
+                <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M10 9.1V13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="10" cy="6.5" r="0.9" fill="currentColor" />
+              </svg>
+            </button>
+          ) : null}
         </div>
 
         <div
           className={clsx(
             'grid gap-2',
+            fullBleedSingleAsset && 'h-full',
             slotAssets.length <= 1 ? 'sm:grid-cols-1' : 'sm:grid-cols-2'
           )}
         >
           {slotAssets.map((asset, index) => {
             const slotRequired = index < minCount;
             const showRequiredHint = slotRequired && engine.id !== 'wan-2-6' && !hideRequiredSlotCopy;
-            const slotLabel = hideRequiredSlotCopy
-              ? assetCopy.imageSlot
-              : slotRequired
-                ? assetCopy.required
-                : assetCopy.optional;
-            const allowClick = asset === null || maxCount === 0;
+            const canOpenLibrary = Boolean(onOpenLibrary && (field.type === 'image' || field.type === 'video'));
+            const flattenSlotSurface = slotAssets.length === 1;
+            const filledSingleSlot = flattenSlotSurface && asset != null;
+            const allowClick = asset == null || asset?.kind !== 'audio';
             return (
               <div
                 key={`${field.id}-slot-${index}`}
                 className={clsx(
-                  'relative flex h-36 w-full flex-col justify-center overflow-hidden rounded-card border border-border/70 bg-surface text-center text-[12px] text-text-muted transition',
-                  allowClick ? 'cursor-pointer hover:border-text-muted hover:bg-surface-2' : 'cursor-default'
+                  'relative flex w-full flex-col justify-center overflow-hidden text-center text-[12px] text-text-muted transition',
+                  filledSingleSlot
+                    ? fullBleedSingleAsset
+                      ? 'min-h-[260px] h-full rounded-none border-0 bg-transparent'
+                      : 'min-h-[228px] rounded-[20px] border border-border/60 bg-surface'
+                    : flattenSlotSurface
+                    ? 'min-h-[132px] rounded-[18px] border-0 bg-transparent'
+                    : 'h-40 rounded-[18px] border border-border/60 bg-surface/80',
+                  allowClick
+                    ? filledSingleSlot
+                      ? 'cursor-pointer hover:border-brand/50'
+                      : flattenSlotSurface
+                      ? 'cursor-pointer hover:bg-surface-2/70'
+                      : 'cursor-pointer hover:border-brand/50 hover:bg-surface-2'
+                    : 'cursor-default'
                 )}
                 onClick={() => {
                   if (!allowClick) return;
+                  if (asset) {
+                    if (canOpenLibrary) {
+                      onOpenLibrary?.(field, index);
+                      return;
+                    }
+                    const input = inputRefs.current[index];
+                    if (input) input.click();
+                    return;
+                  }
+                  if (canOpenLibrary) {
+                    onOpenLibrary?.(field, index);
+                    return;
+                  }
                   const input = inputRefs.current[index];
                   if (input) input.click();
                 }}
+                title={asset ? undefined : canOpenLibrary ? assetCopy.selectAsset : assetCopy.upload}
                 onDragOver={(event) => {
                   event.preventDefault();
                 }}
@@ -972,35 +1030,35 @@ function AssetDropzone({
                 />
                 {asset ? (
                   <>
+                    {fullBleedSingleAsset ? (
+                      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-24 bg-gradient-to-b from-black/55 via-black/18 to-transparent" />
+                    ) : null}
                     {asset.kind === 'image' ? (
-                      <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full bg-surface object-contain" />
+                      <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full bg-surface object-cover" />
                     ) : asset.kind === 'audio' ? (
                       <div className="absolute inset-0 flex items-center justify-center bg-surface p-4">
                         <audio src={asset.previewUrl} controls className="w-full" />
                       </div>
                     ) : (
                       <>
-                            <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-contain" />
-                            <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
-                          </>
-                        )}
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-surface-on-media-dark-50 px-2 py-1 text-[11px] text-on-inverse">
-                      <span className="truncate" title={asset.name}>
-                        {asset.name}
-                      </span>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="min-h-0 h-auto rounded-full bg-surface-glass-90 px-2 py-0.5 text-[10px] font-medium text-text-secondary shadow-none hover:bg-surface hover:text-text-primary"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onRemove?.(field, index);
-                        }}
-                      >
-                        {assetCopy.remove}
-                      </Button>
-                    </div>
+                        <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-cover" />
+                        <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
+                      </>
+                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="absolute right-3 top-3 z-10 h-9 w-9 rounded-full border border-white/30 bg-black/62 p-0 text-white shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur transition hover:bg-black/78 focus-visible:ring-2 focus-visible:ring-white/70"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onRemove?.(field, index);
+                      }}
+                      aria-label={assetCopy.remove}
+                      title={assetCopy.remove}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden />
+                    </Button>
                     {asset.status === 'uploading' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-surface-on-media-dark-50 px-3 text-xs font-medium uppercase tracking-widest text-on-inverse">
                         {assetCopy.uploading}
@@ -1025,58 +1083,35 @@ function AssetDropzone({
                     )}
                   </>
                 ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-1.5 px-3 text-center">
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
-                      {assetCopy.slotSuffix(slotLabel)}
-                    </span>
-                    <span className="text-[11px] text-text-muted">
-                      {assetCopy.addFile(helperLines.length > 0 ? helperLines.join(' • ') : '')}
-                    </span>
+                  <div className="flex h-full flex-col items-center justify-center gap-4 px-4 text-center">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border/75 bg-surface-2/80 text-text-secondary">
+                      <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
+                        <path
+                          d="M10 4.5v11m-5.5-5.5h11"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </div>
                     {showRequiredHint && <span className="text-[10px] text-warning">{assetCopy.neededBeforeGenerating}</span>}
-                    {(field.type === 'image' || field.type === 'video') && (
-                      <div className="flex w-full items-center justify-center gap-2 pt-1">
-                        {assetSlotCta ? (
-                          <ButtonLink
-                            href={assetSlotCta.href}
-                            size="sm"
-                            variant="outline"
-                            className="min-h-0 h-auto flex-1 rounded-full border-brand px-2 py-1 text-[10px] font-semibold text-brand hover:bg-surface-2"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            {assetSlotCta.label}
-                          </ButtonLink>
-                        ) : null}
-                        {onOpenLibrary ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="min-h-0 h-auto flex-1 rounded-full border-border px-2 py-1 text-[10px] font-semibold text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onOpenLibrary(field, index);
-                            }}
-                          >
-                            {assetCopy.library}
-                          </Button>
-                        ) : null}
-                      </div>
-                    )}
+                    <div className="flex w-full items-center justify-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="min-h-0 h-auto rounded-full border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          const input = inputRefs.current[index];
+                          if (input) input.click();
+                        }}
+                      >
+                        {assetCopy.upload}
+                      </Button>
+                    </div>
                   </div>
-                )}
-                {asset && onOpenLibrary && (field.type === 'image' || field.type === 'video') && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="absolute bottom-2 right-2 min-h-0 h-auto rounded-full bg-surface-glass-90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary shadow-none hover:bg-surface hover:text-text-primary"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onOpenLibrary(field, index);
-                    }}
-                  >
-                    {assetCopy.library}
-                  </Button>
                 )}
               </div>
             );

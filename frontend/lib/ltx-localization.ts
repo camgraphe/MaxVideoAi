@@ -25,6 +25,12 @@ type AssetDropzoneCopy = {
   slotSuffix: (label: string) => string;
   addFile: (details: string) => string;
   neededBeforeGenerating: string;
+  upload: string;
+  selectAsset: string;
+  createImage: string;
+  changeAngle: string;
+  characterBuilder: string;
+  info: string;
   library: string;
   remove: string;
   required: string;
@@ -287,6 +293,12 @@ const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     slotSuffix: (label) => `${label} slot`,
     addFile: (details) => `Drag & drop or click to add.${details ? ` ${details}` : ''}`,
     neededBeforeGenerating: 'Needed before generating.',
+    upload: 'Upload',
+    selectAsset: 'Select asset',
+    createImage: 'Create image',
+    changeAngle: 'Change angle',
+    characterBuilder: 'Character builder',
+    info: 'Field details',
     library: 'Library',
     remove: 'Remove',
     required: 'Required',
@@ -321,6 +333,12 @@ const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     slotSuffix: (label) => `Slot ${label}`,
     addFile: (details) => `Glissez-déposez ou cliquez pour ajouter.${details ? ` ${details}` : ''}`,
     neededBeforeGenerating: 'Nécessaire avant génération.',
+    upload: 'Upload',
+    selectAsset: 'Sélectionner un asset',
+    createImage: 'Créer une image',
+    changeAngle: 'Changer l’angle',
+    characterBuilder: 'Character Builder',
+    info: 'Détails du champ',
     library: 'Bibliothèque',
     remove: 'Retirer',
     required: 'Obligatoire',
@@ -355,6 +373,12 @@ const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     slotSuffix: (label) => `Slot de ${label}`,
     addFile: (details) => `Arrastra y suelta o haz clic para añadir.${details ? ` ${details}` : ''}`,
     neededBeforeGenerating: 'Necesario antes de generar.',
+    upload: 'Subir',
+    selectAsset: 'Seleccionar asset',
+    createImage: 'Crear imagen',
+    changeAngle: 'Cambiar ángulo',
+    characterBuilder: 'Character Builder',
+    info: 'Detalles del campo',
     library: 'Biblioteca',
     remove: 'Eliminar',
     required: 'Obligatorio',
