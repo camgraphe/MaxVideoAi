@@ -22,6 +22,12 @@ const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
     posterUrl: '/hero/veo3.jpg',
     hasAudio: true,
   },
+  'veo-3-1-lite': {
+    videoUrl: 'https://v3b.fal.media/files/b/0a949299/CRknSuYHK6oMgLxp9a1RD_87571c2de4194c71a1a495b45f875914.mp4',
+    posterUrl:
+      'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0a6e2df3-0107-4ea7-8f70-6e03e406f39b.jpg',
+    hasAudio: true,
+  },
   'pika-text-to-video': {
     videoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
     posterUrl: '/hero/pika-22.jpg',

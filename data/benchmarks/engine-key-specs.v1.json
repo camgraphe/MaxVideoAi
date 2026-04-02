@@ -149,6 +149,41 @@
       }
     },
     {
+      "modelSlug": "veo-3-1-lite",
+      "sources": [
+        "https://maxvideoai.com/models/veo-3-1-lite",
+        "https://fal.ai/models/fal-ai/veo3.1/lite",
+        "https://fal.ai/models/fal-ai/veo3.1/lite/image-to-video",
+        "https://fal.ai/models/fal-ai/veo3.1/lite/first-last-frame-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported (single start image)",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p",
+        "maxDuration": "8s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported (always on)",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Apr 2026"
+      }
+    },
+    {
       "modelSlug": "ltx-2",
       "sources": [
         "https://maxvideoai.com/models/ltx-2",

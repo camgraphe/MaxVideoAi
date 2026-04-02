@@ -77,6 +77,7 @@ export const LEGACY_SURFACELESS_MODEL_SLUGS = [
   'sora-2-pro',
   'veo-3-1',
   'veo-3-1-fast',
+  'veo-3-1-lite',
   'wan-2-5',
   'wan-2-6',
 ] as const;
@@ -98,6 +99,7 @@ export const LEGACY_COMPARE_INDEXED_ENGINE_SLUGS = [
   'sora-2-pro',
   'veo-3-1',
   'veo-3-1-fast',
+  'veo-3-1-lite',
   'wan-2-5',
   'wan-2-6',
 ] as const;
@@ -107,6 +109,7 @@ export const LEGACY_APP_DISCOVERY_PRIORITY = [
   'sora-2-pro',
   'veo-3-1',
   'veo-3-1-fast',
+  'veo-3-1-lite',
   'pika-text-to-video',
   'minimax-hailuo-02-text',
   'nano-banana-2',
@@ -116,6 +119,7 @@ export const LEGACY_APP_DISCOVERY_PRIORITY = [
 
 const LEGACY_COMPARE_SUGGESTED_OPPONENTS: Record<string, string[]> = {
   'veo-3-1': ['kling-3-pro', 'veo-3-1-fast', 'sora-2'],
+  'veo-3-1-lite': ['veo-3-1-fast', 'veo-3-1', 'ltx-2-fast'],
   'kling-3-pro': ['veo-3-1', 'sora-2', 'seedance-1-5-pro'],
   'sora-2': ['veo-3-1', 'kling-3-pro', 'seedance-2-0'],
   'pika-text-to-video': ['seedance-2-0', 'minimax-hailuo-02-text', 'ltx-2-fast'],
@@ -133,6 +137,7 @@ const LEGACY_APP_VARIANTS: Record<string, Pick<AppPublicationConfig, 'variantGro
   'sora-2-pro': { variantGroup: 'sora', variantLabel: 'Pro' },
   'veo-3-1': { variantGroup: 'veo-3-1', variantLabel: 'Standard' },
   'veo-3-1-fast': { variantGroup: 'veo-3-1', variantLabel: 'Fast' },
+  'veo-3-1-lite': { variantGroup: 'veo-3-1', variantLabel: 'Lite' },
   'kling-3-standard': { variantGroup: 'kling-3', variantLabel: 'Standard' },
   'kling-3-pro': { variantGroup: 'kling-3', variantLabel: 'Pro' },
   'ltx-2-3-pro': { variantGroup: 'ltx-2-3', variantLabel: 'Pro' },

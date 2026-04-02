@@ -112,6 +112,22 @@
     }
   },
   {
+    "engineId": "veo-3-1-lite",
+    "marketingName": "Google Veo 3.1 Lite",
+    "brandId": "google-veo",
+    "modelSlug": "veo-3-1-lite",
+    "family": "veo",
+    "versionLabel": "3.1 Lite",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "kling-2-5-turbo",
     "marketingName": "Kling 2.5 Turbo",
     "brandId": "kling",

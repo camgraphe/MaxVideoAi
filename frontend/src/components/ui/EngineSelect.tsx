@@ -78,6 +78,9 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
     fl2v: 'First/Last',
     extend: 'Extend',
   },
+  'veo-3-1-lite': {
+    fl2v: 'First/Last',
+  },
   'kling-2-5-turbo': {
     t2v: 'Pro · Text',
     i2v: 'Pro · Image',
@@ -113,6 +116,10 @@ function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[
   }
   if (engineId === 'veo-3-1-fast') {
     const order: Mode[] = ['t2v', 'i2v', 'fl2v', 'extend'];
+    return order.filter((mode) => modes.includes(mode));
+  }
+  if (engineId === 'veo-3-1-lite') {
+    const order: Mode[] = ['t2v', 'i2v', 'fl2v'];
     return order.filter((mode) => modes.includes(mode));
   }
   return modes;

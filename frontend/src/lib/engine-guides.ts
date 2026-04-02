@@ -28,6 +28,11 @@ export const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'Veo 3.1 Fast now handles quick prompts, image-to-video, first/last transitions, and extend runs with optional audio.',
     badges: ['Text prompts', 'First/Last', 'Audio option'],
   },
+  'veo-3-1-lite': {
+    description:
+      'Veo 3.1 Lite keeps the same unified Veo flow for prompts, start-image animation, and first/last transitions at a lower cost with audio always on.',
+    badges: ['Text prompts', 'First/Last', 'Audio always on'],
+  },
   'minimax-hailuo-02-text': {
     description:
       'Hailuo 02 Standard handles stylized text prompts or animated reference stills with prompt optimiser support.',

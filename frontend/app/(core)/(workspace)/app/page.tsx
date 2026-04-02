@@ -1269,7 +1269,7 @@ function serializePendingRenders(renders: LocalRender[]): string | null {
 
 const DEBOUNCE_MS = 200;
 const PRIMARY_IMAGE_SLOT_IDS = ['image_url', 'input_image', 'image'] as const;
-const UNIFIED_VEO_FIRST_LAST_ENGINE_IDS = new Set(['veo-3-1', 'veo-3-1-fast']);
+const UNIFIED_VEO_FIRST_LAST_ENGINE_IDS = new Set(['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']);
 
 export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
@@ -3758,6 +3758,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       const available = order.filter((value) => selectedEngine.modes.includes(value));
       return available.length ? available : undefined;
     }
+    if (selectedEngine.id === 'veo-3-1-lite') {
+      return undefined;
+    }
     if (selectedEngine.id === 'ltx-2-3') {
       const order: Mode[] = ['extend', 'retake'];
       const available = order.filter((value) => selectedEngine.modes.includes(value));
@@ -4452,6 +4455,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ? (['ref2v', 'extend'] as const)
           : selectedEngine.id === 'veo-3-1-fast'
             ? (['extend'] as const)
+            : selectedEngine.id === 'veo-3-1-lite'
+              ? ([] as const)
             : null;
     if (!explicitModes) return undefined;
     const disabledReason = audioWorkflowLocked
@@ -4477,7 +4482,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (audioWorkflowUnsupported) {
       return workflowCopy.audioUnsupported;
     }
-    if (selectedEngine.id === 'ltx-2-3' || selectedEngine.id === 'veo-3-1' || selectedEngine.id === 'veo-3-1-fast') {
+    if (
+      selectedEngine.id === 'ltx-2-3' ||
+      selectedEngine.id === 'veo-3-1' ||
+      selectedEngine.id === 'veo-3-1-fast' ||
+      selectedEngine.id === 'veo-3-1-lite'
+    ) {
       return workflowCopy.audioLocked;
     }
     return workflowCopy.audioLockedFallback;

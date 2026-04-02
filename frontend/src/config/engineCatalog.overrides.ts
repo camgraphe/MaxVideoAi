@@ -25,6 +25,9 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     'veo-3-1-fast': {
       bestFor: 'Fast iterations',
     },
+    'veo-3-1-lite': {
+      bestFor: 'Budget Veo drafts',
+    },
     'kling-2-6-pro': {
       bestFor: 'Cinematic dialogue',
     },

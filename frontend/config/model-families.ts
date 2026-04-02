@@ -52,13 +52,13 @@ export const MODEL_FAMILIES = [
     navLabel: 'Veo 3.1',
     brandId: 'google-veo',
     defaultModelSlug: 'veo-3-1',
-    routeAliases: ['veo-3-1', 'veo-3-1-fast'],
-    aliases: ['veo-3', 'veo3', 'veo3.1', 'veo-3-fast', 'veo3-fast'],
+    routeAliases: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'],
+    aliases: ['veo-3', 'veo3', 'veo3.1', 'veo-3-fast', 'veo3-fast', 'veo-3-lite', 'veo3-lite', 'veo3.1-lite'],
     prefixes: ['veo', 'veo-3', 'veo3'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['veo-3-1', 'veo-3-1-fast'],
+      publishedModelSlugs: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'],
     },
   },
   {

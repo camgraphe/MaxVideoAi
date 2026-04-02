@@ -487,6 +487,8 @@ const en: Dictionary = {
       descriptions: {
         'sora-2': 'Text/image remix with native audio.',
         'veo-3-1': 'Swap between text-to-video prompts or multi-image reference control.',
+        'veo-3-1-fast': 'Use Veo 3.1 Fast for quick text, start-image, last-frame, and extend passes.',
+        'veo-3-1-lite': 'Use Veo 3.1 Lite for lower-cost text, start-image, and last-frame passes with audio always on.',
         'pika-text-to-video': 'Quick social loops with captions and remix-friendly settings.',
         'minimax-hailuo-02-text': 'Prompt-optimised drafts before the hero render.',
       },
@@ -648,6 +650,12 @@ const en: Dictionary = {
         description: 'Fast text, image, first/last, and extend workflows with optional audio.',
         priceBefore: 'Live pricing updates inside the Generate workspace.',
         versionLabel: 'Veo 3.1 Fast',
+      },
+      'veo-3-1-lite': {
+        displayName: 'Google Veo 3.1 Lite',
+        description: 'Lower-cost Veo passes for text prompts, start-image animation, and last-frame control with audio always on.',
+        priceBefore: 'Live pricing updates inside the Generate workspace.',
+        versionLabel: 'Veo 3.1 Lite',
       },
       'pika-text-to-video': {
         displayName: 'Pika 2.2 · Text & Image to Video',

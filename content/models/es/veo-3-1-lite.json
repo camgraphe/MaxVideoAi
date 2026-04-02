@@ -1,0 +1,379 @@
+{
+  "marketingName": "Google Veo 3.1 Lite",
+  "versionLabel": "3.1 Lite",
+  "seo": {
+    "title": "Veo 3.1 Lite (4–8s, 1080p) — especificaciones, precio y audio nativo",
+    "description": "Veo 3.1 Lite en MaxVideoAI: clips de 4–8s en 720p/1080p desde texto, imagen inicial o guiado opcional con último frame, con audio nativo siempre activo. Compara el precio frente a otros tiers Veo y genera con la billetera.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0a6e2df3-0107-4ea7-8f70-6e03e406f39b.jpg"
+  },
+  "overview": "Veo 3.1 Lite es el tier Veo más barato en MaxVideoAI: clips de 4–8 s, 720p/1080p, workflows de texto, imagen inicial, control opcional con último frame, audio nativo siempre activo y precio por segundo para pruebas rápidas.",
+  "hero": {
+    "title": "Veo 3.1 Lite – Video IA más económico con audio nativo",
+    "intro": "Clips cinematográficos de 4–8s en 720p/1080p a menor costo desde texto, imagen inicial o tomas guiadas por último frame, con audio nativo siempre incluido.",
+    "badge": "720p/1080p · 4–8 s · Texto, imagen inicial y último frame",
+    "ctaPrimary": {
+      "label": "Probar Veo 3.1 Lite",
+      "href": "/app?engine=veo-3-1-lite"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Comparar Veo 3.1 Lite vs Veo 3.1 Fast →",
+        "href": "/models/veo-3-1-fast"
+      },
+      {
+        "label": "Abrir Generate + último frame →",
+        "href": "/app?engine=veo-3-1-lite"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Casos de uso",
+    "items": [
+      {
+        "title": "Pruebas rápidas de concepto",
+        "icon": "zap"
+      },
+      {
+        "title": "Variantes de anuncios y A/B tests",
+        "icon": "ads"
+      },
+      {
+        "title": "Borradores sociales y loops",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Tomas rápidas de producto",
+        "icon": "product"
+      },
+      {
+        "title": "Pre‑viz y beats de historia",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Exploración de estilo (muchas variantes)",
+        "icon": "wand2"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Duración",
+      "body": "4 s, 6 s, 8 s por render"
+    },
+    {
+      "label": "Resolución",
+      "body": "720p o 1080p a 24 fps"
+    },
+    {
+      "label": "Formatos",
+      "body": "16:9 o 9:16; los runs con imagen pueden mantener el encuadre auto de la imagen fuente"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Video; Generate Video desde una sola imagen inicial; guiado opcional con último frame"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo siempre activo en este tier"
+    },
+    {
+      "label": "Precio",
+      "body": "Por segundo; $0.05/s en 720p o $0.08/s en 1080p; wallet pay‑as‑you‑go"
+    },
+    {
+      "label": "Tiempo de render",
+      "body": "Colas cortas; estimaciones en vivo visibles en la lista de jobs"
+    }
+  ],
+  "promptStructure": {
+    "title": "Texto→Video con Veo 3.1 Lite",
+    "quote": "Bosque con neblina al amanecer, plano medio centrado en una roca con musgo. La cámara avanza lentamente mientras aparecen rayos suaves entre los árboles, 6 segundos, 16:9 a 1080p. Audio: pájaros suaves y viento, sin diálogo.",
+    "description": "Mantén los prompts cortos, de una sola escena y sensoriales. El objetivo es A/B testear rápido con cambios mínimos.",
+    "steps": [
+      "Sujeto + punto focal (una sola idea para todo el clip)",
+      "Entorno en una sola ubicación",
+      "Movimiento de cámara a lo largo de 4–8 segundos",
+      "Luz y mood (día, neón, oficina cálida, etc.)",
+      "Cues de audio: ambiente + VO corta, o indica “sin diálogo”",
+      "Formato y duración (16:9 o 9:16; 4/6/8 s)"
+    ]
+  },
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "⚡ Usa Lite como el sandbox Veo más rápido para A/B tests y ajustes de prompt",
+      "🔊 El audio siempre está activo, así que escribe directamente los cues de ambiente o diálogo en el prompt",
+      "📱 Optimiza para formatos sociales donde 4–8 segundos cuentan la historia",
+      "🖼️ Enfoque mono‑escena; evita narrativas multi‑locación en este nivel",
+      "🔁 Clona ganadores a Veo 3.1 para pulir en 1080p y audio más rico"
+    ]
+  },
+  "compareLink": {
+    "label": "Comparar Veo 3.1 Lite vs Veo 3.1 Fast →",
+    "href": "/models/veo-3-1-fast"
+  },
+  "prompts": [
+    {
+      "title": "Bosque brumoso con push lento",
+      "prompt": "Bosque con neblina al amanecer, push‑in lento hacia una roca con musgo mientras rayos de luz atraviesan los árboles, canto de pájaros sutil, sin diálogo, 8 s, 16:9 a 1080p."
+    },
+    {
+      "title": "Loop vertical de escritorio nocturno",
+      "prompt": "Loop 6 s 9:16 de una joven trabajando tarde en un escritorio minimalista, luces de ciudad desenfocadas detrás. Deriva handheld lenta izquierda/derecha, luz azul fría de ventana + lámpara cálida, tipeo suave + hum de ciudad, sin diálogo."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Cuándo usar Veo 3.1 Lite en lugar de Veo 3.1?",
+      "a": "Usa Veo 3.1 Lite para las pruebas Veo más baratas, variantes sociales y revisiones internas; cambia a Veo 3.1 Fast o Veo 3.1 cuando necesites más control o finales premium."
+    },
+    {
+      "q": "¿Veo 3.1 Lite admite vertical?",
+      "a": "Sí. Veo 3.1 Lite admite 16:9 y 9:16 en 720p o 1080p. Elige 9:16 para placements mobile‑first."
+    },
+    {
+      "q": "¿Puedo reutilizar prompts de Veo 3.1 en Veo 3.1 Lite?",
+      "a": "Sí. Clona un render de Veo 3.1, cambia a Veo 3.1 Lite, conserva presets de encuadre/tono y ajusta duración/resolución."
+    },
+    {
+      "q": "¿Cómo se compara el precio con Veo 3.1?",
+      "a": "Veo 3.1 Lite es más barato por segundo que los otros tiers Veo: $0.05/s en 720p o $0.08/s en 1080p, con audio incluido."
+    },
+    {
+      "q": "¿Puedo ejecutar Veo 3.1 Lite desde Europa o LATAM?",
+      "a": "Sí. Mismo wallet/workspace MaxVideoAI y routing DeepMind con licencia — sin facturación separada."
+    }
+  ],
+  "custom": {
+    "heroDesc1": "Veo 3.1 Lite lleva el motor cinematográfico de DeepMind a un precio menor y con turnaround más rápido, ideal para tests rápidos, finales guiados y loops sociales.",
+    "heroDesc2": "Parte de un brief corto o una imagen inicial, añade un último frame solo si necesitas guiar el final, luego elige 4/6/8 segundos, 16:9 o 9:16, y genera clips lo bastante rápido para A/B testear varias ideas en una sesión.",
+    "heroSupportLine": "Ideal para explorar hooks, finales guiados y ritmo rápido antes de regenerar los ganadores en Veo 3.1.",
+    "whyTitle": "Por qué Veo 3.1 Lite es potente",
+    "heroHighlights": [
+      "Optimizado para velocidad + workflows de negocio||Hecho para generación de anuncios programáticos y pruebas creativas a escala.",
+      "Mantiene la intención cinematográfica de Veo||Lenguaje de cámara claro + cues de estilo para variantes consistentes.",
+      "Audio nativo incluido||Cada render Lite sale con audio, útil para probar timing y diálogo.",
+      "Ruta de upgrade simple||Borra en Lite y luego regenera los ganadores en Veo 3.1 Fast o Veo 3.1."
+    ],
+    "bestUseCasesTitle": "Casos de uso",
+    "bestUseCases": [
+      {
+        "title": "Pruebas rápidas de concepto",
+        "icon": "zap"
+      },
+      {
+        "title": "Variantes de anuncios y A/B tests",
+        "icon": "ads"
+      },
+      {
+        "title": "Borradores sociales y loops",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Tomas rápidas de producto",
+        "icon": "product"
+      },
+      {
+        "title": "Pre‑viz y beats de historia",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Exploración de estilo (muchas variantes)",
+        "icon": "wand2"
+      }
+    ],
+    "whatTitle": "Qué es realmente Veo 3.1 Lite en MaxVideoAI",
+    "whatIntro1": "Veo 3.1 Lite está ajustado para velocidad y eficiencia dentro de la familia Veo.",
+    "whatIntro2": "Mantienes presets de encuadre y tono, pero los renders están optimizados para costo y turnaround.",
+    "whatFlowTitle": "Flujo MaxVideoAI:",
+    "whatFlowSteps": [
+      "1. Elige Veo 3.1 Lite como motor.",
+      "2. Parte de texto o añade una imagen inicial.",
+      "3. Añade un último frame solo cuando necesites guiar el final.",
+      "4. Configura duración, orientación y resolución.",
+      "5. Pega un prompt corto y sensorial con tus cues de ambiente o diálogo.",
+      "6. Revisa el precio en vivo y renderiza."
+    ],
+    "specTitle": "Specs reales — Veo 3.1 Lite en MaxVideoAI (720p/1080p, 4–8 s)",
+    "specNote": "Estas specs describen Veo 3.1 Lite tal como puedes usarlo hoy vía MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Exploración a velocidad draft",
+        "intro": "Hecho para probar rápido y en volumen cuando necesitas ideas. Úsalo para explorar hooks, ángulos y ritmo.",
+        "items": [
+          "Mantén los prompts cortos y centrados en acción.",
+          "Genera muchas variantes pequeñas.",
+          "Prueba múltiples aperturas rápido.",
+          "Promueve los ganadores al tier completo."
+        ]
+      },
+      {
+        "title": "Ruta de upgrade",
+        "intro": "La misma estructura de prompt se traslada bien a los tiers premium. Trata Lite como tu capa de borrador.",
+        "items": [
+          "Reutiliza el lenguaje de plano para finales.",
+          "Pasa a Veo 3.1 Fast o Veo 3.1 cuando necesites más control.",
+          "Usa Lite para borradores sociales y loops.",
+          "Guarda plantillas para escalar campañas."
+        ]
+      }
+    ],
+    "specValueProp": "Veo 3.1 Lite es tu banco de pruebas ultra‑rápido: mismo lenguaje cinematográfico que Veo 3.1, menor costo y turnaround más rápido.",
+    "galleryTitle": "Galería de ejemplos: renders Veo 3.1 Lite",
+    "galleryIntro": "Explora clips generados con Veo 3.1 Lite usando los mismos presets que tienes.",
+    "galleryAllCta": "Ver todos los ejemplos Veo 3.1 Lite →",
+    "recreateLabel": "Recrear esta toma →",
+    "imageTitle": "Imagen→Video con Veo 3.1 Lite",
+    "imageIntro": "Anima un solo still en un loop rápido o toma hero.",
+    "imageFlow": [
+      "Sube una foto lifestyle o de producto.",
+      "Elige Imagen → Video, duración (4/6/8 s), formato y resolución.",
+      "Promptea movimiento sutil de cámara y sujeto, además de posibles cues de ambiente o diálogo.",
+      "Genera variantes cambiando un elemento por vez (velocidad de cámara, tono de VO, hora del día)."
+    ],
+    "imageWhy": [
+      "Tomas hero rápidas para landings o ecommerce",
+      "Posts sociales animados desde fotografía de marca",
+      "Loops de ambiente detrás de títulos o elementos UI"
+    ],
+    "multishotTitle": "Veo 3.1 Lite como banco de pruebas",
+    "multishotIntro1": "Usa Lite para explorar prompts barato y luego mueve los ganadores a Veo 3.1 Fast o Veo 3.1.",
+    "multishotIntro2": "Los presets de encuadre y tono son compartidos, así que la migración es suave.",
+    "multishotTips": [
+      "Renderiza 2–4 variantes en Lite con pequeños ajustes.",
+      "Promueve lo mejor a Veo 3.1 Fast o Veo 3.1 para mayor fidelidad y más control.",
+      "Mantente mono‑escena en Lite; usa otros tiers Veo para control multi‑beat."
+    ],
+    "tipsTitle": "Consejos y límites",
+    "strengths": [
+      "Empieza con encuadre + movimiento de cámara (wide/medium/close + dolly/pan/handheld) antes del estilo.",
+      "Mantén un solo sujeto principal y una acción legible por clip.",
+      "Usa 2–3 anclajes concretos (hora, clima, 1–2 detalles de set) en lugar de listas largas.",
+      "Para continuidad, reutiliza la misma “receta de plano” (paleta, luz, sensación de lente) y cambia una variable por toma.",
+      "El audio funciona mejor con cues mínimos: ambiente + 1 sonido clave, o una línea corta de VO."
+    ],
+    "boundaries": [
+      "El foco mono‑escena funciona mejor; las narrativas multi‑locación tienden a derivar.",
+      "Este tier es draft‑first (algo menos de detalle/fidelidad que Veo 3.1 completo).",
+      "Texto UI pequeño y letras diminutas son poco fiables — añade en post."
+    ],
+    "safetyTitle": "Seguridad y personas / semejanza",
+    "safetyRules": [
+      "Nada de contenido sexual ni nada que involucre menores.",
+      "Nada de contenido de odio, acoso o violencia gráfica.",
+      "No suplantes personas reales o figuras públicas; usa consentimiento para cualquier semejanza/voz.",
+      "No incluyas datos personales privados (direcciones, teléfonos, documentos, rostros sin consentimiento).",
+      "Algunos prompts o referencias pueden bloquearse por filtros del proveedor."
+    ],
+    "safetyInterpretation": [],
+    "safetyNote": null,
+    "comparisonTitle": "Veo 3.1 Lite vs Veo 3.1 — resumen rápido",
+    "comparisonPoints": [
+      "Veo 3.1 Lite: más barato, más rápido; ideal para tests, loops sociales y revisiones internas.",
+      "Veo 3.1: mayor fidelidad y audio más rico; ideal para entregables cliente y medios pagados.",
+      "Workflow: prototipa en Lite y luego regenera los ganadores en Veo 3.1 Fast o Veo 3.1."
+    ],
+    "comparisonCta": "Comparar Veo 3.1 Lite vs Veo 3.1 →",
+    "faqTitle": "FAQ – Veo 3.1 Lite",
+    "faqs": [
+      {
+        "q": "¿Cuándo usar Veo 3.1 Lite en lugar de Veo 3.1?",
+        "a": "Usa Lite para explorar ideas, variantes sociales y revisiones internas; usa Veo 3.1 Fast o Veo 3.1 para tomas hero y medios pagados."
+      },
+      {
+        "q": "¿Veo 3.1 Lite admite vertical?",
+        "a": "Sí — 16:9 y 9:16 en 720p o 1080p; elige 9:16 para placements mobile‑first."
+      },
+      {
+        "q": "¿Puedo reutilizar prompts de Veo 3.1 en Veo 3.1 Lite?",
+        "a": "Sí. Clona un render de Veo 3.1, cambia a Veo 3.1 Lite, conserva presets de encuadre/tono y ajusta duración/resolución."
+      },
+      {
+        "q": "¿Cómo se compara el precio con Veo 3.1?",
+        "a": "Lite es más barato por segundo: $0.05/s en 720p o $0.08/s en 1080p, con audio siempre incluido."
+      },
+      {
+        "q": "¿Puedo ejecutar Veo 3.1 Lite desde Europa / LATAM?",
+        "a": "Sí. Mismo wallet/workspace MaxVideoAI y routing DeepMind con licencia — sin facturación separada."
+      }
+    ],
+    "relatedTitle": "Explorar otros modelos",
+    "relatedSubtitle": "Compara niveles de precio, latencia y presets de prompt en el resto del catálogo.",
+    "finalPara1": "Veo 3.1 Lite en MaxVideoAI es tu banco de pruebas ultra‑rápido para prompts Veo.",
+    "finalPara2": "Mismo lenguaje cinematográfico, menor riesgo y calidad lista para social.",
+    "finalButton": "Abrir Generate",
+    "promptingTitle": "Cómo escribir un gran prompt para Veo 3.1 Lite",
+    "promptingIntro": "Veo 3.1 Lite prefiere prompts cortos, concretos y una acción clara.",
+    "promptingTip": "Tip: la duración + el formato se definen en la UI — tu prompt controla sujeto, acción, cámara, iluminación, estilo y cues de sonido.",
+    "promptingGlobalPrinciples": [
+      "Un sujeto, una acción.",
+      "Indica encuadre y movimiento de cámara.",
+      "Usa 2–3 anclajes visuales, no listas largas."
+    ],
+    "tipsIntro": "Veo 3.1 Lite es más fiable cuando escribes un brief corto: un sujeto, una acción, encuadre claro y un solo movimiento de cámara.",
+    "promptingEngineWhy": [
+      "Lite favorece beats simples y prompts cortos.",
+      "El lenguaje de cámara mejora la consistencia.",
+      "Usa anclajes de estilo para mantener el look estable."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
+      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
+      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [acción] en [contexto], [movimiento de cámara], [iluminación/estilo], [cue sonoro opcional]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nContexto:\n[Ubicación + momento + 2 anclajes visuales.]\n\nCámara:\n[Encuadre + ángulo + un movimiento.]\n\nLook:\n[Iluminación + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1 cue.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre tomas.",
+        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto:\n[Rasgos clave + vestuario/props.]\n\nCámara:\n[Encuadre + un movimiento + sensación de lente.]\n\nLuz + color:\n[Key light + anclajes de paleta.]\n\nRestricciones:\nManténlo simple; evita acciones extra."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (shot list corta)",
+        "description": "Manténlo mínimo para borradores más limpios y rápidos.",
+        "copy": "Shot list (mismo sujeto + mismo escenario)\nDuración: [4/6/8s]\n\nShot 1 (0–2s):\n[Encuadre + acción + movimiento de cámara]\n\nShot 2 (2–6/8s):\n[Encuadre + acción + movimiento de cámara]\n\nLook + mood:\n[Iluminación + paleta]\n\nSonido (opcional):\n[Ambiente + 1 cue]"
+      }
+    ],
+    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
+    "demoTitle": "Demo: patrón de prompt para Veo 3.1 Lite",
+    "demoPromptLabel": "Loop vertical 6 s (9:16, 1080p)",
+    "demoPrompt": [
+      "Loop 6 s 9:16 de una joven trabajando tarde en un escritorio minimalista frente a una gran ventana, luces de ciudad desenfocadas.",
+      "Cámara: deriva handheld lenta izquierda/derecha, centrada en su rostro y el portátil.",
+      "Luz: azul frío exterior + lámpara cálida en las manos.",
+      "Audio: tipeo suave, hum de ciudad, sin diálogo."
+    ],
+    "demoNotes": [
+      "Un sujeto claro y un solo entorno.",
+      "Movimiento simple que loopa limpio.",
+      "El audio sostiene el mood sin añadir complejidad."
+    ],
+    "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
+    "troubleshootingItems": [
+      "Deriva / ignora detalles → mueve sujeto + acción + encuadre a la primera línea; elimina beats extra; mantén restricciones positivas (“fondo limpio”, “sujeto centrado”).",
+      "El movimiento se ve desordenado → un solo movimiento de cámara; acción más lenta; fondo más simple.",
+      "Look fuera de marca → bloquea paleta + iluminación; reutiliza el mismo wording; añade un frame de referencia cuando puedas.",
+      "Texto/señalética se rompe → mantén el texto legible fuera de plano; añade el copy crítico en post.",
+      "La VO / lip sync falla → acorta líneas; evita monólogos largos y habla rápida."
+    ]
+  }
+}

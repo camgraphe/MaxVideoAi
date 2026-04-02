@@ -645,6 +645,7 @@
         "sora-2": "Text/image remix with native audio.",
         "veo-3-1": "Run text, start-image, reference, last-frame, and extend controls in one engine.",
         "veo-3-1-fast": "Use Veo 3.1 Fast for quick text, start-image, last-frame, and extend passes.",
+        "veo-3-1-lite": "Use Veo 3.1 Lite for lower-cost text, start-image, and last-frame passes with audio always on.",
         "pika-text-to-video": "Quick social loops with captions and remix-friendly settings.",
         "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero render."
       },
@@ -1037,6 +1038,12 @@
         "description": "Run fast text prompts, start-image animation, optional last-frame control, and extend workflows with optional audio.",
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Veo 3.1 Fast"
+      },
+      "veo-3-1-lite": {
+        "displayName": "Google Veo 3.1 Lite",
+        "description": "Lower-cost Veo passes for text prompts, start-image animation, and last-frame control with audio always on.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
+        "versionLabel": "Veo 3.1 Lite"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Text & Image to Video",
@@ -2450,6 +2457,14 @@
               "Text prompts",
               "Last frame",
               "Audio option"
+            ]
+          },
+          "veo-3-1-lite": {
+            "description": "Veo 3.1 Lite handles lower-cost text prompts, start-image animation, and last-frame control with native audio always on.",
+            "badges": [
+              "Text prompts",
+              "Last frame",
+              "Audio always on"
             ]
           },
           "minimax-hailuo-02-text": {

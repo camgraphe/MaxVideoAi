@@ -115,6 +115,39 @@
     ]
   },
   {
+    "engine": "Google Veo 3.1 Lite",
+    "catalogSlug": "veo-3-1-lite",
+    "falSlug": "fal-ai/veo3.1/lite",
+    "source_url": "https://fal.ai/models/fal-ai/veo3.1/lite",
+    "last_checked_at": "2026-04-02T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": {
+          "resolution": "720p",
+          "audio": "on"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.05
+        }
+      },
+      {
+        "variant": {
+          "resolution": "1080p",
+          "audio": "on"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.08
+        }
+      }
+    ]
+  },
+  {
     "engine": "Pika 2.2 Text & Image to Video",
     "catalogSlug": "pika-text-to-video",
     "falSlug": "fal-ai/pika/v2.2/text-to-video",

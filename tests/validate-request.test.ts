@@ -204,6 +204,52 @@ test('Veo 3.1 Fast FL2V requires both frames', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Veo 3.1 Lite T2V supports 4-8 second prompts with always-on audio', () => {
+  const valid = validateRequest('veo-3-1-lite', 't2v', {
+    duration: '6s',
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+    auto_fix: 'true',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Veo 3.1 Lite I2V requires a start image', () => {
+  const invalid = validateRequest('veo-3-1-lite', 'i2v', {
+    prompt: 'Animate this still',
+    duration: '8s',
+    resolution: '720p',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'image_url');
+
+  const valid = validateRequest('veo-3-1-lite', 'i2v', {
+    prompt: 'Animate this still',
+    image_url: 'https://example.com/test.png',
+    duration: '8s',
+    resolution: '1080p',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Veo 3.1 Lite FL2V requires both frames', () => {
+  const invalid = validateRequest('veo-3-1-lite', 'fl2v', {
+    prompt: 'Bridge frames',
+    first_frame_url: 'https://example.com/frame1.png',
+    duration: '8s',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'last_frame_url');
+
+  const valid = validateRequest('veo-3-1-lite', 'fl2v', {
+    prompt: 'Bridge frames',
+    first_frame_url: 'https://example.com/frame1.png',
+    last_frame_url: 'https://example.com/frame2.png',
+    duration: '8s',
+  });
+  assert.deepEqual(valid, OK);
+});
+
 test('Veo 3 I2V rejects durations other than 8s', () => {
   const invalid = validateRequest('veo-3-1', 'i2v', {
     duration: '6s',
@@ -374,6 +420,22 @@ test('LTX 2.3 registry exposes unified mode mapping', () => {
   assert.equal(ltx23Fast?.modes.some((mode) => mode.mode === 'a2v'), false);
   assert.equal(ltx23Fast?.modes.some((mode) => mode.mode === 'extend'), false);
   assert.equal(ltx23Fast?.modes.some((mode) => mode.mode === 'retake'), false);
+});
+
+test('Veo 3.1 Lite registry exposes the unified lite mode mapping', () => {
+  const registry = listFalEngines();
+  const veoLite = registry.find((entry) => entry.id === 'veo-3-1-lite');
+
+  assert.ok(veoLite);
+  assert.equal(veoLite?.modes.find((mode) => mode.mode === 't2v')?.falModelId, 'fal-ai/veo3.1/lite');
+  assert.equal(veoLite?.modes.find((mode) => mode.mode === 'i2v')?.falModelId, 'fal-ai/veo3.1/lite/image-to-video');
+  assert.equal(
+    veoLite?.modes.find((mode) => mode.mode === 'fl2v')?.falModelId,
+    'fal-ai/veo3.1/lite/first-last-frame-to-video'
+  );
+  assert.equal(veoLite?.modes.some((mode) => mode.mode === 'ref2v'), false);
+  assert.equal(veoLite?.modes.some((mode) => mode.mode === 'extend'), false);
+  assert.equal(veoLite?.engine.inputSchema?.optional?.some((field) => field.id === 'generate_audio'), false);
 });
 
 test('Nano Banana 2 registry exposes image mappings and schema caps', () => {

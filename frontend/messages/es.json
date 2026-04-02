@@ -725,6 +725,7 @@
         "sora-2": "Remix de texto/imagen con audio nativo.",
         "veo-3-1": "Un solo motor para texto, imagen inicial, referencias, último frame y extend.",
         "veo-3-1-fast": "Veo 3.1 Fast para pases rápidos de texto, imagen inicial, último frame y extend.",
+        "veo-3-1-lite": "Veo 3.1 Lite para pases más baratos de texto, imagen inicial y último frame, con audio siempre activo.",
         "pika-text-to-video": "Bucle social rápido con subtítulos y ajustes amigables para remix.",
         "minimax-hailuo-02-text": "Bocetos optimizados por prompt antes del render principal."
       },
@@ -1121,6 +1122,12 @@
         "description": "Prompts rápidos, animación desde imagen inicial, control con último frame y extend con audio opcional.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Veo 3.1 Rápido"
+      },
+      "veo-3-1-lite": {
+        "displayName": "Google Veo 3.1 Lite",
+        "description": "Tier Veo más económico para texto, animación desde imagen inicial y control con último frame, con audio siempre activo.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
+        "versionLabel": "Veo 3.1 Lite"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Texto e Imagen→Video",
@@ -2454,6 +2461,14 @@
               "Prompts de texto",
               "Último frame",
               "Opción de audio"
+            ]
+          },
+          "veo-3-1-lite": {
+            "description": "Veo 3.1 Lite maneja prompts de texto, animación desde imagen inicial y control con último frame, con audio nativo siempre activo.",
+            "badges": [
+              "Prompts de texto",
+              "Último frame",
+              "Audio siempre activo"
             ]
           },
           "minimax-hailuo-02-text": {

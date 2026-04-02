@@ -204,6 +204,10 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: 'job_4db2339c-000a-4b81-a68c-9314dd7940b2',
     demo: 'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
   },
+  'veo-3-1-lite': {
+    hero: 'job_a424b7be-5f70-491b-b70e-6cbbbe223d21',
+    demo: 'job_43c4c8cd-246a-4c96-80a9-ab647b2eade7',
+  },
   'pika-text-to-video': {
     hero: 'job_2c958e35-92e7-4c0f-8828-ec49476c8c4e',
     demo: 'job_f5992c71-a197-482f-8d0f-028f261ed27b',
@@ -2761,6 +2765,7 @@ const MODEL_OG_IMAGE_MAP: Record<string, string> = {
     'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
   'veo-3-1': '/hero/veo3.jpg',
   'veo-3-1-fast': '/hero/veo3.jpg',
+  'veo-3-1-lite': '/hero/veo3.jpg',
   'pika-text-to-video': '/hero/pika-22.jpg',
   'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
 };
