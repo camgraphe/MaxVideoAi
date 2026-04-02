@@ -451,7 +451,9 @@ function resolveModeSupported(entry: EngineCatalogEntry, mode: string) {
 function resolveVideoToVideoSupport(entry: EngineCatalogEntry) {
   const modes = entry.engine?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') && modes.includes('reframe')) return 'Supported (modify / reframe workflows)';
   if (modes.includes('v2v')) return 'Supported';
+  if (modes.includes('reframe')) return 'Supported (reframe workflow)';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (extend / retake workflows)';
   }
@@ -476,6 +478,9 @@ function resolveReferenceImageSupport(entry: EngineCatalogEntry) {
 function resolveReferenceVideoSupport(entry: EngineCatalogEntry) {
   const modes = entry.engine?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') || modes.includes('reframe')) {
+    return 'Supported (source clip for modify / reframe)';
+  }
   if (modes.includes('r2v')) return 'Supported';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (source clip for extend / retake)';
@@ -733,11 +738,28 @@ function localizeSpecDetailValue(
         ? 'clip fuente para extensión / retake'
         : normalized;
   }
+  if (lower === 'source clip for modify / reframe') {
+    return locale === 'fr'
+      ? 'clip source pour modify / reframe'
+      : locale === 'es'
+        ? 'clip fuente para modify / reframe'
+        : normalized;
+  }
   if (lower === 'start + end image in i2v') {
     return locale === 'fr'
       ? 'image de départ + image de fin en image → vidéo'
       : locale === 'es'
         ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'reframe workflow') {
+    return locale === 'fr' ? 'workflow reframe' : locale === 'es' ? 'workflow reframe' : normalized;
+  }
+  if (lower === 'modify / reframe workflows') {
+    return locale === 'fr'
+      ? 'workflows modify / reframe'
+      : locale === 'es'
+        ? 'workflows modify / reframe'
         : normalized;
   }
   if (lower === 'extend / retake workflows') {

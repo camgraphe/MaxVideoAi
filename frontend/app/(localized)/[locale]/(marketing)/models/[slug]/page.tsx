@@ -1175,6 +1175,7 @@ export function generateStaticParams() {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
 const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
+  luma: { name: 'Luma AI', url: 'https://lumalabs.ai' },
   openai: { name: 'OpenAI', url: 'https://openai.com' },
   'google-veo': { name: 'Google DeepMind', url: 'https://deepmind.google/technologies/veo/' },
   pika: { name: 'Pika Labs', url: 'https://pika.art' },
@@ -2104,7 +2105,9 @@ function resolveModeSupported(engineCaps: EngineCaps | undefined, mode: Mode | '
 function resolveVideoToVideoSupport(engineCaps: EngineCaps | undefined) {
   const modes = engineCaps?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') && modes.includes('reframe')) return 'Supported (modify / reframe workflows)';
   if (modes.some((mode) => String(mode) === 'v2v')) return 'Supported';
+  if (modes.includes('reframe')) return 'Supported (reframe workflow)';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (extend / retake workflows)';
   }
@@ -2129,6 +2132,9 @@ function resolveReferenceImageSupport(engineCaps: EngineCaps | undefined) {
 function resolveReferenceVideoSupport(engineCaps: EngineCaps | undefined) {
   const modes = engineCaps?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') || modes.includes('reframe')) {
+    return 'Supported (source clip for modify / reframe)';
+  }
   if (modes.includes('r2v')) return 'Supported';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (source clip for extend / retake)';
@@ -2327,11 +2333,28 @@ function localizeSpecStatus(value: string, locale: AppLocale): string {
         ? 'clip fuente para extensión / retake'
         : normalized;
   }
+  if (lower === 'source clip for modify / reframe') {
+    return locale === 'fr'
+      ? 'clip source pour modify / reframe'
+      : locale === 'es'
+        ? 'clip fuente para modify / reframe'
+        : normalized;
+  }
   if (lower === 'start + end image in i2v') {
     return locale === 'fr'
       ? 'image de départ + image de fin en image → vidéo'
       : locale === 'es'
         ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'reframe workflow') {
+    return locale === 'fr' ? 'workflow reframe' : locale === 'es' ? 'workflow reframe' : normalized;
+  }
+  if (lower === 'modify / reframe workflows') {
+    return locale === 'fr'
+      ? 'workflows modify / reframe'
+      : locale === 'es'
+        ? 'workflows modify / reframe'
         : normalized;
   }
   if (lower === 'extend / retake workflows') {

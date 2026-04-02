@@ -66,9 +66,17 @@ const ENGINE_VARIANT_SORT_ORDER = new Map<string, number>([
 ]);
 const ENGINE_LEGACY_STORAGE_KEY = 'engineSelect.showLegacy';
 
-const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend', 'a2v', 'retake', 'r2v'];
+const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe', 'ref2v', 'fl2v', 'extend', 'a2v', 'retake', 'r2v'];
 
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
+  lumaRay2: {
+    v2v: 'Modify',
+    reframe: 'Reframe',
+  },
+  lumaRay2_flash: {
+    v2v: 'Modify',
+    reframe: 'Reframe',
+  },
   'veo-3-1': {
     ref2v: 'Reference',
     fl2v: 'First/Last',
@@ -110,6 +118,10 @@ function getModeLabel(
 }
 
 function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
+  if (engineId === 'lumaRay2' || engineId === 'lumaRay2_flash') {
+    const order: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe'];
+    return order.filter((mode) => modes.includes(mode));
+  }
   if (engineId === 'veo-3-1') {
     const order: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend'];
     return order.filter((mode) => modes.includes(mode));
@@ -387,9 +399,7 @@ export function EngineSelect({
     return deduped;
   }, [modeOptions]);
 
-  const modeVariantOptions = useMemo(() => {
-    return [];
-  }, [displayedModeOptions, selectedEngine]);
+  const modeVariantOptions: Mode[] = [];
 
   const showModeVariantSelector = modeVariantOptions.length > 1;
 

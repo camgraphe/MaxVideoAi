@@ -159,7 +159,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     }
   }
 
-  if (normalizedMode === 'extend' || normalizedMode === 'retake') {
+  if (normalizedMode === 'v2v' || normalizedMode === 'reframe' || normalizedMode === 'extend' || normalizedMode === 'retake') {
     const sourceVideo =
       typeof payload['video_url'] === 'string' && payload['video_url'].trim().length
         ? payload['video_url'].trim()
@@ -450,7 +450,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
       const uploadField =
         normalizedMode === 'r2v'
           ? 'video_urls'
-          : normalizedMode === 'extend' || normalizedMode === 'retake'
+          : normalizedMode === 'v2v' || normalizedMode === 'reframe' || normalizedMode === 'extend' || normalizedMode === 'retake'
             ? 'video_url'
           : normalizedMode === 'a2v'
             ? 'audio_url'

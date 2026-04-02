@@ -328,16 +328,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/models/luma-ray-2',
-        destination: '/models',
-        permanent: true,
-      },
-      {
-        source: '/models/luma-ray-2-flash',
-        destination: '/models',
-        permanent: true,
-      },
-      {
         source: '/models/hunyuan-video',
         destination: '/models',
         permanent: true,

@@ -256,6 +256,38 @@
     }
   },
   {
+    "engineId": "lumaRay2",
+    "marketingName": "Luma Ray 2",
+    "brandId": "luma",
+    "modelSlug": "luma-ray-2",
+    "family": "luma",
+    "versionLabel": "Ray 2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "lumaRay2_flash",
+    "marketingName": "Luma Ray 2 Flash",
+    "brandId": "luma",
+    "modelSlug": "luma-ray-2-flash",
+    "family": "luma",
+    "versionLabel": "Ray 2 Flash",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard",
     "brandId": "minimax",

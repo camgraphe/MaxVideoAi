@@ -261,6 +261,7 @@ export async function POST(req: NextRequest) {
       engine: pricingEngine,
       durationSec,
       resolution,
+      mode,
       membershipTier: body.membershipTier,
     });
 

@@ -30,8 +30,6 @@
 | /models/minimax-hailuo-02-pro | /models/minimax-hailuo-02-text | Sunset Pro variant |
 | /models/hailuo-2-pro | /models/minimax-hailuo-02-text | Redirect deprecated Pro slug to Standard page |
 | /models/luma-dream-machine | /models | Route removed Luma engine to models hub |
-| /models/luma-ray-2 | /models | Route legacy Luma Ray 2 slug to models hub |
-| /models/luma-ray-2-flash | /models | Route Ray 2 Flash slug to models hub |
 | /models/kling-2-5-turbo-pro | /models/kling-2-5-turbo | Consolidate retired Kling tier into refreshed Kling detail page |
 | /models/kling-25-turbo-pro | /models/kling-2-5-turbo | Consolidate retired Kling tier into refreshed Kling detail page |
 | /blog/express-case-study | /blog/compare-ai-video-engines | Merge legacy case study into comparison guide |

@@ -7,7 +7,12 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { listFalEngines } from '@/config/falEngines';
 import { getFalClient } from '@/lib/fal-client';
 import { buildSoraFalInput, type SoraRequest } from '@/lib/sora';
-import { getLumaRay2DurationInfo, toLumaRay2DurationLabel } from '@/lib/luma-ray2';
+import {
+  getLumaRay2DurationInfo,
+  isLumaRay2EngineId,
+  isLumaRay2GenerateMode,
+  toLumaRay2DurationLabel,
+} from '@/lib/luma-ray2';
 
 const BLOCKED_VIDEO_HOSTS = new Set([
   'upload.wikimedia.org',
@@ -253,12 +258,16 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
         return 'reference-to-video';
       case 'fl2v':
         return 'first-last-frame-to-video';
+      case 'v2v':
+        return 'modify';
       case 'a2v':
         return 'audio-to-video';
       case 'extend':
         return 'extend-video';
       case 'retake':
         return 'retake-video';
+      case 'reframe':
+        return 'reframe';
       default:
         return 'text-to-video';
     }
@@ -378,7 +387,7 @@ async function generateViaFal(
 
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
       requestBody.num_frames = Math.round(payload.numFrames);
-    } else if (payload.engineId !== 'lumaRay2' && payload.durationSec != null) {
+    } else if (!isLumaRay2EngineId(payload.engineId) && payload.durationSec != null) {
       requestBody.duration = payload.durationSec;
     }
 
@@ -421,7 +430,7 @@ async function generateViaFal(
     requestBody.end_image_url = payload.endImageUrl;
   }
 
-  if (payload.engineId === 'lumaRay2') {
+  if (isLumaRay2EngineId(payload.engineId) && isLumaRay2GenerateMode(payload.mode)) {
     const durationInfo = getLumaRay2DurationInfo(payload.durationOption ?? payload.durationSec);
     const durationLabel = durationInfo?.label ?? toLumaRay2DurationLabel(payload.durationSec) ?? '5s';
     requestBody.duration = durationLabel;
@@ -438,7 +447,8 @@ async function generateViaFal(
   }
 
   const arrayCollectors = new Map<string, Set<string>>();
-  const expectsSingleSourceVideo = payload.mode === 'extend' || payload.mode === 'retake';
+  const expectsSingleSourceVideo =
+    payload.mode === 'v2v' || payload.mode === 'reframe' || payload.mode === 'extend' || payload.mode === 'retake';
   const expectsImageArray = payload.mode === 'ref2v';
   const expectsFirstLastFrames = payload.mode === 'fl2v';
   const forbidsPrimaryImage = payload.mode === 'ref2v';

@@ -1,0 +1,230 @@
+{
+  "marketingName": "Luma Ray 2",
+  "versionLabel": "Ray 2",
+  "seo": {
+    "title": "Luma Ray 2 Specs, Precio, Modify y Reframe | MaxVideoAI",
+    "description": "Luma Ray 2 en MaxVideoAI une text-to-video, image-to-video, modify y reframe en una sola pagina de modelo, con generacion de 5s o 9s, salida 540p a 1080p y controles de edicion desde video fuente.",
+    "image": "/hero/luma-dream.jpg"
+  },
+  "overview": "Luma Ray 2 es el modelo Luma cinematografico premium dentro de MaxVideoAI. La familia sigue siendo simple en el catalogo, pero la pagina del modelo expone ahora toda la superficie publica de Fal: text-to-video, image-to-video, modify y reframe.",
+  "hero": {
+    "title": "Luma Ray 2 - generar, modify y reframe en una sola pagina",
+    "intro": "Usa Ray 2 cuando quieras el tier premium de Luma para crear tomas nuevas, animar un still, modificar un video fuente y producir reframes sociales sin separar el workflow en varias paginas de modelo.",
+    "badge": "T2V + I2V + Modify + Reframe",
+    "ctaPrimary": {
+      "label": "Generar con Luma Ray 2",
+      "href": "/app?engine=luma-ray-2"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Comparar Ray 2 vs Ray 2 Flash ->",
+        "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-2-flash"
+      },
+      {
+        "label": "Ver todos los ejemplos Luma ->",
+        "href": "/examples/luma"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      {
+        "title": "Concept films cinematograficos premium",
+        "icon": "camera"
+      },
+      {
+        "title": "Motion hero para moda y producto",
+        "icon": "product"
+      },
+      {
+        "title": "Still-to-video con final guiado",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Cambios de look sobre video fuente",
+        "icon": "wand2"
+      },
+      {
+        "title": "Versiones verticales para social",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Bucles premium y planos de ambiente",
+        "icon": "repeat2"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen tecnico",
+  "technicalOverview": [
+    {
+      "label": "Workflows de generacion",
+      "body": "Text-to-Video e Image-to-Video con clips de 5 s o 9 s"
+    },
+    {
+      "label": "Workflows de edicion",
+      "body": "Modify y Reframe usan un video fuente subido en lugar de presets fijos de 5 s o 9 s"
+    },
+    {
+      "label": "Resolucion",
+      "body": "540p, 720p o 1080p para los modos generate"
+    },
+    {
+      "label": "Aspect ratios",
+      "body": "16:9, 9:16, 4:3, 3:4, 21:9 y 9:21 en generate; Reframe tambien agrega 1:1"
+    },
+    {
+      "label": "Controles de imagen",
+      "body": "Image-to-Video acepta una start image y una end image opcional; Modify y Reframe tambien aceptan un still de referencia opcional"
+    },
+    {
+      "label": "Opciones Modify",
+      "body": "Presets Fal expuestos en MaxVideoAI: adhere_1 a adhere_3, flex_1 a flex_3 y reimagine_1 a reimagine_3"
+    },
+    {
+      "label": "Opciones Reframe",
+      "body": "Aspect ratio objetivo mas anclas de grilla y coordenadas de crop opcionales"
+    },
+    {
+      "label": "Pricing",
+      "body": "El precio visible empieza alrededor de $0.50 para 5 s en 540p en generate, alrededor de $0.12/s para Modify y alrededor de $0.20/s para Reframe"
+    }
+  ],
+  "promptStructure": {
+    "title": "Como escribir prompts para Luma Ray 2 segun el workflow",
+    "quote": "Mode: Modify. Objetivo: mantener el movimiento de camara y el timing del video fuente. Cambio: textura metallic silk, highlights mas frios, set mas limpio. Strength: flex_2.",
+    "description": "Piensa en Ray 2 como cuatro workflows relacionados, no como una sola caja de prompt generica. El prompt correcto depende de si estas creando un plano nuevo, animando un still, modificando un clip existente o reframing para otro formato.",
+    "steps": [
+      "Para Text-to-Video, escribe un sujeto claro, un movimiento de camara, una direccion de luz y luego elige duracion, resolucion y formato.",
+      "Para Image-to-Video, deja que el still ancle la primera frame y usa el prompt para definir movimiento y evolucion de la escena.",
+      "Agrega una end image solo cuando la composicion final importe mas que el movimiento libre.",
+      "Para Modify, explica que debe permanecer del clip fuente y que debe cambiar, luego elige el preset adecuado de adhere, flex o reimagine.",
+      "Para Reframe, describe el sujeto prioritario y el resultado de crop que buscas en lugar de reescribir toda la escena.",
+      "Usa lenguaje corto y a nivel de toma. Ray 2 funciona mejor cuando la instruccion sigue siendo cinematografica pero controlada."
+    ]
+  },
+  "tips": {
+    "title": "Consejos y limites",
+    "items": [
+      "Usa Ray 2 cuando la calidad importe mas que la velocidad bruta de iteracion.",
+      "Empieza en Text-to-Video o Image-to-Video y pasa a Modify solo cuando el blocking ya funciona.",
+      "Usa los presets adhere cuando la continuidad sea clave; ve hacia flex o reimagine cuando busques un cambio visual mas fuerte.",
+      "Usa Reframe para versiones de entrega, sobre todo 9:16 y 1:1 desde un master horizontal aprobado.",
+      "Mantiene generate para tomas nuevas y los workflows de edit para conservar footage fuerte mientras cambias estilo o formato."
+    ]
+  },
+  "compareLink": {
+    "label": "Comparar Ray 2 vs Ray 2 Flash ->",
+    "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-2-flash"
+  },
+  "prompts": [
+    {
+      "title": "Plano de lobby de lujo en text-to-video",
+      "prompt": "Lobby de hotel boutique al atardecer, iluminacion practica calida sobre marmol pulido, lento dolly hacia adelante, ritmo cinematografico contenido, 9s, 16:9 en 1080p."
+    },
+    {
+      "title": "Still editorial en image-to-video",
+      "prompt": "Anima el still editorial subido en un ligero movimiento hacia delante con tela suave e identidad facial estable, manteniendo una luz de estudio premium, 5s."
+    },
+    {
+      "title": "Modify con cambio de estilo",
+      "prompt": "Mantener el timing y el movimiento de camara del clip fuente, transformar el vestuario en metallic silk, enfriar los highlights, simplificar el set, flex_2.",
+      "notes": "Sube primero el video fuente y luego elige el preset modify que coincide con la intensidad del cambio."
+    },
+    {
+      "title": "Reframe vertical para social",
+      "prompt": "Reframea el clip de moda horizontal subido en un crop 9:16 limpio, manteniendo el rostro y los hombros como prioridad y la continuidad de movimiento durante toda la toma."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Que workflows expone Luma Ray 2 en MaxVideoAI?",
+      "a": "Ray 2 mantiene toda la superficie publica de Fal dentro de una sola pagina de modelo: text-to-video, image-to-video, modify y reframe."
+    },
+    {
+      "q": "Que opciones se exponen en Modify?",
+      "a": "Modify usa un video fuente mas un prompt opcional y un still de referencia opcional. MaxVideoAI expone los presets Fal desde adhere_1 hasta reimagine_3."
+    },
+    {
+      "q": "Que opciones se exponen en Reframe?",
+      "a": "Reframe usa un video fuente, un aspect ratio objetivo, un prompt opcional, un still de referencia opcional y controles opcionales de grilla y ventana de crop."
+    },
+    {
+      "q": "Cuando elegir Ray 2 en lugar de Ray 2 Flash?",
+      "a": "Elige Ray 2 cuando quieras el tier premium de Luma para finales mas solidos, mientras que Ray 2 Flash sirve mejor para drafts rapidos e iteracion mas barata."
+    }
+  ],
+  "custom": {
+    "heroDesc1": "Luma Ray 2 ya no es una pagina reducida de text-to-video dentro de MaxVideoAI. Ahora sigue el mismo patron workflow-first de las paginas LTX y Veo mas completas: un modelo publico, varios workflows reales de Fal.",
+    "heroDesc2": "Eso importa en produccion. Puedes generar una toma desde texto, animar un still, modificar un clip fuente ganador y reframear el master aprobado para social sin cambiar de familia de modelo.",
+    "heroSupportLine": "Ideal para trabajo cinematografico premium cuando quieres generacion y edicion sobre video fuente en una misma superficie Luma.",
+    "heroSpecChips": [
+      { "label": "Text->Video", "icon": "textToVideo" },
+      { "label": "Image->Video", "icon": "imageToVideo" },
+      { "label": "Modify desde video fuente", "icon": "videoToVideo" },
+      { "label": "Reframe a 1:1 o 9:16", "icon": "aspectRatio" },
+      { "label": "Generate: 5s o 9s", "icon": "duration" },
+      { "label": "540p a 1080p en generate", "icon": "resolution" }
+    ],
+    "whyTitle": "Por que Luma Ray 2 es estrategicamente util",
+    "heroHighlights": [
+      "Un modelo, cobertura workflow real||Crea clips nuevos, anima stills, modifica footage existente y reframea tomas aprobadas desde la misma pagina Luma.",
+      "Modify ya no esta oculto||Los presets Fal adhere, flex y reimagine estan expuestos de forma directa para decidir cuanto debe alejarse la edicion del clip fuente.",
+      "Reframe es una herramienta de entrega real||Las salidas cuadradas y verticales importan cuando un master aprobado debe ir a paid social, mobile y commerce.",
+      "Historia de familia mas limpia||Ray 2 sigue siendo el tier premium, Ray 2 Flash sigue siendo el tier rapido, pero ambos modelos exponen ya la superficie workflow publica real."
+    ],
+    "specTitle": "Specs reales - Luma Ray 2 en MaxVideoAI",
+    "specNote": "Estas specs describen el routing publico de Fal expuesto hoy en MaxVideoAI, no una superficie placeholder reducida.",
+    "specSections": [
+      {
+        "title": "Workflows generate",
+        "intro": "Text-to-Video e Image-to-Video son los modos de creacion: 5 o 9 segundos, 540p a 1080p, varios ratios cinematograficos, loop opcional y end image opcional para runs guiados por imagen.",
+        "items": [
+          "Usa Text-to-Video para nuevos beats cinematograficos.",
+          "Usa Image-to-Video cuando la primera frame deba mantenerse on-brand.",
+          "Agrega una end image solo si la composicion final importa.",
+          "Usa loop para pruebas de ambiente o producto."
+        ]
+      },
+      {
+        "title": "Modify y Reframe",
+        "intro": "La ampliacion del workflow no es solo marketing. Ray 2 expone ahora la edicion sobre video fuente de forma directa, y eso cambia su valor en produccion.",
+        "items": [
+          "Modify preserva el timing y el movimiento de camara mientras cambia look, styling o interpretacion de escena.",
+          "Los presets adhere se mantienen cerca del clip fuente, mientras que flex y reimagine permiten mas deriva creativa.",
+          "Reframe mantiene el movimiento pero cambia el formato de entrega, con salida cuadrada y vertical.",
+          "Los controles opcionales de crop y grilla ayudan a mantener al sujeto prioritario dentro del nuevo encuadre."
+        ]
+      }
+    ],
+    "whatTitle": "Como funciona Luma Ray 2 en MaxVideoAI",
+    "whatIntro1": "Elige Luma Ray 2, mantente en Generate Video para workflows de texto e imagen, o cambia a Modify / Reframe cuando trabajes a partir de un video fuente subido.",
+    "whatIntro2": "Esto mantiene la familia simple a nivel de modelo mientras expone los workflows reales de Fal donde corresponde: en la pagina del modelo y en el workspace.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Elige Luma Ray 2 como engine.",
+      "Mantente en Generate Video para workflows de texto e imagen, o cambia a Modify / Reframe para ediciones sobre video fuente.",
+      "En generate, elige 5s o 9s y luego la resolucion y el ratio.",
+      "Sube el asset correspondiente al workflow activo: start image, end image opcional o video fuente.",
+      "Para Modify, elige el preset adhere, flex o reimagine adecuado.",
+      "Revisa el precio live antes de generar y luego itera solo sobre el workflow que importa."
+    ],
+    "galleryTitle": "Ejemplos Luma Ray 2",
+    "galleryIntro": "Usa el rail de ejemplos para comparar generacion nueva, animacion de still, pases de modify y reframes de entrega dentro de la misma familia Ray 2.",
+    "galleryAllCta": "Ver todos los ejemplos Luma ->",
+    "recreateLabel": "Recrear esta toma ->",
+    "tipsTitle": "Fortalezas practicas y limites",
+    "strengths": [
+      "Superficie workflow Luma de alto valor: generate, modify y reframe en el mismo sitio.",
+      "Muy util cuando la calidad cinematografica importa pero el plan de entrega tambien exige ediciones sobre video fuente.",
+      "Historia de producto mas limpia que exponer pseudo-modelos publicos separados para modify o reframe."
+    ],
+    "boundaries": [
+      "Las duraciones de 5s y 9s y la resolucion 540p a 1080p aplican a los modos generate, no a la duracion de las ediciones sobre video fuente.",
+      "Modify y Reframe dependen siempre de la calidad y claridad del clip fuente subido.",
+      "Ray 2 sigue siendo el tier premium; Flash sigue siendo mejor para iteracion rapida al inicio."
+    ],
+    "finalPara1": "Luma Ray 2 es la mitad premium de la nueva familia Luma de dos modelos, pero ahora la pagina se comporta como una pagina workflow completa y no como un placeholder reducido. Ese es el compromiso correcto: lineup simple y cobertura workflow Fal completa.",
+    "finalButton": "Generar con Luma Ray 2"
+  }
+}

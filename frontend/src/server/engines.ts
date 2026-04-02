@@ -16,11 +16,13 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { ensureBillingSchema } from '@/lib/schema';
 import {
   getLumaRay2DurationInfo,
+  isLumaRay2EngineId,
   isLumaRay2AspectRatio,
   normaliseLumaRay2Loop,
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
+import { getEngineCaps } from '@/fixtures/engineCaps';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -214,13 +216,20 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     };
   }
 
-  const isLumaRay2 = engine.id === 'lumaRay2';
+  const isLumaRay2 = isLumaRay2EngineId(engine.id);
   const pricingEngine = applyEngineVariantPricing(engine, request.mode);
+  const capability = getEngineCaps(engine.id, request.mode);
+  const supportsDuration = Boolean(capability?.duration || capability?.frames);
+  const supportsResolution = Boolean(capability?.resolution?.length);
+  const supportsAspectRatio = Boolean(capability?.aspectRatio?.length);
   const requestedResolution = request.resolution;
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
   let effectiveResolution = requestedResolution;
   if (isLumaRay2) {
-    if (requestedResolution === 'auto') {
+    if (!supportsResolution) {
+      effectiveResolution =
+        (availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? '540p') as typeof requestedResolution;
+    } else if (requestedResolution === 'auto') {
       effectiveResolution = '540p' as typeof requestedResolution;
     } else if (!availableResolutions.includes(requestedResolution)) {
       return {
@@ -241,8 +250,8 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     effectiveResolution = (fallback ?? '1080p') as typeof requestedResolution;
   }
 
-  const durationInfo = isLumaRay2 ? getLumaRay2DurationInfo(request.durationSec) : null;
-  if (isLumaRay2 && !durationInfo) {
+  const durationInfo = isLumaRay2 && supportsDuration ? getLumaRay2DurationInfo(request.durationSec) : null;
+  if (isLumaRay2 && supportsDuration && !durationInfo) {
     return {
       ok: false,
       messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
@@ -253,7 +262,12 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     };
   }
 
-  if (isLumaRay2 && request.aspectRatio && !isLumaRay2AspectRatio(request.aspectRatio)) {
+  if (
+    isLumaRay2 &&
+    supportsAspectRatio &&
+    request.aspectRatio &&
+    !isLumaRay2AspectRatio(request.aspectRatio, { includeSquare: request.mode === 'reframe' })
+  ) {
     return {
       ok: false,
       messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
@@ -267,7 +281,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   const durationSecRaw = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
   const durationSec = durationInfo ? durationInfo.seconds : durationSecRaw;
   const memberTier = normalizeMemberTier(request.user?.memberTier);
-  const loop = isLumaRay2 ? normaliseLumaRay2Loop(request.loop) : undefined;
+  const loop = isLumaRay2 && supportsDuration ? normaliseLumaRay2Loop(request.loop) : undefined;
   const audioEnabled = typeof request.audio === 'boolean' ? request.audio : undefined;
   const addons = buildEngineAddonInput(pricingEngine, {
     audioEnabled,
@@ -279,6 +293,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       engine: pricingEngine,
       durationSec,
       resolution: effectiveResolution,
+      mode: request.mode,
       membershipTier: memberTier,
       loop,
       durationOption: durationInfo?.label,
