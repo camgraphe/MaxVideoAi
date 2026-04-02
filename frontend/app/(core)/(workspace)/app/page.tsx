@@ -457,6 +457,8 @@ function AssetLibraryModal({
         className="relative z-10 h-[92svh] max-w-[1240px] sm:h-[84vh]"
         title={copyAssetLibrary.title}
         subtitle={fieldLabel}
+        onClose={onClose}
+        closeLabel={copyAssetLibrary.close}
         assetType={assetType}
         assets={assets}
         isLoading={isLoading}
@@ -492,18 +494,6 @@ function AssetLibraryModal({
               onClick={() => onRefresh(source)}
             >
               {copyAssetLibrary.refresh}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-10 w-10 rounded-full border border-transparent px-0 text-text-secondary hover:border-border hover:bg-surface-2 hover:text-text-primary sm:ml-auto"
-              onClick={onClose}
-              aria-label={copyAssetLibrary.close}
-            >
-              <svg aria-hidden viewBox="0 0 20 20" className="h-4.5 w-4.5">
-                <path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
             </Button>
           </>
         }

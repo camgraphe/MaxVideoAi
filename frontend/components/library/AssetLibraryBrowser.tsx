@@ -32,6 +32,8 @@ interface AssetLibraryBrowserProps {
   title: string;
   subtitle?: string;
   countLabel?: string | null;
+  onClose?: () => void;
+  closeLabel?: string;
   assets: AssetBrowserAsset[];
   isLoading: boolean;
   error?: string | null;
@@ -83,6 +85,8 @@ export function AssetLibraryBrowser({
   title,
   subtitle,
   countLabel,
+  onClose,
+  closeLabel = 'Close',
   assets,
   isLoading,
   error,
@@ -140,16 +144,31 @@ export function AssetLibraryBrowser({
       className={clsx(
         isPageLayout
           ? 'flex w-full flex-col gap-4 lg:min-h-0 lg:flex-1'
-          : 'flex h-full w-full flex-col overflow-y-auto overscroll-contain rounded-[24px] border border-border/70 bg-surface shadow-float lg:overflow-hidden lg:rounded-[28px]',
+          : 'relative flex h-full w-full flex-col overflow-y-auto overscroll-contain rounded-[24px] border border-border/70 bg-surface shadow-float lg:overflow-hidden lg:rounded-[28px]',
         className
       )}
     >
+      {!isPageLayout && onClose ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="absolute right-3 top-3 z-20 h-10 w-10 rounded-full border border-border/70 bg-surface-glass-90 px-0 text-text-secondary shadow-card backdrop-blur hover:bg-surface-2 hover:text-text-primary dark:border-white/10 dark:bg-black/30 dark:text-white/70 dark:hover:bg-white/[0.08] dark:hover:text-white"
+          onClick={onClose}
+          aria-label={closeLabel}
+          title={closeLabel}
+        >
+          <svg aria-hidden viewBox="0 0 20 20" className="h-4.5 w-4.5">
+            <path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </Button>
+      ) : null}
       <div
         className={clsx(
           'flex flex-col gap-3',
           isPageLayout
             ? 'border-b border-border/60 pb-4'
-            : 'border-b border-border/70 bg-surface-glass-90 px-4 py-4 lg:px-6 lg:py-5'
+            : 'border-b border-border/70 bg-surface-glass-90 px-4 py-4 pr-16 lg:px-6 lg:py-5 lg:pr-20'
         )}
       >
         <div className="min-w-0">

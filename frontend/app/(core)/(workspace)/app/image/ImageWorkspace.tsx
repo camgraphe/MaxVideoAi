@@ -2908,6 +2908,8 @@ function ImageLibraryModal({
           layout="modal"
           title={isCharacterMode ? characterCopy.title : copy.modal.title}
           subtitle={supportedFormatsHint ?? (isCharacterMode ? characterCopy.description : copy.modal.description)}
+          onClose={onClose}
+          closeLabel={copy.modal.close}
           assets={browserAssets}
           isLoading={isLoading}
           error={error ? (isCharacterMode ? (error instanceof Error ? error.message : characterCopy.empty) : copy.modal.error) : null}
@@ -2922,17 +2924,6 @@ function ImageLibraryModal({
           toolLinks={toolLinks}
           emptyLabel={emptyLabel}
           emptySearchLabel={copy.modal.empty}
-          headerActions={
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg"
-            >
-              {copy.modal.close}
-            </Button>
-          }
           renderAssetActions={(asset) => (
             isCharacterMode ? (
               (() => {
