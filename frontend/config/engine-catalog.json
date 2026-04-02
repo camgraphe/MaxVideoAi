@@ -16,7 +16,7 @@
     },
     "versionLabel": "2",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -285,7 +285,7 @@
     },
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -563,7 +563,7 @@
     },
     "versionLabel": "3.1",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -1042,7 +1042,7 @@
     },
     "versionLabel": "3.1 Fast",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -1475,7 +1475,7 @@
     },
     "versionLabel": "3.1 Lite",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -1840,7 +1840,7 @@
     },
     "versionLabel": "2.2",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2153,7 +2153,7 @@
     },
     "versionLabel": "2.5 Turbo",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2464,7 +2464,7 @@
     },
     "versionLabel": "v2.6 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2765,7 +2765,7 @@
     },
     "versionLabel": "v3 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -3109,7 +3109,7 @@
     },
     "versionLabel": "v3 Standard",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -3446,7 +3446,7 @@
     },
     "versionLabel": "v1.5 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -3814,7 +3814,7 @@
     },
     "versionLabel": "2.0",
     "availability": "waitlist",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4100,7 +4100,7 @@
     },
     "versionLabel": "Preview",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4410,7 +4410,7 @@
     },
     "versionLabel": "2.6",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4789,7 +4789,7 @@
     },
     "versionLabel": "Standard",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -5075,7 +5075,7 @@
     },
     "versionLabel": "2.3 Fast",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -5439,7 +5439,7 @@
     },
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -5985,7 +5985,7 @@
     },
     "versionLabel": "Fast",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -6294,7 +6294,7 @@
     },
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -6575,7 +6575,7 @@
     "familyExamplesPage": null,
     "versionLabel": "Nano",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -6831,7 +6831,7 @@
     "familyExamplesPage": null,
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -7127,7 +7127,7 @@
     "familyExamplesPage": null,
     "versionLabel": "2",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,

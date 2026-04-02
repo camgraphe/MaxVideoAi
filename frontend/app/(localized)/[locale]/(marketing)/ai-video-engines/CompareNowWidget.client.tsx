@@ -5,7 +5,9 @@ import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { Link } from '@/i18n/navigation';
 import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { buildCanonicalCompareSlug } from '@/lib/compare-hub/data';
+import engineCatalog from '@/config/engine-catalog.json';
 
 type CompareNowWidgetProps = {
   options: SelectOption[];
@@ -31,19 +33,12 @@ function resolveRawLabel(option: SelectOption): string {
 
 function renderOptionLabel(option: SelectOption): ReactNode {
   const label = resolveRawLabel(option);
-  const short = label
-    .split(' ')
-    .filter(Boolean)
-    .slice(1, 2)
-    .join('')
-    .replace(/[^a-zA-Z]/g, '')
-    .slice(0, 2) || label.replace(/[^a-zA-Z]/g, '').slice(0, 2);
+  const catalog = engineCatalog as Array<{ modelSlug: string; brandId?: string | null }>;
+  const brandId = catalog.find((entry) => entry.modelSlug === String(option.value))?.brandId ?? null;
 
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
-      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-text-primary shadow-inner">
-        {short || label.slice(0, 2)}
-      </span>
+      <EngineIcon engine={{ id: String(option.value), label, brandId: brandId ?? undefined }} size={20} className="shrink-0" />
       <span className="truncate">{label}</span>
     </span>
   );

@@ -3,8 +3,8 @@
 import clsx from 'clsx';
 import { Link } from '@/i18n/navigation';
 import { type CSSProperties } from 'react';
-import { getEnginePictogram } from '@/lib/engine-branding';
 import { ButtonLink } from '@/components/ui/Button';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import styles from './examples-orbit.module.css';
 
 type OrbitEngine = {
@@ -92,8 +92,6 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                 const driftDuration = 5.4 + chaos * 3.6;
                 const lineDuration = driftDuration * (0.92 + chaos * 0.18);
                 const delay = `${driftDelaySeconds}s`;
-                const pictogram = getEnginePictogram({ id: engine.id, label: engine.label, brandId: engine.brandId });
-
                 return (
                   <div key={engine.id} className="absolute left-1/2 top-1/2">
                     <span
@@ -130,15 +128,12 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                         } as CSSProperties
                       }
                     >
-                      <span
-                        aria-label={`${engine.label} engine`}
-                        role="img"
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold leading-none text-opacity-90 shadow-sm"
-                        style={{ backgroundColor: pictogram.backgroundColor, color: pictogram.textColor }}
-                        title={engine.label}
-                      >
-                        {pictogram.code}
-                      </span>
+                      <EngineIcon
+                        engine={{ id: engine.id, label: engine.label, brandId: engine.brandId ?? undefined }}
+                        size={32}
+                        rounded="full"
+                        framed={false}
+                      />
                     </div>
                   </div>
                 );

@@ -21,6 +21,7 @@ const BRAND_PICTOGRAMS: Record<string, EnginePictogram> = {
   openai: { code: 'So', backgroundColor: brandColorVar('openai', 'bg'), textColor: brandColorVar('openai', 'ink') },
   pika: { code: 'Pi', backgroundColor: brandColorVar('pika', 'bg'), textColor: brandColorVar('pika', 'ink') },
   minimax: { code: 'Mi', backgroundColor: brandColorVar('minimax', 'bg'), textColor: brandColorVar('minimax', 'ink') },
+  bytedance: { code: 'Sd', backgroundColor: brandColorVar('bytedance', 'bg'), textColor: brandColorVar('bytedance', 'ink') },
   kling: { code: 'Kl', backgroundColor: brandColorVar('kling', 'bg'), textColor: brandColorVar('kling', 'ink') },
   wan: { code: 'Wa', backgroundColor: brandColorVar('wan', 'bg'), textColor: brandColorVar('wan', 'ink') },
   luma: { code: 'Lu', backgroundColor: brandColorVar('luma', 'bg'), textColor: brandColorVar('luma', 'ink') },

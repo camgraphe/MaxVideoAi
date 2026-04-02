@@ -1,23 +1,23 @@
 engineId,marketingName,brandId,modelSlug,family,versionLabel,availability,logoPolicy,modelPageIndexable,modelPageInSitemap
-seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,v1.5 Pro,available,textOnly,true,true
-seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,2.0,waitlist,textOnly,true,true
-nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,Nano,available,textOnly,true,true
-nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,2,available,textOnly,true,true
-nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,Pro,available,textOnly,true,true
-veo-3-1,Google Veo 3.1,google-veo,veo-3-1,veo,3.1,available,textOnly,true,true
-veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,veo,3.1 Fast,available,textOnly,true,true
-veo-3-1-lite,Google Veo 3.1 Lite,google-veo,veo-3-1-lite,veo,3.1 Lite,available,textOnly,true,true
-kling-2-5-turbo,Kling 2.5 Turbo,kling,kling-2-5-turbo,kling,2.5 Turbo,available,textOnly,true,true
-kling-2-6-pro,Kling 2.6 Pro,kling,kling-2-6-pro,kling,v2.6 Pro,available,textOnly,true,true
-kling-3-pro,Kling 3 Pro,kling,kling-3-pro,kling,v3 Pro,available,textOnly,true,true
-kling-3-standard,Kling 3 Standard,kling,kling-3-standard,kling,v3 Standard,available,textOnly,true,true
-ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,2.3 Fast,available,textOnly,true,true
-ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,Pro,available,textOnly,true,true
-ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,Fast,available,textOnly,true,true
-ltx-2,LTX Video 2.0 Pro,lightricks,ltx-2,ltx,Pro,available,textOnly,true,true
-minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text,hailuo,Standard,available,textOnly,true,true
-sora-2,OpenAI Sora 2,openai,sora-2,sora,2,available,textOnly,true,true
-sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,Pro,available,textOnly,true,true
-pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,2.2,available,textOnly,true,true
-wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,Preview,available,textOnly,true,true
-wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,2.6,available,textOnly,true,true
+seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,v1.5 Pro,available,logoAllowed,true,true
+seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,2.0,waitlist,logoAllowed,true,true
+nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,Nano,available,logoAllowed,true,true
+nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,2,available,logoAllowed,true,true
+nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,Pro,available,logoAllowed,true,true
+veo-3-1,Google Veo 3.1,google-veo,veo-3-1,veo,3.1,available,logoAllowed,true,true
+veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,veo,3.1 Fast,available,logoAllowed,true,true
+veo-3-1-lite,Google Veo 3.1 Lite,google-veo,veo-3-1-lite,veo,3.1 Lite,available,logoAllowed,true,true
+kling-2-5-turbo,Kling 2.5 Turbo,kling,kling-2-5-turbo,kling,2.5 Turbo,available,logoAllowed,true,true
+kling-2-6-pro,Kling 2.6 Pro,kling,kling-2-6-pro,kling,v2.6 Pro,available,logoAllowed,true,true
+kling-3-pro,Kling 3 Pro,kling,kling-3-pro,kling,v3 Pro,available,logoAllowed,true,true
+kling-3-standard,Kling 3 Standard,kling,kling-3-standard,kling,v3 Standard,available,logoAllowed,true,true
+ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,2.3 Fast,available,logoAllowed,true,true
+ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,Pro,available,logoAllowed,true,true
+ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,Fast,available,logoAllowed,true,true
+ltx-2,LTX Video 2.0 Pro,lightricks,ltx-2,ltx,Pro,available,logoAllowed,true,true
+minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text,hailuo,Standard,available,logoAllowed,true,true
+sora-2,OpenAI Sora 2,openai,sora-2,sora,2,available,logoAllowed,true,true
+sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,Pro,available,logoAllowed,true,true
+pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,2.2,available,logoAllowed,true,true
+wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,Preview,available,logoAllowed,true,true
+wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,2.6,available,logoAllowed,true,true

@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useLocale } from 'next-intl';
 import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { getPathname, useRouter } from '@/i18n/navigation';
 import engineCatalog from '@/config/engine-catalog.json';
 
@@ -27,33 +28,18 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
     () =>
       options.map((option) => {
         const labelText = typeof option.label === 'string' ? option.label : String(option.value);
-        const shortLabel = labelText
-          .split(' ')
-          .filter(Boolean)
-          .slice(1, 2)
-          .join('')
-          .replace(/[^a-zA-Z]/g, '')
-          .slice(0, 2) || labelText.replace(/[^a-zA-Z]/g, '').slice(0, 2);
-        const badgeText = shortLabel
-          ? `${shortLabel[0]?.toUpperCase() ?? ''}${shortLabel[1]?.toLowerCase() ?? ''}`
-          : labelText.slice(0, 2);
-
         const brandId = brandBySlug.get(String(option.value)) ?? null;
-        const badgeStyle = brandId
-          ? { backgroundColor: `var(--engine-${brandId}-bg)`, color: `var(--engine-${brandId}-ink)` }
-          : undefined;
 
         return {
           ...option,
           disabled: String(option.value) === String(otherValue),
           label: (
             <span className="inline-flex min-w-0 items-center gap-2">
-              <span
-                className="flex h-5 w-5 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-text-primary shadow-inner"
-                style={badgeStyle}
-              >
-                {badgeText}
-              </span>
+              <EngineIcon
+                engine={{ id: String(option.value), label: labelText, brandId: brandId ?? undefined }}
+                size={20}
+                className="shrink-0"
+              />
               <span className="truncate">{labelText}</span>
             </span>
           ),

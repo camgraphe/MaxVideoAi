@@ -1,4 +1,5 @@
 import type { EngineCaps, EngineAvailability, Mode } from '../../types/engines';
+import { getPartnerByBrandId } from '../lib/brand-partners';
 import {
   buildDefaultModelPublicationSurfaces,
   mergeModelPublicationSurfaces,
@@ -5245,6 +5246,7 @@ promptExample:
 ];
 
 function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
+  const partnerBrand = getPartnerByBrandId(entry.brandId);
   const defaults = buildDefaultModelPublicationSurfaces({
     id: entry.id,
     modelSlug: entry.modelSlug,
@@ -5254,6 +5256,7 @@ function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
 
   return {
     ...entry,
+    logoPolicy: partnerBrand?.policy.logoAllowed ? 'logoAllowed' : entry.logoPolicy,
     surfaces: mergeModelPublicationSurfaces(defaults, entry.surfaces),
   };
 }

@@ -5,11 +5,14 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { usePathname, useSearchParams, useRouter as useNextRouter } from 'next/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 
 export type ModelGalleryCard = {
   id: string;
   label: string;
   provider?: string | null;
+  engineId?: string | null;
+  brandId?: string | null;
   description: string;
   versionLabel?: string;
   overallScore?: number | null;
@@ -847,13 +850,19 @@ function ModelCard({
       <div className="relative z-10 flex h-full flex-col">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h3 className="line-clamp-2 min-h-[2.2em] text-balance text-[24px] font-semibold leading-[1.02] tracking-[-0.035em] text-slate-950 dark:text-white sm:text-[26px]">
+            <h3 className="line-clamp-2 text-balance text-[24px] font-semibold leading-[1.02] tracking-[-0.035em] text-slate-950 dark:text-white sm:text-[26px]">
               {card.label}
             </h3>
             {card.provider ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-3 py-[0.4rem] text-[10px] font-medium tracking-[0.03em] text-[color:var(--provider-badge-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
+                  <EngineIcon
+                    engine={{ id: card.engineId ?? card.id, label: card.label, brandId: card.brandId ?? undefined }}
+                    size={16}
+                    framed={false}
+                    rounded="full"
+                    className="shrink-0"
+                  />
                   {card.provider}
                 </span>
               </div>

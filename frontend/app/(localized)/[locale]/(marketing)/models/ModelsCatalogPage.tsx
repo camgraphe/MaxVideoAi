@@ -1127,6 +1127,8 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
       id: engine.modelSlug,
       label: titleLabel,
       provider: providerLabel,
+      engineId: engine.engine.id,
+      brandId: engine.brandId ?? engine.engine.brandId ?? null,
       description: microDescription,
       versionLabel,
       overallScore,

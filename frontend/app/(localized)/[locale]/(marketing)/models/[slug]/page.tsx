@@ -30,6 +30,7 @@ import { getLocalizedHeroChipLabels, getLocalizedModelMetaLabels } from '@/lib/l
 import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { TextLink } from '@/components/ui/TextLink';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { BackLink } from '@/components/video/BackLink';
@@ -4490,6 +4491,7 @@ function MarketingModelPageLayout({
                     .filter((entry) => Boolean(entry.modelSlug))
                     .map((entry) => {
                       const label = entry.title ?? '';
+                      const relatedEngine = entry.modelSlug ? getFalEngineBySlug(entry.modelSlug) : null;
                       const canCompare =
                         !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug ?? '');
                       const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
@@ -4510,14 +4512,29 @@ function MarketingModelPageLayout({
                           key={entry.modelSlug}
                           className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
                         >
-                          {entry.brand ? (
-                            <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                              {entry.brand}
-                            </p>
-                          ) : null}
-                          <h3 className="mt-2 text-lg font-semibold text-text-primary">
-                            {heroTitle} vs {label}
-                          </h3>
+                          <div className="flex items-start gap-3">
+                            <EngineIcon
+                              engine={
+                                relatedEngine?.engine ?? {
+                                  id: entry.modelSlug ?? label,
+                                  label,
+                                  brandId: relatedEngine?.brandId ?? undefined,
+                                }
+                              }
+                              size={32}
+                              className="shrink-0"
+                            />
+                            <div className="min-w-0">
+                              {entry.brand ? (
+                                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                                  {entry.brand}
+                                </p>
+                              ) : null}
+                              <h3 className="mt-1 text-lg font-semibold text-text-primary">
+                                {heroTitle} vs {label}
+                              </h3>
+                            </div>
+                          </div>
                           <p className="mt-2 text-sm text-text-secondary line-clamp-2">{description}</p>
                           <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
                             {ctaLabel}

@@ -7,7 +7,7 @@
     "family": "seedance",
     "versionLabel": "v1.5 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -23,7 +23,7 @@
     "family": "seedance",
     "versionLabel": "2.0",
     "availability": "waitlist",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -39,7 +39,7 @@
     "family": "nano-banana",
     "versionLabel": "Nano",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -55,7 +55,7 @@
     "family": "nano-banana",
     "versionLabel": "2",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -71,7 +71,7 @@
     "family": "nano-banana",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -87,7 +87,7 @@
     "family": "veo",
     "versionLabel": "3.1",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -103,7 +103,7 @@
     "family": "veo",
     "versionLabel": "3.1 Fast",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -119,7 +119,7 @@
     "family": "veo",
     "versionLabel": "3.1 Lite",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -135,7 +135,7 @@
     "family": "kling",
     "versionLabel": "2.5 Turbo",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -151,7 +151,7 @@
     "family": "kling",
     "versionLabel": "v2.6 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -167,7 +167,7 @@
     "family": "kling",
     "versionLabel": "v3 Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -183,7 +183,7 @@
     "family": "kling",
     "versionLabel": "v3 Standard",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -199,7 +199,7 @@
     "family": "ltx",
     "versionLabel": "2.3 Fast",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -215,7 +215,7 @@
     "family": "ltx",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -231,7 +231,7 @@
     "family": "ltx",
     "versionLabel": "Fast",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -247,7 +247,7 @@
     "family": "ltx",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -263,7 +263,7 @@
     "family": "hailuo",
     "versionLabel": "Standard",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -279,7 +279,7 @@
     "family": "sora",
     "versionLabel": "2",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -295,7 +295,7 @@
     "family": "sora",
     "versionLabel": "Pro",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -311,7 +311,7 @@
     "family": "pika",
     "versionLabel": "2.2",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -327,7 +327,7 @@
     "family": "wan",
     "versionLabel": "Preview",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -343,7 +343,7 @@
     "family": "wan",
     "versionLabel": "2.6",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,
