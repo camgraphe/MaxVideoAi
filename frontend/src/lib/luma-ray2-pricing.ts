@@ -7,7 +7,7 @@ import {
 } from './luma-ray2';
 
 export type LumaRay2PriceBreakdown = {
-  engineId: 'luma-ray2';
+  engineId: 'luma-ray2' | 'luma-ray2-flash';
   base_5s_540p: number;
   duration: LumaRay2DurationLabel;
   duration_factor: number;
@@ -23,13 +23,30 @@ export type LumaRay2PriceComputation = {
   breakdown: LumaRay2PriceBreakdown;
 };
 
+export type LumaRay2EditWorkflow = 'modify' | 'reframe';
+
+export type LumaRay2EditPriceBreakdown = {
+  engineId: 'luma-ray2' | 'luma-ray2-flash';
+  workflow: LumaRay2EditWorkflow;
+  seconds: number;
+  rate_per_second_usd: number;
+  computed_total_usd: number;
+};
+
+export type LumaRay2EditPriceComputation = {
+  totalUsd: number;
+  baseSubtotalUsd: number;
+  breakdown: LumaRay2EditPriceBreakdown;
+};
+
 export function calculateLumaRay2Price(params: {
   baseUsd: number;
   duration: number | string | null | undefined;
   resolution: string | null | undefined;
   loop?: boolean;
+  engineId?: 'luma-ray2' | 'luma-ray2-flash';
 }): LumaRay2PriceComputation {
-  const { baseUsd, duration, resolution, loop } = params;
+  const { baseUsd, duration, resolution, loop, engineId = 'luma-ray2' } = params;
   const durationInfo = getLumaRay2DurationInfo(duration);
   const resolutionInfo = getLumaRay2ResolutionInfo(resolution);
 
@@ -48,7 +65,7 @@ export function calculateLumaRay2Price(params: {
     totalUsd,
     baseSubtotalUsd,
     breakdown: {
-      engineId: 'luma-ray2',
+      engineId,
       base_5s_540p: Number(baseUsd.toFixed(4)),
       duration: durationInfo.label,
       duration_factor: durationInfo.factor,
@@ -56,6 +73,32 @@ export function calculateLumaRay2Price(params: {
       resolution_factor: resolutionInfo.factor,
       loop: typeof loop === 'boolean' ? loop : undefined,
       computed_total_usd: totalUsd,
+    },
+  };
+}
+
+export function calculateLumaRay2EditPrice(params: {
+  engineId?: 'luma-ray2' | 'luma-ray2-flash';
+  workflow: LumaRay2EditWorkflow;
+  durationSec: number;
+  rateUsd: number;
+}): LumaRay2EditPriceComputation {
+  const { durationSec, rateUsd, workflow, engineId = 'luma-ray2' } = params;
+  const seconds = Math.max(1, Math.round(durationSec));
+  if (typeof rateUsd !== 'number' || Number.isNaN(rateUsd) || rateUsd <= 0) {
+    throw new Error('Luma Ray 2 edit rate must be a positive number');
+  }
+
+  const baseSubtotalUsd = Number((seconds * rateUsd).toFixed(4));
+  return {
+    totalUsd: baseSubtotalUsd,
+    baseSubtotalUsd,
+    breakdown: {
+      engineId,
+      workflow,
+      seconds,
+      rate_per_second_usd: Number(rateUsd.toFixed(4)),
+      computed_total_usd: baseSubtotalUsd,
     },
   };
 }

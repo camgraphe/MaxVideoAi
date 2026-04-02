@@ -240,6 +240,14 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: 'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f',
     demo: 'job_a3197eac-62e4-4043-a0d6-7b62a8f57ff0',
   },
+  'luma-ray-2': {
+    hero: 'job_c4c9b10e-839f-4935-bbd9-de2d5731126a',
+    demo: 'job_e17eaa6a-7bb7-47b8-8287-8aa8dc4efd8a',
+  },
+  'luma-ray-2-flash': {
+    hero: 'job_e658a8d1-8ed8-4494-8247-19ef4e45102d',
+    demo: 'job_b13fdbfe-eb04-4000-b88f-abd2dcde7e1b',
+  },
 };
 
 const PREP_LINK_VISUALS = {
@@ -1174,6 +1182,7 @@ export function generateStaticParams() {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
 const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
+  luma: { name: 'Luma AI', url: 'https://lumalabs.ai' },
   openai: { name: 'OpenAI', url: 'https://openai.com' },
   'google-veo': { name: 'Google DeepMind', url: 'https://deepmind.google/technologies/veo/' },
   pika: { name: 'Pika Labs', url: 'https://pika.art' },
@@ -1451,49 +1460,64 @@ const COMPARE_COPY_BY_LOCALE: Record<
   {
     title: (model: string) => string;
     introPrefix: (model: string) => string;
-    introStrong: string;
+    introStrong: (supportsAudio: boolean) => string;
     introSuffix: string;
     subline: string;
     ctaCompare: (model: string, other: string) => string;
     ctaExplore: (other: string) => string;
-    cardDescription: (model: string, other: string) => string;
+    cardDescription: (model: string, other: string, supportsAudio: boolean) => string;
   }
 > = {
   en: {
     title: (model) => `Compare ${model} vs other AI video models`,
     introPrefix: (model) =>
       `Not sure if ${model} is the best fit for your shot? These side-by-side comparisons break down the tradeoffs — `,
-    introStrong: 'price per second, resolution, audio, speed, and motion style',
+    introStrong: (supportsAudio) =>
+      supportsAudio
+        ? 'price per second, resolution, audio, speed, and motion style'
+        : 'price per second, resolution, speed, and motion style',
     introSuffix: ' — so you can pick the right engine fast.',
     subline: 'Each page includes real outputs and practical best-use cases.',
     ctaCompare: (model, other) => `Compare ${model} vs ${other} →`,
     ctaExplore: (other) => `Explore ${other} →`,
-    cardDescription: (model, other) =>
-      `Compare ${model} vs ${other} on price, resolution, audio, speed, and motion style.`,
+    cardDescription: (model, other, supportsAudio) =>
+      supportsAudio
+        ? `Compare ${model} vs ${other} on price, resolution, audio, speed, and motion style.`
+        : `Compare ${model} vs ${other} on price, resolution, speed, and motion style.`,
   },
   fr: {
     title: (model) => `Comparer ${model} aux autres modèles vidéo IA`,
     introPrefix: (model) =>
       `Vous ne savez pas si ${model} est le meilleur choix pour votre plan ? Ces comparatifs côte à côte détaillent les compromis — `,
-    introStrong: 'prix par seconde, résolution, audio, vitesse et style de mouvement',
+    introStrong: (supportsAudio) =>
+      supportsAudio
+        ? 'prix par seconde, résolution, audio, vitesse et style de mouvement'
+        : 'prix par seconde, résolution, vitesse et style de mouvement',
     introSuffix: ' — pour choisir rapidement le bon moteur.',
     subline: 'Chaque page inclut des rendus réels et des cas d’usage concrets.',
     ctaCompare: (model, other) => `Comparer ${model} vs ${other} →`,
     ctaExplore: (other) => `Voir ${other} →`,
-    cardDescription: (model, other) =>
-      `Comparez ${model} vs ${other} sur le prix, la résolution, l’audio, la vitesse et le style de mouvement.`,
+    cardDescription: (model, other, supportsAudio) =>
+      supportsAudio
+        ? `Comparez ${model} vs ${other} sur le prix, la résolution, l’audio, la vitesse et le style de mouvement.`
+        : `Comparez ${model} vs ${other} sur le prix, la résolution, la vitesse et le style de mouvement.`,
   },
   es: {
     title: (model) => `Comparar ${model} con otros modelos de video IA`,
     introPrefix: (model) =>
       `¿No estás seguro de si ${model} es la mejor opción para tu toma? Estas comparativas lado a lado muestran los compromisos — `,
-    introStrong: 'precio por segundo, resolución, audio, velocidad y estilo de movimiento',
+    introStrong: (supportsAudio) =>
+      supportsAudio
+        ? 'precio por segundo, resolución, audio, velocidad y estilo de movimiento'
+        : 'precio por segundo, resolución, velocidad y estilo de movimiento',
     introSuffix: ' — para elegir el motor adecuado rápidamente.',
     subline: 'Cada página incluye renders reales y casos de uso prácticos.',
     ctaCompare: (model, other) => `Comparar ${model} vs ${other} →`,
     ctaExplore: (other) => `Ver ${other} →`,
-    cardDescription: (model, other) =>
-      `Compara ${model} vs ${other} en precio, resolución, audio, velocidad y estilo de movimiento.`,
+    cardDescription: (model, other, supportsAudio) =>
+      supportsAudio
+        ? `Compara ${model} vs ${other} en precio, resolución, audio, velocidad y estilo de movimiento.`
+        : `Compara ${model} vs ${other} en precio, resolución, velocidad y estilo de movimiento.`,
   },
 };
 
@@ -2103,7 +2127,9 @@ function resolveModeSupported(engineCaps: EngineCaps | undefined, mode: Mode | '
 function resolveVideoToVideoSupport(engineCaps: EngineCaps | undefined) {
   const modes = engineCaps?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') && modes.includes('reframe')) return 'Supported (modify / reframe workflows)';
   if (modes.some((mode) => String(mode) === 'v2v')) return 'Supported';
+  if (modes.includes('reframe')) return 'Supported (reframe workflow)';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (extend / retake workflows)';
   }
@@ -2128,6 +2154,9 @@ function resolveReferenceImageSupport(engineCaps: EngineCaps | undefined) {
 function resolveReferenceVideoSupport(engineCaps: EngineCaps | undefined) {
   const modes = engineCaps?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') || modes.includes('reframe')) {
+    return 'Supported (source clip for modify / reframe)';
+  }
   if (modes.includes('r2v')) return 'Supported';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (source clip for extend / retake)';
@@ -2326,11 +2355,28 @@ function localizeSpecStatus(value: string, locale: AppLocale): string {
         ? 'clip fuente para extensión / retake'
         : normalized;
   }
+  if (lower === 'source clip for modify / reframe') {
+    return locale === 'fr'
+      ? 'clip source pour modify / reframe'
+      : locale === 'es'
+        ? 'clip fuente para modify / reframe'
+        : normalized;
+  }
   if (lower === 'start + end image in i2v') {
     return locale === 'fr'
       ? 'image de départ + image de fin en image → vidéo'
       : locale === 'es'
         ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'reframe workflow') {
+    return locale === 'fr' ? 'workflow reframe' : locale === 'es' ? 'workflow reframe' : normalized;
+  }
+  if (lower === 'modify / reframe workflows') {
+    return locale === 'fr'
+      ? 'workflows modify / reframe'
+      : locale === 'es'
+        ? 'workflows modify / reframe'
         : normalized;
   }
   if (lower === 'extend / retake workflows') {
@@ -2486,17 +2532,17 @@ function resolveAudioPricingLabels(locale: AppLocale) {
   return PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en;
 }
 
-function resolveCompareCopy(locale: AppLocale, heroTitle: string) {
+function resolveCompareCopy(locale: AppLocale, heroTitle: string, supportsAudio: boolean) {
   const copy = COMPARE_COPY_BY_LOCALE[locale] ?? COMPARE_COPY_BY_LOCALE.en;
   return {
     title: copy.title(heroTitle),
     introPrefix: copy.introPrefix(heroTitle),
-    introStrong: copy.introStrong,
+    introStrong: copy.introStrong(supportsAudio),
     introSuffix: copy.introSuffix,
     subline: copy.subline,
     ctaCompare: (other: string) => copy.ctaCompare(heroTitle, other),
     ctaExplore: (other: string) => copy.ctaExplore(other),
-    cardDescription: (other: string) => copy.cardDescription(heroTitle, other),
+    cardDescription: (other: string) => copy.cardDescription(heroTitle, other, supportsAudio),
   };
 }
 
@@ -2609,6 +2655,19 @@ const DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE: Record<AppLocale, string[]> = {
     'El diálogo deriva → mantén líneas cortas y directas; evita monólogos largos.',
   ],
 };
+
+const DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE: Record<AppLocale, string[]> = {
+  en: DEFAULT_VIDEO_TROUBLESHOOTING.filter((item) => !item.toLowerCase().includes('dialogue')),
+  fr: DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE.fr.filter((item) => !item.toLowerCase().includes('dialogue')),
+  es: DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE.es.filter((item) => !item.toLowerCase().includes('diálogo')),
+};
+
+function getDefaultVideoTroubleshooting(locale: AppLocale, supportsAudio: boolean): string[] {
+  if (supportsAudio) {
+    return DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING;
+  }
+  return DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE.en;
+}
 
 const DEFAULT_VIDEO_SAFETY = [
   'Don’t generate real people or public figures (celebrities, politicians, etc.).',
@@ -3621,6 +3680,10 @@ function MarketingModelPageLayout({
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const strengths = copy.strengths;
   const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues) : [];
+  const supportsNativeAudio = Boolean(
+    keySpecValues &&
+      (isSupported(keySpecValues.audioOutput) || isSupported(keySpecValues.nativeAudioGeneration))
+  );
   const troubleshootingTitle = isVideoEngine
     ? locale === 'fr'
       ? 'Problèmes fréquents → solutions rapides'
@@ -3632,7 +3695,7 @@ function MarketingModelPageLayout({
     copy.troubleshootingItems.length
       ? copy.troubleshootingItems
       : isVideoEngine
-        ? (DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING)
+        ? getDefaultVideoTroubleshooting(locale, supportsNativeAudio)
         : [];
   const tipsCardLabels = TIPS_CARD_LABELS[locale] ?? TIPS_CARD_LABELS.en;
   const safetyRules = copy.safetyRules.length ? copy.safetyRules : DEFAULT_GENERIC_SAFETY;
@@ -3732,7 +3795,7 @@ function MarketingModelPageLayout({
         };
   })();
   const sectionLabels = resolveSectionLabels(locale);
-  const compareCopy = resolveCompareCopy(locale, heroTitle);
+  const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
@@ -4264,6 +4327,7 @@ function MarketingModelPageLayout({
                   guideLabel={copy.promptingGuideLabel ?? undefined}
                   guideUrl={copy.promptingGuideUrl ?? undefined}
                   mode="video"
+                  supportsAudio={supportsNativeAudio}
                   tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
                   globalPrinciples={copy.promptingGlobalPrinciples}
                   engineWhy={copy.promptingEngineWhy}
@@ -4305,6 +4369,7 @@ function MarketingModelPageLayout({
                 guideLabel={copy.promptingGuideLabel ?? undefined}
                 guideUrl={copy.promptingGuideUrl ?? undefined}
                 mode="image"
+                supportsAudio={supportsNativeAudio}
                 tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
                 globalPrinciples={copy.promptingGlobalPrinciples}
                 engineWhy={copy.promptingEngineWhy}

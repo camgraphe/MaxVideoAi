@@ -28,6 +28,12 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     'veo-3-1-lite': {
       bestFor: 'Budget Veo drafts',
     },
+    lumaRay2: {
+      bestFor: 'Premium cinematic generation with modify and reframe',
+    },
+    lumaRay2_flash: {
+      bestFor: 'Fast cinematic drafts with modify and reframe',
+    },
     'kling-2-6-pro': {
       bestFor: 'Cinematic dialogue',
     },

@@ -7,7 +7,7 @@ import {
   type EngineCategory,
 } from '@/lib/engines';
 import { computePricingSnapshot } from '@/lib/pricing';
-import type { EngineCaps, EnginePricing, EnginePricingDetails } from '@/types/engines';
+import type { EngineCaps, EngineInputField, EnginePricing, EnginePricingDetails } from '@/types/engines';
 import { fetchEngineOverrides } from '@/server/engine-overrides';
 import type { EngineOverride } from '@/server/engine-overrides';
 import { ensureEngineSettingsSeed, fetchEngineSettings, EngineSettingsRecord } from '@/server/engine-settings';
@@ -16,11 +16,13 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { ensureBillingSchema } from '@/lib/schema';
 import {
   getLumaRay2DurationInfo,
+  isLumaRay2EngineId,
   isLumaRay2AspectRatio,
   normaliseLumaRay2Loop,
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
+import { getEngineCaps } from '@/fixtures/engineCaps';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -40,6 +42,76 @@ function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails |
     );
   }
   engine.pricing = pricingData;
+}
+
+function filterFieldValues(field: EngineInputField, allowedValues: string[]): EngineInputField {
+  if (field.type !== 'enum' || !Array.isArray(field.values) || !allowedValues.length) {
+    return field;
+  }
+  const nextValues = field.values.filter((value) => allowedValues.includes(value));
+  if (!nextValues.length) {
+    return field;
+  }
+  const currentDefault =
+    typeof field.default === 'string' && nextValues.includes(field.default) ? field.default : nextValues[0];
+  return {
+    ...field,
+    values: nextValues,
+    default: currentDefault,
+  };
+}
+
+function filterDurationField(field: EngineInputField, maxDurationSec?: number): EngineInputField {
+  if (field.type !== 'enum' || field.id !== 'duration' || !Array.isArray(field.values) || typeof maxDurationSec !== 'number') {
+    return field;
+  }
+  const nextValues = field.values.filter((value) => {
+    const numeric = Number(String(value).replace(/[^\d.]/g, ''));
+    return !Number.isFinite(numeric) || numeric <= maxDurationSec;
+  });
+  if (!nextValues.length) {
+    return field;
+  }
+  const currentDefault =
+    typeof field.default === 'string' && nextValues.includes(field.default) ? field.default : nextValues[0];
+  return {
+    ...field,
+    values: nextValues,
+    default: currentDefault,
+  };
+}
+
+function syncInputSchemaWithOptions(engine: EngineCaps, options: Record<string, unknown>): void {
+  if (!engine.inputSchema) return;
+
+  const allowedResolutions = Array.isArray(options.resolutions)
+    ? options.resolutions.filter((value): value is string => typeof value === 'string')
+    : [];
+  const allowedAspectRatios = Array.isArray(options.aspectRatios)
+    ? options.aspectRatios.filter((value): value is string => typeof value === 'string')
+    : [];
+  const allowedFps = Array.isArray(options.fps)
+    ? options.fps.filter((value): value is number => typeof value === 'number').map((value) => String(value))
+    : [];
+  const maxDurationSec = typeof options.maxDurationSec === 'number' ? options.maxDurationSec : undefined;
+
+  const syncField = (field: EngineInputField): EngineInputField => {
+    let nextField = field;
+    if (field.id === 'resolution') {
+      nextField = filterFieldValues(nextField, allowedResolutions);
+    } else if (field.id === 'aspect_ratio') {
+      nextField = filterFieldValues(nextField, allowedAspectRatios);
+    } else if (field.id === 'fps') {
+      nextField = filterFieldValues(nextField, allowedFps);
+    }
+    return filterDurationField(nextField, maxDurationSec);
+  };
+
+  engine.inputSchema = {
+    ...engine.inputSchema,
+    required: engine.inputSchema.required?.map(syncField),
+    optional: engine.inputSchema.optional?.map(syncField),
+  };
 }
 
 function applyOptions(engine: EngineCaps, record?: EngineSettingsRecord | null): EngineCaps {
@@ -106,6 +178,7 @@ function applyOptions(engine: EngineCaps, record?: EngineSettingsRecord | null):
   if (typeof options.brandId === 'string') {
     clone.brandId = options.brandId;
   }
+  syncInputSchemaWithOptions(clone, options);
   return clone;
 }
 
@@ -214,13 +287,20 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     };
   }
 
-  const isLumaRay2 = engine.id === 'lumaRay2';
+  const isLumaRay2 = isLumaRay2EngineId(engine.id);
   const pricingEngine = applyEngineVariantPricing(engine, request.mode);
+  const capability = getEngineCaps(engine.id, request.mode);
+  const supportsDuration = Boolean(capability?.duration || capability?.frames);
+  const supportsResolution = Boolean(capability?.resolution?.length);
+  const supportsAspectRatio = Boolean(capability?.aspectRatio?.length);
   const requestedResolution = request.resolution;
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
   let effectiveResolution = requestedResolution;
   if (isLumaRay2) {
-    if (requestedResolution === 'auto') {
+    if (!supportsResolution) {
+      effectiveResolution =
+        (availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? '540p') as typeof requestedResolution;
+    } else if (requestedResolution === 'auto') {
       effectiveResolution = '540p' as typeof requestedResolution;
     } else if (!availableResolutions.includes(requestedResolution)) {
       return {
@@ -241,8 +321,8 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     effectiveResolution = (fallback ?? '1080p') as typeof requestedResolution;
   }
 
-  const durationInfo = isLumaRay2 ? getLumaRay2DurationInfo(request.durationSec) : null;
-  if (isLumaRay2 && !durationInfo) {
+  const durationInfo = isLumaRay2 && supportsDuration ? getLumaRay2DurationInfo(request.durationSec) : null;
+  if (isLumaRay2 && supportsDuration && !durationInfo) {
     return {
       ok: false,
       messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
@@ -253,7 +333,12 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     };
   }
 
-  if (isLumaRay2 && request.aspectRatio && !isLumaRay2AspectRatio(request.aspectRatio)) {
+  if (
+    isLumaRay2 &&
+    supportsAspectRatio &&
+    request.aspectRatio &&
+    !isLumaRay2AspectRatio(request.aspectRatio, { includeSquare: request.mode === 'reframe' })
+  ) {
     return {
       ok: false,
       messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
@@ -267,7 +352,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   const durationSecRaw = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
   const durationSec = durationInfo ? durationInfo.seconds : durationSecRaw;
   const memberTier = normalizeMemberTier(request.user?.memberTier);
-  const loop = isLumaRay2 ? normaliseLumaRay2Loop(request.loop) : undefined;
+  const loop = isLumaRay2 && supportsDuration ? normaliseLumaRay2Loop(request.loop) : undefined;
   const audioEnabled = typeof request.audio === 'boolean' ? request.audio : undefined;
   const addons = buildEngineAddonInput(pricingEngine, {
     audioEnabled,
@@ -279,6 +364,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       engine: pricingEngine,
       durationSec,
       resolution: effectiveResolution,
+      mode: request.mode,
       membershipTier: memberTier,
       loop,
       durationOption: durationInfo?.label,

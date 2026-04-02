@@ -58,7 +58,9 @@ import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
+  isLumaRay2EngineId,
   isLumaRay2AspectRatio,
+  isLumaRay2GenerateMode,
   toLumaRay2DurationLabel,
   LUMA_RAY2_ERROR_UNSUPPORTED,
   type LumaRay2DurationLabel,
@@ -616,12 +618,14 @@ function isModeValue(value: unknown): value is Mode {
   return (
     value === 't2v' ||
     value === 'i2v' ||
+    value === 'v2v' ||
     value === 'ref2v' ||
     value === 'fl2v' ||
     value === 'r2v' ||
     value === 'a2v' ||
     value === 'extend' ||
     value === 'retake' ||
+    value === 'reframe' ||
     value === 't2i' ||
     value === 'i2i'
   );
@@ -741,7 +745,7 @@ function framesToSeconds(frames: number): number {
 
 function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | null | undefined): FormState {
   const capability = getEngineCaps(engine.id, mode) as EngineCapabilityCaps | undefined;
-  const isLumaRay2Engine = engine.id === 'lumaRay2';
+  const isLumaRay2Engine = isLumaRay2EngineId(engine.id);
   const resetFastDefaultsOnEngineSwitch =
     (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') &&
     Boolean(previous?.engineId) &&
@@ -863,7 +867,7 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
   })();
 
   const iterations = previous?.iterations ? Math.max(1, Math.min(4, previous.iterations)) : 1;
-  const loop = isLumaRay2Engine ? Boolean(previous?.loop) : undefined;
+  const loop = isLumaRay2Engine && isLumaRay2GenerateMode(mode) ? Boolean(previous?.loop) : undefined;
   const audio = (() => {
     const previousAudio = typeof previous?.audio === 'boolean' ? previous.audio : null;
     if (previousAudio !== null) return previousAudio;
@@ -1259,6 +1263,7 @@ function serializePendingRenders(renders: LocalRender[]): string | null {
 
 const DEBOUNCE_MS = 200;
 const PRIMARY_IMAGE_SLOT_IDS = ['image_url', 'input_image', 'image'] as const;
+const PRIMARY_VIDEO_SLOT_IDS = ['video_url', 'input_video', 'video'] as const;
 const UNIFIED_VEO_FIRST_LAST_ENGINE_IDS = new Set(['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']);
 
 export default function Page() {
@@ -3717,6 +3722,17 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
     return null;
   }, [inputAssets]);
+  const primaryVideoDurationSec = useMemo(() => {
+    for (const fieldId of PRIMARY_VIDEO_SLOT_IDS) {
+      const entries = inputAssets[fieldId] ?? [];
+      for (const asset of entries) {
+        if (asset?.kind === 'video' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
+          return Math.max(1, Math.round(asset.durationSec));
+        }
+      }
+    }
+    return null;
+  }, [inputAssets]);
   const multiPromptError = multiPromptInvalid
     ? `Multi-prompt requires a prompt per scene and total duration between ${MULTI_PROMPT_MIN_SEC}s and ${MULTI_PROMPT_MAX_SEC}s.`
     : null;
@@ -3756,7 +3772,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       const available = order.filter((value) => selectedEngine.modes.includes(value));
       return available.length ? available : undefined;
     }
-    const preferredOrder: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
+    const preferredOrder: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe', 'ref2v', 'fl2v', 'a2v', 'extend', 'retake', 'r2v', 'i2i'];
     const available = preferredOrder.filter((value) => selectedEngine.modes.includes(value));
     return available.length ? available : undefined;
   }, [selectedEngine]);
@@ -4265,7 +4281,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!selectedEngine) return form?.mode ?? 't2v';
     const modes = selectedEngine.modes;
     if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
+    if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
     if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
+    if (referenceInputStatus.hasVideo && modes.includes('reframe')) return 'reframe';
     if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
     if (modes.includes('t2v')) return 't2v';
     return modes[0] ?? 't2v';
@@ -4280,7 +4298,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (referenceInputStatus.hasAudio) return null;
     const currentMode = form?.mode ?? null;
     if (
-      (currentMode === 'ref2v' ||
+      (currentMode === 'v2v' ||
+        currentMode === 'reframe' ||
+        currentMode === 'ref2v' ||
         currentMode === 'extend' ||
         currentMode === 'retake') &&
       selectedEngine.modes.includes(currentMode)
@@ -4308,8 +4328,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const effectiveDurationSec = useMemo(() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
+    if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number') {
+      return primaryVideoDurationSec;
+    }
     return form?.durationSec ?? 0;
-  }, [multiPromptActive, multiPromptTotalSec, submissionMode, primaryAudioDurationSec, form?.durationSec]);
+  }, [multiPromptActive, multiPromptTotalSec, submissionMode, primaryAudioDurationSec, primaryVideoDurationSec, form?.durationSec]);
 
   useEffect(() => {
     if (!selectedEngine || !form) return;
@@ -4439,7 +4462,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const composerModeToggles = useMemo(() => {
     if (!selectedEngine) return undefined;
     const explicitModes =
-      selectedEngine.id === 'ltx-2-3'
+      isLumaRay2EngineId(selectedEngine.id)
+        ? (['v2v', 'reframe'] as const)
+        : selectedEngine.id === 'ltx-2-3'
         ? (['extend'] as const)
         : selectedEngine.id === 'veo-3-1'
           ? (['ref2v', 'extend'] as const)
@@ -4486,7 +4511,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const handleComposerModeToggle = useCallback(
     (mode: Mode | null) => {
       if (!selectedEngine) return;
-      if (referenceInputStatus.hasAudio && (mode === 'extend' || mode === 'retake')) {
+      if (referenceInputStatus.hasAudio && (mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake')) {
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
@@ -4603,14 +4628,20 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     const allowsCrossModeAssets =
       activeMode === 't2v' &&
-      Boolean(selectedEngine?.modes?.some((mode) => mode === 'i2v' || mode === 'r2v' || mode === 'a2v'));
+      Boolean(
+        selectedEngine?.modes?.some(
+          (mode) => mode === 'i2v' || mode === 'v2v' || mode === 'reframe' || mode === 'r2v' || mode === 'a2v'
+        )
+      );
     const appliesToMode = (field: EngineInputField) => {
       if (!field.modes || field.modes.includes(activeMode)) return true;
       if (allowsUnifiedVeoFirstLast && field.id === 'last_frame_url' && field.modes.includes('fl2v')) return true;
       if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
       if (!allowsCrossModeAssets) return false;
       if (field.type === 'image' && field.modes.includes('i2v')) return true;
-      if (field.type === 'video' && field.modes.includes('r2v')) return true;
+      if (field.type === 'video' && (field.modes.includes('r2v') || field.modes.includes('v2v') || field.modes.includes('reframe'))) {
+        return true;
+      }
       if (field.type === 'audio' && field.modes.includes('a2v')) return true;
       return false;
     };
@@ -4902,12 +4933,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const trimmedPrompt = effectivePrompt.trim();
     const trimmedNegativePrompt = negativePrompt.trim();
     const supportsNegativePrompt = Boolean(inputSchemaSummary.negativePromptField);
-    const isLumaRay2 = selectedEngine.id === 'lumaRay2';
+    const isLumaRay2 = isLumaRay2EngineId(selectedEngine.id);
+    const isLumaRay2GenerateWorkflow = isLumaRay2 && isLumaRay2GenerateMode(submissionMode);
+    const isLumaRay2ReframeWorkflow = isLumaRay2 && submissionMode === 'reframe';
     const lumaDuration = isLumaRay2
       ? getLumaRay2DurationInfo(form.durationOption ?? form.durationSec)
       : null;
     const lumaResolution = isLumaRay2 ? getLumaRay2ResolutionInfo(form.resolution) : null;
-    const lumaAspectOk = !isLumaRay2 || isLumaRay2AspectRatio(form.aspectRatio);
+    const lumaAspectOk =
+      !isLumaRay2 || isLumaRay2AspectRatio(form.aspectRatio, { includeSquare: isLumaRay2ReframeWorkflow });
 
     if (multiPromptActive && multiPromptInvalid) {
       showNotice(multiPromptError ?? 'Multi-prompt requires a prompt per scene and a valid total duration.');
@@ -4960,7 +4994,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       return;
     }
 
-    if (isLumaRay2 && (!lumaDuration || !lumaResolution || !lumaAspectOk)) {
+    if (
+      (isLumaRay2GenerateWorkflow && (!lumaDuration || !lumaResolution || !lumaAspectOk)) ||
+      (isLumaRay2ReframeWorkflow && !lumaAspectOk)
+    ) {
       showNotice(LUMA_RAY2_ERROR_UNSUPPORTED);
       setPreflightError(LUMA_RAY2_ERROR_UNSUPPORTED);
       return;
@@ -5401,20 +5438,20 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       try {
         const shouldSendAspectRatio = !capability || (capability.aspectRatio?.length ?? 0) > 0;
-        const resolvedDurationSeconds = isLumaRay2 && lumaDuration ? lumaDuration.seconds : effectiveDurationSec;
+        const resolvedDurationSeconds = isLumaRay2GenerateWorkflow && lumaDuration ? lumaDuration.seconds : effectiveDurationSec;
         const durationOptionLabel: LumaRay2DurationLabel | undefined =
           typeof form.durationOption === 'string'
             ? (['5s', '9s'].includes(form.durationOption) ? (form.durationOption as LumaRay2DurationLabel) : undefined)
             : undefined;
         const resolvedDurationLabel =
-          isLumaRay2 && lumaDuration
+          isLumaRay2GenerateWorkflow && lumaDuration
             ? lumaDuration.label
             : toLumaRay2DurationLabel(effectiveDurationSec, durationOptionLabel) ??
               durationOptionLabel ??
               effectiveDurationSec;
         const shouldSendDuration = !capability || Boolean(capability.duration || capability.frames);
         const shouldSendResolution = !capability || (capability.resolution?.length ?? 0) > 0;
-        const resolvedResolution = isLumaRay2 && lumaResolution ? lumaResolution.value : form.resolution;
+        const resolvedResolution = isLumaRay2GenerateWorkflow && lumaResolution ? lumaResolution.value : form.resolution;
         const shouldSendFps =
           !capability ||
           (Array.isArray(capability.fps) ? capability.fps.length > 0 : typeof capability.fps === 'number');
@@ -5476,7 +5513,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           etaLabel,
           visibility: 'private',
           indexable: false,
-          ...(isLumaRay2 ? { loop: Boolean(form.loop) } : {}),
+          ...(isLumaRay2GenerateWorkflow ? { loop: Boolean(form.loop) } : {}),
         };
 
         emitClientMetric('generation_started', {
@@ -6437,8 +6474,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       audioControlDisabled={voiceControlEnabled}
                       audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
                       onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
-                      showLoopControl={selectedEngine.id === 'lumaRay2'}
-                      loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
+                      showLoopControl={isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)}
+                      loopEnabled={
+                        isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)
+                          ? Boolean(form.loop)
+                          : undefined
+                      }
                       onLoopChange={(next) =>
                         setForm((current) => (current ? { ...current, loop: next } : current))
                       }

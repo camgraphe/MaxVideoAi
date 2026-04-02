@@ -34,6 +34,10 @@ const fixtures: LocaleFixture[] = [
     englishPath: '/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro',
     localizableInternalPaths: COMPARE_INTERNAL_PATHS,
   },
+  {
+    englishPath: '/ai-video-engines/luma-ray-2-vs-luma-ray-2-flash',
+    localizableInternalPaths: COMPARE_INTERNAL_PATHS,
+  },
 ];
 
 runLocaleFixtureSet('compare', fixtures).catch((error) => {

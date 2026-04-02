@@ -257,7 +257,8 @@ export function Composer({
     });
   }, [assetFields, assets]);
   const orderedAssetFields = useMemo(() => {
-    if (!engine.id.startsWith('ltx-2-3')) {
+    const useCustomAssetOrder = engine.id.startsWith('ltx-2-3') || engine.id.startsWith('lumaRay2');
+    if (!useCustomAssetOrder) {
       return assetFields;
     }
 

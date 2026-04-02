@@ -62,6 +62,21 @@ export const MODEL_FAMILIES = [
     },
   },
   {
+    id: 'luma',
+    label: 'Luma Ray',
+    navLabel: 'Ray 2',
+    brandId: 'luma',
+    defaultModelSlug: 'luma-ray-2',
+    routeAliases: ['luma-ray-2', 'luma-ray-2-flash'],
+    aliases: ['ray-2', 'ray-2-flash', 'lumaray2', 'lumaray2flash'],
+    prefixes: ['luma', 'fal-ai/luma-dream-machine'],
+    examplesPage: {
+      stage: 'indexed',
+      showInNav: true,
+      publishedModelSlugs: ['luma-ray-2', 'luma-ray-2-flash'],
+    },
+  },
+  {
     id: 'wan',
     label: 'Wan',
     navLabel: 'Wan 2.6',

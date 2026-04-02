@@ -22,6 +22,7 @@ import { translateError, type ErrorTranslationInput } from '@/lib/error-messages
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
+  isLumaRay2EngineId,
   isLumaRay2AspectRatio,
   normaliseLumaRay2Loop,
   toLumaRay2DurationLabel,
@@ -39,7 +40,7 @@ const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
-type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'r2v' | 'a2v' | 'extend' | 'retake'>;
+type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'v2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 'reframe'>;
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -116,10 +117,12 @@ function isVideoMode(value: unknown): value is VideoMode {
     value === 'ref2v' ||
     value === 'fl2v' ||
     value === 'i2i' ||
+    value === 'v2v' ||
     value === 'r2v' ||
     value === 'a2v' ||
     value === 'extend' ||
-    value === 'retake'
+    value === 'retake' ||
+    value === 'reframe'
   );
 }
 
@@ -563,15 +566,25 @@ export async function POST(req: NextRequest) {
       : typeof body.generate_audio === 'boolean'
         ? body.generate_audio
         : undefined;
-  const isLumaRay2 = engine.id === 'lumaRay2';
+  const isLumaRay2 = isLumaRay2EngineId(engine.id);
+  const capability = getEngineCaps(engine.id, mode);
+  const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
+  const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
+  const supportsFps = capability
+    ? Array.isArray(capability.fps)
+      ? capability.fps.length > 0
+      : typeof capability.fps === 'number'
+    : true;
+  const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
   let durationSec = Number(body.durationSec || 4);
   if (multiPromptTotalSec > 0) {
     durationSec = multiPromptTotalSec;
   }
-  const lumaDurationInfo = isLumaRay2 ? getLumaRay2DurationInfo(rawDurationOption ?? durationSec) : null;
-  if (isLumaRay2 && !lumaDurationInfo) {
+  const lumaDurationInfo =
+    isLumaRay2 && supportsDuration ? getLumaRay2DurationInfo(rawDurationOption ?? durationSec) : null;
+  if (isLumaRay2 && supportsDuration && !lumaDurationInfo) {
     logMetric('rejected', {
       errorCode: 'LUMA_DURATION_UNSUPPORTED',
       meta: { durationOption: rawDurationOption, durationSec: body.durationSec },
@@ -646,21 +659,15 @@ export async function POST(req: NextRequest) {
       : typeof body.audio_url === 'string' && body.audio_url.trim().length
         ? body.audio_url.trim()
         : null;
-  const capability = getEngineCaps(engine.id, mode);
-  const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
-  const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
-  const supportsFps = capability
-    ? Array.isArray(capability.fps)
-      ? capability.fps.length > 0
-      : typeof capability.fps === 'number'
-    : true;
-  const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawAspectRatio =
     supportsAspectRatio && typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length
       ? body.aspectRatio.trim()
       : null;
   const fallbackAspectRatio = supportsAspectRatio
-    ? engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9'
+    ? capability?.aspectRatio?.find((value) => value !== 'auto') ??
+      engine.aspectRatios?.find((value) => value !== 'auto') ??
+      engine.aspectRatios?.[0] ??
+      '16:9'
     : null;
   let aspectRatio =
     rawAspectRatio && fallbackAspectRatio
@@ -668,8 +675,8 @@ export async function POST(req: NextRequest) {
         ? fallbackAspectRatio
         : rawAspectRatio
       : rawAspectRatio ?? fallbackAspectRatio ?? null;
-  if (isLumaRay2) {
-    if (aspectRatio && !isLumaRay2AspectRatio(aspectRatio)) {
+  if (isLumaRay2 && supportsAspectRatio) {
+    if (aspectRatio && !isLumaRay2AspectRatio(aspectRatio, { includeSquare: mode === 'reframe' })) {
       logMetric('rejected', {
         errorCode: 'LUMA_ASPECT_UNSUPPORTED',
         meta: { aspectRatio },
@@ -677,7 +684,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
     }
     if (!aspectRatio) {
-      aspectRatio = '16:9';
+      aspectRatio = fallbackAspectRatio ?? '16:9';
     }
   }
   const batchId = typeof body.batchId === 'string' && body.batchId.trim().length ? body.batchId.trim() : null;
@@ -716,8 +723,8 @@ export async function POST(req: NextRequest) {
       ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
       : requestedResolution;
   let effectiveResolution = requestedResolution === 'auto' ? pricingResolution : requestedResolution;
-  let lumaResolutionInfo = isLumaRay2 ? getLumaRay2ResolutionInfo(requestedResolution) : null;
-  if (isLumaRay2) {
+  let lumaResolutionInfo = isLumaRay2 && supportsResolution ? getLumaRay2ResolutionInfo(requestedResolution) : null;
+  if (isLumaRay2 && supportsResolution) {
     if (requestedResolution === 'auto') {
       requestedResolution = '540p';
       lumaResolutionInfo = getLumaRay2ResolutionInfo(requestedResolution);
@@ -728,6 +735,12 @@ export async function POST(req: NextRequest) {
     pricingResolution = lumaResolutionInfo.value;
     effectiveResolution = lumaResolutionInfo.value;
     requestedResolution = lumaResolutionInfo.value;
+  } else if (!supportsResolution) {
+    const fallbackResolution =
+      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '540p';
+    pricingResolution = fallbackResolution;
+    effectiveResolution = fallbackResolution;
+    requestedResolution = fallbackResolution;
   }
   if ((engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10) {
     // Fal requirement: 12–20s clips must run at 1080p/25fps on LTX fast variants.
@@ -868,6 +881,7 @@ export async function POST(req: NextRequest) {
     engine: pricingEngine,
     durationSec,
     resolution: pricingResolution,
+    mode,
     membershipTier: body.membershipTier,
     loop: isLumaRay2 ? loop : undefined,
     durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
@@ -1703,7 +1717,7 @@ async function rollbackPendingPayment(params: {
     .filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
   const resolvedAudioUrl = rawAudioUrl ?? audioUrls[0] ?? undefined;
   const initialImageUrl =
-    mode === 'i2v' || mode === 'i2i'
+    mode === 'i2v' || mode === 'i2i' || mode === 'v2v' || mode === 'reframe'
       ? requestedPrimaryImageUrl
       : undefined;
   const resolvedFirstFrameUrl = mode === 'fl2v' ? firstFrameUrl ?? requestedPrimaryImageUrl : firstFrameUrl;
@@ -1751,7 +1765,7 @@ async function rollbackPendingPayment(params: {
   if (mode === 'r2v' && videoUrls.length) {
     validationPayload.video_urls = videoUrls;
   }
-  if ((mode === 'extend' || mode === 'retake') && sourceInputVideoUrl) {
+  if ((mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake') && sourceInputVideoUrl) {
     validationPayload.video_url = sourceInputVideoUrl;
   }
   if (resolvedAudioUrl) {
@@ -1765,6 +1779,7 @@ async function rollbackPendingPayment(params: {
   const needsReferenceImages = mode === 'ref2v';
   const needsFirstLastFrames = mode === 'fl2v';
   const needsAudio = mode === 'a2v';
+  const needsSourceVideoEdit = mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake';
   if (isLumaRay2 && mode === 'i2v') {
     if (!initialImageUrl) {
       logMetric('rejected', {
@@ -1782,6 +1797,10 @@ async function rollbackPendingPayment(params: {
       });
       return NextResponse.json({ ok: false, error: 'Image URL is required for this engine mode' }, { status: 400 });
     }
+    if (initialImageUrl) {
+      validationPayload.image_url = initialImageUrl;
+    }
+  } else if (mode === 'v2v' || mode === 'reframe') {
     if (initialImageUrl) {
       validationPayload.image_url = initialImageUrl;
     }
@@ -1815,7 +1834,7 @@ async function rollbackPendingPayment(params: {
       });
       return NextResponse.json({ ok: false, error: 'Video URLs are required for this engine mode' }, { status: 400 });
     }
-  } else if (mode === 'extend' || mode === 'retake') {
+  } else if (needsSourceVideoEdit) {
     if (!sourceInputVideoUrl) {
       logMetric('rejected', {
         errorCode: 'VIDEO_URL_REQUIRED',
@@ -2027,7 +2046,12 @@ async function rollbackPendingPayment(params: {
     mode,
     apiKey: typeof body.apiKey === 'string' ? body.apiKey : undefined,
     idempotencyKey: jobId,
-    imageUrl: needsImage ? initialImageUrl : needsFirstLastFrames ? resolvedFirstFrameUrl : undefined,
+    imageUrl:
+      needsImage || mode === 'v2v' || mode === 'reframe'
+        ? initialImageUrl
+        : needsFirstLastFrames
+          ? resolvedFirstFrameUrl
+          : undefined,
     audioUrl: resolvedAudioUrl,
     referenceImages: normalizedReferenceImages.length ? normalizedReferenceImages : undefined,
     inputs: falInputs,
@@ -2600,7 +2624,7 @@ async function rollbackPendingPayment(params: {
   }
 
   if (isLumaRay2) {
-    console.info('[fal] lumaRay2 generation', {
+    console.info('[fal] luma ray generation', {
       jobId,
       providerJobId,
       status,

@@ -48,6 +48,14 @@ type CompareEnginesCarouselProps = {
 };
 
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
+  lumaRay2: {
+    v2v: 'Modify',
+    reframe: 'Reframe',
+  },
+  lumaRay2_flash: {
+    v2v: 'Modify',
+    reframe: 'Reframe',
+  },
   'veo-3-1': {
     ref2v: 'Reference',
     fl2v: 'First/Last',
@@ -84,6 +92,10 @@ function getModeLabel(
 }
 
 function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
+  if (engineId === 'lumaRay2' || engineId === 'lumaRay2_flash') {
+    const order: Mode[] = ['t2v', 'i2v', 'v2v', 'reframe'];
+    return order.filter((mode) => modes.includes(mode));
+  }
   if (engineId === 'veo-3-1') {
     const order: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend'];
     return order.filter((mode) => modes.includes(mode));

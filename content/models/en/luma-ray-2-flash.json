@@ -1,0 +1,229 @@
+{
+  "marketingName": "Luma Ray 2 Flash",
+  "versionLabel": "Ray 2 Flash",
+  "seo": {
+    "title": "Luma Ray 2 Flash Specs, Pricing and Fast Draft Workflows | MaxVideoAI",
+    "description": "Use Luma Ray 2 Flash in MaxVideoAI for faster, lower-cost drafts, image-to-video tests, source-video modify passes, and social reframes. Flash keeps the same Luma workflow surface while optimizing for iteration speed from 540p to 1080p.",
+    "image": "/hero/luma-ray2-flash.jpg"
+  },
+  "overview": "Luma Ray 2 Flash is the fast draft and throughput tier of the Luma family in MaxVideoAI. Like Ray 2, it now exposes the full public Fal workflow surface inside one model page: text-to-video, image-to-video, modify, and reframe.",
+  "hero": {
+    "title": "Luma Ray 2 Flash - faster drafts, modify, and reframe",
+    "intro": "Use Ray 2 Flash when you want the same Luma workflow coverage as Ray 2 but need faster, lower-cost concept validation, source-video exploration, and delivery reframes before moving a winner to the premium tier.",
+    "badge": "T2V + I2V + Modify + Reframe",
+    "ctaPrimary": {
+      "label": "Start generating with Luma Ray 2 Flash",
+      "href": "/app?engine=luma-ray-2-flash"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Compare Ray 2 Flash vs Ray 2 ->",
+        "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+      },
+      {
+        "label": "Browse all Luma examples ->",
+        "href": "/examples/luma"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      {
+        "title": "Fast concept validation",
+        "icon": "zap"
+      },
+      {
+        "title": "Storyboard and previs motion",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Short-form ad drafts",
+        "icon": "ads"
+      },
+      {
+        "title": "Quick source-video look changes",
+        "icon": "wand2"
+      },
+      {
+        "title": "Fast vertical and square reframes",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Reference-image animation before premium finals",
+        "icon": "camera"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Generate workflows",
+      "body": "Text-to-Video and Image-to-Video with 5 s or 9 s clips"
+    },
+    {
+      "label": "Edit workflows",
+      "body": "Modify and Reframe use an uploaded source video instead of fixed 5 s or 9 s presets"
+    },
+    {
+      "label": "Resolution",
+      "body": "540p, 720p, or 1080p for generate modes"
+    },
+    {
+      "label": "Aspect ratios",
+      "body": "16:9, 9:16, 4:3, 3:4, 21:9, and 9:21 on generate; Reframe also adds 1:1"
+    },
+    {
+      "label": "Image controls",
+      "body": "Image-to-Video supports one start image plus an optional end image; Modify and Reframe can also take an optional reference still"
+    },
+    {
+      "label": "Modify options",
+      "body": "Fal modify presets exposed in MaxVideoAI: adhere_1 to adhere_3, flex_1 to flex_3, and reimagine_1 to reimagine_3"
+    },
+    {
+      "label": "Reframe options",
+      "body": "Target aspect ratio plus optional grid anchors and crop-window coordinates"
+    },
+    {
+      "label": "Pricing",
+      "body": "Displayed pricing starts around $0.20 for 5 s at 540p on generate, about $0.12/s for Modify, and about $0.06/s for Reframe"
+    }
+  ],
+  "promptStructure": {
+    "title": "How to prompt Luma Ray 2 Flash by workflow",
+    "quote": "Mode: Reframe. Goal: repurpose the approved landscape teaser into a 9:16 mobile cut. Priority subject: the product in the upper-center third. Keep the existing timing and motion continuity.",
+    "description": "Flash is best used as a draft and throughput engine, but the prompting logic stays workflow-specific. The instruction should match whether you are generating a new shot, animating a still, modifying a source clip, or reframing it for another placement.",
+    "steps": [
+      "For Text-to-Video, keep the brief compact and visual: one subject, one move, one mood.",
+      "For Image-to-Video, let the start image anchor the shot and use the prompt to describe motion, energy, and landing.",
+      "Use an end image only when you want tighter closing control in a draft pass.",
+      "For Modify, tell Flash what must stay from the source clip and what should change, then choose the right Fal preset.",
+      "For Reframe, prioritize subject placement and delivery format instead of rewriting the whole scene.",
+      "Use Flash for iteration speed first, then move the approved prompt and workflow to Ray 2 when you need a premium final."
+    ]
+  },
+  "tips": {
+    "title": "Tips and limits",
+    "items": [
+      "Use Flash to shortlist concepts before moving the winner to Ray 2.",
+      "Modify is ideal when the timing and camera path already work but the look still needs exploration.",
+      "Reframe is the fastest way to turn one approved master into mobile and square variants.",
+      "Keep one strong motion beat per generate run; Flash performs best when the shot idea stays simple.",
+      "Treat Flash as the throughput layer of the Luma family, not as a separate workflow philosophy."
+    ]
+  },
+  "compareLink": {
+    "label": "Compare Ray 2 Flash vs Ray 2 ->",
+    "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+  },
+  "prompts": [
+    {
+      "title": "Fast tunnel reveal",
+      "prompt": "Futuristic sports car entering a wet tunnel, quick cinematic push-in, specular reflections on the asphalt, bold contrast, teaser energy, 5s, 16:9."
+    },
+    {
+      "title": "Animatic from still",
+      "prompt": "Animate the uploaded storyboard frame into a short previs shot with clean parallax, readable subject motion, and restrained lighting transitions, 5s."
+    },
+    {
+      "title": "Fast modify pass",
+      "prompt": "Keep the source clip camera path and timing, shift the setting into a cleaner showroom look, brighter key light, simpler background, flex_1."
+    },
+    {
+      "title": "Square commerce reframe",
+      "prompt": "Reframe the uploaded product teaser into a 1:1 square crop, keep the bottle centered and fully readable across the full move."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What is the difference between Ray 2 and Ray 2 Flash now?",
+      "a": "The workflow surface is aligned on purpose. Both models expose generate, modify, and reframe, but Ray 2 is the premium tier while Flash is optimized for faster drafts and lower-cost iteration."
+    },
+    {
+      "q": "Does Flash still support Modify and Reframe?",
+      "a": "Yes. Flash now exposes the same public Fal workflow coverage as Ray 2: text-to-video, image-to-video, modify, and reframe."
+    },
+    {
+      "q": "Which options are exposed in Flash Modify and Reframe?",
+      "a": "Modify keeps the Fal adhere, flex, and reimagine presets. Reframe keeps target aspect ratio, optional prompt, optional reference image, and optional crop-window controls."
+    },
+    {
+      "q": "When should I stay on Flash instead of switching to Ray 2?",
+      "a": "Stay on Flash while you are still exploring direction, pacing, crop strategy, or source-video edit strength. Move to Ray 2 when you want the higher-confidence premium pass."
+    }
+  ],
+  "custom": {
+    "heroDesc1": "Luma Ray 2 Flash now follows the same workflow-complete pattern as the stronger LTX and Veo pages in MaxVideoAI. It is still a two-model family, but each model now exposes the full public Fal workflow surface instead of hiding the source-video tools.",
+    "heroDesc2": "That gives the family a cleaner product story. Ray 2 stays premium, Flash stays fast, and both models support net-new generation plus source-video modify and reframe workflows.",
+    "heroSupportLine": "Best for fast iteration when you still need real modify and reframe tools inside the same Luma family.",
+    "heroSpecChips": [
+      { "label": "Text->Video", "icon": "textToVideo" },
+      { "label": "Image->Video", "icon": "imageToVideo" },
+      { "label": "Modify from source clip", "icon": "videoToVideo" },
+      { "label": "Reframe to 1:1 or 9:16", "icon": "aspectRatio" },
+      { "label": "Generate: 5s or 9s", "icon": "duration" },
+      { "label": "540p to 1080p on generate", "icon": "resolution" }
+    ],
+    "whyTitle": "Why Luma Ray 2 Flash is strategically useful",
+    "heroHighlights": [
+      "Fast tier, full workflow story||Flash is no longer just a reduced draft page. It now exposes the same public Fal workflow set as Ray 2: generate, modify, and reframe.",
+      "Better iteration economics||Generate pricing starts lower, which makes Flash the right place to test prompt direction, modify strength, and crop strategy.",
+      "Delivery edits without premium spend||Reframe stays useful even when the final creative is not ready for the flagship tier yet.",
+      "Clean upgrade path||Once the concept, modify preset, or crop strategy is approved, the team can move the exact workflow to Ray 2."
+    ],
+    "specTitle": "Real specs - Luma Ray 2 Flash in MaxVideoAI",
+    "specNote": "These specs describe the live public Fal routing exposed in MaxVideoAI today, not a trimmed placeholder page.",
+    "specSections": [
+      {
+        "title": "Generate workflows",
+        "intro": "Text-to-Video and Image-to-Video are the draft creation modes: 5 or 9 seconds, 540p to 1080p, multiple cinematic aspect ratios, optional loop, and optional end-image control.",
+        "items": [
+          "Use Text-to-Video for fast concept exploration.",
+          "Use Image-to-Video when the first frame should stay close to an approved still.",
+          "Add an end image only when you need a guided landing.",
+          "Use loop for ambient, teaser, or product motion drafts."
+        ]
+      },
+      {
+        "title": "Modify and Reframe",
+        "intro": "Flash now exposes the same source-video tools as Ray 2, which makes it much more useful during early-stage iteration and delivery planning.",
+        "items": [
+          "Modify explores look changes while keeping the original timing and camera path.",
+          "Adhere, flex, and reimagine presets let you choose how far the edit should drift from the source clip.",
+          "Reframe handles square and vertical delivery variants from one approved master.",
+          "Optional crop and grid controls keep the priority subject inside the new frame."
+        ]
+      }
+    ],
+    "whatTitle": "How Luma Ray 2 Flash works in MaxVideoAI",
+    "whatIntro1": "Choose Luma Ray 2 Flash, then stay in Generate Video for text or still-led drafts, or switch to Modify / Reframe when you are working from a source clip.",
+    "whatIntro2": "This keeps the family easy to understand while exposing the real workflows where they matter: inside the model page and workspace.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Pick Luma Ray 2 Flash as the engine.",
+      "Stay on Generate Video for text and image workflows, or switch to Modify / Reframe for source-video edits.",
+      "On generate runs, choose 5s or 9s, then pick resolution and aspect ratio.",
+      "Upload the relevant asset for the active workflow: start image, optional end image, or source video.",
+      "For Modify, pick the right adherence or reimagine preset.",
+      "Use Flash to iterate on direction, then move the approved workflow to Ray 2 if a premium final is needed."
+    ],
+    "galleryTitle": "Luma Ray 2 Flash examples",
+    "galleryIntro": "Use the examples rail to compare fast generate runs, modify passes, and delivery reframes before choosing whether the shot should stay on Flash or move to Ray 2.",
+    "galleryAllCta": "View all Luma examples ->",
+    "recreateLabel": "Recreate this shot ->",
+    "tipsTitle": "Practical strengths and boundaries",
+    "strengths": [
+      "Fast throughput while keeping the real Luma workflow surface.",
+      "Useful for source-video experimentation before premium finals.",
+      "Cleaner family story than exposing extra public Luma pseudo-models for every edit route."
+    ],
+    "boundaries": [
+      "Generate durations and resolutions still apply only to the creation modes, not to source-video edit lengths.",
+      "Modify and Reframe quality still depends on the clarity of the uploaded source clip.",
+      "Ray 2 remains the better choice for the highest-confidence premium final."
+    ],
+    "finalPara1": "Luma Ray 2 Flash is the right fast counterpart to Ray 2 only if it exposes the same real workflows. That is now the case: simpler model lineup, stronger workflow coverage, and a cleaner path from draft to premium final.",
+    "finalButton": "Generate with Luma Ray 2 Flash"
+  }
+}

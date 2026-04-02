@@ -677,6 +677,8 @@ const USE_CASE_MAP: Record<string, string> = {
   'kling-2-5-turbo': 'fast iterations with stable prompt adherence',
   'wan-2-6': 'structured prompts with clean transitions',
   'wan-2-5': 'budget-friendly prompt testing',
+  'luma-ray-2': 'cinematic generation with source-video modify and reframe',
+  'luma-ray-2-flash': 'fast cinematic drafts with source-video modify and reframe',
   'pika-text-to-video': 'stylized social-first clips',
   'ltx-2-3-pro': 'all-in-one LTX video workflows with audio and retakes',
   'ltx-2-3-fast': 'quick LTX 2.3 iterations for text and image video',
@@ -828,7 +830,8 @@ function getEngineTypeKey(entry: FalEngineEntry): EngineTypeKey {
   if (entry.type && ENGINE_TYPE_KEYS.includes(entry.type as EngineTypeKey)) return entry.type as EngineTypeKey;
   const modes = new Set(entry.engine.modes);
   const hasTextVideo = modes.has('t2v') || modes.has('a2v');
-  const hasImageVideo = modes.has('i2v') || modes.has('r2v') || modes.has('retake') || entry.engine.keyframes;
+  const hasImageVideo =
+    modes.has('i2v') || modes.has('v2v') || modes.has('reframe') || modes.has('r2v') || modes.has('retake') || entry.engine.keyframes;
   if (isImageOnlyModel(entry)) return 'image';
   if (hasTextVideo && hasImageVideo) return 'textImage';
   if (hasTextVideo) return 'text';
@@ -972,6 +975,8 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     'seedance-1-5-pro',
     'veo-3-1-fast',
     'veo-3-1-lite',
+    'luma-ray-2',
+    'luma-ray-2-flash',
     'pika-text-to-video',
     'wan-2-6',
     'wan-2-5',
@@ -1060,7 +1065,9 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     const isImageOnly = isImageOnlyModel(engine);
     const t2v = resolveSupported((keySpecs as Record<string, unknown>).textToVideo) ?? modes.has('t2v');
     const i2v = resolveSupported((keySpecs as Record<string, unknown>).imageToVideo) ?? modes.has('i2v');
-    const v2v = resolveSupported((keySpecs as Record<string, unknown>).videoToVideo) ?? modes.has('v2v');
+    const v2v =
+      resolveSupported((keySpecs as Record<string, unknown>).videoToVideo) ??
+      (modes.has('v2v') || modes.has('reframe'));
     const firstLast =
       resolveSupported((keySpecs as Record<string, unknown>).firstLastFrame) ??
       Boolean(catalogEntry?.engine?.keyframes);

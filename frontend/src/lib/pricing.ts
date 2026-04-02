@@ -8,13 +8,17 @@ import { getPricingDetails } from '@/lib/fal-catalog';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getMembershipDiscountMap } from '@/lib/membership';
 import { ENV } from '@/lib/env';
-import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
+import { calculateLumaRay2EditPrice, calculateLumaRay2Price, type LumaRay2EditWorkflow } from '@/lib/luma-ray2-pricing';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
+  isLumaRay2EditMode,
+  isLumaRay2EngineId,
+  isLumaRay2GenerateMode,
   normaliseLumaRay2Loop,
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
+import type { Mode } from '@/types/engines';
 
 const DECIMAL_PLACES = 6;
 const STANDARD_PRICING_MODES = new Set(['t2v', 'i2v', 't2i', 'i2i']);
@@ -57,6 +61,19 @@ const DEFAULT_RULE: PricingRule = {
 const CACHE_TTL_MS = 60_000;
 let cachedRules: PricingRule[] | null = null;
 let cacheLoadedAt = 0;
+
+const LUMA_RAY2_DEFAULT_PRICING = {
+  lumaRay2: {
+    base5s540pUsd: 0.5,
+    modifyPerSecondUsd: 0.12,
+    reframePerSecondUsd: 0.2,
+  },
+  lumaRay2_flash: {
+    base5s540pUsd: 0.2,
+    modifyPerSecondUsd: 0.12,
+    reframePerSecondUsd: 0.06,
+  },
+} as const;
 
 function toNumber(value: number | string | null | undefined, fallback = 0, precision?: number): number {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -120,6 +137,7 @@ function selectRule(rules: PricingRule[], engineId: string, resolution: string):
 }
 
 function buildLumaRay2Snapshot(params: {
+  engineId: 'luma-ray2' | 'luma-ray2-flash';
   baseUsd: number;
   duration: number | string | null | undefined;
   resolution: string;
@@ -131,6 +149,7 @@ function buildLumaRay2Snapshot(params: {
   vendorAccountId?: string | null;
 }): PricingSnapshot {
   const { baseSubtotalUsd, breakdown } = calculateLumaRay2Price({
+    engineId: params.engineId,
     baseUsd: params.baseUsd,
     duration: params.duration,
     resolution: params.resolution,
@@ -189,6 +208,105 @@ function buildLumaRay2Snapshot(params: {
       loop: typeof breakdown.loop === 'boolean' ? breakdown.loop : undefined,
     },
   };
+}
+
+function buildLumaRay2EditSnapshot(params: {
+  engineId: 'luma-ray2' | 'luma-ray2-flash';
+  workflow: LumaRay2EditWorkflow;
+  durationSec: number;
+  rateUsd: number;
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+}): PricingSnapshot {
+  const { baseSubtotalUsd, breakdown } = calculateLumaRay2EditPrice({
+    engineId: params.engineId,
+    workflow: params.workflow,
+    durationSec: params.durationSec,
+    rateUsd: params.rateUsd,
+  });
+
+  const baseSubtotalCents = Math.max(0, Math.round(baseSubtotalUsd * 100));
+  const marginPercent = params.rule.marginPercent;
+  const marginFlatCents = params.rule.marginFlatCents;
+  const marginAmount = Math.max(0, Math.round(baseSubtotalCents * marginPercent) + marginFlatCents);
+  const subtotalBeforeDiscountCents = baseSubtotalCents + marginAmount;
+
+  const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
+  const discountAmount = discountPercent > 0 ? Math.round(subtotalBeforeDiscountCents * discountPercent) : 0;
+  const totalCents = Math.max(0, subtotalBeforeDiscountCents - discountAmount);
+  const discountAppliedToMargin = Math.min(marginAmount, discountAmount);
+  const platformFeeCents = Math.max(0, marginAmount - discountAppliedToMargin);
+  const vendorShareCents = Math.max(0, totalCents - platformFeeCents);
+
+  return {
+    currency: params.currency,
+    totalCents,
+    subtotalBeforeDiscountCents,
+    base: {
+      seconds: breakdown.seconds,
+      rate: breakdown.rate_per_second_usd,
+      unit: 'sec',
+      amountCents: baseSubtotalCents,
+    },
+    addons: [],
+    margin: {
+      amountCents: marginAmount,
+      percentApplied: marginPercent,
+      flatCents: marginFlatCents,
+    },
+    discount: discountAmount
+      ? {
+          amountCents: discountAmount,
+          percentApplied: discountPercent,
+          tier: params.memberTier,
+        }
+      : undefined,
+    membershipTier: params.memberTier,
+    platformFeeCents,
+    vendorShareCents,
+    vendorAccountId: params.vendorAccountId ?? undefined,
+    meta: {
+      cost_breakdown_usd: breakdown,
+      workflow: breakdown.workflow,
+      seconds: breakdown.seconds,
+      rate_per_second_usd: breakdown.rate_per_second_usd,
+    },
+  };
+}
+
+function getLumaRay2BasePriceEnv(engineId: string): string | undefined {
+  if (engineId === 'lumaRay2_flash') {
+    return (
+      ENV.LUMARAY2_FLASH_BASE_5S_540P_USD ??
+      ENV.LUMARAY2_BASE_5S_540P_USD ??
+      String(LUMA_RAY2_DEFAULT_PRICING.lumaRay2_flash.base5s540pUsd)
+    );
+  }
+  return ENV.LUMARAY2_BASE_5S_540P_USD ?? String(LUMA_RAY2_DEFAULT_PRICING.lumaRay2.base5s540pUsd);
+}
+
+function getLumaRay2EditRateEnv(engineId: string, workflow: LumaRay2EditWorkflow): string | undefined {
+  if (workflow === 'modify') {
+    if (engineId === 'lumaRay2_flash') {
+      return (
+        ENV.LUMARAY2_FLASH_MODIFY_PER_SECOND_USD ??
+        ENV.LUMARAY2_MODIFY_PER_SECOND_USD ??
+        String(LUMA_RAY2_DEFAULT_PRICING.lumaRay2_flash.modifyPerSecondUsd)
+      );
+    }
+    return ENV.LUMARAY2_MODIFY_PER_SECOND_USD ?? String(LUMA_RAY2_DEFAULT_PRICING.lumaRay2.modifyPerSecondUsd);
+  }
+  if (engineId === 'lumaRay2_flash') {
+    return (
+      ENV.LUMARAY2_FLASH_REFRAME_PER_SECOND_USD ??
+      ENV.LUMARAY2_REFRAME_PER_SECOND_USD ??
+      String(LUMA_RAY2_DEFAULT_PRICING.lumaRay2_flash.reframePerSecondUsd)
+    );
+  }
+  return ENV.LUMARAY2_REFRAME_PER_SECOND_USD ?? String(LUMA_RAY2_DEFAULT_PRICING.lumaRay2.reframePerSecondUsd);
 }
 
 function buildDefinitionFromEngine(
@@ -316,6 +434,7 @@ export type PricingContext = {
   engine: EngineCaps;
   durationSec: number;
   resolution: string;
+  mode?: Mode;
   membershipTier?: string | null;
   currency?: string;
   loop?: boolean;
@@ -325,45 +444,17 @@ export type PricingContext = {
 
 export async function computePricingSnapshot(context: PricingContext): Promise<PricingSnapshot> {
   const { engine, durationSec, resolution } = context;
+  const lumaMode = context.mode ?? 't2v';
   const pricingDetails: EnginePricingDetails | undefined =
     engine.pricingDetails ?? (await getPricingDetails(engine.id));
   const rules = await loadRules();
   const rule = selectRule(rules, engine.id, resolution);
   const vendorAccountId = rule.vendorAccountId ?? engine.vendorAccountId;
-
-  let definition: PricingEngineDefinition | null = null;
-  if (pricingDetails || engine.pricing) {
-    definition = buildDefinitionFromEngine(engine, pricingDetails);
-  }
-
-  if (!definition) {
-    const kernel = getPricingKernel();
-    const fallback = kernel.getDefinition(engine.id);
-    if (!fallback) {
-      throw new Error(`Pricing definition not found for engine ${engine.id}`);
-    }
-    definition = fallback;
-  }
-
-  if (
-    !definition.resolutionMultipliers[resolution] &&
-    pricingDetails?.perSecondCents?.byResolution?.[resolution]
-  ) {
-    const perSecond = pricingDetails.perSecondCents.byResolution[resolution];
-    if (typeof perSecond === 'number' && definition.baseUnitPriceCents > 0) {
-      definition = {
-        ...definition,
-        resolutionMultipliers: {
-          ...definition.resolutionMultipliers,
-          [resolution]: perSecond / definition.baseUnitPriceCents,
-        },
-      };
-    }
-  }
-
   const membershipDiscounts = await getMembershipDiscountMap();
   const memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'] = {
-    ...definition.memberTierDiscounts,
+    member: 0,
+    plus: 0.05,
+    pro: 0.1,
   };
   (Object.keys(memberTierDiscounts) as Array<keyof PricingEngineDefinition['memberTierDiscounts']>).forEach((key) => {
     const override = membershipDiscounts[key];
@@ -373,17 +464,17 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
   });
 
   const memberTier = (context.membershipTier ?? 'member').toLowerCase() as 'member' | 'plus' | 'pro';
-
   let snapshot: PricingSnapshot;
 
-  if (engine.id === 'lumaRay2') {
-    const baseRaw = ENV.LUMARAY2_BASE_5S_540P_USD;
-    if (!baseRaw) {
-      throw new Error('LUMARAY2_BASE_5S_540P_USD is not configured');
-    }
+  if (isLumaRay2EngineId(engine.id) && isLumaRay2GenerateMode(lumaMode)) {
+    const baseRaw = getLumaRay2BasePriceEnv(engine.id);
     const baseUsd = Number(baseRaw);
     if (!Number.isFinite(baseUsd) || baseUsd <= 0) {
-      throw new Error('LUMARAY2_BASE_5S_540P_USD must be a positive number');
+      throw new Error(
+        engine.id === 'lumaRay2_flash'
+          ? 'LUMARAY2_FLASH_BASE_5S_540P_USD or LUMARAY2_BASE_5S_540P_USD must be a positive number'
+          : 'LUMARAY2_BASE_5S_540P_USD must be a positive number'
+      );
     }
 
     const durationInfo = getLumaRay2DurationInfo(context.durationOption ?? durationSec);
@@ -396,9 +487,10 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
     }
 
     const loop = normaliseLumaRay2Loop(context.loop);
-    const currency = (context.currency ?? rule.currency ?? definition.currency ?? 'USD').toUpperCase();
+    const currency = (context.currency ?? rule.currency ?? pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
 
     snapshot = buildLumaRay2Snapshot({
+      engineId: engine.id === 'lumaRay2_flash' ? 'luma-ray2-flash' : 'luma-ray2',
       baseUsd,
       duration: durationInfo.label,
       resolution: resolutionInfo.value,
@@ -410,7 +502,77 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
       vendorAccountId,
     });
     snapshot.base.seconds = durationInfo.seconds;
+  } else if (isLumaRay2EngineId(engine.id) && isLumaRay2EditMode(lumaMode)) {
+    const workflow: LumaRay2EditWorkflow = lumaMode === 'reframe' ? 'reframe' : 'modify';
+    const rateRaw = getLumaRay2EditRateEnv(engine.id, workflow);
+    const rateUsd = Number(rateRaw);
+    if (!Number.isFinite(rateUsd) || rateUsd <= 0) {
+      throw new Error(
+        workflow === 'modify'
+          ? engine.id === 'lumaRay2_flash'
+            ? 'LUMARAY2_FLASH_MODIFY_PER_SECOND_USD or LUMARAY2_MODIFY_PER_SECOND_USD must be a positive number'
+            : 'LUMARAY2_MODIFY_PER_SECOND_USD must be a positive number'
+          : engine.id === 'lumaRay2_flash'
+            ? 'LUMARAY2_FLASH_REFRAME_PER_SECOND_USD or LUMARAY2_REFRAME_PER_SECOND_USD must be a positive number'
+            : 'LUMARAY2_REFRAME_PER_SECOND_USD must be a positive number'
+      );
+    }
+
+    const currency = (context.currency ?? rule.currency ?? pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+    snapshot = buildLumaRay2EditSnapshot({
+      engineId: engine.id === 'lumaRay2_flash' ? 'luma-ray2-flash' : 'luma-ray2',
+      workflow,
+      durationSec,
+      rateUsd,
+      rule,
+      memberTier,
+      memberTierDiscounts,
+      currency,
+      vendorAccountId,
+    });
   } else {
+    let definition: PricingEngineDefinition | null = null;
+    if (pricingDetails || engine.pricing) {
+      definition = buildDefinitionFromEngine(engine, pricingDetails);
+    }
+
+    if (!definition) {
+      const kernel = getPricingKernel();
+      const fallback = kernel.getDefinition(engine.id);
+      if (!fallback) {
+        throw new Error(`Pricing definition not found for engine ${engine.id}`);
+      }
+      definition = fallback;
+    }
+
+    if (
+      !definition.resolutionMultipliers[resolution] &&
+      pricingDetails?.perSecondCents?.byResolution?.[resolution]
+    ) {
+      const perSecond = pricingDetails.perSecondCents.byResolution[resolution];
+      if (typeof perSecond === 'number' && definition.baseUnitPriceCents > 0) {
+        definition = {
+          ...definition,
+          resolutionMultipliers: {
+            ...definition.resolutionMultipliers,
+            [resolution]: perSecond / definition.baseUnitPriceCents,
+          },
+        };
+      }
+    }
+
+    (Object.keys(memberTierDiscounts) as Array<keyof PricingEngineDefinition['memberTierDiscounts']>).forEach((key) => {
+      const override = membershipDiscounts[key];
+      if (typeof override === 'number' && Number.isFinite(override)) {
+        memberTierDiscounts[key] = Math.max(0, override);
+        return;
+      }
+      const definitionValue = definition.memberTierDiscounts[key];
+      if (typeof definitionValue === 'number' && Number.isFinite(definitionValue)) {
+        memberTierDiscounts[key] = Math.max(0, definitionValue);
+      }
+    });
+
     const augmentedDefinition: PricingEngineDefinition = {
       ...definition,
       currency: context.currency ?? definition.currency,

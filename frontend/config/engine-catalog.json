@@ -41,6 +41,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -306,6 +308,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -588,6 +592,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -1067,6 +1073,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -1500,6 +1508,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -1825,6 +1835,980 @@
     "bestFor": "Budget Veo drafts"
   },
   {
+    "engineId": "lumaRay2",
+    "modelSlug": "luma-ray-2",
+    "marketingName": "Luma Ray 2",
+    "provider": "Luma AI",
+    "brandId": "luma",
+    "family": "luma",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "luma-ray-2",
+        "luma-ray-2-flash"
+      ]
+    },
+    "versionLabel": "Ray 2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "veo-3-1-fast",
+          "kling-3-standard",
+          "seedance-1-5-pro"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "luma-ray-2-flash",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-lite",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 5,
+        "variantGroup": "luma-ray-2",
+        "variantLabel": "Ray 2"
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "lumaRay2",
+      "label": "Luma Ray 2",
+      "provider": "Luma AI",
+      "version": "Ray 2",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "v2v",
+        "reframe"
+      ],
+      "maxDurationSec": 9,
+      "resolutions": [
+        "540p",
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9",
+        "9:21"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 500
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Use one still image to anchor the opening frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Upload the video to modify or reframe.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ],
+            "requiredInModes": [
+              "v2v",
+              "reframe"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Optional text guidance for modify and reframe workflows.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "description": "Optional still reference to steer styling or composition during modify or reframe.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional closing frame for a guided start-to-end transition.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "5s",
+              "9s"
+            ],
+            "default": "5s",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "21:9",
+              "9:21"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "540p",
+              "720p",
+              "1080p"
+            ],
+            "default": "540p",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "loop",
+            "type": "boolean",
+            "label": "Loop video",
+            "default": false,
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "mode",
+            "type": "enum",
+            "label": "Modify strength",
+            "description": "Choose how tightly the source clip should follow the original motion and composition.",
+            "values": [
+              "adhere_1",
+              "adhere_2",
+              "adhere_3",
+              "flex_1",
+              "flex_2",
+              "flex_3",
+              "reimagine_1",
+              "reimagine_2",
+              "reimagine_3"
+            ],
+            "default": "flex_1",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Reframe aspect ratio",
+            "description": "Choose the new framing for the output clip.",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:3",
+              "3:4",
+              "21:9",
+              "9:21"
+            ],
+            "default": "9:16",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "grid_position_x",
+            "type": "number",
+            "label": "Grid position X",
+            "description": "Optional horizontal grid anchor for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "grid_position_y",
+            "type": "number",
+            "label": "Grid position Y",
+            "description": "Optional vertical grid anchor for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "x_start",
+            "type": "number",
+            "label": "Crop start X",
+            "description": "Optional left crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "x_end",
+            "type": "number",
+            "label": "Crop end X",
+            "description": "Optional right crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "y_start",
+            "type": "number",
+            "label": "Crop start Y",
+            "description": "Optional top crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "y_end",
+            "type": "number",
+            "label": "Crop end Y",
+            "description": "Optional bottom crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "webm",
+            "m4v",
+            "gif"
+          ],
+          "maxImageSizeMB": 10,
+          "maxVideoSizeMB": 500
+        }
+      },
+      "updatedAt": "2026-04-02T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "luma",
+        "modelSlug": "fal-ai/luma-dream-machine/ray-2"
+      },
+      "availability": "available",
+      "brandId": "luma"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "9s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ],
+          "audioToggle": false
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "9s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": false,
+          "notes": "Animate one still with optional end-frame guidance and loop control."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2/modify",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "notes": "Modify a source clip with optional prompt and reference-image guidance plus Fal adherence presets."
+        }
+      },
+      {
+        "mode": "reframe",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2/reframe",
+        "ui": {
+          "modes": [
+            "reframe"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ],
+          "notes": "Reframe an existing source clip into a new aspect ratio with optional prompt, reference image, and crop controls."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Premium cinematic generation with modify and reframe"
+  },
+  {
+    "engineId": "lumaRay2_flash",
+    "modelSlug": "luma-ray-2-flash",
+    "marketingName": "Luma Ray 2 Flash",
+    "provider": "Luma AI",
+    "brandId": "luma",
+    "family": "luma",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "luma-ray-2",
+        "luma-ray-2-flash"
+      ]
+    },
+    "versionLabel": "Ray 2 Flash",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "luma-ray-2",
+          "veo-3-1-lite",
+          "ltx-2-3-fast"
+        ],
+        "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "luma-ray-2",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-lite",
+          "wan-2-5",
+          "wan-2-6"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 6,
+        "variantGroup": "luma-ray-2",
+        "variantLabel": "Ray 2 Flash"
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "lumaRay2_flash",
+      "label": "Luma Ray 2 Flash",
+      "provider": "Luma AI",
+      "version": "Ray 2 Flash",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "v2v",
+        "reframe"
+      ],
+      "maxDurationSec": 9,
+      "resolutions": [
+        "540p",
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9",
+        "9:21"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 500
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Use one still image to anchor the opening frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Upload the video to modify or reframe.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ],
+            "requiredInModes": [
+              "v2v",
+              "reframe"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Optional text guidance for modify and reframe workflows.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "description": "Optional still reference to steer styling or composition during modify or reframe.",
+            "modes": [
+              "v2v",
+              "reframe"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional closing frame for a guided start-to-end transition.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "5s",
+              "9s"
+            ],
+            "default": "5s",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "21:9",
+              "9:21"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "540p",
+              "720p",
+              "1080p"
+            ],
+            "default": "540p",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "loop",
+            "type": "boolean",
+            "label": "Loop video",
+            "default": false,
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "mode",
+            "type": "enum",
+            "label": "Modify strength",
+            "description": "Choose how tightly the source clip should follow the original motion and composition.",
+            "values": [
+              "adhere_1",
+              "adhere_2",
+              "adhere_3",
+              "flex_1",
+              "flex_2",
+              "flex_3",
+              "reimagine_1",
+              "reimagine_2",
+              "reimagine_3"
+            ],
+            "default": "flex_1",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Reframe aspect ratio",
+            "description": "Choose the new framing for the output clip.",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:3",
+              "3:4",
+              "21:9",
+              "9:21"
+            ],
+            "default": "9:16",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "grid_position_x",
+            "type": "number",
+            "label": "Grid position X",
+            "description": "Optional horizontal grid anchor for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "grid_position_y",
+            "type": "number",
+            "label": "Grid position Y",
+            "description": "Optional vertical grid anchor for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "x_start",
+            "type": "number",
+            "label": "Crop start X",
+            "description": "Optional left crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "x_end",
+            "type": "number",
+            "label": "Crop end X",
+            "description": "Optional right crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "y_start",
+            "type": "number",
+            "label": "Crop start Y",
+            "description": "Optional top crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          },
+          {
+            "id": "y_end",
+            "type": "number",
+            "label": "Crop end Y",
+            "description": "Optional bottom crop boundary for the reframe window.",
+            "modes": [
+              "reframe"
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "webm",
+            "m4v",
+            "gif"
+          ],
+          "maxImageSizeMB": 10,
+          "maxVideoSizeMB": 500
+        }
+      },
+      "updatedAt": "2026-04-02T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "luma",
+        "modelSlug": "fal-ai/luma-dream-machine/ray-2-flash"
+      },
+      "availability": "available",
+      "brandId": "luma"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2-flash",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "9s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ],
+          "audioToggle": false
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2-flash/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "5s",
+              "9s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": false,
+          "notes": "Use Flash for faster cinematic drafts with the same visible settings surface."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2-flash/modify",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "notes": "Modify a source clip quickly with the same Fal adherence and reimagination presets exposed in Flash."
+        }
+      },
+      {
+        "mode": "reframe",
+        "falModelId": "fal-ai/luma-dream-machine/ray-2-flash/reframe",
+        "ui": {
+          "modes": [
+            "reframe"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ],
+          "notes": "Reframe an existing source clip into a new format with the faster Flash variant."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Fast cinematic drafts with modify and reframe"
+  },
+  {
     "engineId": "pika-text-to-video",
     "modelSlug": "pika-text-to-video",
     "marketingName": "Pika 2.2 Text & Image to Video",
@@ -1865,6 +2849,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "seedance-1-5-pro",
           "seedance-2-0",
@@ -2173,6 +3159,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -2484,6 +3472,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -2789,6 +3779,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -3129,6 +4121,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -3471,6 +4465,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-2-0",
@@ -3839,6 +4835,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -4121,6 +5119,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -4435,6 +5435,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -4810,6 +5812,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
@@ -5099,6 +6103,8 @@
           "ltx-2",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -5463,6 +6469,8 @@
           "ltx-2",
           "ltx-2-3-fast",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -6009,6 +7017,8 @@
           "ltx-2",
           "ltx-2-3-fast",
           "ltx-2-3-pro",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -6314,6 +7324,8 @@
           "ltx-2-3-fast",
           "ltx-2-3-pro",
           "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",

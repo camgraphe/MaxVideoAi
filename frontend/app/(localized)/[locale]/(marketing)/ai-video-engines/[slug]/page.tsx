@@ -14,7 +14,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { isDatabaseConfigured } from '@/lib/db';
 import compareConfig from '@/config/compare-config.json';
-import { COMPARE_SHOWDOWNS } from '@/config/compare-showdowns';
+import { getCompareShowdowns, type CompareShowdown } from '@/config/compare-showdowns';
 import { listFalEngines } from '@/config/falEngines';
 import engineCatalog from '@/config/engine-catalog.json';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
@@ -161,6 +161,33 @@ function reverseCompareSlug(slug: string) {
 
 function formatTemplate(template: string, values: Record<string, string>) {
   return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '');
+}
+
+function replaceCriteriaCount(template: string, count: number) {
+  return template
+    .replace(/\b11 criteria\b/g, `${count} criteria`)
+    .replace(/\b11 critères\b/g, `${count} critères`)
+    .replace(/\b11 criterios\b/g, `${count} criterios`);
+}
+
+function stripAudioReferencesForSilentPair(template: string, pairHasNativeAudio: boolean) {
+  if (pairHasNativeAudio) return template;
+  return template
+    .replace(/\(duration,\s*resolution,\s*audio\)/g, '(duration and resolution)')
+    .replace(/\(durée,\s*résolution,\s*audio\)/g, '(durée et résolution)')
+    .replace(/\(duración,\s*resolución,\s*audio\)/g, '(duración y resolución)')
+    .replace(
+      /\(pricing,\s*inputs,\s*resolution,\s*duration,\s*aspect ratios,\s*audio,\s*and core controls\)/g,
+      '(pricing, inputs, resolution, duration, aspect ratios, and core controls)'
+    )
+    .replace(
+      /\(prix,\s*entrées,\s*résolution,\s*durée,\s*formats,\s*audio et contrôles\)/g,
+      '(prix, entrées, résolution, durée, formats et contrôles)'
+    )
+    .replace(
+      /\(precios,\s*entradas,\s*resolución,\s*duración,\s*formatos,\s*audio y controles\)/g,
+      '(precios, entradas, resolución, duración, formatos y controles)'
+    );
 }
 
 export const dynamicParams = true;
@@ -451,7 +478,9 @@ function resolveModeSupported(entry: EngineCatalogEntry, mode: string) {
 function resolveVideoToVideoSupport(entry: EngineCatalogEntry) {
   const modes = entry.engine?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') && modes.includes('reframe')) return 'Supported (modify / reframe workflows)';
   if (modes.includes('v2v')) return 'Supported';
+  if (modes.includes('reframe')) return 'Supported (reframe workflow)';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (extend / retake workflows)';
   }
@@ -476,6 +505,9 @@ function resolveReferenceImageSupport(entry: EngineCatalogEntry) {
 function resolveReferenceVideoSupport(entry: EngineCatalogEntry) {
   const modes = entry.engine?.modes ?? [];
   if (!modes.length) return 'Data pending';
+  if (modes.includes('v2v') || modes.includes('reframe')) {
+    return 'Supported (source clip for modify / reframe)';
+  }
   if (modes.includes('r2v')) return 'Supported';
   if (modes.includes('extend') || modes.includes('retake')) {
     return 'Supported (source clip for extend / retake)';
@@ -733,11 +765,28 @@ function localizeSpecDetailValue(
         ? 'clip fuente para extensión / retake'
         : normalized;
   }
+  if (lower === 'source clip for modify / reframe') {
+    return locale === 'fr'
+      ? 'clip source pour modify / reframe'
+      : locale === 'es'
+        ? 'clip fuente para modify / reframe'
+        : normalized;
+  }
   if (lower === 'start + end image in i2v') {
     return locale === 'fr'
       ? 'image de départ + image de fin en image → vidéo'
       : locale === 'es'
         ? 'imagen inicial + imagen final en imagen → video'
+        : normalized;
+  }
+  if (lower === 'reframe workflow') {
+    return locale === 'fr' ? 'workflow reframe' : locale === 'es' ? 'workflow reframe' : normalized;
+  }
+  if (lower === 'modify / reframe workflows') {
+    return locale === 'fr'
+      ? 'workflows modify / reframe'
+      : locale === 'es'
+        ? 'workflows modify / reframe'
         : normalized;
   }
   if (lower === 'extend / retake workflows') {
@@ -1059,15 +1108,19 @@ export async function generateMetadata({
   const canonicalSlug = canonicalInfo?.canonicalSlug ?? slug;
   const metaOverride = compareCopy.meta?.slugOverrides?.[canonicalSlug];
   const resolved = canonicalInfo ? resolveEngines(canonicalInfo.canonicalSlug) : null;
+  const pairHasNativeAudio = Boolean(resolved?.left.engine?.audio) || Boolean(resolved?.right.engine?.audio);
+  const criteriaCount = pairHasNativeAudio ? 11 : 10;
   const titleTemplate =
     metaOverride?.title ?? compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
   const titleFallback =
     compareCopy.meta?.titleFallback ??
     'Compare AI video engines — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
-  const descriptionTemplate =
+  const descriptionTemplate = replaceCriteriaCount(
     metaOverride?.description ??
-    compareCopy.meta?.description ??
-    'Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across 11 criteria.';
+      compareCopy.meta?.description ??
+      `Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across ${criteriaCount} criteria.`,
+    criteriaCount
+  );
   const descriptionFallback =
     compareCopy.meta?.descriptionFallback ?? 'Side-by-side comparison of AI video engines with MaxVideoAI metrics and guidance.';
   const title = resolved
@@ -1218,6 +1271,9 @@ export default async function CompareDetailPage({
     keySpecs.get(right.modelSlug)?.keySpecs ?? keySpecs.get(right.engineId)?.keySpecs ?? undefined;
   const leftSpecs = buildSpecValues(left, leftKeySpecs);
   const rightSpecs = buildSpecValues(right, rightKeySpecs);
+  const pairHasNativeAudio = Boolean(left.engine?.audio) || Boolean(right.engine?.audio);
+  const criteriaCount = pairHasNativeAudio ? 11 : 10;
+  const compareShowdowns = getCompareShowdowns({ pairHasNativeAudio });
   const [leftPricingDisplay, rightPricingDisplay] = await Promise.all([
     resolvePricingDisplay(left, activeLocale, PRICING_ENGINES.get(left.modelSlug)),
     resolvePricingDisplay(right, activeLocale, PRICING_ENGINES.get(right.modelSlug)),
@@ -1231,11 +1287,14 @@ export default async function CompareDetailPage({
         body: compareCopy.prelaunch?.notice ?? getPrelaunchCompareNotice(activeLocale).body,
       }
     : null;
-  const heroIntroTemplate = hasPrelaunchEngine
-    ? (compareCopy.hero?.introPrelaunch ??
-      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.')
-    : (compareCopy.hero?.intro ??
-      'This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across 11 criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.');
+  const heroIntroTemplate = replaceCriteriaCount(
+    hasPrelaunchEngine
+      ? (compareCopy.hero?.introPrelaunch ??
+        `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`)
+      : (compareCopy.hero?.intro ??
+        `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`),
+    criteriaCount
+  );
   const showdownSubtitle = hasPrelaunchEngine
     ? (compareCopy.showdown?.subtitlePrelaunch ??
       'Side-by-side prompts and renders (when available) on MaxVideoAI. Prompts are identical; outputs may vary by model.')
@@ -1283,7 +1342,7 @@ export default async function CompareDetailPage({
       .filter((entry) => Boolean(entry.slotId))
       .map((entry) => [entry.slotId as string, entry])
   );
-  const orderedShowdowns = COMPARE_SHOWDOWNS.map((template) => {
+  const orderedShowdowns = compareShowdowns.map((template) => {
     const bySlot = showdownsBySlotId.get(template.id);
     if (bySlot) return bySlot;
     const byPrompt = showdownsByPrompt.get(normalizePrompt(template.prompt));
@@ -1291,7 +1350,7 @@ export default async function CompareDetailPage({
     return null;
   });
   const overrideJobs = new Set<string>();
-  COMPARE_SHOWDOWNS.forEach((template) => {
+  compareShowdowns.forEach((template) => {
     const leftOverride = SHOWDOWN_OVERRIDES[left.modelSlug]?.[template.id];
     if (leftOverride) overrideJobs.add(leftOverride);
     const rightOverride = SHOWDOWN_OVERRIDES[right.modelSlug]?.[template.id];
@@ -1305,7 +1364,7 @@ export default async function CompareDetailPage({
   const fallbackByTemplateId = new Map<string, { left?: GalleryVideo; right?: GalleryVideo }>();
   if (isDatabaseConfigured()) {
     const lookupTasks: Array<Promise<void>> = [];
-    COMPARE_SHOWDOWNS.forEach((template, index) => {
+    compareShowdowns.forEach((template, index) => {
       const entry = orderedShowdowns[index];
       const needsLeft = !hasMedia(entry?.left);
       const needsRight = !hasMedia(entry?.right);
@@ -1333,8 +1392,8 @@ export default async function CompareDetailPage({
       await Promise.all(lookupTasks);
     }
   }
-  type ShowdownSlot = (typeof COMPARE_SHOWDOWNS)[number] & { left: ShowdownSide; right: ShowdownSide };
-  const showdownSlots = COMPARE_SHOWDOWNS.map((template, index) => {
+  type ShowdownSlot = CompareShowdown & { left: ShowdownSide; right: ShowdownSide };
+  const showdownSlots = compareShowdowns.map((template, index) => {
     const entry = orderedShowdowns[index];
     const shouldSwapShowdownSides = showdownSourceSlug === canonicalSlug ? shouldSwapDisplayOrder : !shouldSwapDisplayOrder;
     const entryLeft = shouldSwapShowdownSides ? entry?.right : entry?.left;
@@ -1413,13 +1472,17 @@ export default async function CompareDetailPage({
     { label: specLabels.aspectRatios ?? 'Aspect ratios', left: leftSpecs.aspectRatios, right: rightSpecs.aspectRatios },
     { label: specLabels.fpsOptions ?? 'FPS options', left: leftSpecs.fpsOptions, right: rightSpecs.fpsOptions },
     { label: specLabels.outputFormats ?? 'Output format', left: leftSpecs.outputFormats, right: rightSpecs.outputFormats },
-    { label: specLabels.audioOutput ?? 'Audio output', left: leftSpecs.audioOutput, right: rightSpecs.audioOutput },
-    {
-      label: specLabels.nativeAudioGeneration ?? 'Native audio generation',
-      left: leftSpecs.nativeAudioGeneration,
-      right: rightSpecs.nativeAudioGeneration,
-    },
-    { label: specLabels.lipSync ?? 'Lip sync', left: leftSpecs.lipSync, right: rightSpecs.lipSync },
+    ...(pairHasNativeAudio
+      ? [
+          { label: specLabels.audioOutput ?? 'Audio output', left: leftSpecs.audioOutput, right: rightSpecs.audioOutput },
+          {
+            label: specLabels.nativeAudioGeneration ?? 'Native audio generation',
+            left: leftSpecs.nativeAudioGeneration,
+            right: rightSpecs.nativeAudioGeneration,
+          },
+          { label: specLabels.lipSync ?? 'Lip sync', left: leftSpecs.lipSync, right: rightSpecs.lipSync },
+        ]
+      : []),
     {
       label: specLabels.cameraMotionControls ?? 'Camera / motion controls',
       left: leftSpecs.cameraMotionControls,
@@ -1532,8 +1595,13 @@ export default async function CompareDetailPage({
     {
       question: faqTemplates.q3 ?? 'Which is cheaper on MaxVideoAI?',
       answer: formatTemplate(
-        faqTemplates.a3 ??
-          'Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).',
+        stripAudioReferencesForSilentPair(
+          faqTemplates.a3 ??
+          (pairHasNativeAudio
+            ? 'Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).'
+            : 'Pricing varies by engine and settings (duration and resolution). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).'),
+          pairHasNativeAudio
+        ),
         {
           left: formatEngineName(left),
           right: formatEngineName(right),
@@ -1597,21 +1665,25 @@ export default async function CompareDetailPage({
         }
       ),
     },
-    {
-      question: faqTemplates.q8 ?? 'Do they support audio generation and lip sync?',
-      answer: formatTemplate(
-        faqTemplates.a8 ??
-          'Audio output is {audioOutLeft} vs {audioOutRight}. Native audio generation is {audioGenLeft} vs {audioGenRight}, and lip sync is {lipLeft} vs {lipRight} (some fields may still be under validation).',
-        {
-          audioOutLeft: faqAudioOutLeft,
-          audioOutRight: faqAudioOutRight,
-          audioGenLeft: faqAudioGenLeft,
-          audioGenRight: faqAudioGenRight,
-          lipLeft: faqLipLeft,
-          lipRight: faqLipRight,
-        }
-      ),
-    },
+    ...(pairHasNativeAudio
+      ? [
+          {
+            question: faqTemplates.q8 ?? 'Do they support audio generation and lip sync?',
+            answer: formatTemplate(
+              faqTemplates.a8 ??
+                'Audio output is {audioOutLeft} vs {audioOutRight}. Native audio generation is {audioGenLeft} vs {audioGenRight}, and lip sync is {lipLeft} vs {lipRight} (some fields may still be under validation).',
+              {
+                audioOutLeft: faqAudioOutLeft,
+                audioOutRight: faqAudioOutRight,
+                audioGenLeft: faqAudioGenLeft,
+                audioGenRight: faqAudioGenRight,
+                lipLeft: faqLipLeft,
+                lipRight: faqLipRight,
+              }
+            ),
+          },
+        ]
+      : []),
     {
       question: faqTemplates.q9 ?? 'Does MaxVideoAI add a watermark?',
       answer:
@@ -1671,6 +1743,13 @@ export default async function CompareDetailPage({
     ],
   };
 
+  const webPageDescriptionTemplate = replaceCriteriaCount(
+    metaOverride?.description ??
+      compareCopy.meta?.description ??
+      `Compare {left} vs {right} with the same prompts, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`,
+    criteriaCount
+  );
+
   const webPageJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
@@ -1679,12 +1758,10 @@ export default async function CompareDetailPage({
       { left: formatEngineName(left), right: formatEngineName(right) }
     ),
     url: comparisonCanonicalUrl,
-    description: formatTemplate(
-      metaOverride?.description ??
-        compareCopy.meta?.description ??
-        'Compare {left} vs {right} with the same prompts, key specs, and a scorecard across 11 criteria on MaxVideoAI.',
-      { left: formatEngineName(left), right: formatEngineName(right) }
-    ),
+    description: formatTemplate(webPageDescriptionTemplate, {
+      left: formatEngineName(left),
+      right: formatEngineName(right),
+    }),
   };
 
   const comparisonMetrics = [
@@ -1733,13 +1810,17 @@ export default async function CompareDetailPage({
       leftValue: leftScore?.textRendering ?? null,
       rightValue: rightScore?.textRendering ?? null,
     },
-    {
-      id: 'audio_lip_sync',
-      label: compareCopy.metrics?.audio_lip_sync?.label ?? 'Audio & Lip Sync',
-      tooltip: compareCopy.metrics?.audio_lip_sync?.tooltip ?? 'lip sync quality / dialogue sync',
-      leftValue: leftScore?.lipsyncQuality ?? null,
-      rightValue: rightScore?.lipsyncQuality ?? null,
-    },
+    ...(pairHasNativeAudio
+      ? [
+          {
+            id: 'audio_lip_sync',
+            label: compareCopy.metrics?.audio_lip_sync?.label ?? 'Audio & Lip Sync',
+            tooltip: compareCopy.metrics?.audio_lip_sync?.tooltip ?? 'lip sync quality / dialogue sync',
+            leftValue: leftScore?.lipsyncQuality ?? null,
+            rightValue: rightScore?.lipsyncQuality ?? null,
+          },
+        ]
+      : []),
     {
       id: 'multi_shot_sequencing',
       label: compareCopy.metrics?.multi_shot_sequencing?.label ?? 'Multi-Shot Sequencing',
@@ -2107,8 +2188,11 @@ export default async function CompareDetailPage({
                 {compareCopy.scorecard?.title ?? 'Scorecard (Side-by-Side)'}
               </h2>
               <p className="mt-1 text-sm text-text-secondary">
-                {compareCopy.scorecard?.subtitle ??
-                  'Scores reflect quality and control on MaxVideoAI across 11 criteria.'}
+                {replaceCriteriaCount(
+                  compareCopy.scorecard?.subtitle ??
+                    `Scores reflect quality and control on MaxVideoAI across ${criteriaCount} criteria.`,
+                  criteriaCount
+                )}
               </p>
               {scorecardProvisionalNote ? (
                 <p className="mt-2 text-xs font-semibold text-text-muted">{scorecardProvisionalNote}</p>
@@ -2226,8 +2310,11 @@ export default async function CompareDetailPage({
                 {compareCopy.keySpecs?.title ?? 'Key Specs (Side-by-Side)'}
               </h2>
               <p className="mt-2 text-center text-sm text-text-secondary">
-                {compareCopy.keySpecs?.subtitle ??
-                  'Compare key AI video model specs side-by-side (pricing, inputs, resolution, duration, aspect ratios, audio, and core controls). This is a high-level snapshot — see the full engine profile for the complete feature set and prompt examples.'}
+                {stripAudioReferencesForSilentPair(
+                  compareCopy.keySpecs?.subtitle ??
+                    'Compare key AI video model specs side-by-side (pricing, inputs, resolution, duration, aspect ratios, audio, and core controls). This is a high-level snapshot — see the full engine profile for the complete feature set and prompt examples.',
+                  pairHasNativeAudio
+                )}
               </p>
 
               <div className="mt-4 rounded-card border border-hairline bg-surface shadow-card">

@@ -1,9 +1,16 @@
 const DURATION_LABELS = ['5s', '9s'] as const;
 const RESOLUTION_VALUES = ['540p', '720p', '1080p'] as const;
-const ASPECT_VALUES = ['16:9', '9:16', '4:3', '3:4', '21:9', '9:21'] as const;
+const GENERATE_ASPECT_VALUES = ['16:9', '9:16', '4:3', '3:4', '21:9', '9:21'] as const;
+const REFRAME_ASPECT_VALUES = ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9', '9:21'] as const;
+const LUMA_RAY2_ENGINE_IDS = ['lumaRay2', 'lumaRay2_flash'] as const;
+const LUMA_RAY2_GENERATE_MODES = ['t2v', 'i2v'] as const;
+const LUMA_RAY2_EDIT_MODES = ['v2v', 'reframe'] as const;
 
 export type LumaRay2DurationLabel = (typeof DURATION_LABELS)[number];
 export type LumaRay2ResolutionValue = (typeof RESOLUTION_VALUES)[number];
+export type LumaRay2EngineId = (typeof LUMA_RAY2_ENGINE_IDS)[number];
+export type LumaRay2GenerateMode = (typeof LUMA_RAY2_GENERATE_MODES)[number];
+export type LumaRay2EditMode = (typeof LUMA_RAY2_EDIT_MODES)[number];
 
 const DURATION_FACTORS: Record<LumaRay2DurationLabel, number> = {
   '5s': 1,
@@ -16,7 +23,23 @@ const RESOLUTION_FACTORS: Record<LumaRay2ResolutionValue, number> = {
   '1080p': 4,
 };
 
-export const LUMA_RAY2_ERROR_UNSUPPORTED = 'Luma Ray 2 supports only 5 s / 9 s durations and 540p / 720p / 1080p resolutions.';
+export const LUMA_RAY2_ERROR_UNSUPPORTED =
+  'Luma Ray 2 and Ray 2 Flash support only 5 s / 9 s durations and 540p / 720p / 1080p resolutions.';
+
+export function isLumaRay2EngineId(value: string | null | undefined): value is LumaRay2EngineId {
+  if (!value) return false;
+  return LUMA_RAY2_ENGINE_IDS.some((engineId) => engineId === value);
+}
+
+export function isLumaRay2GenerateMode(value: string | null | undefined): value is LumaRay2GenerateMode {
+  if (!value) return false;
+  return LUMA_RAY2_GENERATE_MODES.some((mode) => mode === value);
+}
+
+export function isLumaRay2EditMode(value: string | null | undefined): value is LumaRay2EditMode {
+  if (!value) return false;
+  return LUMA_RAY2_EDIT_MODES.some((mode) => mode === value);
+}
 
 export function getLumaRay2DurationInfo(
   raw: number | string | null | undefined
@@ -55,10 +78,14 @@ export function getLumaRay2ResolutionInfo(
   return null;
 }
 
-export function isLumaRay2AspectRatio(value: string | null | undefined): boolean {
+export function isLumaRay2AspectRatio(
+  value: string | null | undefined,
+  options?: { includeSquare?: boolean }
+): boolean {
   if (!value) return false;
   const normalised = value.trim().toLowerCase();
-  return ASPECT_VALUES.some((allowed) => allowed.toLowerCase() === normalised);
+  const allowed = options?.includeSquare ? REFRAME_ASPECT_VALUES : GENERATE_ASPECT_VALUES;
+  return allowed.some((entry) => entry.toLowerCase() === normalised);
 }
 
 export function listLumaRay2Durations(): LumaRay2DurationLabel[] {
@@ -70,7 +97,11 @@ export function listLumaRay2Resolutions(): LumaRay2ResolutionValue[] {
 }
 
 export function listLumaRay2AspectRatios(): string[] {
-  return [...ASPECT_VALUES];
+  return [...GENERATE_ASPECT_VALUES];
+}
+
+export function listLumaRay2ReframeAspectRatios(): string[] {
+  return [...REFRAME_ASPECT_VALUES];
 }
 
 export function toLumaRay2DurationLabel(

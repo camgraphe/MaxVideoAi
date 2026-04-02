@@ -3,7 +3,7 @@ import engineCatalog from '@/config/engine-catalog.json';
 
 const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
 const ELIGIBLE_STATUSES = new Set(['live', 'early_access']);
-const VIDEO_MODES = new Set(['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend']);
+const VIDEO_MODES = new Set(['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 'reframe']);
 const LEGACY_UNAVAILABLE = new Set(['paused']);
 
 export type HubEngine = {

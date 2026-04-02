@@ -10,6 +10,15 @@ export type EngineSettingsRecord = {
   updated_by: string | null;
 };
 
+type EngineSettingsUpsert = {
+  engine_id: string;
+  options: Record<string, unknown>;
+  pricing: EnginePricingDetails | null;
+  updated_by: string | null;
+};
+
+let ensureSeedPromise: Promise<void> | null = null;
+
 function normalizeOptions(engine: EngineCaps): Record<string, unknown> {
   return {
     label: engine.label,
@@ -56,6 +65,10 @@ function extractPricing(engine: EngineCaps): EnginePricingDetails | null {
   return pricingDetails;
 }
 
+function shouldRefreshEngineOptions(engine: EngineCaps, current?: EngineSettingsRecord | null): boolean {
+  return !current || current.updated_by == null;
+}
+
 export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsRecord>> {
   if (!process.env.DATABASE_URL) return new Map();
   const rows = await query<EngineSettingsRecord>(
@@ -78,40 +91,58 @@ export async function listEnginePricingOverrides(): Promise<Record<string, Engin
 
 export async function ensureEngineSettingsSeed(updatedBy?: string): Promise<void> {
   if (!process.env.DATABASE_URL) return;
-  const rows = await query<{ count: string }>(`SELECT COUNT(*)::text as count FROM engine_settings`);
-  const total = Number(rows[0]?.count ?? '0');
-  if (Number.isFinite(total) && total > 0) {
-    return;
-  }
+  if (ensureSeedPromise) return ensureSeedPromise;
 
-  const baseEngines = getBaseEngines();
-  const now = new Date().toISOString();
+  ensureSeedPromise = (async () => {
+    const existing = await fetchEngineSettings();
+    const baseEngines = getBaseEngines();
+    const upserts = baseEngines
+      .map((engine) => {
+        const current = existing.get(engine.id);
+        if (!shouldRefreshEngineOptions(engine, current)) {
+          return null;
+        }
+        const upsert: EngineSettingsUpsert = {
+          engine_id: engine.id,
+          options: normalizeOptions(engine),
+          pricing: extractPricing(engine) ?? current?.pricing ?? null,
+          updated_by: current?.updated_by ?? updatedBy ?? null,
+        };
+        return upsert;
+      })
+      .filter((entry): entry is EngineSettingsUpsert => entry != null);
 
-  const inserts = baseEngines.map((engine) => ({
-    engine_id: engine.id,
-    options: normalizeOptions(engine),
-    pricing: extractPricing(engine),
-    updated_at: now,
-    updated_by: updatedBy ?? null,
-  }));
+    if (!upserts.length) return;
 
-  const values: unknown[] = [];
-  const placeholders = inserts
-    .map((entry, index) => {
-      const offset = index * 4;
-      values.push(entry.engine_id, JSON.stringify(entry.options ?? null), JSON.stringify(entry.pricing ?? null), updatedBy ?? null);
-      return `($${offset + 1}, $${offset + 2}::jsonb, $${offset + 3}::jsonb, NOW(), $${offset + 4}::uuid)`;
-    })
-    .join(', ');
+    const values: unknown[] = [];
+    const placeholders = upserts
+      .map((entry, index) => {
+        const offset = index * 4;
+        values.push(
+          entry.engine_id,
+          JSON.stringify(entry.options),
+          JSON.stringify(entry.pricing ?? null),
+          entry.updated_by
+        );
+        return `($${offset + 1}, $${offset + 2}::jsonb, $${offset + 3}::jsonb, NOW(), $${offset + 4}::uuid)`;
+      })
+      .join(', ');
 
-  if (!placeholders) return;
+    await query(
+      `INSERT INTO engine_settings (engine_id, options, pricing, updated_at, updated_by)
+       VALUES ${placeholders}
+       ON CONFLICT (engine_id)
+       DO UPDATE SET
+         options = EXCLUDED.options,
+         pricing = EXCLUDED.pricing,
+         updated_at = NOW(),
+         updated_by = EXCLUDED.updated_by
+       WHERE engine_settings.updated_by IS NULL`,
+      values
+    );
+  })();
 
-  await query(
-    `INSERT INTO engine_settings (engine_id, options, pricing, updated_at, updated_by)
-     VALUES ${placeholders}
-     ON CONFLICT (engine_id) DO NOTHING`,
-    values
-  );
+  return ensureSeedPromise;
 }
 
 export async function upsertEngineSettings(
