@@ -2,14 +2,14 @@
   "marketingName": "Luma Ray 2",
   "versionLabel": "Ray 2",
   "seo": {
-    "title": "Luma Ray 2 Specs, Precio, Modify y Reframe | MaxVideoAI",
-    "description": "Luma Ray 2 en MaxVideoAI une text-to-video, image-to-video, modify y reframe en una sola pagina de modelo, con generacion de 5s o 9s, salida 540p a 1080p y controles de edicion desde video fuente.",
+    "title": "Luma Ray 2 Specs, Precio y workflows premium | MaxVideoAI",
+    "description": "Usa Luma Ray 2 en MaxVideoAI para tomas cinematicas premium, image-to-video, modify sobre video fuente y reframes de entrega. Ray 2 apunta a finales mas solidos con generacion de 5s o 9s entre 540p y 1080p.",
     "image": "/hero/luma-dream.jpg"
   },
-  "overview": "Luma Ray 2 es el modelo Luma cinematografico premium dentro de MaxVideoAI. La familia sigue siendo simple en el catalogo, pero la pagina del modelo expone ahora toda la superficie publica de Fal: text-to-video, image-to-video, modify y reframe.",
+  "overview": "Luma Ray 2 es el tier de final premium de la familia Luma dentro de MaxVideoAI. La familia sigue siendo simple en el catalogo, pero la pagina del modelo expone ahora toda la superficie publica de Fal: text-to-video, image-to-video, modify y reframe.",
   "hero": {
     "title": "Luma Ray 2 - generar, modify y reframe en una sola pagina",
-    "intro": "Usa Ray 2 cuando quieras el tier premium de Luma para crear tomas nuevas, animar un still, modificar un video fuente y producir reframes sociales sin separar el workflow en varias paginas de modelo.",
+    "intro": "Usa Ray 2 cuando la toma ya supera la fase draft y quieres el tier premium de Luma para planos cinematicos, animacion desde still mas controlada, cambios sobre video fuente y reframes de entrega sin separar el workflow en varias paginas de modelo.",
     "badge": "T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
       "label": "Generar con Luma Ray 2",

@@ -29,6 +29,8 @@ export type ExampleModelLanding = {
 type CanonicalSlug = ModelFamilyId;
 
 type LocalizedModelDescriptor = {
+  metaTitle?: string;
+  metaDescription?: string;
   subtitle: string;
   intro: string;
   promptPatterns: string;
@@ -85,6 +87,34 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Where can I compare Veo pricing quickly?',
         answer: 'Open the pricing surface from this page and compare equivalent durations and resolutions side by side.',
+      },
+    ],
+  },
+  luma: {
+    metaTitle: 'Luma Ray 2 and Ray 2 Flash Examples (Prompts + Settings) | MaxVideoAI',
+    metaDescription:
+      'Browse Luma Ray 2 and Ray 2 Flash examples with reusable prompts, modify and reframe patterns, and price-per-clip guidance before choosing the premium or fast tier in MaxVideoAI.',
+    subtitle: 'Luma Ray examples across Ray 2 and Ray 2 Flash, with reusable prompts, modify/reframe patterns, and pricing signals.',
+    intro:
+      'This page is the family view for Luma Ray inside MaxVideoAI. Use it to compare Ray 2 and Ray 2 Flash examples side by side before deciding whether the job belongs on the premium tier or the faster draft tier. The model pages handle detailed specs; this gallery is for prompt patterns, workflow examples, and cost tradeoffs across the two public Luma models.',
+    promptPatterns:
+      'Luma examples work best when prompts stay shot-level and workflow-specific: net-new generate, still-led animation, source-video modify, or reframe for delivery. Keep the brief compact and describe what must stay versus what can change.',
+    strengthsLimits:
+      'Ray 2 is the stronger fit for premium cinematic finals and higher-confidence polish. Ray 2 Flash is the cheaper throughput layer for concept validation, faster modify passes, and square or vertical delivery prep. Neither model generates native audio, so judge them on motion, framing, and source-video control rather than lip sync.',
+    pricingNotes:
+      'Use matching durations and resolutions when comparing the two Luma tiers. Ray 2 usually earns the higher spend on final-quality shots, while Ray 2 Flash is the better baseline for draft exploration, source-video experimentation, and lower-cost delivery variants.',
+    faq: [
+      {
+        question: 'When should I start from the Luma examples page?',
+        answer: 'Start here when you want to compare Ray 2 and Ray 2 Flash quickly before choosing the premium or fast tier for a real job.',
+      },
+      {
+        question: 'What is the clearest difference between Ray 2 and Ray 2 Flash in examples?',
+        answer: 'Ray 2 is the premium finaling tier, while Ray 2 Flash is the faster draft tier. The workflows stay aligned, but the role in production is different.',
+      },
+      {
+        question: 'Can I compare modify and reframe use cases from this page?',
+        answer: 'Yes. The gallery is meant to surface both net-new generation and source-video edit patterns before you open the model pages for full workflow controls.',
       },
     ],
   },
@@ -291,6 +321,34 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       },
     ],
   },
+  luma: {
+    metaTitle: 'Exemples Luma Ray 2 et Ray 2 Flash (prompts + reglages) | MaxVideoAI',
+    metaDescription:
+      'Parcourez des exemples Luma Ray 2 et Ray 2 Flash avec prompts reutilisables, cas modify/reframe et reperes de prix par clip avant de choisir le tier premium ou rapide dans MaxVideoAI.',
+    subtitle: 'Exemples Luma Ray sur Ray 2 et Ray 2 Flash, avec prompts reutilisables, cas modify/reframe et signaux de prix.',
+    intro:
+      'Cette page est la vue famille de Luma Ray dans MaxVideoAI. Utilisez-la pour comparer rapidement les exemples Ray 2 et Ray 2 Flash avant de decider si le job doit partir sur le tier premium ou sur le tier draft plus rapide. Les pages modele portent les specs detaillees; cette galerie sert a lire les patterns de prompt, les workflows et les arbitrages de cout entre les deux modeles Luma publics.',
+    promptPatterns:
+      'Les exemples Luma sont plus utiles quand le prompt reste au niveau du plan et du workflow: generate net-new, animation depuis still, modify sur video source, ou reframe pour la livraison. Gardez une consigne compacte et dites clairement ce qui doit rester versus ce qui peut changer.',
+    strengthsLimits:
+      'Ray 2 est le meilleur choix pour des finals cinematographiques premium et un niveau de confiance plus eleve. Ray 2 Flash est la couche de throughput la moins couteuse pour valider des concepts, tester des passes modify plus rapides et preparer des declinaisons carre ou verticales. Aucun des deux modeles ne genere d audio natif, donc jugez-les sur le mouvement, le cadrage et le controle sur video source plutot que sur le lip sync.',
+    pricingNotes:
+      'Gardez des durees et resolutions identiques pour comparer proprement les deux tiers Luma. Ray 2 justifie plus souvent le cout sur des shots finals, alors que Ray 2 Flash est la meilleure base pour l exploration, les edits sur video source et les variantes de livraison moins couteuses.',
+    faq: [
+      {
+        question: 'Quand faut-il commencer par la page d exemples Luma ?',
+        answer: 'Commencez ici quand vous voulez comparer rapidement Ray 2 et Ray 2 Flash avant de choisir le tier premium ou rapide pour un vrai job.',
+      },
+      {
+        question: 'Quelle difference saute le plus aux yeux entre Ray 2 et Ray 2 Flash dans les exemples ?',
+        answer: 'Ray 2 reste le tier premium pour les finals, tandis que Ray 2 Flash reste le tier rapide pour les drafts. Les workflows sont alignes, mais leur role en production est different.',
+      },
+      {
+        question: 'Peut-on comparer ici les usages modify et reframe ?',
+        answer: 'Oui. La galerie est justement faite pour montrer a la fois la generation nette et les cas d edition video source avant d ouvrir les pages modele pour les controles complets.',
+      },
+    ],
+  },
   wan: {
     subtitle: 'Exemples Wan pensés pour des séquences structurées, des transitions propres et une continuité guidée.',
     intro:
@@ -491,6 +549,34 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: '¿Dónde comparo rápido los costes de Veo?',
         answer: 'Abre pricing desde esta página usando presets equivalentes.',
+      },
+    ],
+  },
+  luma: {
+    metaTitle: 'Ejemplos de Luma Ray 2 y Ray 2 Flash (prompts + ajustes) | MaxVideoAI',
+    metaDescription:
+      'Revisa ejemplos de Luma Ray 2 y Ray 2 Flash con prompts reutilizables, patrones de modify y reframe, y referencias de precio por clip antes de elegir el tier premium o rapido en MaxVideoAI.',
+    subtitle: 'Ejemplos de Luma Ray en Ray 2 y Ray 2 Flash, con prompts reutilizables, patrones de modify/reframe y senales de precio.',
+    intro:
+      'Esta pagina es la vista de familia de Luma Ray dentro de MaxVideoAI. Sirve para comparar rapidamente ejemplos de Ray 2 y Ray 2 Flash antes de decidir si el trabajo pertenece al tier premium o al tier draft mas rapido. Las paginas de modelo cubren las specs detalladas; esta galeria esta pensada para leer patrones de prompt, workflows y tradeoffs de coste entre los dos modelos Luma publicos.',
+    promptPatterns:
+      'Los ejemplos de Luma funcionan mejor cuando el prompt se mantiene a nivel de toma y de workflow: generate net-new, animacion desde still, modify sobre video fuente o reframe para entrega. Mantén la consigna compacta y deja claro que debe quedarse y que puede cambiar.',
+    strengthsLimits:
+      'Ray 2 encaja mejor en finales cinematicos premium y en pases con mayor confianza. Ray 2 Flash es la capa de throughput mas barata para validar conceptos, probar pases modify mas rapidos y preparar entregas cuadradas o verticales. Ninguno de los dos modelos genera audio nativo, asi que conviene evaluarlos por movimiento, encuadre y control sobre video fuente, no por lip sync.',
+    pricingNotes:
+      'Usa duraciones y resoluciones equivalentes para comparar bien los dos tiers Luma. Ray 2 suele justificar mejor el gasto en tomas finales, mientras que Ray 2 Flash es la mejor base para exploracion, iteracion sobre video fuente y variantes de entrega con menor coste.',
+    faq: [
+      {
+        question: '¿Cuándo conviene empezar por la página de ejemplos de Luma?',
+        answer: 'Empieza aquí cuando quieras comparar Ray 2 y Ray 2 Flash rapidamente antes de elegir el tier premium o rapido para un trabajo real.',
+      },
+      {
+        question: '¿Cuál es la diferencia mas clara entre Ray 2 y Ray 2 Flash en ejemplos?',
+        answer: 'Ray 2 sigue siendo el tier premium para finales, mientras que Ray 2 Flash sigue siendo el tier rapido para drafts. Los workflows estan alineados, pero su papel en produccion es distinto.',
+      },
+      {
+        question: '¿Puedo comparar aquí casos de modify y reframe?',
+        answer: 'Sí. La galería está pensada para mostrar tanto generación nueva como patrones de edición sobre video fuente antes de abrir las páginas de modelo con todos los controles.',
       },
     ],
   },
@@ -861,11 +947,12 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
           : `This page includes multiple ${label} models.`;
   const localized = getLocalizedModelData(locale)[normalized] ?? buildGenericLocalizedModelData(locale, label, variantsSentence);
   const metaTitle =
-    locale === 'fr'
+    localized.metaTitle ??
+    (locale === 'fr'
       ? `Exemples vidéo IA ${label} (prompts + réglages) | MaxVideoAI`
       : locale === 'es'
         ? `Ejemplos de video con IA de ${label} (prompts + ajustes) | MaxVideoAI`
-        : `${label} AI Video Examples (Prompts + Settings) | MaxVideoAI`;
+        : `${label} AI Video Examples (Prompts + Settings) | MaxVideoAI`);
   const sectionPromptTitle =
     locale === 'fr'
       ? `Prompts sur les modèles ${label}`
@@ -890,11 +977,12 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
     label,
     metaTitle,
     metaDescription:
-      locale === 'fr'
+      localized.metaDescription ??
+      (locale === 'fr'
         ? `Exemples vidéo IA ${label} avec prompts, réglages et prix par clip. ${variantsSentence}`
         : locale === 'es'
           ? `Ejemplos de video con IA de ${label} con prompts, ajustes y precio por clip. ${variantsSentence}`
-          : `${label} examples with prompts, settings, and price per clip. ${variantsSentence}`,
+          : `${label} examples with prompts, settings, and price per clip. ${variantsSentence}`),
     heroTitle:
       locale === 'fr' ? `Exemples ${label}` : locale === 'es' ? `Ejemplos de ${label}` : `${label} Examples`,
     heroSubtitle: `${localized.subtitle} ${variantsSentence}`,

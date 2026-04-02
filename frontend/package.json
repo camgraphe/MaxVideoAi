@@ -24,6 +24,7 @@
     "qa:canonical-host": "tsx scripts/qa/canonical-host-guard.ts",
     "qa:locale-surfaces": "tsx scripts/qa/locale-surface-check.ts",
     "qa:compare-locales": "tsx scripts/qa/compare-locales.ts",
+    "qa:examples-locales": "tsx scripts/qa/examples-locales.ts",
     "qa:tools-locales": "tsx scripts/qa/tools-locales.ts",
     "qa:models-locales": "tsx scripts/qa/models-locales.ts",
     "qa:compare-en": "tsx scripts/qa/compare-en-prod.ts",

@@ -47,6 +47,22 @@ const fixtures: LocaleFixture[] = [
       es: ['View render', 'View model'],
     },
   },
+  {
+    englishPath: '/models/luma-ray-2',
+    localizableInternalPaths: MODELS_INTERNAL_PATHS,
+    forbiddenTextByLocale: {
+      fr: ['View render', 'View model'],
+      es: ['View render', 'View model'],
+    },
+  },
+  {
+    englishPath: '/models/luma-ray-2-flash',
+    localizableInternalPaths: MODELS_INTERNAL_PATHS,
+    forbiddenTextByLocale: {
+      fr: ['View render', 'View model'],
+      es: ['View render', 'View model'],
+    },
+  },
 ];
 
 runLocaleFixtureSet('models', fixtures).catch((error) => {
