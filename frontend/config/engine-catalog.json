@@ -1898,10 +1898,7 @@
       "region": "global",
       "modes": [
         "t2v",
-        "i2v",
-        "ref2v",
-        "fl2v",
-        "extend"
+        "i2v"
       ],
       "maxDurationSec": 10,
       "resolutions": [

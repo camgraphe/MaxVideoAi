@@ -115,7 +115,7 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
   latencyTier: 'standard',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v', 'i2v', 'ref2v', 'fl2v', 'extend'],
+  modes: ['t2v', 'i2v'],
   maxDurationSec: 10,
   resolutions: ['720p', '1080p'],
   aspectRatios: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
