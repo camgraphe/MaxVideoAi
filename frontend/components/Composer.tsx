@@ -290,6 +290,7 @@ export function Composer({
   const promptPlaceholderValue = hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
+  const visibleModeToggles = modeToggles && modeToggles.length > 1 ? modeToggles : null;
 
   const triggerButtonAnimation = useCallback(() => {
     if (animationTimeoutRef.current) {
@@ -333,9 +334,9 @@ export function Composer({
       <div className="space-y-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
-            {modeToggles && modeToggles.length > 0 ? (
+            {visibleModeToggles ? (
               <div className="flex flex-wrap gap-2">
-                {modeToggles.map((entry) => {
+                {visibleModeToggles.map((entry) => {
                   const active = activeManualMode === entry.mode;
                   return (
                     <Button

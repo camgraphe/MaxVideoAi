@@ -2345,6 +2345,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               type: 'image/*',
               previewUrl: slot.previewUrl ?? slot.url,
               status: slot.status,
+              badge: slot.characterReference ? resolvedCopy.composer.characterButton : undefined,
             }
           : null
       ),

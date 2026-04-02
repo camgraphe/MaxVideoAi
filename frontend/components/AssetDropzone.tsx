@@ -22,6 +22,7 @@ export type AssetSlotAttachment = {
   previewUrl: string;
   status?: 'uploading' | 'ready' | 'error';
   error?: string;
+  badge?: string;
 };
 
 export type AssetFieldRole = 'primary' | 'reference' | 'frame' | 'generic';
@@ -498,6 +499,13 @@ export function AssetDropzone({
                         <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
                       </>
                     )}
+                    {asset.badge ? (
+                      <div className="absolute left-3 top-3 z-10">
+                        <span className="inline-flex items-center rounded-full border border-white/24 bg-black/58 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur">
+                          {asset.badge}
+                        </span>
+                      </div>
+                    ) : null}
                     <Button
                       type="button"
                       size="sm"
