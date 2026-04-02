@@ -19,8 +19,6 @@ type EngineSettingsUpsert = {
 
 let ensureSeedPromise: Promise<void> | null = null;
 
-const LUMA_RAY2_ENGINE_IDS = new Set(['lumaRay2', 'lumaRay2_flash']);
-
 function normalizeOptions(engine: EngineCaps): Record<string, unknown> {
   return {
     label: engine.label,
@@ -67,39 +65,8 @@ function extractPricing(engine: EngineCaps): EnginePricingDetails | null {
   return pricingDetails;
 }
 
-function hasSameStringSet(left: string[], right: string[]): boolean {
-  if (left.length !== right.length) return false;
-  const leftSorted = [...left].sort();
-  const rightSorted = [...right].sort();
-  return leftSorted.every((value, index) => value === rightSorted[index]);
-}
-
 function shouldRefreshEngineOptions(engine: EngineCaps, current?: EngineSettingsRecord | null): boolean {
-  if (!current) return true;
-  if (!LUMA_RAY2_ENGINE_IDS.has(engine.id)) {
-    return current.updated_by == null;
-  }
-
-  const currentOptions = current.options ?? {};
-  const currentResolutions = Array.isArray(currentOptions.resolutions)
-    ? currentOptions.resolutions.filter((value): value is string => typeof value === 'string')
-    : [];
-  const currentAspectRatios = Array.isArray(currentOptions.aspectRatios)
-    ? currentOptions.aspectRatios.filter((value): value is string => typeof value === 'string')
-    : [];
-  const currentModes = Array.isArray(currentOptions.modes)
-    ? currentOptions.modes.filter((value): value is string => typeof value === 'string')
-    : [];
-  const currentMaxDurationSec =
-    typeof currentOptions.maxDurationSec === 'number' ? currentOptions.maxDurationSec : null;
-
-  return (
-    current.updated_by == null ||
-    currentMaxDurationSec !== engine.maxDurationSec ||
-    !hasSameStringSet(currentResolutions, engine.resolutions.map((value) => String(value))) ||
-    !hasSameStringSet(currentAspectRatios, engine.aspectRatios.map((value) => String(value))) ||
-    !hasSameStringSet(currentModes, engine.modes.map((value) => String(value)))
-  );
+  return !current || current.updated_by == null;
 }
 
 export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsRecord>> {
@@ -170,7 +137,7 @@ export async function ensureEngineSettingsSeed(updatedBy?: string): Promise<void
          pricing = EXCLUDED.pricing,
          updated_at = NOW(),
          updated_by = EXCLUDED.updated_by
-       WHERE engine_settings.updated_by IS NULL OR engine_settings.engine_id IN ('lumaRay2', 'lumaRay2_flash')`,
+       WHERE engine_settings.updated_by IS NULL`,
       values
     );
   })();
