@@ -91,6 +91,8 @@ export const LEGACY_COMPARE_INDEXED_ENGINE_SLUGS = [
   'ltx-2-3-fast',
   'ltx-2-3-pro',
   'ltx-2-fast',
+  'luma-ray-2',
+  'luma-ray-2-flash',
   'minimax-hailuo-02-text',
   'pika-text-to-video',
   'seedance-1-5-pro',

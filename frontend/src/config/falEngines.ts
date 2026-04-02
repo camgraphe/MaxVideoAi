@@ -4145,7 +4145,6 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       compare: {
         suggestOpponents: ['veo-3-1-fast', 'kling-3-standard', 'seedance-1-5-pro'],
-        publishedPairs: ['luma-ray-2-flash'],
         includeInHub: true,
       },
       app: {
@@ -4283,7 +4282,6 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       compare: {
         suggestOpponents: ['luma-ray-2', 'veo-3-1-lite', 'ltx-2-3-fast'],
-        publishedPairs: ['luma-ray-2'],
         includeInHub: true,
       },
       app: {
