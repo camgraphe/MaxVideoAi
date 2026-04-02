@@ -14,7 +14,6 @@ import type {
 } from 'react';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { GalleryRail } from '@/components/GalleryRail';
-import { Chip } from '@/components/ui/Chip';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
@@ -396,7 +395,7 @@ const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_A
   : 25;
 
 const IMAGE_COMPOSER_STORAGE_KEY = 'maxvideoai.image.composer.v1';
-const IMAGE_COMPOSER_STORAGE_VERSION = 2;
+const IMAGE_COMPOSER_STORAGE_VERSION = 3;
 const IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS = 1200;
 
 function normalizeEngineToken(value: string): string {
@@ -458,10 +457,17 @@ type ReferenceSlotValue = {
   previewUrl?: string;
   name?: string;
   status: 'ready' | 'uploading';
-  source?: 'upload' | 'library' | 'paste';
+  source?: 'upload' | 'library' | 'paste' | 'character';
+  characterReference?: CharacterReferenceSelection | null;
 };
 
-type PersistedReferenceSlot = { url: string; source?: ReferenceSlotValue['source'] } | null;
+type PersistedReferenceSlot =
+  | {
+      url: string;
+      source?: ReferenceSlotValue['source'];
+      characterReference?: PersistedCharacterReference | null;
+    }
+  | null;
 type PersistedCharacterReference = CharacterReferenceSelection;
 
 type PersistedImageComposerState = {
@@ -485,7 +491,7 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
   try {
     const raw = JSON.parse(value) as Partial<PersistedImageComposerState> | null;
     if (!raw || typeof raw !== 'object') return null;
-    if (raw.version !== 1 && raw.version !== IMAGE_COMPOSER_STORAGE_VERSION) return null;
+    if (raw.version !== 1 && raw.version !== 2 && raw.version !== IMAGE_COMPOSER_STORAGE_VERSION) return null;
     if (typeof raw.engineId !== 'string' || raw.engineId.trim().length === 0) return null;
     const mode = raw.mode === 't2i' || raw.mode === 'i2i' ? raw.mode : 't2i';
     const prompt = typeof raw.prompt === 'string' ? raw.prompt : '';
@@ -505,37 +511,24 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
       .map((entry): PersistedReferenceSlot => {
         if (entry === null) return null;
         if (!entry || typeof entry !== 'object') return null;
-        const record = entry as { url?: unknown; source?: unknown };
+        const record = entry as { url?: unknown; source?: unknown; characterReference?: unknown };
         const url = typeof record.url === 'string' ? record.url.trim() : '';
         if (!url || url.startsWith('blob:')) return null;
         const source =
-          record.source === 'upload' || record.source === 'library' || record.source === 'paste'
+          record.source === 'upload' ||
+          record.source === 'library' ||
+          record.source === 'paste' ||
+          record.source === 'character'
             ? (record.source as ReferenceSlotValue['source'])
             : undefined;
-        return { url, source };
+        const characterReference = parseCharacterReferenceEntry(record.characterReference);
+        return { url, source, characterReference };
       });
     const characterReferencesRaw = Array.isArray(raw.characterReferences) ? raw.characterReferences : [];
     const characterReferences = characterReferencesRaw.reduce<PersistedCharacterReference[]>((acc, entry) => {
-      if (!entry || typeof entry !== 'object') return acc;
-      const record = entry as Partial<CharacterReferenceSelection>;
-      const id = typeof record.id === 'string' ? record.id.trim() : '';
-      const jobId = typeof record.jobId === 'string' ? record.jobId.trim() : '';
-      const imageUrl = typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '';
-      if (!id || !jobId || !/^https?:\/\//i.test(imageUrl)) return acc;
-      acc.push({
-        id,
-        jobId,
-        imageUrl,
-        thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : null,
-        prompt: typeof record.prompt === 'string' ? record.prompt : null,
-        createdAt: typeof record.createdAt === 'string' ? record.createdAt : null,
-        engineLabel: typeof record.engineLabel === 'string' ? record.engineLabel : null,
-        outputMode: record.outputMode === 'portrait-reference' || record.outputMode === 'character-sheet' ? record.outputMode : null,
-        action:
-          record.action === 'generate' || record.action === 'full-body-fix' || record.action === 'lighting-variant'
-            ? record.action
-            : null,
-      });
+      const parsedEntry = parseCharacterReferenceEntry(entry);
+      if (!parsedEntry) return acc;
+      acc.push(parsedEntry);
       return acc;
     }, []);
 
@@ -604,6 +597,78 @@ function formatCharacterReferenceDate(value?: string | null): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return 'Recent';
   return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function parseCharacterReferenceEntry(entry: unknown): PersistedCharacterReference | null {
+  if (!entry || typeof entry !== 'object') return null;
+  const record = entry as Partial<CharacterReferenceSelection>;
+  const id = typeof record.id === 'string' ? record.id.trim() : '';
+  const jobId = typeof record.jobId === 'string' ? record.jobId.trim() : '';
+  const imageUrl = typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '';
+  if (!id || !jobId || !/^https?:\/\//i.test(imageUrl)) return null;
+  return {
+    id,
+    jobId,
+    imageUrl,
+    thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : null,
+    prompt: typeof record.prompt === 'string' ? record.prompt : null,
+    createdAt: typeof record.createdAt === 'string' ? record.createdAt : null,
+    engineLabel: typeof record.engineLabel === 'string' ? record.engineLabel : null,
+    outputMode:
+      record.outputMode === 'portrait-reference' || record.outputMode === 'character-sheet'
+        ? record.outputMode
+        : null,
+    action:
+      record.action === 'generate' || record.action === 'full-body-fix' || record.action === 'lighting-variant'
+        ? record.action
+        : null,
+  };
+}
+
+function createCharacterReferenceSlot(
+  reference: CharacterReferenceSelection,
+  idPrefix = 'character'
+): ReferenceSlotValue {
+  return {
+    id: `${idPrefix}-${reference.id}`,
+    url: reference.imageUrl,
+    previewUrl: reference.thumbUrl ?? reference.imageUrl,
+    name: getCharacterReferenceLabel(reference),
+    status: 'ready',
+    source: 'character',
+    characterReference: reference,
+  };
+}
+
+function mergeCharacterReferencesIntoSlots(
+  slots: Array<ReferenceSlotValue | null>,
+  references: CharacterReferenceSelection[],
+  limit: number
+): Array<ReferenceSlotValue | null> {
+  if (!references.length || limit <= 0) return slots;
+  const next = slots.slice();
+  references.forEach((reference) => {
+    if (next.some((slot) => slot?.characterReference?.id === reference.id)) {
+      return;
+    }
+    const existingUrlIndex = next.findIndex((slot) => slot?.url === reference.imageUrl);
+    if (existingUrlIndex >= 0) {
+      next[existingUrlIndex] = {
+        ...(next[existingUrlIndex] as ReferenceSlotValue),
+        source: 'character',
+        characterReference: reference,
+        name: getCharacterReferenceLabel(reference),
+        previewUrl: next[existingUrlIndex]?.previewUrl ?? reference.thumbUrl ?? reference.imageUrl,
+      };
+      return;
+    }
+    const emptyIndex = next.slice(0, limit).findIndex((slot) => slot === null);
+    const targetIndex = emptyIndex >= 0 ? emptyIndex : -1;
+    if (targetIndex >= 0) {
+      next[targetIndex] = createCharacterReferenceSlot(reference);
+    }
+  });
+  return next;
 }
 
 function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
@@ -721,7 +786,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
     Array(MAX_REFERENCE_SLOTS).fill(null)
   );
-  const [selectedCharacterReferences, setSelectedCharacterReferences] = useState<CharacterReferenceSelection[]>([]);
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
   const [selectedPreviewEntryId, setSelectedPreviewEntryId] = useState<string | null>(null);
   const [selectedPreviewImageIndex, setSelectedPreviewImageIndex] = useState(0);
@@ -856,33 +920,32 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   );
   const baseReferenceSlotLimit = Math.min(MAX_REFERENCE_SLOTS, referencePickerConstraints.max);
   const supportsCharacterReferences = toolsEnabled && baseReferenceSlotLimit > 0;
-  const totalRegularReferenceSelections = useMemo(
-    () => referenceSlots.slice(0, baseReferenceSlotLimit).filter((slot) => Boolean(slot)).length,
+  const visibleReferenceSlots = useMemo(
+    () => referenceSlots.slice(0, baseReferenceSlotLimit),
     [baseReferenceSlotLimit, referenceSlots]
   );
-  const characterSelectionLimit = supportsCharacterReferences
-    ? Math.max(0, baseReferenceSlotLimit - totalRegularReferenceSelections)
-    : 0;
-  const effectiveCharacterReferences = useMemo(
+  const selectedCharacterReferences = useMemo(
+    () =>
+      visibleReferenceSlots.reduce<CharacterReferenceSelection[]>((acc, slot) => {
+        if (slot?.characterReference) {
+          acc.push(slot.characterReference);
+        }
+        return acc;
+      }, []),
+    [visibleReferenceSlots]
+  );
+  const totalRegularReferenceSelections = useMemo(
+    () => visibleReferenceSlots.filter((slot) => Boolean(slot && !slot.characterReference)).length,
+    [visibleReferenceSlots]
+  );
+  const characterSelectionLimit = useMemo(
     () =>
       supportsCharacterReferences
-        ? selectedCharacterReferences.slice(0, characterSelectionLimit)
-        : [],
-    [characterSelectionLimit, selectedCharacterReferences, supportsCharacterReferences]
+        ? Math.max(0, baseReferenceSlotLimit - totalRegularReferenceSelections)
+        : 0,
+    [baseReferenceSlotLimit, supportsCharacterReferences, totalRegularReferenceSelections]
   );
-  const activeCharacterReferenceIds = useMemo(
-    () => new Set(effectiveCharacterReferences.map((reference) => reference.id)),
-    [effectiveCharacterReferences]
-  );
-  const activeCharacterReferenceCount = effectiveCharacterReferences.length;
-  const hasHiddenCharacterReferences = selectedCharacterReferences.length > effectiveCharacterReferences.length;
-  const referenceSlotLimit = supportsCharacterReferences
-    ? Math.max(0, baseReferenceSlotLimit - activeCharacterReferenceCount)
-    : baseReferenceSlotLimit;
-  const visibleReferenceSlots = useMemo(
-    () => referenceSlots.slice(0, referenceSlotLimit),
-    [referenceSlots, referenceSlotLimit]
-  );
+  const referenceSlotLimit = baseReferenceSlotLimit;
   const canCollapseReferenceSlots = referenceSlotLimit > DEFAULT_VISIBLE_REFERENCE_SLOTS;
   const displayedReferenceSlotCount =
     canCollapseReferenceSlots && !areReferenceSlotsExpanded
@@ -1109,17 +1172,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         .map((slot) => slot.url),
     [visibleReferenceSlots]
   );
-  const activeCharacterReferenceUrls = useMemo(
-    () => effectiveCharacterReferences.map((reference) => reference.imageUrl),
-    [effectiveCharacterReferences]
-  );
-  const combinedReferenceUrls = useMemo(
-    () => [...activeCharacterReferenceUrls, ...readyReferenceUrls],
-    [activeCharacterReferenceUrls, readyReferenceUrls]
-  );
+  const combinedReferenceUrls = readyReferenceUrls;
   const hasAnyReferenceSelection = useMemo(
-    () => visibleReferenceSlots.some((slot) => Boolean(slot)) || activeCharacterReferenceUrls.length > 0,
-    [activeCharacterReferenceUrls.length, visibleReferenceSlots]
+    () => visibleReferenceSlots.some((slot) => Boolean(slot)),
+    [visibleReferenceSlots]
   );
   const referenceNoteText = resolvedCopy.composer.referenceNote;
 
@@ -1249,29 +1305,31 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         );
       }
 
-      if (parsed.referenceSlots.length) {
+      if (parsed.referenceSlots.length || (parsed.characterReferences?.length ?? 0) > 0) {
         setReferenceSlots((previous) => {
           const next = Array(MAX_REFERENCE_SLOTS).fill(null) as Array<ReferenceSlotValue | null>;
           parsed.referenceSlots.slice(0, MAX_REFERENCE_SLOTS).forEach((slot, index) => {
             if (!slot) return;
-            next[index] = {
-              id: `stored-${index}`,
-              url: slot.url,
-              previewUrl: slot.url,
-              status: 'ready',
-              source: slot.source ?? 'library',
-            };
+            next[index] = slot.characterReference
+              ? createCharacterReferenceSlot(slot.characterReference, `stored-${index}`)
+              : {
+                  id: `stored-${index}`,
+                  url: slot.url,
+                  previewUrl: slot.url,
+                  status: 'ready',
+                  source: slot.source ?? 'library',
+                };
           });
-          const changed = next.some((slot, idx) => {
+          const migratedNext = mergeCharacterReferencesIntoSlots(next, parsed.characterReferences ?? [], MAX_REFERENCE_SLOTS);
+          const changed = migratedNext.some((slot, idx) => {
             const prior = previous[idx];
             if (!slot && !prior) return false;
             if (!slot || !prior) return true;
             return slot.url !== prior.url || slot.status !== prior.status;
           });
-          return changed ? next : previous;
+          return changed ? migratedNext : previous;
         });
       }
-      setSelectedCharacterReferences(parsed.characterReferences ?? []);
     }
 
     setStorageHydrated(true);
@@ -1411,37 +1469,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
             source: 'library',
           };
         });
-        return next;
-      });
-      const characterReferencesRaw = Array.isArray(refs.characterReferences) ? refs.characterReferences : [];
-      setSelectedCharacterReferences(
-        characterReferencesRaw.reduce<CharacterReferenceSelection[]>((acc, entry) => {
-          if (!entry || typeof entry !== 'object') return acc;
-          const record = entry as Partial<CharacterReferenceSelection>;
-          const id = typeof record.id === 'string' ? record.id.trim() : '';
-          const jobId = typeof record.jobId === 'string' ? record.jobId.trim() : '';
-          const imageUrl = typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '';
-          if (!id || !jobId || !/^https?:\/\//i.test(imageUrl)) return acc;
-          acc.push({
-            id,
-            jobId,
-            imageUrl,
-            thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : null,
-            prompt: typeof record.prompt === 'string' ? record.prompt : null,
-            createdAt: typeof record.createdAt === 'string' ? record.createdAt : null,
-            engineLabel: typeof record.engineLabel === 'string' ? record.engineLabel : null,
-            outputMode:
-              record.outputMode === 'portrait-reference' || record.outputMode === 'character-sheet'
-                ? record.outputMode
-                : null,
-            action:
-              record.action === 'generate' || record.action === 'full-body-fix' || record.action === 'lighting-variant'
-                ? record.action
-                : null,
-          });
+        const characterReferencesRaw = Array.isArray(refs.characterReferences) ? refs.characterReferences : [];
+        const characterReferences = characterReferencesRaw.reduce<CharacterReferenceSelection[]>((acc, entry) => {
+          const parsedEntry = parseCharacterReferenceEntry(entry);
+          if (!parsedEntry) return acc;
+          acc.push(parsedEntry);
           return acc;
-        }, [])
-      );
+        }, []);
+        return mergeCharacterReferencesIntoSlots(next, characterReferences, MAX_REFERENCE_SLOTS);
+      });
 
       if (selectJobId) {
         setSelectedPreviewEntryId(selectJobId);
@@ -1482,24 +1518,25 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         if (!slot || slot.status !== 'ready') return null;
         const url = slot.url?.trim?.() ?? '';
         if (!url || url.startsWith('blob:')) return null;
-        return { url, source: slot.source };
+        return {
+          url,
+          source: slot.source,
+          characterReference: slot.characterReference
+            ? {
+                id: slot.characterReference.id,
+                jobId: slot.characterReference.jobId,
+                imageUrl: slot.characterReference.imageUrl,
+                thumbUrl: slot.characterReference.thumbUrl ?? null,
+                prompt: slot.characterReference.prompt ?? null,
+                createdAt: slot.characterReference.createdAt ?? null,
+                engineLabel: slot.characterReference.engineLabel ?? null,
+                outputMode: slot.characterReference.outputMode ?? null,
+                action: slot.characterReference.action ?? null,
+              }
+            : null,
+        };
       }),
     [referenceSlots]
-  );
-  const persistableCharacterReferences = useMemo<PersistedCharacterReference[]>(
-    () =>
-      selectedCharacterReferences.map((reference) => ({
-        id: reference.id,
-        jobId: reference.jobId,
-        imageUrl: reference.imageUrl,
-        thumbUrl: reference.thumbUrl ?? null,
-        prompt: reference.prompt ?? null,
-        createdAt: reference.createdAt ?? null,
-        engineLabel: reference.engineLabel ?? null,
-        outputMode: reference.outputMode ?? null,
-        action: reference.action ?? null,
-      })),
-    [selectedCharacterReferences]
   );
 
   useEffect(() => {
@@ -1519,7 +1556,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       thinkingLevel,
       limitGenerations,
       referenceSlots: persistableReferenceSlots,
-      characterReferences: persistableCharacterReferences,
     };
     if (!payload.engineId) return;
     let serialized: string;
@@ -1555,7 +1591,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     mode,
     numImages,
     outputFormat,
-    persistableCharacterReferences,
     persistableReferenceSlots,
     prompt,
     resolution,
@@ -1761,22 +1796,27 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [cleanupSlotPreview, isSupportedReferenceAsset, showUnsupportedFormatError]
   );
 
+  const resolveTargetReferenceSlotIndex = useCallback(
+    (preferredIndex: number | null = null) => {
+      if (preferredIndex != null && preferredIndex >= 0 && preferredIndex < referenceSlotLimit) {
+        return preferredIndex;
+      }
+      const emptyIndex = referenceSlots.slice(0, referenceSlotLimit).findIndex((slot) => slot === null);
+      if (emptyIndex >= 0) {
+        return emptyIndex;
+      }
+      return Math.max(0, referenceSlotLimit - 1);
+    },
+    [referenceSlotLimit, referenceSlots]
+  );
+
   const handleLibrarySelect = useCallback(
     (asset: LibraryAsset) => {
-      if (libraryModal.selectionMode === 'character') {
-        return;
-      }
       if (!isSupportedReferenceAsset(asset.mime, asset.url)) {
         showUnsupportedFormatError();
         return;
       }
-      let slotIndex = libraryModal.slotIndex;
-      if (slotIndex == null) {
-        slotIndex = referenceSlots.slice(0, referenceSlotLimit).findIndex((slot) => slot === null);
-        if (slotIndex < 0) {
-          slotIndex = Math.max(0, referenceSlotLimit - 1);
-        }
-      }
+      const slotIndex = resolveTargetReferenceSlotIndex(libraryModal.slotIndex);
       if (slotIndex >= referenceSlotLimit) {
         setLibraryModal({ open: false, slotIndex: null, selectionMode: 'reference', initialSource: 'all' });
         return;
@@ -1803,10 +1843,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       canCollapseReferenceSlots,
       cleanupSlotPreview,
       isSupportedReferenceAsset,
-      libraryModal.selectionMode,
       libraryModal.slotIndex,
       referenceSlotLimit,
-      referenceSlots,
+      resolveTargetReferenceSlotIndex,
       showUnsupportedFormatError,
     ]
   );
@@ -1820,23 +1859,48 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const toggleCharacterReference = useCallback(
     (reference: CharacterReferenceSelection) => {
-      setSelectedCharacterReferences((previous) => {
-        const existingIndex = previous.findIndex((entry) => entry.id === reference.id);
-        if (existingIndex >= 0) {
-          return previous.filter((entry) => entry.id !== reference.id);
-        }
-        if (!supportsCharacterReferences || previous.length >= characterSelectionLimit) {
-          return previous;
-        }
-        return [...previous, reference];
+      if (!supportsCharacterReferences) {
+        return;
+      }
+      const existingIndex = referenceSlots.findIndex((slot) => slot?.characterReference?.id === reference.id);
+      if (existingIndex >= 0) {
+        setReferenceSlots((previous) => {
+          const next = previous.slice();
+          cleanupSlotPreview(next[existingIndex]);
+          next[existingIndex] = null;
+          return next;
+        });
+        return;
+      }
+      if (selectedCharacterReferences.length >= characterSelectionLimit) {
+        return;
+      }
+      const nextIndex = resolveTargetReferenceSlotIndex(libraryModal.slotIndex);
+      if (nextIndex >= referenceSlotLimit) {
+        return;
+      }
+      if (nextIndex >= DEFAULT_VISIBLE_REFERENCE_SLOTS && canCollapseReferenceSlots) {
+        setAreReferenceSlotsExpanded(true);
+      }
+      setReferenceSlots((previous) => {
+        const next = previous.slice();
+        cleanupSlotPreview(next[nextIndex]);
+        next[nextIndex] = createCharacterReferenceSlot(reference);
+        return next;
       });
     },
-    [characterSelectionLimit, supportsCharacterReferences]
+    [
+      canCollapseReferenceSlots,
+      characterSelectionLimit,
+      cleanupSlotPreview,
+      libraryModal.slotIndex,
+      referenceSlotLimit,
+      referenceSlots,
+      resolveTargetReferenceSlotIndex,
+      selectedCharacterReferences.length,
+      supportsCharacterReferences,
+    ]
   );
-
-  const removeCharacterReference = useCallback((referenceId: string) => {
-    setSelectedCharacterReferences((previous) => previous.filter((entry) => entry.id !== referenceId));
-  }, []);
 
   const handleRun = useCallback(
     async (event?: FormEvent<HTMLFormElement> | null) => {
@@ -1888,7 +1952,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           prompt: trimmedPrompt,
           numImages,
           imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
-          characterReferences: mode === 'i2i' ? effectiveCharacterReferences : undefined,
+          characterReferences: mode === 'i2i' ? selectedCharacterReferences : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,
           seed: seedField ? normalizedSeed : undefined,
@@ -1932,7 +1996,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       numImages,
       prompt,
       combinedReferenceUrls,
-      effectiveCharacterReferences,
       resolvedCopy.errors.generic,
       resolvedCopy.errors.promptMissing,
       resolvedCopy.errors.referenceMissing,
@@ -2506,74 +2569,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   }
                   extraFields={
                     <div className="space-y-6">
-                      {(selectedCharacterReferences.length > 0 || hasHiddenCharacterReferences) ? (
-                        <section className="space-y-3">
-                          {hasHiddenCharacterReferences && supportsCharacterReferences ? (
-                            <p className="text-xs text-text-secondary">
-                              {formatTemplate(resolvedCopy.composer.characterLimitNotice, {
-                                count: effectiveCharacterReferences.length,
-                                suffix: effectiveCharacterReferences.length === 1 ? '' : 's',
-                              })}
-                            </p>
-                          ) : !supportsCharacterReferences && selectedCharacterReferences.length ? (
-                            <p className="text-xs text-text-secondary">{resolvedCopy.composer.characterHiddenNotice}</p>
-                          ) : null}
-
-                          {selectedCharacterReferences.length ? (
-                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                              {selectedCharacterReferences.map((reference, index) => {
-                                const isActiveCharacter = activeCharacterReferenceIds.has(reference.id);
-                                return (
-                                  <div
-                                    key={`character-slot-${reference.id}`}
-                                    className={clsx(
-                                      'group relative aspect-[4/3] overflow-hidden rounded-[20px] border bg-surface shadow-card transition',
-                                      isActiveCharacter ? 'border-text-muted' : 'border-border opacity-80'
-                                    )}
-                                  >
-                                    <img
-                                      src={reference.thumbUrl ?? reference.imageUrl}
-                                      alt=""
-                                      className="h-full w-full object-cover"
-                                      loading="lazy"
-                                      referrerPolicy="no-referrer"
-                                    />
-                                    <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/55 via-black/18 to-transparent" />
-                                    <div className="absolute left-3 top-3">
-                                      <Chip
-                                        variant={isActiveCharacter ? 'accent' : 'ghost'}
-                                        className={clsx(
-                                          'border-none px-2.5 py-1 text-[10px] uppercase tracking-[0.16em]',
-                                          isActiveCharacter ? '' : 'bg-surface-on-media-dark-60 text-on-inverse'
-                                        )}
-                                      >
-                                        {`Character ${index + 1}`}
-                                      </Chip>
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeCharacterReference(reference.id)}
-                                      className="absolute right-3 top-3 h-9 w-9 rounded-full border border-white/30 bg-black/62 p-0 text-white shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur transition hover:bg-black/78 focus-visible:ring-2 focus-visible:ring-white/70"
-                                      aria-label="Remove character reference"
-                                    >
-                                      ×
-                                    </Button>
-                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/18 to-transparent px-3 py-3 text-[11px] text-on-inverse">
-                                      <span className="truncate">{getCharacterReferenceLabel(reference)}</span>
-                                      <span className="shrink-0 text-on-inverse/80">
-                                        {isActiveCharacter ? formatCharacterReferenceDate(reference.createdAt) : 'Saved'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : null}
-                        </section>
-                      ) : null}
-
                       <ImageAdvancedSettings
                         title={advancedSettingsTitle}
                         seed={
