@@ -108,6 +108,16 @@
       "motion-physics": "job_b7c5ce0f-45a3-44f1-971c-94989e6a1c0c",
       "ugc-lipsync": "job_f94d62e7-4b15-446e-b43a-319d8bfde3f3",
       "hands-text": "job_d8f52d87-fea7-458e-898d-d6b6c8de5d0a"
+    },
+    "luma-ray-2": {
+      "motion-physics": "job_eb467daa-7bef-4053-a1dd-895e33f1bb38",
+      "ugc-lipsync": "job_f3bae828-5908-4b78-800c-ff3abe10e1a4",
+      "hands-text": "job_3c92babc-a3db-4c9f-bd45-31e469452855"
+    },
+    "luma-ray-2-flash": {
+      "motion-physics": "job_85e0aa16-4dc0-4967-ac17-0ed121bbcec9",
+      "ugc-lipsync": "job_3d348765-4d97-45b8-8ede-5d3d17160f99",
+      "hands-text": "job_7a36c0e0-1bb9-4d6b-a2f3-a771aaacddc9"
     }
   },
   "showdowns": {

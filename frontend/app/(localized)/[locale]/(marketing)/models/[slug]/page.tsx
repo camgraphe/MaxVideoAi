@@ -240,6 +240,14 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: 'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f',
     demo: 'job_a3197eac-62e4-4043-a0d6-7b62a8f57ff0',
   },
+  'luma-ray-2': {
+    hero: 'job_c4c9b10e-839f-4935-bbd9-de2d5731126a',
+    demo: 'job_e17eaa6a-7bb7-47b8-8287-8aa8dc4efd8a',
+  },
+  'luma-ray-2-flash': {
+    hero: 'job_e658a8d1-8ed8-4494-8247-19ef4e45102d',
+    demo: 'job_b13fdbfe-eb04-4000-b88f-abd2dcde7e1b',
+  },
 };
 
 const PREP_LINK_VISUALS = {
@@ -2633,6 +2641,19 @@ const DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE: Record<AppLocale, string[]> = {
   ],
 };
 
+const DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE: Record<AppLocale, string[]> = {
+  en: DEFAULT_VIDEO_TROUBLESHOOTING.filter((item) => !item.toLowerCase().includes('dialogue')),
+  fr: DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE.fr.filter((item) => !item.toLowerCase().includes('dialogue')),
+  es: DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE.es.filter((item) => !item.toLowerCase().includes('diálogo')),
+};
+
+function getDefaultVideoTroubleshooting(locale: AppLocale, supportsAudio: boolean): string[] {
+  if (supportsAudio) {
+    return DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING;
+  }
+  return DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING_NO_AUDIO_BY_LOCALE.en;
+}
+
 const DEFAULT_VIDEO_SAFETY = [
   'Don’t generate real people or public figures (celebrities, politicians, etc.).',
   'No minors, sexual content, hateful content, or graphic violence.',
@@ -3644,6 +3665,10 @@ function MarketingModelPageLayout({
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const strengths = copy.strengths;
   const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues) : [];
+  const supportsNativeAudio = Boolean(
+    keySpecValues &&
+      (isSupported(keySpecValues.audioOutput) || isSupported(keySpecValues.nativeAudioGeneration))
+  );
   const troubleshootingTitle = isVideoEngine
     ? locale === 'fr'
       ? 'Problèmes fréquents → solutions rapides'
@@ -3655,7 +3680,7 @@ function MarketingModelPageLayout({
     copy.troubleshootingItems.length
       ? copy.troubleshootingItems
       : isVideoEngine
-        ? (DEFAULT_VIDEO_TROUBLESHOOTING_BY_LOCALE[locale] ?? DEFAULT_VIDEO_TROUBLESHOOTING)
+        ? getDefaultVideoTroubleshooting(locale, supportsNativeAudio)
         : [];
   const tipsCardLabels = TIPS_CARD_LABELS[locale] ?? TIPS_CARD_LABELS.en;
   const safetyRules = copy.safetyRules.length ? copy.safetyRules : DEFAULT_GENERIC_SAFETY;
@@ -4287,6 +4312,7 @@ function MarketingModelPageLayout({
                   guideLabel={copy.promptingGuideLabel ?? undefined}
                   guideUrl={copy.promptingGuideUrl ?? undefined}
                   mode="video"
+                  supportsAudio={supportsNativeAudio}
                   tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
                   globalPrinciples={copy.promptingGlobalPrinciples}
                   engineWhy={copy.promptingEngineWhy}
@@ -4328,6 +4354,7 @@ function MarketingModelPageLayout({
                 guideLabel={copy.promptingGuideLabel ?? undefined}
                 guideUrl={copy.promptingGuideUrl ?? undefined}
                 mode="image"
+                supportsAudio={supportsNativeAudio}
                 tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
                 globalPrinciples={copy.promptingGlobalPrinciples}
                 engineWhy={copy.promptingEngineWhy}

@@ -3,6 +3,7 @@ import { getModelRoster } from '@/lib/model-roster';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import type {
   EngineCaps,
+  EngineInputField,
   ItemizationLine,
   PreflightRequest,
   PreflightResponse,
@@ -63,11 +64,27 @@ function buildBaseEngines(entries: typeof REGISTRY_ENTRIES): EngineCaps[] {
 
 const ENGINES_BASE: EngineCaps[] = buildBaseEngines(REGISTRY_BY_CATEGORY.video);
 
+function cloneInputField(field: EngineInputField): EngineInputField {
+  return {
+    ...field,
+    modes: field.modes ? [...field.modes] : undefined,
+    requiredInModes: field.requiredInModes ? [...field.requiredInModes] : undefined,
+    values: field.values ? [...field.values] : undefined,
+  };
+}
+
 export function cloneEngine(engine: EngineCaps): EngineCaps {
   return {
     ...engine,
     params: { ...engine.params },
     inputLimits: { ...engine.inputLimits },
+    inputSchema: engine.inputSchema
+      ? {
+          required: engine.inputSchema.required?.map(cloneInputField),
+          optional: engine.inputSchema.optional?.map(cloneInputField),
+          constraints: engine.inputSchema.constraints ? { ...engine.inputSchema.constraints } : undefined,
+        }
+      : undefined,
     providerMeta: engine.providerMeta ? { ...engine.providerMeta } : undefined,
     pricing: engine.pricing ? { ...engine.pricing } : undefined,
     pricingDetails: engine.pricingDetails ? { ...engine.pricingDetails } : undefined,

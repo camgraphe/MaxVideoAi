@@ -53,11 +53,34 @@ Background sound:
 Constraints:
 No logos, no readable text, no subtitles/overlays.`;
 
+const STRUCTURED_TEMPLATE_NO_AUDIO = `Scene (plain language):
+[Subject + setting + props + time of day. Add 2–3 distinctive visual anchors.]
+
+Cinematography:
+- Camera shot: [wide / medium / close-up, angle]
+- Camera motion: [slow push-in / handheld / pan / tracking]
+- Lens look + depth of field: [e.g., 35mm, shallow DOF]
+- Lighting + palette: [key light + 3 palette anchors]
+
+Actions (beats):
+- [Beat 1: a small, visible action]
+- [Beat 2: another clear beat]
+- [Beat 3: a final beat in the last second]
+
+Constraints:
+No logos, no readable text, no subtitles/overlays.`;
+
 const QUICK_TEMPLATE =
   '[Style] + [Subject doing 1 clear action] + [Where] + [Camera move] + [Lighting] + [Sound cue]';
 
+const QUICK_TEMPLATE_NO_AUDIO =
+  '[Style] + [Subject doing 1 clear action] + [Where] + [Camera move] + [Lighting] + [Ending / visual payoff]';
+
 const QUICK_EXAMPLE =
   'Handheld smartphone UGC clip of a woman unboxing a new skincare bottle at a kitchen table. She peels the seal, smiles, and turns the bottle toward camera. Soft window daylight, natural colors, subtle room tone + packaging crinkle.';
+
+const QUICK_EXAMPLE_NO_AUDIO =
+  'Handheld smartphone UGC clip of a woman unboxing a new skincare bottle at a kitchen table. She peels the seal, smiles, and turns the bottle toward camera. Soft window daylight, natural colors, clean kitchen background, product label held readable in the final beat.';
 
 const PRO_TEMPLATE = `Project / intent:
 [One-line goal. What should the viewer feel/understand?]
@@ -93,6 +116,35 @@ Sound (if supported):
 Constraints:
 No logos. No readable text. No subtitles/overlays. No slow-motion. No jump cuts.`;
 
+const PRO_TEMPLATE_NO_AUDIO = `Project / intent:
+[One-line goal. What should the viewer feel/understand?]
+
+Subject:
+[Who/what. Wardrobe/materials. 2-3 distinctive traits.]
+
+Location / set:
+[Where + time of day + weather. Add 3 visual anchors (specific nouns).]
+
+Cinematography:
+- Framing: [wide / medium / close-up] + [angle]
+- Lens feel + depth of field: [e.g., 35mm natural, shallow DOF]
+- Camera movement: [ONE move: slow dolly-in / handheld / pan / tracking]
+- Composition: [centered / rule of thirds / negative space]
+- Look (optional): [clean digital / subtle film grain / soft bloom]
+
+Lighting & color grade:
+- Key light: [soft window / golden hour / neon practicals / studio key]
+- Contrast: [low / medium / high]
+- Palette anchors: [3-5 anchors: "warm sunrise, teal shadows, amber highlights"]
+
+Action (timed beats):
+- Beat 1 (start): [visible action + camera behavior]
+- Beat 2 (middle): [visible action + camera behavior]
+- Beat 3 (end): [final action + end pose / reveal]
+
+Constraints:
+No logos. No readable text. No subtitles/overlays. No slow-motion. No jump cuts.`;
+
 const STORYBOARD_TEMPLATE = `Storyboard / shot list prompt
 Duration: [4/8/12s] • Aspect: [16:9 or 9:16]
 
@@ -113,6 +165,27 @@ Lighting + mood:
 
 Sound (if supported):
 [Ambience + 1–2 SFX cues + optional music vibe]
+
+Constraints:
+No logos. No readable text. No subtitles/overlays. No jump cuts. No slow-motion.`;
+
+const STORYBOARD_TEMPLATE_NO_AUDIO = `Storyboard / shot list prompt
+Duration: [4/8/12s] • Aspect: [16:9 or 9:16]
+
+Scene + continuity:
+[Same subject + same location + same wardrobe/props + same lighting throughout.]
+
+Shot 1 (0–2s):
+[Framing + subject action + camera move]
+
+Shot 2 (2–6s):
+[Framing + subject action + camera move]
+
+Shot 3 (6–8/12s):
+[Framing + final action/reveal + camera move or settle]
+
+Lighting + mood:
+[Golden hour / soft daylight / neon night… + 2–3 palette anchors]
 
 Constraints:
 No logos. No readable text. No subtitles/overlays. No jump cuts. No slow-motion.`;
@@ -147,6 +220,38 @@ const VIDEO_TABS = [
     description:
       'Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives Sora clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.',
     copy: STORYBOARD_TEMPLATE,
+  },
+];
+
+const VIDEO_TABS_NO_AUDIO = [
+  {
+    id: 'quick' as TabId,
+    label: 'Quick',
+    title: 'Quick prompt (fast iteration)',
+    description: 'Use 1–2 sentences when you want variations.',
+    copy: QUICK_TEMPLATE_NO_AUDIO,
+  },
+  {
+    id: 'structured' as TabId,
+    label: 'Structured',
+    title: 'Structured prompt (best for reliable results)',
+    description: 'Separate information so the model can follow it consistently.',
+    copy: STRUCTURED_TEMPLATE_NO_AUDIO,
+  },
+  {
+    id: 'pro' as TabId,
+    label: 'Pro',
+    title: 'Pro prompt (ultra-specific "film crew brief")',
+    description: 'Use this when you need a very specific cinematic look or continuity across shots.',
+    copy: PRO_TEMPLATE_NO_AUDIO,
+  },
+  {
+    id: 'storyboard' as TabId,
+    label: 'Storyboard',
+    title: 'Storyboard prompt (multi-shot / shot list)',
+    description:
+      'Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.',
+    copy: STORYBOARD_TEMPLATE_NO_AUDIO,
   },
 ];
 
@@ -241,6 +346,7 @@ type SoraPromptingTabsProps = {
   guideLabel?: string;
   guideUrl?: string;
   mode?: PromptingMode;
+  supportsAudio?: boolean;
   tabs?: PromptingTab[];
   globalPrinciples?: string[];
   engineWhy?: string[];
@@ -254,6 +360,7 @@ export function SoraPromptingTabs({
   guideLabel,
   guideUrl,
   mode = 'video',
+  supportsAudio = true,
   tabs,
   globalPrinciples,
   engineWhy,
@@ -264,7 +371,15 @@ export function SoraPromptingTabs({
     ...DEFAULT_TAB_NOTES,
     ...(tabNotes ?? {}),
   };
-  const resolvedTabs = (tabs && tabs.length ? tabs : mode === 'image' ? IMAGE_TABS : VIDEO_TABS).filter(Boolean);
+  const resolvedTabs = (
+    tabs && tabs.length
+      ? tabs
+      : mode === 'image'
+        ? IMAGE_TABS
+        : supportsAudio
+          ? VIDEO_TABS
+          : VIDEO_TABS_NO_AUDIO
+  ).filter(Boolean);
   const globalRules = globalPrinciples?.length ? globalPrinciples : DEFAULT_GLOBAL_PRINCIPLES;
   const engineRules = engineWhy?.length ? engineWhy : DEFAULT_ENGINE_WHY;
   const resolvedTitle =
@@ -278,7 +393,9 @@ export function SoraPromptingTabs({
     tip ??
     (mode === 'image'
       ? 'Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.'
-      : 'Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.');
+      : supportsAudio
+        ? 'Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.'
+        : 'Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and the visual ending.');
   const resolvedGuideUrl = guideUrl === null ? undefined : guideUrl ?? (mode === 'video' ? DEFAULT_GUIDE_URL : undefined);
   const resolvedGuideLabel =
     resolvedGuideUrl
@@ -364,7 +481,7 @@ export function SoraPromptingTabs({
                     {tab.id === 'quick' && mode === 'video' ? (
                       <div className="rounded-xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
                         <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Example</p>
-                        <p className="mt-2">{QUICK_EXAMPLE}</p>
+                        <p className="mt-2">{supportsAudio ? QUICK_EXAMPLE : QUICK_EXAMPLE_NO_AUDIO}</p>
                       </div>
                     ) : null}
                   </div>

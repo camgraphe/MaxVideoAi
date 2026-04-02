@@ -7,7 +7,7 @@ import {
   type EngineCategory,
 } from '@/lib/engines';
 import { computePricingSnapshot } from '@/lib/pricing';
-import type { EngineCaps, EnginePricing, EnginePricingDetails } from '@/types/engines';
+import type { EngineCaps, EngineInputField, EnginePricing, EnginePricingDetails } from '@/types/engines';
 import { fetchEngineOverrides } from '@/server/engine-overrides';
 import type { EngineOverride } from '@/server/engine-overrides';
 import { ensureEngineSettingsSeed, fetchEngineSettings, EngineSettingsRecord } from '@/server/engine-settings';
@@ -42,6 +42,76 @@ function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails |
     );
   }
   engine.pricing = pricingData;
+}
+
+function filterFieldValues(field: EngineInputField, allowedValues: string[]): EngineInputField {
+  if (field.type !== 'enum' || !Array.isArray(field.values) || !allowedValues.length) {
+    return field;
+  }
+  const nextValues = field.values.filter((value) => allowedValues.includes(value));
+  if (!nextValues.length) {
+    return field;
+  }
+  const currentDefault =
+    typeof field.default === 'string' && nextValues.includes(field.default) ? field.default : nextValues[0];
+  return {
+    ...field,
+    values: nextValues,
+    default: currentDefault,
+  };
+}
+
+function filterDurationField(field: EngineInputField, maxDurationSec?: number): EngineInputField {
+  if (field.type !== 'enum' || field.id !== 'duration' || !Array.isArray(field.values) || typeof maxDurationSec !== 'number') {
+    return field;
+  }
+  const nextValues = field.values.filter((value) => {
+    const numeric = Number(String(value).replace(/[^\d.]/g, ''));
+    return !Number.isFinite(numeric) || numeric <= maxDurationSec;
+  });
+  if (!nextValues.length) {
+    return field;
+  }
+  const currentDefault =
+    typeof field.default === 'string' && nextValues.includes(field.default) ? field.default : nextValues[0];
+  return {
+    ...field,
+    values: nextValues,
+    default: currentDefault,
+  };
+}
+
+function syncInputSchemaWithOptions(engine: EngineCaps, options: Record<string, unknown>): void {
+  if (!engine.inputSchema) return;
+
+  const allowedResolutions = Array.isArray(options.resolutions)
+    ? options.resolutions.filter((value): value is string => typeof value === 'string')
+    : [];
+  const allowedAspectRatios = Array.isArray(options.aspectRatios)
+    ? options.aspectRatios.filter((value): value is string => typeof value === 'string')
+    : [];
+  const allowedFps = Array.isArray(options.fps)
+    ? options.fps.filter((value): value is number => typeof value === 'number').map((value) => String(value))
+    : [];
+  const maxDurationSec = typeof options.maxDurationSec === 'number' ? options.maxDurationSec : undefined;
+
+  const syncField = (field: EngineInputField): EngineInputField => {
+    let nextField = field;
+    if (field.id === 'resolution') {
+      nextField = filterFieldValues(nextField, allowedResolutions);
+    } else if (field.id === 'aspect_ratio') {
+      nextField = filterFieldValues(nextField, allowedAspectRatios);
+    } else if (field.id === 'fps') {
+      nextField = filterFieldValues(nextField, allowedFps);
+    }
+    return filterDurationField(nextField, maxDurationSec);
+  };
+
+  engine.inputSchema = {
+    ...engine.inputSchema,
+    required: engine.inputSchema.required?.map(syncField),
+    optional: engine.inputSchema.optional?.map(syncField),
+  };
 }
 
 function applyOptions(engine: EngineCaps, record?: EngineSettingsRecord | null): EngineCaps {
@@ -108,6 +178,7 @@ function applyOptions(engine: EngineCaps, record?: EngineSettingsRecord | null):
   if (typeof options.brandId === 'string') {
     clone.brandId = options.brandId;
   }
+  syncInputSchemaWithOptions(clone, options);
   return clone;
 }
 

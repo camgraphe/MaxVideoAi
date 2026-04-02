@@ -270,6 +270,36 @@
       "pricing": 9.3
     },
     {
+      "modelSlug": "luma-ray-2",
+      "fidelity": 7.1,
+      "visualQuality": 8.3,
+      "motion": 6.9,
+      "consistency": 6.1,
+      "anatomy": 7.4,
+      "textRendering": 5.8,
+      "lipsyncQuality": null,
+      "sequencingQuality": 5.8,
+      "controllability": 7.8,
+      "speedStability": 6.8,
+      "pricing": 6.4,
+      "last_updated": "2026-04-02"
+    },
+    {
+      "modelSlug": "luma-ray-2-flash",
+      "fidelity": 6.4,
+      "visualQuality": 7.5,
+      "motion": 6.3,
+      "consistency": 5.4,
+      "anatomy": 7.0,
+      "textRendering": 5.6,
+      "lipsyncQuality": null,
+      "sequencingQuality": 5.4,
+      "controllability": 7.2,
+      "speedStability": 8.5,
+      "pricing": 8.6,
+      "last_updated": "2026-04-02"
+    },
+    {
       "modelSlug": "kling-2-5-turbo",
       "fidelity": 8.1,
       "visualQuality": 7.6,
