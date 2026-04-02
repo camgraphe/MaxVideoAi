@@ -269,6 +269,36 @@ test('Veo 3 I2V rejects durations other than 8s', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Luma Ray 2 modify and reframe validate the new workflow surface', () => {
+  const missingSource = validateRequest('lumaRay2', 'v2v', {
+    prompt: 'Refresh the wardrobe texture',
+  });
+  assert.equal(missingSource.ok, false);
+  assert.equal(missingSource.error?.field, 'video_url');
+
+  const validModify = validateRequest('lumaRay2', 'v2v', {
+    video_url: 'https://example.com/source.mp4',
+    prompt: 'Refresh the wardrobe texture',
+    mode: 'flex_2',
+  });
+  assert.deepEqual(validModify, OK);
+
+  const validReframe = validateRequest('lumaRay2', 'reframe', {
+    video_url: 'https://example.com/source.mp4',
+    aspect_ratio: '1:1',
+  });
+  assert.deepEqual(validReframe, OK);
+
+  const invalidGenerateAspect = validateRequest('lumaRay2', 't2v', {
+    prompt: 'Generate a cinematic shot',
+    duration: '5s',
+    resolution: '1080p',
+    aspect_ratio: '1:1',
+  });
+  assert.equal(invalidGenerateAspect.ok, false);
+  assert.equal(invalidGenerateAspect.error?.field, 'aspect_ratio');
+});
+
 test('Hailuo-02 Std enforces duration and resolution', () => {
   const invalid = validateRequest('minimax-hailuo-02-text', 'i2v', {
     duration: 12,
@@ -436,6 +466,40 @@ test('Veo 3.1 Lite registry exposes the unified lite mode mapping', () => {
   assert.equal(veoLite?.modes.some((mode) => mode.mode === 'ref2v'), false);
   assert.equal(veoLite?.modes.some((mode) => mode.mode === 'extend'), false);
   assert.equal(veoLite?.engine.inputSchema?.optional?.some((field) => field.id === 'generate_audio'), false);
+});
+
+test('Luma Ray 2 registry keeps the two public models with generate, modify, and reframe workflows', () => {
+  const registry = listFalEngines();
+  const lumaRay2 = registry.find((entry) => entry.id === 'lumaRay2');
+  const lumaRay2Flash = registry.find((entry) => entry.id === 'lumaRay2_flash');
+
+  assert.ok(lumaRay2);
+  assert.ok(lumaRay2Flash);
+  assert.equal(lumaRay2?.modes.find((mode) => mode.mode === 't2v')?.falModelId, 'fal-ai/luma-dream-machine/ray-2');
+  assert.equal(
+    lumaRay2?.modes.find((mode) => mode.mode === 'i2v')?.falModelId,
+    'fal-ai/luma-dream-machine/ray-2/image-to-video'
+  );
+  assert.equal(
+    lumaRay2?.modes.find((mode) => mode.mode === 'v2v')?.falModelId,
+    'fal-ai/luma-dream-machine/ray-2/modify'
+  );
+  assert.equal(
+    lumaRay2?.modes.find((mode) => mode.mode === 'reframe')?.falModelId,
+    'fal-ai/luma-dream-machine/ray-2/reframe'
+  );
+  assert.equal(
+    lumaRay2Flash?.modes.find((mode) => mode.mode === 'v2v')?.falModelId,
+    'fal-ai/luma-dream-machine/ray-2-flash/modify'
+  );
+  assert.equal(
+    lumaRay2Flash?.modes.find((mode) => mode.mode === 'reframe')?.falModelId,
+    'fal-ai/luma-dream-machine/ray-2-flash/reframe'
+  );
+  assert.equal(lumaRay2?.engine.audio, false);
+  assert.equal(lumaRay2Flash?.engine.audio, false);
+  assert.equal(registry.some((entry) => entry.id === 'lumaRay2_modify'), false);
+  assert.equal(registry.some((entry) => entry.id === 'lumaRay2_reframe'), false);
 });
 
 test('Nano Banana 2 registry exposes image mappings and schema caps', () => {

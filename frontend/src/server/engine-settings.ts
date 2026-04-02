@@ -10,6 +10,13 @@ export type EngineSettingsRecord = {
   updated_by: string | null;
 };
 
+type EngineSettingsUpsert = {
+  engine_id: string;
+  options: Record<string, unknown>;
+  pricing: EnginePricingDetails | null;
+  updated_by: string | null;
+};
+
 let ensureSeedPromise: Promise<void> | null = null;
 
 const LUMA_RAY2_ENGINE_IDS = new Set(['lumaRay2', 'lumaRay2_flash']);
@@ -128,14 +135,15 @@ export async function ensureEngineSettingsSeed(updatedBy?: string): Promise<void
         if (!shouldRefreshEngineOptions(engine, current)) {
           return null;
         }
-        return {
+        const upsert: EngineSettingsUpsert = {
           engine_id: engine.id,
           options: normalizeOptions(engine),
           pricing: extractPricing(engine) ?? current?.pricing ?? null,
           updated_by: current?.updated_by ?? updatedBy ?? null,
         };
+        return upsert;
       })
-      .filter((entry): entry is { engine_id: string; options: Record<string, unknown> | null; pricing: EnginePricingDetails | null; updated_by: string | null } => entry != null);
+      .filter((entry): entry is EngineSettingsUpsert => entry != null);
 
     if (!upserts.length) return;
 
@@ -145,7 +153,7 @@ export async function ensureEngineSettingsSeed(updatedBy?: string): Promise<void
         const offset = index * 4;
         values.push(
           entry.engine_id,
-          JSON.stringify(entry.options ?? null),
+          JSON.stringify(entry.options),
           JSON.stringify(entry.pricing ?? null),
           entry.updated_by
         );

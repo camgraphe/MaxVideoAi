@@ -1460,49 +1460,64 @@ const COMPARE_COPY_BY_LOCALE: Record<
   {
     title: (model: string) => string;
     introPrefix: (model: string) => string;
-    introStrong: string;
+    introStrong: (supportsAudio: boolean) => string;
     introSuffix: string;
     subline: string;
     ctaCompare: (model: string, other: string) => string;
     ctaExplore: (other: string) => string;
-    cardDescription: (model: string, other: string) => string;
+    cardDescription: (model: string, other: string, supportsAudio: boolean) => string;
   }
 > = {
   en: {
     title: (model) => `Compare ${model} vs other AI video models`,
     introPrefix: (model) =>
       `Not sure if ${model} is the best fit for your shot? These side-by-side comparisons break down the tradeoffs — `,
-    introStrong: 'price per second, resolution, audio, speed, and motion style',
+    introStrong: (supportsAudio) =>
+      supportsAudio
+        ? 'price per second, resolution, audio, speed, and motion style'
+        : 'price per second, resolution, speed, and motion style',
     introSuffix: ' — so you can pick the right engine fast.',
     subline: 'Each page includes real outputs and practical best-use cases.',
     ctaCompare: (model, other) => `Compare ${model} vs ${other} →`,
     ctaExplore: (other) => `Explore ${other} →`,
-    cardDescription: (model, other) =>
-      `Compare ${model} vs ${other} on price, resolution, audio, speed, and motion style.`,
+    cardDescription: (model, other, supportsAudio) =>
+      supportsAudio
+        ? `Compare ${model} vs ${other} on price, resolution, audio, speed, and motion style.`
+        : `Compare ${model} vs ${other} on price, resolution, speed, and motion style.`,
   },
   fr: {
     title: (model) => `Comparer ${model} aux autres modèles vidéo IA`,
     introPrefix: (model) =>
       `Vous ne savez pas si ${model} est le meilleur choix pour votre plan ? Ces comparatifs côte à côte détaillent les compromis — `,
-    introStrong: 'prix par seconde, résolution, audio, vitesse et style de mouvement',
+    introStrong: (supportsAudio) =>
+      supportsAudio
+        ? 'prix par seconde, résolution, audio, vitesse et style de mouvement'
+        : 'prix par seconde, résolution, vitesse et style de mouvement',
     introSuffix: ' — pour choisir rapidement le bon moteur.',
     subline: 'Chaque page inclut des rendus réels et des cas d’usage concrets.',
     ctaCompare: (model, other) => `Comparer ${model} vs ${other} →`,
     ctaExplore: (other) => `Voir ${other} →`,
-    cardDescription: (model, other) =>
-      `Comparez ${model} vs ${other} sur le prix, la résolution, l’audio, la vitesse et le style de mouvement.`,
+    cardDescription: (model, other, supportsAudio) =>
+      supportsAudio
+        ? `Comparez ${model} vs ${other} sur le prix, la résolution, l’audio, la vitesse et le style de mouvement.`
+        : `Comparez ${model} vs ${other} sur le prix, la résolution, la vitesse et le style de mouvement.`,
   },
   es: {
     title: (model) => `Comparar ${model} con otros modelos de video IA`,
     introPrefix: (model) =>
       `¿No estás seguro de si ${model} es la mejor opción para tu toma? Estas comparativas lado a lado muestran los compromisos — `,
-    introStrong: 'precio por segundo, resolución, audio, velocidad y estilo de movimiento',
+    introStrong: (supportsAudio) =>
+      supportsAudio
+        ? 'precio por segundo, resolución, audio, velocidad y estilo de movimiento'
+        : 'precio por segundo, resolución, velocidad y estilo de movimiento',
     introSuffix: ' — para elegir el motor adecuado rápidamente.',
     subline: 'Cada página incluye renders reales y casos de uso prácticos.',
     ctaCompare: (model, other) => `Comparar ${model} vs ${other} →`,
     ctaExplore: (other) => `Ver ${other} →`,
-    cardDescription: (model, other) =>
-      `Compara ${model} vs ${other} en precio, resolución, audio, velocidad y estilo de movimiento.`,
+    cardDescription: (model, other, supportsAudio) =>
+      supportsAudio
+        ? `Compara ${model} vs ${other} en precio, resolución, audio, velocidad y estilo de movimiento.`
+        : `Compara ${model} vs ${other} en precio, resolución, velocidad y estilo de movimiento.`,
   },
 };
 
@@ -2517,17 +2532,17 @@ function resolveAudioPricingLabels(locale: AppLocale) {
   return PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en;
 }
 
-function resolveCompareCopy(locale: AppLocale, heroTitle: string) {
+function resolveCompareCopy(locale: AppLocale, heroTitle: string, supportsAudio: boolean) {
   const copy = COMPARE_COPY_BY_LOCALE[locale] ?? COMPARE_COPY_BY_LOCALE.en;
   return {
     title: copy.title(heroTitle),
     introPrefix: copy.introPrefix(heroTitle),
-    introStrong: copy.introStrong,
+    introStrong: copy.introStrong(supportsAudio),
     introSuffix: copy.introSuffix,
     subline: copy.subline,
     ctaCompare: (other: string) => copy.ctaCompare(heroTitle, other),
     ctaExplore: (other: string) => copy.ctaExplore(other),
-    cardDescription: (other: string) => copy.cardDescription(heroTitle, other),
+    cardDescription: (other: string) => copy.cardDescription(heroTitle, other, supportsAudio),
   };
 }
 
@@ -3780,7 +3795,7 @@ function MarketingModelPageLayout({
         };
   })();
   const sectionLabels = resolveSectionLabels(locale);
-  const compareCopy = resolveCompareCopy(locale, heroTitle);
+  const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
