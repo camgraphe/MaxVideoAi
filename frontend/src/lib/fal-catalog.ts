@@ -1,8 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
-import { ENV } from '@/lib/env';
-import { buildFalProxyUrl } from '@/lib/fal-proxy';
 import { listFalEngines } from '@/config/falEngines';
 
 const CATALOG_TTL_MS = 5 * 60 * 1000;
@@ -291,33 +289,6 @@ function extractPricingDetails(pricingRaw: Record<string, unknown>, maxDurationS
   };
 }
 
-async function fetchFalCatalogFromApi(): Promise<Omit<EngineCatalog, 'fetchedAt'> | null> {
-  if (!ENV.FAL_API_KEY) return null;
-  try {
-    const res = await fetch(buildFalProxyUrl('/models'));
-    if (!res.ok) {
-      return null;
-    }
-    const json = await res.json();
-    const models: FalModel[] = Array.isArray(json?.models) ? (json.models as FalModel[]) : Array.isArray(json) ? (json as FalModel[]) : [];
-    if (!models.length) return null;
-    const engines: EngineCaps[] = [];
-    const mapping: Record<string, string> = {};
-    const pricing: Record<string, EnginePricingDetails> = {};
-    for (const model of models) {
-      const mapped = mapFalModel(model);
-      if (!mapped) continue;
-      engines.push(mapped.engine);
-      mapping[mapped.engine.id] = mapped.slug;
-      pricing[mapped.engine.id] = mapped.pricing;
-    }
-    if (!engines.length) return null;
-    return { engines, modelMap: mapping, pricing };
-  } catch {
-    return null;
-  }
-}
-
 async function loadFixtureCatalog(): Promise<Omit<EngineCatalog, 'fetchedAt'> | null> {
   try {
     const candidates = [
@@ -359,18 +330,10 @@ export async function getFalCatalog(): Promise<EngineCatalog | null> {
     return catalogCache;
   }
 
-  const attempts: Array<Promise<Omit<EngineCatalog, 'fetchedAt'> | null>> = [];
-  if (ENV.FAL_API_KEY) {
-    attempts.push(fetchFalCatalogFromApi());
-  }
-  attempts.push(loadFixtureCatalog());
-
-  for (const attempt of attempts) {
-    const result = await attempt;
-    if (result && result.engines.length) {
-      catalogCache = { ...result, fetchedAt: Date.now() };
-      return catalogCache;
-    }
+  const result = await loadFixtureCatalog();
+  if (result && result.engines.length) {
+    catalogCache = { ...result, fetchedAt: Date.now() };
+    return catalogCache;
   }
 
   return null;

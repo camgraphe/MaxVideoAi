@@ -1,15 +1,60 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { buildFalProxyUrl } from '../frontend/src/lib/fal-proxy';
+import fsSync from 'node:fs';
+import dotenv from 'dotenv';
+
+const ENV_FILES = [
+  path.join(process.cwd(), '.env.local'),
+  path.join(process.cwd(), 'frontend', '.env.local'),
+  path.join(process.cwd(), '.env'),
+];
+
+for (const envFile of ENV_FILES) {
+  if (fsSync.existsSync(envFile)) {
+    dotenv.config({ path: envFile, override: false });
+  }
+}
+
+type FalModelPayload = {
+  models?: unknown[];
+  next_cursor?: string | null;
+  has_more?: boolean;
+};
 
 async function fetchModels() {
-  const url = buildFalProxyUrl('/models');
-  const res = await fetch(url);
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Failed to fetch FAL models (${res.status}): ${text}`);
+  const falKey = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
+  if (!falKey) {
+    throw new Error('Missing FAL key. Set FAL_KEY or FAL_API_KEY before dumping models.');
   }
-  return res.json();
+
+  const models: unknown[] = [];
+  let cursor: string | null = null;
+
+  do {
+    const url = new URL('https://api.fal.ai/v1/models');
+    url.searchParams.set('limit', '200');
+    if (cursor) {
+      url.searchParams.set('cursor', cursor);
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Key ${falKey}`,
+      },
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Failed to fetch FAL models (${res.status}): ${text}`);
+    }
+
+    const payload = (await res.json()) as FalModelPayload;
+    if (Array.isArray(payload.models)) {
+      models.push(...payload.models);
+    }
+    cursor = payload.has_more ? payload.next_cursor ?? null : null;
+  } while (cursor);
+
+  return { models };
 }
 
 async function writeFixtures(payload: unknown) {
@@ -38,4 +83,3 @@ main().catch((error) => {
   console.error('Failed to dump FAL models:', error);
   process.exitCode = 1;
 });
-

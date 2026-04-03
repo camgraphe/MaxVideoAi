@@ -229,12 +229,12 @@ The scripts are idempotent and will seed the current legal document versions req
 
 ### Fal Fixtures Utility
 
-Run `npx tsx scripts/dump-fal-models.ts` (server running) to regenerate:
+Run `npx tsx scripts/dump-fal-models.ts` to regenerate:
 
 - `frontend/fixtures/fal-models.json`
 - `fixtures/fal-models.json`
 
-The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is required.
+The script calls the Fal Platform API directly with `FAL_KEY` / `FAL_API_KEY`, so it no longer depends on the app proxy.
 
 ## 6. Scheduled Jobs
 
