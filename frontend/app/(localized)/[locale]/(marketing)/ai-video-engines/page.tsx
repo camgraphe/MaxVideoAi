@@ -617,6 +617,8 @@ export default async function AiVideoEnginesPage() {
     ])
   );
   const defaultComparison = allComparisonEntries[0];
+  const strategicSeedanceVeoComparison =
+    allComparisonEntries.find((entry) => entry.slug === 'seedance-2-0-vs-veo-3-1') ?? null;
   const strategicKlingVeoComparison =
     allComparisonEntries.find((entry) => entry.slug === 'kling-3-pro-vs-veo-3-1') ?? null;
   const strategicSeedanceSoraComparison =
@@ -646,26 +648,30 @@ export default async function AiVideoEnginesPage() {
             </header>
             <CompareNowWidget
               options={engineOptions}
-              defaultLeft="sora-2"
+              defaultLeft="seedance-2-0"
               defaultRight="veo-3-1"
               engineMetaBySlug={engineMetaBySlug}
               labels={copy.hero.compareNow}
               embedded
               className="rounded-2xl border border-hairline bg-surface/95 p-4 shadow-card sm:p-5"
             />
-            {defaultComparison ? (
+            {strategicSeedanceVeoComparison ?? defaultComparison ? (
               <p className="text-center text-xs text-text-muted">
                 {copy.sections.quickStartLabel}:{' '}
                 <Link
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: defaultComparison.slug } }}
+                  href={{
+                    pathname: '/ai-video-engines/[slug]',
+                    params: { slug: (strategicSeedanceVeoComparison ?? defaultComparison)?.slug ?? 'seedance-2-0-vs-veo-3-1' },
+                  }}
                   className="font-semibold text-brand hover:text-brandHover"
                 >
-                  {defaultComparison.label}
+                  {(strategicSeedanceVeoComparison ?? defaultComparison)?.label}
                 </Link>
                 .
               </p>
             ) : null}
-            {strategicKlingVeoComparison && strategicKlingVeoComparison.slug !== defaultComparison?.slug ? (
+            {strategicKlingVeoComparison &&
+            strategicKlingVeoComparison.slug !== (strategicSeedanceVeoComparison ?? defaultComparison)?.slug ? (
               <p className="text-center text-xs text-text-muted">
                 {copy.sections.quickStartLabel}:{' '}
                 <Link

@@ -83,13 +83,13 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Sora 2 narrative (voice-over)',
-        engine: 'Sora 2',
-        duration: '12s',
+        title: 'Seedance 2.0 launch sequence',
+        engine: 'Seedance 2.0',
+        duration: '10s',
         resolution: '1280×720',
         audio: 'On',
-        note: 'Automatic refund on fail.',
-        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+        note: 'Confirm final rate before go-live.',
+        pricingScenario: { engineId: 'seedance-2-0', durationSec: 10, resolution: '720p', memberTier: 'member' },
       },
     ],
   },
@@ -117,13 +117,13 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Narratif Sora 2 (voice-over)',
-        engine: 'Sora 2',
-        duration: '12 s',
+        title: 'Séquence de lancement Seedance 2.0',
+        engine: 'Seedance 2.0',
+        duration: '10 s',
         resolution: '1280×720',
         audio: 'Inclus',
-        note: 'Remboursement automatique en cas d’échec.',
-        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+        note: 'Confirmer le tarif final avant mise en prod.',
+        pricingScenario: { engineId: 'seedance-2-0', durationSec: 10, resolution: '720p', memberTier: 'member' },
       },
     ],
   },
@@ -151,13 +151,13 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Narrativa Sora 2 (voz en off)',
-        engine: 'Sora 2',
-        duration: '12 s',
+        title: 'Secuencia de lanzamiento Seedance 2.0',
+        engine: 'Seedance 2.0',
+        duration: '10 s',
         resolution: '1280×720',
         audio: 'Incluido',
-        note: 'Reembolso automático si falla.',
-        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+        note: 'Confirma la tarifa final antes del lanzamiento.',
+        pricingScenario: { engineId: 'seedance-2-0', durationSec: 10, resolution: '720p', memberTier: 'member' },
       },
     ],
   },
@@ -170,7 +170,7 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
       'Duration scales linearly (4s / 8s / 12s).',
       'Resolution increases cost at 1080p vs 720p.',
       'Audio adds a small premium on supported engines.',
-      'Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate.',
+      'Engine tier (Seedance / Veo / Kling / LTX) sets the base rate.',
     ],
   },
   fr: {
@@ -179,7 +179,7 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
       'La durée évolue linéairement (4 s / 8 s / 12 s).',
       'La résolution augmente le coût en 1080p vs 720p.',
       'L’audio ajoute une légère prime sur les moteurs compatibles.',
-      'Le niveau du moteur (Sora/Veo/Pika/MiniMax) fixe le tarif de base.',
+      'Le niveau du moteur (Seedance / Veo / Kling / LTX) fixe le tarif de base.',
     ],
   },
   es: {
@@ -188,7 +188,7 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
       'La duración escala de forma lineal (4 s / 8 s / 12 s).',
       'La resolución incrementa el costo en 1080p frente a 720p.',
       'El audio añade un pequeño recargo en los motores compatibles.',
-      'El nivel del motor (Sora/Veo/Pika/MiniMax) define la tarifa base.',
+      'El nivel del motor (Seedance / Veo / Kling / LTX) define la tarifa base.',
     ],
   },
 };
@@ -236,22 +236,26 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const exploreTitle =
     locale === 'fr' ? 'Pages liées' : locale === 'es' ? 'Páginas relacionadas' : 'Related pages';
   const exploreModelsLabel =
-    locale === 'fr' ? 'Profil Veo 3.1 Fast' : locale === 'es' ? 'Perfil Veo 3.1 Fast' : 'Veo 3.1 Fast profile';
+    locale === 'fr' ? 'Profil Seedance 2.0 Fast' : locale === 'es' ? 'Perfil Seedance 2.0 Fast' : 'Seedance 2.0 Fast profile';
   const exploreEnginesLabel =
-    locale === 'fr' ? 'Kling 3 Pro vs Veo 3.1' : locale === 'es' ? 'Kling 3 Pro vs Veo 3.1' : 'Kling 3 Pro vs Veo 3.1';
+    locale === 'fr' ? 'Seedance 2.0 vs Veo 3.1' : locale === 'es' ? 'Seedance 2.0 vs Veo 3.1' : 'Seedance 2.0 vs Veo 3.1';
   const exploreSeedanceModelLabel =
     locale === 'fr' ? 'Profil Seedance 2.0' : locale === 'es' ? 'Perfil Seedance 2.0' : 'Seedance 2.0 profile';
   const exploreSeedanceCompareLabel =
-    locale === 'fr' ? 'Seedance 2.0 vs Sora 2' : locale === 'es' ? 'Seedance 2.0 vs Sora 2' : 'Seedance 2.0 vs Sora 2';
+    locale === 'fr'
+      ? 'Seedance 2.0 Fast vs LTX 2.3 Fast'
+      : locale === 'es'
+        ? 'Seedance 2.0 Fast vs LTX 2.3 Fast'
+        : 'Seedance 2.0 Fast vs LTX 2.3 Fast';
   const exploreLinks = [
-    { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } }, label: exploreModelsLabel },
+    { href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0-fast' } }, label: exploreModelsLabel },
     {
-      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } },
+      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-veo-3-1' } },
       label: exploreEnginesLabel,
     },
     { href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }, label: exploreSeedanceModelLabel },
     {
-      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-sora-2' } },
+      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'ltx-2-3-fast-vs-seedance-2-0-fast' } },
       label: exploreSeedanceCompareLabel,
     },
   ];

@@ -4435,6 +4435,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
         "seedance-1-5-pro"
       ]
     },
@@ -4478,7 +4480,7 @@
           "wan-2-5",
           "wan-2-6"
         ],
-        "includeInHub": true
+        "includeInHub": false
       },
       "app": {
         "enabled": true
@@ -4487,7 +4489,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "explicit",
     "engine": {
       "id": "seedance-1-5-pro",
       "label": "Seedance 1.5 Pro",
@@ -4805,11 +4807,13 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
         "seedance-1-5-pro"
       ]
     },
     "versionLabel": "2.0",
-    "availability": "waitlist",
+    "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
@@ -4822,39 +4826,26 @@
       },
       "compare": {
         "suggestOpponents": [
-          "sora-2",
-          "pika-text-to-video",
-          "seedance-1-5-pro"
+          "veo-3-1",
+          "kling-3-pro",
+          "sora-2"
         ],
         "publishedPairs": [
-          "kling-2-5-turbo",
-          "kling-2-6-pro",
-          "kling-3-pro",
-          "kling-3-standard",
-          "ltx-2",
-          "ltx-2-3-fast",
-          "ltx-2-3-pro",
-          "ltx-2-fast",
-          "luma-ray-2",
-          "luma-ray-2-flash",
-          "minimax-hailuo-02-text",
-          "pika-text-to-video",
-          "seedance-1-5-pro",
-          "sora-2",
-          "sora-2-pro",
           "veo-3-1",
-          "veo-3-1-fast",
-          "veo-3-1-lite",
-          "wan-2-5",
-          "wan-2-6"
+          "kling-3-pro",
+          "sora-2"
         ],
         "includeInHub": true
       },
       "app": {
-        "enabled": true
+        "enabled": true,
+        "discoveryRank": -2,
+        "variantGroup": "seedance-2-0",
+        "variantLabel": "Standard"
       },
       "pricing": {
-        "includeInEstimator": true
+        "includeInEstimator": false,
+        "featuredScenario": "seedance-2-family"
       }
     },
     "surfacesSource": "explicit",
@@ -4996,15 +4987,15 @@
       "ttlSec": 600,
       "providerMeta": {
         "provider": "bytedance",
-        "modelSlug": "fal-ai/seedance-2.0/text-to-video"
+        "modelSlug": "bytedance/seedance-2.0/text-to-video"
       },
-      "availability": "waitlist",
+      "availability": "available",
       "brandId": "bytedance"
     },
     "modes": [
       {
         "mode": "t2v",
-        "falModelId": "fal-ai/seedance-2.0/text-to-video",
+        "falModelId": "bytedance/seedance-2.0/text-to-video",
         "ui": {
           "modes": [
             "t2v"
@@ -5027,12 +5018,12 @@
             "1:1"
           ],
           "audioToggle": true,
-          "notes": "Coming soon. Native audio with up to 15s multi-shot generation."
+          "notes": "Native audio with up to 15s multi-shot generation."
         }
       },
       {
         "mode": "i2v",
-        "falModelId": "fal-ai/seedance-2.0/image-to-video",
+        "falModelId": "bytedance/seedance-2.0/image-to-video",
         "ui": {
           "modes": [
             "i2v"
@@ -5062,7 +5053,7 @@
           ],
           "maxUploadMB": 25,
           "audioToggle": true,
-          "notes": "Supports multimodal references at launch (images, video clips, audio clips)."
+          "notes": "Supports multimodal references with images, video clips, and audio clips."
         }
       }
     ],
@@ -5079,7 +5070,270 @@
       "extend": {
         "value": true
       }
-    }
+    },
+    "bestFor": "Premium multi-shot video with native audio"
+  },
+  {
+    "engineId": "seedance-2-0-fast",
+    "modelSlug": "seedance-2-0-fast",
+    "marketingName": "Seedance 2.0 Fast",
+    "provider": "ByteDance",
+    "brandId": "bytedance",
+    "family": "seedance",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "seedance-1-5-pro"
+      ]
+    },
+    "versionLabel": "2.0 Fast",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "veo-3-1-fast",
+          "ltx-2-3-fast",
+          "sora-2"
+        ],
+        "publishedPairs": [
+          "veo-3-1-fast",
+          "ltx-2-3-fast"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": -1,
+        "variantGroup": "seedance-2-0",
+        "variantLabel": "Fast"
+      },
+      "pricing": {
+        "includeInEstimator": false,
+        "featuredScenario": "seedance-2-family"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "seedance-2-0-fast",
+      "label": "Seedance 2.0 Fast",
+      "provider": "ByteDance",
+      "version": "2.0",
+      "variant": "Fast",
+      "status": "early_access",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25,
+        "videoMaxMB": 50
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "5",
+              "10",
+              "15"
+            ],
+            "default": "10",
+            "min": 5,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Generate audio",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 25
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "currency": "USD",
+        "notes": "Prelaunch route only. Pricing is confirmed at launch."
+      },
+      "updatedAt": "2026-04-03T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "bytedance",
+        "modelSlug": "bytedance/seedance-2.0/fast/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "bytedance/seedance-2.0/fast/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              10,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Draft-speed Seedance 2 route for fast iteration and shot planning."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "bytedance/seedance-2.0/fast/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              10,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 25,
+          "audioToggle": true,
+          "notes": "Fast draft tier on the Seedance 2 route family with the same image-first workflow."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": true
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Fast Seedance drafts and shot planning"
   },
   {
     "engineId": "wan-2-5",

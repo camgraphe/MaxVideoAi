@@ -286,8 +286,12 @@ const PARTNER_BRANDS: PartnerBrand[] = [
     engineIds: [
       'seedance-1-5-pro',
       'seedance-2-0',
+      'seedance-2-0-fast',
       'fal-ai/bytedance/seedance/v1.5/pro/text-to-video',
-      'fal-ai/seedance-2.0/text-to-video',
+      'bytedance/seedance-2.0/text-to-video',
+      'bytedance/seedance-2.0/image-to-video',
+      'bytedance/seedance-2.0/fast/text-to-video',
+      'bytedance/seedance-2.0/fast/image-to-video',
     ],
   },
   {

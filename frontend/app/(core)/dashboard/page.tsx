@@ -29,7 +29,7 @@ import {
   writeLastKnownWallet,
 } from '@/lib/last-known';
 
-const NEW_USER_ENGINE_ID = 'sora-2';
+const NEW_USER_ENGINE_ID = 'seedance-2-0';
 const STORAGE_KEYS = {
   form: 'maxvideoai.generate.form.v1',
   imageForm: 'maxvideoai.image.composer.v1',

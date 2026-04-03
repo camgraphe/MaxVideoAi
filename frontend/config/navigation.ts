@@ -63,27 +63,20 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 });
 
 const MODEL_MENU: LabeledSlug[] = [
-  { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
-  { slug: 'ltx-2-3-pro', label: 'LTX 2.3 Pro' },
+  { slug: 'seedance-2-0', label: 'Seedance 2.0' },
+  { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
-  { slug: 'sora-2-pro', label: 'Sora 2 Pro' },
+  { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
   { slug: 'wan-2-6', label: 'Wan 2.6' },
-  { slug: 'seedance-1-5-pro', label: 'Seedance 1.5 Pro' },
-  { slug: 'pika-text-to-video', label: 'Pika 2.2' },
-  { slug: 'minimax-hailuo-02-text', label: 'MiniMax Hailuo 02' },
+  { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
 ];
 
-const EXAMPLE_FAMILY_PRIORITY = ['kling', 'veo', 'ltx', 'wan', 'seedance', 'hailuo', 'pika', 'sora'] as const;
-const FOOTER_EXAMPLE_FAMILIES = ['kling', 'veo', 'ltx', 'wan'] as const;
+const HEADER_EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'ltx', 'kling', 'wan'] as const;
+const FOOTER_EXAMPLE_FAMILIES = ['veo', 'seedance', 'ltx', 'kling', 'wan'] as const;
 const AVAILABLE_EXAMPLE_FAMILY_IDS = getExampleNavFamilyIds();
-const EXAMPLE_FAMILY_PRIORITY_SET = new Set<string>(EXAMPLE_FAMILY_PRIORITY);
 
-const ORDERED_EXAMPLE_FAMILY_IDS = [
-  ...EXAMPLE_FAMILY_PRIORITY.filter((familyId) => AVAILABLE_EXAMPLE_FAMILY_IDS.includes(familyId)),
-  ...AVAILABLE_EXAMPLE_FAMILY_IDS.filter((familyId) => !EXAMPLE_FAMILY_PRIORITY_SET.has(familyId)),
-];
-
-const EXAMPLES_MENU: LabeledSlug[] = ORDERED_EXAMPLE_FAMILY_IDS
+const EXAMPLES_MENU: LabeledSlug[] = HEADER_EXAMPLE_FAMILY_PRIORITY
+  .filter((familyId) => AVAILABLE_EXAMPLE_FAMILY_IDS.includes(familyId))
   .map((familyId) => getModelFamilyDefinition(familyId))
   .filter((family): family is NonNullable<typeof family> => Boolean(family))
   .map((family) => ({
@@ -100,12 +93,11 @@ const FOOTER_EXAMPLES_MENU: LabeledSlug[] = FOOTER_EXAMPLE_FAMILIES
   }));
 
 const COMPARE_MENU: LabeledSlug[] = [
-  { slug: 'sora-2-vs-veo-3-1', label: 'Sora 2 vs Veo 3.1' },
-  { slug: 'kling-3-pro-vs-sora-2', label: 'Kling 3 Pro vs Sora 2' },
-  { slug: 'kling-3-pro-vs-seedance-1-5-pro', label: 'Kling 3 Pro vs Seedance 1.5 Pro' },
-  { slug: 'seedance-1-5-pro-vs-veo-3-1', label: 'Seedance 1.5 Pro vs Veo 3.1' },
-  { slug: 'sora-2-vs-wan-2-6', label: 'Sora 2 vs Wan 2.6' },
-  { slug: 'ltx-2-3-fast-vs-ltx-2-3-pro', label: 'LTX 2.3 Fast vs Pro' },
+  { slug: 'seedance-1-5-pro-vs-seedance-2-0', label: 'Seedance 1.5 vs 2.0' },
+  { slug: 'ltx-2-vs-ltx-2-3-fast', label: 'LTX 2 vs 2.3 Fast' },
+  { slug: 'ltx-2-3-fast-vs-seedance-2-0', label: 'LTX 2.3 Fast vs Seedance 2.0' },
+  { slug: 'ltx-2-3-fast-vs-veo-3-1', label: 'LTX 2.3 Fast vs Veo 3.1' },
+  { slug: 'kling-3-pro-vs-ltx-2-3-pro', label: 'Kling 3 Pro vs LTX 2.3 Pro' },
 ];
 
 export const MARKETING_MODEL_SLUGS = MODEL_MENU.map((item) => item.slug);

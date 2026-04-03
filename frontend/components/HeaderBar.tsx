@@ -506,11 +506,16 @@ export function HeaderBar() {
                       isOpen ? 'visible opacity-100' : 'invisible opacity-0'
                     )}
                   >
-                    <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
+                    <div
+                      className={clsx(
+                        'rounded-card border border-hairline bg-surface p-3 shadow-card',
+                        item.key === 'compare' ? 'min-w-[280px] w-max' : 'min-w-[240px]'
+                      )}
+                    >
                       <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
                         <Link
                           href={resolveLocalizedHref(dropdown.allHref)}
-                          className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
                           role="menuitem"
                           onClick={() => closeDesktopDropdown(200)}
                         >
@@ -522,7 +527,7 @@ export function HeaderBar() {
                             <Link
                               key={entry.key}
                               href={href}
-                              className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
                               role="menuitem"
                               onClick={() => closeDesktopDropdown(200)}
                             >

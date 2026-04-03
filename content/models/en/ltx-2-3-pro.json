@@ -205,7 +205,7 @@
       "Review the live price before generation, then iterate only on the workflow that matters."
     ],
     "galleryTitle": "LTX 2.3 Pro examples",
-    "galleryIntro": "Local placeholders are used for now on this dev branch. Replace them with final approved LTX 2.3 Pro renders before production launch.",
+    "galleryIntro": "Representative LTX 2.3 Pro examples and placeholders used on this branch for layout and prompt coverage.",
     "galleryAllCta": "View all LTX 2.3 Pro examples ->",
     "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",

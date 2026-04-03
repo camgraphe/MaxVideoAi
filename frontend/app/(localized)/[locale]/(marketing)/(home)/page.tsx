@@ -82,18 +82,17 @@ function ReferenceStartCard({
 
 const HERO_TILES: readonly HeroTileConfig[] = [
   {
-    id: 'sora-2',
-    engineId: 'sora-2',
-    label: 'Sora 2',
-    videoSrc: '/hero/sora2.mp4',
-    posterSrc: '/hero/sora2.jpg',
-    durationSec: 8,
+    id: 'seedance-2-0',
+    engineId: 'seedance-2-0',
+    label: 'Seedance 2.0',
+    videoSrc: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+    posterSrc: '/hero/seedance-2-0.jpg',
+    durationSec: 10,
     resolution: '1080p',
-    fallbackPriceLabel: 'from $0.52',
-    minPriceCents: 52,
+    fallbackPriceLabel: 'confirm live price',
     showAudioIcon: true,
-    alt: 'Sora 2  -  example clip',
-    examplesSlug: 'sora-2',
+    alt: 'Seedance 2.0  -  example clip',
+    examplesSlug: 'seedance-2-0',
   },
   {
     id: 'veo-3-1',
@@ -110,6 +109,20 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     examplesSlug: 'veo-3-1',
   },
   {
+    id: 'sora-2',
+    engineId: 'sora-2',
+    label: 'Sora 2',
+    videoSrc: '/hero/sora2.mp4',
+    posterSrc: '/hero/sora2.jpg',
+    durationSec: 8,
+    resolution: '1080p',
+    fallbackPriceLabel: 'from $0.52',
+    minPriceCents: 52,
+    showAudioIcon: true,
+    alt: 'Sora 2  -  example clip',
+    examplesSlug: 'sora-2',
+  },
+  {
     id: 'pika-22',
     engineId: 'pika-text-to-video',
     label: 'Pika 2.2',
@@ -121,19 +134,6 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     minPriceCents: 24,
     alt: 'Pika 2.2  -  example clip',
     examplesSlug: 'pika-2-2',
-  },
-  {
-    id: 'minimax-hailuo-02',
-    engineId: 'minimax-hailuo-02-text',
-    label: 'MiniMax Hailuo 02',
-    videoSrc: '/hero/minimax-video01.mp4',
-    posterSrc: '/hero/minimax-video01.jpg',
-    durationSec: 6,
-    resolution: '768P',
-    fallbackPriceLabel: 'from $0.27',
-    minPriceCents: 27,
-    alt: 'MiniMax Hailuo 02  -  example clip',
-    examplesSlug: 'minimax-hailuo-02',
   },
 ] as const;
 
@@ -163,19 +163,20 @@ type WorksWithBrandItem = {
 };
 
 const WORKS_WITH_BRAND_LINKS: readonly WorksWithBrandItem[] = [
-  { label: 'Sora 2', slug: 'sora-2' },
-  { label: 'Veo 3.1', slug: 'veo-3-1' },
-  { label: 'LTX-2', slug: 'ltx-2' },
-  { label: 'Kling 3', slug: 'kling-3-pro' },
-  { label: 'Wan 2.6', slug: 'wan-2-6' },
-  { label: 'Seedance 1.5', slug: 'seedance-1-5-pro' },
   { label: 'Seedance 2.0', slug: 'seedance-2-0' },
+  { label: 'Kling 3', slug: 'kling-3-pro' },
+  { label: 'Veo 3.1', slug: 'veo-3-1' },
+  { label: 'LTX 2.3', slug: 'ltx-2-3-pro' },
+  { label: 'Sora 2', slug: 'sora-2' },
+  { label: 'Wan 2.6', slug: 'wan-2-6' },
   { label: 'Pika 2.2', slug: 'pika-text-to-video' },
   { label: 'Hailuo 02', slug: 'minimax-hailuo-02-text' },
   { label: 'Nano Banana', slug: 'nano-banana' },
 ] as const;
 
 const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
+  'seedance-2-0': 'seedance-2-0',
+  'seedance-2-0-fast': 'seedance-2-0-fast',
   'sora-2': 'sora-2',
   'sora-2-pro': 'sora-2-pro',
   'veo-3-1': 'veo-3-1',
@@ -336,11 +337,11 @@ const GENERATE_WAYS_COPY = [
 ] as const;
 
 const POPULAR_COMPARISON_LINKS = [
-  { label: 'Sora 2 vs Veo 3.1 comparison', slug: 'sora-2-vs-veo-3-1' },
-  { label: 'Kling 3 vs Sora 2 comparison', slug: 'kling-3-pro-vs-sora-2' },
-  { label: 'Veo 3.1 vs Kling 3 comparison', slug: 'kling-3-pro-vs-veo-3-1' },
-  { label: 'LTX 2.3 Fast vs Pro comparison', slug: 'ltx-2-3-fast-vs-ltx-2-3-pro' },
-  { label: 'LTX 2.3 Pro vs Veo 3.1 comparison', slug: 'ltx-2-3-pro-vs-veo-3-1' },
+  { label: 'Seedance 2.0 vs Veo 3.1 comparison', slug: 'seedance-2-0-vs-veo-3-1' },
+  { label: 'Seedance 2.0 vs Kling 3 Pro comparison', slug: 'kling-3-pro-vs-seedance-2-0' },
+  { label: 'Seedance 2.0 vs Sora 2 comparison', slug: 'seedance-2-0-vs-sora-2' },
+  { label: 'Seedance 2.0 Fast vs Veo 3.1 Fast comparison', slug: 'seedance-2-0-fast-vs-veo-3-1-fast' },
+  { label: 'Seedance 2.0 Fast vs LTX 2.3 Fast comparison', slug: 'ltx-2-3-fast-vs-seedance-2-0-fast' },
 ] as const;
 
 function MiniFAQ({ faq }: MiniFaqProps) {
@@ -561,7 +562,10 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const defaultWhyCards = [
     { title: 'Live product, not a roadmap.', body: 'Log in and use the same workspace we run internally today.' },
     { title: 'Wallet-first billing.', body: 'Top up once, monitor spend, and get automatic refunds on failed renders.' },
-    { title: 'All your engines in one place.', body: 'Switch between Sora, Veo, Pika, MiniMax, and more without juggling dashboards.' },
+    {
+      title: 'All your engines in one place.',
+      body: 'Switch between Seedance, Kling, Veo, LTX, Sora, and more without juggling dashboards.',
+    },
   ];
   const whyCards = Array.isArray(home.whyCards) && home.whyCards.length ? home.whyCards : defaultWhyCards;
   const pricing = home.pricing;

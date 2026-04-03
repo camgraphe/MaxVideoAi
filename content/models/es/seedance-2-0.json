@@ -3,28 +3,36 @@
   "versionLabel": "2.0",
   "seo": {
     "title": "Seedance 2.0 — video IA con audio nativo",
-    "description": "Conozca Seedance 2.0 (ByteDance) en prelanzamiento: video IA cinematográfico, audio nativo, control avanzado de cámara y salidas de hasta 15 s en 1080p."
+    "description": "Conozca Seedance 2.0 (ByteDance) en MaxVideoAI: video IA cinematográfico, audio nativo, control avanzado de cámara y salidas de hasta 15 s en 1080p."
   },
-  "overview": "Seedance 2.0 es el modelo de video IA de ByteDance enfocado en movimiento cinematográfico, continuidad multi-shot y generación nativa de audio sincronizado con la imagen. Esta página es una vista de prelanzamiento indexable para que usted prepare prompts, casos de uso y decisiones de producción antes de la disponibilidad runtime.",
-  "pricingNotes": "Prelanzamiento: el precio final y los términos comerciales se confirman en el lanzamiento.",
+  "overview": "Seedance 2.0 es el modelo de video IA flagship de ByteDance para motion cinematográfico, continuidad multi-shot y audio nativo sincronizado. Usa esta página para elegir el workflow, la estructura de prompt y las comparativas internas correctas antes de pasar a producción.",
+  "pricingNotes": "Verifica la tarifa en vivo dentro de Generate antes de cada ejecución de producción.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "Prepare su flujo de video antes del lanzamiento: capacidades oficiales, casos de uso prioritarios y plantillas de prompts orientadas a multi-shot + audio nativo.",
-    "badge": "Prelanzamiento · Fecha oficial por confirmar",
+    "intro": "Usa Seedance 2.0 cuando busques video premium multi-shot, motion más creíble y audio nativo en la misma pasada. Esta página ya está orientada al lanzamiento: workflows, estructuras de prompt y rutas internas para compararlo con Veo, Kling y el tier Sora saliente.",
+    "badge": "1080p · Hasta 15 s · Audio nativo · Referencias de texto / imagen / multimodales",
     "ctaPrimary": {
-      "label": "Unirse a la lista de espera / Recibir aviso",
-      "href": "/ai-video-engines"
+      "label": "Generar con Seedance 2.0",
+      "href": "/app?engine=seedance-2-0"
     },
     "secondaryLinks": [
       {
-        "label": "Ver Seedance 1.5 Pro",
-        "href": "/models/seedance-1-5-pro"
+        "label": "Ver Seedance 2.0 Fast",
+        "href": "/models/seedance-2-0-fast"
       },
       {
-        "label": "Leer anuncio oficial",
-        "href": "https://seed.bytedance.com/en/blog/official-launch-of-seedance-2-0"
+        "label": "Comparar Seedance 2.0 vs Veo 3.1",
+        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
+      },
+      {
+        "label": "Ver precios y workflows",
+        "href": "/pricing"
       }
     ]
+  },
+  "compareLink": {
+    "label": "Comparar Seedance 2.0 vs Kling 3 Pro ->",
+    "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-0"
   },
   "bestUseCases": {
     "title": "Casos de uso",
@@ -58,8 +66,8 @@
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
     {
-      "label": "Estado",
-      "body": "Prelanzamiento. Fecha oficial por confirmar. La página es indexable, pero la generación runtime permanece bloqueada antes del lanzamiento."
+      "label": "Rol",
+      "body": "El tier flagship de ByteDance para motion cinematográfico, continuidad multi-shot y audio nativo."
     },
     {
       "label": "Entradas",
@@ -83,7 +91,7 @@
     },
     {
       "label": "Fuentes",
-      "body": "Fuentes oficiales: páginas de Seed ByteDance. La exposición final de endpoints se confirma en el lanzamiento."
+      "body": "Fuentes oficiales: páginas de Seed ByteDance. También describen capacidades de extensión y edición junto al workflow principal."
     }
   ],
   "promptStructure": {
@@ -100,12 +108,12 @@
   },
   "promptingTip": "Tip: Seedance 2.0 responde mejor cuando el prompt combina timing de planos + verbos de cámara + cues de audio breves.",
   "tips": {
-    "title": "Límites y notas de prelanzamiento",
+    "title": "Notas de producción",
     "items": [
-      "La página es visible e indexable en prelanzamiento; la ejecución runtime sigue bloqueada hasta el lanzamiento.",
-      "El precio final y los términos comerciales se confirman en el lanzamiento.",
-      "Algunas capacidades avanzadas (extensión/edición) dependen de los endpoints publicados al lanzamiento.",
-      "Para multi-shot en <=15 s, use beats simples y bien secuenciados."
+      "Mantén una estructura plano por plano para reforzar la continuidad multi-shot.",
+      "Usa referencias multimodales para fijar vestuario, props, ritmo y ambiente.",
+      "Pasa a Seedance 2.0 Fast cuando quieras borradores más baratos antes de los finales.",
+      "Verifica la ruta activa y el precio en vivo dentro de Generate antes de cada ejecución."
     ]
   },
   "prompts": [
@@ -145,16 +153,16 @@
       "a": "Las comunicaciones oficiales indican hasta 15 segundos por generación."
     },
     {
-      "q": "¿Cuándo estará disponible?",
-      "a": "La fecha oficial está por confirmar."
+      "q": "¿Cómo verifico disponibilidad y precio?",
+      "a": "Abre Generate para confirmar la ruta activa, los workflows soportados y la tarifa en vivo de tu ejecución."
     },
     {
-      "q": "¿Se puede generar antes de esa fecha?",
-      "a": "No. Esta página es indexable en prelanzamiento, pero la ejecución runtime permanece bloqueada antes del lanzamiento."
+      "q": "¿Debo empezar con estándar o con Fast?",
+      "a": "Empieza con Seedance 2.0 estándar cuando quieras la calidad flagship y usa Seedance 2.0 Fast para borradores rápidos y comparativas."
     },
     {
-      "q": "¿El precio ya está confirmado?",
-      "a": "No. El precio final se publica en el lanzamiento."
+      "q": "¿El precio mostrado es el precio en vivo?",
+      "a": "Sí. Revisa siempre el precio visible dentro de Generate justo antes de lanzar una generación."
     }
   ],
   "custom": {
@@ -165,8 +173,8 @@
       "Audio nativo sincronizado||Audio output, native audio generation y lip sync soportados",
       "Referencias multimodales||Combina texto, imagen, video y audio para fijar estilo y ritmo"
     ],
-    "specTitle": "Especificaciones (prelanzamiento)",
-    "specNote": "Solo se listan puntos con fuente oficial. Acceso final y precio se confirman en el lanzamiento.",
+    "specTitle": "Especificaciones",
+    "specNote": "Solo se listan puntos con fuente oficial, mientras que precio y detalles del workflow se revisan en vivo dentro de Generate.",
     "specSections": [
       {
         "title": "Entradas multimodales",
@@ -259,16 +267,39 @@
       "Física poco creíble -> reduzca acciones simultáneas por plano."
     ],
     "boundaries": [
-      "Visibilidad de prelanzamiento != acceso runtime.",
-      "Las operaciones avanzadas dependen de endpoints disponibles al lanzamiento.",
-      "Precio y términos comerciales se confirman en el lanzamiento.",
-      "En producción, use solo capacidades documentadas oficialmente."
+      "Las escenas complejas mejoran cuando separas los beats con más claridad.",
+      "Los prompts con muchas referencias funcionan mejor si cada fuente tiene una función clara.",
+      "Controla la familia de rutas Fal activa antes de escalar tráfico.",
+      "Confirma el precio en vivo antes de un rollout con clientes o automatizaciones."
     ],
     "galleryTitle": "Ejemplos de Seedance 2.0",
-    "galleryIntro": "Revise referencias oficiales durante el prelanzamiento. Publicaremos aquí los renders reales de MaxVideoAI cuando se habilite el runtime.",
+    "galleryIntro": "Usa esta galería para revisar patrones de prompt, estructura de escenas y tipos de beats que Seedance 2.0 resuelve bien dentro de MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos de Seedance ->",
     "recreateLabel": "Recrear esta toma ->",
     "demoTitle": "Prompt de demostración — Seedance 2.0",
-    "demoPromptLabel": "Prompt"
+    "demoPromptLabel": "Prompt",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Fast",
+        "description": "Usa el tier rápido de Seedance para borradores, checks de timing y loops de concepto antes de llevar los finales a la versión estándar.",
+        "modelSlug": "seedance-2-0-fast",
+        "ctaLabel": "Ver Seedance 2.0 Fast ->"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1",
+        "description": "Compara Seedance 2.0 con Veo 3.1 cuando necesites otro motor premium con audio nativo para anuncios, lanzamientos y motion de producto.",
+        "modelSlug": "veo-3-1",
+        "ctaLabel": "Comparar Seedance 2.0 vs Veo 3.1 ->"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Abre Kling 3 Pro si quieres más foco en secuenciación de escenas, shot control y lógica storyboard multi-prompt.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Comparar Seedance 2.0 vs Kling 3 Pro ->"
+      }
+    ]
   }
 }

@@ -1,6 +1,7 @@
 engineId,marketingName,brandId,modelSlug,family,versionLabel,availability,logoPolicy,modelPageIndexable,modelPageInSitemap
 seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,v1.5 Pro,available,logoAllowed,true,true
-seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,2.0,waitlist,logoAllowed,true,true
+seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,2.0,available,logoAllowed,true,true
+seedance-2-0-fast,Seedance 2.0 Fast,bytedance,seedance-2-0-fast,seedance,2.0 Fast,available,logoAllowed,true,true
 nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,Nano,available,logoAllowed,true,true
 nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,2,available,logoAllowed,true,true
 nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,Pro,available,logoAllowed,true,true

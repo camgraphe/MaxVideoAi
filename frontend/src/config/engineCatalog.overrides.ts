@@ -46,6 +46,12 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     'seedance-1-5-pro': {
       bestFor: 'Cinematic motion with camera lock',
     },
+    'seedance-2-0': {
+      bestFor: 'Premium multi-shot video with native audio',
+    },
+    'seedance-2-0-fast': {
+      bestFor: 'Fast Seedance drafts and shot planning',
+    },
     'wan-2-6': {
       bestFor: 'General purpose video',
     },

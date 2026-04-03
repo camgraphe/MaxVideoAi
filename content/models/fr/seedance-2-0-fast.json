@@ -1,0 +1,260 @@
+{
+  "marketingName": "Seedance 2.0 Fast",
+  "versionLabel": "2.0 Fast",
+  "seo": {
+    "title": "Seedance 2.0 Fast — vidéo IA ByteDance pour drafts rapides | MaxVideoAI",
+    "description": "Utilisez Seedance 2.0 Fast sur MaxVideoAI pour des drafts plus rapides, du shot planning et des itérations avant de passer les finals dans Seedance 2.0 standard."
+  },
+  "overview": "Seedance 2.0 Fast est la variante draft-speed de Seedance 2.0. Utilisez-la pour les passes storyboard, les checks de timing et les boucles de concept quand vous voulez le langage visuel Seedance sans envoyer chaque rendu directement sur le tier premium.",
+  "pricingNotes": "Vérifiez le tarif live dans Generate avant chaque run de production.",
+  "hero": {
+    "title": "Seedance 2.0 Fast",
+    "intro": "Utilisez Seedance 2.0 Fast quand vous voulez le look Seedance avec des boucles de feedback plus courtes. Le tier Fast sert au concept validation, au shot planning et aux comparaisons rapides avant de pousser les finals dans Seedance 2.0 standard.",
+    "badge": "Tier Seedance draft-speed · Texte / image vers vidéo · Workflow audio natif",
+    "ctaPrimary": {
+      "label": "Générer avec Seedance 2.0 Fast",
+      "href": "/app?engine=seedance-2-0-fast"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir Seedance 2.0 standard",
+        "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "Comparer Seedance 2.0 Fast vs Veo 3.1 Fast",
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
+      },
+      {
+        "label": "Voir tarifs et workflows",
+        "href": "/pricing"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Comparer Seedance 2.0 Fast vs LTX 2.3 Fast ->",
+    "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
+  },
+  "bestUseCases": {
+    "title": "Cas d'usage",
+    "items": [
+      {
+        "title": "Passes storyboard avant finals",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Variantes pub avec retours plus rapides",
+        "icon": "ads"
+      },
+      {
+        "title": "Checks de timing pour plans pilotés par l'audio",
+        "icon": "music"
+      },
+      {
+        "title": "Tests A/B de motion avant Seedance standard",
+        "icon": "repeat"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Aperçu technique",
+  "technicalOverview": [
+    {
+      "label": "Rôle dans la famille",
+      "body": "Tier draft rapide pour le workflow Seedance 2."
+    },
+    {
+      "label": "Entrées",
+      "body": "Prompts texte et workflows image-to-video"
+    },
+    {
+      "label": "Objectif durée",
+      "body": "Préparé pour des passes Seedance courtes à intermédiaires jusqu'à 15 secondes"
+    },
+    {
+      "label": "Audio",
+      "body": "Aligné sur le workflow audio-first de Seedance 2 quand l'audio est actif"
+    },
+    {
+      "label": "Quand l'utiliser",
+      "body": "Exploration initiale, shot planning et comparaisons avant finals"
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompter Seedance 2.0 Fast",
+    "quote": "[Objectif du plan] + [sujet] + [un beat principal] + [langage caméra] + [un cue audio] + [durée cible].",
+    "description": "Gardez les prompts courts. Le tier Fast est plus fort quand chaque rendu sert à valider une décision: timing, cadrage, continuité ou rythme audio.",
+    "steps": [
+      "Nommer la décision à valider",
+      "Garder un seul beat par plan",
+      "Utiliser des verbes caméra courts",
+      "Ajouter un cue audio si le rythme compte",
+      "Faire monter les drafts gagnants dans Seedance 2.0 standard"
+    ]
+  },
+  "promptingTip": "Astuce : Seedance 2.0 Fast est surtout un outil de décision. Changez une variable à la fois pour savoir quel draft gagne vraiment.",
+  "tips": {
+    "title": "Notes de production",
+    "items": [
+      "Utilisez Fast pour la vitesse, puis Seedance 2.0 standard pour les finals premium.",
+      "Gardez des prompts tactiques: un beat, un mouvement, une raison de comparer.",
+      "Servez-vous du compare hub pour le juger face à Veo 3.1 Fast et LTX 2.3 Fast.",
+      "Vérifiez la route active et le prix live dans Generate avant chaque run."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Draft de beat narratif",
+      "prompt": "Pass concept en un plan pour une révélation produit, slow push-in, un beat hero, room tone douce, conçu pour valider timing et cadrage plus que le polish final."
+    },
+    {
+      "title": "Test A/B de motion",
+      "prompt": "Même produit sur la même table. Version A avec caméra fixe et main qui entre. Version B avec court mouvement en arc. Garder la lumière identique pour ne comparer que la motion."
+    },
+    {
+      "title": "Boucle social rapide",
+      "prompt": "Draft vertical de six secondes d'un flacon skincare dans une salle de bain lumineuse, une révélation propre, une rotation de bouchon, un cue d'eau discret."
+    }
+  ],
+  "faqTitle": "FAQ – Seedance 2.0 Fast sur MaxVideoAI",
+  "faqs": [
+    {
+      "q": "Quand utiliser Seedance 2.0 Fast plutôt que Seedance 2.0 standard ?",
+      "a": "Utilisez Fast quand le but est la vitesse d'itération, le shot planning et les comparaisons rapides. Passez au standard pour le rendu final plus poli."
+    },
+    {
+      "q": "Contre quels modèles le comparer en premier ?",
+      "a": "Commencez par Veo 3.1 Fast et LTX 2.3 Fast. Ces comparaisons disent vite si vous voulez le look Seedance, le polish pub de Veo ou le rythme storyboard de LTX."
+    },
+    {
+      "q": "Peut-on faire de l'image-to-video avec Seedance 2.0 Fast ?",
+      "a": "Oui. Fast reste utile pour les checks de motion et de continuité à partir d'une image de référence avant de monter sur le tier standard."
+    }
+  ],
+  "custom": {
+    "whyTitle": "Pourquoi Seedance 2.0 Fast compte",
+    "heroTrustLine": "Utilisez Fast pour décider vite, puis poussez les finals dans Seedance 2.0 standard",
+    "heroHighlights": [
+      "Boucle draft plus rapide||Idéal pour shot planning, timing brut et tests motion initiaux",
+      "Même famille visuelle Seedance||Pratique si vous voulez des drafts proches du look du tier premium",
+      "Prêt pour la comparaison||Se compare naturellement à Veo 3.1 Fast et LTX 2.3 Fast",
+      "Pensé pour l'escalade||Les drafts gagnants montent ensuite dans Seedance 2.0 standard"
+    ],
+    "specTitle": "Specs et rôle",
+    "specNote": "Traitez Fast comme le tier draft-speed de la famille Seedance 2.",
+    "specSections": [
+      {
+        "title": "Ce que Fast fait bien",
+        "intro": "Le tier Fast aide à valider plus vite.",
+        "items": [
+          "Shot planning avant rendus polis",
+          "Tests A/B de motion rapides",
+          "Itération créative avec feedback loops courtes",
+          "Validation du timing avec références"
+        ]
+      },
+      {
+        "title": "Où il s'insère",
+        "intro": "Utilisez Fast d'abord, puis escaladez les gagnants.",
+        "items": [
+          "Fast draft -> compare -> final standard Seedance 2.0",
+          "Très utile face à Veo 3.1 Fast et LTX 2.3 Fast",
+          "Meilleur quand un prompt teste une seule décision",
+          "Le workflow audio reste dans la logique Seedance"
+        ]
+      }
+    ],
+    "promptingTitle": "Prompt Lab — Seedance 2.0 Fast",
+    "promptingGuideLabel": "Ouvrir la page Seedance 2.0 standard",
+    "promptingGuideUrl": "/models/seedance-2-0",
+    "promptingIntro": "Le tier Fast récompense la discipline. Un plan, un beat, une raison de comparer.",
+    "promptingGlobalPrinciples": [
+      "Tester une variable à la fois",
+      "Utiliser un seul beat par rendu",
+      "Garder un mouvement caméra court",
+      "Escalader les drafts gagnants dans le tier standard"
+    ],
+    "promptingEngineWhy": [
+      "Fast est meilleur quand l'objectif est une décision, pas un film final.",
+      "Les prompts courts rendent les comparaisons plus lisibles.",
+      "Les références aident à garder la continuité pendant les tests de motion.",
+      "Comparer Fast à d'autres fast tiers fait gagner du temps avant les rendus premium."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = une décision, un rendu.",
+      "structured": "Structured = rendre le test lisible.",
+      "pro": "Pro = préparer le handoff vers Seedance 2.0 standard.",
+      "storyboard": "Storyboard = beats courts pour planifier."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt draft rapide",
+        "description": "Quand vous voulez une réponse rapide.",
+        "copy": "[Sujet] dans [décor]. Un beat principal. Caméra: [mouvement court]. Son: [un cue]. Objectif: valider timing / cadrage / motion."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt de comparaison structuré",
+        "description": "Quand le rendu sera comparé à un autre fast tier.",
+        "copy": "Objectif du plan:\nAncrages de continuité:\nBeat principal:\nMouvement caméra:\nCue audio:\nCe qui doit rester identique entre versions:"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt d'escalade",
+        "description": "À utiliser quand Fast a gagné et qu'on prépare le brief standard.",
+        "copy": "Résumé du draft gagnant:\nCe qu'on garde:\nCe qu'on affine dans Seedance 2.0 standard:\nPolish attendu:\nNotes audio:\nFormat final:"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard",
+        "description": "Utile pour les beats bruts.",
+        "copy": "Plan 1 (0-3 s):\nPlan 2 (3-6 s):\nPlan 3 (6-9 s):\nGarder sujet / tenue / décor cohérents.\nN'utiliser des transitions que si nécessaire."
+      }
+    ],
+    "tipsTitle": "Forces et limites",
+    "strengths": [
+      "Itération draft rapide",
+      "Bonne base pour comparaisons côte à côte",
+      "Utile pour shot planning et checks de pacing",
+      "Marche bien comme marchepied vers Seedance 2.0 standard"
+    ],
+    "boundaries": [
+      "Ne jugez pas le polish final à partir de Fast seul.",
+      "Les prompts complexes sont plus difficiles à comparer.",
+      "Traitez-le comme un tier draft, pas comme un remplaçant du standard.",
+      "Vérifiez le prix live et les détails de route dans Generate avant chaque run."
+    ],
+    "galleryTitle": "Exemples Seedance 2.0 Fast",
+    "galleryIntro": "Revue des drafts et prompts de comparaison qui rendent Seedance 2.0 Fast utile dans un vrai workflow de production.",
+    "galleryAllCta": "Voir tous les exemples Seedance ->",
+    "recreateLabel": "Recréer ce draft ->",
+    "demoTitle": "Prompt de démonstration — Seedance 2.0 Fast",
+    "demoPromptLabel": "Prompt",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Passez les drafts gagnants en Seedance 2.0 standard quand vous voulez le rendu flagship plus poli.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Voir Seedance 2.0 standard ->"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1 Fast",
+        "description": "Ouvrez Veo 3.1 Fast quand vous voulez un autre fast tier audio-native pour les comparatifs orientés ads.",
+        "modelSlug": "veo-3-1-fast",
+        "ctaLabel": "Comparer Seedance 2.0 Fast vs Veo 3.1 Fast ->"
+      },
+      {
+        "brand": "lightricks",
+        "title": "LTX 2.3 Fast",
+        "description": "Utilisez LTX 2.3 Fast quand la boucle draft sert surtout à contrôler rythme storyboard et structure.",
+        "modelSlug": "ltx-2-3-fast",
+        "ctaLabel": "Comparer Seedance 2.0 Fast vs LTX 2.3 Fast ->"
+      }
+    ]
+  }
+}

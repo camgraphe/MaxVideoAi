@@ -665,6 +665,8 @@ function clampDescription(value: string, maxLength = 110) {
 }
 
 const USE_CASE_MAP: Record<string, string> = {
+  'seedance-2-0': 'premium multi-shot video with native audio and stronger motion realism',
+  'seedance-2-0-fast': 'fast Seedance drafts for shot planning and creative iteration',
   'sora-2': 'cinematic scenes and character continuity',
   'sora-2-pro': 'studio-grade cinematic shots and hero scenes',
   'veo-3-1': 'ad-ready shots with reference, first/last and extend control',
@@ -968,24 +970,25 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const catalogBySlug = getCatalogBySlug();
 
   const priorityOrder = [
+    'seedance-2-0',
+    'seedance-2-0-fast',
+    'kling-3-pro',
+    'kling-3-standard',
+    'veo-3-1',
+    'veo-3-1-fast',
+    'ltx-2-3-pro',
+    'ltx-2-3-fast',
     'sora-2',
     'sora-2-pro',
-    'veo-3-1',
-    'seedance-2-0',
     'seedance-1-5-pro',
-    'veo-3-1-fast',
     'veo-3-1-lite',
     'luma-ray-2',
     'luma-ray-2-flash',
     'pika-text-to-video',
     'wan-2-6',
     'wan-2-5',
-    'kling-3-standard',
-    'kling-3-pro',
     'kling-2-6-pro',
     'kling-2-5-turbo',
-    'ltx-2-3-fast',
-    'ltx-2-3-pro',
     'ltx-2-fast',
     'ltx-2',
     'minimax-hailuo-02-text',
@@ -1001,7 +1004,10 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const remainingEngines = listFalEngines()
     .filter((entry) => !priorityOrder.includes(entry.modelSlug))
     .sort((a, b) => getEngineDisplayName(a).localeCompare(getEngineDisplayName(b)));
-  const engines = [...priorityEngines, ...remainingEngines].filter((entry) => isModelInScope(entry, scope));
+  const publishedModelEntries = [...priorityEngines, ...remainingEngines].filter(
+    (entry) => entry.surfaces.modelPage.indexable || entry.surfaces.modelPage.includeInSitemap
+  );
+  const engines = publishedModelEntries.filter((entry) => isModelInScope(entry, scope));
 
   const localizedMap = new Map<string, Awaited<ReturnType<typeof getEngineLocalized>>>(
     await Promise.all(
@@ -1189,12 +1195,12 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const showVideoCompare = scope === 'video';
   const quickCompareMicroLabels = listingCopy.quickCompare?.shortcuts ?? [];
   const quickCompareShortcuts = [
-    { a: 'sora-2', b: 'veo-3-1', micro: quickCompareMicroLabels[0] ?? 'cinematic vs ad-ready' },
-    { a: 'sora-2', b: 'kling-3-standard', micro: quickCompareMicroLabels[1] ?? 'cinematic vs multi-shot' },
-    { a: 'veo-3-1', b: 'kling-3-standard', micro: quickCompareMicroLabels[2] ?? 'ads vs story' },
-    { a: 'sora-2', b: 'wan-2-6', micro: quickCompareMicroLabels[3] ?? 'premium vs fast' },
-    { a: 'veo-3-1', b: 'wan-2-6', micro: quickCompareMicroLabels[4] ?? 'ads vs budget' },
-    { a: 'kling-3-standard', b: 'wan-2-6', micro: quickCompareMicroLabels[5] ?? 'control vs speed' },
+    { a: 'seedance-2-0', b: 'veo-3-1', micro: quickCompareMicroLabels[0] ?? 'native audio vs ad-ready polish' },
+    { a: 'seedance-2-0', b: 'kling-3-pro', micro: quickCompareMicroLabels[1] ?? 'multi-shot realism vs scene control' },
+    { a: 'seedance-2-0', b: 'sora-2', micro: quickCompareMicroLabels[2] ?? 'new flagship vs outgoing cinematic tier' },
+    { a: 'seedance-2-0-fast', b: 'veo-3-1-fast', micro: quickCompareMicroLabels[3] ?? 'fast drafts vs fast audio polish' },
+    { a: 'seedance-2-0-fast', b: 'ltx-2-3-fast', micro: quickCompareMicroLabels[4] ?? 'rapid storyboard passes' },
+    { a: 'kling-3-pro', b: 'veo-3-1', micro: quickCompareMicroLabels[5] ?? 'scene control vs ad-ready audio' },
   ].filter((shortcut) => cardBySlug.has(shortcut.a) && cardBySlug.has(shortcut.b));
 
   const outcomeCopy = listingCopy.chooseOutcome?.tiles ?? [];
@@ -1204,13 +1210,13 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
           {
             title: outcomeCopy[0]?.title ?? 'Text-to-video models',
             description: outcomeCopy[0]?.description ?? 'Shortlist models that support prompt-only generation.',
-            engines: ['sora-2', 'sora-2-pro', 'veo-3-1', 'kling-3-standard', 'kling-3-pro', 'seedance-1-5-pro'],
+            engines: ['seedance-2-0', 'seedance-2-0-fast', 'kling-3-pro', 'veo-3-1', 'ltx-2-3-pro', 'sora-2'],
             icon: Film,
           },
           {
             title: outcomeCopy[1]?.title ?? 'Image-to-video models',
             description: outcomeCopy[1]?.description ?? 'Check which models support references and image-led workflows.',
-            engines: ['veo-3-1', 'veo-3-1-fast', 'pika-text-to-video', 'wan-2-6', 'ltx-2-3-pro'],
+            engines: ['seedance-2-0', 'seedance-2-0-fast', 'veo-3-1', 'veo-3-1-fast', 'wan-2-6', 'ltx-2-3-pro'],
             icon: Clapperboard,
           },
           {
@@ -1222,19 +1228,19 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
           {
             title: outcomeCopy[3]?.title ?? 'Limits and formats',
             description: outcomeCopy[3]?.description ?? 'Duration, max resolution, audio, and format constraints by model.',
-            engines: ['sora-2', 'veo-3-1', 'kling-3-standard', 'ltx-2-3-pro', 'minimax-hailuo-02-text'],
+            engines: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'ltx-2-3-pro', 'sora-2'],
             icon: Sparkles,
           },
           {
             title: outcomeCopy[4]?.title ?? 'Pricing per model and mode',
             description: outcomeCopy[4]?.description ?? 'Use per-second pricing and mode support to estimate cost accurately.',
-            engines: ['veo-3-1', 'sora-2', 'wan-2-6', 'pika-text-to-video', 'seedance-1-5-pro'],
+            engines: ['seedance-2-0', 'seedance-2-0-fast', 'veo-3-1', 'ltx-2-3-fast', 'wan-2-6'],
             icon: Wand2,
           },
           {
             title: outcomeCopy[5]?.title ?? 'Examples and prompt references',
             description: outcomeCopy[5]?.description ?? 'Open real outputs per model before selecting your production preset.',
-            engines: ['sora-2', 'veo-3-1', 'wan-2-6', 'kling-3-standard', 'pika-text-to-video'],
+            engines: ['seedance-2-0', 'seedance-2-0-fast', 'kling-3-pro', 'veo-3-1', 'ltx-2-3-pro'],
             icon: Copy,
           },
         ]
@@ -1316,7 +1322,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Pasa a motores de video para renderizar, comparar y piloter tus flujos de movimiento.'
                     : 'Jump to the video hub for rendering, compare pages, and motion workflows.',
-              engines: ['sora-2', 'veo-3-1', 'kling-3-standard'],
+              engines: ['seedance-2-0', 'kling-3-pro', 'veo-3-1'],
               icon: Film,
             },
             {
@@ -1338,7 +1344,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Controla duración, resolución, audio, referencias y formatos de salida por modelo.'
                     : 'Check duration, resolution, audio, references, and output format constraints by model.',
-              engines: ['sora-2', 'veo-3-1', 'nano-banana-2'],
+              engines: ['seedance-2-0', 'veo-3-1', 'nano-banana-2'],
               icon: Sparkles,
             },
             {
@@ -1349,7 +1355,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Separa motores cobrados por segundo de modelos cobrados por imagen.'
                     : 'Separate per-second video engines from per-image still models.',
-              engines: ['sora-2', 'wan-2-6', 'nano-banana-2'],
+              engines: ['seedance-2-0', 'ltx-2-3-fast', 'nano-banana-2'],
               icon: Wand2,
             },
             {
@@ -1360,7 +1366,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Abre las fichas de modelo para prompts, limitaciones y consejos operativos.'
                     : 'Open model profiles for prompts, limitations, and operational guidance.',
-              engines: ['sora-2', 'veo-3-1', 'nano-banana-2'],
+              engines: ['seedance-2-0', 'kling-3-pro', 'nano-banana-2'],
               icon: Copy,
             },
           ];

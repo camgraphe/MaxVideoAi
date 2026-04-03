@@ -202,7 +202,7 @@
       "Check the live price and use Fast for broad iteration before upgrading winners."
     ],
     "galleryTitle": "LTX 2.3 Fast examples",
-    "galleryIntro": "Local placeholders are used for now on this dev branch. Replace them with final approved LTX 2.3 Fast renders before production launch.",
+    "galleryIntro": "Representative LTX 2.3 Fast examples and placeholders used on this branch for layout and prompt coverage.",
     "galleryAllCta": "View all LTX 2.3 Fast examples ->",
     "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",

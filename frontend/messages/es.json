@@ -231,11 +231,16 @@
       "engines": {
         "title": "Motores de video IA",
         "items": {
+          "ltx23fast": "LTX 2.3 Fast",
+          "seedance2_0": "Seedance 2.0",
           "sora2": "Sora 2",
+          "sora2pro": "Sora 2 Pro",
           "kling3pro": "Kling 3 Pro",
           "wan2_6": "Wan 2.6",
           "veo3_1": "Veo 3.1",
+          "veo3_1lite": "Veo 3.1 Lite",
           "ltx23pro": "LTX 2.3 Pro",
+          "pika22": "Pika 2.2",
           "ltx2": "LTX-2",
           "seedance1_5pro": "Seedance 1.5 Pro"
         }
@@ -243,6 +248,16 @@
       "comparisons": {
         "title": "Comparaciones populares",
         "items": {
+          "seedance1_5pro_vs_seedance2_0": "Seedance 1.5 Pro vs Seedance 2.0",
+          "ltx2_vs_ltx23fast": "LTX 2 vs LTX 2.3 Fast",
+          "ltx23fast_vs_veo3_1": "LTX 2.3 Fast vs Veo 3.1",
+          "kling3pro_vs_ltx23pro": "Kling 3 Pro vs LTX 2.3 Pro",
+          "seedance2_0_vs_veo3_1": "Seedance 2.0 vs Veo 3.1",
+          "seedance2_0_vs_kling3pro": "Seedance 2.0 vs Kling 3 Pro",
+          "seedance2_0_vs_sora2": "Seedance 2.0 vs Sora 2",
+          "seedance2_0_fast_vs_veo3_1_fast": "Seedance 2.0 Fast vs Veo 3.1 Fast",
+          "seedance2_0_fast_vs_ltx23fast": "Seedance 2.0 Fast vs LTX 2.3 Fast",
+          "kling3pro_vs_veo3_1": "Kling 3 Pro vs Veo 3.1",
           "kling3pro_vs_sora2": "Kling 3 Pro vs Sora 2",
           "sora2_vs_veo3_1": "Sora 2 vs Veo 3.1",
           "kling3pro_vs_wan2_6": "Kling 3 Pro vs Wan 2.6",
@@ -269,9 +284,9 @@
       "product": {
         "title": "Producto",
         "items": {
-          "tools": "Herramientas",
+          "angle": "Cambiar ángulo de cámara",
+          "characterBuilder": "Character Builder",
           "pricing": "Precios",
-          "docs": "Documentación",
           "models": "Todos los modelos"
         }
       },
@@ -624,7 +639,7 @@
       "compare": {
         "title": "Compara modelos de video con IA antes de generar",
         "body": "MaxVideoAI te permite probar varios modelos en un solo lugar. Cada motor tiene fortalezas distintas (velocidad, fidelidad al prompt, movimiento, realismo y estilo). Compara resultados lado a lado, elige el mejor modelo para cada toma y mantén el costo visible antes de generar.",
-        "worksWith": "Compatible con Sora 2, Veo 3.1, Kling 3, LTX-2, Wan 2.6, Seedance 1.5, Pika 2.2, Hailuo 02... y más.",
+        "worksWith": "Compatible con Seedance 2.0, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2, Hailuo 02... y más.",
         "popularLinks": [
           {
             "label": "Comparativa Sora 2 vs Veo 3.1",

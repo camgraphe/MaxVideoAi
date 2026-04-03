@@ -17,6 +17,7 @@ import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ExamplesHeroVideo } from '@/components/examples/ExamplesHeroVideo.client';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { orderExamplesHubFamilyIds } from '@/lib/examples/familyOrder';
 import {
   getExampleModelLanding,
   getHubExamplesFaq,
@@ -102,7 +103,7 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
-const PREFERRED_ENGINE_ORDER = getExampleFamilyIds();
+const PREFERRED_ENGINE_ORDER = orderExamplesHubFamilyIds(getExampleFamilyIds());
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 function getEngineAccentOutlineStyle(brandId?: string) {

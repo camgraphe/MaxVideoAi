@@ -107,6 +107,86 @@ interface RawFalEngineEntry extends Omit<FalEngineEntry, 'surfaces'> {
   surfaces?: PartialModelPublicationSurfaces;
 }
 
+// Keep Seedance 2 launch routing and exposure in one place so go-live is a
+// single confirmation pass when Fal publishes the final stable IDs.
+const SEEDANCE_2_ENDPOINTS = {
+  standard: {
+    t2v: 'bytedance/seedance-2.0/text-to-video',
+    i2v: 'bytedance/seedance-2.0/image-to-video',
+    ref2v: 'bytedance/seedance-2.0/reference-to-video',
+  },
+  fast: {
+    t2v: 'bytedance/seedance-2.0/fast/text-to-video',
+    i2v: 'bytedance/seedance-2.0/fast/image-to-video',
+    ref2v: 'bytedance/seedance-2.0/fast/reference-to-video',
+  },
+} as const;
+
+const SEEDANCE_2_LAUNCH_CONFIG = {
+  isLive: true,
+  availability: 'available' as EngineAvailability,
+  modelPage: {
+    indexable: true,
+    includeInSitemap: true,
+  },
+  examples: {
+    includeInFamilyResolver: true,
+    includeInFamilyCopy: true,
+  },
+  pricing: {
+    includeInEstimator: false,
+    featuredScenario: 'seedance-2-family',
+  },
+  app: {
+    variantGroup: 'seedance-2-0',
+    standardRank: -2,
+    fastRank: -1,
+  },
+  standard: {
+    suggestOpponents: ['veo-3-1', 'kling-3-pro', 'sora-2'],
+    publishedPairs: ['veo-3-1', 'kling-3-pro', 'sora-2'],
+  },
+  fast: {
+    suggestOpponents: ['veo-3-1-fast', 'ltx-2-3-fast', 'sora-2'],
+    publishedPairs: ['veo-3-1-fast', 'ltx-2-3-fast'],
+  },
+} as const;
+
+function buildSeedance2Surfaces(
+  variant: 'standard' | 'fast',
+  variantLabel: 'Standard' | 'Fast'
+): PartialModelPublicationSurfaces {
+  const variantConfig = variant === 'standard' ? SEEDANCE_2_LAUNCH_CONFIG.standard : SEEDANCE_2_LAUNCH_CONFIG.fast;
+  const discoveryRank =
+    variant === 'standard' ? SEEDANCE_2_LAUNCH_CONFIG.app.standardRank : SEEDANCE_2_LAUNCH_CONFIG.app.fastRank;
+
+  return {
+    modelPage: {
+      indexable: SEEDANCE_2_LAUNCH_CONFIG.modelPage.indexable,
+      includeInSitemap: SEEDANCE_2_LAUNCH_CONFIG.modelPage.includeInSitemap,
+    },
+    examples: {
+      includeInFamilyResolver: SEEDANCE_2_LAUNCH_CONFIG.examples.includeInFamilyResolver,
+      includeInFamilyCopy: SEEDANCE_2_LAUNCH_CONFIG.examples.includeInFamilyCopy,
+    },
+    compare: {
+      suggestOpponents: [...variantConfig.suggestOpponents],
+      publishedPairs: [...variantConfig.publishedPairs],
+      includeInHub: SEEDANCE_2_LAUNCH_CONFIG.isLive,
+    },
+    app: {
+      enabled: SEEDANCE_2_LAUNCH_CONFIG.isLive,
+      discoveryRank,
+      variantGroup: SEEDANCE_2_LAUNCH_CONFIG.app.variantGroup,
+      variantLabel,
+    },
+    pricing: {
+      includeInEstimator: SEEDANCE_2_LAUNCH_CONFIG.pricing.includeInEstimator,
+      featuredScenario: SEEDANCE_2_LAUNCH_CONFIG.pricing.featuredScenario,
+    },
+  };
+}
+
 const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
   id: 'pika-text-to-video',
   label: 'Pika 2.2 Text & Image to Video',
@@ -2067,9 +2147,104 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
   ttlSec: 600,
   providerMeta: {
     provider: 'bytedance',
-    modelSlug: 'fal-ai/seedance-2.0/text-to-video',
+    modelSlug: SEEDANCE_2_ENDPOINTS.standard.t2v,
   },
-  availability: 'waitlist',
+  availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
+  brandId: 'bytedance',
+};
+
+const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
+  id: 'seedance-2-0-fast',
+  label: 'Seedance 2.0 Fast',
+  provider: 'ByteDance',
+  version: '2.0',
+  variant: 'Fast',
+  status: 'early_access',
+  latencyTier: 'fast',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2v', 'i2v'],
+  maxDurationSec: 15,
+  resolutions: ['720p', '1080p'],
+  aspectRatios: ['16:9', '9:16', '1:1'],
+  fps: [24],
+  audio: true,
+  upscale4k: false,
+  extend: false,
+  motionControls: true,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 25,
+    videoMaxMB: 50,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Reference image',
+        modes: ['i2v'],
+        requiredInModes: ['i2v'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+    ],
+    optional: [
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration (seconds)',
+        values: ['5', '10', '15'],
+        default: '10',
+        min: 5,
+        max: 15,
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['16:9', '9:16', '1:1'],
+        default: '16:9',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['720p', '1080p'],
+        default: '720p',
+      },
+      {
+        id: 'generate_audio',
+        type: 'enum',
+        label: 'Generate audio',
+        values: ['true', 'false'],
+        default: 'true',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+      maxImageSizeMB: 25,
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    currency: 'USD',
+    notes: 'Prelaunch route only. Pricing is confirmed at launch.',
+  },
+  updatedAt: '2026-04-03T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'bytedance',
+    modelSlug: SEEDANCE_2_ENDPOINTS.fast.t2v,
+  },
+  availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
   brandId: 'bytedance',
 };
 
@@ -4801,6 +4976,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     family: 'seedance',
     versionLabel: 'v1.5 Pro',
     availability: 'available',
+    isLegacy: true,
     logoPolicy: 'textOnly',
     engine: SEEDANCE_1_5_PRO_ENGINE,
     modes: [
@@ -4874,6 +5050,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       resolution: '720p',
       label: 'Audio on',
     },
+    surfaces: {
+      compare: {
+        includeInHub: false,
+      },
+    },
     promptExample:
       'Locked camera shot of a neon alley, subtle rain, soft ambient audio, slow motion detail.',
   },
@@ -4886,26 +5067,26 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     brandId: 'bytedance',
     family: 'seedance',
     versionLabel: '2.0',
-    availability: 'waitlist',
+    availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
     logoPolicy: 'textOnly',
-    billingNote: 'Launch date TBA. Pricing will be confirmed at launch.',
+    billingNote: 'Check the active Fal route and live pricing in Generate before production runs.',
     engine: SEEDANCE_2_0_ENGINE,
     modes: [
       {
         mode: 't2v',
-        falModelId: 'fal-ai/seedance-2.0/text-to-video',
+        falModelId: SEEDANCE_2_ENDPOINTS.standard.t2v,
         ui: {
           modes: ['t2v'],
           duration: { options: [5, 10, 15], default: 10 },
           resolution: ['720p', '1080p'],
           aspectRatio: ['16:9', '9:16', '1:1'],
           audioToggle: true,
-          notes: 'Coming soon. Native audio with up to 15s multi-shot generation.',
+          notes: 'Native audio with up to 15s multi-shot generation.',
         },
       },
       {
         mode: 'i2v',
-        falModelId: 'fal-ai/seedance-2.0/image-to-video',
+        falModelId: SEEDANCE_2_ENDPOINTS.standard.i2v,
         ui: {
           modes: ['i2v'],
           duration: { options: [5, 10, 15], default: 10 },
@@ -4914,20 +5095,20 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           audioToggle: true,
-          notes: 'Supports multimodal references at launch (images, video clips, audio clips).',
+          notes: 'Supports multimodal references with images, video clips, and audio clips.',
         },
       },
     ],
-    defaultFalModelId: 'fal-ai/seedance-2.0/text-to-video',
+    defaultFalModelId: SEEDANCE_2_ENDPOINTS.standard.t2v,
     seo: {
-      title: 'Seedance 2.0 — AI Video with Native Audio (Coming Soon)',
+      title: 'Seedance 2.0 — ByteDance AI Video with Native Audio',
       description:
-        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control. Official launch date TBA.',
+        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, and director-level camera control.',
       canonicalPath: '/models/seedance-2-0',
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 is coming soon with multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
+      'Seedance 2.0 supports multimodal text, image, audio, and video references, native audio generation, and up to 15s multi-shot outputs.',
     media: {
       videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
       imagePath: '/hero/seedance-2-0.jpg',
@@ -4936,7 +5117,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     demoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
     prompts: [
       {
-        title: 'Action chase prelaunch test',
+        title: 'Action chase test',
         prompt:
           'Cinematic rooftop chase at dusk, three shots with natural cuts, handheld tracking then crane reveal, synchronized footsteps and city ambience, 15 seconds total.',
         mode: 't2v',
@@ -4950,28 +5131,116 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     faqs: [
       {
-        question: 'When is Seedance 2.0 available?',
+        question: 'What is Seedance 2.0 best for?',
         answer:
-          'Seedance 2.0 is coming soon with an official date TBA. Until then it is visible in pre-launch mode.',
+          'Use Seedance 2.0 for cinematic multi-shot timelines, stronger motion realism, and native audio-led outputs.',
       },
       {
-        question: 'Can I run Seedance 2.0 before launch?',
+        question: 'Which Seedance route family should I use first?',
         answer:
-          'No. Runtime generation is locked before launch even though the model page is indexable.',
+          'Start with text-to-video for prompt-led ideation, then switch to image-to-video when you need tighter continuity from references.',
       },
     ],
     pricingHint: {
       currency: 'USD',
       amountCents: 0,
-      label: 'Pricing confirmed at launch',
+      label: 'Check live pricing in Generate',
     },
-    surfaces: {
-      compare: {
-        suggestOpponents: ['sora-2', 'pika-text-to-video', 'seedance-1-5-pro'],
-      },
-    },
+    surfaces: buildSeedance2Surfaces('standard', 'Standard'),
     promptExample:
       'Three-shot cinematic sequence, 15 seconds total, director-style camera language, realistic physics, synchronized dialogue and ambience, 16:9.',
+  },
+  {
+    id: 'seedance-2-0-fast',
+    modelSlug: 'seedance-2-0-fast',
+    marketingName: 'Seedance 2.0 Fast',
+    cardTitle: 'Seedance 2.0 Fast',
+    provider: 'ByteDance',
+    brandId: 'bytedance',
+    family: 'seedance',
+    versionLabel: '2.0 Fast',
+    availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
+    logoPolicy: 'textOnly',
+    billingNote: 'Check the active Fal route and live pricing in Generate before production runs.',
+    engine: SEEDANCE_2_0_FAST_ENGINE,
+    modes: [
+      {
+        mode: 't2v',
+        falModelId: SEEDANCE_2_ENDPOINTS.fast.t2v,
+        ui: {
+          modes: ['t2v'],
+          duration: { options: [5, 10, 15], default: 10 },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          audioToggle: true,
+          notes: 'Draft-speed Seedance 2 route for fast iteration and shot planning.',
+        },
+      },
+      {
+        mode: 'i2v',
+        falModelId: SEEDANCE_2_ENDPOINTS.fast.i2v,
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [5, 10, 15], default: 10 },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 25,
+          audioToggle: true,
+          notes: 'Fast draft tier on the Seedance 2 route family with the same image-first workflow.',
+        },
+      },
+    ],
+    defaultFalModelId: SEEDANCE_2_ENDPOINTS.fast.t2v,
+    seo: {
+      title: 'Seedance 2.0 Fast — ByteDance Draft-Speed Video Model',
+      description:
+        'Seedance 2.0 Fast is the draft-speed Seedance 2 tier on MaxVideoAI for faster iteration, shorter feedback loops, and seeded internal comparisons.',
+      canonicalPath: '/models/seedance-2-0-fast',
+    },
+    type: 'textImage',
+    seoText:
+      'Seedance 2.0 Fast is the draft-speed Seedance 2.0 variant for quicker iteration, short concept passes, and faster comparison rounds.',
+    media: {
+      videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+      imagePath: '/hero/seedance-2-0.jpg',
+      altText: 'Seedance 2.0 Fast demo frame',
+    },
+    demoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+    prompts: [
+      {
+        title: 'Fast draft concept',
+        prompt:
+          'Draft-speed cinematic social ad, one hero action beat, fast camera move, native ambience, designed for quick iteration rather than final polish.',
+        mode: 't2v',
+      },
+      {
+        title: 'Fast still-to-motion test',
+        prompt:
+          'Animate one approved still into a short motion draft with clean subject continuity, restrained camera motion, and simple synced ambience.',
+        mode: 'i2v',
+      },
+    ],
+    faqs: [
+      {
+        question: 'When should I use Seedance 2.0 Fast?',
+        answer:
+          'Use Seedance 2.0 Fast for faster ideation, comparison runs, and short draft passes before you commit to the standard Seedance 2.0 tier.',
+      },
+      {
+        question: 'What should I compare Seedance 2.0 Fast against first?',
+        answer:
+          'Start with Veo 3.1 Fast and LTX 2.3 Fast to judge draft speed, motion behavior, and how closely the output matches the Seedance look you want.',
+      },
+    ],
+    pricingHint: {
+      currency: 'USD',
+      amountCents: 0,
+      label: 'Check live pricing in Generate',
+    },
+    surfaces: buildSeedance2Surfaces('fast', 'Fast'),
+    promptExample:
+      'Fast draft pass for a three-beat product story, simple camera language, audio on, built for iteration before pushing finals through standard Seedance 2.0.',
   },
   {
     id: 'wan-2-5',
@@ -6003,6 +6272,11 @@ const LEGACY_MODEL_SLUG_ALIASES: Record<string, string> = {
   veo3lite: 'veo-3-1-lite',
   'veo3-lite': 'veo-3-1-lite',
   'veo3.1-lite': 'veo-3-1-lite',
+  'seedance-2-fast': 'seedance-2-0-fast',
+  'seedance-2.0-fast': 'seedance-2-0-fast',
+  'seedance-v2-fast': 'seedance-2-0-fast',
+  'seedance-v2.0-fast': 'seedance-2-0-fast',
+  'seedance-fast': 'seedance-2-0-fast',
   'ltx-2-3': 'ltx-2-3-pro',
   'pika-2-2': 'pika-text-to-video',
   'pika-image-to-video': 'pika-text-to-video',

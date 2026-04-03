@@ -3,28 +3,36 @@
   "versionLabel": "2.0",
   "seo": {
     "title": "Seedance 2.0 (ByteDance) — AI Video with Native Audio & Multi-Shot Control | MaxVideoAI",
-    "description": "Explore ByteDance Seedance 2.0 before launch: native audio generation, 1080p up to 15s, multi-shot outputs, cinematic camera language, and structured prompt templates. Official launch date TBA."
+    "description": "Explore ByteDance Seedance 2.0 on MaxVideoAI: native audio generation, 1080p up to 15s, multi-shot outputs, cinematic camera language, and structured prompt templates."
   },
-  "overview": "Seedance 2.0 is ByteDance's next-gen AI video model focused on cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. This page is a pre-launch overview: specs, best use cases, and prompt templates so you can plan workflows before release.",
-  "pricingNotes": "Pre-launch: pricing and commercial terms are confirmed at launch.",
+  "overview": "Seedance 2.0 is ByteDance's flagship AI video model for cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. Use this page to choose the right workflow, prompt structure, and comparison path before you move into production.",
+  "pricingNotes": "Confirm the current live rate inside Generate before each production run.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "Seedance 2.0 is ByteDance's next-gen AI video model focused on cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. This page is a pre-launch overview: specs, best use cases, and prompt templates so you can plan workflows before release.",
-    "badge": "Coming soon · Official date TBA",
+    "intro": "Use Seedance 2.0 when you want premium multi-shot video, stronger motion realism, and native audio in the same render. This page is tuned for launch: workflows, prompt structures, and the best internal routes to compare it against Veo, Kling, and the outgoing Sora tier.",
+    "badge": "1080p · Up to 15s · Native audio · Text / image / multimodal references",
     "ctaPrimary": {
-      "label": "Join waitlist / Get notified",
-      "href": "/ai-video-engines"
+      "label": "Generate with Seedance 2.0",
+      "href": "/app?engine=seedance-2-0"
     },
     "secondaryLinks": [
       {
-        "label": "See Seedance 1.5 Pro",
-        "href": "/models/seedance-1-5-pro"
+        "label": "See Seedance 2.0 Fast",
+        "href": "/models/seedance-2-0-fast"
       },
       {
-        "label": "Read official launch details",
-        "href": "https://seed.bytedance.com/en/blog/official-launch-of-seedance-2-0"
+        "label": "Compare Seedance 2.0 vs Veo 3.1",
+        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
+      },
+      {
+        "label": "Review pricing and workflows",
+        "href": "/pricing"
       }
     ]
+  },
+  "compareLink": {
+    "label": "Compare Seedance 2.0 vs Kling 3 Pro ->",
+    "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-0"
   },
   "bestUseCases": {
     "title": "Use cases",
@@ -58,8 +66,8 @@
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
     {
-      "label": "Launch status",
-      "body": "Coming soon. Official launch date TBA. Pre-launch page is indexable; runtime generation remains locked before launch."
+      "label": "Role",
+      "body": "ByteDance's flagship Seedance tier for cinematic motion, multi-shot continuity, and native audio."
     },
     {
       "label": "Inputs",
@@ -83,7 +91,7 @@
     },
     {
       "label": "Notes",
-      "body": "ByteDance describes extension/editing capabilities; final endpoint exposure depends on launch endpoints."
+      "body": "ByteDance describes extension and editing capabilities alongside the main generation workflows."
     }
   ],
   "promptStructure": {
@@ -100,12 +108,12 @@
   },
   "promptingTip": "Tip: Seedance 2.0 rewards shot timing, camera verbs, and audio cues. Keep dialogue short, pin SFX to visible actions, and use references to lock continuity.",
   "tips": {
-    "title": "Limitations and pre-launch notes",
+    "title": "Production notes",
     "items": [
-      "Model page is live and indexable before launch; generation is locked until launch.",
-      "Commercial usage details are confirmed at launch.",
-      "Advanced editing and extension capabilities depend on launch endpoint exposure.",
-      "Keep prompts structured for multi-shot coherence in <=15s outputs."
+      "Keep prompts structured shot-by-shot when you want the strongest multi-shot continuity.",
+      "Use multimodal references to lock wardrobe, props, pacing, and ambience across beats.",
+      "Move to Seedance 2.0 Fast when you need cheaper draft passes before final renders.",
+      "Confirm the active route and live price inside Generate before production runs."
     ]
   },
   "prompts": [
@@ -145,25 +153,25 @@
       "a": "Yes. Native audio is highlighted in official messaging, with audio generated alongside video for better sync."
     },
     {
-      "q": "When will it be available on MaxVideoAI?",
-      "a": "This page is pre-launch. Availability and pricing will be confirmed at launch (official date TBA)."
+      "q": "How should I check availability and pricing?",
+      "a": "Open Generate to confirm the active route, supported workflows, and the current live rate for your run."
     },
     {
-      "q": "Can I generate before launch?",
-      "a": "No. The model page can be indexed for discovery, but runtime remains locked until release."
+      "q": "Should I start with standard or Fast?",
+      "a": "Start with standard Seedance 2.0 when you want the flagship render quality, and switch to Seedance 2.0 Fast for quicker draft passes and comparison rounds."
     }
   ],
   "custom": {
     "whyTitle": "What makes Seedance 2.0 different",
-    "heroTrustLine": "Pay-as-you-go on MaxVideoAI · Price shown before you generate (at launch)",
+    "heroTrustLine": "Pay-as-you-go on MaxVideoAI · Price shown before you generate",
     "heroHighlights": [
       "Director-level camera language||Optimized for explicit shot direction: camera movement, framing, and transition verbs",
       "Multi-shot continuity in a single render||Designed for short timelines where multiple beats can be stitched into one coherent output",
       "Native audio generation (visual and sound together)||Official materials highlight audio generated alongside video for stronger sync",
       "Multimodal references at scale||Mix text with image, video, and audio references to lock style, pacing, and continuity"
     ],
-    "specTitle": "Specs (pre-launch)",
-    "specNote": "Only officially sourced claims are listed here. Availability and final pricing are confirmed at launch.",
+    "specTitle": "Specs",
+    "specNote": "Only officially sourced claims are listed here, with pricing and workflow details checked live inside Generate.",
     "specSections": [
       {
         "title": "Multimodal input stack",
@@ -255,16 +263,39 @@
       "Physics looks off -> simplify simultaneous actions per beat and reduce fast interactions."
     ],
     "boundaries": [
-      "Pre-launch visibility does not imply runtime access.",
-      "Launch-day endpoint exposure determines available advanced operations.",
-      "Commercial details and pricing finalize at launch.",
-      "Use only officially documented capabilities in production planning."
+      "Complex action stacks still benefit from simpler, clearly separated beats.",
+      "Reference-heavy prompts work best when each source has one clear job.",
+      "Check the active Fal route family before scaling production traffic.",
+      "Confirm live pricing before client-facing rollout or automated workflows."
     ],
     "galleryTitle": "Seedance 2.0 examples",
-    "galleryIntro": "Explore official references and prompt patterns while runtime remains locked pre-launch. We will publish real MaxVideoAI renders here once the model is live.",
+    "galleryIntro": "Use this gallery to review prompt patterns, scene structure, and the kinds of beats Seedance 2.0 handles well inside MaxVideoAI.",
     "galleryAllCta": "View all Seedance examples ->",
     "recreateLabel": "Recreate this shot ->",
     "demoTitle": "Demo prompt — Seedance 2.0",
-    "demoPromptLabel": "Prompt"
+    "demoPromptLabel": "Prompt",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Fast",
+        "description": "Use the fast Seedance tier for draft passes, quick timing checks, and early concept loops before you move finals into the standard tier.",
+        "modelSlug": "seedance-2-0-fast",
+        "ctaLabel": "See Seedance 2.0 Fast ->"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1",
+        "description": "Compare Seedance 2.0 against Veo 3.1 when you need another premium audio-native engine for ads, launches, and product motion.",
+        "modelSlug": "veo-3-1",
+        "ctaLabel": "Compare Seedance 2.0 vs Veo 3.1 ->"
+      },
+      {
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Open Kling 3 Pro when you want a stronger emphasis on scene sequencing, shot control, and storyboard-style multi-prompt direction.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Compare Seedance 2.0 vs Kling 3 Pro ->"
+      }
+    ]
   }
 }
