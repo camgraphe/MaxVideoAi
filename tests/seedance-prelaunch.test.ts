@@ -62,6 +62,15 @@ test('Seedance aliases, family routing, hub publication, and locale coverage are
 
   const esFastOverlayPath = path.join(process.cwd(), 'content/models/es/seedance-2-0-fast.json');
   assert.equal(fs.existsSync(esFastOverlayPath), true);
+
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-scores.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    scores?: Array<{ modelSlug?: string; fidelity?: number; speedStability?: number }>;
+  };
+  const fastScore = benchmarkData.scores?.find((entry) => entry.modelSlug === 'seedance-2-0-fast') ?? null;
+  assert.ok(fastScore);
+  assert.equal(typeof fastScore.fidelity, 'number');
+  assert.equal(typeof fastScore.speedStability, 'number');
 });
 
 test('Seedance becomes the app and marketing priority family ahead of Sora', () => {
