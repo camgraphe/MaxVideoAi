@@ -15,7 +15,7 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { isDatabaseConfigured } from '@/lib/db';
 import compareConfig from '@/config/compare-config.json';
 import { getCompareShowdowns, type CompareShowdown } from '@/config/compare-showdowns';
-import { listFalEngines } from '@/config/falEngines';
+import { canonicalizeFalModelSlug, listFalEngines } from '@/config/falEngines';
 import engineCatalog from '@/config/engine-catalog.json';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { ButtonLink } from '@/components/ui/Button';
@@ -302,7 +302,9 @@ function resolveEngines(slug: string) {
 function getCanonicalCompareSlug(slug: string) {
   const parts = slug.split('-vs-');
   if (parts.length !== 2) return null;
-  const [leftSlug, rightSlug] = parts;
+  const [rawLeftSlug, rawRightSlug] = parts;
+  const leftSlug = canonicalizeFalModelSlug(rawLeftSlug);
+  const rightSlug = canonicalizeFalModelSlug(rawRightSlug);
   const sorted = [leftSlug, rightSlug].sort();
   return {
     canonicalSlug: `${sorted[0]}-vs-${sorted[1]}`,
@@ -1232,7 +1234,7 @@ export default async function CompareDetailPage({
   if (excludedRedirect) {
     redirect(excludedRedirect);
   }
-  const resolved = resolveEngines(slug);
+  const resolved = resolveEngines(canonicalInfo.canonicalSlug);
   if (!resolved) {
     notFound();
   }

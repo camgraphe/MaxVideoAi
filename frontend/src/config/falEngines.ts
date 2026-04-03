@@ -5986,14 +5986,44 @@ export function getFalEngineById(id: string): FalEngineEntry | undefined {
 }
 
 const LEGACY_MODEL_SLUG_ALIASES: Record<string, string> = {
+  'openai-sora-2': 'sora-2',
+  'openai-sora-2-pro': 'sora-2-pro',
+  'google-veo-3': 'veo-3-1',
+  'veo-3': 'veo-3-1',
+  veo3: 'veo-3-1',
+  'veo3.1': 'veo-3-1',
+  'google-veo-3-fast': 'veo-3-1-fast',
+  'veo-3-fast': 'veo-3-1-fast',
+  veo3fast: 'veo-3-1-fast',
+  'veo3-fast': 'veo-3-1-fast',
+  'google-veo-3-1-fast': 'veo-3-1-fast',
+  'veo-3-1-first-last': 'veo-3-1',
+  'veo-3-1-first-last-fast': 'veo-3-1-fast',
+  'veo-3-lite': 'veo-3-1-lite',
+  veo3lite: 'veo-3-1-lite',
+  'veo3-lite': 'veo-3-1-lite',
+  'veo3.1-lite': 'veo-3-1-lite',
   'ltx-2-3': 'ltx-2-3-pro',
   'pika-2-2': 'pika-text-to-video',
   'pika-image-to-video': 'pika-text-to-video',
+  'minimax-video-01': 'minimax-hailuo-02-text',
+  'minimax-video-1': 'minimax-hailuo-02-text',
+  'minimax-hailuo-02': 'minimax-hailuo-02-text',
+  'minimax-hailuo-02-pro': 'minimax-hailuo-02-text',
+  'minimax-hailuo-02-image': 'minimax-hailuo-02-text',
+  'hailuo-2-pro': 'minimax-hailuo-02-text',
+  'kling-25-turbo-pro': 'kling-2-5-turbo',
+  'kling-2-5-turbo-pro': 'kling-2-5-turbo',
 };
+
+export function canonicalizeFalModelSlug(slug: string): string {
+  const normalized = slug.trim().toLowerCase();
+  return LEGACY_MODEL_SLUG_ALIASES[normalized] ?? normalized;
+}
 
 export function getFalEngineBySlug(slug: string): FalEngineEntry | undefined {
   const normalized = slug.trim().toLowerCase();
-  const canonicalSlug = LEGACY_MODEL_SLUG_ALIASES[normalized] ?? normalized;
+  const canonicalSlug = canonicalizeFalModelSlug(slug);
 
   const directMatch = FAL_ENGINE_REGISTRY.find((entry) => entry.modelSlug.toLowerCase() === canonicalSlug);
   if (directMatch) {
