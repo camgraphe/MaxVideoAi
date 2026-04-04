@@ -756,6 +756,65 @@ function buildPendingGroup({
   };
 }
 
+function buildCompletedGroup({
+  id,
+  engineId,
+  engineLabel,
+  prompt,
+  aspectRatio,
+  images,
+  createdAt,
+  totalPriceCents,
+  currency,
+}: {
+  id: string;
+  engineId: string;
+  engineLabel: string;
+  prompt: string;
+  aspectRatio: string | null;
+  images: GeneratedImage[];
+  createdAt: number;
+  totalPriceCents?: number | null;
+  currency?: string | null;
+}): GroupSummary {
+  const createdAtIso = new Date(createdAt).toISOString();
+  const members: GroupMemberSummary[] = images.map((image, index) => ({
+    id: `${id}-image-${index + 1}`,
+    jobId: id,
+    engineId,
+    engineLabel,
+    durationSec: 0,
+    priceCents: totalPriceCents ?? null,
+    currency: currency ?? null,
+    thumbUrl: image.url,
+    aspectRatio,
+    prompt,
+    status: 'completed',
+    progress: 100,
+    createdAt: createdAtIso,
+    source: 'render',
+  }));
+
+  return {
+    id,
+    source: 'active',
+    splitMode: members.length > 1 ? 'quad' : 'single',
+    count: members.length,
+    totalPriceCents: totalPriceCents ?? null,
+    currency: currency ?? null,
+    createdAt: createdAtIso,
+    hero: members[0],
+    previews: images.map((image, index) => ({
+      id: `${id}-preview-${index + 1}`,
+      thumbUrl: image.url,
+      videoUrl: null,
+      aspectRatio,
+      source: 'render',
+    })),
+    members,
+  };
+}
+
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const toolsEnabled = FEATURES.workflows.toolsSection;
   const { t } = useI18n();
@@ -1156,6 +1215,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       .map((job) => mapJobToHistoryEntry(job))
       .filter((entry): entry is HistoryEntry => Boolean(entry));
   }, [jobPages, isImageJob]);
+  const remoteHistoryIds = useMemo(
+    () =>
+      new Set(
+        remoteHistory
+          .map((entry) => entry.jobId ?? entry.id)
+          .filter((value): value is string => typeof value === 'string' && value.length > 0)
+      ),
+    [remoteHistory]
+  );
 
   const combinedHistory = useMemo(() => {
     const map = new Map<string, HistoryEntry>();
@@ -1167,6 +1235,44 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     });
     return Array.from(map.values()).sort((a, b) => b.createdAt - a.createdAt);
   }, [localHistory, remoteHistory]);
+
+  useEffect(() => {
+    if (!remoteHistoryIds.size) return;
+    setPendingGroups((previous) =>
+      previous.filter((group) => {
+        const relatedIds = new Set<string>();
+        relatedIds.add(group.id);
+        if (group.hero.jobId) {
+          relatedIds.add(group.hero.jobId);
+        }
+        group.members.forEach((member) => {
+          if (member.jobId) {
+            relatedIds.add(member.jobId);
+          }
+        });
+        for (const candidateId of relatedIds) {
+          if (remoteHistoryIds.has(candidateId)) {
+            return false;
+          }
+        }
+        return true;
+      })
+    );
+  }, [remoteHistoryIds]);
+
+  useEffect(() => {
+    if (!pendingGroups.length) return;
+    const intervalId = window.setInterval(() => {
+      void mutateJobs();
+    }, 2000);
+    const timeoutId = window.setTimeout(() => {
+      window.clearInterval(intervalId);
+    }, 30000);
+    return () => {
+      window.clearInterval(intervalId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [mutateJobs, pendingGroups]);
 
   const readyReferenceUrls = useMemo(
     () =>
@@ -1938,6 +2044,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         }),
         ...prev,
       ]);
+      let keepActiveGroup = false;
       try {
         const appliedAspectRatio = aspectRatioField
           ? aspectRatio ?? getDefaultAspectRatio(selectedEngine.engineCaps, mode) ?? undefined
@@ -1987,11 +2094,31 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setStatusMessage(
           formatTemplate(resolvedCopy.messages.success, { count: response.images.length, suffix })
         );
+        const resolvedGroupId = response.jobId ?? pendingId;
+        if (response.images.length > 0) {
+          keepActiveGroup = true;
+          setPendingGroups((prev) => [
+            buildCompletedGroup({
+              id: resolvedGroupId,
+              engineId: response.engineId ?? selectedEngine.id,
+              engineLabel: response.engineLabel ?? selectedEngine.name,
+              prompt: trimmedPrompt,
+              aspectRatio: response.aspectRatio ?? appliedAspectRatio ?? null,
+              images: response.images,
+              createdAt: pendingCreatedAt,
+              totalPriceCents: response.pricing?.totalCents ?? response.costCents ?? null,
+              currency: response.pricing?.currency ?? response.currency ?? null,
+            }),
+            ...prev.filter((group) => group.id !== pendingId && group.id !== resolvedGroupId),
+          ]);
+        }
         void mutateJobs();
       } catch (err) {
         setError(err instanceof Error ? err.message : resolvedCopy.errors.generic);
       } finally {
-        setPendingGroups((prev) => prev.filter((group) => group.id !== pendingId));
+        if (!keepActiveGroup) {
+          setPendingGroups((prev) => prev.filter((group) => group.id !== pendingId));
+        }
       }
     },
     [
