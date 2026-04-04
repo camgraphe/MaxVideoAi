@@ -116,18 +116,29 @@ export function GalleryRail({
     [groupedJobSummariesFromApi]
   );
   const activeGroupIds = useMemo(() => new Set(activeGroups.map((group) => group.id)), [activeGroups]);
+  const historicalGroupMap = useMemo(() => {
+    const map = new Map<string, GroupSummary>();
+    groupedJobSummaries.forEach((group) => {
+      map.set(group.id, group);
+    });
+    return map;
+  }, [groupedJobSummaries]);
+  const displayActiveGroups = useMemo(
+    () => activeGroups.map((group) => historicalGroupMap.get(group.id) ?? group),
+    [activeGroups, historicalGroupMap]
+  );
   const historicalGroups = useMemo(() => {
     return groupedJobSummaries.filter((group) => !activeGroupIds.has(group.id));
   }, [groupedJobSummaries, activeGroupIds]);
   const summaryIndex = useMemo(() => {
     const map = new Map<string, GroupSummary>();
-    [...activeGroups, ...historicalGroups].forEach((group) => {
+    [...displayActiveGroups, ...historicalGroups].forEach((group) => {
       map.set(group.id, group);
     });
     return map;
-  }, [activeGroups, historicalGroups]);
+  }, [displayActiveGroups, historicalGroups]);
 
-  const normalizedActiveGroups = useMemo(() => normalizeGroupSummaries(activeGroups), [activeGroups]);
+  const normalizedActiveGroups = useMemo(() => normalizeGroupSummaries(displayActiveGroups), [displayActiveGroups]);
   const normalizedHistoricalGroups = useMemo(
     () => normalizeGroupSummaries(historicalGroups),
     [historicalGroups]
@@ -246,12 +257,43 @@ export function GalleryRail({
     return ratio;
   }, []);
 
+  const resolveImageOriginalUrl = useCallback((group: GroupSummary) => {
+    const resolveFromMember = (member = group.hero) => {
+      const job = member.job;
+      if (!job || !Array.isArray(job.renderIds) || !job.renderIds.length) {
+        return null;
+      }
+      const renderIds = job.renderIds.filter((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value));
+      if (!renderIds.length) {
+        return null;
+      }
+      if (typeof job.heroRenderId === 'string' && /^https?:\/\//i.test(job.heroRenderId)) {
+        return job.heroRenderId;
+      }
+      const match = member.id.match(/-image-(\d+)$/);
+      if (match) {
+        const index = Number(match[1]) - 1;
+        if (Number.isInteger(index) && index >= 0 && index < renderIds.length) {
+          return renderIds[index];
+        }
+      }
+      return renderIds[0] ?? null;
+    };
+
+    return (
+      resolveFromMember(group.hero) ??
+      group.members.map((member) => resolveFromMember(member)).find((value): value is string => typeof value === 'string' && value.length > 0) ??
+      group.hero.thumbUrl ??
+      group.previews.find((preview) => preview.thumbUrl)?.thumbUrl ??
+      null
+    );
+  }, []);
+
   const resolveMediaUrl = useCallback(
     (group: GroupSummary, preferImage: boolean) => {
       if (preferImage) {
         return (
-          group.hero.thumbUrl ??
-          group.previews.find((preview) => preview.thumbUrl)?.thumbUrl ??
+          resolveImageOriginalUrl(group) ??
           group.hero.videoUrl ??
           group.previews.find((preview) => preview.videoUrl)?.videoUrl ??
           null
@@ -265,7 +307,7 @@ export function GalleryRail({
         null
       );
     },
-    []
+    [resolveImageOriginalUrl]
   );
 
   const handleCardOpen = useCallback(
