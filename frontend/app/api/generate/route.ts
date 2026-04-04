@@ -1574,6 +1574,29 @@ async function rollbackPendingPayment(params: {
     const width = typeof candidate.width === 'number' ? candidate.width : null;
     const height = typeof candidate.height === 'number' ? candidate.height : null;
     const assetId = typeof candidate.assetId === 'string' ? candidate.assetId : undefined;
+    const declaredMimeType = base.type.trim().toLowerCase();
+
+    if (base.kind === 'video' && declaredMimeType && declaredMimeType !== 'application/octet-stream' && !declaredMimeType.startsWith('video/')) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'INVALID_VIDEO_ASSET',
+          message: 'The selected source is not a video. Choose an MP4/MOV clip and try again.',
+        },
+        { status: 422 }
+      );
+    }
+
+    if (base.kind === 'audio' && declaredMimeType && declaredMimeType !== 'application/octet-stream' && !declaredMimeType.startsWith('audio/')) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'INVALID_AUDIO_ASSET',
+          message: 'The selected source is not an audio file. Choose an audio clip and try again.',
+        },
+        { status: 422 }
+      );
+    }
 
     if (urlCandidate) {
       if (!isAllowedAssetHost(urlCandidate)) {

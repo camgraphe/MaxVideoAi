@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import deepmerge from 'deepmerge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
-import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveImageToLibrary } from '@/lib/api';
+import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus, saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
@@ -178,6 +178,7 @@ type UserAsset = {
 };
 
 type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle';
+type AssetLibraryKind = 'image' | 'video';
 
 type AssetPickerTarget =
   | { kind: 'field'; field: EngineInputField; slotIndex?: number }
@@ -185,7 +186,7 @@ type AssetPickerTarget =
 
 type AssetLibraryModalProps = {
   fieldLabel: string;
-  assetType: 'image' | 'video';
+  assetType: AssetLibraryKind;
   assets: UserAsset[];
   isLoading: boolean;
   error: string | null;
@@ -197,6 +198,10 @@ type AssetLibraryModalProps = {
   onDelete: (asset: UserAsset) => Promise<void> | void;
   deletingAssetId: string | null;
 };
+
+function buildAssetLibraryCacheKey(kind: AssetLibraryKind, source: AssetLibrarySource): string {
+  return `${kind}:${source}`;
+}
 
 const DEFAULT_WORKSPACE_COPY = {
   errors: {
@@ -2610,18 +2615,24 @@ useEffect(() => {
   const [assetLibrary, setAssetLibrary] = useState<UserAsset[]>([]);
   const [isAssetLibraryLoading, setIsAssetLibraryLoading] = useState(false);
   const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
-  const [assetLibraryLoaded, setAssetLibraryLoaded] = useState(false);
   const [assetLibrarySource, setAssetLibrarySource] = useState<AssetLibrarySource>('all');
-  const [assetLibraryLoadedSource, setAssetLibraryLoadedSource] = useState<AssetLibrarySource | null>(null);
+  const [assetLibraryLoadedKey, setAssetLibraryLoadedKey] = useState<string | null>(null);
   const [assetDeletePendingId, setAssetDeletePendingId] = useState<string | null>(null);
 
-  const assetLibraryKind = useMemo<'image' | 'video'>(() => {
+  const assetLibraryKind = useMemo<AssetLibraryKind>(() => {
     if (!assetPickerTarget) return 'image';
     if (assetPickerTarget.kind === 'field' && assetPickerTarget.field.type === 'video') {
       return 'video';
     }
     return 'image';
   }, [assetPickerTarget]);
+  const assetLibraryRequestKey = assetPickerTarget
+    ? buildAssetLibraryCacheKey(assetLibraryKind, assetLibrarySource)
+    : null;
+  const visibleAssetLibrary = useMemo(
+    () => assetLibrary.filter((asset) => asset.kind === assetLibraryKind),
+    [assetLibrary, assetLibraryKind]
+  );
 
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
   const klingElementsRef = useRef<KlingElementState[]>([]);
@@ -2679,8 +2690,10 @@ const showNotice = useCallback((message: string) => {
     }, 6000);
   }, []);
 
-  const fetchAssetLibrary = useCallback(async (sourceOverride?: AssetLibrarySource) => {
-    const source = sourceOverride ?? assetLibrarySource;
+  const fetchAssetLibrary = useCallback(async (options?: { source?: AssetLibrarySource; kind?: AssetLibraryKind }) => {
+    const source = options?.source ?? assetLibrarySource;
+    const kind = options?.kind ?? assetLibraryKind;
+    const requestKey = buildAssetLibraryCacheKey(kind, source);
     setIsAssetLibraryLoading(true);
     setAssetLibraryError(null);
     try {
@@ -2689,7 +2702,7 @@ const showNotice = useCallback((message: string) => {
           ? '/api/user-assets?limit=60'
           : `/api/user-assets?limit=60&source=${encodeURIComponent(source)}`;
       const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
-      if (assetLibraryKind === 'video' && source !== 'upload') {
+      if (kind === 'video' && source !== 'upload') {
         requests.push(authFetch(`/api/jobs?limit=60&type=video`));
       }
 
@@ -2697,8 +2710,9 @@ const showNotice = useCallback((message: string) => {
       if (assetResponse.status === 401 || jobsResponse?.status === 401) {
         setAssetLibrary([]);
         setAssetLibraryError(
-          assetLibraryKind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.'
+          kind === 'video' ? 'Sign in to access your video library.' : 'Sign in to access your image library.'
         );
+        setAssetLibraryLoadedKey(requestKey);
         return;
       }
       const payload = await assetResponse.json().catch(() => null);
@@ -2706,7 +2720,7 @@ const showNotice = useCallback((message: string) => {
         const message =
           typeof payload?.error === 'string'
             ? payload.error
-            : assetLibraryKind === 'video'
+            : kind === 'video'
               ? 'Failed to load videos'
               : 'Failed to load images';
         throw new Error(message);
@@ -2729,13 +2743,13 @@ const showNotice = useCallback((message: string) => {
           })
         : [];
       const filteredUploads = assets.filter((asset) =>
-        assetLibraryKind === 'video'
+        kind === 'video'
           ? Boolean(asset.mime?.startsWith('video/'))
           : !asset.mime || asset.mime.startsWith('image/')
       );
 
       let generatedVideos: UserAsset[] = [];
-      if (assetLibraryKind === 'video' && jobsResponse) {
+      if (kind === 'video' && jobsResponse) {
         const jobsPayload = await jobsResponse.json().catch(() => null);
         if (jobsResponse.ok && Array.isArray(jobsPayload?.jobs)) {
           generatedVideos = (jobsPayload.jobs as Job[])
@@ -2753,28 +2767,44 @@ const showNotice = useCallback((message: string) => {
       }
 
       const combined =
-        assetLibraryKind === 'video'
+        kind === 'video'
           ? [...filteredUploads, ...generatedVideos]
           : filteredUploads;
       const deduped = combined.filter(
         (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
       );
       setAssetLibrary(deduped);
-      setAssetLibraryLoaded(true);
-      setAssetLibraryLoadedSource(source);
+      setAssetLibraryLoadedKey(requestKey);
     } catch (error) {
       console.error('[assets] failed to load library', error);
       setAssetLibraryError(
         error instanceof Error
           ? error.message
-          : assetLibraryKind === 'video'
+          : kind === 'video'
             ? 'Failed to load videos'
             : 'Failed to load images'
       );
+      setAssetLibraryLoadedKey(requestKey);
     } finally {
       setIsAssetLibraryLoading(false);
     }
   }, [assetLibraryKind, assetLibrarySource]);
+
+  useEffect(() => {
+    if (!assetPickerTarget || !assetLibraryRequestKey || isAssetLibraryLoading) return;
+    if (assetLibraryLoadedKey === assetLibraryRequestKey) return;
+    setAssetLibrary([]);
+    setAssetLibraryError(null);
+    void fetchAssetLibrary({ kind: assetLibraryKind, source: assetLibrarySource });
+  }, [
+    assetLibraryKind,
+    assetLibraryLoadedKey,
+    assetLibraryRequestKey,
+    assetLibrarySource,
+    assetPickerTarget,
+    fetchAssetLibrary,
+    isAssetLibraryLoading,
+  ]);
 
   const handleDeleteLibraryAsset = useCallback(
     async (asset: UserAsset) => {
@@ -2848,27 +2878,83 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const handleOpenAssetLibrary = useCallback(
     (field: EngineInputField, slotIndex?: number) => {
-      setAssetPickerTarget({ kind: 'field', field, slotIndex });
-      if (!isAssetLibraryLoading && (!assetLibraryLoaded || assetLibraryLoadedSource !== assetLibrarySource)) {
-        void fetchAssetLibrary(assetLibrarySource);
+      const nextSource: AssetLibrarySource = field.type === 'video' ? 'generated' : 'all';
+      if (nextSource !== assetLibrarySource) {
+        setAssetLibrarySource(nextSource);
+        setAssetLibrary([]);
+        setAssetLibraryError(null);
+        setAssetLibraryLoadedKey(null);
       }
+      setAssetPickerTarget({ kind: 'field', field, slotIndex });
     },
-    [assetLibraryLoaded, assetLibraryLoadedSource, assetLibrarySource, fetchAssetLibrary, isAssetLibraryLoading]
+    [assetLibrarySource]
   );
 
   const handleOpenKlingAssetLibrary = useCallback(
     (elementId: string, slot: 'frontal' | 'reference', slotIndex?: number) => {
-      setAssetPickerTarget({ kind: 'kling', elementId, slot, slotIndex });
-      if (!isAssetLibraryLoading && (!assetLibraryLoaded || assetLibraryLoadedSource !== assetLibrarySource)) {
-        void fetchAssetLibrary(assetLibrarySource);
+      if (assetLibrarySource !== 'all') {
+        setAssetLibrarySource('all');
+        setAssetLibrary([]);
+        setAssetLibraryError(null);
+        setAssetLibraryLoadedKey(null);
       }
+      setAssetPickerTarget({ kind: 'kling', elementId, slot, slotIndex });
     },
-    [assetLibraryLoaded, assetLibraryLoadedSource, assetLibrarySource, fetchAssetLibrary, isAssetLibraryLoading]
+    [assetLibrarySource]
   );
 
   const handleSelectLibraryAsset = useCallback(
     async (field: EngineInputField, asset: UserAsset, slotIndex?: number) => {
+      if (field.type === 'video' && asset.kind !== 'video') {
+        showNotice('This slot requires a video source. Pick a video from the video library or import an MP4/MOV clip.');
+        return;
+      }
+      if (field.type === 'image' && asset.kind !== 'image') {
+        showNotice('This slot requires an image source. Pick an image from the library or import one.');
+        return;
+      }
+
       let resolvedAsset = asset;
+
+      if (field.type === 'video' && asset.kind === 'video') {
+        try {
+          const host = new URL(asset.url).host.toLowerCase();
+          const shouldMirrorVideo =
+            asset.source === 'generated' ||
+            host === 'fal.media' ||
+            host.endsWith('.fal.media');
+          if (shouldMirrorVideo) {
+            const mirrored = await saveAssetToLibrary({
+              url: asset.url,
+              label:
+                field.label ??
+                asset.url.split('/').pop() ??
+                'Video',
+              source: asset.source,
+              kind: 'video',
+            });
+            resolvedAsset = {
+              ...asset,
+              id: mirrored.id,
+              url: mirrored.url,
+              width: mirrored.width ?? asset.width,
+              height: mirrored.height ?? asset.height,
+              size: mirrored.size ?? asset.size,
+              mime: mirrored.mime ?? asset.mime,
+              canDelete: true,
+            };
+            setAssetLibrary((previous) =>
+              previous.map((entry) =>
+                entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry
+              )
+            );
+          }
+        } catch (error) {
+          console.error('[assets] failed to mirror generated video asset', error);
+          showNotice(error instanceof Error ? error.message : 'Unable to prepare this video. Try importing the source clip directly.');
+          return;
+        }
+      }
 
       if (
         field.type === 'image' &&
@@ -6731,7 +6817,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 : `Kling reference ${typeof assetPickerTarget.slotIndex === 'number' ? assetPickerTarget.slotIndex + 1 : ''}`.trim()
           }
           assetType={assetLibraryKind}
-          assets={assetLibrary}
+          assets={visibleAssetLibrary}
           isLoading={isAssetLibraryLoading}
           error={assetLibraryError}
           source={assetLibrarySource}
@@ -6740,10 +6826,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             setAssetLibrarySource(nextSource);
             setAssetLibraryError(null);
             setAssetLibrary([]);
-            void fetchAssetLibrary(nextSource);
+            setAssetLibraryLoadedKey(null);
           }}
           onClose={() => setAssetPickerTarget(null)}
-          onRefresh={fetchAssetLibrary}
+          onRefresh={(sourceOverride) => fetchAssetLibrary({ source: sourceOverride ?? assetLibrarySource, kind: assetLibraryKind })}
           onSelect={(asset) => {
             if (assetPickerTarget.kind === 'field') {
               void handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
