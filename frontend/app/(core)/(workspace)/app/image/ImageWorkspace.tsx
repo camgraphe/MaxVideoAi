@@ -9,6 +9,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
 import { Plus } from 'lucide-react';
 import type {
+  ChangeEvent,
   FormEvent,
   MouseEvent as ReactMouseEvent,
 } from 'react';
@@ -23,6 +24,7 @@ import { AssetLibraryBrowser, type AssetLibrarySource } from '@/components/libra
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { supabase } from '@/lib/supabaseClient';
+import { translateError } from '@/lib/error-messages';
 import type {
   CharacterReferenceSelection,
   CharacterReferencesResponse,
@@ -39,6 +41,7 @@ import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
+import { normalizeUiLocale } from '@/lib/ltx-localization';
 import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
 import { FEATURES } from '@/content/feature-flags';
 import {
@@ -1215,7 +1218,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const closeViewer = useCallback(() => setViewerGroup(null), []);
 
   const handleSaveVariantToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
-    const mediaUrl = entry.videoUrl ?? entry.thumbUrl;
+    const mediaUrl = entry.videoUrl ?? entry.audioUrl ?? entry.imageUrl ?? entry.thumbUrl;
     if (!mediaUrl) {
       throw new Error('No image available to save');
     }
@@ -2738,9 +2741,25 @@ function ImageLibraryModal({
   supportedFormatsLabel: string;
   toolsEnabled: boolean;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const uiLocale = normalizeUiLocale(locale);
   const [activeSource, setActiveSource] = useState<AssetLibrarySource>(initialSource);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const isCharacterMode = selectionMode === 'character';
+  const importLabel = t(
+    'workspace.generate.assetLibrary.import',
+    uiLocale === 'fr' ? 'Importer' : uiLocale === 'es' ? 'Importar' : 'Import'
+  ) as string;
+  const importingLabel = t(
+    'workspace.generate.assetLibrary.importing',
+    uiLocale === 'fr' ? 'Import en cours…' : uiLocale === 'es' ? 'Importando…' : 'Importing…'
+  ) as string;
+  const importFailedLabel = t(
+    'workspace.generate.assetLibrary.importFailed',
+    uiLocale === 'fr' ? 'Import impossible. Réessayez.' : uiLocale === 'es' ? 'La importación falló. Inténtalo de nuevo.' : 'Import failed. Please try again.'
+  ) as string;
   const swrKey = !open
     ? null
     : isCharacterMode
@@ -2748,7 +2767,7 @@ function ImageLibraryModal({
       : activeSource === 'all'
         ? '/api/user-assets?limit=60'
         : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`;
-  const { data, error, isLoading } = useSWR(swrKey, async (url: string) => {
+  const { data, error, isLoading, mutate } = useSWR(swrKey, async (url: string) => {
     const response = await authFetch(url);
     if (isCharacterMode) {
       const payload = (await response.json().catch(() => null)) as CharacterReferencesResponse | null;
@@ -2779,6 +2798,60 @@ function ImageLibraryModal({
     if (!open) return;
     setActiveSource(initialSource);
   }, [initialSource, open]);
+
+  const handleImportChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.currentTarget.files?.[0] ?? null;
+      event.currentTarget.value = '';
+      if (!file || isCharacterMode) return;
+
+      if (!file.type.startsWith('image/')) {
+        setImportError(t('workspace.image.errors.onlyImages', DEFAULT_COPY.errors.onlyImages) as string);
+        return;
+      }
+
+      setImportError(null);
+      setIsImporting(true);
+      try {
+        const preparedFile = await prepareImageFileForUpload(file, {
+          maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
+        });
+        const formData = new FormData();
+        formData.append('file', preparedFile, preparedFile.name);
+        const response = await authFetch('/api/uploads/image', {
+          method: 'POST',
+          body: formData,
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok || !payload?.asset?.url) {
+          const message = translateError({
+            code: typeof payload?.error === 'string' ? payload.error : null,
+            status: response.status,
+            message: importFailedLabel,
+          }).message;
+          throw new Error(message);
+        }
+
+        const uploadedAsset = payload.asset as LibraryAsset;
+        void mutate();
+        onSelect({
+          id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
+          url: uploadedAsset.url,
+          mime: uploadedAsset.mime ?? null,
+          width: uploadedAsset.width ?? null,
+          height: uploadedAsset.height ?? null,
+          size: uploadedAsset.size ?? null,
+          source: uploadedAsset.source ?? 'upload',
+          createdAt: uploadedAsset.createdAt,
+        });
+      } catch (uploadError) {
+        setImportError(uploadError instanceof Error ? uploadError.message : importFailedLabel);
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [importFailedLabel, isCharacterMode, mutate, onSelect, t]
+  );
 
   const assets = useMemo(() => {
     if (isCharacterMode) return [];
@@ -2903,6 +2976,15 @@ function ImageLibraryModal({
       onMouseDown={handleBackdropClick}
     >
       <div className="h-[92svh] w-full max-w-6xl overflow-hidden sm:h-[84vh]">
+        {!isCharacterMode ? (
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handleImportChange}
+          />
+        ) : null}
         <AssetLibraryBrowser
           assetType="image"
           layout="modal"
@@ -2912,11 +2994,28 @@ function ImageLibraryModal({
           closeLabel={copy.modal.close}
           assets={browserAssets}
           isLoading={isLoading}
-          error={error ? (isCharacterMode ? (error instanceof Error ? error.message : characterCopy.empty) : copy.modal.error) : null}
+          error={
+            importError ??
+            (error ? (isCharacterMode ? (error instanceof Error ? error.message : characterCopy.empty) : copy.modal.error) : null)
+          }
           source={activeSource}
           availableSources={availableSources}
           sourceLabels={copy.tabs}
           onSourceChange={setActiveSource}
+          headerActions={
+            !isCharacterMode ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+                disabled={isImporting}
+                onClick={() => importInputRef.current?.click()}
+              >
+                {isImporting ? importingLabel : importLabel}
+              </Button>
+            ) : undefined
+          }
           searchPlaceholder={searchPlaceholder}
           sourcesTitle={sourcesTitle}
           toolsTitle={toolsEnabled ? toolsTitle : undefined}
