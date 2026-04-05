@@ -3,14 +3,14 @@
   "versionLabel": "2.0",
   "seo": {
     "title": "Seedance 2.0 — video IA con audio nativo",
-    "description": "Conozca Seedance 2.0 (ByteDance) en MaxVideoAI: video IA cinematográfico, audio nativo, salida 480p/720p, duraciones auto o de 4-15 s y referencias multimodales."
+    "description": "Conoce Seedance 2.0 (ByteDance) en MaxVideoAI: audio nativo, salida 480p/720p, duraciones auto o de 4-15 s, física más creíble y control de cámara de nivel dirección."
   },
-  "overview": "Seedance 2.0 es el modelo de video IA flagship de ByteDance para motion cinematográfico, continuidad multi-shot y audio nativo sincronizado. Usa esta página para elegir el workflow, la estructura de prompt y las comparativas internas correctas antes de pasar a producción.",
-  "pricingNotes": "Seedance 2 sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra la cotización final en vivo antes de enviar.",
+  "overview": "Seedance 2.0 es el modelo de generación de video más reciente y más avanzado de ByteDance en Fal. Combina puesta en escena cinematográfica, continuidad multi-shot, física más creíble y audio nativo en una sola generación.",
+  "pricingNotes": "Seedance 2 sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra el precio final antes de enviar.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "Usa Seedance 2.0 cuando busques video premium multi-shot, motion más creíble y audio nativo en la misma pasada. Esta página cubre los workflows Seedance 2 ya abiertos en Fal: text-to-video, image-to-video con imagen final opcional, reference-to-video multimodal y las comparativas internas correctas frente a Veo, Kling y el tier Sora saliente.",
-    "badge": "480p/720p · Auto o 4-15 s · Audio nativo · Workflows de texto / imagen / referencia",
+    "intro": "Fal presenta Seedance 2.0 como video cinematográfico con audio nativo, física realista y control de cámara de nivel dirección. En MaxVideoAI puedes usarlo en text-to-video, image-to-video con imagen final opcional y reference-to-video multimodal cuando buscas mejor gramática de cámara, más credibilidad en la acción y continuidad multi-shot.",
+    "badge": "480p/720p · Auto o 4-15 s · Audio nativo · Modos texto / imagen / referencia",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -25,7 +25,7 @@
         "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
       },
       {
-        "label": "Ver precios y workflows",
+        "label": "Ver precios y usos",
         "href": "/pricing"
       }
     ]
@@ -38,7 +38,7 @@
     "title": "Casos de uso",
     "items": [
       {
-        "title": "Secuencias de acción con interacciones más creíbles",
+        "title": "Secuencias de acción con colisiones, escombros e interacciones más creíbles",
         "icon": "camera"
       },
       {
@@ -46,11 +46,11 @@
         "icon": "product"
       },
       {
-        "title": "Visuales guiados por audio con mejor sincronía",
+        "title": "Escenas guiadas por audio con diálogo, ambiente y efectos mejor sincronizados",
         "icon": "music"
       },
       {
-        "title": "Storyboard-to-video con referencias multimodales",
+        "title": "Storyboard a video con referencias multimodales",
         "icon": "storyboard"
       },
       {
@@ -67,7 +67,7 @@
   "technicalOverview": [
     {
       "label": "Rol",
-      "body": "El tier flagship de ByteDance para motion cinematográfico, continuidad multi-shot y audio nativo."
+      "body": "El último modelo de video de ByteDance, basado en una arquitectura multimodal unificada de audio y video."
     },
     {
       "label": "Entradas",
@@ -87,16 +87,16 @@
     },
     {
       "label": "Cámara y movimiento",
-      "body": "Controles avanzados de cámara, con mejores resultados cuando la dirección está bien especificada"
+      "body": "Control de cámara avanzado, especialmente convincente en dolly zooms, rack focus, planos de seguimiento, POV y handheld suave"
     },
     {
       "label": "Fuentes",
-      "body": "Fuentes oficiales: páginas de Seed ByteDance. También describen capacidades de extensión y edición junto al workflow principal."
+      "body": "La página pública de Fal destaca text-to-video, image-to-video, reference-to-video y variantes Fast optimizadas dentro de la familia Seedance 2."
     }
   ],
   "promptStructure": {
     "title": "Cómo escribir prompts para Seedance 2.0",
-    "quote": "[Género] + [sujeto] + [escenario] + [beats de acción] + [lenguaje de cámara] + [cues de audio] + [duración auto o 4-15 s] + [estructura multi-shot].",
+    "quote": "[Género] + [sujeto] + [escenario] + [momentos de acción] + [lenguaje de cámara] + [indicaciones de audio] + [duración auto o 4-15 s] + [estructura multi-shot].",
     "description": "Para mayor consistencia, estructure la línea temporal por planos, defina transiciones explícitas y sincronice diálogo/SFX con acciones visibles.",
     "steps": [
       "Definir el género y el sujeto principal",
@@ -106,15 +106,15 @@
       "Especificar ambiente, diálogo breve y SFX sincronizados"
     ]
   },
-  "promptingTip": "Tip: Seedance 2.0 responde mejor cuando el prompt combina timing de planos + verbos de cámara + cues de audio breves.",
+  "promptingTip": "Consejo: Seedance 2.0 responde mejor cuando el prompt combina timing de planos, verbos de cámara e indicaciones de audio breves.",
   "tips": {
     "title": "Notas de producción",
     "items": [
       "Mantén una estructura plano por plano para reforzar la continuidad multi-shot.",
       "Usa referencias multimodales para fijar vestuario, props, ritmo y ambiente.",
       "Usa la imagen final opcional en i2v cuando quieras guiar el último frame.",
-      "Pasa a Seedance 2.0 Fast cuando quieras borradores más baratos antes de los finales.",
-      "Generate muestra la ruta activa y la cotización en vivo antes de enviar."
+      "Pasa a Seedance 2.0 Fast cuando quieras versiones de trabajo más económicas antes de los finales.",
+      "Generate muestra la ruta activa y el precio final antes de enviar."
     ]
   },
   "prompts": [
@@ -155,31 +155,33 @@
     },
     {
       "q": "¿Cómo verifico disponibilidad y precio?",
-      "a": "Abre Generate para confirmar la ruta activa, los workflows soportados y la tarifa en vivo de tu ejecución."
+      "a": "Abre Generate para confirmar la ruta activa, los modos compatibles y el precio final de tu ejecución."
     },
     {
       "q": "¿Debo empezar con estándar o con Fast?",
-      "a": "Empieza con Seedance 2.0 estándar cuando quieras la calidad flagship y usa Seedance 2.0 Fast para borradores rápidos y comparativas."
+      "a": "Empieza con Seedance 2.0 estándar cuando quieras la calidad más alta y usa Seedance 2.0 Fast para borradores rápidos y comparativas."
     },
     {
-      "q": "¿El precio mostrado es el precio en vivo?",
-      "a": "Sí. Revisa siempre el precio visible dentro de Generate justo antes de lanzar una generación."
+      "q": "¿El precio mostrado es el definitivo?",
+      "a": "Sí. Revisa siempre el precio final visible dentro de Generate justo antes de lanzar una generación."
     }
   ],
   "custom": {
     "whyTitle": "Qué diferencia a Seedance 2.0",
+    "heroTrustLine": "Pago por uso en MaxVideoAI · Precio final visible antes de generar",
     "heroHighlights": [
-      "Lenguaje de cámara de nivel dirección||Control explícito de movimientos, encuadres y transiciones",
-      "Continuidad multi-shot||Salidas cortas con varios beats en una estructura coherente",
-      "Audio nativo sincronizado||Audio nativo activado por defecto, desactivable, con el mismo precio indicado por Fal",
-      "Referencias multimodales||Combina texto, imagen, video y audio para fijar estilo y ritmo"
+      "Gramática de cámara de nivel dirección||Fal destaca dolly zooms, rack focus, planos de seguimiento, POV y handheld suave",
+      "Física creíble bajo presión||Acción, colisiones, escombros y movimiento de materiales forman parte del posicionamiento público de Seedance 2.0 en Fal",
+      "Audio nativo en la misma generación||Diálogo, ambiente, música y efectos permanecen sincronizados sin capas de audio separadas",
+      "Control multimodal unificado||Texto, imagen, audio y video pueden combinarse dentro de la misma familia Seedance 2",
+      "Salidas multi-shot de hasta 15 s||Fal insiste en los cortes y transiciones naturales dentro de una sola generación"
     ],
     "specTitle": "Especificaciones",
-    "specNote": "Solo se listan puntos con fuente oficial, mientras que precio y detalles del workflow se revisan en vivo dentro de Generate.",
+    "specNote": "Solo se listan puntos con fuente oficial; el precio final y los detalles de ruta se revisan dentro de Generate.",
     "specSections": [
       {
         "title": "Entradas multimodales",
-        "intro": "Seedance 2.0 soporta texto, imagen, audio y video de referencia.",
+        "intro": "La página pública de Fal presenta Seedance 2.0 como un modelo unificado de audio y video multimodal.",
         "items": [
           "Instrucciones de texto + referencias multimodales",
           "Hasta 9 imágenes",
@@ -190,7 +192,7 @@
       },
       {
         "title": "Salida y estructura",
-        "intro": "Fal expone ahora la ruta Seedance 2 con control cinematográfico, audio nativo y más opciones reales de duración/ratio que el primer wording de lanzamiento.",
+        "intro": "Fal destaca control cinematográfico, audio nativo, física más creíble, cortes multi-shot y hasta 15 segundos por generación.",
         "items": [
           "480p o 720p",
           "Auto o 4-15 s por generación",
@@ -205,17 +207,17 @@
     "promptingTitle": "Prompt Lab — Seedance 2.0",
     "promptingGuideLabel": "Página oficial de Seedance 2.0",
     "promptingGuideUrl": "https://seed.bytedance.com/en/seedance2_0",
-    "promptingIntro": "Seedance 2.0 mejora cuando usted define timing de planos, verbos de cámara y cues de audio claros. Mantenga diálogo breve y acciones visibles.",
+    "promptingIntro": "Seedance 2.0 mejora cuando defines con claridad el timing de los planos, los verbos de cámara y las indicaciones de audio. Mantén el diálogo breve y las acciones visibles.",
     "promptingGlobalPrinciples": [
-      "Estructure en 0-5 s / 5-10 s / 10-15 s, o use auto cuando quiera que el modelo decida el pacing.",
+      "Estructure en 0-5 s / 5-10 s / 10-15 s, o use auto cuando quiera que el modelo decida el ritmo.",
       "Defina movimiento de cámara por plano.",
-      "Mantenga un beat principal por plano.",
+      "Mantenga un momento principal por plano.",
       "Alinee SFX y diálogo con acciones visibles."
     ],
     "promptingEngineWhy": [
       "Optimizado para lenguaje de cámara y continuidad multi-shot.",
       "Los prompts estructurados mejoran la coherencia temporal.",
-      "El audio nativo funciona mejor con cues cortos y específicos.",
+      "El audio nativo funciona mejor con indicaciones cortas y específicas.",
       "Las referencias multimodales mejoran estabilidad visual."
     ],
     "promptingTabNotes": {
@@ -229,8 +231,8 @@
         "id": "quick",
         "label": "Rápido",
         "title": "Prompt rápido de concepto",
-        "description": "Ideación rápida con un beat principal.",
-        "copy": "[Sujeto] en [escenario]. Cámara: [movimiento + intención]. Iluminación: [estilo]. Acción: [beat principal]. Audio: [ambiente + 1 SFX]. (Auto o 4-15 s)"
+        "description": "Ideación rápida con un momento principal.",
+        "copy": "[Sujeto] en [escenario]. Cámara: [movimiento + intención]. Iluminación: [estilo]. Acción: [momento principal]. Audio: [ambiente + 1 SFX]. (Auto o 4-15 s)"
       },
       {
         "id": "structured",
@@ -256,7 +258,7 @@
     ],
     "tipsTitle": "Consejos y límites",
     "strengths": [
-      "Muy buen control de cámara cuando los beats son explícitos.",
+      "Muy buen control de cámara cuando los tiempos son explícitos.",
       "Continuidad más sólida con referencias multimodales.",
       "Audio nativo sincronizado en salidas cortas.",
       "Útil para publicidad, acción y previsualización."
@@ -264,17 +266,17 @@
     "troubleshootingItems": [
       "Cortes bruscos -> agregue verbos de transición + timestamps.",
       "Deriva de continuidad -> refuerce anclas (vestuario, prop, locación).",
-      "Audio desalineado -> acorte diálogo y alinee cues con acciones visibles.",
+      "Audio desalineado -> acorte el diálogo y alinee las indicaciones sonoras con acciones visibles.",
       "Física poco creíble -> reduzca acciones simultáneas por plano."
     ],
     "boundaries": [
-      "Las escenas complejas mejoran cuando separas los beats con más claridad.",
+      "Las escenas complejas mejoran cuando separas los momentos con más claridad.",
       "Los prompts con muchas referencias funcionan mejor si cada fuente tiene una función clara.",
       "Controla la familia de rutas Fal activa antes de escalar tráfico.",
-      "Usa la cotización en vivo de Generate antes de un rollout con clientes o automatizaciones."
+      "Usa el precio final de Generate antes de un despliegue con clientes o automatizaciones."
     ],
     "galleryTitle": "Ejemplos de Seedance 2.0",
-    "galleryIntro": "Usa esta galería para revisar patrones de prompt, estructura de escenas y tipos de beats que Seedance 2.0 resuelve bien dentro de MaxVideoAI.",
+    "galleryIntro": "Usa esta galería para revisar patrones de prompt, estructura de escenas y tipos de secuencias que Seedance 2.0 resuelve bien dentro de MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos de Seedance ->",
     "recreateLabel": "Recrear esta toma ->",
     "demoTitle": "Prompt de demostración — Seedance 2.0",
@@ -283,21 +285,21 @@
       {
         "brand": "bytedance",
         "title": "Seedance 2.0 Fast",
-        "description": "Usa el tier rápido de Seedance para borradores, checks de timing y loops de concepto antes de llevar los finales a la versión estándar.",
+        "description": "Usa la versión rápida de Seedance para borradores, revisiones de timing e iteraciones de concepto antes de llevar los finales a la versión estándar.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Ver Seedance 2.0 Fast ->"
       },
       {
         "brand": "google-veo",
         "title": "Google Veo 3.1",
-        "description": "Compara Seedance 2.0 con Veo 3.1 cuando necesites otro motor premium con audio nativo para anuncios, lanzamientos y motion de producto.",
+        "description": "Compara Seedance 2.0 con Veo 3.1 cuando necesites otro motor premium con audio nativo para anuncios, lanzamientos y animaciones de producto.",
         "modelSlug": "veo-3-1",
         "ctaLabel": "Comparar Seedance 2.0 vs Veo 3.1 ->"
       },
       {
         "brand": "kling",
         "title": "Kling 3 Pro",
-        "description": "Abre Kling 3 Pro si quieres más foco en secuenciación de escenas, shot control y lógica storyboard multi-prompt.",
+        "description": "Abre Kling 3 Pro si quieres más foco en la secuenciación de escenas, el control del encuadre y la lógica storyboard multi-prompt.",
         "modelSlug": "kling-3-pro",
         "ctaLabel": "Comparar Seedance 2.0 vs Kling 3 Pro ->"
       }

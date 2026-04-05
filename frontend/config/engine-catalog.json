@@ -4496,7 +4496,7 @@
           "wan-2-5",
           "wan-2-6"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
         "enabled": true

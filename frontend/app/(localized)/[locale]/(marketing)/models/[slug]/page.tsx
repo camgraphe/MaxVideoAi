@@ -2260,9 +2260,23 @@ function formatImageResolutions(engineCaps: EngineCaps | undefined) {
   return resolutions.length ? resolutions.join(' / ') : 'Data pending';
 }
 
-function formatOutputFormats(engineCaps: EngineCaps | undefined) {
-  const formats = engineCaps?.inputSchema?.constraints?.supportedFormats ?? [];
-  return formats.length ? formats.join(' / ') : 'Data pending';
+function formatOutputFormats(entry: FalEngineEntry) {
+  const engineCaps = entry.engine;
+  const fields = [...(engineCaps?.inputSchema?.required ?? []), ...(engineCaps?.inputSchema?.optional ?? [])];
+  const outputFormatField = fields.find((field) => field.id === 'output_format');
+  const outputFormatValues =
+    outputFormatField && 'values' in outputFormatField && Array.isArray(outputFormatField.values)
+      ? outputFormatField.values
+      : [];
+  if (outputFormatValues.length) {
+    return outputFormatValues.join(' / ');
+  }
+  const rendersVideo =
+    entry.type === 'video' ||
+    (engineCaps?.modes ?? []).some((mode) =>
+      ['t2v', 'i2v', 'v2v', 'ref2v', 'r2v', 'fl2v', 'extend', 'reframe', 'retake'].includes(mode)
+    );
+  return rendersVideo ? 'MP4' : 'Data pending';
 }
 
 function getPricePerSecondCents(engineCaps: EngineCaps | undefined): number | null {
@@ -2344,7 +2358,7 @@ function buildSpecValues(
     maxDuration: resolveKeySpecValue(specs, 'maxDuration', formatDuration(engineCaps)),
     aspectRatios: resolveKeySpecValue(specs, 'aspectRatios', formatAspectRatios(engineCaps)),
     fpsOptions: resolveKeySpecValue(specs, 'fpsOptions', formatFps(engineCaps)),
-    outputFormats: resolveKeySpecValue(specs, 'outputFormats', formatOutputFormats(engineCaps)),
+    outputFormats: resolveKeySpecValue(specs, 'outputFormats', formatOutputFormats(entry)),
     audioOutput: resolveKeySpecValue(specs, 'audioOutput', resolveStatus(engineCaps?.audio)),
     nativeAudioGeneration: resolveKeySpecValue(specs, 'nativeAudioGeneration', resolveStatus(engineCaps?.audio)),
     lipSync: resolveKeySpecValue(specs, 'lipSync', 'Data pending'),
@@ -2531,7 +2545,10 @@ function normalizeHeroSubtitle(text: string, locale: AppLocale): string {
     aiCount += 1;
     return aiCount === 1 ? match : '';
   });
+  output = output.replace(/([.?!])\s*,\s*/g, '$1 ');
+  output = output.replace(/,\s*([.?!])/g, '$1');
   output = output.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
+  output = output.replace(/([.?!]\s+)([a-z])/g, (_, boundary: string, letter: string) => `${boundary}${letter.toUpperCase()}`);
   return output;
 }
 

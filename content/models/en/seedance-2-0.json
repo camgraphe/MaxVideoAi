@@ -3,14 +3,14 @@
   "versionLabel": "2.0",
   "seo": {
     "title": "Seedance 2.0 (ByteDance) — AI Video with Native Audio & Multi-Shot Control | MaxVideoAI",
-    "description": "Explore ByteDance Seedance 2.0 on MaxVideoAI: native audio generation, 480p/720p output, auto or 4-15 second runs, multimodal references, and cinematic camera language."
+    "description": "Explore ByteDance Seedance 2.0 on MaxVideoAI: native audio, 480p/720p output, auto or 4-15 second runs, multimodal references, realistic physics, and director-level camera control."
   },
-  "overview": "Seedance 2.0 is ByteDance's flagship AI video model for cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. Use this page to choose the right workflow, prompt structure, and comparison path before you move into production.",
-  "pricingNotes": "Seedance 2 uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final live quote before submission.",
+  "overview": "Seedance 2.0 is ByteDance's latest and most advanced video generation model on Fal. It combines cinematic motion, multi-shot continuity, realistic physics, and native audio in a single generation.",
+  "pricingNotes": "Seedance 2 uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "Use Seedance 2.0 when you want premium multi-shot video, stronger motion realism, and native audio in the same render. This page covers the live Seedance 2 workflows now exposed on Fal: text-to-video, image-to-video with an optional end frame, reference-to-video with multimodal references, and the best internal routes to compare it against Veo, Kling, and the outgoing Sora tier.",
-    "badge": "480p/720p · Auto or 4-15s · Native audio · Text / image / reference workflows",
+    "intro": "Fal presents Seedance 2.0 as cinematic video with native audio, real-world physics, and director-level camera control. On MaxVideoAI, use it across text-to-video, image-to-video with an optional end frame, and reference-to-video with multimodal inputs when you need stronger camera grammar, action realism, and multi-shot continuity.",
+    "badge": "480p/720p · Auto or 4-15s · Native audio · Text / image / reference modes",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -25,7 +25,7 @@
         "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
       },
       {
-        "label": "Review pricing and workflows",
+        "label": "Review pricing and usage",
         "href": "/pricing"
       }
     ]
@@ -38,7 +38,7 @@
     "title": "Use cases",
     "items": [
       {
-        "title": "Action sequences with more believable physics and interaction",
+        "title": "Action scenes with collisions, debris, and more believable physical interaction",
         "icon": "camera"
       },
       {
@@ -46,7 +46,7 @@
         "icon": "product"
       },
       {
-        "title": "Music-led visuals with synced ambience and SFX cues",
+        "title": "Audio-led scenes with synced dialogue, ambience, and sound effects",
         "icon": "music"
       },
       {
@@ -67,7 +67,7 @@
   "technicalOverview": [
     {
       "label": "Role",
-      "body": "ByteDance's flagship Seedance tier for cinematic motion, multi-shot continuity, and native audio."
+      "body": "ByteDance's latest video generation model with a unified multimodal audio-video architecture."
     },
     {
       "label": "Inputs",
@@ -87,11 +87,11 @@
     },
     {
       "label": "Camera and motion",
-      "body": "Advanced camera and motion controls, with best results from explicit shot direction"
+      "body": "Advanced camera control with strong results on dolly zooms, rack focus, tracking shots, POV switches, and smooth handheld movement"
     },
     {
       "label": "Notes",
-      "body": "ByteDance describes extension and editing capabilities alongside the main generation workflows."
+      "body": "Fal's public page highlights text-to-video, image-to-video, reference-to-video, and optimized fast variants inside the Seedance 2 family."
     }
   ],
   "promptStructure": {
@@ -114,7 +114,7 @@
       "Use multimodal references to lock wardrobe, props, pacing, and ambience across beats.",
       "Use the optional end image in i2v when you need a guided last frame.",
       "Move to Seedance 2.0 Fast when you need cheaper draft passes before final renders.",
-      "Generate shows the active route and the live quote before you submit."
+      "Generate shows the active route and the final quote before you submit."
     ]
   },
   "prompts": [
@@ -155,29 +155,29 @@
     },
     {
       "q": "How should I check availability and pricing?",
-      "a": "Open Generate to confirm the active route, supported workflows, and the live quote for your run before you submit."
+      "a": "Open Generate to confirm the active route, supported workflows, and the final quote for your run before you submit."
     },
     {
       "q": "Should I start with standard or Fast?",
-      "a": "Start with standard Seedance 2.0 when you want the flagship render quality, and switch to Seedance 2.0 Fast for quicker draft passes and comparison rounds."
+      "a": "Start with standard Seedance 2.0 when you want the highest render quality, and switch to Seedance 2.0 Fast for quicker draft passes and comparison rounds."
     }
   ],
   "custom": {
     "whyTitle": "What makes Seedance 2.0 different",
     "heroTrustLine": "Pay-as-you-go on MaxVideoAI · Price shown before you generate",
     "heroHighlights": [
-      "Director-level camera language||Optimized for explicit shot direction: camera movement, framing, and transition verbs",
-      "Multi-shot continuity in a single render||Designed for short timelines where multiple beats can be stitched into one coherent output",
-      "Native audio generation (visual and sound together)||Official materials highlight audio generated alongside video for stronger sync",
-      "Multimodal references at scale||Mix text with image, video, and audio references to lock style, pacing, and continuity",
-      "i2v with optional end frame||Start from one still, then add an optional closing image when you need a guided transition"
+      "Director-level camera grammar||Fal highlights dolly zooms, rack focuses, tracking shots, POV switches, and smooth handheld movement",
+      "Real-world physics under pressure||Action scenes, collisions, debris, and fabric motion are part of the model's public positioning on Fal",
+      "Native audio in the same generation||Dialogue, ambience, music, and sound effects stay synchronized without separate audio layering",
+      "Unified multimodal control||Text, image, audio, and video inputs can be combined inside the Seedance 2 workflow family",
+      "Multi-shot outputs up to 15s||Fal highlights natural cuts and transitions inside a single generation rather than a single unbroken take"
     ],
     "specTitle": "Specs",
     "specNote": "Only officially sourced claims are listed here, with pricing and workflow details checked live inside Generate.",
     "specSections": [
       {
         "title": "Multimodal input stack",
-        "intro": "Seedance 2.0 accepts text, image, audio, and video references.",
+        "intro": "Fal's public page frames Seedance 2.0 as a unified multimodal audio-video model.",
         "items": [
           "Text instructions + multimodal references",
           "Up to 9 image references",
@@ -188,7 +188,7 @@
       },
       {
         "title": "Output style and structure",
-        "intro": "Fal exposes the current Seedance 2 route with cinematic control, native audio, and broader duration/aspect coverage than the initial launch copy suggested.",
+        "intro": "Fal highlights cinematic control, native audio, realistic physics, multi-shot cuts, and up to 15 seconds per generation.",
         "items": [
           "480p or 720p",
           "Auto or 4-15s per generation",
@@ -271,7 +271,7 @@
       "Reference-heavy prompts work best when each source has one clear job.",
       "Reference audio only works when at least one image or video reference is attached.",
       "Check the active Fal route family before scaling production traffic.",
-      "Use the live quote in Generate before client-facing rollout or automated workflows."
+      "Use the final quote in Generate before client-facing rollout or automated workflows."
     ],
     "galleryTitle": "Seedance 2.0 examples",
     "galleryIntro": "Use this gallery to review prompt patterns, scene structure, and the kinds of beats Seedance 2.0 handles well inside MaxVideoAI.",
@@ -283,7 +283,7 @@
       {
         "brand": "bytedance",
         "title": "Seedance 2.0 Fast",
-        "description": "Use the fast Seedance tier for draft passes, quick timing checks, and early concept loops before you move finals into the standard tier.",
+        "description": "Use the faster Seedance version for draft passes, quick timing checks, and early concept loops before you move finals into the standard version.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "See Seedance 2.0 Fast ->"
       },

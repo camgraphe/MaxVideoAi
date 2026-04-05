@@ -189,7 +189,7 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
       'On token-priced routes like Seedance 2, both resolution and aspect ratio change the pixel count and the cost.',
       'Audio can add a premium on some engines; others, like Seedance 2, price audio on/off the same.',
       'Engine tier (Seedance / Veo / Kling / LTX) sets the base rate.',
-      'Generate still shows the final live quote before submission.',
+      'Generate still shows the final quote before submission.',
     ],
   },
   fr: {
@@ -199,7 +199,7 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
       'Sur les routes à tokens comme Seedance 2, la résolution et le ratio changent le nombre de pixels et donc le coût.',
       'L’audio peut ajouter une prime sur certains moteurs ; d’autres, comme Seedance 2, gardent le même prix avec ou sans audio.',
       'Le niveau du moteur (Seedance / Veo / Kling / LTX) fixe le tarif de base.',
-      'Generate affiche quand même le devis live final avant validation.',
+      'Generate affiche quand même le devis final avant validation.',
     ],
   },
   es: {
@@ -209,7 +209,7 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
       'En rutas con tokens como Seedance 2, la resolución y el ratio cambian el número de píxeles y por tanto el costo.',
       'El audio puede añadir un recargo en algunos motores; otros, como Seedance 2, mantienen el mismo precio con o sin audio.',
       'El nivel del motor (Seedance / Veo / Kling / LTX) define la tarifa base.',
-      'Generate sigue mostrando la cotización final en vivo antes de enviar.',
+      'Generate sigue mostrando el precio final antes de enviar.',
     ],
   },
 };

@@ -112,6 +112,30 @@ test('Seedance aliases, family routing, hub publication, and locale coverage are
   assert.equal(typeof fastScore.speedStability, 'number');
 });
 
+test('Seedance benchmark specs stay aligned with the live Fal-facing product surface', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    specs?: Array<{ modelSlug?: string; keySpecs?: Record<string, unknown> }>;
+  };
+
+  const standard = benchmarkData.specs?.find((entry) => entry.modelSlug === 'seedance-2-0') ?? null;
+  const fast = benchmarkData.specs?.find((entry) => entry.modelSlug === 'seedance-2-0-fast') ?? null;
+
+  assert.ok(standard);
+  assert.ok(fast);
+
+  [standard, fast].forEach((entry) => {
+    assert.equal(entry?.keySpecs?.videoToVideo, 'Not supported');
+    assert.equal(entry?.keySpecs?.firstLastFrame, 'Supported (start + end image in i2v)');
+    assert.equal(entry?.keySpecs?.maxResolution, '720p');
+    assert.equal(entry?.keySpecs?.maxDuration, '15s');
+    assert.deepEqual(entry?.keySpecs?.aspectRatios, ['Auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+    assert.deepEqual(entry?.keySpecs?.outputFormats, ['MP4']);
+    assert.equal(entry?.keySpecs?.pricePerSecond ?? null, null);
+    assert.equal(entry?.keySpecs?.releaseDate ?? null, null);
+  });
+});
+
 test('Seedance becomes the app and marketing priority family ahead of Sora', () => {
   const appEngineIds = getBaseEnginesByCategory('video').map((engine) => engine.id);
   assert.equal(appEngineIds[0], 'seedance-2-0');
@@ -136,15 +160,15 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
   assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
 });
 
-test('Seedance 1.5 Pro stays accessible as legacy while Seedance 2.0 owns the primary alias and promoted slots', () => {
-  const legacySeedance = listFalEngines().find((entry) => entry.id === 'seedance-1-5-pro');
+test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias and promoted slots', () => {
+  const seedance15 = listFalEngines().find((entry) => entry.id === 'seedance-1-5-pro');
 
-  assert.ok(legacySeedance);
-  assert.equal(legacySeedance.isLegacy, true);
-  assert.equal(legacySeedance.surfaces.compare.includeInHub, false);
+  assert.ok(seedance15);
+  assert.equal(Boolean(seedance15.isLegacy), false);
+  assert.equal(seedance15.surfaces.compare.includeInHub, true);
   assert.equal(normalizeEngineId('seedance'), 'seedance-2-0');
   assert.equal(MARKETING_NAV_MODELS.some((item) => item.key === 'seedance-1-5-pro'), false);
-  assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), false);
+  assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
 test('Header model menu keeps the Veo family expanded with a dedicated Lite slot', () => {

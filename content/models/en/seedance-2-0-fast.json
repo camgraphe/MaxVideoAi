@@ -3,14 +3,14 @@
   "versionLabel": "2.0 Fast",
   "seo": {
     "title": "Seedance 2.0 Fast — ByteDance AI video for fast draft passes | MaxVideoAI",
-    "description": "Use Seedance 2.0 Fast on MaxVideoAI for quicker draft passes, shot planning, 480p/720p output, auto or 4-15 second runs, and fast iteration before you move polished work into standard Seedance 2.0."
+    "description": "Use Seedance 2.0 Fast on MaxVideoAI as the optimized fast variant in the Seedance 2 family for quicker storyboard passes, 480p/720p output, auto or 4-15 second runs, and faster iteration before standard Seedance 2.0."
   },
-  "overview": "Seedance 2.0 Fast is the draft-speed sibling of Seedance 2.0. Use it for rapid storyboard passes, timing checks, and early concept loops when you want the Seedance family look without committing every render to the premium tier first.",
-  "pricingNotes": "Seedance 2 Fast uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final live quote before submission.",
+  "overview": "Seedance 2.0 Fast is the optimized fast variant in the Seedance 2 endpoint family on Fal. Use it for storyboard passes, timing checks, and side-by-side iteration before moving winning directions into standard Seedance 2.0.",
+  "pricingNotes": "Seedance 2 Fast uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
   "hero": {
     "title": "Seedance 2.0 Fast",
-    "intro": "Use Seedance 2.0 Fast when you want the Seedance family look with shorter feedback loops. It is built for concept validation, shot planning, and rapid side-by-side comparisons across text-to-video, image-to-video with an optional end frame, and reference-to-video before final renders move into standard Seedance 2.0.",
-    "badge": "Draft-speed Seedance tier · 480p/720p · Auto or 4-15s · Native audio",
+    "intro": "Fal lists Fast as one of the optimized variants in the Seedance 2 family. On MaxVideoAI, use it when you want the same core text-to-video, image-to-video, and reference-to-video workflow family with shorter iteration loops before you commit to standard Seedance 2.0.",
+    "badge": "Optimized fast variant · 480p/720p · Auto or 4-15s · Native audio",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0 Fast",
       "href": "/app?engine=seedance-2-0-fast"
@@ -25,7 +25,7 @@
         "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
       },
       {
-        "label": "Review pricing and workflows",
+        "label": "Review pricing and usage",
         "href": "/pricing"
       }
     ]
@@ -38,11 +38,11 @@
     "title": "Best use cases",
     "items": [
       {
-        "title": "Storyboard passes before finals",
+        "title": "Storyboard passes before standard runs",
         "icon": "storyboard"
       },
       {
-        "title": "Draft ad variants with faster turnarounds",
+        "title": "Quick route comparisons across Seedance Fast, Veo Fast, and LTX Fast",
         "icon": "ads"
       },
       {
@@ -50,7 +50,7 @@
         "icon": "music"
       },
       {
-        "title": "A/B motion tests before standard Seedance renders",
+        "title": "A/B camera and motion tests before standard Seedance renders",
         "icon": "repeat"
       }
     ]
@@ -59,11 +59,11 @@
   "technicalOverview": [
     {
       "label": "Role in the family",
-      "body": "Fast draft tier for the Seedance 2 workflow."
+      "body": "Optimized fast variant in the Seedance 2 family on Fal."
     },
     {
       "label": "Inputs",
-      "body": "Text prompts, image-to-video with an optional end frame, and ref2v with image/video/audio references"
+      "body": "Same core Seedance 2 workflow family: text prompts, image-to-video with an optional end frame, and ref2v with image, video, and audio references"
     },
     {
       "label": "Duration target",
@@ -76,6 +76,10 @@
     {
       "label": "Best moment to use it",
       "body": "Early exploration, shot planning, and pre-final comparison rounds"
+    },
+    {
+      "label": "Fal positioning",
+      "body": "Fal's public Seedance page groups Fast with the same cinematic, audio-native, multimodal endpoint family."
     }
   ],
   "promptStructure": {
@@ -98,7 +102,7 @@
       "Use the optional end image in i2v when you want a guided last frame during draft passes.",
       "Keep prompts short and tactical: one beat, one move, one reason to compare.",
       "Use the compare hub to judge Seedance Fast against Veo Fast and LTX Fast, not against every model at once.",
-      "Generate shows the active route and the live quote before you submit."
+      "Generate shows the active route and the final quote before you submit."
     ]
   },
   "prompts": [
@@ -132,19 +136,20 @@
   ],
   "custom": {
     "whyTitle": "Why Seedance 2.0 Fast matters",
-    "heroTrustLine": "Use Fast to decide quickly, then move finals into standard Seedance 2.0",
+    "heroTrustLine": "Use Fast to decide quickly, then move selected shots into standard Seedance 2.0",
     "heroHighlights": [
-      "Faster draft loop||Ideal for shot planning, rough timing, and early motion tests",
-      "Same Seedance family language||Useful when you want draft passes that stay closer to the premium tier's look",
+      "Optimized fast variant||Fal lists Fast as the optimized route inside the Seedance 2 endpoint family",
+      "Same workflow family||Text-to-video, image-to-video, and reference-to-video stay available in the same Seedance 2 stack",
+      "Native audio plus multimodal references||Fast still sits inside the same audio-native and multimodal Seedance family",
       "Comparison-ready||Pairs naturally against Veo 3.1 Fast and LTX 2.3 Fast",
       "Built for escalation||Move successful drafts into standard Seedance 2.0 for polished finals"
     ],
     "specTitle": "Specs and role",
-    "specNote": "Treat Fast as the draft-speed tier in the Seedance 2 family.",
+    "specNote": "Treat Fast as the quick-iteration version in the Seedance 2 family.",
     "specSections": [
       {
         "title": "What Fast is for",
-        "intro": "The Fast tier helps you validate decisions sooner.",
+        "intro": "Fal positions Fast as the quicker route inside the Seedance 2 family.",
         "items": [
           "Shot planning before polished renders",
           "Rapid A/B motion checks",
@@ -155,7 +160,7 @@
       },
       {
         "title": "Where it fits",
-        "intro": "Use Fast first, then escalate winners.",
+        "intro": "Fast keeps the same core mode coverage and format envelope.",
         "items": [
           "Fast draft -> compare -> standard Seedance 2.0 final",
           "Useful against Veo 3.1 Fast and LTX 2.3 Fast",
@@ -228,7 +233,7 @@
       "Do not judge final polish from Fast alone.",
       "Complex prompts make Fast harder to compare.",
       "Treat it as a draft tier, not a replacement for the standard tier.",
-      "Use the live quote and route details inside Generate before scaling winners."
+      "Use the final quote and route details inside Generate before scaling winners."
     ],
     "galleryTitle": "Seedance 2.0 Fast examples",
     "galleryIntro": "Review the kinds of draft passes and comparison prompts that make Seedance 2.0 Fast useful in a real production workflow.",
@@ -240,7 +245,7 @@
       {
         "brand": "bytedance",
         "title": "Seedance 2.0",
-        "description": "Move winning drafts into standard Seedance 2.0 when you need the polished flagship render.",
+        "description": "Move winning drafts into standard Seedance 2.0 when you need the most polished final render.",
         "modelSlug": "seedance-2-0",
         "ctaLabel": "See standard Seedance 2.0 ->"
       },

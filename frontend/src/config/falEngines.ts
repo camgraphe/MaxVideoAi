@@ -5093,7 +5093,6 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     family: 'seedance',
     versionLabel: 'v1.5 Pro',
     availability: 'available',
-    isLegacy: true,
     logoPolicy: 'textOnly',
     engine: SEEDANCE_1_5_PRO_ENGINE,
     modes: [
@@ -5169,7 +5168,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     surfaces: {
       compare: {
-        includeInHub: false,
+        includeInHub: true,
       },
     },
     promptExample:
