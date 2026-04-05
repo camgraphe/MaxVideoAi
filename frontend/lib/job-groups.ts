@@ -1,4 +1,4 @@
-import { normalizeMediaUrl } from './media';
+import { normalizeMediaUrl, resolvePreferredMediaUrl } from './media';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from './job-status';
 import type { Job } from '../types/jobs';
 import type { GroupSummary, GroupMemberSummary } from '../types/groups';
@@ -38,11 +38,7 @@ function buildMember(job: Job): GroupMemberSummary {
     Array.isArray(job.renderThumbUrls) && job.renderThumbUrls.length
       ? job.renderThumbUrls.find((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value)) ?? null
       : null;
-  const thumbUrl =
-    normalizeMediaUrl(job.thumbUrl) ??
-    normalizeMediaUrl(firstRenderThumbUrl) ??
-    normalizeMediaUrl(firstRenderUrl) ??
-    null;
+  const thumbUrl = resolvePreferredMediaUrl(job.thumbUrl, firstRenderThumbUrl, firstRenderUrl);
   const videoUrl = normalizeMediaUrl(job.videoUrl) ?? null;
   const audioUrl = normalizeMediaUrl(job.audioUrl) ?? null;
   const aspectRatio = job.aspectRatio ?? null;

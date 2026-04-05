@@ -26,3 +26,18 @@ export function isPlaceholderMediaUrl(value?: string | null): boolean {
     normalized.includes('/assets/gallery/')
   );
 }
+
+export function resolvePreferredMediaUrl(...candidates: Array<string | null | undefined>): string | null {
+  let fallback: string | null = null;
+  for (const candidate of candidates) {
+    const normalized = normalizeMediaUrl(candidate);
+    if (!normalized) continue;
+    if (!fallback) {
+      fallback = normalized;
+    }
+    if (!isPlaceholderMediaUrl(normalized)) {
+      return normalized;
+    }
+  }
+  return fallback;
+}

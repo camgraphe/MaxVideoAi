@@ -67,6 +67,7 @@ import {
 } from '@/lib/image/inputSchema';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobSurface } from '@/lib/job-surface';
+import { isPlaceholderMediaUrl, resolvePreferredMediaUrl } from '@/lib/media';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -686,11 +687,15 @@ function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
     renderUrls.length > 0
       ? renderUrls.map((url, index) => ({
           url,
-          thumbUrl: renderThumbUrls[index] ?? (index === 0 ? job.thumbUrl ?? null : null),
+          thumbUrl: resolvePreferredMediaUrl(renderThumbUrls[index], index === 0 ? job.thumbUrl ?? null : null, url),
         }))
-      : job.thumbUrl
-        ? [{ url: heroOriginal ?? job.thumbUrl, thumbUrl: job.thumbUrl }]
-        : [];
+      : (() => {
+          const thumbUrl = resolvePreferredMediaUrl(job.thumbUrl, heroOriginal);
+          if (!thumbUrl || isPlaceholderMediaUrl(thumbUrl)) {
+            return [];
+          }
+          return [{ url: heroOriginal ?? thumbUrl, thumbUrl }];
+        })();
   if (!images.length) return null;
   const timestamp = Date.parse(job.createdAt ?? '');
   return {
