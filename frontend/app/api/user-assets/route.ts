@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
-import { deleteUserAsset, StorageUploadError, uploadImageToStorage, recordUserAsset } from '@/server/storage';
+import { deleteUserAsset, StorageUploadError, uploadFileBuffer, uploadImageToStorage, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { normalizeUserAssetSource } from '@/lib/job-surface';
 
 export const runtime = 'nodejs';
+
+const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
+const MAX_VIDEO_BYTES = Number(process.env.ASSET_MAX_VIDEO_MB ?? '30') * 1024 * 1024;
 
 export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
@@ -100,9 +103,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  let payload: { url?: string; name?: string; label?: string; jobId?: string; source?: string } | null = null;
+  let payload: { url?: string; name?: string; label?: string; jobId?: string; source?: string; kind?: string } | null = null;
   try {
-    payload = (await req.json()) as { url?: string; name?: string; label?: string; jobId?: string; source?: string } | null;
+    payload = (await req.json()) as {
+      url?: string;
+      name?: string;
+      label?: string;
+      jobId?: string;
+      source?: string;
+      kind?: string;
+    } | null;
   } catch {
     return NextResponse.json({ ok: false, error: 'INVALID_JSON' }, { status: 400 });
   }
@@ -111,6 +121,8 @@ export async function POST(req: NextRequest) {
   if (!sourceUrl) {
     return NextResponse.json({ ok: false, error: 'URL_REQUIRED' }, { status: 400 });
   }
+
+  const requestedKind = payload?.kind === 'video' ? 'video' : 'image';
 
   await ensureAssetSchema();
 
@@ -167,40 +179,72 @@ export async function POST(req: NextRequest) {
         { status: 422 }
       );
     }
-    const mime = response.headers.get('content-type') ?? 'image/png';
-    if (!mime.startsWith('image/')) {
+    const mime = response.headers.get('content-type') ?? (requestedKind === 'video' ? 'video/mp4' : 'image/png');
+    const isImage = mime.startsWith('image/');
+    const isVideo = mime.startsWith('video/');
+    if ((requestedKind === 'image' && !isImage) || (requestedKind === 'video' && !isVideo)) {
       return NextResponse.json({ ok: false, error: 'UNSUPPORTED_TYPE' }, { status: 415 });
     }
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const MAX_BYTES = 25 * 1024 * 1024;
     if (!buffer.length) {
-      return NextResponse.json({ ok: false, error: 'EMPTY_IMAGE' }, { status: 422 });
+      return NextResponse.json({ ok: false, error: requestedKind === 'video' ? 'EMPTY_VIDEO' : 'EMPTY_IMAGE' }, { status: 422 });
     }
-    if (buffer.length > MAX_BYTES) {
-      return NextResponse.json({ ok: false, error: 'IMAGE_TOO_LARGE' }, { status: 422 });
+    const maxBytes = requestedKind === 'video' ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+    if (buffer.length > maxBytes) {
+      return NextResponse.json(
+        { ok: false, error: requestedKind === 'video' ? 'VIDEO_TOO_LARGE' : 'IMAGE_TOO_LARGE' },
+        { status: 422 }
+      );
     }
 
-    const upload = await uploadImageToStorage({
-      data: buffer,
-      mime,
-      userId,
-      prefix: 'library',
-      fileName: payload?.name ?? payload?.label ?? parsed.pathname.split('/').pop() ?? 'image.png',
-    });
+    const fileName =
+      payload?.name ??
+      payload?.label ??
+      parsed.pathname.split('/').pop() ??
+      (requestedKind === 'video' ? 'video.mp4' : 'image.png');
+
+    let uploadUrl = '';
+    let uploadMime = mime;
+    let uploadWidth: number | null = null;
+    let uploadHeight: number | null = null;
+
+    if (requestedKind === 'video') {
+      const upload = await uploadFileBuffer({
+        data: buffer,
+        mime,
+        userId,
+        prefix: 'library',
+        fileName,
+      });
+      uploadUrl = upload.url;
+    } else {
+      const upload = await uploadImageToStorage({
+        data: buffer,
+        mime,
+        userId,
+        prefix: 'library',
+        fileName,
+      });
+      uploadUrl = upload.url;
+      uploadMime = upload.mime;
+      uploadWidth = upload.width;
+      uploadHeight = upload.height;
+    }
 
     const assetId = await recordUserAsset({
       userId,
-      url: upload.url,
-      mime: upload.mime,
-      width: upload.width,
-      height: upload.height,
-      size: upload.size,
+      url: uploadUrl,
+      mime: uploadMime,
+      width: uploadWidth,
+      height: uploadHeight,
+      size: buffer.length,
       source: normalizeUserAssetSource(payload?.source),
       metadata: {
         originUrl: sourceUrl,
         jobId: payload?.jobId ?? null,
         label: payload?.label ?? payload?.name ?? null,
+        kind: requestedKind,
       },
     });
 
@@ -208,11 +252,11 @@ export async function POST(req: NextRequest) {
       ok: true,
       asset: {
         id: assetId,
-        url: upload.url,
-        width: upload.width,
-        height: upload.height,
-        mime: upload.mime,
-        size: upload.size,
+        url: uploadUrl,
+        width: uploadWidth,
+        height: uploadHeight,
+        mime: uploadMime,
+        size: buffer.length,
       },
     });
   } catch (error) {

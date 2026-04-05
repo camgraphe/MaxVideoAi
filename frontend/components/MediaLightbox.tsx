@@ -14,6 +14,7 @@ export interface MediaLightboxEntry {
   label: string;
   videoUrl?: string | null;
   audioUrl?: string | null;
+  imageUrl?: string | null;
   thumbUrl?: string | null;
   aspectRatio?: string | null;
   jobId?: string | null;
@@ -265,7 +266,7 @@ export function MediaLightbox({
   );
 
   const hasAtLeastOneRenderableMedia = useMemo(
-    () => entries.some((entry) => Boolean(entry.videoUrl || entry.audioUrl || entry.thumbUrl)),
+    () => entries.some((entry) => Boolean(entry.videoUrl || entry.audioUrl || entry.imageUrl || entry.thumbUrl)),
     [entries]
   );
   const specs = useMemo(() => {
@@ -319,8 +320,9 @@ export function MediaLightbox({
             const aspectClass = aspectRatioClass(entry.aspectRatio);
             const videoUrl = entry.videoUrl ?? undefined;
             const audioUrl = entry.audioUrl ?? undefined;
+            const imageUrl = entry.imageUrl ?? undefined;
             const thumbUrl = entry.thumbUrl ?? undefined;
-            const mediaUrl = entry.videoUrl ?? entry.audioUrl ?? entry.thumbUrl ?? null;
+            const mediaUrl = entry.videoUrl ?? entry.audioUrl ?? entry.imageUrl ?? entry.thumbUrl ?? null;
             const libraryState = libraryStates[entry.id];
             const isProcessing = entry.status === 'pending';
             const progressLabel =
@@ -469,8 +471,8 @@ export function MediaLightbox({
                           <audio controls src={audioUrl} className="w-full" />
                         </div>
                       </div>
-                    ) : thumbUrl ? (
-                      <Image src={thumbUrl} alt="" fill className="object-contain" />
+                    ) : imageUrl || thumbUrl ? (
+                      <Image src={imageUrl ?? thumbUrl ?? ''} alt="" fill className="object-contain" />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[12px] font-medium uppercase tracking-micro text-text-muted">
                         Preview unavailable

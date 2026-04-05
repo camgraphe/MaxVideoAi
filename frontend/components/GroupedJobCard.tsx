@@ -279,7 +279,9 @@ export function GroupedJobCard({
               const memberAudioUrl = member?.audioUrl ?? member?.job?.audioUrl ?? null;
               const previewThumb = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
               const previewHasMedia = Boolean(preview?.videoUrl || previewThumb || memberAudioUrl);
-              const isCompleted = memberStatus === 'completed' || previewHasMedia;
+              const isCompleted =
+                memberStatus === 'completed' ||
+                (previewHasMedia && memberStatus !== 'pending' && memberStatus !== 'failed');
               const previewKey = preview?.id ? `${preview.id}-${index}` : `preview-${index}`;
               return (
                 <div

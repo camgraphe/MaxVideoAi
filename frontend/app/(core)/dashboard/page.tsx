@@ -1515,6 +1515,11 @@ function EngineStatusCompact({
 }
 
 function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
+  const imageUrl =
+    Array.isArray(job.renderIds) && job.renderIds.length
+      ? job.renderIds.find((value): value is string => typeof value === 'string' && value.length > 0) ?? undefined
+      : undefined;
+
   return [
     {
       id: job.jobId,
@@ -1522,6 +1527,7 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
       surface: job.surface ?? null,
       label: job.engineLabel,
       videoUrl: job.videoUrl ?? undefined,
+      imageUrl,
       thumbUrl: job.thumbUrl ?? undefined,
       aspectRatio: job.aspectRatio ?? undefined,
       status: (job.status as MediaLightboxEntry['status']) ?? 'completed',
@@ -1541,30 +1547,38 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
 }
 
 function buildEntriesFromGroup(group: GroupSummary, versionLabel: string): MediaLightboxEntry[] {
-  return group.members.map((member) => ({
-    id: member.id,
-    jobId: member.jobId ?? member.id,
-    surface: member.job?.surface ?? null,
-    label:
-      typeof member.iterationIndex === 'number'
-        ? versionLabel.replace('{index}', String(member.iterationIndex + 1))
-        : member.engineLabel ?? member.id,
-    videoUrl: member.videoUrl ?? undefined,
-    thumbUrl: member.thumbUrl ?? undefined,
-    aspectRatio: member.aspectRatio ?? undefined,
-    status: member.status ?? 'completed',
-    progress: typeof member.progress === 'number' ? member.progress : null,
-    message: member.message ?? null,
-    engineLabel: member.engineLabel,
-    engineId: member.engineId ?? null,
-    durationSec: member.durationSec,
-    createdAt: member.createdAt,
-    hasAudio: Boolean(member.job?.hasAudio),
-    prompt: member.prompt ?? group.hero.prompt ?? null,
-    priceCents: typeof member.priceCents === 'number' ? member.priceCents : null,
-    currency: member.currency ?? group.currency ?? null,
-    curated: Boolean(member.job?.curated),
-  }));
+  return group.members.map((member) => {
+    const imageUrl =
+      Array.isArray(member.job?.renderIds) && member.job.renderIds.length
+        ? member.job.renderIds.find((value): value is string => typeof value === 'string' && value.length > 0) ?? undefined
+        : undefined;
+
+    return {
+      id: member.id,
+      jobId: member.jobId ?? member.id,
+      surface: member.job?.surface ?? null,
+      label:
+        typeof member.iterationIndex === 'number'
+          ? versionLabel.replace('{index}', String(member.iterationIndex + 1))
+          : member.engineLabel ?? member.id,
+      videoUrl: member.videoUrl ?? undefined,
+      imageUrl,
+      thumbUrl: member.thumbUrl ?? undefined,
+      aspectRatio: member.aspectRatio ?? undefined,
+      status: member.status ?? 'completed',
+      progress: typeof member.progress === 'number' ? member.progress : null,
+      message: member.message ?? null,
+      engineLabel: member.engineLabel,
+      engineId: member.engineId ?? null,
+      durationSec: member.durationSec,
+      createdAt: member.createdAt,
+      hasAudio: Boolean(member.job?.hasAudio),
+      prompt: member.prompt ?? group.hero.prompt ?? null,
+      priceCents: typeof member.priceCents === 'number' ? member.priceCents : null,
+      currency: member.currency ?? group.currency ?? null,
+      curated: Boolean(member.job?.curated),
+    };
+  });
 }
 
 function formatDateTime(value: string): string {

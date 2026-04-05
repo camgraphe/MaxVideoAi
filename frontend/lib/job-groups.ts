@@ -1,4 +1,4 @@
-import { normalizeMediaUrl } from './media';
+import { normalizeMediaUrl, resolvePreferredMediaUrl } from './media';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from './job-status';
 import type { Job } from '../types/jobs';
 import type { GroupSummary, GroupMemberSummary } from '../types/groups';
@@ -30,14 +30,22 @@ function shouldGroup(job: Job, iterationCountHint: number): boolean {
 }
 
 function buildMember(job: Job): GroupMemberSummary {
-  const thumbUrl = normalizeMediaUrl(job.thumbUrl) ?? null;
+  const firstRenderUrl =
+    Array.isArray(job.renderIds) && job.renderIds.length
+      ? job.renderIds.find((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value)) ?? null
+      : null;
+  const firstRenderThumbUrl =
+    Array.isArray(job.renderThumbUrls) && job.renderThumbUrls.length
+      ? job.renderThumbUrls.find((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value)) ?? null
+      : null;
+  const thumbUrl = resolvePreferredMediaUrl(job.thumbUrl, firstRenderThumbUrl, firstRenderUrl);
   const videoUrl = normalizeMediaUrl(job.videoUrl) ?? null;
   const audioUrl = normalizeMediaUrl(job.audioUrl) ?? null;
   const aspectRatio = job.aspectRatio ?? null;
   const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
   const currency = job.currency ?? job.pricingSnapshot?.currency ?? null;
   const iterationCount = job.iterationCount ?? (Array.isArray(job.renderIds) ? job.renderIds.length : null) ?? null;
-  const hasRenderableMedia = Boolean(videoUrl || audioUrl);
+  const hasRenderableMedia = Boolean(videoUrl || audioUrl || firstRenderUrl);
   const normalizedStatus = normalizeJobStatus(job.status ?? null, hasRenderableMedia);
   const status: GroupMemberSummary['status'] =
     normalizedStatus ?? (hasRenderableMedia ? 'completed' : 'pending');

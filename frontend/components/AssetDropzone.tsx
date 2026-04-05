@@ -415,22 +415,24 @@ export function AssetDropzone({
             const flattenSlotSurface = slotAssets.length === 1;
             const filledSingleSlot = flattenSlotSurface && asset != null;
             const allowClick = asset == null || asset?.kind !== 'audio';
+            const triggerFilePicker = () => {
+              inputRefs.current[index]?.click();
+            };
+            const triggerLibrary = () => {
+              onOpenLibrary?.(field, index);
+            };
 
             const triggerSelection = () => {
               if (!allowClick) return;
               if (asset) {
                 if (canOpenLibrary) {
-                  onOpenLibrary?.(field, index);
+                  triggerLibrary();
                   return;
                 }
-                inputRefs.current[index]?.click();
+                triggerFilePicker();
                 return;
               }
-              if (canOpenLibrary) {
-                onOpenLibrary?.(field, index);
-                return;
-              }
-              inputRefs.current[index]?.click();
+              triggerFilePicker();
             };
 
             return (
@@ -460,7 +462,7 @@ export function AssetDropzone({
                   event.preventDefault();
                   triggerSelection();
                 }}
-                title={asset ? undefined : canOpenLibrary ? assetCopy.selectAsset : assetCopy.upload}
+                title={asset ? undefined : assetCopy.upload}
                 onDragOver={(event) => {
                   event.preventDefault();
                 }}
@@ -557,7 +559,7 @@ export function AssetDropzone({
                       </svg>
                     </div>
                     {showRequiredHint ? <span className="text-[10px] text-warning dark:text-[#f6c667]">{assetCopy.neededBeforeGenerating}</span> : null}
-                    <div className="flex w-full items-center justify-center gap-2">
+                    <div className="flex w-full flex-wrap items-center justify-center gap-2">
                       <Button
                         type="button"
                         size="sm"
@@ -565,11 +567,25 @@ export function AssetDropzone({
                         className="min-h-0 h-auto rounded-full border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary dark:border-white/14 dark:bg-white/[0.045] dark:text-white/78 dark:hover:border-brand/30 dark:hover:bg-white/[0.08] dark:hover:text-white"
                         onClick={(event) => {
                           event.stopPropagation();
-                          inputRefs.current[index]?.click();
+                          triggerFilePicker();
                         }}
                       >
                         {assetCopy.upload}
                       </Button>
+                      {canOpenLibrary ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/78 dark:hover:bg-white/[0.08] dark:hover:text-white"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            triggerLibrary();
+                          }}
+                        >
+                          {assetCopy.library}
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 )}

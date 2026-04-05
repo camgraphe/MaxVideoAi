@@ -26,3 +26,51 @@ test('image grouping prefers renderThumbUrls for preview/member thumbnails', () 
   assert.equal(group.members[1]?.thumbUrl, 'https://cdn.example.com/thumb-2.webp');
   assert.equal(group.previews[0]?.thumbUrl, 'https://cdn.example.com/thumb-1.webp');
 });
+
+test('single image jobs fall back to render ids when thumbUrl is not ready yet', () => {
+  const jobs: Job[] = [
+    {
+      jobId: 'img-job-single',
+      engineLabel: 'Image Engine',
+      durationSec: 2,
+      prompt: 'A portrait',
+      createdAt: '2026-02-16T00:00:00.000Z',
+      engineId: 'fal-image',
+      status: 'completed',
+      renderIds: ['https://cdn.example.com/full-single.png'],
+      renderThumbUrls: null,
+      thumbUrl: null,
+    },
+  ];
+
+  const { groups } = groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true });
+  assert.equal(groups.length, 1);
+  const [group] = groups;
+  assert.equal(group.hero.thumbUrl, 'https://cdn.example.com/full-single.png');
+  assert.equal(group.previews[0]?.thumbUrl, 'https://cdn.example.com/full-single.png');
+  assert.equal(group.hero.status, 'completed');
+});
+
+test('single image jobs ignore placeholder thumbs when a real render exists', () => {
+  const jobs: Job[] = [
+    {
+      jobId: 'img-job-placeholder',
+      engineLabel: 'Image Engine',
+      durationSec: 2,
+      prompt: 'A city skyline',
+      createdAt: '2026-02-16T00:00:00.000Z',
+      engineId: 'fal-image',
+      status: 'completed',
+      renderIds: ['https://cdn.example.com/full-placeholder-fallback.png'],
+      renderThumbUrls: null,
+      thumbUrl: '/assets/frames/thumb-1x1.svg',
+    },
+  ];
+
+  const { groups } = groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true });
+  assert.equal(groups.length, 1);
+  const [group] = groups;
+  assert.equal(group.hero.thumbUrl, 'https://cdn.example.com/full-placeholder-fallback.png');
+  assert.equal(group.previews[0]?.thumbUrl, 'https://cdn.example.com/full-placeholder-fallback.png');
+  assert.equal(group.hero.status, 'completed');
+});
