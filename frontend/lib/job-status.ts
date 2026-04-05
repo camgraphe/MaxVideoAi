@@ -31,7 +31,10 @@ export function normalizeJobStatus(
     return hasMedia ? 'completed' : undefined;
   }
   const status = rawStatus.toLowerCase();
-  if (COMPLETED_STATUSES.has(status) || (hasMedia && !FAILED_STATUSES.has(status))) {
+  if (COMPLETED_STATUSES.has(status)) {
+    return hasMedia ? 'completed' : 'pending';
+  }
+  if (hasMedia && !FAILED_STATUSES.has(status)) {
     return 'completed';
   }
   if (FAILED_STATUSES.has(status)) {
