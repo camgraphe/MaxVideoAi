@@ -68,6 +68,8 @@ import {
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobSurface } from '@/lib/job-surface';
 import { isPlaceholderMediaUrl, resolvePreferredMediaUrl } from '@/lib/media';
+import { groupJobsIntoSummaries } from '@/lib/job-groups';
+import { countResolvedVisualSlots } from '@/lib/group-progress';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -1212,23 +1214,43 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [imageEngineAliasSet]
   );
 
-  const remoteHistory = useMemo(() => {
+  const remoteImageJobs = useMemo(() => {
     if (!jobPages) return [];
     return jobPages
       .flatMap((page) => page.jobs ?? [])
-      .filter((job) => isImageJob(job))
+      .filter((job) => isImageJob(job));
+  }, [jobPages, isImageJob]);
+
+  const remoteHistory = useMemo(() => {
+    if (!remoteImageJobs.length) return [];
+    return remoteImageJobs
       .map((job) => mapJobToHistoryEntry(job))
       .filter((entry): entry is HistoryEntry => Boolean(entry));
-  }, [jobPages, isImageJob]);
-  const remoteHistoryIds = useMemo(
-    () =>
-      new Set(
-        remoteHistory
-          .map((entry) => entry.jobId ?? entry.id)
-          .filter((value): value is string => typeof value === 'string' && value.length > 0)
-      ),
-    [remoteHistory]
-  );
+  }, [remoteImageJobs]);
+
+  const remoteResolvedGroupMap = useMemo(() => {
+    if (!remoteImageJobs.length) return new Map<string, number>();
+    const { groups } = groupJobsIntoSummaries(remoteImageJobs, { includeSinglesAsGroups: true });
+    const map = new Map<string, number>();
+    groups.forEach((group) => {
+      const resolvedCount = countResolvedVisualSlots(group);
+      const candidateIds = new Set<string>();
+      candidateIds.add(group.id);
+      if (group.hero.jobId) {
+        candidateIds.add(group.hero.jobId);
+      }
+      group.members.forEach((member) => {
+        if (member.jobId) {
+          candidateIds.add(member.jobId);
+        }
+      });
+      candidateIds.forEach((candidateId) => {
+        if (!candidateId) return;
+        map.set(candidateId, Math.max(map.get(candidateId) ?? 0, resolvedCount));
+      });
+    });
+    return map;
+  }, [remoteImageJobs]);
 
   const combinedHistory = useMemo(() => {
     const map = new Map<string, HistoryEntry>();
@@ -1242,9 +1264,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   }, [localHistory, remoteHistory]);
 
   useEffect(() => {
-    if (!remoteHistoryIds.size) return;
+    if (!remoteResolvedGroupMap.size) return;
     setPendingGroups((previous) =>
       previous.filter((group) => {
+        const expectedCount = Math.max(1, Math.min(4, group.count || group.members.length || 1));
         const relatedIds = new Set<string>();
         relatedIds.add(group.id);
         if (group.hero.jobId) {
@@ -1256,14 +1279,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           }
         });
         for (const candidateId of relatedIds) {
-          if (remoteHistoryIds.has(candidateId)) {
+          const resolvedCount = remoteResolvedGroupMap.get(candidateId) ?? 0;
+          if (resolvedCount >= expectedCount) {
             return false;
           }
         }
         return true;
       })
     );
-  }, [remoteHistoryIds]);
+  }, [remoteResolvedGroupMap]);
 
   useEffect(() => {
     if (!pendingGroups.length) return;

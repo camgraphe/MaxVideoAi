@@ -17,7 +17,7 @@ import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
-import { isPlaceholderMediaUrl, resolvePreferredMediaUrl } from '@/lib/media';
+import { countResolvedVisualSlots, mergeImageProgressGroup } from '@/lib/group-progress';
 
 type GalleryVariant = 'desktop' | 'mobile';
 
@@ -71,43 +71,6 @@ const DEFAULT_GALLERY_COPY = {
 type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
 const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
 
-function resolveRealMediaUrl(candidate?: string | null): string | null {
-  const resolved = resolvePreferredMediaUrl(candidate);
-  if (!resolved || isPlaceholderMediaUrl(resolved)) return null;
-  return resolved;
-}
-
-function groupHasRealVisualMedia(group: GroupSummary): boolean {
-  const candidates: Array<string | null | undefined> = [
-    group.hero.thumbUrl,
-    group.hero.videoUrl,
-    group.hero.job?.thumbUrl,
-    group.hero.job?.previewFrame,
-    group.hero.job?.heroRenderId,
-    group.hero.job?.videoUrl,
-    ...group.previews.flatMap((preview) => [preview.thumbUrl, preview.videoUrl]),
-    ...group.members.flatMap((member) => [
-      member.thumbUrl,
-      member.videoUrl,
-      member.job?.thumbUrl,
-      member.job?.previewFrame,
-      member.job?.heroRenderId,
-      member.job?.videoUrl,
-      ...(Array.isArray(member.job?.renderIds) ? member.job.renderIds : []),
-      ...(Array.isArray(member.job?.renderThumbUrls) ? member.job.renderThumbUrls : []),
-    ]),
-    ...(Array.isArray(group.hero.job?.renderIds) ? group.hero.job.renderIds : []),
-    ...(Array.isArray(group.hero.job?.renderThumbUrls) ? group.hero.job.renderThumbUrls : []),
-  ];
-
-  return candidates.some((candidate) => Boolean(resolveRealMediaUrl(candidate)));
-}
-
-function groupHasCompletedMedia(group: GroupSummary): boolean {
-  if (!groupHasRealVisualMedia(group)) return false;
-  return group.hero.status === 'completed' || group.members.some((member) => member.status === 'completed');
-}
-
 function resolveDisplayedActiveGroup(
   feedType: 'video' | 'image',
   activeGroup: GroupSummary,
@@ -116,20 +79,14 @@ function resolveDisplayedActiveGroup(
   if (!historicalGroup) return activeGroup;
   if (feedType !== 'image') return historicalGroup;
 
-  const historicalHasCompletedMedia = groupHasCompletedMedia(historicalGroup);
-  if (historicalHasCompletedMedia) {
+  const expectedCount = Math.max(1, Math.min(4, activeGroup.count || historicalGroup.count || 1));
+  const resolvedCount = countResolvedVisualSlots(historicalGroup);
+  if (resolvedCount >= expectedCount) {
     return historicalGroup;
   }
 
-  const activeHasCompletedMedia = groupHasCompletedMedia(activeGroup);
-  if (activeHasCompletedMedia) {
-    return activeGroup;
-  }
-
-  const historicalHasRealMedia = groupHasRealVisualMedia(historicalGroup);
-  const activeHasRealMedia = groupHasRealVisualMedia(activeGroup);
-  if (historicalHasRealMedia && !activeHasRealMedia) {
-    return historicalGroup;
+  if (resolvedCount > 0) {
+    return mergeImageProgressGroup(activeGroup, historicalGroup);
   }
 
   return activeGroup;
