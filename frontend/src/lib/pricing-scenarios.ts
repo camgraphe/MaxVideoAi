@@ -1,12 +1,22 @@
-import type { MemberTier, PricingInput } from '@maxvideoai/pricing';
+import type { MemberTier } from '@maxvideoai/pricing';
 import { normalizeEngineId } from '@/lib/engine-alias';
 
 export interface PricingScenario {
   engineId: string;
   durationSec: number;
   resolution: string;
+  aspectRatio?: string;
   memberTier?: MemberTier | string;
-  addons?: PricingInput['addons'];
+  addons?: Record<string, boolean | number | undefined>;
+}
+
+export interface PricingScenarioInput {
+  engineId: string;
+  durationSec: number;
+  resolution: string;
+  aspectRatio?: string;
+  memberTier?: MemberTier;
+  addons?: Record<string, boolean | number | undefined>;
 }
 
 export const DEFAULT_MARKETING_SCENARIO: PricingScenario = {
@@ -27,12 +37,13 @@ function normalizeMemberTier(tier?: PricingScenario['memberTier']): MemberTier |
   return undefined;
 }
 
-export function scenarioToPricingInput(scenario: PricingScenario): PricingInput {
+export function scenarioToPricingInput(scenario: PricingScenario): PricingScenarioInput {
   const canonicalId = normalizeEngineId(scenario.engineId) ?? scenario.engineId;
   return {
     engineId: canonicalId,
     durationSec: scenario.durationSec,
     resolution: scenario.resolution,
+    aspectRatio: scenario.aspectRatio,
     memberTier: normalizeMemberTier(scenario.memberTier),
     addons: scenario.addons,
   };

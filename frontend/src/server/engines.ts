@@ -364,6 +364,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       engine: pricingEngine,
       durationSec,
       resolution: effectiveResolution,
+      aspectRatio: request.aspectRatio,
       mode: request.mode,
       membershipTier: memberTier,
       loop,

@@ -3,14 +3,14 @@
   "versionLabel": "2.0",
   "seo": {
     "title": "Seedance 2.0 (ByteDance) — AI Video with Native Audio & Multi-Shot Control | MaxVideoAI",
-    "description": "Explore ByteDance Seedance 2.0 on MaxVideoAI: native audio generation, 1080p up to 15s, multi-shot outputs, cinematic camera language, and structured prompt templates."
+    "description": "Explore ByteDance Seedance 2.0 on MaxVideoAI: native audio generation, 480p/720p output, auto or 4-15 second runs, multimodal references, and cinematic camera language."
   },
   "overview": "Seedance 2.0 is ByteDance's flagship AI video model for cinematic motion, multi-shot continuity, and native audio generated in sync with visuals. Use this page to choose the right workflow, prompt structure, and comparison path before you move into production.",
-  "pricingNotes": "Confirm the current live rate inside Generate before each production run.",
+  "pricingNotes": "Seedance 2 uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final live quote before submission.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "Use Seedance 2.0 when you want premium multi-shot video, stronger motion realism, and native audio in the same render. This page is tuned for launch: workflows, prompt structures, and the best internal routes to compare it against Veo, Kling, and the outgoing Sora tier.",
-    "badge": "1080p · Up to 15s · Native audio · Text / image / multimodal references",
+    "intro": "Use Seedance 2.0 when you want premium multi-shot video, stronger motion realism, and native audio in the same render. This page covers the live Seedance 2 workflows now exposed on Fal: text-to-video, image-to-video with an optional end frame, reference-to-video with multimodal references, and the best internal routes to compare it against Veo, Kling, and the outgoing Sora tier.",
+    "badge": "480p/720p · Auto or 4-15s · Native audio · Text / image / reference workflows",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -71,19 +71,19 @@
     },
     {
       "label": "Inputs",
-      "body": "Text + image + audio + video references"
+      "body": "Text prompts, start image + optional end image, plus image/video/audio references in ref2v"
     },
     {
       "label": "Reference limits",
-      "body": "Up to 9 images, 3 video clips, and 3 audio clips, plus text instructions"
+      "body": "Up to 9 images, 3 video clips, and 3 audio clips, with 12 total files across all ref2v inputs"
     },
     {
       "label": "Duration",
-      "body": "Up to 15s per generation with multi-shot continuity in one output"
+      "body": "Auto or 4-15 seconds per generation"
     },
     {
       "label": "Audio",
-      "body": "Official materials highlight native audio generated alongside video, including audio-video sync"
+      "body": "Native audio is on by default and can be disabled; Fal states the price is the same either way"
     },
     {
       "label": "Camera and motion",
@@ -96,7 +96,7 @@
   ],
   "promptStructure": {
     "title": "Prompting Seedance 2.0",
-    "quote": "[Genre] + [subject] + [setting] + [action beats] + [camera language] + [audio cues] + [duration <=15s] + [shot structure].",
+    "quote": "[Genre] + [subject] + [setting] + [action beats] + [camera language] + [audio cues] + [duration auto or 4-15s] + [shot structure].",
     "description": "For best consistency, keep each beat explicit and define camera transitions and audio timing in the same prompt.",
     "steps": [
       "Define genre and core subject",
@@ -112,8 +112,9 @@
     "items": [
       "Keep prompts structured shot-by-shot when you want the strongest multi-shot continuity.",
       "Use multimodal references to lock wardrobe, props, pacing, and ambience across beats.",
+      "Use the optional end image in i2v when you need a guided last frame.",
       "Move to Seedance 2.0 Fast when you need cheaper draft passes before final renders.",
-      "Confirm the active route and live price inside Generate before production runs."
+      "Generate shows the active route and the live quote before you submit."
     ]
   },
   "prompts": [
@@ -146,15 +147,15 @@
     },
     {
       "q": "How long can outputs be?",
-      "a": "Launch materials highlight outputs up to 15 seconds per generation."
+      "a": "Fal lists auto or 4 to 15 seconds per generation for the current Seedance 2.0 routes."
     },
     {
       "q": "Does it support audio?",
-      "a": "Yes. Native audio is highlighted in official messaging, with audio generated alongside video for better sync."
+      "a": "Yes. Native audio is available, generate_audio defaults to on, and Fal states pricing is the same whether audio is generated or not."
     },
     {
       "q": "How should I check availability and pricing?",
-      "a": "Open Generate to confirm the active route, supported workflows, and the current live rate for your run."
+      "a": "Open Generate to confirm the active route, supported workflows, and the live quote for your run before you submit."
     },
     {
       "q": "Should I start with standard or Fast?",
@@ -168,7 +169,8 @@
       "Director-level camera language||Optimized for explicit shot direction: camera movement, framing, and transition verbs",
       "Multi-shot continuity in a single render||Designed for short timelines where multiple beats can be stitched into one coherent output",
       "Native audio generation (visual and sound together)||Official materials highlight audio generated alongside video for stronger sync",
-      "Multimodal references at scale||Mix text with image, video, and audio references to lock style, pacing, and continuity"
+      "Multimodal references at scale||Mix text with image, video, and audio references to lock style, pacing, and continuity",
+      "i2v with optional end frame||Start from one still, then add an optional closing image when you need a guided transition"
     ],
     "specTitle": "Specs",
     "specNote": "Only officially sourced claims are listed here, with pricing and workflow details checked live inside Generate.",
@@ -180,20 +182,21 @@
           "Text instructions + multimodal references",
           "Up to 9 image references",
           "Up to 3 video references",
-          "Up to 3 audio references"
+          "Up to 3 audio references",
+          "Up to 12 total files across the ref2v run"
         ]
       },
       {
         "title": "Output style and structure",
-        "intro": "Model messaging emphasizes cinematic control and multi-shot outputs.",
+        "intro": "Fal exposes the current Seedance 2 route with cinematic control, native audio, and broader duration/aspect coverage than the initial launch copy suggested.",
         "items": [
-          "Up to 1080p",
-          "Up to 15s per generation",
-          "24 FPS (as announced)",
+          "480p or 720p",
+          "Auto or 4-15s per generation",
+          "Aspect ratios: auto, 21:9, 16:9, 4:3, 1:1, 3:4, 9:16",
+          "Image-to-video supports an optional end frame",
           "Natural transitions across multiple shots",
           "Native audio-video joint generation",
-          "Audio-video sync mentioned in official materials",
-          "Dual-channel (stereo) audio support highlighted by ByteDance"
+          "Audio toggle available with the same pricing whether audio is on or off"
         ]
       }
     ],
@@ -203,6 +206,7 @@
     "promptingIntro": "Seedance 2.0 tends to reward shot timing, camera verbs, and audio cues. Keep dialogue short, pin SFX to visible actions, and use references to lock continuity.",
     "promptingGlobalPrinciples": [
       "Use explicit shot timing (0-5s, 5-10s, 10-15s).",
+      "Use auto duration when you want the model to decide pacing from the prompt.",
       "Write camera movement and transition verbs clearly.",
       "Keep one clear action beat per shot.",
       "Pin dialogue and SFX to visible moments."
@@ -225,7 +229,7 @@
         "label": "Quick",
         "title": "Quick concept prompt",
         "description": "Fast ideation with one cinematic beat.",
-        "copy": "[Subject] in [setting]. Camera: [move + lens feel]. Lighting: [style]. Action: [one clear beat]. Audio: [ambience + one SFX cue]. (<=15s, choose aspect ratio in UI.)\n\nExample: Handheld UGC unboxing at a kitchen table. Slow push-in, natural daylight. She peels the seal, smiles, turns the bottle to camera. Room tone + packaging crinkle + soft click when cap opens."
+        "copy": "[Subject] in [setting]. Camera: [move + lens feel]. Lighting: [style]. Action: [one clear beat]. Audio: [ambience + one SFX cue]. (Auto or 4-15s, choose aspect ratio in UI.)\n\nExample: Handheld UGC unboxing at a kitchen table. Slow push-in, natural daylight. She peels the seal, smiles, turns the bottle to camera. Room tone + packaging crinkle + soft click when cap opens."
       },
       {
         "id": "structured",
@@ -246,7 +250,7 @@
         "label": "Storyboard",
         "title": "Storyboard multimodal prompt",
         "description": "Reference-driven prompting with images, videos, and audio.",
-        "copy": "Use @Image1..@Image9 to lock style and characters.\nUse @Video1..@Video3 for pacing and camera rhythm.\nUse @Audio1..@Audio3 for ambience texture.\nProduce a coherent 3-shot output (<=15s) with explicit transition verbs."
+        "copy": "Use @Image1..@Image9 to lock style and characters.\nUse @Video1..@Video3 for pacing and camera rhythm.\nUse @Audio1..@Audio3 for ambience texture.\nProduce a coherent 3-shot output (auto or 4-15s) with explicit transition verbs."
       }
     ],
     "tipsTitle": "Tips and boundaries",
@@ -265,8 +269,9 @@
     "boundaries": [
       "Complex action stacks still benefit from simpler, clearly separated beats.",
       "Reference-heavy prompts work best when each source has one clear job.",
+      "Reference audio only works when at least one image or video reference is attached.",
       "Check the active Fal route family before scaling production traffic.",
-      "Confirm live pricing before client-facing rollout or automated workflows."
+      "Use the live quote in Generate before client-facing rollout or automated workflows."
     ],
     "galleryTitle": "Seedance 2.0 examples",
     "galleryIntro": "Use this gallery to review prompt patterns, scene structure, and the kinds of beats Seedance 2.0 handles well inside MaxVideoAI.",

@@ -3,14 +3,14 @@
   "versionLabel": "2.0 Fast",
   "seo": {
     "title": "Seedance 2.0 Fast — ByteDance AI video for fast draft passes | MaxVideoAI",
-    "description": "Use Seedance 2.0 Fast on MaxVideoAI for quicker draft passes, shot planning, and fast iteration before you move polished work into standard Seedance 2.0."
+    "description": "Use Seedance 2.0 Fast on MaxVideoAI for quicker draft passes, shot planning, 480p/720p output, auto or 4-15 second runs, and fast iteration before you move polished work into standard Seedance 2.0."
   },
   "overview": "Seedance 2.0 Fast is the draft-speed sibling of Seedance 2.0. Use it for rapid storyboard passes, timing checks, and early concept loops when you want the Seedance family look without committing every render to the premium tier first.",
-  "pricingNotes": "Check the current live rate in Generate before each production run.",
+  "pricingNotes": "Seedance 2 Fast uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final live quote before submission.",
   "hero": {
     "title": "Seedance 2.0 Fast",
-    "intro": "Use Seedance 2.0 Fast when you want the Seedance family look with shorter feedback loops. It is built for concept validation, shot planning, and rapid side-by-side comparisons before final renders move into standard Seedance 2.0.",
-    "badge": "Draft-speed Seedance tier · Text / image to video · Native audio workflow",
+    "intro": "Use Seedance 2.0 Fast when you want the Seedance family look with shorter feedback loops. It is built for concept validation, shot planning, and rapid side-by-side comparisons across text-to-video, image-to-video with an optional end frame, and reference-to-video before final renders move into standard Seedance 2.0.",
+    "badge": "Draft-speed Seedance tier · 480p/720p · Auto or 4-15s · Native audio",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0 Fast",
       "href": "/app?engine=seedance-2-0-fast"
@@ -63,15 +63,15 @@
     },
     {
       "label": "Inputs",
-      "body": "Text prompts and image-led motion workflows"
+      "body": "Text prompts, image-to-video with an optional end frame, and ref2v with image/video/audio references"
     },
     {
       "label": "Duration target",
-      "body": "Prepared for short to mid-length Seedance passes up to 15 seconds"
+      "body": "Auto or 4-15 seconds per generation"
     },
     {
       "label": "Audio",
-      "body": "Aligned to the Seedance 2 audio-first workflow where supported"
+      "body": "Native audio is on by default and can be disabled; Fal states the price is the same either way"
     },
     {
       "label": "Best moment to use it",
@@ -95,9 +95,10 @@
     "title": "Production notes",
     "items": [
       "Use Fast for speed, then switch to standard Seedance 2.0 for premium finals.",
+      "Use the optional end image in i2v when you want a guided last frame during draft passes.",
       "Keep prompts short and tactical: one beat, one move, one reason to compare.",
       "Use the compare hub to judge Seedance Fast against Veo Fast and LTX Fast, not against every model at once.",
-      "Confirm the active route and live price inside Generate before production runs."
+      "Generate shows the active route and the live quote before you submit."
     ]
   },
   "prompts": [
@@ -125,8 +126,8 @@
       "a": "Start with Veo 3.1 Fast and LTX 2.3 Fast. Those comparisons tell you quickly whether you want the Seedance look, the Veo ad polish, or the LTX storyboard rhythm."
     },
     {
-      "q": "Can I use image-to-video with Seedance 2.0 Fast?",
-      "a": "Yes. Fast stays useful for reference-led motion checks when you want to validate timing and continuity before scaling up."
+      "q": "Can I use image-to-video and reference-to-video with Seedance 2.0 Fast?",
+      "a": "Yes. Fast supports start-image animation with an optional end frame, plus ref2v with image, video, and audio references when you want to validate timing and continuity before scaling up."
     }
   ],
   "custom": {
@@ -148,7 +149,8 @@
           "Shot planning before polished renders",
           "Rapid A/B motion checks",
           "Creative iteration with shorter feedback loops",
-          "Reference-led timing validation"
+          "Reference-led timing validation",
+          "Optional end-frame checks in image-to-video"
         ]
       },
       {
@@ -157,6 +159,7 @@
         "items": [
           "Fast draft -> compare -> standard Seedance 2.0 final",
           "Useful against Veo 3.1 Fast and LTX 2.3 Fast",
+          "480p or 720p with auto or 4-15s duration control",
           "Best when one prompt tests one decision",
           "Audio-aware workflows stay part of the Seedance family"
         ]
@@ -225,7 +228,7 @@
       "Do not judge final polish from Fast alone.",
       "Complex prompts make Fast harder to compare.",
       "Treat it as a draft tier, not a replacement for the standard tier.",
-      "Check live pricing and route details inside Generate before production runs."
+      "Use the live quote and route details inside Generate before scaling winners."
     ],
     "galleryTitle": "Seedance 2.0 Fast examples",
     "galleryIntro": "Review the kinds of draft passes and comparison prompts that make Seedance 2.0 Fast useful in a real production workflow.",

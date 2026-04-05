@@ -23,6 +23,45 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(seedance.engine.providerMeta?.modelSlug, 'bytedance/seedance-2.0/text-to-video');
   assert.equal(fast.defaultFalModelId, 'bytedance/seedance-2.0/fast/text-to-video');
   assert.equal(fast.engine.providerMeta?.modelSlug, 'bytedance/seedance-2.0/fast/text-to-video');
+  assert.equal(seedance.engine.status, 'live');
+  assert.equal(fast.engine.status, 'live');
+  assert.equal(seedance.engine.modes.includes('ref2v'), true);
+  assert.equal(fast.engine.modes.includes('ref2v'), true);
+  assert.equal(seedance.modes.some((mode) => mode.mode === 'ref2v'), true);
+  assert.equal(fast.modes.some((mode) => mode.mode === 'ref2v'), true);
+  assert.deepEqual(seedance.engine.resolutions, ['480p', '720p']);
+  assert.deepEqual(fast.engine.resolutions, ['480p', '720p']);
+  assert.deepEqual(seedance.engine.aspectRatios, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  assert.deepEqual(fast.engine.aspectRatios, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  assert.equal(seedance.engine.pricingDetails?.tokenPricing?.unitPriceUsdPer1kTokens, 0.014);
+  assert.equal(fast.engine.pricingDetails?.tokenPricing?.unitPriceUsdPer1kTokens, 0.0112);
+  assert.equal(seedance.engine.pricingDetails?.tokenPricing?.defaultAspectRatio, '16:9');
+  assert.equal(fast.engine.pricingDetails?.tokenPricing?.defaultAspectRatio, '16:9');
+
+  const seedanceI2v = seedance.modes.find((mode) => mode.mode === 'i2v');
+  const seedanceRef2v = seedance.modes.find((mode) => mode.mode === 'ref2v');
+  const fastRef2v = fast.modes.find((mode) => mode.mode === 'ref2v');
+  assert.ok(seedanceI2v);
+  assert.ok(seedanceRef2v);
+  assert.ok(fastRef2v);
+  assert.deepEqual(seedanceI2v.ui.duration, { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' });
+  assert.deepEqual(seedanceI2v.ui.resolution, ['480p', '720p']);
+  assert.deepEqual(seedanceI2v.ui.aspectRatio, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  assert.deepEqual(seedanceRef2v.ui.resolution, ['480p', '720p']);
+  assert.deepEqual(fastRef2v.ui.resolution, ['480p', '720p']);
+
+  const seedanceFields = [...(seedance.engine.inputSchema?.required ?? []), ...(seedance.engine.inputSchema?.optional ?? [])];
+  const fastFields = [...(fast.engine.inputSchema?.required ?? []), ...(fast.engine.inputSchema?.optional ?? [])];
+  assert.ok(seedanceFields.some((field) => field.id === 'end_image_url' && field.modes?.includes('i2v')));
+  assert.ok(seedanceFields.some((field) => field.id === 'image_urls' && field.modes?.includes('ref2v') && field.maxCount === 9));
+  assert.ok(seedanceFields.some((field) => field.id === 'video_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
+  assert.ok(seedanceFields.some((field) => field.id === 'audio_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
+  assert.equal(seedanceFields.some((field) => field.id === 'reference_image_urls' && field.modes?.includes('ref2v')), false);
+  assert.ok(fastFields.some((field) => field.id === 'end_image_url' && field.modes?.includes('i2v')));
+  assert.ok(fastFields.some((field) => field.id === 'image_urls' && field.modes?.includes('ref2v') && field.maxCount === 9));
+  assert.ok(fastFields.some((field) => field.id === 'video_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
+  assert.ok(fastFields.some((field) => field.id === 'audio_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
+  assert.equal(fastFields.some((field) => field.id === 'reference_image_urls' && field.modes?.includes('ref2v')), false);
 
   assert.equal(seedance.availability, 'available');
   assert.equal(fast.availability, 'available');

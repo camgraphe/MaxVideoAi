@@ -206,21 +206,28 @@ export function applyEnginePricingOverride(
   override?: EnginePricingDetails | null
 ): EngineCaps {
   if (!override) return engine;
+  const mergedOverride =
+    engine.pricingDetails?.tokenPricing && !override.tokenPricing
+      ? {
+          ...override,
+          tokenPricing: engine.pricingDetails.tokenPricing,
+        }
+      : override;
   const pricing: EnginePricing = {
     unit: 'sec',
-    currency: override.currency,
+    currency: mergedOverride.currency,
   };
-  if (override.perSecondCents?.default != null) {
-    pricing.base = override.perSecondCents.default / 100;
+  if (mergedOverride.perSecondCents?.default != null) {
+    pricing.base = mergedOverride.perSecondCents.default / 100;
   }
-  if (override.perSecondCents?.byResolution) {
+  if (mergedOverride.perSecondCents?.byResolution) {
     pricing.byResolution = Object.fromEntries(
-      Object.entries(override.perSecondCents.byResolution).map(([key, cents]) => [key, cents / 100])
+      Object.entries(mergedOverride.perSecondCents.byResolution).map(([key, cents]) => [key, cents / 100])
     );
   }
   return {
     ...engine,
-    pricingDetails: override,
+    pricingDetails: mergedOverride,
     pricing,
   };
 }

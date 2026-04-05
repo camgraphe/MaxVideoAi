@@ -339,13 +339,14 @@
       "label": "OpenAI Sora 2 Pro",
       "provider": "OpenAI",
       "version": "Pro",
-      "status": "early_access",
+      "status": "live",
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "ref2v"
       ],
       "maxDurationSec": 12,
       "resolutions": [
@@ -3549,7 +3550,7 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
             "modes": [
               "i2v"
             ],
@@ -3558,6 +3559,21 @@
             ],
             "minCount": 1,
             "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "description": "Use 1 to 9 stills to lock identity, styling, and continuity across the clip.",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 9,
             "source": "either"
           }
         ],
@@ -4854,23 +4870,28 @@
       "label": "Seedance 2.0",
       "provider": "ByteDance",
       "version": "2.0",
-      "status": "early_access",
+      "status": "live",
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "ref2v"
       ],
       "maxDurationSec": 15,
       "resolutions": [
-        "720p",
-        "1080p"
+        "480p",
+        "720p"
       ],
       "aspectRatios": [
+        "auto",
+        "21:9",
         "16:9",
-        "9:16",
-        "1:1"
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
       ],
       "fps": [
         24
@@ -4882,8 +4903,9 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 25,
-        "videoMaxMB": 50
+        "imageMaxMB": 30,
+        "videoMaxMB": 50,
+        "audioMaxMB": 15
       },
       "inputSchema": {
         "required": [
@@ -4895,7 +4917,7 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
             "modes": [
               "i2v"
             ],
@@ -4909,16 +4931,38 @@
         ],
         "optional": [
           {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional last frame for start-to-end transitions in image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
             "id": "duration",
             "type": "enum",
             "label": "Duration (seconds)",
             "values": [
+              "auto",
+              "4",
               "5",
+              "6",
+              "7",
+              "8",
+              "9",
               "10",
+              "11",
+              "12",
+              "13",
+              "14",
               "15"
             ],
-            "default": "10",
-            "min": 5,
+            "default": "auto",
+            "min": 4,
             "max": 15
           },
           {
@@ -4926,46 +4970,67 @@
             "type": "enum",
             "label": "Aspect ratio",
             "values": [
+              "auto",
+              "21:9",
               "16:9",
-              "9:16",
-              "1:1"
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
             ],
-            "default": "16:9"
+            "default": "auto"
           },
           {
             "id": "resolution",
             "type": "enum",
             "label": "Resolution",
             "values": [
-              "720p",
-              "1080p"
+              "480p",
+              "720p"
             ],
-            "default": "1080p"
+            "default": "720p"
           },
           {
-            "id": "reference_image_urls",
-            "type": "text",
-            "label": "Reference images (up to 9)"
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images (up to 9)",
+            "description": "Optional reference stills for identity, styling, and continuity. Fal allows up to 9 images and 12 total files across all reference inputs.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 9,
+            "source": "either"
           },
           {
-            "id": "reference_video_urls",
-            "type": "text",
-            "label": "Reference video clips (up to 3)"
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference video clips (up to 3)",
+            "description": "Optional motion or pacing references for ref2v. Fal allows up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
+            "minCount": 0,
+            "maxCount": 3,
+            "modes": [
+              "ref2v"
+            ],
+            "source": "either"
           },
           {
-            "id": "reference_audio_urls",
-            "type": "text",
-            "label": "Reference audio clips (up to 3)"
+            "id": "audio_urls",
+            "type": "audio",
+            "label": "Reference audio clips (up to 3)",
+            "description": "Optional soundtrack, dialogue, or rhythm references for ref2v. Fal allows up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
+            "minCount": 0,
+            "maxCount": 3,
+            "modes": [
+              "ref2v"
+            ],
+            "source": "either"
           },
           {
             "id": "generate_audio",
-            "type": "enum",
-            "label": "Generate audio",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
+            "type": "boolean",
+            "label": "Audio",
+            "default": true
           }
         ],
         "constraints": {
@@ -4973,17 +5038,95 @@
             "jpg",
             "jpeg",
             "png",
-            "webp"
+            "webp",
+            "mp4",
+            "mov",
+            "mp3",
+            "wav"
           ],
-          "maxImageSizeMB": 25
+          "maxImageSizeMB": 30,
+          "maxVideoSizeMB": 50,
+          "maxAudioSizeMB": 15
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "tokenPricing": {
+          "model": "fal_tokens",
+          "unitPriceUsdPer1kTokens": 0.014,
+          "framesPerSecond": 24,
+          "defaultAspectRatio": "16:9",
+          "dimensions": {
+            "480p": {
+              "auto": {
+                "width": 854,
+                "height": 480
+              },
+              "21:9": {
+                "width": 1120,
+                "height": 480
+              },
+              "16:9": {
+                "width": 854,
+                "height": 480
+              },
+              "4:3": {
+                "width": 640,
+                "height": 480
+              },
+              "1:1": {
+                "width": 480,
+                "height": 480
+              },
+              "3:4": {
+                "width": 480,
+                "height": 640
+              },
+              "9:16": {
+                "width": 480,
+                "height": 854
+              }
+            },
+            "720p": {
+              "auto": {
+                "width": 1280,
+                "height": 720
+              },
+              "21:9": {
+                "width": 1680,
+                "height": 720
+              },
+              "16:9": {
+                "width": 1280,
+                "height": 720
+              },
+              "4:3": {
+                "width": 960,
+                "height": 720
+              },
+              "1:1": {
+                "width": 720,
+                "height": 720
+              },
+              "3:4": {
+                "width": 720,
+                "height": 960
+              },
+              "9:16": {
+                "width": 720,
+                "height": 1280
+              }
+            }
+          },
+          "rounding": "ceil_cent"
         }
       },
       "pricing": {
         "unit": "USD/s",
         "currency": "USD",
-        "notes": "Pricing is confirmed at launch."
+        "notes": "Fal bills Seedance 2 from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote."
       },
-      "updatedAt": "2026-02-19T00:00:00Z",
+      "updatedAt": "2026-04-05T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "bytedance",
@@ -5002,23 +5145,37 @@
           ],
           "duration": {
             "options": [
+              "auto",
+              4,
               5,
+              6,
+              7,
+              8,
+              9,
               10,
+              11,
+              12,
+              13,
+              14,
               15
             ],
-            "default": 10
+            "default": "auto"
           },
           "resolution": [
-            "720p",
-            "1080p"
+            "480p",
+            "720p"
           ],
           "aspectRatio": [
+            "auto",
+            "21:9",
             "16:9",
-            "9:16",
-            "1:1"
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "audioToggle": true,
-          "notes": "Native audio with up to 15s multi-shot generation."
+          "notes": "4-15s or auto, 480p/720p, native audio on or off, with the wider Seedance 2 camera ratio set."
         }
       },
       {
@@ -5030,20 +5187,34 @@
           ],
           "duration": {
             "options": [
+              "auto",
+              4,
               5,
+              6,
+              7,
+              8,
+              9,
               10,
+              11,
+              12,
+              13,
+              14,
               15
             ],
-            "default": 10
+            "default": "auto"
           },
           "resolution": [
-            "720p",
-            "1080p"
+            "480p",
+            "720p"
           ],
           "aspectRatio": [
+            "auto",
+            "21:9",
             "16:9",
-            "9:16",
-            "1:1"
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -5051,9 +5222,58 @@
             "png",
             "webp"
           ],
-          "maxUploadMB": 25,
+          "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Supports multimodal references with images, video clips, and audio clips."
+          "notes": "Start image plus optional end image, 4-15s or auto, 480p/720p, with audio on or off."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "bytedance/seedance-2.0/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": true,
+          "notes": "Prompt-only is allowed, or add up to 9 images, 3 videos, and 3 audio files with 12 total references max."
         }
       }
     ],
@@ -5071,7 +5291,7 @@
         "value": true
       }
     },
-    "bestFor": "Premium multi-shot video with native audio"
+    "bestFor": "Flagship multi-shot video with native audio and references"
   },
   {
     "engineId": "seedance-2-0-fast",
@@ -5131,23 +5351,28 @@
       "provider": "ByteDance",
       "version": "2.0",
       "variant": "Fast",
-      "status": "early_access",
+      "status": "live",
       "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
       "modes": [
         "t2v",
-        "i2v"
+        "i2v",
+        "ref2v"
       ],
       "maxDurationSec": 15,
       "resolutions": [
-        "720p",
-        "1080p"
+        "480p",
+        "720p"
       ],
       "aspectRatios": [
+        "auto",
+        "21:9",
         "16:9",
-        "9:16",
-        "1:1"
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
       ],
       "fps": [
         24
@@ -5159,8 +5384,9 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 25,
-        "videoMaxMB": 50
+        "imageMaxMB": 30,
+        "videoMaxMB": 50,
+        "audioMaxMB": 15
       },
       "inputSchema": {
         "required": [
@@ -5172,7 +5398,7 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Reference image",
+            "label": "Start image",
             "modes": [
               "i2v"
             ],
@@ -5186,16 +5412,38 @@
         ],
         "optional": [
           {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional last frame for start-to-end transitions in image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
             "id": "duration",
             "type": "enum",
             "label": "Duration (seconds)",
             "values": [
+              "auto",
+              "4",
               "5",
+              "6",
+              "7",
+              "8",
+              "9",
               "10",
+              "11",
+              "12",
+              "13",
+              "14",
               "15"
             ],
-            "default": "10",
-            "min": 5,
+            "default": "auto",
+            "min": 4,
             "max": 15
           },
           {
@@ -5203,31 +5451,67 @@
             "type": "enum",
             "label": "Aspect ratio",
             "values": [
+              "auto",
+              "21:9",
               "16:9",
-              "9:16",
-              "1:1"
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
             ],
-            "default": "16:9"
+            "default": "auto"
           },
           {
             "id": "resolution",
             "type": "enum",
             "label": "Resolution",
             "values": [
-              "720p",
-              "1080p"
+              "480p",
+              "720p"
             ],
             "default": "720p"
           },
           {
             "id": "generate_audio",
-            "type": "enum",
-            "label": "Generate audio",
-            "values": [
-              "true",
-              "false"
+            "type": "boolean",
+            "label": "Audio",
+            "default": true
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images (up to 9)",
+            "description": "Optional still references for draft continuity checks. Fal allows up to 9 images and 12 total files across all reference inputs.",
+            "modes": [
+              "ref2v"
             ],
-            "default": "true"
+            "minCount": 1,
+            "maxCount": 9,
+            "source": "either"
+          },
+          {
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference video clips (up to 3)",
+            "description": "Optional pacing or motion references for draft-speed ref2v runs. Fal allows up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
+            "minCount": 0,
+            "maxCount": 3,
+            "modes": [
+              "ref2v"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "audio_urls",
+            "type": "audio",
+            "label": "Reference audio clips (up to 3)",
+            "description": "Optional soundtrack or rhythm references for ref2v. Fal allows up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
+            "minCount": 0,
+            "maxCount": 3,
+            "modes": [
+              "ref2v"
+            ],
+            "source": "either"
           }
         ],
         "constraints": {
@@ -5235,17 +5519,95 @@
             "jpg",
             "jpeg",
             "png",
-            "webp"
+            "webp",
+            "mp4",
+            "mov",
+            "mp3",
+            "wav"
           ],
-          "maxImageSizeMB": 25
+          "maxImageSizeMB": 30,
+          "maxVideoSizeMB": 50,
+          "maxAudioSizeMB": 15
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "tokenPricing": {
+          "model": "fal_tokens",
+          "unitPriceUsdPer1kTokens": 0.0112,
+          "framesPerSecond": 24,
+          "defaultAspectRatio": "16:9",
+          "dimensions": {
+            "480p": {
+              "auto": {
+                "width": 854,
+                "height": 480
+              },
+              "21:9": {
+                "width": 1120,
+                "height": 480
+              },
+              "16:9": {
+                "width": 854,
+                "height": 480
+              },
+              "4:3": {
+                "width": 640,
+                "height": 480
+              },
+              "1:1": {
+                "width": 480,
+                "height": 480
+              },
+              "3:4": {
+                "width": 480,
+                "height": 640
+              },
+              "9:16": {
+                "width": 480,
+                "height": 854
+              }
+            },
+            "720p": {
+              "auto": {
+                "width": 1280,
+                "height": 720
+              },
+              "21:9": {
+                "width": 1680,
+                "height": 720
+              },
+              "16:9": {
+                "width": 1280,
+                "height": 720
+              },
+              "4:3": {
+                "width": 960,
+                "height": 720
+              },
+              "1:1": {
+                "width": 720,
+                "height": 720
+              },
+              "3:4": {
+                "width": 720,
+                "height": 960
+              },
+              "9:16": {
+                "width": 720,
+                "height": 1280
+              }
+            }
+          },
+          "rounding": "ceil_cent"
         }
       },
       "pricing": {
         "unit": "USD/s",
         "currency": "USD",
-        "notes": "Prelaunch route only. Pricing is confirmed at launch."
+        "notes": "Fal bills Seedance 2 Fast from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote."
       },
-      "updatedAt": "2026-04-03T00:00:00Z",
+      "updatedAt": "2026-04-05T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "bytedance",
@@ -5264,23 +5626,37 @@
           ],
           "duration": {
             "options": [
+              "auto",
+              4,
               5,
+              6,
+              7,
+              8,
+              9,
               10,
+              11,
+              12,
+              13,
+              14,
               15
             ],
-            "default": 10
+            "default": "auto"
           },
           "resolution": [
-            "720p",
-            "1080p"
+            "480p",
+            "720p"
           ],
           "aspectRatio": [
+            "auto",
+            "21:9",
             "16:9",
-            "9:16",
-            "1:1"
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "audioToggle": true,
-          "notes": "Draft-speed Seedance 2 route for fast iteration and shot planning."
+          "notes": "Draft-speed Seedance 2 route with 4-15s or auto, 480p/720p, and the same audio toggle."
         }
       },
       {
@@ -5292,20 +5668,34 @@
           ],
           "duration": {
             "options": [
+              "auto",
+              4,
               5,
+              6,
+              7,
+              8,
+              9,
               10,
+              11,
+              12,
+              13,
+              14,
               15
             ],
-            "default": 10
+            "default": "auto"
           },
           "resolution": [
-            "720p",
-            "1080p"
+            "480p",
+            "720p"
           ],
           "aspectRatio": [
+            "auto",
+            "21:9",
             "16:9",
-            "9:16",
-            "1:1"
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -5313,9 +5703,58 @@
             "png",
             "webp"
           ],
-          "maxUploadMB": 25,
+          "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Fast draft tier on the Seedance 2 route family with the same image-first workflow."
+          "notes": "Start image plus optional end image, 4-15s or auto, 480p/720p, and draft-speed iteration."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "bytedance/seedance-2.0/fast/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": true,
+          "notes": "Prompt-only is allowed, or add up to 9 images, 3 videos, and 3 audio files before moving winners into standard Seedance 2.0."
         }
       }
     ],
@@ -5333,7 +5772,7 @@
         "value": false
       }
     },
-    "bestFor": "Fast Seedance drafts and shot planning"
+    "bestFor": "Fast Seedance drafts, reference tests, and shot planning"
   },
   {
     "engineId": "wan-2-5",

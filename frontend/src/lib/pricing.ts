@@ -9,6 +9,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { getMembershipDiscountMap } from '@/lib/membership';
 import { ENV } from '@/lib/env';
 import { calculateLumaRay2EditPrice, calculateLumaRay2Price, type LumaRay2EditWorkflow } from '@/lib/luma-ray2-pricing';
+import { computeSeedance2TokenQuote, isSeedance2TokenPricing, roundUsdUpToCents } from '@/lib/seedance-2-pricing';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -277,6 +278,79 @@ function buildLumaRay2EditSnapshot(params: {
   };
 }
 
+function buildSeedance2Snapshot(params: {
+  pricingDetails: EnginePricingDetails & { tokenPricing: NonNullable<EnginePricingDetails['tokenPricing']> };
+  durationSec: number;
+  resolution: string;
+  aspectRatio?: string | null;
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+}): PricingSnapshot {
+  const quote = computeSeedance2TokenQuote({
+    details: params.pricingDetails,
+    durationSec: params.durationSec,
+    resolution: params.resolution,
+    aspectRatio: params.aspectRatio,
+  });
+
+  const vendorShareCentsBase = roundUsdUpToCents(quote.vendorCostUsd);
+  const subtotalBeforeDiscountExactUsd =
+    quote.vendorCostUsd * (1 + params.rule.marginPercent) + params.rule.marginFlatCents / 100;
+  const subtotalBeforeDiscountCents = roundUsdUpToCents(subtotalBeforeDiscountExactUsd);
+  const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
+  const discountAmount =
+    discountPercent > 0 ? Math.round(subtotalBeforeDiscountCents * discountPercent) : 0;
+  const totalCents = Math.max(0, subtotalBeforeDiscountCents - discountAmount);
+  const platformFeeCents = Math.max(0, totalCents - vendorShareCentsBase);
+  const vendorShareCents = Math.max(0, totalCents - platformFeeCents);
+  const marginAmount = Math.max(0, subtotalBeforeDiscountCents - vendorShareCentsBase);
+
+  return {
+    currency: params.currency,
+    totalCents,
+    subtotalBeforeDiscountCents,
+    base: {
+      seconds: params.durationSec,
+      rate: quote.vendorCostPerSecondUsd,
+      unit: 'sec',
+      amountCents: vendorShareCentsBase,
+    },
+    addons: [],
+    margin: {
+      amountCents: marginAmount,
+      percentApplied: params.rule.marginPercent,
+      flatCents: params.rule.marginFlatCents,
+    },
+    discount: discountAmount
+      ? {
+          amountCents: discountAmount,
+          percentApplied: discountPercent,
+          tier: params.memberTier,
+        }
+      : undefined,
+    membershipTier: params.memberTier,
+    platformFeeCents,
+    vendorShareCents,
+    vendorAccountId: params.vendorAccountId ?? undefined,
+    meta: {
+      pricing_model: 'fal_tokens',
+      billed_resolution: params.resolution,
+      billed_aspect_ratio: quote.aspectRatio,
+      output_width: quote.width,
+      output_height: quote.height,
+      frame_rate: quote.frameRate,
+      token_count: Number(quote.tokenCount.toFixed(3)),
+      vendor_cost_usd: quote.vendorCostUsd,
+      vendor_cost_per_second_usd: quote.vendorCostPerSecondUsd,
+      unit_price_usd_per_1k_tokens: params.pricingDetails.tokenPricing.unitPriceUsdPer1kTokens,
+      rounding: params.pricingDetails.tokenPricing.rounding ?? 'ceil_cent',
+    },
+  };
+}
+
 function getLumaRay2BasePriceEnv(engineId: string): string | undefined {
   if (engineId === 'lumaRay2_flash') {
     return (
@@ -434,6 +508,7 @@ export type PricingContext = {
   engine: EngineCaps;
   durationSec: number;
   resolution: string;
+  aspectRatio?: string | null;
   mode?: Mode;
   membershipTier?: string | null;
   currency?: string;
@@ -524,6 +599,19 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
       workflow,
       durationSec,
       rateUsd,
+      rule,
+      memberTier,
+      memberTierDiscounts,
+      currency,
+      vendorAccountId,
+    });
+  } else if (isSeedance2TokenPricing(pricingDetails)) {
+    const currency = (context.currency ?? rule.currency ?? pricingDetails.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+    snapshot = buildSeedance2Snapshot({
+      pricingDetails,
+      durationSec,
+      resolution,
+      aspectRatio: context.aspectRatio,
       rule,
       memberTier,
       memberTierDiscounts,

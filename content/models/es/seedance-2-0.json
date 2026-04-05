@@ -3,14 +3,14 @@
   "versionLabel": "2.0",
   "seo": {
     "title": "Seedance 2.0 — video IA con audio nativo",
-    "description": "Conozca Seedance 2.0 (ByteDance) en MaxVideoAI: video IA cinematográfico, audio nativo, control avanzado de cámara y salidas de hasta 15 s en 1080p."
+    "description": "Conozca Seedance 2.0 (ByteDance) en MaxVideoAI: video IA cinematográfico, audio nativo, salida 480p/720p, duraciones auto o de 4-15 s y referencias multimodales."
   },
   "overview": "Seedance 2.0 es el modelo de video IA flagship de ByteDance para motion cinematográfico, continuidad multi-shot y audio nativo sincronizado. Usa esta página para elegir el workflow, la estructura de prompt y las comparativas internas correctas antes de pasar a producción.",
-  "pricingNotes": "Verifica la tarifa en vivo dentro de Generate antes de cada ejecución de producción.",
+  "pricingNotes": "Seedance 2 sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra la cotización final en vivo antes de enviar.",
   "hero": {
     "title": "Seedance 2.0",
-    "intro": "Usa Seedance 2.0 cuando busques video premium multi-shot, motion más creíble y audio nativo en la misma pasada. Esta página ya está orientada al lanzamiento: workflows, estructuras de prompt y rutas internas para compararlo con Veo, Kling y el tier Sora saliente.",
-    "badge": "1080p · Hasta 15 s · Audio nativo · Referencias de texto / imagen / multimodales",
+    "intro": "Usa Seedance 2.0 cuando busques video premium multi-shot, motion más creíble y audio nativo en la misma pasada. Esta página cubre los workflows Seedance 2 ya abiertos en Fal: text-to-video, image-to-video con imagen final opcional, reference-to-video multimodal y las comparativas internas correctas frente a Veo, Kling y el tier Sora saliente.",
+    "badge": "480p/720p · Auto o 4-15 s · Audio nativo · Workflows de texto / imagen / referencia",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -71,19 +71,19 @@
     },
     {
       "label": "Entradas",
-      "body": "Texto + imagen + audio + video de referencia"
+      "body": "Prompts de texto, imagen inicial + imagen final opcional, y referencias de imagen/video/audio en ref2v"
     },
     {
       "label": "Límites de referencias",
-      "body": "Hasta 9 imágenes, 3 clips de video y 3 clips de audio, además de la instrucción de texto"
+      "body": "Hasta 9 imágenes, 3 clips de video y 3 clips de audio, con 12 archivos máximos entre todas las referencias ref2v"
     },
     {
       "label": "Duración",
-      "body": "Hasta 15 segundos por generación, con continuidad multi-shot en una sola salida"
+      "body": "Auto o 4-15 segundos por generación"
     },
     {
       "label": "Audio",
-      "body": "Audio nativo soportado, lip sync soportado y dual-channel (estéreo) soportado según fuentes oficiales"
+      "body": "Audio nativo activado por defecto y desactivable; Fal indica que el precio es el mismo con o sin audio"
     },
     {
       "label": "Cámara y movimiento",
@@ -96,7 +96,7 @@
   ],
   "promptStructure": {
     "title": "Cómo escribir prompts para Seedance 2.0",
-    "quote": "[Género] + [sujeto] + [escenario] + [beats de acción] + [lenguaje de cámara] + [cues de audio] + [duración <=15 s] + [estructura multi-shot].",
+    "quote": "[Género] + [sujeto] + [escenario] + [beats de acción] + [lenguaje de cámara] + [cues de audio] + [duración auto o 4-15 s] + [estructura multi-shot].",
     "description": "Para mayor consistencia, estructure la línea temporal por planos, defina transiciones explícitas y sincronice diálogo/SFX con acciones visibles.",
     "steps": [
       "Definir el género y el sujeto principal",
@@ -112,8 +112,9 @@
     "items": [
       "Mantén una estructura plano por plano para reforzar la continuidad multi-shot.",
       "Usa referencias multimodales para fijar vestuario, props, ritmo y ambiente.",
+      "Usa la imagen final opcional en i2v cuando quieras guiar el último frame.",
       "Pasa a Seedance 2.0 Fast cuando quieras borradores más baratos antes de los finales.",
-      "Verifica la ruta activa y el precio en vivo dentro de Generate antes de cada ejecución."
+      "Generate muestra la ruta activa y la cotización en vivo antes de enviar."
     ]
   },
   "prompts": [
@@ -131,7 +132,7 @@
     },
     {
       "title": "Storyboard multimodal",
-      "prompt": "Use @Image1..@Image9 para estilo y personajes, @Video1..@Video3 para ritmo, y @Audio1..@Audio3 para ambiente. Entregue una salida coherente en 3 planos (<=15 s)."
+      "prompt": "Use @Image1..@Image9 para estilo y personajes, @Video1..@Video3 para ritmo, y @Audio1..@Audio3 para ambiente. Entregue una salida coherente en 3 planos (auto o 4-15 s)."
     },
     {
       "title": "Escena de diálogo orientada a audio",
@@ -150,7 +151,7 @@
     },
     {
       "q": "¿Cuál es la duración máxima?",
-      "a": "Las comunicaciones oficiales indican hasta 15 segundos por generación."
+      "a": "Fal indica duración auto o de 4 a 15 segundos por generación en las rutas Seedance 2.0 actuales."
     },
     {
       "q": "¿Cómo verifico disponibilidad y precio?",
@@ -170,7 +171,7 @@
     "heroHighlights": [
       "Lenguaje de cámara de nivel dirección||Control explícito de movimientos, encuadres y transiciones",
       "Continuidad multi-shot||Salidas cortas con varios beats en una estructura coherente",
-      "Audio nativo sincronizado||Audio output, native audio generation y lip sync soportados",
+      "Audio nativo sincronizado||Audio nativo activado por defecto, desactivable, con el mismo precio indicado por Fal",
       "Referencias multimodales||Combina texto, imagen, video y audio para fijar estilo y ritmo"
     ],
     "specTitle": "Especificaciones",
@@ -183,21 +184,21 @@
           "Instrucciones de texto + referencias multimodales",
           "Hasta 9 imágenes",
           "Hasta 3 videos",
-          "Hasta 3 audios"
+          "Hasta 3 audios",
+          "Hasta 12 archivos totales en la ejecución ref2v"
         ]
       },
       {
         "title": "Salida y estructura",
-        "intro": "Las fuentes oficiales destacan control cinematográfico y audio nativo.",
+        "intro": "Fal expone ahora la ruta Seedance 2 con control cinematográfico, audio nativo y más opciones reales de duración/ratio que el primer wording de lanzamiento.",
         "items": [
-          "Hasta 1080p",
-          "Hasta 15 s por generación",
-          "24 FPS (anunciado)",
+          "480p o 720p",
+          "Auto o 4-15 s por generación",
+          "Ratios: auto, 21:9, 16:9, 4:3, 1:1, 3:4, 9:16",
+          "Image-to-video con imagen final opcional",
           "Transiciones naturales entre planos",
-          "Audio output soportado",
-          "Native audio generation soportada",
-          "Lip sync soportado",
-          "Dual-channel (estéreo) soportado"
+          "Audio nativo generado junto al video",
+          "Toggle de audio disponible con el mismo precio tanto si el audio está activado como si no"
         ]
       }
     ],
@@ -206,7 +207,7 @@
     "promptingGuideUrl": "https://seed.bytedance.com/en/seedance2_0",
     "promptingIntro": "Seedance 2.0 mejora cuando usted define timing de planos, verbos de cámara y cues de audio claros. Mantenga diálogo breve y acciones visibles.",
     "promptingGlobalPrinciples": [
-      "Estructure en 0-5 s / 5-10 s / 10-15 s.",
+      "Estructure en 0-5 s / 5-10 s / 10-15 s, o use auto cuando quiera que el modelo decida el pacing.",
       "Defina movimiento de cámara por plano.",
       "Mantenga un beat principal por plano.",
       "Alinee SFX y diálogo con acciones visibles."
@@ -229,7 +230,7 @@
         "label": "Rápido",
         "title": "Prompt rápido de concepto",
         "description": "Ideación rápida con un beat principal.",
-        "copy": "[Sujeto] en [escenario]. Cámara: [movimiento + intención]. Iluminación: [estilo]. Acción: [beat principal]. Audio: [ambiente + 1 SFX]. (<=15 s)"
+        "copy": "[Sujeto] en [escenario]. Cámara: [movimiento + intención]. Iluminación: [estilo]. Acción: [beat principal]. Audio: [ambiente + 1 SFX]. (Auto o 4-15 s)"
       },
       {
         "id": "structured",
@@ -250,7 +251,7 @@
         "label": "Storyboard",
         "title": "Prompt storyboard multimodal",
         "description": "Prompting guiado por referencias de imagen/video/audio.",
-        "copy": "Use @Image1..@Image9 para estilo y personajes.\nUse @Video1..@Video3 para ritmo y gramática de cámara.\nUse @Audio1..@Audio3 para textura sonora.\nGenere 3 planos coherentes en <=15 s con transiciones explícitas."
+        "copy": "Use @Image1..@Image9 para estilo y personajes.\nUse @Video1..@Video3 para ritmo y gramática de cámara.\nUse @Audio1..@Audio3 para textura sonora.\nGenere 3 planos coherentes en auto o 4-15 s con transiciones explícitas."
       }
     ],
     "tipsTitle": "Consejos y límites",
@@ -270,7 +271,7 @@
       "Las escenas complejas mejoran cuando separas los beats con más claridad.",
       "Los prompts con muchas referencias funcionan mejor si cada fuente tiene una función clara.",
       "Controla la familia de rutas Fal activa antes de escalar tráfico.",
-      "Confirma el precio en vivo antes de un rollout con clientes o automatizaciones."
+      "Usa la cotización en vivo de Generate antes de un rollout con clientes o automatizaciones."
     ],
     "galleryTitle": "Ejemplos de Seedance 2.0",
     "galleryIntro": "Usa esta galería para revisar patrones de prompt, estructura de escenas y tipos de beats que Seedance 2.0 resuelve bien dentro de MaxVideoAI.",

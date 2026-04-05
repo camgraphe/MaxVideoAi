@@ -560,6 +560,7 @@ type DurationOptionMeta = {
   raw: number | string;
   value: number;
   label: string;
+  isAuto?: boolean;
 };
 
 function parseDurationOptionValue(option: number | string): DurationOptionMeta {
@@ -568,6 +569,14 @@ function parseDurationOptionValue(option: number | string): DurationOptionMeta {
       raw: option,
       value: option,
       label: `${option}s`,
+    };
+  }
+  if (option.trim().toLowerCase() === 'auto') {
+    return {
+      raw: option,
+      value: 0,
+      label: option,
+      isAuto: true,
     };
   }
   const numeric = Number(option.replace(/[^\d.]/g, ''));
@@ -790,23 +799,32 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     }
     if (capability?.duration) {
       if ('options' in capability.duration) {
-        const parsedOptions = capability.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0);
+        const parsedOptions = capability.duration.options
+          .map(parseDurationOptionValue)
+          .filter((entry) => entry.isAuto || entry.value > 0);
+        const numericOptions = parsedOptions.filter((entry) => !entry.isAuto && entry.value > 0);
         const defaultRaw = capability.duration.default ?? parsedOptions[0]?.raw ?? engine.maxDurationSec;
         const defaultMeta = parseDurationOptionValue(defaultRaw as number | string);
+        const fallbackDurationSec =
+          prevSeconds != null && prevSeconds > 0
+            ? prevSeconds
+            : numericOptions.find((meta) => matchesDurationOption(meta, defaultRaw as number | string, defaultMeta.value))
+                ?.value ?? numericOptions[0]?.value ?? Math.min(engine.maxDurationSec, 8);
         const closestBySeconds =
-          prevSeconds != null
-            ? parsedOptions.reduce((best, candidate) => {
+          prevSeconds != null && numericOptions.length
+            ? numericOptions.reduce((best, candidate) => {
                 const bestDiff = Math.abs(best.value - prevSeconds);
                 const candidateDiff = Math.abs(candidate.value - prevSeconds);
                 return candidateDiff < bestDiff ? candidate : best;
-              }, parsedOptions[0])
+              }, numericOptions[0])
             : null;
         const selected = parsedOptions.find((meta) => matchesDurationOption(meta, prevOption, prevSeconds))
           ?? closestBySeconds
           ?? parsedOptions.find((meta) => matchesDurationOption(meta, defaultRaw as number | string, defaultMeta.value))
           ?? parsedOptions[0]
           ?? defaultMeta;
-        const clampedSeconds = Math.max(1, Math.min(engine.maxDurationSec, Math.round(selected.value)));
+        const resolvedDurationValue = selected.isAuto ? fallbackDurationSec : selected.value;
+        const clampedSeconds = Math.max(1, Math.min(engine.maxDurationSec, Math.round(resolvedDurationValue)));
         return {
           durationSec: clampedSeconds,
           durationOption: selected.raw,

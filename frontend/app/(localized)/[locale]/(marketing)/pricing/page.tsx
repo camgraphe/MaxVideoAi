@@ -83,13 +83,19 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Seedance 2.0 launch sequence',
+        title: 'Flagship Seedance 2.0 run',
         engine: 'Seedance 2.0',
         duration: '10s',
         resolution: '1280×720',
         audio: 'On',
-        note: 'Confirm final rate before go-live.',
-        pricingScenario: { engineId: 'seedance-2-0', durationSec: 10, resolution: '720p', memberTier: 'member' },
+        note: 'Seedance 2 uses Fal token pricing. This example assumes 1280×720 at 24 fps, adds the MaxVideoAI margin, then rounds up to the next cent.',
+        pricingScenario: {
+          engineId: 'seedance-2-0',
+          durationSec: 10,
+          resolution: '720p',
+          aspectRatio: '16:9',
+          memberTier: 'member',
+        },
       },
     ],
   },
@@ -117,13 +123,19 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Séquence de lancement Seedance 2.0',
+        title: 'Séquence premium Seedance 2.0',
         engine: 'Seedance 2.0',
         duration: '10 s',
         resolution: '1280×720',
         audio: 'Inclus',
-        note: 'Confirmer le tarif final avant mise en prod.',
-        pricingScenario: { engineId: 'seedance-2-0', durationSec: 10, resolution: '720p', memberTier: 'member' },
+        note: 'Seedance 2 suit la formule tokens de Fal. Cet exemple part de 1280×720 à 24 fps, ajoute la marge MaxVideoAI, puis arrondit au centime supérieur.',
+        pricingScenario: {
+          engineId: 'seedance-2-0',
+          durationSec: 10,
+          resolution: '720p',
+          aspectRatio: '16:9',
+          memberTier: 'member',
+        },
       },
     ],
   },
@@ -151,13 +163,19 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Secuencia de lanzamiento Seedance 2.0',
+        title: 'Secuencia premium Seedance 2.0',
         engine: 'Seedance 2.0',
         duration: '10 s',
         resolution: '1280×720',
         audio: 'Incluido',
-        note: 'Confirma la tarifa final antes del lanzamiento.',
-        pricingScenario: { engineId: 'seedance-2-0', durationSec: 10, resolution: '720p', memberTier: 'member' },
+        note: 'Seedance 2 usa la fórmula de tokens de Fal. Este ejemplo parte de 1280×720 a 24 fps, añade el margen de MaxVideoAI y redondea al céntimo superior.',
+        pricingScenario: {
+          engineId: 'seedance-2-0',
+          durationSec: 10,
+          resolution: '720p',
+          aspectRatio: '16:9',
+          memberTier: 'member',
+        },
       },
     ],
   },
@@ -168,27 +186,30 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
     title: 'What affects price',
     points: [
       'Duration scales linearly (4s / 8s / 12s).',
-      'Resolution increases cost at 1080p vs 720p.',
-      'Audio adds a small premium on supported engines.',
+      'On token-priced routes like Seedance 2, both resolution and aspect ratio change the pixel count and the cost.',
+      'Audio can add a premium on some engines; others, like Seedance 2, price audio on/off the same.',
       'Engine tier (Seedance / Veo / Kling / LTX) sets the base rate.',
+      'Generate still shows the final live quote before submission.',
     ],
   },
   fr: {
     title: 'Ce qui influence le prix',
     points: [
       'La durée évolue linéairement (4 s / 8 s / 12 s).',
-      'La résolution augmente le coût en 1080p vs 720p.',
-      'L’audio ajoute une légère prime sur les moteurs compatibles.',
+      'Sur les routes à tokens comme Seedance 2, la résolution et le ratio changent le nombre de pixels et donc le coût.',
+      'L’audio peut ajouter une prime sur certains moteurs ; d’autres, comme Seedance 2, gardent le même prix avec ou sans audio.',
       'Le niveau du moteur (Seedance / Veo / Kling / LTX) fixe le tarif de base.',
+      'Generate affiche quand même le devis live final avant validation.',
     ],
   },
   es: {
     title: 'Qué afecta el precio',
     points: [
       'La duración escala de forma lineal (4 s / 8 s / 12 s).',
-      'La resolución incrementa el costo en 1080p frente a 720p.',
-      'El audio añade un pequeño recargo en los motores compatibles.',
+      'En rutas con tokens como Seedance 2, la resolución y el ratio cambian el número de píxeles y por tanto el costo.',
+      'El audio puede añadir un recargo en algunos motores; otros, como Seedance 2, mantienen el mismo precio con o sin audio.',
       'El nivel del motor (Seedance / Veo / Kling / LTX) define la tarifa base.',
+      'Generate sigue mostrando la cotización final en vivo antes de enviar.',
     ],
   },
 };
@@ -241,12 +262,8 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     locale === 'fr' ? 'Seedance 2.0 vs Veo 3.1' : locale === 'es' ? 'Seedance 2.0 vs Veo 3.1' : 'Seedance 2.0 vs Veo 3.1';
   const exploreSeedanceModelLabel =
     locale === 'fr' ? 'Profil Seedance 2.0' : locale === 'es' ? 'Perfil Seedance 2.0' : 'Seedance 2.0 profile';
-  const exploreSeedanceCompareLabel =
-    locale === 'fr'
-      ? 'Seedance 2.0 Fast vs LTX 2.3 Fast'
-      : locale === 'es'
-        ? 'Seedance 2.0 Fast vs LTX 2.3 Fast'
-        : 'Seedance 2.0 Fast vs LTX 2.3 Fast';
+  const exploreVeoModelLabel =
+    locale === 'fr' ? 'Profil Veo 3.1' : locale === 'es' ? 'Perfil Veo 3.1' : 'Veo 3.1 profile';
   const exploreLinks = [
     { href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0-fast' } }, label: exploreModelsLabel },
     {
@@ -254,10 +271,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       label: exploreEnginesLabel,
     },
     { href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }, label: exploreSeedanceModelLabel },
-    {
-      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'ltx-2-3-fast-vs-seedance-2-0-fast' } },
-      label: exploreSeedanceCompareLabel,
-    },
+    { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1' } }, label: exploreVeoModelLabel },
   ];
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -303,6 +317,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         engine: engineCaps,
         durationSec: input.durationSec,
         resolution: input.resolution,
+        aspectRatio: input.aspectRatio,
         membershipTier: input.memberTier,
         addons: input.addons,
       });
