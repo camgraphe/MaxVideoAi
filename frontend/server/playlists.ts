@@ -1,8 +1,15 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
+import {
+  getExampleFamilyDescriptor,
+  getExampleFamilyModelSlugs,
+  resolveExampleFamilyId,
+} from '@/lib/model-families';
 import { getIndexablePlaylistSlugs } from '@/server/indexing';
 
 export type PlaylistKind = 'core' | 'model' | 'draft';
+export type PlaylistSurfaceRole = 'starter' | 'examplesHub' | 'family' | 'model' | 'draft' | 'other';
+export type PlaylistSurfaceStatus = 'ready' | 'missing' | 'empty' | 'other';
 
 class LockedPlaylistError extends Error {
   constructor(message = 'This collection is locked by runtime configuration') {
@@ -26,6 +33,13 @@ export type PlaylistRecord = {
   kind: PlaylistKind;
   isLocked: boolean;
   usageTargets: string[];
+  surfaceRole: PlaylistSurfaceRole;
+  surfaceStatus: PlaylistSurfaceStatus;
+  familyId: string | null;
+  modelSlug: string | null;
+  helperText: string | null;
+  drivesRoute: string | null;
+  fallbackModelSlugs: string[];
 };
 
 export type PlaylistItemRecord = {
@@ -94,9 +108,53 @@ type MutablePlaylistFields = Partial<{
   userId: string | null;
 }>;
 
-function getStarterPlaylistSlug(): string {
+function parseSlugList(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  const values = raw
+    .split(/[,\s]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return Array.from(new Set(values.map((value) => value.toLowerCase()))).map((normalized) => {
+    const original = values.find((value) => value.toLowerCase() === normalized);
+    return original ?? normalized;
+  });
+}
+
+export function getStarterPlaylistSlug(): string {
   const slug = process.env.STARTER_PLAYLIST_SLUG?.trim();
   return slug?.length ? slug : 'starter';
+}
+
+export function getExamplesHubPlaylistSlug(): string {
+  const explicit = parseSlugList(process.env.EXAMPLES_PLAYLIST_SLUG);
+  if (explicit.length) {
+    return explicit[0]!;
+  }
+  const indexable = getIndexablePlaylistSlugs();
+  if (indexable.length) {
+    return indexable[0]!;
+  }
+  return 'examples';
+}
+
+export function getFamilyPlaylistSlug(familyId: string): string {
+  return `family-${familyId.trim().toLowerCase()}`;
+}
+
+export function getModelPlaylistSlug(modelSlug: string): string {
+  return `examples-${modelSlug.trim().toLowerCase()}`;
+}
+
+export function getFamilyFeedSourceSlugs(familyId: string): string[] {
+  const normalizedFamilyId = familyId.trim().toLowerCase();
+  if (!normalizedFamilyId) return [];
+  return Array.from(
+    new Set([
+      getFamilyPlaylistSlug(normalizedFamilyId),
+      ...getExampleFamilyModelSlugs(normalizedFamilyId).map((modelSlug) => getModelPlaylistSlug(modelSlug)),
+      getExamplesHubPlaylistSlug(),
+    ])
+  );
 }
 
 function compareDatesDescending(a?: string | null, b?: string | null) {
@@ -112,15 +170,29 @@ function getPlaylistUsageTargets(slug: string): string[] {
   const starterSlug = getStarterPlaylistSlug().toLowerCase();
   const normalizedSlug = slug.trim().toLowerCase();
   const indexableSlugs = new Set(getIndexablePlaylistSlugs().map((entry) => entry.trim().toLowerCase()));
+  const examplesHubSlug = getExamplesHubPlaylistSlug().toLowerCase();
 
   if (normalizedSlug === starterSlug) {
     targets.push('starter-tab');
   }
-  if (indexableSlugs.has(normalizedSlug)) {
+  if (normalizedSlug === examplesHubSlug || indexableSlugs.has(normalizedSlug)) {
     targets.push('examples-hub');
   }
+  if (normalizedSlug.startsWith('family-')) {
+    const familyId = normalizedSlug.slice('family-'.length);
+    if (familyId) {
+      targets.push(`family-page:${familyId}`);
+    }
+  }
   if (normalizedSlug.startsWith('examples-')) {
-    targets.push(`model-page:${normalizedSlug.slice('examples-'.length)}`);
+    const modelSlug = normalizedSlug.slice('examples-'.length);
+    if (modelSlug) {
+      targets.push(`model-page:${modelSlug}`);
+      const familyId = resolveExampleFamilyId(modelSlug);
+      if (familyId) {
+        targets.push(`family-fallback:${familyId}`);
+      }
+    }
   }
 
   return targets;
@@ -135,26 +207,111 @@ function isLockedPlaylistSlug(slug: string): boolean {
   if (getIndexablePlaylistSlugs().some((entry) => entry.trim().toLowerCase() === normalizedSlug)) {
     return true;
   }
-  return normalizedSlug.startsWith('examples-');
+  if (normalizedSlug === getExamplesHubPlaylistSlug().toLowerCase()) {
+    return true;
+  }
+  return normalizedSlug.startsWith('examples-') || normalizedSlug.startsWith('family-');
 }
 
-function getPlaylistKind(slug: string, itemCount: number): PlaylistKind {
+function derivePlaylistRuntimeMeta(slug: string, itemCount: number) {
   const normalizedSlug = slug.trim().toLowerCase();
-  if (normalizedSlug === getStarterPlaylistSlug().toLowerCase()) {
-    return 'core';
+  const starterSlug = getStarterPlaylistSlug().toLowerCase();
+  const examplesHubSlug = getExamplesHubPlaylistSlug().toLowerCase();
+
+  if (normalizedSlug === starterSlug) {
+    return {
+      kind: 'core' as PlaylistKind,
+      surfaceRole: 'starter' as PlaylistSurfaceRole,
+      surfaceStatus: itemCount > 0 ? ('ready' as PlaylistSurfaceStatus) : ('empty' as PlaylistSurfaceStatus),
+      familyId: null,
+      modelSlug: null,
+      helperText: 'Feeds guest starter mode in the workspace.',
+      drivesRoute: '/app?tab=starter',
+      fallbackModelSlugs: [] as string[],
+    };
   }
-  if (getIndexablePlaylistSlugs().some((entry) => entry.trim().toLowerCase() === normalizedSlug)) {
-    return 'core';
+
+  if (normalizedSlug === examplesHubSlug) {
+    return {
+      kind: 'core' as PlaylistKind,
+      surfaceRole: 'examplesHub' as PlaylistSurfaceRole,
+      surfaceStatus: itemCount > 0 ? ('ready' as PlaylistSurfaceStatus) : ('empty' as PlaylistSurfaceStatus),
+      familyId: null,
+      modelSlug: null,
+      helperText: 'Feeds the main examples page.',
+      drivesRoute: '/examples',
+      fallbackModelSlugs: [] as string[],
+    };
   }
-  if (normalizedSlug.startsWith('examples-') && itemCount > 0) {
-    return 'model';
+
+  if (normalizedSlug.startsWith('family-')) {
+    const familyId = normalizedSlug.slice('family-'.length);
+    const descriptor = getExampleFamilyDescriptor(familyId);
+    const fallbackModelSlugs = getExampleFamilyModelSlugs(familyId);
+    const fallbackSources = fallbackModelSlugs.map(getModelPlaylistSlug);
+    const fallbackSummary = fallbackSources.length
+      ? `${fallbackSources.join(', ')} then ${examplesHubSlug}`
+      : examplesHubSlug;
+    return {
+      kind: 'model' as PlaylistKind,
+      surfaceRole: 'family' as PlaylistSurfaceRole,
+      surfaceStatus: itemCount > 0 ? ('ready' as PlaylistSurfaceStatus) : ('empty' as PlaylistSurfaceStatus),
+      familyId: descriptor?.id ?? familyId ?? null,
+      modelSlug: null,
+      helperText: descriptor
+        ? `Drives /examples/${descriptor.id}. Falls back to ${fallbackSummary}.`
+        : `Drives /examples/${familyId}. Falls back to ${fallbackSummary}.`,
+      drivesRoute: familyId ? `/examples/${familyId}` : null,
+      fallbackModelSlugs,
+    };
   }
-  return 'draft';
+
+  if (normalizedSlug.startsWith('examples-')) {
+    const modelSlug = normalizedSlug.slice('examples-'.length);
+    const familyId = resolveExampleFamilyId(modelSlug);
+    return {
+      kind: itemCount > 0 ? ('model' as PlaylistKind) : ('draft' as PlaylistKind),
+      surfaceRole: 'model' as PlaylistSurfaceRole,
+      surfaceStatus: itemCount > 0 ? ('ready' as PlaylistSurfaceStatus) : ('empty' as PlaylistSurfaceStatus),
+      familyId,
+      modelSlug,
+      helperText: familyId
+        ? `Feeds /models/${modelSlug} and contributes to /examples/${familyId} fallback.`
+        : `Feeds /models/${modelSlug}.`,
+      drivesRoute: modelSlug ? `/models/${modelSlug}` : null,
+      fallbackModelSlugs: [],
+    };
+  }
+
+  if (!itemCount) {
+    return {
+      kind: 'draft' as PlaylistKind,
+      surfaceRole: 'draft' as PlaylistSurfaceRole,
+      surfaceStatus: 'empty' as PlaylistSurfaceStatus,
+      familyId: null,
+      modelSlug: null,
+      helperText: 'Draft or empty collection.',
+      drivesRoute: null,
+      fallbackModelSlugs: [] as string[],
+    };
+  }
+
+  return {
+    kind: 'model' as PlaylistKind,
+    surfaceRole: 'other' as PlaylistSurfaceRole,
+    surfaceStatus: 'other' as PlaylistSurfaceStatus,
+    familyId: null,
+    modelSlug: null,
+    helperText: 'General-purpose collection.',
+    drivesRoute: null,
+    fallbackModelSlugs: [] as string[],
+  };
 }
 
 function mapPlaylistRow(row: PlaylistSummaryRow): PlaylistRecord {
   const itemCount = Number(row.item_count ?? '0');
   const slug = row.slug;
+  const runtimeMeta = derivePlaylistRuntimeMeta(slug, itemCount);
 
   return {
     id: row.id,
@@ -168,20 +325,36 @@ function mapPlaylistRow(row: PlaylistSummaryRow): PlaylistRecord {
     siteVisibleCount: Number(row.site_visible_count ?? '0'),
     withVideoAssetCount: Number(row.with_video_asset_count ?? '0'),
     lastAddedAt: row.last_added_at ?? null,
-    kind: getPlaylistKind(slug, itemCount),
+    kind: runtimeMeta.kind,
     isLocked: isLockedPlaylistSlug(slug),
     usageTargets: getPlaylistUsageTargets(slug),
+    surfaceRole: runtimeMeta.surfaceRole,
+    surfaceStatus: runtimeMeta.surfaceStatus,
+    familyId: runtimeMeta.familyId,
+    modelSlug: runtimeMeta.modelSlug,
+    helperText: runtimeMeta.helperText,
+    drivesRoute: runtimeMeta.drivesRoute,
+    fallbackModelSlugs: runtimeMeta.fallbackModelSlugs,
   };
 }
 
-function getPlaylistPriority(playlist: Pick<PlaylistRecord, 'kind' | 'slug' | 'usageTargets'>): number {
-  if (playlist.usageTargets.includes('starter-tab')) {
+function getPlaylistPriority(playlist: Pick<PlaylistRecord, 'surfaceRole' | 'usageTargets'>): number {
+  if (playlist.surfaceRole === 'starter') {
     return 0;
   }
-  if (playlist.usageTargets.includes('examples-hub')) {
+  if (playlist.surfaceRole === 'examplesHub') {
     return 1;
   }
-  return 2;
+  if (playlist.surfaceRole === 'family') {
+    return 2;
+  }
+  if (playlist.surfaceRole === 'model') {
+    return 3;
+  }
+  if (playlist.surfaceRole === 'other') {
+    return 4;
+  }
+  return 5;
 }
 
 function comparePlaylists(a: PlaylistRecord, b: PlaylistRecord) {
@@ -246,6 +419,12 @@ async function getPlaylistRecordById(playlistId: string): Promise<PlaylistRecord
   return row ? mapPlaylistRow(row) : null;
 }
 
+async function getPlaylistRecordBySlug(slug: string): Promise<PlaylistRecord | null> {
+  const rows = await listPlaylistRows('LOWER(p.slug) = LOWER($1)', [slug]);
+  const row = rows[0];
+  return row ? mapPlaylistRow(row) : null;
+}
+
 async function assertPlaylistCanEditDetails(playlistId: string): Promise<PlaylistRecord> {
   const playlist = await getPlaylistRecordById(playlistId);
   if (!playlist) {
@@ -264,6 +443,10 @@ export async function listPlaylists(): Promise<PlaylistRecord[]> {
 
 export async function getPlaylist(playlistId: string): Promise<PlaylistRecord | null> {
   return getPlaylistRecordById(playlistId);
+}
+
+export async function getPlaylistBySlug(slug: string): Promise<PlaylistRecord | null> {
+  return getPlaylistRecordBySlug(slug);
 }
 
 export async function getPlaylistItems(playlistId: string): Promise<PlaylistItemRecord[]> {
@@ -338,6 +521,8 @@ export async function createPlaylist(payload: {
     throw new Error('Failed to create playlist');
   }
 
+  const runtimeMeta = derivePlaylistRuntimeMeta(row.slug, 0);
+
   return {
     id: row.id,
     slug: row.slug,
@@ -350,9 +535,16 @@ export async function createPlaylist(payload: {
     siteVisibleCount: 0,
     withVideoAssetCount: 0,
     lastAddedAt: null,
-    kind: getPlaylistKind(row.slug, 0),
+    kind: runtimeMeta.kind,
     isLocked: isLockedPlaylistSlug(row.slug),
     usageTargets: getPlaylistUsageTargets(row.slug),
+    surfaceRole: runtimeMeta.surfaceRole,
+    surfaceStatus: runtimeMeta.surfaceStatus,
+    familyId: runtimeMeta.familyId,
+    modelSlug: runtimeMeta.modelSlug,
+    helperText: runtimeMeta.helperText,
+    drivesRoute: runtimeMeta.drivesRoute,
+    fallbackModelSlugs: runtimeMeta.fallbackModelSlugs,
   };
 }
 

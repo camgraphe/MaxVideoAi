@@ -4,7 +4,7 @@ import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { listExamplesPage } from '@/server/videos';
+import { listExampleFamilyPage } from '@/server/videos';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { getExampleModelLanding } from '@/lib/examples/modelLanding';
 import { EXAMPLES_HERO_SELECTION_LIMIT, pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
@@ -100,11 +100,10 @@ export async function generateMetadata({
   const description =
     modelLanding?.metaDescription ??
     `Explore ${modelLabel} examples with prompts, settings, and per-clip pricing on MaxVideoAI.`;
-  const heroResult = await listExamplesPage({
+  const heroResult = await listExampleFamilyPage(canonical, {
     sort: DEFAULT_SORT,
     limit: EXAMPLES_HERO_SELECTION_LIMIT,
     offset: 0,
-    engineGroup: canonical,
   });
   const heroVideo = pickFirstPlayableVideo(heroResult.items);
   const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/price-before.png`;

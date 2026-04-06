@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
+import { listExampleFamilyPage, listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
@@ -511,12 +511,19 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   }
 
   const offset = (currentPage - 1) * EXAMPLES_PAGE_SIZE;
-  const pageResult = await listExamplesPage({
-    sort,
-    limit: EXAMPLES_PAGE_SIZE,
-    offset,
-    engineGroup: collapsedEngineParam || undefined,
-  });
+  const pageResult =
+    engineFromPath && collapsedEngineParam
+      ? await listExampleFamilyPage(collapsedEngineParam, {
+          sort,
+          limit: EXAMPLES_PAGE_SIZE,
+          offset,
+        })
+      : await listExamplesPage({
+          sort,
+          limit: EXAMPLES_PAGE_SIZE,
+          offset,
+          engineGroup: collapsedEngineParam || undefined,
+        });
   const allVideos = pageResult.items;
   const totalCount = pageResult.total;
   const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));

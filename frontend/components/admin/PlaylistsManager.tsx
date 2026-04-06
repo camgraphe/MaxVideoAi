@@ -1,12 +1,27 @@
 "use client";
 
 import Image from 'next/image';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, useTransition, type DragEvent, type FormEvent, type ReactNode } from 'react';
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type DragEvent,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
+import { getExampleFamilyDescriptor, getExampleFamilyIds, getExampleFamilyModelSlugs } from '@/lib/model-families';
 
 type PlaylistKind = 'core' | 'model' | 'draft';
+type PlaylistSurfaceRole = 'starter' | 'examplesHub' | 'family' | 'model' | 'draft' | 'other';
+type PlaylistSurfaceStatus = 'ready' | 'missing' | 'empty' | 'other';
+type PlaylistGroup = 'runtime' | 'family' | 'model' | 'draft';
 
 type PlaylistSummary = {
   id: string;
@@ -23,6 +38,13 @@ type PlaylistSummary = {
   kind: PlaylistKind;
   isLocked: boolean;
   usageTargets: string[];
+  surfaceRole: PlaylistSurfaceRole;
+  surfaceStatus: PlaylistSurfaceStatus;
+  familyId: string | null;
+  modelSlug: string | null;
+  helperText: string | null;
+  drivesRoute: string | null;
+  fallbackModelSlugs: string[];
 };
 
 type PlaylistItemRecord = {
@@ -50,7 +72,16 @@ type PlaylistsManagerProps = {
 
 type EditablePlaylist = PlaylistSummary & { dirty?: boolean; loading?: boolean };
 type DropPlacement = 'before' | 'after';
-type FutureCollectionSection = 'image' | 'audio' | 'character' | 'angle';
+type FamilyPlaylistHelperCard = {
+  familyId: string;
+  label: string;
+  slug: string;
+  route: string;
+  fallbackModelSlugs: string[];
+  helperText: string;
+  status: 'ready' | 'missing' | 'empty';
+  playlistId: string | null;
+};
 
 const PLACEHOLDER_MAP: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
@@ -58,17 +89,11 @@ const PLACEHOLDER_MAP: Record<string, string> = {
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
 
-const GROUP_LABELS: Record<PlaylistKind, string> = {
-  core: 'Core surfaces',
-  model: 'Model collections',
-  draft: 'Draft / empty',
-};
-
-const FUTURE_SECTION_LABELS: Record<FutureCollectionSection, string> = {
-  image: 'Image',
-  audio: 'Audio',
-  character: 'Character',
-  angle: 'Angle',
+const GROUP_LABELS: Record<PlaylistGroup, string> = {
+  runtime: 'Runtime surfaces',
+  family: 'Family playlists',
+  model: 'Model playlists',
+  draft: 'Draft / misc',
 };
 
 function getPlaceholderThumb(aspectRatio?: string | null): string {
@@ -105,32 +130,21 @@ function compareDatesDescending(a?: string | null, b?: string | null) {
   return safeB - safeA;
 }
 
-function getPlaylistPriority(playlist: Pick<EditablePlaylist, 'kind' | 'slug' | 'usageTargets'>) {
-  if (playlist.usageTargets.includes('starter-tab')) {
-    return 0;
-  }
-  if (playlist.usageTargets.includes('examples-hub')) {
-    return 1;
-  }
-  return 2;
+function getPlaylistPriority(playlist: Pick<EditablePlaylist, 'surfaceRole'>) {
+  if (playlist.surfaceRole === 'starter') return 0;
+  if (playlist.surfaceRole === 'examplesHub') return 1;
+  if (playlist.surfaceRole === 'family') return 2;
+  if (playlist.surfaceRole === 'model') return 3;
+  if (playlist.surfaceRole === 'other') return 4;
+  return 5;
 }
 
 function comparePlaylists(a: EditablePlaylist, b: EditablePlaylist) {
-  const kindWeight: Record<PlaylistKind, number> = { core: 0, model: 1, draft: 2 };
-  if (kindWeight[a.kind] !== kindWeight[b.kind]) {
-    return kindWeight[a.kind] - kindWeight[b.kind];
-  }
   const priorityDelta = getPlaylistPriority(a) - getPlaylistPriority(b);
-  if (priorityDelta !== 0) {
-    return priorityDelta;
-  }
-  if (a.itemCount !== b.itemCount) {
-    return b.itemCount - a.itemCount;
-  }
+  if (priorityDelta !== 0) return priorityDelta;
+  if (a.itemCount !== b.itemCount) return b.itemCount - a.itemCount;
   const lastAddedDelta = compareDatesDescending(a.lastAddedAt, b.lastAddedAt);
-  if (lastAddedDelta !== 0) {
-    return lastAddedDelta;
-  }
+  if (lastAddedDelta !== 0) return lastAddedDelta;
   return a.name.localeCompare(b.name) || a.slug.localeCompare(b.slug);
 }
 
@@ -141,6 +155,12 @@ function sortPlaylists(playlists: EditablePlaylist[]): EditablePlaylist[] {
 function getUsageLabel(target: string): string {
   if (target === 'starter-tab') return 'Starter tab';
   if (target === 'examples-hub') return 'Examples hub';
+  if (target.startsWith('family-page:')) {
+    return `Family page · ${target.slice('family-page:'.length)}`;
+  }
+  if (target.startsWith('family-fallback:')) {
+    return `Family fallback · ${target.slice('family-fallback:'.length)}`;
+  }
   if (target.startsWith('model-page:')) {
     return `Model page · ${target.slice('model-page:'.length)}`;
   }
@@ -167,6 +187,48 @@ function buildPlaylistUpdateFromItems(playlist: EditablePlaylist, items: Playlis
   };
 }
 
+function getPlaylistGroup(playlist: Pick<PlaylistSummary, 'surfaceRole'>): PlaylistGroup {
+  if (playlist.surfaceRole === 'starter' || playlist.surfaceRole === 'examplesHub') {
+    return 'runtime';
+  }
+  if (playlist.surfaceRole === 'family') {
+    return 'family';
+  }
+  if (playlist.surfaceRole === 'model') {
+    return 'model';
+  }
+  return 'draft';
+}
+
+function buildFamilyHelpers(playlists: PlaylistSummary[]): FamilyPlaylistHelperCard[] {
+  const byFamilyId = new Map<string, PlaylistSummary>();
+  playlists.forEach((playlist) => {
+    if (playlist.surfaceRole === 'family' && playlist.familyId) {
+      byFamilyId.set(playlist.familyId, playlist);
+    }
+  });
+
+  return getExampleFamilyIds().map((familyId) => {
+    const descriptor = getExampleFamilyDescriptor(familyId);
+    const playlist = byFamilyId.get(familyId) ?? null;
+    const fallbackModelSlugs = getExampleFamilyModelSlugs(familyId);
+    return {
+      familyId,
+      label: descriptor?.label ?? familyId,
+      slug: `family-${familyId}`,
+      route: `/examples/${familyId}`,
+      fallbackModelSlugs,
+      helperText: `Feeds /examples/${familyId}. Auto-fills from ${
+        fallbackModelSlugs.length
+          ? `${fallbackModelSlugs.map((modelSlug) => `examples-${modelSlug}`).join(', ')} then examples`
+          : 'examples'
+      }.`,
+      status: playlist ? (playlist.itemCount > 0 ? 'ready' : 'empty') : 'missing',
+      playlistId: playlist?.id ?? null,
+    };
+  });
+}
+
 function sortItemsForDisplay(items: PlaylistItemRecord[]): PlaylistItemRecord[] {
   return [...items].sort((a, b) => {
     if (a.orderIndex !== b.orderIndex) {
@@ -174,6 +236,47 @@ function sortItemsForDisplay(items: PlaylistItemRecord[]): PlaylistItemRecord[] 
     }
     return compareDatesDescending(a.createdAt, b.createdAt);
   });
+}
+
+function getSurfaceRoleLabel(role: PlaylistSurfaceRole): string {
+  switch (role) {
+    case 'starter':
+      return 'Starter surface';
+    case 'examplesHub':
+      return 'Examples hub';
+    case 'family':
+      return 'Family playlist';
+    case 'model':
+      return 'Model playlist';
+    case 'draft':
+      return 'Draft';
+    case 'other':
+    default:
+      return 'Misc collection';
+  }
+}
+
+function getSurfaceRoleTone(role: PlaylistSurfaceRole): 'neutral' | 'ok' | 'warn' {
+  if (role === 'starter' || role === 'examplesHub') return 'ok';
+  if (role === 'family' || role === 'model') return 'neutral';
+  return 'warn';
+}
+
+function getSurfaceStatusTone(status: PlaylistSurfaceStatus | FamilyPlaylistHelperCard['status']): 'neutral' | 'ok' | 'warn' {
+  if (status === 'ready') return 'ok';
+  if (status === 'missing' || status === 'empty') return 'warn';
+  return 'neutral';
+}
+
+function getSurfaceStatusLabel(status: PlaylistSurfaceStatus | FamilyPlaylistHelperCard['status']): string {
+  if (status === 'ready') return 'Ready';
+  if (status === 'missing') return 'Missing';
+  if (status === 'empty') return 'Empty';
+  return 'General';
+}
+
+function buildHelperFallbackLabel(modelSlug: string): string {
+  return `examples-${modelSlug}`;
 }
 
 function StatusPill({
@@ -193,6 +296,92 @@ function StatusPill({
   return <span className={clsx('inline-flex rounded-full border px-2 py-1 text-[11px] font-semibold', classes)}>{children}</span>;
 }
 
+function PlaylistRailCard({
+  playlist,
+  isActive,
+  onSelect,
+}: {
+  playlist: EditablePlaylist;
+  isActive: boolean;
+  onSelect: (playlistId: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(playlist.id)}
+      className={clsx(
+        'w-full rounded-card border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+        isActive
+          ? 'border-brand bg-surface-2 shadow-card'
+          : 'border-hairline bg-surface hover:border-text-muted hover:bg-surface-2'
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-1">
+          <p className="truncate text-sm font-semibold text-text-primary">{playlist.name}</p>
+          <p className="truncate text-xs text-text-muted">{playlist.slug}</p>
+        </div>
+        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+          <StatusPill tone={getSurfaceRoleTone(playlist.surfaceRole)}>{getSurfaceRoleLabel(playlist.surfaceRole)}</StatusPill>
+          <StatusPill tone={getSurfaceStatusTone(playlist.surfaceStatus)}>{getSurfaceStatusLabel(playlist.surfaceStatus)}</StatusPill>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-text-secondary">{summarizePlaylist(playlist)}</p>
+      {playlist.helperText ? <p className="mt-2 text-[11px] leading-5 text-text-muted">{playlist.helperText}</p> : null}
+      <p className="mt-2 text-[11px] text-text-muted">Last added: {formatDate(playlist.lastAddedAt)}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {playlist.usageTargets.map((target) => (
+          <StatusPill key={target} tone={playlist.surfaceRole === 'starter' || playlist.surfaceRole === 'examplesHub' ? 'ok' : 'neutral'}>
+            {getUsageLabel(target)}
+          </StatusPill>
+        ))}
+        {playlist.isLocked ? <StatusPill tone="neutral">Locked</StatusPill> : null}
+      </div>
+    </button>
+  );
+}
+
+function MissingFamilyCard({
+  helper,
+  onCreate,
+  onSeed,
+  pending,
+}: {
+  helper: FamilyPlaylistHelperCard;
+  onCreate: (familyId: string) => void;
+  onSeed: (familyId: string) => void;
+  pending: boolean;
+}) {
+  return (
+    <div className="rounded-card border border-dashed border-hairline bg-surface p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-1">
+          <p className="truncate text-sm font-semibold text-text-primary">{helper.label}</p>
+          <p className="truncate text-xs text-text-muted">{helper.slug}</p>
+        </div>
+        <StatusPill tone={getSurfaceStatusTone(helper.status)}>{getSurfaceStatusLabel(helper.status)}</StatusPill>
+      </div>
+      <p className="mt-3 text-xs text-text-secondary">{helper.helperText}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <StatusPill tone="neutral">{helper.route}</StatusPill>
+        {helper.fallbackModelSlugs.map((modelSlug) => (
+          <StatusPill key={modelSlug} tone="neutral">
+            {buildHelperFallbackLabel(modelSlug)}
+          </StatusPill>
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="outline" onClick={() => onCreate(helper.familyId)} disabled={pending}>
+          Create empty
+        </Button>
+        <Button type="button" size="sm" onClick={() => onSeed(helper.familyId)} disabled={pending}>
+          Seed from auto
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialItems }: PlaylistsManagerProps) {
   const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
   const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
@@ -206,20 +395,14 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDraftCollections, setShowDraftCollections] = useState(false);
+  const [showFamilyCollections, setShowFamilyCollections] = useState(true);
   const [showModelCollections, setShowModelCollections] = useState(true);
-  const [expandedFutureSections, setExpandedFutureSections] = useState<Record<FutureCollectionSection, boolean>>({
-    image: false,
-    audio: false,
-    character: false,
-    angle: false,
-  });
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createSlug, setCreateSlug] = useState('');
   const [createDescription, setCreateDescription] = useState('');
   const dragGhostRef = useRef<HTMLElement | null>(null);
   const draggingIdRef = useRef<string | null>(null);
-  const dropPlacementRef = useRef<DropPlacement>('before');
 
   useEffect(() => {
     setPlaylists(sortPlaylists(initialPlaylists));
@@ -231,7 +414,6 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     setDropAtEnd(false);
     setDropPlacement('before');
     draggingIdRef.current = null;
-    dropPlacementRef.current = 'before';
   }, [initialItems, initialPlaylistId, initialPlaylists]);
 
   const selectedPlaylist = useMemo(
@@ -239,62 +421,122 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     [playlists, selectedId]
   );
 
+  useEffect(() => {
+    if (selectedPlaylist && getPlaylistGroup(selectedPlaylist) === 'draft') {
+      setShowDraftCollections(true);
+    }
+  }, [selectedPlaylist]);
+
   const groupedPlaylists = useMemo(
     () => ({
-      core: playlists.filter((playlist) => playlist.kind === 'core'),
-      model: playlists.filter((playlist) => playlist.kind === 'model'),
-      draft: playlists.filter((playlist) => playlist.kind === 'draft'),
+      runtime: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'runtime'),
+      family: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'family'),
+      model: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'model'),
+      draft: playlists.filter((playlist) => getPlaylistGroup(playlist) === 'draft'),
     }),
     [playlists]
   );
 
-  const refreshPlaylistItems = useCallback((playlistId: string) => {
-    startTransition(async () => {
-      try {
-        const res = await authFetch(`/api/admin/playlists/${playlistId}`);
-        if (!res.ok) throw new Error(`Failed to load items (${res.status})`);
-        const json = await res.json().catch(() => ({ ok: false }));
-        if (!json?.ok || !Array.isArray(json.items)) {
-          throw new Error(json?.error ?? 'Unable to load collection items');
-        }
+  const familyHelpers = useMemo(() => buildFamilyHelpers(playlists), [playlists]);
 
-        const nextItems = json.items as PlaylistItemRecord[];
-        const nextPlaylist = json.playlist as PlaylistSummary | undefined;
-        setItems(sortItemsForDisplay(nextItems));
-        setPlaylists((current) =>
-          sortPlaylists(
-            current.map((playlist) => {
-              if (playlist.id !== playlistId) return playlist;
-              const merged = nextPlaylist ? { ...playlist, ...nextPlaylist } : playlist;
-              return { ...buildPlaylistUpdateFromItems(merged, nextItems), dirty: false, loading: false };
-            })
-          )
-        );
-        setItemsDirty(false);
-        setDropTargetId(null);
-        setDropAtEnd(false);
-        setDropPlacement('before');
-        draggingIdRef.current = null;
-        dropPlacementRef.current = 'before';
-      } catch (loadError) {
-        console.error('[PlaylistsManager] load items failed', loadError);
-        setError(loadError instanceof Error ? loadError.message : 'Failed to load collection items');
-      }
-    });
+  const clearDragState = useCallback(() => {
+    draggingIdRef.current = null;
+    setDraggingId(null);
+    setDropTargetId(null);
+    setDropAtEnd(false);
+    setDropPlacement('before');
   }, []);
 
-  useEffect(() => {
-    if (selectedPlaylist?.kind === 'draft') {
-      setShowDraftCollections(true);
+  const clearDragGhost = useCallback(() => {
+    if (dragGhostRef.current) {
+      dragGhostRef.current.remove();
+      dragGhostRef.current = null;
     }
-  }, [selectedPlaylist?.kind]);
+  }, []);
+
+  const syncPlaylistDetail = useCallback(
+    (playlistId: string, nextPlaylist: PlaylistSummary | undefined, nextItems: PlaylistItemRecord[], basePlaylists?: EditablePlaylist[]) => {
+      setItems(sortItemsForDisplay(nextItems));
+      setPlaylists((current) => {
+        const source = basePlaylists ?? current;
+        let found = false;
+        const mapped = source.map((playlist) => {
+          if (playlist.id !== playlistId) return playlist;
+          found = true;
+          const merged = nextPlaylist ? { ...playlist, ...nextPlaylist } : playlist;
+          return { ...buildPlaylistUpdateFromItems(merged, nextItems), dirty: false, loading: false };
+        });
+        if (!found && nextPlaylist) {
+          mapped.push({ ...buildPlaylistUpdateFromItems({ ...nextPlaylist }, nextItems), dirty: false, loading: false });
+        }
+        return sortPlaylists(mapped);
+      });
+      setItemsDirty(false);
+      clearDragState();
+    },
+    [clearDragState]
+  );
+
+  const refreshPlaylistItems = useCallback(
+    async (playlistId: string, basePlaylists?: EditablePlaylist[]) => {
+      const res = await authFetch(`/api/admin/playlists/${playlistId}`);
+      if (!res.ok) {
+        throw new Error(`Failed to load items (${res.status})`);
+      }
+      const json = await res.json().catch(() => ({ ok: false }));
+      if (!json?.ok || !Array.isArray(json.items)) {
+        throw new Error(json?.error ?? 'Unable to load collection items');
+      }
+
+      syncPlaylistDetail(playlistId, json.playlist as PlaylistSummary | undefined, json.items as PlaylistItemRecord[], basePlaylists);
+    },
+    [syncPlaylistDetail]
+  );
+
+  const refreshPlaylistsState = useCallback(
+    async (preferredPlaylistId?: string | null) => {
+      const res = await authFetch('/api/admin/playlists');
+      if (!res.ok) {
+        throw new Error(`Failed to load collections (${res.status})`);
+      }
+      const json = await res.json().catch(() => ({ ok: false }));
+      if (!json?.ok || !Array.isArray(json.playlists)) {
+        throw new Error(json?.error ?? 'Unable to load collections');
+      }
+
+      const nextPlaylists = sortPlaylists((json.playlists as PlaylistSummary[]).map((playlist) => ({ ...playlist })));
+      const preferredId =
+        preferredPlaylistId && nextPlaylists.some((playlist) => playlist.id === preferredPlaylistId)
+          ? preferredPlaylistId
+          : nextPlaylists.find((playlist) => getPlaylistGroup(playlist) !== 'draft')?.id ?? nextPlaylists[0]?.id ?? null;
+
+      setPlaylists(nextPlaylists);
+      setSelectedId(preferredId);
+      if (preferredId) {
+        await refreshPlaylistItems(preferredId, nextPlaylists);
+      } else {
+        setItems([]);
+        setItemsDirty(false);
+        clearDragState();
+      }
+      return { nextPlaylists, selectedId: preferredId };
+    },
+    [clearDragState, refreshPlaylistItems]
+  );
 
   const handleSelectPlaylist = useCallback(
     (playlistId: string) => {
       setSelectedId(playlistId);
       setFeedback(null);
       setError(null);
-      refreshPlaylistItems(playlistId);
+      startTransition(async () => {
+        try {
+          await refreshPlaylistItems(playlistId);
+        } catch (loadError) {
+          console.error('[PlaylistsManager] load items failed', loadError);
+          setError(loadError instanceof Error ? loadError.message : 'Failed to load collection items');
+        }
+      });
     },
     [refreshPlaylistItems]
   );
@@ -344,16 +586,8 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
             throw new Error(json?.error ?? `Failed to save collection (${res.status})`);
           }
 
+          await refreshPlaylistsState(playlistId);
           setFeedback('Collection details saved');
-          setPlaylists((current) =>
-            sortPlaylists(
-              current.map((entry) =>
-                entry.id === playlistId
-                  ? { ...entry, dirty: false, loading: false, updatedAt: new Date().toISOString() }
-                  : entry
-              )
-            )
-          );
         } catch (saveError) {
           console.error('[PlaylistsManager] save playlist failed', saveError);
           setError(saveError instanceof Error ? saveError.message : 'Failed to save collection');
@@ -363,7 +597,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         }
       });
     },
-    [playlists]
+    [playlists, refreshPlaylistsState]
   );
 
   const handleCreatePlaylist = useCallback(
@@ -392,10 +626,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           }
 
           const playlist = json.playlist as PlaylistSummary;
-          setPlaylists((current) => sortPlaylists([{ ...playlist, dirty: false, loading: false }, ...current]));
-          setSelectedId(playlist.id);
-          setItems([]);
-          setItemsDirty(false);
+          await refreshPlaylistsState(playlist.id);
           setShowCreateForm(false);
           setCreateName('');
           setCreateSlug('');
@@ -407,7 +638,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         }
       });
     },
-    [createDescription, createName, createSlug]
+    [createDescription, createName, createSlug, refreshPlaylistsState]
   );
 
   const handleDeletePlaylist = useCallback(
@@ -426,19 +657,12 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
             throw new Error(json?.error ?? `Failed to delete collection (${res.status})`);
           }
 
-          let nextSelectedId: string | null = null;
-          setPlaylists((current) => {
-            const filtered = current.filter((entry) => entry.id !== playlistId);
-            nextSelectedId = filtered.find((entry) => entry.kind !== 'draft')?.id ?? filtered[0]?.id ?? null;
-            return filtered;
-          });
-
-          setSelectedId(nextSelectedId);
-          if (nextSelectedId) {
-            refreshPlaylistItems(nextSelectedId);
-          } else {
-            setItems([]);
-          }
+          const currentIndex = playlists.findIndex((entry) => entry.id === playlistId);
+          const nextFallback =
+            playlists.filter((entry) => entry.id !== playlistId).find((entry) => getPlaylistGroup(entry) !== 'draft')?.id ??
+            playlists.filter((entry) => entry.id !== playlistId)[Math.max(0, currentIndex - 1)]?.id ??
+            null;
+          await refreshPlaylistsState(nextFallback);
           setFeedback('Collection deleted');
         } catch (deleteError) {
           console.error('[PlaylistsManager] delete playlist failed', deleteError);
@@ -446,7 +670,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         }
       });
     },
-    [playlists, refreshPlaylistItems]
+    [playlists, refreshPlaylistsState]
   );
 
   const handleRemoveVideo = useCallback(
@@ -463,7 +687,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           if (!res.ok || !json?.ok) {
             throw new Error(json?.error ?? `Failed to remove clip (${res.status})`);
           }
-          refreshPlaylistItems(selectedId);
+          await refreshPlaylistItems(selectedId);
           setFeedback('Clip removed from collection');
         } catch (removeError) {
           console.error('[PlaylistsManager] remove video failed', removeError);
@@ -474,6 +698,85 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     [refreshPlaylistItems, selectedId]
   );
 
+  const handleCreateMissingFamilyPlaylists = useCallback(
+    (preferredFamilyId?: string | null) => {
+      startTransition(async () => {
+        try {
+          setFeedback(null);
+          setError(null);
+          const res = await authFetch('/api/admin/playlists/helpers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'create-missing-family-playlists' }),
+          });
+          const json = await res.json().catch(() => ({ ok: false }));
+          if (!res.ok || !json?.ok || !Array.isArray(json.playlists)) {
+            throw new Error(json?.error ?? `Failed to create family playlists (${res.status})`);
+          }
+          const selectedFamilyPlaylistId =
+            preferredFamilyId
+              ? (json.playlists as PlaylistSummary[]).find((playlist) => playlist.familyId === preferredFamilyId)?.id ?? null
+              : null;
+          await refreshPlaylistsState(selectedFamilyPlaylistId ?? selectedId);
+          setFeedback('Family playlists synced');
+        } catch (helperError) {
+          console.error('[PlaylistsManager] create missing family playlists failed', helperError);
+          setError(helperError instanceof Error ? helperError.message : 'Failed to create family playlists');
+        }
+      });
+    },
+    [refreshPlaylistsState, selectedId]
+  );
+
+  const handleSeedFamilyPlaylist = useCallback(
+    (familyId: string) => {
+      startTransition(async () => {
+        try {
+          setFeedback(null);
+          setError(null);
+          const res = await authFetch('/api/admin/playlists/helpers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'seed-family-playlist', familyId }),
+          });
+          const json = await res.json().catch(() => ({ ok: false }));
+          if (!res.ok || !json?.ok || !json.result?.playlist?.id) {
+            throw new Error(json?.error ?? `Failed to seed family playlist (${res.status})`);
+          }
+          await refreshPlaylistsState(json.result.playlist.id as string);
+          setFeedback(`Family playlist seeded for ${familyId}`);
+        } catch (helperError) {
+          console.error('[PlaylistsManager] seed family playlist failed', helperError);
+          setError(helperError instanceof Error ? helperError.message : 'Failed to seed family playlist');
+        }
+      });
+    },
+    [refreshPlaylistsState]
+  );
+
+  const handleSeedAllFamilyPlaylists = useCallback(() => {
+    startTransition(async () => {
+      try {
+        setFeedback(null);
+        setError(null);
+        const res = await authFetch('/api/admin/playlists/helpers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'seed-all-family-playlists' }),
+        });
+        const json = await res.json().catch(() => ({ ok: false }));
+        if (!res.ok || !json?.ok) {
+          throw new Error(json?.error ?? `Failed to seed family playlists (${res.status})`);
+        }
+        await refreshPlaylistsState(selectedId);
+        setFeedback('All family playlists seeded from the auto feed');
+      } catch (helperError) {
+        console.error('[PlaylistsManager] seed all family playlists failed', helperError);
+        setError(helperError instanceof Error ? helperError.message : 'Failed to seed family playlists');
+      }
+    });
+  }, [refreshPlaylistsState, selectedId]);
+
   const commitDragMove = useCallback((fromId: string, toId: string | null, placement: DropPlacement = 'before') => {
     setItems((current) => {
       const fromIndex = current.findIndex((item) => item.videoId === fromId);
@@ -481,20 +784,13 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       const next = [...current];
       const [moved] = next.splice(fromIndex, 1);
       const insertIndex = toId ? next.findIndex((item) => item.videoId === toId) : next.length;
-      const targetIndex =
-        insertIndex === -1 ? next.length : placement === 'after' ? insertIndex + 1 : insertIndex;
+      const targetIndex = insertIndex === -1 ? next.length : placement === 'after' ? insertIndex + 1 : insertIndex;
       next.splice(targetIndex, 0, moved);
       return next.map((item, orderIndex) => ({ ...item, orderIndex }));
     });
     setItemsDirty(true);
-  }, []);
-
-  const clearDragGhost = useCallback(() => {
-    if (dragGhostRef.current) {
-      dragGhostRef.current.remove();
-      dragGhostRef.current = null;
-    }
-  }, []);
+    clearDragState();
+  }, [clearDragState]);
 
   const handleDragStart = useCallback((event: DragEvent<HTMLElement>, videoId: string) => {
     clearDragGhost();
@@ -517,7 +813,6 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     dragGhostRef.current = ghost;
     event.dataTransfer.setDragImage(ghost, source.clientWidth / 2, 32);
     draggingIdRef.current = videoId;
-    dropPlacementRef.current = 'before';
     setDraggingId(videoId);
     setDropTargetId(null);
     setDropAtEnd(false);
@@ -526,19 +821,13 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
 
   const handleDragEnd = useCallback(() => {
     clearDragGhost();
-    draggingIdRef.current = null;
-    dropPlacementRef.current = 'before';
-    setDraggingId(null);
-    setDropTargetId(null);
-    setDropAtEnd(false);
-    setDropPlacement('before');
-  }, [clearDragGhost]);
+    clearDragState();
+  }, [clearDragGhost, clearDragState]);
 
   const handleDragOver = useCallback((event: DragEvent<HTMLElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     if (event.target === event.currentTarget) {
-      dropPlacementRef.current = 'after';
       setDropTargetId(null);
       setDropAtEnd(true);
       setDropPlacement('after');
@@ -551,15 +840,8 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       const activeDraggingId = draggingIdRef.current;
       if (!activeDraggingId || activeDraggingId === targetVideoId) return;
       const rect = event.currentTarget.getBoundingClientRect();
-      const nextPlacement: DropPlacement =
-        event.clientY >= rect.top + rect.height / 2 ? 'after' : 'before';
+      const nextPlacement: DropPlacement = event.clientY >= rect.top + rect.height / 2 ? 'after' : 'before';
       commitDragMove(activeDraggingId, targetVideoId, nextPlacement);
-      draggingIdRef.current = null;
-      dropPlacementRef.current = 'before';
-      setDraggingId(null);
-      setDropTargetId(null);
-      setDropAtEnd(false);
-      setDropPlacement('before');
     },
     [commitDragMove]
   );
@@ -571,12 +853,6 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       const activeDraggingId = draggingIdRef.current;
       if (!activeDraggingId) return;
       commitDragMove(activeDraggingId, null, 'after');
-      draggingIdRef.current = null;
-      dropPlacementRef.current = 'before';
-      setDraggingId(null);
-      setDropTargetId(null);
-      setDropAtEnd(false);
-      setDropPlacement('before');
     },
     [commitDragMove]
   );
@@ -596,12 +872,6 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           const activeDraggingId = draggingIdRef.current;
           if (!activeDraggingId) return;
           commitDragMove(activeDraggingId, targetVideoId, placement);
-          draggingIdRef.current = null;
-          dropPlacementRef.current = 'before';
-          setDraggingId(null);
-          setDropTargetId(null);
-          setDropAtEnd(false);
-          setDropPlacement('before');
         }}
         className="rounded-card border-2 border-dashed border-brand/55 bg-brand/5 p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.02)]"
       >
@@ -621,6 +891,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     startTransition(async () => {
       try {
         setError(null);
+        setFeedback(null);
         const payload = [...items].reverse().map((item) => ({ videoId: item.videoId, pinned: item.pinned }));
         const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
           method: 'PUT',
@@ -631,6 +902,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         if (!res.ok || !json?.ok) {
           throw new Error(json?.error ?? `Failed to save order (${res.status})`);
         }
+        await refreshPlaylistItems(selectedId);
         setItemsDirty(false);
         setFeedback('Collection order saved');
       } catch (saveError) {
@@ -638,7 +910,10 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         setError(saveError instanceof Error ? saveError.message : 'Failed to save collection order');
       }
     });
-  }, [items, selectedId]);
+  }, [items, refreshPlaylistItems, selectedId]);
+
+  const missingFamilyCount = familyHelpers.filter((helper) => helper.status === 'missing').length;
+  const emptyFamilyCount = familyHelpers.filter((helper) => helper.status === 'empty').length;
 
   return (
     <div className={clsx('space-y-8', isItemsDirty && 'pb-28')}>
@@ -647,24 +922,22 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Admin</p>
           <h1 className="text-3xl font-semibold text-text-primary">Collections curation</h1>
           <p className="max-w-3xl text-sm text-text-secondary">
-            Curate the starter surface, examples hub, and model collections with a visual workflow. Runtime collections are
-            locked for metadata and can only be edited through their clips and order.
+            Keep the runtime surfaces stable while preparing family playlists. The main examples hub stays on <code>examples</code>,
+            guest starter stays on <code>welcome</code>, and family pages can be seeded from the current automatic flow before you
+            start reordering them.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowDraftCollections((current) => !current)}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={() => setShowDraftCollections((current) => !current)}>
             {showDraftCollections ? 'Hide draft / empty' : `Show draft / empty (${groupedPlaylists.draft.length})`}
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setShowCreateForm((current) => !current)}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={() => handleCreateMissingFamilyPlaylists()}>
+            {missingFamilyCount > 0 ? `Create missing family playlists (${missingFamilyCount})` : 'Sync family playlists'}
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={handleSeedAllFamilyPlaylists}>
+            Seed all family playlists
+          </Button>
+          <Button type="button" size="sm" onClick={() => setShowCreateForm((current) => !current)}>
             {showCreateForm ? 'Close new collection' : '+ New collection'}
           </Button>
         </div>
@@ -722,140 +995,150 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       ) : null}
 
       {feedback ? (
-        <div className="rounded-card border border-success-border bg-success-bg px-4 py-3 text-sm text-success">
-          {feedback}
-        </div>
+        <div className="rounded-card border border-success-border bg-success-bg px-4 py-3 text-sm text-success">{feedback}</div>
       ) : null}
       {error ? (
-        <div className="rounded-card border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
-          {error}
-        </div>
+        <div className="rounded-card border border-error-border bg-error-bg px-4 py-3 text-sm text-error">{error}</div>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
         <aside className="space-y-6">
-          {(['core', 'model', 'draft'] as PlaylistKind[]).map((kind) => {
-            if (kind === 'draft' && !showDraftCollections) {
-              return null;
-            }
-            const entries = groupedPlaylists[kind];
-            if (!entries.length) return null;
-            const isCollapsible = kind === 'model';
-            const isExpanded = kind === 'model' ? showModelCollections : true;
+          {groupedPlaylists.runtime.length ? (
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.runtime}</h2>
+                <span className="text-xs text-text-muted">{groupedPlaylists.runtime.length}</span>
+              </div>
+              <div className="space-y-2">
+                {groupedPlaylists.runtime.map((playlist) => (
+                  <PlaylistRailCard
+                    key={playlist.id}
+                    playlist={playlist}
+                    isActive={playlist.id === selectedId}
+                    onSelect={handleSelectPlaylist}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-            return (
-              <section key={kind} className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  {isCollapsible ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowModelCollections((current) => !current)}
-                      className="flex min-w-0 items-center gap-2 text-left"
-                    >
-                      <svg
-                        viewBox="0 0 20 20"
-                        aria-hidden="true"
-                        className={clsx('h-4 w-4 text-text-muted transition-transform', isExpanded ? 'rotate-90' : 'rotate-0')}
-                      >
-                        <path
-                          d="M7.5 5.5 12 10l-4.5 4.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                        />
-                      </svg>
-                      <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS[kind]}</h2>
-                    </button>
-                  ) : (
-                    <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS[kind]}</h2>
-                  )}
-                  <span className="text-xs text-text-muted">{entries.length}</span>
-                </div>
-                {isExpanded ? <div className="space-y-2">
-                  {entries.map((playlist) => {
-                    const isActive = playlist.id === selectedId;
+          <section className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setShowFamilyCollections((current) => !current)}
+                className="flex min-w-0 items-center gap-2 text-left"
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                  className={clsx('h-4 w-4 text-text-muted transition-transform', showFamilyCollections ? 'rotate-90' : 'rotate-0')}
+                >
+                  <path
+                    d="M7.5 5.5 12 10l-4.5 4.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
+                </svg>
+                <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.family}</h2>
+              </button>
+              <div className="flex items-center gap-2 text-xs text-text-muted">
+                {emptyFamilyCount ? <span>{emptyFamilyCount} empty</span> : null}
+                <span>{familyHelpers.length}</span>
+              </div>
+            </div>
+            {showFamilyCollections ? (
+              <div className="space-y-2">
+                {familyHelpers.map((helper) => {
+                  const playlist = helper.playlistId
+                    ? groupedPlaylists.family.find((entry) => entry.id === helper.playlistId) ?? null
+                    : null;
+                  if (playlist) {
                     return (
-                      <button
+                      <PlaylistRailCard
                         key={playlist.id}
-                        type="button"
-                        onClick={() => handleSelectPlaylist(playlist.id)}
-                        className={clsx(
-                          'w-full rounded-card border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                          isActive
-                            ? 'border-brand bg-surface-2 shadow-card'
-                            : 'border-hairline bg-surface hover:border-text-muted hover:bg-surface-2'
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 space-y-1">
-                            <p className="truncate text-sm font-semibold text-text-primary">{playlist.name}</p>
-                            <p className="truncate text-xs text-text-muted">{playlist.slug}</p>
-                          </div>
-                          {playlist.isLocked ? <StatusPill tone="neutral">Locked</StatusPill> : null}
-                        </div>
-                        <p className="mt-3 text-xs text-text-secondary">{summarizePlaylist(playlist)}</p>
-                        <p className="mt-1 text-[11px] text-text-muted">Last added: {formatDate(playlist.lastAddedAt)}</p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {playlist.usageTargets.map((target) => (
-                            <StatusPill key={target} tone={playlist.kind === 'core' ? 'ok' : 'neutral'}>
-                              {getUsageLabel(target)}
-                            </StatusPill>
-                          ))}
-                          {playlist.kind === 'draft' && !playlist.itemCount ? (
-                            <StatusPill tone="warn">Empty placeholder</StatusPill>
-                          ) : null}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div> : null}
-              </section>
-            );
-          })}
-
-          {(Object.keys(FUTURE_SECTION_LABELS) as FutureCollectionSection[]).map((section) => {
-            const expanded = expandedFutureSections[section];
-            return (
-              <section key={section} className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setExpandedFutureSections((current) => ({
-                        ...current,
-                        [section]: !current[section],
-                      }))
-                    }
-                    className="flex min-w-0 items-center gap-2 text-left"
-                  >
-                    <svg
-                      viewBox="0 0 20 20"
-                      aria-hidden="true"
-                      className={clsx('h-4 w-4 text-text-muted transition-transform', expanded ? 'rotate-90' : 'rotate-0')}
-                    >
-                      <path
-                        d="M7.5 5.5 12 10l-4.5 4.5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.8"
+                        playlist={playlist}
+                        isActive={playlist.id === selectedId}
+                        onSelect={handleSelectPlaylist}
                       />
-                    </svg>
-                    <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{FUTURE_SECTION_LABELS[section]}</h2>
-                  </button>
-                  <span className="text-xs text-text-muted">0</span>
+                    );
+                  }
+                  return (
+                    <MissingFamilyCard
+                      key={helper.familyId}
+                      helper={helper}
+                      onCreate={handleCreateMissingFamilyPlaylists}
+                      onSeed={handleSeedFamilyPlaylist}
+                      pending={isPending}
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
+          </section>
+
+          {groupedPlaylists.model.length ? (
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowModelCollections((current) => !current)}
+                  className="flex min-w-0 items-center gap-2 text-left"
+                >
+                  <svg
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    className={clsx('h-4 w-4 text-text-muted transition-transform', showModelCollections ? 'rotate-90' : 'rotate-0')}
+                  >
+                    <path
+                      d="M7.5 5.5 12 10l-4.5 4.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.8"
+                    />
+                  </svg>
+                  <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.model}</h2>
+                </button>
+                <span className="text-xs text-text-muted">{groupedPlaylists.model.length}</span>
+              </div>
+              {showModelCollections ? (
+                <div className="space-y-2">
+                  {groupedPlaylists.model.map((playlist) => (
+                    <PlaylistRailCard
+                      key={playlist.id}
+                      playlist={playlist}
+                      isActive={playlist.id === selectedId}
+                      onSelect={handleSelectPlaylist}
+                    />
+                  ))}
                 </div>
-                {expanded ? (
-                  <div className="rounded-card border border-dashed border-hairline bg-surface px-4 py-4 text-sm text-text-secondary">
-                    No collections yet.
-                  </div>
-                ) : null}
-              </section>
-            );
-          })}
+              ) : null}
+            </section>
+          ) : null}
+
+          {showDraftCollections && groupedPlaylists.draft.length ? (
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{GROUP_LABELS.draft}</h2>
+                <span className="text-xs text-text-muted">{groupedPlaylists.draft.length}</span>
+              </div>
+              <div className="space-y-2">
+                {groupedPlaylists.draft.map((playlist) => (
+                  <PlaylistRailCard
+                    key={playlist.id}
+                    playlist={playlist}
+                    isActive={playlist.id === selectedId}
+                    onSelect={handleSelectPlaylist}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </aside>
 
         <section className="space-y-6">
@@ -866,18 +1149,34 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-lg font-semibold text-text-primary">{selectedPlaylist.name}</h2>
-                      <StatusPill tone={selectedPlaylist.kind === 'core' ? 'ok' : selectedPlaylist.kind === 'model' ? 'neutral' : 'warn'}>
-                        {selectedPlaylist.kind === 'core' ? 'Core surface' : selectedPlaylist.kind === 'model' ? 'Model collection' : 'Draft'}
+                      <StatusPill tone={getSurfaceRoleTone(selectedPlaylist.surfaceRole)}>
+                        {getSurfaceRoleLabel(selectedPlaylist.surfaceRole)}
+                      </StatusPill>
+                      <StatusPill tone={getSurfaceStatusTone(selectedPlaylist.surfaceStatus)}>
+                        {getSurfaceStatusLabel(selectedPlaylist.surfaceStatus)}
                       </StatusPill>
                       {selectedPlaylist.isLocked ? <StatusPill tone="neutral">Locked by runtime</StatusPill> : null}
                     </div>
                     <p className="text-sm text-text-secondary">
-                      {selectedPlaylist.isLocked
-                        ? 'This collection powers a live runtime surface. You can curate clips and order, but metadata is read-only here.'
-                        : 'Editable collection metadata. Clips and ordering are managed separately below.'}
+                      {selectedPlaylist.surfaceRole === 'family'
+                        ? 'The first positions are fully editorial here. When this playlist runs out, the page auto-fills from model playlists and then the main examples hub.'
+                        : selectedPlaylist.isLocked
+                          ? 'This collection powers a live runtime surface. You can curate clips and order, but metadata is read-only here.'
+                          : 'Editable collection metadata. Clips and ordering are managed separately below.'}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    {selectedPlaylist.surfaceRole === 'family' ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSeedFamilyPlaylist(selectedPlaylist.familyId ?? selectedPlaylist.slug.replace(/^family-/, ''))}
+                        disabled={isPending}
+                      >
+                        Seed from auto order
+                      </Button>
+                    ) : null}
                     {!selectedPlaylist.isLocked ? (
                       <>
                         <Button
@@ -951,6 +1250,34 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   </div>
                 </div>
 
+                <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-card border border-hairline bg-bg px-4 py-4">
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Helper</p>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      {selectedPlaylist.helperText ?? 'No helper text for this collection.'}
+                    </p>
+                    {selectedPlaylist.drivesRoute ? (
+                      <div className="mt-3">
+                        <StatusPill tone="neutral">{selectedPlaylist.drivesRoute}</StatusPill>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="rounded-card border border-hairline bg-bg px-4 py-4">
+                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Fallback model playlists</p>
+                    {selectedPlaylist.fallbackModelSlugs.length ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {selectedPlaylist.fallbackModelSlugs.map((modelSlug) => (
+                          <StatusPill key={modelSlug} tone="neutral">
+                            {buildHelperFallbackLabel(modelSlug)}
+                          </StatusPill>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-text-secondary">No automatic fallback configured.</p>
+                    )}
+                  </div>
+                </div>
+
                 {selectedPlaylist.usageTargets.length ? (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {selectedPlaylist.usageTargets.map((target) => (
@@ -967,7 +1294,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   <div>
                     <h2 className="text-lg font-semibold text-text-primary">Collection items</h2>
                     <p className="text-sm text-text-secondary">
-                      Drag clips with the mouse, then save the live gallery order.
+                      Drag clips to change the visible order, then save the gallery. Family playlists define the editorial top of the page.
                     </p>
                   </div>
                   <Button
@@ -1001,16 +1328,14 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                             const activeDraggingId = draggingIdRef.current;
                             if (!activeDraggingId || activeDraggingId === item.videoId) return;
                             const rect = event.currentTarget.getBoundingClientRect();
-                            const nextPlacement: DropPlacement =
-                              event.clientY >= rect.top + rect.height / 2 ? 'after' : 'before';
-                            dropPlacementRef.current = nextPlacement;
+                            const nextPlacement: DropPlacement = event.clientY >= rect.top + rect.height / 2 ? 'after' : 'before';
                             setDropTargetId(item.videoId);
                             setDropAtEnd(false);
                             setDropPlacement(nextPlacement);
                           }}
                           onDrop={(event) => handleDropOnCard(event, item.videoId)}
                           className={clsx(
-                            'overflow-hidden rounded-card border border-hairline bg-bg shadow-card transition cursor-grab active:cursor-grabbing',
+                            'cursor-grab overflow-hidden rounded-card border border-hairline bg-bg shadow-card transition active:cursor-grabbing',
                             draggingId === item.videoId && 'scale-[0.985] opacity-35'
                           )}
                         >
@@ -1041,9 +1366,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                           </div>
 
                           <div className="px-4 py-4">
-                            <p className="truncate text-sm font-semibold text-text-primary">
-                              {item.engineLabel ?? 'Unknown model'}
-                            </p>
+                            <p className="truncate text-sm font-semibold text-text-primary">{item.engineLabel ?? 'Unknown model'}</p>
                           </div>
                         </article>
                         {draggingId && dropTargetId === item.videoId && dropPlacement === 'after'
@@ -1055,7 +1378,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   </div>
                 ) : (
                   <div className="mt-5 rounded-card border border-dashed border-hairline bg-bg px-4 py-8 text-center text-sm text-text-secondary">
-                    This collection is empty. Add clips from moderation, then reorder them here.
+                    This collection is empty. Use the family seed helpers or add clips from moderation, then reorder them here.
                   </div>
                 )}
               </section>

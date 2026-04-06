@@ -13,6 +13,7 @@ import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 
 const NEXT_LOCALE_COOKIE = 'NEXT_LOCALE';
 const LOGIN_PATH = '/login';
+const LOCAL_ADMIN_BYPASS_COOKIE = 'mva_local_admin_bypass';
 const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/admin'];
 const NON_LOCALIZED_PREFIXES = [
   '/api',
@@ -140,6 +141,18 @@ const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'pika-image-to-video', destination: '/models/pika-text-to-video' },
   { slug: 'pika-text-to-video', destination: '/models/pika-text-to-video' },
 ];
+
+function isLoopbackHost(host: string | null | undefined): boolean {
+  if (!host) return false;
+  const normalized = host.trim().toLowerCase().split(':')[0] ?? '';
+  return normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '::1';
+}
+
+function hasLocalAdminBypass(req: NextRequest): boolean {
+  if ((process.env.LOCAL_ADMIN_BYPASS ?? '').trim() !== '1') return false;
+  if (!isLoopbackHost(req.headers.get('x-forwarded-host') ?? req.headers.get('host'))) return false;
+  return req.cookies.get(LOCAL_ADMIN_BYPASS_COOKIE)?.value === '1';
+}
 
 const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
   '/fr/about': '/a-propos',
@@ -475,6 +488,10 @@ export async function middleware(req: NextRequest) {
   }
 
   if (userId) {
+    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
+  }
+
+  if (isAdminRoute && hasLocalAdminBypass(req)) {
     return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 

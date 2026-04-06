@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
-import { listExamplesPage, type ExampleSort, type GalleryVideo } from '@/server/videos';
+import { listExampleFamilyPage, listExamplesPage, type ExampleSort, type GalleryVideo } from '@/server/videos';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { listFalEngines } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
@@ -176,13 +176,14 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(120, Math.max(1, Number(url.searchParams.get('limit') ?? '60')));
     const offset = Math.max(0, Number(url.searchParams.get('offset') ?? '0'));
     const engineFilterRaw = (url.searchParams.get('engine') ?? '').trim().toLowerCase();
-    const engineFilter = engineFilterRaw
-      ? resolveExampleCanonicalSlug(engineFilterRaw) ?? engineFilterRaw
-      : '';
+    const canonicalEngineFilter = engineFilterRaw ? resolveExampleCanonicalSlug(engineFilterRaw) : null;
+    const engineFilter = canonicalEngineFilter ?? engineFilterRaw;
     const localeParam = (url.searchParams.get('locale') ?? 'en') as AppLocale;
     const locale: AppLocale = localeParam === 'fr' || localeParam === 'es' ? localeParam : 'en';
 
-    const page = await listExamplesPage({ sort, limit, offset, engineGroup: engineFilter || undefined });
+    const page = canonicalEngineFilter
+      ? await listExampleFamilyPage(engineFilter, { sort, limit, offset })
+      : await listExamplesPage({ sort, limit, offset, engineGroup: engineFilter || undefined });
     const items = page.items;
     const cards = items.map((video) => toExampleCard(video, locale));
     const response = NextResponse.json({

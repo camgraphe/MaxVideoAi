@@ -2,7 +2,9 @@ import { query } from '@/lib/db';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { normalizeMediaUrl } from '@/lib/media';
-import { getIndexablePlaylistSlugs, removeVideosFromIndexablePlaylists } from '@/server/indexing';
+import { getExampleFamilyEngineAliases } from '@/lib/model-families';
+import { removeVideosFromIndexablePlaylists } from '@/server/indexing';
+import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs, getStarterPlaylistSlug } from '@/server/playlists';
 import type { PricingSnapshot } from '@/types/engines';
 
 type VideoRow = {
@@ -84,17 +86,6 @@ function mapRow(row: VideoRow): GalleryVideo {
 }
 
 export type GalleryTab = 'starter' | 'latest' | 'trending';
-
-function getStarterPlaylistSlug(): string {
-  const slug = process.env.STARTER_PLAYLIST_SLUG;
-  if (typeof slug === 'string') {
-    const trimmed = slug.trim();
-    if (trimmed.length) {
-      return trimmed;
-    }
-  }
-  return 'starter';
-}
 
 const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
@@ -219,7 +210,33 @@ export async function getLatestPublicVideoByPromptAndEngine(
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
-export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
+type PlaylistVideoQueryOptions = {
+  slug: string;
+  limit?: number;
+  engineAliases?: string[] | null;
+};
+
+async function listPlaylistVideosWithOptions({
+  slug,
+  limit,
+  engineAliases,
+}: PlaylistVideoQueryOptions): Promise<GalleryVideo[]> {
+  const params: unknown[] = [slug];
+  const aliasFilter =
+    Array.isArray(engineAliases) && engineAliases.length
+      ? (() => {
+          params.push(engineAliases.map((value) => value.trim().toLowerCase()).filter(Boolean));
+          return `AND LOWER(aj.engine_id) = ANY($${params.length}::text[])`;
+        })()
+      : '';
+  const limitClause =
+    typeof limit === 'number'
+      ? (() => {
+          params.push(limit);
+          return `LIMIT $${params.length}`;
+        })()
+      : '';
+
   const rows = await query<VideoRow & { order_index: number }>(
     `
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt, aj.thumb_url,
@@ -231,15 +248,24 @@ export async function listPlaylistVideos(slug: string, limit: number): Promise<G
       WHERE p.slug = $1
         AND p.is_public = TRUE
         AND ${PUBLIC_VIDEO_PREDICATE_PLAYLIST}
+        ${aliasFilter}
       ORDER BY
         CASE WHEN pi.order_index IS NULL THEN 1 ELSE 0 END,
         pi.order_index DESC,
         aj.created_at DESC
-      LIMIT $2
+      ${limitClause}
     `,
-    [slug, limit]
+    params
   );
   return rows.map(mapRow);
+}
+
+export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
+  return listPlaylistVideosWithOptions({ slug, limit });
+}
+
+async function listAllPlaylistVideos(slug: string): Promise<GalleryVideo[]> {
+  return listPlaylistVideosWithOptions({ slug });
 }
 
 async function listLatest(limit: number): Promise<GalleryVideo[]> {
@@ -335,10 +361,84 @@ function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): Gall
   }
 }
 
+export function mergeUniqueGalleryVideos(...groups: GalleryVideo[][]): GalleryVideo[] {
+  const seen = new Set<string>();
+  const merged: GalleryVideo[] = [];
+  groups.forEach((videos) => {
+    videos.forEach((video) => {
+      if (seen.has(video.id)) return;
+      seen.add(video.id);
+      merged.push(video);
+    });
+  });
+  return merged;
+}
+
+function paginateGalleryVideos(videos: GalleryVideo[], limit: number, offset: number): ListExamplesPageResult {
+  const total = videos.length;
+  const start = Math.max(0, offset);
+  const items = videos.slice(start, start + limit);
+  return {
+    items,
+    total,
+    limit,
+    offset: start,
+    hasMore: start + items.length < total,
+  };
+}
+
+async function loadExampleFamilyFeed(
+  familyId: string,
+  options?: { includeFamilyPlaylist?: boolean }
+): Promise<GalleryVideo[]> {
+  const includeFamilyPlaylist = options?.includeFamilyPlaylist ?? true;
+  const sourceSlugs = getFamilyFeedSourceSlugs(familyId);
+  if (!sourceSlugs.length) {
+    return [];
+  }
+
+  const [familySlug, ...rest] = sourceSlugs;
+  const hubSlug = rest.pop() ?? getExamplesHubPlaylistSlug();
+  const modelSlugs = rest;
+  const engineAliases = getExampleFamilyEngineAliases(familyId);
+
+  const familyVideosPromise =
+    includeFamilyPlaylist && familySlug ? listAllPlaylistVideos(familySlug).catch(() => [] as GalleryVideo[]) : Promise.resolve([]);
+  const modelVideosPromise = Promise.all(
+    modelSlugs.map(async (slug) => listAllPlaylistVideos(slug).catch(() => [] as GalleryVideo[]))
+  );
+  const hubVideosPromise =
+    hubSlug && engineAliases.length
+      ? listPlaylistVideosWithOptions({ slug: hubSlug, engineAliases }).catch(() => [] as GalleryVideo[])
+      : Promise.resolve([] as GalleryVideo[]);
+
+  const [familyVideos, modelVideos, hubVideos] = await Promise.all([
+    familyVideosPromise,
+    modelVideosPromise,
+    hubVideosPromise,
+  ]);
+
+  return mergeUniqueGalleryVideos(familyVideos, ...modelVideos, hubVideos);
+}
+
+export async function listExampleFamilyAutoFeed(familyId: string): Promise<GalleryVideo[]> {
+  return loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: false });
+}
+
+export async function listExampleFamilyPage(
+  familyId: string,
+  options: Omit<ListExamplesPageOptions, 'engineGroup'>
+): Promise<ListExamplesPageResult> {
+  const { sort, limit = 150, offset = 0 } = options;
+  const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true });
+  const sorted = sortVideosByPreference(merged, sort);
+  return paginateGalleryVideos(sorted, limit, offset);
+}
+
 export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0, engineGroup } = options;
-  const slugs = getIndexablePlaylistSlugs();
-  if (!slugs.length) {
+  const hubSlug = getExamplesHubPlaylistSlug();
+  if (!hubSlug) {
     return { items: [], total: 0, limit, offset, hasMore: false };
   }
 
@@ -348,28 +448,9 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
     ? Math.min(baseFetchLimit * ENGINE_GROUP_FETCH_MULTIPLIER, ENGINE_GROUP_FETCH_CAP)
     : baseFetchLimit;
 
-  const playlistResults = await Promise.all(
-    slugs.map(async (slug) => {
-      try {
-        const videos = await listPlaylistVideos(slug, playlistFetchLimit);
-        return videos;
-      } catch (error) {
-        console.warn(`[examples] failed to load playlist "${slug}"`, error);
-        return [] as GalleryVideo[];
-      }
-    })
-  );
-
-  const seen = new Set<string>();
-  const aggregated: GalleryVideo[] = [];
-  playlistResults.forEach((videos) => {
-    videos.forEach((video) => {
-      if (seen.has(video.id)) {
-        return;
-      }
-      seen.add(video.id);
-      aggregated.push(video);
-    });
+  const aggregated = await listPlaylistVideos(hubSlug, playlistFetchLimit).catch((error) => {
+    console.warn(`[examples] failed to load playlist "${hubSlug}"`, error);
+    return [] as GalleryVideo[];
   });
 
   if (!aggregated.length) {
@@ -380,16 +461,7 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
     ? aggregated.filter((video) => resolveExampleGroupId(video.engineId) === normalizedGroup)
     : aggregated;
   const sorted = sortVideosByPreference(candidates, sort);
-  const total = sorted.length;
-  const start = Math.max(0, offset);
-  const items = sorted.slice(start, start + limit);
-  return {
-    items,
-    total,
-    limit,
-    offset: start,
-    hasMore: start + items.length < total,
-  };
+  return paginateGalleryVideos(sorted, limit, offset);
 }
 
 export async function listExamples(sort: ExampleSort, limit = 150): Promise<GalleryVideo[]> {
@@ -398,12 +470,11 @@ export async function listExamples(sort: ExampleSort, limit = 150): Promise<Gall
 }
 
 export async function getPlaylistExamples(limit = 60): Promise<GalleryVideo[]> {
-  const slugs = getIndexablePlaylistSlugs();
-  const firstSlug = slugs[0];
-  if (!firstSlug) {
+  const hubSlug = getExamplesHubPlaylistSlug();
+  if (!hubSlug) {
     return [];
   }
-  return listPlaylistVideos(firstSlug, limit);
+  return listPlaylistVideos(hubSlug, limit);
 }
 
 export async function updateVideoIndexableForUser(

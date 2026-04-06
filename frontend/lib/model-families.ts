@@ -66,6 +66,7 @@ const FAMILY_STATE = (() => {
   const copyCandidateSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const publishedModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const variantLabelsByFamily = new Map<ModelFamilyId, string[]>();
+  const engineAliasesByFamily = new Map<ModelFamilyId, string[]>();
 
   const register = (key: string | null | undefined, familyId: ModelFamilyId) => {
     if (!key) return;
@@ -149,6 +150,29 @@ const FAMILY_STATE = (() => {
           .filter((value): value is string => Boolean(value))
       )
     );
+
+    const aliasSet = new Set<string>();
+    FAL_ENGINES.forEach((entry) => {
+      if (resolveEntryFamilyId(entry) !== familyId || !publishedModelSlugs.includes(entry.modelSlug)) {
+        return;
+      }
+      const addAlias = (value: string | null | undefined) => {
+        if (!value) return;
+        const normalized = value.trim().toLowerCase();
+        if (!normalized) return;
+        aliasSet.add(normalized);
+        const canonical = normalizeEngineId(value)?.trim().toLowerCase();
+        if (canonical) {
+          aliasSet.add(canonical);
+        }
+      };
+
+      addAlias(entry.id);
+      addAlias(entry.modelSlug);
+      addAlias(entry.defaultFalModelId);
+      entry.modes.forEach((mode) => addAlias(mode.falModelId));
+    });
+    engineAliasesByFamily.set(familyId, Array.from(aliasSet));
   });
 
   return {
@@ -160,6 +184,7 @@ const FAMILY_STATE = (() => {
     resolverModelSlugsByFamily,
     publishedModelSlugsByFamily,
     variantLabelsByFamily,
+    engineAliasesByFamily,
   };
 })();
 
@@ -223,6 +248,12 @@ export function getExampleFamilyPrimaryModelSlug(familyId: string): string | nul
     return family.defaultModelSlug;
   }
   return modelSlugs[0] ?? null;
+}
+
+export function getExampleFamilyEngineAliases(familyId: string): string[] {
+  const family = getModelFamilyDefinition(familyId);
+  if (!family) return [];
+  return [...(FAMILY_STATE.engineAliasesByFamily.get(family.id as ModelFamilyId) ?? [])];
 }
 
 export function getExampleFamilyVariantLabels(familyId: string): string[] {
