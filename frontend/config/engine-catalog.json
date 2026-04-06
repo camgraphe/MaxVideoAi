@@ -4847,9 +4847,27 @@
           "sora-2"
         ],
         "publishedPairs": [
-          "veo-3-1",
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
           "kling-3-pro",
-          "sora-2"
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-lite",
+          "wan-2-5",
+          "wan-2-6",
+          "seedance-2-0-fast"
         ],
         "includeInHub": true
       },
@@ -5328,8 +5346,27 @@
           "sora-2"
         ],
         "publishedPairs": [
+          "kling-2-5-turbo",
+          "kling-2-6-pro",
+          "kling-3-pro",
+          "kling-3-standard",
+          "ltx-2",
+          "ltx-2-3-fast",
+          "ltx-2-3-pro",
+          "ltx-2-fast",
+          "luma-ray-2",
+          "luma-ray-2-flash",
+          "minimax-hailuo-02-text",
+          "pika-text-to-video",
+          "seedance-1-5-pro",
+          "seedance-2-0",
+          "sora-2",
+          "sora-2-pro",
+          "veo-3-1",
           "veo-3-1-fast",
-          "ltx-2-3-fast"
+          "veo-3-1-lite",
+          "wan-2-5",
+          "wan-2-6"
         ],
         "includeInHub": true
       },

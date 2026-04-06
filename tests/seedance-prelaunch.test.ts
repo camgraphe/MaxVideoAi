@@ -88,8 +88,14 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(fast.surfaces.compare.includeInHub, true);
   assert.equal(seedance.surfaces.modelPage.indexable, true);
   assert.equal(fast.surfaces.modelPage.indexable, true);
-  assert.deepEqual(seedance.surfaces.compare.publishedPairs, ['veo-3-1', 'kling-3-pro', 'sora-2']);
-  assert.deepEqual(fast.surfaces.compare.publishedPairs, ['veo-3-1-fast', 'ltx-2-3-fast']);
+  assert.equal(seedance.surfaces.compare.publishedPairs.length, 21);
+  assert.equal(fast.surfaces.compare.publishedPairs.length, 21);
+  ['veo-3-1', 'kling-3-pro', 'sora-2', 'seedance-1-5-pro', 'seedance-2-0-fast'].forEach((slug) =>
+    assert.ok(seedance.surfaces.compare.publishedPairs.includes(slug), `Seedance 2.0 missing published pair ${slug}`)
+  );
+  ['veo-3-1-fast', 'ltx-2-3-fast', 'seedance-1-5-pro', 'seedance-2-0', 'wan-2-6'].forEach((slug) =>
+    assert.ok(fast.surfaces.compare.publishedPairs.includes(slug), `Seedance 2.0 Fast missing published pair ${slug}`)
+  );
 });
 
 test('Seedance aliases, family routing, hub publication, and locale coverage are launch-ready', () => {
@@ -110,6 +116,8 @@ test('Seedance aliases, family routing, hub publication, and locale coverage are
     'seedance-2-0-vs-sora-2',
     'seedance-2-0-fast-vs-veo-3-1-fast',
     'ltx-2-3-fast-vs-seedance-2-0-fast',
+    'seedance-1-5-pro-vs-seedance-2-0-fast',
+    'seedance-2-0-fast-vs-sora-2',
   ].forEach((slug) => assert.ok(publishedComparisonSlugs.includes(slug), `Missing published comparison ${slug}`));
 
   const hubEngines = getHubEngines();
@@ -206,6 +214,7 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.ok(seedance15);
   assert.equal(Boolean(seedance15.isLegacy), false);
   assert.equal(seedance15.surfaces.compare.includeInHub, true);
+  assert.equal(getPublishedComparisonSlugs().includes('seedance-1-5-pro-vs-seedance-2-0-fast'), true);
   assert.equal(normalizeEngineId('seedance'), 'seedance-2-0');
   assert.equal(MARKETING_NAV_MODELS.some((item) => item.key === 'seedance-1-5-pro'), false);
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);

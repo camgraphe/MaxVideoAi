@@ -2,6 +2,7 @@ import type { EngineCaps, EngineAvailability, EnginePricingDetails, Mode } from 
 import { getPartnerByBrandId } from '../lib/brand-partners';
 import {
   buildDefaultModelPublicationSurfaces,
+  LEGACY_COMPARE_INDEXED_ENGINE_SLUGS,
   mergeModelPublicationSurfaces,
   type ModelPublicationSurfaces,
   type PartialModelPublicationSurfaces,
@@ -187,11 +188,20 @@ const SEEDANCE_2_LAUNCH_CONFIG = {
   },
 } as const;
 
+const SEEDANCE_COMPARE_PUBLISHED_SLUGS = Array.from(
+  new Set([...LEGACY_COMPARE_INDEXED_ENGINE_SLUGS, 'seedance-2-0-fast'])
+);
+
+function getSeedancePublishedPairs(modelSlug: string): string[] {
+  return SEEDANCE_COMPARE_PUBLISHED_SLUGS.filter((slug) => slug !== modelSlug);
+}
+
 function buildSeedance2Surfaces(
   variant: 'standard' | 'fast',
   variantLabel: 'Standard' | 'Fast'
 ): PartialModelPublicationSurfaces {
   const variantConfig = variant === 'standard' ? SEEDANCE_2_LAUNCH_CONFIG.standard : SEEDANCE_2_LAUNCH_CONFIG.fast;
+  const modelSlug = variant === 'standard' ? 'seedance-2-0' : 'seedance-2-0-fast';
   const discoveryRank =
     variant === 'standard' ? SEEDANCE_2_LAUNCH_CONFIG.app.standardRank : SEEDANCE_2_LAUNCH_CONFIG.app.fastRank;
 
@@ -206,7 +216,7 @@ function buildSeedance2Surfaces(
     },
     compare: {
       suggestOpponents: [...variantConfig.suggestOpponents],
-      publishedPairs: [...variantConfig.publishedPairs],
+      publishedPairs: getSeedancePublishedPairs(modelSlug),
       includeInHub: SEEDANCE_2_LAUNCH_CONFIG.isLive,
     },
     app: {
