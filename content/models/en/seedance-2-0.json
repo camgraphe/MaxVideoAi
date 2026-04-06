@@ -2,8 +2,8 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 (ByteDance) — Text-to-Video, Image-to-Video & Reference-to-Video | MaxVideoAI",
-    "description": "Use ByteDance Seedance 2.0 on MaxVideoAI for text-to-video, image-to-video with an optional end frame, and multimodal reference-to-video with native audio and auto or 4-15 second runs."
+    "title": "Seedance 2.0 by ByteDance | Text, Image & Reference Video",
+    "description": "Generate with Seedance 2.0 on MaxVideoAI: text-to-video, start/end-frame image-to-video, and reference-to-video with native audio."
   },
   "overview": "Seedance 2.0 is ByteDance's flagship video generation model on Fal. It brings text-to-video, image-to-video with an optional end frame, and multimodal reference-to-video into one cinematic workflow family with native audio.",
   "pricingNotes": "Seedance 2 uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",

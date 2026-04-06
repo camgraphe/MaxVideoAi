@@ -2,8 +2,8 @@
   "marketingName": "Seedance 2.0 Fast",
   "versionLabel": "2.0 Fast",
   "seo": {
-    "title": "Seedance 2.0 Fast — Fast Text-to-Video, Image-to-Video & Reference-to-Video | MaxVideoAI",
-    "description": "Use Seedance 2.0 Fast on MaxVideoAI for faster text-to-video, image-to-video with an optional end frame, and multimodal reference-to-video before moving winners into standard Seedance 2.0."
+    "title": "Seedance 2.0 Fast | Fast Text, Image & Reference Video",
+    "description": "Use Seedance 2.0 Fast on MaxVideoAI for faster text-to-video, start/end-frame image-to-video, and reference-to-video drafts with audio."
   },
   "overview": "Seedance 2.0 Fast is the quick-iteration tier in the Seedance 2 family on Fal. It keeps the same three workflow types as standard Seedance 2.0, but is better suited to storyboard passes, timing checks, and rapid comparison loops.",
   "pricingNotes": "Seedance 2 Fast uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
