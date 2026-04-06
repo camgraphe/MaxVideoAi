@@ -4,7 +4,7 @@
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef } from 'react';
 import type { ChangeEvent, ClipboardEvent, DragEvent, KeyboardEvent, ReactNode } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Lock, Trash2 } from 'lucide-react';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Button } from '@/components/ui/Button';
@@ -492,14 +492,19 @@ export function AssetDropzone({
             const filledSingleSlot = flattenSlotSurface && asset != null;
             const allowClick = asset == null || asset?.kind !== 'audio';
             const slotLabel = isCollectionField && asset == null ? null : resolveSlotLabel(field, role, slotIndex, assetCopy);
+            const isLockedEmptySlot = disabled && !asset;
             const slotDescription =
-              displaySlots.length === 1
+              isLockedEmptySlot
+                ? null
+                : displaySlots.length === 1
                 ? field.description ?? roleDescription
                 : isCollectionField && asset == null && filledAssetCount === 0
                   ? field.description ?? roleDescription
                 : null;
             const slotMeta =
-              (displaySlots.length === 1 || (isCollectionField && asset == null && filledAssetCount === 0)
+              isLockedEmptySlot
+                ? null
+                : (displaySlots.length === 1 || (isCollectionField && asset == null && filledAssetCount === 0)
                 ? helperLines.slice(0, 2)
                 : [])
                 .filter((value) => value.trim().length > 0)
@@ -668,21 +673,37 @@ export function AssetDropzone({
                         +
                       </span>
                     ) : null}
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border/75 bg-surface-2/80 text-text-secondary dark:border-brand/25 dark:bg-brand/15 dark:text-brand">
-                      <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
-                        <path
-                          d="M10 4.5v11m-5.5-5.5h11"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
+                    <div
+                      className={clsx(
+                        'flex h-8 w-8 items-center justify-center rounded-full border text-text-secondary',
+                        isLockedEmptySlot
+                          ? 'border-border/80 bg-surface text-text-muted dark:border-white/12 dark:bg-white/[0.04] dark:text-white/58'
+                          : 'border-border/75 bg-surface-2/80 dark:border-brand/25 dark:bg-brand/15 dark:text-brand'
+                      )}
+                    >
+                      {isLockedEmptySlot ? (
+                        <Lock className="h-3.5 w-3.5" aria-hidden />
+                      ) : (
+                        <svg aria-hidden viewBox="0 0 20 20" className="h-3.5 w-3.5">
+                          <path
+                            d="M10 4.5v11m-5.5-5.5h11"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      )}
                     </div>
                     <div className={clsx('space-y-1', isCollectionAddTile && 'space-y-0')}>
                       {slotLabel ? (
                         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary dark:text-white/86">
                           {slotLabel}
+                        </p>
+                      ) : null}
+                      {isLockedEmptySlot && disabledReason ? (
+                        <p className="max-w-[16rem] text-[11px] font-medium leading-4 text-text-secondary dark:text-white/72">
+                          {disabledReason}
                         </p>
                       ) : null}
                       {slotDescription ? (
@@ -695,7 +716,7 @@ export function AssetDropzone({
                           {slotMeta}
                         </p>
                       ) : null}
-                      {disabledReason && slotIndex === 0 ? (
+                      {disabledReason && slotIndex === 0 && !isLockedEmptySlot ? (
                         <p className="max-w-[16rem] text-[10px] leading-4 text-text-muted dark:text-white/54">
                           {disabledReason}
                         </p>
@@ -704,38 +725,40 @@ export function AssetDropzone({
                         <span className="text-[10px] text-warning dark:text-[#f6c667]">{assetCopy.neededBeforeGenerating}</span>
                       ) : null}
                     </div>
-                    <div className="flex w-full flex-wrap items-center justify-center gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="min-h-0 h-auto rounded-full border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary dark:border-white/14 dark:bg-white/[0.045] dark:text-white/78 dark:hover:border-brand/30 dark:hover:bg-white/[0.08] dark:hover:text-white"
-                        disabled={disabled}
-                        title={disabledReason ?? undefined}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          triggerFilePicker();
-                        }}
-                      >
-                        {assetCopy.upload}
-                      </Button>
-                      {canOpenLibrary ? (
+                    {!isLockedEmptySlot ? (
+                      <div className="flex w-full flex-wrap items-center justify-center gap-2">
                         <Button
                           type="button"
                           size="sm"
-                          variant="ghost"
-                          className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/78 dark:hover:bg-white/[0.08] dark:hover:text-white"
+                          variant="outline"
+                          className="min-h-0 h-auto rounded-full border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary dark:border-white/14 dark:bg-white/[0.045] dark:text-white/78 dark:hover:border-brand/30 dark:hover:bg-white/[0.08] dark:hover:text-white"
                           disabled={disabled}
                           title={disabledReason ?? undefined}
                           onClick={(event) => {
                             event.stopPropagation();
-                            triggerLibrary();
+                            triggerFilePicker();
                           }}
                         >
-                          {assetCopy.library}
+                          {assetCopy.upload}
                         </Button>
-                      ) : null}
-                    </div>
+                        {canOpenLibrary ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="min-h-0 h-auto rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/78 dark:hover:bg-white/[0.08] dark:hover:text-white"
+                            disabled={disabled}
+                            title={disabledReason ?? undefined}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              triggerLibrary();
+                            }}
+                          >
+                            {assetCopy.library}
+                          </Button>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 )}
               </div>

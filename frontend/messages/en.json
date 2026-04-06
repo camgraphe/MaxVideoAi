@@ -2231,6 +2231,14 @@
         "submit": "Add funds",
         "submitting": "Starting top-up…"
       },
+      "authGate": {
+        "title": "Create an account to render",
+        "body": "You can explore the full workspace with starter renders, but launching a real render requires an account.",
+        "primary": "Create account",
+        "secondary": "Sign in",
+        "close": "Maybe later",
+        "uploadLocked": "Sign in to upload"
+      },
       "assetLibrary": {
         "title": "Select reference image",
         "refresh": "Refresh",

@@ -2242,6 +2242,14 @@
         "submit": "Ajouter des fonds",
         "submitting": "Top-up en cours…"
       },
+      "authGate": {
+        "title": "Créez un compte pour lancer un rendu",
+        "body": "Vous pouvez explorer l’espace de travail avec des rendus de démonstration, mais lancer un vrai rendu nécessite un compte.",
+        "primary": "Créer un compte",
+        "secondary": "Se connecter",
+        "close": "Plus tard",
+        "uploadLocked": "Connectez-vous pour importer"
+      },
       "assetLibrary": {
         "title": "Sélectionner une image de référence",
         "refresh": "Actualiser",

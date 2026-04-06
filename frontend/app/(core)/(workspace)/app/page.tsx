@@ -239,6 +239,7 @@ const DEFAULT_WORKSPACE_COPY = {
     primary: 'Create account',
     secondary: 'Sign in',
     close: 'Maybe later',
+    uploadLocked: 'Sign in to upload',
   },
   assetLibrary: {
     title: 'Select asset',
@@ -4986,25 +4987,34 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const primaryField = inputSchemaSummary.assetFields.find((entry) => entry.role === 'primary')?.field;
     return primaryField?.label ?? 'Reference image';
   }, [inputSchemaSummary.assetFields]);
+  const guestUploadLockedReason = !authLoading && !user?.id ? workspaceCopy.authGate.uploadLocked : null;
   const composerAssetFields = useMemo(() => {
     return inputSchemaSummary.assetFields.map((entry) => {
       const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset !== null);
       const blockKey = isUnifiedSeedance
         ? getSeedanceFieldBlockKey(entry.field.id, inputAssets, fieldHasOwnAssets)
         : null;
-      const disabledReason =
+      const workflowDisabledReason =
         blockKey === 'clearReferences'
           ? workflowCopy.clearReferencesToUseStartEnd
           : blockKey === 'clearStartEnd'
             ? workflowCopy.clearStartEndToUseReferences
             : null;
+      const disabledReason = workflowDisabledReason ?? guestUploadLockedReason;
       return {
         ...entry,
         disabled: Boolean(disabledReason),
         disabledReason,
       };
     });
-  }, [inputAssets, inputSchemaSummary.assetFields, isUnifiedSeedance, workflowCopy.clearReferencesToUseStartEnd, workflowCopy.clearStartEndToUseReferences]);
+  }, [
+    guestUploadLockedReason,
+    inputAssets,
+    inputSchemaSummary.assetFields,
+    isUnifiedSeedance,
+    workflowCopy.clearReferencesToUseStartEnd,
+    workflowCopy.clearStartEndToUseReferences,
+  ]);
 
   useEffect(() => {
     if (!selectedEngine) {

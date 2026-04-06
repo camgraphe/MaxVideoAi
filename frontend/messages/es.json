@@ -2235,6 +2235,14 @@
         "submit": "Añadir fondos",
         "submitting": "Iniciando recarga…"
       },
+      "authGate": {
+        "title": "Crea una cuenta para renderizar",
+        "body": "Puedes explorar todo el espacio de trabajo con renders de prueba, pero lanzar un render real requiere una cuenta.",
+        "primary": "Crear cuenta",
+        "secondary": "Iniciar sesión",
+        "close": "Más tarde",
+        "uploadLocked": "Inicia sesión para subir"
+      },
       "assetLibrary": {
         "title": "Selecciona imagen de referencia",
         "refresh": "Actualizar",
