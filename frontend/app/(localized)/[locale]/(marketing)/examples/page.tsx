@@ -94,7 +94,9 @@ const MODEL_SLUG_MAP = buildSlugMap('models');
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
 const DEFAULT_SORT: ExampleSort = 'playlist';
 const EXAMPLES_PAGE_SIZE = 60;
-const INITIAL_GALLERY_BATCH = 8;
+const HUB_INITIAL_DESKTOP_GALLERY_BATCH = 8;
+const FAMILY_INITIAL_DESKTOP_GALLERY_BATCH = 12;
+const INITIAL_MOBILE_GALLERY_BATCH = 4;
 const HERO_POSTER_OPTIONS = { width: 1080, quality: 60 } as const;
 const GALLERY_POSTER_OPTIONS = { width: 640, quality: 56 } as const;
 const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page', '__engineFromPath']);
@@ -647,7 +649,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       : null;
   const galleryVideos = mainVideo ? videos.filter((_, index) => index !== mainVideoIndex) : videos;
   const galleryClientVideos = mainVideo ? clientVideos.filter((_, index) => index !== mainVideoIndex) : clientVideos;
-  const initialExamples = galleryClientVideos.slice(0, INITIAL_GALLERY_BATCH);
+  const initialDesktopBatch = isModelLanding ? FAMILY_INITIAL_DESKTOP_GALLERY_BATCH : HUB_INITIAL_DESKTOP_GALLERY_BATCH;
+  const initialExamples = galleryClientVideos.slice(0, initialDesktopBatch);
   const initialMaxIndex = initialExamples.reduce((max, video) => Math.max(max, video.sourceIndex ?? -1), -1);
   const pageOffsetStart = offset;
   const pageOffsetEnd = offset + allVideos.length;
@@ -1055,6 +1058,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 loadingLabel={galleryUiCopy.loading}
                 noPreviewLabel={galleryUiCopy.noPreview}
                 audioAvailableLabel={galleryUiCopy.audioAvailable}
+                initialDesktopBatch={initialDesktopBatch}
+                initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
                 sort={sort}
                 engineFilter={selectedEngine?.toLowerCase() ?? null}
                 initialOffset={nextOffsetStart}

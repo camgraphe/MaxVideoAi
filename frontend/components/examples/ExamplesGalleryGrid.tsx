@@ -8,6 +8,8 @@ export function ExamplesGalleryGrid({
   loadingLabel = 'Loading…',
   noPreviewLabel = 'No preview',
   audioAvailableLabel = 'Audio available on playback',
+  initialDesktopBatch = 8,
+  initialMobileBatch = 4,
   sort,
   engineFilter,
   initialOffset,
@@ -19,6 +21,8 @@ export function ExamplesGalleryGrid({
   loadingLabel?: string;
   noPreviewLabel?: string;
   audioAvailableLabel?: string;
+  initialDesktopBatch?: number;
+  initialMobileBatch?: number;
   sort: 'playlist' | 'date-desc' | 'date-asc' | 'duration-asc' | 'duration-desc' | 'engine-asc';
   engineFilter?: string | null;
   initialOffset: number;
@@ -32,6 +36,8 @@ export function ExamplesGalleryGrid({
       loadingLabel={loadingLabel}
       noPreviewLabel={noPreviewLabel}
       audioAvailableLabel={audioAvailableLabel}
+      initialDesktopBatch={initialDesktopBatch}
+      initialMobileBatch={initialMobileBatch}
       sort={sort}
       engineFilter={engineFilter}
       initialOffset={initialOffset}

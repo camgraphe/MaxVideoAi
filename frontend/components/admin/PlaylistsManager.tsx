@@ -769,7 +769,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           throw new Error(json?.error ?? `Failed to seed family playlists (${res.status})`);
         }
         await refreshPlaylistsState(selectedId);
-        setFeedback('All family playlists seeded from the auto feed');
+        setFeedback('All family playlists seeded from the current live order');
       } catch (helperError) {
         console.error('[PlaylistsManager] seed all family playlists failed', helperError);
         setError(helperError instanceof Error ? helperError.message : 'Failed to seed family playlists');
@@ -923,7 +923,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           <h1 className="text-3xl font-semibold text-text-primary">Collections curation</h1>
           <p className="max-w-3xl text-sm text-text-secondary">
             Keep the runtime surfaces stable while preparing family playlists. The main examples hub stays on <code>examples</code>,
-            guest starter stays on <code>welcome</code>, and family pages can be seeded from the current automatic flow before you
+            guest starter stays on <code>welcome</code>, and family pages can be seeded from the current live order before you
             start reordering them.
           </p>
         </div>
@@ -1174,7 +1174,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                         onClick={() => handleSeedFamilyPlaylist(selectedPlaylist.familyId ?? selectedPlaylist.slug.replace(/^family-/, ''))}
                         disabled={isPending}
                       >
-                        Seed from auto order
+                        Seed from current order
                       </Button>
                     ) : null}
                     {!selectedPlaylist.isLocked ? (

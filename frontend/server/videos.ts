@@ -3,6 +3,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getExampleFamilyEngineAliases } from '@/lib/model-families';
+import { getIndexablePlaylistSlugs } from '@/server/indexing';
 import { removeVideosFromIndexablePlaylists } from '@/server/indexing';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs, getStarterPlaylistSlug } from '@/server/playlists';
 import type { PricingSnapshot } from '@/types/engines';
@@ -423,6 +424,26 @@ async function loadExampleFamilyFeed(
 
 export async function listExampleFamilyAutoFeed(familyId: string): Promise<GalleryVideo[]> {
   return loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: false });
+}
+
+export async function listExampleFamilyCurrentPublicOrder(familyId: string): Promise<GalleryVideo[]> {
+  const normalizedFamilyId = resolveExampleCanonicalSlug(familyId) ?? familyId.trim().toLowerCase();
+  if (!normalizedFamilyId) {
+    return [];
+  }
+
+  const slugs = getIndexablePlaylistSlugs();
+  if (!slugs.length) {
+    return [];
+  }
+
+  const playlistResults = await Promise.all(
+    slugs.map(async (slug) => listAllPlaylistVideos(slug).catch(() => [] as GalleryVideo[]))
+  );
+
+  return mergeUniqueGalleryVideos(...playlistResults).filter(
+    (video) => resolveExampleGroupId(video.engineId) === normalizedFamilyId
+  );
 }
 
 export async function listExampleFamilyPage(

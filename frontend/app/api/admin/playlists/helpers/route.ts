@@ -4,8 +4,8 @@ import { submitToIndexNow } from '@/lib/indexnow';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import {
   createMissingFamilyPlaylists,
-  seedAllFamilyPlaylistsFromAutoOrder,
-  seedFamilyPlaylistFromAutoOrder,
+  seedAllFamilyPlaylistsFromCurrentOrder,
+  seedFamilyPlaylistFromCurrentOrder,
 } from '@/server/example-family-playlists';
 
 type HelpersAction = 'create-missing-family-playlists' | 'seed-family-playlist' | 'seed-all-family-playlists';
@@ -48,14 +48,14 @@ export async function POST(req: NextRequest) {
       if (!familyId) {
         return NextResponse.json({ ok: false, error: 'Missing familyId' }, { status: 400 });
       }
-      const result = await seedFamilyPlaylistFromAutoOrder(familyId, adminId);
+      const result = await seedFamilyPlaylistFromCurrentOrder(familyId, adminId);
       await submitToIndexNow('/examples');
       await submitToIndexNow(`/examples/${familyId}`);
       return NextResponse.json({ ok: true, result });
     }
 
     if (action === 'seed-all-family-playlists') {
-      const results = await seedAllFamilyPlaylistsFromAutoOrder(adminId);
+      const results = await seedAllFamilyPlaylistsFromCurrentOrder(adminId);
       await submitToIndexNow('/examples');
       await Promise.all(results.map((result) => submitToIndexNow(`/examples/${result.familyId}`)));
       return NextResponse.json({ ok: true, results });

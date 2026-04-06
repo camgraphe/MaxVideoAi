@@ -10,7 +10,7 @@ import {
   reorderPlaylistItems,
   type PlaylistRecord,
 } from '@/server/playlists';
-import { listExampleFamilyAutoFeed } from '@/server/videos';
+import { listExampleFamilyCurrentPublicOrder } from '@/server/videos';
 
 export type FamilyPlaylistHelper = {
   familyId: string;
@@ -69,12 +69,12 @@ export async function createMissingFamilyPlaylists(userId?: string | null): Prom
   return results;
 }
 
-export async function seedFamilyPlaylistFromAutoOrder(
+export async function seedFamilyPlaylistFromCurrentOrder(
   familyId: string,
   userId?: string | null
 ): Promise<SeedFamilyPlaylistResult> {
   const playlist = await ensureFamilyPlaylist(familyId, userId);
-  const videos = await listExampleFamilyAutoFeed(familyId);
+  const videos = await listExampleFamilyCurrentPublicOrder(familyId);
   await reorderPlaylistItems(
     playlist.id,
     [...videos].reverse().map((video) => ({
@@ -91,10 +91,10 @@ export async function seedFamilyPlaylistFromAutoOrder(
   };
 }
 
-export async function seedAllFamilyPlaylistsFromAutoOrder(userId?: string | null): Promise<SeedFamilyPlaylistResult[]> {
+export async function seedAllFamilyPlaylistsFromCurrentOrder(userId?: string | null): Promise<SeedFamilyPlaylistResult[]> {
   const results: SeedFamilyPlaylistResult[] = [];
   for (const familyId of getExampleFamilyIds()) {
-    results.push(await seedFamilyPlaylistFromAutoOrder(familyId, userId));
+    results.push(await seedFamilyPlaylistFromCurrentOrder(familyId, userId));
   }
   return results;
 }

@@ -32,8 +32,8 @@ export type ExampleGalleryVideo = {
 };
 
 const BATCH_SIZE = 8;
-const INITIAL_MOBILE_BATCH = 4;
-const INITIAL_DESKTOP_BATCH = 8;
+const DEFAULT_INITIAL_MOBILE_BATCH = 4;
+const DEFAULT_INITIAL_DESKTOP_BATCH = 8;
 const LANDSCAPE_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw';
 const PORTRAIT_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw';
 const DEFAULT_LANDSCAPE_RATIO = 16 / 9;
@@ -48,6 +48,8 @@ export default function ExamplesGalleryGridClient({
   loadingLabel = 'Loading…',
   noPreviewLabel = 'No preview',
   audioAvailableLabel = 'Audio available on playback',
+  initialDesktopBatch = DEFAULT_INITIAL_DESKTOP_BATCH,
+  initialMobileBatch = DEFAULT_INITIAL_MOBILE_BATCH,
   sort,
   engineFilter,
   initialOffset,
@@ -59,6 +61,8 @@ export default function ExamplesGalleryGridClient({
   loadingLabel?: string;
   noPreviewLabel?: string;
   audioAvailableLabel?: string;
+  initialDesktopBatch?: number;
+  initialMobileBatch?: number;
   sort: ExampleSort;
   engineFilter?: string | null;
   initialOffset: number;
@@ -72,15 +76,15 @@ export default function ExamplesGalleryGridClient({
   const [isLoading, setIsLoading] = useState(false);
 
   const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() =>
-    baseAll.slice(0, INITIAL_DESKTOP_BATCH)
+    baseAll.slice(0, initialDesktopBatch)
   );
 
   // Reset batches when the filtered dataset changes (e.g., engine filter navigation).
   useEffect(() => {
-    const nextInitialBatch = isMobile ? INITIAL_MOBILE_BATCH : INITIAL_DESKTOP_BATCH;
+    const nextInitialBatch = isMobile ? initialMobileBatch : initialDesktopBatch;
     setVisibleVideos(baseAll.slice(0, nextInitialBatch));
     setNextOffset(initialOffset);
-  }, [baseAll, initialOffset, isMobile]);
+  }, [baseAll, initialDesktopBatch, initialMobileBatch, initialOffset, isMobile]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
