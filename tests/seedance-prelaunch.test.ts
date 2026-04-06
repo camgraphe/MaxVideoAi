@@ -7,6 +7,7 @@ import { MARKETING_FOOTER_EXAMPLES, MARKETING_NAV_COMPARE, MARKETING_NAV_EXAMPLE
 import { getModelFamilyDefinition } from '../frontend/config/model-families.ts';
 import { getPublishedComparisonSlugs, getHubEngines } from '../frontend/lib/compare-hub/data.ts';
 import { orderExamplesHubFamilyIds } from '../frontend/lib/examples/familyOrder.ts';
+import { normalizeHomepageAdminPriceLabel } from '../frontend/lib/homepage-price-label.ts';
 import { normalizeFalDurationValueForModel } from '../frontend/src/lib/fal.ts';
 import { getVisibleAssetSlotCount } from '../frontend/lib/asset-slot-layout.ts';
 import { getSeedanceAssetState, getSeedanceFieldBlockKey, getUnifiedSeedanceMode } from '../frontend/lib/seedance-workflow.ts';
@@ -242,6 +243,13 @@ test('Engine select uses the same family priority as the examples hub', () => {
     .slice()
     .sort((a, b) => getEngineSelectFamilyRank({ family: a }) - getEngineSelectFamilyRank({ family: b }));
   assert.deepEqual(sorted, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'sora']);
+});
+
+test('Homepage admin hero pricing labels preserve per-second suffixes', () => {
+  assert.equal(normalizeHomepageAdminPriceLabel('from $0.18/s', 'en'), 'from $0.18/s');
+  assert.equal(normalizeHomepageAdminPriceLabel('from $0.29 /s', 'en'), 'from $0.29/s');
+  assert.equal(normalizeHomepageAdminPriceLabel('à partir de 0,18 EUR/s', 'fr'), 'à partir de 0,18 €/s');
+  assert.equal(normalizeHomepageAdminPriceLabel('headline only', 'en'), null);
 });
 
 test('Unified Seedance workspace switches mode from attached assets and blocks the opposite family', () => {
