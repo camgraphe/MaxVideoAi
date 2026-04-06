@@ -150,7 +150,7 @@ export default function JobsPage() {
     isValidating: angleIsValidating,
     mutate: mutateAngle,
   } = useInfiniteJobs(24, { surface: 'angle' });
-  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  useRequireAuth({ redirectIfLoggedOut: false });
 
   const videoPages = videoData ?? [];
   const audioPages = audioData ?? [];

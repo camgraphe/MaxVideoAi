@@ -288,7 +288,7 @@ export function Composer({
       return 'flex flex-wrap gap-4';
     }
     return 'grid gap-4 md:grid-cols-2';
-  }, [orderedAssetFields.length, useLtxAssetGridLayout]);
+  }, [useLtxAssetGridLayout]);
   const promptPlaceholderValue = hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;

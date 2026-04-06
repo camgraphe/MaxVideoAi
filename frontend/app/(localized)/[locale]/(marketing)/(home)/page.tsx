@@ -188,12 +188,6 @@ const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
   'minimax-hailuo-02': 'minimax-hailuo-02',
 };
 
-const PRICE_FORMAT_LOCALE_BY_LOCALE: Record<AppLocale, string> = {
-  en: CURRENCY_LOCALE,
-  fr: 'fr-FR',
-  es: 'es-ES',
-};
-
 const HERO_AUDIO_BADGE_BY_LOCALE: Record<AppLocale, string> = {
   en: 'Audio available. Preview plays muted on this page.',
   fr: 'Audio disponible. La prévisualisation est lue sans son sur cette page.',

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import clsx from 'clsx';
 import type { EngineCaps } from '@/types/engines';
 import { getPartnerBrandMark } from '@/lib/brand-partners';
@@ -77,13 +78,14 @@ export function EngineIcon({
     >
       {brandMark ? (
         <>
-          <img
+          <Image
             src={brandMark.light.src}
             alt=""
             aria-hidden="true"
             className="block select-none object-contain dark:hidden"
-            loading="eager"
-            decoding="async"
+            width={markSize}
+            height={markSize}
+            sizes={`${markSize}px`}
             draggable={false}
             style={{
               width: markSize,
@@ -91,13 +93,14 @@ export function EngineIcon({
               objectFit: brandMark.light.fit ?? 'contain',
             }}
           />
-          <img
+          <Image
             src={brandMark.dark.src}
             alt=""
             aria-hidden="true"
             className="hidden select-none object-contain dark:block"
-            loading="eager"
-            decoding="async"
+            width={markSize}
+            height={markSize}
+            sizes={`${markSize}px`}
             draggable={false}
             style={{
               width: markSize,

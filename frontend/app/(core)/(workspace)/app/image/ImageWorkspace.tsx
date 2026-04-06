@@ -2173,6 +2173,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       outputFormat,
       outputFormatField,
       readyReferenceUrls,
+      selectedCharacterReferences,
       thinkingLevel,
       thinkingLevelField,
       mutateJobs,
@@ -2509,7 +2510,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           : null
       ),
     }),
-    [displayedReferenceSlots, resolvedCopy.composer.referenceSlotNameFallback]
+    [
+      displayedReferenceSlots,
+      resolvedCopy.composer.characterButton,
+      resolvedCopy.composer.referenceSlotNameFallback,
+    ]
   );
   const composerError = error ?? pricingError?.message ?? null;
 
