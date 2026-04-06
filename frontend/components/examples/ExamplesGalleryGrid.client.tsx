@@ -369,7 +369,6 @@ function ExampleCard({
             ) : (
               <span>{video.engineLabel}</span>
             )}
-            {video.priceLabel ? <span className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-text-secondary">{video.priceLabel}</span> : null}
           </div>
           <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary sm:text-sm">{video.prompt}</p>
           <p className="text-[10px] text-text-secondary sm:text-[11px]">

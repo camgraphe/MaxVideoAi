@@ -304,22 +304,6 @@ function formatPromptExcerpt(prompt: string, maxWords = 18): string {
   return `${words.slice(0, maxWords).join(' ')}…`;
 }
 
-function formatPrice(priceCents: number | null | undefined, currency: string | null | undefined): string | null {
-  if (typeof priceCents !== 'number' || Number.isNaN(priceCents)) {
-    return null;
-  }
-  const normalizedCurrency = typeof currency === 'string' && currency.length ? currency.toUpperCase() : 'USD';
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: normalizedCurrency,
-      maximumFractionDigits: 2,
-    }).format(priceCents / 100);
-  } catch {
-    return `${normalizedCurrency} ${(priceCents / 100).toFixed(2)}`;
-  }
-}
-
 function compactLeadCopy(value: string, maxChars = 130): string {
   const normalized = value.replace(/\s+/g, ' ').trim();
   if (normalized.length <= maxChars) return normalized;
@@ -620,7 +604,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
     const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
     const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta) : null;
-    const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
     const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
     const modelSlug =
       engineMeta?.modelSlug ?? (descriptor ? ENGINE_MODEL_LINKS[descriptor.id.toLowerCase()] : null);
@@ -631,7 +614,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
       engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
       engineBrandId: engineMeta?.brandId,
-      priceLabel,
+      priceLabel: null,
       prompt: promptDisplay,
       promptFull: video.prompt ?? null,
       aspectRatio: video.aspectRatio ?? null,
@@ -977,11 +960,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                     <span>
                       {mainVideo.video.aspectRatio ?? 'Auto'} · {mainVideo.video.durationSec}s
                     </span>
-                    {mainVideo.card.priceLabel ? (
-                      <span className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-text-secondary">
-                        {mainVideo.card.priceLabel}
-                      </span>
-                    ) : null}
                   </div>
 
                   <h2 className="text-lg font-semibold leading-snug text-text-primary sm:text-xl">
