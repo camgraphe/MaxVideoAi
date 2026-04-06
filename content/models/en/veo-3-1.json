@@ -306,55 +306,57 @@
     "finalPara1": "Veo 3.1 in MaxVideoAI gives you direct, pay-as-you-go access to DeepMind’s most controllable short-form video engine.",
     "finalPara2": "Framing and audio controls make it feel like a virtual camera, not just another black-box generator.",
     "finalButton": "Open Generate",
-    "promptingTitle": "How to Write a Great Veo 3.1 Prompt",
-    "promptingIntro": "Veo works best when you specify subject, action, context, camera, and style in plain language.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and sound cues.",
+    "promptingTitle": "How to Prompt Veo 3.1 by Workflow",
+    "promptingIntro": "Veo 3.1 is not just a text model. Choose the right path in the UI: plain-language text-to-video, image-guided animation, multi-reference control, first/last bridging, or clip extension.",
+    "promptingTip": "Tip: Veo follows natural language well. Lead with subject, action, and context, keep one camera move, and use positive constraints. Use the specific Veo route for references, first/last, and extend.",
     "promptingGlobalPrinciples": [
-      "Lead with subject + action + context.",
-      "Name framing and camera movement explicitly.",
-      "Use concrete style anchors (lighting, lens feel, color)."
+      "Write in plain language; do not overcomplicate the brief.",
+      "Keep one clear physical action and one camera move per clip.",
+      "Tell Veo what must stay fixed when you bridge or extend a shot.",
+      "Use positive constraints and concrete atmosphere cues.",
+      "Use references to stabilize brand, wardrobe, product, or setting, not to fight the camera direction."
     ],
     "tipsIntro": "Veo 3.1 is easiest to control when you write like a shot brief: framing, one camera move, and clear lighting cues.",
     "promptingEngineWhy": [
-      "Veo responds to camera language (shot size, angle, movement).",
-      "Keep actions physical and simple per clip.",
-      "Specify atmosphere: lighting, weather, and mood.",
-      "Prefer positive constraints (say what you want, not what you do not)."
+      "Text-to-video and single-image animation work best when the brief reads like a live-action shot.",
+      "Reference mode is best for brand, character, and product consistency.",
+      "First/last mode works when you define the opening frame, the landing frame, and one transition logic between them.",
+      "Extend works best when you describe only the new beat while preserving camera rhythm, location, and subject identity."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = continuity. Use for precise, repeatable looks.",
-      "storyboard": "Storyboard = beat timing. Use for mini-stories in one clip."
+      "quick": "Text = plain-language shot brief.",
+      "structured": "Refs = stabilize brand, subject, or setting.",
+      "pro": "First/Last = define the bridge between opening and landing frames.",
+      "storyboard": "Extend = add the next beat without breaking continuity."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] [action] in [context], [camera shot + movement], [lighting], [style], [ambience/sound cue]."
+        "label": "Text",
+        "title": "Text-to-video prompt",
+        "description": "Use when the shot starts from language and Veo should infer the scene naturally.",
+        "copy": "Subject + action + context:\n[Who/what does what, and where]\n\nCamera:\n[Shot size + one move]\n\nLook:\n[Lighting + palette + atmosphere]\n\nSound:\n[Optional ambience / dialogue / SFX]\n\nConstraint style:\nSay what you want (\"clean background\", \"steady handheld\") rather than what you do not want."
       },
       {
         "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 2-3 defining details.]\n\nAction:\n[One clear physical action.]\n\nContext:\n[Location + time of day + environment.]\n\nCamera:\n- Shot + angle\n- Movement: [pan / dolly / handheld / static]\n- Lens feel: [e.g., 35mm, shallow DOF]\n\nStyle + lighting:\n[Look / palette / key light.]\n\nAmbience + sound (optional):\n[Atmosphere + 1-2 SFX cues.]\n\nConstraints:\nState the desired result (e.g., \"clean background\") instead of \"no/don't\"."
+        "label": "Refs",
+        "title": "Reference prompt",
+        "description": "Use when the key problem is consistency, not invention.",
+        "copy": "Prompt intent:\n[What the shot should accomplish]\n\nReference stills:\n[Which images define subject / product / setting / palette]\n\nWhat stays fixed:\n[Wardrobe / packaging / background / mood]\n\nWhat can change:\n[Camera / action / framing]\n\nRule:\nUse references to lock identity and style, then let the prompt steer the motion and camera."
       },
       {
         "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Director brief:\n[Goal for the shot + intended vibe.]\n\nSubject + wardrobe/props:\n[Key traits + textures.]\n\nSet + continuity:\n[Location, time, weather, 3 visual anchors.]\n\nCinematography:\n- Framing + angle\n- Movement (one move)\n- Lens + depth of field\n- Composition rule (centered / thirds / negative space)\n\nLighting + grade:\n[Key light + contrast + palette anchors.]\n\nSound (optional):\n[Ambience + 1-2 SFX cues.]\n\nConstraints:\nDescribe what to include, not what to exclude."
+        "label": "First/Last",
+        "title": "First/last frame prompt",
+        "description": "Use when Veo should bridge from an opening frame to a landing frame.",
+        "copy": "First frame:\n[What we open on]\n\nLast frame:\n[What we must land on]\n\nTransition logic:\n[How the camera and subject move between the two]\n\nContinuity anchors:\n[What must remain stable across the bridge]\n\nDo not ask for unrelated scene changes in the last frame. Use it to guide the destination."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (shot list)",
-        "description": "Use for short multi-beat sequences in one clip.",
-        "copy": "Shot list (same subject + same setting)\nDuration: [4/6/8s]\n\nShot 1 (0-2s):\n[Framing + action + camera move]\n\nShot 2 (2-5s):\n[Framing + action + camera move]\n\nShot 3 (5-8s):\n[Final action/reveal + camera settle]\n\nLook + mood:\n[Lighting + palette + atmosphere]\n\nSound (optional):\n[Ambience + 1-2 cues]"
+        "label": "Extend",
+        "title": "Extend prompt",
+        "description": "Use when a source clip already exists and you only need the next beat.",
+        "copy": "Current clip:\n[What already happened]\n\nNew beat:\n[What should happen next]\n\nWhat must stay continuous:\n[Subject / setting / camera rhythm / lighting]\n\nExtension rule:\nDescribe only the next action, reveal, or continuation. Do not rewrite the whole scene."
       }
     ],
     "promptingGuideLabel": "Google DeepMind",

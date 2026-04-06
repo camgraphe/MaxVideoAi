@@ -16,8 +16,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare Sora 2 vs Sora 2 Pro (high-res)",
-        "href": "/models/sora-2"
+        "label": "Compare Seedance 2.0 vs Sora 2",
+        "href": "/ai-video-engines/seedance-2-0-vs-sora-2"
       },
       {
         "label": "Explore workflows",
@@ -339,8 +339,8 @@
     ]
   },
   "compareLink": {
-    "label": "Compare Sora 2 vs Sora 2 Pro →",
-    "href": "/models/sora-2"
+    "label": "Explore Seedance 2.0 ->",
+    "href": "/models/seedance-2-0"
   },
   "prompts": [
     {

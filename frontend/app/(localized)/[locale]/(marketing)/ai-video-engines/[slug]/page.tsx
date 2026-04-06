@@ -22,7 +22,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { CompareEngineSelector } from './CompareEngineSelector.client';
 import { CompareScoreboard } from './CompareScoreboard.client';
 import { CopyPromptButton } from './CopyPromptButton.client';
-import { getLatestVideoByPromptAndEngine, getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { getLatestPublicVideoByPromptAndEngine, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { fetchEngineAverageDurations } from '@/server/generate-metrics';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
@@ -393,7 +393,7 @@ async function hydrateShowdowns(
     return entries;
   }
   try {
-    const videos = await getVideosByIds(Array.from(jobIds));
+    const videos = await getPublicVideosByIds(Array.from(jobIds));
     return entries.map((entry) => {
       if (!entry) return entry;
       const leftVideo = entry.left.jobId ? videos.get(entry.left.jobId) : null;
@@ -1360,7 +1360,7 @@ export default async function CompareDetailPage({
   });
   const overrideVideos =
     overrideJobs.size && isDatabaseConfigured()
-      ? await getVideosByIds(Array.from(overrideJobs))
+      ? await getPublicVideosByIds(Array.from(overrideJobs))
       : new Map<string, GalleryVideo>();
   const hasMedia = (side?: ShowdownSide | null) => Boolean(side?.videoUrl || side?.posterUrl);
   const fallbackByTemplateId = new Map<string, { left?: GalleryVideo; right?: GalleryVideo }>();
@@ -1373,7 +1373,7 @@ export default async function CompareDetailPage({
       if (!needsLeft && !needsRight) return;
       if (needsLeft) {
         lookupTasks.push(
-          getLatestVideoByPromptAndEngine(template.prompt, left.engineId || left.modelSlug).then((video) => {
+          getLatestPublicVideoByPromptAndEngine(template.prompt, left.engineId || left.modelSlug).then((video) => {
             if (!video) return;
             const current = fallbackByTemplateId.get(template.id) ?? {};
             fallbackByTemplateId.set(template.id, { ...current, left: video });
@@ -1382,7 +1382,7 @@ export default async function CompareDetailPage({
       }
       if (needsRight) {
         lookupTasks.push(
-          getLatestVideoByPromptAndEngine(template.prompt, right.engineId || right.modelSlug).then((video) => {
+          getLatestPublicVideoByPromptAndEngine(template.prompt, right.engineId || right.modelSlug).then((video) => {
             if (!video) return;
             const current = fallbackByTemplateId.get(template.id) ?? {};
             fallbackByTemplateId.set(template.id, { ...current, right: video });

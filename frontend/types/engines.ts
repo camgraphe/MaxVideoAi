@@ -77,6 +77,20 @@ export interface EnginePricing {
   addons?: Record<string, { perSecond?: number; flat?: number }>;
 }
 
+export interface TokenVideoPricingDimensions {
+  width: number;
+  height: number;
+}
+
+export interface TokenVideoPricing {
+  model: 'fal_tokens';
+  unitPriceUsdPer1kTokens: number;
+  framesPerSecond: number;
+  defaultAspectRatio?: AspectRatio;
+  dimensions: Partial<Record<Resolution, Partial<Record<AspectRatio, TokenVideoPricingDimensions>>>>;
+  rounding?: 'ceil_cent';
+}
+
 export interface EngineInputLimits {
   imageMaxMB?: number;
   videoMaxMB?: number;
@@ -237,4 +251,5 @@ export interface EnginePricingDetails {
       | undefined;
   };
   maxDurationSec?: number;
+  tokenPricing?: TokenVideoPricing;
 }

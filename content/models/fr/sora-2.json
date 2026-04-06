@@ -16,8 +16,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparer avec Sora 2 Pro",
-        "href": "/models/sora-2-pro"
+        "label": "Comparer Seedance 2.0 vs Sora 2",
+        "href": "/ai-video-engines/seedance-2-0-vs-sora-2"
       }
     ]
   },
@@ -222,11 +222,11 @@
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur les autres moteurs.",
     "relatedItems": [
       {
-        "brand": "openai",
-        "title": "OpenAI Sora 2 Pro",
-        "description": "Créez des vidéos plus immersives depuis du texte ou une image avec Sora 2 Pro. Voix native, ambiances, prompts enchaînés et contrôle avancé via MaxVideoAI.",
-        "modelSlug": "sora-2-pro",
-        "ctaLabel": "Comparer OpenAI Sora 2 vs OpenAI Sora 2 Pro →"
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Ouvrez Seedance 2.0 si vous voulez la nouvelle famille flagship pour motion multi-plans, réalisme plus fort et sorties pilotées par l'audio natif.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Comparer Seedance 2.0 vs OpenAI Sora 2 ->"
       },
       {
         "brand": "google-veo",
@@ -236,11 +236,11 @@
         "ctaLabel": "Comparer OpenAI Sora 2 vs Google Veo 3.1 →"
       },
       {
-        "brand": "google-veo",
-        "title": "Google Veo 3.1 Fast",
-        "description": "Utilisez Veo 3.1 Fast pour des vidéos IA rapides et abordables. Clips jusqu’à 8 s avec audio natif optionnel — idéal pour formats sociaux et tests itératifs.",
-        "modelSlug": "veo-3-1-fast",
-        "ctaLabel": "Comparer OpenAI Sora 2 vs Google Veo 3.1 Fast →"
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Utilisez Kling 3 Pro si vous voulez plus de contrôle de scène, du multi-prompt sequencing et une autre route premium au-delà de Sora pour les workflows storyboard.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Comparer OpenAI Sora 2 vs Kling 3 Pro ->"
       }
     ],
     "finalPara1": "Sora 2 dans MaxVideoAI vous donne un accès direct et à l’usage à l’un des meilleurs modèles vidéo court‑form — sans infra ni complications.",

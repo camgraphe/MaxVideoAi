@@ -269,9 +269,9 @@
     "finalPara1": "¿Listo para probar un workflow LTX completo con audio, extend y retake en un solo lugar? Abre LTX 2.3 Pro en Generate.",
     "finalPara2": "Usa el modelo estándar cuando el proyecto necesite más que una simple primera pasada rápida.",
     "finalButton": "Abrir LTX 2.3 Pro en Generate ->",
-    "promptingTitle": "Cómo escribir un gran prompt para LTX 2.3 Pro",
-    "promptingIntro": "LTX 2.3 Pro funciona mejor cuando el prompt coincide con el workflow activo: generación pura, animación guiada por audio, continuación o retake.",
-    "promptingTip": "Consejo: la duración, la resolución, los fps y los controles específicos de cada workflow ya están en la UI. Usa el prompt para sujeto, acción, cámara, iluminación, intención temporal y lo que debe cambiar.",
+    "promptingTitle": "Cómo promptear LTX 2.3 Pro según el workflow",
+    "promptingIntro": "LTX 2.3 Pro cambia realmente de lógica según el trabajo. Promptea distinto una generación nueva, una animación guiada por audio, una extensión y un retake en lugar de usar una plantilla universal.",
+    "promptingTip": "Consejo: duración, resolución, fps y controles de workflow ya viven en la UI. Usa el prompt para dirigir la ruta activa: toma nueva, movimiento guiado por soundtrack, continuación o arreglo quirúrgico.",
     "promptingGlobalPrinciples": [
       "Define un sujeto, un beat central y un movimiento de cámara antes de añadir estilo.",
       "Usa el workflow que corresponda al trabajo: generación, audio, extend o retake.",
@@ -283,39 +283,39 @@
       "Extend y Retake son más sólidos cuando el prompt es preciso sobre la continuidad y sobre lo que debe permanecer igual."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = drafts rápidos de generación.",
-      "structured": "Structured = dirección más limpia para resultados repetibles.",
-      "pro": "Workflow = la mejor opción cuando importan continuidad o edición sobre fuente.",
-      "storyboard": "Storyboard = útil para pasadas multi-beat antes de extender."
+      "quick": "Generar = crear una toma nueva desde texto o imagen.",
+      "structured": "Audio = dejar que la soundtrack lleve el timing.",
+      "pro": "Extend = añadir el siguiente beat sin deriva.",
+      "storyboard": "Retake = cambiar solo la parte dañada o floja."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Rápido",
-        "title": "Prompt rápido (primera pasada)",
-        "description": "Úsalo cuando solo necesites validar la idea de movimiento.",
-        "copy": "[Sujeto + una acción] en [entorno], [movimiento de cámara], [luz/estilo], [pista de audio opcional]."
+        "label": "Generar",
+        "title": "Prompt de generación",
+        "description": "Úsalo cuando LTX crea una toma nueva desde texto o una imagen inicial.",
+        "copy": "Sujeto:\n[Quién / qué aparece]\n\nAcción:\n[Un beat visible]\n\nCámara:\n[Encuadre + un movimiento]\n\nLook:\n[Luz + paleta + textura]\n\nÚsalo cuando la escena empieza desde cero."
       },
       {
         "id": "structured",
-        "label": "Estructurado",
-        "title": "Prompt estructurado (resultados repetibles)",
-        "description": "Separa sujeto, escenario, cámara y look para ganar consistencia.",
-        "copy": "Sujeto:\n[Quién/qué + una acción]\n\nEscenario:\n[Dónde + momento + anclas visuales]\n\nCámara:\n[Plano + ángulo + un movimiento]\n\nLook:\n[Luz + paleta + textura]\n\nAudio:\n[Ambiente / música / diálogo si aplica]"
+        "label": "Audio",
+        "title": "Prompt audio-to-video",
+        "description": "Úsalo cuando la banda sonora o el diálogo deben marcar timing y puesta en escena.",
+        "copy": "Fuente de audio:\n[Qué hace la soundtrack / el diálogo / el beat]\n\nPuesta en escena visual:\n[Qué debe ver el espectador mientras suena]\n\nCámara:\n[Cómo sigue la toma ese ritmo]\n\nRegla:\nDeja que el audio lleve el pacing. Usa el prompt para controlar sujeto, staging y cámara."
       },
       {
         "id": "pro",
-        "label": "Workflow",
-        "title": "Prompt workflow (extend / retake / audio)",
-        "description": "La mejor opción cuando no empiezas desde cero.",
-        "copy": "Fuente actual:\n[Qué existe ya]\n\nObjetivo:\n[Qué debe cambiar o continuar]\n\nContinuidad a preservar:\n[Identidad, escenario, ritmo de cámara, luz]\n\nNuevo beat:\n[Acción / timing / pista sonora]\n\nEvitar:\n[Qué no debe desviarse]"
+        "label": "Extend",
+        "title": "Prompt de extensión",
+        "description": "Úsalo cuando el clip actual es bueno y solo falta el siguiente beat.",
+        "copy": "Fuente actual:\n[Qué ya existe]\n\nSiguiente beat:\n[Qué debe ocurrir después]\n\nContinuidad a preservar:\n[Identidad / escenario / ritmo de cámara / luz]\n\nRegla:\nDescribe solo la continuación. No reescribas el clip entero."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (generación multi-beat)",
-        "description": "Úsalo cuando quieras una pasada de generación de 6 a 10 segundos similar a una secuencia antes de editar.",
-        "copy": "Plano 1: [setup + cámara]\nPlano 2: [acción principal + cámara]\nPlano 3: [resolución o reveal]\n\nLook:\n[Luz + color grading]\n\nAudio:\n[Ambiente + una pista clave]"
+        "label": "Retake",
+        "title": "Prompt de retake",
+        "description": "Úsalo cuando solo una parte del clip debe cambiar.",
+        "copy": "Fuente actual:\n[Qué ya está correcto]\n\nSección a rehacer:\n[Momento exacto o problema visual]\n\nQué debe permanecer igual:\n[Todo lo que queda fuera de la ventana de retake]\n\nBeat de reemplazo:\n[Qué debe hacer la nueva sección]\n\nRegla:\nUn retake debe ser quirúrgico. Pide una reparación, no una escena nueva."
       }
     ],
     "troubleshootingTitle": "Problemas frecuentes -> soluciones rápidas",

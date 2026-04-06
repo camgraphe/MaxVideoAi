@@ -205,7 +205,7 @@
       "Review the live price before generation, then iterate only on the workflow that matters."
     ],
     "galleryTitle": "LTX 2.3 Pro examples",
-    "galleryIntro": "Local placeholders are used for now on this dev branch. Replace them with final approved LTX 2.3 Pro renders before production launch.",
+    "galleryIntro": "Representative LTX 2.3 Pro examples and placeholders used on this branch for layout and prompt coverage.",
     "galleryAllCta": "View all LTX 2.3 Pro examples ->",
     "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",
@@ -269,9 +269,9 @@
     "finalPara1": "Ready to test a full LTX workflow with audio, extend and retake in one place? Open LTX 2.3 Pro in Generate.",
     "finalPara2": "Use the standard model when the project needs more than just a fast first pass.",
     "finalButton": "Open LTX 2.3 Pro in Generate ->",
-    "promptingTitle": "How to Write a Great LTX 2.3 Pro Prompt",
-    "promptingIntro": "LTX 2.3 Pro works best when the prompt matches the active workflow: pure generation, audio-led animation, continuation, or retake.",
-    "promptingTip": "Tip: duration, resolution, fps and workflow-specific controls live in the UI. Use the prompt for subject, action, camera, lighting, timing intent and what should change.",
+    "promptingTitle": "How to Prompt LTX 2.3 Pro by Workflow",
+    "promptingIntro": "LTX 2.3 Pro changes shape depending on the job. Prompt fresh generation, audio-led animation, extend, and retake differently instead of using one universal template.",
+    "promptingTip": "Tip: duration, resolution, fps, and workflow controls already live in the UI. Use the prompt to steer the active route: new shot, soundtrack-led motion, continuation, or surgical fix.",
     "promptingGlobalPrinciples": [
       "Define one subject, one core beat and one camera move before layering style.",
       "Use the workflow that matches the job: generate, audio, extend or retake.",
@@ -283,39 +283,39 @@
       "Extend and Retake are strongest when the prompt is specific about continuity and what must remain unchanged."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = fast generation drafts.",
-      "structured": "Structured = cleaner direction for repeatable outputs.",
-      "pro": "Pro = best when continuity or source-footage editing matters.",
-      "storyboard": "Storyboard = useful for multi-beat generate passes before extension."
+      "quick": "Generate = create a new shot from text or image.",
+      "structured": "Audio = let the soundtrack carry timing and pacing.",
+      "pro": "Extend = add the next beat without drifting.",
+      "storyboard": "Retake = change only the damaged or weak section."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast first pass)",
-        "description": "Use a short prompt when you just need to validate the motion idea.",
-        "copy": "[Subject + one action] in [environment], [camera move], [lighting/style], [optional audio cue]."
+        "label": "Generate",
+        "title": "Generate prompt",
+        "description": "Use when LTX is creating a fresh shot from text or a start image.",
+        "copy": "Subject:\n[Who/what appears]\n\nAction:\n[One visible beat]\n\nCamera:\n[Shot + one move]\n\nLook:\n[Lighting + palette + texture]\n\nUse this when the scene starts from scratch."
       },
       {
         "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (repeatable results)",
-        "description": "Separate subject, setting, camera and look for better consistency.",
-        "copy": "Subject:\n[Who/what + one action]\n\nSetting:\n[Where + time + visual anchors]\n\nCamera:\n[Shot + angle + one move]\n\nLook:\n[Lighting + palette + texture]\n\nAudio:\n[Ambience/music/dialogue cue if relevant]"
+        "label": "Audio",
+        "title": "Audio-to-video prompt",
+        "description": "Use when soundtrack or dialogue should drive timing and staging.",
+        "copy": "Audio source:\n[What the soundtrack / dialogue / beat is doing]\n\nVisual staging:\n[What the viewer should see while the audio plays]\n\nCamera:\n[How the shot follows the rhythm]\n\nRule:\nLet the audio set pacing. Use the prompt to control subject, staging, and camera."
       },
       {
         "id": "pro",
-        "label": "Workflow",
-        "title": "Workflow prompt (extend / retake / audio)",
-        "description": "Best when you are not starting from scratch.",
-        "copy": "Current source:\n[What already exists]\n\nGoal:\n[What should change or continue]\n\nContinuity to preserve:\n[Identity, setting, camera rhythm, lighting]\n\nNew beat:\n[Action / timing / sound cue]\n\nAvoid:\n[What should not drift]"
+        "label": "Extend",
+        "title": "Extend prompt",
+        "description": "Use when the current clip is good and you only need the next beat.",
+        "copy": "Current source:\n[What already exists]\n\nNext beat:\n[What should happen after the existing clip]\n\nContinuity to preserve:\n[Identity / setting / camera rhythm / light]\n\nRule:\nDescribe only the continuation. Do not rewrite the whole clip."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (multi-beat generation)",
-        "description": "Use this when you want a sequence-like 6 to 10 second generate pass before editing.",
-        "copy": "Shot 1: [setup + camera]\nShot 2: [main action + camera]\nShot 3: [resolve or reveal]\n\nLook:\n[Lighting + grade]\n\nAudio:\n[Ambience + one key cue]"
+        "label": "Retake",
+        "title": "Retake prompt",
+        "description": "Use when only one part of the clip needs to change.",
+        "copy": "Current source:\n[What is already correct]\n\nSection to retake:\n[Exact moment or visual problem]\n\nWhat must stay unchanged:\n[Everything outside the retake window]\n\nReplacement beat:\n[What the new section should do instead]\n\nRule:\nRetake prompts should be surgical. Ask for one repair, not a new scene."
       }
     ],
     "troubleshootingTitle": "Common problems -> fast fixes",

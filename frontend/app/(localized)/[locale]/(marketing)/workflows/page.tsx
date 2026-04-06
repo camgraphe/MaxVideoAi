@@ -18,14 +18,15 @@ type WorkflowFeature = { title: string; description: string };
 type WorkflowFaq = { question: string; answer: string };
 
 const FALLBACK_EXAMPLES: WorkflowExampleEntry[] = [
-  { label: 'Sora 2', slug: 'sora-2', brandId: 'openai' },
+  { label: 'Seedance 2.0', slug: 'seedance-2-0', brandId: 'bytedance' },
+  { label: 'Seedance 2.0 Fast', slug: 'seedance-2-0-fast', brandId: 'bytedance' },
+  { label: 'Kling 3 Pro', slug: 'kling-3-pro', brandId: 'kling' },
   { label: 'Veo 3.1', slug: 'veo-3-1', brandId: 'google-veo' },
+  { label: 'LTX 2.3 Fast', slug: 'ltx-2-3-fast', brandId: 'lightricks' },
   { label: 'Kling 3 Standard', slug: 'kling-3-standard', brandId: 'kling' },
-  { label: 'Seedance 1.5 Pro', slug: 'seedance-1-5-pro', brandId: 'bytedance' },
+  { label: 'Sora 2', slug: 'sora-2', brandId: 'openai' },
   { label: 'Pika Text-to-Video', slug: 'pika-text-to-video', brandId: 'pika' },
   { label: 'Wan 2.6', slug: 'wan-2-6', brandId: 'wan' },
-  { label: 'LTX-2', slug: 'ltx-2', brandId: 'lightricks' },
-  { label: 'LTX-2 Fast', slug: 'ltx-2-fast', brandId: 'lightricks' },
   { label: 'MiniMax Hailuo 02', slug: 'minimax-hailuo-02-text', brandId: 'minimax' },
 ];
 

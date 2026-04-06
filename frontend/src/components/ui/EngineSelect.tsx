@@ -21,6 +21,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { Link } from '@/i18n/navigation';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
+import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
 import { getExamplesHref } from '@/lib/examples-links';
 import { formatResolutionList } from '@/lib/resolution-labels';
 import { getLocalizedModeLabel, normalizeUiLocale } from '@/lib/ltx-localization';
@@ -148,6 +149,40 @@ function getEngineDiscoveryRank(engineId: string, registryMeta: EngineRegistryMe
   return registryMeta?.meta.get(engineId)?.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER;
 }
 
+function compareEnginesByDefaultPriority(
+  a: EngineCaps,
+  b: EngineCaps,
+  registryMeta: EngineRegistryMeta | null,
+  engineMeta?: Map<string, FalEngineEntry>
+): number {
+  const metaA = engineMeta?.get(a.id) ?? registryMeta?.meta.get(a.id);
+  const metaB = engineMeta?.get(b.id) ?? registryMeta?.meta.get(b.id);
+  const familyRankA = getEngineSelectFamilyRank(metaA);
+  const familyRankB = getEngineSelectFamilyRank(metaB);
+  if (familyRankA !== familyRankB) {
+    if (familyRankA === Number.MAX_SAFE_INTEGER) return 1;
+    if (familyRankB === Number.MAX_SAFE_INTEGER) return -1;
+    return familyRankA - familyRankB;
+  }
+  const variantOrderA = ENGINE_VARIANT_SORT_ORDER.get(a.id);
+  const variantOrderB = ENGINE_VARIANT_SORT_ORDER.get(b.id);
+  if (variantOrderA != null || variantOrderB != null) {
+    if (variantOrderA == null) return 1;
+    if (variantOrderB == null) return -1;
+    if (variantOrderA !== variantOrderB) return variantOrderA - variantOrderB;
+  }
+  const priorityOrderA = getEngineDiscoveryRank(a.id, registryMeta);
+  const priorityOrderB = getEngineDiscoveryRank(b.id, registryMeta);
+  if (priorityOrderA !== priorityOrderB) {
+    if (priorityOrderA === Number.MAX_SAFE_INTEGER) return 1;
+    if (priorityOrderB === Number.MAX_SAFE_INTEGER) return -1;
+    return priorityOrderA - priorityOrderB;
+  }
+  const orderA = registryMeta?.order.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+  const orderB = registryMeta?.order.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+  return orderA - orderB;
+}
+
 interface EngineSelectProps {
   engines: EngineCaps[];
   engineId: string;
@@ -261,26 +296,7 @@ export function EngineSelect({
 
   const availableEngines = useMemo(() => {
     const sorted = engines.slice();
-    const order = registryMeta?.order;
-    sorted.sort((a, b) => {
-      const variantOrderA = ENGINE_VARIANT_SORT_ORDER.get(a.id);
-      const variantOrderB = ENGINE_VARIANT_SORT_ORDER.get(b.id);
-      if (variantOrderA != null || variantOrderB != null) {
-        if (variantOrderA == null) return 1;
-        if (variantOrderB == null) return -1;
-        if (variantOrderA !== variantOrderB) return variantOrderA - variantOrderB;
-      }
-      const priorityOrderA = getEngineDiscoveryRank(a.id, registryMeta);
-      const priorityOrderB = getEngineDiscoveryRank(b.id, registryMeta);
-      if (priorityOrderA !== priorityOrderB) {
-        if (priorityOrderA === Number.MAX_SAFE_INTEGER) return 1;
-        if (priorityOrderB === Number.MAX_SAFE_INTEGER) return -1;
-        return priorityOrderA - priorityOrderB;
-      }
-      const orderA = order?.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-      const orderB = order?.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
+    sorted.sort((a, b) => compareEnginesByDefaultPriority(a, b, registryMeta));
     return sorted.filter((entry) => entry.availability !== 'paused');
   }, [engines, registryMeta]);
 
@@ -1028,17 +1044,12 @@ function BrowseEnginesModal({
         return haystack.includes(searchValue);
       })
       .sort((a, b) => {
-        const aPriority = engineMeta?.get(a.id)?.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER;
-        const bPriority = engineMeta?.get(b.id)?.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER;
-        if (aPriority !== bPriority) {
-          return aPriority - bPriority;
-        }
-        if (a.isLab === b.isLab) {
-          const aName = engineMeta?.get(a.id)?.marketingName ?? a.label ?? a.id;
-          const bName = engineMeta?.get(b.id)?.marketingName ?? b.label ?? b.id;
-          return aName.localeCompare(bName);
-        }
-        return a.isLab ? 1 : -1;
+        const ranked = compareEnginesByDefaultPriority(a, b, null, engineMeta);
+        if (ranked !== 0) return ranked;
+        if (a.isLab !== b.isLab) return a.isLab ? 1 : -1;
+        const aName = engineMeta?.get(a.id)?.marketingName ?? a.label ?? a.id;
+        const bName = engineMeta?.get(b.id)?.marketingName ?? b.label ?? b.id;
+        return aName.localeCompare(bName);
       });
     return ranked;
   }, [legacyFilteredEngines, modeFilter, resolutionFilter, searchValue, copy, engineMeta]);

@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { getPartnerByEngineId } from '@/lib/brand-partners';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
+import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
@@ -50,6 +51,7 @@ export interface PriceEstimatorProps {
 const MEMBER_ORDER: MemberTier[] = ['Member', 'Plus', 'Pro'];
 const MIN_DURATION_SEC = 2;
 const FAL_ENGINE_REGISTRY = listFalEngines();
+const FAL_ENGINE_META_BY_ID = new Map(FAL_ENGINE_REGISTRY.map((entry) => [entry.id, entry]));
 const FAL_ENGINE_ORDER = new Map<string, number>(FAL_ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
 const FAL_ENGINE_DISCOVERY_RANK = new Map(
   FAL_ENGINE_REGISTRY.map((entry) => [entry.id, entry.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER])
@@ -441,6 +443,13 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
     });
 
     return options.sort((a, b) => {
+      const familyRankA = getEngineSelectFamilyRank(FAL_ENGINE_META_BY_ID.get(a.baseEngineId));
+      const familyRankB = getEngineSelectFamilyRank(FAL_ENGINE_META_BY_ID.get(b.baseEngineId));
+      if (familyRankA !== familyRankB) {
+        if (familyRankA === Number.MAX_SAFE_INTEGER) return 1;
+        if (familyRankB === Number.MAX_SAFE_INTEGER) return -1;
+        return familyRankA - familyRankB;
+      }
       const prefA = FAL_ENGINE_DISCOVERY_RANK.get(a.baseEngineId) ?? Number.MAX_SAFE_INTEGER;
       const prefB = FAL_ENGINE_DISCOVERY_RANK.get(b.baseEngineId) ?? Number.MAX_SAFE_INTEGER;
       if (prefA !== prefB) return prefA - prefB;

@@ -22,6 +22,15 @@ type AssetDropzoneCopy = {
   primaryRoleDescription: string;
   referenceRoleDescription: string;
   frameRoleDescription: string;
+  startImageSlot: string;
+  endImageSlot: string;
+  firstFrameSlot: string;
+  lastFrameSlot: string;
+  referenceImageSlot: (index: number) => string;
+  referenceVideoSlot: (index: number) => string;
+  referenceAudioSlot: (index: number) => string;
+  sourceVideoSlot: string;
+  sourceAudioSlot: string;
   slotSuffix: (label: string) => string;
   addFile: (details: string) => string;
   neededBeforeGenerating: string;
@@ -56,6 +65,9 @@ type WorkflowCopy = {
   audioLocked: string;
   audioLockedFallback: string;
   removeAudioToUseEdit: string;
+  clearReferencesToUseStartEnd: string;
+  clearStartEndToUseReferences: string;
+  addReferenceMediaBeforeAudio: string;
   addSourceVideo: (modeLabel: string) => string;
   workflowOptionsTitle: string;
   workflowOptionsSubtitle: string;
@@ -241,6 +253,9 @@ const WORKFLOW_COPY: Record<UiLocale, WorkflowCopy> = {
     audioLockedFallback:
       'Audio source detected. The available controls are now limited to Audio → Video settings until you remove the audio source.',
     removeAudioToUseEdit: 'Remove the audio source to use Extend Video or Retake Video.',
+    clearReferencesToUseStartEnd: 'Clear the Seedance reference files to use start and end images.',
+    clearStartEndToUseReferences: 'Clear the start or end images to use Seedance reference files.',
+    addReferenceMediaBeforeAudio: 'Add at least one reference image or reference video before using reference audio.',
     addSourceVideo: (modeLabel) => `Add a source video before running ${modeLabel}.`,
     workflowOptionsTitle: 'Workflow options',
     workflowOptionsSubtitle: 'Settings specific to this workflow.',
@@ -257,6 +272,9 @@ const WORKFLOW_COPY: Record<UiLocale, WorkflowCopy> = {
     audioLockedFallback:
       'Audio source détecté. Les contrôles disponibles sont désormais limités aux réglages Audio → Vidéo jusqu’au retrait du fichier audio.',
     removeAudioToUseEdit: "Retirez l'audio source pour utiliser Étendre la vidéo ou Retake vidéo.",
+    clearReferencesToUseStartEnd: 'Retirez les fichiers de référence Seedance pour utiliser les images de départ et de fin.',
+    clearStartEndToUseReferences: 'Retirez l’image de départ ou de fin pour utiliser les fichiers de référence Seedance.',
+    addReferenceMediaBeforeAudio: 'Ajoutez au moins une image ou une vidéo de référence avant d’utiliser un audio de référence.',
     addSourceVideo: (modeLabel) => `Ajoutez une vidéo source avant d’utiliser ${modeLabel}.`,
     workflowOptionsTitle: 'Options du workflow',
     workflowOptionsSubtitle: 'Réglages spécifiques à ce workflow.',
@@ -273,6 +291,9 @@ const WORKFLOW_COPY: Record<UiLocale, WorkflowCopy> = {
     audioLockedFallback:
       'Se detectó audio fuente. Los controles disponibles ahora se limitan a los ajustes de Audio → Video hasta que quites el audio.',
     removeAudioToUseEdit: 'Quita el audio fuente para usar Extender video o Retake de video.',
+    clearReferencesToUseStartEnd: 'Quita los archivos de referencia de Seedance para usar las imágenes inicial y final.',
+    clearStartEndToUseReferences: 'Quita la imagen inicial o final para usar los archivos de referencia de Seedance.',
+    addReferenceMediaBeforeAudio: 'Añade al menos una imagen o un video de referencia antes de usar audio de referencia.',
     addSourceVideo: (modeLabel) => `Añade un video fuente antes de ejecutar ${modeLabel}.`,
     workflowOptionsTitle: 'Opciones del workflow',
     workflowOptionsSubtitle: 'Ajustes específicos de este workflow.',
@@ -296,6 +317,15 @@ const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     primaryRoleDescription: 'This still is used as the start image / first frame that drives the motion.',
     referenceRoleDescription: 'Optional supporting stills to guide style or lighting.',
     frameRoleDescription: 'Defines the transition frame for this engine.',
+    startImageSlot: 'Start image',
+    endImageSlot: 'End image',
+    firstFrameSlot: 'First frame',
+    lastFrameSlot: 'Last frame',
+    referenceImageSlot: (index) => `Reference image ${index}`,
+    referenceVideoSlot: (index) => `Reference video ${index}`,
+    referenceAudioSlot: (index) => `Reference audio ${index}`,
+    sourceVideoSlot: 'Source video',
+    sourceAudioSlot: 'Source audio',
     slotSuffix: (label) => `${label} slot`,
     addFile: (details) => `Drag & drop or click to add.${details ? ` ${details}` : ''}`,
     neededBeforeGenerating: 'Needed before generating.',
@@ -336,6 +366,15 @@ const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     primaryRoleDescription: "Cette image sert d'image de départ / première frame pour piloter le mouvement.",
     referenceRoleDescription: 'Images complémentaires optionnelles pour guider le style ou la lumière.',
     frameRoleDescription: 'Définit la frame de transition pour ce moteur.',
+    startImageSlot: 'Image de départ',
+    endImageSlot: 'Image de fin',
+    firstFrameSlot: 'Première frame',
+    lastFrameSlot: 'Dernière frame',
+    referenceImageSlot: (index) => `Image de référence ${index}`,
+    referenceVideoSlot: (index) => `Vidéo de référence ${index}`,
+    referenceAudioSlot: (index) => `Audio de référence ${index}`,
+    sourceVideoSlot: 'Vidéo source',
+    sourceAudioSlot: 'Audio source',
     slotSuffix: (label) => `Slot ${label}`,
     addFile: (details) => `Glissez-déposez ou cliquez pour ajouter.${details ? ` ${details}` : ''}`,
     neededBeforeGenerating: 'Nécessaire avant génération.',
@@ -376,6 +415,15 @@ const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
     primaryRoleDescription: 'Esta imagen se usa como imagen inicial / primer frame que impulsa el movimiento.',
     referenceRoleDescription: 'Stills opcionales de apoyo para guiar estilo o iluminación.',
     frameRoleDescription: 'Define el frame de transición para este motor.',
+    startImageSlot: 'Imagen inicial',
+    endImageSlot: 'Imagen final',
+    firstFrameSlot: 'Primer frame',
+    lastFrameSlot: 'Último frame',
+    referenceImageSlot: (index) => `Imagen de referencia ${index}`,
+    referenceVideoSlot: (index) => `Video de referencia ${index}`,
+    referenceAudioSlot: (index) => `Audio de referencia ${index}`,
+    sourceVideoSlot: 'Video fuente',
+    sourceAudioSlot: 'Audio fuente',
     slotSuffix: (label) => `Slot de ${label}`,
     addFile: (details) => `Arrastra y suelta o haz clic para añadir.${details ? ` ${details}` : ''}`,
     neededBeforeGenerating: 'Necesario antes de generar.',

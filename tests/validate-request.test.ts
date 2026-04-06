@@ -186,6 +186,40 @@ test('Veo 3.1 REF2V requires reference images', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Seedance 2.0 REF2V accepts Fal-style multimodal references and keeps audio gated behind image/video refs', () => {
+  const promptOnly = validateRequest('seedance-2-0', 'ref2v', {
+    prompt: 'Keep the same hero and outfit',
+    duration: 'auto',
+  });
+  assert.deepEqual(promptOnly, OK);
+
+  const valid = validateRequest('seedance-2-0', 'ref2v', {
+    prompt: 'Keep the same hero and outfit',
+    image_urls: Array.from({ length: 6 }, (_, index) => `https://example.com/ref-${index + 1}.png`),
+    video_urls: ['https://example.com/ref-video.mp4'],
+    audio_urls: ['https://example.com/ref-audio.wav'],
+    duration: '10',
+  });
+  assert.deepEqual(valid, OK);
+
+  const tooMany = validateRequest('seedance-2-0', 'ref2v', {
+    prompt: 'Keep the same hero and outfit',
+    image_urls: Array.from({ length: 10 }, (_, index) => `https://example.com/ref-${index + 1}.png`),
+    duration: '10',
+  });
+  assert.equal(tooMany.ok, false);
+  assert.equal(tooMany.error?.field, 'image_urls');
+  assert.deepEqual(tooMany.error?.allowed, [1, 9]);
+
+  const audioOnly = validateRequest('seedance-2-0', 'ref2v', {
+    prompt: 'Use the soundtrack reference only',
+    audio_urls: ['https://example.com/ref-audio.wav'],
+    duration: '10',
+  });
+  assert.equal(audioOnly.ok, false);
+  assert.equal(audioOnly.error?.field, 'audio_urls');
+});
+
 test('Veo 3.1 Fast FL2V requires both frames', () => {
   const invalid = validateRequest('veo-3-1-fast', 'fl2v', {
     prompt: 'Bridge frames',

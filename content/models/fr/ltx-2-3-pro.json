@@ -269,9 +269,9 @@
     "finalPara1": "Prêt à tester un workflow LTX complet avec audio, extend et retake au même endroit ? Ouvrez LTX 2.3 Pro dans Generate.",
     "finalPara2": "Utilisez le modèle standard quand le projet demande plus qu'une simple première passe rapide.",
     "finalButton": "Ouvrir LTX 2.3 Pro dans Generate ->",
-    "promptingTitle": "Comment écrire un excellent prompt LTX 2.3 Pro",
-    "promptingIntro": "LTX 2.3 Pro fonctionne mieux quand le prompt correspond au workflow actif : génération pure, animation pilotée par audio, continuation ou retake.",
-    "promptingTip": "Astuce : la durée, la résolution, les fps et les contrôles spécifiques au workflow vivent déjà dans l'UI. Utilisez le prompt pour le sujet, l'action, la caméra, la lumière, l'intention de timing et ce qui doit changer.",
+    "promptingTitle": "Comment prompter LTX 2.3 Pro selon le workflow",
+    "promptingIntro": "LTX 2.3 Pro change vraiment de logique selon le job. Promptez différemment une génération neuve, une animation guidée par audio, une extension et un retake au lieu d'utiliser un template unique.",
+    "promptingTip": "Astuce : durée, résolution, fps et contrôles de workflow sont déjà dans l'UI. Utilisez le prompt pour piloter la route active : nouveau plan, mouvement guidé par soundtrack, continuation, ou correction ciblée.",
     "promptingGlobalPrinciples": [
       "Définissez un sujet, un beat principal et un mouvement caméra avant d'ajouter le style.",
       "Utilisez le workflow qui correspond au job : génération, audio, extend ou retake.",
@@ -283,39 +283,39 @@
       "Extend et Retake sont plus solides quand le prompt est précis sur la continuité et sur ce qui doit rester inchangé."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = drafts rapides de génération.",
-      "structured": "Structured = direction plus propre pour des sorties répétables.",
-      "pro": "Workflow = le meilleur choix quand la continuité ou l'édition d'une source comptent.",
-      "storyboard": "Storyboard = utile pour des passes multi-beats avant extension."
+      "quick": "Générer = créer un nouveau plan depuis texte ou image.",
+      "structured": "Audio = laisser la soundtrack porter le timing.",
+      "pro": "Extension = ajouter le beat suivant sans dérive.",
+      "storyboard": "Retake = corriger uniquement la partie faible ou cassée."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Rapide",
-        "title": "Prompt rapide (première passe)",
-        "description": "Utilisez un prompt court quand vous devez surtout valider l'idée de mouvement.",
-        "copy": "[Sujet + une action] dans [environnement], [mouvement caméra], [lumière/style], [indice audio optionnel]."
+        "label": "Générer",
+        "title": "Prompt de génération",
+        "description": "À utiliser quand LTX crée un plan neuf depuis du texte ou une image de départ.",
+        "copy": "Sujet :\n[Qui / quoi apparaît]\n\nAction :\n[Un beat visible]\n\nCaméra :\n[Cadrage + un mouvement]\n\nLook :\n[Lumière + palette + texture]\n\nÀ utiliser quand la scène démarre de zéro."
       },
       {
         "id": "structured",
-        "label": "Structuré",
-        "title": "Prompt structuré (résultats répétables)",
-        "description": "Séparez sujet, décor, caméra et look pour plus de cohérence.",
-        "copy": "Sujet :\n[Qui/quoi + une action]\n\nDécor :\n[Où + moment + ancres visuelles]\n\nCaméra :\n[Cadrage + angle + un mouvement]\n\nLook :\n[Lumière + palette + texture]\n\nAudio :\n[Ambiance / musique / dialogue si utile]"
+        "label": "Audio",
+        "title": "Prompt audio-to-video",
+        "description": "À utiliser quand la soundtrack ou le dialogue doivent piloter timing et staging.",
+        "copy": "Source audio :\n[Ce que fait la soundtrack / le dialogue / le beat]\n\nMise en scène visuelle :\n[Ce que l'on doit voir pendant l'audio]\n\nCaméra :\n[Comment le plan suit ce rythme]\n\nRègle :\nLaissez l'audio porter le pacing. Utilisez le prompt pour cadrer sujet, staging et caméra."
       },
       {
         "id": "pro",
-        "label": "Workflow",
-        "title": "Prompt workflow (extend / retake / audio)",
-        "description": "Le meilleur choix quand vous ne partez pas de zéro.",
-        "copy": "Source actuelle :\n[Ce qui existe déjà]\n\nObjectif :\n[Ce qui doit changer ou continuer]\n\nContinuité à préserver :\n[Identité, décor, rythme caméra, lumière]\n\nNouveau beat :\n[Action / timing / indice sonore]\n\nÀ éviter :\n[Ce qui ne doit pas dériver]"
+        "label": "Extension",
+        "title": "Prompt d'extension",
+        "description": "À utiliser quand le clip actuel est bon et qu'il ne manque que le beat suivant.",
+        "copy": "Source actuelle :\n[Ce qui existe déjà]\n\nBeat suivant :\n[Ce qui doit arriver ensuite]\n\nContinuité à préserver :\n[Identité / décor / rythme caméra / lumière]\n\nRègle :\nDécrivez uniquement la continuation. Ne réécrivez pas tout le clip."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (génération multi-beats)",
-        "description": "À utiliser quand vous voulez une passe de génération de 6 à 10 secondes proche d'une séquence avant édition.",
-        "copy": "Plan 1 : [mise en place + caméra]\nPlan 2 : [action principale + caméra]\nPlan 3 : [résolution ou reveal]\n\nLook :\n[Lumière + étalonnage]\n\nAudio :\n[Ambiance + un indice clé]"
+        "label": "Retake",
+        "title": "Prompt de retake",
+        "description": "À utiliser quand une seule partie du clip doit changer.",
+        "copy": "Source actuelle :\n[Ce qui est déjà correct]\n\nSection à retoucher :\n[Moment exact ou problème visuel]\n\nCe qui doit rester inchangé :\n[Tout ce qui est hors de la fenêtre de retake]\n\nBeat de remplacement :\n[Ce que la nouvelle section doit faire à la place]\n\nRègle :\nUn retake doit être chirurgical. Demandez une réparation, pas une nouvelle scène."
       }
     ],
     "troubleshootingTitle": "Problèmes fréquents -> correctifs rapides",

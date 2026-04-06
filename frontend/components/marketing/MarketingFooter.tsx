@@ -49,13 +49,13 @@ export function MarketingFooter() {
   }));
 
   const engineItems = [
-    { slug: 'sora-2', labelKey: 'footer.sections.engines.items.sora2', fallback: 'Sora 2' },
-    { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
-    { slug: 'kling-2-6-pro', labelKey: 'footer.sections.engines.items.kling2_6_pro', fallback: 'Kling 2.6 Pro' },
-    { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
-    { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
+    { slug: 'ltx-2-3-fast', labelKey: 'footer.sections.engines.items.ltx23fast', fallback: 'LTX 2.3 Fast' },
     { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
-    { slug: 'seedance-1-5-pro', labelKey: 'footer.sections.engines.items.seedance1_5pro', fallback: 'Seedance 1.5 Pro' },
+    { slug: 'seedance-2-0', labelKey: 'footer.sections.engines.items.seedance2_0', fallback: 'Seedance 2.0' },
+    { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
+    { slug: 'veo-3-1-lite', labelKey: 'footer.sections.engines.items.veo3_1lite', fallback: 'Veo 3.1 Lite' },
+    { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
+    { slug: 'sora-2-pro', labelKey: 'footer.sections.engines.items.sora2pro', fallback: 'Sora 2 Pro' },
   ];
   const engineLinks: FooterLink[] = engineItems
     .filter((item) => modelSlugSet.has(item.slug))
@@ -67,40 +67,28 @@ export function MarketingFooter() {
 
   const comparisonItems = [
     {
-      left: 'kling-3-pro',
-      right: 'sora-2',
-      labelKey: 'footer.sections.comparisons.items.kling3pro_vs_sora2',
-      fallback: 'Kling 3 Pro vs Sora 2',
+      left: 'seedance-1-5-pro',
+      right: 'seedance-2-0',
+      labelKey: 'footer.sections.comparisons.items.seedance1_5pro_vs_seedance2_0',
+      fallback: 'Seedance 1.5 Pro vs Seedance 2.0',
     },
     {
-      left: 'sora-2',
-      right: 'veo-3-1',
-      labelKey: 'footer.sections.comparisons.items.sora2_vs_veo3_1',
-      fallback: 'Sora 2 vs Veo 3.1',
-    },
-    {
-      left: 'kling-3-pro',
-      right: 'wan-2-6',
-      labelKey: 'footer.sections.comparisons.items.kling3pro_vs_wan2_6',
-      fallback: 'Kling 3 Pro vs Wan 2.6',
+      left: 'ltx-2',
+      right: 'ltx-2-3-fast',
+      labelKey: 'footer.sections.comparisons.items.ltx2_vs_ltx23fast',
+      fallback: 'LTX 2 vs LTX 2.3 Fast',
     },
     {
       left: 'ltx-2-3-fast',
+      right: 'veo-3-1',
+      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_veo3_1',
+      fallback: 'LTX 2.3 Fast vs Veo 3.1',
+    },
+    {
+      left: 'kling-3-pro',
       right: 'ltx-2-3-pro',
-      labelKey: 'footer.sections.comparisons.items.ltx23fast_vs_ltx23pro',
-      fallback: 'LTX 2.3 Fast vs Pro',
-    },
-    {
-      left: 'sora-2',
-      right: 'wan-2-6',
-      labelKey: 'footer.sections.comparisons.items.sora2_vs_wan2_6',
-      fallback: 'Sora 2 vs Wan 2.6',
-    },
-    {
-      left: 'seedance-1-5-pro',
-      right: 'sora-2',
-      labelKey: 'footer.sections.comparisons.items.seedance1_5pro_vs_sora2',
-      fallback: 'Seedance 1.5 Pro vs Sora 2',
+      labelKey: 'footer.sections.comparisons.items.kling3pro_vs_ltx23pro',
+      fallback: 'Kling 3 Pro vs LTX 2.3 Pro',
     },
   ];
   const comparisonLinks: FooterLink[] = comparisonItems
@@ -125,9 +113,17 @@ export function MarketingFooter() {
   ];
 
   const productLinks: FooterLink[] = [
-    { key: 'tools', label: labelFor('footer.sections.product.items.tools', 'Tools'), href: { pathname: '/tools' } },
+    {
+      key: 'angle',
+      label: labelFor('footer.sections.product.items.angle', 'Change Camera Angle'),
+      href: { pathname: '/tools/angle' },
+    },
+    {
+      key: 'characterBuilder',
+      label: labelFor('footer.sections.product.items.characterBuilder', 'Character Builder'),
+      href: { pathname: '/tools/character-builder' },
+    },
     { key: 'pricing', label: labelFor('footer.sections.product.items.pricing', 'Pricing'), href: { pathname: '/pricing' } },
-    { key: 'docs', label: labelFor('footer.sections.product.items.docs', 'Docs'), href: { pathname: '/docs' } },
     { key: 'models', label: labelFor('footer.sections.product.items.models', 'All models'), href: { pathname: '/models' } },
   ];
 

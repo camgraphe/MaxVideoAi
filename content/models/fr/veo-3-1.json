@@ -305,55 +305,57 @@
     "finalPara1": "Veo 3.1 dans MaxVideoAI vous donne un accès direct pay‑as‑you‑go au moteur vidéo court‑format le plus contrôlable de DeepMind.",
     "finalPara2": "Les contrôles de cadrage et d’audio donnent l’impression d’une caméra virtuelle, pas d’un générateur boîte noire.",
     "finalButton": "Ouvrir Generate",
-    "promptingTitle": "Comment écrire un excellent prompt Veo 3.1",
-    "promptingIntro": "Veo fonctionne mieux quand vous spécifiez sujet, action, contexte, caméra et style en langage simple.",
-    "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle sujet, action, caméra, lumière, style et cues sonores.",
+    "promptingTitle": "Comment prompter Veo 3.1 selon le workflow",
+    "promptingIntro": "Veo 3.1 n'est pas qu'un moteur texte. Choisissez la bonne route dans l'UI : text-to-video en langage naturel, animation guidée par image, contrôle multi-références, pont début/fin, ou extension de clip.",
+    "promptingTip": "Astuce : Veo suit bien le langage naturel. Commencez par sujet, action et contexte, gardez un seul mouvement caméra, et utilisez des contraintes positives. Utilisez la route Veo dédiée pour références, début/fin et extend.",
     "promptingGlobalPrinciples": [
-      "Commencez par sujet + action + contexte.",
-      "Nommez explicitement cadrage et mouvement caméra.",
-      "Utilisez des ancrages de style concrets (lumière, sensation de lens, couleur)."
+      "Écrivez en langage naturel, sans surcharger le brief.",
+      "Gardez une action physique claire et un seul mouvement caméra par clip.",
+      "Dites à Veo ce qui doit rester fixe quand vous faites un pont ou une extension.",
+      "Utilisez des contraintes positives et des indices d'atmosphère concrets.",
+      "Servez-vous des références pour stabiliser marque, personnage, produit ou décor, pas pour lutter contre la caméra."
     ],
     "tipsIntro": "Veo 3.1 est plus facile à contrôler quand vous écrivez comme une note de plan : cadrage, un seul mouvement de caméra, et des cues de lumière clairs.",
     "promptingEngineWhy": [
-      "Veo répond au langage caméra (taille de plan, angle, mouvement).",
-      "Gardez des actions physiques et simples par clip.",
-      "Spécifiez l’atmosphère : lumière, météo, mood.",
-      "Préférez les contraintes positives (dire ce que vous voulez, pas ce que vous ne voulez pas)."
+      "Le text-to-video et l'animation à partir d'une seule image marchent mieux quand le brief ressemble à une note de mise en scène live-action.",
+      "Le mode références est le meilleur choix pour la cohérence de marque, de personnage ou de produit.",
+      "Le mode début/fin est fort quand vous définissez la frame d'ouverture, la frame d'arrivée et la logique de transition.",
+      "Extend fonctionne mieux quand vous décrivez uniquement le prochain beat en conservant rythme caméra, décor et identité."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = continuité. À utiliser pour des looks précis et répétables.",
-      "storyboard": "Storyboard = timing des beats. À utiliser pour des mini‑histoires en un clip."
+      "quick": "Texte = brief de plan en langage naturel.",
+      "structured": "Références = stabiliser marque, sujet ou décor.",
+      "pro": "Début/Fin = définir le pont entre ouverture et arrivée.",
+      "storyboard": "Extension = ajouter le beat suivant sans casser la continuité."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet] [action] dans [contexte], [cadrage + mouvement caméra], [lumière], [style], [ambiance/son]."
+        "label": "Texte",
+        "title": "Prompt text-to-video",
+        "description": "À utiliser quand le plan démarre du langage et que Veo doit interpréter la scène naturellement.",
+        "copy": "Sujet + action + contexte :\n[Qui / quoi fait quoi, et où]\n\nCaméra :\n[Taille de plan + un mouvement]\n\nLook :\n[Lumière + palette + atmosphère]\n\nSon :\n[Ambiance / dialogue / SFX optionnels]\n\nStyle de contrainte :\nDites ce que vous voulez (\"fond propre\", \"handheld stable\") plutôt que ce que vous refusez."
       },
       {
         "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + 2–3 détails distinctifs.]\n\nAction :\n[Une action physique claire.]\n\nContexte :\n[Lieu + moment de la journée + environnement.]\n\nCaméra :\n- Cadrage + angle\n- Mouvement : [pan / dolly / handheld / statique]\n- Sensation de lentille : [ex. 35mm, faible profondeur]\n\nStyle + lumière :\n[Look / palette / key light.]\n\nAmbiance + son (optionnel) :\n[Atmosphère + 1–2 cues SFX.]\n\nContraintes :\nIndiquez le résultat souhaité (ex. « fond propre ») plutôt que « pas de / ne pas »."
+        "label": "Références",
+        "title": "Prompt à références",
+        "description": "À utiliser quand le vrai sujet est la cohérence, pas l'invention.",
+        "copy": "Intention du prompt :\n[Ce que le plan doit accomplir]\n\nRéférences visuelles :\n[Quelles images définissent sujet / produit / décor / palette]\n\nCe qui reste fixe :\n[Tenue / packaging / arrière-plan / mood]\n\nCe qui peut changer :\n[Caméra / action / cadrage]\n\nRègle :\nUtilisez les références pour verrouiller identité et style, puis laissez le prompt guider mouvement et caméra."
       },
       {
         "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
-        "copy": "Brief réalisateur :\n[Objectif du plan + vibe.]\n\nSujet + tenue/props :\n[Traits clés + textures.]\n\nDécor + continuité :\n[Lieu, moment, météo, 3 ancrages visuels.]\n\nCinématographie :\n- Cadrage + angle\n- Mouvement (un seul)\n- Lentille + profondeur de champ\n- Règle de composition (centré / tiers / espace négatif)\n\nLumière + grade :\n[Key light + contraste + ancrages de palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues SFX.]\n\nContraintes :\nDécrivez ce qu’il faut inclure, pas ce qu’il faut exclure."
+        "label": "Début/Fin",
+        "title": "Prompt début / fin",
+        "description": "À utiliser quand Veo doit relier une frame d'ouverture à une frame d'arrivée.",
+        "copy": "Première frame :\n[Ce sur quoi on ouvre]\n\nDernière frame :\n[Ce sur quoi on doit atterrir]\n\nLogique de transition :\n[Comment la caméra et le sujet se déplacent entre les deux]\n\nAncrages de continuité :\n[Ce qui doit rester stable sur tout le pont]\n\nN'utilisez pas la frame d'arrivée pour demander une autre scène. Elle doit guider la destination."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (shot list)",
-        "description": "À utiliser pour des séquences multi‑beats courtes en un seul clip.",
-        "copy": "Shot list (même sujet + même décor)\nDurée : [4/6/8s]\n\nShot 1 (0–2s):\n[Cadrage + action + mouvement caméra]\n\nShot 2 (2–5s):\n[Cadrage + action + mouvement caméra]\n\nShot 3 (5–8s):\n[Action finale / reveal + caméra qui se pose]\n\nLook + mood :\n[Lumière + palette + atmosphère]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues]"
+        "label": "Extension",
+        "title": "Prompt d'extension",
+        "description": "À utiliser quand un clip source existe déjà et que vous ne voulez que le beat suivant.",
+        "copy": "Clip actuel :\n[Ce qui s'est déjà produit]\n\nNouveau beat :\n[Ce qui doit se produire ensuite]\n\nCe qui doit rester continu :\n[Sujet / décor / rythme caméra / lumière]\n\nRègle :\nDécrivez uniquement la continuation. Ne réécrivez pas toute la scène."
       }
     ],
     "promptingGuideLabel": "Google DeepMind",

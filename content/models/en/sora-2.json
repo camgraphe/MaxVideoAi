@@ -16,8 +16,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare with Sora 2 Pro",
-        "href": "/models/sora-2-pro"
+        "label": "Compare Seedance 2.0 vs Sora 2",
+        "href": "/ai-video-engines/seedance-2-0-vs-sora-2"
       }
     ]
   },
@@ -222,11 +222,11 @@
     "relatedSubtitle": "Compare pricing, latency, and output options across other engines available in MaxVideoAI.",
     "relatedItems": [
       {
-        "brand": "openai",
-        "title": "OpenAI Sora 2 Pro",
-        "description": "Create longer, more immersive AI videos from text or images using Sora 2 Pro. Native voice, ambient sound, prompt chaining, and advanced control via MaxVideoAI.",
-        "modelSlug": "sora-2-pro",
-        "ctaLabel": "Compare OpenAI Sora 2 vs OpenAI Sora 2 Pro →"
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Open Seedance 2.0 when you want the newer flagship family for multi-shot motion, stronger realism, and native audio-led outputs.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Compare Seedance 2.0 vs OpenAI Sora 2 ->"
       },
       {
         "brand": "google-veo",
@@ -236,11 +236,11 @@
         "ctaLabel": "Compare OpenAI Sora 2 vs Google Veo 3.1 →"
       },
       {
-        "brand": "google-veo",
-        "title": "Google Veo 3.1 Fast",
-        "description": "Use Veo 3.1 Fast for affordable, fast AI video generation. Up to 8-second clips with optional native audio—ideal for social formats and iterative testing.",
-        "modelSlug": "veo-3-1-fast",
-        "ctaLabel": "Compare OpenAI Sora 2 vs Google Veo 3.1 Fast →"
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Use Kling 3 Pro when you want deeper scene control, multi-prompt sequencing, and another premium route beyond Sora for storyboard-heavy work.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Compare OpenAI Sora 2 vs Kling 3 Pro ->"
       }
     ],
     "finalPara1": "Sora 2 in MaxVideoAI gives you a direct, pay-as-you-go way to use one of the most impressive short-form video models available – without infrastructure setup or guesswork.",

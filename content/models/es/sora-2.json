@@ -16,8 +16,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparar con Sora 2 Pro",
-        "href": "/models/sora-2-pro"
+        "label": "Comparar Seedance 2.0 vs Sora 2",
+        "href": "/ai-video-engines/seedance-2-0-vs-sora-2"
       }
     ]
   },
@@ -222,11 +222,11 @@
     "relatedSubtitle": "Compara precio, latencia y opciones de salida entre los demás motores.",
     "relatedItems": [
       {
-        "brand": "openai",
-        "title": "OpenAI Sora 2 Pro",
-        "description": "Crea videos más inmersivos desde texto o imagen con Sora 2 Pro. Voz nativa, ambientes, prompts encadenados y control avanzado vía MaxVideoAI.",
-        "modelSlug": "sora-2-pro",
-        "ctaLabel": "Comparar OpenAI Sora 2 vs OpenAI Sora 2 Pro →"
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Abre Seedance 2.0 si quieres la nueva familia flagship para motion multi-shot, más realismo y salidas guiadas por audio nativo.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Comparar Seedance 2.0 vs OpenAI Sora 2 ->"
       },
       {
         "brand": "google-veo",
@@ -236,11 +236,11 @@
         "ctaLabel": "Comparar OpenAI Sora 2 vs Google Veo 3.1 →"
       },
       {
-        "brand": "google-veo",
-        "title": "Google Veo 3.1 Fast",
-        "description": "Usa Veo 3.1 Fast para generar video IA rápido y asequible. Clips hasta 8 s con audio nativo opcional — ideal para social y pruebas iterativas.",
-        "modelSlug": "veo-3-1-fast",
-        "ctaLabel": "Comparar OpenAI Sora 2 vs Google Veo 3.1 Fast →"
+        "brand": "kling",
+        "title": "Kling 3 Pro",
+        "description": "Usa Kling 3 Pro cuando quieras más control de escena, secuencias multi-prompt y otra ruta premium además de Sora para workflows storyboard.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Comparar OpenAI Sora 2 vs Kling 3 Pro ->"
       }
     ],
     "finalPara1": "Sora 2 en MaxVideoAI te da una forma directa y pay‑as‑you‑go de usar uno de los mejores modelos de video corto — sin infraestructura ni complicaciones.",

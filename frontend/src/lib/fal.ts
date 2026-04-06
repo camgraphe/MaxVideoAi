@@ -33,6 +33,24 @@ const ENGINE_MODE_MODEL_MAP = (() => {
   return map;
 })();
 
+const STRING_ENUM_DURATION_MODEL_PATTERN = /^bytedance\/seedance-2\.0(?:\/fast)?\//i;
+
+export function normalizeFalDurationValueForModel(
+  engineId: string,
+  modelSlug: string,
+  duration: number | string
+): number | string {
+  if (typeof duration === 'string') {
+    return duration;
+  }
+
+  if (STRING_ENUM_DURATION_MODEL_PATTERN.test(modelSlug) || engineId.startsWith('seedance-2-0')) {
+    return String(Math.round(duration));
+  }
+
+  return duration;
+}
+
 type FalVideoCandidate =
   | string
   | {
@@ -387,8 +405,12 @@ async function generateViaFal(
 
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
       requestBody.num_frames = Math.round(payload.numFrames);
-    } else if (!isLumaRay2EngineId(payload.engineId) && payload.durationSec != null) {
-      requestBody.duration = payload.durationSec;
+    } else if (!isLumaRay2EngineId(payload.engineId)) {
+      if (payload.durationOption != null) {
+        requestBody.duration = normalizeFalDurationValueForModel(payload.engineId, model, payload.durationOption);
+      } else if (payload.durationSec != null) {
+        requestBody.duration = normalizeFalDurationValueForModel(payload.engineId, model, payload.durationSec);
+      }
     }
 
     if (apiKey) {
@@ -475,13 +497,27 @@ async function generateViaFal(
     }
 
     const slotId = attachment.slotId?.trim();
-    if (slotId === 'reference_images' || slotId === 'images' || slotId === 'image_urls') {
-      addToArray(slotId === 'reference_images' ? 'reference_images' : slotId, urlCandidate);
+    if (
+      slotId === 'reference_images' ||
+      slotId === 'images' ||
+      slotId === 'image_urls' ||
+      slotId === 'reference_image_urls'
+    ) {
+      if (expectsImageArray) {
+        addToArray('image_urls', urlCandidate);
+      } else if (slotId === 'reference_images') {
+        addToArray('reference_images', urlCandidate);
+      } else if (slotId === 'reference_image_urls') {
+        addToArray('reference_image_urls', urlCandidate);
+      } else {
+        addToArray(slotId === 'images' ? 'image_urls' : slotId, urlCandidate);
+      }
       continue;
     }
     if (
       slotId === 'video_urls' ||
       slotId === 'video_url' ||
+      slotId === 'reference_video_urls' ||
       slotId === 'reference_videos' ||
       slotId === 'videos'
     ) {
@@ -490,7 +526,13 @@ async function generateViaFal(
           requestBody.video_url = urlCandidate;
         }
       } else {
-        addToArray('video_urls', urlCandidate);
+        if (expectsImageArray && (slotId === 'reference_videos' || slotId === 'reference_video_urls')) {
+          addToArray('video_urls', urlCandidate);
+        } else if (slotId === 'reference_videos' || slotId === 'reference_video_urls') {
+          addToArray('reference_video_urls', urlCandidate);
+        } else {
+          addToArray('video_urls', urlCandidate);
+        }
       }
       continue;
     }
@@ -502,6 +544,8 @@ async function generateViaFal(
     ) {
       if (slotId === 'audio_url') {
         requestBody.audio_url = urlCandidate;
+      } else if (expectsImageArray && (slotId === 'reference_audio_urls' || slotId === 'reference_audios')) {
+        addToArray('audio_urls', urlCandidate);
       } else {
         addToArray(slotId === 'reference_audios' ? 'reference_audio_urls' : slotId, urlCandidate);
       }
@@ -521,6 +565,10 @@ async function generateViaFal(
       requestBody[slotId] = urlCandidate;
       continue;
     }
+    if (!slotId && attachment.kind === 'image' && expectsImageArray) {
+      addToArray('image_urls', urlCandidate);
+      continue;
+    }
     if (!slotId && attachment.kind === 'video') {
       if (expectsSingleSourceVideo) {
         if (!requestBody.video_url) {
@@ -532,7 +580,9 @@ async function generateViaFal(
       continue;
     }
     if (!slotId && attachment.kind === 'audio') {
-      if (!requestBody.audio_url) {
+      if (expectsImageArray) {
+        addToArray('audio_urls', urlCandidate);
+      } else if (!requestBody.audio_url) {
         requestBody.audio_url = urlCandidate;
       } else {
         addToArray('reference_audio_urls', urlCandidate);
@@ -545,7 +595,11 @@ async function generateViaFal(
   referenceImages.forEach((url) => {
     const trimmed = url.trim();
     if (!trimmed) return;
-    addToArray(expectsImageArray ? 'image_urls' : 'reference_images', trimmed);
+    if (expectsImageArray) {
+      addToArray('image_urls', trimmed);
+      return;
+    }
+    addToArray('reference_images', trimmed);
   });
 
   for (const [key, values] of arrayCollectors.entries()) {

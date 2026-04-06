@@ -22,7 +22,23 @@
     "modelSlug": "seedance-2-0",
     "family": "seedance",
     "versionLabel": "2.0",
-    "availability": "waitlist",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "seedance-2-0-fast",
+    "marketingName": "Seedance 2.0 Fast",
+    "brandId": "bytedance",
+    "modelSlug": "seedance-2-0-fast",
+    "family": "seedance",
+    "versionLabel": "2.0 Fast",
+    "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {

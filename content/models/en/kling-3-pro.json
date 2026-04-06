@@ -103,7 +103,7 @@
       "Specify audio or voice IDs"
     ]
   },
-  "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls shot timing, camera, lighting, style, and audio cues. Keep one action per shot.",
+  "promptingTip": "Tip: treat Kling 3 Pro like a storyboard engine. Choose shot_type intentionally, reuse @Element anchors, keep one action per shot, and keep dialogue very short when audio is on.",
   "tips": {
     "title": "Tips & limits",
     "items": [
@@ -171,10 +171,10 @@
         ]
       }
     ],
-    "promptingTitle": "How to Write a Great Kling 3 Pro Prompt",
+    "promptingTitle": "How to Prompt Kling 3 Pro for Multi-shot Control",
     "promptingGuideLabel": "Kling 3.0 Prompting Guide",
     "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
-    "promptingIntro": "Kling 3 Pro performs best with shot-based direction: clear framing, one action per shot, explicit camera motion, and (if audio is on) short dialogue plus minimal sound cues.",
+    "promptingIntro": "Kling 3 Pro rewards storyboard-style prompting with multi_prompt, reusable @Element anchors, optional end frame, and short native-audio cues. Think like a shot planner, not a prose writer.",
     "promptingGlobalPrinciples": [
       "Think in shots, not clips: one readable action per shot.",
       "Put framing + camera movement before style adjectives.",
@@ -190,38 +190,38 @@
       "shot_type: \"intelligent\" helps with automatic coverage; \"customize\" is better for strict shot control."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = control. Use for precise, repeatable looks.",
-      "storyboard": "Storyboard = shot timing. Use for multi-shot beats."
+      "quick": "Single shot = validate framing, motion, and one beat.",
+      "structured": "Multi-shot = 2-4 shots with reused anchors.",
+      "pro": "Elements + audio = lock identity, props, and voices.",
+      "storyboard": "Shot list = full sequence with shot_type and optional end frame."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
+        "label": "Single shot",
+        "title": "Single-shot prompt",
+        "description": "Use when you want one clean action with one camera move.",
         "copy": "[One subject] [one visible action] in [setting], [framing + one camera move], [lighting/style].\nAudio (optional): [ambience + 1 SFX cue OR one short line].\nNegative: no text, no logos, no subtitles/overlays."
       },
       {
         "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
+        "label": "Multi-shot",
+        "title": "Multi-shot prompt",
+        "description": "Use when multi_prompt structure matters more than pure variation.",
         "copy": "Scene anchors:\n[Subject + wardrobe/props + 2–3 environment anchors.]\n\nMulti-shot plan (3–15s total):\nShot 1 (0–4s): [framing + action + one camera move]\nShot 2 (4–10s): [framing + action + one camera move]\nShot 3 (10–15s): [final action/reveal + settle]\n\nElements (optional):\n@Element1 = [main character/subject]\n@Element2 = [prop/product]\n\nAudio (optional):\nDialogue: <<<voice_1>>> “Short line.”\nAmbience + 1–2 SFX cues. Keep it minimal.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays."
       },
       {
         "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"film crew brief\")",
-        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
-        "copy": "Director brief:\n[Goal + vibe + intended audience.]\n\nContinuity (repeat across shots):\n- Subject identity + wardrobe/props\n- Location + time + 3 visual anchors\n- Lighting + palette anchors\n- Lens feel + one camera move per shot\n\nShot type:\n[customize | intelligent]\n\nMulti-shot plan (up to 15s total, up to ~6 shots):\nShot 1: [framing + action + camera]\nShot 2: [framing + action + camera]\nShot 3: [framing + action + camera]\n(optional) Shot 4–6: [only if needed]\n\nElements:\n@Element1 = [character]\n@Element2 = [product/prop]\n\nAudio (if on):\nDialogue: <<<voice_1>>> “One short line.”\nAmbience + 1–2 SFX cues + optional music vibe.\n\nEnd frame (optional):\n[Describe the final frame you want to land on.]\n\nNegative:\nNo text, no logos, no subtitles/overlays, no jump cuts."
+        "label": "Elements + Audio",
+        "title": "Elements / voices prompt",
+        "description": "Use when identity, props, and voices must stay locked across the clip.",
+        "copy": "Director brief:\n[Goal + vibe + intended audience.]\n\nElements:\n@Element1 = [character]\n@Element2 = [product / prop]\n\nShot type:\n[customize | intelligent]\n\nContinuity:\n- Identity + wardrobe / props\n- Location + time + 3 anchors\n- Lighting + palette\n\nAudio (if on):\nDialogue: <<<voice_1>>> \"One short line.\"\nAmbience + 1–2 SFX cues.\n\nRule:\nIf audio is on, keep dialogue brief and avoid adding too many sound instructions."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (multi-shot / shot list)",
-        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
+        "label": "Shot list",
+        "title": "Shot-list prompt",
+        "description": "Use when you want a complete multi-shot sequence with shot_type and optional end frame.",
         "copy": "Duration: [3–15s] • Aspect: [16:9 / 9:16 / 1:1] • Audio: [on/off] • shot_type: [customize | intelligent]\n\nElements (optional):\n@Element1 = [main character/subject]\n@Element2 = [prop/product]\n\nShot 1 (0–3s):\n[Framing + action + camera move]\n\nShot 2 (3–8s):\n[Framing + action + camera move]\n\nShot 3 (8–15s):\n[Final action/reveal + camera settle]\nEnd frame (optional): [describe the final frame you want to land on]\n\nAudio (if on):\nDialogue: <<<voice_1>>> “Short line.”\nAmbience + 1–2 SFX cues.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. Keep it to one action per shot."
       }
     ],

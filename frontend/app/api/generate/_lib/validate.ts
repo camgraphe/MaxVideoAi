@@ -19,6 +19,43 @@ const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxCh
   return acc;
 }, {});
 
+type Ref2vLimits = {
+  imageFieldId: string;
+  imageRequired: boolean;
+  maxImageCount: number;
+  videoFieldId?: string;
+  maxVideoCount?: number;
+  audioFieldId?: string;
+  maxAudioCount?: number;
+};
+
+const ENGINE_REF2V_LIMITS = listFalEngines().reduce<Record<string, Ref2vLimits>>((acc, entry) => {
+  const requiredFields = entry.engine.inputSchema?.required ?? [];
+  const optionalFields = entry.engine.inputSchema?.optional ?? [];
+  const fields = [...requiredFields, ...optionalFields];
+  const findField = (type: 'image' | 'video' | 'audio', ids: string[]) =>
+    fields.find((field) => field.type === type && field.modes?.includes('ref2v') && ids.includes(field.id));
+
+  const imageField = findField('image', ['image_urls', 'reference_image_urls']);
+  if (!imageField) {
+    return acc;
+  }
+
+  const videoField = findField('video', ['video_urls', 'reference_video_urls']);
+  const audioField = findField('audio', ['audio_urls', 'reference_audio_urls']);
+  acc[entry.id] = {
+    imageFieldId: imageField.id,
+    imageRequired:
+      requiredFields.includes(imageField) || Boolean(imageField.requiredInModes?.includes('ref2v')),
+    maxImageCount: imageField.maxCount ?? 4,
+    videoFieldId: videoField?.id,
+    maxVideoCount: videoField?.maxCount,
+    audioFieldId: audioField?.id,
+    maxAudioCount: audioField?.maxCount,
+  };
+  return acc;
+}, {});
+
 function normalizeDurationValue(value: unknown): number | string | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return Math.round(value);
@@ -214,31 +251,101 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
       };
     }
   } else if (normalizedMode === 'ref2v') {
-    const rawImages = payload['image_urls'];
-    const imageUrls = Array.isArray(rawImages)
-      ? rawImages.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
-      : typeof rawImages === 'string' && rawImages.trim().length
-        ? [rawImages.trim()]
-        : [];
-    if (!imageUrls.length) {
+    const configured = ENGINE_REF2V_LIMITS[engineId] ?? {
+      imageFieldId: 'image_urls',
+      imageRequired: true,
+      maxImageCount: 4,
+      videoFieldId: 'video_urls',
+      maxVideoCount: 3,
+      audioFieldId: 'audio_urls',
+      maxAudioCount: 3,
+    };
+    const normalizeImageArray = (raw: unknown): string[] =>
+      Array.isArray(raw)
+        ? raw.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
+        : typeof raw === 'string' && raw.trim().length
+          ? [raw.trim()]
+          : [];
+    const referenceImageUrls = normalizeImageArray(payload['reference_image_urls']);
+    const genericImageUrls = normalizeImageArray(payload['image_urls']);
+    const referenceVideoUrls = normalizeImageArray(payload['reference_video_urls']);
+    const genericVideoUrls = normalizeImageArray(payload['video_urls']);
+    const referenceAudioUrls = normalizeImageArray(payload['reference_audio_urls']);
+    const genericAudioUrls = normalizeImageArray(payload['audio_urls']);
+    const imageUrls = referenceImageUrls.length ? referenceImageUrls : genericImageUrls;
+    const videoUrls = referenceVideoUrls.length ? referenceVideoUrls : genericVideoUrls;
+    const audioUrls = referenceAudioUrls.length ? referenceAudioUrls : genericAudioUrls;
+    const imageFieldId =
+      referenceImageUrls.length ||
+      payload['reference_image_urls'] !== undefined ||
+      configured.imageFieldId === 'reference_image_urls'
+        ? 'reference_image_urls'
+        : 'image_urls';
+    const videoFieldId =
+      referenceVideoUrls.length ||
+      payload['reference_video_urls'] !== undefined ||
+      configured.videoFieldId === 'reference_video_urls'
+        ? 'reference_video_urls'
+        : 'video_urls';
+    const audioFieldId =
+      referenceAudioUrls.length ||
+      payload['reference_audio_urls'] !== undefined ||
+      configured.audioFieldId === 'reference_audio_urls'
+        ? 'reference_audio_urls'
+        : 'audio_urls';
+    if (configured.imageRequired && !imageUrls.length) {
       return {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'image_urls',
+          field: imageFieldId,
           message: 'Reference images are required for this engine mode',
         },
       };
     }
-    if (imageUrls.length > 4) {
+    if (imageUrls.length > configured.maxImageCount) {
       return {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'image_urls',
-          message: 'Up to 4 reference images are supported',
-          allowed: [1, 4],
+          field: imageFieldId,
+          message: `Up to ${configured.maxImageCount} reference images are supported`,
+          allowed: [1, configured.maxImageCount],
           value: imageUrls.length,
+        },
+      };
+    }
+    if (typeof configured.maxVideoCount === 'number' && videoUrls.length > configured.maxVideoCount) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: videoFieldId,
+          message: `Up to ${configured.maxVideoCount} reference videos are supported`,
+          allowed: [1, configured.maxVideoCount],
+          value: videoUrls.length,
+        },
+      };
+    }
+    if (typeof configured.maxAudioCount === 'number' && audioUrls.length > configured.maxAudioCount) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: audioFieldId,
+          message: `Up to ${configured.maxAudioCount} reference audio files are supported`,
+          allowed: [1, configured.maxAudioCount],
+          value: audioUrls.length,
+        },
+      };
+    }
+    if (audioUrls.length && imageUrls.length === 0 && videoUrls.length === 0) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: audioFieldId,
+          message: 'Reference audio requires at least one reference image or reference video',
         },
       };
     }

@@ -1,0 +1,286 @@
+{
+  "marketingName": "Seedance 2.0 Fast",
+  "versionLabel": "2.0 Fast",
+  "seo": {
+    "title": "Seedance 2.0 Fast — Fast Text-to-Video, Image-to-Video & Reference-to-Video | MaxVideoAI",
+    "description": "Use Seedance 2.0 Fast on MaxVideoAI for faster text-to-video, image-to-video with an optional end frame, and multimodal reference-to-video before moving winners into standard Seedance 2.0."
+  },
+  "overview": "Seedance 2.0 Fast is the quick-iteration tier in the Seedance 2 family on Fal. It keeps the same three workflow types as standard Seedance 2.0, but is better suited to storyboard passes, timing checks, and rapid comparison loops.",
+  "pricingNotes": "Seedance 2 Fast uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
+  "hero": {
+    "title": "Seedance 2.0 Fast",
+    "intro": "Seedance 2.0 Fast keeps the same three workflows as the standard tier: text-to-video, image-to-video with an optional end frame, and reference-to-video with image, video, and audio references. Use it when you want shorter iteration loops, faster A/B checks, and a lighter draft tier before you commit to standard Seedance 2.0.",
+    "badge": "Fast tier · 3 workflows · 480p/720p · Auto or 4-15s · Native audio",
+    "ctaPrimary": {
+      "label": "Generate with Seedance 2.0 Fast",
+      "href": "/app?engine=seedance-2-0-fast"
+    },
+    "secondaryLinks": [
+      {
+        "label": "View Seedance examples",
+        "href": "/examples/seedance"
+      },
+      {
+        "label": "See standard Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "Compare Seedance 2.0 Fast vs Veo 3.1 Fast",
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Compare Seedance 2.0 Fast vs LTX 2.3 Fast ->",
+    "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      {
+        "title": "Storyboard passes before standard runs",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Quick route comparisons across Seedance Fast, Veo Fast, and LTX Fast",
+        "icon": "ads"
+      },
+      {
+        "title": "Quick timing checks for audio-led shots",
+        "icon": "music"
+      },
+      {
+        "title": "A/B camera and motion tests before standard Seedance renders",
+        "icon": "repeat"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Role in the family",
+      "body": "Optimized fast variant in the Seedance 2 family on Fal."
+    },
+    {
+      "label": "Inputs",
+      "body": "The same three core Seedance 2 workflows: text-to-video, image-to-video with an optional end frame, and ref2v with image, video, and audio references"
+    },
+    {
+      "label": "Reference limits",
+      "body": "Up to 9 image references, 3 video references, and 3 audio references, with 12 total files across the full ref2v run"
+    },
+    {
+      "label": "Duration target",
+      "body": "Auto or 4-15 seconds per generation"
+    },
+    {
+      "label": "Audio",
+      "body": "Native audio is on by default and can be disabled; Fal states the price is the same either way"
+    },
+    {
+      "label": "Best moment to use it",
+      "body": "Early exploration, shot planning, and pre-final comparison rounds"
+    },
+    {
+      "label": "Fal positioning",
+      "body": "Fal's public Seedance page groups Fast with the same cinematic, audio-native, multimodal endpoint family."
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompting Seedance 2.0 Fast",
+    "quote": "[Shot goal] + [subject] + [one clear action beat] + [camera language] + [one sound cue] + [duration target].",
+    "description": "Keep prompts lean. The fast tier is strongest when each render checks one decision: timing, framing, subject continuity, or audio rhythm.",
+    "steps": [
+      "Name the single decision you want to validate",
+      "Keep one beat per shot",
+      "Use short camera verbs",
+      "Add one sound cue if rhythm matters",
+      "Escalate winning drafts into standard Seedance 2.0"
+    ]
+  },
+  "promptingTip": "Tip: keep the same Seedance grammar as standard, but use Fast to answer one question per run: does the text brief work, does the start/end transition land, do the references hold continuity, or is the timing right?",
+  "tips": {
+    "title": "Production notes",
+    "items": [
+      "Use Fast for speed, then switch to standard Seedance 2.0 for premium finals.",
+      "Use the optional end image in i2v when you want a guided last frame during draft passes.",
+      "Keep prompts short and tactical: one beat, one move, one reason to compare.",
+      "Use the compare hub to judge Seedance Fast against Veo Fast and LTX Fast, not against every model at once.",
+      "Generate shows the active route and the final quote before you submit."
+    ]
+  },
+  "demoTitle": "Prompt demo",
+  "prompts": [
+    {
+      "title": "Story beat draft",
+      "prompt": "One-shot concept pass for a product reveal, slow push-in, single hero motion beat, soft room tone, designed to validate pacing and framing rather than final polish."
+    },
+    {
+      "title": "A/B motion test",
+      "prompt": "Same product on the same table. Version A uses a locked camera and hand reach. Version B uses a short arc move. Keep lighting identical so only motion changes."
+    },
+    {
+      "title": "Fast social ad loop",
+      "prompt": "Six-second draft of a skincare bottle in a bright bathroom, one clean reveal, one cap twist, one ambient water cue, vertical framing."
+    }
+  ],
+  "faqTitle": "FAQ – Seedance 2.0 Fast on MaxVideoAI",
+  "faqs": [
+    {
+      "q": "What is Seedance 2.0 Fast?",
+      "a": "Seedance 2.0 Fast is the quicker iteration tier inside the Seedance 2 family, designed for faster draft passes before you move winning directions into standard Seedance 2.0."
+    },
+    {
+      "q": "Does Seedance 2.0 Fast keep text-to-video, image-to-video, and reference-to-video?",
+      "a": "Yes. Seedance 2.0 Fast keeps the same core workflow family as standard Seedance 2.0: text-to-video, image-to-video with an optional end frame, and multimodal reference-to-video."
+    },
+    {
+      "q": "How many references does Seedance 2.0 Fast accept?",
+      "a": "Fast supports up to 9 image references, 3 video references, and 3 audio references, with 12 total files across the full ref2v run."
+    },
+    {
+      "q": "Does Seedance 2.0 Fast image-to-video support an end frame?",
+      "a": "Yes. The image-to-video workflow supports a start image plus an optional end image when you want to guide the last frame in draft passes."
+    },
+    {
+      "q": "How long can Seedance 2.0 Fast runs be?",
+      "a": "Fal lists auto duration or explicit runs from 4 to 15 seconds for the current Seedance 2.0 Fast routes."
+    },
+    {
+      "q": "When should I use Seedance 2.0 Fast instead of standard Seedance 2.0?",
+      "a": "Use Fast when the goal is iteration speed, shot planning, timing checks, and quick comparison passes. Move to standard Seedance 2.0 when you want the most polished final take."
+    }
+  ],
+  "custom": {
+    "whyTitle": "Why Seedance 2.0 Fast matters",
+    "heroTrustLine": "Use Fast to decide quickly, then move selected shots into standard Seedance 2.0",
+    "heroHighlights": [
+      "Optimized fast variant||Fal lists Fast as the optimized route inside the Seedance 2 endpoint family",
+      "Same workflow family||Text-to-video, image-to-video, and reference-to-video stay available in the same Seedance 2 stack",
+      "Native audio plus multimodal references||Fast still sits inside the same audio-native and multimodal Seedance family",
+      "Comparison-ready||Pairs naturally against Veo 3.1 Fast and LTX 2.3 Fast",
+      "Built for escalation||Move successful drafts into standard Seedance 2.0 for polished finals"
+    ],
+    "specTitle": "Specs and role",
+    "specNote": "Treat Fast as the quick-iteration version in the Seedance 2 family.",
+    "specSections": [
+      {
+        "title": "What Fast is for",
+        "intro": "Fal positions Fast as the quicker route inside the Seedance 2 family.",
+        "items": [
+          "Shot planning before polished renders",
+          "Rapid A/B motion checks",
+          "Creative iteration with shorter feedback loops",
+          "Reference-led timing validation",
+          "Optional end-frame checks in image-to-video"
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "intro": "Fast keeps the same core mode coverage and format envelope.",
+        "items": [
+          "Fast draft -> compare -> standard Seedance 2.0 final",
+          "Useful against Veo 3.1 Fast and LTX 2.3 Fast",
+          "480p or 720p with auto or 4-15s duration control",
+          "Best when one prompt tests one decision",
+          "Audio-aware workflows stay part of the Seedance family"
+        ]
+      }
+    ],
+    "promptingTitle": "Prompt Lab — Seedance 2.0 Fast",
+    "promptingGuideLabel": "Seedance 2.0 workflow notes",
+    "promptingGuideUrl": "/models/seedance-2-0",
+    "promptingIntro": "Seedance 2.0 Fast works best when each run tests one decision. Keep the brief in Subject -> Action -> Camera -> Style order, then choose the fastest route: text, start/end image, or references.",
+    "promptingGlobalPrinciples": [
+      "Change one variable per run so comparisons stay readable.",
+      "Keep the same references when testing camera, timing, or audio variants.",
+      "Use start/end image tests to validate transitions, not to rewrite the full scene.",
+      "Give every reference one job and trim extra style adjectives.",
+      "Escalate winning drafts into standard Seedance 2.0 for final polish."
+    ],
+    "promptingEngineWhy": [
+      "Fast is strongest for prompt-only concept checks before expensive finals.",
+      "Start/end image tests are useful for landing the last frame without over-directing the middle.",
+      "Reference runs are best for continuity A/B checks, not for maximum complexity.",
+      "Short audio cues make side-by-side comparisons easier to judge."
+    ],
+    "promptingTabNotes": {
+      "quick": "Text = test the brief itself.",
+      "structured": "Start/End = test the transition and landing frame.",
+      "pro": "References = test continuity with the same source pack.",
+      "storyboard": "Compare = package the winner for standard Seedance 2.0."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Text-to-video test prompt",
+        "description": "Use when you want a fast read on framing, motion, or mood from language alone.",
+        "copy": "Subject:\n[Who/what appears]\n\nAction:\n[One visible beat only]\n\nCamera:\n[One short move]\n\nStyle:\n[Lighting + palette]\n\nGoal:\n[What this run is proving: timing / framing / motion / audio]\n\nRule:\nDo not combine multiple decisions in the same Fast run."
+      },
+      {
+        "id": "structured",
+        "label": "Start/End",
+        "title": "Image-to-video transition test",
+        "description": "Use when you need to validate how a start frame lands on an end frame.",
+        "copy": "Start image:\n[What is fixed from frame 1]\n\nEnd image (optional):\n[What the last frame should land on]\n\nMotion path:\n[How the subject travels between the two]\n\nCamera:\n[One move only]\n\nWhat should stay identical across versions:\n[Lighting / wardrobe / background / pace]\n\nUse this when the question is transition quality, not final polish."
+      },
+      {
+        "id": "pro",
+        "label": "References",
+        "title": "Reference continuity test",
+        "description": "Use when you are checking whether the same reference pack holds together across variants.",
+        "copy": "Prompt intent:\n[What the short draft should prove]\n\nImage refs:\n@Image1 = [identity]\n@Image2 = [product / wardrobe / palette]\n\nVideo refs:\n@Video1 = [camera rhythm / pacing]\n\nAudio refs:\n@Audio1 = [ambience / beat / dialogue texture]\n\nVariant under test:\n[Only one variable: camera / pace / framing / sound]\n\nRule:\nKeep the same source pack while changing one thing."
+      },
+      {
+        "id": "storyboard",
+        "label": "Compare",
+        "title": "Comparison / handoff prompt",
+        "description": "Use this when Fast is selecting a winner before the standard tier.",
+        "copy": "What stays fixed across A/B:\n[Subject / refs / setting / duration / ratio]\n\nVariant A:\n[Camera / pacing / sound choice]\n\nVariant B:\n[One changed variable only]\n\nWinner criteria:\n[What counts as success]\n\nIf approved, move into standard Seedance 2.0 with:\n[Extra polish, richer sound design, fuller shot plan]"
+      }
+    ],
+    "tipsTitle": "Strengths and boundaries",
+    "strengths": [
+      "Rapid draft iteration",
+      "Clear side-by-side comparison setup",
+      "Good for shot planning and pacing checks",
+      "Natural stepping stone into standard Seedance 2.0"
+    ],
+    "boundaries": [
+      "Do not judge final polish from Fast alone.",
+      "Complex prompts make Fast harder to compare.",
+      "Treat it as a draft tier, not a replacement for the standard tier.",
+      "Use the final quote and route details inside Generate before scaling winners."
+    ],
+    "galleryTitle": "Seedance 2.0 Fast examples",
+    "galleryIntro": "Review the kinds of draft passes and comparison prompts that make Seedance 2.0 Fast useful in a real production workflow.",
+    "galleryAllCta": "View all Seedance examples ->",
+    "recreateLabel": "Recreate this draft ->",
+    "demoTitle": "Demo prompt — Seedance 2.0 Fast",
+    "demoPromptLabel": "Prompt",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Move winning drafts into standard Seedance 2.0 when you need the most polished final render.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "See standard Seedance 2.0 ->"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1 Fast",
+        "description": "Open Veo 3.1 Fast when you want another audio-native fast tier for ad-style comparison passes.",
+        "modelSlug": "veo-3-1-fast",
+        "ctaLabel": "Compare Seedance 2.0 Fast vs Veo 3.1 Fast ->"
+      },
+      {
+        "brand": "lightricks",
+        "title": "LTX 2.3 Fast",
+        "description": "Use LTX 2.3 Fast when the draft loop is more about storyboard rhythm and quick structure checks.",
+        "modelSlug": "ltx-2-3-fast",
+        "ctaLabel": "Compare Seedance 2.0 Fast vs LTX 2.3 Fast ->"
+      }
+    ]
+  }
+}

@@ -20,7 +20,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { listPlaylistVideos, getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
@@ -184,6 +184,13 @@ function resolveNonLocalizedHref(rawHref?: string | null): string | null {
   return `${normalizedPath}${search}${hash}`;
 }
 
+function getDefaultSecondaryModelHref(slug: string): string {
+  if (slug === 'sora-2') return '/models/sora-2-pro';
+  if (slug === 'seedance-2-0') return '/models/seedance-2-0-fast';
+  if (slug === 'seedance-2-0-fast') return '/models/seedance-2-0';
+  return '/models/seedance-2-0';
+}
+
 export const dynamicParams = false;
 export const revalidate = 300;
 
@@ -231,6 +238,14 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
   'seedance-1-5-pro': {
     hero: 'job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab',
     demo: 'job_b748b50c-30bc-42ba-a83b-208abbd4fb7f',
+  },
+  'seedance-2-0': {
+    hero: 'job_39509619-83fe-4f46-8a15-c164b17c414e',
+    demo: 'job_99e1ef37-e7f6-4002-9339-021f9e20f485',
+  },
+  'seedance-2-0-fast': {
+    hero: 'job_bdf3583a-264e-42ec-bfc2-cd866969374c',
+    demo: 'job_cd3036e6-a6a3-4f4a-b139-0c7a31a918f2',
   },
   'ltx-2-3-pro': {
     hero: 'job_2a07e085-4764-4e9b-8850-c3941dbf303a',
@@ -727,6 +742,65 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     },
   },
   {
+    slugA: 'seedance-2-0-fast',
+    slugB: 'seedance-2-0',
+    nameA: 'Seedance 2.0 Fast',
+    nameB: 'Seedance 2.0',
+    onlyFor: ['seedance-2-0', 'seedance-2-0-fast'],
+    copyA: {
+      en: {
+        title: 'Use Seedance 2.0 Fast when you want:',
+        items: [
+          'Rapid draft passes before client-facing finals',
+          'Quick shot planning, pacing checks, and A/B motion tests',
+          'A lighter Seedance tier for early creative exploration',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Seedance 2.0 Fast quand vous voulez :',
+        items: [
+          'Des drafts rapides avant les finals client',
+          'Du shot planning, des checks de pacing et des tests A/B motion',
+          'Un tier Seedance plus léger pour explorer tôt',
+        ],
+      },
+      es: {
+        title: 'Usa Seedance 2.0 Fast cuando quieras:',
+        items: [
+          'Borradores rápidos antes de los finales para cliente',
+          'Shot planning, checks de pacing y tests A/B de motion',
+          'Un tier Seedance más ligero para explorar antes',
+        ],
+      },
+    },
+    copyB: {
+      en: {
+        title: 'Use Seedance 2.0 when you need:',
+        items: [
+          'More polished motion and native audio for finals',
+          'Stronger multi-shot continuity for launch work',
+          'The main Seedance tier for flagship ads and hero scenes',
+        ],
+      },
+      fr: {
+        title: 'Utilisez Seedance 2.0 quand vous avez besoin :',
+        items: [
+          'D’un motion plus premium et d’un audio natif pour les finals',
+          'D’une continuité multi-plans plus sûre pour les livrables de lancement',
+          'Du tier principal Seedance pour pubs flagship et hero scenes',
+        ],
+      },
+      es: {
+        title: 'Usa Seedance 2.0 cuando necesites:',
+        items: [
+          'Más acabado de motion y audio nativo para finales',
+          'Continuidad multi-shot más fiable para entregables de lanzamiento',
+          'El tier principal de Seedance para anuncios flagship y hero scenes',
+        ],
+      },
+    },
+  },
+  {
     slugA: 'ltx-2-fast',
     slugB: 'ltx-2',
     nameA: 'LTX-2 Fast',
@@ -1194,7 +1268,7 @@ const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
 const AVAILABILITY_SCHEMA_MAP: Record<string, string> = {
   available: 'https://schema.org/InStock',
   limited: 'https://schema.org/LimitedAvailability',
-  waitlist: 'https://schema.org/PreOrder',
+  waitlist: 'https://schema.org/LimitedAvailability',
   paused: 'https://schema.org/Discontinued',
 };
 const HERO_SPEC_ICON_MAP = {
@@ -1382,12 +1456,6 @@ const SPEC_TITLE_BASE: Record<AppLocale, string> = {
   en: 'Specs',
   fr: 'Spécifications',
   es: 'Especificaciones',
-};
-
-const PRELAUNCH_SPEC_SUFFIX: Record<AppLocale, string> = {
-  en: '(pre-launch)',
-  fr: '(pré-lancement)',
-  es: '(prelanzamiento)',
 };
 
 const SPECS_DECISION_NOTES: Record<AppLocale, string> = {
@@ -1594,12 +1662,6 @@ const PRICE_AUDIO_LABELS: Record<AppLocale, { on: string; off: string }> = {
   en: { on: 'Audio on', off: 'Audio off' },
   fr: { on: 'Audio activé', off: 'Audio coupé' },
   es: { on: 'Audio activado', off: 'Audio desactivado' },
-};
-
-const PRELAUNCH_AUDIO_BADGE_LABELS: Record<AppLocale, string> = {
-  en: 'Audio: supported (pre-launch)',
-  fr: 'Audio: pris en charge (pré-lancement)',
-  es: 'Audio: soportado (prelanzamiento)',
 };
 
 const TIPS_CARD_LABELS: Record<
@@ -2206,9 +2268,23 @@ function formatImageResolutions(engineCaps: EngineCaps | undefined) {
   return resolutions.length ? resolutions.join(' / ') : 'Data pending';
 }
 
-function formatOutputFormats(engineCaps: EngineCaps | undefined) {
-  const formats = engineCaps?.inputSchema?.constraints?.supportedFormats ?? [];
-  return formats.length ? formats.join(' / ') : 'Data pending';
+function formatOutputFormats(entry: FalEngineEntry) {
+  const engineCaps = entry.engine;
+  const fields = [...(engineCaps?.inputSchema?.required ?? []), ...(engineCaps?.inputSchema?.optional ?? [])];
+  const outputFormatField = fields.find((field) => field.id === 'output_format');
+  const outputFormatValues =
+    outputFormatField && 'values' in outputFormatField && Array.isArray(outputFormatField.values)
+      ? outputFormatField.values
+      : [];
+  if (outputFormatValues.length) {
+    return outputFormatValues.join(' / ');
+  }
+  const rendersVideo =
+    entry.type === 'video' ||
+    (engineCaps?.modes ?? []).some((mode) =>
+      ['t2v', 'i2v', 'v2v', 'ref2v', 'r2v', 'fl2v', 'extend', 'reframe', 'retake'].includes(mode)
+    );
+  return rendersVideo ? 'MP4' : 'Data pending';
 }
 
 function getPricePerSecondCents(engineCaps: EngineCaps | undefined): number | null {
@@ -2290,7 +2366,7 @@ function buildSpecValues(
     maxDuration: resolveKeySpecValue(specs, 'maxDuration', formatDuration(engineCaps)),
     aspectRatios: resolveKeySpecValue(specs, 'aspectRatios', formatAspectRatios(engineCaps)),
     fpsOptions: resolveKeySpecValue(specs, 'fpsOptions', formatFps(engineCaps)),
-    outputFormats: resolveKeySpecValue(specs, 'outputFormats', formatOutputFormats(engineCaps)),
+    outputFormats: resolveKeySpecValue(specs, 'outputFormats', formatOutputFormats(entry)),
     audioOutput: resolveKeySpecValue(specs, 'audioOutput', resolveStatus(engineCaps?.audio)),
     nativeAudioGeneration: resolveKeySpecValue(specs, 'nativeAudioGeneration', resolveStatus(engineCaps?.audio)),
     lipSync: resolveKeySpecValue(specs, 'lipSync', 'Data pending'),
@@ -2477,30 +2553,24 @@ function normalizeHeroSubtitle(text: string, locale: AppLocale): string {
     aiCount += 1;
     return aiCount === 1 ? match : '';
   });
+  output = output.replace(/([.?!])\s*,\s*/g, '$1 ');
+  output = output.replace(/,\s*([.?!])/g, '$1');
   output = output.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
+  output = output.replace(/([.?!]\s+)([a-z])/g, (_, boundary: string, letter: string) => `${boundary}${letter.toUpperCase()}`);
   return output;
 }
 
-function isPrelaunchAvailabilityValue(availability?: string | null) {
-  const normalized = String(availability ?? '').toLowerCase();
-  return normalized === 'waitlist' || normalized === 'limited';
-}
-
-function buildDefaultSpecTitle(locale: AppLocale, availability?: string | null): string {
-  const base = SPEC_TITLE_BASE[locale] ?? SPEC_TITLE_BASE.en;
-  if (!isPrelaunchAvailabilityValue(availability)) return base;
-  const suffix = PRELAUNCH_SPEC_SUFFIX[locale] ?? PRELAUNCH_SPEC_SUFFIX.en;
-  return `${base} ${suffix}`;
+function buildDefaultSpecTitle(locale: AppLocale): string {
+  return SPEC_TITLE_BASE[locale] ?? SPEC_TITLE_BASE.en;
 }
 
 function normalizeSpecTitle(
   rawTitle: string | null,
-  locale: AppLocale,
-  availability?: string | null
+  locale: AppLocale
 ): string {
   const cleanRaw = rawTitle?.trim();
   if (cleanRaw) return cleanRaw;
-  return buildDefaultSpecTitle(locale, availability);
+  return buildDefaultSpecTitle(locale);
 }
 
 function normalizeSpecNote(_rawNote: string | null, locale: AppLocale): string | null {
@@ -3050,7 +3120,7 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
     secondaryCtaHref:
       (localized.hero?.secondaryLinks?.[0]?.href as string | undefined) ??
       localized.compareLink?.href ??
-      (slug === 'sora-2' ? '/models/sora-2-pro' : '/models/sora-2'),
+      getDefaultSecondaryModelHref(slug),
     whyTitle: getString('whyTitle'),
     heroHighlights,
     bestUseCasesTitle,
@@ -3191,6 +3261,22 @@ function formatPromptExcerpt(prompt: string, maxWords = 22): string {
   return `${words.slice(0, maxWords).join(' ')}…`;
 }
 
+function formatFeaturedPrompt(prompt: string, preferFullPrompt = false): string {
+  const condensed = prompt
+    .replace(/\*\*/g, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\s*\n+\s*/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  if (!condensed) return '';
+  const hasStructuredSections =
+    /^prompt\b/i.test(condensed) || /\b(brief|subject|camera|style|audio|look|ending):/i.test(condensed);
+  if (preferFullPrompt && !hasStructuredSections) {
+    return condensed;
+  }
+  return formatPromptExcerpt(condensed, preferFullPrompt ? 48 : 22);
+}
+
 function toGalleryCard(
   video: GalleryVideo,
   brandId?: string,
@@ -3223,7 +3309,8 @@ function toGalleryCard(
 
 function toFeaturedMedia(entry?: ExampleGalleryVideo | null, preferFullPrompt = false): FeaturedMedia | null {
   if (!entry) return null;
-  const prompt = preferFullPrompt && entry.promptFull ? entry.promptFull : entry.prompt;
+  const rawPrompt = preferFullPrompt && entry.promptFull ? entry.promptFull : entry.prompt;
+  const prompt = formatFeaturedPrompt(rawPrompt, preferFullPrompt);
   return {
     id: entry.id,
     prompt,
@@ -3340,7 +3427,7 @@ async function renderMarketingModelPage({
     const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
     return normalized ? allowedEngineIds.has(normalized) : false;
   });
-  const validatedMap = await getVideosByIds(soraExamples.map((video) => video.id));
+  const validatedMap = await getPublicVideosByIds(soraExamples.map((video) => video.id));
   let galleryVideos = soraExamples
     .filter((video) => validatedMap.has(video.id))
     .map((video) =>
@@ -3358,7 +3445,7 @@ async function renderMarketingModelPage({
   const preferredList = [preferredIds.hero, preferredIds.demo].filter((id): id is string => Boolean(id));
   const missingPreferred = preferredList.filter((id) => !galleryVideos.some((video) => video.id === id));
   if (missingPreferred.length) {
-    const preferredMap = await getVideosByIds(missingPreferred);
+    const preferredMap = await getPublicVideosByIds(missingPreferred);
     for (const id of preferredList) {
       if (!preferredMap.has(id) || galleryVideos.some((video) => video.id === id)) continue;
       const video = preferredMap.get(id)!;
@@ -3388,21 +3475,12 @@ async function renderMarketingModelPage({
   }
 
   const modelName = localizedContent.marketingName ?? engine.marketingName;
-  const isPrelaunchAvailability = isPrelaunchAvailabilityValue(engine.availability);
-  const prelaunchFallbackPrompt =
-    locale === 'fr'
-      ? `${modelName} aperçu de pré-lancement (placeholder)`
-      : locale === 'es'
-        ? `${modelName} vista previa de prelanzamiento (placeholder)`
-        : `${modelName} pre-launch preview placeholder`;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
     prompt:
-      isPrelaunchAvailability
-        ? prelaunchFallbackPrompt
-        : engine.type === 'image'
-          ? `${modelName} demo still from MaxVideoAI`
-          : `${modelName} demo clip from MaxVideoAI`,
+      engine.type === 'image'
+        ? `${modelName} demo still from MaxVideoAI`
+        : `${modelName} demo clip from MaxVideoAI`,
     videoUrl: engine.type === 'image' ? null : engine.media?.videoUrl ?? engine.demoUrl ?? null,
     posterUrl:
       engine.media?.imagePath ??
@@ -3594,7 +3672,7 @@ function MarketingModelPageLayout({
     locale === 'en'
       ? (engine.modelSlug === 'seedance-2-0' ? copy.heroTrustLine : null) ?? GENERIC_TRUST_LINE
       : copy.heroTrustLine;
-  const specTitle = normalizeSpecTitle(copy.specTitle, locale, engine.availability);
+  const specTitle = normalizeSpecTitle(copy.specTitle, locale);
   const specNote = normalizeSpecNote(copy.specNote, locale);
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = isImageEngine
@@ -3634,21 +3712,11 @@ function MarketingModelPageLayout({
   const examplesLinkHref = getExamplesHref(galleryEngineSlug) ?? { pathname: '/examples' };
   const pricingLinkHref = { pathname: '/pricing' };
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
-  const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
+  const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=seedance-2-0';
   const secondaryCta = normalizeSecondaryCta(copy.secondaryCta);
-  const secondaryCtaHref = copy.secondaryCtaHref ?? '/models/sora-2-pro';
-  const isSeedancePrelaunchLocked =
-    engine.modelSlug === 'seedance-2-0' && String(engine.availability).toLowerCase() === 'waitlist';
-  const audioBadgeLabel = isPrelaunchAvailabilityValue(engine.availability)
-    ? PRELAUNCH_AUDIO_BADGE_LABELS[locale] ?? PRELAUNCH_AUDIO_BADGE_LABELS.en
-    : resolveAudioPricingLabels(locale).on;
-  const prelaunchPrimaryCtaLabel =
-    locale === 'fr'
-      ? "Liste d'attente · Date officielle à confirmer"
-      : locale === 'es'
-        ? 'Lista de espera · Fecha oficial por confirmar'
-        : 'Join waitlist · Official date TBA';
-  const resolvedPrimaryCta = isSeedancePrelaunchLocked ? prelaunchPrimaryCtaLabel : primaryCta;
+  const secondaryCtaHref = copy.secondaryCtaHref ?? getDefaultSecondaryModelHref(engine.modelSlug);
+  const audioBadgeLabel = resolveAudioPricingLabels(locale).on;
+  const resolvedPrimaryCta = primaryCta;
   const normalizeCtaHref = (href?: string | null): LocalizedLinkHref | null => {
     if (!href) return null;
     const examplesHref = resolveExamplesHrefFromRaw(href);
@@ -3974,23 +4042,14 @@ function MarketingModelPageLayout({
             </div>
             <div className="flex flex-wrap justify-center gap-4">
               {resolvedPrimaryCta ? (
-                isSeedancePrelaunchLocked ? (
-                  <span
-                    aria-disabled="true"
-                    className="inline-flex min-h-[48px] cursor-not-allowed select-none items-center justify-center gap-2 rounded-input bg-brand px-6 py-3 text-sm font-semibold text-on-brand opacity-85 shadow-card"
-                  >
-                    {resolvedPrimaryCta}
-                  </span>
-                ) : (
-                  <ButtonLink
-                    href={normalizedPrimaryCtaHref}
-                    size="lg"
-                    className="shadow-card"
-                    linkComponent={Link}
-                  >
-                    {resolvedPrimaryCta}
-                  </ButtonLink>
-                )
+                <ButtonLink
+                  href={normalizedPrimaryCtaHref}
+                  size="lg"
+                  className="shadow-card"
+                  linkComponent={Link}
+                >
+                  {resolvedPrimaryCta}
+                </ButtonLink>
               ) : null}
               {secondaryCta && localizedSecondaryCtaHref ? (
                 <ButtonLink
@@ -4353,7 +4412,7 @@ function MarketingModelPageLayout({
                       />
                     ) : (
                       <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
-                        {copy.galleryIntro ?? 'Demo clip coming soon.'}
+                        {copy.galleryIntro ?? (locale === 'fr' ? 'Aperçu de démonstration.' : locale === 'es' ? 'Vista previa de demostración.' : 'Demo preview.')}
                       </div>
                     )}
                   </div>
@@ -4699,18 +4758,7 @@ function MediaPreview({
     prompt: media.prompt ?? label,
     locale,
   });
-  const placeholderHint = (media.prompt ?? '').toLowerCase();
-  const isPrelaunchPlaceholder =
-    placeholderHint.includes('pre-launch') ||
-    placeholderHint.includes('pré-lancement') ||
-    placeholderHint.includes('prelanzamiento');
-  const resolvedAltText = isPrelaunchPlaceholder
-    ? locale === 'fr'
-      ? `${media.label ?? label} aperçu visuel de pré-lancement`
-      : locale === 'es'
-        ? `${media.label ?? label} vista visual de prelanzamiento`
-        : `${media.label ?? label} pre-launch visual preview`
-    : altText;
+  const resolvedAltText = altText;
   const resolvedAudioBadgeLabel = audioBadgeLabel ?? (PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en).on;
   const resolvedRenderLinkLabel =
     renderLinkLabel ?? (locale === 'fr' ? 'Voir le rendu →' : locale === 'es' ? 'Ver render →' : 'View render →');
@@ -4754,7 +4802,7 @@ function MediaPreview({
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-surface-2 text-sm font-semibold text-text-muted">
-                Sora 2 preview
+                Media preview
               </div>
             )}
             {media.hasAudio ? (

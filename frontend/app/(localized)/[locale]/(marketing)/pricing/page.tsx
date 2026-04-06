@@ -83,13 +83,19 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Sora 2 narrative (voice-over)',
-        engine: 'Sora 2',
-        duration: '12s',
+        title: 'Flagship Seedance 2.0 run',
+        engine: 'Seedance 2.0',
+        duration: '10s',
         resolution: '1280×720',
         audio: 'On',
-        note: 'Automatic refund on fail.',
-        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+        note: 'Seedance 2 uses Fal token pricing. This example assumes 1280×720 at 24 fps, adds the MaxVideoAI margin, then rounds up to the next cent.',
+        pricingScenario: {
+          engineId: 'seedance-2-0',
+          durationSec: 10,
+          resolution: '720p',
+          aspectRatio: '16:9',
+          memberTier: 'member',
+        },
       },
     ],
   },
@@ -117,13 +123,19 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Narratif Sora 2 (voice-over)',
-        engine: 'Sora 2',
-        duration: '12 s',
+        title: 'Séquence premium Seedance 2.0',
+        engine: 'Seedance 2.0',
+        duration: '10 s',
         resolution: '1280×720',
         audio: 'Inclus',
-        note: 'Remboursement automatique en cas d’échec.',
-        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+        note: 'Seedance 2 suit la formule tokens de Fal. Cet exemple part de 1280×720 à 24 fps, ajoute la marge MaxVideoAI, puis arrondit au centime supérieur.',
+        pricingScenario: {
+          engineId: 'seedance-2-0',
+          durationSec: 10,
+          resolution: '720p',
+          aspectRatio: '16:9',
+          memberTier: 'member',
+        },
       },
     ],
   },
@@ -151,13 +163,19 @@ const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
         pricingScenario: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
       },
       {
-        title: 'Narrativa Sora 2 (voz en off)',
-        engine: 'Sora 2',
-        duration: '12 s',
+        title: 'Secuencia premium Seedance 2.0',
+        engine: 'Seedance 2.0',
+        duration: '10 s',
         resolution: '1280×720',
         audio: 'Incluido',
-        note: 'Reembolso automático si falla.',
-        pricingScenario: { engineId: 'sora-2', durationSec: 12, resolution: '720p', memberTier: 'member' },
+        note: 'Seedance 2 usa la fórmula de tokens de Fal. Este ejemplo parte de 1280×720 a 24 fps, añade el margen de MaxVideoAI y redondea al céntimo superior.',
+        pricingScenario: {
+          engineId: 'seedance-2-0',
+          durationSec: 10,
+          resolution: '720p',
+          aspectRatio: '16:9',
+          memberTier: 'member',
+        },
       },
     ],
   },
@@ -168,27 +186,30 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
     title: 'What affects price',
     points: [
       'Duration scales linearly (4s / 8s / 12s).',
-      'Resolution increases cost at 1080p vs 720p.',
-      'Audio adds a small premium on supported engines.',
-      'Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate.',
+      'On token-priced routes like Seedance 2, both resolution and aspect ratio change the pixel count and the cost.',
+      'Audio can add a premium on some engines; others, like Seedance 2, price audio on/off the same.',
+      'Engine tier (Seedance / Veo / Kling / LTX) sets the base rate.',
+      'Generate still shows the final quote before submission.',
     ],
   },
   fr: {
     title: 'Ce qui influence le prix',
     points: [
       'La durée évolue linéairement (4 s / 8 s / 12 s).',
-      'La résolution augmente le coût en 1080p vs 720p.',
-      'L’audio ajoute une légère prime sur les moteurs compatibles.',
-      'Le niveau du moteur (Sora/Veo/Pika/MiniMax) fixe le tarif de base.',
+      'Sur les routes à tokens comme Seedance 2, la résolution et le ratio changent le nombre de pixels et donc le coût.',
+      'L’audio peut ajouter une prime sur certains moteurs ; d’autres, comme Seedance 2, gardent le même prix avec ou sans audio.',
+      'Le niveau du moteur (Seedance / Veo / Kling / LTX) fixe le tarif de base.',
+      'Generate affiche quand même le devis final avant validation.',
     ],
   },
   es: {
     title: 'Qué afecta el precio',
     points: [
       'La duración escala de forma lineal (4 s / 8 s / 12 s).',
-      'La resolución incrementa el costo en 1080p frente a 720p.',
-      'El audio añade un pequeño recargo en los motores compatibles.',
-      'El nivel del motor (Sora/Veo/Pika/MiniMax) define la tarifa base.',
+      'En rutas con tokens como Seedance 2, la resolución y el ratio cambian el número de píxeles y por tanto el costo.',
+      'El audio puede añadir un recargo en algunos motores; otros, como Seedance 2, mantienen el mismo precio con o sin audio.',
+      'El nivel del motor (Seedance / Veo / Kling / LTX) define la tarifa base.',
+      'Generate sigue mostrando el precio final antes de enviar.',
     ],
   },
 };
@@ -236,24 +257,21 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const exploreTitle =
     locale === 'fr' ? 'Pages liées' : locale === 'es' ? 'Páginas relacionadas' : 'Related pages';
   const exploreModelsLabel =
-    locale === 'fr' ? 'Profil Veo 3.1 Fast' : locale === 'es' ? 'Perfil Veo 3.1 Fast' : 'Veo 3.1 Fast profile';
+    locale === 'fr' ? 'Profil Seedance 2.0 Fast' : locale === 'es' ? 'Perfil Seedance 2.0 Fast' : 'Seedance 2.0 Fast profile';
   const exploreEnginesLabel =
-    locale === 'fr' ? 'Kling 3 Pro vs Veo 3.1' : locale === 'es' ? 'Kling 3 Pro vs Veo 3.1' : 'Kling 3 Pro vs Veo 3.1';
+    locale === 'fr' ? 'Seedance 2.0 vs Veo 3.1' : locale === 'es' ? 'Seedance 2.0 vs Veo 3.1' : 'Seedance 2.0 vs Veo 3.1';
   const exploreSeedanceModelLabel =
     locale === 'fr' ? 'Profil Seedance 2.0' : locale === 'es' ? 'Perfil Seedance 2.0' : 'Seedance 2.0 profile';
-  const exploreSeedanceCompareLabel =
-    locale === 'fr' ? 'Seedance 2.0 vs Sora 2' : locale === 'es' ? 'Seedance 2.0 vs Sora 2' : 'Seedance 2.0 vs Sora 2';
+  const exploreVeoModelLabel =
+    locale === 'fr' ? 'Profil Veo 3.1' : locale === 'es' ? 'Perfil Veo 3.1' : 'Veo 3.1 profile';
   const exploreLinks = [
-    { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } }, label: exploreModelsLabel },
+    { href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0-fast' } }, label: exploreModelsLabel },
     {
-      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'kling-3-pro-vs-veo-3-1' } },
+      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-veo-3-1' } },
       label: exploreEnginesLabel,
     },
     { href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }, label: exploreSeedanceModelLabel },
-    {
-      href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-sora-2' } },
-      label: exploreSeedanceCompareLabel,
-    },
+    { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1' } }, label: exploreVeoModelLabel },
   ];
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -299,6 +317,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         engine: engineCaps,
         durationSec: input.durationSec,
         resolution: input.resolution,
+        aspectRatio: input.aspectRatio,
         membershipTier: input.memberTier,
         addons: input.addons,
       });
