@@ -109,6 +109,7 @@
       "Generate muestra la ruta activa y el precio final antes de enviar."
     ]
   },
+  "demoTitle": "Demo de prompt",
   "prompts": [
     {
       "title": "Borrador de un momento narrativo",

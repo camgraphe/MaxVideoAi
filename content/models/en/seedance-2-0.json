@@ -117,6 +117,7 @@
       "Generate shows the active route and the final quote before you submit."
     ]
   },
+  "demoTitle": "Prompt demo",
   "prompts": [
     {
       "title": "Action chase (multi-shot)",

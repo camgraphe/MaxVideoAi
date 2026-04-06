@@ -109,6 +109,7 @@
       "Generate affiche la route active et le devis final avant validation."
     ]
   },
+  "demoTitle": "Démo de prompt",
   "prompts": [
     {
       "title": "Version de travail d'un temps narratif",

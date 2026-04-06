@@ -117,6 +117,7 @@
       "Generate muestra la ruta activa y el precio final antes de enviar."
     ]
   },
+  "demoTitle": "Demo de prompt",
   "prompts": [
     {
       "title": "Persecución de acción multi-shot",

@@ -239,6 +239,14 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: 'job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab',
     demo: 'job_b748b50c-30bc-42ba-a83b-208abbd4fb7f',
   },
+  'seedance-2-0': {
+    hero: 'job_39509619-83fe-4f46-8a15-c164b17c414e',
+    demo: 'job_99e1ef37-e7f6-4002-9339-021f9e20f485',
+  },
+  'seedance-2-0-fast': {
+    hero: 'job_bdf3583a-264e-42ec-bfc2-cd866969374c',
+    demo: 'job_cd3036e6-a6a3-4f4a-b139-0c7a31a918f2',
+  },
   'ltx-2-3-pro': {
     hero: 'job_2a07e085-4764-4e9b-8850-c3941dbf303a',
     demo: 'job_ff7bf5c5-44f2-4d8d-92a6-851ecc5a59ab',
@@ -3253,6 +3261,22 @@ function formatPromptExcerpt(prompt: string, maxWords = 22): string {
   return `${words.slice(0, maxWords).join(' ')}…`;
 }
 
+function formatFeaturedPrompt(prompt: string, preferFullPrompt = false): string {
+  const condensed = prompt
+    .replace(/\*\*/g, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\s*\n+\s*/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  if (!condensed) return '';
+  const hasStructuredSections =
+    /^prompt\b/i.test(condensed) || /\b(brief|subject|camera|style|audio|look|ending):/i.test(condensed);
+  if (preferFullPrompt && !hasStructuredSections) {
+    return condensed;
+  }
+  return formatPromptExcerpt(condensed, preferFullPrompt ? 48 : 22);
+}
+
 function toGalleryCard(
   video: GalleryVideo,
   brandId?: string,
@@ -3285,7 +3309,8 @@ function toGalleryCard(
 
 function toFeaturedMedia(entry?: ExampleGalleryVideo | null, preferFullPrompt = false): FeaturedMedia | null {
   if (!entry) return null;
-  const prompt = preferFullPrompt && entry.promptFull ? entry.promptFull : entry.prompt;
+  const rawPrompt = preferFullPrompt && entry.promptFull ? entry.promptFull : entry.prompt;
+  const prompt = formatFeaturedPrompt(rawPrompt, preferFullPrompt);
   return {
     id: entry.id,
     prompt,

@@ -117,6 +117,7 @@
       "Generate affiche la route active et le devis final avant validation."
     ]
   },
+  "demoTitle": "Démo de prompt",
   "prompts": [
     {
       "title": "Poursuite d'action multi-plans",
