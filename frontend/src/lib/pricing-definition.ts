@@ -1,5 +1,6 @@
 import type { EngineCaps, EngineInputField, EnginePricing, EnginePricingDetails } from '@/types/engines';
 import type { PricingAddonRule, PricingEngineDefinition } from '@maxvideoai/pricing';
+import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 
 const DEFAULT_MEMBER_DISCOUNTS = {
   member: 0,
@@ -156,6 +157,47 @@ function resolveBaseUnitPriceCents(engine: EngineCaps): {
         baseUnitPriceCents: firstResolution * 100,
         currency,
         byResolution: fallbackByResolution,
+      };
+    }
+  }
+
+  if (isSeedance2TokenPricing(engine.pricingDetails)) {
+    const tokenPricing = engine.pricingDetails;
+    const resolutionField =
+      engine.inputSchema?.optional?.find((field) => field.id === 'resolution') ??
+      engine.inputSchema?.required?.find((field) => field.id === 'resolution');
+    const candidateResolutions = engine.resolutions?.length
+      ? engine.resolutions
+      : Object.keys(tokenPricing.tokenPricing.dimensions);
+    const defaultResolution =
+      (typeof resolutionField?.default === 'string' && candidateResolutions.includes(resolutionField.default)
+        ? resolutionField.default
+        : candidateResolutions[0]) ?? null;
+    const byResolutionFromTokens = Object.fromEntries(
+      candidateResolutions
+        .map((resolution) => {
+          try {
+            const quote = computeSeedance2TokenQuote({
+              details: tokenPricing,
+              durationSec: 1,
+              resolution,
+              aspectRatio: tokenPricing.tokenPricing.defaultAspectRatio,
+            });
+            return [resolution, quote.vendorCostPerSecondUsd * 100] as const;
+          } catch {
+            return null;
+          }
+        })
+        .filter((entry): entry is readonly [string, number] => Boolean(entry))
+    );
+    const baseFromTokens =
+      (defaultResolution ? byResolutionFromTokens[defaultResolution] : undefined) ??
+      Object.values(byResolutionFromTokens)[0];
+    if (typeof baseFromTokens === 'number' && baseFromTokens > 0) {
+      return {
+        baseUnitPriceCents: baseFromTokens,
+        currency,
+        byResolution: Object.keys(byResolutionFromTokens).length ? byResolutionFromTokens : undefined,
       };
     }
   }

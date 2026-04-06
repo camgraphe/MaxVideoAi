@@ -2,20 +2,24 @@
   "marketingName": "Seedance 2.0 Fast",
   "versionLabel": "2.0 Fast",
   "seo": {
-    "title": "Seedance 2.0 Fast — vidéo IA ByteDance pour itérations rapides | MaxVideoAI",
-    "description": "Utilisez Seedance 2.0 Fast sur MaxVideoAI comme variante rapide optimisée de la famille Seedance 2 pour storyboard, itération plus rapide, sorties 480p/720p et durées auto ou 4-15 s."
+    "title": "Seedance 2.0 Fast — text-to-video, image-to-video et reference-to-video rapides | MaxVideoAI",
+    "description": "Utilisez Seedance 2.0 Fast sur MaxVideoAI pour des rendus plus rapides en text-to-video, image-to-video avec image de fin optionnelle, et reference-to-video multimodal avant passage au standard."
   },
-  "overview": "Seedance 2.0 Fast est la variante rapide optimisée dans la famille d'endpoints Seedance 2 sur Fal. Utilisez-la pour les passes storyboard, les vérifications de timing et les comparaisons rapides avant de faire monter les meilleures directions dans Seedance 2.0 standard.",
+  "overview": "Seedance 2.0 Fast est le tier d'itération rapide dans la famille Seedance 2 sur Fal. Il garde les mêmes trois workflows que Seedance 2.0 standard, mais sert surtout aux passes storyboard, aux checks de timing et aux comparaisons rapides.",
   "pricingNotes": "Seedance 2 Fast suit la formule tokens de Fal. MaxVideoAI ajoute sa marge et arrondit au centime supérieur ; Generate affiche le devis final avant validation.",
   "hero": {
     "title": "Seedance 2.0 Fast",
-    "intro": "Fal présente Fast comme l'une des variantes optimisées de la famille Seedance 2. Sur MaxVideoAI, utilisez-la quand vous voulez garder la même famille de modes text-to-video, image-to-video et reference-to-video avec des boucles d'itération plus courtes avant de passer à Seedance 2.0 standard.",
-    "badge": "Variante rapide optimisée · 480p/720p · Auto ou 4-15 s · Audio natif",
+    "intro": "Seedance 2.0 Fast conserve les trois workflows du tier standard : text-to-video, image-to-video avec image de fin optionnelle, et reference-to-video avec références image, vidéo et audio. Utilisez-le quand vous voulez des boucles d'itération plus courtes, des checks A/B plus rapides et un tier de brouillon avant de passer à Seedance 2.0 standard.",
+    "badge": "Tier rapide · 3 workflows · 480p/720p · Auto ou 4-15 s · Audio natif",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.0 Fast",
       "href": "/app?engine=seedance-2-0-fast"
     },
     "secondaryLinks": [
+      {
+        "label": "Voir les exemples Seedance",
+        "href": "/examples/seedance"
+      },
       {
         "label": "Voir Seedance 2.0 standard",
         "href": "/models/seedance-2-0"
@@ -23,10 +27,6 @@
       {
         "label": "Comparer Seedance 2.0 Fast vs Veo 3.1 Fast",
         "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
-      },
-      {
-        "label": "Voir tarifs et usages",
-        "href": "/pricing"
       }
     ]
   },
@@ -63,7 +63,11 @@
     },
     {
       "label": "Entrées",
-      "body": "Même famille de modes Seedance 2 : prompts texte, image-to-video avec image de fin optionnelle, et ref2v avec références image, vidéo et audio"
+      "body": "Les mêmes trois workflows Seedance 2 : text-to-video, image-to-video avec image de fin optionnelle, et ref2v avec références image, vidéo et audio"
+    },
+    {
+      "label": "Limites de références",
+      "body": "Jusqu'à 9 images de référence, 3 vidéos de référence et 3 audios de référence, avec 12 fichiers maximum sur l'ensemble d'un run ref2v"
     },
     {
       "label": "Objectif durée",
@@ -94,7 +98,7 @@
       "Faire passer les versions gagnantes dans Seedance 2.0 standard"
     ]
   },
-  "promptingTip": "Astuce : Seedance 2.0 Fast sert surtout à trancher vite. Changez une seule variable à la fois pour savoir quel essai fonctionne le mieux.",
+  "promptingTip": "Astuce : gardez la même grammaire Seedance que sur le standard, mais utilisez Fast pour répondre à une seule question par run : le brief texte marche-t-il, la transition départ/fin tombe-t-elle juste, les références tiennent-elles la continuité, ou le timing est-il bon ?",
   "tips": {
     "title": "Notes de production",
     "items": [
@@ -122,16 +126,28 @@
   "faqTitle": "FAQ – Seedance 2.0 Fast sur MaxVideoAI",
   "faqs": [
     {
+      "q": "Qu'est-ce que Seedance 2.0 Fast ?",
+      "a": "Seedance 2.0 Fast est le tier d'itération le plus rapide de la famille Seedance 2, pensé pour produire des brouillons plus vite avant de faire monter les versions gagnantes dans Seedance 2.0 standard."
+    },
+    {
+      "q": "Seedance 2.0 Fast conserve-t-il text-to-video, image-to-video et reference-to-video ?",
+      "a": "Oui. Seedance 2.0 Fast garde la même famille de workflows que Seedance 2.0 standard : text-to-video, image-to-video avec image de fin optionnelle, et reference-to-video multimodal."
+    },
+    {
+      "q": "Combien de références Seedance 2.0 Fast accepte-t-il ?",
+      "a": "Fast prend en charge jusqu'à 9 images de référence, 3 vidéos de référence et 3 audios de référence, avec 12 fichiers maximum sur l'ensemble d'un run ref2v."
+    },
+    {
+      "q": "L'image-to-video de Seedance 2.0 Fast prend-il en charge une image de fin ?",
+      "a": "Oui. Le workflow image-to-video accepte une image de départ et une image de fin optionnelle quand vous voulez guider la dernière frame pendant les passes de brouillon."
+    },
+    {
+      "q": "Quelle durée peut-on viser avec Seedance 2.0 Fast ?",
+      "a": "Fal indique une durée auto ou explicite de 4 à 15 secondes pour les routes Seedance 2.0 Fast actuelles."
+    },
+    {
       "q": "Quand utiliser Seedance 2.0 Fast plutôt que Seedance 2.0 standard ?",
-      "a": "Utilisez Fast quand le but est la vitesse d'itération, la préparation des plans et les comparaisons rapides. Passez au standard pour le rendu final le plus soigné."
-    },
-    {
-      "q": "Contre quels modèles le comparer en premier ?",
-      "a": "Commencez par Veo 3.1 Fast et LTX 2.3 Fast. Ces comparaisons disent vite si vous voulez la signature Seedance, la finition publicitaire de Veo ou le rythme storyboard de LTX."
-    },
-    {
-      "q": "Peut-on faire de l'image-to-video et du reference-to-video avec Seedance 2.0 Fast ?",
-      "a": "Oui. Fast prend en charge l'animation depuis une image de départ avec image de fin optionnelle, ainsi que le ref2v avec références image, vidéo et audio pour valider timing et continuité avant de passer à la version standard."
+      "a": "Utilisez Fast quand le but est la vitesse d'itération, le shot planning, les checks de timing et les comparaisons rapides. Passez au standard quand vous voulez le rendu final le plus soigné."
     }
   ],
   "custom": {
@@ -171,55 +187,56 @@
       }
     ],
     "promptingTitle": "Prompt Lab — Seedance 2.0 Fast",
-    "promptingGuideLabel": "Ouvrir la page Seedance 2.0 standard",
+    "promptingGuideLabel": "Notes de workflow Seedance 2.0",
     "promptingGuideUrl": "/models/seedance-2-0",
-    "promptingIntro": "La version Fast récompense la discipline. Un plan, un temps fort, une raison de comparer.",
+    "promptingIntro": "Seedance 2.0 Fast fonctionne mieux quand chaque rendu teste une seule décision. Gardez le brief dans l'ordre Sujet -> Action -> Caméra -> Style, puis choisissez la route la plus rapide : texte, image départ/fin, ou références.",
     "promptingGlobalPrinciples": [
-      "Tester une variable à la fois",
-      "Utiliser un seul temps fort par rendu",
-      "Garder un mouvement caméra court",
-      "Faire passer les versions gagnantes dans la version standard"
+      "Changez une seule variable par rendu pour garder des comparaisons lisibles.",
+      "Conservez les mêmes références quand vous testez caméra, timing ou audio.",
+      "Utilisez les tests départ/fin pour valider une transition, pas pour réécrire toute la scène.",
+      "Donnez un rôle unique à chaque référence et supprimez les adjectifs de style superflus.",
+      "Faites passer les versions gagnantes dans Seedance 2.0 standard pour la finition finale."
     ],
     "promptingEngineWhy": [
-      "Fast est meilleur quand l'objectif est une décision, pas un film final.",
-      "Les prompts courts rendent les comparaisons plus lisibles.",
-      "Les références aident à garder la continuité pendant les tests de mouvement.",
-      "Comparer Fast à d'autres versions rapides fait gagner du temps avant les rendus premium."
+      "Fast est surtout utile pour les checks conceptuels avant les rendus coûteux.",
+      "Les tests avec image de départ/fin sont pratiques pour juger une transition sans sur-diriger le milieu du plan.",
+      "Les runs à références servent surtout aux tests A/B de continuité, pas à la complexité maximale.",
+      "Des indications audio courtes rendent les comparaisons côte à côte plus faciles à juger."
     ],
     "promptingTabNotes": {
-      "quick": "Rapide = une décision, un rendu.",
-      "structured": "Structuré = rendre le test lisible.",
-      "pro": "Avancé = préparer le passage à Seedance 2.0 standard.",
-      "storyboard": "Storyboard = temps courts pour planifier."
+      "quick": "Texte = tester le brief lui-même.",
+      "structured": "Départ/Fin = tester la transition et la frame d'arrivée.",
+      "pro": "Références = tester la continuité avec le même pack source.",
+      "storyboard": "Comparaison = préparer le gagnant pour le standard."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Rapide",
-        "title": "Prompt d'itération rapide",
-        "description": "Quand vous voulez une réponse rapide.",
-        "copy": "[Sujet] dans [décor]. Un temps fort principal. Caméra: [mouvement court]. Son: [une indication]. Objectif: valider timing / cadrage / mouvement."
+        "label": "Texte",
+        "title": "Prompt text-to-video de test",
+        "description": "À utiliser quand vous voulez une lecture rapide du cadrage, du mouvement ou de l'ambiance depuis le langage seul.",
+        "copy": "Sujet :\n[Qui / quoi apparaît]\n\nAction :\n[Un seul beat visible]\n\nCaméra :\n[Un seul mouvement court]\n\nStyle :\n[Lumière + palette]\n\nObjectif :\n[Ce que ce run doit prouver : timing / cadrage / mouvement / audio]\n\nRègle :\nNe mélangez pas plusieurs décisions dans le même run Fast."
       },
       {
         "id": "structured",
-        "label": "Structuré",
-        "title": "Prompt de comparaison structuré",
-        "description": "Quand le rendu sera comparé à une autre version rapide.",
-        "copy": "Objectif du plan:\nAncrages de continuité:\nMoment principal:\nMouvement caméra:\nIndication audio:\nCe qui doit rester identique entre versions:"
+        "label": "Départ/Fin",
+        "title": "Prompt de test image-to-video",
+        "description": "À utiliser quand vous devez valider la façon dont une image de départ atterrit sur une image de fin.",
+        "copy": "Image de départ :\n[Ce qui est fixe dès la frame 1]\n\nImage de fin (optionnelle) :\n[Ce que la dernière frame doit atteindre]\n\nTrajet du mouvement :\n[Comment le sujet se déplace entre les deux]\n\nCaméra :\n[Un seul mouvement]\n\nCe qui doit rester identique entre variantes :\n[Lumière / tenue / décor / rythme]\n\nUtilisez ce format quand la vraie question est la qualité de la transition."
       },
       {
         "id": "pro",
-        "label": "Avancé",
-        "title": "Prompt de passage au standard",
-        "description": "À utiliser quand Fast a gagné et qu'on prépare le brief standard.",
-        "copy": "Résumé de l'essai gagnant:\nCe qu'on garde:\nCe qu'on affine dans Seedance 2.0 standard:\nPolissage attendu:\nNotes audio:\nFormat final:"
+        "label": "Références",
+        "title": "Prompt de test de continuité",
+        "description": "À utiliser quand vous vérifiez si le même pack de références tient bien entre variantes.",
+        "copy": "Intention du prompt :\n[Ce que le brouillon doit valider]\n\nRéférences image :\n@Image1 = [identité]\n@Image2 = [produit / tenue / palette]\n\nRéférences vidéo :\n@Video1 = [rythme caméra / pacing]\n\nRéférences audio :\n@Audio1 = [ambiance / beat / texture de dialogue]\n\nVariable testée :\n[Un seul changement : caméra / rythme / cadrage / son]\n\nRègle :\nGardez le même pack source et ne changez qu'une seule chose."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard",
-        "description": "Utile pour des temps forts encore bruts.",
-        "copy": "Plan 1 (0-3 s):\nPlan 2 (3-6 s):\nPlan 3 (6-9 s):\nGarder sujet / tenue / décor cohérents.\nN'utiliser des transitions que si nécessaire."
+        "label": "Comparaison",
+        "title": "Prompt de comparaison / handoff",
+        "description": "À utiliser quand Fast sert à choisir un gagnant avant le standard.",
+        "copy": "Ce qui reste fixe dans le A/B :\n[Sujet / références / décor / durée / ratio]\n\nVariante A :\n[Choix caméra / rythme / audio]\n\nVariante B :\n[Une seule variable changée]\n\nCritère de victoire :\n[Ce qui compte comme succès]\n\nSi validé, passage au standard avec :\n[Plus de polish, un plan de sons plus riche, un découpage plus complet]"
       }
     ],
     "tipsTitle": "Forces et limites",

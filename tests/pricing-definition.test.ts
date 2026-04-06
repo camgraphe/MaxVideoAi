@@ -36,3 +36,15 @@ test('Nano Banana 2 pricing definition includes resolution tiers and web search 
   assert.equal(definition?.resolutionMultipliers['4k'], 2);
   assert.equal(definition?.addons?.enable_web_search?.flatCents, 1.5);
 });
+
+test('Seedance 2 pricing definition exposes token-priced 480p and 720p tiers to the estimator', () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'seedance-2-0')?.engine;
+  assert.ok(engine);
+
+  const definition = buildPricingDefinition(engine);
+  assert.ok(definition);
+  assert.ok(typeof definition?.baseUnitPriceCents === 'number' && definition.baseUnitPriceCents > 0);
+  assert.ok(typeof definition?.resolutionMultipliers['480p'] === 'number');
+  assert.ok(typeof definition?.resolutionMultipliers['720p'] === 'number');
+  assert.ok((definition?.resolutionMultipliers['720p'] ?? 0) > (definition?.resolutionMultipliers['480p'] ?? 0));
+});

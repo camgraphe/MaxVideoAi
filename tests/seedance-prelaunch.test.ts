@@ -7,6 +7,10 @@ import { MARKETING_FOOTER_EXAMPLES, MARKETING_NAV_COMPARE, MARKETING_NAV_EXAMPLE
 import { getModelFamilyDefinition } from '../frontend/config/model-families.ts';
 import { getPublishedComparisonSlugs, getHubEngines } from '../frontend/lib/compare-hub/data.ts';
 import { orderExamplesHubFamilyIds } from '../frontend/lib/examples/familyOrder.ts';
+import { normalizeFalDurationValueForModel } from '../frontend/src/lib/fal.ts';
+import { getVisibleAssetSlotCount } from '../frontend/lib/asset-slot-layout.ts';
+import { getSeedanceAssetState, getSeedanceFieldBlockKey, getUnifiedSeedanceMode } from '../frontend/lib/seedance-workflow.ts';
+import { ENGINE_SELECT_FAMILY_PRIORITY, getEngineSelectFamilyRank } from '../frontend/src/lib/engine-family-priority.ts';
 import { getExampleFamilyIds } from '../frontend/lib/model-families.ts';
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
@@ -56,17 +60,29 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.ok(seedanceFields.some((field) => field.id === 'image_urls' && field.modes?.includes('ref2v') && field.maxCount === 9));
   assert.ok(seedanceFields.some((field) => field.id === 'video_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
   assert.ok(seedanceFields.some((field) => field.id === 'audio_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
+  assert.equal(seedanceFields.find((field) => field.id === 'image_url')?.label, 'Start image');
+  assert.equal(seedanceFields.find((field) => field.id === 'end_image_url')?.label, 'End image');
+  assert.equal(seedanceFields.find((field) => field.id === 'image_urls')?.label, 'Reference images (up to 9)');
+  assert.equal(seedanceFields.find((field) => field.id === 'video_urls')?.label, 'Reference video clips (up to 3)');
+  assert.equal(seedanceFields.find((field) => field.id === 'audio_urls')?.label, 'Reference audio clips (up to 3)');
   assert.equal(seedanceFields.some((field) => field.id === 'reference_image_urls' && field.modes?.includes('ref2v')), false);
   assert.ok(fastFields.some((field) => field.id === 'end_image_url' && field.modes?.includes('i2v')));
   assert.ok(fastFields.some((field) => field.id === 'image_urls' && field.modes?.includes('ref2v') && field.maxCount === 9));
   assert.ok(fastFields.some((field) => field.id === 'video_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
   assert.ok(fastFields.some((field) => field.id === 'audio_urls' && field.modes?.includes('ref2v') && field.maxCount === 3));
+  assert.equal(fastFields.find((field) => field.id === 'image_url')?.label, 'Start image');
+  assert.equal(fastFields.find((field) => field.id === 'end_image_url')?.label, 'End image');
+  assert.equal(fastFields.find((field) => field.id === 'image_urls')?.label, 'Reference images (up to 9)');
+  assert.equal(fastFields.find((field) => field.id === 'video_urls')?.label, 'Reference video clips (up to 3)');
+  assert.equal(fastFields.find((field) => field.id === 'audio_urls')?.label, 'Reference audio clips (up to 3)');
   assert.equal(fastFields.some((field) => field.id === 'reference_image_urls' && field.modes?.includes('ref2v')), false);
 
   assert.equal(seedance.availability, 'available');
   assert.equal(fast.availability, 'available');
   assert.equal(seedance.surfaces.app.enabled, true);
   assert.equal(fast.surfaces.app.enabled, true);
+  assert.equal(seedance.surfaces.pricing.includeInEstimator, true);
+  assert.equal(fast.surfaces.pricing.includeInEstimator, true);
   assert.equal(seedance.surfaces.compare.includeInHub, true);
   assert.equal(fast.surfaces.compare.includeInHub, true);
   assert.equal(seedance.surfaces.modelPage.indexable, true);
@@ -194,4 +210,59 @@ test('Examples hub family order follows the current business priority without re
     'pika',
     'hailuo',
   ]);
+});
+
+test('Engine select uses the same family priority as the examples hub', () => {
+  assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'sora']);
+  const families = ['sora', 'ltx', 'seedance', 'veo', 'wan', 'kling'];
+  const sorted = families
+    .slice()
+    .sort((a, b) => getEngineSelectFamilyRank({ family: a }) - getEngineSelectFamilyRank({ family: b }));
+  assert.deepEqual(sorted, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'sora']);
+});
+
+test('Unified Seedance workspace switches mode from attached assets and blocks the opposite family', () => {
+  const startImageAssets = {
+    image_url: [{ kind: 'image' as const }],
+  };
+  assert.equal(getUnifiedSeedanceMode(startImageAssets), 'i2v');
+  assert.equal(getSeedanceFieldBlockKey('image_urls', startImageAssets), 'clearStartEnd');
+  assert.equal(getSeedanceFieldBlockKey('image_url', startImageAssets, true), null);
+
+  const referenceAssets = {
+    image_urls: [{ kind: 'image' as const }],
+    video_urls: [{ kind: 'video' as const }],
+  };
+  assert.equal(getUnifiedSeedanceMode(referenceAssets), 'ref2v');
+  assert.equal(getSeedanceFieldBlockKey('image_url', referenceAssets), 'clearReferences');
+  assert.equal(getSeedanceFieldBlockKey('video_urls', referenceAssets, true), null);
+
+  const audioOnlyAssets = {
+    audio_urls: [{ kind: 'audio' as const }],
+  };
+  assert.equal(getSeedanceAssetState(audioOnlyAssets).hasReferenceAudio, true);
+  assert.equal(getSeedanceAssetState(audioOnlyAssets).hasReferenceMedia, false);
+});
+
+test('Progressive asset slots start at three and reveal the next slot when the visible limit is filled', () => {
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 0 }), 3);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 2 }), 3);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 3 }), 4);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 8 }), 9);
+  assert.equal(getVisibleAssetSlotCount({ maxCount: 3, filledCount: 0 }), 3);
+});
+
+test('Seedance Fal requests serialize numeric duration selections as string enum values', () => {
+  assert.equal(
+    normalizeFalDurationValueForModel('seedance-2-0', 'bytedance/seedance-2.0/text-to-video', 12),
+    '12'
+  );
+  assert.equal(
+    normalizeFalDurationValueForModel('seedance-2-0-fast', 'bytedance/seedance-2.0/fast/image-to-video', 4),
+    '4'
+  );
+  assert.equal(
+    normalizeFalDurationValueForModel('veo-3-1', 'fal-ai/veo3.1/text-to-video', 8),
+    8
+  );
 });

@@ -33,6 +33,24 @@ const ENGINE_MODE_MODEL_MAP = (() => {
   return map;
 })();
 
+const STRING_ENUM_DURATION_MODEL_PATTERN = /^bytedance\/seedance-2\.0(?:\/fast)?\//i;
+
+export function normalizeFalDurationValueForModel(
+  engineId: string,
+  modelSlug: string,
+  duration: number | string
+): number | string {
+  if (typeof duration === 'string') {
+    return duration;
+  }
+
+  if (STRING_ENUM_DURATION_MODEL_PATTERN.test(modelSlug) || engineId.startsWith('seedance-2-0')) {
+    return String(Math.round(duration));
+  }
+
+  return duration;
+}
+
 type FalVideoCandidate =
   | string
   | {
@@ -389,9 +407,9 @@ async function generateViaFal(
       requestBody.num_frames = Math.round(payload.numFrames);
     } else if (!isLumaRay2EngineId(payload.engineId)) {
       if (payload.durationOption != null) {
-        requestBody.duration = payload.durationOption;
+        requestBody.duration = normalizeFalDurationValueForModel(payload.engineId, model, payload.durationOption);
       } else if (payload.durationSec != null) {
-        requestBody.duration = payload.durationSec;
+        requestBody.duration = normalizeFalDurationValueForModel(payload.engineId, model, payload.durationSec);
       }
     }
 

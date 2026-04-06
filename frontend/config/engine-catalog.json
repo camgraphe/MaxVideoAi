@@ -4860,7 +4860,7 @@
         "variantLabel": "Standard"
       },
       "pricing": {
-        "includeInEstimator": false,
+        "includeInEstimator": true,
         "featuredScenario": "seedance-2-family"
       }
     },
@@ -5340,7 +5340,7 @@
         "variantLabel": "Fast"
       },
       "pricing": {
-        "includeInEstimator": false,
+        "includeInEstimator": true,
         "featuredScenario": "seedance-2-family"
       }
     },

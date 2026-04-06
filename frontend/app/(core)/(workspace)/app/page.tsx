@@ -68,6 +68,14 @@ import {
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 import {
+  getSeedanceAssetState,
+  getSeedanceFieldBlockKey,
+  getUnifiedSeedanceMode,
+  isUnifiedSeedanceEngineId,
+  SEEDANCE_REFERENCE_AUDIO_FIELD_IDS,
+  UNIFIED_SEEDANCE_ENGINE_IDS,
+} from '@/lib/seedance-workflow';
+import {
   getLocalizedModeLabel,
   getLocalizedWorkflowCopy,
   localizeLtxField,
@@ -2893,9 +2901,29 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     setTopUpAmount(1000);
     setTopUpError(null);
   }, []);
+  const getSeedanceFieldBlockedMessage = useCallback(
+    (field: EngineInputField) => {
+      if (!isUnifiedSeedanceEngineId(form?.engineId)) return null;
+      const fieldHasOwnAssets = (inputAssets[field.id] ?? []).some((asset) => asset !== null);
+      const blockKey = getSeedanceFieldBlockKey(field.id, inputAssets, fieldHasOwnAssets);
+      if (blockKey === 'clearReferences') {
+        return workflowCopy.clearReferencesToUseStartEnd;
+      }
+      if (blockKey === 'clearStartEnd') {
+        return workflowCopy.clearStartEndToUseReferences;
+      }
+      return null;
+    },
+    [form?.engineId, inputAssets, workflowCopy.clearReferencesToUseStartEnd, workflowCopy.clearStartEndToUseReferences]
+  );
 
   const handleOpenAssetLibrary = useCallback(
     (field: EngineInputField, slotIndex?: number) => {
+      const blockedMessage = getSeedanceFieldBlockedMessage(field);
+      if (blockedMessage) {
+        showNotice(blockedMessage);
+        return;
+      }
       const nextSource: AssetLibrarySource = field.type === 'video' ? 'generated' : 'all';
       if (nextSource !== assetLibrarySource) {
         setAssetLibrarySource(nextSource);
@@ -2905,7 +2933,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       }
       setAssetPickerTarget({ kind: 'field', field, slotIndex });
     },
-    [assetLibrarySource]
+    [assetLibrarySource, getSeedanceFieldBlockedMessage, showNotice]
   );
 
   const handleOpenKlingAssetLibrary = useCallback(
@@ -2923,6 +2951,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const handleSelectLibraryAsset = useCallback(
     async (field: EngineInputField, asset: UserAsset, slotIndex?: number) => {
+      const blockedMessage = getSeedanceFieldBlockedMessage(field);
+      if (blockedMessage) {
+        showNotice(blockedMessage);
+        return;
+      }
       if (field.type === 'video' && asset.kind !== 'video') {
         showNotice('This slot requires a video source. Pick a video from the video library or import an MP4/MOV clip.');
         return;
@@ -3068,7 +3101,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       setAssetPickerTarget(null);
     },
-    [showNotice]
+    [getSeedanceFieldBlockedMessage, showNotice]
   );
 
   const handleSelectKlingLibraryAsset = useCallback(
@@ -3112,6 +3145,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const handleAssetAdd = useCallback(
     (field: EngineInputField, file: File, slotIndex?: number, meta?: { durationSec?: number }) => {
+      const blockedMessage = getSeedanceFieldBlockedMessage(field);
+      if (blockedMessage) {
+        showNotice(blockedMessage);
+        return;
+      }
       const assetId =
         typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
           ? crypto.randomUUID()
@@ -3233,7 +3271,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       void upload();
     },
-    [showNotice]
+    [getSeedanceFieldBlockedMessage, showNotice]
   );
 
   const handleAssetRemove = useCallback((field: EngineInputField, index: number) => {
@@ -3789,6 +3827,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const isKlingV3 =
     selectedEngine?.id === 'kling-3-pro' || selectedEngine?.id === 'kling-3-standard';
   const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
+  const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
   const multiPromptTotalSec = useMemo(
     () => multiPromptScenes.reduce((sum, scene) => sum + (scene.duration || 0), 0),
     [multiPromptScenes]
@@ -3858,6 +3897,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const engineModeOptions = useMemo<Mode[] | undefined>(() => {
     if (!selectedEngine) return undefined;
+    if (UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)) {
+      return undefined;
+    }
     if (selectedEngine.id === 'veo-3-1') {
       const order: Mode[] = ['ref2v', 'extend'];
       const available = order.filter((value) => selectedEngine.modes.includes(value));
@@ -4372,6 +4414,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
     return { hasImage, hasVideo, hasAudio };
   }, [inputAssets]);
+  const seedanceAssetState = useMemo(() => getSeedanceAssetState(inputAssets), [inputAssets]);
   const hasPrimaryImageInput = useMemo(() => {
     return PRIMARY_IMAGE_SLOT_IDS.some((fieldId) =>
       (inputAssets[fieldId] ?? []).some((asset) => asset?.kind === 'image')
@@ -4383,6 +4426,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const implicitMode = useMemo<Mode>(() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
+    if (isUnifiedSeedance) {
+      return getUnifiedSeedanceMode(inputAssets);
+    }
     const modes = selectedEngine.modes;
     if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
     if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
@@ -4391,14 +4437,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
     if (modes.includes('t2v')) return 't2v';
     return modes[0] ?? 't2v';
-  }, [form?.mode, referenceInputStatus.hasAudio, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
+  }, [form?.mode, inputAssets, isUnifiedSeedance, referenceInputStatus.hasAudio, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
 
   const audioToVideoSupported = Boolean(selectedEngine?.modes.includes('a2v'));
   const audioWorkflowLocked = referenceInputStatus.hasAudio && audioToVideoSupported;
-  const audioWorkflowUnsupported = referenceInputStatus.hasAudio && Boolean(selectedEngine) && !audioToVideoSupported;
+  const audioWorkflowUnsupported =
+    referenceInputStatus.hasAudio &&
+    Boolean(selectedEngine) &&
+    !audioToVideoSupported &&
+    !(isUnifiedSeedance && seedanceAssetState.hasReferenceAudio);
 
   const activeManualMode = useMemo<Mode | null>(() => {
     if (!selectedEngine) return null;
+    if (isUnifiedSeedance) return null;
     if (referenceInputStatus.hasAudio) return null;
     const currentMode = form?.mode ?? null;
     if (
@@ -4407,12 +4458,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         currentMode === 'ref2v' ||
         currentMode === 'extend' ||
         currentMode === 'retake') &&
-      selectedEngine.modes.includes(currentMode)
+        selectedEngine.modes.includes(currentMode)
     ) {
       return currentMode;
     }
     return null;
-  }, [form?.mode, referenceInputStatus.hasAudio, selectedEngine]);
+  }, [form?.mode, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
   const allowsUnifiedVeoFirstLast = useMemo(() => {
@@ -4576,7 +4627,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             ? (['extend'] as const)
             : selectedEngine.id === 'veo-3-1-lite'
               ? ([] as const)
-            : null;
+            : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
+              ? ([] as const)
+              : null;
     if (!explicitModes) return undefined;
     const disabledReason = audioWorkflowLocked
       ? workflowCopy.removeAudioToUnlock
@@ -4709,6 +4762,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const id = (field.id ?? '').toLowerCase();
     if (id.includes('first_frame') || id.includes('last_frame') || id.includes('end_image')) return 'frame';
     if (id === 'image_urls' || id.endsWith('_image_urls')) return 'reference';
+    if (id === 'video_urls' || id.endsWith('_video_urls')) return 'reference';
+    if (id === 'audio_urls' || id.endsWith('_audio_urls')) return 'reference';
     if (id.includes('reference')) return 'reference';
     if (id === 'image_url' || id === 'input_image') return 'primary';
     if (required && field.type === 'image') return 'primary';
@@ -4739,6 +4794,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       );
     const appliesToMode = (field: EngineInputField) => {
       if (!field.modes || field.modes.includes(activeMode)) return true;
+      if (
+        isUnifiedSeedance &&
+        (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
+        (field.modes.includes('i2v') || field.modes.includes('ref2v'))
+      ) {
+        return true;
+      }
       if (allowsUnifiedVeoFirstLast && field.id === 'last_frame_url' && field.modes.includes('fl2v')) return true;
       if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
       if (!allowsCrossModeAssets) return false;
@@ -4837,7 +4899,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       negativePromptField,
       negativePromptRequired,
     };
-  }, [selectedEngine, activeMode, allowsUnifiedVeoFirstLast, uiLocale]);
+  }, [selectedEngine, activeMode, allowsUnifiedVeoFirstLast, isUnifiedSeedance, uiLocale]);
 
   const extraInputFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
@@ -4912,11 +4974,37 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       .map((entry) => entry.field.id as string);
     return new Set(ids);
   }, [inputSchemaSummary.assetFields]);
+  const referenceAudioFieldIds = useMemo(() => {
+    const ids = inputSchemaSummary.assetFields
+      .filter((entry) => entry.field.type === 'audio' && typeof entry.field.id === 'string')
+      .map((entry) => entry.field.id as string)
+      .filter((fieldId) => SEEDANCE_REFERENCE_AUDIO_FIELD_IDS.has(fieldId));
+    return new Set(ids);
+  }, [inputSchemaSummary.assetFields]);
 
   const primaryAssetFieldLabel = useMemo(() => {
     const primaryField = inputSchemaSummary.assetFields.find((entry) => entry.role === 'primary')?.field;
     return primaryField?.label ?? 'Reference image';
   }, [inputSchemaSummary.assetFields]);
+  const composerAssetFields = useMemo(() => {
+    return inputSchemaSummary.assetFields.map((entry) => {
+      const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset !== null);
+      const blockKey = isUnifiedSeedance
+        ? getSeedanceFieldBlockKey(entry.field.id, inputAssets, fieldHasOwnAssets)
+        : null;
+      const disabledReason =
+        blockKey === 'clearReferences'
+          ? workflowCopy.clearReferencesToUseStartEnd
+          : blockKey === 'clearStartEnd'
+            ? workflowCopy.clearStartEndToUseReferences
+            : null;
+      return {
+        ...entry,
+        disabled: Boolean(disabledReason),
+        disabledReason,
+      };
+    });
+  }, [inputAssets, inputSchemaSummary.assetFields, isUnifiedSeedance, workflowCopy.clearReferencesToUseStartEnd, workflowCopy.clearStartEndToUseReferences]);
 
   useEffect(() => {
     if (!selectedEngine) {
@@ -5282,11 +5370,28 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           .map((attachment) => attachment.url)
           .filter((url, index, self) => self.indexOf(url) === index)
       : [];
+    const referenceAudioUrls = inputsPayload
+      ? inputsPayload
+          .filter(
+            (attachment) =>
+              attachment.kind === 'audio' &&
+              typeof attachment.url === 'string' &&
+              typeof attachment.slotId === 'string' &&
+              referenceAudioFieldIds.has(attachment.slotId)
+          )
+          .map((attachment) => attachment.url)
+          .filter((url, index, self) => self.indexOf(url) === index)
+      : [];
 
     const primaryImageUrl =
       primaryAttachment?.url ?? (activeMode === 'i2v' || activeMode === 'i2i' ? referenceImageUrls[0] : undefined);
     const primaryAudioUrl =
-      inputsPayload?.find((attachment) => attachment.kind === 'audio' && typeof attachment.url === 'string')?.url ?? undefined;
+      inputsPayload?.find(
+        (attachment) =>
+          attachment.kind === 'audio' &&
+          typeof attachment.url === 'string' &&
+          !(typeof attachment.slotId === 'string' && referenceAudioFieldIds.has(attachment.slotId))
+      )?.url ?? undefined;
     const endImageUrl =
       inputsPayload?.find((attachment) => attachment.slotId === 'end_image_url' && typeof attachment.url === 'string')
         ?.url ?? undefined;
@@ -5382,9 +5487,20 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         showNotice(guardMessage);
         return;
       }
-      if (isReferenceImageMode && referenceImageUrls.length === 0) {
-        showNotice('Add 1–4 reference images before running Reference → Video.');
-        return;
+      if (isReferenceImageMode) {
+        if (isUnifiedSeedance) {
+          if (referenceImageUrls.length === 0 && referenceVideoUrls.length === 0) {
+            showNotice(
+              referenceAudioUrls.length > 0
+                ? workflowCopy.addReferenceMediaBeforeAudio
+                : 'Add at least one reference image or reference video before running Seedance Reference → Video.'
+            );
+            return;
+          }
+        } else if (referenceImageUrls.length === 0) {
+          showNotice('Add 1–4 reference images before running Reference → Video.');
+          return;
+        }
       }
       const isVideoDrivenMode = submissionMode === 'r2v';
       if (isVideoDrivenMode && referenceVideoUrls.length === 0) {
@@ -5945,6 +6061,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     primaryAssetFieldLabel,
     primaryAssetFieldIds,
     referenceAssetFieldIds,
+    referenceAudioFieldIds,
     genericImageFieldIds,
     frameAssetFieldIds,
     allowsUnifiedVeoFirstLast,
@@ -5956,6 +6073,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     multiPromptScenes,
     isKlingV3,
     isSeedance,
+    isUnifiedSeedance,
     prompt.length,
     promptCharLimitExceeded,
     promptMaxChars,
@@ -6504,7 +6622,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 onModeToggle={handleComposerModeToggle}
                 workflowNotice={composerWorkflowNotice}
                 promotedActions={composerPromotedActions}
-                assetFields={inputSchemaSummary.assetFields}
+                assetFields={composerAssetFields}
                 assets={composerAssets}
                 onAssetAdd={handleAssetAdd}
                 onAssetRemove={handleAssetRemove}

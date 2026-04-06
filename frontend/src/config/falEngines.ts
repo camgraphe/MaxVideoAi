@@ -169,7 +169,7 @@ const SEEDANCE_2_LAUNCH_CONFIG = {
     includeInFamilyCopy: true,
   },
   pricing: {
-    includeInEstimator: false,
+    includeInEstimator: true,
     featuredScenario: 'seedance-2-family',
   },
   app: {

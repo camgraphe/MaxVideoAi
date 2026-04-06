@@ -103,7 +103,7 @@
       "Ajouter audio ou voice IDs"
     ]
   },
-  "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle le timing des plans, la caméra, la lumière, le style et les cues audio. Un seul geste par plan.",
+  "promptingTip": "Astuce : traitez Kling 3 Pro comme un moteur storyboard. Choisissez shot_type consciemment, réutilisez les ancres @Element, gardez une action par plan et des répliques très courtes quand l'audio est actif.",
   "tips": {
     "title": "Conseils & limites",
     "items": [
@@ -171,10 +171,10 @@
         ]
       }
     ],
-    "promptingTitle": "Comment écrire un bon prompt Kling 3 Pro",
+    "promptingTitle": "Comment prompter Kling 3 Pro pour le multi-plan",
     "promptingGuideLabel": "Guide de prompting Kling 3.0",
     "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
-    "promptingIntro": "Kling 3 Pro fonctionne mieux avec une direction par plans : cadrage clair, une action par plan, mouvement de caméra explicite et (si audio activé) dialogue court + peu de cues sonores.",
+    "promptingIntro": "Kling 3 Pro récompense un prompting de type storyboard avec multi_prompt, ancres @Element réutilisables, image de fin optionnelle et cues audio natives très courtes. Pensez comme un chef de plan, pas comme un romancier.",
     "promptingGlobalPrinciples": [
       "Pensez en plans, pas en clips : une action lisible par plan.",
       "Placez cadrage + mouvement caméra avant les adjectifs de style.",
@@ -190,38 +190,38 @@
       "shot_type : “intelligent” aide la couverture automatique ; “customize” est meilleur pour un contrôle strict."
     ],
     "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = contrôle. À utiliser pour des looks précis et répétables.",
-      "storyboard": "Storyboard = timing des plans. À utiliser pour des beats multi‑plans."
+      "quick": "Plan unique = valider cadrage, mouvement et un beat.",
+      "structured": "Multi-plan = 2-4 plans avec ancres réutilisées.",
+      "pro": "Elements + audio = verrouiller identité, props et voix.",
+      "storyboard": "Liste de plans = séquence complète avec shot_type et image de fin éventuelle."
     },
     "promptingTabs": [
       {
         "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "label": "Plan unique",
+        "title": "Prompt plan unique",
+        "description": "À utiliser quand vous voulez une action propre avec un seul mouvement caméra.",
         "copy": "[Un sujet] [une action visible] dans [décor], [cadrage + un mouvement caméra], [lumière/style].\nAudio (optionnel) : [ambience + 1 cue SFX OU une courte ligne].\nNégatif : pas de texte, pas de logos, pas de sous‑titres/overlays."
       },
       {
         "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "label": "Multi-plan",
+        "title": "Prompt multi-plan",
+        "description": "À utiliser quand la structure multi_prompt compte plus que la variation libre.",
         "copy": "Ancrages de scène :\n[Sujet + tenue/props + 2–3 ancrages d’environnement.]\n\nPlan multi‑shot (3–15 s au total) :\nPlan 1 (0–4 s) : [cadrage + action + un mouvement caméra]\nPlan 2 (4–10 s) : [cadrage + action + un mouvement caméra]\nPlan 3 (10–15 s) : [action finale/reveal + pose]\n\nElements (optionnel) :\n@Element1 = [personnage/sujet principal]\n@Element2 = [prop/produit]\n\nAudio (optionnel) :\nDialogue : <<<voice_1>>> “Courte ligne.”\nAmbience + 1–2 cues SFX. Gardez ça minimal.\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de sous‑titres/overlays."
       },
       {
         "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “équipe de tournage” ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité entre plans.",
-        "copy": "Brief réalisateur :\n[Objectif + vibe + audience visée.]\n\nContinuité (répéter sur chaque plan) :\n- Identité du sujet + tenue/props\n- Lieu + moment + 3 ancrages visuels\n- Lumière + ancrages de palette\n- Sensation de lentille + un mouvement caméra par plan\n\nShot type :\n[customize | intelligent]\n\nPlan multi‑shot (jusqu’à 15 s au total, jusqu’à ~6 plans) :\nPlan 1 : [cadrage + action + caméra]\nPlan 2 : [cadrage + action + caméra]\nPlan 3 : [cadrage + action + caméra]\n(optionnel) Plan 4–6 : [si nécessaire]\n\nElements :\n@Element1 = [personnage]\n@Element2 = [produit/prop]\n\nAudio (si activé) :\nDialogue : <<<voice_1>>> “Courte ligne.”\nAmbience + 1–2 cues SFX + vibe musicale optionnelle.\n\nImage de fin (optionnelle) :\n[Décrivez le dernier frame souhaité.]\n\nNégatif :\nPas de texte, pas de logos, pas de sous‑titres/overlays, pas de jump cuts."
+        "label": "Elements + audio",
+        "title": "Prompt Elements / voix",
+        "description": "À utiliser quand identité, props et voix doivent rester verrouillés sur tout le clip.",
+        "copy": "Brief réalisateur :\n[Objectif + vibe + audience visée.]\n\nElements :\n@Element1 = [personnage]\n@Element2 = [produit / prop]\n\nShot type :\n[customize | intelligent]\n\nContinuité :\n- Identité + tenue / props\n- Lieu + moment + 3 ancrages\n- Lumière + palette\n\nAudio (si activé) :\nDialogue : <<<voice_1>>> Courte ligne.\nAmbience + 1–2 cues SFX.\n\nRègle :\nSi l'audio est activé, gardez des répliques courtes et évitez d'empiler trop d'instructions sonores."
       },
       {
         "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (multi‑shot / liste de plans)",
-        "description": "À utiliser quand vous voulez une mini‑story en un seul clip. Un prompt storyboard (multi‑shot / shot list) donne un timing clair, une direction caméra et de la continuité.",
+        "label": "Liste de plans",
+        "title": "Prompt shot list",
+        "description": "À utiliser quand vous voulez une séquence multi-plans complète avec shot_type et image de fin éventuelle.",
         "copy": "Durée : [3–15 s] • Format : [16:9 / 9:16 / 1:1] • Audio : [on/off] • shot_type : [customize | intelligent]\n\nElements (optionnel) :\n@Element1 = [personnage/sujet principal]\n@Element2 = [prop/produit]\n\nPlan 1 (0–3 s) :\n[Cadrage + action + mouvement caméra]\n\nPlan 2 (3–8 s) :\n[Cadrage + action + mouvement caméra]\n\nPlan 3 (8–15 s) :\n[Action finale/reveal + pose caméra]\nImage de fin (optionnelle) : [décrivez le dernier frame souhaité]\n\nAudio (si activé) :\nDialogue : <<<voice_1>>> “Courte ligne.”\nAmbience + 1–2 cues SFX.\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de sous‑titres/overlays. Une action par plan."
       }
     ],

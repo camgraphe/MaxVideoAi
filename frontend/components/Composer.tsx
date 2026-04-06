@@ -257,7 +257,8 @@ export function Composer({
     });
   }, [assetFields, assets]);
   const orderedAssetFields = useMemo(() => {
-    const useCustomAssetOrder = engine.id.startsWith('ltx-2-3') || engine.id.startsWith('lumaRay2');
+    const useCustomAssetOrder =
+      engine.id.startsWith('ltx-2-3') || engine.id.startsWith('lumaRay2') || engine.id.startsWith('seedance-2-0');
     if (!useCustomAssetOrder) {
       return assetFields;
     }
@@ -265,8 +266,11 @@ export function Composer({
     const order = new Map<string, number>([
       ['image_url', 0],
       ['end_image_url', 1],
-      ['audio_url', 2],
-      ['video_url', 3],
+      ['image_urls', 2],
+      ['video_urls', 3],
+      ['audio_urls', 4],
+      ['audio_url', 5],
+      ['video_url', 6],
     ]);
 
     return [...assetFields].sort((left, right) => {
@@ -278,15 +282,12 @@ export function Composer({
       return left.field.id.localeCompare(right.field.id);
     });
   }, [assetFields, engine.id]);
-  const useLtxAssetGridLayout = engine.id.startsWith('ltx-2-3');
+  const useLtxAssetGridLayout = engine.id.startsWith('ltx-2-3') || engine.id.startsWith('seedance-2-0');
   const assetFieldLayoutClass = useMemo(() => {
     if (!useLtxAssetGridLayout) {
       return 'flex flex-wrap gap-4';
     }
-    if (orderedAssetFields.length >= 4) {
-      return 'grid gap-4 md:grid-cols-2 xl:grid-cols-4';
-    }
-    return 'grid gap-4 md:grid-cols-2 xl:grid-cols-3';
+    return 'grid gap-4 md:grid-cols-2';
   }, [orderedAssetFields.length, useLtxAssetGridLayout]);
   const promptPlaceholderValue = hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
@@ -563,7 +564,7 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              {orderedAssetFields.map(({ field, required, role, headerAction }) => (
+              {orderedAssetFields.map(({ field, required, role, headerAction, disabled, disabledReason }) => (
                 <AssetDropzone
                   key={field.id}
                   engine={engine}
@@ -571,9 +572,12 @@ export function Composer({
                   field={field}
                   required={required}
                   isSoloField={orderedAssetFields.length === 1}
+                  className={field.maxCount && field.maxCount > 1 ? 'md:col-span-2' : undefined}
                   role={role}
                   assets={assets[field.id] ?? []}
                   headerAction={headerAction}
+                  disabled={disabled}
+                  disabledReason={disabledReason}
                   onSelect={onAssetAdd}
                   onRemove={onAssetRemove}
                   onError={onNotice}
