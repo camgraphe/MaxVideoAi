@@ -110,6 +110,16 @@ const BASE_SELECT_WITH_SETTINGS = `
   FROM app_jobs
 `;
 
+const PUBLIC_VIDEO_PREDICATE = `
+  visibility = 'public'
+  AND COALESCE(indexable, TRUE)
+`;
+
+const PUBLIC_VIDEO_PREDICATE_PLAYLIST = `
+  aj.visibility = 'public'
+  AND COALESCE(aj.indexable, TRUE)
+`;
+
 export async function getVideoById(videoId: string): Promise<GalleryVideo | null> {
   const rows = await query<VideoRow>(
     `${BASE_SELECT} WHERE job_id = $1 LIMIT 1`,
@@ -120,7 +130,7 @@ export async function getVideoById(videoId: string): Promise<GalleryVideo | null
 
 export async function getSeoVideoById(videoId: string): Promise<GalleryVideo | null> {
   const rows = await query<VideoRow>(
-    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = $1 LIMIT 1`,
+    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = $1 AND ${PUBLIC_VIDEO_PREDICATE} LIMIT 1`,
     [videoId]
   );
   return rows[0] ? mapRow(rows[0]) : null;
@@ -148,7 +158,23 @@ export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string,
   }
   const uniqueIds = Array.from(new Set(videoIds));
   const rows = await query<VideoRow>(
-    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = ANY($1::text[])`,
+    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
+    [uniqueIds]
+  );
+  const map = new Map<string, GalleryVideo>();
+  rows.forEach((row) => {
+    map.set(row.job_id, mapRow(row));
+  });
+  return map;
+}
+
+export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<string, GalleryVideo>> {
+  if (!videoIds.length) {
+    return new Map();
+  }
+  const uniqueIds = Array.from(new Set(videoIds));
+  const rows = await query<VideoRow>(
+    `${BASE_SELECT} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
     [uniqueIds]
   );
   const map = new Map<string, GalleryVideo>();
@@ -175,6 +201,24 @@ export async function getLatestVideoByPromptAndEngine(
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
+export async function getLatestPublicVideoByPromptAndEngine(
+  prompt: string,
+  engineId: string
+): Promise<GalleryVideo | null> {
+  const rows = await query<VideoRow>(
+    `
+      ${BASE_SELECT}
+      WHERE prompt = $1
+        AND engine_id = $2
+        AND ${PUBLIC_VIDEO_PREDICATE}
+      ORDER BY created_at DESC
+      LIMIT 1
+    `,
+    [prompt, engineId]
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
 export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
   const rows = await query<VideoRow & { order_index: number }>(
     `
@@ -186,8 +230,7 @@ export async function listPlaylistVideos(slug: string, limit: number): Promise<G
       JOIN app_jobs aj ON aj.job_id = pi.video_id
       WHERE p.slug = $1
         AND p.is_public = TRUE
-        AND aj.visibility = 'public'
-        AND COALESCE(aj.indexable, TRUE)
+        AND ${PUBLIC_VIDEO_PREDICATE_PLAYLIST}
       ORDER BY
         CASE WHEN pi.order_index IS NULL THEN 1 ELSE 0 END,
         pi.order_index DESC,
@@ -203,8 +246,7 @@ async function listLatest(limit: number): Promise<GalleryVideo[]> {
   const rows = await query<VideoRow>(
     `
       ${BASE_SELECT}
-      WHERE visibility = 'public'
-        AND COALESCE(indexable, TRUE)
+      WHERE ${PUBLIC_VIDEO_PREDICATE}
       ORDER BY created_at DESC
       LIMIT $1
     `,
@@ -217,8 +259,7 @@ async function listTrending(limit: number): Promise<GalleryVideo[]> {
   const rows = await query<VideoRow>(
     `
       ${BASE_SELECT}
-      WHERE visibility = 'public'
-        AND COALESCE(indexable, TRUE)
+      WHERE ${PUBLIC_VIDEO_PREDICATE}
       ORDER BY featured DESC, featured_order ASC, created_at DESC
       LIMIT $1
     `,

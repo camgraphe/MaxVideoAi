@@ -20,7 +20,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { listPlaylistVideos, getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
@@ -3427,7 +3427,7 @@ async function renderMarketingModelPage({
     const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
     return normalized ? allowedEngineIds.has(normalized) : false;
   });
-  const validatedMap = await getVideosByIds(soraExamples.map((video) => video.id));
+  const validatedMap = await getPublicVideosByIds(soraExamples.map((video) => video.id));
   let galleryVideos = soraExamples
     .filter((video) => validatedMap.has(video.id))
     .map((video) =>
@@ -3445,7 +3445,7 @@ async function renderMarketingModelPage({
   const preferredList = [preferredIds.hero, preferredIds.demo].filter((id): id is string => Boolean(id));
   const missingPreferred = preferredList.filter((id) => !galleryVideos.some((video) => video.id === id));
   if (missingPreferred.length) {
-    const preferredMap = await getVideosByIds(missingPreferred);
+    const preferredMap = await getPublicVideosByIds(missingPreferred);
     for (const id of preferredList) {
       if (!preferredMap.has(id) || galleryVideos.some((video) => video.id === id)) continue;
       const video = preferredMap.get(id)!;

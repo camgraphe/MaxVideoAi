@@ -152,6 +152,29 @@ test('Seedance benchmark specs stay aligned with the live Fal-facing product sur
   });
 });
 
+test('Public marketing media fetchers stay visibility-safe for pinned and prompt-based Seedance surfaces', () => {
+  const videosSource = fs.readFileSync(path.join(process.cwd(), 'frontend/server/videos.ts'), 'utf8');
+  const compareSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/page.tsx'),
+    'utf8'
+  );
+  const modelSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx'),
+    'utf8'
+  );
+  const homepageSource = fs.readFileSync(path.join(process.cwd(), 'frontend/server/homepage.ts'), 'utf8');
+
+  assert.match(videosSource, /export async function getPublicVideosByIds/);
+  assert.match(videosSource, /export async function getLatestPublicVideoByPromptAndEngine/);
+  assert.match(videosSource, /visibility = 'public'/);
+  assert.match(videosSource, /COALESCE\(indexable, TRUE\)/);
+  assert.match(compareSource, /getPublicVideosByIds/);
+  assert.match(compareSource, /getLatestPublicVideoByPromptAndEngine/);
+  assert.doesNotMatch(compareSource, /getLatestVideoByPromptAndEngine/);
+  assert.match(modelSource, /getPublicVideosByIds/);
+  assert.match(homepageSource, /getPublicVideosByIds/);
+});
+
 test('Seedance becomes the app and marketing priority family ahead of Sora', () => {
   const appEngineIds = getBaseEnginesByCategory('video').map((engine) => engine.id);
   assert.equal(appEngineIds[0], 'seedance-2-0');

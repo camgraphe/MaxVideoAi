@@ -1,7 +1,7 @@
 import { query } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { ensureBillingSchema } from '@/lib/schema';
-import { getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 
 export const HOMEPAGE_SECTION_TYPES = ['hero', 'gallery', 'playlist_rail'] as const;
 export type HomepageSectionType = (typeof HOMEPAGE_SECTION_TYPES)[number];
@@ -336,7 +336,7 @@ export async function getHomepageSlots(): Promise<{
     .map((slot) => slot.videoId)
     .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
-  const videosMap = await getVideosByIds(videoIds);
+  const videosMap = await getPublicVideosByIds(videoIds);
 
   const heroSlots: HomepageSlotWithVideo[] = [];
   const gallerySlots: HomepageSlotWithVideo[] = [];
