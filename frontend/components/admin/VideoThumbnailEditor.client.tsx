@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 
@@ -11,6 +12,8 @@ type VideoThumbnailEditorProps = {
   engineLabel?: string | null;
   initialThumbUrl?: string | null;
   videoUrl?: string | null;
+  className?: string;
+  onThumbnailUpdated?: (thumbUrl: string) => void;
 };
 
 function formatTime(value: number): string {
@@ -24,6 +27,8 @@ export function VideoThumbnailEditor({
   engineLabel,
   initialThumbUrl,
   videoUrl,
+  className,
+  onThumbnailUpdated,
 }: VideoThumbnailEditorProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [thumbUrl, setThumbUrl] = useState(initialThumbUrl ?? null);
@@ -50,6 +55,7 @@ export function VideoThumbnailEditor({
         throw new Error(json?.error ?? 'Failed to update thumbnail');
       }
       setThumbUrl(json.thumbUrl);
+      onThumbnailUpdated?.(json.thumbUrl);
       setFeedback(`Thumbnail updated from ${formatTime(roundedTime)}`);
     } catch (captureError) {
       console.error('[video-thumbnail-editor] failed', captureError);
@@ -60,7 +66,7 @@ export function VideoThumbnailEditor({
   }
 
   return (
-    <div className="w-[15rem] space-y-3">
+    <div className={clsx('w-full max-w-sm space-y-3', className)}>
       {videoUrl ? (
         <div className="overflow-hidden rounded-card border border-hairline bg-black shadow-card">
           <video

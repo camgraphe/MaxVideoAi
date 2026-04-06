@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import clsx from 'clsx';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
@@ -210,6 +211,20 @@ export function ModerationTable({
         error: patch.error ?? (patch.error === null ? null : prev[videoId]?.error ?? null),
       },
     }));
+  }, []);
+
+  const handleThumbnailUpdated = useCallback((videoId: string, thumbUrl: string) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === videoId
+          ? {
+              ...item,
+              thumbUrl,
+              updatedAt: new Date().toISOString(),
+            }
+          : item
+      )
+    );
   }, []);
 
   const scheduleStatusClear = useCallback((videoId: string, field: 'message' | 'error', value: string, delay = 2500) => {
@@ -871,9 +886,9 @@ export function ModerationTable({
                 </div>
 
                 <div className="space-y-3">
-                    <div className="space-y-2">
+                  <div className="space-y-2">
                       <p className="text-sm font-semibold text-text-primary">{selectedVideo.engineLabel}</p>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <PublicationPill state={selectedVideo.publicationState} />
                       <StatePill tone={selectedVideo.isPublishedOnSite ? 'ok' : 'warn'}>
                         {getPublicationLabel(selectedVideo)}
@@ -908,6 +923,19 @@ export function ModerationTable({
                     <p className="mt-2 text-sm text-text-secondary">{selectedVideo.prompt}</p>
                   </details>
                 </div>
+
+                {surface === 'video' ? (
+                  <VideoThumbnailEditor
+                    key={selectedVideo.id}
+                    videoId={selectedVideo.id}
+                    title={selectedVideo.prompt}
+                    engineLabel={selectedVideo.engineLabel}
+                    initialThumbUrl={selectedVideo.thumbUrl ?? null}
+                    videoUrl={selectedVideo.videoUrl ?? null}
+                    className="max-w-none"
+                    onThumbnailUpdated={(thumbUrl) => handleThumbnailUpdated(selectedVideo.id, thumbUrl)}
+                  />
+                ) : null}
 
                 <div className="space-y-2">
                   <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Moderation</p>
