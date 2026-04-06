@@ -80,18 +80,18 @@
     },
     {
       "modelSlug": "seedance-1-5-pro",
-      "fidelity": 8.1,
-      "visualQuality": 8.3,
-      "motion": 8.0,
-      "consistency": 7.7,
-      "anatomy": 7.7,
+      "fidelity": 7.8,
+      "visualQuality": 8.0,
+      "motion": 7.6,
+      "consistency": 7.2,
+      "anatomy": 7.4,
       "textRendering": 6.8,
-      "lipsyncQuality": 8.5,
-      "sequencingQuality": 7.5,
-      "controllability": 8.0,
-      "speedStability": 7.4,
+      "lipsyncQuality": 8.1,
+      "sequencingQuality": 7.1,
+      "controllability": 7.5,
+      "speedStability": 7.2,
       "pricing": 8.5,
-      "last_updated": "2026-04-03"
+      "last_updated": "2026-04-06"
     },
     {
       "modelSlug": "seedance-2-0",
