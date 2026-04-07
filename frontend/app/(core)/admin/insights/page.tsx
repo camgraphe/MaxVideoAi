@@ -11,6 +11,7 @@ import type {
 } from '@/lib/admin/types';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { type AdminStatColumn, AdminStatTable } from '@/components/admin-system/surfaces/AdminStatTable';
 import { requireAdmin } from '@/server/admin';
 
 const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
@@ -595,45 +596,60 @@ function EngineMixTable({ engines }: { engines: AdminMetrics['engines'] }) {
     return <EmptyStateCard>No engine activity recorded in the last 30 days.</EmptyStateCard>;
   }
 
+  const columns: AdminStatColumn<AdminMetrics['engines'][number]>[] = [
+    {
+      key: 'engine',
+      header: 'Engine',
+      render: (engine) => (
+        <>
+          <p className="font-medium text-text-primary">{engine.engineLabel}</p>
+          <p className="mt-1 text-xs text-text-secondary">
+            {formatCurrency(engine.avgSpendPerUser30d, { precise: true })} avg / user
+          </p>
+        </>
+      ),
+    },
+    {
+      key: 'revenue',
+      header: 'Revenue',
+      cellClassName: 'font-medium text-text-primary',
+      render: (engine) => formatCurrency(engine.rendersAmount30dUsd),
+    },
+    {
+      key: 'renders',
+      header: 'Renders',
+      cellClassName: 'text-text-secondary',
+      render: (engine) => formatNumber(engine.rendersCount30d),
+    },
+    {
+      key: 'users',
+      header: 'Users',
+      cellClassName: 'text-text-secondary',
+      render: (engine) => formatNumber(engine.distinctUsers30d),
+    },
+    {
+      key: 'renderShare',
+      header: 'Render share',
+      render: (engine) => (
+        <ShareBar value={engine.shareOfTotalRenders30d} label={formatPercent(engine.shareOfTotalRenders30d)} accent="#0F766E" />
+      ),
+    },
+    {
+      key: 'revenueShare',
+      header: 'Revenue share',
+      render: (engine) => (
+        <ShareBar value={engine.shareOfTotalRevenue30d} label={formatPercent(engine.shareOfTotalRevenue30d)} accent="#2563EB" />
+      ),
+    },
+  ];
+
   return (
     <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine mix</p>
         <p className="mt-1 text-sm text-text-secondary">Table-first reading of revenue, render share and distinct usage.</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="bg-surface">
-            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-              <th className="px-4 py-3 font-semibold">Engine</th>
-              <th className="px-4 py-3 font-semibold">Revenue</th>
-              <th className="px-4 py-3 font-semibold">Renders</th>
-              <th className="px-4 py-3 font-semibold">Users</th>
-              <th className="px-4 py-3 font-semibold">Render share</th>
-              <th className="px-4 py-3 font-semibold">Revenue share</th>
-            </tr>
-          </thead>
-          <tbody>
-            {engines.map((engine) => (
-              <tr key={engine.engineId} className="border-t border-hairline">
-                <td className="px-4 py-3">
-                  <p className="font-medium text-text-primary">{engine.engineLabel}</p>
-                  <p className="mt-1 text-xs text-text-secondary">{formatCurrency(engine.avgSpendPerUser30d, { precise: true })} avg / user</p>
-                </td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(engine.rendersAmount30dUsd)}</td>
-                <td className="px-4 py-3 text-text-secondary">{formatNumber(engine.rendersCount30d)}</td>
-                <td className="px-4 py-3 text-text-secondary">{formatNumber(engine.distinctUsers30d)}</td>
-                <td className="px-4 py-3">
-                  <ShareBar value={engine.shareOfTotalRenders30d} label={formatPercent(engine.shareOfTotalRenders30d)} accent="#0F766E" />
-                </td>
-                <td className="px-4 py-3">
-                  <ShareBar value={engine.shareOfTotalRevenue30d} label={formatPercent(engine.shareOfTotalRevenue30d)} accent="#2563EB" />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminStatTable columns={columns} rows={engines} getRowKey={(engine) => engine.engineId} empty={null} className="rounded-none border-0" tableClassName="min-w-[760px]" headerClassName="bg-surface" bodyClassName="divide-y divide-hairline" />
     </div>
   );
 }
@@ -715,36 +731,46 @@ function DailyLedgerTable({ rows }: { rows: LedgerRow[] }) {
     return <EmptyStateCard>No recent daily entries.</EmptyStateCard>;
   }
 
+  const columns: AdminStatColumn<LedgerRow>[] = [
+    {
+      key: 'date',
+      header: 'Date',
+      cellClassName: 'text-text-secondary',
+      render: (row) => formatDay(row.date),
+    },
+    {
+      key: 'signups',
+      header: 'Signups',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatNumber(row.signups),
+    },
+    {
+      key: 'active',
+      header: 'Active',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatNumber(row.active),
+    },
+    {
+      key: 'topups',
+      header: 'Top-ups',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.topupsUsd),
+    },
+    {
+      key: 'charges',
+      header: 'Charges',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.chargesUsd),
+    },
+  ];
+
   return (
     <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Latest 7 days</p>
         <p className="mt-1 text-sm text-text-secondary">Lecture condensée des dernières journées utiles, sans séparer croissance et revenu dans deux cartes différentes.</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="bg-surface">
-            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-              <th className="px-4 py-3 font-semibold">Date</th>
-              <th className="px-4 py-3 font-semibold">Signups</th>
-              <th className="px-4 py-3 font-semibold">Active</th>
-              <th className="px-4 py-3 font-semibold">Top-ups</th>
-              <th className="px-4 py-3 font-semibold">Charges</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.date} className="border-t border-hairline">
-                <td className="px-4 py-3 text-text-secondary">{formatDay(row.date)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatNumber(row.signups)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatNumber(row.active)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.topupsUsd)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.chargesUsd)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminStatTable columns={columns} rows={rows} getRowKey={(row) => row.date} empty={null} className="rounded-none border-0" tableClassName="min-w-[640px]" headerClassName="bg-surface" bodyClassName="divide-y divide-hairline" />
     </div>
   );
 }
@@ -758,34 +784,40 @@ function MonthlyRollupTable({
     return <EmptyStateCard>No monthly aggregates yet.</EmptyStateCard>;
   }
 
+  const columns: AdminStatColumn<(typeof rows)[number]>[] = [
+    {
+      key: 'month',
+      header: 'Month',
+      cellClassName: 'text-text-secondary',
+      render: (row) => formatMonth(row.month),
+    },
+    {
+      key: 'signups',
+      header: 'Signups',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatNumber(row.signups),
+    },
+    {
+      key: 'topups',
+      header: 'Top-ups',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.topupsUsd),
+    },
+    {
+      key: 'charges',
+      header: 'Charges',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.chargesUsd),
+    },
+  ];
+
   return (
     <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Monthly rollup</p>
         <p className="mt-1 text-sm text-text-secondary">Six derniers mois, gardés séparés des lignes journalières.</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-surface">
-            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-              <th className="px-4 py-3 font-semibold">Month</th>
-              <th className="px-4 py-3 font-semibold">Signups</th>
-              <th className="px-4 py-3 font-semibold">Top-ups</th>
-              <th className="px-4 py-3 font-semibold">Charges</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.month} className="border-t border-hairline">
-                <td className="px-4 py-3 text-text-secondary">{formatMonth(row.month)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatNumber(row.signups)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.topupsUsd)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.chargesUsd)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminStatTable columns={columns} rows={rows} getRowKey={(row) => row.month} empty={null} className="rounded-none border-0" headerClassName="bg-surface" bodyClassName="divide-y divide-hairline" />
     </div>
   );
 }

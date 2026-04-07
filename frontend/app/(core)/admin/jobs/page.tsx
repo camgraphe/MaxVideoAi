@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { AlertTriangle, CheckCircle2, Clock3, History, ReceiptText, ShieldAlert } from 'lucide-react';
 import type { AdminJobAuditRecord } from '@/server/admin-job-audit';
 import { fetchRecentJobAudits } from '@/server/admin-job-audit';
@@ -8,6 +7,7 @@ import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
+import { AdminShortcutRail } from '@/components/admin-system/surfaces/AdminShortcutRail';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
@@ -138,7 +138,14 @@ export default async function AdminJobsAuditPage({ searchParams = {} }: PageProp
         }
       >
         <div className="space-y-4">
-          <OutcomeShortcutRail shortcuts={shortcuts} />
+          <AdminShortcutRail
+            items={shortcuts.map((shortcut) => ({
+              label: shortcut.label,
+              href: shortcut.href,
+              active: shortcut.active,
+              meta: formatNumber(shortcut.count),
+            }))}
+          />
           <JobFilters filters={filters} />
           <AdminJobAuditTable key={filtersQuery || 'all-jobs'} initialJobs={jobs} initialCursor={nextCursor} filtersQuery={filtersQuery} />
         </div>
@@ -411,27 +418,5 @@ function JobFilters({ filters }: { filters: UiFilters }) {
         />
       </label>
     </AdminFilterBar>
-  );
-}
-
-function OutcomeShortcutRail({ shortcuts }: { shortcuts: Shortcut[] }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {shortcuts.map((shortcut) => (
-        <Link
-          key={shortcut.label}
-          href={shortcut.href}
-          className={[
-            'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition',
-            shortcut.active
-              ? 'border-brand bg-brand/10 text-brand'
-              : 'border-border bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary',
-          ].join(' ')}
-        >
-          <span>{shortcut.label}</span>
-          <span className="rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-text-primary">{formatNumber(shortcut.count)}</span>
-        </Link>
-      ))}
-    </div>
   );
 }

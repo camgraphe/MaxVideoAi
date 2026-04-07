@@ -7,6 +7,8 @@ import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { type AdminStatColumn, AdminStatTable } from '@/components/admin-system/surfaces/AdminStatTable';
+import { AdminWatchlistCard } from '@/components/admin-system/surfaces/AdminWatchlistCard';
 import { ButtonLink } from '@/components/ui/Button';
 import type { AdminTransactionRecord, TransactionAnomalies } from '@/server/admin-transactions';
 import { fetchAdminTransactions, fetchTransactionAnomalies } from '@/server/admin-transactions';
@@ -50,6 +52,93 @@ export default async function AdminTransactionsPage() {
     anomalies.largeRefunds.length + anomalies.frequentRefundUsers.length + anomalies.invalidCharges.length;
   const refundableCharges = transactions.filter((row) => row.canRefund).length;
   const missingJobs = transactions.filter(isMissingJobRecord).length;
+  const largeRefundColumns: AdminStatColumn<TransactionAnomalies['largeRefunds'][number]>[] = [
+    {
+      key: 'receipt',
+      header: 'Receipt',
+      render: (row) => (
+        <>
+          <p className="font-mono text-xs text-text-primary">#{row.receiptId}</p>
+          <p className="mt-1 text-xs text-text-muted">{formatDate(row.createdAt)}</p>
+        </>
+      ),
+    },
+    {
+      key: 'user',
+      header: 'User',
+      render: (row) => <UserRef userId={row.userId} />,
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right font-medium text-text-primary',
+      render: (row) => formatAmount(row.amountCents, row.currency),
+    },
+  ];
+  const refundHeavyColumns: AdminStatColumn<TransactionAnomalies['frequentRefundUsers'][number]>[] = [
+    {
+      key: 'user',
+      header: 'User',
+      render: (row) => (
+        <>
+          <UserRef userId={row.userId} />
+          <p className="mt-1 text-xs text-text-muted">{formatDate(row.lastRefundAt)}</p>
+        </>
+      ),
+    },
+    {
+      key: 'refunds',
+      header: 'Refunds',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right font-medium text-text-primary',
+      render: (row) => formatNumber(row.refundCount),
+    },
+    {
+      key: 'value',
+      header: 'Value',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right font-medium text-text-primary',
+      render: (row) => formatUsdCents(row.totalCents),
+    },
+  ];
+  const invalidChargeColumns: AdminStatColumn<TransactionAnomalies['invalidCharges'][number]>[] = [
+    {
+      key: 'receipt',
+      header: 'Receipt',
+      render: (row) => (
+        <>
+          <p className="font-mono text-xs text-text-primary">#{row.receiptId}</p>
+          <div className="mt-1">
+            <UserRef userId={row.userId} />
+          </div>
+        </>
+      ),
+    },
+    {
+      key: 'job',
+      header: 'Job',
+      render: (row) => (
+        <>
+          {row.jobId ? (
+            <Link href={`/admin/jobs?jobId=${encodeURIComponent(row.jobId)}`} className="text-sm text-brand hover:underline">
+              {row.jobId}
+            </Link>
+          ) : (
+            <span className="text-text-muted">No linked job</span>
+          )}
+          <p className="mt-1 text-xs text-text-muted">{formatDate(row.createdAt)}</p>
+        </>
+      ),
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right font-medium text-error',
+      render: (row) => formatUsdCents(row.amountCents),
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-5">
@@ -106,128 +195,73 @@ export default async function AdminTransactionsPage() {
             lines={['Large refunds, repeated refunds and invalid charges are grouped here for faster triage.']}
           />
         }
-      >
+        >
         <div className="grid gap-4 xl:grid-cols-3">
-          <WatchlistCard
+          <AdminWatchlistCard
             title="Large refunds"
             description="Remboursements supérieurs a 500 USD."
-            count={anomalies.largeRefunds.length}
-            tone={anomalies.largeRefunds.length ? 'warning' : 'default'}
+            badge={formatNumber(anomalies.largeRefunds.length)}
           >
             {anomalies.largeRefunds.length ? (
-              <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-hairline text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                  <tr>
-                    <th className="pb-2">Receipt</th>
-                    <th className="pb-2">User</th>
-                    <th className="pb-2 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {anomalies.largeRefunds.map((row) => (
-                    <tr key={row.receiptId} className="border-b border-hairline/80 last:border-b-0">
-                      <td className="py-3 align-top">
-                        <p className="font-mono text-xs text-text-primary">#{row.receiptId}</p>
-                        <p className="mt-1 text-xs text-text-muted">{formatDate(row.createdAt)}</p>
-                      </td>
-                      <td className="py-3 align-top">
-                        <UserRef userId={row.userId} />
-                      </td>
-                      <td className="py-3 text-right align-top font-medium text-text-primary">
-                        {formatAmount(row.amountCents, row.currency)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <AdminStatTable
+                columns={largeRefundColumns}
+                rows={anomalies.largeRefunds}
+                getRowKey={(row) => String(row.receiptId)}
+                empty={<AdminEmptyState>No refunds above the review threshold in the latest scan.</AdminEmptyState>}
+                className="border-0 bg-transparent"
+                tableClassName="min-w-full"
+                headerClassName="bg-transparent"
+                bodyClassName="divide-y divide-hairline/80"
+                emptyClassName="px-0 py-0"
+              />
             ) : (
               <AdminEmptyState>No refunds above the review threshold in the latest scan.</AdminEmptyState>
             )}
-          </WatchlistCard>
+          </AdminWatchlistCard>
 
-          <WatchlistCard
+          <AdminWatchlistCard
             title="Refund-heavy users"
             description="Utilisateurs avec au moins 3 remboursements sur 30 jours."
-            count={anomalies.frequentRefundUsers.length}
-            tone={anomalies.frequentRefundUsers.length ? 'warning' : 'default'}
+            badge={formatNumber(anomalies.frequentRefundUsers.length)}
           >
             {anomalies.frequentRefundUsers.length ? (
-              <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-hairline text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                  <tr>
-                    <th className="pb-2">User</th>
-                    <th className="pb-2 text-right">Refunds</th>
-                    <th className="pb-2 text-right">Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {anomalies.frequentRefundUsers.map((row) => (
-                    <tr
-                      key={`${row.userId ?? 'anonymous'}-${row.lastRefundAt ?? 'latest'}`}
-                      className="border-b border-hairline/80 last:border-b-0"
-                    >
-                      <td className="py-3 align-top">
-                        <UserRef userId={row.userId} />
-                        <p className="mt-1 text-xs text-text-muted">{formatDate(row.lastRefundAt)}</p>
-                      </td>
-                      <td className="py-3 text-right align-top font-medium text-text-primary">
-                        {formatNumber(row.refundCount)}
-                      </td>
-                      <td className="py-3 text-right align-top font-medium text-text-primary">
-                        {formatUsdCents(row.totalCents)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <AdminStatTable
+                columns={refundHeavyColumns}
+                rows={anomalies.frequentRefundUsers}
+                getRowKey={(row) => `${row.userId ?? 'anonymous'}-${row.lastRefundAt ?? 'latest'}`}
+                empty={<AdminEmptyState>No user currently exceeds the refund frequency threshold.</AdminEmptyState>}
+                className="border-0 bg-transparent"
+                tableClassName="min-w-full"
+                headerClassName="bg-transparent"
+                bodyClassName="divide-y divide-hairline/80"
+                emptyClassName="px-0 py-0"
+              />
             ) : (
               <AdminEmptyState>No user currently exceeds the refund frequency threshold.</AdminEmptyState>
             )}
-          </WatchlistCard>
+          </AdminWatchlistCard>
 
-          <WatchlistCard
+          <AdminWatchlistCard
             title="Invalid charges"
             description="Charges nulles ou negatives a corriger."
-            count={anomalies.invalidCharges.length}
-            tone={anomalies.invalidCharges.length ? 'warning' : 'default'}
+            badge={formatNumber(anomalies.invalidCharges.length)}
           >
             {anomalies.invalidCharges.length ? (
-              <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-hairline text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                  <tr>
-                    <th className="pb-2">Receipt</th>
-                    <th className="pb-2">Job</th>
-                    <th className="pb-2 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {anomalies.invalidCharges.map((row) => (
-                    <tr key={row.receiptId} className="border-b border-hairline/80 last:border-b-0">
-                      <td className="py-3 align-top">
-                        <p className="font-mono text-xs text-text-primary">#{row.receiptId}</p>
-                        <div className="mt-1">
-                          <UserRef userId={row.userId} />
-                        </div>
-                      </td>
-                      <td className="py-3 align-top">
-                        {row.jobId ? (
-                          <Link href={`/admin/jobs?jobId=${encodeURIComponent(row.jobId)}`} className="text-sm text-brand hover:underline">
-                            {row.jobId}
-                          </Link>
-                        ) : (
-                          <span className="text-text-muted">No linked job</span>
-                        )}
-                        <p className="mt-1 text-xs text-text-muted">{formatDate(row.createdAt)}</p>
-                      </td>
-                      <td className="py-3 text-right align-top font-medium text-error">{formatUsdCents(row.amountCents)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <AdminStatTable
+                columns={invalidChargeColumns}
+                rows={anomalies.invalidCharges}
+                getRowKey={(row) => String(row.receiptId)}
+                empty={<AdminEmptyState>No zero-value or negative charges detected.</AdminEmptyState>}
+                className="border-0 bg-transparent"
+                tableClassName="min-w-full"
+                headerClassName="bg-transparent"
+                bodyClassName="divide-y divide-hairline/80"
+                emptyClassName="px-0 py-0"
+              />
             ) : (
               <AdminEmptyState>No zero-value or negative charges detected.</AdminEmptyState>
             )}
-          </WatchlistCard>
+          </AdminWatchlistCard>
         </div>
       </AdminSection>
     </div>
@@ -303,43 +337,6 @@ function formatTypeVolume(rows: AdminTransactionRecord[], fallbackLabel: string)
 
 function isMissingJobRecord(row: AdminTransactionRecord) {
   return Boolean(row.jobId && !row.jobStatus && !row.jobPaymentStatus && !row.jobEngineLabel);
-}
-
-
-function WatchlistCard({
-  title,
-  description,
-  count,
-  tone = 'default',
-  children,
-}: {
-  title: string;
-  description: string;
-  count: number;
-  tone?: 'default' | 'warning';
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-hairline bg-bg/40 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{title}</p>
-          <p className="mt-1 text-sm leading-6 text-text-secondary">{description}</p>
-        </div>
-        <span
-          className={[
-            'inline-flex min-w-[2rem] items-center justify-center rounded-full border px-2 py-1 text-xs font-semibold',
-            tone === 'warning'
-              ? 'border-warning-border bg-warning-bg text-warning'
-              : 'border-border bg-surface text-text-primary',
-          ].join(' ')}
-        >
-          {formatNumber(count)}
-        </span>
-      </div>
-      <div className="mt-4">{children}</div>
-    </div>
-  );
 }
 
 function UserRef({ userId }: { userId: string | null }) {

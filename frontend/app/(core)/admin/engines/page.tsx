@@ -6,6 +6,7 @@ import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { type AdminStatColumn, AdminStatTable } from '@/components/admin-system/surfaces/AdminStatTable';
 import { EngineSettingsPanel } from '@/components/admin/EngineSettingsPanel';
 import { ButtonLink } from '@/components/ui/Button';
 import { fetchEngineUsageMetrics } from '@/server/admin-metrics';
@@ -80,6 +81,144 @@ export default async function AdminEnginesPage() {
   const opsRows = buildOperationalRows(performanceMetrics, configSnapshots);
   const commercialRows = buildCommercialRows(usageMetrics, configSnapshots);
   const configMeta = summarizeConfig(configSnapshots);
+  const opsColumns: AdminStatColumn<EngineOpsRow>[] = [
+    {
+      key: 'engine',
+      header: 'Engine',
+      cellClassName: 'px-5',
+      render: (row) => (
+        <div className="flex flex-col gap-1">
+          <p className="font-medium text-text-primary">{row.engineLabel}</p>
+          <p className="font-mono text-xs text-text-muted">{row.engineId}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'modes',
+      header: 'Modes',
+      render: (row) => <span className="text-text-secondary">{row.modes.length ? row.modes.join(', ') : '—'}</span>,
+    },
+    {
+      key: 'attempts',
+      header: 'Attempts',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right font-medium text-text-primary',
+      render: (row) => formatNumber(row.totalAttempts),
+    },
+    {
+      key: 'completed',
+      header: 'Completed',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-secondary',
+      render: (row) => formatNumber(row.completedCount),
+    },
+    {
+      key: 'failed',
+      header: 'Failed',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-secondary',
+      render: (row) => formatNumber(row.failedCount),
+    },
+    {
+      key: 'rejected',
+      header: 'Rejected',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-secondary',
+      render: (row) => formatNumber(row.rejectedCount),
+    },
+    {
+      key: 'rate',
+      header: 'Fail rate',
+      headerClassName: 'text-right',
+      cellClassName: (row) =>
+        [
+          'text-right font-medium',
+          row.failureRate >= 0.15 ? 'text-warning' : row.failureRate > 0 ? 'text-text-primary' : 'text-success',
+        ].join(' '),
+      render: (row) => formatPercent(row.failureRate),
+    },
+    {
+      key: 'avg',
+      header: 'Avg',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-primary',
+      render: (row) => formatDuration(row.averageDurationMs),
+    },
+    {
+      key: 'p95',
+      header: 'P95',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-primary',
+      render: (row) => formatDuration(row.p95DurationMs),
+    },
+    {
+      key: 'config',
+      header: 'Config',
+      cellClassName: 'px-5',
+      render: (row) => <ConfigInlineSummary config={row.config} />,
+    },
+  ];
+  const commercialColumns: AdminStatColumn<EngineCommercialRow>[] = [
+    {
+      key: 'engine',
+      header: 'Engine',
+      cellClassName: 'px-5',
+      render: (row) => (
+        <div className="flex flex-col gap-1">
+          <p className="font-medium text-text-primary">{row.engineLabel}</p>
+          <p className="font-mono text-xs text-text-muted">{row.engineId}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'renders',
+      header: 'Renders',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right font-medium text-text-primary',
+      render: (row) => formatNumber(row.rendersCount30d),
+    },
+    {
+      key: 'users',
+      header: 'Users',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-secondary',
+      render: (row) => formatNumber(row.distinctUsers30d),
+    },
+    {
+      key: 'revenue',
+      header: 'Revenue',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right font-medium text-text-primary',
+      render: (row) => formatCurrency(row.rendersAmount30dUsd),
+    },
+    {
+      key: 'renderShare',
+      header: 'Render share',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-secondary',
+      render: (row) => formatPercent(row.shareOfTotalRenders30d),
+    },
+    {
+      key: 'revenueShare',
+      header: 'Revenue share',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-secondary',
+      render: (row) => formatPercent(row.shareOfTotalRevenue30d),
+    },
+    {
+      key: 'avgPerUser',
+      header: 'Avg / user',
+      headerClassName: 'text-right',
+      cellClassName: 'text-right text-text-secondary',
+      render: (row) => formatCurrency(row.avgSpendPerUser30d),
+    },
+    {
+      key: 'config',
+      header: 'Config',
+      cellClassName: 'px-5',
+      render: (row) => <ConfigInlineSummary config={row.config} />,
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-5">
@@ -116,54 +255,14 @@ export default async function AdminEnginesPage() {
         contentClassName="p-0"
       >
         {opsRows.length ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border text-sm">
-              <thead className="bg-bg/70">
-                <tr>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Modes</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Attempts</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Completed</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Failed</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Rejected</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Fail rate</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Avg</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">P95</th>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Config</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {opsRows.map((row) => (
-                  <tr key={row.engineId}>
-                    <td className="px-5 py-3 align-top">
-                      <div className="flex flex-col gap-1">
-                        <p className="font-medium text-text-primary">{row.engineLabel}</p>
-                        <p className="font-mono text-xs text-text-muted">{row.engineId}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 align-top text-text-secondary">{row.modes.length ? row.modes.join(', ') : '—'}</td>
-                    <td className="px-4 py-3 text-right align-top font-medium text-text-primary">{formatNumber(row.totalAttempts)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.completedCount)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.failedCount)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.rejectedCount)}</td>
-                    <td
-                      className={[
-                        'px-4 py-3 text-right align-top font-medium',
-                        row.failureRate >= 0.15 ? 'text-warning' : row.failureRate > 0 ? 'text-text-primary' : 'text-success',
-                      ].join(' ')}
-                    >
-                      {formatPercent(row.failureRate)}
-                    </td>
-                    <td className="px-4 py-3 text-right align-top text-text-primary">{formatDuration(row.averageDurationMs)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-primary">{formatDuration(row.p95DurationMs)}</td>
-                    <td className="px-5 py-3 align-top">
-                      <ConfigInlineSummary config={row.config} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AdminStatTable
+            columns={opsColumns}
+            rows={opsRows}
+            getRowKey={(row) => row.engineId}
+            empty={<AdminEmptyState>No Fal attempt metrics recorded yet.</AdminEmptyState>}
+            className="rounded-none border-0"
+            tableClassName="min-w-full"
+          />
         ) : (
           <div className="px-5 py-5">
             <AdminEmptyState>No Fal attempt metrics recorded yet.</AdminEmptyState>
@@ -178,43 +277,14 @@ export default async function AdminEnginesPage() {
         contentClassName="p-0"
       >
         {commercialRows.length ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border text-sm">
-              <thead className="bg-bg/70">
-                <tr>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Renders</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Users</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Render share</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue share</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Avg / user</th>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Config</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {commercialRows.map((row) => (
-                  <tr key={row.engineId}>
-                    <td className="px-5 py-3 align-top">
-                      <div className="flex flex-col gap-1">
-                        <p className="font-medium text-text-primary">{row.engineLabel}</p>
-                        <p className="font-mono text-xs text-text-muted">{row.engineId}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right align-top font-medium text-text-primary">{formatNumber(row.rendersCount30d)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.distinctUsers30d)}</td>
-                    <td className="px-4 py-3 text-right align-top font-medium text-text-primary">{formatCurrency(row.rendersAmount30dUsd)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatPercent(row.shareOfTotalRenders30d)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatPercent(row.shareOfTotalRevenue30d)}</td>
-                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatCurrency(row.avgSpendPerUser30d)}</td>
-                    <td className="px-5 py-3 align-top">
-                      <ConfigInlineSummary config={row.config} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AdminStatTable
+            columns={commercialColumns}
+            rows={commercialRows}
+            getRowKey={(row) => row.engineId}
+            empty={<AdminEmptyState>No engine usage recorded over the last 30 days.</AdminEmptyState>}
+            className="rounded-none border-0"
+            tableClassName="min-w-full"
+          />
         ) : (
           <div className="px-5 py-5">
             <AdminEmptyState>No engine usage recorded over the last 30 days.</AdminEmptyState>

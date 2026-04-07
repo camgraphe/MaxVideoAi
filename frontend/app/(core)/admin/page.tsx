@@ -5,6 +5,7 @@ import { fetchAdminHealth } from '@/server/admin-metrics';
 import type { AdminHealthSnapshot } from '@/lib/admin/types';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminWatchlistCard } from '@/components/admin-system/surfaces/AdminWatchlistCard';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
@@ -148,11 +149,11 @@ export default async function AdminIndexPage() {
             description="Résumé opérationnel sur les surfaces qui ont le plus de probabilité de nécessiter une intervention humaine."
           >
             <div className="grid gap-4 lg:grid-cols-3">
-              <WatchlistCard
+              <AdminWatchlistCard
                 icon={CircleAlert}
                 title="Engines at risk"
                 value={atRisk.length ? `${atRisk.length} engines` : 'No engine risk'}
-                body={
+                description={
                   atRisk.length === 0
                     ? 'Aucun moteur ne dépasse le seuil d’alerte actuellement.'
                     : atRisk
@@ -161,24 +162,42 @@ export default async function AdminIndexPage() {
                         .join(', ')
                 }
                 href={buildJobsHref({ outcome: 'failed_action_required' })}
+                footer={
+                  <span className="inline-flex items-center gap-2">
+                    Open surface
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  </span>
+                }
               />
-              <WatchlistCard
+              <AdminWatchlistCard
                 icon={BellRing}
                 title="Service notice"
                 value={health.serviceNotice.active ? 'Banner active' : 'No banner'}
-                body={
+                description={
                   health.serviceNotice.active
                     ? health.serviceNotice.message ?? 'Un message incident est actuellement visible côté produit.'
                     : 'Aucun bandeau d’incident n’est affiché pour les membres.'
                 }
                 href="/admin/system"
+                footer={
+                  <span className="inline-flex items-center gap-2">
+                    Open surface
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  </span>
+                }
               />
-              <WatchlistCard
+              <AdminWatchlistCard
                 icon={ShieldCheck}
                 title="Support coverage"
                 value={`${formatNumber(health.failedRenders24h + health.stalePendingJobs)} open items`}
-                body="Combine échecs non résolus et jobs encore bloqués dans la file pending."
+                description="Combine échecs non résolus et jobs encore bloqués dans la file pending."
                 href="/admin/jobs"
+                footer={
+                  <span className="inline-flex items-center gap-2">
+                    Open surface
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  </span>
+                }
               />
             </div>
           </AdminSection>
@@ -476,42 +495,6 @@ function TriageLink({
         </div>
       </div>
       <ExternalLink className="h-4 w-4 shrink-0 text-text-muted transition group-hover:text-text-primary" />
-    </Link>
-  );
-}
-
-function WatchlistCard({
-  icon: Icon,
-  title,
-  value,
-  body,
-  href,
-}: {
-  icon: typeof CircleAlert;
-  title: string;
-  value: string;
-  body: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-2xl border border-border bg-bg/60 p-4 transition hover:border-border-hover hover:bg-bg"
-    >
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white">
-          <Icon className="h-4 w-4" />
-        </span>
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{title}</p>
-          <p className="mt-1 text-lg font-semibold text-text-primary">{value}</p>
-        </div>
-      </div>
-      <p className="mt-4 text-sm leading-6 text-text-secondary">{body}</p>
-      <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-text-primary">
-        Open surface
-        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-      </div>
     </Link>
   );
 }
