@@ -77,10 +77,22 @@ export default async function AdminEnginesPage() {
   ]);
 
   const configSnapshots = configEntries.map(buildConfigSnapshot);
+  const configSnapshotByEngineId = new Map(configSnapshots.map((snapshot) => [snapshot.engineId, snapshot] as const));
   const overviewCards = buildOverviewCards(performanceMetrics, usageMetrics, configSnapshots);
   const opsRows = buildOperationalRows(performanceMetrics, configSnapshots);
   const commercialRows = buildCommercialRows(usageMetrics, configSnapshots);
   const configMeta = summarizeConfig(configSnapshots);
+  const attentionConfigEntries = configEntries.filter((entry) => {
+    const snapshot = configSnapshotByEngineId.get(entry.engine.id);
+    return snapshot ? needsConfigAttention(snapshot) : false;
+  });
+  const stableConfigEntries = configEntries.filter((entry) => {
+    const snapshot = configSnapshotByEngineId.get(entry.engine.id);
+    return snapshot ? !needsConfigAttention(snapshot) : false;
+  });
+  const disabledConfigs = configSnapshots.filter((snapshot) => !snapshot.active).length;
+  const limitedConfigs = configSnapshots.filter((snapshot) => snapshot.availability !== 'available').length;
+  const degradedConfigs = configSnapshots.filter((snapshot) => !['live', 'busy'].includes(snapshot.status)).length;
   const opsColumns: AdminStatColumn<EngineOpsRow>[] = [
     {
       key: 'engine',
@@ -262,6 +274,8 @@ export default async function AdminEnginesPage() {
             empty={<AdminEmptyState>No Fal attempt metrics recorded yet.</AdminEmptyState>}
             className="rounded-none border-0"
             tableClassName="min-w-full"
+            viewportClassName="max-h-[30rem] overflow-auto"
+            stickyHeader
           />
         ) : (
           <div className="px-5 py-5">
@@ -284,6 +298,8 @@ export default async function AdminEnginesPage() {
             empty={<AdminEmptyState>No engine usage recorded over the last 30 days.</AdminEmptyState>}
             className="rounded-none border-0"
             tableClassName="min-w-full"
+            viewportClassName="max-h-[26rem] overflow-auto"
+            stickyHeader
           />
         ) : (
           <div className="px-5 py-5">
@@ -308,25 +324,92 @@ export default async function AdminEnginesPage() {
       >
         {databaseAvailable ? (
           configEntries.length ? (
-            <div className="divide-y divide-border">
-              {configEntries.map((entry) => (
-                <EngineSettingsPanel
-                  key={entry.engine.id}
-                  engineId={entry.engine.id}
-                  engineLabel={entry.engine.label}
-                  baseline={{
-                    availability: entry.engine.availability,
-                    status: entry.engine.status,
-                    latencyTier: entry.engine.latencyTier,
-                    maxDurationSec: entry.engine.maxDurationSec ?? null,
-                    resolutions: entry.engine.resolutions ?? [],
-                    currency: entry.engine.pricingDetails?.currency ?? 'USD',
-                    perSecondCents: entry.engine.pricingDetails?.perSecondCents?.default ?? null,
-                    flatCents: entry.engine.pricingDetails?.flatCents?.default ?? null,
-                  }}
-                  initialForm={buildInitialForm(entry)}
-                />
-              ))}
+            <div className="grid xl:grid-cols-[320px_minmax(0,1fr)]">
+              <div className="border-b border-hairline px-5 py-5 xl:border-b-0 xl:border-r">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Config pulse</p>
+                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                  Les moteurs en anomalie restent visibles immédiatement. Le reste du catalogue est replié pour garder la page pilotable.
+                </p>
+
+                <div className="mt-4 grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2">
+                  <CompactConfigCell label="Needs attention" value={formatNumber(configMeta.attention)} tone={configMeta.attention ? 'warning' : 'success'} />
+                  <CompactConfigCell label="Disabled" value={formatNumber(disabledConfigs)} tone={disabledConfigs ? 'warning' : 'success'} />
+                  <CompactConfigCell label="Limited" value={formatNumber(limitedConfigs)} tone={limitedConfigs ? 'warning' : 'success'} />
+                  <CompactConfigCell label="Degraded" value={formatNumber(degradedConfigs)} tone={degradedConfigs ? 'warning' : 'success'} />
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Priority engines</p>
+                  {attentionConfigEntries.length ? (
+                    attentionConfigEntries.slice(0, 6).map((entry) => {
+                      const snapshot = configSnapshotByEngineId.get(entry.engine.id) ?? null;
+                      return (
+                        <div key={`priority-${entry.engine.id}`} className="rounded-xl border border-hairline bg-bg/40 px-3 py-2">
+                          <p className="text-sm font-medium text-text-primary">{entry.engine.label}</p>
+                          <p className="mt-1 text-xs text-text-secondary">
+                            {snapshot ? summarizeConfigIssue(snapshot) : 'Override requires review.'}
+                          </p>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-xl border border-hairline bg-bg/40 px-3 py-3 text-sm text-text-secondary">
+                      All registered engine overrides are currently healthy.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="divide-y divide-border">
+                {attentionConfigEntries.length ? (
+                  <div>
+                    <div className="border-b border-hairline px-5 py-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Priority overrides</p>
+                      <p className="mt-1 text-sm text-text-secondary">Review these engines first before opening the broader catalog.</p>
+                    </div>
+                    <div className="divide-y divide-border">
+                      {attentionConfigEntries.map((entry) => (
+                        <EngineSettingsPanel
+                          key={entry.engine.id}
+                          engineId={entry.engine.id}
+                          engineLabel={entry.engine.label}
+                          baseline={buildBaseline(entry)}
+                          initialForm={buildInitialForm(entry)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {stableConfigEntries.length ? (
+                  <details className="group" open={!attentionConfigEntries.length && stableConfigEntries.length <= 6}>
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 marker:hidden">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine catalog</p>
+                        <p className="mt-1 text-sm text-text-secondary">
+                          {attentionConfigEntries.length
+                            ? `${formatNumber(stableConfigEntries.length)} stable engines remain available in the folded catalog.`
+                            : 'Open the full catalog to inspect or edit a healthy engine override.'}
+                        </p>
+                      </div>
+                      <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-semibold text-text-primary">
+                        {formatNumber(stableConfigEntries.length)}
+                      </span>
+                    </summary>
+                    <div className="border-t border-hairline divide-y divide-border">
+                      {stableConfigEntries.map((entry) => (
+                        <EngineSettingsPanel
+                          key={entry.engine.id}
+                          engineId={entry.engine.id}
+                          engineLabel={entry.engine.label}
+                          baseline={buildBaseline(entry)}
+                          initialForm={buildInitialForm(entry)}
+                        />
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
+              </div>
             </div>
           ) : (
             <div className="px-5 py-5">
@@ -400,6 +483,19 @@ function buildInitialForm(entry: ConfigEntry) {
     currency,
     perSecondCents: perSecond === '' ? '' : String(perSecond),
     flatCents: flat === '' ? '' : String(flat),
+  };
+}
+
+function buildBaseline(entry: ConfigEntry) {
+  return {
+    availability: entry.engine.availability,
+    status: entry.engine.status,
+    latencyTier: entry.engine.latencyTier,
+    maxDurationSec: entry.engine.maxDurationSec ?? null,
+    resolutions: entry.engine.resolutions ?? [],
+    currency: entry.engine.pricingDetails?.currency ?? 'USD',
+    perSecondCents: entry.engine.pricingDetails?.perSecondCents?.default ?? null,
+    flatCents: entry.engine.pricingDetails?.flatCents?.default ?? null,
   };
 }
 
@@ -646,6 +742,35 @@ function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }
       </p>
     </div>
   );
+}
+
+function CompactConfigCell({
+  label,
+  value,
+  tone = 'default',
+}: {
+  label: string;
+  value: string;
+  tone?: 'default' | 'success' | 'warning';
+}) {
+  return (
+    <div className="bg-surface px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{label}</p>
+      <p className={['mt-2 text-lg font-semibold', tone === 'warning' ? 'text-warning' : tone === 'success' ? 'text-success' : 'text-text-primary'].join(' ')}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function summarizeConfigIssue(config: EngineConfigSnapshot) {
+  const notes: string[] = [];
+
+  if (!config.active) notes.push('disabled');
+  if (config.availability !== 'available') notes.push(config.availability);
+  if (!['live', 'busy'].includes(config.status)) notes.push(config.status.replace('_', ' '));
+
+  return notes.length ? notes.join(' · ') : 'Healthy';
 }
 
 function formatNumber(value: number): string {

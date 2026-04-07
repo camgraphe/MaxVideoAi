@@ -17,10 +17,12 @@ type AdminStatTableProps<T> = {
   empty: ReactNode;
   className?: string;
   tableClassName?: string;
+  viewportClassName?: string;
   headerClassName?: string;
   bodyClassName?: string;
   emptyClassName?: string;
   rowClassName?: string | ((row: T, index: number) => string);
+  stickyHeader?: boolean;
 };
 
 export function AdminStatTable<T>({
@@ -30,14 +32,16 @@ export function AdminStatTable<T>({
   empty,
   className,
   tableClassName,
+  viewportClassName,
   headerClassName,
   bodyClassName,
   emptyClassName,
   rowClassName,
+  stickyHeader = false,
 }: AdminStatTableProps<T>) {
   return (
-    <AdminDataTable className={className} tableClassName={tableClassName} tone="muted">
-      <thead className={clsx('bg-bg/70', headerClassName)}>
+    <AdminDataTable className={className} tableClassName={tableClassName} tone="muted" viewportClassName={viewportClassName}>
+      <thead className={clsx('bg-bg/70', stickyHeader && 'sticky top-0 z-10 backdrop-blur', headerClassName)}>
         <tr>
           {columns.map((column) => (
             <th

@@ -3,6 +3,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import type { AdminTransactionRecord } from '@/server/admin-transactions';
 import { Button } from '@/components/ui/Button';
 
@@ -228,164 +229,162 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-        <table className="min-w-full divide-y divide-border">
-          <thead className="bg-bg/70">
+      <AdminDataTable className="border-border bg-surface" viewportClassName="max-h-[68vh] overflow-auto" tableClassName="min-w-full divide-y divide-border">
+        <thead className="sticky top-0 z-10 bg-bg/90 backdrop-blur">
+          <tr>
+            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Receipt</th>
+            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Member</th>
+            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Entry</th>
+            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Linked job</th>
+            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">State</th>
+            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border text-sm">
+          {visibleRows.length === 0 ? (
             <tr>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Receipt</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Member</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Entry</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Linked job</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">State</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Action</th>
+              <td colSpan={6} className="px-4 py-10 text-center text-text-secondary">
+                No transactions match the current scope.
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-border text-sm">
-            {visibleRows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-text-secondary">
-                  No transactions match the current scope.
-                </td>
-              </tr>
-            ) : (
-              visibleRows.map((row) => {
-                const amountLabel = formatCurrency(row.amountCents, row.currency);
-                const userLabel = row.userEmail ?? row.userId ?? 'Unknown user';
-                const isPending = pendingReceiptId === row.receiptId;
-                const jobMissing = isMissingJobRecord(row);
-                const rowNeedsReview = needsReview(row);
+          ) : (
+            visibleRows.map((row) => {
+              const amountLabel = formatCurrency(row.amountCents, row.currency);
+              const userLabel = row.userEmail ?? row.userId ?? 'Unknown user';
+              const isPending = pendingReceiptId === row.receiptId;
+              const jobMissing = isMissingJobRecord(row);
+              const rowNeedsReview = needsReview(row);
 
-                return (
-                  <tr key={`${row.receiptId}-${row.createdAt}`} className={clsx(rowNeedsReview && 'bg-warning-bg/30')}>
-                    <td className="whitespace-nowrap px-4 py-3 align-top">
-                      <p className="font-mono text-xs text-text-primary">#{row.receiptId}</p>
-                      <p className="mt-1 text-xs text-text-secondary">{formatDate(row.createdAt)}</p>
-                    </td>
+              return (
+                <tr key={`${row.receiptId}-${row.createdAt}`} className={clsx(rowNeedsReview && 'bg-warning-bg/30')}>
+                  <td className="whitespace-nowrap px-4 py-3 align-top">
+                    <p className="font-mono text-xs text-text-primary">#{row.receiptId}</p>
+                    <p className="mt-1 text-xs text-text-secondary">{formatDate(row.createdAt)}</p>
+                  </td>
 
-                    <td className="px-4 py-3 align-top">
-                      {row.userId ? (
-                        <Link
-                          href={`/admin/users/${row.userId}`}
-                          className="inline-flex min-w-0 flex-col rounded-md border border-transparent px-1 py-0.5 text-left transition hover:border-text-muted hover:bg-bg/70"
-                        >
-                          <span className="truncate text-sm font-medium text-brand">{userLabel}</span>
-                          {row.userEmail && row.userId && row.userEmail !== row.userId ? (
-                            <span className="mt-1 truncate text-xs text-text-muted">{row.userId}</span>
-                          ) : null}
-                        </Link>
-                      ) : (
-                        <div className="flex flex-col">
-                          <span className="text-sm text-text-primary">{userLabel}</span>
-                          <span className="mt-1 text-xs text-text-muted">No linked account id</span>
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span
-                            className={clsx(
-                              'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.18em]',
-                              TYPE_CLASS[row.type]
-                            )}
-                          >
-                            {TYPE_LABEL[row.type] ?? row.type}
-                          </span>
-                          <span className="font-medium text-text-primary">{amountLabel}</span>
-                        </div>
-                        <p className="max-w-[28rem] text-sm text-text-secondary">
-                          {row.description ? row.description : <span className="text-text-muted">No description</span>}
-                        </p>
+                  <td className="px-4 py-3 align-top">
+                    {row.userId ? (
+                      <Link
+                        href={`/admin/users/${row.userId}`}
+                        className="inline-flex min-w-0 flex-col rounded-md border border-transparent px-1 py-0.5 text-left transition hover:border-text-muted hover:bg-bg/70"
+                      >
+                        <span className="truncate text-sm font-medium text-brand">{userLabel}</span>
+                        {row.userEmail && row.userId && row.userEmail !== row.userId ? (
+                          <span className="mt-1 truncate text-xs text-text-muted">{row.userId}</span>
+                        ) : null}
+                      </Link>
+                    ) : (
+                      <div className="flex flex-col">
+                        <span className="text-sm text-text-primary">{userLabel}</span>
+                        <span className="mt-1 text-xs text-text-muted">No linked account id</span>
                       </div>
-                    </td>
+                    )}
+                  </td>
 
-                    <td className="px-4 py-3 align-top">
-                      {row.jobId ? (
-                        <div className="flex flex-col gap-1">
-                          <Link href={`/admin/jobs?jobId=${encodeURIComponent(row.jobId)}`} className="font-mono text-xs text-brand hover:underline">
-                            {row.jobId}
-                          </Link>
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
-                            {row.jobEngineLabel ? <span>{row.jobEngineLabel}</span> : null}
-                            {row.jobStatus ? <span className="uppercase tracking-wide">{row.jobStatus}</span> : null}
-                            {row.jobVideoUrl ? (
-                              <a
-                                href={row.jobVideoUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-brand underline-offset-2 hover:underline"
-                              >
-                                Video
-                              </a>
-                            ) : null}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-text-muted">Wallet event only</span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex flex-wrap gap-2">
-                        {row.jobPaymentStatus ? (
-                          <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium uppercase tracking-[0.16em] text-text-secondary">
-                            {row.jobPaymentStatus}
-                          </span>
-                        ) : null}
-                        {row.hasRefund ? (
-                          <span className="rounded-full border border-success-border bg-success-bg px-2.5 py-1 text-xs font-medium text-success">
-                            Refunded
-                          </span>
-                        ) : null}
-                        {row.canRefund ? (
-                          <span className="rounded-full border border-warning-border bg-warning-bg px-2.5 py-1 text-xs font-medium text-warning">
-                            Refundable
-                          </span>
-                        ) : null}
-                        {jobMissing ? (
-                          <span className="rounded-full border border-warning-border bg-warning-bg px-2.5 py-1 text-xs font-medium text-warning">
-                            Job record missing
-                          </span>
-                        ) : null}
-                        {row.type === 'charge' && !row.isLatestCharge ? (
-                          <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium text-text-muted">
-                            Historical charge
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3 align-top">
-                      {row.canRefund ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleRefund(row)}
-                          disabled={isPending}
+                  <td className="px-4 py-3 align-top">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
                           className={clsx(
-                            'rounded-md border-destructive px-3 py-1.5 text-sm font-medium text-destructive hover:text-destructive',
-                            isPending ? 'cursor-wait opacity-60' : 'hover:bg-destructive/10'
+                            'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.18em]',
+                            TYPE_CLASS[row.type]
                           )}
                         >
-                          {isPending ? 'Refunding…' : 'Refund tokens'}
-                        </Button>
-                      ) : row.type === 'charge' ? (
-                        <span className="text-xs text-text-muted">
-                          {row.hasRefund ? 'Already refunded' : 'Refund unavailable'}
+                          {TYPE_LABEL[row.type] ?? row.type}
                         </span>
-                      ) : (
-                        <span className="text-xs text-text-muted">No action</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                        <span className="font-medium text-text-primary">{amountLabel}</span>
+                      </div>
+                      <p className="max-w-[28rem] text-sm text-text-secondary">
+                        {row.description ? row.description : <span className="text-text-muted">No description</span>}
+                      </p>
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3 align-top">
+                    {row.jobId ? (
+                      <div className="flex flex-col gap-1">
+                        <Link href={`/admin/jobs?jobId=${encodeURIComponent(row.jobId)}`} className="font-mono text-xs text-brand hover:underline">
+                          {row.jobId}
+                        </Link>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary">
+                          {row.jobEngineLabel ? <span>{row.jobEngineLabel}</span> : null}
+                          {row.jobStatus ? <span className="uppercase tracking-wide">{row.jobStatus}</span> : null}
+                          {row.jobVideoUrl ? (
+                            <a
+                              href={row.jobVideoUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-brand underline-offset-2 hover:underline"
+                            >
+                              Video
+                            </a>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-text-muted">Wallet event only</span>
+                    )}
+                  </td>
+
+                  <td className="px-4 py-3 align-top">
+                    <div className="flex flex-wrap gap-2">
+                      {row.jobPaymentStatus ? (
+                        <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium uppercase tracking-[0.16em] text-text-secondary">
+                          {row.jobPaymentStatus}
+                        </span>
+                      ) : null}
+                      {row.hasRefund ? (
+                        <span className="rounded-full border border-success-border bg-success-bg px-2.5 py-1 text-xs font-medium text-success">
+                          Refunded
+                        </span>
+                      ) : null}
+                      {row.canRefund ? (
+                        <span className="rounded-full border border-warning-border bg-warning-bg px-2.5 py-1 text-xs font-medium text-warning">
+                          Refundable
+                        </span>
+                      ) : null}
+                      {jobMissing ? (
+                        <span className="rounded-full border border-warning-border bg-warning-bg px-2.5 py-1 text-xs font-medium text-warning">
+                          Job record missing
+                        </span>
+                      ) : null}
+                      {row.type === 'charge' && !row.isLatestCharge ? (
+                        <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium text-text-muted">
+                          Historical charge
+                        </span>
+                      ) : null}
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3 align-top">
+                    {row.canRefund ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRefund(row)}
+                        disabled={isPending}
+                        className={clsx(
+                          'rounded-md border-destructive px-3 py-1.5 text-sm font-medium text-destructive hover:text-destructive',
+                          isPending ? 'cursor-wait opacity-60' : 'hover:bg-destructive/10'
+                        )}
+                      >
+                        {isPending ? 'Refunding…' : 'Refund tokens'}
+                      </Button>
+                    ) : row.type === 'charge' ? (
+                      <span className="text-xs text-text-muted">
+                        {row.hasRefund ? 'Already refunded' : 'Refund unavailable'}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-text-muted">No action</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </AdminDataTable>
     </div>
   );
 }

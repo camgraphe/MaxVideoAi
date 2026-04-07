@@ -168,102 +168,119 @@ export default async function AdminTransactionsPage() {
         <AdminMetricGrid items={overviewCards} columnsClassName="sm:grid-cols-2 xl:grid-cols-6" className="border-0" />
       </AdminSection>
 
-      <AdminSection
-        title="Transaction Workspace"
-        description="Recherche locale, filtres rapides et actions de remboursement sur les 100 dernieres ecritures."
-        action={
-          <AdminSectionMeta
-            title="Current ledger slice"
-            lines={[
-              `${formatNumber(transactions.length)} rows`,
-              `${formatNumber(refundableCharges)} refundable`,
-              `${formatNumber(missingJobs)} missing jobs`,
-              `${formatNumber(watchlistHits)} watchlist hits`,
-            ]}
-          />
-        }
-      >
-        <AdminTransactionTable initialTransactions={transactions} />
-      </AdminSection>
-
-      <AdminSection
-        title="Watchlist"
-        description="Remboursements eleves, utilisateurs refund-heavy et charges invalides a investiguer en priorite."
-        action={
-          <AdminSectionMeta
-            title={watchlistHits ? `${formatNumber(watchlistHits)} active watchlist hit${watchlistHits > 1 ? 's' : ''}` : 'No active anomaly'}
-            lines={['Large refunds, repeated refunds and invalid charges are grouped here for faster triage.']}
-          />
-        }
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_360px] xl:items-start">
+        <AdminSection
+          title="Transaction Workspace"
+          description="Recherche locale, filtres rapides et actions de remboursement sur les 100 dernieres ecritures."
+          action={
+            <AdminSectionMeta
+              title="Current ledger slice"
+              lines={[
+                `${formatNumber(transactions.length)} rows`,
+                `${formatNumber(refundableCharges)} refundable`,
+                `${formatNumber(missingJobs)} missing jobs`,
+                `${formatNumber(watchlistHits)} watchlist hits`,
+              ]}
+            />
+          }
         >
-        <div className="grid gap-4 xl:grid-cols-3">
-          <AdminWatchlistCard
-            title="Large refunds"
-            description="Remboursements supérieurs a 500 USD."
-            badge={formatNumber(anomalies.largeRefunds.length)}
-          >
-            {anomalies.largeRefunds.length ? (
-              <AdminStatTable
-                columns={largeRefundColumns}
-                rows={anomalies.largeRefunds}
-                getRowKey={(row) => String(row.receiptId)}
-                empty={<AdminEmptyState>No refunds above the review threshold in the latest scan.</AdminEmptyState>}
-                className="border-0 bg-transparent"
-                tableClassName="min-w-full"
-                headerClassName="bg-transparent"
-                bodyClassName="divide-y divide-hairline/80"
-                emptyClassName="px-0 py-0"
-              />
-            ) : (
-              <AdminEmptyState>No refunds above the review threshold in the latest scan.</AdminEmptyState>
-            )}
-          </AdminWatchlistCard>
+          <AdminTransactionTable initialTransactions={transactions} />
+        </AdminSection>
 
-          <AdminWatchlistCard
-            title="Refund-heavy users"
-            description="Utilisateurs avec au moins 3 remboursements sur 30 jours."
-            badge={formatNumber(anomalies.frequentRefundUsers.length)}
-          >
-            {anomalies.frequentRefundUsers.length ? (
-              <AdminStatTable
-                columns={refundHeavyColumns}
-                rows={anomalies.frequentRefundUsers}
-                getRowKey={(row) => `${row.userId ?? 'anonymous'}-${row.lastRefundAt ?? 'latest'}`}
-                empty={<AdminEmptyState>No user currently exceeds the refund frequency threshold.</AdminEmptyState>}
-                className="border-0 bg-transparent"
-                tableClassName="min-w-full"
-                headerClassName="bg-transparent"
-                bodyClassName="divide-y divide-hairline/80"
-                emptyClassName="px-0 py-0"
-              />
-            ) : (
-              <AdminEmptyState>No user currently exceeds the refund frequency threshold.</AdminEmptyState>
-            )}
-          </AdminWatchlistCard>
+        <div className="xl:sticky xl:top-[5.75rem]">
+          <div className="overflow-hidden rounded-[20px] border border-border bg-surface shadow-card">
+            <div className="border-b border-hairline px-5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Watchlist</p>
+                  <p className="mt-1 text-sm leading-6 text-text-secondary">
+                    Remboursements eleves, utilisateurs refund-heavy et charges invalides a investiguer en priorite.
+                  </p>
+                </div>
+                <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-semibold text-text-primary">
+                  {watchlistHits ? `${formatNumber(watchlistHits)} hit${watchlistHits > 1 ? 's' : ''}` : 'Clear'}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-4 px-4 py-4">
+              <AdminWatchlistCard
+                title="Large refunds"
+                description="Remboursements supérieurs a 500 USD."
+                badge={formatNumber(anomalies.largeRefunds.length)}
+                className="bg-bg/30"
+              >
+                {anomalies.largeRefunds.length ? (
+                  <AdminStatTable
+                    columns={largeRefundColumns}
+                    rows={anomalies.largeRefunds}
+                    getRowKey={(row) => String(row.receiptId)}
+                    empty={<AdminEmptyState>No refunds above the review threshold in the latest scan.</AdminEmptyState>}
+                    className="border-0 bg-transparent"
+                    tableClassName="min-w-full"
+                    headerClassName="bg-transparent"
+                    bodyClassName="divide-y divide-hairline/80"
+                    emptyClassName="px-0 py-0"
+                    viewportClassName="max-h-56 overflow-auto"
+                    stickyHeader
+                  />
+                ) : (
+                  <AdminEmptyState>No refunds above the review threshold in the latest scan.</AdminEmptyState>
+                )}
+              </AdminWatchlistCard>
 
-          <AdminWatchlistCard
-            title="Invalid charges"
-            description="Charges nulles ou negatives a corriger."
-            badge={formatNumber(anomalies.invalidCharges.length)}
-          >
-            {anomalies.invalidCharges.length ? (
-              <AdminStatTable
-                columns={invalidChargeColumns}
-                rows={anomalies.invalidCharges}
-                getRowKey={(row) => String(row.receiptId)}
-                empty={<AdminEmptyState>No zero-value or negative charges detected.</AdminEmptyState>}
-                className="border-0 bg-transparent"
-                tableClassName="min-w-full"
-                headerClassName="bg-transparent"
-                bodyClassName="divide-y divide-hairline/80"
-                emptyClassName="px-0 py-0"
-              />
-            ) : (
-              <AdminEmptyState>No zero-value or negative charges detected.</AdminEmptyState>
-            )}
-          </AdminWatchlistCard>
+              <AdminWatchlistCard
+                title="Refund-heavy users"
+                description="Utilisateurs avec au moins 3 remboursements sur 30 jours."
+                badge={formatNumber(anomalies.frequentRefundUsers.length)}
+                className="bg-bg/30"
+              >
+                {anomalies.frequentRefundUsers.length ? (
+                  <AdminStatTable
+                    columns={refundHeavyColumns}
+                    rows={anomalies.frequentRefundUsers}
+                    getRowKey={(row) => `${row.userId ?? 'anonymous'}-${row.lastRefundAt ?? 'latest'}`}
+                    empty={<AdminEmptyState>No user currently exceeds the refund frequency threshold.</AdminEmptyState>}
+                    className="border-0 bg-transparent"
+                    tableClassName="min-w-full"
+                    headerClassName="bg-transparent"
+                    bodyClassName="divide-y divide-hairline/80"
+                    emptyClassName="px-0 py-0"
+                    viewportClassName="max-h-56 overflow-auto"
+                    stickyHeader
+                  />
+                ) : (
+                  <AdminEmptyState>No user currently exceeds the refund frequency threshold.</AdminEmptyState>
+                )}
+              </AdminWatchlistCard>
+
+              <AdminWatchlistCard
+                title="Invalid charges"
+                description="Charges nulles ou negatives a corriger."
+                badge={formatNumber(anomalies.invalidCharges.length)}
+                className="bg-bg/30"
+              >
+                {anomalies.invalidCharges.length ? (
+                  <AdminStatTable
+                    columns={invalidChargeColumns}
+                    rows={anomalies.invalidCharges}
+                    getRowKey={(row) => String(row.receiptId)}
+                    empty={<AdminEmptyState>No zero-value or negative charges detected.</AdminEmptyState>}
+                    className="border-0 bg-transparent"
+                    tableClassName="min-w-full"
+                    headerClassName="bg-transparent"
+                    bodyClassName="divide-y divide-hairline/80"
+                    emptyClassName="px-0 py-0"
+                    viewportClassName="max-h-56 overflow-auto"
+                    stickyHeader
+                  />
+                ) : (
+                  <AdminEmptyState>No zero-value or negative charges detected.</AdminEmptyState>
+                )}
+              </AdminWatchlistCard>
+            </div>
+          </div>
         </div>
-      </AdminSection>
+      </div>
     </div>
   );
 }
