@@ -34,6 +34,7 @@ const ACTION_OPTIONS = [
   { value: 'IMPERSONATE_START', label: 'Impersonate start' },
   { value: 'IMPERSONATE_STOP', label: 'Impersonate stop' },
   { value: 'FORCE_RESYNC_JOB', label: 'Force resync' },
+  { value: 'SERVICE_NOTICE_UPDATE', label: 'Service notice' },
 ];
 
 const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
@@ -329,6 +330,8 @@ function AuditActionBadge({ action }: { action: string }) {
   const toneClass =
     action === 'FORCE_RESYNC_JOB'
       ? 'border-warning-border bg-warning-bg text-warning'
+      : action === 'SERVICE_NOTICE_UPDATE'
+        ? 'border-warning-border bg-warning-bg text-warning'
       : action === 'IMPERSONATE_START'
         ? 'border-info-border bg-info-bg text-info'
         : 'border-success-border bg-success-bg text-success';
@@ -346,6 +349,8 @@ function AuditContextCell({ log }: { log: Awaited<ReturnType<typeof fetchAdminAu
   const engineId = typeof metadata?.engineId === 'string' ? metadata.engineId : null;
   const redirectTo = typeof metadata?.redirectTo === 'string' ? metadata.redirectTo : null;
   const returnTo = typeof metadata?.returnTo === 'string' ? metadata.returnTo : null;
+  const preview = typeof metadata?.preview === 'string' ? metadata.preview : null;
+  const messageLength = typeof metadata?.messageLength === 'number' ? metadata.messageLength : null;
 
   return (
     <div className="space-y-2">
@@ -366,6 +371,8 @@ function AuditContextCell({ log }: { log: Awaited<ReturnType<typeof fetchAdminAu
         ) : null}
         {redirectTo ? <p>redirect <span className="font-mono text-text-primary">{redirectTo}</span></p> : null}
         {returnTo ? <p>return <span className="font-mono text-text-primary">{returnTo}</span></p> : null}
+        {messageLength !== null ? <p>message length <span className="text-text-primary">{messageLength}</span></p> : null}
+        {preview ? <p className="line-clamp-2">preview <span className="text-text-primary">{preview}</span></p> : null}
       </div>
 
       {metadata ? (

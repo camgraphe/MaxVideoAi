@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { requireAdmin } from '@/server/admin';
+import { logAdminAction } from '@/server/admin-audit';
 import { getServiceNoticeSetting, setServiceNoticeSetting } from '@/server/app-settings';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,16 @@ export async function PUT(req: NextRequest) {
       },
       adminUserId
     );
+    await logAdminAction({
+      adminId: adminUserId,
+      action: 'SERVICE_NOTICE_UPDATE',
+      route: '/api/admin/service-notice',
+      metadata: {
+        enabled,
+        messageLength: message.length,
+        preview: message ? message.slice(0, 120) : null,
+      },
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/service-notice] failed to update', error);

@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { BadgePercent, Box, RefreshCw, SlidersHorizontal, Wallet } from 'lucide-react';
 import useSWR from 'swr';
-import { Button } from '@/components/ui/Button';
+import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { Button, ButtonLink } from '@/components/ui/Button';
 
 type PricingRule = {
   id: string;
@@ -63,6 +70,10 @@ const TIER_ORDER = ['member', 'plus', 'pro'] as const;
 
 function formatCurrencyCents(value: number): string {
   return (value / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+function formatPercent(value: number): string {
+  return `${Math.round(value * 100)}%`;
 }
 
 const DEFAULT_RULE_TEMPLATE: PricingRule = {
@@ -137,6 +148,11 @@ export default function PricingAdminPage() {
       });
   }, [billingProductsData]);
 
+  const overviewItems = useMemo(
+    () => buildPricingOverviewItems({ rules, toolProducts, membership: orderedMembership }),
+    [orderedMembership, rules, toolProducts]
+  );
+
   const handleMembershipFieldChange = (tier: string, field: 'thresholdUsd' | 'discountPct', value: string) => {
     setMembershipDraft((prev) => ({
       ...prev,
@@ -186,109 +202,145 @@ export default function PricingAdminPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    await Promise.all([mutateRules(), mutateMembership(), mutateBillingProducts()]);
+  };
+
   return (
-    <div className="stack-gap-xl">
-      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
-        <h1 className="text-xl font-semibold text-text-primary">Pricing controls</h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          Adjust wallet membership thresholds, discounts, and per-engine margins. Changes propagate instantly to new quotes
-          and wallet charges.
-        </p>
-      </section>
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Operations"
+        title="Pricing controls"
+        description="Ajuste les seuils membership, les prix des outils et les marges engine. Cette surface pilote les futurs quotes et les charges wallet."
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-border bg-surface"
+              onClick={() => {
+                void handleRefresh();
+              }}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <ButtonLink href="/admin/engines" variant="outline" size="sm" className="border-border bg-surface">
+              Engines
+            </ButtonLink>
+            <ButtonLink href="/admin/transactions" variant="outline" size="sm" className="border-border bg-surface">
+              Transactions
+            </ButtonLink>
+          </>
+        }
+      />
 
-      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-text-primary">Membership tiers</h2>
-            <p className="text-xs text-text-tertiary">
-              Control spend requirements and automatic discounts applied to Plus and Pro tiers.
-            </p>
+      <AdminSection
+        title="Pricing Pulse"
+        description="Lecture rapide du catalogue tarifaire chargé, pour savoir si l’on est en train de gérer des seuils, des SKUs ou des overrides moteurs."
+      >
+        <AdminMetricGrid items={overviewItems} columnsClassName="sm:grid-cols-2 xl:grid-cols-5" density="compact" />
+      </AdminSection>
+
+      <AdminSection
+        title="Membership Tiers"
+        description="Seuils de dépense rolling et remises auto pour les niveaux Plus et Pro."
+        action={
+          <AdminSectionMeta
+            title={`${orderedMembership.length || 0} tiers`}
+            lines={[
+              orderedMembership.length
+                ? `Highest discount ${formatPercent(Math.max(...orderedMembership.map((tier) => tier.discountPercent)))}`
+                : 'No membership data',
+              'Changes apply to future pricing snapshots',
+            ]}
+          />
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSaveMembership}
+              disabled={savingMembership || membershipLoading || !!membershipError}
+              className="rounded-xl border-border bg-surface"
+            >
+              {savingMembership ? 'Saving…' : 'Save tiers'}
+            </Button>
+            {membershipStatus ? (
+              <span className={`text-xs ${membershipStatus === 'saved' ? 'text-success' : 'text-error'}`}>
+                {membershipStatus === 'saved' ? 'Membership tiers saved.' : membershipStatus}
+              </span>
+            ) : null}
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleSaveMembership}
-            disabled={savingMembership || membershipLoading || !!membershipError}
-            className="rounded-pill border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
-          >
-            {savingMembership ? 'Saving…' : 'Save tiers'}
-          </Button>
-        </div>
-        {membershipLoading ? (
-          <p className="mt-4 text-sm text-text-secondary">Loading membership tiers…</p>
-        ) : membershipError ? (
-          <p className="mt-4 rounded-lg border border-error-border bg-error-bg p-3 text-xs text-error">
-            Failed to load membership tiers.
-          </p>
-        ) : orderedMembership.length ? (
-          <div className="mt-4 grid grid-gap-sm sm:grid-cols-3">
-            {orderedMembership.map((tier) => {
-              const editable = membershipDraft[tier.tier] ?? { thresholdUsd: '', discountPct: '' };
-              const label = tier.tier.slice(0, 1).toUpperCase() + tier.tier.slice(1);
-              const thresholdDefault = formatCurrencyCents(tier.spendThresholdCents);
-              return (
-                <div key={tier.tier} className="rounded-xl border border-hairline bg-bg p-4">
-                  <h3 className="text-sm font-semibold text-text-primary">{label}</h3>
-                  <div className="mt-3 stack-gap-sm text-xs text-text-secondary">
-                    <label className="flex flex-col gap-1">
-                      <span className="text-text-tertiary">Spend threshold (USD, 30-day rolling)</span>
-                      <input
-                        type="number"
-                        min={0}
-                        step="10"
-                        value={editable.thresholdUsd}
-                        onChange={(event) => handleMembershipFieldChange(tier.tier, 'thresholdUsd', event.target.value)}
-                        placeholder={thresholdDefault}
-                        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1">
-                      <span className="text-text-tertiary">Discount (%)</span>
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="0.5"
-                        value={editable.discountPct}
-                        onChange={(event) => handleMembershipFieldChange(tier.tier, 'discountPct', event.target.value)}
-                        placeholder={(tier.discountPercent * 100).toString()}
-                        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </label>
+
+          {membershipLoading ? (
+            <AdminEmptyState>Loading membership tiers…</AdminEmptyState>
+          ) : membershipError ? (
+            <AdminNotice tone="error">Failed to load membership tiers.</AdminNotice>
+          ) : orderedMembership.length ? (
+            <div className="grid gap-4 sm:grid-cols-3">
+              {orderedMembership.map((tier) => {
+                const editable = membershipDraft[tier.tier] ?? { thresholdUsd: '', discountPct: '' };
+                const label = tier.tier.slice(0, 1).toUpperCase() + tier.tier.slice(1);
+                const thresholdDefault = formatCurrencyCents(tier.spendThresholdCents);
+                return (
+                  <div key={tier.tier} className="rounded-2xl border border-hairline bg-bg/40 p-4">
+                    <h3 className="text-sm font-semibold text-text-primary">{label}</h3>
+                    <div className="mt-3 space-y-3 text-xs text-text-secondary">
+                      <label className="flex flex-col gap-1">
+                        <span className="text-text-tertiary">Spend threshold (USD, 30-day rolling)</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step="10"
+                          value={editable.thresholdUsd}
+                          onChange={(event) => handleMembershipFieldChange(tier.tier, 'thresholdUsd', event.target.value)}
+                          placeholder={thresholdDefault}
+                          className="rounded-xl border border-hairline bg-bg px-3 py-2 text-sm font-medium text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <span className="text-text-tertiary">Discount (%)</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.5"
+                          value={editable.discountPct}
+                          onChange={(event) => handleMembershipFieldChange(tier.tier, 'discountPct', event.target.value)}
+                          placeholder={(tier.discountPercent * 100).toString()}
+                          className="rounded-xl border border-hairline bg-bg px-3 py-2 text-sm font-medium text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-text-secondary">No membership tiers found.</p>
-        )}
-        {membershipStatus ? (
-          <p
-            className={`mt-4 text-xs ${
-              membershipStatus === 'saved' ? 'text-success' : 'text-error'
-            }`}
-          >
-            {membershipStatus === 'saved' ? 'Membership tiers saved.' : membershipStatus}
-          </p>
-        ) : null}
-      </section>
-
-      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-text-primary">Tool pricing</h2>
-            <p className="text-xs text-text-tertiary">
-              Character and Angle bill from dedicated tool products, independently from the underlying engine.
-            </p>
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <AdminEmptyState>No membership tiers found.</AdminEmptyState>
+          )}
         </div>
+      </AdminSection>
 
+      <AdminSection
+        title="Tool Pricing"
+        description="Tarifs dédiés pour Character Builder et Angle Tool, indépendamment du moteur sous-jacent."
+        action={
+          <AdminSectionMeta
+            title={`${toolProducts.filter((product) => product.active).length}/${toolProducts.length || 0} active`}
+            lines={[toolProducts.length ? 'Character and angle products only' : 'No product loaded']}
+          />
+        }
+      >
         {billingProductsLoading ? (
-          <p className="text-sm text-text-secondary">Loading tool pricing…</p>
+          <AdminEmptyState>Loading tool pricing…</AdminEmptyState>
         ) : billingProductsError ? (
-          <p className="rounded-lg border border-error-border bg-error-bg p-3 text-xs text-error">Failed to load tool pricing.</p>
+          <AdminNotice tone="error">Failed to load tool pricing.</AdminNotice>
         ) : toolProducts.length ? (
           <div className="space-y-4">
             {toolProducts.map((product) => (
@@ -296,24 +348,27 @@ export default function PricingAdminPage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-text-secondary">No tool products found.</p>
+          <AdminEmptyState>No tool products found.</AdminEmptyState>
         )}
-      </section>
+      </AdminSection>
 
-      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-text-primary">Pricing rules</h2>
-            <p className="text-xs text-text-tertiary">
-              Override per-engine margins. Values apply to future quotes and charges.
-            </p>
-          </div>
-        </div>
-
+      <AdminSection
+        title="Pricing Rules"
+        description="Overrides par engine et résolution. Les règles sont appliquées aux quotes et charges futures."
+        action={
+          <AdminSectionMeta
+            title={`${rules.length} rules`}
+            lines={[
+              `${rules.filter((rule) => rule.id !== 'default').length} custom overrides`,
+              rules.some((rule) => rule.id === 'default') ? 'Default fallback present' : 'No default fallback',
+            ]}
+          />
+        }
+      >
         {rulesLoading ? (
-          <p className="text-sm text-text-secondary">Loading pricing rules…</p>
+          <AdminEmptyState>Loading pricing rules…</AdminEmptyState>
         ) : rulesError ? (
-          <p className="rounded-lg border border-error-border bg-error-bg p-3 text-xs text-error">Failed to load pricing rules.</p>
+          <AdminNotice tone="error">Failed to load pricing rules.</AdminNotice>
         ) : (
           <div className="space-y-4">
             {rules.map((rule) => (
@@ -322,9 +377,59 @@ export default function PricingAdminPage() {
             <NewPricingRuleCard onCreated={() => mutateRules()} />
           </div>
         )}
-      </section>
+      </AdminSection>
     </div>
   );
+}
+
+function buildPricingOverviewItems({
+  rules,
+  toolProducts,
+  membership,
+}: {
+  rules: PricingRule[];
+  toolProducts: BillingProduct[];
+  membership: MembershipTier[];
+}): AdminMetricItem[] {
+  const activeToolProducts = toolProducts.filter((product) => product.active).length;
+  const customRules = rules.filter((rule) => rule.id !== 'default').length;
+  const highestDiscount = membership.length ? Math.max(...membership.map((tier) => tier.discountPercent)) : 0;
+  const proTier = membership.find((tier) => tier.tier === 'pro') ?? null;
+  const defaultRule = rules.find((rule) => rule.id === 'default') ?? null;
+
+  return [
+    {
+      label: 'Rules',
+      value: String(rules.length),
+      helper: `${customRules} custom overrides`,
+      icon: SlidersHorizontal,
+    },
+    {
+      label: 'Active tool SKUs',
+      value: `${activeToolProducts}/${toolProducts.length || 0}`,
+      helper: 'Character and angle products',
+      icon: Box,
+    },
+    {
+      label: 'Highest discount',
+      value: membership.length ? formatPercent(highestDiscount) : '—',
+      helper: 'Best automatic member rate',
+      tone: highestDiscount > 0 ? 'info' : 'default',
+      icon: BadgePercent,
+    },
+    {
+      label: 'Pro threshold',
+      value: proTier ? formatCurrencyCents(proTier.spendThresholdCents) : '—',
+      helper: '30-day rolling spend requirement',
+      icon: Wallet,
+    },
+    {
+      label: 'Default margin',
+      value: defaultRule ? formatPercent(defaultRule.marginPercent) : '—',
+      helper: defaultRule ? `${formatCurrencyCents(defaultRule.marginFlatCents)} flat add-on` : 'No fallback rule',
+      icon: SlidersHorizontal,
+    },
+  ];
 }
 
 function isLegacyProduct(product: BillingProduct): boolean {
@@ -408,7 +513,7 @@ function BillingProductCard({ product, onRefresh }: BillingProductCardProps) {
   };
 
   return (
-    <div className="rounded-xl border border-hairline bg-bg p-4">
+    <div className="rounded-2xl border border-hairline bg-bg/40 p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold text-text-primary">{product.label}</h3>
@@ -454,7 +559,7 @@ function BillingProductCard({ product, onRefresh }: BillingProductCardProps) {
           size="sm"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
+          className="rounded-xl border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
         >
           {saving ? 'Saving…' : 'Save'}
         </Button>
@@ -553,7 +658,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
     .trim();
 
   return (
-    <div className="rounded-xl border border-hairline bg-bg p-4">
+    <div className="rounded-2xl border border-hairline bg-bg/40 p-4">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold text-text-primary">{labelParts}</h3>
@@ -566,7 +671,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
             size="sm"
             onClick={() => setEditing((prev) => !prev)}
             disabled={saving}
-            className="rounded-pill border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
+            className="rounded-xl border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
           >
             {editing ? 'Cancel' : 'Edit'}
           </Button>
@@ -576,7 +681,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
             size="sm"
             onClick={handleDelete}
             disabled={saving || rule.id === 'default'}
-            className="rounded-pill border-error-border px-3 py-1 text-xs font-semibold text-error hover:border-error-border hover:text-error"
+            className="rounded-xl border-error-border px-3 py-1 text-xs font-semibold text-error hover:border-error-border hover:text-error"
           >
             Delete
           </Button>
@@ -630,7 +735,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
             size="sm"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
+            className="rounded-xl border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
           >
             {saving ? 'Saving…' : 'Save'}
           </Button>
@@ -762,11 +867,11 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
 
   if (!open) {
     return (
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="h-auto rounded-xl border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-auto rounded-xl border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
         onClick={() => setOpen(true)}
       >
         + Add pricing rule
@@ -775,7 +880,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-surface-2 p-4">
+    <div className="rounded-2xl border border-hairline bg-bg/40 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-primary">New pricing rule</h3>
         <Button
@@ -806,7 +911,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
         <Button
           type="button"
           size="sm"
-          className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
+          className="rounded-xl border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
           onClick={handleCreate}
           disabled={saving}
         >
