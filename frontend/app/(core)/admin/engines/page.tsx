@@ -1,28 +1,68 @@
 import { notFound } from 'next/navigation';
-import { requireAdmin } from '@/server/admin';
-import { fetchEnginePerformanceMetrics } from '@/server/generate-metrics';
+import { Activity, AlertTriangle, Clock3, Cpu, DollarSign, ShieldAlert } from 'lucide-react';
+import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { EngineSettingsPanel } from '@/components/admin/EngineSettingsPanel';
+import { ButtonLink } from '@/components/ui/Button';
 import { fetchEngineUsageMetrics } from '@/server/admin-metrics';
+import { requireAdmin } from '@/server/admin';
 import { ensureEngineSettingsSeed, fetchEngineSettings } from '@/server/engine-settings';
 import { getAdminEngineEntries } from '@/server/engine-overrides';
-import { EngineSettingsPanel } from '@/components/admin/EngineSettingsPanel';
+import { fetchEnginePerformanceMetrics, type EnginePerformanceMetric } from '@/server/generate-metrics';
 
 export const dynamic = 'force-dynamic';
 
-function formatDuration(ms: number | null): string {
-  if (ms == null) return '—';
-  if (ms >= 1000) {
-    return `${(ms / 1000).toFixed(1)}s`;
-  }
-  return `${ms}ms`;
-}
+type OverviewCard = {
+  label: string;
+  value: string;
+  helper: string;
+  tone?: 'default' | 'success' | 'warning';
+  icon: typeof AlertTriangle;
+};
 
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat('en-US').format(value);
-}
+type ConfigEntry = Awaited<ReturnType<typeof loadEngineConfigEntries>>[number];
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
-}
+type EngineConfigSnapshot = {
+  engineId: string;
+  engineLabel: string;
+  active: boolean;
+  availability: string;
+  status: string;
+  latencyTier: string;
+  perSecondCents: number | null;
+  flatCents: number | null;
+};
+
+type EngineOpsRow = {
+  engineId: string;
+  engineLabel: string;
+  modes: string[];
+  totalAttempts: number;
+  acceptedCount: number;
+  completedCount: number;
+  failedCount: number;
+  rejectedCount: number;
+  failureRate: number;
+  averageDurationMs: number | null;
+  p95DurationMs: number | null;
+  config: EngineConfigSnapshot | null;
+};
+
+type EngineCommercialRow = {
+  engineId: string;
+  engineLabel: string;
+  rendersCount30d: number;
+  distinctUsers30d: number;
+  rendersAmount30dUsd: number;
+  shareOfTotalRenders30d: number;
+  shareOfTotalRevenue30d: number;
+  avgSpendPerUser30d: number;
+  config: EngineConfigSnapshot | null;
+};
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+const usdFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
 export default async function AdminEnginesPage() {
   try {
@@ -40,110 +80,175 @@ export default async function AdminEnginesPage() {
     databaseAvailable ? loadEngineConfigEntries() : Promise.resolve([]),
   ]);
 
+  const configSnapshots = configEntries.map(buildConfigSnapshot);
+  const overviewCards = buildOverviewCards(performanceMetrics, usageMetrics, configSnapshots);
+  const opsRows = buildOperationalRows(performanceMetrics, configSnapshots);
+  const commercialRows = buildCommercialRows(usageMetrics, configSnapshots);
+  const configMeta = summarizeConfig(configSnapshots);
+
   return (
-    <div className="stack-gap-lg">
-      <header className="stack-gap-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Operations</p>
-        <h1 className="text-3xl font-semibold text-text-primary">Engine performance &amp; configuration</h1>
-        <p className="text-sm text-text-secondary">
-          Track Fal status per engine, review usage and revenue, and tune availability without reaching for a separate tool.
-        </p>
-      </header>
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Operations"
+        title="Engines"
+        description="Surface de pilotage des moteurs Fal : sante, demande, revenus et configuration active."
+        actions={
+          <>
+            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
+              Insights
+            </ButtonLink>
+            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+              Jobs
+            </ButtonLink>
+            <ButtonLink href="/admin/transactions" variant="outline" size="sm" className="border-border bg-surface">
+              Transactions
+            </ButtonLink>
+          </>
+        }
+      />
 
-      <section className="rounded-card border border-surface-on-media-30 bg-surface-glass-80 p-6 shadow-card">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Fal attempt metrics</h2>
-        <p className="text-xs text-text-secondary">Rolling 30-day summary of Fal attempts grouped by engine and mode.</p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full divide-y divide-white/60 text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                <th className="pb-3 text-left">Engine</th>
-                <th className="pb-3 text-left">Mode</th>
-                <th className="pb-3 text-right">Accepted</th>
-                <th className="pb-3 text-right">Rejected</th>
-                <th className="pb-3 text-right">Completed</th>
-                <th className="pb-3 text-right">Failed</th>
-                <th className="pb-3 text-right">Avg duration</th>
-                <th className="pb-3 text-right">P95 duration</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/50">
-              {performanceMetrics.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="p-6 text-center text-text-secondary">
-                    No Fal attempt metrics recorded yet.
-                  </td>
-                </tr>
-              ) : (
-                performanceMetrics.map((row) => (
-                  <tr key={`${row.engineId}-${row.mode}`}>
-                    <td className="py-3 font-medium text-text-primary">{row.engineLabel}</td>
-                    <td className="py-3 text-text-secondary">{row.mode}</td>
-                    <td className="py-3 text-right font-semibold text-text-primary">{formatNumber(row.acceptedCount)}</td>
-                    <td className="py-3 text-right text-text-secondary">{formatNumber(row.rejectedCount)}</td>
-                    <td className="py-3 text-right text-text-secondary">{formatNumber(row.completedCount)}</td>
-                    <td className="py-3 text-right text-text-secondary">{formatNumber(row.failedCount)}</td>
-                    <td className="py-3 text-right text-text-primary">{formatDuration(row.averageDurationMs)}</td>
-                    <td className="py-3 text-right text-text-primary">{formatDuration(row.p95DurationMs)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <AdminSection
+        title="Engine Overview"
+        description="Signal rapide pour savoir combien de moteurs tournent vraiment, combien degradent, et ou part le revenu."
+        contentClassName="p-0"
+      >
+        <div className="grid gap-px bg-hairline sm:grid-cols-2 xl:grid-cols-6">
+          {overviewCards.map((card) => (
+            <OverviewCell key={card.label} card={card} />
+          ))}
         </div>
-      </section>
+      </AdminSection>
 
-      <section className="rounded-card border border-surface-on-media-30 bg-surface-glass-80 p-6 shadow-card">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Usage &amp; revenue (30d)</h2>
-        <p className="text-xs text-text-secondary">Renders, distinct users, revenue share, and average spend per engine.</p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                <th className="py-2 font-semibold">Engine</th>
-                <th className="py-2 font-semibold">Renders</th>
-                <th className="py-2 font-semibold">Distinct users</th>
-                <th className="py-2 font-semibold">Revenue</th>
-                <th className="py-2 font-semibold">Share of renders</th>
-                <th className="py-2 font-semibold">Share of revenue</th>
-                <th className="py-2 font-semibold">Avg spend / user</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usageMetrics.length === 0 ? (
+      <AdminSection
+        title="Operational Health"
+        description="Lecture operations-first des tentatives Fal sur 30 jours, avec le statut de config en face."
+        action={<SectionMeta title="Health" lines={[`${formatNumber(opsRows.length)} engines tracked`, buildOpsAttentionLabel(opsRows)]} />}
+        contentClassName="p-0"
+      >
+        {opsRows.length ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border text-sm">
+              <thead className="bg-bg/70">
                 <tr>
-                  <td colSpan={7} className="py-4 text-center text-sm text-text-secondary">
-                    No engine usage recorded over the last 30 days.
-                  </td>
+                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Modes</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Attempts</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Completed</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Failed</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Rejected</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Fail rate</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Avg</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">P95</th>
+                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Config</th>
                 </tr>
-              ) : (
-                usageMetrics.map((engine) => (
-                  <tr key={engine.engineId} className="border-t border-surface-on-media-40 text-text-secondary">
-                    <td className="py-2 font-semibold text-text-primary">{engine.engineLabel}</td>
-                    <td className="py-2">{formatNumber(engine.rendersCount30d)}</td>
-                    <td className="py-2">{formatNumber(engine.distinctUsers30d)}</td>
-                    <td className="py-2">{formatCurrency(engine.rendersAmount30dUsd)}</td>
-                    <td className="py-2">{(engine.shareOfTotalRenders30d * 100).toFixed(1)}%</td>
-                    <td className="py-2">{(engine.shareOfTotalRevenue30d * 100).toFixed(1)}%</td>
-                    <td className="py-2">{engine.avgSpendPerUser30d ? formatCurrency(engine.avgSpendPerUser30d) : '$0'}</td>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {opsRows.map((row) => (
+                  <tr key={row.engineId}>
+                    <td className="px-5 py-3 align-top">
+                      <div className="flex flex-col gap-1">
+                        <p className="font-medium text-text-primary">{row.engineLabel}</p>
+                        <p className="font-mono text-xs text-text-muted">{row.engineId}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 align-top text-text-secondary">{row.modes.length ? row.modes.join(', ') : '—'}</td>
+                    <td className="px-4 py-3 text-right align-top font-medium text-text-primary">{formatNumber(row.totalAttempts)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.completedCount)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.failedCount)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.rejectedCount)}</td>
+                    <td
+                      className={[
+                        'px-4 py-3 text-right align-top font-medium',
+                        row.failureRate >= 0.15 ? 'text-warning' : row.failureRate > 0 ? 'text-text-primary' : 'text-success',
+                      ].join(' ')}
+                    >
+                      {formatPercent(row.failureRate)}
+                    </td>
+                    <td className="px-4 py-3 text-right align-top text-text-primary">{formatDuration(row.averageDurationMs)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-primary">{formatDuration(row.p95DurationMs)}</td>
+                    <td className="px-5 py-3 align-top">
+                      <ConfigInlineSummary config={row.config} />
+                    </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="px-5 py-5">
+            <AdminEmptyState>No Fal attempt metrics recorded yet.</AdminEmptyState>
+          </div>
+        )}
+      </AdminSection>
 
-      <section className="space-y-4">
-        <header>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Configuration</h2>
-          <p className="text-xs text-text-secondary">
-            Edit availability, overrides, and pricing for each engine. Changes take effect immediately on the next quote.
-          </p>
-        </header>
+      <AdminSection
+        title="Demand & Revenue"
+        description="Les moteurs qui captent le volume et le cash-in actuellement, sans passer par insights."
+        action={<SectionMeta title="Demand" lines={[`${formatNumber(commercialRows.length)} engines with usage or config`, buildRevenueLabel(commercialRows)]} />}
+        contentClassName="p-0"
+      >
+        {commercialRows.length ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border text-sm">
+              <thead className="bg-bg/70">
+                <tr>
+                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Renders</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Users</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Render share</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue share</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Avg / user</th>
+                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Config</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {commercialRows.map((row) => (
+                  <tr key={row.engineId}>
+                    <td className="px-5 py-3 align-top">
+                      <div className="flex flex-col gap-1">
+                        <p className="font-medium text-text-primary">{row.engineLabel}</p>
+                        <p className="font-mono text-xs text-text-muted">{row.engineId}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right align-top font-medium text-text-primary">{formatNumber(row.rendersCount30d)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatNumber(row.distinctUsers30d)}</td>
+                    <td className="px-4 py-3 text-right align-top font-medium text-text-primary">{formatCurrency(row.rendersAmount30dUsd)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatPercent(row.shareOfTotalRenders30d)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatPercent(row.shareOfTotalRevenue30d)}</td>
+                    <td className="px-4 py-3 text-right align-top text-text-secondary">{formatCurrency(row.avgSpendPerUser30d)}</td>
+                    <td className="px-5 py-3 align-top">
+                      <ConfigInlineSummary config={row.config} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="px-5 py-5">
+            <AdminEmptyState>No engine usage recorded over the last 30 days.</AdminEmptyState>
+          </div>
+        )}
+      </AdminSection>
+
+      <AdminSection
+        title="Configuration"
+        description="Overrides, disponibilite et pricing par moteur. Les changements s’appliquent sur les prochains quotes."
+        action={
+          <SectionMeta
+            title="Config"
+            lines={[
+              `${formatNumber(configMeta.total)} registered`,
+              `${formatNumber(configMeta.attention)} needs attention · ${formatNumber(configMeta.active)} active`,
+            ]}
+          />
+        }
+        contentClassName="p-0"
+      >
         {databaseAvailable ? (
           configEntries.length ? (
-            <div className="space-y-4">
+            <div className="divide-y divide-border">
               {configEntries.map((entry) => (
                 <EngineSettingsPanel
                   key={entry.engine.id}
@@ -164,21 +269,21 @@ export default async function AdminEnginesPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-surface-on-media-30 bg-surface-glass-80 p-5 text-sm text-text-secondary shadow-card">
-              No engines registered yet. Seed engine settings to enable configuration.
+            <div className="px-5 py-5">
+              <AdminEmptyState>No engines registered yet. Seed engine settings to enable configuration.</AdminEmptyState>
             </div>
           )
         ) : (
-          <div className="rounded-2xl border border-warning-border bg-warning-bg p-5 text-sm text-warning">
-            Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to edit engine overrides.
+          <div className="px-5 py-5">
+            <div className="rounded-2xl border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">
+              Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to edit engine overrides.
+            </div>
           </div>
         )}
-      </section>
+      </AdminSection>
     </div>
   );
 }
-
-type ConfigEntry = Awaited<ReturnType<typeof loadEngineConfigEntries>>[number];
 
 async function loadEngineConfigEntries() {
   await ensureEngineSettingsSeed();
@@ -236,4 +341,304 @@ function buildInitialForm(entry: ConfigEntry) {
     perSecondCents: perSecond === '' ? '' : String(perSecond),
     flatCents: flat === '' ? '' : String(flat),
   };
+}
+
+function buildConfigSnapshot(entry: ConfigEntry): EngineConfigSnapshot {
+  const effective = buildInitialForm(entry);
+
+  return {
+    engineId: entry.engine.id,
+    engineLabel: entry.engine.label,
+    active: effective.active,
+    availability: effective.availability,
+    status: effective.status,
+    latencyTier: effective.latencyTier,
+    perSecondCents: effective.perSecondCents.length ? Number(effective.perSecondCents) : null,
+    flatCents: effective.flatCents.length ? Number(effective.flatCents) : null,
+  };
+}
+
+function buildOverviewCards(
+  performanceMetrics: EnginePerformanceMetric[],
+  usageMetrics: Awaited<ReturnType<typeof fetchEngineUsageMetrics>>,
+  configSnapshots: EngineConfigSnapshot[]
+): OverviewCard[] {
+  const attemptTotals = performanceMetrics.reduce(
+    (acc, row) => {
+      acc.total += row.acceptedCount + row.rejectedCount + row.completedCount + row.failedCount;
+      acc.failed += row.failedCount;
+      acc.completed += row.completedCount;
+      acc.durationWeight += (row.averageDurationMs ?? 0) * row.completedCount;
+      return acc;
+    },
+    { total: 0, failed: 0, completed: 0, durationWeight: 0 }
+  );
+
+  const liveEngines = usageMetrics.filter((row) => row.rendersCount30d > 0).length;
+  const revenue30d = usageMetrics.reduce((sum, row) => sum + row.rendersAmount30dUsd, 0);
+  const activeConfigs = configSnapshots.filter((row) => row.active).length;
+  const attentionConfigs = configSnapshots.filter(needsConfigAttention).length;
+  const weightedAverageDurationMs =
+    attemptTotals.completed > 0 ? attemptTotals.durationWeight / attemptTotals.completed : null;
+
+  return [
+    {
+      label: 'Registered',
+      value: formatNumber(configSnapshots.length),
+      helper: 'Configurable engines in the current catalog',
+      icon: Cpu,
+    },
+    {
+      label: 'Active config',
+      value: formatNumber(activeConfigs),
+      helper: `${formatNumber(configSnapshots.length - activeConfigs)} disabled override${configSnapshots.length - activeConfigs === 1 ? '' : 's'}`,
+      tone: activeConfigs === configSnapshots.length ? 'success' : 'warning',
+      icon: Activity,
+    },
+    {
+      label: 'Live engines',
+      value: formatNumber(liveEngines),
+      helper: 'Engines with renders over the last 30 days',
+      tone: liveEngines > 0 ? 'success' : 'default',
+      icon: Cpu,
+    },
+    {
+      label: 'Failure rate',
+      value: formatPercent(attemptTotals.total ? attemptTotals.failed / attemptTotals.total : 0),
+      helper: `${formatNumber(attemptTotals.failed)} failed attempt${attemptTotals.failed === 1 ? '' : 's'} in 30d`,
+      tone: attemptTotals.failed > 0 ? 'warning' : 'success',
+      icon: ShieldAlert,
+    },
+    {
+      label: 'Avg completion',
+      value: formatDuration(weightedAverageDurationMs),
+      helper: `${formatNumber(attemptTotals.completed)} completed attempt${attemptTotals.completed === 1 ? '' : 's'} tracked`,
+      icon: Clock3,
+    },
+    {
+      label: 'Revenue 30d',
+      value: formatCurrency(revenue30d),
+      helper: `${formatNumber(attentionConfigs)} config${attentionConfigs === 1 ? '' : 's'} currently degraded or limited`,
+      tone: attentionConfigs > 0 ? 'warning' : 'success',
+      icon: DollarSign,
+    },
+  ];
+}
+
+function buildOperationalRows(performanceMetrics: EnginePerformanceMetric[], configSnapshots: EngineConfigSnapshot[]): EngineOpsRow[] {
+  const configMap = new Map(configSnapshots.map((row) => [row.engineId, row] as const));
+  const metricsByEngine = new Map<string, EnginePerformanceMetric[]>();
+
+  performanceMetrics.forEach((row) => {
+    const list = metricsByEngine.get(row.engineId) ?? [];
+    list.push(row);
+    metricsByEngine.set(row.engineId, list);
+  });
+
+  const engineIds = new Set<string>([...metricsByEngine.keys(), ...configMap.keys()]);
+
+  const rows = Array.from(engineIds).map((engineId) => {
+    const metrics = metricsByEngine.get(engineId) ?? [];
+    const config = configMap.get(engineId) ?? null;
+    const completedCount = metrics.reduce((sum, row) => sum + row.completedCount, 0);
+    const failedCount = metrics.reduce((sum, row) => sum + row.failedCount, 0);
+    const acceptedCount = metrics.reduce((sum, row) => sum + row.acceptedCount, 0);
+    const rejectedCount = metrics.reduce((sum, row) => sum + row.rejectedCount, 0);
+    const totalAttempts = acceptedCount + rejectedCount + completedCount + failedCount;
+    const averageDurationMs =
+      completedCount > 0
+        ? metrics.reduce((sum, row) => sum + (row.averageDurationMs ?? 0) * row.completedCount, 0) / completedCount
+        : null;
+    const p95DurationMs = metrics.reduce<number | null>(
+      (max, row) => {
+        if (row.p95DurationMs == null) return max;
+        if (max == null || row.p95DurationMs > max) return row.p95DurationMs;
+        return max;
+      },
+      null
+    );
+
+    return {
+      engineId,
+      engineLabel: metrics[0]?.engineLabel ?? config?.engineLabel ?? engineId,
+      modes: metrics.map((row) => row.mode),
+      totalAttempts,
+      acceptedCount,
+      completedCount,
+      failedCount,
+      rejectedCount,
+      failureRate: totalAttempts ? failedCount / totalAttempts : 0,
+      averageDurationMs,
+      p95DurationMs,
+      config,
+    };
+  });
+
+  return rows.sort((a, b) => {
+    if (b.failedCount !== a.failedCount) return b.failedCount - a.failedCount;
+    if (b.totalAttempts !== a.totalAttempts) return b.totalAttempts - a.totalAttempts;
+    return a.engineLabel.localeCompare(b.engineLabel);
+  });
+}
+
+function buildCommercialRows(
+  usageMetrics: Awaited<ReturnType<typeof fetchEngineUsageMetrics>>,
+  configSnapshots: EngineConfigSnapshot[]
+): EngineCommercialRow[] {
+  const configMap = new Map(configSnapshots.map((row) => [row.engineId, row] as const));
+  const usageMap = new Map(usageMetrics.map((row) => [row.engineId, row] as const));
+  const engineIds = new Set<string>([...usageMap.keys(), ...configMap.keys()]);
+
+  const rows = Array.from(engineIds).map((engineId) => {
+    const usage = usageMap.get(engineId);
+    const config = configMap.get(engineId) ?? null;
+
+    return {
+      engineId,
+      engineLabel: usage?.engineLabel ?? config?.engineLabel ?? engineId,
+      rendersCount30d: usage?.rendersCount30d ?? 0,
+      distinctUsers30d: usage?.distinctUsers30d ?? 0,
+      rendersAmount30dUsd: usage?.rendersAmount30dUsd ?? 0,
+      shareOfTotalRenders30d: usage?.shareOfTotalRenders30d ?? 0,
+      shareOfTotalRevenue30d: usage?.shareOfTotalRevenue30d ?? 0,
+      avgSpendPerUser30d: usage?.avgSpendPerUser30d ?? 0,
+      config,
+    };
+  });
+
+  return rows.sort((a, b) => {
+    if (b.rendersAmount30dUsd !== a.rendersAmount30dUsd) return b.rendersAmount30dUsd - a.rendersAmount30dUsd;
+    if (b.rendersCount30d !== a.rendersCount30d) return b.rendersCount30d - a.rendersCount30d;
+    return a.engineLabel.localeCompare(b.engineLabel);
+  });
+}
+
+function summarizeConfig(configSnapshots: EngineConfigSnapshot[]) {
+  return {
+    total: configSnapshots.length,
+    active: configSnapshots.filter((row) => row.active).length,
+    attention: configSnapshots.filter(needsConfigAttention).length,
+  };
+}
+
+function needsConfigAttention(config: EngineConfigSnapshot) {
+  if (!config.active) return true;
+  return config.availability !== 'available' || !['live', 'busy'].includes(config.status);
+}
+
+function buildOpsAttentionLabel(rows: EngineOpsRow[]) {
+  const attention = rows.filter((row) => row.failureRate >= 0.15 || needsConfigAttention(row.config ?? fallbackConfig(row))).length;
+  return attention ? `${formatNumber(attention)} engine${attention === 1 ? '' : 's'} to review` : 'No engine currently flagged';
+}
+
+function buildRevenueLabel(rows: EngineCommercialRow[]) {
+  const totalRevenue = rows.reduce((sum, row) => sum + row.rendersAmount30dUsd, 0);
+  return totalRevenue > 0 ? `${formatCurrency(totalRevenue)} total 30d revenue` : 'No revenue tracked in the current window';
+}
+
+function fallbackConfig(row: { engineId: string; engineLabel: string }): EngineConfigSnapshot {
+  return {
+    engineId: row.engineId,
+    engineLabel: row.engineLabel,
+    active: true,
+    availability: 'available',
+    status: 'live',
+    latencyTier: 'standard',
+    perSecondCents: null,
+    flatCents: null,
+  };
+}
+
+function OverviewCell({ card }: { card: OverviewCard }) {
+  const toneClass =
+    card.tone === 'success'
+      ? 'text-success'
+      : card.tone === 'warning'
+        ? 'text-warning'
+        : 'text-text-primary';
+
+  const Icon = card.icon;
+
+  return (
+    <div className="bg-surface px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{card.label}</p>
+          <p className={`mt-2 text-3xl font-semibold ${toneClass}`}>{card.value}</p>
+          <p className="mt-1 text-xs leading-5 text-text-secondary">{card.helper}</p>
+        </div>
+        <Icon className="h-4 w-4 shrink-0 text-text-muted" />
+      </div>
+    </div>
+  );
+}
+
+function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }) {
+  if (!config) {
+    return <span className="text-sm text-text-muted">No override record</span>;
+  }
+
+  const stateTone = !config.active || config.availability !== 'available' || config.status !== 'live' ? 'warning' : 'default';
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        <span
+          className={[
+            'rounded-full border px-2.5 py-1 text-xs font-medium',
+            config.active ? 'border-success-border bg-success-bg text-success' : 'border-warning-border bg-warning-bg text-warning',
+          ].join(' ')}
+        >
+          {config.active ? 'active' : 'disabled'}
+        </span>
+        <span
+          className={[
+            'rounded-full border px-2.5 py-1 text-xs font-medium capitalize',
+            stateTone === 'warning' ? 'border-warning-border bg-warning-bg text-warning' : 'border-border bg-bg text-text-secondary',
+          ].join(' ')}
+        >
+          {config.availability}
+        </span>
+        <span className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium capitalize text-text-secondary">
+          {config.status.replace('_', ' ')}
+        </span>
+      </div>
+      <p className="text-xs text-text-secondary">
+        {config.latencyTier} latency
+        {config.perSecondCents != null ? ` · ${formatMoneyCents(config.perSecondCents)} / sec` : ''}
+        {config.flatCents != null ? ` · ${formatMoneyCents(config.flatCents)} flat` : ''}
+      </p>
+    </div>
+  );
+}
+
+function SectionMeta({ title, lines }: { title: string; lines: string[] }) {
+  return (
+    <div className="text-right">
+      <p className="text-sm font-medium text-text-primary">{title}</p>
+      <p className="mt-1 max-w-[320px] text-xs text-text-secondary">{lines.join(' · ')}</p>
+    </div>
+  );
+}
+
+function formatNumber(value: number): string {
+  return numberFormatter.format(value);
+}
+
+function formatCurrency(value: number): string {
+  return usdFormatter.format(value);
+}
+
+function formatMoneyCents(value: number): string {
+  return usdFormatter.format(value / 100);
+}
+
+function formatPercent(value: number): string {
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function formatDuration(ms: number | null): string {
+  if (ms == null) return '—';
+  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${Math.round(ms)}ms`;
 }
