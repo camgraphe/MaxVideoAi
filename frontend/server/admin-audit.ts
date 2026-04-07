@@ -39,10 +39,44 @@ export type AdminAuditLog = {
   createdAt: string;
 };
 
-export async function fetchAdminAuditLogs(limit = 100): Promise<AdminAuditLog[]> {
+type FetchAdminAuditLogsParams = {
+  limit?: number;
+  action?: string | null;
+  adminId?: string | null;
+  targetUserId?: string | null;
+};
+
+export async function fetchAdminAuditLogs({
+  limit = 100,
+  action = null,
+  adminId = null,
+  targetUserId = null,
+}: FetchAdminAuditLogsParams = {}): Promise<AdminAuditLog[]> {
   if (!process.env.DATABASE_URL) {
     return [];
   }
+
+  const conditions: string[] = [];
+  const values: Array<number | string> = [];
+
+  if (action) {
+    values.push(action);
+    conditions.push(`action = $${values.length}`);
+  }
+
+  if (adminId) {
+    values.push(adminId);
+    conditions.push(`admin_id::text = $${values.length}`);
+  }
+
+  if (targetUserId) {
+    values.push(targetUserId);
+    conditions.push(`target_user_id::text = $${values.length}`);
+  }
+
+  values.push(Math.min(500, Math.max(1, limit)));
+  const limitParam = `$${values.length}`;
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   const rows = await query<{
     id: number;
@@ -56,10 +90,11 @@ export async function fetchAdminAuditLogs(limit = 100): Promise<AdminAuditLog[]>
     `
       SELECT id, admin_id, target_user_id, action, route, metadata, created_at
       FROM admin_audit
+      ${whereClause}
       ORDER BY created_at DESC
-      LIMIT $1
+      LIMIT ${limitParam}
     `,
-    [Math.min(500, Math.max(1, limit))]
+    values
   );
 
   const uniqueUserIds = Array.from(

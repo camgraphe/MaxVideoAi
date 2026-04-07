@@ -2,13 +2,16 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 
 type ManualCreditFormProps = {
   userId: string;
+  embedded?: boolean;
+  className?: string;
 };
 
-export function ManualCreditForm({ userId }: ManualCreditFormProps) {
+export function ManualCreditForm({ userId, embedded = false, className }: ManualCreditFormProps) {
   const router = useRouter();
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -54,7 +57,13 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="stack-gap-sm rounded-2xl border border-border/70 bg-surface p-4">
+    <form
+      onSubmit={handleSubmit}
+      className={clsx(
+        embedded ? 'space-y-4' : 'stack-gap-sm rounded-2xl border border-border/70 bg-surface p-4',
+        className
+      )}
+    >
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Manual credit</p>
         <p className="text-sm text-text-secondary">Add wallet balance for debugging or refunds.</p>
@@ -92,12 +101,15 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
           {status.message}
         </div>
       ) : null}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <Button
           type="submit"
           size="sm"
           disabled={pending}
-          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse"
+          className={clsx(
+            'bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse',
+            embedded ? 'rounded-xl' : 'rounded-full'
+          )}
         >
           {pending ? 'Processing…' : 'Add credits'}
         </Button>

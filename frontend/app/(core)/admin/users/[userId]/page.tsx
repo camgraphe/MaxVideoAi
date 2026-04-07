@@ -1,11 +1,24 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { BadgeDollarSign, Clock3, History, Layers3, ShieldCheck, UserRound, Wallet } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { fetchAdminUserOverview } from '@/server/admin-users';
 import { ManualCreditForm } from '@/components/admin/ManualCreditForm';
-import { Button } from '@/components/ui/Button';
+import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { Button, ButtonLink } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const dateTimeFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+const shortDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
 
 export default async function AdminUserDetailPage({ params }: { params: { userId: string } }) {
   const userId = params.userId?.trim();
@@ -21,190 +34,250 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
 
   const lifetimeTopupsUsd = wallet ? (wallet.stats.topup ?? 0) / 100 : 0;
   const lifetimeChargesUsd = wallet ? (wallet.stats.charge ?? 0) / 100 : 0;
+  const metrics = buildMemberPulseItems({
+    userId,
+    profile,
+    wallet,
+    usage,
+    lifetimeTopupsUsd,
+    lifetimeChargesUsd,
+  });
+  const profileMetaLines = [
+    profile?.createdAt ? `Created ${formatShortDate(profile.createdAt)}` : null,
+    profile?.lastSignInAt ? `Last sign-in ${formatShortDate(profile.lastSignInAt)}` : 'No sign-in captured',
+  ].filter((value): value is string => Boolean(value));
 
   return (
-    <div className="stack-gap-lg">
-      <Link href="/admin/users" className="text-sm text-text-secondary transition hover:text-text-primary">
-        ← Back to users
-      </Link>
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Operations"
+        title={profile?.email ?? 'User detail'}
+        description="Fiche support pour l’identité, le wallet, l’historique de rendus et l’impersonation. Le détail reste dense, mais sans empilement inutile de cartes."
+        actions={
+          <>
+            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+              Users
+            </ButtonLink>
+            <ButtonLink href={`/admin/jobs?userId=${encodeURIComponent(userId)}`} variant="outline" size="sm" className="border-border bg-surface">
+              Jobs
+            </ButtonLink>
+            <ButtonLink href={`/admin/audit?targetUserId=${encodeURIComponent(userId)}`} variant="outline" size="sm" className="border-border bg-surface">
+              Audit
+            </ButtonLink>
+          </>
+        }
+      />
 
-      <header className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-text-muted">User overview</p>
-        <h1 className="text-3xl font-semibold text-text-primary">{profile?.email ?? 'Unknown email'}</h1>
-        <p className="text-sm text-text-secondary">
-          {profile ? 'Supabase user ' : 'Supabase service role missing · user ID '}
-          <span className="font-mono text-xs">{userId}</span>
-        </p>
-      </header>
+      {!profile ? (
+        <AdminNotice tone={overview.serviceRoleConfigured ? 'info' : 'warning'}>
+          {overview.serviceRoleConfigured ? (
+            <>
+              Supabase did not return a profile for <code className="font-mono text-xs">{userId}</code>. Wallet and render aggregates can still appear if the user has historical data in Postgres.
+            </>
+          ) : (
+            <>
+              Supabase service role key is missing. Add <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code> to fetch profile metadata and enable impersonation.
+            </>
+          )}
+        </AdminNotice>
+      ) : null}
 
-      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-text-muted">Profile</h2>
-        {profile ? (
-          <dl className="mt-4 grid grid-gap-sm md:grid-cols-2">
-            <ProfileField label="Email">{profile.email ?? '—'}</ProfileField>
-            <ProfileField label="User ID">{profile.id}</ProfileField>
-            <ProfileField label="Created">{formatDate(profile.createdAt)}</ProfileField>
-            <ProfileField label="Last sign-in">{formatDate(profile.lastSignInAt)}</ProfileField>
-            <ProfileField label="Role">{profile.isAdmin ? 'Admin' : 'Member'}</ProfileField>
-            <ProfileField label="Metadata">
-              <pre className="overflow-auto rounded-lg bg-bg px-3 py-2 text-xs text-text-secondary">
-                {JSON.stringify(profile.userMetadata ?? {}, null, 2)}
-              </pre>
-            </ProfileField>
-          </dl>
-        ) : (
-          <p className="mt-4 rounded-lg border border-warning-border bg-warning-bg p-3 text-sm text-warning">
-            Supabase service role key is not configured. Add <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code> to
-            fetch profile metadata and enable impersonation.
-          </p>
-        )}
-      </section>
+      {(wallet === null || usage === null) && process.env.DATABASE_URL ? (
+        <AdminNotice tone="info">
+          Some Postgres aggregates are unavailable for this user. The page still shows any data that could be resolved.
+        </AdminNotice>
+      ) : null}
 
-      <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total renders" value={formatNumber(usage?.totalRenders ?? 0)} helper="Lifetime completed jobs" />
-        <StatCard label="Renders (30d)" value={formatNumber(usage?.renders30d ?? 0)} helper="Completed in last 30 days" />
-        <StatCard label="Wallet balance" value={wallet ? formatCurrency(wallet.balanceCents / 100) : '—'} helper="Stored credits" />
-        <StatCard
-          label="Lifetime top-ups"
-          value={formatCurrency(lifetimeTopupsUsd)}
-          helper={`Charges: ${formatCurrency(lifetimeChargesUsd)}`}
-        />
-      </section>
+      <AdminSection
+        title="Member Pulse"
+        description="Repères principaux pour savoir immédiatement si le sujet est un problème de compte, de wallet ou de consommation."
+        action={<AdminSectionMeta title={truncateId(userId)} lines={profileMetaLines} />}
+      >
+        <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-3" density="compact" />
+      </AdminSection>
 
-      <section className="grid grid-gap lg:grid-cols-2">
-        {wallet ? <ManualCreditForm userId={userId} /> : null}
-        <ImpersonationCard userId={userId} profile={profile} serviceRoleConfigured={overview.serviceRoleConfigured} />
-      </section>
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_340px] xl:items-start">
+        <div className="space-y-5">
+          <AdminSection
+            title="Identity & Access"
+            description="Email, timestamps, rôle et métadonnées associées au compte Supabase."
+            action={
+              profile ? (
+                <AdminSectionMeta
+                  title={profile.isAdmin ? 'Admin account' : 'Member account'}
+                  lines={[profile.email ?? 'No email', profile.lastSignInAt ? `Last sign-in ${formatShortDate(profile.lastSignInAt)}` : 'No sign-in captured']}
+                />
+              ) : undefined
+            }
+          >
+            {profile ? (
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                  <ProfileField label="Email">{profile.email ?? '—'}</ProfileField>
+                  <ProfileField label="User ID">
+                    <span className="font-mono text-xs">{profile.id}</span>
+                  </ProfileField>
+                  <ProfileField label="Created">{formatDateTime(profile.createdAt)}</ProfileField>
+                  <ProfileField label="Last sign-in">{formatDateTime(profile.lastSignInAt)}</ProfileField>
+                  <ProfileField label="Role">{profile.isAdmin ? 'Admin' : 'Member'}</ProfileField>
+                  <ProfileField label="App metadata">{profile.appMetadata ? `${Object.keys(profile.appMetadata).length} keys` : 'None'}</ProfileField>
+                </dl>
+                <div className="space-y-3">
+                  <MetadataPanel label="User metadata" value={profile.userMetadata} />
+                  <MetadataPanel label="App metadata" value={profile.appMetadata} />
+                </div>
+              </div>
+            ) : (
+              <AdminEmptyState>Profile metadata is unavailable for this user.</AdminEmptyState>
+            )}
+          </AdminSection>
 
-      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
-        <header className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Engine usage</p>
-            <p className="text-sm text-text-secondary">Lifetime completed renders &amp; spend per engine.</p>
-          </div>
-        </header>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                <th className="py-2 font-semibold">Engine</th>
-                <th className="py-2 font-semibold">Renders</th>
-                <th className="py-2 font-semibold">Spend</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usage?.engineBreakdown.length ? (
-                usage.engineBreakdown.map((engine) => (
-                  <tr key={engine.engineLabel} className="border-t border-border/40 text-text-secondary">
-                    <td className="py-2 font-semibold text-text-primary">{engine.engineLabel}</td>
-                    <td className="py-2">{formatNumber(engine.renderCount)}</td>
-                    <td className="py-2">{formatCurrency(engine.spendUsd)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="py-3 text-center text-sm text-text-secondary">
-                    No renders recorded yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <AdminSection
+            title="Usage & Spend"
+            description="Derniers rendus et répartition par engine pour comprendre rapidement où part la dépense."
+            action={
+              usage ? (
+                <AdminSectionMeta
+                  title={`${formatNumber(usage.totalRenders)} completed renders`}
+                  lines={[`30d ${formatNumber(usage.renders30d)}`, `${usage.engineBreakdown.length} engines touched`]}
+                />
+              ) : undefined
+            }
+          >
+            {usage ? (
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_340px]">
+                <div className="overflow-x-auto rounded-2xl border border-hairline">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-surface">
+                      <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                        <th className="px-4 py-3 font-semibold">Job</th>
+                        <th className="px-4 py-3 font-semibold">Created</th>
+                        <th className="px-4 py-3 font-semibold">Engine</th>
+                        <th className="px-4 py-3 font-semibold">Status</th>
+                        <th className="px-4 py-3 font-semibold">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-hairline bg-bg/30">
+                      {usage.recentJobs.length ? (
+                        usage.recentJobs.map((job) => (
+                          <tr key={job.jobId} className="text-text-secondary">
+                            <td className="px-4 py-3">
+                              <Link className="font-mono text-xs text-text-primary underline-offset-2 hover:underline" href={`/admin/jobs?jobId=${job.jobId}`}>
+                                {job.jobId}
+                              </Link>
+                            </td>
+                            <td className="px-4 py-3 text-xs">{formatDateTime(job.createdAt)}</td>
+                            <td className="px-4 py-3">{job.engineLabel}</td>
+                            <td className="px-4 py-3">
+                              <JobStatusBadge status={job.status} />
+                            </td>
+                            <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(job.amountUsd)}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="px-4 py-6">
+                            <AdminEmptyState>No jobs recorded yet.</AdminEmptyState>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+                  <div className="border-b border-hairline px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine mix</p>
+                    <p className="mt-1 text-sm text-text-secondary">Lifetime completed renders and spend by provider.</p>
+                  </div>
+                  {usage.engineBreakdown.length ? (
+                    <div className="divide-y divide-hairline">
+                      {usage.engineBreakdown.map((engine) => (
+                        <div key={engine.engineLabel} className="flex items-start justify-between gap-3 px-4 py-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-text-primary">{engine.engineLabel}</p>
+                            <p className="mt-1 text-xs text-text-secondary">{formatNumber(engine.renderCount)} renders</p>
+                          </div>
+                          <p className="shrink-0 text-sm font-medium text-text-primary">{formatCurrency(engine.spendUsd)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-4 py-6">
+                      <AdminEmptyState>No engine usage recorded yet.</AdminEmptyState>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <AdminEmptyState>Render and spend aggregates are unavailable.</AdminEmptyState>
+            )}
+          </AdminSection>
+
+          <AdminSection
+            title="Wallet Ledger"
+            description="Historique des top-ups appliqués à ce membre. Conserve la lecture transactionnelle, sans noyer le support dans des cartes."
+            action={
+              wallet ? (
+                <AdminSectionMeta
+                  title={formatCurrency(lifetimeTopupsUsd)}
+                  lines={[`Charges ${formatCurrency(lifetimeChargesUsd)}`, `${overview.topups.length} recent top-ups`]}
+                />
+              ) : undefined
+            }
+          >
+            {overview.topups.length ? (
+              <div className="overflow-x-auto rounded-2xl border border-hairline">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="bg-surface">
+                    <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                      <th className="px-4 py-3 font-semibold">Date</th>
+                      <th className="px-4 py-3 font-semibold">Amount</th>
+                      <th className="px-4 py-3 font-semibold">Description</th>
+                      <th className="px-4 py-3 font-semibold">Stripe ref</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-hairline bg-bg/30">
+                    {overview.topups.map((topup) => (
+                      <tr key={topup.id} className="text-text-secondary">
+                        <td className="px-4 py-3 text-xs">{formatDateTime(topup.createdAt)}</td>
+                        <td className="px-4 py-3 font-medium text-text-primary">
+                          {formatCurrency(topup.amountUsd)} {topup.currency}
+                        </td>
+                        <td className="px-4 py-3">{topup.description ?? '—'}</td>
+                        <td className="px-4 py-3 font-mono text-xs">{topup.stripePaymentIntentId ?? topup.stripeChargeId ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <AdminEmptyState>No top-ups recorded yet.</AdminEmptyState>
+            )}
+          </AdminSection>
         </div>
-      </section>
 
-      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
-        <header className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Recent jobs</p>
-            <p className="text-sm text-text-secondary">Newest 10 renders for investigation.</p>
-          </div>
-        </header>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                <th className="py-2 font-semibold">Job</th>
-                <th className="py-2 font-semibold">Created</th>
-                <th className="py-2 font-semibold">Engine</th>
-                <th className="py-2 font-semibold">Status</th>
-                <th className="py-2 font-semibold">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usage?.recentJobs.length ? (
-                usage.recentJobs.map((job) => (
-                  <tr key={job.jobId} className="border-t border-border/40 text-text-secondary">
-                    <td className="py-2 font-mono text-xs">
-                      <Link className="text-brand underline-offset-2 hover:underline" href={`/admin/jobs?jobId=${job.jobId}`}>
-                        {job.jobId}
-                      </Link>
-                    </td>
-                    <td className="py-2">{formatDate(job.createdAt)}</td>
-                    <td className="py-2">{job.engineLabel}</td>
-                    <td className="py-2 capitalize">{job.status ?? '—'}</td>
-                    <td className="py-2">{formatCurrency(job.amountUsd)}</td>
-                  </tr>
-                ))
+        <div className="xl:sticky xl:top-[5.75rem]">
+          <AdminSection title="Support Actions" description="Opérations directes pour corriger un wallet ou reproduire l’expérience membre.">
+            <div className="space-y-5">
+              {wallet ? (
+                <ManualCreditForm userId={userId} embedded />
               ) : (
-                <tr>
-                  <td colSpan={5} className="py-3 text-center text-sm text-text-secondary">
-                    No jobs recorded yet.
-                  </td>
-                </tr>
+                <AdminNotice tone="info">Wallet controls are unavailable because Postgres aggregates could not be loaded.</AdminNotice>
               )}
-            </tbody>
-          </table>
-        </div>
-      </section>
 
-      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
-        <header className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Top-ups</p>
-            <p className="text-sm text-text-secondary">Last 20 wallet loads for this workspace.</p>
-          </div>
-        </header>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                <th className="py-2 font-semibold">Date</th>
-                <th className="py-2 font-semibold">Amount</th>
-                <th className="py-2 font-semibold">Description</th>
-                <th className="py-2 font-semibold">Stripe ref</th>
-              </tr>
-            </thead>
-            <tbody>
-              {overview.topups.length ? (
-                overview.topups.map((topup) => (
-                  <tr key={topup.id} className="border-t border-border/40 text-text-secondary">
-                    <td className="py-2">{formatDate(topup.createdAt)}</td>
-                    <td className="py-2 font-semibold text-text-primary">
-                      {formatCurrency(topup.amountUsd)} {topup.currency}
-                    </td>
-                    <td className="py-2">{topup.description ?? '—'}</td>
-                    <td className="py-2 text-xs font-mono">
-                      {topup.stripePaymentIntentId ?? topup.stripeChargeId ?? '—'}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="py-3 text-center text-sm text-text-secondary">
-                    No top-ups recorded yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              <div className="border-t border-hairline pt-5">
+                <ImpersonationPanel userId={userId} profile={profile} serviceRoleConfigured={overview.serviceRoleConfigured} />
+              </div>
+            </div>
+          </AdminSection>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
 
-function ProfileField({ label, children }: { label: string; children: React.ReactNode }) {
+function ProfileField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <dt className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{label}</dt>
@@ -213,17 +286,30 @@ function ProfileField({ label, children }: { label: string; children: React.Reac
   );
 }
 
-function StatCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
+function MetadataPanel({
+  label,
+  value,
+}: {
+  label: string;
+  value: Record<string, unknown> | null;
+}) {
+  const hasValue = Boolean(value && Object.keys(value).length);
+
   return (
-    <div className="rounded-2xl border border-border/70 bg-surface px-4 py-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-text-muted">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-text-primary">{value}</p>
-      {helper ? <p className="text-xs text-text-secondary">{helper}</p> : null}
-    </div>
+    <details className="rounded-2xl border border-hairline bg-bg/40 px-4 py-3" open={!hasValue}>
+      <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        {label}
+      </summary>
+      {hasValue ? (
+        <pre className="mt-3 max-h-44 overflow-auto text-[11px] leading-5 text-text-secondary">{JSON.stringify(value, null, 2)}</pre>
+      ) : (
+        <p className="mt-3 text-sm text-text-secondary">No metadata captured.</p>
+      )}
+    </details>
   );
 }
 
-function ImpersonationCard({
+function ImpersonationPanel({
   userId,
   profile,
   serviceRoleConfigured,
@@ -234,7 +320,7 @@ function ImpersonationCard({
 }) {
   const disabled = !serviceRoleConfigured || !profile?.email;
   return (
-    <div className="stack-gap-sm rounded-2xl border border-border/70 bg-surface p-4">
+    <div className="space-y-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Impersonation</p>
         <p className="text-sm text-text-secondary">
@@ -256,7 +342,7 @@ function ImpersonationCard({
           type="submit"
           size="sm"
           disabled={disabled}
-          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse hover:bg-text-primary/90"
+          className="rounded-xl bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse hover:bg-text-primary/90"
         >
           View workspace as this user
         </Button>
@@ -270,17 +356,103 @@ function ImpersonationCard({
   );
 }
 
+function buildMemberPulseItems({
+  userId,
+  profile,
+  wallet,
+  usage,
+  lifetimeTopupsUsd,
+  lifetimeChargesUsd,
+}: {
+  userId: string;
+  profile: Awaited<ReturnType<typeof fetchAdminUserOverview>>['profile'];
+  wallet: Awaited<ReturnType<typeof fetchAdminUserOverview>>['wallet'];
+  usage: Awaited<ReturnType<typeof fetchAdminUserOverview>>['usage'];
+  lifetimeTopupsUsd: number;
+  lifetimeChargesUsd: number;
+}): AdminMetricItem[] {
+  return [
+    {
+      label: 'Access',
+      value: profile ? (profile.isAdmin ? 'Admin' : 'Member') : 'Unknown',
+      helper: profile?.email ?? truncateId(userId),
+      tone: profile?.isAdmin ? 'info' : 'default',
+      icon: profile?.isAdmin ? ShieldCheck : UserRound,
+    },
+    {
+      label: 'Last sign-in',
+      value: profile?.lastSignInAt ? formatShortDate(profile.lastSignInAt) : '—',
+      helper: profile?.createdAt ? `Created ${formatShortDate(profile.createdAt)}` : 'No profile timestamp',
+      icon: Clock3,
+    },
+    {
+      label: 'Wallet balance',
+      value: wallet ? formatCurrency(wallet.balanceCents / 100) : '—',
+      helper: wallet ? 'Stored credits available' : 'Wallet aggregate unavailable',
+      icon: Wallet,
+    },
+    {
+      label: 'Lifetime top-ups',
+      value: wallet ? formatCurrency(lifetimeTopupsUsd) : '—',
+      helper: wallet ? `Charges ${formatCurrency(lifetimeChargesUsd)}` : 'No receipt aggregate',
+      icon: BadgeDollarSign,
+    },
+    {
+      label: 'Completed renders',
+      value: formatNumber(usage?.totalRenders ?? 0),
+      helper: `30d ${formatNumber(usage?.renders30d ?? 0)}`,
+      icon: History,
+    },
+    {
+      label: 'Engine coverage',
+      value: formatNumber(usage?.engineBreakdown.length ?? 0),
+      helper: usage?.engineBreakdown.length ? 'Distinct engines completed' : 'No engine usage yet',
+      icon: Layers3,
+    },
+  ];
+}
+
+function JobStatusBadge({ status }: { status: string | null }) {
+  const normalized = (status ?? 'unknown').toLowerCase();
+  const toneClass =
+    normalized === 'completed'
+      ? 'border-success-border bg-success-bg text-success'
+      : normalized === 'failed'
+        ? 'border-error-border bg-error-bg text-error'
+        : normalized === 'running' || normalized === 'pending'
+          ? 'border-warning-border bg-warning-bg text-warning'
+          : 'border-border bg-surface text-text-secondary';
+
+  return (
+    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${toneClass}`}>
+      {normalized}
+    </span>
+  );
+}
+
 function formatNumber(value: number) {
-  return new Intl.NumberFormat('en-US').format(value);
+  return numberFormatter.format(value);
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  return currencyFormatter.format(amount);
 }
 
-function formatDate(value: string | null | undefined) {
+function formatDateTime(value: string | null | undefined) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString();
+  return dateTimeFormatter.format(date);
+}
+
+function formatShortDate(value: string | null | undefined) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return shortDateFormatter.format(date);
+}
+
+function truncateId(value: string) {
+  if (value.length <= 16) return value;
+  return `${value.slice(0, 8)}…${value.slice(-6)}`;
 }
