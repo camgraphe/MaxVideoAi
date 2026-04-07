@@ -9,12 +9,12 @@ type AdminFrameProps = {
 export function AdminFrame({ sidebar, topbar, children }: AdminFrameProps) {
   return (
     <div className="min-h-screen bg-bg">
-      <div className="flex min-h-screen bg-[linear-gradient(180deg,rgba(15,23,42,0.02),transparent_200px)]">
+      <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.04),transparent_28rem)]">
         {sidebar}
-        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-transparent">
           {topbar}
-          <main className="flex-1 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
-            <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-4">{children}</div>
+          <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+            <div className="mx-auto flex w-full max-w-[1520px] flex-col gap-5">{children}</div>
           </main>
         </div>
       </div>

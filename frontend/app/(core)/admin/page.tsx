@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { ArrowRight, AudioWaveform, BellRing, BriefcaseBusiness, CircleAlert, Cpu, ExternalLink, ShieldCheck, Users } from 'lucide-react';
 import { fetchAdminHealth } from '@/server/admin-metrics';
 import type { AdminHealthSnapshot } from '@/lib/admin/types';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
@@ -109,61 +110,119 @@ const percentFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maxi
 
 export default async function AdminIndexPage() {
   const health = await fetchAdminHealth();
+  const atRisk = health.engineStats.filter((stat) => stat.failureRate >= 0.15 && stat.failedCount >= 3);
+
   return (
     <>
       <AdminPageHeader
-        eyebrow="Hub & Health"
-        title="Admin Dashboard"
-        description="Single entry point for analytics, support tooling, curation, and compliance workflows."
+        eyebrow="Admin System"
+        title="Operations control"
+        description="Pilotage central des incidents, outils de support, surfaces éditoriales et workflows de conformité."
         actions={
           <>
-            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-surface-on-media-25">
+            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
               Insights
             </ButtonLink>
-            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-surface-on-media-25">
+            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
               Jobs
             </ButtonLink>
-            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-surface-on-media-25">
+            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
               Users
             </ButtonLink>
           </>
         }
       />
 
-      <AdminSection
-        title="Live Operations"
-        description="Incident and health signals for the last 24 hours, kept immediately actionable."
-      >
-        <HealthStrip health={health} />
-      </AdminSection>
-
-      <AdminSection
-        title="Quick Tools"
-        description="Direct jumps into the most common support and investigation flows."
-      >
-        <QuickTools />
-      </AdminSection>
-
-      {SECTION_GROUPS.map((group) => (
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_340px]">
         <AdminSection
-          key={group.title}
-          title={group.title}
-          description="Core admin surfaces grouped by operating domain."
+          title="Signal Board"
+          description="Lecture immédiate des incidents et métriques critiques sur les dernières 24 heures."
+          contentClassName="p-0"
         >
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {group.items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-xl border border-surface-on-media-25 bg-bg/50 px-4 py-4 transition hover:border-text-muted hover:bg-bg"
-              >
-                <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">{item.description}</p>
-              </Link>
-            ))}
-          </div>
+          <HealthStrip health={health} />
         </AdminSection>
-      ))}
+
+        <AdminSection
+          title="Triage"
+          description="Entrées rapides vers les recherches et files qui demandent une action."
+          contentClassName="p-0"
+        >
+          <QuickTools health={health} />
+        </AdminSection>
+      </div>
+
+      <AdminSection
+        title="Operating Areas"
+        description="Surfaces admin regroupées par domaine, avec un routage plus lisible que la grille de cartes précédente."
+      >
+        <div className="grid gap-8 xl:grid-cols-3">
+          {SECTION_GROUPS.map((group) => (
+            <section key={group.title} className="min-w-0">
+              <div className="flex items-end justify-between gap-3 border-b border-hairline pb-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-text-primary">{group.title}</h2>
+                  <p className="mt-1 text-xs text-text-secondary">{group.items.length} admin surfaces</p>
+                </div>
+              </div>
+              <div className="divide-y divide-hairline">
+                {group.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="group flex items-start justify-between gap-4 py-3 transition hover:bg-surface-hover/60"
+                  >
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-medium text-text-primary transition group-hover:text-brand">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-text-secondary">{item.description}</p>
+                    </div>
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Current Watchlist"
+        description="Résumé opérationnel sur les surfaces qui ont le plus de probabilité de nécessiter une intervention humaine."
+      >
+        <div className="grid gap-4 lg:grid-cols-3">
+          <WatchlistCard
+            icon={CircleAlert}
+            title="Engines at risk"
+            value={atRisk.length ? `${atRisk.length} engines` : 'No engine risk'}
+            body={
+              atRisk.length === 0
+                ? 'Aucun moteur ne dépasse le seuil d’alerte actuellement.'
+                : atRisk
+                    .slice(0, 3)
+                    .map((stat) => `${stat.engineLabel} (${formatPercent(stat.failureRate)})`)
+                    .join(', ')
+            }
+            href={buildJobsHref({ outcome: 'failed_action_required' })}
+          />
+          <WatchlistCard
+            icon={BellRing}
+            title="Service notice"
+            value={health.serviceNotice.active ? 'Banner active' : 'No banner'}
+            body={
+              health.serviceNotice.active
+                ? health.serviceNotice.message ?? 'Un message incident est actuellement visible côté produit.'
+                : 'Aucun bandeau d’incident n’est affiché pour les membres.'
+            }
+            href="/admin/system"
+          />
+          <WatchlistCard
+            icon={ShieldCheck}
+            title="Support coverage"
+            value={`${formatNumber(health.failedRenders24h + health.stalePendingJobs)} open items`}
+            body="Combine échecs non résolus et jobs encore bloqués dans la file pending."
+            href="/admin/jobs"
+          />
+        </div>
+      </AdminSection>
     </>
   );
 }
@@ -192,7 +251,7 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
         );
 
   return (
-    <div className="grid gap-px overflow-hidden rounded-xl border border-surface-on-media-25 bg-surface-on-media-25 md:grid-cols-2 xl:grid-cols-5">
+    <div className="grid divide-y divide-hairline md:grid-cols-2 md:divide-x md:[&>*:nth-child(2n+1)]:border-r-0 xl:grid-cols-5 xl:divide-x xl:divide-y-0">
       <HealthTile
         label="Engine signals"
         value={atRisk.length ? `${atRisk.length} incident${atRisk.length > 1 ? 's' : ''}` : 'All clear'}
@@ -247,17 +306,25 @@ function HealthTile({
   variant?: 'ok' | 'warn' | 'info';
   href?: string;
 }) {
-  const intentClasses =
-    variant === 'warn' ? 'text-error' : variant === 'info' ? 'text-info' : 'text-text-primary';
-  const baseClasses = 'block bg-surface px-4 py-4';
+  const toneClasses =
+    variant === 'warn'
+      ? 'bg-error'
+      : variant === 'info'
+        ? 'bg-info'
+        : 'bg-emerald-500';
+  const intentClasses = variant === 'warn' ? 'text-error' : variant === 'info' ? 'text-info' : 'text-text-primary';
+  const baseClasses = 'block bg-transparent px-5 py-4';
   const interactiveClasses = href
-    ? 'transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+    ? 'transition hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
     : '';
   const content = (
     <>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-text-muted">{label}</p>
-      <p className={`mt-2 text-2xl font-semibold ${intentClasses}`}>{value}</p>
-      {helper ? <p className="mt-1 text-xs text-text-secondary">{helper}</p> : null}
+      <div className="flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${toneClasses}`} aria-hidden />
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{label}</p>
+      </div>
+      <p className={`mt-3 text-2xl font-semibold ${intentClasses}`}>{value}</p>
+      {helper ? <p className="mt-2 text-xs leading-5 text-text-secondary">{helper}</p> : null}
     </>
   );
 
@@ -272,62 +339,175 @@ function HealthTile({
   return <div className={baseClasses}>{content}</div>;
 }
 
-function QuickTools() {
+function QuickTools({ health }: { health: AdminHealthSnapshot }) {
   return (
-    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
-      <form action="/admin/users" method="get" className="flex flex-col gap-3 rounded-xl border border-surface-on-media-25 bg-bg/60 p-4">
-        <div>
-          <label htmlFor="quick-user" className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
-            Find user
-          </label>
-          <p className="mt-1 text-sm text-text-secondary">Open a member record directly from email or Supabase ID.</p>
+    <div className="divide-y divide-hairline">
+      <QuickSearchForm
+        action="/admin/users"
+        id="quick-user"
+        label="Find user"
+        description="Open a member record from email or Supabase ID."
+        name="search"
+        placeholder="Email or Supabase user ID"
+        cta="Open user"
+      />
+      <QuickSearchForm
+        action="/admin/jobs"
+        id="quick-job"
+        label="Find render job"
+        description="Jump straight to a job using the local job id or Fal request id."
+        name="jobId"
+        placeholder="Job id or Fal request id"
+        cta="Open job"
+      />
+      <div className="space-y-3 px-5 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Queues</p>
+            <p className="mt-1 text-sm text-text-secondary">Liens directs vers les surfaces à surveiller en premier.</p>
+          </div>
         </div>
-        <input
-          id="quick-user"
-          name="search"
-          type="text"
-          placeholder="Email or Supabase user ID"
-          className="rounded-lg border border-surface-on-media-25 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-        <Button type="submit" size="sm" className="w-fit rounded-lg px-4">
-          Search user
-        </Button>
-      </form>
-
-      <form action="/admin/jobs" method="get" className="flex flex-col gap-3 rounded-xl border border-surface-on-media-25 bg-bg/60 p-4">
-        <div>
-          <label htmlFor="quick-job" className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
-            Find render job
-          </label>
-          <p className="mt-1 text-sm text-text-secondary">Jump straight to a job using the local job id or Fal request id.</p>
-        </div>
-        <input
-          id="quick-job"
-          name="jobId"
-          type="text"
-          placeholder="Job id or Fal request id"
-          className="rounded-lg border border-surface-on-media-25 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-        <Button type="submit" size="sm" className="w-fit rounded-lg px-4">
-          Search job
-        </Button>
-      </form>
-
-      <div className="rounded-xl border border-surface-on-media-25 bg-bg/60 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Fast links</p>
-        <div className="mt-3 flex flex-col gap-2">
-          <ButtonLink href="/admin/insights" variant="outline" size="sm" className="justify-start border-surface-on-media-25">
-            Analytics
-          </ButtonLink>
-          <ButtonLink href="/admin/engines" variant="outline" size="sm" className="justify-start border-surface-on-media-25">
-            Engines
-          </ButtonLink>
-          <ButtonLink href="/admin/system" variant="outline" size="sm" className="justify-start border-surface-on-media-25">
-            Service notice
-          </ButtonLink>
+        <div className="space-y-2">
+          <TriageLink
+            href="/admin/insights"
+            icon={AudioWaveform}
+            label="Insights"
+            meta="Metrics and financial pulse"
+          />
+          <TriageLink
+            href="/admin/engines"
+            icon={Cpu}
+            label="Engines"
+            meta={`${formatNumber(health.engineStats.length)} integrations tracked`}
+          />
+          <TriageLink
+            href="/admin/jobs?outcome=failed_action_required"
+            icon={CircleAlert}
+            label="Failed jobs"
+            meta={`${formatNumber(health.failedRenders24h)} unresolved over 24h`}
+          />
+          <TriageLink
+            href="/admin/users"
+            icon={Users}
+            label="Users"
+            meta="Support and impersonation flows"
+          />
+          <TriageLink
+            href="/admin/system"
+            icon={BriefcaseBusiness}
+            label="Service notice"
+            meta={health.serviceNotice.active ? 'Banner currently enabled' : 'No active banner'}
+          />
         </div>
       </div>
     </div>
+  );
+}
+
+function QuickSearchForm({
+  action,
+  id,
+  label,
+  description,
+  name,
+  placeholder,
+  cta,
+}: {
+  action: string;
+  id: string;
+  label: string;
+  description: string;
+  name: string;
+  placeholder: string;
+  cta: string;
+}) {
+  return (
+    <form action={action} method="get" className="space-y-3 px-5 py-4">
+      <div>
+        <label htmlFor={id} className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+          {label}
+        </label>
+        <p className="mt-1 text-sm text-text-secondary">{description}</p>
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          id={id}
+          name={name}
+          type="text"
+          placeholder={placeholder}
+          className="min-h-[40px] flex-1 rounded-xl border border-border bg-bg px-3 text-sm text-text-primary focus:border-border-hover focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <Button type="submit" size="sm" className="rounded-xl px-4">
+          {cta}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function TriageLink({
+  href,
+  icon: Icon,
+  label,
+  meta,
+}: {
+  href: string;
+  icon: typeof AudioWaveform;
+  label: string;
+  meta: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between gap-3 rounded-xl border border-transparent px-3 py-2 transition hover:border-hairline hover:bg-surface-hover"
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950 text-white">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-text-primary">{label}</p>
+          <p className="truncate text-xs text-text-secondary">{meta}</p>
+        </div>
+      </div>
+      <ExternalLink className="h-4 w-4 shrink-0 text-text-muted transition group-hover:text-text-primary" />
+    </Link>
+  );
+}
+
+function WatchlistCard({
+  icon: Icon,
+  title,
+  value,
+  body,
+  href,
+}: {
+  icon: typeof CircleAlert;
+  title: string;
+  value: string;
+  body: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-2xl border border-border bg-bg/60 p-4 transition hover:border-border-hover hover:bg-bg"
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{title}</p>
+          <p className="mt-1 text-lg font-semibold text-text-primary">{value}</p>
+        </div>
+      </div>
+      <p className="mt-4 text-sm leading-6 text-text-secondary">{body}</p>
+      <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-text-primary">
+        Open surface
+        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+      </div>
+    </Link>
   );
 }
 

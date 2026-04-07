@@ -67,8 +67,8 @@ type SidebarNavProps = {
 };
 
 const BADGE_TONE_CLASS: Record<AdminNavBadgeTone, string> = {
-  info: 'border-surface-on-media-25 bg-bg text-text-muted',
-  warn: 'border-warning-border bg-warning-bg text-warning',
+  info: 'border-white/10 bg-white/10 text-slate-300',
+  warn: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
 };
 
 export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: SidebarNavProps) {
@@ -95,28 +95,28 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
           prefetch={false}
           onClick={mobileOpen ? onMobileClose : undefined}
           className={clsx(
-            'group relative flex w-full items-center rounded-xl px-3 py-2 text-[13px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'group relative flex w-full items-center rounded-xl px-3 py-2.5 text-[13px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             showCompact ? 'justify-center px-2' : 'gap-2',
             isActive
-              ? 'bg-bg text-text-primary'
-              : 'text-text-secondary hover:bg-bg hover:text-text-primary'
+              ? 'bg-white/10 text-white'
+              : 'text-slate-300 hover:bg-white/6 hover:text-white'
           )}
           aria-current={isActive ? 'page' : undefined}
           aria-describedby={showCompact ? tooltipId : undefined}
         >
           <span
             className={clsx(
-              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-brand transition-opacity',
+              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-white transition-opacity',
               isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
             )}
             aria-hidden
           />
           <span
             className={clsx(
-              'flex h-7 w-7 items-center justify-center rounded-card border transition-colors',
+              'flex h-7 w-7 items-center justify-center rounded-lg transition-colors',
               isActive
-                ? 'border-surface-on-media-25 bg-surface text-text-primary'
-                : 'border-transparent bg-transparent text-text-muted group-hover:bg-surface group-hover:text-text-primary'
+                ? 'bg-white/12 text-white'
+                : 'bg-transparent text-slate-400 group-hover:bg-white/8 group-hover:text-white'
             )}
             aria-hidden
           >
@@ -160,7 +160,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
   const renderGroup = (group: AdminNavGroup, index: number) => {
     const headerClass = clsx(
       'flex w-full items-center justify-between px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]',
-      group.secondary ? 'text-text-muted' : 'text-text-tertiary'
+      group.secondary ? 'text-slate-500' : 'text-slate-500'
     );
     const wrapperClass = 'space-y-1';
 
@@ -181,42 +181,52 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
   return (
     <aside
       className={clsx(
-        'fixed inset-y-0 left-0 z-40 flex w-[17.5rem] flex-col border-r border-surface-on-media-25 bg-surface/98 backdrop-blur transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[16.5rem] md:translate-x-0 md:shadow-none',
+        'fixed inset-y-0 left-0 z-40 flex w-[18rem] flex-col border-r border-slate-900 bg-slate-950 text-slate-100 transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[17rem] md:translate-x-0 md:shadow-none',
         mobileOpen ? 'translate-x-0 shadow-float' : '-translate-x-full',
         'md:translate-x-0'
       )}
       aria-label="Admin navigation"
     >
-      <div className="flex items-center justify-between gap-3 border-b border-surface-on-media-25 px-4 pb-3 pt-4">
-        <Link href="/admin" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-surface-on-media-25 bg-bg text-xs font-semibold text-text-primary">
-            MV
-          </span>
-          <span className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold text-text-primary">Admin</span>
-            <span className="text-xs text-text-muted">Operations workspace</span>
-          </span>
-        </Link>
-        <div className="flex items-center gap-2">
+      <div className="border-b border-white/10 px-4 pb-4 pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/admin" className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-xs font-semibold text-slate-950">
+              MV
+            </span>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-sm font-semibold text-white">MaxVideo Admin</span>
+              <span className="text-xs text-slate-400">Operations control</span>
+            </span>
+          </Link>
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={onMobileClose}
-            className="h-9 w-9 min-h-0 rounded-lg border border-surface-on-media-25 bg-surface p-0 text-text-secondary hover:bg-bg hover:text-text-primary md:hidden"
+            className="h-9 w-9 min-h-0 rounded-lg border border-white/10 bg-white/5 p-0 text-slate-300 hover:bg-white/10 hover:text-white md:hidden"
           >
             <UIIcon icon={X} size={18} />
             <span className="sr-only">Close navigation</span>
           </Button>
         </div>
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Workspace</p>
+            <p className="mt-1 text-sm font-medium text-white">Admin</p>
+          </div>
+          <span className="inline-flex items-center gap-2 text-xs text-slate-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
+            Live
+          </span>
+        </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-3">
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
         <div className="space-y-1">
           {primaryGroups.map((group, index) => renderGroup(group, index))}
         </div>
         {secondaryGroups.length ? (
-          <div className="mt-3 border-t border-surface-on-media-25 pt-3">
+          <div className="mt-4 border-t border-white/10 pt-4">
             <div className="space-y-1">
               {secondaryGroups.map((group, index) => renderGroup(group, index))}
             </div>

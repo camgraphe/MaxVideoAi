@@ -51,7 +51,7 @@ export function TopbarSearch() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full max-w-xs items-center gap-2 rounded-input border border-hairline bg-bg/70 px-2 py-0.5 text-sm text-text-secondary"
+      className="flex h-10 w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface px-2 shadow-card"
     >
       <label className="sr-only" htmlFor={inputId}>
         Quick search
@@ -59,7 +59,7 @@ export function TopbarSearch() {
       <select
         value={scope}
         onChange={(event) => setScope(event.target.value as SearchScope)}
-        className="rounded-input border border-hairline bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted"
+        className="h-8 rounded-lg border border-hairline bg-bg px-2.5 text-[11px] font-medium text-text-secondary focus:border-border-hover focus:outline-none"
         aria-label="Search scope"
       >
         {scopeOptions.map((option) => (
@@ -68,19 +68,19 @@ export function TopbarSearch() {
           </option>
         ))}
       </select>
-      <div className="h-5 w-px bg-hairline/80" aria-hidden="true" />
-      <UIIcon icon={Search} size={14} className="text-text-tertiary" />
+      <div className="h-5 w-px bg-hairline" aria-hidden="true" />
+      <UIIcon icon={Search} size={14} className="text-text-muted" />
       <input
         id={inputId}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary focus:outline-none"
+        className="w-full min-w-0 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
         type="search"
       />
       <button
         type="submit"
-        className="rounded-input border border-hairline bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted transition hover:bg-surface-2"
+        className="inline-flex h-8 items-center rounded-lg bg-slate-950 px-3 text-[11px] font-medium text-white transition hover:bg-slate-800"
       >
         Go
       </button>
