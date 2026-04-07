@@ -35,6 +35,11 @@ const ACTION_OPTIONS = [
   { value: 'IMPERSONATE_STOP', label: 'Impersonate stop' },
   { value: 'FORCE_RESYNC_JOB', label: 'Force resync' },
   { value: 'SERVICE_NOTICE_UPDATE', label: 'Service notice' },
+  { value: 'THEME_TOKENS_UPDATE', label: 'Theme update' },
+  { value: 'THEME_TOKENS_RESET', label: 'Theme reset' },
+  { value: 'HOMEPAGE_SECTION_CREATE', label: 'Homepage create' },
+  { value: 'HOMEPAGE_SECTION_UPDATE', label: 'Homepage update' },
+  { value: 'HOMEPAGE_SECTION_DELETE', label: 'Homepage delete' },
 ];
 
 const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
@@ -332,7 +337,11 @@ function AuditActionBadge({ action }: { action: string }) {
       ? 'border-warning-border bg-warning-bg text-warning'
       : action === 'SERVICE_NOTICE_UPDATE'
         ? 'border-warning-border bg-warning-bg text-warning'
-      : action === 'IMPERSONATE_START'
+      : action === 'THEME_TOKENS_UPDATE' || action === 'THEME_TOKENS_RESET'
+        ? 'border-info-border bg-info-bg text-info'
+      : action === 'HOMEPAGE_SECTION_CREATE' || action === 'HOMEPAGE_SECTION_UPDATE' || action === 'HOMEPAGE_SECTION_DELETE'
+        ? 'border-success-border bg-success-bg text-success'
+        : action === 'IMPERSONATE_START'
         ? 'border-info-border bg-info-bg text-info'
         : 'border-success-border bg-success-bg text-success';
 
@@ -351,6 +360,15 @@ function AuditContextCell({ log }: { log: Awaited<ReturnType<typeof fetchAdminAu
   const returnTo = typeof metadata?.returnTo === 'string' ? metadata.returnTo : null;
   const preview = typeof metadata?.preview === 'string' ? metadata.preview : null;
   const messageLength = typeof metadata?.messageLength === 'number' ? metadata.messageLength : null;
+  const sectionId = typeof metadata?.sectionId === 'string' ? metadata.sectionId : null;
+  const sectionKey = typeof metadata?.sectionKey === 'string' ? metadata.sectionKey : null;
+  const sectionType = typeof metadata?.sectionType === 'string' ? metadata.sectionType : null;
+  const lightCount = typeof metadata?.lightCount === 'number' ? metadata.lightCount : null;
+  const darkCount = typeof metadata?.darkCount === 'number' ? metadata.darkCount : null;
+  const advancedCount = typeof metadata?.advancedCount === 'number' ? metadata.advancedCount : null;
+  const keysPreview = Array.isArray(metadata?.keysPreview)
+    ? metadata.keysPreview.filter((value): value is string => typeof value === 'string')
+    : [];
 
   return (
     <div className="space-y-2">
@@ -369,9 +387,23 @@ function AuditContextCell({ log }: { log: Awaited<ReturnType<typeof fetchAdminAu
             {engineId ? <span className="text-text-muted"> · {engineId}</span> : null}
           </p>
         ) : null}
+        {sectionId ? <p>section <span className="font-mono text-text-primary">{sectionId}</span></p> : null}
+        {sectionKey ? (
+          <p>
+            homepage <span className="font-mono text-text-primary">{sectionKey}</span>
+            {sectionType ? <span className="text-text-muted"> · {sectionType}</span> : null}
+          </p>
+        ) : null}
         {redirectTo ? <p>redirect <span className="font-mono text-text-primary">{redirectTo}</span></p> : null}
         {returnTo ? <p>return <span className="font-mono text-text-primary">{returnTo}</span></p> : null}
         {messageLength !== null ? <p>message length <span className="text-text-primary">{messageLength}</span></p> : null}
+        {lightCount !== null || darkCount !== null ? (
+          <p>
+            tokens <span className="text-text-primary">{lightCount ?? 0}L / {darkCount ?? 0}D</span>
+            {advancedCount !== null ? <span className="text-text-muted"> · advanced {advancedCount}</span> : null}
+          </p>
+        ) : null}
+        {keysPreview.length ? <p className="line-clamp-2">keys <span className="text-text-primary">{keysPreview.join(', ')}</span></p> : null}
         {preview ? <p className="line-clamp-2">preview <span className="text-text-primary">{preview}</span></p> : null}
       </div>
 

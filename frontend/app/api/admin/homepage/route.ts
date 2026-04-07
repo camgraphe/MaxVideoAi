@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
+import { logAdminAction } from '@/server/admin-audit';
 import { createHomepageSection, listHomepageSections, HOMEPAGE_SECTION_TYPES } from '@/server/homepage';
 
 const VALID_TYPES = new Set(HOMEPAGE_SECTION_TYPES);
@@ -82,6 +83,18 @@ export async function POST(req: NextRequest) {
       startAt: startAt ?? null,
       endAt: endAt ?? null,
       userId: adminId,
+    });
+    await logAdminAction({
+      adminId,
+      action: 'HOMEPAGE_SECTION_CREATE',
+      route: '/api/admin/homepage',
+      metadata: {
+        sectionId: section.id,
+        sectionKey: section.key,
+        sectionType: section.type,
+        title: section.title,
+        videoId: section.videoId,
+      },
     });
     return NextResponse.json({ ok: true, section });
   } catch (error) {
