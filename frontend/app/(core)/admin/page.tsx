@@ -133,22 +133,66 @@ export default async function AdminIndexPage() {
         }
       />
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_340px]">
-        <AdminSection
-          title="Signal Board"
-          description="Lecture immédiate des incidents et métriques critiques sur les dernières 24 heures."
-          contentClassName="p-0"
-        >
-          <HealthStrip health={health} />
-        </AdminSection>
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_360px] xl:items-start">
+        <div className="space-y-5">
+          <AdminSection
+            title="Signal Board"
+            description="Lecture immédiate des incidents et métriques critiques sur les dernières 24 heures."
+            contentClassName="p-0"
+          >
+            <HealthStrip health={health} />
+          </AdminSection>
 
-        <AdminSection
-          title="Triage"
-          description="Entrées rapides vers les recherches et files qui demandent une action."
-          contentClassName="p-0"
-        >
-          <QuickTools health={health} />
-        </AdminSection>
+          <AdminSection
+            title="Current Watchlist"
+            description="Résumé opérationnel sur les surfaces qui ont le plus de probabilité de nécessiter une intervention humaine."
+          >
+            <div className="grid gap-4 lg:grid-cols-3">
+              <WatchlistCard
+                icon={CircleAlert}
+                title="Engines at risk"
+                value={atRisk.length ? `${atRisk.length} engines` : 'No engine risk'}
+                body={
+                  atRisk.length === 0
+                    ? 'Aucun moteur ne dépasse le seuil d’alerte actuellement.'
+                    : atRisk
+                        .slice(0, 3)
+                        .map((stat) => `${stat.engineLabel} (${formatPercent(stat.failureRate)})`)
+                        .join(', ')
+                }
+                href={buildJobsHref({ outcome: 'failed_action_required' })}
+              />
+              <WatchlistCard
+                icon={BellRing}
+                title="Service notice"
+                value={health.serviceNotice.active ? 'Banner active' : 'No banner'}
+                body={
+                  health.serviceNotice.active
+                    ? health.serviceNotice.message ?? 'Un message incident est actuellement visible côté produit.'
+                    : 'Aucun bandeau d’incident n’est affiché pour les membres.'
+                }
+                href="/admin/system"
+              />
+              <WatchlistCard
+                icon={ShieldCheck}
+                title="Support coverage"
+                value={`${formatNumber(health.failedRenders24h + health.stalePendingJobs)} open items`}
+                body="Combine échecs non résolus et jobs encore bloqués dans la file pending."
+                href="/admin/jobs"
+              />
+            </div>
+          </AdminSection>
+        </div>
+
+        <div className="xl:sticky xl:top-[5.75rem]">
+          <AdminSection
+            title="Triage"
+            description="Entrées rapides vers les recherches et files qui demandent une action."
+            contentClassName="p-0"
+          >
+            <QuickTools health={health} />
+          </AdminSection>
+        </div>
       </div>
 
       <AdminSection
@@ -184,45 +228,6 @@ export default async function AdminIndexPage() {
         </div>
       </AdminSection>
 
-      <AdminSection
-        title="Current Watchlist"
-        description="Résumé opérationnel sur les surfaces qui ont le plus de probabilité de nécessiter une intervention humaine."
-      >
-        <div className="grid gap-4 lg:grid-cols-3">
-          <WatchlistCard
-            icon={CircleAlert}
-            title="Engines at risk"
-            value={atRisk.length ? `${atRisk.length} engines` : 'No engine risk'}
-            body={
-              atRisk.length === 0
-                ? 'Aucun moteur ne dépasse le seuil d’alerte actuellement.'
-                : atRisk
-                    .slice(0, 3)
-                    .map((stat) => `${stat.engineLabel} (${formatPercent(stat.failureRate)})`)
-                    .join(', ')
-            }
-            href={buildJobsHref({ outcome: 'failed_action_required' })}
-          />
-          <WatchlistCard
-            icon={BellRing}
-            title="Service notice"
-            value={health.serviceNotice.active ? 'Banner active' : 'No banner'}
-            body={
-              health.serviceNotice.active
-                ? health.serviceNotice.message ?? 'Un message incident est actuellement visible côté produit.'
-                : 'Aucun bandeau d’incident n’est affiché pour les membres.'
-            }
-            href="/admin/system"
-          />
-          <WatchlistCard
-            icon={ShieldCheck}
-            title="Support coverage"
-            value={`${formatNumber(health.failedRenders24h + health.stalePendingJobs)} open items`}
-            body="Combine échecs non résolus et jobs encore bloqués dans la file pending."
-            href="/admin/jobs"
-          />
-        </div>
-      </AdminSection>
     </>
   );
 }
