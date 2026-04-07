@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Eye, Film, Radar, ShieldCheck } from 'lucide-react';
 import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
@@ -113,34 +114,42 @@ export default async function AdminVideoSeoPage() {
                 {rows.map((row) => (
                   <tr key={row.entry.id} className={row.isReady ? 'align-top' : 'align-top bg-warning-bg/20'}>
                     <td className="px-4 py-4 align-top">
-                      <div className="max-w-[30rem] space-y-2">
-                        <div>
-                          <Link href={row.watchPath} prefetch={false} className="font-semibold text-text-primary hover:underline">
-                            {row.generatedTitle}
-                          </Link>
-                          <p className="mt-1 text-xs text-text-muted">
-                            {row.entry.engineLabel} · {row.entry.engineFamily} · Priority {row.entry.priority}
-                          </p>
-                        </div>
-                        <p className="line-clamp-2 text-sm text-text-secondary">{row.generatedIntro}</p>
-                        <div className="space-y-1 text-xs text-text-muted">
-                          <p>
-                            Source:{' '}
-                            <Link href={row.entry.sourcePath} prefetch={false} className="font-medium text-text-primary hover:underline">
-                              {row.entry.sourceLabel}
+                      <div className="grid max-w-[34rem] gap-3 lg:grid-cols-[160px_minmax(0,1fr)]">
+                        <WatchPreview
+                          title={row.generatedTitle}
+                          watchPath={row.watchPath}
+                          thumbUrl={row.video?.thumbUrl ?? null}
+                          ready={row.isReady}
+                        />
+                        <div className="min-w-0 space-y-2">
+                          <div>
+                            <Link href={row.watchPath} prefetch={false} className="font-semibold text-text-primary hover:underline">
+                              {row.generatedTitle}
                             </Link>
-                          </p>
-                          <p>
-                            Public URL:{' '}
-                            <a href={row.watchUrl} className="font-mono text-[11px] text-text-primary hover:underline">
-                              {row.watchUrl}
-                            </a>
-                          </p>
-                          <p>
-                            Video ID:{' '}
-                            <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-text-primary">{row.entry.id}</code>
-                          </p>
-                          <p>Published target: {formatDate(row.entry.publishedAt)}</p>
+                            <p className="mt-1 text-xs text-text-muted">
+                              {row.entry.engineLabel} · {row.entry.engineFamily} · Priority {row.entry.priority}
+                            </p>
+                          </div>
+                          <p className="line-clamp-2 text-sm text-text-secondary">{row.generatedIntro}</p>
+                          <div className="space-y-1 text-xs text-text-muted">
+                            <p>
+                              Source:{' '}
+                              <Link href={row.entry.sourcePath} prefetch={false} className="font-medium text-text-primary hover:underline">
+                                {row.entry.sourceLabel}
+                              </Link>
+                            </p>
+                            <p>
+                              Public URL:{' '}
+                              <a href={row.watchUrl} className="font-mono text-[11px] text-text-primary hover:underline">
+                                {row.watchUrl}
+                              </a>
+                            </p>
+                            <p>
+                              Video ID:{' '}
+                              <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-text-primary">{row.entry.id}</code>
+                            </p>
+                            <p>Published target: {formatDate(row.entry.publishedAt)}</p>
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -352,6 +361,44 @@ function buildOverviewItems(rows: WatchRow[]): AdminMetricItem[] {
 
 function buildWatchPath(id: string): string {
   return `/video/${encodeURIComponent(id)}`;
+}
+
+function WatchPreview({
+  title,
+  watchPath,
+  thumbUrl,
+  ready,
+}: {
+  title: string;
+  watchPath: string;
+  thumbUrl: string | null;
+  ready: boolean;
+}) {
+  return (
+    <Link
+      href={watchPath}
+      prefetch={false}
+      className="group relative block overflow-hidden rounded-2xl border border-hairline bg-surface-2"
+    >
+      {thumbUrl ? (
+        <Image
+          src={thumbUrl}
+          alt={title}
+          width={160}
+          height={90}
+          unoptimized
+          className="aspect-video object-cover transition group-hover:scale-[1.02]"
+          style={{ width: '100%', height: 'auto' }}
+        />
+      ) : (
+        <div className="flex aspect-video items-center justify-center bg-bg text-xs font-medium text-text-muted">No thumbnail</div>
+      )}
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 text-[11px] font-semibold text-white">
+        <span>{ready ? 'Ready' : 'Review'}</span>
+        <span>Open</span>
+      </div>
+    </Link>
+  );
 }
 
 function compareWatchRows(a: WatchRow, b: WatchRow) {
