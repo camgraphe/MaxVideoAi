@@ -1,8 +1,15 @@
 'use client';
 
-import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { FileBadge2, FileText, ShieldCheck, TimerReset } from 'lucide-react';
+import useSWR from 'swr';
+import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { Button, ButtonLink } from '@/components/ui/Button';
 
 const fetchJson = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url, { cache: 'no-store' });
@@ -33,6 +40,11 @@ type UpdateResponse = {
   error?: string;
 };
 
+type StatusState = {
+  tone: 'success' | 'error';
+  message: string;
+} | null;
+
 const DEFAULT_TITLES: Record<LegalDocument['key'], string> = {
   terms: 'Terms of Service',
   privacy: 'Privacy Policy',
@@ -55,13 +67,19 @@ function formatDate(value: string | null): string {
 
 export default function AdminLegalPage() {
   const { data, error, isLoading, mutate } = useSWR<DocumentsResponse>('/api/admin/legal/documents', fetchJson);
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<StatusState>(null);
 
-  const docs = data?.documents ?? [];
+  const docs = useMemo(() => data?.documents ?? [], [data?.documents]);
+  const reconsent = useMemo(
+    () => data?.reconsent ?? { mode: 'soft' as const, graceDays: 14 },
+    [data?.reconsent]
+  );
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const metrics = useMemo(() => buildLegalMetrics(docs, reconsent), [docs, reconsent]);
 
   useEffect(() => {
     if (error) {
-      setStatus(error.message || 'Failed to load legal documents.');
+      setStatus({ tone: 'error', message: error.message || 'Failed to load legal documents.' });
     }
   }, [error]);
 
@@ -78,68 +96,88 @@ export default function AdminLegalPage() {
         throw new Error(json?.error ?? 'Failed to update document');
       }
       await mutate();
-      setStatus(`${DEFAULT_TITLES[doc.key]} updated to version ${payload.version}.`);
+      setStatus({ tone: 'success', message: `${DEFAULT_TITLES[doc.key]} updated to version ${payload.version}.` });
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Failed to update document');
+      setStatus({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to update document' });
     }
   };
 
-  const reconsent = data?.reconsent ?? { mode: 'soft' as const, graceDays: 14 };
-
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-
   return (
-    <div className="stack-gap-lg">
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-text-primary">Legal documents</h2>
-        <p className="text-sm text-text-secondary">
-          Update legal versions to trigger re-consent. Current mode: <span className="font-medium text-text-primary">{reconsent.mode.toUpperCase()}</span>{' '}
-          {reconsent.mode === 'soft' ? `(grace period ${reconsent.graceDays} days)` : null}.
-        </p>
-        <p className="text-xs text-text-secondary">
-          Need a consent ledger?{' '}
-          <a
-            href={`/admin/consents.csv?from=${today}`}
-            className="font-semibold text-brand underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Download CSV export
-          </a>
-          .
-        </p>
-      </div>
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Compliance"
+        title="Legal documents"
+        description="Pilote les versions légales et la politique de re-consentement. Cette surface sert à publier les nouvelles versions sans perdre la lisibilité opérationnelle."
+        actions={
+          <>
+            <ButtonLink href={`/admin/consents.csv?from=${today}`} variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+              Consent CSV
+            </ButtonLink>
+            <ButtonLink href="/admin/marketing" variant="outline" size="sm" className="border-border bg-surface">
+              Marketing
+            </ButtonLink>
+          </>
+        }
+      />
+
+      <AdminSection
+        title="Compliance Pulse"
+        description="Lecture courte de l’état des documents publiés et du mode de re-consentement actif."
+      >
+        <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
+      </AdminSection>
+
+      <AdminNotice tone={reconsent.mode === 'hard' ? 'warning' : 'info'}>
+        Current re-consent mode is <strong>{reconsent.mode.toUpperCase()}</strong>
+        {reconsent.mode === 'soft' ? ` with a ${reconsent.graceDays}-day grace period.` : '. Members must accept again on next access.'}
+      </AdminNotice>
 
       {status ? (
-        <div className="rounded-lg border border-border bg-bg px-4 py-3 text-sm text-text-secondary">{status}</div>
+        <AdminNotice tone={status.tone === 'success' ? 'success' : 'error'}>
+          {status.message}
+        </AdminNotice>
       ) : null}
 
-      {isLoading ? (
-        <div className="rounded-xl border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">Loading…</div>
-      ) : error ? (
-        <div className="rounded-xl border border-error-border bg-error-bg p-4 text-sm text-error">
-          {error.message || 'Failed to load legal documents.'}
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
-          <table className="min-w-full divide-y divide-hairline text-sm">
-            <thead className="bg-surface-2 text-text-secondary">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium">Document</th>
-                <th className="px-4 py-3 text-left font-medium">Version</th>
-                <th className="px-4 py-3 text-left font-medium">Published</th>
-                <th className="px-4 py-3 text-left font-medium">URL</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-hairline">
-              {docs.map((doc) => (
-                <DocumentRow key={doc.key} doc={doc} onUpdate={handleUpdate} defaultDate={today} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <AdminSection
+        title="Document Registry"
+        description="Mets à jour version, date de publication et URL publique pour chaque document piloté par le consentement."
+        action={
+          <AdminSectionMeta
+            title={`${docs.length} tracked documents`}
+            lines={[
+              docs.length ? `${docs.filter((doc) => Boolean(doc.publishedAt)).length} already published` : 'No document data loaded',
+              'Saving triggers the legal update endpoint immediately',
+            ]}
+          />
+        }
+      >
+        {isLoading ? (
+          <div className="rounded-xl border border-hairline bg-surface p-6 text-sm text-text-secondary">Loading…</div>
+        ) : error ? (
+          <AdminNotice tone="error">{error.message || 'Failed to load legal documents.'}</AdminNotice>
+        ) : docs.length ? (
+          <div className="overflow-x-auto rounded-2xl border border-hairline">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-surface">
+                <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                  <th className="px-4 py-3 font-semibold">Document</th>
+                  <th className="px-4 py-3 font-semibold">Version</th>
+                  <th className="px-4 py-3 font-semibold">Published</th>
+                  <th className="px-4 py-3 font-semibold">URL</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-hairline bg-bg/30">
+                {docs.map((doc) => (
+                  <DocumentRow key={doc.key} doc={doc} onUpdate={handleUpdate} defaultDate={today} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <AdminEmptyState>No legal documents are configured yet.</AdminEmptyState>
+        )}
+      </AdminSection>
     </div>
   );
 }
@@ -188,17 +226,17 @@ function DocumentRow({ doc, onUpdate, defaultDate }: DocumentRowProps) {
   };
 
   return (
-    <tr className="align-top">
+    <tr className="align-top text-text-secondary">
       <td className="px-4 py-3">
         <div className="font-semibold text-text-primary">{DEFAULT_TITLES[doc.key]}</div>
-        <p className="text-xs text-text-secondary">Key: {doc.key}</p>
+        <p className="text-xs text-text-muted">Key: {doc.key}</p>
       </td>
       <td className="px-4 py-3">
         <input
           type="text"
           value={version}
           onChange={(event) => setVersion(event.target.value)}
-          className="w-full rounded-input border border-border bg-bg px-2 py-1 text-sm"
+          className="w-full rounded-input border border-border bg-bg px-2 py-1 text-sm text-text-primary"
           placeholder="YYYY-MM-DD"
         />
       </td>
@@ -207,7 +245,7 @@ function DocumentRow({ doc, onUpdate, defaultDate }: DocumentRowProps) {
           type="date"
           value={publishedAt}
           onChange={(event) => setPublishedAt(event.target.value)}
-          className="w-full rounded-input border border-border bg-bg px-2 py-1 text-sm"
+          className="w-full rounded-input border border-border bg-bg px-2 py-1 text-sm text-text-primary"
         />
         <p className="mt-1 text-xs text-text-muted">{formatDate(doc.publishedAt)}</p>
       </td>
@@ -216,30 +254,66 @@ function DocumentRow({ doc, onUpdate, defaultDate }: DocumentRowProps) {
           type="text"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          className="mb-2 w-full rounded-input border border-border bg-bg px-2 py-1 text-sm"
+          className="mb-2 w-full rounded-input border border-border bg-bg px-2 py-1 text-sm text-text-primary"
           placeholder="Title"
         />
         <input
           type="text"
           value={url}
           onChange={(event) => setUrl(event.target.value)}
-          className="w-full rounded-input border border-border bg-bg px-2 py-1 text-sm"
+          className="w-full rounded-input border border-border bg-bg px-2 py-1 text-sm text-text-primary"
           placeholder="/legal/terms"
         />
       </td>
       <td className="px-4 py-3 text-right">
         <form onSubmit={handleSubmit} className="space-y-2">
-          <Button
-            type="submit"
-            size="sm"
-            disabled={saving}
-            className="w-full px-3 text-sm font-semibold"
-          >
+          <Button type="submit" size="sm" disabled={saving} className="w-full px-3 text-sm font-semibold">
             {saving ? 'Saving…' : 'Save changes'}
           </Button>
-          {error ? <p className="text-xs text-state-warning">{error}</p> : null}
+          {error ? <p className="text-xs text-warning">{error}</p> : null}
         </form>
       </td>
     </tr>
   );
+}
+
+function buildLegalMetrics(
+  docs: LegalDocument[],
+  reconsent: DocumentsResponse['reconsent']
+): AdminMetricItem[] {
+  const publishedCount = docs.filter((doc) => Boolean(doc.publishedAt)).length;
+  const latestPublishedAt =
+    docs
+      .map((doc) => doc.publishedAt)
+      .filter((value): value is string => Boolean(value))
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? null;
+
+  return [
+    {
+      label: 'Documents',
+      value: String(docs.length),
+      helper: 'Tracked legal surfaces inside the registry',
+      icon: FileText,
+    },
+    {
+      label: 'Published',
+      value: String(publishedCount),
+      helper: `${docs.length - publishedCount} still missing a publish timestamp`,
+      tone: publishedCount === docs.length && docs.length > 0 ? 'success' : 'info',
+      icon: ShieldCheck,
+    },
+    {
+      label: 'Re-consent',
+      value: reconsent.mode.toUpperCase(),
+      helper: reconsent.mode === 'soft' ? `${reconsent.graceDays} day grace period` : 'Immediate re-acceptance required',
+      tone: reconsent.mode === 'hard' ? 'warning' : 'default',
+      icon: TimerReset,
+    },
+    {
+      label: 'Latest publish',
+      value: latestPublishedAt ? formatDate(latestPublishedAt) : '—',
+      helper: 'Most recent document publication date',
+      icon: FileBadge2,
+    },
+  ];
 }

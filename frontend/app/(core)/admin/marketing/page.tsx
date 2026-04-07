@@ -1,4 +1,12 @@
 import Link from 'next/link';
+import { Inbox, MailCheck, Sheet, UserRound } from 'lucide-react';
+import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { ButtonLink } from '@/components/ui/Button';
 import { isDatabaseConfigured } from '@/lib/db';
 import { fetchMarketingOptIns } from '@/server/admin-marketing';
 
@@ -14,14 +22,31 @@ function formatDate(value: string | null): string {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export default async function AdminMarketingOptInsPage() {
+  const csvHref = '/api/admin/marketing/opt-ins?format=csv';
+
   if (!isDatabaseConfigured()) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold text-text-primary">Marketing opt-ins</h1>
-        <p className="text-sm text-text-secondary">
-          Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to view marketing consent
-          stats.
-        </p>
+      <div className="flex flex-col gap-5">
+        <AdminPageHeader
+          eyebrow="Growth ops"
+          title="Marketing opt-ins"
+          description="Suivi des consentements marketing exportables vers les outils CRM et emailing."
+          actions={
+            <>
+              <ButtonLink href="/admin/legal" variant="outline" size="sm" className="border-border bg-surface">
+                Legal
+              </ButtonLink>
+              <ButtonLink href={csvHref} variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+                Export CSV
+              </ButtonLink>
+            </>
+          }
+        />
+        <AdminSection title="Marketing Opt-ins" description="Database access is required to load marketing consent history.">
+          <AdminNotice tone="warning">
+            Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to view marketing consent stats.
+          </AdminNotice>
+        </AdminSection>
       </div>
     );
   }
@@ -30,81 +55,127 @@ export default async function AdminMarketingOptInsPage() {
   const now = Date.now();
   const last7 = records.filter((record) => record.optedInAt && new Date(record.optedInAt).getTime() >= now - 7 * DAY_MS).length;
   const last30 = records.filter((record) => record.optedInAt && new Date(record.optedInAt).getTime() >= now - 30 * DAY_MS).length;
-  const csvHref = '/api/admin/marketing/opt-ins?format=csv';
+  const latestOptIn = records
+    .map((record) => record.optedInAt)
+    .filter((value): value is string => Boolean(value))
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? null;
+  const metrics = buildMarketingMetrics(records.length, last7, last30, latestOptIn);
 
   return (
-    <div className="stack-gap-lg">
-      <header className="stack-gap-sm">
-        <h1 className="text-3xl font-semibold text-text-primary">Marketing opt-ins</h1>
-        <p className="text-sm text-text-secondary">
-          Track the members who agreed to receive promotional email updates. Use the export to sync with your marketing platform.
-        </p>
-      </header>
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Growth ops"
+        title="Marketing opt-ins"
+        description="Tracke les membres qui ont accepté les emails promotionnels. La table reste exportable pour synchroniser CRM, ESP ou campagnes one-off."
+        actions={
+          <>
+            <ButtonLink href="/admin/legal" variant="outline" size="sm" className="border-border bg-surface">
+              Legal
+            </ButtonLink>
+            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+              Users
+            </ButtonLink>
+            <ButtonLink href={csvHref} variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+              Export CSV
+            </ButtonLink>
+          </>
+        }
+      />
 
-      <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Total opt-ins</p>
-          <p className="mt-2 text-3xl font-semibold text-text-primary">{records.length}</p>
-        </div>
-        <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 7 days</p>
-          <p className="mt-2 text-3xl font-semibold text-text-primary">{last7}</p>
-        </div>
-        <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 30 days</p>
-          <p className="mt-2 text-3xl font-semibold text-text-primary">{last30}</p>
-        </div>
-      </section>
+      <AdminSection
+        title="Consent Pulse"
+        description="Lecture rapide du volume d’opt-ins et de leur fraîcheur avant export ou investigation utilisateur."
+      >
+        <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
+      </AdminSection>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-surface p-4 shadow-card">
-        <div className="text-sm text-text-secondary">
-          List updates automatically when members toggle their marketing preference inside Settings → Notifications.
-        </div>
-        <a
-          href={csvHref}
-          className="inline-flex items-center gap-2 rounded-md border border-brand px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          Export CSV
-        </a>
-      </div>
+      <AdminNotice tone="info">
+        This list updates whenever members toggle their marketing preference inside <strong>Settings → Notifications</strong>.
+      </AdminNotice>
 
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
-        <table className="min-w-full divide-y divide-hairline text-sm">
-          <thead className="bg-surface-2 text-text-secondary">
-            <tr>
-              <th className="px-4 py-3 text-left font-medium">Email</th>
-              <th className="px-4 py-3 text-left font-medium">User ID</th>
-              <th className="px-4 py-3 text-left font-medium">Opt-in date</th>
-              <th className="px-4 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-hairline">
-            {records.length === 0 ? (
-              <tr>
-                <td className="px-4 py-12 text-center text-text-tertiary" colSpan={4}>
-                  No marketing opt-ins recorded yet.
-                </td>
-              </tr>
-            ) : (
-              records.map((record) => (
-                <tr key={record.userId} className="hover:bg-bg">
-                  <td className="px-4 py-3 text-text-primary">{record.email ?? '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-text-tertiary">{record.userId}</td>
-                  <td className="px-4 py-3 text-text-secondary">{formatDate(record.optedInAt)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/users/${record.userId}`}
-                      className="rounded-lg border border-brand/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand transition hover:bg-brand/10"
-                    >
-                      View member
-                    </Link>
-                  </td>
+      <AdminSection
+        title="Subscriber Ledger"
+        description="Historique exportable des membres ayant accepté les communications marketing."
+        action={
+          <AdminSectionMeta
+            title={`${records.length} subscribed members`}
+            lines={[
+              latestOptIn ? `Latest opt-in ${formatDate(latestOptIn)}` : 'No opt-ins recorded yet',
+              'CSV export is available at any time',
+            ]}
+          />
+        }
+      >
+        {records.length === 0 ? (
+          <AdminEmptyState>No marketing opt-ins recorded yet.</AdminEmptyState>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border border-hairline">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-surface">
+                <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                  <th className="px-4 py-3 font-semibold">Email</th>
+                  <th className="px-4 py-3 font-semibold">User ID</th>
+                  <th className="px-4 py-3 font-semibold">Opt-in date</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody className="divide-y divide-hairline bg-bg/30">
+                {records.map((record) => (
+                  <tr key={record.userId} className="align-top text-text-secondary hover:bg-bg/50">
+                    <td className="px-4 py-3 text-text-primary">{record.email ?? '—'}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-text-muted">{record.userId}</td>
+                    <td className="px-4 py-3">{formatDate(record.optedInAt)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/admin/users/${record.userId}`}
+                        className="inline-flex min-h-[36px] items-center justify-center rounded-input border border-hairline px-3 py-1.5 text-xs font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover"
+                      >
+                        View member
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </AdminSection>
     </div>
   );
+}
+
+function buildMarketingMetrics(
+  total: number,
+  last7: number,
+  last30: number,
+  latestOptIn: string | null
+): AdminMetricItem[] {
+  return [
+    {
+      label: 'Total opt-ins',
+      value: String(total),
+      helper: 'Members currently subscribed to marketing updates',
+      icon: MailCheck,
+    },
+    {
+      label: 'Last 7 days',
+      value: String(last7),
+      helper: 'Recent marketing consent captures',
+      tone: last7 ? 'success' : 'default',
+      icon: Inbox,
+    },
+    {
+      label: 'Last 30 days',
+      value: String(last30),
+      helper: 'Rolling monthly opt-in volume',
+      tone: last30 ? 'info' : 'default',
+      icon: Sheet,
+    },
+    {
+      label: 'Latest opt-in',
+      value: latestOptIn ? formatDate(latestOptIn) : '—',
+      helper: 'Most recent consent event on record',
+      icon: UserRound,
+    },
+  ];
 }
