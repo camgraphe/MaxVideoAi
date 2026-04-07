@@ -100,7 +100,7 @@ export function VideoThumbnailEditor({
               alt={title}
               width={96}
               height={54}
-              className="h-[54px] w-24 rounded-card object-cover"
+              className="h-auto w-24 rounded-card object-cover"
               unoptimized
             />
           ) : (

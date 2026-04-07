@@ -1,6 +1,11 @@
+import { Boxes, Eye, ListChecks, TriangleAlert } from 'lucide-react';
 import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { ModerationTable, type ModerationVideo } from '@/components/admin/ModerationTable';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { ButtonLink } from '@/components/ui/Button';
 
 type ModerationBucket = 'not-published' | 'published' | 'all';
 type ModerationSurface = 'video' | 'image' | 'audio' | 'character' | 'angle';
@@ -11,9 +16,7 @@ function getBaseUrl() {
   const forwardedHost = headerStore.get('x-forwarded-host');
   const host = forwardedHost ?? headerStore.get('host');
   if (host) {
-    const protocol =
-      forwardedProto ??
-      (process.env.NODE_ENV === 'development' ? 'http' : 'https');
+    const protocol = forwardedProto ?? (process.env.NODE_ENV === 'development' ? 'http' : 'https');
     return `${protocol}://${host}`;
   }
   if (process.env.NODE_ENV === 'development') {
@@ -76,5 +79,80 @@ export default async function AdminModerationPage() {
     return { videos: [] as ModerationVideo[], nextCursor: null };
   });
 
-  return <ModerationTable videos={videos} initialCursor={nextCursor} initialBucket={initialBucket} initialSurface={initialSurface} />;
+  const metrics = buildModerationMetrics(videos);
+
+  return (
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Curation"
+        title="Publication queue"
+        description="Surface de tri éditorial pour publier, retirer ou réaffecter les médias par surface. Les incidents restent côté Jobs, et le rollout Google Video reste isolé."
+        actions={
+          <>
+            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+              Jobs
+            </ButtonLink>
+            <ButtonLink href="/admin/video-seo" variant="outline" size="sm" className="border-border bg-surface">
+              Video SEO
+            </ButtonLink>
+            <ButtonLink href="/admin/playlists" variant="outline" size="sm" className="border-border bg-surface">
+              Playlists
+            </ButtonLink>
+          </>
+        }
+      />
+
+      <AdminSection
+        title="Queue Pulse"
+        description="Lecture rapide du lot actuellement chargé. Cette surface reste volontairement dense pour le triage et la publication."
+      >
+        <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
+      </AdminSection>
+
+      <ModerationTable
+        videos={videos}
+        initialCursor={nextCursor}
+        initialBucket={initialBucket}
+        initialSurface={initialSurface}
+        embedded
+      />
+    </div>
+  );
+}
+
+function buildModerationMetrics(videos: ModerationVideo[]): AdminMetricItem[] {
+  const publishedCount = videos.filter((video) => video.isPublishedOnSite).length;
+  const unpublishedCount = videos.length - publishedCount;
+  const seoWatchCount = videos.filter((video) => video.seoWatch).length;
+  const mismatchCount = videos.filter((video) => video.hasLegacyMismatch).length;
+
+  return [
+    {
+      label: 'Loaded rows',
+      value: String(videos.length),
+      helper: 'Current moderation slice from the queue',
+      icon: ListChecks,
+    },
+    {
+      label: 'Published',
+      value: String(publishedCount),
+      helper: 'Already live on at least one public surface',
+      tone: publishedCount ? 'success' : 'default',
+      icon: Eye,
+    },
+    {
+      label: 'Not published',
+      value: String(unpublishedCount),
+      helper: 'Still waiting for editorial release',
+      tone: unpublishedCount ? 'warning' : 'default',
+      icon: Boxes,
+    },
+    {
+      label: 'Legacy mismatch',
+      value: String(mismatchCount),
+      helper: `${seoWatchCount} rows currently part of the Google Video shortlist`,
+      tone: mismatchCount ? 'warning' : 'info',
+      icon: TriangleAlert,
+    },
+  ];
 }

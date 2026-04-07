@@ -68,6 +68,8 @@ type PlaylistsManagerProps = {
   initialPlaylists: PlaylistSummary[];
   initialPlaylistId: string | null;
   initialItems: PlaylistItemRecord[];
+  embedded?: boolean;
+  className?: string;
 };
 
 type EditablePlaylist = PlaylistSummary & { dirty?: boolean; loading?: boolean };
@@ -382,7 +384,13 @@ function MissingFamilyCard({
   );
 }
 
-export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialItems }: PlaylistsManagerProps) {
+export function PlaylistsManager({
+  initialPlaylists,
+  initialPlaylistId,
+  initialItems,
+  embedded = false,
+  className,
+}: PlaylistsManagerProps) {
   const [playlists, setPlaylists] = useState<EditablePlaylist[]>(() => sortPlaylists(initialPlaylists));
   const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
   const [items, setItems] = useState<PlaylistItemRecord[]>(() => sortItemsForDisplay(initialItems));
@@ -916,17 +924,19 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
   const emptyFamilyCount = familyHelpers.filter((helper) => helper.status === 'empty').length;
 
   return (
-    <div className={clsx('space-y-8', isItemsDirty && 'pb-28')}>
+    <div className={clsx('space-y-8', isItemsDirty && 'pb-28', className)}>
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Admin</p>
-          <h1 className="text-3xl font-semibold text-text-primary">Collections curation</h1>
-          <p className="max-w-3xl text-sm text-text-secondary">
-            Keep the runtime surfaces stable while preparing family playlists. The main examples hub stays on <code>examples</code>,
-            guest starter stays on <code>welcome</code>, and family pages can be seeded from the current live order before you
-            start reordering them.
-          </p>
-        </div>
+        {!embedded ? (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Admin</p>
+            <h1 className="text-3xl font-semibold text-text-primary">Collections curation</h1>
+            <p className="max-w-3xl text-sm text-text-secondary">
+              Keep the runtime surfaces stable while preparing family playlists. The main examples hub stays on <code>examples</code>,
+              guest starter stays on <code>welcome</code>, and family pages can be seeded from the current live order before you
+              start reordering them.
+            </p>
+          </div>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => setShowDraftCollections((current) => !current)}>
             {showDraftCollections ? 'Hide draft / empty' : `Show draft / empty (${groupedPlaylists.draft.length})`}
