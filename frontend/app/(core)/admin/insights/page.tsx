@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Fragment, type CSSProperties, type ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { fetchAdminMetrics, fetchAdminMetricsComparison, METRIC_RANGE_OPTIONS } from '@/server/admin-metrics';
 import type {
@@ -9,6 +9,8 @@ import type {
   MetricsRangeLabel,
   TimeSeriesPoint,
 } from '@/lib/admin/types';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { requireAdmin } from '@/server/admin';
 
 const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
@@ -25,10 +27,13 @@ const numberFormatter = new Intl.NumberFormat('en-US');
 const compactNumberFormatter = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 const percentFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
 
+type FocusMetric = 'signups' | 'active' | 'topups' | 'charges';
+
 type PageProps = {
   searchParams?: {
     range?: string;
     excludeAdmin?: string | string[];
+    focus?: string | string[];
   };
 };
 
@@ -42,20 +47,6 @@ type SmallStat = {
   value: string;
   helper?: string;
   tone?: 'default' | 'success' | 'warning';
-};
-
-type GrowthTableRow = {
-  date: string;
-  signups: number;
-  active: number;
-};
-
-type RevenueTableRow = {
-  date: string;
-  topupsUsd: number;
-  topupCount: number;
-  chargesUsd: number;
-  chargeCount: number;
 };
 
 type PulseCard = {
@@ -75,8 +66,7 @@ type DeltaSnapshot = {
 };
 
 type ChartTheme = {
-  barStart: string;
-  barEnd: string;
+  bar: string;
   line: string;
 };
 
@@ -86,34 +76,56 @@ type FunnelStep = {
   helper: string;
   shareOfStart: number;
   conversionFromPrevious: number | null;
-  accentStart: string;
-  accentEnd: string;
+  accent: string;
+};
+
+type LedgerRow = {
+  date: string;
+  signups: number;
+  active: number;
+  topupsUsd: number;
+  chargesUsd: number;
+};
+
+type FocusMetricData = {
+  key: FocusMetric;
+  label: string;
+  description: string;
+  theme: ChartTheme;
+  currentPoints: ChartPoint[];
+  previousPoints: ChartPoint[];
+  stats: SmallStat[];
+  axisFormatter?: (value: number) => string;
+  tooltipFormatter?: (value: number) => string;
 };
 
 const ADMIN_EXCLUDED_USER_IDS = ['301cc489-d689-477f-94c4-0b051deda0bc'];
 
-const CHART_THEMES: Record<'signups' | 'active' | 'topups' | 'charges', ChartTheme> = {
+const CHART_THEMES: Record<FocusMetric, ChartTheme> = {
   signups: {
-    barStart: '#b7d6ff',
-    barEnd: 'var(--info)',
-    line: 'rgba(136, 177, 255, 0.95)',
+    bar: '#2563EB',
+    line: '#94A3B8',
   },
   active: {
-    barStart: '#9de8d7',
-    barEnd: 'var(--chart-active)',
-    line: 'rgba(109, 214, 190, 0.95)',
+    bar: '#0F766E',
+    line: '#94A3B8',
   },
   topups: {
-    barStart: '#ffe199',
-    barEnd: 'var(--accent)',
-    line: 'rgba(255, 205, 96, 0.95)',
+    bar: '#CA8A04',
+    line: '#94A3B8',
   },
   charges: {
-    barStart: '#ffc2af',
-    barEnd: 'var(--chart-charges)',
-    line: 'rgba(255, 144, 122, 0.95)',
+    bar: '#EA580C',
+    line: '#94A3B8',
   },
 };
+
+const FOCUS_OPTIONS: Array<{ key: FocusMetric; label: string }> = [
+  { key: 'signups', label: 'Signups' },
+  { key: 'active', label: 'Active' },
+  { key: 'topups', label: 'Top-ups' },
+  { key: 'charges', label: 'Charges' },
+];
 
 export default async function AdminInsightsPage({ searchParams }: PageProps) {
   try {
@@ -124,6 +136,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
   }
 
   const excludeAdmin = resolveExcludeAdminParam(searchParams?.excludeAdmin);
+  const focus = resolveFocusParam(searchParams?.focus);
   const queryOptions = {
     excludeUserIds: excludeAdmin ? ADMIN_EXCLUDED_USER_IDS : [],
   };
@@ -133,389 +146,151 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
     fetchAdminMetricsComparison(searchParams?.range, queryOptions),
   ]);
 
+  const humanRange = describeRange(metrics.range.label);
   const overviewStats = buildOverviewStats(metrics);
   const pulseCards = buildPulseCards(metrics, comparison);
   const quickInsights = buildQuickInsights(metrics, comparison);
-  const recentGrowthRows = buildRecentGrowthRows(metrics);
-  const recentRevenueRows = buildRecentRevenueRows(metrics);
+  const focusMetric = buildFocusMetricData(focus, metrics, comparison, humanRange);
+  const behaviorStats = buildBehaviorStats(metrics);
+  const funnelSteps = buildFunnelSteps(metrics);
+  const dailyLedgerRows = buildRecentLedgerRows(metrics);
   const monthlyRows = buildMonthlyRows(metrics);
-  const featuredEngines = metrics.engines.slice(0, 8);
+  const featuredEngines = metrics.engines.slice(0, 10);
   const flaggedHealthRows = metrics.health.failedByEngine30d
     .filter((row) => row.failedCount30d > 0 || row.failureRate30d > 0)
     .sort((a, b) => b.failedCount30d - a.failedCount30d || b.failureRate30d - a.failureRate30d);
 
-  const humanRange = describeRange(metrics.range.label);
-  const signupSummary = buildCountSeriesStats(metrics.timeseries.signupsDaily, comparison.previous.signupsDaily, humanRange);
-  const activeSummary = buildCountSeriesStats(
-    metrics.timeseries.activeAccountsDaily,
-    comparison.previous.activeAccountsDaily,
-    humanRange,
-    {
-      totalLabel: 'Current total',
-      totalHelper: 'Summed daily active-account counts',
-      peakEmptyLabel: 'No activity',
-    }
-  );
-  const topupSummary = buildAmountSeriesStats(
-    metrics.timeseries.topupsDaily,
-    comparison.previous.topupsDaily,
-    humanRange,
-    'loads'
-  );
-  const chargeSummary = buildAmountSeriesStats(
-    metrics.timeseries.chargesDaily,
-    comparison.previous.chargesDaily,
-    humanRange,
-    'charges'
-  );
-  const behaviorStats = buildBehaviorStats(metrics);
-  const funnelSteps = buildFunnelSteps(metrics);
-
   return (
-    <div className="stack-gap-lg">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Analytics</p>
-          <h1 className="mt-1 text-3xl font-semibold text-text-primary">Workspace insights</h1>
-          <p className="mt-2 text-sm text-text-secondary">
-            Admin view focused on trend reading, cash movement, conversion, and operational alerts. V2 compares the
-            current window against the previous one instead of showing standalone bars only.
-          </p>
-        </div>
-        <RangeSelector current={metrics.range.label} excludeAdmin={excludeAdmin} />
-      </header>
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Analytics"
+        title="Workspace insights"
+        description="Surface admin resserrée pour lire les tendances, comparer la fenêtre courante à la précédente et agir vite sur les signaux business ou ops."
+        actions={<InsightsControls current={metrics.range.label} excludeAdmin={excludeAdmin} focus={focus} />}
+      />
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.75fr)_minmax(360px,1fr)]">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {overviewStats.map((stat) => (
-            <MetricTile key={stat.label} label={stat.label} value={stat.value} helper={stat.helper} size="lg" tone={stat.tone} />
-          ))}
-        </div>
-        <SectionCard title="Period pulse" description={`Current ${humanRange} against the previous ${humanRange}.`}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {pulseCards.map((card) => (
-              <PulseMetricTile key={card.label} card={card} />
+      <AdminSection
+        title="Overview"
+        description={`Base de lecture pour la fenêtre courante de ${humanRange}, sans empiler de cartes décoratives.`}
+        contentClassName="p-0"
+      >
+        <div className="grid xl:grid-cols-[minmax(0,1.7fr)_360px]">
+          <div className="grid gap-px bg-hairline sm:grid-cols-2 xl:grid-cols-3">
+            {overviewStats.map((stat) => (
+              <OverviewStatCell key={stat.label} stat={stat} />
             ))}
           </div>
-          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
-            {quickInsights.map((line, index) => (
-              <li key={`insight-${index}`} className="flex items-start gap-3">
-                <span className="mt-1.5 h-2 w-2 rounded-full bg-brand" aria-hidden />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
-        </SectionCard>
-      </section>
-
-      <SectionCard
-        title="Growth"
-        description={`Current ${humanRange} in bars, previous ${humanRange} as a dashed reference line.`}
-      >
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
-          <div className="space-y-4">
-            <ChartPanel
-              title="Signups per day"
-              description="The previous period is overlaid so trend direction is readable without mental math."
-            >
-              <StatStrip items={signupSummary} />
-              <ChartLegend theme={CHART_THEMES.signups} />
-              <div className="mt-4">
-                <ComparisonChart
-                  ariaLabel="Daily signup counts comparison"
-                  theme={CHART_THEMES.signups}
-                  currentPoints={metrics.timeseries.signupsDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.value,
-                  }))}
-                  previousPoints={comparison.previous.signupsDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.value,
-                  }))}
-                />
-              </div>
-            </ChartPanel>
-
-            <ChartPanel
-              title="Active accounts per day"
-              description="Shows whether daily engagement is actually improving or just fluctuating."
-            >
-              <StatStrip items={activeSummary} />
-              <ChartLegend theme={CHART_THEMES.active} />
-              <div className="mt-4">
-                <ComparisonChart
-                  ariaLabel="Daily active accounts comparison"
-                  theme={CHART_THEMES.active}
-                  currentPoints={metrics.timeseries.activeAccountsDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.value,
-                  }))}
-                  previousPoints={comparison.previous.activeAccountsDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.value,
-                  }))}
-                />
-              </div>
-            </ChartPanel>
-          </div>
-
-          <RecentGrowthTable rows={recentGrowthRows} />
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Wallet flow"
-        description={`Cash-in and usage are compared against the previous ${humanRange}, not shown as isolated snapshots.`}
-      >
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
-          <div className="space-y-4">
-            <ChartPanel
-              title="Wallet top-ups"
-              description="Gradient bars highlight the current period while the dashed line preserves previous pacing."
-            >
-              <StatStrip items={topupSummary} />
-              <ChartLegend theme={CHART_THEMES.topups} />
-              <div className="mt-4">
-                <ComparisonChart
-                  ariaLabel="Daily wallet top-ups comparison"
-                  theme={CHART_THEMES.topups}
-                  axisFormatter={formatAxisCurrency}
-                  tooltipFormatter={(value) => formatCurrency(value, { precise: value < 100 })}
-                  currentPoints={metrics.timeseries.topupsDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.amountCents / 100,
-                  }))}
-                  previousPoints={comparison.previous.topupsDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.amountCents / 100,
-                  }))}
-                />
-              </div>
-            </ChartPanel>
-
-            <ChartPanel
-              title="Render charges"
-              description="Charge spikes stay visible, but now you can also see whether they beat the previous window."
-            >
-              <StatStrip items={chargeSummary} />
-              <ChartLegend theme={CHART_THEMES.charges} />
-              <div className="mt-4">
-                <ComparisonChart
-                  ariaLabel="Daily render charges comparison"
-                  theme={CHART_THEMES.charges}
-                  axisFormatter={formatAxisCurrency}
-                  tooltipFormatter={(value) => formatCurrency(value, { precise: value < 100 })}
-                  currentPoints={metrics.timeseries.chargesDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.amountCents / 100,
-                  }))}
-                  previousPoints={comparison.previous.chargesDaily.map((point) => ({
-                    label: formatDay(point.date),
-                    value: point.amountCents / 100,
-                  }))}
-                />
-              </div>
-            </ChartPanel>
-          </div>
-
-          <RecentRevenueTable rows={recentRevenueRows} />
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Conversion funnel"
-        description="A true step-down view from signup to payment to first value, with retention context and top spenders beside it."
-      >
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
-          <div className="space-y-4">
-            <FunnelVisual steps={funnelSteps} />
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {behaviorStats.map((stat) => (
-                <MetricTile key={stat.label} label={stat.label} value={stat.value} helper={stat.helper} tone={stat.tone} size="sm" />
+          <div className="border-t border-hairline px-5 py-5 xl:border-l xl:border-t-0">
+            <div className="mb-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Window summary</p>
+              <p className="mt-1 text-sm text-text-secondary">Lecture rapide des mouvements à retenir avant d’ouvrir les tables détaillées.</p>
+            </div>
+            <ul className="space-y-3 text-sm text-text-secondary">
+              {quickInsights.map((line, index) => (
+                <li key={`overview-note-${index}`} className="flex items-start gap-3">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-slate-950" aria-hidden />
+                  <span>{line}</span>
+                </li>
               ))}
+            </ul>
+          </div>
+        </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Trend Workspace"
+        description="Un seul indicateur principal à la fois, avec un vrai overlay période courante vs précédente."
+        action={<MetricFocusTabs current={focus} range={metrics.range.label} excludeAdmin={excludeAdmin} />}
+      >
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_360px]">
+          <div>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-text-primary">{focusMetric.label}</h2>
+                <p className="mt-1 text-sm text-text-secondary">{focusMetric.description}</p>
+              </div>
+              <div className="text-xs font-medium text-text-secondary">Current bars, previous dashed line</div>
+            </div>
+            <StatStrip items={focusMetric.stats} className="mt-4" />
+            <div className="mt-5 rounded-2xl border border-hairline bg-bg/60 p-4">
+              <ComparisonChart
+                ariaLabel={`${focusMetric.label} comparison`}
+                theme={focusMetric.theme}
+                axisFormatter={focusMetric.axisFormatter}
+                tooltipFormatter={focusMetric.tooltipFormatter}
+                currentPoints={focusMetric.currentPoints}
+                previousPoints={focusMetric.previousPoints}
+              />
             </div>
           </div>
 
-          <TopSpendersPanel whales={metrics.behavior.whalesTop10} />
-        </div>
-      </SectionCard>
-
-      <SectionCard title="Monthly rollup" description="Six-month summary kept apart from daily trends to avoid mixed granularity.">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                <th className="py-2 font-semibold">Month</th>
-                <th className="py-2 font-semibold">Signups</th>
-                <th className="py-2 font-semibold">Top-ups</th>
-                <th className="py-2 font-semibold">Charges</th>
-              </tr>
-            </thead>
-            <tbody>
-              {monthlyRows.length ? (
-                monthlyRows.map((row) => (
-                  <tr key={row.month} className="border-t border-surface-on-media-40 text-text-secondary">
-                    <td className="py-3">{formatMonth(row.month)}</td>
-                    <td className="py-3 font-semibold text-text-primary">{formatNumber(row.signups)}</td>
-                    <td className="py-3 font-semibold text-text-primary">{formatCurrency(row.topupsUsd)}</td>
-                    <td className="py-3 font-semibold text-text-primary">{formatCurrency(row.chargesUsd)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="py-4 text-center text-sm text-text-secondary">
-                    No monthly aggregates yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </SectionCard>
-
-      <SectionCard title="Engine usage (30d)" description="Ranked view first, detailed table only when you need the full mix.">
-        {featuredEngines.length ? (
-          <>
-            <div className="grid gap-3 lg:grid-cols-2">
-              {featuredEngines.map((engine) => (
-                <EngineUsageCard key={engine.engineId} engine={engine} />
-              ))}
-            </div>
-            <details className="mt-4 rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-text-primary">Open detailed engine table</summary>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                      <th className="py-2 font-semibold">Engine</th>
-                      <th className="py-2 font-semibold">Renders</th>
-                      <th className="py-2 font-semibold">Distinct users</th>
-                      <th className="py-2 font-semibold">Revenue (30d)</th>
-                      <th className="py-2 font-semibold">Render share</th>
-                      <th className="py-2 font-semibold">Revenue share</th>
-                      <th className="py-2 font-semibold">Avg spend / user</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {metrics.engines.map((engine) => (
-                      <tr key={engine.engineId} className="border-t border-surface-on-media-40 text-text-secondary">
-                        <td className="py-3 font-semibold text-text-primary">{engine.engineLabel}</td>
-                        <td className="py-3">{formatNumber(engine.rendersCount30d)}</td>
-                        <td className="py-3">{formatNumber(engine.distinctUsers30d)}</td>
-                        <td className="py-3">{formatCurrency(engine.rendersAmount30dUsd)}</td>
-                        <td className="py-3">
-                          <ShareBar value={engine.shareOfTotalRenders30d} label={formatPercent(engine.shareOfTotalRenders30d)} />
-                        </td>
-                        <td className="py-3">
-                          <ShareBar value={engine.shareOfTotalRevenue30d} label={formatPercent(engine.shareOfTotalRevenue30d)} />
-                        </td>
-                        <td className="py-3">{formatCurrency(engine.avgSpendPerUser30d, { precise: true })}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </details>
-          </>
-        ) : (
-          <EmptyStateCard>No engine activity recorded in the last 30 days.</EmptyStateCard>
-        )}
-      </SectionCard>
-
-      <SectionCard title="Operational health (30d)" description="Alert-first view: only engines with unresolved failures stay visible by default.">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricTile
-            label="Failed renders"
-            value={formatNumber(metrics.health.failedRenders30d)}
-            helper="Unresolved failures"
-            size="sm"
-            tone={metrics.health.failedRenders30d ? 'warning' : 'success'}
-          />
-          <MetricTile
-            label="Failure rate"
-            value={formatPercent(metrics.health.failedRendersRate30d)}
-            helper="Failed / completed"
-            size="sm"
-            tone={metrics.health.failedRendersRate30d ? 'warning' : 'success'}
-          />
-          <MetricTile
-            label="Engines impacted"
-            value={formatNumber(flaggedHealthRows.length)}
-            helper="At least one unresolved failure"
-            size="sm"
-            tone={flaggedHealthRows.length ? 'warning' : 'success'}
-          />
-          <MetricTile label="Monitoring mode" value="Alert-first" helper="Healthy zero-value engines stay hidden" size="sm" />
-        </div>
-
-        {flaggedHealthRows.length ? (
-          <div className="mt-4 space-y-3">
-            {flaggedHealthRows.map((row) => (
-              <div key={row.engineId} className="rounded-2xl border border-warning-border bg-warning-bg p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-text-primary">{row.engineLabel}</p>
-                    <p className="mt-1 text-xs text-warning">Unresolved failures need follow-up on the jobs or billing side.</p>
-                  </div>
-                  <div className="grid min-w-[220px] gap-2 sm:grid-cols-2">
-                    <SmallMetric label="Failed renders" value={formatNumber(row.failedCount30d)} tone="warning" />
-                    <SmallMetric label="Failure rate" value={formatPercent(row.failureRate30d)} tone="warning" />
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="space-y-4 xl:border-l xl:border-hairline xl:pl-6">
+            <WindowPulseTable cards={pulseCards} humanRange={humanRange} />
           </div>
-        ) : (
-          <div className="mt-4 rounded-2xl border border-success-border bg-success-bg p-4 text-sm text-success">
-            No unresolved failures recorded in the past 30 days. Zero-value engine rows are intentionally hidden here.
+        </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Conversion & Customers"
+        description="Du signup à la première valeur, puis lecture des comptes les plus engagés."
+      >
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_380px]">
+          <div className="space-y-5">
+            <FunnelRows steps={funnelSteps} />
+            <BehaviorGrid stats={behaviorStats} />
           </div>
-        )}
-      </SectionCard>
+          <TopSpendersTable whales={metrics.behavior.whalesTop10} />
+        </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Engine Mix & Health"
+        description="Répartition usage/revenu à gauche, incidents encore ouverts à droite."
+      >
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
+          <EngineMixTable engines={featuredEngines} />
+          <HealthPanel
+            failedRenders={metrics.health.failedRenders30d}
+            failureRate={metrics.health.failedRendersRate30d}
+            flaggedRows={flaggedHealthRows}
+          />
+        </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Daily Ledger"
+        description="Derniers jours et rollup mensuel gardés en lecture table-first, sans mélange de granularités."
+      >
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_360px]">
+          <DailyLedgerTable rows={dailyLedgerRows} />
+          <MonthlyRollupTable rows={monthlyRows} />
+        </div>
+      </AdminSection>
     </div>
   );
 }
 
-function resolveExcludeAdminParam(value: string | string[] | undefined): boolean {
-  const resolved = Array.isArray(value) ? value[value.length - 1] : value;
-  if (resolved == null) return true;
-  const normalized = resolved.trim().toLowerCase();
-  if (!normalized) return true;
-  return !['0', 'false', 'no', 'off'].includes(normalized);
-}
-
-function SectionCard({
-  title,
-  description,
-  children,
+function InsightsControls({
+  current,
+  excludeAdmin,
+  focus,
 }: {
-  title: string;
-  description?: string;
-  children: ReactNode;
+  current: MetricsRangeLabel;
+  excludeAdmin: boolean;
+  focus: FocusMetric;
 }) {
   return (
-    <section className="rounded-card border border-surface-on-media-30 bg-surface-glass-85 p-5 shadow-card">
-      <header className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">{title}</p>
-        {description ? <p className="text-sm text-text-secondary">{description}</p> : null}
-      </header>
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
-
-function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; excludeAdmin: boolean }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center rounded-full border border-surface-on-media-40 bg-surface-glass-80 p-1 shadow-card">
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="inline-flex rounded-xl border border-border bg-surface p-1 shadow-card">
         {METRIC_RANGE_OPTIONS.map((option) => {
           const isActive = option === current;
           return (
             <Link
               key={option}
-              href={buildInsightsHref({ range: option, excludeAdmin })}
+              href={buildInsightsHref({ range: option, excludeAdmin, focus })}
               className={[
-                'rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] transition',
-                isActive ? 'bg-text-primary text-on-inverse' : 'text-text-secondary hover:bg-surface hover:text-text-primary',
+                'rounded-lg px-3 py-1.5 text-sm font-medium transition',
+                isActive ? 'bg-slate-950 text-white' : 'text-text-secondary hover:bg-bg hover:text-text-primary',
               ].join(' ')}
             >
               {option}
@@ -524,12 +299,12 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
         })}
       </div>
       <Link
-        href={buildInsightsHref({ range: current, excludeAdmin: !excludeAdmin })}
+        href={buildInsightsHref({ range: current, excludeAdmin: !excludeAdmin, focus })}
         className={[
-          'rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] transition',
+          'inline-flex rounded-xl border px-3 py-2 text-sm font-medium transition',
           excludeAdmin
-            ? 'border-success-border bg-success-bg text-success hover:bg-success-bg/80'
-            : 'border-surface-on-media-40 bg-surface-glass-80 text-text-secondary hover:bg-surface hover:text-text-primary',
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            : 'border-border bg-surface text-text-secondary hover:bg-bg hover:text-text-primary',
         ].join(' ')}
       >
         {excludeAdmin ? 'Admin excluded' : 'Include admin'}
@@ -538,140 +313,91 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
   );
 }
 
-function PulseMetricTile({ card }: { card: PulseCard }) {
-  const toneClass =
-    card.tone === 'success'
-      ? 'border-success-border bg-success-bg/70'
-      : card.tone === 'warning'
-        ? 'border-warning-border bg-warning-bg/70'
-        : 'border-surface-on-media-40 bg-surface/70';
-
-  const badgeClass =
-    card.tone === 'success'
-      ? 'border-success-border/80 bg-success-bg text-success'
-      : card.tone === 'warning'
-        ? 'border-warning-border/80 bg-warning-bg text-warning'
-        : 'border-surface-on-media-40 bg-surface-glass-80 text-text-secondary';
-
-  return (
-    <div className={`rounded-2xl border p-4 ${toneClass}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-muted">{card.label}</p>
-        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${badgeClass}`}>
-          {card.delta}
-        </span>
-      </div>
-      <p className="mt-3 text-2xl font-semibold text-text-primary">{card.value}</p>
-      <p className="mt-1 text-xs text-text-secondary">Previous {card.previousValue}</p>
-      <p className="mt-3 text-xs leading-5 text-text-secondary">{card.helper}</p>
-    </div>
-  );
-}
-
-function MetricTile({
-  label,
-  value,
-  helper,
-  tone = 'default',
-  size = 'sm',
+function MetricFocusTabs({
+  current,
+  range,
+  excludeAdmin,
 }: {
-  label: string;
-  value: string;
-  helper?: string;
-  tone?: 'default' | 'success' | 'warning';
-  size?: 'sm' | 'lg';
+  current: FocusMetric;
+  range: MetricsRangeLabel;
+  excludeAdmin: boolean;
 }) {
-  const toneClass =
-    tone === 'success'
-      ? 'border-success-border bg-success-bg'
-      : tone === 'warning'
-        ? 'border-warning-border bg-warning-bg'
-        : 'border-surface-on-media-30 bg-surface-glass-90';
-
-  const valueClass = size === 'lg' ? 'text-2xl' : 'text-xl';
-
   return (
-    <div className={`rounded-card border px-4 py-3 shadow-card ${toneClass}`}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">{label}</p>
-      <p className={`mt-2 font-semibold text-text-primary ${valueClass}`}>{value}</p>
-      {helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{helper}</p> : null}
+    <div className="inline-flex rounded-xl border border-border bg-surface p-1">
+      {FOCUS_OPTIONS.map((option) => {
+        const isActive = option.key === current;
+        return (
+          <Link
+            key={option.key}
+            href={buildInsightsHref({ range, excludeAdmin, focus: option.key })}
+            className={[
+              'rounded-lg px-3 py-1.5 text-sm font-medium transition',
+              isActive ? 'bg-bg text-text-primary shadow-card' : 'text-text-secondary hover:bg-bg hover:text-text-primary',
+            ].join(' ')}
+          >
+            {option.label}
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
-function SmallMetric({ label, value, tone = 'default' }: { label: string; value: string; tone?: 'default' | 'warning' }) {
+function OverviewStatCell({ stat }: { stat: SmallStat }) {
+  const valueClass =
+    stat.tone === 'warning'
+      ? 'text-error'
+      : stat.tone === 'success'
+        ? 'text-emerald-700'
+        : 'text-text-primary';
+
   return (
-    <div
-      className={[
-        'rounded-xl border px-3 py-2',
-        tone === 'warning' ? 'border-warning-border/70 bg-surface/70' : 'border-surface-on-media-40 bg-surface-glass-70',
-      ].join(' ')}
-    >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-text-primary">{value}</p>
+    <div className="bg-surface px-5 py-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{stat.label}</p>
+      <p className={`mt-2 text-2xl font-semibold ${valueClass}`}>{stat.value}</p>
+      {stat.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{stat.helper}</p> : null}
     </div>
   );
 }
 
-function ChartPanel({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+function WindowPulseTable({ cards, humanRange }: { cards: PulseCard[]; humanRange: string }) {
   return (
-    <div className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">{title}</p>
-          {description ? <p className="mt-1 text-sm text-text-secondary">{description}</p> : null}
-        </div>
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Window pulse</p>
+        <p className="mt-1 text-sm text-text-secondary">Current {humanRange} compared to the previous {humanRange}.</p>
       </div>
-      {children}
+      <div className="divide-y divide-hairline">
+        {cards.map((card) => (
+          <div key={card.label} className="px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-text-primary">{card.label}</p>
+                <p className="mt-1 text-xs text-text-secondary">Previous {card.previousValue}</p>
+              </div>
+              <span className={`rounded-md px-2 py-1 text-[11px] font-semibold ${toneBadgeClass(card.tone)}`}>{card.delta}</span>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="text-lg font-semibold text-text-primary">{card.value}</p>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-text-secondary">{card.helper}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-function StatStrip({ items }: { items: SmallStat[] }) {
+function StatStrip({ items, className = '' }: { items: SmallStat[]; className?: string }) {
   return (
-    <dl className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+    <div className={`grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4 ${className}`}>
       {items.map((item) => (
-        <div
-          key={item.label}
-          className={[
-            'rounded-xl border px-3 py-2',
-            item.tone === 'success'
-              ? 'border-success-border/70 bg-success-bg/60'
-              : item.tone === 'warning'
-                ? 'border-warning-border/70 bg-warning-bg/60'
-                : 'border-surface-on-media-40 bg-surface/70',
-          ].join(' ')}
-        >
-          <dt className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">{item.label}</dt>
-          <dd className="mt-1 text-sm font-semibold text-text-primary">{item.value}</dd>
+        <div key={item.label} className="bg-surface px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{item.label}</p>
+          <p className={`mt-1 text-sm font-semibold ${toneValueClass(item.tone)}`}>{item.value}</p>
           {item.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{item.helper}</p> : null}
         </div>
       ))}
-    </dl>
-  );
-}
-
-function ChartLegend({ theme }: { theme: ChartTheme }) {
-  return (
-    <div className="mt-4 flex flex-wrap items-center gap-4 text-[11px] text-text-muted">
-      <span className="inline-flex items-center gap-2">
-        <span
-          className="h-2.5 w-2.5 rounded-sm"
-          style={{
-            backgroundImage: `linear-gradient(135deg, ${theme.barStart}, ${theme.barEnd})`,
-          }}
-        />
-        Current period
-      </span>
-      <span className="inline-flex items-center gap-2">
-        <span className="relative block h-2 w-4">
-          <span
-            className="absolute inset-x-0 top-1/2 border-t border-dashed"
-            style={{ borderColor: theme.line }}
-          />
-        </span>
-        Previous period
-      </span>
     </div>
   );
 }
@@ -694,28 +420,28 @@ function ComparisonChart({
   const values = [...currentPoints.map((point) => point.value), ...previousPoints.map((point) => point.value)];
 
   if (!values.length || values.every((value) => value <= 0)) {
-    return <p className="text-sm text-text-secondary">No data for this range.</p>;
+    return <EmptyStateCard>No data available for this range.</EmptyStateCard>;
   }
 
-  const width = 760;
-  const height = 252;
-  const padding = { top: 20, right: 16, bottom: 36, left: 48 };
+  const width = 820;
+  const height = 268;
+  const padding = { top: 18, right: 16, bottom: 34, left: 52 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const maxValue = Math.max(...values);
   const ticks = buildChartTicks(maxValue);
   const maxTick = ticks[ticks.length - 1] || 1;
-  const step = chartWidth / Math.max(1, currentPoints.length);
-  const barWidth = Math.max(4, step * 0.62);
-  const labelEvery = Math.max(1, Math.ceil(currentPoints.length / 6));
-  const slug = ariaLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  const gradientId = `${slug}-gradient`;
+  const totalPoints = Math.max(currentPoints.length, previousPoints.length);
+  const step = chartWidth / Math.max(1, totalPoints);
+  const barWidth = Math.max(6, step * 0.56);
+  const labelEvery = Math.max(1, Math.ceil(totalPoints / 7));
 
-  const previousLinePoints = currentPoints.map((point, index) => {
-    const previousValue = previousPoints[index]?.value ?? 0;
-    const x = padding.left + step * index + step / 2;
-    const y = padding.top + chartHeight - (previousValue / maxTick) * chartHeight;
-    return { x, y };
+  const previousLinePoints = Array.from({ length: totalPoints }, (_, index) => {
+    const value = previousPoints[index]?.value ?? 0;
+    return {
+      x: padding.left + step * index + step / 2,
+      y: padding.top + chartHeight - (value / maxTick) * chartHeight,
+    };
   });
 
   const previousPath = previousLinePoints
@@ -723,27 +449,13 @@ function ComparisonChart({
     .join(' ');
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={ariaLabel} className="h-60 w-full">
-      <defs>
-        <linearGradient id={gradientId} x1="0%" x2="0%" y1="0%" y2="100%">
-          <stop offset="0%" stopColor={theme.barStart} />
-          <stop offset="100%" stopColor={theme.barEnd} />
-        </linearGradient>
-      </defs>
-
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={ariaLabel} className="h-64 w-full">
       {ticks.map((tick) => {
         const y = padding.top + chartHeight - (tick / maxTick) * chartHeight;
         return (
           <g key={`tick-${tick}`}>
-            <line
-              x1={padding.left}
-              x2={width - padding.right}
-              y1={y}
-              y2={y}
-              stroke="var(--surface-on-media-40)"
-              strokeDasharray="4 5"
-            />
-            <text x={padding.left - 8} y={y + 4} textAnchor="end" className="fill-text-muted text-[10px]">
+            <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="var(--hairline)" />
+            <text x={padding.left - 10} y={y + 4} textAnchor="end" fontSize="10" fill="var(--text-muted)">
               {axisFormatter(tick)}
             </text>
           </g>
@@ -755,15 +467,15 @@ function ComparisonChart({
         x2={width - padding.right}
         y1={padding.top + chartHeight}
         y2={padding.top + chartHeight}
-        stroke="var(--surface-on-media-40)"
+        stroke="var(--border)"
       />
 
       {previousLinePoints.length > 1 ? (
-        <path d={previousPath} fill="none" stroke={theme.line} strokeWidth="2.5" strokeDasharray="6 6" />
+        <path d={previousPath} fill="none" stroke={theme.line} strokeWidth="2" strokeDasharray="5 5" />
       ) : null}
 
       {previousLinePoints.map((point, index) => (
-        <circle key={`previous-${index}`} cx={point.x} cy={point.y} r="2.5" fill={theme.line} opacity="0.85" />
+        <circle key={`previous-${index}`} cx={point.x} cy={point.y} r="2.5" fill={theme.line} />
       ))}
 
       {currentPoints.map((point, index) => {
@@ -772,16 +484,17 @@ function ComparisonChart({
         const x = xCenter - barWidth / 2;
         const y = padding.top + chartHeight - barHeight;
         const previousValue = previousPoints[index]?.value ?? 0;
+        const showLabel = index === 0 || index === currentPoints.length - 1 || index % labelEvery === 0;
 
         return (
           <g key={`${point.label}-${index}`}>
             <title>{`${point.label} | Current: ${tooltipFormatter(point.value)} | Previous: ${tooltipFormatter(previousValue)}`}</title>
-            <rect x={x} y={y} width={barWidth} height={Math.max(1, barHeight)} rx={4} fill={`url(#${gradientId})`} opacity="0.95" />
-            {(index === 0 || index === currentPoints.length - 1 || index % labelEvery === 0) && (
-              <text x={xCenter} y={height - 12} textAnchor="middle" className="fill-text-muted text-[10px]">
+            <rect x={x} y={y} width={barWidth} height={Math.max(1, barHeight)} rx={4} fill={theme.bar} />
+            {showLabel ? (
+              <text x={xCenter} y={height - 12} textAnchor="middle" fontSize="10" fill="var(--text-muted)">
                 {point.label}
               </text>
-            )}
+            ) : null}
           </g>
         );
       })}
@@ -789,101 +502,133 @@ function ComparisonChart({
   );
 }
 
-function FunnelVisual({ steps }: { steps: FunnelStep[] }) {
-  const lastStep = steps[steps.length - 1];
-
+function FunnelRows({ steps }: { steps: FunnelStep[] }) {
   if (!steps.length) {
     return <EmptyStateCard>No funnel data available yet.</EmptyStateCard>;
   }
 
   return (
-    <div className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">True funnel</p>
-          <p className="mt-1 text-sm text-text-secondary">
-            Card widths reflect share of total signups. Connector labels show step conversion between stages.
-          </p>
-        </div>
-        <div className="rounded-xl border border-surface-on-media-40 bg-surface/70 px-3 py-2 text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">End-to-end</p>
-          <p className="mt-1 text-lg font-semibold text-text-primary">{formatPercent(lastStep.shareOfStart)}</p>
-          <p className="text-xs text-text-secondary">Signup → first render within 30d</p>
-        </div>
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Funnel</p>
+        <p className="mt-1 text-sm text-text-secondary">Lecture en lignes compactes, plus proche d’un admin que d’un composant marketing.</p>
       </div>
-
-      <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <div className="divide-y divide-hairline">
         {steps.map((step, index) => (
-          <Fragment key={step.label}>
-            <FunnelStepCard step={step} index={index} />
-            {index < steps.length - 1 ? <FunnelConnector label={formatPercent(steps[index + 1].conversionFromPrevious ?? 0)} /> : null}
-          </Fragment>
+          <div key={step.label} className="grid gap-4 px-4 py-4 lg:grid-cols-[200px_minmax(0,1fr)_132px] lg:items-center">
+            <div>
+              <p className="text-sm font-medium text-text-primary">{step.label}</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">{step.helper}</p>
+            </div>
+            <div>
+              <ShareBar value={step.shareOfStart} label={formatPercent(step.shareOfStart)} accent={step.accent} />
+              <p className="mt-2 text-xs text-text-secondary">
+                {step.conversionFromPrevious == null ? 'Baseline stage' : `${formatPercent(step.conversionFromPrevious)} from previous stage`}
+              </p>
+            </div>
+            <div className="text-left lg:text-right">
+              <p className="text-lg font-semibold text-text-primary">{formatNumber(step.value)}</p>
+              <p className="mt-1 text-xs text-text-secondary">Stage {index + 1}</p>
+            </div>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-function FunnelStepCard({ step, index }: { step: FunnelStep; index: number }) {
-  const widthPercent = step.value > 0 ? Math.max(8, step.shareOfStart * 100) : 0;
-  const style: CSSProperties = {
-    backgroundImage: `linear-gradient(90deg, ${step.accentStart}, ${step.accentEnd})`,
-    width: `${Math.min(100, widthPercent)}%`,
-  };
-
+function BehaviorGrid({ stats }: { stats: SmallStat[] }) {
   return (
-    <div className="rounded-2xl border border-surface-on-media-40 bg-surface/70 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">Stage {index + 1}</span>
-        <span className="text-[11px] text-text-secondary">{formatPercent(step.shareOfStart)} of signups</span>
-      </div>
-      <p className="mt-3 text-sm font-semibold text-text-primary">{step.label}</p>
-      <p className="mt-2 text-3xl font-semibold text-text-primary">{formatNumber(step.value)}</p>
-      <p className="mt-2 text-xs leading-5 text-text-secondary">{step.helper}</p>
-      <div className="mt-4 h-2.5 w-full rounded-full bg-surface-glass-60">
-        <div className="h-2.5 rounded-full" style={style} />
-      </div>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-text-secondary">
-        <span>{formatPercent(step.shareOfStart)} of stage 1</span>
-        <span>{step.conversionFromPrevious == null ? 'Baseline' : `${formatPercent(step.conversionFromPrevious)} step conversion`}</span>
-      </div>
-    </div>
-  );
-}
-
-function FunnelConnector({ label }: { label: string }) {
-  return (
-    <div className="hidden xl:flex flex-col items-center justify-center gap-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">
-      <span>{label}</span>
-      <div className="h-px w-10 bg-surface-on-media-40" />
-    </div>
-  );
-}
-
-function RecentGrowthTable({ rows }: { rows: GrowthTableRow[] }) {
-  return (
-    <div className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Latest daily activity</p>
-          <p className="mt-1 text-sm text-text-secondary">Last 7 calendar days from the current window only.</p>
+    <div className="grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-3">
+      {stats.map((stat) => (
+        <div key={stat.label} className="bg-surface px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{stat.label}</p>
+          <p className={`mt-2 text-base font-semibold ${toneValueClass(stat.tone)}`}>{stat.value}</p>
+          {stat.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{stat.helper}</p> : null}
         </div>
+      ))}
+    </div>
+  );
+}
+
+function TopSpendersTable({ whales }: { whales: AdminMetrics['behavior']['whalesTop10'] }) {
+  if (!whales.length) {
+    return <EmptyStateCard>No paying users yet.</EmptyStateCard>;
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Top spenders</p>
+        <p className="mt-1 text-sm text-text-secondary">Entrées directement actionnables vers les fiches user admin.</p>
       </div>
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
-              <th className="py-2 font-semibold">Date</th>
-              <th className="py-2 font-semibold">Signups</th>
-              <th className="py-2 font-semibold">Active</th>
+      <div className="divide-y divide-hairline">
+        {whales.map((whale) => (
+          <Link
+            key={whale.userId}
+            href={`/admin/users/${whale.userId}`}
+            className="grid gap-3 px-4 py-4 transition hover:bg-bg lg:grid-cols-[minmax(0,1fr)_110px_80px]"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-text-primary">{whale.identifier}</p>
+              <p className="mt-1 text-xs text-text-secondary">
+                Last active {formatFullDate(whale.lastActiveAt)} · First seen {formatFullDate(whale.firstSeenAt)}
+              </p>
+            </div>
+            <div className="text-left lg:text-right">
+              <p className="text-sm font-semibold text-text-primary">{formatCurrency(whale.lifetimeTopupUsd)}</p>
+              <p className="mt-1 text-[11px] text-text-muted">top-ups</p>
+            </div>
+            <div className="text-left lg:text-right">
+              <p className="text-sm font-semibold text-text-primary">{formatNumber(whale.renderCount)}</p>
+              <p className="mt-1 text-[11px] text-text-muted">renders</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EngineMixTable({ engines }: { engines: AdminMetrics['engines'] }) {
+  if (!engines.length) {
+    return <EmptyStateCard>No engine activity recorded in the last 30 days.</EmptyStateCard>;
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine mix</p>
+        <p className="mt-1 text-sm text-text-secondary">Table-first reading of revenue, render share and distinct usage.</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="bg-surface">
+            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+              <th className="px-4 py-3 font-semibold">Engine</th>
+              <th className="px-4 py-3 font-semibold">Revenue</th>
+              <th className="px-4 py-3 font-semibold">Renders</th>
+              <th className="px-4 py-3 font-semibold">Users</th>
+              <th className="px-4 py-3 font-semibold">Render share</th>
+              <th className="px-4 py-3 font-semibold">Revenue share</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.date} className="border-t border-surface-on-media-40 text-text-secondary">
-                <td className="py-2.5">{formatDay(row.date)}</td>
-                <td className="py-2.5 font-semibold text-text-primary">{formatNumber(row.signups)}</td>
-                <td className="py-2.5 font-semibold text-text-primary">{formatNumber(row.active)}</td>
+            {engines.map((engine) => (
+              <tr key={engine.engineId} className="border-t border-hairline">
+                <td className="px-4 py-3">
+                  <p className="font-medium text-text-primary">{engine.engineLabel}</p>
+                  <p className="mt-1 text-xs text-text-secondary">{formatCurrency(engine.avgSpendPerUser30d, { precise: true })} avg / user</p>
+                </td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(engine.rendersAmount30dUsd)}</td>
+                <td className="px-4 py-3 text-text-secondary">{formatNumber(engine.rendersCount30d)}</td>
+                <td className="px-4 py-3 text-text-secondary">{formatNumber(engine.distinctUsers30d)}</td>
+                <td className="px-4 py-3">
+                  <ShareBar value={engine.shareOfTotalRenders30d} label={formatPercent(engine.shareOfTotalRenders30d)} accent="#0F766E" />
+                </td>
+                <td className="px-4 py-3">
+                  <ShareBar value={engine.shareOfTotalRevenue30d} label={formatPercent(engine.shareOfTotalRevenue30d)} accent="#2563EB" />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -893,138 +638,224 @@ function RecentGrowthTable({ rows }: { rows: GrowthTableRow[] }) {
   );
 }
 
-function RecentRevenueTable({ rows }: { rows: RevenueTableRow[] }) {
+function HealthPanel({
+  failedRenders,
+  failureRate,
+  flaggedRows,
+}: {
+  failedRenders: number;
+  failureRate: number;
+  flaggedRows: AdminMetrics['health']['failedByEngine30d'];
+}) {
   return (
-    <div className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Latest money days</p>
-          <p className="mt-1 text-sm text-text-secondary">Current-window daily cash-in and usage, without monthly mixing.</p>
-        </div>
+    <div className="space-y-4">
+      <div className="grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-3">
+        <SummaryCell label="Failed renders" value={formatNumber(failedRenders)} helper="Unresolved failures" tone={failedRenders ? 'warning' : 'success'} />
+        <SummaryCell label="Failure rate" value={formatPercent(failureRate)} helper="Failed / completed" tone={failureRate ? 'warning' : 'success'} />
+        <SummaryCell
+          label="Engines impacted"
+          value={formatNumber(flaggedRows.length)}
+          helper="At least one unresolved failure"
+          tone={flaggedRows.length ? 'warning' : 'success'}
+        />
       </div>
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
-              <th className="py-2 font-semibold">Date</th>
-              <th className="py-2 font-semibold">Top-ups</th>
-              <th className="py-2 font-semibold">Loads</th>
-              <th className="py-2 font-semibold">Charges</th>
-              <th className="py-2 font-semibold">Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.date} className="border-t border-surface-on-media-40 text-text-secondary">
-                <td className="py-2.5">{formatDay(row.date)}</td>
-                <td className="py-2.5 font-semibold text-text-primary">{formatCurrency(row.topupsUsd)}</td>
-                <td className="py-2.5">{formatNumber(row.topupCount)}</td>
-                <td className="py-2.5 font-semibold text-text-primary">{formatCurrency(row.chargesUsd)}</td>
-                <td className="py-2.5">{formatNumber(row.chargeCount)}</td>
-              </tr>
+
+      {flaggedRows.length ? (
+        <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+          <div className="border-b border-hairline px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Open incidents</p>
+            <p className="mt-1 text-sm text-text-secondary">Seuls les moteurs avec un vrai signal restent visibles.</p>
+          </div>
+          <div className="divide-y divide-hairline">
+            {flaggedRows.map((row) => (
+              <div key={row.engineId} className="px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-text-primary">{row.engineLabel}</p>
+                    <p className="mt-1 text-xs text-text-secondary">Unresolved failures still need follow-up on jobs or billing.</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-error">{formatPercent(row.failureRate30d)}</p>
+                    <p className="mt-1 text-[11px] text-text-muted">{formatNumber(row.failedCount30d)} failed renders</p>
+                  </div>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function EngineUsageCard({ engine }: { engine: AdminMetrics['engines'][number] }) {
-  return (
-    <div className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-text-primary">{engine.engineLabel}</p>
-          <p className="mt-1 text-xs text-text-secondary">
-            {formatNumber(engine.distinctUsers30d)} users · {formatCurrency(engine.avgSpendPerUser30d, { precise: true })} avg spend / user
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-lg font-semibold text-text-primary">{formatCurrency(engine.rendersAmount30dUsd)}</p>
-          <p className="mt-1 text-xs text-text-muted">{formatNumber(engine.rendersCount30d)} renders</p>
-        </div>
-      </div>
-      <div className="mt-4 space-y-3">
-        <div>
-          <div className="mb-1 flex items-center justify-between gap-3 text-xs text-text-secondary">
-            <span>Render share</span>
-            <span>{formatPercent(engine.shareOfTotalRenders30d)}</span>
           </div>
-          <ShareBar value={engine.shareOfTotalRenders30d} label={formatPercent(engine.shareOfTotalRenders30d)} hideLabel />
-        </div>
-        <div>
-          <div className="mb-1 flex items-center justify-between gap-3 text-xs text-text-secondary">
-            <span>Revenue share</span>
-            <span>{formatPercent(engine.shareOfTotalRevenue30d)}</span>
-          </div>
-          <ShareBar value={engine.shareOfTotalRevenue30d} label={formatPercent(engine.shareOfTotalRevenue30d)} hideLabel />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ShareBar({ value, label, hideLabel = false }: { value: number; label: string; hideLabel?: boolean }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-2 w-full rounded-full bg-surface-glass-60">
-        <div className="h-2 rounded-full bg-text-primary" style={{ width: `${Math.min(100, Math.max(0, value * 100))}%` }} />
-      </div>
-      {!hideLabel ? <span className="text-xs text-text-secondary">{label}</span> : null}
-    </div>
-  );
-}
-
-function TopSpendersPanel({ whales }: { whales: AdminMetrics['behavior']['whalesTop10'] }) {
-  return (
-    <div className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Top spenders</p>
-          <p className="mt-1 text-sm text-text-secondary">Direct links into admin users make this list immediately actionable.</p>
-        </div>
-      </div>
-      {whales.length ? (
-        <div className="mt-4 space-y-2">
-          {whales.map((whale) => (
-            <Link
-              key={whale.userId}
-              href={`/admin/users/${whale.userId}`}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-on-media-40 bg-surface/70 px-3 py-3 transition hover:border-surface-on-media-60 hover:bg-surface"
-            >
-              <div>
-                <p className="text-sm font-semibold text-text-primary">{whale.identifier}</p>
-                <p className="mt-1 text-xs text-text-secondary">
-                  Last active {formatFullDate(whale.lastActiveAt)} · First seen {formatFullDate(whale.firstSeenAt)}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-right">
-                <div>
-                  <p className="text-sm font-semibold text-text-primary">{formatCurrency(whale.lifetimeTopupUsd)}</p>
-                  <p className="text-[11px] text-text-muted">lifetime top-ups</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-text-primary">{formatNumber(whale.renderCount)}</p>
-                  <p className="text-[11px] text-text-muted">renders</p>
-                </div>
-              </div>
-            </Link>
-          ))}
         </div>
       ) : (
-        <EmptyStateCard className="mt-4">No paying users yet.</EmptyStateCard>
+        <EmptyStateCard>No unresolved failures recorded in the past 30 days.</EmptyStateCard>
       )}
     </div>
   );
 }
 
-function EmptyStateCard({ children, className = '' }: { children: ReactNode; className?: string }) {
+function SummaryCell({
+  label,
+  value,
+  helper,
+  tone = 'default',
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  tone?: SmallStat['tone'];
+}) {
   return (
-    <div className={`rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4 text-sm text-text-secondary ${className}`}>
+    <div className="bg-surface px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{label}</p>
+      <p className={`mt-2 text-lg font-semibold ${toneValueClass(tone)}`}>{value}</p>
+      <p className="mt-1 text-xs leading-5 text-text-secondary">{helper}</p>
+    </div>
+  );
+}
+
+function DailyLedgerTable({ rows }: { rows: LedgerRow[] }) {
+  if (!rows.length) {
+    return <EmptyStateCard>No recent daily entries.</EmptyStateCard>;
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Latest 7 days</p>
+        <p className="mt-1 text-sm text-text-secondary">Lecture condensée des dernières journées utiles, sans séparer croissance et revenu dans deux cartes différentes.</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead className="bg-surface">
+            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+              <th className="px-4 py-3 font-semibold">Date</th>
+              <th className="px-4 py-3 font-semibold">Signups</th>
+              <th className="px-4 py-3 font-semibold">Active</th>
+              <th className="px-4 py-3 font-semibold">Top-ups</th>
+              <th className="px-4 py-3 font-semibold">Charges</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.date} className="border-t border-hairline">
+                <td className="px-4 py-3 text-text-secondary">{formatDay(row.date)}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatNumber(row.signups)}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatNumber(row.active)}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.topupsUsd)}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.chargesUsd)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function MonthlyRollupTable({
+  rows,
+}: {
+  rows: Array<{ month: string; signups: number; topupsUsd: number; chargesUsd: number }>;
+}) {
+  if (!rows.length) {
+    return <EmptyStateCard>No monthly aggregates yet.</EmptyStateCard>;
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Monthly rollup</p>
+        <p className="mt-1 text-sm text-text-secondary">Six derniers mois, gardés séparés des lignes journalières.</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-surface">
+            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+              <th className="px-4 py-3 font-semibold">Month</th>
+              <th className="px-4 py-3 font-semibold">Signups</th>
+              <th className="px-4 py-3 font-semibold">Top-ups</th>
+              <th className="px-4 py-3 font-semibold">Charges</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.month} className="border-t border-hairline">
+                <td className="px-4 py-3 text-text-secondary">{formatMonth(row.month)}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatNumber(row.signups)}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.topupsUsd)}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(row.chargesUsd)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ShareBar({
+  value,
+  label,
+  accent,
+}: {
+  value: number;
+  label: string;
+  accent: string;
+}) {
+  const style: CSSProperties = {
+    width: `${Math.min(100, Math.max(0, value * 100))}%`,
+    backgroundColor: accent,
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-hairline">
+        <div className="h-2.5 rounded-full" style={style} />
+      </div>
+      <span className="shrink-0 text-xs text-text-secondary">{label}</span>
+    </div>
+  );
+}
+
+function EmptyStateCard({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-hairline bg-bg/40 px-4 py-5 text-sm text-text-secondary">
       {children}
     </div>
   );
+}
+
+function toneBadgeClass(tone: SmallStat['tone']) {
+  if (tone === 'success') {
+    return 'bg-emerald-50 text-emerald-700';
+  }
+  if (tone === 'warning') {
+    return 'bg-red-50 text-red-700';
+  }
+  return 'bg-slate-100 text-slate-700';
+}
+
+function toneValueClass(tone: SmallStat['tone']) {
+  if (tone === 'success') {
+    return 'text-emerald-700';
+  }
+  if (tone === 'warning') {
+    return 'text-error';
+  }
+  return 'text-text-primary';
+}
+
+function resolveExcludeAdminParam(value: string | string[] | undefined): boolean {
+  const resolved = Array.isArray(value) ? value[value.length - 1] : value;
+  if (resolved == null) return true;
+  const normalized = resolved.trim().toLowerCase();
+  if (!normalized) return true;
+  return !['0', 'false', 'no', 'off'].includes(normalized);
+}
+
+function resolveFocusParam(value: string | string[] | undefined): FocusMetric {
+  const resolved = Array.isArray(value) ? value[value.length - 1] : value;
+  if (resolved === 'active' || resolved === 'topups' || resolved === 'charges') {
+    return resolved;
+  }
+  return 'signups';
 }
 
 function buildOverviewStats(metrics: AdminMetrics): SmallStat[] {
@@ -1176,33 +1007,31 @@ function buildQuickInsights(metrics: AdminMetrics, comparison: AdminMetricsCompa
   return insights;
 }
 
-function buildRecentGrowthRows(metrics: AdminMetrics): GrowthTableRow[] {
+function buildRecentLedgerRows(metrics: AdminMetrics): LedgerRow[] {
+  const signupsMap = new Map(metrics.timeseries.signupsDaily.map((point) => [point.date.slice(0, 10), point.value]));
   const activeMap = new Map(metrics.timeseries.activeAccountsDaily.map((point) => [point.date.slice(0, 10), point.value]));
-  return metrics.timeseries.signupsDaily
-    .slice(-7)
-    .map((point) => ({
-      date: point.date,
-      signups: point.value,
-      active: activeMap.get(point.date.slice(0, 10)) ?? 0,
-    }))
-    .reverse();
-}
+  const topupsMap = new Map(metrics.timeseries.topupsDaily.map((point) => [point.date.slice(0, 10), point.amountCents / 100]));
+  const chargesMap = new Map(metrics.timeseries.chargesDaily.map((point) => [point.date.slice(0, 10), point.amountCents / 100]));
 
-function buildRecentRevenueRows(metrics: AdminMetrics): RevenueTableRow[] {
-  const chargeMap = new Map(metrics.timeseries.chargesDaily.map((point) => [point.date.slice(0, 10), point]));
-  return metrics.timeseries.topupsDaily
+  const dates = Array.from(
+    new Set([
+      ...metrics.timeseries.signupsDaily.map((point) => point.date.slice(0, 10)),
+      ...metrics.timeseries.activeAccountsDaily.map((point) => point.date.slice(0, 10)),
+      ...metrics.timeseries.topupsDaily.map((point) => point.date.slice(0, 10)),
+      ...metrics.timeseries.chargesDaily.map((point) => point.date.slice(0, 10)),
+    ])
+  )
+    .sort((a, b) => a.localeCompare(b))
     .slice(-7)
-    .map((point) => {
-      const chargePoint = chargeMap.get(point.date.slice(0, 10));
-      return {
-        date: point.date,
-        topupsUsd: point.amountCents / 100,
-        topupCount: point.count,
-        chargesUsd: (chargePoint?.amountCents ?? 0) / 100,
-        chargeCount: chargePoint?.count ?? 0,
-      };
-    })
     .reverse();
+
+  return dates.map((date) => ({
+    date,
+    signups: signupsMap.get(date) ?? 0,
+    active: activeMap.get(date) ?? 0,
+    topupsUsd: topupsMap.get(date) ?? 0,
+    chargesUsd: chargesMap.get(date) ?? 0,
+  }));
 }
 
 function buildMonthlyRows(metrics: AdminMetrics) {
@@ -1285,22 +1114,19 @@ function buildFunnelSteps(metrics: AdminMetrics): FunnelStep[] {
       label: 'Signed up',
       value: metrics.totals.totalAccounts,
       helper: 'All synced accounts in the workspace',
-      accentStart: '#b7d6ff',
-      accentEnd: 'var(--info)',
+      accent: '#2563EB',
     },
     {
       label: 'Loaded wallet',
       value: metrics.funnels.totalTopupUsers,
       helper: 'At least one wallet top-up recorded',
-      accentStart: '#ffe199',
-      accentEnd: 'var(--accent)',
+      accent: '#CA8A04',
     },
     {
       label: 'First render within 30d',
       value: metrics.funnels.convertedWithin30dUsers,
       helper: 'Reached first completed render within 30 days of first top-up',
-      accentStart: '#ffc2af',
-      accentEnd: 'var(--chart-charges)',
+      accent: '#EA580C',
     },
   ];
 
@@ -1314,6 +1140,91 @@ function buildFunnelSteps(metrics: AdminMetrics): FunnelStep[] {
       conversionFromPrevious: index === 0 ? null : previousValue ? step.value / previousValue : 0,
     };
   });
+}
+
+function buildFocusMetricData(
+  focus: FocusMetric,
+  metrics: AdminMetrics,
+  comparison: AdminMetricsComparison,
+  humanRange: string
+): FocusMetricData {
+  if (focus === 'active') {
+    return {
+      key: 'active',
+      label: 'Active account-days',
+      description: 'Mesure d’usage journalier cumulé. Ce n’est pas un distinct user count, mais un vrai rythme d’activité.',
+      theme: CHART_THEMES.active,
+      currentPoints: comparison.current.activeAccountsDaily.map((point) => ({
+        label: formatDay(point.date),
+        value: point.value,
+      })),
+      previousPoints: comparison.previous.activeAccountsDaily.map((point) => ({
+        label: formatDay(point.date),
+        value: point.value,
+      })),
+      stats: buildCountSeriesStats(comparison.current.activeAccountsDaily, comparison.previous.activeAccountsDaily, humanRange, {
+        totalLabel: 'Current total',
+        totalHelper: 'Summed daily active-account counts',
+        peakEmptyLabel: 'No activity',
+      }),
+    };
+  }
+
+  if (focus === 'topups') {
+    return {
+      key: 'topups',
+      label: 'Wallet top-ups',
+      description: 'Cash-in par jour. Le tracé précédent garde la cadence historique visible sans surcharger le graph.',
+      theme: CHART_THEMES.topups,
+      currentPoints: comparison.current.topupsDaily.map((point) => ({
+        label: formatDay(point.date),
+        value: point.amountCents / 100,
+      })),
+      previousPoints: comparison.previous.topupsDaily.map((point) => ({
+        label: formatDay(point.date),
+        value: point.amountCents / 100,
+      })),
+      stats: buildAmountSeriesStats(comparison.current.topupsDaily, comparison.previous.topupsDaily, humanRange, 'loads'),
+      axisFormatter: formatAxisCurrency,
+      tooltipFormatter: (value) => formatCurrency(value, { precise: value < 100 }),
+    };
+  }
+
+  if (focus === 'charges') {
+    return {
+      key: 'charges',
+      label: 'Render charges',
+      description: 'Consommation par jour. Les pics restent visibles, mais la comparaison n’oblige plus à faire le calcul mental.',
+      theme: CHART_THEMES.charges,
+      currentPoints: comparison.current.chargesDaily.map((point) => ({
+        label: formatDay(point.date),
+        value: point.amountCents / 100,
+      })),
+      previousPoints: comparison.previous.chargesDaily.map((point) => ({
+        label: formatDay(point.date),
+        value: point.amountCents / 100,
+      })),
+      stats: buildAmountSeriesStats(comparison.current.chargesDaily, comparison.previous.chargesDaily, humanRange, 'charges'),
+      axisFormatter: formatAxisCurrency,
+      tooltipFormatter: (value) => formatCurrency(value, { precise: value < 100 }),
+    };
+  }
+
+  return {
+    key: 'signups',
+    label: 'Signups per day',
+    description: 'Nouvelle acquisition dans la fenêtre. C’est la meilleure lecture de tendance en haut de funnel.',
+    theme: CHART_THEMES.signups,
+    currentPoints: comparison.current.signupsDaily.map((point) => ({
+      label: formatDay(point.date),
+      value: point.value,
+    })),
+    previousPoints: comparison.previous.signupsDaily.map((point) => ({
+      label: formatDay(point.date),
+      value: point.value,
+    })),
+    stats: buildCountSeriesStats(comparison.current.signupsDaily, comparison.previous.signupsDaily, humanRange),
+  };
 }
 
 function buildCountSeriesStats(
@@ -1497,10 +1408,19 @@ function buildChartTicks(maxValue: number): number[] {
   return Array.from({ length: tickCount + 1 }, (_, index) => Number((index * step).toFixed(4)));
 }
 
-function buildInsightsHref({ range, excludeAdmin }: { range: MetricsRangeLabel; excludeAdmin: boolean }) {
+function buildInsightsHref({
+  range,
+  excludeAdmin,
+  focus,
+}: {
+  range: MetricsRangeLabel;
+  excludeAdmin: boolean;
+  focus: FocusMetric;
+}) {
   const params = new URLSearchParams();
   params.set('range', range);
   params.set('excludeAdmin', excludeAdmin ? '1' : '0');
+  params.set('focus', focus);
   return `/admin/insights?${params.toString()}`;
 }
 
