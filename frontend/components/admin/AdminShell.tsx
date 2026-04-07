@@ -77,7 +77,7 @@ export function AdminShell({ navGroups, navBadges, children }: AdminShellProps) 
           type="button"
           aria-label="Close navigation"
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-30 bg-slate-950/20 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-30 bg-overlay-bg/60 backdrop-blur-sm md:hidden"
         />
       ) : null}
       <AdminFrame sidebar={sidebar} topbar={topbar}>

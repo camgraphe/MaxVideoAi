@@ -188,7 +188,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
             <ul className="space-y-3 text-sm text-text-secondary">
               {quickInsights.map((line, index) => (
                 <li key={`overview-note-${index}`} className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-slate-950" aria-hidden />
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-brand" aria-hidden />
                   <span>{line}</span>
                 </li>
               ))}
@@ -290,7 +290,7 @@ function InsightsControls({
               href={buildInsightsHref({ range: option, excludeAdmin, focus })}
               className={[
                 'rounded-lg px-3 py-1.5 text-sm font-medium transition',
-                isActive ? 'bg-slate-950 text-white' : 'text-text-secondary hover:bg-bg hover:text-text-primary',
+                isActive ? 'bg-brand text-on-brand' : 'text-text-secondary hover:bg-bg hover:text-text-primary',
               ].join(' ')}
             >
               {option}
@@ -303,7 +303,7 @@ function InsightsControls({
         className={[
           'inline-flex rounded-xl border px-3 py-2 text-sm font-medium transition',
           excludeAdmin
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            ? 'border-success-border bg-success-bg text-success hover:bg-success-bg/80'
             : 'border-border bg-surface text-text-secondary hover:bg-bg hover:text-text-primary',
         ].join(' ')}
       >
@@ -348,7 +348,7 @@ function OverviewStatCell({ stat }: { stat: SmallStat }) {
     stat.tone === 'warning'
       ? 'text-error'
       : stat.tone === 'success'
-        ? 'text-emerald-700'
+        ? 'text-success'
         : 'text-text-primary';
 
   return (
@@ -824,17 +824,17 @@ function EmptyStateCard({ children }: { children: ReactNode }) {
 
 function toneBadgeClass(tone: SmallStat['tone']) {
   if (tone === 'success') {
-    return 'bg-emerald-50 text-emerald-700';
+    return 'bg-success-bg text-success';
   }
   if (tone === 'warning') {
-    return 'bg-red-50 text-red-700';
+    return 'bg-error-bg text-error';
   }
-  return 'bg-slate-100 text-slate-700';
+  return 'bg-surface-hover text-text-secondary';
 }
 
 function toneValueClass(tone: SmallStat['tone']) {
   if (tone === 'success') {
-    return 'text-emerald-700';
+    return 'text-success';
   }
   if (tone === 'warning') {
     return 'text-error';

@@ -80,7 +80,7 @@ export function TopbarSearch() {
       />
       <button
         type="submit"
-        className="inline-flex h-8 items-center rounded-lg bg-slate-950 px-3 text-[11px] font-medium text-white transition hover:bg-slate-800"
+        className="inline-flex h-8 items-center rounded-lg bg-brand px-3 text-[11px] font-medium text-on-brand transition hover:bg-brand-hover"
       >
         Go
       </button>

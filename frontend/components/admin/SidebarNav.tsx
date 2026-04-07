@@ -67,8 +67,8 @@ type SidebarNavProps = {
 };
 
 const BADGE_TONE_CLASS: Record<AdminNavBadgeTone, string> = {
-  info: 'border-white/10 bg-white/10 text-slate-300',
-  warn: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
+  info: 'border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-surface)] text-[var(--admin-sidebar-text-muted)]',
+  warn: 'border-warning-border bg-warning-bg text-warning',
 };
 
 export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: SidebarNavProps) {
@@ -98,15 +98,15 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
             'group relative flex w-full items-center rounded-xl px-3 py-2.5 text-[13px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             showCompact ? 'justify-center px-2' : 'gap-2',
             isActive
-              ? 'bg-white/10 text-white'
-              : 'text-slate-300 hover:bg-white/6 hover:text-white'
+              ? 'bg-[var(--admin-sidebar-surface-hover)] text-[var(--admin-sidebar-text)]'
+              : 'text-[var(--admin-sidebar-text-muted)] hover:bg-[var(--admin-sidebar-surface)] hover:text-[var(--admin-sidebar-text)]'
           )}
           aria-current={isActive ? 'page' : undefined}
           aria-describedby={showCompact ? tooltipId : undefined}
         >
           <span
             className={clsx(
-              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-white transition-opacity',
+              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-[var(--admin-sidebar-text)] transition-opacity',
               isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
             )}
             aria-hidden
@@ -115,8 +115,8 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
             className={clsx(
               'flex h-7 w-7 items-center justify-center rounded-lg transition-colors',
               isActive
-                ? 'bg-white/12 text-white'
-                : 'bg-transparent text-slate-400 group-hover:bg-white/8 group-hover:text-white'
+                ? 'bg-[var(--admin-sidebar-surface-hover)] text-[var(--admin-sidebar-text)]'
+                : 'bg-transparent text-[var(--admin-sidebar-text-faint)] group-hover:bg-[var(--admin-sidebar-surface)] group-hover:text-[var(--admin-sidebar-text)]'
             )}
             aria-hidden
           >
@@ -160,7 +160,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
   const renderGroup = (group: AdminNavGroup, index: number) => {
     const headerClass = clsx(
       'flex w-full items-center justify-between px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]',
-      group.secondary ? 'text-slate-500' : 'text-slate-500'
+      group.secondary ? 'text-[var(--admin-sidebar-text-faint)]' : 'text-[var(--admin-sidebar-text-faint)]'
     );
     const wrapperClass = 'space-y-1';
 
@@ -181,21 +181,21 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
   return (
     <aside
       className={clsx(
-        'fixed inset-y-0 left-0 z-40 flex w-[18rem] flex-col border-r border-slate-900 bg-slate-950 text-slate-100 transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[17rem] md:translate-x-0 md:shadow-none',
+        'fixed inset-y-0 left-0 z-40 flex w-[18rem] flex-col border-r border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-bg)] text-[var(--admin-sidebar-text)] transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[17rem] md:translate-x-0 md:shadow-none',
         mobileOpen ? 'translate-x-0 shadow-float' : '-translate-x-full',
         'md:translate-x-0'
       )}
       aria-label="Admin navigation"
     >
-      <div className="border-b border-white/10 px-4 pb-4 pt-4">
+      <div className="border-b border-[var(--admin-sidebar-border)] px-4 pb-4 pt-4">
         <div className="flex items-center justify-between gap-3">
           <Link href="/admin" className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-xs font-semibold text-slate-950">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--admin-sidebar-contrast)] text-xs font-semibold text-[var(--admin-sidebar-bg)]">
               MV
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate text-sm font-semibold text-white">MaxVideo Admin</span>
-              <span className="text-xs text-slate-400">Operations control</span>
+              <span className="truncate text-sm font-semibold text-[var(--admin-sidebar-text)]">MaxVideo Admin</span>
+              <span className="text-xs text-[var(--admin-sidebar-text-faint)]">Operations control</span>
             </span>
           </Link>
           <Button
@@ -203,19 +203,19 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
             variant="ghost"
             size="sm"
             onClick={onMobileClose}
-            className="h-9 w-9 min-h-0 rounded-lg border border-white/10 bg-white/5 p-0 text-slate-300 hover:bg-white/10 hover:text-white md:hidden"
+            className="h-9 w-9 min-h-0 rounded-lg border border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-surface)] p-0 text-[var(--admin-sidebar-text-muted)] hover:bg-[var(--admin-sidebar-surface-hover)] hover:text-[var(--admin-sidebar-text)] md:hidden"
           >
             <UIIcon icon={X} size={18} />
             <span className="sr-only">Close navigation</span>
           </Button>
         </div>
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-surface)] px-3 py-2">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Workspace</p>
-            <p className="mt-1 text-sm font-medium text-white">Admin</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-sidebar-text-faint)]">Workspace</p>
+            <p className="mt-1 text-sm font-medium text-[var(--admin-sidebar-text)]">Admin</p>
           </div>
-          <span className="inline-flex items-center gap-2 text-xs text-slate-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
+          <span className="inline-flex items-center gap-2 text-xs text-[var(--admin-sidebar-text-faint)]">
+            <span className="h-2 w-2 rounded-full bg-success" aria-hidden />
             Live
           </span>
         </div>
@@ -226,7 +226,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
           {primaryGroups.map((group, index) => renderGroup(group, index))}
         </div>
         {secondaryGroups.length ? (
-          <div className="mt-4 border-t border-white/10 pt-4">
+          <div className="mt-4 border-t border-[var(--admin-sidebar-border)] pt-4">
             <div className="space-y-1">
               {secondaryGroups.map((group, index) => renderGroup(group, index))}
             </div>
