@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useId } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
@@ -74,17 +73,13 @@ const BADGE_TONE_CLASS: Record<AdminNavBadgeTone, string> = {
 export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: SidebarNavProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const tooltipBaseId = useId();
-
-  const showCompact = false;
   const primaryGroups = groups.filter((group) => !group.secondary);
   const secondaryGroups = groups.filter((group) => group.secondary);
   const activeSearch = searchParams?.toString();
 
-  const renderNavItem = (item: AdminNavItem, groupId: string) => {
+  const renderNavItem = (item: AdminNavItem) => {
     const isActive = isAdminNavMatch(pathname, item.href);
     const href = isActive && activeSearch ? `${item.href}?${activeSearch}` : item.href;
-    const tooltipId = `${tooltipBaseId}-${groupId}-${item.id}`;
     const IconComponent = ADMIN_ICON_MAP[item.icon] ?? LayoutDashboard;
     const itemBadges = badges?.[item.id] ?? [];
 
@@ -96,13 +91,12 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
           onClick={mobileOpen ? onMobileClose : undefined}
           className={clsx(
             'group relative flex w-full items-center rounded-xl px-3 py-2.5 text-[13px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            showCompact ? 'justify-center px-2' : 'gap-2',
+            'gap-2',
             isActive
               ? 'bg-[var(--admin-sidebar-surface-hover)] text-[var(--admin-sidebar-text)]'
               : 'text-[var(--admin-sidebar-text-muted)] hover:bg-[var(--admin-sidebar-surface)] hover:text-[var(--admin-sidebar-text)]'
           )}
           aria-current={isActive ? 'page' : undefined}
-          aria-describedby={showCompact ? tooltipId : undefined}
         >
           <span
             className={clsx(
@@ -144,15 +138,6 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
             ) : null}
           </span>
         </Link>
-        {showCompact ? (
-          <div
-            id={tooltipId}
-            role="tooltip"
-            className="pointer-events-none absolute left-full top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-card border border-border bg-surface px-3 py-1 text-xs font-semibold text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 md:block"
-          >
-            {item.label}
-          </div>
-        ) : null}
       </li>
     );
   };
@@ -172,7 +157,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
           <span>{group.label}</span>
         </div>
         <ul id={`admin-group-${group.id}`} className="space-y-1">
-          {group.items.map((item) => renderNavItem(item, group.id))}
+          {group.items.map((item) => renderNavItem(item))}
         </ul>
       </section>
     );
@@ -181,7 +166,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
   return (
     <aside
       className={clsx(
-        'fixed inset-y-0 left-0 z-40 flex w-[18rem] flex-col border-r border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-bg)] text-[var(--admin-sidebar-text)] transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[17rem] md:translate-x-0 md:shadow-none',
+        'fixed inset-y-0 left-0 z-40 flex w-[min(18rem,88vw)] flex-col border-r border-[var(--admin-sidebar-border)] bg-[var(--admin-sidebar-bg)] text-[var(--admin-sidebar-text)] transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[17rem] md:translate-x-0 md:shadow-none',
         mobileOpen ? 'translate-x-0 shadow-float' : '-translate-x-full',
         'md:translate-x-0'
       )}
@@ -233,6 +218,11 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
           </div>
         ) : null}
       </nav>
+
+      <div className="border-t border-[var(--admin-sidebar-border)] px-4 py-3">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-sidebar-text-faint)]">Shell</p>
+        <p className="mt-1 text-xs text-[var(--admin-sidebar-text-muted)]">Cmd+K for navigation and quick jumps.</p>
+      </div>
     </aside>
   );
 }

@@ -8,8 +8,8 @@ type AdminFrameProps = {
 
 export function AdminFrame({ sidebar, topbar, children }: AdminFrameProps) {
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.04),transparent_28rem)]">
+    <div className="min-h-screen overflow-x-hidden bg-bg">
+      <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.04),transparent_28rem)] dark:bg-none">
         {sidebar}
         <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-transparent">
           {topbar}

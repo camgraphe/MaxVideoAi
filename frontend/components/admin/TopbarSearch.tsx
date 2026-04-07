@@ -12,7 +12,11 @@ const scopeOptions: Array<{ value: SearchScope; label: string }> = [
   { value: 'jobs', label: 'Jobs' },
 ];
 
-export function TopbarSearch() {
+type TopbarSearchProps = {
+  compact?: boolean;
+};
+
+export function TopbarSearch({ compact = false }: TopbarSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -51,7 +55,10 @@ export function TopbarSearch() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-10 w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface px-2 shadow-card"
+      className={[
+        'flex w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface shadow-card',
+        compact ? 'h-11 px-2.5' : 'h-10 px-2',
+      ].join(' ')}
     >
       <label className="sr-only" htmlFor={inputId}>
         Quick search
@@ -59,7 +66,10 @@ export function TopbarSearch() {
       <select
         value={scope}
         onChange={(event) => setScope(event.target.value as SearchScope)}
-        className="h-8 rounded-lg border border-hairline bg-bg px-2.5 text-[11px] font-medium text-text-secondary focus:border-border-hover focus:outline-none"
+        className={[
+          'rounded-lg border border-hairline bg-bg font-medium text-text-secondary focus:border-border-hover focus:outline-none',
+          compact ? 'h-9 px-2 text-xs' : 'h-8 px-2.5 text-[11px]',
+        ].join(' ')}
         aria-label="Search scope"
       >
         {scopeOptions.map((option) => (
@@ -75,12 +85,15 @@ export function TopbarSearch() {
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={placeholder}
-        className="w-full min-w-0 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
+        className={['w-full min-w-0 bg-transparent text-text-primary placeholder:text-text-muted focus:outline-none', compact ? 'text-[15px]' : 'text-sm'].join(' ')}
         type="search"
       />
       <button
         type="submit"
-        className="inline-flex h-8 items-center rounded-lg bg-brand px-3 text-[11px] font-medium text-on-brand transition hover:bg-brand-hover"
+        className={[
+          'inline-flex items-center rounded-lg bg-brand font-medium text-on-brand transition hover:bg-brand-hover',
+          compact ? 'h-9 px-3 text-xs' : 'h-8 px-3 text-[11px]',
+        ].join(' ')}
       >
         Go
       </button>
