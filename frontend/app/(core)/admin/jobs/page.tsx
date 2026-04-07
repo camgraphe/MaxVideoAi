@@ -1,62 +1,25 @@
-import { Button, ButtonLink } from '@/components/ui/Button';
+import Link from 'next/link';
+import { AlertTriangle, CheckCircle2, Clock3, History, ReceiptText, ShieldAlert } from 'lucide-react';
+import type { AdminJobAuditRecord } from '@/server/admin-job-audit';
 import { fetchRecentJobAudits } from '@/server/admin-job-audit';
 import { AdminJobAuditTable } from '@/components/admin/JobAuditTable';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { Button, ButtonLink } from '@/components/ui/Button';
+
+type SearchParamValue = string | string[] | undefined;
 
 type PageProps = {
   searchParams?: {
-    jobId?: string;
-    userId?: string;
-    engineId?: string;
-    status?: string;
-    outcome?: string;
-    from?: string;
-    to?: string;
+    jobId?: SearchParamValue;
+    userId?: SearchParamValue;
+    engineId?: SearchParamValue;
+    status?: SearchParamValue;
+    outcome?: SearchParamValue;
+    from?: SearchParamValue;
+    to?: SearchParamValue;
   };
 };
-
-export const dynamic = 'force-dynamic';
-
-export default async function AdminJobsAuditPage({ searchParams = {} }: PageProps) {
-  if (!process.env.DATABASE_URL) {
-    return (
-      <div className="stack-gap-lg">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold text-text-primary">Job Audit</h1>
-          <p className="text-sm text-text-secondary">
-            Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable job auditing.
-          </p>
-        </header>
-      </div>
-    );
-  }
-
-  const filters = normalizeFilters(searchParams);
-  const { jobs, nextCursor } = await fetchRecentJobAudits({
-    limit: 30,
-    jobId: filters.jobId || null,
-    userId: filters.userId || null,
-    engineId: filters.engineId || null,
-    status: filters.status || null,
-    outcome: filters.outcome || null,
-    from: filters.fromDate,
-    to: filters.toDate,
-  });
-  const filtersQuery = buildFiltersQuery(filters);
-
-  return (
-    <div className="stack-gap-lg">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-text-primary">Job audit</h1>
-        <p className="text-sm text-text-secondary">
-          Search render attempts, inspect Fal sync, refund wallet charges, or bring older jobs back online.
-        </p>
-      </header>
-
-      <JobFilters filters={filters} />
-      <AdminJobAuditTable initialJobs={jobs} initialCursor={nextCursor} filtersQuery={filtersQuery} />
-    </div>
-  );
-}
 
 type UiFilters = {
   jobId: string;
@@ -70,8 +33,130 @@ type UiFilters = {
   toDate: Date | null;
 };
 
+type OverviewCard = {
+  label: string;
+  value: string;
+  helper: string;
+  tone?: 'default' | 'success' | 'warning';
+  icon: typeof AlertTriangle;
+};
+
+type Shortcut = {
+  label: string;
+  href: string;
+  count: number;
+  active: boolean;
+};
+
+export const dynamic = 'force-dynamic';
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'All statuses' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'running', label: 'Running' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'failed', label: 'Failed' },
+];
+
+const OUTCOME_OPTIONS = [
+  { value: '', label: 'All outcomes' },
+  { value: 'failed_action_required', label: 'Action required' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'refunded_failure_resolved', label: 'Refunded failure' },
+  { value: 'unknown', label: 'Unknown' },
+];
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+
+export default async function AdminJobsAuditPage({ searchParams = {} }: PageProps) {
+  const filters = normalizeFilters(searchParams);
+
+  if (!process.env.DATABASE_URL) {
+    return (
+      <div className="flex flex-col gap-5">
+        <AdminPageHeader
+          eyebrow="Operations"
+          title="Jobs"
+          description="Audit renders, Fal sync, refunds and recovery flows from one operational workspace."
+        />
+        <AdminSection title="Job Workspace" description="Database access is required for the audit surface.">
+          <div className="rounded-2xl border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">
+            Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable job auditing.
+          </div>
+        </AdminSection>
+      </div>
+    );
+  }
+
+  const { jobs, nextCursor } = await fetchRecentJobAudits({
+    limit: 30,
+    jobId: filters.jobId || null,
+    userId: filters.userId || null,
+    engineId: filters.engineId || null,
+    status: filters.status || null,
+    outcome: filters.outcome || null,
+    from: filters.fromDate,
+    to: filters.toDate,
+  });
+
+  const filtersQuery = buildFiltersQuery(filters);
+  const overviewCards = buildOverviewCards(jobs);
+  const shortcuts = buildOutcomeShortcuts(filters, jobs);
+  const activeFilters = describeActiveFilters(filters);
+  const filterCount = activeFilters.length;
+
+  return (
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Operations"
+        title="Jobs"
+        description="Surface de triage pour les rendus, les erreurs Fal, les débits wallet et les remises en ligne."
+        actions={
+          <>
+            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
+              Insights
+            </ButtonLink>
+            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+              Users
+            </ButtonLink>
+          </>
+        }
+      />
+
+      <AdminSection
+        title="Jobs Overview"
+        description="Lecture rapide du lot actuellement chargé, pour savoir immédiatement si on est en mode monitoring ou triage."
+        contentClassName="p-0"
+      >
+        <div className="grid gap-px bg-hairline sm:grid-cols-2 xl:grid-cols-6">
+          {overviewCards.map((card) => (
+            <OverviewCell key={card.label} card={card} />
+          ))}
+        </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Job Workspace"
+        description="Filtres linkables, raccourcis outcome et table d’audit compacte."
+        action={<WorkspaceMeta filterCount={filterCount} activeFilters={activeFilters} />}
+      >
+        <div className="space-y-4">
+          <OutcomeShortcutRail shortcuts={shortcuts} />
+          <JobFilters filters={filters} />
+          <AdminJobAuditTable key={filtersQuery || 'all-jobs'} initialJobs={jobs} initialCursor={nextCursor} filtersQuery={filtersQuery} />
+        </div>
+      </AdminSection>
+    </div>
+  );
+}
+
 function normalizeFilters(params: PageProps['searchParams']): UiFilters {
-  const coerce = (value: string | undefined) => (value?.trim().length ? value.trim() : '');
+  const coerce = (value: SearchParamValue) => {
+    const raw = Array.isArray(value) ? value[0] : value;
+    return raw?.trim().length ? raw.trim() : '';
+  };
+
   const jobId = coerce(params?.jobId);
   const userId = coerce(params?.userId);
   const engineId = coerce(params?.engineId);
@@ -81,6 +166,7 @@ function normalizeFilters(params: PageProps['searchParams']): UiFilters {
   const to = coerce(params?.to);
   const fromDate = from ? parseDate(from) : null;
   const toDate = to ? parseDate(to) : null;
+
   return { jobId, userId, engineId, status, outcome, from, to, fromDate, toDate };
 }
 
@@ -102,110 +188,293 @@ function buildFiltersQuery(filters: UiFilters): string {
   return params.toString();
 }
 
+function buildJobsHref(filters: UiFilters, overrides: Partial<Record<keyof UiFilters, string>>) {
+  const next = {
+    jobId: filters.jobId,
+    userId: filters.userId,
+    engineId: filters.engineId,
+    status: filters.status,
+    outcome: filters.outcome,
+    from: filters.from,
+    to: filters.to,
+    ...overrides,
+  };
+
+  const params = new URLSearchParams();
+  if (next.jobId) params.set('jobId', next.jobId);
+  if (next.userId) params.set('userId', next.userId);
+  if (next.engineId) params.set('engineId', next.engineId);
+  if (next.status) params.set('status', next.status);
+  if (next.outcome) params.set('outcome', next.outcome);
+  if (next.from) params.set('from', next.from);
+  if (next.to) params.set('to', next.to);
+
+  const query = params.toString();
+  return query ? `/admin/jobs?${query}` : '/admin/jobs';
+}
+
+function buildOverviewCards(jobs: AdminJobAuditRecord[]): OverviewCard[] {
+  const actionRequired = jobs.filter((job) => job.outcome === 'failed_action_required').length;
+  const inProgress = jobs.filter((job) => job.outcome === 'in_progress').length;
+  const completed = jobs.filter((job) => job.outcome === 'completed').length;
+  const refunded = jobs.filter((job) => job.outcome === 'refunded_failure_resolved').length;
+  const falIssues = jobs.filter((job) => !job.falOk).length;
+  const paymentDrift = jobs.filter((job) => !job.paymentOk).length;
+
+  return [
+    {
+      label: 'Loaded',
+      value: formatNumber(jobs.length),
+      helper: 'Current audit slice',
+      icon: History,
+    },
+    {
+      label: 'Action required',
+      value: formatNumber(actionRequired),
+      helper: 'Jobs still failing without refund resolution',
+      tone: actionRequired > 0 ? 'warning' : 'success',
+      icon: AlertTriangle,
+    },
+    {
+      label: 'In progress',
+      value: formatNumber(inProgress),
+      helper: 'Pending, queued or actively processing',
+      icon: Clock3,
+    },
+    {
+      label: 'Completed',
+      value: formatNumber(completed),
+      helper: 'Jobs with terminal success state',
+      tone: completed > 0 ? 'success' : 'default',
+      icon: CheckCircle2,
+    },
+    {
+      label: 'Fal issues',
+      value: formatNumber(falIssues),
+      helper: 'Rows where provider state still looks unhealthy',
+      tone: falIssues > 0 ? 'warning' : 'success',
+      icon: ShieldAlert,
+    },
+    {
+      label: 'Payment drift',
+      value: formatNumber(paymentDrift + refunded),
+      helper: 'Mismatched charges or refunded failure flows',
+      tone: paymentDrift + refunded > 0 ? 'warning' : 'success',
+      icon: ReceiptText,
+    },
+  ];
+}
+
+function buildOutcomeShortcuts(filters: UiFilters, jobs: AdminJobAuditRecord[]): Shortcut[] {
+  const actionRequired = jobs.filter((job) => job.outcome === 'failed_action_required').length;
+  const inProgress = jobs.filter((job) => job.outcome === 'in_progress').length;
+  const completed = jobs.filter((job) => job.outcome === 'completed').length;
+  const refunded = jobs.filter((job) => job.outcome === 'refunded_failure_resolved').length;
+
+  return [
+    {
+      label: 'All',
+      href: buildJobsHref(filters, { outcome: '' }),
+      count: jobs.length,
+      active: !filters.outcome,
+    },
+    {
+      label: 'Action required',
+      href: buildJobsHref(filters, { outcome: 'failed_action_required' }),
+      count: actionRequired,
+      active: filters.outcome === 'failed_action_required',
+    },
+    {
+      label: 'In progress',
+      href: buildJobsHref(filters, { outcome: 'in_progress' }),
+      count: inProgress,
+      active: filters.outcome === 'in_progress',
+    },
+    {
+      label: 'Completed',
+      href: buildJobsHref(filters, { outcome: 'completed' }),
+      count: completed,
+      active: filters.outcome === 'completed',
+    },
+    {
+      label: 'Refunded',
+      href: buildJobsHref(filters, { outcome: 'refunded_failure_resolved' }),
+      count: refunded,
+      active: filters.outcome === 'refunded_failure_resolved',
+    },
+  ];
+}
+
+function describeActiveFilters(filters: UiFilters): string[] {
+  const items: string[] = [];
+  if (filters.jobId) items.push(`job ${filters.jobId}`);
+  if (filters.userId) items.push(`user ${filters.userId}`);
+  if (filters.engineId) items.push(`engine ${filters.engineId}`);
+  if (filters.status) items.push(`status ${filters.status}`);
+  if (filters.outcome) items.push(`outcome ${filters.outcome}`);
+  if (filters.from) items.push(`from ${filters.from}`);
+  if (filters.to) items.push(`to ${filters.to}`);
+  return items;
+}
+
+function formatNumber(value: number) {
+  return numberFormatter.format(value);
+}
+
 function JobFilters({ filters }: { filters: UiFilters }) {
   return (
-    <form className="space-y-4 rounded-2xl border border-surface-on-media-25 bg-surface-glass-95 p-5 shadow-card" method="get">
-      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-3">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+    <form className="rounded-2xl border border-hairline bg-bg/40 p-4" method="get">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.2fr)_180px_220px_180px_180px]">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
           Job ID
           <input
             type="text"
             name="jobId"
             defaultValue={filters.jobId}
             placeholder="job_1234 or provider id"
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
           User ID
           <input
             type="text"
             name="userId"
             defaultValue={filters.userId}
             placeholder="Supabase user id"
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
           Engine
           <input
             type="text"
             name="engineId"
             defaultValue={filters.engineId}
             placeholder="engine id or label"
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
-      </div>
-
-      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
           Status
           <select
             name="status"
             defaultValue={filters.status}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">All</option>
-            {['pending', 'running', 'completed', 'failed'].map((value) => (
-              <option key={value} value={value}>
-                {value}
+            {STATUS_OPTIONS.map((option) => (
+              <option key={option.value || 'all'} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
         </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
           Outcome
           <select
             name="outcome"
             defaultValue={filters.outcome}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">All</option>
-            <option value="failed_action_required">Action required</option>
-            <option value="refunded_failure_resolved">Refunded failure</option>
-            <option value="completed">Completed</option>
-            <option value="in_progress">In progress</option>
-            <option value="unknown">Unknown</option>
+            {OUTCOME_OPTIONS.map((option) => (
+              <option key={option.value || 'all'} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
           From
           <input
             type="date"
             name="from"
             defaultValue={filters.from}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
           To
           <input
             type="date"
             name="to"
             defaultValue={filters.to}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <Button
-          type="submit"
-          size="sm"
-          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse hover:bg-text-primary/90"
-        >
-          Apply filters
-        </Button>
-        <ButtonLink
-          href="/admin/jobs"
-          variant="ghost"
-          size="sm"
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary hover:text-text-primary"
-        >
-          Reset
-        </ButtonLink>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-text-secondary">
+          Search by internal job id, provider id, user id, engine or time window. Filters stay shareable in the URL.
+        </p>
+        <div className="flex items-center gap-2">
+          <Button type="submit" size="sm" className="bg-brand text-on-brand">
+            Apply filters
+          </Button>
+          <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+            Reset
+          </ButtonLink>
+        </div>
       </div>
     </form>
+  );
+}
+
+function OutcomeShortcutRail({ shortcuts }: { shortcuts: Shortcut[] }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {shortcuts.map((shortcut) => (
+        <Link
+          key={shortcut.label}
+          href={shortcut.href}
+          className={[
+            'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition',
+            shortcut.active
+              ? 'border-brand bg-brand/10 text-brand'
+              : 'border-border bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary',
+          ].join(' ')}
+        >
+          <span>{shortcut.label}</span>
+          <span className="rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-text-primary">{formatNumber(shortcut.count)}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function WorkspaceMeta({ filterCount, activeFilters }: { filterCount: number; activeFilters: string[] }) {
+  return (
+    <div className="text-right">
+      <p className="text-sm font-medium text-text-primary">
+        {filterCount ? `${filterCount} active filter${filterCount > 1 ? 's' : ''}` : 'All jobs'}
+      </p>
+      <p className="mt-1 max-w-[320px] text-xs text-text-secondary">
+        {activeFilters.length ? activeFilters.join(' · ') : 'No scope restriction. The table shows the latest audit slice.'}
+      </p>
+    </div>
+  );
+}
+
+function OverviewCell({ card }: { card: OverviewCard }) {
+  const toneClass =
+    card.tone === 'success'
+      ? 'text-success'
+      : card.tone === 'warning'
+        ? 'text-warning'
+        : 'text-text-primary';
+
+  const Icon = card.icon;
+
+  return (
+    <div className="bg-surface px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{card.label}</p>
+          <p className={`mt-2 text-3xl font-semibold ${toneClass}`}>{card.value}</p>
+          <p className="mt-1 text-xs leading-5 text-text-secondary">{card.helper}</p>
+        </div>
+        <Icon className="h-4 w-4 shrink-0 text-text-muted" />
+      </div>
+    </div>
   );
 }
