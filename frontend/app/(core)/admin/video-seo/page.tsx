@@ -4,9 +4,11 @@ import { Eye, Film, Radar, ShieldCheck } from 'lucide-react';
 import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminInspectorPanel } from '@/components/admin-system/shell/AdminInspectorPanel';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { ButtonLink } from '@/components/ui/Button';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
@@ -92,20 +94,19 @@ export default async function AdminVideoSeoPage() {
           }
         >
           {rows.length ? (
-            <div className="overflow-x-auto rounded-2xl border border-hairline">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-surface">
-                  <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-                    <th className="px-4 py-3 font-semibold">Preview</th>
-                    <th className="px-4 py-3 font-semibold">Watch page</th>
-                    <th className="px-4 py-3 font-semibold">Runtime status</th>
-                    <th className="px-4 py-3 font-semibold">Controls</th>
-                    <th className="px-4 py-3 font-semibold">Selection note</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-hairline bg-bg/30">
-                  {rows.map((row) => (
-                    <tr key={row.entry.id} className={row.isReady ? 'align-top' : 'align-top bg-warning-bg/20'}>
+            <AdminDataTable>
+              <thead className="bg-surface">
+                <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                  <th className="px-4 py-3 font-semibold">Preview</th>
+                  <th className="px-4 py-3 font-semibold">Watch page</th>
+                  <th className="px-4 py-3 font-semibold">Runtime status</th>
+                  <th className="px-4 py-3 font-semibold">Controls</th>
+                  <th className="px-4 py-3 font-semibold">Selection note</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-hairline bg-bg/30">
+                {rows.map((row) => (
+                  <tr key={row.entry.id} className={row.isReady ? 'align-top' : 'align-top bg-warning-bg/20'}>
                       <td className="px-4 py-4 align-top">
                         <VideoThumbnailEditor
                           videoId={row.entry.id}
@@ -232,41 +233,38 @@ export default async function AdminVideoSeoPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </AdminDataTable>
           ) : (
             <AdminEmptyState>No watch pages are currently configured for the rollout.</AdminEmptyState>
           )}
         </AdminSection>
 
-        <div className="xl:sticky xl:top-[5.75rem]">
-          <AdminSection title="Rollout Guardrails" description="Rappels courts pour garder le shortlist propre et utile.">
-            <div className="space-y-4">
-              <AdminNotice tone={issueCount ? 'warning' : 'success'}>
-                {issueCount
-                  ? 'Some rollout pages drifted away from the public-indexable-with-assets contract. Fix the underlying video before trusting the sitemap.'
-                  : 'The current shortlist satisfies the rollout contract: public, discovery-on, with assets and no detected blockers.'}
-              </AdminNotice>
+        <AdminInspectorPanel title="Rollout Guardrails" description="Rappels courts pour garder le shortlist propre et utile.">
+          <div className="space-y-4">
+            <AdminNotice tone={issueCount ? 'warning' : 'success'}>
+              {issueCount
+                ? 'Some rollout pages drifted away from the public-indexable-with-assets contract. Fix the underlying video before trusting the sitemap.'
+                : 'The current shortlist satisfies the rollout contract: public, discovery-on, with assets and no detected blockers.'}
+            </AdminNotice>
 
-              <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 px-4 py-4 text-sm text-text-secondary">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Source of truth</p>
-                  <p className="mt-1">The rollout remains code-driven. This admin surface audits the shortlist but does not redefine it.</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Eligibility contract</p>
-                  <p className="mt-1">Every shortlisted video must be public, indexable, have a video asset and a thumbnail, and stay editorially differentiated.</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Operational split</p>
-                  <p className="mt-1">General publication lives in Moderation. Google Video rollout is narrower and should stay intentionally curated.</p>
-                </div>
+            <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 px-4 py-4 text-sm text-text-secondary">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Source of truth</p>
+                <p className="mt-1">The rollout remains code-driven. This admin surface audits the shortlist but does not redefine it.</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Eligibility contract</p>
+                <p className="mt-1">Every shortlisted video must be public, indexable, have a video asset and a thumbnail, and stay editorially differentiated.</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Operational split</p>
+                <p className="mt-1">General publication lives in Moderation. Google Video rollout is narrower and should stay intentionally curated.</p>
               </div>
             </div>
-          </AdminSection>
-        </div>
+          </div>
+        </AdminInspectorPanel>
       </div>
     </div>
   );

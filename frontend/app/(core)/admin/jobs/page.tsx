@@ -7,6 +7,7 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
@@ -318,100 +319,98 @@ function formatNumber(value: number) {
 
 function JobFilters({ filters }: { filters: UiFilters }) {
   return (
-    <form className="rounded-2xl border border-hairline bg-bg/40 p-4" method="get">
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.2fr)_180px_220px_180px_180px]">
-        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-          Job ID
-          <input
-            type="text"
-            name="jobId"
-            defaultValue={filters.jobId}
-            placeholder="job_1234 or provider id"
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-          User ID
-          <input
-            type="text"
-            name="userId"
-            defaultValue={filters.userId}
-            placeholder="Supabase user id"
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-          Engine
-          <input
-            type="text"
-            name="engineId"
-            defaultValue={filters.engineId}
-            placeholder="engine id or label"
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-          Status
-          <select
-            name="status"
-            defaultValue={filters.status}
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {STATUS_OPTIONS.map((option) => (
-              <option key={option.value || 'all'} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-          Outcome
-          <select
-            name="outcome"
-            defaultValue={filters.outcome}
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {OUTCOME_OPTIONS.map((option) => (
-              <option key={option.value || 'all'} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-          From
-          <input
-            type="date"
-            name="from"
-            defaultValue={filters.from}
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-        <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-          To
-          <input
-            type="date"
-            name="to"
-            defaultValue={filters.to}
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-text-secondary">
-          Search by internal job id, provider id, user id, engine or time window. Filters stay shareable in the URL.
-        </p>
-        <div className="flex items-center gap-2">
+    <AdminFilterBar
+      method="get"
+      fieldsClassName="xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.2fr)_180px_220px_180px_180px]"
+      helper="Search by internal job id, provider id, user id, engine or time window. Filters stay shareable in the URL."
+      actions={
+        <>
           <Button type="submit" size="sm" className="bg-brand text-on-brand">
             Apply filters
           </Button>
           <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
             Reset
           </ButtonLink>
-        </div>
-      </div>
-    </form>
+        </>
+      }
+    >
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Job ID
+        <input
+          type="text"
+          name="jobId"
+          defaultValue={filters.jobId}
+          placeholder="job_1234 or provider id"
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        User ID
+        <input
+          type="text"
+          name="userId"
+          defaultValue={filters.userId}
+          placeholder="Supabase user id"
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Engine
+        <input
+          type="text"
+          name="engineId"
+          defaultValue={filters.engineId}
+          placeholder="engine id or label"
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Status
+        <select
+          name="status"
+          defaultValue={filters.status}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          {STATUS_OPTIONS.map((option) => (
+            <option key={option.value || 'all'} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Outcome
+        <select
+          name="outcome"
+          defaultValue={filters.outcome}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          {OUTCOME_OPTIONS.map((option) => (
+            <option key={option.value || 'all'} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        From
+        <input
+          type="date"
+          name="from"
+          defaultValue={filters.from}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        To
+        <input
+          type="date"
+          name="to"
+          defaultValue={filters.to}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+    </AdminFilterBar>
   );
 }
 

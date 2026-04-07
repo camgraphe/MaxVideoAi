@@ -5,6 +5,7 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { ButtonLink } from '@/components/ui/Button';
 import { isDatabaseConfigured } from '@/lib/db';
@@ -109,35 +110,33 @@ export default async function AdminMarketingOptInsPage() {
         {records.length === 0 ? (
           <AdminEmptyState>No marketing opt-ins recorded yet.</AdminEmptyState>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-hairline">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-surface">
-                <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-                  <th className="px-4 py-3 font-semibold">Email</th>
-                  <th className="px-4 py-3 font-semibold">User ID</th>
-                  <th className="px-4 py-3 font-semibold">Opt-in date</th>
-                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
+          <AdminDataTable>
+            <thead className="bg-surface">
+              <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                <th className="px-4 py-3 font-semibold">Email</th>
+                <th className="px-4 py-3 font-semibold">User ID</th>
+                <th className="px-4 py-3 font-semibold">Opt-in date</th>
+                <th className="px-4 py-3 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-hairline bg-bg/30">
+              {records.map((record) => (
+                <tr key={record.userId} className="align-top text-text-secondary hover:bg-bg/50">
+                  <td className="px-4 py-3 text-text-primary">{record.email ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-text-muted">{record.userId}</td>
+                  <td className="px-4 py-3">{formatDate(record.optedInAt)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/admin/users/${record.userId}`}
+                      className="inline-flex min-h-[36px] items-center justify-center rounded-input border border-hairline px-3 py-1.5 text-xs font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover"
+                    >
+                      View member
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-hairline bg-bg/30">
-                {records.map((record) => (
-                  <tr key={record.userId} className="align-top text-text-secondary hover:bg-bg/50">
-                    <td className="px-4 py-3 text-text-primary">{record.email ?? '—'}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-text-muted">{record.userId}</td>
-                    <td className="px-4 py-3">{formatDate(record.optedInAt)}</td>
-                    <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/admin/users/${record.userId}`}
-                        className="inline-flex min-h-[36px] items-center justify-center rounded-input border border-hairline px-3 py-1.5 text-xs font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover"
-                      >
-                        View member
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </AdminDataTable>
         )}
       </AdminSection>
     </div>

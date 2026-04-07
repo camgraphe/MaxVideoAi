@@ -8,6 +8,8 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
+import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
@@ -233,7 +235,10 @@ function AuditActionRail({ filters }: { filters: AuditFilters }) {
 
 function AuditFiltersForm({ filters }: { filters: AuditFilters }) {
   return (
-    <form method="get" className="grid gap-3 rounded-2xl border border-hairline bg-bg/40 p-4 lg:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)_auto_auto]">
+    <AdminFilterBar
+      method="get"
+      fieldsClassName="lg:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)_auto_auto]"
+    >
       <label className="space-y-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Action</span>
         <select
@@ -279,44 +284,42 @@ function AuditFiltersForm({ filters }: { filters: AuditFilters }) {
       <ButtonLink href="/admin/audit" variant="outline" size="sm" className="self-end border-border bg-surface">
         Reset
       </ButtonLink>
-    </form>
+    </AdminFilterBar>
   );
 }
 
 function AuditTable({ logs }: { logs: Awaited<ReturnType<typeof fetchAdminAuditLogs>> }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-hairline">
-      <table className="min-w-full text-left text-sm">
-        <thead className="bg-surface">
-          <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-            <th className="px-4 py-3 font-semibold">Timestamp</th>
-            <th className="px-4 py-3 font-semibold">Action</th>
-            <th className="px-4 py-3 font-semibold">Admin</th>
-            <th className="px-4 py-3 font-semibold">Target</th>
-            <th className="px-4 py-3 font-semibold">Context</th>
+    <AdminDataTable>
+      <thead className="bg-surface">
+        <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+          <th className="px-4 py-3 font-semibold">Timestamp</th>
+          <th className="px-4 py-3 font-semibold">Action</th>
+          <th className="px-4 py-3 font-semibold">Admin</th>
+          <th className="px-4 py-3 font-semibold">Target</th>
+          <th className="px-4 py-3 font-semibold">Context</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-hairline bg-bg/30">
+        {logs.map((log) => (
+          <tr key={log.id} className="align-top text-text-secondary">
+            <td className="px-4 py-3 text-xs">{formatDateTime(log.createdAt)}</td>
+            <td className="px-4 py-3">
+              <AuditActionBadge action={log.action} />
+            </td>
+            <td className="px-4 py-3">
+              <UserIdentityCell userId={log.adminId} email={log.adminEmail} />
+            </td>
+            <td className="px-4 py-3">
+              {log.targetUserId ? <UserIdentityCell userId={log.targetUserId} email={log.targetEmail} /> : <span className="text-text-muted">—</span>}
+            </td>
+            <td className="px-4 py-3">
+              <AuditContextCell log={log} />
+            </td>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-hairline bg-bg/30">
-          {logs.map((log) => (
-            <tr key={log.id} className="align-top text-text-secondary">
-              <td className="px-4 py-3 text-xs">{formatDateTime(log.createdAt)}</td>
-              <td className="px-4 py-3">
-                <AuditActionBadge action={log.action} />
-              </td>
-              <td className="px-4 py-3">
-                <UserIdentityCell userId={log.adminId} email={log.adminEmail} />
-              </td>
-              <td className="px-4 py-3">
-                {log.targetUserId ? <UserIdentityCell userId={log.targetUserId} email={log.targetEmail} /> : <span className="text-text-muted">—</span>}
-              </td>
-              <td className="px-4 py-3">
-                <AuditContextCell log={log} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </AdminDataTable>
   );
 }
 

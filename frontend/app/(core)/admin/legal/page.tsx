@@ -8,6 +8,7 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
@@ -156,24 +157,22 @@ export default function AdminLegalPage() {
         ) : error ? (
           <AdminNotice tone="error">{error.message || 'Failed to load legal documents.'}</AdminNotice>
         ) : docs.length ? (
-          <div className="overflow-x-auto rounded-2xl border border-hairline">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-surface">
-                <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-                  <th className="px-4 py-3 font-semibold">Document</th>
-                  <th className="px-4 py-3 font-semibold">Version</th>
-                  <th className="px-4 py-3 font-semibold">Published</th>
-                  <th className="px-4 py-3 font-semibold">URL</th>
-                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-hairline bg-bg/30">
-                {docs.map((doc) => (
-                  <DocumentRow key={doc.key} doc={doc} onUpdate={handleUpdate} defaultDate={today} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AdminDataTable>
+            <thead className="bg-surface">
+              <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                <th className="px-4 py-3 font-semibold">Document</th>
+                <th className="px-4 py-3 font-semibold">Version</th>
+                <th className="px-4 py-3 font-semibold">Published</th>
+                <th className="px-4 py-3 font-semibold">URL</th>
+                <th className="px-4 py-3 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-hairline bg-bg/30">
+              {docs.map((doc) => (
+                <DocumentRow key={doc.key} doc={doc} onUpdate={handleUpdate} defaultDate={today} />
+              ))}
+            </tbody>
+          </AdminDataTable>
         ) : (
           <AdminEmptyState>No legal documents are configured yet.</AdminEmptyState>
         )}

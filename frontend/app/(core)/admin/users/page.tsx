@@ -10,6 +10,8 @@ import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
+import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
 import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -259,11 +261,19 @@ function DirectoryToolbar({
   onClear: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <form
-        onSubmit={(event) => event.preventDefault()}
-        className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border bg-bg/40 px-4 py-3"
-      >
+    <AdminFilterBar
+      onSubmit={(event) => event.preventDefault()}
+      className="p-3"
+      fieldsClassName="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+      actions={
+        hasQuery ? (
+          <Button type="button" variant="outline" size="sm" className="border-border bg-surface" onClick={onClear}>
+            Clear search
+          </Button>
+        ) : null
+      }
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
         <UIIcon icon={Search} size={16} className="text-text-muted" />
         <input
           value={value}
@@ -272,76 +282,64 @@ function DirectoryToolbar({
           className="w-full min-w-0 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
         />
         {pending ? <span className="text-xs text-text-secondary">Updating…</span> : null}
-      </form>
-
-      <div className="flex items-center gap-2">
-        {hasQuery ? (
-          <Button type="button" variant="outline" size="sm" className="border-border bg-surface" onClick={onClear}>
-            Clear search
-          </Button>
-        ) : null}
       </div>
-    </div>
+    </AdminFilterBar>
   );
 }
 
 function UsersTable({ rows }: { rows: AdminUser[] }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-sm">
-          <thead className="bg-surface">
-            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-              <th className="px-4 py-3 font-semibold">Member</th>
-              <th className="px-4 py-3 font-semibold">User ID</th>
-              <th className="px-4 py-3 font-semibold">Role</th>
-              <th className="px-4 py-3 font-semibold">Security</th>
-              <th className="px-4 py-3 font-semibold">Created</th>
-              <th className="px-4 py-3 font-semibold">Last sign-in</th>
-              <th className="px-4 py-3 text-right font-semibold">Open</th>
+    <AdminDataTable tone="muted" tableClassName="w-full min-w-[980px]">
+      <thead className="bg-surface">
+        <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+          <th className="px-4 py-3 font-semibold">Member</th>
+          <th className="px-4 py-3 font-semibold">User ID</th>
+          <th className="px-4 py-3 font-semibold">Role</th>
+          <th className="px-4 py-3 font-semibold">Security</th>
+          <th className="px-4 py-3 font-semibold">Created</th>
+          <th className="px-4 py-3 font-semibold">Last sign-in</th>
+          <th className="px-4 py-3 text-right font-semibold">Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((user) => {
+          const provider = resolveProvider(user.appMetadata);
+          return (
+            <tr key={user.id} className="border-t border-hairline transition hover:bg-bg">
+              <td className="px-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-text-primary">{user.email ?? 'No email attached'}</p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    {provider ? `Provider: ${provider}` : 'Provider unavailable'}
+                  </p>
+                </div>
+              </td>
+              <td className="px-4 py-3 font-mono text-xs text-text-secondary">{user.id}</td>
+              <td className="px-4 py-3">
+                <InlineBadge tone={user.isAdmin ? 'info' : 'default'} icon={ShieldCheck}>
+                  {user.isAdmin ? 'Admin' : 'Member'}
+                </InlineBadge>
+              </td>
+              <td className="px-4 py-3">
+                <InlineBadge tone={user.factors > 0 ? 'success' : 'default'} icon={KeyRound}>
+                  {user.factors > 0 ? `${user.factors} MFA` : 'No MFA'}
+                </InlineBadge>
+              </td>
+              <td className="px-4 py-3 text-text-secondary">{formatDateTime(user.createdAt)}</td>
+              <td className="px-4 py-3 text-text-secondary">{formatDateTime(user.lastSignInAt)}</td>
+              <td className="px-4 py-3 text-right">
+                <Link
+                  href={`/admin/users/${user.id}`}
+                  className="inline-flex min-h-[34px] items-center rounded-lg border border-border bg-surface px-3 text-xs font-medium text-text-primary transition hover:bg-surface-hover"
+                >
+                  View
+                </Link>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {rows.map((user) => {
-              const provider = resolveProvider(user.appMetadata);
-              return (
-                <tr key={user.id} className="border-t border-hairline transition hover:bg-bg">
-                  <td className="px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-text-primary">{user.email ?? 'No email attached'}</p>
-                      <p className="mt-1 text-xs text-text-secondary">
-                        {provider ? `Provider: ${provider}` : 'Provider unavailable'}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-text-secondary">{user.id}</td>
-                  <td className="px-4 py-3">
-                    <InlineBadge tone={user.isAdmin ? 'info' : 'default'} icon={ShieldCheck}>
-                      {user.isAdmin ? 'Admin' : 'Member'}
-                    </InlineBadge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <InlineBadge tone={user.factors > 0 ? 'success' : 'default'} icon={KeyRound}>
-                      {user.factors > 0 ? `${user.factors} MFA` : 'No MFA'}
-                    </InlineBadge>
-                  </td>
-                  <td className="px-4 py-3 text-text-secondary">{formatDateTime(user.createdAt)}</td>
-                  <td className="px-4 py-3 text-text-secondary">{formatDateTime(user.lastSignInAt)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/users/${user.id}`}
-                      className="inline-flex min-h-[34px] items-center rounded-lg border border-border bg-surface px-3 text-xs font-medium text-text-primary transition hover:bg-surface-hover"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          );
+        })}
+      </tbody>
+    </AdminDataTable>
   );
 }
 

@@ -2,6 +2,7 @@ import { Clapperboard, Eye, LayoutTemplate, Sparkles } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { HomepageVideoManager } from '@/components/admin/HomepageVideoManager';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminInspectorPanel } from '@/components/admin-system/shell/AdminInspectorPanel';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
@@ -102,38 +103,36 @@ export default async function AdminHomepagePage() {
           </div>
         </AdminSection>
 
-        <div className="xl:sticky xl:top-[5.75rem]">
-          <AdminSection
-            title="Programming Notes"
-            description="Repères rapides pour garder la homepage compacte, cohérente et éditorialement forte."
-          >
-            <div className="space-y-4">
-              <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 px-4 py-4 text-sm text-text-secondary">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Selection logic</p>
-                  <p className="mt-1">Mix engines, durations and creative angles. Avoid repeating near-identical renders in adjacent slots.</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Copy discipline</p>
-                  <p className="mt-1">Titles should stay short and scannable. Use subtitles only when they add context, not to restate the obvious.</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Preview quality</p>
-                  <p className="mt-1">If a slot lacks preview media, return to moderation or the original job before publishing the change.</p>
-                </div>
+        <AdminInspectorPanel
+          title="Programming Notes"
+          description="Repères rapides pour garder la homepage compacte, cohérente et éditorialement forte."
+        >
+          <div className="space-y-4">
+            <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 px-4 py-4 text-sm text-text-secondary">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Selection logic</p>
+                <p className="mt-1">Mix engines, durations and creative angles. Avoid repeating near-identical renders in adjacent slots.</p>
               </div>
-
-              <div className="space-y-3">
-                <ButtonLink href="/admin/theme" variant="outline" size="sm" className="w-full justify-center border-border bg-surface">
-                  Theme tokens
-                </ButtonLink>
-                <ButtonLink href="/admin/video-seo" variant="outline" size="sm" className="w-full justify-center border-border bg-surface">
-                  Video SEO
-                </ButtonLink>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Copy discipline</p>
+                <p className="mt-1">Titles should stay short and scannable. Use subtitles only when they add context, not to restate the obvious.</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Preview quality</p>
+                <p className="mt-1">If a slot lacks preview media, return to moderation or the original job before publishing the change.</p>
               </div>
             </div>
-          </AdminSection>
-        </div>
+
+            <div className="space-y-3">
+              <ButtonLink href="/admin/theme" variant="outline" size="sm" className="w-full justify-center border-border bg-surface">
+                Theme tokens
+              </ButtonLink>
+              <ButtonLink href="/admin/video-seo" variant="outline" size="sm" className="w-full justify-center border-border bg-surface">
+                Video SEO
+              </ButtonLink>
+            </div>
+          </div>
+        </AdminInspectorPanel>
       </div>
     </div>
   );

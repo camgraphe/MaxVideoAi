@@ -6,6 +6,7 @@ import { fetchAdminAuditLogs } from '@/server/admin-audit';
 import { ServiceNoticeForm } from '@/components/admin/ServiceNoticeForm';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminInspectorPanel } from '@/components/admin-system/shell/AdminInspectorPanel';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
@@ -98,32 +99,30 @@ export default async function AdminSystemPage() {
           </div>
         </AdminSection>
 
-        <div className="xl:sticky xl:top-[5.75rem]">
-          <AdminSection title="Guidance" description="Rappels de diffusion pour garder la bannière utile et courte.">
-            <div className="space-y-4">
-              <AdminNotice tone={notice.enabled ? 'warning' : 'default'}>
-                {notice.enabled
-                  ? 'The service banner is live. Keep the copy short and actionable, then remove it as soon as the incident is resolved.'
-                  : 'The service banner is currently off. Use it only for workspace-wide impact, not for isolated support cases.'}
-              </AdminNotice>
+        <AdminInspectorPanel title="Guidance" description="Rappels de diffusion pour garder la bannière utile et courte.">
+          <div className="space-y-4">
+            <AdminNotice tone={notice.enabled ? 'warning' : 'default'}>
+              {notice.enabled
+                ? 'The service banner is live. Keep the copy short and actionable, then remove it as soon as the incident is resolved.'
+                : 'The service banner is currently off. Use it only for workspace-wide impact, not for isolated support cases.'}
+            </AdminNotice>
 
-              <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 px-4 py-4 text-sm text-text-secondary">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">When to use it</p>
-                  <p className="mt-1">Provider outage, queue degradation, billing disruption or any issue affecting a broad slice of members.</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Copy pattern</p>
-                  <p className="mt-1">State the impact, mention whether new renders are delayed, and avoid internal jargon or speculative timing.</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Follow-up</p>
-                  <p className="mt-1">Pair banner changes with the audit trail and remove the message as soon as the incident is resolved.</p>
-                </div>
+            <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 px-4 py-4 text-sm text-text-secondary">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">When to use it</p>
+                <p className="mt-1">Provider outage, queue degradation, billing disruption or any issue affecting a broad slice of members.</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Copy pattern</p>
+                <p className="mt-1">State the impact, mention whether new renders are delayed, and avoid internal jargon or speculative timing.</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Follow-up</p>
+                <p className="mt-1">Pair banner changes with the audit trail and remove the message as soon as the incident is resolved.</p>
               </div>
             </div>
-          </AdminSection>
-        </div>
+          </div>
+        </AdminInspectorPanel>
       </div>
 
       <AdminSection
