@@ -3,8 +3,11 @@ import { AlertTriangle, CheckCircle2, Clock3, History, ReceiptText, ShieldAlert 
 import type { AdminJobAuditRecord } from '@/server/admin-job-audit';
 import { fetchRecentJobAudits } from '@/server/admin-job-audit';
 import { AdminJobAuditTable } from '@/components/admin/JobAuditTable';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
 type SearchParamValue = string | string[] | undefined;
@@ -31,14 +34,6 @@ type UiFilters = {
   to: string;
   fromDate: Date | null;
   toDate: Date | null;
-};
-
-type OverviewCard = {
-  label: string;
-  value: string;
-  helper: string;
-  tone?: 'default' | 'success' | 'warning';
-  icon: typeof AlertTriangle;
 };
 
 type Shortcut = {
@@ -81,9 +76,9 @@ export default async function AdminJobsAuditPage({ searchParams = {} }: PageProp
           description="Audit renders, Fal sync, refunds and recovery flows from one operational workspace."
         />
         <AdminSection title="Job Workspace" description="Database access is required for the audit surface.">
-          <div className="rounded-2xl border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">
+          <AdminNotice tone="warning">
             Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable job auditing.
-          </div>
+          </AdminNotice>
         </AdminSection>
       </div>
     );
@@ -127,19 +122,19 @@ export default async function AdminJobsAuditPage({ searchParams = {} }: PageProp
       <AdminSection
         title="Jobs Overview"
         description="Lecture rapide du lot actuellement chargé, pour savoir immédiatement si on est en mode monitoring ou triage."
-        contentClassName="p-0"
       >
-        <div className="grid gap-px bg-hairline sm:grid-cols-2 xl:grid-cols-6">
-          {overviewCards.map((card) => (
-            <OverviewCell key={card.label} card={card} />
-          ))}
-        </div>
+        <AdminMetricGrid items={overviewCards} columnsClassName="sm:grid-cols-2 xl:grid-cols-6" className="border-0" />
       </AdminSection>
 
       <AdminSection
         title="Job Workspace"
         description="Filtres linkables, raccourcis outcome et table d’audit compacte."
-        action={<WorkspaceMeta filterCount={filterCount} activeFilters={activeFilters} />}
+        action={
+          <AdminSectionMeta
+            title={filterCount ? `${filterCount} active filter${filterCount > 1 ? 's' : ''}` : 'All jobs'}
+            lines={[activeFilters.length ? activeFilters.join(' · ') : 'No scope restriction. The table shows the latest audit slice.']}
+          />
+        }
       >
         <div className="space-y-4">
           <OutcomeShortcutRail shortcuts={shortcuts} />
@@ -213,7 +208,7 @@ function buildJobsHref(filters: UiFilters, overrides: Partial<Record<keyof UiFil
   return query ? `/admin/jobs?${query}` : '/admin/jobs';
 }
 
-function buildOverviewCards(jobs: AdminJobAuditRecord[]): OverviewCard[] {
+function buildOverviewCards(jobs: AdminJobAuditRecord[]): AdminMetricItem[] {
   const actionRequired = jobs.filter((job) => job.outcome === 'failed_action_required').length;
   const inProgress = jobs.filter((job) => job.outcome === 'in_progress').length;
   const completed = jobs.filter((job) => job.outcome === 'completed').length;
@@ -438,43 +433,6 @@ function OutcomeShortcutRail({ shortcuts }: { shortcuts: Shortcut[] }) {
           <span className="rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-text-primary">{formatNumber(shortcut.count)}</span>
         </Link>
       ))}
-    </div>
-  );
-}
-
-function WorkspaceMeta({ filterCount, activeFilters }: { filterCount: number; activeFilters: string[] }) {
-  return (
-    <div className="text-right">
-      <p className="text-sm font-medium text-text-primary">
-        {filterCount ? `${filterCount} active filter${filterCount > 1 ? 's' : ''}` : 'All jobs'}
-      </p>
-      <p className="mt-1 max-w-[320px] text-xs text-text-secondary">
-        {activeFilters.length ? activeFilters.join(' · ') : 'No scope restriction. The table shows the latest audit slice.'}
-      </p>
-    </div>
-  );
-}
-
-function OverviewCell({ card }: { card: OverviewCard }) {
-  const toneClass =
-    card.tone === 'success'
-      ? 'text-success'
-      : card.tone === 'warning'
-        ? 'text-warning'
-        : 'text-text-primary';
-
-  const Icon = card.icon;
-
-  return (
-    <div className="bg-surface px-4 py-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{card.label}</p>
-          <p className={`mt-2 text-3xl font-semibold ${toneClass}`}>{card.value}</p>
-          <p className="mt-1 text-xs leading-5 text-text-secondary">{card.helper}</p>
-        </div>
-        <Icon className="h-4 w-4 shrink-0 text-text-muted" />
-      </div>
     </div>
   );
 }

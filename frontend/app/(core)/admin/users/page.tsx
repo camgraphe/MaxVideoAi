@@ -8,6 +8,9 @@ import { ChevronLeft, ChevronRight, KeyRound, RefreshCw, Search, ShieldCheck, Us
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 
@@ -135,6 +138,14 @@ export default function AdminUsersPage() {
     pagination,
     rows,
   });
+  const volumeItems = stats
+    ? [
+        { label: 'All time', value: formatNumber(stats.total), helper: 'Total members synced' },
+        { label: 'Today', value: formatNumber(stats.today), helper: 'New accounts today' },
+        { label: 'Last 7 days', value: formatNumber(stats.last7), helper: 'Recent acquisition' },
+        { label: 'Last 30 days', value: formatNumber(stats.last30), helper: 'Monthly intake' },
+      ]
+    : [];
 
   const handleRefresh = () => {
     void mutate();
@@ -163,16 +174,11 @@ export default function AdminUsersPage() {
 
       <AdminSection title="User Volume" description="Repères de croissance membres, gardés compacts pour laisser la table prendre le rôle principal.">
         {statsUnavailable ? (
-          <StateBanner tone="warning">
+          <AdminNotice tone="warning">
             Supabase service role key is missing. Add <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code> to display user metrics.
-          </StateBanner>
+          </AdminNotice>
         ) : stats ? (
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCell label="All time" value={formatNumber(stats.total)} helper="Total members synced" />
-            <SummaryCell label="Today" value={formatNumber(stats.today)} helper="New accounts today" />
-            <SummaryCell label="Last 7 days" value={formatNumber(stats.last7)} helper="Recent acquisition" />
-            <SummaryCell label="Last 30 days" value={formatNumber(stats.last30)} helper="Monthly intake" />
-          </div>
+          <AdminMetricGrid items={volumeItems} density="compact" columnsClassName="sm:grid-cols-2 xl:grid-cols-4" />
         ) : (
           <AdminEmptyState>Metrics are loading.</AdminEmptyState>
         )}
@@ -181,7 +187,12 @@ export default function AdminUsersPage() {
       <AdminSection
         title="Member Directory"
         description="Search by email or Supabase user ID. The table stays dense and operational instead of card-heavy."
-        action={<DirectoryMeta summary={directorySummary} pending={isRouting || isLoading} />}
+        action={
+          <AdminSectionMeta
+            title={directorySummary}
+            lines={[isRouting || isLoading ? 'Refreshing route state…' : 'Search is URL-driven and linkable.']}
+          />
+        }
       >
         <div className="space-y-4">
           <DirectoryToolbar
@@ -196,15 +207,15 @@ export default function AdminUsersPage() {
           />
 
           {unauthorized ? (
-            <StateBanner tone="error">Access denied. Sign in with an admin account.</StateBanner>
+            <AdminNotice tone="error">Access denied. Sign in with an admin account.</AdminNotice>
           ) : serviceRoleMissing ? (
-            <StateBanner tone="warning">
+            <AdminNotice tone="warning">
               Supabase service role key is missing. Add <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code> to enable admin user listing.
-            </StateBanner>
+            </AdminNotice>
           ) : error ? (
-            <StateBanner tone="error">{error.message || 'Failed to load users.'}</StateBanner>
+            <AdminNotice tone="error">{error.message || 'Failed to load users.'}</AdminNotice>
           ) : fetchError ? (
-            <StateBanner tone="error">{fetchError}</StateBanner>
+            <AdminNotice tone="error">{fetchError}</AdminNotice>
           ) : null}
 
           {isLoading ? (
@@ -270,15 +281,6 @@ function DirectoryToolbar({
           </Button>
         ) : null}
       </div>
-    </div>
-  );
-}
-
-function DirectoryMeta({ summary, pending }: { summary: string; pending: boolean }) {
-  return (
-    <div className="text-right">
-      <p className="text-sm font-medium text-text-primary">{summary}</p>
-      <p className="mt-1 text-xs text-text-secondary">{pending ? 'Refreshing route state…' : 'Search is URL-driven and linkable.'}</p>
     </div>
   );
 }
@@ -388,39 +390,6 @@ function DirectoryPagination({
       </div>
     </div>
   );
-}
-
-function SummaryCell({
-  label,
-  value,
-  helper,
-}: {
-  label: string;
-  value: string;
-  helper: string;
-}) {
-  return (
-    <div className="bg-surface px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-text-primary">{value}</p>
-      <p className="mt-1 text-xs leading-5 text-text-secondary">{helper}</p>
-    </div>
-  );
-}
-
-function StateBanner({
-  tone,
-  children,
-}: {
-  tone: 'warning' | 'error';
-  children: ReactNode;
-}) {
-  const className =
-    tone === 'warning'
-      ? 'border-warning-border bg-warning-bg text-warning'
-      : 'border-error-border bg-error-bg text-error';
-
-  return <div className={`rounded-2xl border px-4 py-3 text-sm ${className}`}>{children}</div>;
 }
 
 function InlineBadge({

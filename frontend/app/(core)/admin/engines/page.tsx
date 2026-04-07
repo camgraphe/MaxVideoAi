@@ -1,8 +1,11 @@
 import { notFound } from 'next/navigation';
-import { Activity, AlertTriangle, Clock3, Cpu, DollarSign, ShieldAlert } from 'lucide-react';
+import { Activity, Clock3, Cpu, DollarSign, ShieldAlert } from 'lucide-react';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { EngineSettingsPanel } from '@/components/admin/EngineSettingsPanel';
 import { ButtonLink } from '@/components/ui/Button';
 import { fetchEngineUsageMetrics } from '@/server/admin-metrics';
@@ -12,14 +15,6 @@ import { getAdminEngineEntries } from '@/server/engine-overrides';
 import { fetchEnginePerformanceMetrics, type EnginePerformanceMetric } from '@/server/generate-metrics';
 
 export const dynamic = 'force-dynamic';
-
-type OverviewCard = {
-  label: string;
-  value: string;
-  helper: string;
-  tone?: 'default' | 'success' | 'warning';
-  icon: typeof AlertTriangle;
-};
 
 type ConfigEntry = Awaited<ReturnType<typeof loadEngineConfigEntries>>[number];
 
@@ -110,19 +105,14 @@ export default async function AdminEnginesPage() {
       <AdminSection
         title="Engine Overview"
         description="Signal rapide pour savoir combien de moteurs tournent vraiment, combien degradent, et ou part le revenu."
-        contentClassName="p-0"
       >
-        <div className="grid gap-px bg-hairline sm:grid-cols-2 xl:grid-cols-6">
-          {overviewCards.map((card) => (
-            <OverviewCell key={card.label} card={card} />
-          ))}
-        </div>
+        <AdminMetricGrid items={overviewCards} columnsClassName="sm:grid-cols-2 xl:grid-cols-6" className="border-0" />
       </AdminSection>
 
       <AdminSection
         title="Operational Health"
         description="Lecture operations-first des tentatives Fal sur 30 jours, avec le statut de config en face."
-        action={<SectionMeta title="Health" lines={[`${formatNumber(opsRows.length)} engines tracked`, buildOpsAttentionLabel(opsRows)]} />}
+        action={<AdminSectionMeta title="Health" lines={[`${formatNumber(opsRows.length)} engines tracked`, buildOpsAttentionLabel(opsRows)]} />}
         contentClassName="p-0"
       >
         {opsRows.length ? (
@@ -184,7 +174,7 @@ export default async function AdminEnginesPage() {
       <AdminSection
         title="Demand & Revenue"
         description="Les moteurs qui captent le volume et le cash-in actuellement, sans passer par insights."
-        action={<SectionMeta title="Demand" lines={[`${formatNumber(commercialRows.length)} engines with usage or config`, buildRevenueLabel(commercialRows)]} />}
+        action={<AdminSectionMeta title="Demand" lines={[`${formatNumber(commercialRows.length)} engines with usage or config`, buildRevenueLabel(commercialRows)]} />}
         contentClassName="p-0"
       >
         {commercialRows.length ? (
@@ -236,7 +226,7 @@ export default async function AdminEnginesPage() {
         title="Configuration"
         description="Overrides, disponibilite et pricing par moteur. Les changements s’appliquent sur les prochains quotes."
         action={
-          <SectionMeta
+          <AdminSectionMeta
             title="Config"
             lines={[
               `${formatNumber(configMeta.total)} registered`,
@@ -275,9 +265,9 @@ export default async function AdminEnginesPage() {
           )
         ) : (
           <div className="px-5 py-5">
-            <div className="rounded-2xl border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">
+            <AdminNotice tone="warning">
               Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to edit engine overrides.
-            </div>
+            </AdminNotice>
           </div>
         )}
       </AdminSection>
@@ -362,7 +352,7 @@ function buildOverviewCards(
   performanceMetrics: EnginePerformanceMetric[],
   usageMetrics: Awaited<ReturnType<typeof fetchEngineUsageMetrics>>,
   configSnapshots: EngineConfigSnapshot[]
-): OverviewCard[] {
+): AdminMetricItem[] {
   const attemptTotals = performanceMetrics.reduce(
     (acc, row) => {
       acc.total += row.acceptedCount + row.rejectedCount + row.completedCount + row.failedCount;
@@ -549,30 +539,6 @@ function fallbackConfig(row: { engineId: string; engineLabel: string }): EngineC
   };
 }
 
-function OverviewCell({ card }: { card: OverviewCard }) {
-  const toneClass =
-    card.tone === 'success'
-      ? 'text-success'
-      : card.tone === 'warning'
-        ? 'text-warning'
-        : 'text-text-primary';
-
-  const Icon = card.icon;
-
-  return (
-    <div className="bg-surface px-4 py-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{card.label}</p>
-          <p className={`mt-2 text-3xl font-semibold ${toneClass}`}>{card.value}</p>
-          <p className="mt-1 text-xs leading-5 text-text-secondary">{card.helper}</p>
-        </div>
-        <Icon className="h-4 w-4 shrink-0 text-text-muted" />
-      </div>
-    </div>
-  );
-}
-
 function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }) {
   if (!config) {
     return <span className="text-sm text-text-muted">No override record</span>;
@@ -608,15 +574,6 @@ function ConfigInlineSummary({ config }: { config: EngineConfigSnapshot | null }
         {config.perSecondCents != null ? ` · ${formatMoneyCents(config.perSecondCents)} / sec` : ''}
         {config.flatCents != null ? ` · ${formatMoneyCents(config.flatCents)} flat` : ''}
       </p>
-    </div>
-  );
-}
-
-function SectionMeta({ title, lines }: { title: string; lines: string[] }) {
-  return (
-    <div className="text-right">
-      <p className="text-sm font-medium text-text-primary">{title}</p>
-      <p className="mt-1 max-w-[320px] text-xs text-text-secondary">{lines.join(' · ')}</p>
     </div>
   );
 }

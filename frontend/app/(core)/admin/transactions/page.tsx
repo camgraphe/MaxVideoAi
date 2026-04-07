@@ -2,21 +2,16 @@ import Link from 'next/link';
 import { AlertTriangle, ArrowRightLeft, ReceiptText, RotateCcw, ShieldAlert, Wallet } from 'lucide-react';
 import { AdminTransactionTable } from '@/components/admin/TransactionTable';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { ButtonLink } from '@/components/ui/Button';
 import type { AdminTransactionRecord, TransactionAnomalies } from '@/server/admin-transactions';
 import { fetchAdminTransactions, fetchTransactionAnomalies } from '@/server/admin-transactions';
 
 export const dynamic = 'force-dynamic';
-
-type OverviewCard = {
-  label: string;
-  value: string;
-  helper: string;
-  tone?: 'default' | 'success' | 'warning';
-  icon: typeof AlertTriangle;
-};
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 const usdFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -40,10 +35,10 @@ export default async function AdminTransactionsPage() {
           description="Ledger admin pour auditer les charges wallet, les top-ups et les remboursements manuels."
         />
         <AdminSection title="Transaction Workspace" description="La connexion base de donnees est requise pour charger le ledger.">
-          <div className="rounded-2xl border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">
+          <AdminNotice tone="warning">
             Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable transaction
             reporting.
-          </div>
+          </AdminNotice>
         </AdminSection>
       </div>
     );
@@ -80,24 +75,22 @@ export default async function AdminTransactionsPage() {
       <AdminSection
         title="Ledger Overview"
         description="Signal rapide sur le lot charge pour savoir si on est en revue courante ou en mode incident."
-        contentClassName="p-0"
       >
-        <div className="grid gap-px bg-hairline sm:grid-cols-2 xl:grid-cols-6">
-          {overviewCards.map((card) => (
-            <OverviewCell key={card.label} card={card} />
-          ))}
-        </div>
+        <AdminMetricGrid items={overviewCards} columnsClassName="sm:grid-cols-2 xl:grid-cols-6" className="border-0" />
       </AdminSection>
 
       <AdminSection
         title="Transaction Workspace"
         description="Recherche locale, filtres rapides et actions de remboursement sur les 100 dernieres ecritures."
         action={
-          <WorkspaceMeta
-            total={transactions.length}
-            refundableCharges={refundableCharges}
-            missingJobs={missingJobs}
-            watchlistHits={watchlistHits}
+          <AdminSectionMeta
+            title="Current ledger slice"
+            lines={[
+              `${formatNumber(transactions.length)} rows`,
+              `${formatNumber(refundableCharges)} refundable`,
+              `${formatNumber(missingJobs)} missing jobs`,
+              `${formatNumber(watchlistHits)} watchlist hits`,
+            ]}
           />
         }
       >
@@ -107,7 +100,12 @@ export default async function AdminTransactionsPage() {
       <AdminSection
         title="Watchlist"
         description="Remboursements eleves, utilisateurs refund-heavy et charges invalides a investiguer en priorite."
-        action={<WatchlistMeta anomalies={anomalies} />}
+        action={
+          <AdminSectionMeta
+            title={watchlistHits ? `${formatNumber(watchlistHits)} active watchlist hit${watchlistHits > 1 ? 's' : ''}` : 'No active anomaly'}
+            lines={['Large refunds, repeated refunds and invalid charges are grouped here for faster triage.']}
+          />
+        }
       >
         <div className="grid gap-4 xl:grid-cols-3">
           <WatchlistCard
@@ -239,7 +237,7 @@ export default async function AdminTransactionsPage() {
 function buildOverviewCards(
   transactions: AdminTransactionRecord[],
   anomalies: TransactionAnomalies
-): OverviewCard[] {
+): AdminMetricItem[] {
   const charges = transactions.filter((row) => row.type === 'charge');
   const refunds = transactions.filter((row) => row.type === 'refund');
   const topups = transactions.filter((row) => row.type === 'topup');
@@ -307,71 +305,6 @@ function isMissingJobRecord(row: AdminTransactionRecord) {
   return Boolean(row.jobId && !row.jobStatus && !row.jobPaymentStatus && !row.jobEngineLabel);
 }
 
-function WatchlistMeta({ anomalies }: { anomalies: TransactionAnomalies }) {
-  const total =
-    anomalies.largeRefunds.length + anomalies.frequentRefundUsers.length + anomalies.invalidCharges.length;
-
-  return (
-    <div className="text-right">
-      <p className="text-sm font-medium text-text-primary">
-        {total ? `${formatNumber(total)} active watchlist hit${total > 1 ? 's' : ''}` : 'No active anomaly'}
-      </p>
-      <p className="mt-1 max-w-[320px] text-xs text-text-secondary">
-        Large refunds, repeated refunds and invalid charges are grouped here for faster triage.
-      </p>
-    </div>
-  );
-}
-
-function WorkspaceMeta({
-  total,
-  refundableCharges,
-  missingJobs,
-  watchlistHits,
-}: {
-  total: number;
-  refundableCharges: number;
-  missingJobs: number;
-  watchlistHits: number;
-}) {
-  const chips = [
-    `${formatNumber(total)} rows`,
-    `${formatNumber(refundableCharges)} refundable`,
-    `${formatNumber(missingJobs)} missing jobs`,
-    `${formatNumber(watchlistHits)} watchlist hits`,
-  ];
-
-  return (
-    <div className="text-right">
-      <p className="text-sm font-medium text-text-primary">Current ledger slice</p>
-      <p className="mt-1 max-w-[340px] text-xs text-text-secondary">{chips.join(' · ')}</p>
-    </div>
-  );
-}
-
-function OverviewCell({ card }: { card: OverviewCard }) {
-  const toneClass =
-    card.tone === 'success'
-      ? 'text-success'
-      : card.tone === 'warning'
-        ? 'text-warning'
-        : 'text-text-primary';
-
-  const Icon = card.icon;
-
-  return (
-    <div className="bg-surface px-4 py-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{card.label}</p>
-          <p className={`mt-2 text-3xl font-semibold ${toneClass}`}>{card.value}</p>
-          <p className="mt-1 text-xs leading-5 text-text-secondary">{card.helper}</p>
-        </div>
-        <Icon className="h-4 w-4 shrink-0 text-text-muted" />
-      </div>
-    </div>
-  );
-}
 
 function WatchlistCard({
   title,
