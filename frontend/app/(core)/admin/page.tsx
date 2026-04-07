@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { fetchAdminHealth } from '@/server/admin-metrics';
 import type { AdminHealthSnapshot } from '@/lib/admin/types';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
@@ -108,36 +110,61 @@ const percentFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maxi
 export default async function AdminIndexPage() {
   const health = await fetchAdminHealth();
   return (
-    <div className="stack-gap-lg">
-      <header className="stack-gap-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-text-muted">Hub &amp; Health</p>
-        <h1 className="text-3xl font-semibold text-text-primary">Admin dashboard</h1>
-        <p className="text-sm text-text-secondary">
-          Single entry point for analytics, support tooling, curation, and compliance workflows.
-        </p>
-      </header>
+    <>
+      <AdminPageHeader
+        eyebrow="Hub & Health"
+        title="Admin Dashboard"
+        description="Single entry point for analytics, support tooling, curation, and compliance workflows."
+        actions={
+          <>
+            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-surface-on-media-25">
+              Insights
+            </ButtonLink>
+            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-surface-on-media-25">
+              Jobs
+            </ButtonLink>
+            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-surface-on-media-25">
+              Users
+            </ButtonLink>
+          </>
+        }
+      />
 
-      <HealthStrip health={health} />
-      <QuickToolsCard />
+      <AdminSection
+        title="Live Operations"
+        description="Incident and health signals for the last 24 hours, kept immediately actionable."
+      >
+        <HealthStrip health={health} />
+      </AdminSection>
+
+      <AdminSection
+        title="Quick Tools"
+        description="Direct jumps into the most common support and investigation flows."
+      >
+        <QuickTools />
+      </AdminSection>
 
       {SECTION_GROUPS.map((group) => (
-        <section key={group.title} className="stack-gap-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-micro text-text-muted">{group.title}</h2>
-          <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+        <AdminSection
+          key={group.title}
+          title={group.title}
+          description="Core admin surfaces grouped by operating domain."
+        >
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {group.items.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-card border border-surface-on-media-25 bg-surface p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
+                className="rounded-xl border border-surface-on-media-25 bg-bg/50 px-4 py-4 transition hover:border-text-muted hover:bg-bg"
               >
-                <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
-                <p className="mt-2 text-sm text-text-secondary">{item.description}</p>
+                <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">{item.description}</p>
               </Link>
             ))}
           </div>
-        </section>
+        </AdminSection>
       ))}
-    </div>
+    </>
   );
 }
 
@@ -165,47 +192,45 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
         );
 
   return (
-    <section className="rounded-card border border-surface-on-media-25 bg-surface-glass-95 p-5 shadow-card">
-      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-5">
-        <HealthTile
-          label="Engine signals"
-          value={atRisk.length ? `${atRisk.length} incident${atRisk.length > 1 ? 's' : ''}` : 'All clear'}
-          helper={engineHelper}
-          variant={atRisk.length ? 'warn' : 'ok'}
-        />
-        <HealthTile
-          label="Failed unresolved (24h)"
-          value={formatNumber(health.failedRenders24h)}
-          helper="Failed jobs without refund resolution"
-          variant={health.failedRenders24h > 0 ? 'warn' : 'ok'}
-          href={buildJobsHref({ outcome: 'failed_action_required' })}
-        />
-        <HealthTile
-          label="Refunded failures (24h)"
-          value={formatNumber(health.refundedFailures24h)}
-          helper="Failed jobs already refunded"
-          variant={health.refundedFailures24h > 0 ? 'info' : 'ok'}
-          href={buildJobsHref({ outcome: 'refunded_failure_resolved' })}
-        />
-        <HealthTile
-          label="Pending jobs (stuck)"
-          value={formatNumber(health.stalePendingJobs)}
-          helper="Status = pending for 15+ minutes"
-          variant={health.stalePendingJobs > 0 ? 'warn' : 'ok'}
-          href={buildJobsHref({ status: 'pending' })}
-        />
-        <HealthTile
-          label="Service notice"
-          value={health.serviceNotice.active ? 'Active' : 'Clear'}
-          helper={
-            health.serviceNotice.active
-              ? health.serviceNotice.message ?? 'Broadcast currently enabled'
-              : 'Members do not see any incident banner.'
-          }
-          variant={health.serviceNotice.active ? 'warn' : 'ok'}
-        />
-      </div>
-    </section>
+    <div className="grid gap-px overflow-hidden rounded-xl border border-surface-on-media-25 bg-surface-on-media-25 md:grid-cols-2 xl:grid-cols-5">
+      <HealthTile
+        label="Engine signals"
+        value={atRisk.length ? `${atRisk.length} incident${atRisk.length > 1 ? 's' : ''}` : 'All clear'}
+        helper={engineHelper}
+        variant={atRisk.length ? 'warn' : 'ok'}
+      />
+      <HealthTile
+        label="Failed unresolved (24h)"
+        value={formatNumber(health.failedRenders24h)}
+        helper="Failed jobs without refund resolution"
+        variant={health.failedRenders24h > 0 ? 'warn' : 'ok'}
+        href={buildJobsHref({ outcome: 'failed_action_required' })}
+      />
+      <HealthTile
+        label="Refunded failures (24h)"
+        value={formatNumber(health.refundedFailures24h)}
+        helper="Failed jobs already refunded"
+        variant={health.refundedFailures24h > 0 ? 'info' : 'ok'}
+        href={buildJobsHref({ outcome: 'refunded_failure_resolved' })}
+      />
+      <HealthTile
+        label="Pending jobs (stuck)"
+        value={formatNumber(health.stalePendingJobs)}
+        helper="Status = pending for 15+ minutes"
+        variant={health.stalePendingJobs > 0 ? 'warn' : 'ok'}
+        href={buildJobsHref({ status: 'pending' })}
+      />
+      <HealthTile
+        label="Service notice"
+        value={health.serviceNotice.active ? 'Active' : 'Clear'}
+        helper={
+          health.serviceNotice.active
+            ? health.serviceNotice.message ?? 'Broadcast currently enabled'
+            : 'Members do not see any incident banner.'
+        }
+        variant={health.serviceNotice.active ? 'warn' : 'ok'}
+      />
+    </div>
   );
 }
 
@@ -224,9 +249,9 @@ function HealthTile({
 }) {
   const intentClasses =
     variant === 'warn' ? 'text-error' : variant === 'info' ? 'text-info' : 'text-text-primary';
-  const baseClasses = 'block rounded-2xl border border-surface-on-media-25 bg-surface px-5 py-4';
+  const baseClasses = 'block bg-surface px-4 py-4';
   const interactiveClasses = href
-    ? 'transition hover:-translate-y-0.5 hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+    ? 'transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
     : '';
   const content = (
     <>
@@ -247,83 +272,62 @@ function HealthTile({
   return <div className={baseClasses}>{content}</div>;
 }
 
-function QuickToolsCard() {
+function QuickTools() {
   return (
-    <section className="rounded-card border border-surface-on-media-25 bg-surface-glass-95 p-5 shadow-card">
-      <header className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Admin quick tools</p>
-        <p className="text-sm text-text-secondary">Jump to common support flows without loading the full modules first.</p>
-      </header>
-
-      <div className="mt-4 grid grid-gap-sm md:grid-cols-2">
-        <form action="/admin/users" method="get" className="flex flex-col gap-2 rounded-2xl border border-surface-on-media-25 bg-bg p-4">
-          <label htmlFor="quick-user" className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
+      <form action="/admin/users" method="get" className="flex flex-col gap-3 rounded-xl border border-surface-on-media-25 bg-bg/60 p-4">
+        <div>
+          <label htmlFor="quick-user" className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
             Find user
           </label>
-          <input
-            id="quick-user"
-            name="search"
-            type="text"
-            placeholder="Email or Supabase user ID"
-            className="rounded-lg border border-surface-on-media-25 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse hover:bg-text-primary/90"
-          >
-            Search
-          </Button>
-        </form>
+          <p className="mt-1 text-sm text-text-secondary">Open a member record directly from email or Supabase ID.</p>
+        </div>
+        <input
+          id="quick-user"
+          name="search"
+          type="text"
+          placeholder="Email or Supabase user ID"
+          className="rounded-lg border border-surface-on-media-25 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <Button type="submit" size="sm" className="w-fit rounded-lg px-4">
+          Search user
+        </Button>
+      </form>
 
-        <form action="/admin/jobs" method="get" className="flex flex-col gap-2 rounded-2xl border border-surface-on-media-25 bg-bg p-4">
-          <label htmlFor="quick-job" className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+      <form action="/admin/jobs" method="get" className="flex flex-col gap-3 rounded-xl border border-surface-on-media-25 bg-bg/60 p-4">
+        <div>
+          <label htmlFor="quick-job" className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">
             Find render job
           </label>
-          <input
-            id="quick-job"
-            name="jobId"
-            type="text"
-            placeholder="Job id or Fal request id"
-            className="rounded-lg border border-surface-on-media-25 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse hover:bg-text-primary/90"
-          >
-            Search
-          </Button>
-        </form>
-      </div>
+          <p className="mt-1 text-sm text-text-secondary">Jump straight to a job using the local job id or Fal request id.</p>
+        </div>
+        <input
+          id="quick-job"
+          name="jobId"
+          type="text"
+          placeholder="Job id or Fal request id"
+          className="rounded-lg border border-surface-on-media-25 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <Button type="submit" size="sm" className="w-fit rounded-lg px-4">
+          Search job
+        </Button>
+      </form>
 
-      <div className="mt-4 flex flex-wrap gap-4">
-        <ButtonLink
-          href="/admin/insights"
-          variant="outline"
-          size="sm"
-          className="border-surface-on-media-25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg hover:text-text-primary"
-        >
-          Go to analytics
-        </ButtonLink>
-        <ButtonLink
-          href="/admin/engines"
-          variant="outline"
-          size="sm"
-          className="border-surface-on-media-25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg hover:text-text-primary"
-        >
-          Engine performance
-        </ButtonLink>
-        <ButtonLink
-          href="/admin/system"
-          variant="outline"
-          size="sm"
-          className="border-surface-on-media-25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg hover:text-text-primary"
-        >
-          Service notice
-        </ButtonLink>
+      <div className="rounded-xl border border-surface-on-media-25 bg-bg/60 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">Fast links</p>
+        <div className="mt-3 flex flex-col gap-2">
+          <ButtonLink href="/admin/insights" variant="outline" size="sm" className="justify-start border-surface-on-media-25">
+            Analytics
+          </ButtonLink>
+          <ButtonLink href="/admin/engines" variant="outline" size="sm" className="justify-start border-surface-on-media-25">
+            Engines
+          </ButtonLink>
+          <ButtonLink href="/admin/system" variant="outline" size="sm" className="justify-start border-surface-on-media-25">
+            Service notice
+          </ButtonLink>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
 

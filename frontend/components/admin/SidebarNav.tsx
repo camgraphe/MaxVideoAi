@@ -67,7 +67,7 @@ type SidebarNavProps = {
 };
 
 const BADGE_TONE_CLASS: Record<AdminNavBadgeTone, string> = {
-  info: 'border-hairline bg-surface-2 text-text-muted',
+  info: 'border-surface-on-media-25 bg-bg text-text-muted',
   warn: 'border-warning-border bg-warning-bg text-warning',
 };
 
@@ -95,11 +95,11 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
           prefetch={false}
           onClick={mobileOpen ? onMobileClose : undefined}
           className={clsx(
-            'group relative flex w-full items-center rounded-card px-2 py-0.5 text-[12px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'group relative flex w-full items-center rounded-xl px-3 py-2 text-[13px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             showCompact ? 'justify-center px-2' : 'gap-2',
             isActive
-              ? 'bg-surface-2 text-text-primary'
-              : 'text-text-muted hover:bg-surface-2 hover:text-text-primary'
+              ? 'bg-bg text-text-primary'
+              : 'text-text-secondary hover:bg-bg hover:text-text-primary'
           )}
           aria-current={isActive ? 'page' : undefined}
           aria-describedby={showCompact ? tooltipId : undefined}
@@ -115,8 +115,8 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
             className={clsx(
               'flex h-7 w-7 items-center justify-center rounded-card border transition-colors',
               isActive
-                ? 'border-brand/30 bg-surface-3 text-text-primary'
-                : 'border-transparent bg-surface/70 text-text-muted group-hover:bg-surface-2 group-hover:text-text-primary'
+                ? 'border-surface-on-media-25 bg-surface text-text-primary'
+                : 'border-transparent bg-transparent text-text-muted group-hover:bg-surface group-hover:text-text-primary'
             )}
             aria-hidden
           >
@@ -159,19 +159,19 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
 
   const renderGroup = (group: AdminNavGroup, index: number) => {
     const headerClass = clsx(
-      'flex w-full items-center justify-between px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]',
+      'flex w-full items-center justify-between px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]',
       group.secondary ? 'text-text-muted' : 'text-text-tertiary'
     );
-    const wrapperClass = 'space-y-0.5';
+    const wrapperClass = 'space-y-1';
 
     return (
       <section key={group.id} className={wrapperClass}>
         <h2 className="sr-only">{group.label}</h2>
-        {index > 0 ? <div className="my-1 h-px w-full bg-hairline/80" /> : null}
+        {index > 0 ? <div className="my-1 h-px w-full bg-surface-on-media-25" /> : null}
         <div className={headerClass}>
           <span>{group.label}</span>
         </div>
-        <ul id={`admin-group-${group.id}`} className="space-y-0.5">
+        <ul id={`admin-group-${group.id}`} className="space-y-1">
           {group.items.map((item) => renderNavItem(item, group.id))}
         </ul>
       </section>
@@ -181,20 +181,20 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
   return (
     <aside
       className={clsx(
-        'fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-border bg-surface/95 backdrop-blur transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-64 md:translate-x-0 md:shadow-none',
+        'fixed inset-y-0 left-0 z-40 flex w-[17.5rem] flex-col border-r border-surface-on-media-25 bg-surface/98 backdrop-blur transition-transform duration-200 md:sticky md:top-0 md:bottom-auto md:h-screen md:w-[16.5rem] md:translate-x-0 md:shadow-none',
         mobileOpen ? 'translate-x-0 shadow-float' : '-translate-x-full',
         'md:translate-x-0'
       )}
       aria-label="Admin navigation"
     >
-      <div className="flex items-center justify-between gap-3 px-3 pb-3 pt-4">
+      <div className="flex items-center justify-between gap-3 border-b border-surface-on-media-25 px-4 pb-3 pt-4">
         <Link href="/admin" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-card border border-hairline bg-surface-2 text-xs font-semibold text-text-primary">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-surface-on-media-25 bg-bg text-xs font-semibold text-text-primary">
             MV
           </span>
           <span className="flex flex-col leading-tight">
             <span className="text-sm font-semibold text-text-primary">Admin</span>
-            <span className="text-xs text-text-muted">MaxVideoAI</span>
+            <span className="text-xs text-text-muted">Operations workspace</span>
           </span>
         </Link>
         <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
             variant="ghost"
             size="sm"
             onClick={onMobileClose}
-            className="h-9 w-9 min-h-0 rounded-input border border-hairline bg-surface/70 p-0 text-text-secondary hover:bg-surface-2 hover:text-text-primary md:hidden"
+            className="h-9 w-9 min-h-0 rounded-lg border border-surface-on-media-25 bg-surface p-0 text-text-secondary hover:bg-bg hover:text-text-primary md:hidden"
           >
             <UIIcon icon={X} size={18} />
             <span className="sr-only">Close navigation</span>
@@ -211,13 +211,13 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2 pb-4">
-        <div className="space-y-0.5">
+      <nav className="flex-1 overflow-y-auto px-3 py-3">
+        <div className="space-y-1">
           {primaryGroups.map((group, index) => renderGroup(group, index))}
         </div>
         {secondaryGroups.length ? (
-          <div className="mt-2 border-t border-hairline/80 pt-2">
-            <div className="space-y-0.5">
+          <div className="mt-3 border-t border-surface-on-media-25 pt-3">
+            <div className="space-y-1">
               {secondaryGroups.map((group, index) => renderGroup(group, index))}
             </div>
           </div>
