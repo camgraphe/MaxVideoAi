@@ -106,7 +106,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
         >
           <span
             className={clsx(
-              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-[var(--admin-sidebar-text)] transition-opacity',
+              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-brand transition-opacity',
               isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
             )}
             aria-hidden
@@ -190,7 +190,7 @@ export function SidebarNav({ groups, badges, mobileOpen, onMobileClose }: Sideba
       <div className="border-b border-[var(--admin-sidebar-border)] px-4 pb-4 pt-4">
         <div className="flex items-center justify-between gap-3">
           <Link href="/admin" className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--admin-sidebar-contrast)] text-xs font-semibold text-[var(--admin-sidebar-bg)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-xs font-semibold text-on-brand">
               MV
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
