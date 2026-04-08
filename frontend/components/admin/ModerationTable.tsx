@@ -54,6 +54,7 @@ type ModerationTableProps = {
   initialCursor: string | null;
   initialBucket?: ModerationBucket;
   initialSurface?: ModerationSurface;
+  embedded?: boolean;
 };
 
 type ModerationViewMode = 'wall' | 'table';
@@ -159,6 +160,7 @@ export function ModerationTable({
   initialCursor,
   initialBucket = 'not-published',
   initialSurface = 'video',
+  embedded = false,
 }: ModerationTableProps) {
   const initialPlaylistAssignments = useMemo(
     () =>
@@ -639,16 +641,18 @@ export function ModerationTable({
   );
 
   return (
-    <div className="stack-gap-lg">
+    <div className={embedded ? 'space-y-5' : 'stack-gap-lg'}>
       <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="space-y-2">
-          <div>
-            <h1 className="text-2xl font-semibold text-text-primary">Publication queue</h1>
-            <p className="text-sm text-text-secondary">
-              Manage publishable media by surface, publish or unpublish assets on the site, and curate playlists for video only. Incidents and
-              failures live in Jobs. Google Video rollout stays separate.
-            </p>
-          </div>
+          {!embedded ? (
+            <div>
+              <h1 className="text-2xl font-semibold text-text-primary">Publication queue</h1>
+              <p className="text-sm text-text-secondary">
+                Manage publishable media by surface, publish or unpublish assets on the site, and curate playlists for video only. Incidents and
+                failures live in Jobs. Google Video rollout stays separate.
+              </p>
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             {SURFACE_OPTIONS.map((option) => {
               const active = surface === option.id;

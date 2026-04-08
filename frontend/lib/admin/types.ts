@@ -51,7 +51,9 @@ export type FailedEngineStat = {
 
 export type FunnelMetrics = {
   signupToTopUpConversion: number;
+  totalTopupUsers: number;
   topUpToRenderConversion30d: number;
+  convertedWithin30dUsers: number;
   avgTimeSignupToFirstTopUpDays: number | null;
   avgTimeTopUpToFirstRenderDays: number | null;
 };
@@ -93,6 +95,22 @@ export type AdminMetrics = {
   funnels: FunnelMetrics;
   behavior: BehaviorMetrics;
   health: HealthMetrics;
+};
+
+export type AdminMetricsComparison = {
+  range: MetricsRange;
+  current: {
+    signupsDaily: TimeSeriesPoint[];
+    activeAccountsDaily: TimeSeriesPoint[];
+    topupsDaily: AmountSeriesPoint[];
+    chargesDaily: AmountSeriesPoint[];
+  };
+  previous: {
+    signupsDaily: TimeSeriesPoint[];
+    activeAccountsDaily: TimeSeriesPoint[];
+    topupsDaily: AmountSeriesPoint[];
+    chargesDaily: AmountSeriesPoint[];
+  };
 };
 
 export type EngineHealthStat = {

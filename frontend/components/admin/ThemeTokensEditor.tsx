@@ -14,6 +14,8 @@ import {
 
 type ThemeTokensEditorProps = {
   initialSetting: ThemeTokensSetting;
+  embedded?: boolean;
+  className?: string;
 };
 
 type ThemeMode = 'light' | 'dark';
@@ -23,7 +25,11 @@ const MODE_LABELS: Record<ThemeMode, string> = {
   dark: 'Dark',
 };
 
-export function ThemeTokensEditor({ initialSetting }: ThemeTokensEditorProps) {
+export function ThemeTokensEditor({
+  initialSetting,
+  embedded = false,
+  className,
+}: ThemeTokensEditorProps) {
   const [mode, setMode] = useState<ThemeMode>('light');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [search, setSearch] = useState('');
@@ -158,18 +164,20 @@ export function ThemeTokensEditor({ initialSetting }: ThemeTokensEditorProps) {
   };
 
   return (
-    <div className="grid grid-gap-lg xl:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="rounded-card border border-border bg-surface p-6 shadow-card">
-        <header className="stack-gap-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Theme tokens</p>
-          <h1 className="text-2xl font-semibold text-text-primary">Personnalisation globale</h1>
-          <p className="text-sm text-text-secondary">
-            Ajustez les tokens UI pour tous les ecrans. Les changements sont appliques immediatement sur cette page,
-            puis sauvegardes pour l&apos;ensemble du site.
-          </p>
-        </header>
+    <div className={clsx('grid grid-gap-lg xl:grid-cols-[minmax(0,1fr)_360px]', className)}>
+      <section className={clsx('border border-border bg-surface shadow-card', embedded ? 'rounded-[20px] px-5 py-5' : 'rounded-card p-6')}>
+        {!embedded ? (
+          <header className="stack-gap-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Theme tokens</p>
+            <h1 className="text-2xl font-semibold text-text-primary">Personnalisation globale</h1>
+            <p className="text-sm text-text-secondary">
+              Ajustez les tokens UI pour tous les ecrans. Les changements sont appliques immediatement sur cette page,
+              puis sauvegardes pour l&apos;ensemble du site.
+            </p>
+          </header>
+        ) : null}
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className={clsx('flex flex-wrap items-center gap-3', embedded ? '' : 'mt-6')}>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-2 p-1">
             {(['light', 'dark'] as ThemeMode[]).map((target) => (
               <button
@@ -250,7 +258,7 @@ export function ThemeTokensEditor({ initialSetting }: ThemeTokensEditorProps) {
       </section>
 
       <aside
-        className="rounded-card border border-border bg-surface p-6 shadow-card"
+        className={clsx('border border-border bg-surface shadow-card', embedded ? 'rounded-[20px] px-5 py-5' : 'rounded-card p-6')}
         data-theme={mode === 'dark' ? 'dark' : undefined}
       >
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Preview</p>

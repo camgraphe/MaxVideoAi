@@ -1,6 +1,7 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
+import { type ReactNode, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import type { AdminJobAuditRecord, AdminJobOutcome } from '@/server/admin-job-audit';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +11,17 @@ interface JobAuditTableProps {
   initialCursor: string | null;
   filtersQuery: string;
 }
+
+const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+  timeZone: 'Europe/Paris',
+});
 
 function formatCurrency(amountCents: number, currency: string) {
   try {
@@ -25,7 +37,15 @@ function formatCurrency(amountCents: number, currency: string) {
 function formatDate(value: string | null | undefined) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString();
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    const parts = Object.fromEntries(
+      dateTimeFormatter
+        .formatToParts(date)
+        .filter((part) => part.type !== 'literal')
+        .map((part) => [part.type, part.value])
+    );
+    return `${parts.day}/${parts.month}/${parts.year} ${parts.hour}:${parts.minute}:${parts.second}`;
   } catch {
     return value;
   }
@@ -113,6 +133,47 @@ function displayMeta(job: AdminJobAuditRecord) {
   };
 }
 
+function IntegrityPill({
+  ok,
+  label,
+  helper,
+  warningLabel,
+}: {
+  ok: boolean;
+  label: string;
+  helper: string;
+  warningLabel: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <span
+        className={clsx(
+          'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-micro',
+          ok ? 'border-success-border bg-success-bg text-success' : 'border-warning-border bg-warning-bg text-warning'
+        )}
+      >
+        {ok ? label : warningLabel}
+      </span>
+      <p className="text-xs text-text-secondary">{helper}</p>
+    </div>
+  );
+}
+
+function DetailCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-hairline bg-bg/70 p-4 text-xs text-text-secondary">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{title}</p>
+      <div className="space-y-1.5">{children}</div>
+    </div>
+  );
+}
+
 export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }: JobAuditTableProps) {
   const [jobs, setJobs] = useState<AdminJobAuditRecord[]>(initialJobs);
   const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
@@ -121,9 +182,21 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusVariant, setStatusVariant] = useState<'info' | 'success' | 'error'>('info');
   const [showArchived, setShowArchived] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [syncingJobId, setSyncingJobId] = useState<string | null>(null);
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setJobs(initialJobs);
+    setNextCursor(initialCursor);
+    setIsRefreshing(false);
+    setIsLoadingMore(false);
+    setStatusMessage(null);
+    setStatusVariant('info');
+    setShowArchived(false);
+    setSyncingJobId(null);
+    setExpandedJobId(null);
+  }, [filtersQuery, initialCursor, initialJobs]);
 
   const buildSearchParams = useCallback(
     (overrides: Record<string, string | null | undefined>) => {
@@ -148,11 +221,21 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
     [buildSearchParams]
   );
 
-  const sortedJobs = useMemo(() => {
+  const visibleJobs = useMemo(() => {
     const base = [...jobs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     if (showArchived) return base;
     return base.filter((job) => !job.archived);
   }, [jobs, showArchived]);
+
+  const attentionCount = useMemo(
+    () =>
+      visibleJobs.filter(
+        (job) => job.outcome === 'failed_action_required' || !job.paymentOk || !job.falOk || !job.hasOutput
+      ).length,
+    [visibleJobs]
+  );
+
+  const archivedCount = useMemo(() => jobs.filter((job) => job.archived).length, [jobs]);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -304,31 +387,28 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="text-sm text-text-secondary">
-          Showing {sortedJobs.length} job{sortedJobs.length === 1 ? '' : 's'} (latest first)
-          {showArchived ? ' (including archived jobs).' : '.'}
+        <div>
+          <p className="text-sm font-medium text-text-primary">
+            {visibleJobs.length} jobs loaded
+            {showArchived ? ' including archived rows' : ''}
+          </p>
+          <p className="mt-1 text-xs text-text-secondary">
+            {attentionCount} need attention{archivedCount > 0 ? ` · ${archivedCount} archived candidates hidden by default` : ''}.
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setShowArchived((prev) => !prev)}
-            className="gap-2 rounded-md border-border px-3 py-1.5 text-sm font-medium hover:border-text-muted hover:bg-surface-2"
-          >
-            {showArchived ? 'Hide archived' : 'Show archived'}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={refresh}
-            disabled={isRefreshing}
-            className={clsx(
-              'gap-2 rounded-md border-border px-3 py-1.5 text-sm font-medium',
-              isRefreshing ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
-            )}
-          >
+          {archivedCount > 0 ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setShowArchived((prev) => !prev)}
+              className="border-border bg-surface"
+            >
+              {showArchived ? 'Hide archived' : 'Show archived'}
+            </Button>
+          ) : null}
+          <Button type="button" size="sm" variant="outline" onClick={refresh} disabled={isRefreshing} className="border-border bg-surface">
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
           </Button>
         </div>
@@ -337,7 +417,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
       {statusMessage ? (
         <div
           className={clsx(
-            'rounded-md border px-3 py-2 text-sm',
+            'rounded-2xl border px-4 py-3 text-sm',
             statusVariant === 'success' && 'border-success-border bg-success-bg text-success',
             statusVariant === 'error' && 'border-error-border bg-error-bg text-error',
             statusVariant === 'info' && 'border-info-border bg-info-bg text-info'
@@ -347,297 +427,269 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-muted/60 text-xs font-semibold uppercase tracking-micro text-text-muted">
-            <tr>
-              <th className="px-4 py-3 text-left">Created</th>
-              <th className="px-4 py-3 text-left">Job</th>
-              <th className="px-4 py-3 text-left">User</th>
-              <th className="px-4 py-3 text-left">Engine</th>
-              <th className="px-4 py-3 text-left">Outcome</th>
-              <th className="px-4 py-3 text-left">Display</th>
-              <th className="px-4 py-3 text-left">Payment</th>
-              <th className="px-4 py-3 text-left">Fal</th>
-              <th className="px-4 py-3 text-left">Receipts</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border bg-background">
-            {sortedJobs.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-text-secondary">
-                  No jobs found.
-                </td>
+      <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1220px] text-left text-sm">
+            <thead className="bg-surface">
+              <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                <th className="px-4 py-3 font-semibold">Created</th>
+                <th className="px-4 py-3 font-semibold">Job</th>
+                <th className="px-4 py-3 font-semibold">Scope</th>
+                <th className="px-4 py-3 font-semibold">State</th>
+                <th className="px-4 py-3 font-semibold">Integrity</th>
+                <th className="px-4 py-3 text-right font-semibold">Actions</th>
               </tr>
-            ) : (
-              sortedJobs.map((job) => {
-                const paymentClass = job.paymentOk
-                  ? 'border-success-border bg-success-bg text-success'
-                  : 'border-error-border bg-error-bg text-error';
-                const falClass = job.falOk
-                  ? 'border-success-border bg-success-bg text-success'
-                  : 'border-error-border bg-error-bg text-error';
-                const meta = outcomeMeta(job.outcome);
-                const isExpanded = expandedJobId === job.jobId;
-                const display = displayMeta(job);
+            </thead>
+            <tbody>
+              {visibleJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-10 text-center text-text-secondary">
+                    No jobs found for the current filters.
+                  </td>
+                </tr>
+              ) : (
+                visibleJobs.map((job) => {
+                  const meta = outcomeMeta(job.outcome);
+                  const display = displayMeta(job);
+                  const isExpanded = expandedJobId === job.jobId;
+                  const refundEligible =
+                    job.paymentStatus?.includes('paid_wallet') && job.totalChargeCents > 0 && job.totalRefundCents === 0;
 
-                return (
-                  <Fragment key={job.jobId}>
-                    <tr className="align-top">
-                      <td className="px-4 py-3 align-top text-xs text-text-secondary">
-                        <div className="flex flex-col gap-2">
-                          <div>
-                            <div className="font-mono text-xs text-text-secondary">{formatDate(job.createdAt)}</div>
-                            <div className="font-mono text-[11px] text-text-muted">Updated: {formatDate(job.updatedAt)}</div>
-                          </div>
-                          {job.videoUrl ? (
-                            <video
-                              className="h-24 w-40 rounded border border-border bg-black"
-                              src={job.videoUrl}
-                              controls
-                              preload="metadata"
-                            />
-                          ) : null}
-                          {job.archived ? (
-                            <div className="flex flex-col gap-2">
-                              <span className="inline-flex items-center rounded-full border border-warning-border bg-warning-bg px-2 py-0.5 font-semibold uppercase tracking-micro text-warning">
-                                Auto-archived
-                              </span>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleRestore(job.jobId)}
-                                className="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary hover:border-text-muted hover:bg-surface-2"
-                              >
-                                Bring back online
-                              </Button>
+                  return (
+                    <Fragment key={job.jobId}>
+                      <tr className="border-t border-hairline align-top transition hover:bg-bg">
+                        <td className="px-4 py-3">
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">{formatDate(job.createdAt)}</p>
+                              <p className="text-xs text-text-secondary">Updated {formatDate(job.updatedAt)}</p>
                             </div>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-2">
-                          <span className="font-mono text-xs text-text-primary break-all">{job.jobId}</span>
-                          {job.providerJobId ? (
-                            <span className="font-mono text-[11px] text-text-muted break-all">{job.providerJobId}</span>
-                          ) : null}
-                          {job.failureReason ? (
-                            <span className="text-xs text-text-secondary line-clamp-2">{job.failureReason}</span>
-                          ) : job.message ? (
-                            <span className="text-xs text-text-secondary line-clamp-2">{job.message}</span>
-                          ) : null}
-                          <div className="flex flex-wrap items-center gap-2">
-                          {job.providerJobId && (!job.hasOutput || job.status !== 'completed') ? (
+                            {job.archived ? (
+                              <span className="inline-flex items-center rounded-full border border-warning-border bg-warning-bg px-2 py-0.5 text-xs font-semibold uppercase tracking-micro text-warning">
+                                Archived candidate
+                              </span>
+                            ) : null}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="min-w-0 space-y-2">
+                            <p className="font-mono text-xs text-text-primary break-all">{job.jobId}</p>
+                            {job.providerJobId ? (
+                              <p className="font-mono text-[11px] text-text-muted break-all">{job.providerJobId}</p>
+                            ) : null}
+                            {job.failureReason ? (
+                              <p className="line-clamp-2 text-xs text-text-secondary">{job.failureReason}</p>
+                            ) : job.message ? (
+                              <p className="line-clamp-2 text-xs text-text-secondary">{job.message}</p>
+                            ) : null}
+                            {job.outputUrl ? (
+                              <a
+                                href={job.outputUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex text-xs font-medium text-brand underline-offset-2 hover:underline"
+                              >
+                                {display.linkLabel}
+                              </a>
+                            ) : null}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="space-y-2 text-xs">
+                            {job.userId ? (
+                              <Link href={`/admin/users/${job.userId}`} className="font-mono text-text-primary underline-offset-2 hover:underline">
+                                {job.userId}
+                              </Link>
+                            ) : (
+                              <p className="text-text-secondary">No user attached</p>
+                            )}
+                            <div>
+                              <p className="font-medium text-text-primary">{job.engineLabel ?? 'Unknown engine'}</p>
+                              <p className="text-text-secondary">
+                                Surface {job.surface ?? 'video'}
+                                {job.durationSec != null ? ` · ${job.durationSec}s` : ''}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-2">
+                              <span className={meta.className}>{meta.label}</span>
+                              {technicalStatusBadge(job.status)}
+                            </div>
+                            <p className="text-xs text-text-secondary">Progress {job.progress ?? 0}%</p>
+                            {job.failureOrigin ? (
+                              <p className="text-xs text-text-secondary">Origin {job.failureOrigin}</p>
+                            ) : null}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="space-y-3">
+                            <IntegrityPill
+                              ok={job.paymentOk}
+                              label="Payment OK"
+                              warningLabel="Payment drift"
+                              helper={`Net ${formatCurrency(job.netChargeCents, job.currency)} · expected ${formatCurrency(job.finalPriceCents, job.currency)}`}
+                            />
+                            <IntegrityPill
+                              ok={job.falOk}
+                              label="Fal OK"
+                              warningLabel="Fal issue"
+                              helper={`Latest ${job.falStatus ?? '—'} · logs ${job.falLogCount}`}
+                            />
+                            <IntegrityPill
+                              ok={job.hasOutput}
+                              label={display.readyLabel}
+                              warningLabel={job.isPlaceholderOutput ? display.placeholderLabel : display.missingLabel}
+                              helper={job.outputUrl ? 'Output linked' : 'No output URL recorded'}
+                            />
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col items-end gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setExpandedJobId((prev) => (prev === job.jobId ? null : job.jobId))}
+                              className="border-border bg-surface"
+                            >
+                              {isExpanded ? 'Hide details' : 'Details'}
+                            </Button>
+
+                            {job.providerJobId && (!job.hasOutput || job.status !== 'completed') ? (
                               <Button
                                 type="button"
                                 size="sm"
                                 variant="outline"
                                 onClick={() => void handleResync(job.jobId)}
                                 disabled={syncingJobId === job.jobId}
-                                className={clsx(
-                                  'rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary',
-                                  syncingJobId === job.jobId
-                                    ? 'cursor-not-allowed opacity-60'
-                                    : 'hover:border-text-muted hover:bg-surface-2'
-                                )}
+                                className="border-border bg-surface"
                               >
                                 {syncingJobId === job.jobId ? 'Syncing…' : 'Resync Fal'}
                               </Button>
                             ) : null}
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setExpandedJobId((prev) => (prev === job.jobId ? null : job.jobId))}
-                              className="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary hover:border-text-muted hover:bg-surface-2"
-                            >
-                              {isExpanded ? 'Hide details' : 'Details'}
-                            </Button>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col text-xs text-text-muted">
-                          <span>{job.userId ?? '—'}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col text-xs text-text-secondary">
-                          <span className="font-medium text-text-primary">{job.engineLabel ?? 'Unknown engine'}</span>
-                          {job.durationSec != null ? <span>{job.durationSec}s</span> : null}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1 text-xs">
-                          <span className={meta.className}>{meta.label}</span>
-                          {technicalStatusBadge(job.status)}
-                          <span className="text-text-muted">Progress: {job.progress ?? 0}%</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1 text-xs">
-                          <span
-                            className={clsx(
-                              'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
-                              job.hasOutput
-                                ? 'border-success-border bg-success-bg text-success'
-                                : job.isPlaceholderOutput
-                                  ? 'border-warning-border bg-warning-bg text-warning'
-                                  : 'border-error-border bg-error-bg text-error'
-                            )}
-                          >
-                            {job.hasOutput
-                              ? display.readyLabel
-                              : job.isPlaceholderOutput
-                                ? display.placeholderLabel
-                                : display.missingLabel}
-                          </span>
-                          {job.outputUrl ? (
-                            <a
-                              href={job.outputUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-primary underline-offset-2 hover:underline"
-                            >
-                              {display.linkLabel}
-                            </a>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1 text-xs">
-                          <span className="text-text-muted">Status: {job.paymentStatus ?? '—'}</span>
-                          <span className="text-text-muted">Expected: {formatCurrency(job.finalPriceCents, job.currency)}</span>
-                          <span className="text-text-muted">Charges: {formatCurrency(job.totalChargeCents, job.currency)}</span>
-                          <span className="text-text-muted">Refunds: {formatCurrency(job.totalRefundCents, job.currency)}</span>
-                          <span className="text-text-muted">Net: {formatCurrency(job.netChargeCents, job.currency)}</span>
-                          <span
-                            className={clsx(
-                              'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
-                              paymentClass
-                            )}
-                          >
-                            {job.paymentOk ? 'Debit OK' : 'Check debit'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1 text-xs text-text-muted">
-                          <span>Latest: {job.falStatus ?? '—'}</span>
-                          <span>Updated: {formatDate(job.falUpdatedAt)}</span>
-                          {job.failureAt ? <span>Failure at: {formatDate(job.failureAt)}</span> : null}
-                          <span
-                            className={clsx(
-                              'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
-                              falClass
-                            )}
-                          >
-                            {job.falOk ? 'Fal OK' : 'Fal issue'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-2 text-xs text-text-muted">
-                          <div className="flex flex-col gap-1">
-                            {job.receipts.length === 0 ? (
-                              <span>No receipts</span>
-                            ) : (
-                              job.receipts.slice(0, 4).map((receipt) => (
-                                <span key={receipt.id} className="font-mono">
-                                  {receipt.type} · {formatCurrency(receipt.amountCents, receipt.currency)} · {formatDate(receipt.createdAt)}
-                                </span>
-                              ))
-                            )}
-                          </div>
-                          {job.paymentStatus?.includes('paid_wallet') && job.totalChargeCents > 0 && job.totalRefundCents === 0 ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRefund(job.jobId)}
-                              className="rounded-md border-destructive px-2.5 py-1 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              Refund tokens
-                            </Button>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                    {isExpanded ? (
-                      <tr className="bg-muted/30">
-                        <td colSpan={9} className="px-4 py-3">
-                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
-                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Fal diagnostics</p>
-                              <p>Raw status: {job.falStatus ?? '—'}</p>
-                              <p>Failure at: {formatDate(job.failureAt)}</p>
-                              <p>Failure origin: {job.failureOrigin ?? '—'}</p>
-                              <p>Reason: {job.failureReason ?? '—'}</p>
-                              <p>Surface: {job.surface ?? 'video'}</p>
-                              <p>Log entries: {job.falLogCount}</p>
-                            </div>
-                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
-                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Refund</p>
-                              <p>Refunded: {job.isRefunded ? 'Yes' : 'No'}</p>
-                              <p>Refund at: {formatDate(job.refundAt)}</p>
-                              <p>Refund reason: {job.refundReason ?? '—'}</p>
-                              <p>Payment status: {job.paymentStatus ?? '—'}</p>
-                            </div>
-                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
-                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Identifiers</p>
-                              <p className="break-all">Job ID: {job.jobId}</p>
-                              <p className="break-all">Provider ID: {job.providerJobId ?? '—'}</p>
-                              <p>Created: {formatDate(job.createdAt)}</p>
-                              <p>Updated: {formatDate(job.updatedAt)}</p>
-                            </div>
-                            <div className="rounded-md border border-border bg-background p-3 text-xs text-text-secondary">
-                              <p className="mb-1 font-semibold uppercase tracking-micro text-text-muted">Timeline</p>
-                              {job.timeline.length ? (
-                                <ul className="space-y-1">
-                                  {job.timeline.map((event, index) => (
-                                    <li key={`${job.jobId}-${event.at}-${event.kind}-${index}`}>
-                                      <span className="font-mono text-[11px]">{formatDate(event.at)}</span>
-                                      {' · '}
-                                      <span>{event.source}</span>
-                                      {' · '}
-                                      <span>{event.kind}</span>
-                                      {' · '}
-                                      <span>{event.summary}</span>
-                                      {event.details ? <span>{` (${event.details})`}</span> : null}
-                                    </li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <p>No timeline events</p>
-                              )}
-                            </div>
+
+                            {refundEligible ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRefund(job.jobId)}
+                                className="border-error-border bg-error-bg text-error hover:text-error"
+                              >
+                                Refund tokens
+                              </Button>
+                            ) : null}
+
+                            {job.archived ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRestore(job.jobId)}
+                                className="border-border bg-surface"
+                              >
+                                Bring online
+                              </Button>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
-                    ) : null}
-                  </Fragment>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+
+                      {isExpanded ? (
+                        <tr className="border-t border-hairline bg-surface/50">
+                          <td colSpan={6} className="px-4 py-4">
+                            <div className="grid gap-4 xl:grid-cols-4">
+                              <DetailCard title="Output & Routing">
+                                <p>Surface: {job.surface ?? 'video'}</p>
+                                <p>Engine: {job.engineLabel ?? 'Unknown engine'}</p>
+                                <p>Provider ID: {job.providerJobId ?? '—'}</p>
+                                <p>Hero render: {job.heroRenderId ?? '—'}</p>
+                                <p>Thumb: {job.thumbUrl ?? '—'}</p>
+                                <p>Render count: {job.renderCount}</p>
+                                {job.outputUrl ? (
+                                  <a href={job.outputUrl} target="_blank" rel="noreferrer" className="font-medium text-brand underline-offset-2 hover:underline">
+                                    {display.linkLabel}
+                                  </a>
+                                ) : null}
+                              </DetailCard>
+
+                              <DetailCard title="Billing">
+                                <p>Status: {job.paymentStatus ?? '—'}</p>
+                                <p>Expected: {formatCurrency(job.finalPriceCents, job.currency)}</p>
+                                <p>Charges: {formatCurrency(job.totalChargeCents, job.currency)}</p>
+                                <p>Refunds: {formatCurrency(job.totalRefundCents, job.currency)}</p>
+                                <p>Net: {formatCurrency(job.netChargeCents, job.currency)}</p>
+                                <p>Charge count: {job.chargeCount}</p>
+                                <p>Refund count: {job.refundCount}</p>
+                                {job.receipts.length ? (
+                                  <div className="pt-1">
+                                    <p className="font-semibold text-text-primary">Recent receipts</p>
+                                    <ul className="mt-1 space-y-1">
+                                      {job.receipts.slice(0, 4).map((receipt) => (
+                                        <li key={receipt.id} className="font-mono text-[11px]">
+                                          {receipt.type} · {formatCurrency(receipt.amountCents, receipt.currency)} · {formatDate(receipt.createdAt)}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ) : null}
+                              </DetailCard>
+
+                              <DetailCard title="Fal Diagnostics">
+                                <p>Latest status: {job.falStatus ?? '—'}</p>
+                                <p>Updated: {formatDate(job.falUpdatedAt)}</p>
+                                <p>Failure at: {formatDate(job.failureAt)}</p>
+                                <p>Failure origin: {job.failureOrigin ?? '—'}</p>
+                                <p>Reason: {job.failureReason ?? '—'}</p>
+                                <p>Refunded: {job.isRefunded ? 'Yes' : 'No'}</p>
+                                <p>Refund note: {job.refundReason ?? '—'}</p>
+                                <p>Fal log entries: {job.falLogCount}</p>
+                              </DetailCard>
+
+                              <DetailCard title="Timeline">
+                                {job.timeline.length ? (
+                                  <ul className="space-y-2">
+                                    {job.timeline.map((event, index) => (
+                                      <li key={`${job.jobId}-${event.at}-${event.kind}-${index}`}>
+                                        <p className="font-mono text-[11px] text-text-primary">{formatDate(event.at)}</p>
+                                        <p>
+                                          {event.source} · {event.kind}
+                                        </p>
+                                        <p>{event.summary}</p>
+                                        {event.details ? <p>{event.details}</p> : null}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p>No timeline events.</p>
+                                )}
+                              </DetailCard>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
+
       <div ref={sentinelRef} className="h-10 w-full" aria-hidden="true" />
       {isLoadingMore ? <div className="text-center text-xs text-text-muted">Loading more jobs…</div> : null}
       {nextCursor ? (
         <div className="text-center">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => void loadMore()}
-            disabled={isLoadingMore}
-            className={clsx(
-              'gap-2 rounded-md border-border px-3 py-1.5 text-sm font-medium',
-              isLoadingMore ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
-            )}
-          >
+          <Button type="button" size="sm" variant="outline" onClick={() => void loadMore()} disabled={isLoadingMore} className="border-border bg-surface">
             {isLoadingMore ? 'Loading…' : 'Load more jobs'}
           </Button>
         </div>

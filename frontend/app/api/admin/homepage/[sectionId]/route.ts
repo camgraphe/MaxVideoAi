@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
+import { logAdminAction } from '@/server/admin-audit';
 import {
   deleteHomepageSection,
   updateHomepageSection,
@@ -77,6 +78,18 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     });
     const sections = await listHomepageSections();
     const section = sections.find((entry) => entry.id === sectionId) ?? null;
+    await logAdminAction({
+      adminId,
+      action: 'HOMEPAGE_SECTION_UPDATE',
+      route: `/api/admin/homepage/${sectionId}`,
+      metadata: {
+        sectionId,
+        sectionKey: section?.key ?? key ?? null,
+        sectionType: section?.type ?? type ?? null,
+        title: section?.title ?? title ?? null,
+        videoId: section?.videoId ?? videoId ?? null,
+      },
+    });
     return NextResponse.json({ ok: true, section });
   } catch (error) {
     console.error('[admin/homepage/:id] failed to update', error);
@@ -89,8 +102,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
+  let adminId: string;
   try {
-    await requireAdmin(req);
+    adminId = await requireAdmin(req);
   } catch (error) {
     return adminErrorToResponse(error);
   }
@@ -101,7 +115,21 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   }
 
   try {
+    const sections = await listHomepageSections();
+    const section = sections.find((entry) => entry.id === sectionId) ?? null;
     await deleteHomepageSection(sectionId);
+    await logAdminAction({
+      adminId,
+      action: 'HOMEPAGE_SECTION_DELETE',
+      route: `/api/admin/homepage/${sectionId}`,
+      metadata: {
+        sectionId,
+        sectionKey: section?.key ?? null,
+        sectionType: section?.type ?? null,
+        title: section?.title ?? null,
+        videoId: section?.videoId ?? null,
+      },
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/homepage/:id] failed to delete', error);

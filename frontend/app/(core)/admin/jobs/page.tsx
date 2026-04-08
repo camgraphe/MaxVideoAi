@@ -1,62 +1,30 @@
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { AlertTriangle, CheckCircle2, Clock3, History, ReceiptText, ShieldAlert } from 'lucide-react';
+import type { AdminJobAuditRecord } from '@/server/admin-job-audit';
 import { fetchRecentJobAudits } from '@/server/admin-job-audit';
 import { AdminJobAuditTable } from '@/components/admin/JobAuditTable';
+import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
+import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
+import { AdminShortcutRail } from '@/components/admin-system/surfaces/AdminShortcutRail';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
+import { Button } from '@/components/ui/Button';
+
+type SearchParamValue = string | string[] | undefined;
 
 type PageProps = {
   searchParams?: {
-    jobId?: string;
-    userId?: string;
-    engineId?: string;
-    status?: string;
-    outcome?: string;
-    from?: string;
-    to?: string;
+    jobId?: SearchParamValue;
+    userId?: SearchParamValue;
+    engineId?: SearchParamValue;
+    status?: SearchParamValue;
+    outcome?: SearchParamValue;
+    from?: SearchParamValue;
+    to?: SearchParamValue;
   };
 };
-
-export const dynamic = 'force-dynamic';
-
-export default async function AdminJobsAuditPage({ searchParams = {} }: PageProps) {
-  if (!process.env.DATABASE_URL) {
-    return (
-      <div className="stack-gap-lg">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold text-text-primary">Job Audit</h1>
-          <p className="text-sm text-text-secondary">
-            Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable job auditing.
-          </p>
-        </header>
-      </div>
-    );
-  }
-
-  const filters = normalizeFilters(searchParams);
-  const { jobs, nextCursor } = await fetchRecentJobAudits({
-    limit: 30,
-    jobId: filters.jobId || null,
-    userId: filters.userId || null,
-    engineId: filters.engineId || null,
-    status: filters.status || null,
-    outcome: filters.outcome || null,
-    from: filters.fromDate,
-    to: filters.toDate,
-  });
-  const filtersQuery = buildFiltersQuery(filters);
-
-  return (
-    <div className="stack-gap-lg">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-text-primary">Job audit</h1>
-        <p className="text-sm text-text-secondary">
-          Search render attempts, inspect Fal sync, refund wallet charges, or bring older jobs back online.
-        </p>
-      </header>
-
-      <JobFilters filters={filters} />
-      <AdminJobAuditTable initialJobs={jobs} initialCursor={nextCursor} filtersQuery={filtersQuery} />
-    </div>
-  );
-}
 
 type UiFilters = {
   jobId: string;
@@ -70,8 +38,129 @@ type UiFilters = {
   toDate: Date | null;
 };
 
+type Shortcut = {
+  label: string;
+  href: string;
+  count: number;
+  active: boolean;
+};
+
+export const dynamic = 'force-dynamic';
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'All statuses' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'running', label: 'Running' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'failed', label: 'Failed' },
+];
+
+const OUTCOME_OPTIONS = [
+  { value: '', label: 'All outcomes' },
+  { value: 'failed_action_required', label: 'Action required' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'refunded_failure_resolved', label: 'Refunded failure' },
+  { value: 'unknown', label: 'Unknown' },
+];
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+
+export default async function AdminJobsAuditPage({ searchParams = {} }: PageProps) {
+  const filters = normalizeFilters(searchParams);
+
+  if (!process.env.DATABASE_URL) {
+    return (
+      <div className="flex flex-col gap-5">
+        <AdminPageHeader
+          eyebrow="Operations"
+          title="Jobs"
+          description="Audit renders, Fal sync, refunds and recovery flows from one operational workspace."
+        />
+        <AdminSection title="Job Workspace" description="Database access is required for the audit surface.">
+          <AdminNotice tone="warning">
+            Database connection is not configured. Set <code className="font-mono text-xs">DATABASE_URL</code> to enable job auditing.
+          </AdminNotice>
+        </AdminSection>
+      </div>
+    );
+  }
+
+  const { jobs, nextCursor } = await fetchRecentJobAudits({
+    limit: 30,
+    jobId: filters.jobId || null,
+    userId: filters.userId || null,
+    engineId: filters.engineId || null,
+    status: filters.status || null,
+    outcome: filters.outcome || null,
+    from: filters.fromDate,
+    to: filters.toDate,
+  });
+
+  const filtersQuery = buildFiltersQuery(filters);
+  const overviewCards = buildOverviewCards(jobs);
+  const shortcuts = buildOutcomeShortcuts(filters, jobs);
+  const activeFilters = describeActiveFilters(filters);
+  const filterCount = activeFilters.length;
+
+  return (
+    <div className="flex flex-col gap-5">
+      <AdminPageHeader
+        eyebrow="Operations"
+        title="Jobs"
+        description="Surface de triage pour les rendus, les erreurs Fal, les débits wallet et les remises en ligne."
+        actions={
+          <>
+            <AdminActionLink href="/admin/insights">
+              Insights
+            </AdminActionLink>
+            <AdminActionLink href="/admin/users">
+              Users
+            </AdminActionLink>
+          </>
+        }
+      />
+
+      <AdminSection
+        title="Jobs Overview"
+        description="Lecture rapide du lot actuellement chargé, pour savoir immédiatement si on est en mode monitoring ou triage."
+      >
+        <AdminMetricGrid items={overviewCards} columnsClassName="sm:grid-cols-2 xl:grid-cols-6" className="border-0" />
+      </AdminSection>
+
+      <AdminSection
+        title="Job Workspace"
+        description="Filtres linkables, raccourcis outcome et table d’audit compacte."
+        action={
+          <AdminSectionMeta
+            title={filterCount ? `${filterCount} active filter${filterCount > 1 ? 's' : ''}` : 'All jobs'}
+            lines={[activeFilters.length ? activeFilters.join(' · ') : 'No scope restriction. The table shows the latest audit slice.']}
+          />
+        }
+      >
+        <div className="space-y-4">
+          <AdminShortcutRail
+            items={shortcuts.map((shortcut) => ({
+              label: shortcut.label,
+              href: shortcut.href,
+              active: shortcut.active,
+              meta: formatNumber(shortcut.count),
+            }))}
+          />
+          <JobFilters filters={filters} />
+          <AdminJobAuditTable key={filtersQuery || 'all-jobs'} initialJobs={jobs} initialCursor={nextCursor} filtersQuery={filtersQuery} />
+        </div>
+      </AdminSection>
+    </div>
+  );
+}
+
 function normalizeFilters(params: PageProps['searchParams']): UiFilters {
-  const coerce = (value: string | undefined) => (value?.trim().length ? value.trim() : '');
+  const coerce = (value: SearchParamValue) => {
+    const raw = Array.isArray(value) ? value[0] : value;
+    return raw?.trim().length ? raw.trim() : '';
+  };
+
   const jobId = coerce(params?.jobId);
   const userId = coerce(params?.userId);
   const engineId = coerce(params?.engineId);
@@ -81,6 +170,7 @@ function normalizeFilters(params: PageProps['searchParams']): UiFilters {
   const to = coerce(params?.to);
   const fromDate = from ? parseDate(from) : null;
   const toDate = to ? parseDate(to) : null;
+
   return { jobId, userId, engineId, status, outcome, from, to, fromDate, toDate };
 }
 
@@ -102,110 +192,232 @@ function buildFiltersQuery(filters: UiFilters): string {
   return params.toString();
 }
 
+function buildJobsHref(filters: UiFilters, overrides: Partial<Record<keyof UiFilters, string>>) {
+  const next = {
+    jobId: filters.jobId,
+    userId: filters.userId,
+    engineId: filters.engineId,
+    status: filters.status,
+    outcome: filters.outcome,
+    from: filters.from,
+    to: filters.to,
+    ...overrides,
+  };
+
+  const params = new URLSearchParams();
+  if (next.jobId) params.set('jobId', next.jobId);
+  if (next.userId) params.set('userId', next.userId);
+  if (next.engineId) params.set('engineId', next.engineId);
+  if (next.status) params.set('status', next.status);
+  if (next.outcome) params.set('outcome', next.outcome);
+  if (next.from) params.set('from', next.from);
+  if (next.to) params.set('to', next.to);
+
+  const query = params.toString();
+  return query ? `/admin/jobs?${query}` : '/admin/jobs';
+}
+
+function buildOverviewCards(jobs: AdminJobAuditRecord[]): AdminMetricItem[] {
+  const actionRequired = jobs.filter((job) => job.outcome === 'failed_action_required').length;
+  const inProgress = jobs.filter((job) => job.outcome === 'in_progress').length;
+  const completed = jobs.filter((job) => job.outcome === 'completed').length;
+  const refunded = jobs.filter((job) => job.outcome === 'refunded_failure_resolved').length;
+  const falIssues = jobs.filter((job) => !job.falOk).length;
+  const paymentDrift = jobs.filter((job) => !job.paymentOk).length;
+
+  return [
+    {
+      label: 'Loaded',
+      value: formatNumber(jobs.length),
+      helper: 'Current audit slice',
+      icon: History,
+    },
+    {
+      label: 'Action required',
+      value: formatNumber(actionRequired),
+      helper: 'Jobs still failing without refund resolution',
+      tone: actionRequired > 0 ? 'warning' : 'success',
+      icon: AlertTriangle,
+    },
+    {
+      label: 'In progress',
+      value: formatNumber(inProgress),
+      helper: 'Pending, queued or actively processing',
+      icon: Clock3,
+    },
+    {
+      label: 'Completed',
+      value: formatNumber(completed),
+      helper: 'Jobs with terminal success state',
+      tone: completed > 0 ? 'success' : 'default',
+      icon: CheckCircle2,
+    },
+    {
+      label: 'Fal issues',
+      value: formatNumber(falIssues),
+      helper: 'Rows where provider state still looks unhealthy',
+      tone: falIssues > 0 ? 'warning' : 'success',
+      icon: ShieldAlert,
+    },
+    {
+      label: 'Payment drift',
+      value: formatNumber(paymentDrift + refunded),
+      helper: 'Mismatched charges or refunded failure flows',
+      tone: paymentDrift + refunded > 0 ? 'warning' : 'success',
+      icon: ReceiptText,
+    },
+  ];
+}
+
+function buildOutcomeShortcuts(filters: UiFilters, jobs: AdminJobAuditRecord[]): Shortcut[] {
+  const actionRequired = jobs.filter((job) => job.outcome === 'failed_action_required').length;
+  const inProgress = jobs.filter((job) => job.outcome === 'in_progress').length;
+  const completed = jobs.filter((job) => job.outcome === 'completed').length;
+  const refunded = jobs.filter((job) => job.outcome === 'refunded_failure_resolved').length;
+
+  return [
+    {
+      label: 'All',
+      href: buildJobsHref(filters, { outcome: '' }),
+      count: jobs.length,
+      active: !filters.outcome,
+    },
+    {
+      label: 'Action required',
+      href: buildJobsHref(filters, { outcome: 'failed_action_required' }),
+      count: actionRequired,
+      active: filters.outcome === 'failed_action_required',
+    },
+    {
+      label: 'In progress',
+      href: buildJobsHref(filters, { outcome: 'in_progress' }),
+      count: inProgress,
+      active: filters.outcome === 'in_progress',
+    },
+    {
+      label: 'Completed',
+      href: buildJobsHref(filters, { outcome: 'completed' }),
+      count: completed,
+      active: filters.outcome === 'completed',
+    },
+    {
+      label: 'Refunded',
+      href: buildJobsHref(filters, { outcome: 'refunded_failure_resolved' }),
+      count: refunded,
+      active: filters.outcome === 'refunded_failure_resolved',
+    },
+  ];
+}
+
+function describeActiveFilters(filters: UiFilters): string[] {
+  const items: string[] = [];
+  if (filters.jobId) items.push(`job ${filters.jobId}`);
+  if (filters.userId) items.push(`user ${filters.userId}`);
+  if (filters.engineId) items.push(`engine ${filters.engineId}`);
+  if (filters.status) items.push(`status ${filters.status}`);
+  if (filters.outcome) items.push(`outcome ${filters.outcome}`);
+  if (filters.from) items.push(`from ${filters.from}`);
+  if (filters.to) items.push(`to ${filters.to}`);
+  return items;
+}
+
+function formatNumber(value: number) {
+  return numberFormatter.format(value);
+}
+
 function JobFilters({ filters }: { filters: UiFilters }) {
   return (
-    <form className="space-y-4 rounded-2xl border border-surface-on-media-25 bg-surface-glass-95 p-5 shadow-card" method="get">
-      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-3">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          Job ID
-          <input
-            type="text"
-            name="jobId"
-            defaultValue={filters.jobId}
-            placeholder="job_1234 or provider id"
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          User ID
-          <input
-            type="text"
-            name="userId"
-            defaultValue={filters.userId}
-            placeholder="Supabase user id"
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          Engine
-          <input
-            type="text"
-            name="engineId"
-            defaultValue={filters.engineId}
-            placeholder="engine id or label"
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-      </div>
-
-      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          Status
-          <select
-            name="status"
-            defaultValue={filters.status}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">All</option>
-            {['pending', 'running', 'completed', 'failed'].map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          Outcome
-          <select
-            name="outcome"
-            defaultValue={filters.outcome}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">All</option>
-            <option value="failed_action_required">Action required</option>
-            <option value="refunded_failure_resolved">Refunded failure</option>
-            <option value="completed">Completed</option>
-            <option value="in_progress">In progress</option>
-            <option value="unknown">Unknown</option>
-          </select>
-        </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          From
-          <input
-            type="date"
-            name="from"
-            defaultValue={filters.from}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-          To
-          <input
-            type="date"
-            name="to"
-            defaultValue={filters.to}
-            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </label>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4">
-        <Button
-          type="submit"
-          size="sm"
-          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse hover:bg-text-primary/90"
+    <AdminFilterBar
+      method="get"
+      fieldsClassName="xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1.2fr)_180px_220px_180px_180px]"
+      helper="Search by internal job id, provider id, user id, engine or time window. Filters stay shareable in the URL."
+      actions={
+        <>
+          <Button type="submit" size="sm" className="bg-brand text-on-brand">
+            Apply filters
+          </Button>
+          <AdminActionLink href="/admin/jobs">
+            Reset
+          </AdminActionLink>
+        </>
+      }
+    >
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Job ID
+        <input
+          type="text"
+          name="jobId"
+          defaultValue={filters.jobId}
+          placeholder="job_1234 or provider id"
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        User ID
+        <input
+          type="text"
+          name="userId"
+          defaultValue={filters.userId}
+          placeholder="Supabase user id"
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Engine
+        <input
+          type="text"
+          name="engineId"
+          defaultValue={filters.engineId}
+          placeholder="engine id or label"
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Status
+        <select
+          name="status"
+          defaultValue={filters.status}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          Apply filters
-        </Button>
-        <ButtonLink
-          href="/admin/jobs"
-          variant="ghost"
-          size="sm"
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary hover:text-text-primary"
+          {STATUS_OPTIONS.map((option) => (
+            <option key={option.value || 'all'} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        Outcome
+        <select
+          name="outcome"
+          defaultValue={filters.outcome}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          Reset
-        </ButtonLink>
-      </div>
-    </form>
+          {OUTCOME_OPTIONS.map((option) => (
+            <option key={option.value || 'all'} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        From
+        <input
+          type="date"
+          name="from"
+          defaultValue={filters.from}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+      <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+        To
+        <input
+          type="date"
+          name="to"
+          defaultValue={filters.to}
+          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </label>
+    </AdminFilterBar>
   );
 }

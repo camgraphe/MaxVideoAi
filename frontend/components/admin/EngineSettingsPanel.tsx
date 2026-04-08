@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 type EngineSettingsPanelProps = {
@@ -32,11 +33,18 @@ type EngineSettingsPanelProps = {
 
 type StatusMessage = { variant: 'success' | 'error'; message: string } | null;
 
+const moneyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 2,
+});
+
 export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialForm }: EngineSettingsPanelProps) {
   const router = useRouter();
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<StatusMessage>(null);
+  const [isOpen, setIsOpen] = useState(!initialForm.active || initialForm.availability !== 'available' || initialForm.status !== 'live');
 
   const handleChange = (field: keyof typeof form, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -143,170 +151,212 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
   };
 
   return (
-    <section className="space-y-4 rounded-2xl border border-border/60 bg-surface-glass-95 p-5 shadow-card">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Engine</p>
-          <h3 className="text-lg font-semibold text-text-primary">{engineLabel}</h3>
-          <p className="text-xs text-text-secondary">
-            Availability: <strong>{baseline.availability}</strong> · Status: <strong>{baseline.status ?? 'n/a'}</strong> · Latency:{' '}
-            <strong>{baseline.latencyTier ?? 'n/a'}</strong>
-          </p>
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={handleReset}
-          className="rounded-full border-border/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg"
-          disabled={submitting}
-        >
-          Reset overrides
-        </Button>
-      </header>
-
-      <form onSubmit={handleSubmit} className="stack-gap-sm">
-        <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Active
-            <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
-              value={form.active ? 'true' : 'false'}
-              onChange={(event) => handleChange('active', event.target.value === 'true')}
-            >
-              <option value="true">Enabled</option>
-              <option value="false">Disabled</option>
-            </select>
-          </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Availability
-            <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
-              value={form.availability}
-              onChange={(event) => handleChange('availability', event.target.value)}
-            >
-              {['available', 'limited', 'waitlist', 'paused'].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Status
-            <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm capitalize"
-              value={form.status}
-              onChange={(event) => handleChange('status', event.target.value)}
-            >
-              {['live', 'busy', 'degraded', 'maintenance', 'early_access'].map((value) => (
-                <option key={value} value={value}>
-                  {value.replace('_', ' ')}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Latency tier
-            <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm capitalize"
-              value={form.latencyTier}
-              onChange={(event) => handleChange('latencyTier', event.target.value)}
-            >
-              {['fast', 'standard'].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Max duration (seconds)
-            <input
-              type="number"
-              min="1"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
-              value={form.maxDurationSec}
-              onChange={(event) => handleChange('maxDurationSec', event.target.value)}
-              placeholder={baseline.maxDurationSec ? String(baseline.maxDurationSec) : ''}
-            />
-          </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted md:col-span-3">
-            Resolutions (comma separated)
-            <input
-              type="text"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
-              value={form.resolutions}
-              onChange={(event) => handleChange('resolutions', event.target.value)}
-              placeholder={baseline.resolutions.join(', ') || '1080p, 4k'}
-            />
-          </label>
-        </div>
-
-        <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Currency
-            <input
-              type="text"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
-              value={form.currency}
-              onChange={(event) => handleChange('currency', event.target.value)}
-              placeholder={baseline.currency}
-            />
-          </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Per-second rate (cents)
-            <input
-              type="number"
-              min="0"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
-              value={form.perSecondCents}
-              onChange={(event) => handleChange('perSecondCents', event.target.value)}
-              placeholder={baseline.perSecondCents != null ? String(baseline.perSecondCents) : ''}
-            />
-          </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-            Flat charge (cents)
-            <input
-              type="number"
-              min="0"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
-              value={form.flatCents}
-              onChange={(event) => handleChange('flatCents', event.target.value)}
-              placeholder={baseline.flatCents != null ? String(baseline.flatCents) : ''}
-            />
-          </label>
-        </div>
-
-        {status ? (
-          <div
-            className={`rounded-lg border px-3 py-2 text-xs ${
-              status.variant === 'success'
-                ? 'border-success-border bg-success-bg text-success'
-                : 'border-error-border bg-error-bg text-error'
-            }`}
-          >
-            {status.message}
+    <details className="group" open={isOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)}>
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-5 py-4 marker:hidden">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-text-primary">{engineLabel}</p>
+            <span className={pillClass(form.active ? 'success' : 'warning')}>{form.active ? 'active' : 'disabled'}</span>
+            <span className={pillClass(form.availability === 'available' ? 'default' : 'warning')}>{form.availability}</span>
+            <span className={pillClass(form.status === 'live' ? 'default' : 'warning')}>{form.status.replace('_', ' ')}</span>
           </div>
-        ) : null}
-
-        <div className="flex items-center gap-4">
-          <Button
-            type="submit"
-            size="sm"
-            disabled={submitting}
-            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse"
-          >
-            {submitting ? 'Saving…' : 'Save settings'}
-          </Button>
-          <p className="text-xs text-text-secondary">
-            Leave a field blank to keep the upstream configuration. Current defaults shown as placeholders.
+          <p className="mt-1 font-mono text-xs text-text-muted">{engineId}</p>
+          <p className="mt-2 text-sm text-text-secondary">
+            {form.latencyTier} latency
+            {baseline.maxDurationSec ? ` · ${baseline.maxDurationSec}s max` : ''}
+            {baseline.resolutions.length ? ` · ${baseline.resolutions.join(', ')}` : ''}
+          </p>
+          <p className="mt-1 text-xs text-text-secondary">
+            Baseline: {baseline.availability} · {baseline.status ?? 'n/a'} · {baseline.latencyTier ?? 'n/a'}
+            {baseline.perSecondCents != null ? ` · ${formatMoneyFromCents(baseline.perSecondCents, baseline.currency)} / sec` : ''}
+            {baseline.flatCents != null ? ` · ${formatMoneyFromCents(baseline.flatCents, baseline.currency)} flat` : ''}
           </p>
         </div>
-      </form>
-    </section>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="hidden text-xs text-text-muted sm:inline">Edit override</span>
+          <ChevronDown className="h-4 w-4 text-text-muted transition group-open:rotate-180" />
+        </div>
+      </summary>
+
+      <div className="border-t border-hairline px-5 py-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid gap-3 xl:grid-cols-4">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Active
+              <select
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.active ? 'true' : 'false'}
+                onChange={(event) => handleChange('active', event.target.value === 'true')}
+              >
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+            </label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Availability
+              <select
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.availability}
+                onChange={(event) => handleChange('availability', event.target.value)}
+              >
+                {['available', 'limited', 'waitlist', 'paused'].map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Status
+              <select
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm capitalize text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.status}
+                onChange={(event) => handleChange('status', event.target.value)}
+              >
+                {['live', 'busy', 'degraded', 'maintenance', 'early_access'].map((value) => (
+                  <option key={value} value={value}>
+                    {value.replace('_', ' ')}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Latency tier
+              <select
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm capitalize text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.latencyTier}
+                onChange={(event) => handleChange('latencyTier', event.target.value)}
+              >
+                {['fast', 'standard'].map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-[220px_minmax(0,1fr)]">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Max duration (seconds)
+              <input
+                type="number"
+                min="1"
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.maxDurationSec}
+                onChange={(event) => handleChange('maxDurationSec', event.target.value)}
+                placeholder={baseline.maxDurationSec ? String(baseline.maxDurationSec) : ''}
+              />
+            </label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Resolutions (comma separated)
+              <input
+                type="text"
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.resolutions}
+                onChange={(event) => handleChange('resolutions', event.target.value)}
+                placeholder={baseline.resolutions.join(', ') || '1080p, 4k'}
+              />
+            </label>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-4">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Currency
+              <input
+                type="text"
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.currency}
+                onChange={(event) => handleChange('currency', event.target.value)}
+                placeholder={baseline.currency}
+              />
+            </label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Per-second rate (cents)
+              <input
+                type="number"
+                min="0"
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.perSecondCents}
+                onChange={(event) => handleChange('perSecondCents', event.target.value)}
+                placeholder={baseline.perSecondCents != null ? String(baseline.perSecondCents) : ''}
+              />
+            </label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Flat charge (cents)
+              <input
+                type="number"
+                min="0"
+                className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                value={form.flatCents}
+                onChange={(event) => handleChange('flatCents', event.target.value)}
+                placeholder={baseline.flatCents != null ? String(baseline.flatCents) : ''}
+              />
+            </label>
+            <div className="rounded-xl border border-hairline bg-bg/50 px-3 py-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Current pricing</p>
+              <p className="mt-2 text-sm text-text-secondary">
+                {baseline.perSecondCents != null ? `${formatMoneyFromCents(baseline.perSecondCents, baseline.currency)} / sec` : 'No per-second rate'}
+              </p>
+              <p className="mt-1 text-sm text-text-secondary">
+                {baseline.flatCents != null ? `${formatMoneyFromCents(baseline.flatCents, baseline.currency)} flat` : 'No flat charge'}
+              </p>
+            </div>
+          </div>
+
+          {status ? (
+            <div
+              className={[
+                'rounded-xl border px-3 py-2 text-sm',
+                status.variant === 'success'
+                  ? 'border-success-border bg-success-bg text-success'
+                  : 'border-error-border bg-error-bg text-error',
+              ].join(' ')}
+            >
+              {status.message}
+            </div>
+          ) : null}
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-text-secondary">
+              Leave a field blank to keep the upstream configuration. Defaults are shown in placeholders and summary lines above.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleReset}
+                className="border-border bg-surface"
+                disabled={submitting}
+              >
+                Reset overrides
+              </Button>
+              <Button type="submit" size="sm" disabled={submitting} className="bg-brand text-on-brand">
+                {submitting ? 'Saving…' : 'Save settings'}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </details>
   );
+}
+
+function pillClass(tone: 'default' | 'success' | 'warning') {
+  if (tone === 'success') return 'rounded-full border border-success-border bg-success-bg px-2.5 py-1 text-xs font-medium text-success';
+  if (tone === 'warning') return 'rounded-full border border-warning-border bg-warning-bg px-2.5 py-1 text-xs font-medium text-warning';
+  return 'rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium text-text-secondary';
+}
+
+function formatMoneyFromCents(value: number, currency: string) {
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+      maximumFractionDigits: 2,
+    }).format(value / 100);
+  } catch {
+    return moneyFormatter.format(value / 100);
+  }
 }

@@ -114,6 +114,13 @@
   --on-info: #131A22;
   --chart-active: #7C3AED;
   --chart-charges: #F97316;
+  --admin-sidebar-bg: #F4F7FB;
+  --admin-sidebar-border: rgba(19, 26, 34, 0.08);
+  --admin-sidebar-surface: rgba(19, 26, 34, 0.04);
+  --admin-sidebar-surface-hover: rgba(19, 26, 34, 0.08);
+  --admin-sidebar-text: #131A22;
+  --admin-sidebar-text-muted: #5D6B7A;
+  --admin-sidebar-text-faint: #7A8797;
   --radius-card: 12px;
   --radius-input: 10px;
   --radius-sm: 8px;
@@ -299,6 +306,14 @@
   --on-info: #F7F8FA;
   --chart-active: #7C3AED;
   --chart-charges: #F97316;
+  --admin-sidebar-bg: #0A1017;
+  --admin-sidebar-border: rgba(255, 255, 255, 0.08);
+  --admin-sidebar-surface: rgba(255, 255, 255, 0.04);
+  --admin-sidebar-surface-hover: rgba(255, 255, 255, 0.10);
+  --admin-sidebar-text: rgba(255, 255, 255, 0.95);
+  --admin-sidebar-text-muted: rgba(223, 231, 242, 0.76);
+  --admin-sidebar-text-faint: rgba(191, 201, 216, 0.42);
+  --admin-sidebar-contrast: #F7F8FA;
   --shadow-card: 0 1px 2px rgba(0,0,0,.28), 0 8px 20px rgba(0,0,0,.22);
   --shadow-float: 0 12px 32px rgba(0,0,0,.32);
   --preview-outline-idle: rgba(0, 0, 0, 0);

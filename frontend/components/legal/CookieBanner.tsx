@@ -253,6 +253,7 @@ async function persistToServer(categories: ConsentRecord['categories']) {
 
 export function CookieBanner() {
   const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith('/admin');
   const copy = COOKIE_BANNER_COPY[resolveCookieBannerLocale(pathname)];
   const [state, setState] = useState<BannerState>({ ready: false });
   const [showPreferences, setShowPreferences] = useState(false);
@@ -483,7 +484,7 @@ export function CookieBanner() {
     </div>
   );
 
-  if (!state.ready) {
+  if (!state.ready || isAdminRoute) {
     return null;
   }
 

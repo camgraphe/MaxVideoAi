@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 
 type ServiceNoticeFormProps = {
@@ -8,9 +9,11 @@ type ServiceNoticeFormProps = {
     enabled: boolean;
     message: string;
   };
+  embedded?: boolean;
+  className?: string;
 };
 
-export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
+export function ServiceNoticeForm({ initialNotice, embedded = false, className }: ServiceNoticeFormProps) {
   const [enabled, setEnabled] = useState(initialNotice.enabled);
   const [message, setMessage] = useState(initialNotice.message);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -65,7 +68,13 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-card border border-border bg-surface p-6 shadow-card">
+    <form
+      onSubmit={handleSubmit}
+      className={clsx(
+        embedded ? 'space-y-4' : 'space-y-4 rounded-card border border-border bg-surface p-6 shadow-card',
+        className
+      )}
+    >
       <div className="space-y-1">
         <h2 className="text-lg font-semibold text-text-primary">Bannière de service</h2>
         <p className="text-sm text-text-secondary">
@@ -110,7 +119,10 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
           type="submit"
           size="sm"
           disabled={isPending || (enabled && !message.trim())}
-          className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card hover:bg-brandHover"
+          className={clsx(
+            'bg-brand px-4 py-2 text-sm font-semibold text-on-brand hover:bg-brandHover',
+            embedded ? 'rounded-xl' : 'rounded-full shadow-card'
+          )}
         >
           {isPending ? 'Enregistrement…' : 'Enregistrer'}
         </Button>

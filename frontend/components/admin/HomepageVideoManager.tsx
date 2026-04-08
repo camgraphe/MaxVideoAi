@@ -37,6 +37,8 @@ type SlotCardState = HomepageSlotState & {
 
 type HomepageVideoManagerProps = {
   initialHero: HomepageSlotState[];
+  embedded?: boolean;
+  className?: string;
 };
 
 function prepareSlotState(slot: HomepageSlotState): SlotCardState {
@@ -70,7 +72,11 @@ async function fetchVideoPreview(videoId: string): Promise<SlotVideo | null> {
   };
 }
 
-export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps) {
+export function HomepageVideoManager({
+  initialHero,
+  embedded = false,
+  className,
+}: HomepageVideoManagerProps) {
   const [heroSlots, setHeroSlots] = useState(() => initialHero.map(prepareSlotState));
 
   const updateSlotState = useCallback(
@@ -203,12 +209,14 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
   );
 
   return (
-    <div className="space-y-10">
+    <div className={clsx(embedded ? 'space-y-4' : 'space-y-10', className)}>
       <section className="space-y-4">
-        <header className="space-y-1">
-          <h2 className="text-lg font-semibold text-text-primary">Hero spotlight videos</h2>
-          <p className="text-sm text-text-secondary">Configure the four hero tiles displayed above the fold.</p>
-        </header>
+        {!embedded ? (
+          <header className="space-y-1">
+            <h2 className="text-lg font-semibold text-text-primary">Hero spotlight videos</h2>
+            <p className="text-sm text-text-secondary">Configure the four hero tiles displayed above the fold.</p>
+          </header>
+        ) : null}
         <div className="grid grid-gap-sm lg:grid-cols-2">
           {heroSlots.map((slot) => {
             const video = slot.video;
