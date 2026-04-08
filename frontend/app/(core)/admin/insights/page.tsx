@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
 import { notFound } from 'next/navigation';
+import { Activity, AlertTriangle, ChartLine, TrendingUp, Users, Wallet } from 'lucide-react';
 import { fetchAdminMetrics, fetchAdminMetricsComparison, METRIC_RANGE_OPTIONS } from '@/server/admin-metrics';
 import type {
   AdminMetrics,
@@ -11,6 +12,8 @@ import type {
 } from '@/lib/admin/types';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
+import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { AdminShortcutRail } from '@/components/admin-system/surfaces/AdminShortcutRail';
 import { type AdminStatColumn, AdminStatTable } from '@/components/admin-system/surfaces/AdminStatTable';
 import { requireAdmin } from '@/server/admin';
 
@@ -54,6 +57,23 @@ type PulseCard = {
   label: string;
   value: string;
   previousValue: string;
+  delta: string;
+  helper: string;
+  tone?: 'default' | 'success' | 'warning';
+};
+
+type PrioritySignal = {
+  label: string;
+  value: string;
+  helper: string;
+  href: string;
+  tone?: 'default' | 'success' | 'warning';
+};
+
+type RevenueBoardRow = {
+  label: string;
+  current: string;
+  previous: string;
   delta: string;
   helper: string;
   tone?: 'default' | 'success' | 'warning';
@@ -148,10 +168,13 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
   ]);
 
   const humanRange = describeRange(metrics.range.label);
-  const overviewStats = buildOverviewStats(metrics);
+  const executiveMetrics = buildExecutiveMetrics(metrics, comparison, humanRange);
   const pulseCards = buildPulseCards(metrics, comparison);
   const quickInsights = buildQuickInsights(metrics, comparison);
+  const prioritySignals = buildPrioritySignals(metrics, comparison, humanRange);
+  const navigationRailItems = buildInsightsRailItems(metrics, comparison, excludeAdmin, focus);
   const focusMetric = buildFocusMetricData(focus, metrics, comparison, humanRange);
+  const revenueBoardRows = buildRevenueBoardRows(comparison);
   const behaviorStats = buildBehaviorStats(metrics);
   const funnelSteps = buildFunnelSteps(metrics);
   const dailyLedgerRows = buildRecentLedgerRows(metrics);
@@ -166,44 +189,43 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
       <AdminPageHeader
         eyebrow="Analytics"
         title="Workspace insights"
-        description="Surface admin resserrée pour lire les tendances, comparer la fenêtre courante à la précédente et agir vite sur les signaux business ou ops."
+        description="Surface de décision pour lire acquisition, cash-in, usage et fiabilité dans un seul workspace opérateur."
         actions={<InsightsControls current={metrics.range.label} excludeAdmin={excludeAdmin} focus={focus} />}
       />
 
       <AdminSection
-        title="Overview"
-        description={`Base de lecture pour la fenêtre courante de ${humanRange}, sans empiler de cartes décoratives.`}
+        title="Executive Summary"
+        description={`Lecture de base pour ${humanRange}, organisée comme une console de décision plutôt qu’un mur de widgets.`}
         contentClassName="p-0"
       >
-        <div className="grid xl:grid-cols-[minmax(0,1.7fr)_360px]">
-          <div className="grid gap-px bg-hairline sm:grid-cols-2 xl:grid-cols-3">
-            {overviewStats.map((stat) => (
-              <OverviewStatCell key={stat.label} stat={stat} />
-            ))}
-          </div>
-          <div className="border-t border-hairline px-5 py-5 xl:border-l xl:border-t-0">
-            <div className="mb-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Window summary</p>
-              <p className="mt-1 text-sm text-text-secondary">Lecture rapide des mouvements à retenir avant d’ouvrir les tables détaillées.</p>
+        <div className="grid xl:items-start xl:grid-cols-[minmax(0,1.7fr)_380px]">
+          <div className="border-b border-hairline xl:border-b-0 xl:border-r">
+            <div className="border-b border-hairline px-5 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Command deck</p>
+              <p className="mt-1 text-sm text-text-secondary">Acquisition, monetization, activation and reliability compressed into one first read.</p>
             </div>
-            <ul className="space-y-3 text-sm text-text-secondary">
-              {quickInsights.map((line, index) => (
-                <li key={`overview-note-${index}`} className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-brand" aria-hidden />
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
+            <AdminMetricGrid
+              items={executiveMetrics}
+              density="compact"
+              columnsClassName="sm:grid-cols-2 xl:grid-cols-3"
+              className="rounded-none border-0"
+            />
+            <div className="border-t border-hairline px-5 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Navigate</p>
+              <p className="mt-1 text-sm text-text-secondary">Raccourcis vers les surfaces à ouvrir juste après la lecture du board.</p>
+              <AdminShortcutRail items={navigationRailItems} className="mt-3" />
+            </div>
           </div>
+          <PrioritySignalPanel signals={prioritySignals} humanRange={humanRange} />
         </div>
       </AdminSection>
 
       <AdminSection
         title="Trend Workspace"
-        description="Un seul indicateur principal à la fois, avec un vrai overlay période courante vs précédente."
+        description="Un seul indicateur directeur à la fois, avec comparaison explicite et contexte de lecture à droite."
         action={<MetricFocusTabs current={focus} range={metrics.range.label} excludeAdmin={excludeAdmin} />}
       >
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_360px]">
+        <div className="grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.75fr)_320px]">
           <div>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -223,20 +245,23 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
                 previousPoints={focusMetric.previousPoints}
               />
             </div>
+            <WindowPulseGrid cards={pulseCards} humanRange={humanRange} className="mt-5" />
           </div>
 
           <div className="space-y-4 xl:border-l xl:border-hairline xl:pl-6">
-            <WindowPulseTable cards={pulseCards} humanRange={humanRange} />
+            <MetricSnapshotPanel title={`${focusMetric.label} scorecard`} items={focusMetric.stats} />
+            <NarrativePanel title="Operator brief" lines={quickInsights} />
           </div>
         </div>
       </AdminSection>
 
       <AdminSection
-        title="Conversion & Customers"
-        description="Du signup à la première valeur, puis lecture des comptes les plus engagés."
+        title="Revenue & Activation"
+        description="Valeur créée dans la fenêtre, vitesse d’activation et lecture des comptes qui concentrent le plus de spend."
       >
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_380px]">
+        <div className="grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.2fr)_380px]">
           <div className="space-y-5">
+            <RevenueBoardTable rows={revenueBoardRows} />
             <FunnelRows steps={funnelSteps} />
             <BehaviorGrid stats={behaviorStats} />
           </div>
@@ -245,15 +270,16 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
       </AdminSection>
 
       <AdminSection
-        title="Engine Mix & Health"
-        description="Répartition usage/revenu à gauche, incidents encore ouverts à droite."
+        title="Risk & Demand"
+        description="Concentration du revenu moteur à gauche, backlog de fiabilité et signaux de risque à droite."
       >
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
+        <div className="grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.5fr)_360px]">
           <EngineMixTable engines={featuredEngines} />
           <HealthPanel
             failedRenders={metrics.health.failedRenders30d}
             failureRate={metrics.health.failedRendersRate30d}
             flaggedRows={flaggedHealthRows}
+            metrics={metrics}
           />
         </div>
       </AdminSection>
@@ -262,7 +288,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         title="Daily Ledger"
         description="Derniers jours et rollup mensuel gardés en lecture table-first, sans mélange de granularités."
       >
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_360px]">
+        <div className="grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.4fr)_360px]">
           <DailyLedgerTable rows={dailyLedgerRows} />
           <MonthlyRollupTable rows={monthlyRows} />
         </div>
@@ -344,33 +370,57 @@ function MetricFocusTabs({
   );
 }
 
-function OverviewStatCell({ stat }: { stat: SmallStat }) {
-  const valueClass =
-    stat.tone === 'warning'
-      ? 'text-error'
-      : stat.tone === 'success'
-        ? 'text-success'
-        : 'text-text-primary';
-
+function PrioritySignalPanel({
+  signals,
+  humanRange,
+}: {
+  signals: PrioritySignal[];
+  humanRange: string;
+}) {
   return (
-    <div className="bg-surface px-5 py-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{stat.label}</p>
-      <p className={`mt-2 text-2xl font-semibold ${valueClass}`}>{stat.value}</p>
-      {stat.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{stat.helper}</p> : null}
+    <div className="px-5 py-5">
+      <div className="mb-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Priority queue</p>
+        <p className="mt-1 text-sm text-text-secondary">What needs attention in the current {humanRange} before drilling into users, jobs or billing.</p>
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+        <div className="divide-y divide-hairline">
+          {signals.map((signal) => (
+            <Link key={signal.label} href={signal.href} className="flex items-start justify-between gap-4 px-4 py-4 transition hover:bg-bg">
+              <div>
+                <p className="text-sm font-medium text-text-primary">{signal.label}</p>
+                <p className="mt-1 text-xs leading-5 text-text-secondary">{signal.helper}</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className={`text-sm font-semibold ${toneValueClass(signal.tone)}`}>{signal.value}</p>
+                <p className="mt-1 text-[11px] text-text-muted">Open</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function WindowPulseTable({ cards, humanRange }: { cards: PulseCard[]; humanRange: string }) {
+function WindowPulseGrid({
+  cards,
+  humanRange,
+  className = '',
+}: {
+  cards: PulseCard[];
+  humanRange: string;
+  className?: string;
+}) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className={`overflow-hidden rounded-2xl border border-hairline bg-bg/40 ${className}`}>
       <div className="border-b border-hairline px-4 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Window pulse</p>
         <p className="mt-1 text-sm text-text-secondary">Current {humanRange} compared to the previous {humanRange}.</p>
       </div>
-      <div className="divide-y divide-hairline">
+      <div className="grid gap-px bg-hairline sm:grid-cols-2">
         {cards.map((card) => (
-          <div key={card.label} className="px-4 py-3">
+          <div key={card.label} className="bg-surface px-4 py-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-text-primary">{card.label}</p>
@@ -378,13 +428,66 @@ function WindowPulseTable({ cards, humanRange }: { cards: PulseCard[]; humanRang
               </div>
               <span className={`rounded-md px-2 py-1 text-[11px] font-semibold ${toneBadgeClass(card.tone)}`}>{card.delta}</span>
             </div>
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <p className="text-lg font-semibold text-text-primary">{card.value}</p>
-            </div>
+            <p className="mt-3 text-lg font-semibold text-text-primary">{card.value}</p>
             <p className="mt-2 text-xs leading-5 text-text-secondary">{card.helper}</p>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function MetricSnapshotPanel({
+  title,
+  items,
+}: {
+  title: string;
+  items: SmallStat[];
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{title}</p>
+        <p className="mt-1 text-sm text-text-secondary">Current window, previous window and the most useful reading cues for the selected metric.</p>
+      </div>
+      <div className="divide-y divide-hairline">
+        {items.map((item) => (
+          <div key={item.label} className="px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-text-primary">{item.label}</p>
+                {item.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{item.helper}</p> : null}
+              </div>
+              <p className={`text-sm font-semibold ${toneValueClass(item.tone)}`}>{item.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NarrativePanel({
+  title,
+  lines,
+}: {
+  title: string;
+  lines: string[];
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">{title}</p>
+        <p className="mt-1 text-sm text-text-secondary">Short narrative cues extracted from the current window to reduce scanning time.</p>
+      </div>
+      <ul className="space-y-3 px-4 py-4 text-sm text-text-secondary">
+        {lines.map((line, index) => (
+          <li key={`${title}-${index}`} className="flex items-start gap-3">
+            <span className="mt-1.5 h-2 w-2 rounded-full bg-brand" aria-hidden />
+            <span>{line}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -399,6 +502,58 @@ function StatStrip({ items, className = '' }: { items: SmallStat[]; className?: 
           {item.helper ? <p className="mt-1 text-xs leading-5 text-text-secondary">{item.helper}</p> : null}
         </div>
       ))}
+    </div>
+  );
+}
+
+function RevenueBoardTable({ rows }: { rows: RevenueBoardRow[] }) {
+  const columns: AdminStatColumn<RevenueBoardRow>[] = [
+    {
+      key: 'metric',
+      header: 'Metric',
+      render: (row) => (
+        <>
+          <p className="font-medium text-text-primary">{row.label}</p>
+          <p className="mt-1 text-xs text-text-secondary">{row.helper}</p>
+        </>
+      ),
+    },
+    {
+      key: 'current',
+      header: 'Current',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => row.current,
+    },
+    {
+      key: 'previous',
+      header: 'Previous',
+      cellClassName: 'text-text-secondary',
+      render: (row) => row.previous,
+    },
+    {
+      key: 'delta',
+      header: 'Delta',
+      cellClassName: (row) => `font-medium ${toneValueClass(row.tone)}`,
+      render: (row) => row.delta,
+    },
+  ];
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+      <div className="border-b border-hairline px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Revenue board</p>
+        <p className="mt-1 text-sm text-text-secondary">Current window vs previous window, organized like a decision table rather than four isolated cards.</p>
+      </div>
+      <AdminStatTable
+        columns={columns}
+        rows={rows}
+        getRowKey={(row) => row.label}
+        empty={null}
+        className="rounded-none border-0"
+        tableClassName="min-w-[620px]"
+        headerClassName="bg-surface"
+        bodyClassName="divide-y divide-hairline"
+      />
     </div>
   );
 }
@@ -658,11 +813,45 @@ function HealthPanel({
   failedRenders,
   failureRate,
   flaggedRows,
+  metrics,
 }: {
   failedRenders: number;
   failureRate: number;
   flaggedRows: AdminMetrics['health']['failedByEngine30d'];
+  metrics: AdminMetrics;
 }) {
+  const topEngine = metrics.engines[0];
+  const activationGap = Math.max(0, metrics.funnels.totalTopupUsers - metrics.funnels.convertedWithin30dUsers);
+  const riskSignals: PrioritySignal[] = [
+    {
+      label: 'Open failure backlog',
+      value: failedRenders ? formatNumber(failedRenders) : 'Clear',
+      helper: failedRenders
+        ? `${formatNumber(flaggedRows.length)} engine${flaggedRows.length > 1 ? 's' : ''} still show unresolved failures.`
+        : 'No unresolved failure recorded in the last 30 days.',
+      href: '/admin/jobs',
+      tone: failedRenders ? 'warning' : 'success',
+    },
+    {
+      label: 'Activation leak',
+      value: formatNumber(activationGap),
+      helper: activationGap
+        ? 'Wallet users who still have not reached a first completed render within 30 days.'
+        : 'All wallet users in this window reached a first render within 30 days.',
+      href: '/admin/users',
+      tone: activationGap ? 'warning' : 'success',
+    },
+    {
+      label: 'Engine concentration',
+      value: topEngine ? formatPercent(topEngine.shareOfTotalRevenue30d) : '—',
+      helper: topEngine
+        ? `${topEngine.engineLabel} currently carries the largest share of 30-day charge volume.`
+        : 'No engine demand recorded in this range.',
+      href: '/admin/engines',
+      tone: topEngine && topEngine.shareOfTotalRevenue30d > 0.55 ? 'warning' : 'default',
+    },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-3">
@@ -674,6 +863,24 @@ function HealthPanel({
           helper="At least one unresolved failure"
           tone={flaggedRows.length ? 'warning' : 'success'}
         />
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+        <div className="border-b border-hairline px-4 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Risk desk</p>
+          <p className="mt-1 text-sm text-text-secondary">Fast operator read of what could distort conversion, revenue quality or reliability next.</p>
+        </div>
+        <div className="divide-y divide-hairline">
+          {riskSignals.map((signal) => (
+            <Link key={signal.label} href={signal.href} className="flex items-start justify-between gap-4 px-4 py-4 transition hover:bg-bg">
+              <div>
+                <p className="text-sm font-medium text-text-primary">{signal.label}</p>
+                <p className="mt-1 text-xs leading-5 text-text-secondary">{signal.helper}</p>
+              </div>
+              <p className={`shrink-0 text-sm font-semibold ${toneValueClass(signal.tone)}`}>{signal.value}</p>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {flaggedRows.length ? (
@@ -890,40 +1097,226 @@ function resolveFocusParam(value: string | string[] | undefined): FocusMetric {
   return 'signups';
 }
 
-function buildOverviewStats(metrics: AdminMetrics): SmallStat[] {
+function buildExecutiveMetrics(
+  metrics: AdminMetrics,
+  comparison: AdminMetricsComparison,
+  humanRange: string
+): AdminMetricItem[] {
+  const signupsCurrent = sumTimeSeries(comparison.current.signupsDaily);
+  const signupsPrevious = sumTimeSeries(comparison.previous.signupsDaily);
+  const signupsDelta = compareValues(signupsCurrent, signupsPrevious);
+  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
+  const topupsPrevious = sumAmountSeries(comparison.previous.topupsDaily);
+  const topupsDelta = compareValues(topupsCurrent.amountUsd, topupsPrevious.amountUsd);
+  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
+  const chargesPrevious = sumAmountSeries(comparison.previous.chargesDaily);
+  const chargesDelta = compareValues(chargesCurrent.amountUsd, chargesPrevious.amountUsd);
+  const netCurrent = topupsCurrent.amountUsd - chargesCurrent.amountUsd;
+  const netPrevious = topupsPrevious.amountUsd - chargesPrevious.amountUsd;
+  const netDelta = compareValues(netCurrent, netPrevious);
+  const activationGap = Math.max(0, metrics.funnels.totalTopupUsers - metrics.funnels.convertedWithin30dUsers);
+
   return [
     {
-      label: 'Total accounts',
-      value: formatNumber(metrics.totals.totalAccounts),
-      helper: 'All synced signups',
+      label: 'Signups',
+      value: formatNumber(signupsCurrent),
+      helper: `${formatDeltaLabel(signupsDelta)} vs previous ${humanRange}`,
+      tone: resolveDeltaTone(signupsDelta),
+      icon: Users,
     },
     {
-      label: 'Paying accounts',
-      value: formatNumber(metrics.totals.payingAccounts),
-      helper: `${formatPercent(metrics.funnels.signupToTopUpConversion)} signup → top-up`,
+      label: 'Wallet top-ups',
+      value: formatCurrency(topupsCurrent.amountUsd),
+      helper: `${formatNumber(topupsCurrent.count)} loads · ${formatDeltaLabel(topupsDelta)} vs previous`,
+      tone: resolveDeltaTone(topupsDelta),
+      icon: Wallet,
     },
     {
-      label: 'Active (30d)',
-      value: formatNumber(metrics.totals.activeAccounts30d),
-      helper: 'Distinct users with a completed render in the last 30 days',
+      label: 'Render charges',
+      value: formatCurrency(chargesCurrent.amountUsd),
+      helper: `${formatNumber(chargesCurrent.count)} charges · ${formatDeltaLabel(chargesDelta)} vs previous`,
+      tone: resolveDeltaTone(chargesDelta),
+      icon: ChartLine,
     },
     {
-      label: 'All-time top-ups',
-      value: formatCurrency(metrics.totals.allTimeTopUpsUsd),
-      helper: 'Wallet cash-in recorded to date',
+      label: 'Net flow',
+      value: formatSignedCurrency(netCurrent),
+      helper: `Top-ups minus charges · previous ${formatSignedCurrency(netPrevious)}`,
+      tone: resolveDeltaTone(netDelta),
+      icon: TrendingUp,
     },
     {
-      label: 'All-time charges',
-      value: formatCurrency(metrics.totals.allTimeRenderChargesUsd || metrics.totals.allTimeTopUpsUsd),
-      helper: 'Render usage charged to date',
+      label: 'Activation gap',
+      value: formatNumber(activationGap),
+      helper: activationGap
+        ? 'Wallet users still missing a first render within 30 days'
+        : 'No activation gap on the current wallet cohort',
+      tone: activationGap ? 'warning' : 'success',
+      icon: Activity,
     },
     {
-      label: 'Failure rate (30d)',
+      label: 'Failure rate',
       value: formatPercent(metrics.health.failedRendersRate30d),
       helper: `${formatNumber(metrics.health.failedRenders30d)} unresolved failures`,
       tone: metrics.health.failedRenders30d ? 'warning' : 'success',
+      icon: AlertTriangle,
     },
   ];
+}
+
+function buildPrioritySignals(
+  metrics: AdminMetrics,
+  comparison: AdminMetricsComparison,
+  humanRange: string
+): PrioritySignal[] {
+  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
+  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
+  const netUsd = topupsCurrent.amountUsd - chargesCurrent.amountUsd;
+  const activationGap = Math.max(0, metrics.funnels.totalTopupUsers - metrics.funnels.convertedWithin30dUsers);
+  const flaggedEngines = metrics.health.failedByEngine30d.filter((row) => row.failedCount30d > 0);
+  const topEngine = metrics.engines[0];
+
+  return [
+    {
+      label: 'Revenue balance',
+      value: formatSignedCurrency(netUsd),
+      helper: `${formatCurrency(topupsCurrent.amountUsd)} in top-ups vs ${formatCurrency(chargesCurrent.amountUsd)} in charges across ${humanRange}.`,
+      href: '/admin/transactions',
+      tone: netUsd >= 0 ? 'success' : 'warning',
+    },
+    {
+      label: 'Activation leak',
+      value: formatNumber(activationGap),
+      helper: activationGap
+        ? 'Users loaded wallet but still have not completed a first render within 30 days.'
+        : 'Current wallet cohort has no unresolved activation leak.',
+      href: '/admin/users',
+      tone: activationGap ? 'warning' : 'success',
+    },
+    {
+      label: 'Open failures',
+      value: metrics.health.failedRenders30d ? formatNumber(metrics.health.failedRenders30d) : 'Clear',
+      helper: flaggedEngines.length
+        ? `${formatNumber(flaggedEngines.length)} engine${flaggedEngines.length > 1 ? 's' : ''} still impacted by unresolved failures.`
+        : 'No unresolved failures in the current 30-day health window.',
+      href: '/admin/jobs',
+      tone: metrics.health.failedRenders30d ? 'warning' : 'success',
+    },
+    {
+      label: 'Revenue concentration',
+      value: topEngine ? formatPercent(topEngine.shareOfTotalRevenue30d) : '—',
+      helper: topEngine
+        ? `${topEngine.engineLabel} is the current lead engine by 30-day charge volume.`
+        : 'No engine demand recorded yet.',
+      href: '/admin/engines',
+      tone: topEngine && topEngine.shareOfTotalRevenue30d > 0.55 ? 'warning' : 'default',
+    },
+  ];
+}
+
+function buildInsightsRailItems(
+  metrics: AdminMetrics,
+  comparison: AdminMetricsComparison,
+  excludeAdmin: boolean,
+  focus: FocusMetric
+) {
+  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
+  return [
+    { label: 'Users', href: '/admin/users', meta: formatNumber(metrics.totals.totalAccounts) },
+    { label: 'Transactions', href: '/admin/transactions', meta: formatCurrency(topupsCurrent.amountUsd) },
+    { label: 'Jobs', href: '/admin/jobs', meta: metrics.health.failedRenders30d ? formatNumber(metrics.health.failedRenders30d) : 'Clear' },
+    { label: 'Engines', href: '/admin/engines', meta: formatNumber(metrics.engines.length) },
+    {
+      label: 'Focus',
+      href: buildInsightsHref({ range: metrics.range.label, excludeAdmin, focus }),
+      active: true,
+      meta: FOCUS_OPTIONS.find((option) => option.key === focus)?.label ?? focus,
+    },
+  ];
+}
+
+function buildRevenueBoardRows(comparison: AdminMetricsComparison): RevenueBoardRow[] {
+  const signupsCurrent = sumTimeSeries(comparison.current.signupsDaily);
+  const signupsPrevious = sumTimeSeries(comparison.previous.signupsDaily);
+  const activeCurrent = sumTimeSeries(comparison.current.activeAccountsDaily);
+  const activePrevious = sumTimeSeries(comparison.previous.activeAccountsDaily);
+  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
+  const topupsPrevious = sumAmountSeries(comparison.previous.topupsDaily);
+  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
+  const chargesPrevious = sumAmountSeries(comparison.previous.chargesDaily);
+  const netCurrent = topupsCurrent.amountUsd - chargesCurrent.amountUsd;
+  const netPrevious = topupsPrevious.amountUsd - chargesPrevious.amountUsd;
+
+  const rows: Array<{
+    label: string;
+    current: number;
+    previous: number;
+    formatValue: (value: number) => string;
+    helper: string;
+    positiveIsGood?: boolean;
+  }> = [
+    {
+      label: 'New accounts',
+      current: signupsCurrent,
+      previous: signupsPrevious,
+      formatValue: formatNumber,
+      helper: 'Total signups recorded in the current and previous window',
+    },
+    {
+      label: 'Active account-days',
+      current: activeCurrent,
+      previous: activePrevious,
+      formatValue: formatNumber,
+      helper: 'Summed daily activity counts, useful as a pace indicator',
+    },
+    {
+      label: 'Wallet top-ups',
+      current: topupsCurrent.amountUsd,
+      previous: topupsPrevious.amountUsd,
+      formatValue: (value) => formatCurrency(value),
+      helper: `${formatNumber(topupsCurrent.count)} current loads vs ${formatNumber(topupsPrevious.count)} previous`,
+    },
+    {
+      label: 'Render charges',
+      current: chargesCurrent.amountUsd,
+      previous: chargesPrevious.amountUsd,
+      formatValue: (value) => formatCurrency(value),
+      helper: `${formatNumber(chargesCurrent.count)} current charges vs ${formatNumber(chargesPrevious.count)} previous`,
+    },
+    {
+      label: 'Net flow',
+      current: netCurrent,
+      previous: netPrevious,
+      formatValue: (value) => formatSignedCurrency(value),
+      helper: 'Top-ups minus charges within each comparison window',
+    },
+    {
+      label: 'Avg wallet ticket',
+      current: topupsCurrent.count ? topupsCurrent.amountUsd / topupsCurrent.count : 0,
+      previous: topupsPrevious.count ? topupsPrevious.amountUsd / topupsPrevious.count : 0,
+      formatValue: (value) => (value ? formatCurrency(value, { precise: true }) : '—'),
+      helper: 'Average amount per wallet load',
+    },
+    {
+      label: 'Avg charge ticket',
+      current: chargesCurrent.count ? chargesCurrent.amountUsd / chargesCurrent.count : 0,
+      previous: chargesPrevious.count ? chargesPrevious.amountUsd / chargesPrevious.count : 0,
+      formatValue: (value) => (value ? formatCurrency(value, { precise: true }) : '—'),
+      helper: 'Average amount per render charge event',
+    },
+  ];
+
+  return rows.map((row) => {
+    const delta = compareValues(row.current, row.previous);
+    return {
+      label: row.label,
+      current: row.formatValue(row.current),
+      previous: row.formatValue(row.previous),
+      delta: formatDeltaLabel(delta),
+      helper: row.helper,
+      tone: resolveDeltaTone(delta, row.positiveIsGood),
+    };
+  });
 }
 
 function buildPulseCards(metrics: AdminMetrics, comparison: AdminMetricsComparison): PulseCard[] {
@@ -1472,6 +1865,17 @@ function formatCurrency(amount: number, options?: { precise?: boolean }) {
     return preciseCurrencyFormatter.format(amount);
   }
   return currencyFormatter.format(amount);
+}
+
+function formatSignedCurrency(amount: number) {
+  if (!Number.isFinite(amount)) {
+    return '$0';
+  }
+  if (amount === 0) {
+    return '$0';
+  }
+  const absolute = formatCurrency(Math.abs(amount));
+  return `${amount > 0 ? '+' : '-'}${absolute}`;
 }
 
 function formatAverageTicket(totals: { amountUsd: number; count: number }) {
