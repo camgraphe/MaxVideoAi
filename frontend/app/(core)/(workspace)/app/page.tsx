@@ -6155,7 +6155,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             providerMessage && providerMessage !== userMessage
               ? `${userMessage}\n(${providerMessage})`
               : userMessage;
-          showNotice(composed);
           setPreflightError(composed);
           return;
         }

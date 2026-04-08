@@ -357,12 +357,20 @@ export function Composer({
                 })}
               </div>
             ) : null}
-            {(promptDescription || workflowNotice) && (
+            {(promptDescription || workflowNotice || error) && (
               <div className="space-y-1">
                 {promptDescription ? <p className="text-[12px] text-text-muted">{promptDescription}</p> : null}
-                    {workflowNotice ? (
+                {workflowNotice ? (
                   <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary dark:border-white/8 dark:bg-white/[0.04] dark:text-white/70">
                     {workflowNotice}
+                  </div>
+                ) : null}
+                {error ? (
+                  <div
+                    role="alert"
+                    className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[13px] whitespace-pre-line text-error"
+                  >
+                    {error}
                   </div>
                 ) : null}
               </div>
@@ -612,12 +620,6 @@ export function Composer({
               placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
               className="h-11 w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35"
             />
-          </div>
-        ) : null}
-
-        {error ? (
-          <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[13px] text-error whitespace-pre-line">
-            {error}
           </div>
         ) : null}
 
