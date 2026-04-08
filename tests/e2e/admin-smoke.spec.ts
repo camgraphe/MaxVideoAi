@@ -1,14 +1,10 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { assertNoClientErrors, openAdminRoute, trackClientErrors } from './admin-helpers';
 
 type SmokeRoute = {
   path: string;
   heading: string;
   section: string;
-};
-
-type ClientErrors = {
-  consoleErrors: string[];
-  pageErrors: string[];
 };
 
 const smokeRoutes: SmokeRoute[] = [
@@ -44,7 +40,8 @@ test.describe('admin smoke', () => {
 
   for (const route of smokeRoutes) {
     test(`${route.path} renders without client errors`, async ({ page }) => {
-      const errors = await openAdminRoute(page, route.path);
+      const errors = trackClientErrors(page);
+      await openAdminRoute(page, route.path);
 
       await expect(page.getByRole('heading', { level: 1, name: route.heading })).toBeVisible();
       await expect(page.locator('body')).toContainText(route.section);
@@ -54,7 +51,8 @@ test.describe('admin smoke', () => {
   }
 
   test('video seo remains stable in dark theme', async ({ page }) => {
-    const errors = await openAdminRoute(page, '/admin/video-seo');
+    const errors = trackClientErrors(page);
+    await openAdminRoute(page, '/admin/video-seo');
 
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -68,7 +66,8 @@ test.describe('admin smoke', () => {
 
   test('admin home remains usable on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    const errors = await openAdminRoute(page, '/admin');
+    const errors = trackClientErrors(page);
+    await openAdminRoute(page, '/admin');
 
     await expect(page.getByRole('heading', { level: 1, name: 'Operations control' })).toBeVisible();
     await expect(page.locator('body')).toContainText('Signal Board');
@@ -77,37 +76,3 @@ test.describe('admin smoke', () => {
     assertNoClientErrors(errors);
   });
 });
-
-async function openAdminRoute(page: Page, path: string): Promise<ClientErrors> {
-  const consoleErrors: string[] = [];
-  const pageErrors: string[] = [];
-
-  page.on('console', (message) => {
-    if (message.type() === 'error') {
-      consoleErrors.push(message.text());
-    }
-  });
-
-  page.on('pageerror', (error) => {
-    pageErrors.push(error.message);
-  });
-
-  await page.goto(`/api/dev/admin-session?redirectTo=${encodeURIComponent(path)}`, {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await expect(page).toHaveURL(new RegExp(`${escapeForRegExp(path)}$`));
-  await page.waitForLoadState('load');
-  await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => undefined);
-
-  return { consoleErrors, pageErrors };
-}
-
-function assertNoClientErrors(errors: ClientErrors) {
-  expect(errors.pageErrors, `Unexpected page errors:\n${errors.pageErrors.join('\n')}`).toEqual([]);
-  expect(errors.consoleErrors, `Unexpected console errors:\n${errors.consoleErrors.join('\n')}`).toEqual([]);
-}
-
-function escapeForRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}

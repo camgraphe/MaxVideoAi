@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
       RUNTIME_AUDIT_DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
     steps:
       - name: Checkout
