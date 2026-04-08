@@ -43,4 +43,7 @@ private/
 .reports/
 .playwright-cli/
 output/playwright/
+playwright-report/
+test-results/
 output/internal-link-audit-live.json
+frontend/.tmp/
