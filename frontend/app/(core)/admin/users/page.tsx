@@ -182,7 +182,7 @@ export default function AdminUsersPage() {
         ) : stats ? (
           <AdminMetricGrid items={volumeItems} density="compact" columnsClassName="sm:grid-cols-2 xl:grid-cols-4" />
         ) : (
-          <AdminEmptyState>Metrics are loading.</AdminEmptyState>
+          <UsersMetricSkeleton />
         )}
       </AdminSection>
 
@@ -221,7 +221,7 @@ export default function AdminUsersPage() {
           ) : null}
 
           {isLoading ? (
-            <AdminEmptyState>Loading members…</AdminEmptyState>
+            <UsersTableSkeleton />
           ) : unauthorized || serviceRoleMissing || error || fetchError ? null : rows.length ? (
             <>
               <UsersTable rows={rows} />
@@ -284,6 +284,60 @@ function DirectoryToolbar({
         {pending ? <span className="text-xs text-text-secondary">Updating…</span> : null}
       </div>
     </AdminFilterBar>
+  );
+}
+
+function UsersMetricSkeleton() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="rounded-2xl border border-hairline bg-bg/40 px-4 py-4">
+          <div className="h-3 w-20 animate-pulse rounded-full bg-surface-2" />
+          <div className="mt-4 h-9 w-20 animate-pulse rounded-full bg-surface-2" />
+          <div className="mt-3 h-3 w-28 animate-pulse rounded-full bg-surface-2" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UsersTableSkeleton() {
+  return (
+    <div className="space-y-3 rounded-2xl border border-hairline bg-bg/35 p-4">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_180px_180px]">
+        <div className="h-12 animate-pulse rounded-2xl bg-surface-2" />
+        <div className="h-12 animate-pulse rounded-2xl bg-surface-2" />
+        <div className="h-12 animate-pulse rounded-2xl bg-surface-2" />
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-hairline bg-surface">
+        <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(220px,1fr)_140px_140px_140px_140px_90px] gap-3 border-b border-hairline px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-text-muted">
+          <div>Member</div>
+          <div>User ID</div>
+          <div>Role</div>
+          <div>Security</div>
+          <div>Created</div>
+          <div>Last sign-in</div>
+          <div className="text-right">Open</div>
+        </div>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-[minmax(0,1.3fr)_minmax(220px,1fr)_140px_140px_140px_140px_90px] items-center gap-3 border-b border-hairline px-4 py-3 last:border-b-0"
+          >
+            <div className="space-y-2">
+              <div className="h-4 w-32 animate-pulse rounded-full bg-surface-2" />
+              <div className="h-3 w-24 animate-pulse rounded-full bg-surface-2" />
+            </div>
+            <div className="h-3 w-full animate-pulse rounded-full bg-surface-2" />
+            <div className="h-8 w-20 animate-pulse rounded-full bg-surface-2" />
+            <div className="h-8 w-20 animate-pulse rounded-full bg-surface-2" />
+            <div className="h-3 w-24 animate-pulse rounded-full bg-surface-2" />
+            <div className="h-3 w-24 animate-pulse rounded-full bg-surface-2" />
+            <div className="ml-auto h-8 w-16 animate-pulse rounded-lg bg-surface-2" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
