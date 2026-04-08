@@ -15,12 +15,23 @@ export async function POST(req: NextRequest) {
   }
 
   const mime = blob.type || 'application/octet-stream';
+  const size = blob.size ?? 0;
   if (!mime.startsWith('video/')) {
+    console.warn('[upload] rejecting unsupported video upload', {
+      fileName: blob.name,
+      mime,
+      size,
+    });
     return NextResponse.json({ ok: false, error: 'UNSUPPORTED_TYPE' }, { status: 415 });
   }
 
-  const size = blob.size ?? 0;
   if (Number.isFinite(MAX_VIDEO_MB) && MAX_VIDEO_MB > 0 && size > MAX_VIDEO_MB * 1024 * 1024) {
+    console.warn('[upload] rejecting oversized video upload', {
+      fileName: blob.name,
+      mime,
+      size,
+      maxMB: MAX_VIDEO_MB,
+    });
     return NextResponse.json({ ok: false, error: 'FILE_TOO_LARGE', maxMB: MAX_VIDEO_MB }, { status: 413 });
   }
 
@@ -28,11 +39,21 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(arrayBuffer);
 
   if (!buffer.length) {
+    console.warn('[upload] rejecting empty video upload', {
+      fileName: blob.name,
+      mime,
+      size,
+    });
     return NextResponse.json({ ok: false, error: 'EMPTY_FILE' }, { status: 400 });
   }
 
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
+    console.warn('[upload] rejecting unauthorized video upload', {
+      fileName: blob.name,
+      mime,
+      size,
+    });
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
@@ -46,7 +67,13 @@ export async function POST(req: NextRequest) {
       prefix: 'user-assets',
     });
   } catch (error) {
-    console.error('[upload] failed to store video', error);
+    console.error('[upload] failed to store video', {
+      fileName: blob.name,
+      mime,
+      size,
+      userId,
+      error,
+    });
     return NextResponse.json({ ok: false, error: 'UPLOAD_FAILED' }, { status: 500 });
   }
 
@@ -75,7 +102,14 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[upload] failed to record video asset', error);
+    console.error('[upload] failed to record video asset', {
+      fileName: blob.name,
+      mime,
+      size,
+      userId,
+      url: uploadResult.url,
+      error,
+    });
     return NextResponse.json({ ok: false, error: 'STORE_FAILED' }, { status: 500 });
   }
 }

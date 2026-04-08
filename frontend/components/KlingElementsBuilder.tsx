@@ -97,8 +97,8 @@ function AssetSlot({
           )}
           <div className="min-w-0">
             <p className="truncate text-[12px] text-text-primary">{asset.name}</p>
-            <p className="text-[11px] text-text-muted">
-              {asset.status === 'uploading' ? 'Uploading…' : asset.status === 'error' ? 'Upload failed' : 'Ready'}
+            <p className="line-clamp-2 text-[11px] text-text-muted" title={asset.error}>
+              {asset.status === 'uploading' ? 'Uploading…' : asset.status === 'error' ? asset.error ?? 'Upload failed' : 'Ready'}
             </p>
           </div>
         </div>
