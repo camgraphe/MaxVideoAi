@@ -9,7 +9,8 @@ import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMe
 import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
 import { AdminShortcutRail } from '@/components/admin-system/surfaces/AdminShortcutRail';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
+import { Button } from '@/components/ui/Button';
 
 type SearchParamValue = string | string[] | undefined;
 
@@ -110,12 +111,12 @@ export default async function AdminJobsAuditPage({ searchParams = {} }: PageProp
         description="Surface de triage pour les rendus, les erreurs Fal, les débits wallet et les remises en ligne."
         actions={
           <>
-            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/insights">
               Insights
-            </ButtonLink>
-            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/users">
               Users
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -335,9 +336,9 @@ function JobFilters({ filters }: { filters: UiFilters }) {
           <Button type="submit" size="sm" className="bg-brand text-on-brand">
             Apply filters
           </Button>
-          <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+          <AdminActionLink href="/admin/jobs">
             Reset
-          </ButtonLink>
+          </AdminActionLink>
         </>
       }
     >

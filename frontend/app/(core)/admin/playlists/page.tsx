@@ -4,7 +4,7 @@ import { PlaylistsManager } from '@/components/admin/PlaylistsManager';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { requireAdmin } from '@/server/admin';
 import { getPlaylistItems, listPlaylists } from '@/server/playlists';
 
@@ -31,15 +31,15 @@ export default async function AdminPlaylistsPage() {
         description="Pilotage des collections runtime, familles et modèles. Cette surface sert à maintenir les surfaces éditoriales stables tout en préparant les familles et variantes."
         actions={
           <>
-            <ButtonLink href="/admin/moderation" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/moderation">
               Moderation
-            </ButtonLink>
-            <ButtonLink href="/admin/home" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/home">
               Homepage
-            </ButtonLink>
-            <ButtonLink href="/examples" variant="outline" size="sm" className="border-border bg-surface" prefetch={false}>
+            </AdminActionLink>
+            <AdminActionLink href="/examples" prefetch={false}>
               Examples hub
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />

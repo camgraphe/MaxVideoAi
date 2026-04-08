@@ -5,7 +5,7 @@ import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import type { AdminTransactionRecord, TransactionAnomalies } from '@/server/admin-transactions';
 import { fetchAdminTransactions, fetchTransactionAnomalies } from '@/server/admin-transactions';
 
@@ -47,15 +47,15 @@ export default async function AdminTransactionsPage() {
         description="Workspace de controle pour les mouvements wallet, les remboursements manuels et les anomalies de facturation."
         actions={
           <>
-            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/insights">
               Insights
-            </ButtonLink>
-            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/jobs">
               Jobs
-            </ButtonLink>
-            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/users">
               Users
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />

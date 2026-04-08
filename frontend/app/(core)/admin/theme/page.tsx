@@ -5,7 +5,7 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { THEME_TOKEN_DEFS, THEME_TOKEN_GROUPS } from '@/lib/theme-tokens';
 import { requireAdmin } from '@/server/admin';
 import { getThemeTokensSetting } from '@/server/app-settings';
@@ -31,15 +31,15 @@ export default async function AdminThemeTokensPage() {
         description="Surface de pilotage des tokens globaux. Utilise le preview light ou dark pour contrôler contraste, densité et cohérence avant publication."
         actions={
           <>
-            <ButtonLink href="/admin/system" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/system">
               Service notice
-            </ButtonLink>
-            <ButtonLink href="/admin/home" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/home">
               Homepage
-            </ButtonLink>
-            <ButtonLink href="/admin/audit?action=THEME_TOKENS_UPDATE" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/audit?action=THEME_TOKENS_UPDATE">
               Audit
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />

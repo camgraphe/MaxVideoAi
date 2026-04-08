@@ -4,12 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { BadgePercent, Box, RefreshCw, SlidersHorizontal, Wallet } from 'lucide-react';
 import useSWR from 'swr';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
+import { AdminActionButton, AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 
 type PricingRule = {
   id: string;
@@ -214,24 +216,21 @@ export default function PricingAdminPage() {
         description="Ajuste les seuils membership, les prix des outils et les marges engine. Cette surface pilote les futurs quotes et les charges wallet."
         actions={
           <>
-            <Button
+            <AdminActionButton
               type="button"
-              variant="outline"
-              size="sm"
-              className="border-border bg-surface"
               onClick={() => {
                 void handleRefresh();
               }}
             >
               <RefreshCw className="h-4 w-4" />
               Refresh
-            </Button>
-            <ButtonLink href="/admin/engines" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionButton>
+            <AdminActionLink href="/admin/engines">
               Engines
-            </ButtonLink>
-            <ButtonLink href="/admin/transactions" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/transactions">
               Transactions
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -260,16 +259,13 @@ export default function PricingAdminPage() {
       >
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <Button
+            <AdminActionButton
               type="button"
-              variant="outline"
-              size="sm"
               onClick={handleSaveMembership}
               disabled={savingMembership || membershipLoading || !!membershipError}
-              className="rounded-xl border-border bg-surface"
             >
               {savingMembership ? 'Saving…' : 'Save tiers'}
-            </Button>
+            </AdminActionButton>
             {membershipStatus ? (
               <span className={`text-xs ${membershipStatus === 'saved' ? 'text-success' : 'text-error'}`}>
                 {membershipStatus === 'saved' ? 'Membership tiers saved.' : membershipStatus}
@@ -278,7 +274,7 @@ export default function PricingAdminPage() {
           </div>
 
           {membershipLoading ? (
-            <AdminEmptyState>Loading membership tiers…</AdminEmptyState>
+            <AdminLoadingPanel rows={3} compact />
           ) : membershipError ? (
             <AdminNotice tone="error">Failed to load membership tiers.</AdminNotice>
           ) : orderedMembership.length ? (
@@ -338,7 +334,7 @@ export default function PricingAdminPage() {
         }
       >
         {billingProductsLoading ? (
-          <AdminEmptyState>Loading tool pricing…</AdminEmptyState>
+          <AdminLoadingPanel rows={2} />
         ) : billingProductsError ? (
           <AdminNotice tone="error">Failed to load tool pricing.</AdminNotice>
         ) : toolProducts.length ? (
@@ -366,7 +362,7 @@ export default function PricingAdminPage() {
         }
       >
         {rulesLoading ? (
-          <AdminEmptyState>Loading pricing rules…</AdminEmptyState>
+          <AdminLoadingPanel rows={4} />
         ) : rulesError ? (
           <AdminNotice tone="error">Failed to load pricing rules.</AdminNotice>
         ) : (
@@ -867,11 +863,11 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
 
   if (!open) {
     return (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-auto rounded-xl border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-auto rounded-xl border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
         onClick={() => setOpen(true)}
       >
         + Add pricing rule

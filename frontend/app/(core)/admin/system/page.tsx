@@ -10,8 +10,9 @@ import { AdminInspectorPanel } from '@/components/admin-system/shell/AdminInspec
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,15 +44,15 @@ export default async function AdminSystemPage() {
         description="Pilotage de la bannière incident visible dans le workspace. On garde ici la rédaction, l’activation et l’historique opérationnel de ce canal."
         actions={
           <>
-            <ButtonLink href="/admin/audit?action=SERVICE_NOTICE_UPDATE" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/audit?action=SERVICE_NOTICE_UPDATE">
               Audit
-            </ButtonLink>
-            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/insights">
               Insights
-            </ButtonLink>
-            <ButtonLink href="/admin/theme" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/theme">
               Theme
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -130,44 +131,42 @@ export default async function AdminSystemPage() {
         description="Dernières modifications de bannière pour comprendre qui a publié quoi et à quel moment."
       >
         {auditLogs.length ? (
-          <div className="overflow-x-auto rounded-2xl border border-hairline">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-surface">
-                <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-                  <th className="px-4 py-3 font-semibold">Updated</th>
-                  <th className="px-4 py-3 font-semibold">Admin</th>
-                  <th className="px-4 py-3 font-semibold">State</th>
-                  <th className="px-4 py-3 font-semibold">Preview</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-hairline bg-bg/30">
-                {auditLogs.map((log) => {
-                  const preview = typeof log.metadata?.preview === 'string' ? log.metadata.preview : '';
-                  const enabled = log.metadata?.enabled === true;
-                  const messageLength = typeof log.metadata?.messageLength === 'number' ? log.metadata.messageLength : 0;
+          <AdminDataTable>
+            <thead className="bg-surface">
+              <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                <th className="px-4 py-3 font-semibold">Updated</th>
+                <th className="px-4 py-3 font-semibold">Admin</th>
+                <th className="px-4 py-3 font-semibold">State</th>
+                <th className="px-4 py-3 font-semibold">Preview</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-hairline bg-bg/30">
+              {auditLogs.map((log) => {
+                const preview = typeof log.metadata?.preview === 'string' ? log.metadata.preview : '';
+                const enabled = log.metadata?.enabled === true;
+                const messageLength = typeof log.metadata?.messageLength === 'number' ? log.metadata.messageLength : 0;
 
-                  return (
-                    <tr key={log.id} className="align-top text-text-secondary">
-                      <td className="px-4 py-3 text-xs">{formatDateTime(log.createdAt)}</td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-text-primary">{log.adminEmail ?? truncateId(log.adminId)}</p>
-                        <p className="font-mono text-[11px] text-text-muted">{log.adminId}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${
-                          enabled ? 'border-warning-border bg-warning-bg text-warning' : 'border-border bg-surface text-text-secondary'
-                        }`}>
-                          {enabled ? 'Enabled' : 'Disabled'}
-                        </span>
-                        <p className="mt-2 text-xs text-text-muted">{messageLength} characters</p>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-text-secondary">{preview || 'Banner cleared'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                return (
+                  <tr key={log.id} className="align-top text-text-secondary">
+                    <td className="px-4 py-3 text-xs">{formatDateTime(log.createdAt)}</td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium text-text-primary">{log.adminEmail ?? truncateId(log.adminId)}</p>
+                      <p className="font-mono text-[11px] text-text-muted">{log.adminId}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${
+                        enabled ? 'border-warning-border bg-warning-bg text-warning' : 'border-border bg-surface text-text-secondary'
+                      }`}>
+                        {enabled ? 'Enabled' : 'Disabled'}
+                      </span>
+                      <p className="mt-2 text-xs text-text-muted">{messageLength} characters</p>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-text-secondary">{preview || 'Banner cleared'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </AdminDataTable>
         ) : (
           <AdminEmptyState>No service-notice updates recorded yet.</AdminEmptyState>
         )}

@@ -7,7 +7,7 @@ import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { isDatabaseConfigured } from '@/lib/db';
 import { fetchMarketingOptIns } from '@/server/admin-marketing';
 
@@ -34,12 +34,12 @@ export default async function AdminMarketingOptInsPage() {
           description="Suivi des consentements marketing exportables vers les outils CRM et emailing."
           actions={
             <>
-              <ButtonLink href="/admin/legal" variant="outline" size="sm" className="border-border bg-surface">
+              <AdminActionLink href="/admin/legal">
                 Legal
-              </ButtonLink>
-              <ButtonLink href={csvHref} variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+              </AdminActionLink>
+              <AdminActionLink href={csvHref} prefetch={false}>
                 Export CSV
-              </ButtonLink>
+              </AdminActionLink>
             </>
           }
         />
@@ -70,15 +70,15 @@ export default async function AdminMarketingOptInsPage() {
         description="Tracke les membres qui ont accepté les emails promotionnels. La table reste exportable pour synchroniser CRM, ESP ou campagnes one-off."
         actions={
           <>
-            <ButtonLink href="/admin/legal" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/legal">
               Legal
-            </ButtonLink>
-            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/users">
               Users
-            </ButtonLink>
-            <ButtonLink href={csvHref} variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href={csvHref} prefetch={false}>
               Export CSV
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />

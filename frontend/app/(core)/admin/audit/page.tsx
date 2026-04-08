@@ -11,7 +11,8 @@ import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMe
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { AdminFilterBar } from '@/components/admin-system/surfaces/AdminFilterBar';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
+import { Button } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,12 +96,12 @@ export default async function AdminAuditLogPage({ searchParams = {} }: PageProps
         description="Journal d’enquête pour l’impersonation, les resyncs et les interventions sensibles. Les filtres restent linkables pour partager un scope précis."
         actions={
           <>
-            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/users">
               Users
-            </ButtonLink>
-            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/jobs">
               Jobs
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -218,15 +219,13 @@ function AuditActionRail({ filters }: { filters: AuditFilters }) {
       {ACTION_OPTIONS.map((option) => {
         const active = filters.action === option.value;
         return (
-          <ButtonLink
+          <AdminActionLink
             key={option.value || 'all'}
             href={buildAuditHref(filters, { action: option.value })}
             variant={active ? 'primary' : 'outline'}
-            size="sm"
-            className={active ? '' : 'border-border bg-surface'}
           >
             {option.label}
-          </ButtonLink>
+          </AdminActionLink>
         );
       })}
     </div>
@@ -281,9 +280,9 @@ function AuditFiltersForm({ filters }: { filters: AuditFilters }) {
         Apply
       </Button>
 
-      <ButtonLink href="/admin/audit" variant="outline" size="sm" className="self-end border-border bg-surface">
+      <AdminActionLink href="/admin/audit" className="self-end">
         Reset
-      </ButtonLink>
+      </AdminActionLink>
     </AdminFilterBar>
   );
 }

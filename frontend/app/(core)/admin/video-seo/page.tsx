@@ -10,7 +10,7 @@ import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { listSeoWatchVideoRows, type SeoWatchVideoMeta, type SeoWatchVideoRow } from '@/server/video-seo';
 import type { GalleryVideo } from '@/server/videos';
@@ -60,15 +60,15 @@ export default async function AdminVideoSeoPage() {
         description="Vue opérationnelle du shortlist `/video/[id]` pour le rollout Google Video. On contrôle ici l’éligibilité, les assets publics et les watch pages, sans mélanger cette surface avec la publication générale."
         actions={
           <>
-            <ButtonLink href="/admin/moderation" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/moderation">
               Moderation
-            </ButtonLink>
-            <ButtonLink href="/sitemap-video.xml" variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/sitemap-video.xml" prefetch={false}>
               Video sitemap
-            </ButtonLink>
-            <ButtonLink href="/examples" variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/examples" prefetch={false}>
               Examples hub
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -227,12 +227,12 @@ export default async function AdminVideoSeoPage() {
 
                     <td className="px-4 py-4 align-top">
                       <div className="flex min-w-[14rem] flex-col items-start gap-2">
-                        <ButtonLink href={row.watchPath} size="sm" prefetch={false}>
+                        <AdminActionLink href={row.watchPath} variant="primary" prefetch={false}>
                           Open watch page
-                        </ButtonLink>
-                        <ButtonLink href={row.auditPath} variant="outline" size="sm" prefetch={false}>
+                        </AdminActionLink>
+                        <AdminActionLink href={row.auditPath} prefetch={false}>
                           Open job audit
-                        </ButtonLink>
+                        </AdminActionLink>
                         {row.video?.videoUrl ? (
                           <a
                             href={row.video.videoUrl}

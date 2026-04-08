@@ -9,8 +9,10 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
+import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
+import { Button } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -55,15 +57,15 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         description="Fiche support pour l’identité, le wallet, l’historique de rendus et l’impersonation. Le détail reste dense, mais sans empilement inutile de cartes."
         actions={
           <>
-            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/users">
               Users
-            </ButtonLink>
-            <ButtonLink href={`/admin/jobs?userId=${encodeURIComponent(userId)}`} variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href={`/admin/jobs?userId=${encodeURIComponent(userId)}`}>
               Jobs
-            </ButtonLink>
-            <ButtonLink href={`/admin/audit?targetUserId=${encodeURIComponent(userId)}`} variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href={`/admin/audit?targetUserId=${encodeURIComponent(userId)}`}>
               Audit
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -146,44 +148,42 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
           >
             {usage ? (
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_340px]">
-                <div className="overflow-x-auto rounded-2xl border border-hairline">
-                  <table className="min-w-full text-left text-sm">
-                    <thead className="bg-surface">
-                      <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-                        <th className="px-4 py-3 font-semibold">Job</th>
-                        <th className="px-4 py-3 font-semibold">Created</th>
-                        <th className="px-4 py-3 font-semibold">Engine</th>
-                        <th className="px-4 py-3 font-semibold">Status</th>
-                        <th className="px-4 py-3 font-semibold">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-hairline bg-bg/30">
-                      {usage.recentJobs.length ? (
-                        usage.recentJobs.map((job) => (
-                          <tr key={job.jobId} className="text-text-secondary">
-                            <td className="px-4 py-3">
-                              <Link className="font-mono text-xs text-text-primary underline-offset-2 hover:underline" href={`/admin/jobs?jobId=${job.jobId}`}>
-                                {job.jobId}
-                              </Link>
-                            </td>
-                            <td className="px-4 py-3 text-xs">{formatDateTime(job.createdAt)}</td>
-                            <td className="px-4 py-3">{job.engineLabel}</td>
-                            <td className="px-4 py-3">
-                              <JobStatusBadge status={job.status} />
-                            </td>
-                            <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(job.amountUsd)}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={5} className="px-4 py-6">
-                            <AdminEmptyState>No jobs recorded yet.</AdminEmptyState>
+                <AdminDataTable>
+                  <thead className="bg-surface">
+                    <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                      <th className="px-4 py-3 font-semibold">Job</th>
+                      <th className="px-4 py-3 font-semibold">Created</th>
+                      <th className="px-4 py-3 font-semibold">Engine</th>
+                      <th className="px-4 py-3 font-semibold">Status</th>
+                      <th className="px-4 py-3 font-semibold">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-hairline bg-bg/30">
+                    {usage.recentJobs.length ? (
+                      usage.recentJobs.map((job) => (
+                        <tr key={job.jobId} className="text-text-secondary">
+                          <td className="px-4 py-3">
+                            <Link className="font-mono text-xs text-text-primary underline-offset-2 hover:underline" href={`/admin/jobs?jobId=${job.jobId}`}>
+                              {job.jobId}
+                            </Link>
                           </td>
+                          <td className="px-4 py-3 text-xs">{formatDateTime(job.createdAt)}</td>
+                          <td className="px-4 py-3">{job.engineLabel}</td>
+                          <td className="px-4 py-3">
+                            <JobStatusBadge status={job.status} />
+                          </td>
+                          <td className="px-4 py-3 font-medium text-text-primary">{formatCurrency(job.amountUsd)}</td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-6">
+                          <AdminEmptyState>No jobs recorded yet.</AdminEmptyState>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </AdminDataTable>
 
                 <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
                   <div className="border-b border-hairline px-4 py-3">
@@ -227,30 +227,28 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
             }
           >
             {overview.topups.length ? (
-              <div className="overflow-x-auto rounded-2xl border border-hairline">
-                <table className="min-w-full text-left text-sm">
-                  <thead className="bg-surface">
-                    <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-                      <th className="px-4 py-3 font-semibold">Date</th>
-                      <th className="px-4 py-3 font-semibold">Amount</th>
-                      <th className="px-4 py-3 font-semibold">Description</th>
-                      <th className="px-4 py-3 font-semibold">Stripe ref</th>
+              <AdminDataTable>
+                <thead className="bg-surface">
+                  <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                    <th className="px-4 py-3 font-semibold">Date</th>
+                    <th className="px-4 py-3 font-semibold">Amount</th>
+                    <th className="px-4 py-3 font-semibold">Description</th>
+                    <th className="px-4 py-3 font-semibold">Stripe ref</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-hairline bg-bg/30">
+                  {overview.topups.map((topup) => (
+                    <tr key={topup.id} className="text-text-secondary">
+                      <td className="px-4 py-3 text-xs">{formatDateTime(topup.createdAt)}</td>
+                      <td className="px-4 py-3 font-medium text-text-primary">
+                        {formatCurrency(topup.amountUsd)} {topup.currency}
+                      </td>
+                      <td className="px-4 py-3">{topup.description ?? '—'}</td>
+                      <td className="px-4 py-3 font-mono text-xs">{topup.stripePaymentIntentId ?? topup.stripeChargeId ?? '—'}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-hairline bg-bg/30">
-                    {overview.topups.map((topup) => (
-                      <tr key={topup.id} className="text-text-secondary">
-                        <td className="px-4 py-3 text-xs">{formatDateTime(topup.createdAt)}</td>
-                        <td className="px-4 py-3 font-medium text-text-primary">
-                          {formatCurrency(topup.amountUsd)} {topup.currency}
-                        </td>
-                        <td className="px-4 py-3">{topup.description ?? '—'}</td>
-                        <td className="px-4 py-3 font-mono text-xs">{topup.stripePaymentIntentId ?? topup.stripeChargeId ?? '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </AdminDataTable>
             ) : (
               <AdminEmptyState>No top-ups recorded yet.</AdminEmptyState>
             )}

@@ -7,7 +7,7 @@ import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { requireAdmin } from '@/server/admin';
 import { getHomepageSlots, type HomepageSlotWithVideo } from '@/server/homepage';
 
@@ -57,15 +57,15 @@ export default async function AdminHomepagePage() {
         description="Pilote les hero slots visibles sur la homepage marketing. Cette surface doit rester courte, visuelle et orientée couverture éditoriale."
         actions={
           <>
-            <ButtonLink href="/" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/">
               Open site
-            </ButtonLink>
-            <ButtonLink href="/admin/moderation" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/moderation">
               Moderation
-            </ButtonLink>
-            <ButtonLink href="/admin/playlists" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/playlists">
               Playlists
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -124,12 +124,12 @@ export default async function AdminHomepagePage() {
             </div>
 
             <div className="space-y-3">
-              <ButtonLink href="/admin/theme" variant="outline" size="sm" className="w-full justify-center border-border bg-surface">
+              <AdminActionLink href="/admin/theme" className="w-full justify-center">
                 Theme tokens
-              </ButtonLink>
-              <ButtonLink href="/admin/video-seo" variant="outline" size="sm" className="w-full justify-center border-border bg-surface">
+              </AdminActionLink>
+              <AdminActionLink href="/admin/video-seo" className="w-full justify-center">
                 Video SEO
-              </ButtonLink>
+              </AdminActionLink>
             </div>
           </div>
         </AdminInspectorPanel>

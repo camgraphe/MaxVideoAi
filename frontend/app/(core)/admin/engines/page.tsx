@@ -8,7 +8,7 @@ import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMe
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { type AdminStatColumn, AdminStatTable } from '@/components/admin-system/surfaces/AdminStatTable';
 import { EngineSettingsPanel } from '@/components/admin/EngineSettingsPanel';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { fetchEngineUsageMetrics } from '@/server/admin-metrics';
 import { requireAdmin } from '@/server/admin';
 import { ensureEngineSettingsSeed, fetchEngineSettings } from '@/server/engine-settings';
@@ -240,15 +240,15 @@ export default async function AdminEnginesPage() {
         description="Surface de pilotage des moteurs Fal : sante, demande, revenus et configuration active."
         actions={
           <>
-            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/insights">
               Insights
-            </ButtonLink>
-            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/jobs">
               Jobs
-            </ButtonLink>
-            <ButtonLink href="/admin/transactions" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/transactions">
               Transactions
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />

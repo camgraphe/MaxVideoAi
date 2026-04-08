@@ -5,7 +5,7 @@ import { ModerationTable, type ModerationVideo } from '@/components/admin/Modera
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 
 type ModerationBucket = 'not-published' | 'published' | 'all';
 type ModerationSurface = 'video' | 'image' | 'audio' | 'character' | 'angle';
@@ -89,15 +89,15 @@ export default async function AdminModerationPage() {
         description="Surface de tri éditorial pour publier, retirer ou réaffecter les médias par surface. Les incidents restent côté Jobs, et le rollout Google Video reste isolé."
         actions={
           <>
-            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/jobs">
               Jobs
-            </ButtonLink>
-            <ButtonLink href="/admin/video-seo" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/video-seo">
               Video SEO
-            </ButtonLink>
-            <ButtonLink href="/admin/playlists" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/playlists">
               Playlists
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />

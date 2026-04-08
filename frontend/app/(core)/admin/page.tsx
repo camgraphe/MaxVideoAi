@@ -6,7 +6,8 @@ import type { AdminHealthSnapshot } from '@/lib/admin/types';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminWatchlistCard } from '@/components/admin-system/surfaces/AdminWatchlistCard';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
+import { Button } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
@@ -121,15 +122,15 @@ export default async function AdminIndexPage() {
         description="Pilotage central des incidents, outils de support, surfaces éditoriales et workflows de conformité."
         actions={
           <>
-            <ButtonLink href="/admin/insights" variant="outline" size="sm" className="border-border bg-surface">
+            <AdminActionLink href="/admin/insights">
               Insights
-            </ButtonLink>
-            <ButtonLink href="/admin/jobs" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/jobs">
               Jobs
-            </ButtonLink>
-            <ButtonLink href="/admin/users" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/users">
               Users
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />

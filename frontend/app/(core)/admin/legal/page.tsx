@@ -4,13 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { FileBadge2, FileText, ShieldCheck, TimerReset } from 'lucide-react';
 import useSWR from 'swr';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminSectionMeta } from '@/components/admin-system/shell/AdminSectionMeta';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
+import { Button } from '@/components/ui/Button';
 
 const fetchJson = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url, { cache: 'no-store' });
@@ -111,12 +113,12 @@ export default function AdminLegalPage() {
         description="Pilote les versions légales et la politique de re-consentement. Cette surface sert à publier les nouvelles versions sans perdre la lisibilité opérationnelle."
         actions={
           <>
-            <ButtonLink href={`/admin/consents.csv?from=${today}`} variant="outline" size="sm" prefetch={false} className="border-border bg-surface">
+            <AdminActionLink href={`/admin/consents.csv?from=${today}`} prefetch={false}>
               Consent CSV
-            </ButtonLink>
-            <ButtonLink href="/admin/marketing" variant="outline" size="sm" className="border-border bg-surface">
+            </AdminActionLink>
+            <AdminActionLink href="/admin/marketing">
               Marketing
-            </ButtonLink>
+            </AdminActionLink>
           </>
         }
       />
@@ -153,7 +155,7 @@ export default function AdminLegalPage() {
         }
       >
         {isLoading ? (
-          <div className="rounded-xl border border-hairline bg-surface p-6 text-sm text-text-secondary">Loading…</div>
+          <AdminLoadingPanel rows={3} compact />
         ) : error ? (
           <AdminNotice tone="error">{error.message || 'Failed to load legal documents.'}</AdminNotice>
         ) : docs.length ? (
