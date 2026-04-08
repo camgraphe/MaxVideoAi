@@ -26,6 +26,7 @@
     "sources:check": "node scripts/sources-check.mjs",
     "engine:catalog": "./frontend/node_modules/.bin/tsx scripts/build-engine-catalog.ts",
     "jobs:export": "tsx scripts/export-latest-jobs.ts",
+    "test:admin-smoke": "playwright test -c playwright.admin.config.ts",
     "test-videos:process": "node scripts/process-video-gallery.mjs",
     "test-videos:serve": "node scripts/serve-video-gallery.mjs",
     "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts"
@@ -37,6 +38,7 @@
   },
   "packageManager": "pnpm@10.18.2+sha512.9fb969fa749b3ade6035e0f109f0b8a60b5d08a1a87fdf72e337da90dcc93336e2280ca4e44f2358a649b83c17959e9993e777c2080879f3801e6f0d999ad3dd",
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/pg": "^8.10.2",
     "tsx": "^4.20.6"
   }

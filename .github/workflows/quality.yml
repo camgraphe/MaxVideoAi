@@ -61,3 +61,18 @@ jobs:
 
       - name: Validate tests
         run: pnpm run test:validate
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Smoke test admin
+        env:
+          DATABASE_URL: ${{ env.RUNTIME_AUDIT_DATABASE_URL }}
+        run: pnpm run test:admin-smoke
+
+      - name: Upload Playwright admin report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-admin-report
+          path: output/playwright/**
