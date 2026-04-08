@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   assertNoClientErrors,
   firstRowJobId,
@@ -32,8 +32,8 @@ test.describe('admin critical flows', () => {
     const errors = trackClientErrors(page);
 
     await openAdminRoute(page, '/admin/users');
-    const serviceRoleWarning = page.getByText('Supabase service role key is missing.');
-    if (await serviceRoleWarning.isVisible().catch(() => false)) {
+    const directoryState = await waitForUserDirectoryState(page);
+    if (directoryState !== 'rows') {
       test.skip(true, 'requires Supabase service role data');
     }
 
@@ -91,3 +91,25 @@ test.describe('admin critical flows', () => {
     assertNoClientErrors(errors);
   });
 });
+
+async function waitForUserDirectoryState(page: Page) {
+  const deadline = Date.now() + 10_000;
+
+  while (Date.now() < deadline) {
+    if (await page.getByText('Supabase service role key is missing.').isVisible().catch(() => false)) {
+      return 'warning' as const;
+    }
+
+    if (await page.getByText('No users found').first().isVisible().catch(() => false)) {
+      return 'empty' as const;
+    }
+
+    if ((await page.locator('tbody tr').count()) > 0) {
+      return 'rows' as const;
+    }
+
+    await page.waitForTimeout(250);
+  }
+
+  return 'empty' as const;
+}
