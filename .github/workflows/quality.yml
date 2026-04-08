@@ -68,6 +68,8 @@ jobs:
       - name: Smoke test admin
         env:
           DATABASE_URL: ${{ env.RUNTIME_AUDIT_DATABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: pnpm run test:admin-smoke
 
       - name: Upload Playwright admin report
