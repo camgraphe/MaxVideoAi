@@ -2821,6 +2821,10 @@ const showNotice = useCallback((message: string) => {
     }, 6000);
   }, []);
 
+  const showComposerError = useCallback((message: string) => {
+    setPreflightError(message);
+  }, []);
+
   const fetchAssetLibrary = useCallback(async (options?: { source?: AssetLibrarySource; kind?: AssetLibraryKind }) => {
     const source = options?.source ?? assetLibrarySource;
     const kind = options?.kind ?? assetLibraryKind;
@@ -5263,8 +5267,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       setAuthModalOpen(true);
       return;
     }
+    setPreflightError(undefined);
     if (audioWorkflowUnsupported) {
-      showNotice(workflowCopy.audioUnsupported);
+      showComposerError(workflowCopy.audioUnsupported);
       return;
     }
     const trimmedPrompt = effectivePrompt.trim();
@@ -5281,20 +5286,20 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       !isLumaRay2 || isLumaRay2AspectRatio(form.aspectRatio, { includeSquare: isLumaRay2ReframeWorkflow });
 
     if (multiPromptActive && multiPromptInvalid) {
-      showNotice(multiPromptError ?? 'Multi-prompt requires a prompt per scene and a valid total duration.');
+      showComposerError(multiPromptError ?? 'Multi-prompt requires a prompt per scene and a valid total duration.');
       return;
     }
 
     if (promptCharLimitExceeded && typeof promptMaxChars === 'number') {
       const overflow = prompt.length - promptMaxChars;
-      showNotice(
+      showComposerError(
         `Prompt is ${overflow} character${overflow === 1 ? '' : 's'} over the ${promptMaxChars}-character limit for ${selectedEngine.label}.`
       );
       return;
     }
 
     if (inputSchemaSummary.promptRequired && !trimmedPrompt) {
-      showNotice('A prompt is required for this engine and mode.');
+      showComposerError('A prompt is required for this engine and mode.');
       return;
     }
 
@@ -5304,7 +5309,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       !trimmedNegativePrompt
     ) {
       const label = inputSchemaSummary.negativePromptField?.label ?? 'Negative prompt';
-      showNotice(`${label} is required before generating.`);
+      showComposerError(`${label} is required before generating.`);
       return;
     }
 
@@ -5316,7 +5321,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
 
     if (missingAssetField) {
-      showNotice(`${missingAssetField.field.label} is required before generating.`);
+      showComposerError(`${missingAssetField.field.label} is required before generating.`);
       return;
     }
 
@@ -5327,7 +5332,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
 
     if (missingGenericField) {
-      showNotice(`${missingGenericField.field.label} is required before generating.`);
+      showComposerError(`${missingGenericField.field.label} is required before generating.`);
       return;
     }
 
@@ -5335,8 +5340,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       (isLumaRay2GenerateWorkflow && (!lumaDuration || !lumaResolution || !lumaAspectOk)) ||
       (isLumaRay2ReframeWorkflow && !lumaAspectOk)
     ) {
-      showNotice(LUMA_RAY2_ERROR_UNSUPPORTED);
-      setPreflightError(LUMA_RAY2_ERROR_UNSUPPORTED);
+      showComposerError(LUMA_RAY2_ERROR_UNSUPPORTED);
       return;
     }
 
@@ -5374,13 +5378,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         }
       }
 
-      showNotice(friendlyNotice);
       setTopUpModal({
         message: friendlyNotice,
         amountLabel: formattedShortfall,
         shortfallCents: typeof normalizedShortfall === 'number' ? normalizedShortfall : undefined,
       });
-      setPreflightError(friendlyNotice);
+      showComposerError(friendlyNotice);
     };
 
     if (paymentMode === 'wallet') {
@@ -5463,11 +5466,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       for (const { field, asset } of orderedAttachments) {
         if (!asset) continue;
         if (asset.status === 'uploading') {
-          showNotice('Please wait for uploads to finish before generating.');
+          showComposerError('Please wait for uploads to finish before generating.');
           return;
         }
         if (asset.status === 'error' || !asset.url) {
-          showNotice('One of your reference files is unavailable. Remove it and try again.');
+          showComposerError('One of your reference files is unavailable. Remove it and try again.');
           return;
         }
         collected.push({
@@ -5566,11 +5569,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const assetsToCheck = [frontal, ...references, video].filter(Boolean) as KlingElementAsset[];
         for (const asset of assetsToCheck) {
           if (asset.status === 'uploading') {
-            showNotice('Please wait for element uploads to finish before generating.');
+            showComposerError('Please wait for element uploads to finish before generating.');
             return;
           }
           if (asset.status === 'error' || !asset.url) {
-            showNotice('One of your element assets failed to upload. Remove it and try again.');
+            showComposerError('One of your element assets failed to upload. Remove it and try again.');
             return;
           }
         }
@@ -5586,7 +5589,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const hasImageSet = Boolean(frontalUrl && referenceUrls.length > 0);
         const hasVideoReference = Boolean(videoUrl);
         if (!hasImageSet && !hasVideoReference) {
-          showNotice('Each Kling element needs a frontal image plus at least one reference image, or one video reference.');
+          showComposerError('Each Kling element needs a frontal image plus at least one reference image, or one video reference.');
           return;
         }
         collected.push({
@@ -5596,7 +5599,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         });
       }
       if (videoCount > 1) {
-        showNotice('Only one Kling element can include a video reference.');
+        showComposerError('Only one Kling element can include a video reference.');
         return;
       }
       if (collected.length) {
@@ -5622,20 +5625,20 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         : null;
 
       if (allowsUnifiedVeoFirstLast && hasLastFrameInput && !primaryImageUrl) {
-        showNotice('Add a start image before using Last frame with Veo.');
+        showComposerError('Add a start image before using Last frame with Veo.');
         return;
       }
       if (isImageDrivenMode && !primaryImageUrl) {
         const guardMessage = selectedEngine.id.startsWith('sora-2')
           ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
           : `Add at least one ${primaryAssetFieldLabel.toLowerCase()} (URL or upload) before running this mode.`;
-        showNotice(guardMessage);
+        showComposerError(guardMessage);
         return;
       }
       if (isReferenceImageMode) {
         if (isUnifiedSeedance) {
           if (referenceImageUrls.length === 0 && referenceVideoUrls.length === 0) {
-            showNotice(
+            showComposerError(
               referenceAudioUrls.length > 0
                 ? workflowCopy.addReferenceMediaBeforeAudio
                 : 'Add at least one reference image or reference video before running Seedance Reference → Video.'
@@ -5643,28 +5646,28 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             return;
           }
         } else if (referenceImageUrls.length === 0) {
-          showNotice('Add 1–4 reference images before running Reference → Video.');
+          showComposerError('Add 1–4 reference images before running Reference → Video.');
           return;
         }
       }
       const isVideoDrivenMode = submissionMode === 'r2v';
       if (isVideoDrivenMode && referenceVideoUrls.length === 0) {
-        showNotice('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
+        showComposerError('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
         return;
       }
       const isAudioDrivenMode = submissionMode === 'a2v';
       if (isAudioDrivenMode && !primaryAudioUrl) {
-        showNotice('Add an audio file before running Audio → Video.');
+        showComposerError('Add an audio file before running Audio → Video.');
         return;
       }
       const isExtendOrRetakeMode = submissionMode === 'extend' || submissionMode === 'retake';
       if (isExtendOrRetakeMode && referenceVideoUrls.length === 0) {
-        showNotice(workflowCopy.addSourceVideo(getLocalizedModeLabel(submissionMode, uiLocale)));
+        showComposerError(workflowCopy.addSourceVideo(getLocalizedModeLabel(submissionMode, uiLocale)));
         return;
       }
       if (isFirstLastMode) {
         if (!firstFrameAttachment || !lastFrameAttachment) {
-          showNotice('Upload both a start image and last frame before generating with Veo.');
+          showComposerError('Upload both a start image and last frame before generating with Veo.');
           return;
         }
         const sameSource =
@@ -5672,7 +5675,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             ? firstFrameAttachment.assetId === lastFrameAttachment.assetId
             : firstFrameAttachment.url === lastFrameAttachment.url;
         if (sameSource) {
-          showNotice('First and last frames must be two different images for this engine.');
+          showComposerError('First and last frames must be two different images for this engine.');
           return;
         }
       }
@@ -6155,7 +6158,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             providerMessage && providerMessage !== userMessage
               ? `${userMessage}\n(${providerMessage})`
               : userMessage;
-          setPreflightError(composed);
+          showComposerError(composed);
           return;
         }
         const enrichedError = typeof error === 'object' && error !== null ? (error as Record<string, unknown>) : null;
@@ -6168,8 +6171,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           (error instanceof Error && typeof error.message === 'string' && error.message.trim().length
             ? error.message
             : 'Generate failed');
-        showNotice(fallbackMessage);
-        setPreflightError(fallbackMessage);
+        showComposerError(fallbackMessage);
       }
     };
 
@@ -6187,7 +6189,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     selectedEngine,
     preflight,
     memberTier,
-    showNotice,
+    showComposerError,
     writeScopedStorage,
     mutateLatestJobs,
     inputSchemaSummary,
