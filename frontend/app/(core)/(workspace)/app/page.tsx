@@ -49,6 +49,7 @@ import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCa
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import type { Job } from '@/types/jobs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { isExpiredRefundedFailedGalleryItem, isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
@@ -1185,6 +1186,7 @@ type LocalRender = {
   currency?: string;
   pricingSnapshot?: PreflightResponse['pricing'];
   paymentStatus?: string;
+  failedAt?: number;
   etaSeconds?: number;
   etaLabel?: string;
   startedAt: number;
@@ -1231,6 +1233,7 @@ type PersistedRender = {
   priceCents?: number | null;
   currency?: string | null;
   paymentStatus?: string | null;
+  failedAt?: number | null;
   etaSeconds?: number | null;
   etaLabel?: string | null;
   startedAt: number;
@@ -1308,6 +1311,7 @@ function coercePersistedRender(entry: PersistedRender): LocalRender | null {
     currency: typeof entry.currency === 'string' && entry.currency.length ? entry.currency : undefined,
     pricingSnapshot: undefined,
     paymentStatus: typeof entry.paymentStatus === 'string' && entry.paymentStatus.length ? entry.paymentStatus : undefined,
+    failedAt: typeof entry.failedAt === 'number' && Number.isFinite(entry.failedAt) && entry.failedAt > 0 ? Math.trunc(entry.failedAt) : undefined,
     etaSeconds: typeof entry.etaSeconds === 'number' ? entry.etaSeconds : undefined,
     etaLabel: typeof entry.etaLabel === 'string' && entry.etaLabel.length ? entry.etaLabel : undefined,
     startedAt,
@@ -1381,6 +1385,7 @@ function serializePendingRenders(renders: LocalRender[]): string | null {
       priceCents: render.priceCents,
       currency: render.currency,
       paymentStatus: render.paymentStatus,
+      failedAt: render.failedAt ?? null,
       etaSeconds: render.etaSeconds,
       etaLabel: render.etaLabel,
       startedAt: render.startedAt,
@@ -1664,6 +1669,7 @@ useEffect(() => {
   const [guidedSampleFeed, setGuidedSampleFeed] = useState<GalleryFeedState>({ visibleGroups: [], sampleOnly: false });
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
+  const [galleryRetentionTick, setGalleryRetentionTick] = useState(0);
   const [viewerTarget, setViewerTarget] = useState<{ kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | null>(null);
   const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(() => {
@@ -1770,6 +1776,10 @@ useEffect(() => {
         currency,
         pricingSnapshot: job.pricingSnapshot,
         paymentStatus: job.paymentStatus ?? 'platform',
+        failedAt:
+          normalizedStatus === 'failed' && isRefundedPaymentStatus(job.paymentStatus ?? null)
+            ? parsedCreated
+            : undefined,
         etaSeconds: job.etaSeconds ?? undefined,
         etaLabel: job.etaLabel ?? undefined,
         startedAt: parsedCreated,
@@ -1804,6 +1814,13 @@ useEffect(() => {
     setUserId(null);
     setAuthChecked(true);
   }, [authLoading, authStatus, user?.id]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setGalleryRetentionTick((current) => current + 1);
+    }, 5_000);
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -2393,6 +2410,59 @@ useEffect(() => {
       return current;
     });
   }, [recentJobs, renders.length]);
+
+  useEffect(() => {
+    if (!renders.length) return;
+    const now = Date.now();
+    const removedLocalKeys: string[] = [];
+    const removedGroupIds = new Set<string>();
+    setRenders((prev) => {
+      let changed = false;
+      const next = prev.filter((render) => {
+        if (!isExpiredRefundedFailedGalleryItem(render, now)) {
+          return true;
+        }
+        changed = true;
+        if (render.localKey) {
+          removedLocalKeys.push(render.localKey);
+        }
+        if (render.batchId) {
+          removedGroupIds.add(render.batchId);
+        }
+        if (render.groupId) {
+          removedGroupIds.add(render.groupId);
+        }
+        return false;
+      });
+      return changed ? next : prev;
+    });
+    if (!removedLocalKeys.length && !removedGroupIds.size) {
+      return;
+    }
+    setBatchHeroes((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      removedGroupIds.forEach((groupId) => {
+        if (groupId && next[groupId]) {
+          delete next[groupId];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+    setActiveBatchId((current) => (current && removedGroupIds.has(current) ? null : current));
+    setActiveGroupId((current) => (current && removedGroupIds.has(current) ? null : current));
+    setSelectedPreview((current) => {
+      if (!current) return current;
+      if (current.localKey && removedLocalKeys.includes(current.localKey)) {
+        return null;
+      }
+      if (current.batchId && removedGroupIds.has(current.batchId)) {
+        return null;
+      }
+      return current;
+    });
+  }, [renders, galleryRetentionTick]);
 
   const renderGroups = useMemo<Map<string, LocalRenderGroup>>(() => {
     const map = new Map<string, LocalRenderGroup>();
@@ -5940,7 +6010,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         setRenders((prev) =>
           prev.map((render) =>
             render.localKey === localKey
-              ? {
+              ? (() => {
+                  const nextFailedAt =
+                    resolvedStatus === 'failed' && isRefundedPaymentStatus(resolvedPaymentStatus)
+                      ? render.failedAt ?? now
+                      : undefined;
+                  return {
                   ...render,
                   id: resolvedJobId,
                   jobId: resolvedJobId,
@@ -5956,13 +6031,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   currency: resolvedCurrency,
                   pricingSnapshot: resolvedPricingSnapshot,
                   paymentStatus: resolvedPaymentStatus,
+                  failedAt: nextFailedAt,
                   etaSeconds: resolvedEtaSeconds,
                   etaLabel: resolvedEtaLabel,
                   renderIds: resolvedRenderIds,
                   heroRenderId: resolvedHeroRenderId,
                   readyVideoUrl: resolvedVideoUrl ?? render.readyVideoUrl,
                   videoUrl: gatingActive ? render.videoUrl : resolvedVideoUrl ?? render.videoUrl,
-                }
+                  };
+                })()
               : render
           )
         );
@@ -6055,9 +6132,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             setRenders((prev) =>
               prev.map((r) =>
                 r.id === jobId
-                  ? {
+                  ? (() => {
+                      const nextStatus = status.status ?? r.status;
+                      const nextPaymentStatus = status.paymentStatus ?? r.paymentStatus;
+                      const nextFailedAt =
+                        nextStatus === 'failed' && isRefundedPaymentStatus(nextPaymentStatus)
+                          ? r.failedAt ?? now
+                          : undefined;
+                      return {
                       ...r,
-                      status: status.status ?? r.status,
+                      status: nextStatus,
                       progress: status.progress ?? r.progress,
                       readyVideoUrl: status.videoUrl ?? r.readyVideoUrl,
                       videoUrl: status.videoUrl ?? r.videoUrl ?? r.readyVideoUrl,
@@ -6065,8 +6149,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? r.priceCents,
                       currency: status.currency ?? status.pricing?.currency ?? r.currency,
                       pricingSnapshot: status.pricing ?? r.pricingSnapshot,
-                      paymentStatus: status.paymentStatus ?? r.paymentStatus,
-                    }
+                      paymentStatus: nextPaymentStatus,
+                      failedAt: nextFailedAt,
+                    };
+                  })()
                   : r
               )
             );
@@ -6286,6 +6372,17 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         .then((response) => {
           if (canceled) return;
           setPreflight(response);
+          if (!response.ok) {
+            const message =
+              (typeof response.error?.message === 'string' && response.error.message.trim().length
+                ? response.error.message.trim()
+                : undefined) ??
+              response.messages?.find((entry) => typeof entry === 'string' && entry.trim().length)?.trim() ??
+              'Unable to compute pricing';
+            setPreflightError(message);
+            return;
+          }
+          setPreflightError(undefined);
         })
         .catch((err) => {
           if (canceled) return;
@@ -6755,7 +6852,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 currency={currency}
                 isLoading={isPricing}
                 error={preflightError}
-                messages={preflight?.messages}
+                messages={preflight?.ok ? preflight.messages : undefined}
                 textareaRef={composerRef}
                 onGenerate={startRender}
                 preflight={preflight}

@@ -18,6 +18,7 @@ import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { countResolvedVisualSlots, mergeImageProgressGroup } from '@/lib/group-progress';
+import { isExpiredRefundedFailedGalleryItem } from '@/lib/gallery-retention';
 
 type GalleryVariant = 'desktop' | 'mobile';
 
@@ -119,10 +120,14 @@ export function GalleryRail({
     if (!jobFilter) return surfaceSafeJobs;
     return surfaceSafeJobs.filter(jobFilter);
   }, [jobFilter, surfaceSafeJobs]);
-  const hasCuratedJobs = useMemo(() => filteredJobs.some((job) => job.curated), [filteredJobs]);
+  const [currentVisibilityTime, setCurrentVisibilityTime] = useState(() => Date.now());
+  const visibleJobs = useMemo(() => {
+    return filteredJobs.filter((job) => !isExpiredRefundedFailedGalleryItem(job, currentVisibilityTime));
+  }, [filteredJobs, currentVisibilityTime]);
+  const hasCuratedJobs = useMemo(() => visibleJobs.some((job) => job.curated), [visibleJobs]);
   const { groups: groupedJobSummariesFromApi } = useMemo(
-    () => groupJobsIntoSummaries(filteredJobs, { includeSinglesAsGroups: true }),
-    [filteredJobs]
+    () => groupJobsIntoSummaries(visibleJobs, { includeSinglesAsGroups: true }),
+    [visibleJobs]
   );
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -132,6 +137,12 @@ export function GalleryRail({
     window.addEventListener('jobs:hidden', handleHidden);
     return () => window.removeEventListener('jobs:hidden', handleHidden);
   }, [mutate]);
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setCurrentVisibilityTime(Date.now());
+    }, 5_000);
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const groupedJobSummaries = useMemo(
     () => [...groupedJobSummariesFromApi].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
