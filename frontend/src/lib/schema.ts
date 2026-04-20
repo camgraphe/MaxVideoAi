@@ -218,6 +218,25 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_user_created_idx
+          ON app_jobs (user_id, created_at DESC)
+          WHERE user_id IS NOT NULL;
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_provider_job_idx
+          ON app_jobs (provider_job_id)
+          WHERE provider_job_id IS NOT NULL;
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_pending_poll_idx
+          ON app_jobs (updated_at ASC)
+          WHERE provider_job_id IS NOT NULL
+            AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress');
+      `);
+
+      await query(`
         CREATE TABLE IF NOT EXISTS app_billing_products (
           product_key TEXT PRIMARY KEY,
           surface TEXT NOT NULL,
@@ -297,6 +316,12 @@ export async function ensureBillingSchema(): Promise<void> {
 
       await query(`
         CREATE INDEX IF NOT EXISTS app_receipts_user_created_idx ON app_receipts (user_id, created_at DESC);
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_receipts_job_type_created_idx
+          ON app_receipts (job_id, type, created_at DESC)
+          WHERE job_id IS NOT NULL;
       `);
 
       await query(`
@@ -593,6 +618,12 @@ export async function ensureBillingSchema(): Promise<void> {
 
       await query(`
         CREATE INDEX IF NOT EXISTS fal_queue_log_job_idx ON fal_queue_log (job_id, created_at DESC);
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS fal_queue_log_provider_job_created_idx
+          ON fal_queue_log (provider_job_id, created_at DESC)
+          WHERE provider_job_id IS NOT NULL;
       `);
 
       await query(`
