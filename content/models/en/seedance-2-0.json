@@ -2,14 +2,14 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 | AI Video Model, Native Audio, Specs & Pricing | MaxVideoAI",
-    "description": "Use Seedance 2.0 on MaxVideoAI for cinematic multi-shot video, native audio, multimodal references, and live specs and pricing before you render."
+    "title": "Seedance 2.0 | AI Video Model, Pricing, Native Audio & Use Cases | MaxVideoAI",
+    "description": "Use Seedance 2.0 on MaxVideoAI for multi-shot video, native audio, current pricing, key capabilities, and the best use cases for current Seedance workflows."
   },
-  "overview": "Seedance 2.0 is the current Seedance model on MaxVideoAI for high-quality multi-shot video, native audio, and multimodal reference workflows.",
+  "overview": "Seedance 2.0 is the current Seedance model on MaxVideoAI for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences.",
   "pricingNotes": "Seedance 2 uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
   "hero": {
-    "title": "Seedance 2.0 — current Seedance model for cinematic multi-shot video",
-    "intro": "Seedance 2.0 is the current Seedance model for high-quality multi-shot video, native audio, and multimodal reference workflows across ads, launches, and cinematic hero scenes.",
+    "title": "Seedance 2.0 — current Seedance model for multi-shot video and native audio",
+    "intro": "Seedance 2.0 is the current Seedance model for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences. Use this page to review pricing, key capabilities, best use cases, and when Seedance 2.0 is a better fit than Fast or older Seedance versions.",
     "badge": "3 workflows · 480p/720p · Auto or 4-15s · Native audio · 9 image / 3 video / 3 audio refs",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0",
@@ -29,16 +29,16 @@
         "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
       },
       {
-        "label": "Compare Seedance 2.0 vs Veo 3.1",
-        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
-      },
-      {
         "label": "Compare Seedance 1.5 Pro vs Seedance 2.0",
         "href": "/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0"
       },
       {
-        "label": "Compare LTX 2.3 Pro vs Seedance 2.0",
-        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0"
+        "label": "Compare Seedance 2.0 vs Veo 3.1",
+        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
+      },
+      {
+        "label": "Compare Kling 3 Pro vs Seedance 2.0",
+        "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-0"
       }
     ]
   },
@@ -47,7 +47,7 @@
     "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
   },
   "bestUseCases": {
-    "title": "Use cases",
+    "title": "Best use cases for Seedance 2.0",
     "items": [
       {
         "title": "Action scenes with collisions, debris, and more believable physical interaction",
@@ -155,44 +155,36 @@
   "faqTitle": "FAQ – Seedance 2.0 on MaxVideoAI",
   "faqs": [
     {
-      "q": "What is Seedance 2.0?",
-      "a": "Seedance 2.0 is ByteDance's flagship AI video model focused on cinematic motion, multi-shot continuity, native audio, and multimodal control."
+      "q": "What is Seedance 2.0 best for?",
+      "a": "Seedance 2.0 is best for polished multi-shot ads, branded sequences, audio-led scenes, and reference-guided workflows where continuity matters more than draft speed."
     },
     {
-      "q": "Does Seedance 2.0 support text-to-video, image-to-video, and reference-to-video?",
-      "a": "Yes. On MaxVideoAI, Seedance 2.0 covers text-to-video, image-to-video with an optional end frame, and reference-to-video with image, video, and audio inputs."
+      "q": "Does Seedance 2.0 include native audio?",
+      "a": "Yes. Seedance 2.0 supports native audio, including dialogue, ambience, music, and sound effects inside the same generation workflow."
     },
     {
-      "q": "How many image, video, and audio references can I add?",
-      "a": "Seedance 2.0 supports up to 9 image references, 3 video references, and 3 audio references, with 12 total files across the full ref2v run."
+      "q": "How is Seedance 2.0 different from Seedance 2.0 Fast?",
+      "a": "Seedance 2.0 is the stronger current choice for final-quality multi-shot work, native audio, and more demanding reference-driven outputs, while Seedance 2.0 Fast is better for cheaper draft passes and quicker route comparisons."
     },
     {
-      "q": "Does Seedance 2.0 image-to-video support an end frame?",
-      "a": "Yes. The image-to-video workflow supports a start image plus an optional end image when you want to guide the last frame."
+      "q": "When should I use Seedance 2.0 instead of Seedance 1.5 Pro?",
+      "a": "Use Seedance 2.0 when you need stronger multi-shot continuity, broader reference workflows, and the current Seedance production path. Seedance 1.5 Pro still fits shorter, simpler older workflows."
     },
     {
-      "q": "How long can generated videos be?",
-      "a": "Fal lists auto duration or explicit runs from 4 to 15 seconds for the current Seedance 2.0 routes."
-    },
-    {
-      "q": "Does Seedance 2.0 support native audio?",
-      "a": "Yes. Native audio is available, generate_audio defaults to on, and Fal states pricing is the same whether audio is generated or not."
-    },
-    {
-      "q": "Should I start with Seedance 2.0 standard or Fast?",
-      "a": "Start with standard Seedance 2.0 when you want the strongest final quality, and switch to Seedance 2.0 Fast for quicker draft passes, route comparisons, and shot planning."
+      "q": "Is Seedance 2.0 good for multi-shot video?",
+      "a": "Yes. Seedance 2.0 is specifically well suited to multi-shot outputs, guided transitions, and maintaining scene continuity across short cinematic sequences."
     }
   ],
   "custom": {
-    "whyTitle": "What makes Seedance 2.0 different",
+    "whyTitle": "Pricing, native audio and next steps",
     "heroTrustLine": "Pay-as-you-go on MaxVideoAI · Price shown before you generate",
     "heroHighlights": [
-      "Director-level camera grammar||Fal highlights dolly zooms, rack focuses, tracking shots, POV switches, and smooth handheld movement",
-      "Real-world physics under pressure||Action scenes, collisions, debris, and fabric motion are part of the model's public positioning on Fal",
-      "Native audio in the same generation||Dialogue, ambience, music, and sound effects stay synchronized without separate audio layering",
-      "Unified multimodal control||Text, image, audio, and video inputs can be combined inside the Seedance 2 workflow family",
-      "Multi-shot outputs up to 15s||Fal highlights natural cuts and transitions inside a single generation rather than a single unbroken take"
+      "Pricing and current route||Use Seedance 2.0 when you want the main current Seedance path and need the final quoted price visible before generation.",
+      "Native audio||Dialogue, ambience, music, and sound effects can stay inside the same generation flow instead of being treated as a separate afterthought.",
+      "Seedance 2.0 vs Seedance 2.0 Fast||Choose Seedance 2.0 for stronger final-quality multi-shot work, and use Fast when the job is mainly draft iteration and route comparison.",
+      "Start with Seedance examples||Open the examples page first if you want output patterns, prompt baselines, and settings before committing to a production run."
     ],
+    "heroSupportLine": "Start with Seedance examples, use Seedance 2.0 for the main current multi-shot and native-audio workflow, and compare it with Fast when you need quicker draft passes.",
     "specTitle": "Specs",
     "specNote": "Only officially sourced claims are listed here, with pricing and workflow details checked live inside Generate.",
     "specSections": [

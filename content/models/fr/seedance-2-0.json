@@ -2,14 +2,14 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 | Modèle vidéo IA, audio natif, specs et prix | MaxVideoAI",
-    "description": "Utilisez Seedance 2.0 sur MaxVideoAI pour de la vidéo multi-plans, de l'audio natif, des références multimodales, et des specs/prix visibles avant génération."
+    "title": "Seedance 2.0 | Modèle vidéo IA, prix, audio natif et cas d’usage | MaxVideoAI",
+    "description": "Utilisez Seedance 2.0 sur MaxVideoAI pour la vidéo multi-plans, l’audio natif, la tarification actuelle, les capacités clés et les meilleurs cas d’usage du workflow Seedance actuel."
   },
-  "overview": "Seedance 2.0 est le modèle Seedance actuel sur MaxVideoAI pour la vidéo multi-plans de haute qualité, l'audio natif et les workflows à références multimodales.",
+  "overview": "Seedance 2.0 est le modèle Seedance actuel sur MaxVideoAI pour la vidéo multi-plans, l’audio natif et les workflows guidés par références quand vous avez besoin du chemin Seedance principal pour des publicités soignées, des lancements et des séquences de marque cinématiques.",
   "pricingNotes": "Seedance 2 suit la formule tokens de Fal. MaxVideoAI ajoute sa marge et arrondit au centime supérieur ; Generate affiche le devis final avant validation.",
   "hero": {
-    "title": "Seedance 2.0 — modèle Seedance actuel pour la vidéo cinématique multi-plans",
-    "intro": "Seedance 2.0 est le modèle Seedance actuel pour la vidéo multi-plans de haute qualité, l'audio natif et les workflows à références multimodales sur des publicités, lancements et scènes hero.",
+    "title": "Seedance 2.0 — modèle Seedance actuel pour la vidéo multi-plans et l’audio natif",
+    "intro": "Seedance 2.0 est le modèle Seedance actuel pour la vidéo multi-plans, l’audio natif et les workflows guidés par références quand vous avez besoin du chemin Seedance principal pour des publicités soignées, des lancements et des séquences de marque cinématiques. Utilisez cette page pour revoir la tarification, les capacités clés, les meilleurs cas d’usage et les cas où Seedance 2.0 convient mieux que Fast ou que les versions Seedance plus anciennes.",
     "badge": "3 workflows · 480p/720p · Auto ou 4-15 s · Audio natif · 9 images / 3 vidéos / 3 audios de référence",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.0",
@@ -29,16 +29,16 @@
         "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
       },
       {
-        "label": "Comparer Seedance 2.0 vs Veo 3.1",
-        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
-      },
-      {
         "label": "Comparer Seedance 1.5 Pro vs Seedance 2.0",
         "href": "/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0"
       },
       {
-        "label": "Comparer LTX 2.3 Pro vs Seedance 2.0",
-        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0"
+        "label": "Comparer Seedance 2.0 vs Veo 3.1",
+        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
+      },
+      {
+        "label": "Comparer Kling 3 Pro vs Seedance 2.0",
+        "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-0"
       }
     ]
   },
@@ -47,7 +47,7 @@
     "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
   },
   "bestUseCases": {
-    "title": "Cas d'usage",
+    "title": "Meilleurs cas d’usage de Seedance 2.0",
     "items": [
       {
         "title": "Séquences d'action avec collisions, débris et interactions plus crédibles",
@@ -155,43 +155,35 @@
   "faqTitle": "FAQ – Seedance 2.0 sur MaxVideoAI",
   "faqs": [
     {
-      "q": "Qu'est-ce que Seedance 2.0 ?",
-      "a": "Seedance 2.0 est le modèle vidéo flagship de ByteDance, conçu pour le rendu cinématique, la continuité multi-plans, l'audio natif et le contrôle multimodal."
+      "q": "À quoi Seedance 2.0 sert-il le mieux ?",
+      "a": "Seedance 2.0 sert surtout aux publicités multi-plans soignées, aux séquences de marque, aux scènes guidées par l’audio et aux workflows à références où la continuité compte davantage que la vitesse de draft."
     },
     {
-      "q": "Seedance 2.0 prend-il en charge text-to-video, image-to-video et reference-to-video ?",
-      "a": "Oui. Sur MaxVideoAI, Seedance 2.0 couvre text-to-video, image-to-video avec image de fin optionnelle, et reference-to-video avec entrées image, vidéo et audio."
+      "q": "Seedance 2.0 inclut-il l’audio natif ?",
+      "a": "Oui. Seedance 2.0 prend en charge l’audio natif, y compris le dialogue, l’ambiance, la musique et les effets sonores dans le même workflow de génération."
     },
     {
-      "q": "Combien de références image, vidéo et audio peut-on ajouter ?",
-      "a": "Seedance 2.0 prend en charge jusqu'à 9 images de référence, 3 vidéos de référence et 3 audios de référence, avec 12 fichiers maximum sur l'ensemble d'un run ref2v."
+      "q": "Quelle est la différence entre Seedance 2.0 et Seedance 2.0 Fast ?",
+      "a": "Seedance 2.0 est le meilleur choix actuel pour un travail multi-plans de qualité finale, l’audio natif et les sorties à références plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux drafts moins coûteux et aux comparaisons de routes plus rapides."
     },
     {
-      "q": "L'image-to-video de Seedance 2.0 prend-il en charge une image de fin ?",
-      "a": "Oui. Le workflow image-to-video accepte une image de départ et une image de fin optionnelle quand vous voulez guider la dernière frame."
+      "q": "Quand faut-il utiliser Seedance 2.0 plutôt que Seedance 1.5 Pro ?",
+      "a": "Utilisez Seedance 2.0 quand vous avez besoin d’une continuité multi-plans plus forte, de workflows à références plus larges et du chemin de production Seedance actuel. Seedance 1.5 Pro reste adapté à des workflows plus courts et plus simples."
     },
     {
-      "q": "Quelle est la durée maximale ?",
-      "a": "Fal indique une durée auto ou de 4 à 15 secondes par génération pour les routes Seedance 2.0 actuelles."
-    },
-    {
-      "q": "Seedance 2.0 prend-il en charge l'audio natif ?",
-      "a": "Oui. L'audio natif est disponible, generate_audio est activé par défaut, et Fal indique que le prix reste identique avec ou sans audio."
-    },
-    {
-      "q": "Faut-il commencer par le standard ou par Fast ?",
-      "a": "Commencez par Seedance 2.0 standard pour la qualité finale la plus forte, puis passez à Seedance 2.0 Fast pour les itérations rapides, les comparaisons de routes et le shot planning."
+      "q": "Seedance 2.0 est-il bon pour la vidéo multi-plans ?",
+      "a": "Oui. Seedance 2.0 est particulièrement adapté aux sorties multi-plans, aux transitions guidées et au maintien de la continuité de scène sur des séquences cinématiques courtes."
     }
   ],
   "custom": {
-    "whyTitle": "Ce qui distingue Seedance 2.0",
+    "whyTitle": "Tarification, audio natif et prochaines étapes",
     "heroHighlights": [
-      "Grammaire caméra de niveau réalisateur||Fal met en avant les dolly zooms, rack focus, plans de suivi, POV et handheld fluide",
-      "Physique crédible sous contrainte||Action, collisions, débris et mouvement des matières font partie du positionnement public de Seedance 2.0 sur Fal",
-      "Audio natif dans la même génération||Dialogue, ambiance, musique et effets restent synchronisés sans superposition audio séparée",
-      "Contrôle multimodal unifié||Texte, image, audio et vidéo peuvent être combinés dans la même famille de workflows Seedance 2",
-      "Sorties multi-plans jusqu'à 15 s||Fal insiste sur les coupes et transitions naturelles à l'intérieur d'une seule génération"
+      "Tarification et route actuelle||Utilisez Seedance 2.0 quand vous voulez le chemin Seedance actuel et le prix final visible avant génération.",
+      "Audio natif||Dialogue, ambiance, musique et effets sonores peuvent rester dans le même flux de génération au lieu d’être traités à part.",
+      "Seedance 2.0 vs Seedance 2.0 Fast||Choisissez Seedance 2.0 pour un travail multi-plans plus fort en qualité finale, et Fast quand le besoin principal est l’itération de drafts et la comparaison de routes.",
+      "Commencer par les exemples Seedance||Ouvrez d’abord la page d’exemples si vous voulez voir des patterns de sortie, des bases de prompts et des réglages avant de lancer une vraie production."
     ],
+    "heroSupportLine": "Commencez par les exemples Seedance, utilisez Seedance 2.0 pour le workflow multi-plans principal avec audio natif, puis comparez-le à Fast quand vous avez besoin de drafts plus rapides.",
     "heroTrustLine": "Paiement à l'usage sur MaxVideoAI · Prix final affiché avant génération",
     "specTitle": "Spécifications",
     "specNote": "Points sourcés officiellement ; le prix final et les détails de route se vérifient dans Generate.",

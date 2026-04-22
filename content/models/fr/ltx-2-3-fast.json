@@ -2,14 +2,14 @@
   "marketingName": "LTX 2.3 Fast",
   "versionLabel": "Fast",
   "seo": {
-    "title": "LTX 2.3 Fast | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez LTX 2.3 Fast sur MaxVideoAI pour des drafts LTX plus rapides, des tests plus longs et les specs et prix du workflow fast actuel avant rendu.",
+    "title": "LTX 2.3 Fast | Modèle vidéo IA, specs, prix et durée max | MaxVideoAI",
+    "description": "Utilisez LTX 2.3 Fast sur MaxVideoAI pour une génération vidéo moins coûteuse, des boucles de draft plus longues, la tarification actuelle, la durée max et les différences clés face à LTX 2.3 Pro.",
     "image": "/assets/placeholders/preview-16x9.png"
   },
-  "overview": "LTX 2.3 Fast est le modèle LTX fast actuel sur MaxVideoAI pour des drafts plus rapides, moins coûteux, des clips de test plus longs et l’itération.",
+  "overview": "LTX 2.3 Fast est le modèle LTX fast actuel sur MaxVideoAI pour une génération vidéo moins coûteuse, des boucles de draft plus longues et une itération plus rapide avant de faire monter les sorties retenues vers LTX 2.3 Pro.",
   "hero": {
-    "title": "LTX 2.3 Fast — modèle LTX fast actuel pour des drafts plus longs et l’itération",
-    "intro": "Utilisez LTX 2.3 Fast pour des drafts LTX plus rapides et moins coûteux, des clips de test plus longs et des boucles d’itération avant de remonter les sorties retenues vers LTX 2.3 Pro.",
+    "title": "LTX 2.3 Fast — modèle LTX fast actuel pour des drafts plus longs, les tests et l’itération",
+    "intro": "Utilisez LTX 2.3 Fast pour une génération vidéo moins coûteuse, des boucles de draft plus longues et une itération plus rapide quand vous voulez tester des idées, comparer le comportement des prompts ou explorer des clips plus longs avant de faire monter les sorties retenues vers LTX 2.3 Pro. Cette page couvre la tarification du modèle, sa durée max, ses meilleurs cas d’usage et la façon dont il se compare à LTX 2.3 Pro dans les workflows LTX actuels.",
     "badge": "T2V + I2V | 6-20 s | 1080p à 4K",
     "ctaPrimary": {
       "label": "Générer avec LTX 2.3 Fast",
@@ -17,12 +17,12 @@
     },
     "secondaryLinks": [
       {
-        "label": "Voir LTX 2.3 Pro",
-        "href": "/models/ltx-2-3-pro"
-      },
-      {
         "label": "Voir les exemples LTX",
         "href": "/examples/ltx"
+      },
+      {
+        "label": "Voir LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
       },
       {
         "label": "Comparer LTX 2.3 Fast vs LTX 2.3 Pro",
@@ -35,7 +35,7 @@
     ]
   },
   "bestUseCases": {
-    "title": "Meilleurs cas d’usage",
+    "title": "Meilleurs cas d’usage de Fast",
     "items": [
       {
         "title": "Tests rapides de concepts et d’accroches",
@@ -139,26 +139,30 @@
   ],
   "faqs": [
     {
-      "q": "LTX 2.3 Fast prend-il en charge Audio vers vidéo, Extend ou Retake ?",
-      "a": "Non. Dans le routing public Fal actuel, Fast couvre uniquement texte vers vidéo et image vers vidéo."
+      "q": "À quoi LTX 2.3 Fast sert-il le mieux ?",
+      "a": "LTX 2.3 Fast sert surtout aux tests moins coûteux, aux boucles de draft plus longues, aux variantes sociales et à l’exploration de prompts avant de faire passer les sorties retenues vers LTX 2.3 Pro."
     },
     {
-      "q": "LTX 2.3 Fast peut-il générer en vertical ?",
-      "a": "Oui. Les workflows standards de génération prennent en charge 16:9 et 9:16."
+      "q": "Quelle est la différence entre LTX 2.3 Fast et LTX 2.3 Pro ?",
+      "a": "LTX 2.3 Fast est la voie LTX actuelle la plus simple et la plus rapide pour la génération texte vers vidéo et image vers vidéo, tandis que LTX 2.3 Pro est plus adapté quand vous avez besoin de workflows avancés comme Audio vers vidéo, Extend et Retake."
     },
     {
-      "q": "Que se passe-t-il au-dessus de 10 secondes ?",
-      "a": "Fast peut toujours rendre jusqu’à 20 secondes, mais au-dessus de 10 secondes les runs sont contraints à 1080p en 25 fps."
+      "q": "Quelle est la durée max de LTX 2.3 Fast ?",
+      "a": "LTX 2.3 Fast prend actuellement en charge des clips de 6 à 20 secondes. Au-dessus de 10 secondes, le routing public actuel est limité à 1080p en 25 fps."
     },
     {
-      "q": "Quand faut-il passer de Fast à LTX 2.3 Pro ?",
-      "a": "Restez sur Fast pour tester accroches, pacing et variantes de format. Passez sur LTX 2.3 Pro quand vous avez besoin d’Audio vers vidéo, Extend, Retake ou d’un workflow LTX plus complet."
+      "q": "LTX 2.3 Fast est-il meilleur que Pro pour les tests ?",
+      "a": "Oui. LTX 2.3 Fast est le meilleur choix actuel quand l’objectif est de tester le comportement des prompts, de comparer des variantes rapidement et de garder un coût plus bas en phase d’itération."
+    },
+    {
+      "q": "Quand utiliser LTX 2.3 Fast plutôt que LTX 2 ?",
+      "a": "Utilisez LTX 2.3 Fast quand vous voulez le workflow fast actuel de LTX, une couverture de draft plus longue et une voie plus claire vers la famille LTX 2.3. LTX 2 doit plutôt être traité comme une option plus ancienne encore prise en charge, pas comme le choix fast principal."
     }
   ],
   "custom": {
     "heroDesc1": "LTX 2.3 Fast est la version orientée génération de la nouvelle famille LTX 2.3. Il conserve la large surface texte / image, l’audio natif et le support image de départ / image de fin, mais retire les workflows d’édition réservés à LTX 2.3 Pro.",
     "heroDesc2": "Cela en fait un meilleur choix pour l'idéation rapide, les variantes sociales par ratio et les tests d'accroches quand vous voulez un peu plus de longueur de clip que sur la plupart des moteurs fast.",
-    "heroSupportLine": "Utilisez Fast pour la vitesse et le volume, puis faites monter uniquement les gagnants vers LTX 2.3 Pro si le projet demande plus de contrôle.",
+    "heroSupportLine": "Commencez par les exemples, utilisez Fast pour les tests et les drafts plus longs, puis faites monter les sorties retenues vers LTX 2.3 Pro quand le workflow demande plus de contrôle.",
     "heroSpecChips": [
       {
         "label": "Texte→Vidéo",
@@ -185,12 +189,12 @@
         "icon": "audio"
       }
     ],
-    "whyTitle": "Pourquoi LTX 2.3 Fast est utile",
+    "whyTitle": "Tarification, durée max et prochaines étapes",
     "heroHighlights": [
-      "Voie d’itération rapide||Idéal pour tester plusieurs angles de prompt avant de lancer une passe premium.",
-      "Des clips plus longs que beaucoup de moteurs fast||Vous pouvez monter de 6 à 20 secondes quand le pacing a besoin d’un peu plus d’espace.",
-      "L’audio natif reste inclus||Pratique pour caler un timing de base, une ambiance et un sound design social-first.",
-      "Une séparation claire avec la version standard||On comprend exactement à quoi sert Fast : générer vite, pas étendre ou retaker."
+      "Tarification et durée max||Utilisez Fast pour tester à moindre coût sur des clips de 6 à 20 secondes, avec la contrainte actuelle 1080p à 25 fps au-dessus de 10 secondes.",
+      "Fast vs Pro||Choisissez Fast pour les tests, les drafts plus longs et l’itération rapide, puis passez sur Pro quand le workflow a besoin de plus de contrôle.",
+      "Commencer par les exemples||Ouvrez d’abord la page d’exemples LTX si vous voulez des patterns de prompts, des réglages et des bases image-vers-vidéo avant de générer.",
+      "Meilleurs cas d’usage||Fast convient bien aux tests de prompts, aux variantes verticales, aux drafts plus longs et à l’exploration motion à moindre coût."
     ],
     "specTitle": "Vraies specs - LTX 2.3 Fast dans MaxVideoAI",
     "specNote": "Les specs reflètent le routing Fast public exposé aujourd’hui.",

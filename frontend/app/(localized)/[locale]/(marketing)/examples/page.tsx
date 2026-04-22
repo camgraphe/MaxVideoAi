@@ -446,8 +446,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const isLtxLanding = modelLanding?.slug === 'ltx';
   const heroTitle = modelLanding?.heroTitle ?? content.hero.title;
   const heroSubtitle = modelLanding?.heroSubtitle ?? content.hero.subtitle;
-  const heroBody = modelLanding?.intro ?? hubHeroBody;
-  const heroLead = compactLeadCopy(heroBody, modelLanding ? 120 : 152);
+  const heroBody = (modelLanding?.intro ?? hubHeroBody).replace(/\s+/g, ' ').trim();
+  const heroLead = modelLanding ? heroBody : compactLeadCopy(heroBody, 152);
   const klingSectionTitles = isKlingLanding
     ? locale === 'fr'
       ? ['Prompts a reutiliser', 'Controle du mouvement et choix du modele', 'Reglages et notes de prix']
@@ -644,7 +644,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
           : 'Supported older version';
   const pricingLinkLabel =
     locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
-  const nextStepLinks = isSeedanceLanding
+  const rawNextStepLinks = isSeedanceLanding
     ? [
         {
           href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-0-fast'),
@@ -856,6 +856,15 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 : 'Compare Seedance 2.0 vs Sora 2',
         },
       ];
+  const repeatedModelStepHrefs =
+    isModelLanding && modelLinks.length
+      ? new Set([...modelLinks.map((model) => model.href), pricingPath])
+      : new Set<string>();
+  const nextStepLinks = rawNextStepLinks.filter(
+    (item, index, items) =>
+      !repeatedModelStepHrefs.has(item.href) &&
+      items.findIndex((candidate) => candidate.href === item.href) === index
+  );
 
   const filteredEntries = selectedEngine
     ? allVideos
