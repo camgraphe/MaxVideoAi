@@ -1095,6 +1095,290 @@ type ComparePageCopy = {
   breadcrumb?: { root?: string };
 };
 
+type ComparePageOverride = {
+  meta?: {
+    title?: string;
+    description?: string;
+  };
+  heroIntro?: string;
+  topCards?: Array<{
+    title: string;
+    body: string;
+  }>;
+  primaryLinksTitle?: string;
+  primaryLinks?: Array<{
+    href: string;
+    label: string;
+  }>;
+  faq?: {
+    title?: string;
+    subtitle?: string;
+    items: Array<{
+      question: string;
+      answer: string | string[];
+    }>;
+  };
+};
+
+const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePageOverride>>> = {
+  en: {
+    'seedance-1-5-pro-vs-seedance-2-0': {
+      meta: {
+        title: 'Seedance 1.5 Pro vs Seedance 2.0 | What Changed, Upgrade Path & Best Use Cases | MaxVideoAI',
+        description:
+          'Compare Seedance 1.5 Pro vs Seedance 2.0 on MaxVideoAI to see what changed in audio, multi-shot continuity, references, pricing, and when upgrading makes sense.',
+      },
+      heroIntro:
+        'Compare Seedance 1.5 Pro and Seedance 2.0 to see what changed in native audio, multi-shot continuity, and reference workflows, and decide when staying on 1.5 Pro is still enough versus when upgrading to 2.0 makes sense. Use this page to understand the trade-offs quickly before moving to the current Seedance model, the examples page, or the exact workflow that fits your use case.',
+      topCards: [
+        {
+          title: 'What changed',
+          body:
+            'Seedance 2.0 is the newer Seedance workflow with stronger multi-shot continuity, broader reference inputs, and a more current audio-first production path than Seedance 1.5 Pro.',
+        },
+        {
+          title: 'When to stay on Seedance 1.5 Pro',
+          body:
+            'Stay on Seedance 1.5 Pro when you mainly need short, repeatable clips, simpler camera setups, and an older workflow that is already validated in production.',
+        },
+        {
+          title: 'When to upgrade to Seedance 2.0',
+          body:
+            'Upgrade when you need better shot-to-shot continuity, richer native audio workflows, or a more flexible current model for higher-value creative work.',
+        },
+        {
+          title: 'Best use cases',
+          body:
+            'Use this page to decide between a supported older Seedance workflow for short controlled clips and the current Seedance 2.0 workflow for multi-shot ads, launches, and more ambitious reference-driven sequences.',
+        },
+      ],
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Open Seedance 2.0 model page',
+        },
+        {
+          href: '/examples/seedance',
+          label: 'View Seedance examples',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Open Seedance 2.0 Fast model page',
+        },
+        {
+          href: '/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast',
+          label: 'Compare Seedance 2.0 vs Seedance 2.0 Fast',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers to help you decide whether to stay on Seedance 1.5 Pro or move to Seedance 2.0.',
+        items: [
+          {
+            question: 'What changed between Seedance 1.5 Pro and Seedance 2.0?',
+            answer:
+              'Seedance 2.0 is the newer model with stronger multi-shot continuity, broader reference workflows, and the current Seedance path for production work. Seedance 1.5 Pro remains useful for shorter, simpler, repeatable clips.',
+          },
+          {
+            question: 'Is Seedance 2.0 better than Seedance 1.5 Pro?',
+            answer:
+              'For most current workflows, yes. Seedance 2.0 is the better default if you care about continuity, flexibility, and staying on the current model. Seedance 1.5 Pro is still good enough when the job is short, stable, and already works on the older setup.',
+          },
+          {
+            question: 'When should I upgrade from Seedance 1.5 Pro to Seedance 2.0?',
+            answer:
+              'Upgrade when you need better multi-shot behavior, richer native audio workflows, or more headroom for current prompt and reference-driven production. If your existing 1.5 Pro workflow is already stable for short clips, you do not need to move every job immediately.',
+          },
+          {
+            question: 'Is Seedance 1.5 Pro still good enough for some workflows?',
+            answer:
+              'Yes. It still fits short, repeatable cinematic clips and teams that already have validated prompt patterns on 1.5 Pro and do not need the broader 2.0 workflow yet.',
+          },
+          {
+            question: 'Which model is better for multi-shot and native audio?',
+            answer:
+              'Seedance 2.0 is the better choice for multi-shot continuity and the more current native-audio workflow. Seedance 1.5 Pro is better treated as a simpler older option for shorter clips.',
+          },
+        ],
+      },
+    },
+  },
+  fr: {
+    'seedance-1-5-pro-vs-seedance-2-0': {
+      meta: {
+        title: 'Seedance 1.5 Pro vs Seedance 2.0 | Ce qui change, quand passer a 2.0 et meilleurs cas d usage | MaxVideoAI',
+        description:
+          'Comparez Seedance 1.5 Pro et Seedance 2.0 sur MaxVideoAI pour voir ce qui change sur l audio, la continuite multi-shot, les references, le prix, et quand passer a 2.0.',
+      },
+      heroIntro:
+        'Comparez Seedance 1.5 Pro et Seedance 2.0 pour voir ce qui change sur l audio natif, la continuite multi-shot et les workflows a references, puis decidez quand rester sur 1.5 Pro suffit encore et quand passer a 2.0 devient le meilleur choix. Utilisez cette page pour comprendre rapidement les compromis avant d ouvrir le modele Seedance actuel, la page d exemples, ou le workflow le plus adapte a votre usage.',
+      topCards: [
+        {
+          title: 'Ce qui change',
+          body:
+            'Seedance 2.0 est le workflow Seedance le plus recent, avec une meilleure continuite multi-shot, des entrees de reference plus larges, et une approche audio-first plus actuelle que Seedance 1.5 Pro.',
+        },
+        {
+          title: 'Quand rester sur Seedance 1.5 Pro',
+          body:
+            'Restez sur Seedance 1.5 Pro si vous avez surtout besoin de clips courts et repetables, de setups camera plus simples, et d un workflow plus ancien deja valide en production.',
+        },
+        {
+          title: 'Quand passer a Seedance 2.0',
+          body:
+            'Passez a Seedance 2.0 si vous avez besoin d une meilleure continuite entre plans, de workflows audio natifs plus riches, ou d un modele actuel plus flexible pour un travail creatif a plus forte valeur.',
+        },
+        {
+          title: 'Meilleurs cas d usage',
+          body:
+            'Cette page sert a choisir entre un workflow Seedance plus ancien mais encore supporte pour des clips courts et controles, et le workflow Seedance 2.0 actuel pour des pubs multi-shot, des lancements, et des sequences plus ambitieuses guidees par references.',
+        },
+      ],
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Ouvrir la page modele Seedance 2.0',
+        },
+        {
+          href: '/examples/seedance',
+          label: 'Voir les exemples Seedance',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Ouvrir la page modele Seedance 2.0 Fast',
+        },
+        {
+          href: '/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast',
+          label: 'Comparer Seedance 2.0 vs Seedance 2.0 Fast',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses rapides pour decider s il faut rester sur Seedance 1.5 Pro ou passer a Seedance 2.0.',
+        items: [
+          {
+            question: 'Qu est-ce qui change entre Seedance 1.5 Pro et Seedance 2.0 ?',
+            answer:
+              'Seedance 2.0 est le modele le plus recent, avec une meilleure continuite multi-shot, des workflows de reference plus larges, et le chemin Seedance actuel pour la production. Seedance 1.5 Pro reste utile pour des clips plus courts, plus simples et repetables.',
+          },
+          {
+            question: 'Seedance 2.0 est-il meilleur que Seedance 1.5 Pro ?',
+            answer:
+              'Pour la plupart des workflows actuels, oui. Seedance 2.0 est le meilleur choix par defaut si vous cherchez plus de continuite, plus de flexibilite et le modele actuel. Seedance 1.5 Pro reste suffisant quand le travail est court, stable, et deja valide sur l ancien setup.',
+          },
+          {
+            question: 'Quand faut-il passer de Seedance 1.5 Pro a Seedance 2.0 ?',
+            answer:
+              'Passez a 2.0 si vous avez besoin d un meilleur comportement multi-shot, de workflows audio natifs plus riches, ou de plus de marge pour des productions actuelles basees sur prompts et references. Si votre workflow 1.5 Pro est deja stable sur des clips courts, vous n avez pas besoin de migrer tous les jobs tout de suite.',
+          },
+          {
+            question: 'Seedance 1.5 Pro est-il encore suffisant pour certains workflows ?',
+            answer:
+              'Oui. Il reste adapte a des clips cinematographiques courts et repetables, ainsi qu aux equipes qui ont deja des prompts valides sur 1.5 Pro et n ont pas encore besoin du workflow 2.0 plus large.',
+          },
+          {
+            question: 'Quel modele est le meilleur pour le multi-shot et l audio natif ?',
+            answer:
+              'Seedance 2.0 est le meilleur choix pour la continuite multi-shot et pour le workflow audio natif le plus actuel. Seedance 1.5 Pro doit plutot etre traite comme une option plus simple et plus ancienne pour des clips courts.',
+          },
+        ],
+      },
+    },
+  },
+  es: {
+    'seedance-1-5-pro-vs-seedance-2-0': {
+      meta: {
+        title: 'Seedance 1.5 Pro vs Seedance 2.0 | Que cambio, cuando actualizar y mejores casos de uso | MaxVideoAI',
+        description:
+          'Compara Seedance 1.5 Pro y Seedance 2.0 en MaxVideoAI para ver que cambia en audio, continuidad multi-shot, referencias, precio y cuando conviene actualizar.',
+      },
+      heroIntro:
+        'Compara Seedance 1.5 Pro y Seedance 2.0 para ver que cambio en audio nativo, continuidad multi-shot y workflows con referencias, y decidir cuando quedarse en 1.5 Pro sigue siendo suficiente y cuando pasar a 2.0 tiene mas sentido. Usa esta pagina para entender rapido los trade-offs antes de abrir el modelo Seedance actual, la pagina de ejemplos o el workflow que mejor encaja con tu caso de uso.',
+      topCards: [
+        {
+          title: 'Que cambio',
+          body:
+            'Seedance 2.0 es el workflow Seedance mas reciente, con mejor continuidad multi-shot, entradas de referencia mas amplias y un camino de produccion audio-first mas actual que Seedance 1.5 Pro.',
+        },
+        {
+          title: 'Cuando quedarse en Seedance 1.5 Pro',
+          body:
+            'Quedate en Seedance 1.5 Pro cuando necesites sobre todo clips cortos y repetibles, setups de camara mas simples y un workflow anterior que ya esta validado en produccion.',
+        },
+        {
+          title: 'Cuando pasar a Seedance 2.0',
+          body:
+            'Actualiza cuando necesites mejor continuidad entre tomas, workflows de audio nativo mas ricos o un modelo actual mas flexible para trabajo creativo de mayor valor.',
+        },
+        {
+          title: 'Mejores casos de uso',
+          body:
+            'Usa esta pagina para decidir entre un workflow Seedance anterior pero aun compatible para clips cortos y controlados, y el workflow actual de Seedance 2.0 para anuncios multi-shot, lanzamientos y secuencias mas ambiciosas guiadas por referencias.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Abrir la pagina del modelo Seedance 2.0',
+        },
+        {
+          href: '/examples/seedance',
+          label: 'Ver ejemplos de Seedance',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Abrir la pagina del modelo Seedance 2.0 Fast',
+        },
+        {
+          href: '/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast',
+          label: 'Comparar Seedance 2.0 vs Seedance 2.0 Fast',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas rapidas para decidir si conviene quedarse en Seedance 1.5 Pro o pasar a Seedance 2.0.',
+        items: [
+          {
+            question: 'Que cambio entre Seedance 1.5 Pro y Seedance 2.0?',
+            answer:
+              'Seedance 2.0 es el modelo mas nuevo, con mejor continuidad multi-shot, workflows de referencia mas amplios y el camino Seedance actual para produccion. Seedance 1.5 Pro sigue siendo util para clips mas cortos, simples y repetibles.',
+          },
+          {
+            question: 'Es Seedance 2.0 mejor que Seedance 1.5 Pro?',
+            answer:
+              'Para la mayoria de workflows actuales, si. Seedance 2.0 es la mejor opcion por defecto si te importan la continuidad, la flexibilidad y mantenerte en el modelo actual. Seedance 1.5 Pro sigue siendo suficiente cuando el trabajo es corto, estable y ya funciona bien en el setup anterior.',
+          },
+          {
+            question: 'Cuando deberia pasar de Seedance 1.5 Pro a Seedance 2.0?',
+            answer:
+              'Actualiza cuando necesites mejor comportamiento multi-shot, workflows de audio nativo mas ricos o mas margen para produccion actual basada en prompts y referencias. Si tu workflow de 1.5 Pro ya es estable para clips cortos, no hace falta mover todos los trabajos de inmediato.',
+          },
+          {
+            question: 'Sigue siendo suficiente Seedance 1.5 Pro para algunos workflows?',
+            answer:
+              'Si. Sigue encajando en clips cinematicos cortos y repetibles, y en equipos que ya tienen patrones de prompt validados en 1.5 Pro y todavia no necesitan el workflow mas amplio de 2.0.',
+          },
+          {
+            question: 'Que modelo es mejor para multi-shot y audio nativo?',
+            answer:
+              'Seedance 2.0 es la mejor opcion para continuidad multi-shot y para el workflow de audio nativo mas actual. Seedance 1.5 Pro conviene tratarlo como una opcion anterior mas simple para clips cortos.',
+          },
+        ],
+      },
+    },
+  },
+};
+
+function getComparePageOverride(locale: AppLocale, slug: string): ComparePageOverride | undefined {
+  return COMPARE_PAGE_OVERRIDES[locale]?.[slug];
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -1108,17 +1392,21 @@ export async function generateMetadata({
   const slug = params.slug;
   const canonicalInfo = getCanonicalCompareSlug(slug);
   const canonicalSlug = canonicalInfo?.canonicalSlug ?? slug;
-  const metaOverride = compareCopy.meta?.slugOverrides?.[canonicalSlug];
+  const pageOverride = getComparePageOverride(locale, canonicalSlug);
+  const metaOverride = {
+    ...(compareCopy.meta?.slugOverrides?.[canonicalSlug] ?? {}),
+    ...(pageOverride?.meta ?? {}),
+  };
   const resolved = canonicalInfo ? resolveEngines(canonicalInfo.canonicalSlug) : null;
   const pairHasNativeAudio = Boolean(resolved?.left.engine?.audio) || Boolean(resolved?.right.engine?.audio);
   const criteriaCount = pairHasNativeAudio ? 11 : 10;
   const titleTemplate =
-    metaOverride?.title ?? compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
+    metaOverride.title ?? compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
   const titleFallback =
     compareCopy.meta?.titleFallback ??
     'Compare AI video engines — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
   const descriptionTemplate = replaceCriteriaCount(
-    metaOverride?.description ??
+    metaOverride.description ??
       compareCopy.meta?.description ??
       `Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across ${criteriaCount} criteria.`,
     criteriaCount
@@ -1242,11 +1530,15 @@ export default async function CompareDetailPage({
   const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
   const compareHubHref = `${localePrefix}/${compareBase}`.replace(/\/{2,}/g, '/');
   const canonicalSlug = canonicalInfo.canonicalSlug;
+  const pageOverride = getComparePageOverride(activeLocale, canonicalSlug);
   const compareHubCanonicalUrl = buildMetadataUrls(activeLocale, undefined, { englishPath: '/ai-video-engines' }).canonical;
   const comparisonCanonicalUrl = buildMetadataUrls(activeLocale, undefined, {
     englishPath: `/ai-video-engines/${canonicalSlug}`,
   }).canonical;
-  const metaOverride = compareCopy.meta?.slugOverrides?.[canonicalSlug];
+  const metaOverride = {
+    ...(compareCopy.meta?.slugOverrides?.[canonicalSlug] ?? {}),
+    ...(pageOverride?.meta ?? {}),
+  };
   if (canonicalSlug !== slug) {
     const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
     const query = orderParam ? `?order=${orderParam}` : '';
@@ -1293,7 +1585,8 @@ export default async function CompareDetailPage({
     hasPrelaunchEngine
       ? (compareCopy.hero?.introPrelaunch ??
         `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`)
-      : (compareCopy.hero?.intro ??
+      : (pageOverride?.heroIntro ??
+        compareCopy.hero?.intro ??
         `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`),
     criteriaCount
   );
@@ -1573,7 +1866,7 @@ export default async function CompareDetailPage({
     validatingLabel
   );
   const faqTemplates = compareCopy.faq ?? {};
-  const faqItems = [
+  const generatedFaqItems = [
     {
       question: formatTemplate(
         faqTemplates.q1 ?? 'What are {left} and {right}?',
@@ -1707,6 +2000,7 @@ export default async function CompareDetailPage({
       ),
     },
   ];
+  const faqItems = pageOverride?.faq?.items ?? generatedFaqItems;
 
   const faqJsonLdItems = faqItems.filter((item) => {
     const text = Array.isArray(item.answer) ? item.answer.join(' ') : item.answer;
@@ -2119,6 +2413,35 @@ export default async function CompareDetailPage({
           ) : null}
         </header>
 
+        {pageOverride?.topCards?.length ? (
+          <section className="grid gap-3 md:grid-cols-2">
+            {pageOverride.topCards.map((card) => (
+              <article
+                key={card.title}
+                className="rounded-[20px] border border-hairline bg-surface/85 px-5 py-5 shadow-card"
+              >
+                <h2 className="text-base font-semibold text-text-primary">{card.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{card.body}</p>
+              </article>
+            ))}
+          </section>
+        ) : null}
+
+        {pageOverride?.primaryLinks?.length ? (
+          <section className="rounded-[20px] border border-hairline bg-surface/85 px-5 py-5 shadow-card">
+            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-muted">
+              {pageOverride.primaryLinksTitle ?? 'Recommended next steps'}
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-3 text-sm">
+              {pageOverride.primaryLinks.map((item) => (
+                <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="relative overflow-hidden rounded-[36px] border border-hairline bg-surface shadow-card">
           <div className="relative z-10 rounded-[32px] border border-transparent bg-gradient-to-b from-surface via-surface to-surface-2 p-6 sm:p-8">
             <div className="relative mt-2 grid grid-cols-2 gap-3 sm:gap-5">
@@ -2512,11 +2835,12 @@ export default async function CompareDetailPage({
 
         <section className="stack-gap-sm">
           <h2 className="text-2xl font-semibold text-text-primary">
-            {compareCopy.faq?.title ?? 'FAQ'}
+            {pageOverride?.faq?.title ?? compareCopy.faq?.title ?? 'FAQ'}
           </h2>
           <p className="text-sm text-text-secondary">
             {formatTemplate(
-              compareCopy.faq?.subtitle ??
+              pageOverride?.faq?.subtitle ??
+                compareCopy.faq?.subtitle ??
                 'Quick answers about {left} vs {right} on MaxVideoAI (pricing, modes, specs, and why results differ).',
               { left: formatEngineName(left), right: formatEngineName(right) }
             )}

@@ -152,33 +152,46 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   kling: {
-    metaTitle: 'Kling Examples, Prompts & Settings | MaxVideoAI',
+    metaTitle: 'Kling AI Video Examples, Prompts & Settings | MaxVideoAI',
     metaDescription:
-      'Browse Kling examples, prompts, settings, and per-clip pricing for Kling 3 Pro, Kling 3 Standard, and supported Kling 2.6 Pro and Kling 2.5 Turbo workflows on MaxVideoAI.',
-    heroTitle: 'Kling examples, prompts and settings',
-    subtitle: 'Kling examples, prompts, and settings for current Kling workflows and supported older runs.',
+      'Browse Kling 3 Pro and Kling 3 Standard AI video examples, prompts, settings, and output patterns, then compare supported older Kling workflows on MaxVideoAI.',
+    heroTitle: 'Kling AI Video Examples, Prompts & Settings',
+    subtitle: 'Video examples, prompts, settings, and model guidance for current Kling workflows and supported older versions.',
     intro:
-      'Browse Kling 3 Pro and Kling 3 Standard examples, prompts, and reusable settings, then explore Kling 2.6 Pro and Kling 2.5 Turbo as supported older Kling setups for earlier workflows, shorter audio-ready clips, and fast silent draft passes.',
+      'Browse Kling 3 Pro and Kling 3 Standard video examples, prompts, reusable settings, and output patterns, then explore supported older Kling setups for earlier workflows, short audio-ready clips, and fast draft passes. Use this page to compare prompt structures, motion control patterns, and model-specific settings before opening the matching Kling model page.',
     summary:
-      'Kling 3 Pro and Kling 3 Standard lead this gallery, while Kling 2.6 Pro and Kling 2.5 Turbo stay available below as supported older Kling setups for audio-ready short clips and fast silent drafts.',
+      'Kling 3 Pro and Kling 3 Standard lead this page for examples, prompts, settings, and output review, while Kling 2.6 Pro and Kling 2.5 Turbo remain available below as supported older Kling setups.',
     promptPatterns:
-      'Use direct action verbs, short scene constraints, and one camera instruction at a time. Kling examples usually degrade when prompts bundle too many style goals.',
+      'Start with one clear action, one camera instruction, and one style goal. Kling examples are easiest to compare when the prompt structure stays stable and only the model or setting changes.',
     strengthsLimits:
-      'Kling works best when prompt structure stays shot-based and deliberate. Keep scene constraints clear to prevent drift across multi-shot variants.',
+      'Kling 3 Pro is the strongest current option for tighter scene control and more demanding multi-shot work, while Kling 3 Standard is the lower-cost current path for prompt testing, variants, and repeatable drafts.',
     pricingNotes:
-      'Use fixed duration/resolution presets when comparing Kling outputs with other engines to keep pricing comparisons meaningful.',
+      'Keep duration, aspect ratio, and output settings aligned when comparing Kling results. That makes it easier to evaluate both prompt behavior and per-clip cost before opening a model page.',
     faq: [
       {
-        question: 'What kind of prompts are most reliable for Kling?',
-        answer: 'Short prompts with one visual objective and clear camera motion usually produce the most stable results.',
+        question: 'How long can Kling AI videos be?',
+        answer:
+          'Kling 3 Pro and Kling 3 Standard support 3 to 15 second renders at 1080p. Kling 2.6 Pro is better suited to shorter 5 to 10 second audio-ready clips, and Kling 2.5 Turbo is mainly for fast 5 or 10 second silent drafts.',
       },
       {
-        question: 'Can I reuse Kling examples for ad creatives?',
-        answer: 'Yes. Start from these templates and adapt subject, copy, and pacing to your campaign needs.',
+        question: 'How long does Kling AI take to make a video?',
+        answer:
+          'Render time depends on the Kling model, clip length, settings, and queue load. Shorter draft runs on Kling 3 Standard or Kling 2.5 Turbo are usually the fastest way to test prompts, while longer multi-shot or audio-on renders generally take more time than short silent drafts.',
       },
       {
-        question: 'How should I compare Kling cost against alternatives?',
-        answer: 'Keep identical duration and resolution, then compare per-clip pricing and output quality.',
+        question: 'Which Kling model should I use for examples and prompt testing?',
+        answer:
+          'Start with Kling 3 Standard when you want lower-cost prompt testing, repeatable draft passes, and current Kling 3 behavior. Move to Kling 3 Pro when you want stronger scene control, more demanding multi-shot sequences, and higher-priority final outputs.',
+      },
+      {
+        question: 'How should I adapt prompts for Kling 3 Pro vs Kling 3 Standard?',
+        answer:
+          'Keep the same core prompt structure on both models: one clear subject, one action per shot, and explicit camera direction. Kling 3 Pro can support denser multi-shot direction and more demanding continuity, while Kling 3 Standard works best when the shot structure stays tighter and easier to execute.',
+      },
+      {
+        question: 'Does every Kling model support audio the same way?',
+        answer:
+          'No. Kling 3 Pro and Kling 3 Standard support native audio workflows, and Kling 2.6 Pro is also audio-ready for short clips. Kling 2.5 Turbo is built for silent video drafts, so sound should be added later in post.',
       },
     ],
   },
@@ -214,33 +227,46 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    metaTitle: 'LTX Examples, Prompts & Settings | MaxVideoAI',
+    metaTitle: 'LTX 2.3 Prompt Examples, Settings & Outputs | MaxVideoAI',
     metaDescription:
-      'Browse LTX examples, prompts, settings, and outputs for LTX 2.3 Pro, LTX 2.3 Fast, LTX 2, and LTX 2 Fast on MaxVideoAI.',
-    heroTitle: 'LTX examples, prompts and settings',
-    subtitle: 'LTX examples, prompts and settings for current LTX 2.3 workflows and supported older LTX versions.',
+      'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, settings, outputs, and image-to-video patterns, then review supported LTX 2 workflows on MaxVideoAI.',
+    heroTitle: 'LTX 2.3 prompt examples, settings and outputs',
+    subtitle: 'Prompt examples, settings, outputs, and image-to-video patterns for current LTX 2.3 workflows.',
     intro:
-      'Browse LTX 2.3 Pro and LTX 2.3 Fast examples, prompts, settings, and outputs first, then review LTX 2 and LTX 2 Fast as supported older setups for earlier workflows and historical prompt baselines.',
+      'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, reusable settings, and output patterns, then review supported LTX 2 and LTX 2 Fast setups for older workflows, historical prompt baselines, and migration context. Use this page to study prompt structure, image-to-video patterns, and model-specific settings before opening the matching LTX model page.',
     summary:
-      'LTX 2.3 Pro and LTX 2.3 Fast lead this gallery, while LTX 2 and LTX 2 Fast remain available lower down as supported older LTX setups.',
+      'LTX 2.3 Pro and LTX 2.3 Fast lead this page for prompt examples, reusable settings, outputs, and image-to-video patterns, with LTX 2 and LTX 2 Fast kept below for supported older workflows and migration context.',
     promptPatterns:
-      'Use concise prompts with a clear subject, one main action, and one camera instruction. LTX examples are easiest to compare when the brief stays stable and only the model variant changes.',
+      'Start from reusable LTX 2.3 prompt structures for product shots, short cinematic clips, and consistent motion tests before adapting them to your own scene.',
     strengthsLimits:
-      'The LTX family is strong for prompt iteration, repeatable framing, and current-vs-supported workflow comparison. LTX 2.3 Pro adds audio-driven generation plus Extend and Retake, while LTX 2 and LTX 2 Fast remain useful for older workflows and historical baselines.',
+      'Use LTX 2.3 with a clear source image, one main motion instruction, and one camera goal so outputs stay easier to compare across Pro and Fast.',
     pricingNotes:
-      'Keep one reference preset for cost comparison, then compare variants at the same duration and resolution. This makes it easier to see when the newer 2.3 workflows justify the higher spend versus supported older LTX 2 runs.',
+      'Keep duration, aspect ratio, motion complexity, and output settings aligned when testing prompts so you can compare result quality, speed, and cost more cleanly.',
     faq: [
       {
-        question: 'When should I start from LTX examples?',
-        answer: 'Use them when you want prompt, settings, and output patterns for the current LTX 2.3 workflows first, with older LTX 2 variants still available below for comparison.',
+        question: 'What are the best LTX 2.3 prompt examples to start from?',
+        answer:
+          'The best starting point is a simple structure: subject, action, camera direction, and style goal. The strongest examples keep that structure stable while changing only one variable at a time.',
       },
       {
-        question: 'How do I improve consistency across LTX variants?',
-        answer: 'Reuse one validated prompt template and change only one variable at a time so model differences stay readable.',
+        question: 'How should I structure an LTX 2.3 prompt?',
+        answer:
+          'Start with one clear subject, one main action, one camera instruction, and one visual style cue. LTX 2.3 prompts usually work better when the motion goal is explicit and the scene description stays tight.',
       },
       {
-        question: 'Can I compare LTX family pricing from here?',
-        answer: 'Yes. Use matching duration and resolution settings so the price difference reflects the model tier rather than the setup.',
+        question: 'What settings matter most for LTX 2.3 outputs?',
+        answer:
+          'The main settings to watch are duration, aspect ratio, source image choice for image-to-video, and how much motion complexity you ask for in a single prompt. Keeping those stable makes prompt testing much easier.',
+      },
+      {
+        question: 'How should I prompt LTX 2.3 for image-to-video?',
+        answer:
+          'Start from a strong source image, then add one motion instruction, one camera movement, and one output goal. LTX 2.3 image-to-video works best when the prompt extends the source image instead of replacing it with a completely different scene.',
+      },
+      {
+        question: 'Which LTX model should I use: LTX 2.3 Pro or LTX 2.3 Fast?',
+        answer:
+          'Use LTX 2.3 Pro when you want the strongest current LTX output quality and more advanced workflows like audio, Extend, and Retake. Use LTX 2.3 Fast when you want quicker, lower-cost prompt testing and longer draft iteration loops.',
       },
     ],
   },
@@ -469,33 +495,46 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    metaTitle: 'Exemples LTX, prompts et réglages | MaxVideoAI',
+    metaTitle: 'Exemples de prompts, réglages et sorties LTX 2.3 | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples LTX, des prompts, des réglages et des sorties pour LTX 2.3 Pro, LTX 2.3 Fast, LTX 2 et LTX 2 Fast sur MaxVideoAI.',
-    heroTitle: 'Exemples LTX, prompts et réglages',
-    subtitle: 'Exemples LTX, prompts et réglages pour les workflows LTX 2.3 actuels et les versions LTX plus anciennes encore prises en charge.',
+      'Parcourez des exemples de prompts LTX 2.3 Pro et LTX 2.3 Fast, des réglages, des sorties et des patterns image-vers-vidéo, puis consultez les workflows LTX 2 encore pris en charge sur MaxVideoAI.',
+    heroTitle: 'Exemples de prompts, réglages et sorties LTX 2.3',
+    subtitle: 'Exemples de prompts, réglages, sorties et patterns image-vers-vidéo pour les workflows LTX 2.3 actuels.',
     intro:
-      'Parcourez d’abord les exemples, prompts, réglages et sorties de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme setups plus anciens encore pris en charge pour des workflows antérieurs et des bases de prompts historiques.',
+      'Parcourez les exemples de prompts, les réglages réutilisables et les patterns de sortie de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme setups encore pris en charge pour des workflows plus anciens, des bases de prompts historiques et du contexte de migration. Utilisez cette page pour étudier la structure des prompts, les patterns image-vers-vidéo et les réglages propres à chaque modèle avant d’ouvrir la page LTX correspondante.',
     summary:
-      'LTX 2.3 Pro et LTX 2.3 Fast structurent d’abord cette galerie, tandis que LTX 2 et LTX 2 Fast restent disponibles plus bas comme setups LTX plus anciens encore pris en charge.',
+      'LTX 2.3 Pro et LTX 2.3 Fast mènent cette page pour les exemples de prompts, les réglages, les sorties et les patterns image-vers-vidéo, tandis que LTX 2 et LTX 2 Fast restent disponibles plus bas pour les workflows plus anciens et le contexte de migration.',
     promptPatterns:
-      'Utilisez des prompts concis avec un sujet clair, une action principale et une seule instruction caméra. Les exemples LTX se comparent mieux quand la consigne reste stable et que seule la variante de modèle change.',
+      'Commencez par des structures de prompts LTX 2.3 réutilisables pour des plans produit, des clips cinématiques courts et des tests de mouvement cohérents, puis adaptez-les à votre scène.',
     strengthsLimits:
-      'La famille LTX fonctionne bien pour l’itération de prompts, les cadrages reproductibles et la comparaison entre workflows actuels et versions encore prises en charge. LTX 2.3 Pro ajoute l’audio piloté, Extend et Retake, tandis que LTX 2 et LTX 2 Fast restent utiles pour des workflows plus anciens et des bases historiques.',
+      'Utilisez LTX 2.3 avec une image source claire, une instruction de mouvement principale et un objectif caméra unique pour comparer plus proprement les sorties entre Pro et Fast.',
     pricingNotes:
-      'Gardez un preset de référence fixe pour comparer les coûts, puis comparez les variantes à durée et résolution identiques. Cela aide à voir quand les flux 2.3 justifient réellement un coût supérieur aux versions LTX 2 encore prises en charge.',
+      'Gardez la durée, le ratio, la complexité du mouvement et les réglages de sortie alignés quand vous testez des prompts afin de comparer plus proprement la qualité, la vitesse et le coût.',
     faq: [
       {
-        question: 'Quand faut-il commencer par la page d’exemples LTX ?',
-        answer: 'Quand vous voulez partir des prompts, réglages et sorties des workflows LTX 2.3 actuels, tout en gardant LTX 2 et LTX 2 Fast disponibles plus bas pour comparaison.',
+        question: 'Quels sont les meilleurs exemples de prompts LTX 2.3 pour commencer ?',
+        answer:
+          'Le meilleur point de départ reste une structure simple : sujet, action, direction caméra et intention visuelle. Les exemples les plus utiles gardent cette structure stable et ne changent qu’une variable à la fois.',
       },
       {
-        question: 'Comment améliorer la cohérence entre variantes LTX ?',
-        answer: 'Gardez une structure de prompt stable et ne modifiez qu’une variable à la fois pour mieux isoler les différences entre modèles.',
+        question: 'Comment faut-il structurer un prompt LTX 2.3 ?',
+        answer:
+          'Commencez par un sujet clair, une action principale, une instruction caméra et un repère de style visuel. Les prompts LTX 2.3 fonctionnent généralement mieux quand l’objectif de mouvement est explicite et que la scène reste compacte.',
       },
       {
-        question: 'Peut-on comparer les prix de la famille LTX depuis cette page ?',
-        answer: 'Oui, à condition de garder durée et résolution identiques pour obtenir une comparaison propre.',
+        question: 'Quels réglages comptent le plus pour les sorties LTX 2.3 ?',
+        answer:
+          'Les réglages les plus importants sont la durée, le ratio, l’image source pour l’image-vers-vidéo et le niveau de complexité de mouvement demandé. Les garder stables rend les tests beaucoup plus lisibles.',
+      },
+      {
+        question: 'Comment faut-il prompter LTX 2.3 en image-vers-vidéo ?',
+        answer:
+          'Partez d’une image source forte, puis ajoutez une instruction de mouvement, un mouvement caméra et un objectif de sortie. LTX 2.3 fonctionne mieux quand le prompt prolonge l’image d’origine au lieu de tenter de la remplacer par une scène totalement différente.',
+      },
+      {
+        question: 'Quel modèle LTX utiliser : LTX 2.3 Pro ou LTX 2.3 Fast ?',
+        answer:
+          'Utilisez LTX 2.3 Pro quand vous cherchez la meilleure qualité actuelle et des workflows avancés comme l’audio, Extend et Retake. Utilisez LTX 2.3 Fast quand vous voulez tester des prompts plus vite, à moindre coût, et itérer sur des brouillons plus longs.',
       },
     ],
   },
@@ -724,33 +763,46 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    metaTitle: 'Ejemplos de LTX, prompts y ajustes | MaxVideoAI',
+    metaTitle: 'Ejemplos de prompts, ajustes y salidas de LTX 2.3 | MaxVideoAI',
     metaDescription:
-      'Revisa ejemplos de LTX, prompts, ajustes y salidas para LTX 2.3 Pro, LTX 2.3 Fast, LTX 2 y LTX 2 Fast en MaxVideoAI.',
-    heroTitle: 'Ejemplos de LTX, prompts y ajustes',
-    subtitle: 'Ejemplos de LTX, prompts y ajustes para los workflows LTX 2.3 actuales y las versiones LTX anteriores aún compatibles.',
+      'Consulta ejemplos de prompts de LTX 2.3 Pro y LTX 2.3 Fast, ajustes, salidas y patrones de imagen a video, y luego revisa los workflows LTX 2 aún compatibles en MaxVideoAI.',
+    heroTitle: 'Ejemplos de prompts, ajustes y salidas de LTX 2.3',
+    subtitle: 'Ejemplos de prompts, ajustes, salidas y patrones de imagen a video para los workflows actuales de LTX 2.3.',
     intro:
-      'Consulta primero los ejemplos, prompts, ajustes y salidas de LTX 2.3 Pro y LTX 2.3 Fast, y luego revisa LTX 2 y LTX 2 Fast como setups anteriores aún compatibles para workflows más antiguos y bases históricas de prompts.',
+      'Consulta los ejemplos de prompts, ajustes reutilizables y patrones de salida de LTX 2.3 Pro y LTX 2.3 Fast, y luego revisa LTX 2 y LTX 2 Fast como setups aún compatibles para workflows anteriores, bases históricas de prompts y contexto de migración. Usa esta página para estudiar la estructura de prompts, los patrones de imagen a video y los ajustes específicos de cada modelo antes de abrir la página LTX correspondiente.',
     summary:
-      'LTX 2.3 Pro y LTX 2.3 Fast lideran esta galería, mientras LTX 2 y LTX 2 Fast siguen disponibles más abajo como setups LTX anteriores aún compatibles.',
+      'LTX 2.3 Pro y LTX 2.3 Fast lideran esta página para ejemplos de prompts, ajustes, salidas y patrones de imagen a video, mientras LTX 2 y LTX 2 Fast se mantienen más abajo para workflows anteriores y contexto de migración.',
     promptPatterns:
-      'Usa prompts concisos con un sujeto claro, una acción principal y una sola instrucción de cámara. Los ejemplos LTX se comparan mejor cuando la consigna se mantiene estable y solo cambia la variante del modelo.',
+      'Empieza con estructuras de prompts reutilizables de LTX 2.3 para tomas de producto, clips cinematográficos cortos y pruebas de movimiento consistentes antes de adaptarlas a tu escena.',
     strengthsLimits:
-      'La familia LTX funciona bien para iteración de prompts, encuadres repetibles y comparación entre workflows actuales y versiones aún compatibles. LTX 2.3 Pro suma generación guiada por audio, Extend y Retake, mientras que LTX 2 y LTX 2 Fast siguen siendo útiles para workflows más antiguos y referencias históricas.',
+      'Usa LTX 2.3 con una imagen fuente clara, una instrucción principal de movimiento y un único objetivo de cámara para comparar mejor las salidas entre Pro y Fast.',
     pricingNotes:
-      'Mantén un preset base fijo y compara variantes con la misma duración y resolución. Así se ve mejor cuándo los flujos 2.3 justifican un mayor costo frente a las versiones LTX 2 aún compatibles.',
+      'Mantén alineados la duración, la relación de aspecto, la complejidad del movimiento y los ajustes de salida al probar prompts para comparar con más claridad calidad, velocidad y coste.',
     faq: [
       {
-        question: '¿Cuándo conviene empezar por la página de ejemplos LTX?',
-        answer: 'Cuando quieres partir de prompts, ajustes y salidas de los workflows LTX 2.3 actuales, manteniendo LTX 2 y LTX 2 Fast más abajo como comparación.',
+        question: '¿Cuáles son los mejores ejemplos de prompts de LTX 2.3 para empezar?',
+        answer:
+          'El mejor punto de partida es una estructura simple: sujeto, acción, dirección de cámara y objetivo visual. Los ejemplos más útiles mantienen esa estructura estable y solo cambian una variable a la vez.',
       },
       {
-        question: '¿Cómo mejoro consistencia entre variantes LTX?',
-        answer: 'Reutiliza una estructura estable y cambia una sola variable por prueba para aislar mejor las diferencias entre modelos.',
+        question: '¿Cómo debería estructurar un prompt de LTX 2.3?',
+        answer:
+          'Empieza con un sujeto claro, una acción principal, una instrucción de cámara y una referencia de estilo visual. Los prompts de LTX 2.3 suelen funcionar mejor cuando el objetivo de movimiento es explícito y la escena se mantiene compacta.',
       },
       {
-        question: '¿Puedo comparar precios de la familia LTX desde esta página?',
-        answer: 'Sí, usando duración y resolución equivalentes para que la comparación siga siendo limpia.',
+        question: '¿Qué ajustes importan más en las salidas de LTX 2.3?',
+        answer:
+          'Los ajustes más importantes son la duración, la relación de aspecto, la imagen fuente para imagen a video y el nivel de complejidad de movimiento que pides en un solo prompt. Mantenerlos estables hace mucho más fácil probar prompts.',
+      },
+      {
+        question: '¿Cómo debería escribir prompts para LTX 2.3 en imagen a video?',
+        answer:
+          'Parte de una imagen fuente fuerte y añade una instrucción de movimiento, un movimiento de cámara y un objetivo de salida. LTX 2.3 funciona mejor cuando el prompt amplía la imagen original en lugar de intentar sustituirla por una escena totalmente distinta.',
+      },
+      {
+        question: '¿Qué modelo LTX debería usar: LTX 2.3 Pro o LTX 2.3 Fast?',
+        answer:
+          'Usa LTX 2.3 Pro cuando quieras la mejor calidad actual de LTX y workflows más avanzados como audio, Extend y Retake. Usa LTX 2.3 Fast cuando quieras pruebas de prompts más rápidas, más baratas y con más margen para iterar borradores largos.',
       },
     ],
   },

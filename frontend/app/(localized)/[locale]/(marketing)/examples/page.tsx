@@ -440,12 +440,24 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     'Browse AI video examples by model with prompt, format, duration, and price per clip. Use filters to review outputs and open model pages for specs and limits.';
   const hubHeroBody =
     typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
+  const isSeedanceLanding = modelLanding?.slug === 'seedance';
+  const isKlingLanding = modelLanding?.slug === 'kling';
+  const isVeoLanding = modelLanding?.slug === 'veo';
+  const isLtxLanding = modelLanding?.slug === 'ltx';
   const heroTitle = modelLanding?.heroTitle ?? content.hero.title;
   const heroSubtitle = modelLanding?.heroSubtitle ?? content.hero.subtitle;
   const heroBody = modelLanding?.intro ?? hubHeroBody;
   const heroLead = compactLeadCopy(heroBody, modelLanding ? 120 : 152);
-  const modelLandingSections = modelLanding?.sections.map((section) => ({
+  const klingSectionTitles = isKlingLanding
+    ? locale === 'fr'
+      ? ['Prompts a reutiliser', 'Controle du mouvement et choix du modele', 'Reglages et notes de prix']
+      : locale === 'es'
+        ? ['Prompts para reutilizar', 'Control de movimiento y eleccion del modelo', 'Ajustes y notas de precio']
+        : ['Prompt patterns to reuse', 'Motion control and model fit', 'Settings and pricing notes']
+    : null;
+  const modelLandingSections = modelLanding?.sections.map((section, index) => ({
     ...section,
+    title: klingSectionTitles?.[index] ?? section.title,
     body: compactLeadCopy(section.body, 86),
   }));
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
@@ -584,10 +596,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       href: buildModelHref(locale as AppLocale, slug),
     };
   });
-  const isSeedanceLanding = modelLanding?.slug === 'seedance';
-  const isKlingLanding = modelLanding?.slug === 'kling';
-  const isVeoLanding = modelLanding?.slug === 'veo';
-  const isLtxLanding = modelLanding?.slug === 'ltx';
   const usesCurrentAndSupportedBlocks = isSeedanceLanding || isKlingLanding || isLtxLanding;
   const primaryModelLinks = usesCurrentAndSupportedBlocks ? modelLinks.slice(0, 2) : modelLinks;
   const supportedOlderModelLinks = usesCurrentAndSupportedBlocks ? modelLinks.slice(2) : [];
@@ -599,17 +607,41 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
         ? 'Páginas de modelo relacionadas'
         : 'Related model pages';
   const currentModelPagesLabel =
-    locale === 'fr'
-      ? 'Pages modèles actuelles'
-      : locale === 'es'
-        ? 'Páginas de modelo actuales'
-        : 'Current model pages';
+    isKlingLanding
+      ? locale === 'fr'
+        ? 'Choisissez votre modele Kling'
+        : locale === 'es'
+          ? 'Elige tu modelo Kling'
+          : 'Choose your Kling model'
+      : isLtxLanding
+        ? locale === 'fr'
+          ? 'Choisissez votre modele LTX'
+          : locale === 'es'
+            ? 'Elige tu modelo LTX'
+            : 'Choose your LTX model'
+      : locale === 'fr'
+        ? 'Pages modèles actuelles'
+        : locale === 'es'
+          ? 'Páginas de modelo actuales'
+          : 'Current model pages';
   const supportedOlderVersionLabel =
-    locale === 'fr'
-      ? 'Version plus ancienne prise en charge'
-      : locale === 'es'
-        ? 'Versión anterior compatible'
-        : 'Supported older version';
+    isKlingLanding
+      ? locale === 'fr'
+        ? 'Anciens modeles Kling encore pris en charge'
+        : locale === 'es'
+          ? 'Modelos Kling anteriores aun compatibles'
+          : 'Supported older Kling models'
+      : isLtxLanding
+        ? locale === 'fr'
+          ? 'Modeles LTX plus anciens encore pris en charge'
+          : locale === 'es'
+            ? 'Modelos LTX anteriores aun compatibles'
+            : 'Supported older LTX models'
+      : locale === 'fr'
+        ? 'Version plus ancienne prise en charge'
+        : locale === 'es'
+          ? 'Versión anterior compatible'
+          : 'Supported older version';
   const pricingLinkLabel =
     locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
   const nextStepLinks = isSeedanceLanding
@@ -654,6 +686,24 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     : isKlingLanding
       ? [
           {
+            href: buildModelHref(appLocale, 'kling-3-pro'),
+            label:
+              locale === 'fr'
+                ? 'Ouvrir la page modele Kling 3 Pro'
+                : locale === 'es'
+                  ? 'Abrir la pagina del modelo Kling 3 Pro'
+                  : 'Open Kling 3 Pro model page',
+          },
+          {
+            href: buildModelHref(appLocale, 'kling-3-standard'),
+            label:
+              locale === 'fr'
+                ? 'Ouvrir la page modele Kling 3 Standard'
+                : locale === 'es'
+                  ? 'Abrir la pagina del modelo Kling 3 Standard'
+                  : 'Open Kling 3 Standard model page',
+          },
+          {
             href: buildCompareHref(appLocale, 'kling-3-pro-vs-kling-3-standard'),
             label:
               locale === 'fr'
@@ -661,15 +711,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 : locale === 'es'
                   ? 'Comparar Kling 3 Pro vs Kling 3 Standard'
                   : 'Compare Kling 3 Pro vs Kling 3 Standard',
-          },
-          {
-            href: buildCompareHref(appLocale, 'kling-2-6-pro-vs-kling-3-pro'),
-            label:
-              locale === 'fr'
-                ? 'Comparer Kling 2.6 Pro vs Kling 3 Pro'
-                : locale === 'es'
-                  ? 'Comparar Kling 2.6 Pro vs Kling 3 Pro'
-                  : 'Compare Kling 2.6 Pro vs Kling 3 Pro',
           },
           {
             href: buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1'),
@@ -688,15 +729,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 : locale === 'es'
                   ? 'Comparar Kling 3 Pro vs Seedance 2.0'
                   : 'Compare Kling 3 Pro vs Seedance 2.0',
-          },
-          {
-            href: buildCompareHref(appLocale, 'kling-3-pro-vs-sora-2-pro'),
-            label:
-              locale === 'fr'
-                ? 'Comparer Kling 3 Pro vs Sora 2 Pro'
-                : locale === 'es'
-                  ? 'Comparar Kling 3 Pro vs Sora 2 Pro'
-                  : 'Compare Kling 3 Pro vs Sora 2 Pro',
           },
         ]
       : isVeoLanding
