@@ -2,15 +2,15 @@
   "marketingName": "Kling 3 Pro",
   "versionLabel": "v3 Pro",
   "seo": {
-    "title": "Kling 3 Pro Multi-shot (3–15s) — audio nativo + controles",
-    "description": "Genera videos multi-shot con Kling 3 Pro con prompts por escena, Elements y control de voz opcional. Clips de 3–15s con audio nativo, compara el precio por segundo y genera con la billetera.",
+    "title": "Kling 3 Pro | Modelo de video IA, specs y precios | MaxVideoAI",
+    "description": "Usa Kling 3 Pro en MaxVideoAI para video IA multi-shot, control de escena, audio nativo y specs y precios en vivo antes de renderizar.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
-  "overview": "Kling 3 Pro en MaxVideoAI está pensado para control tipo storyboard: prompts multi‑shot, Elements reutilizables, frame final opcional y audio nativo con voice IDs. Crea clips de 3–15 s desde texto o imagen en 1080p, con relaciones flexibles.",
+  "overview": "Kling 3 Pro es el modelo Kling actual en MaxVideoAI para video multi-shot, control de escena, Elements reutilizables, frames finales opcionales y workflows con audio nativo.",
   "pricingNotes": "Tarificación por segundo: 0,336 $/s con audio, 0,224 $/s audio off, 0,392 $/s con voice control.",
   "hero": {
-    "title": "Kling 3 Pro – Control cinematográfico multi‑shot",
-    "intro": "Clips multi-shot de 3–15s con audio nativo — prompts por escena, Elements, IDs de voz y control del fotograma final.",
+    "title": "Kling 3 Pro — modelo Kling actual para video multi-shot y control de escena",
+    "intro": "Kling 3 Pro es el modelo Kling actual para video multi-shot, Elements reutilizables, frames finales opcionales y audio nativo cuando necesitas el control de escena más sólido en anuncios, trailers y secuencias cinematográficas.",
     "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 3 Pro",
@@ -19,13 +19,37 @@
     "secondaryLinks": [
       {
         "label": "Ver ejemplos Kling",
-        "href": "/examples?engine=kling-3-pro"
+        "href": "/examples/kling"
       },
       {
-        "label": "Comparar modelos Kling",
-        "href": "/models"
+        "label": "Ver Kling 3 Standard",
+        "href": "/models/kling-3-standard"
+      },
+      {
+        "label": "Comparar Kling 3 Pro vs Kling 3 Standard",
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard"
+      },
+      {
+        "label": "Comparar Kling 2.6 Pro vs Kling 3 Pro",
+        "href": "/ai-video-engines/kling-2-6-pro-vs-kling-3-pro"
+      },
+      {
+        "label": "Comparar Kling 3 Pro vs Veo 3.1",
+        "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1"
+      },
+      {
+        "label": "Comparar Kling 3 Pro vs Seedance 2.0",
+        "href": "/ai-video-engines/kling-3-pro-vs-seedance-2-0"
+      },
+      {
+        "label": "Comparar Kling 3 Pro vs Sora 2 Pro",
+        "href": "/ai-video-engines/kling-3-pro-vs-sora-2-pro"
       }
     ]
+  },
+  "compareLink": {
+    "label": "Ver Kling 3 Pro vs Kling 3 Standard ->",
+    "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard"
   },
   "bestUseCases": {
     "title": "Mejores casos de uso",

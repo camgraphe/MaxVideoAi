@@ -31,6 +31,8 @@ type CanonicalSlug = ModelFamilyId;
 type LocalizedModelDescriptor = {
   metaTitle?: string;
   metaDescription?: string;
+  heroTitle?: string;
+  summary?: string;
   subtitle: string;
   intro: string;
   promptPatterns: string;
@@ -66,9 +68,15 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   veo: {
-    subtitle: 'Reference-friendly Veo examples with prompts, format choices, and practical settings.',
+    metaTitle: 'Veo Examples, Prompts & Settings | MaxVideoAI',
+    metaDescription:
+      'Browse Veo examples, prompts, settings, and per-clip pricing for Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite on MaxVideoAI.',
+    heroTitle: 'Veo examples, prompts and settings',
+    subtitle: 'Veo examples, prompts, and settings for current Veo workflows across 3.1, Fast, and Lite.',
     intro:
-      'This Veo examples page focuses on motion consistency, framing control, and practical prompt templates. It is built for teams that need predictable behavior across ad variations, branded shots, and short narrative sequences. Use these examples as operational baselines, not as one-off inspiration only.',
+      'Browse Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite examples, prompts, and reusable settings, then open the model pages for specs, limits, and pricing.',
+    summary:
+      'Veo 3.1 leads this gallery, with Veo 3.1 Fast and Veo 3.1 Lite kept visible as current Veo variants for faster iteration and lower-cost audio-ready drafts.',
     promptPatterns:
       'Veo examples usually improve when prompts specify shot objective first, then movement and lighting. Keep reference cues explicit when using image-led workflows.',
     strengthsLimits:
@@ -144,13 +152,19 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   kling: {
-    subtitle: 'Kling examples focused on motion clarity, stylization control, and reusable prompt layouts.',
+    metaTitle: 'Kling Examples, Prompts & Settings | MaxVideoAI',
+    metaDescription:
+      'Browse Kling examples, prompts, settings, and per-clip pricing for Kling 3 Pro, Kling 3 Standard, and supported Kling 2.6 Pro and Kling 2.5 Turbo workflows on MaxVideoAI.',
+    heroTitle: 'Kling examples, prompts and settings',
+    subtitle: 'Kling examples, prompts, and settings for current Kling workflows and supported older runs.',
     intro:
-      'This page groups practical Kling examples for teams that need fast iteration with controlled style and movement. Use it to benchmark what prompt patterns and settings lead to stable outputs for social creatives, product visuals, and cinematic edits. The page is intentionally model-specific to avoid overlap with general hub guidance.',
+      'Browse Kling 3 Pro and Kling 3 Standard examples, prompts, and reusable settings, then explore Kling 2.6 Pro and Kling 2.5 Turbo as supported older Kling setups for earlier workflows, shorter audio-ready clips, and fast silent draft passes.',
+    summary:
+      'Kling 3 Pro and Kling 3 Standard lead this gallery, while Kling 2.6 Pro and Kling 2.5 Turbo stay available below as supported older Kling setups for audio-ready short clips and fast silent drafts.',
     promptPatterns:
       'Use direct action verbs, short scene constraints, and one camera instruction at a time. Kling examples usually degrade when prompts bundle too many style goals.',
     strengthsLimits:
-      'Kling can deliver strong stylized motion and quick iterations. Keep constraints clear to prevent composition drift across multiple variants.',
+      'Kling works best when prompt structure stays shot-based and deliberate. Keep scene constraints clear to prevent drift across multi-shot variants.',
     pricingNotes:
       'Use fixed duration/resolution presets when comparing Kling outputs with other engines to keep pricing comparisons meaningful.',
     faq: [
@@ -169,9 +183,15 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   seedance: {
-    subtitle: 'Seedance examples for controlled motion, camera intent, and practical prompt reuse.',
+    metaTitle: 'Seedance Examples, Prompts & Settings | MaxVideoAI',
+    metaDescription:
+      'Browse Seedance examples, prompts, settings, and per-clip pricing for Seedance 2.0, Seedance 2.0 Fast, and the supported Seedance 1.5 Pro workflow on MaxVideoAI.',
+    heroTitle: 'Seedance examples, prompts and settings',
+    subtitle: 'Seedance examples, prompts, and settings for current Seedance workflows and supported older runs.',
     intro:
-      'Seedance examples here are meant for teams that prioritize camera consistency and predictable scene behavior. They provide a concrete starting point for ad shots, product reveals, and short branded narratives. Each example is structured to be cloned quickly without mixing unrelated model assumptions.',
+      'Browse Seedance examples, prompts, and reusable settings for Seedance 2.0 and Seedance 2.0 Fast, then explore the supported Seedance 1.5 Pro setup for older workflows and shorter clip patterns.',
+    summary:
+      'Seedance 2.0 and Seedance 2.0 Fast lead this gallery, while Seedance 1.5 Pro stays available below as a supported older setup for shorter, repeatable clips.',
     promptPatterns:
       'Lead with one core action, then define camera and environment constraints. Seedance runs respond best when the prompt sequence stays compact.',
     strengthsLimits:
@@ -194,19 +214,25 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    subtitle: 'LTX examples across the full family, from legacy fast drafts to LTX 2.3 Pro workflows with audio, Extend, and Retake.',
+    metaTitle: 'LTX Examples, Prompts & Settings | MaxVideoAI',
+    metaDescription:
+      'Browse LTX examples, prompts, settings, and outputs for LTX 2.3 Pro, LTX 2.3 Fast, LTX 2, and LTX 2 Fast on MaxVideoAI.',
+    heroTitle: 'LTX examples, prompts and settings',
+    subtitle: 'LTX examples, prompts and settings for current LTX 2.3 workflows and supported older LTX versions.',
     intro:
-      'Use this page to review the whole LTX family in one place. It brings together LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro, and LTX 2.0 Fast so you can compare speed, prompt patterns, framing behavior, and workflow breadth before choosing the right starting point.',
+      'Browse LTX 2.3 Pro and LTX 2.3 Fast examples, prompts, settings, and outputs first, then review LTX 2 and LTX 2 Fast as supported older setups for earlier workflows and historical prompt baselines.',
+    summary:
+      'LTX 2.3 Pro and LTX 2.3 Fast lead this gallery, while LTX 2 and LTX 2 Fast remain available lower down as supported older LTX setups.',
     promptPatterns:
       'Use concise prompts with a clear subject, one main action, and one camera instruction. LTX examples are easiest to compare when the brief stays stable and only the model variant changes.',
     strengthsLimits:
-      'The LTX family is strong for fast iteration and repeatable framing. LTX 2.3 Pro adds audio-driven generation plus Extend and Retake, while LTX 2.0 still matters as a ranked legacy entry with historical example depth.',
+      'The LTX family is strong for prompt iteration, repeatable framing, and current-vs-supported workflow comparison. LTX 2.3 Pro adds audio-driven generation plus Extend and Retake, while LTX 2 and LTX 2 Fast remain useful for older workflows and historical baselines.',
     pricingNotes:
-      'Keep one reference preset for cost comparison, then compare variants at the same duration and resolution. This makes it easier to see when the newer 2.3 workflows justify the higher spend versus legacy LTX 2 runs.',
+      'Keep one reference preset for cost comparison, then compare variants at the same duration and resolution. This makes it easier to see when the newer 2.3 workflows justify the higher spend versus supported older LTX 2 runs.',
     faq: [
       {
         question: 'When should I start from LTX examples?',
-        answer: 'Use them when you want to compare the full LTX family, from legacy fast drafts to LTX 2.3 Pro workflows with audio, Extend, and Retake.',
+        answer: 'Use them when you want prompt, settings, and output patterns for the current LTX 2.3 workflows first, with older LTX 2 variants still available below for comparison.',
       },
       {
         question: 'How do I improve consistency across LTX variants?',
@@ -297,9 +323,15 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   veo: {
-    subtitle: 'Exemples Veo pensés pour le contrôle du cadrage, du mouvement et des usages avec référence.',
+    metaTitle: 'Exemples Veo, prompts et reglages | MaxVideoAI',
+    metaDescription:
+      'Parcourez des exemples Veo, prompts, reglages et prix par clip pour Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite sur MaxVideoAI.',
+    heroTitle: 'Exemples Veo, prompts et reglages',
+    subtitle: 'Exemples Veo, prompts et reglages pour les workflows Veo actuels en 3.1, Fast et Lite.',
     intro:
-      'Cette page Veo se concentre sur des structures de prompts et des réglages utiles pour obtenir des rendus plus réguliers. Elle sert de base opérationnelle pour des variations publicitaires, des plans de marque et des séquences courtes où le cadrage doit rester maîtrisé.',
+      'Parcourez des exemples Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite, avec des prompts et des reglages reutilisables, puis ouvrez les pages modele pour les specs, limites et tarifs.',
+    summary:
+      'Veo 3.1 mene cette galerie, avec Veo 3.1 Fast et Veo 3.1 Lite conserves comme variantes Veo actuelles pour une iteration plus rapide et des brouillons audio-ready moins couteux.',
     promptPatterns:
       'Décrivez d’abord l’objectif du plan, puis la caméra et l’ambiance. En usage avec référence, gardez des contraintes explicites et faciles à relire.',
     strengthsLimits:
@@ -375,13 +407,19 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   kling: {
-    subtitle: 'Exemples Kling pensés pour un mouvement stylisé, une itération rapide et des prompts réutilisables.',
+    metaTitle: 'Exemples Kling, prompts et réglages | MaxVideoAI',
+    metaDescription:
+      'Parcourez des exemples Kling avec prompts, réglages et prix par clip pour Kling 3 Pro, Kling 3 Standard, et les workflows Kling 2.6 Pro et Kling 2.5 Turbo encore pris en charge sur MaxVideoAI.',
+    heroTitle: 'Exemples Kling, prompts et réglages',
+    subtitle: 'Exemples Kling, prompts et réglages pour les workflows Kling actuels et les versions encore prises en charge.',
     intro:
-      'Cette page Kling regroupe des exemples concrets pour produire des variantes réseaux sociaux, produit et cinématiques à partir d’une structure de prompt stable. Elle reste volontairement centrée sur le moteur lui-même pour éviter de brouiller la lecture avec des logiques trop génériques.',
+      'Parcourez des exemples Kling, des prompts et des réglages réutilisables pour Kling 3 Pro et Kling 3 Standard, puis explorez Kling 2.6 Pro et Kling 2.5 Turbo comme setups Kling plus anciens encore pris en charge pour des workflows antérieurs, des clips courts prêts pour l’audio et des drafts silencieux rapides.',
+    summary:
+      'Kling 3 Pro et Kling 3 Standard structurent d’abord cette galerie, tandis que Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme setups Kling plus anciens encore pris en charge.',
     promptPatterns:
       'Privilégiez des verbes d’action directs, une scène simple et une seule consigne caméra par plan.',
     strengthsLimits:
-      'Kling est efficace pour des rendus stylisés et des itérations rapides. Trop d’objectifs visuels empilés dans un même prompt peuvent nuire à la stabilité.',
+      'Kling fonctionne mieux quand la structure du prompt reste pensée plan par plan. Gardez des contraintes claires pour limiter la dérive entre variantes multi-plans.',
     pricingNotes:
       'Pour comparer Kling correctement, conservez exactement la même durée et résolution entre moteurs.',
     faq: [
@@ -400,9 +438,15 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   seedance: {
-    subtitle: 'Exemples Seedance pensés pour un mouvement contrôlé et un cadrage prévisible.',
+    metaTitle: 'Exemples Seedance, prompts et réglages | MaxVideoAI',
+    metaDescription:
+      'Parcourez des exemples Seedance avec prompts, réglages et prix par clip pour Seedance 2.0, Seedance 2.0 Fast et le workflow Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
+    heroTitle: 'Exemples Seedance, prompts et réglages',
+    subtitle: 'Exemples Seedance, prompts et réglages pour les workflows Seedance actuels et les versions encore prises en charge.',
     intro:
-      'Les exemples Seedance ci-dessous servent de base pour des plans publicitaires, des reveals produit et des séquences de marque avec caméra stable. Le but est d’accélérer la réutilisation sans repartir de zéro.',
+      'Parcourez des exemples Seedance, des prompts et des réglages réutilisables pour Seedance 2.0 et Seedance 2.0 Fast, puis explorez la configuration Seedance 1.5 Pro encore prise en charge pour des workflows plus anciens et des clips plus courts.',
+    summary:
+      'Seedance 2.0 et Seedance 2.0 Fast structurent d’abord cette galerie, tandis que Seedance 1.5 Pro reste disponible plus bas comme setup plus ancien encore pris en charge pour des clips courts et répétables.',
     promptPatterns:
       'Un objectif de plan clair, puis contraintes caméra/environnement. Les prompts compacts donnent les résultats les plus réguliers.',
     strengthsLimits:
@@ -425,19 +469,25 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    subtitle: 'Exemples LTX sur toute la famille, des brouillons rapides hérités jusqu’aux flux LTX 2.3 Pro avec audio, Extend et Retake.',
+    metaTitle: 'Exemples LTX, prompts et réglages | MaxVideoAI',
+    metaDescription:
+      'Parcourez des exemples LTX, des prompts, des réglages et des sorties pour LTX 2.3 Pro, LTX 2.3 Fast, LTX 2 et LTX 2 Fast sur MaxVideoAI.',
+    heroTitle: 'Exemples LTX, prompts et réglages',
+    subtitle: 'Exemples LTX, prompts et réglages pour les workflows LTX 2.3 actuels et les versions LTX plus anciennes encore prises en charge.',
     intro:
-      'Cette page réunit toute la famille LTX au même endroit. Elle regroupe LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro et LTX 2.0 Fast pour comparer la vitesse, la structure de prompt, le cadrage et la richesse du flux de travail avant de choisir la bonne base.',
+      'Parcourez d’abord les exemples, prompts, réglages et sorties de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme setups plus anciens encore pris en charge pour des workflows antérieurs et des bases de prompts historiques.',
+    summary:
+      'LTX 2.3 Pro et LTX 2.3 Fast structurent d’abord cette galerie, tandis que LTX 2 et LTX 2 Fast restent disponibles plus bas comme setups LTX plus anciens encore pris en charge.',
     promptPatterns:
       'Utilisez des prompts concis avec un sujet clair, une action principale et une seule instruction caméra. Les exemples LTX se comparent mieux quand la consigne reste stable et que seule la variante de modèle change.',
     strengthsLimits:
-      'La famille LTX fonctionne bien pour l’itération rapide et des cadrages reproductibles. LTX 2.3 Pro ajoute l’audio piloté, Extend et Retake, tandis que LTX 2.0 reste une base historique utile avec un volume d’exemples déjà bien référencé.',
+      'La famille LTX fonctionne bien pour l’itération de prompts, les cadrages reproductibles et la comparaison entre workflows actuels et versions encore prises en charge. LTX 2.3 Pro ajoute l’audio piloté, Extend et Retake, tandis que LTX 2 et LTX 2 Fast restent utiles pour des workflows plus anciens et des bases historiques.',
     pricingNotes:
-      'Gardez un preset de référence fixe pour comparer les coûts, puis comparez les variantes à durée et résolution identiques. Cela aide à voir quand les flux 2.3 justifient réellement un coût supérieur à LTX 2.',
+      'Gardez un preset de référence fixe pour comparer les coûts, puis comparez les variantes à durée et résolution identiques. Cela aide à voir quand les flux 2.3 justifient réellement un coût supérieur aux versions LTX 2 encore prises en charge.',
     faq: [
       {
         question: 'Quand faut-il commencer par la page d’exemples LTX ?',
-        answer: 'Quand vous voulez comparer toute la famille LTX, depuis les brouillons rapides hérités jusqu’aux flux LTX 2.3 Pro avec audio, Extend et Retake.',
+        answer: 'Quand vous voulez partir des prompts, réglages et sorties des workflows LTX 2.3 actuels, tout en gardant LTX 2 et LTX 2 Fast disponibles plus bas pour comparaison.',
       },
       {
         question: 'Comment améliorer la cohérence entre variantes LTX ?',
@@ -528,9 +578,15 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   veo: {
-    subtitle: 'Ejemplos de Veo pensados para controlar el encuadre, el movimiento y los trabajos con referencia.',
+    metaTitle: 'Ejemplos de Veo, prompts y ajustes | MaxVideoAI',
+    metaDescription:
+      'Consulta ejemplos de Veo, prompts, ajustes y precios por clip para Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite en MaxVideoAI.',
+    heroTitle: 'Ejemplos de Veo, prompts y ajustes',
+    subtitle: 'Ejemplos de Veo, prompts y ajustes para los workflows Veo actuales en 3.1, Fast y Lite.',
     intro:
-      'Esta página de Veo se centra en patrones de prompt y ajustes prácticos para conseguir resultados más estables. Sirve como base operativa para variantes publicitarias, tomas de marca y secuencias cortas donde el encuadre debe mantenerse bajo control.',
+      'Consulta ejemplos de Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite con prompts y ajustes reutilizables, y luego abre las páginas de modelo para ver specs, límites y precios.',
+    summary:
+      'Veo 3.1 lidera esta galería, con Veo 3.1 Fast y Veo 3.1 Lite visibles como variantes Veo actuales para iteración más rápida y borradores con audio a menor coste.',
     promptPatterns:
       'Empieza por el objetivo de la toma y luego concreta la cámara y el ambiente. En trabajos con referencia, conviene dejar las restricciones bien explícitas y fáciles de revisar.',
     strengthsLimits:
@@ -606,13 +662,19 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   kling: {
-    subtitle: 'Ejemplos de Kling pensados para movimiento estilizado, iteración rápida y prompts realmente reutilizables.',
+    metaTitle: 'Ejemplos de Kling, prompts y ajustes | MaxVideoAI',
+    metaDescription:
+      'Revisa ejemplos de Kling con prompts, ajustes y precio por clip para Kling 3 Pro, Kling 3 Standard y los workflows Kling 2.6 Pro y Kling 2.5 Turbo aún compatibles en MaxVideoAI.',
+    heroTitle: 'Ejemplos de Kling, prompts y ajustes',
+    subtitle: 'Ejemplos de Kling, prompts y ajustes para los workflows Kling actuales y las versiones anteriores aún compatibles.',
     intro:
-      'Esta página de Kling agrupa ejemplos prácticos para producir variantes de redes sociales, producto y piezas cinematográficas con una estructura de prompt estable. Se mantiene específica del motor para no mezclar señales con la página general.',
+      'Revisa ejemplos de Kling, prompts y ajustes reutilizables para Kling 3 Pro y Kling 3 Standard, y luego explora Kling 2.6 Pro y Kling 2.5 Turbo como setups Kling anteriores aún compatibles para workflows más antiguos, clips cortos listos para audio y borradores silenciosos rápidos.',
+    summary:
+      'Kling 3 Pro y Kling 3 Standard lideran esta galería, mientras que Kling 2.6 Pro y Kling 2.5 Turbo siguen disponibles más abajo como setups Kling anteriores aún compatibles.',
     promptPatterns:
       'Prioriza verbos de acción directos, una escena simple y una sola instrucción de cámara por toma.',
     strengthsLimits:
-      'Kling suele responder bien en movimiento estilizado y ciclos rápidos de iteración. Demasiados objetivos visuales en un solo prompt reducen la estabilidad.',
+      'Kling funciona mejor cuando la estructura del prompt se mantiene plano por plano. Mantén restricciones claras para evitar deriva entre variantes multi-shot.',
     pricingNotes:
       'Para comparar Kling de forma justa, usa duración y resolución idénticas entre motores.',
     faq: [
@@ -631,9 +693,15 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   seedance: {
-    subtitle: 'Ejemplos de Seedance pensados para movimiento controlado y un encuadre predecible.',
+    metaTitle: 'Ejemplos de Seedance, prompts y ajustes | MaxVideoAI',
+    metaDescription:
+      'Revisa ejemplos de Seedance con prompts, ajustes y precio por clip para Seedance 2.0, Seedance 2.0 Fast y el flujo Seedance 1.5 Pro aún compatible en MaxVideoAI.',
+    heroTitle: 'Ejemplos de Seedance, prompts y ajustes',
+    subtitle: 'Ejemplos de Seedance, prompts y ajustes para workflows Seedance actuales y versiones anteriores aún compatibles.',
     intro:
-      'Los ejemplos de Seedance en esta página sirven como base para tomas publicitarias, reveals de producto y secuencias de marca con cámara estable. El objetivo es acelerar la reutilización sin volver a empezar cada vez.',
+      'Revisa ejemplos de Seedance, prompts y ajustes reutilizables para Seedance 2.0 y Seedance 2.0 Fast, y luego explora la configuración de Seedance 1.5 Pro aún compatible para workflows más antiguos y patrones de clip más cortos.',
+    summary:
+      'Seedance 2.0 y Seedance 2.0 Fast lideran esta galería, mientras Seedance 1.5 Pro queda disponible más abajo como setup anterior aún compatible para clips cortos y repetibles.',
     promptPatterns:
       'Define una acción central y luego restricciones de cámara y entorno. Los prompts compactos suelen dar resultados más estables.',
     strengthsLimits:
@@ -656,19 +724,25 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   ltx: {
-    subtitle: 'Ejemplos de toda la familia LTX, desde borradores heredados rápidos hasta flujos LTX 2.3 Pro con audio, Extend y Retake.',
+    metaTitle: 'Ejemplos de LTX, prompts y ajustes | MaxVideoAI',
+    metaDescription:
+      'Revisa ejemplos de LTX, prompts, ajustes y salidas para LTX 2.3 Pro, LTX 2.3 Fast, LTX 2 y LTX 2 Fast en MaxVideoAI.',
+    heroTitle: 'Ejemplos de LTX, prompts y ajustes',
+    subtitle: 'Ejemplos de LTX, prompts y ajustes para los workflows LTX 2.3 actuales y las versiones LTX anteriores aún compatibles.',
     intro:
-      'Esta página reúne toda la familia LTX en un solo lugar. Agrupa LTX 2.3 Pro, LTX 2.3 Fast, LTX 2.0 Pro y LTX 2.0 Fast para comparar velocidad, estructura de prompt, encuadre y amplitud del flujo de trabajo antes de elegir la mejor base.',
+      'Consulta primero los ejemplos, prompts, ajustes y salidas de LTX 2.3 Pro y LTX 2.3 Fast, y luego revisa LTX 2 y LTX 2 Fast como setups anteriores aún compatibles para workflows más antiguos y bases históricas de prompts.',
+    summary:
+      'LTX 2.3 Pro y LTX 2.3 Fast lideran esta galería, mientras LTX 2 y LTX 2 Fast siguen disponibles más abajo como setups LTX anteriores aún compatibles.',
     promptPatterns:
       'Usa prompts concisos con un sujeto claro, una acción principal y una sola instrucción de cámara. Los ejemplos LTX se comparan mejor cuando la consigna se mantiene estable y solo cambia la variante del modelo.',
     strengthsLimits:
-      'La familia LTX funciona bien para iteración rápida y encuadres repetibles. LTX 2.3 Pro suma generación guiada por audio, Extend y Retake, mientras que LTX 2.0 sigue siendo una base histórica útil con un volumen de ejemplos ya bien posicionado.',
+      'La familia LTX funciona bien para iteración de prompts, encuadres repetibles y comparación entre workflows actuales y versiones aún compatibles. LTX 2.3 Pro suma generación guiada por audio, Extend y Retake, mientras que LTX 2 y LTX 2 Fast siguen siendo útiles para workflows más antiguos y referencias históricas.',
     pricingNotes:
-      'Mantén un preset base fijo y compara variantes con la misma duración y resolución. Así se ve mejor cuándo los flujos 2.3 justifican un mayor costo frente a LTX 2.',
+      'Mantén un preset base fijo y compara variantes con la misma duración y resolución. Así se ve mejor cuándo los flujos 2.3 justifican un mayor costo frente a las versiones LTX 2 aún compatibles.',
     faq: [
       {
         question: '¿Cuándo conviene empezar por la página de ejemplos LTX?',
-        answer: 'Cuando quieres comparar toda la familia LTX, desde borradores heredados rápidos hasta flujos LTX 2.3 Pro con audio, Extend y Retake.',
+        answer: 'Cuando quieres partir de prompts, ajustes y salidas de los workflows LTX 2.3 actuales, manteniendo LTX 2 y LTX 2 Fast más abajo como comparación.',
       },
       {
         question: '¿Cómo mejoro consistencia entre variantes LTX?',
@@ -984,15 +1058,17 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
           ? `Ejemplos de video con IA de ${label} con prompts, ajustes y precio por clip. ${variantsSentence}`
           : `${label} examples with prompts, settings, and price per clip. ${variantsSentence}`),
     heroTitle:
-      locale === 'fr' ? `Exemples ${label}` : locale === 'es' ? `Ejemplos de ${label}` : `${label} Examples`,
+      localized.heroTitle ??
+      (locale === 'fr' ? `Exemples ${label}` : locale === 'es' ? `Ejemplos de ${label}` : `${label} Examples`),
     heroSubtitle: `${localized.subtitle} ${variantsSentence}`,
     intro: localized.intro,
     summary:
-      locale === 'fr'
+      localized.summary ??
+      (locale === 'fr'
         ? `${variantsSentence} Consultez les prompts, les réglages et le prix par clip avant de lancer un nouveau rendu.`
         : locale === 'es'
           ? `${variantsSentence} Revisa prompts, ajustes y precio por clip antes de lanzar un nuevo render.`
-          : `${variantsSentence} Review prompts, settings, and price per clip before running a new render.`,
+          : `${variantsSentence} Review prompts, settings, and price per clip before running a new render.`),
     sections: [
       {
         title: sectionPromptTitle,

@@ -292,9 +292,9 @@ const GENERATE_WAYS_COPY = [
 const POPULAR_COMPARISON_LINKS = [
   { label: 'Seedance 2.0 vs Veo 3.1 comparison', slug: 'seedance-2-0-vs-veo-3-1' },
   { label: 'Seedance 2.0 vs Kling 3 Pro comparison', slug: 'kling-3-pro-vs-seedance-2-0' },
-  { label: 'Seedance 2.0 vs Sora 2 comparison', slug: 'seedance-2-0-vs-sora-2' },
+  { label: 'LTX 2.3 Pro vs Seedance 2.0 comparison', slug: 'ltx-2-3-pro-vs-seedance-2-0' },
   { label: 'Seedance 2.0 Fast vs Veo 3.1 Fast comparison', slug: 'seedance-2-0-fast-vs-veo-3-1-fast' },
-  { label: 'Seedance 2.0 Fast vs LTX 2.3 Fast comparison', slug: 'ltx-2-3-fast-vs-seedance-2-0-fast' },
+  { label: 'Seedance 2.0 vs Sora 2 comparison', slug: 'seedance-2-0-vs-sora-2' },
 ] as const;
 
 function MiniFAQ({ faq }: MiniFaqProps) {

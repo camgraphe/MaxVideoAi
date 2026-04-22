@@ -2,14 +2,14 @@
   "marketingName": "LTX 2.3 Fast",
   "versionLabel": "Fast",
   "seo": {
-    "title": "LTX 2.3 Fast : specs, prix et durée max | MaxVideoAI",
-    "description": "Specs, prix et durée max de LTX 2.3 Fast. Compare les sorties 6–20 s, le 1080p à 4K, le 16:9 et 9:16, l’audio natif et le contrôle première/dernière image.",
+    "title": "LTX 2.3 Fast | Modèle vidéo IA, specs et prix | MaxVideoAI",
+    "description": "Utilisez LTX 2.3 Fast sur MaxVideoAI pour des drafts LTX plus rapides, des tests plus longs et les specs et prix du workflow fast actuel avant rendu.",
     "image": "/assets/placeholders/preview-16x9.png"
   },
-  "overview": "LTX 2.3 Fast sur MaxVideoAI est centré sur la génération rapide en texte vers vidéo et image vers vidéo, avec audio natif, transitions début / fin, sortie 16:9 ou 9:16 et des clips de 6 à 20 secondes.",
+  "overview": "LTX 2.3 Fast est le modèle LTX fast actuel sur MaxVideoAI pour des drafts plus rapides, moins coûteux, des clips de test plus longs et l’itération.",
   "hero": {
-    "title": "LTX 2.3 Fast - version LTX rapide pensée pour la génération",
-    "intro": "Utilise LTX 2.3 Fast quand tu veux des générations texte-vers-vidéo ou image-vers-vidéo plus rapides et moins chères, avec audio, format vertical et tests 1080p plus longs avant de passer les meilleurs rendus sur Pro.",
+    "title": "LTX 2.3 Fast — modèle LTX fast actuel pour des drafts plus longs et l’itération",
+    "intro": "Utilisez LTX 2.3 Fast pour des drafts LTX plus rapides et moins coûteux, des clips de test plus longs et des boucles d’itération avant de remonter les sorties retenues vers LTX 2.3 Pro.",
     "badge": "T2V + I2V | 6-20 s | 1080p à 4K",
     "ctaPrimary": {
       "label": "Générer avec LTX 2.3 Fast",
@@ -17,36 +17,86 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparer LTX 2.3 Fast vs LTX 2.3 Pro ->",
-        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-fast"
+        "label": "Voir LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
       },
       {
-        "label": "Voir tous les exemples LTX ->",
+        "label": "Voir les exemples LTX",
         "href": "/examples/ltx"
+      },
+      {
+        "label": "Comparer LTX 2.3 Fast vs LTX 2.3 Pro",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+      },
+      {
+        "label": "Comparer LTX 2.3 Fast vs Seedance 2.0 Fast",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
       }
     ]
   },
   "bestUseCases": {
     "title": "Meilleurs cas d’usage",
     "items": [
-      { "title": "Tests rapides de concepts et d’accroches", "icon": "zap" },
-      { "title": "Formats sociaux verticaux", "icon": "smartphone" },
-      { "title": "Transitions image de départ → image de fin", "icon": "camera" },
-      { "title": "Variantes de campagne avec contrainte budget", "icon": "layers" },
-      { "title": "Tests rapides de motion produit", "icon": "product" },
-      { "title": "Beats narratifs avant la passe finale", "icon": "storyboard" }
+      {
+        "title": "Tests rapides de concepts et d’accroches",
+        "icon": "zap"
+      },
+      {
+        "title": "Formats sociaux verticaux",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Transitions image de départ → image de fin",
+        "icon": "camera"
+      },
+      {
+        "title": "Variantes de campagne avec contrainte budget",
+        "icon": "layers"
+      },
+      {
+        "title": "Tests rapides de motion produit",
+        "icon": "product"
+      },
+      {
+        "title": "Beats narratifs avant la passe finale",
+        "icon": "storyboard"
+      }
     ]
   },
   "technicalOverviewTitle": "Vue d’ensemble technique",
   "technicalOverview": [
-    { "label": "Durée", "body": "6 s à 20 s pour Texte vers vidéo et Image vers vidéo" },
-    { "label": "Contrainte longue durée", "body": "Au-dessus de 10 s, le routing public actuel impose 1080p à 25 fps" },
-    { "label": "Résolution", "body": "1080p, 1440p ou 2160p (4K)" },
-    { "label": "Formats", "body": "16:9 et 9:16" },
-    { "label": "Cadence", "body": "24, 25, 48 ou 50 fps" },
-    { "label": "Entrées", "body": "Prompts texte ou image de départ, avec image de fin optionnelle pour les transitions Image vers vidéo" },
-    { "label": "Audio", "body": "Toggle audio natif sur les modes de génération" },
-    { "label": "Tarification", "body": "Paiement à l’usage ; la génération affichée commence autour de 0,05 $/s en 1080p, 0,10 $/s en 1440p et 0,21 $/s en 4K" }
+    {
+      "label": "Durée",
+      "body": "6 s à 20 s pour Texte vers vidéo et Image vers vidéo"
+    },
+    {
+      "label": "Contrainte longue durée",
+      "body": "Au-dessus de 10 s, le routing public actuel impose 1080p à 25 fps"
+    },
+    {
+      "label": "Résolution",
+      "body": "1080p, 1440p ou 2160p (4K)"
+    },
+    {
+      "label": "Formats",
+      "body": "16:9 et 9:16"
+    },
+    {
+      "label": "Cadence",
+      "body": "24, 25, 48 ou 50 fps"
+    },
+    {
+      "label": "Entrées",
+      "body": "Prompts texte ou image de départ, avec image de fin optionnelle pour les transitions Image vers vidéo"
+    },
+    {
+      "label": "Audio",
+      "body": "Toggle audio natif sur les modes de génération"
+    },
+    {
+      "label": "Tarification",
+      "body": "Paiement à l’usage ; la génération affichée commence autour de 0,05 $/s en 1080p, 0,10 $/s en 1440p et 0,21 $/s en 4K"
+    }
   ],
   "promptStructure": {
     "title": "Comment prompter LTX 2.3 Fast",
@@ -71,7 +121,7 @@
   },
   "compareLink": {
     "label": "Comparer LTX 2.3 Fast vs LTX 2.3 Pro ->",
-    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-fast"
+    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
   },
   "prompts": [
     {
@@ -110,12 +160,30 @@
     "heroDesc2": "Cela en fait un meilleur choix pour l'idéation rapide, les variantes sociales par ratio et les tests d'accroches quand vous voulez un peu plus de longueur de clip que sur la plupart des moteurs fast.",
     "heroSupportLine": "Utilisez Fast pour la vitesse et le volume, puis faites monter uniquement les gagnants vers LTX 2.3 Pro si le projet demande plus de contrôle.",
     "heroSpecChips": [
-      { "label": "Texte→Vidéo", "icon": "textToVideo" },
-      { "label": "Image→Vidéo", "icon": "imageToVideo" },
-      { "label": "Image de départ + image de fin", "icon": "imageToVideo" },
-      { "label": "6–20 s", "icon": "duration" },
-      { "label": "4K", "icon": "resolution" },
-      { "label": "Audio", "icon": "audio" }
+      {
+        "label": "Texte→Vidéo",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image→Vidéo",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Image de départ + image de fin",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "6–20 s",
+        "icon": "duration"
+      },
+      {
+        "label": "4K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Audio",
+        "icon": "audio"
+      }
     ],
     "whyTitle": "Pourquoi LTX 2.3 Fast est utile",
     "heroHighlights": [

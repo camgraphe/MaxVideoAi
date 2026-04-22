@@ -2,14 +2,14 @@
   "marketingName": "Kling 2.6 Pro",
   "versionLabel": "v2.6 Pro",
   "seo": {
-    "title": "Kling 2.6 Pro – Vidéo IA texte & image avec audio natif | MaxVideoAI",
-    "description": "Générez des vidéos IA cinématiques avec Kling 2.6 Pro dans MaxVideoAI. Transformez un texte ou une image en clips courts avec dialogue, ambiance et effets sonores natifs — idéal pour le storytelling émotionnel, les pubs produit, les vidéos sociales et la prévis VFX.",
+    "title": "Kling 2.6 Pro | Modèle vidéo IA, audio natif, specs et prix | MaxVideoAI",
+    "description": "Utilisez Kling 2.6 Pro sur MaxVideoAI pour des clips vidéo IA courts prêts pour l’audio, puis comparez-le à Kling 3 Pro pour le workflow Kling actuel.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg"
   },
-  "overview": "Kling 2.6 Pro dans MaxVideoAI : clips cinématiques courts avec audio natif, entrée texte ou image, sortie 1080p, runs 5–10 s, et toggle audio on/off.",
+  "overview": "Kling 2.6 Pro reste disponible comme ancien modèle Kling encore pris en charge pour des clips cinématiques courts avec audio natif, entrée texte ou image et sortie 1080p.",
   "hero": {
-    "title": "Kling 2.6 Pro – Vidéo IA cinématique avec audio natif",
-    "intro": "Clips cinématiques prêts pour le dialogue depuis texte ou une image — avec audio natif qui colle à la scène.",
+    "title": "Kling 2.6 Pro — ancien modèle Kling encore pris en charge pour des clips courts avec audio natif",
+    "intro": "Kling 2.6 Pro reste disponible pour des clips cinématiques courts prêts pour l’audio, tandis que Kling 3 Pro est désormais le modèle Kling principal pour un meilleur contrôle multi-plans, les Elements et les workflows de génération actuels.",
     "badge": "1080p · 5–10 s · Audio on/off",
     "ctaPrimary": {
       "label": "Générer avec Kling 2.6 Pro",
@@ -17,14 +17,26 @@
     },
     "secondaryLinks": [
       {
-        "label": "Voir Kling 2.5 Turbo",
-        "href": "/models/kling-2-5-turbo"
+        "label": "Voir Kling 3 Pro",
+        "href": "/models/kling-3-pro"
       },
       {
         "label": "Voir des exemples Kling",
-        "href": "/examples?engine=kling-2-6-pro"
+        "href": "/examples/kling"
+      },
+      {
+        "label": "Comparer Kling 2.6 Pro vs Kling 3 Pro",
+        "href": "/ai-video-engines/kling-2-6-pro-vs-kling-3-pro"
+      },
+      {
+        "label": "Voir Kling 3 Standard",
+        "href": "/models/kling-3-standard"
       }
     ]
+  },
+  "compareLink": {
+    "label": "Comparer Kling 2.6 Pro vs Kling 3 Pro ->",
+    "href": "/ai-video-engines/kling-2-6-pro-vs-kling-3-pro"
   },
   "bestUseCases": {
     "title": "Meilleurs cas d’usage",

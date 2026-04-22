@@ -3730,6 +3730,31 @@ function MarketingModelPageLayout({
   };
   const normalizedPrimaryCtaHref = normalizeCtaHref(primaryCtaHref) ?? primaryCtaHref;
   const localizedSecondaryCtaHref = normalizeCtaHref(secondaryCtaHref);
+  const heroQuickLinkModels = new Set([
+    'seedance-1-5-pro',
+    'seedance-2-0',
+    'seedance-2-0-fast',
+    'kling-3-pro',
+    'kling-3-standard',
+    'kling-2-6-pro',
+    'kling-2-5-turbo',
+    'veo-3-1',
+    'veo-3-1-fast',
+    'veo-3-1-lite',
+    'ltx-2-3-pro',
+    'ltx-2-3-fast',
+    'ltx-2',
+    'ltx-2-fast',
+  ]);
+  const heroQuickLinks = heroQuickLinkModels.has(engine.modelSlug)
+    ? (localizedContent.hero?.secondaryLinks ?? [])
+        .slice(1)
+        .flatMap((link) => {
+          const label = typeof link?.label === 'string' ? link.label : null;
+          const href = typeof link?.href === 'string' ? normalizeCtaHref(link.href) : null;
+          return label && href ? [{ label, href }] : [];
+        })
+    : [];
   const heroHighlights = copy.heroHighlights;
   const bestUseCaseItems = copy.bestUseCaseItems.length
     ? copy.bestUseCaseItems
@@ -4062,6 +4087,15 @@ function MarketingModelPageLayout({
                 </ButtonLink>
               ) : null}
             </div>
+            {heroQuickLinks.length ? (
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+                {heroQuickLinks.map((item) => (
+                  <Link key={`${item.label}-${String(item.href)}`} href={item.href} className="font-semibold text-brand hover:text-brandHover">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
             {!heroSpecChips.length ? (
               <div className="flex flex-wrap justify-center gap-4 text-sm">
                 <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">

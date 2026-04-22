@@ -1,36 +1,36 @@
 {
-  "marketingName": "LTX-2 Fast",
+  "marketingName": "LTX 2 Fast",
   "versionLabel": "Fast",
   "seo": {
-    "title": "LTX-2 Fast (6–20s, hasta 4K) — video + audio",
-    "description": "Genera clips de 6–20s desde texto o imágenes con audio sincronizado, hasta 4K y 25–50 fps. Ideal para probar y ajustar rápido—pago por uso en MaxVideoAI.",
+    "title": "LTX 2 Fast | Modelo de video IA, specs y precios | MaxVideoAI",
+    "description": "Usa el modelo LTX 2 Fast aún compatible en MaxVideoAI para borradores rápidos con audio y luego pasa a LTX 2.3 Fast para el workflow fast LTX actual.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX-2 Fast en MaxVideoAI: renders de 6–20 s, 1080p/1440p/4K, 25 o 50 fps, entrada de texto o imagen, audio nativo on/off, precio por segundo.",
+  "overview": "LTX 2 Fast sigue disponible en MaxVideoAI como modelo fast LTX anterior aún compatible para borradores rápidos con audio y workflows fast legacy.",
   "hero": {
-    "title": "LTX-2 Fast – Video IA con audio nativo",
-    "intro": "Clips rápidos de 6–20s con audio sincronizado — hasta 4K y 25–50 fps, ideal para probar y ajustar rápido.",
+    "title": "LTX 2 Fast — modelo LTX anterior aún compatible para borradores rápidos con audio",
+    "intro": "LTX 2 Fast sigue disponible para borradores rápidos con audio y workflows fast anteriores, mientras LTX 2.3 Fast es ahora la opción fast LTX actual principal.",
     "badge": "1080p/1440p/4K · 6–20 s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
-      "label": "Generar con LTX-2 Fast",
+      "label": "Generar con LTX 2 Fast",
       "href": "/app?engine=ltx-2-fast"
     },
     "secondaryLinks": [
-      {
-        "label": "Ver LTX 2.3 Pro",
-        "href": "/models/ltx-2-3-pro"
-      },
       {
         "label": "Ver LTX 2.3 Fast",
         "href": "/models/ltx-2-3-fast"
       },
       {
-        "label": "Comparar LTX 2.3 Fast vs Pro",
-        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+        "label": "Ver ejemplos de LTX",
+        "href": "/examples/ltx"
       },
       {
-        "label": "Ver todos los ejemplos de LTX",
-        "href": "/examples/ltx"
+        "label": "Ver LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
+      },
+      {
+        "label": "Comparar LTX 2.3 Fast vs LTX 2.3 Pro",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
       }
     ]
   },
@@ -95,7 +95,7 @@
     }
   ],
   "promptStructure": {
-    "title": "Promptear LTX-2 Fast",
+    "title": "Promptear LTX 2 Fast",
     "quote": "[Sujeto] cinematográfico en [entorno], [movimiento de cámara], [luz/estilo], [duración 6–20 s], 16:9, audio con [ambiente/diálogo/música].",
     "description": "Manténlo conciso: sujeto + entorno + movimiento + estilo + duración + cue de audio.",
     "steps": [
@@ -136,7 +136,7 @@
   ],
   "faqs": [
     {
-      "q": "¿Cuánto puede durar LTX-2 Fast?",
+      "q": "¿Cuánto puede durar LTX 2 Fast?",
       "a": "6–20 segundos. Duraciones superiores a 10 s deben ir en 1080p y 25 fps según Fal."
     },
     {
@@ -149,7 +149,7 @@
     }
   ],
   "custom": {
-    "whyTitle": "Por qué LTX-2 Fast en MaxVideoAI",
+    "whyTitle": "Por qué LTX 2 Fast en MaxVideoAI",
     "heroDesc1": "Crea clips de 6–20 s con audio nativo, 1080p–4K y 25/50 fps en una sola tarjeta. LTX‑2 Fast es el tier “instantáneo” de la familia LTX‑2: perfecto para cortes sociales rápidos, borradores, storyboards y mood pieces cuando quieres calidad 4K sin esperar.",
     "heroDesc2": "Por encima de 10 s, bloqueamos automáticamente en 1080p/25 fps para respetar el routing de Fal y mantener estabilidad.",
     "heroSupportLine": "Úsalo para hooks, pacing y exploración de mood, luego regenera los ganadores en el tier premium.",
@@ -159,7 +159,7 @@
       "Borradores listos para sonido||Perfecto para temporales de diálogo/ambiente/SFX (o silencia y termina en post).",
       "Upgrade fácil||Mantén la misma estructura de prompt y re‑lanza los ganadores en LTX‑2 Pro."
     ],
-    "specTitle": "Especificaciones reales — LTX-2 Fast en MaxVideoAI",
+    "specTitle": "Especificaciones reales — LTX 2 Fast en MaxVideoAI",
     "specNote": "Las specs reflejan el routing de Fal en producción.",
     "specSections": [
       {
@@ -183,21 +183,21 @@
         ]
       }
     ],
-    "whatTitle": "Cómo funciona LTX-2 Fast en MaxVideoAI",
+    "whatTitle": "Cómo funciona LTX 2 Fast en MaxVideoAI",
     "whatIntro1": "Elige modo texto o imagen, ajusta 6–20 s, elige resolución y fps, y luego promtea. El audio está on por defecto y se puede apagar.",
     "whatIntro2": "Para 12–20 s, restringimos automáticamente a 1080p/25 fps para mantener rutas estables.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
-      "Selecciona LTX-2 Fast y elige Texto → Video o Imagen → Video",
+      "Selecciona LTX 2 Fast y elige Texto → Video o Imagen → Video",
       "Ajusta duración (6–20 s) y relación 16:9",
       "Elige resolución/fps (12–20 s = 1080p/25)",
       "Audio on/off, añade prompt y seed/negativo opcional",
       "Sube un still de referencia para I2V",
       "Revisa el precio live y genera"
     ],
-    "galleryTitle": "Ejemplos LTX-2 Fast",
-    "galleryIntro": "Renders recientes de LTX-2 Fast con audio on/off para clips sociales e iteración rápida.",
-    "galleryAllCta": "Ver todos los ejemplos LTX-2 Fast →",
+    "galleryTitle": "Ejemplos LTX 2 Fast",
+    "galleryIntro": "Renders recientes de LTX 2 Fast con audio on/off para clips sociales e iteración rápida.",
+    "galleryAllCta": "Ver todos los ejemplos LTX 2 Fast →",
     "recreateLabel": "Recrear este plano →",
     "tipsTitle": "Consejos y límites",
     "strengths": [
@@ -248,34 +248,34 @@
       "Ideal para animatics rápidos desde un frame",
       "Mantiene el encuadre de marca/producto consistente"
     ],
-    "comparisonTitle": "Cuándo elegir LTX-2 Fast",
+    "comparisonTitle": "Cuándo elegir LTX 2 Fast",
     "comparisonPoints": [
       "Usa Fast para clips sociales rápidos; cambia a LTX‑2 Pro para polish premium",
       "Para relaciones múltiples, combínalo con Wan o Veo; Fast es solo 16:9",
       "Para borradores silenciosos, apaga el audio para bajar costo"
     ],
-    "comparisonCta": "Comparar LTX-2 Fast vs Pro →",
-    "relatedTitle": "Compara el LTX-2 Fast legacy con LTX 2.3",
-    "relatedSubtitle": "Salta del tier Fast legacy a la nueva línea LTX 2.3 para tener routing vigente y una segmentación más clara.",
+    "comparisonCta": "Comparar LTX 2 Fast vs Pro →",
+    "relatedTitle": "Versiones LTX 2.3 más nuevas",
+    "relatedSubtitle": "Usa LTX 2.3 Fast como la página LTX fast actual principal, o LTX 2.3 Pro cuando el workflow necesite la superficie LTX actual más completa.",
     "relatedItems": [
       {
         "brand": "ltx",
         "title": "LTX 2.3 Fast",
-        "description": "Mantén un workflow rápido cambiando al routing actual de LTX 2.3 Fast para generación texto→video e imagen→video.",
+        "description": "Mantén un workflow fast pero pasa al routing LTX 2.3 Fast actual para una generación texto→video e imagen→video más reciente.",
         "modelSlug": "ltx-2-3-fast",
-        "ctaLabel": "Comparar LTX-2 Fast vs LTX 2.3 Fast →"
+        "ctaLabel": "Ver LTX 2.3 Fast ->"
       },
       {
         "brand": "ltx",
         "title": "LTX 2.3 Pro",
-        "description": "Sube a LTX 2.3 Pro cuando necesites audio→video, extend, retake y un set de workflows más completo.",
+        "description": "Sube a LTX 2.3 Pro cuando el proyecto necesite audio→video, Extend, Retake y el set de workflows LTX actuales más amplio.",
         "modelSlug": "ltx-2-3-pro",
-        "ctaLabel": "Comparar LTX-2 Fast vs LTX 2.3 Pro →"
+        "ctaLabel": "Ver LTX 2.3 Pro ->"
       }
     ],
-    "finalPara1": "¿Listo para probar LTX-2 Fast? Carga tu wallet y revisa el chip de precio antes de lanzar.",
+    "finalPara1": "¿Listo para probar LTX 2 Fast? Carga tu wallet y revisa el chip de precio antes de lanzar.",
     "finalPara2": "Pasa a LTX‑2 Pro cuando necesites máxima fidelidad y audio sincronizado.",
-    "finalButton": "Abrir LTX-2 Fast en Generate →",
+    "finalButton": "Abrir LTX 2 Fast en Generate →",
     "promptingTitle": "Cómo escribir un gran prompt LTX 2 Fast",
     "promptingIntro": "LTX‑2 Fast prefiere prompts cortos con una acción clara y un solo movimiento de cámara.",
     "promptingTip": "Tip: duración + fps se configuran en la UI - tu prompt controla sujeto, acción, cámara, luz, estilo y cues sonoros opcionales.",

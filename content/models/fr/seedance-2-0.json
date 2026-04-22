@@ -2,14 +2,14 @@
   "marketingName": "Seedance 2.0",
   "versionLabel": "2.0",
   "seo": {
-    "title": "Seedance 2.0 de ByteDance | Texte, image et reference-to-video",
-    "description": "Utilisez Seedance 2.0 sur MaxVideoAI pour texte vers video, image vers video avec image finale, et reference-to-video multimodal avec audio natif."
+    "title": "Seedance 2.0 | Modèle vidéo IA, audio natif, specs et prix | MaxVideoAI",
+    "description": "Utilisez Seedance 2.0 sur MaxVideoAI pour de la vidéo multi-plans, de l'audio natif, des références multimodales, et des specs/prix visibles avant génération."
   },
-  "overview": "Seedance 2.0 est le modèle vidéo flagship de ByteDance sur Fal. Il réunit text-to-video, image-to-video avec image de fin optionnelle, et reference-to-video multimodal dans une même famille de workflows cinématographiques avec audio natif.",
+  "overview": "Seedance 2.0 est le modèle Seedance actuel sur MaxVideoAI pour la vidéo multi-plans de haute qualité, l'audio natif et les workflows à références multimodales.",
   "pricingNotes": "Seedance 2 suit la formule tokens de Fal. MaxVideoAI ajoute sa marge et arrondit au centime supérieur ; Generate affiche le devis final avant validation.",
   "hero": {
-    "title": "Seedance 2.0",
-    "intro": "Seedance 2.0 vous donne trois workflows de production dans une seule famille de modèles : text-to-video, image-to-video avec image de fin optionnelle, et reference-to-video avec références image, vidéo et audio. Fal le positionne autour de l'audio natif, d'une physique plus crédible, d'un contrôle caméra de niveau réalisateur et d'une vraie continuité multi-plans.",
+    "title": "Seedance 2.0 — modèle Seedance actuel pour la vidéo cinématique multi-plans",
+    "intro": "Seedance 2.0 est le modèle Seedance actuel pour la vidéo multi-plans de haute qualité, l'audio natif et les workflows à références multimodales sur des publicités, lancements et scènes hero.",
     "badge": "3 workflows · 480p/720p · Auto ou 4-15 s · Audio natif · 9 images / 3 vidéos / 3 audios de référence",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.0",
@@ -25,14 +25,26 @@
         "href": "/models/seedance-2-0-fast"
       },
       {
+        "label": "Comparer Seedance 2.0 vs Seedance 2.0 Fast",
+        "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
+      },
+      {
         "label": "Comparer Seedance 2.0 vs Veo 3.1",
         "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1"
+      },
+      {
+        "label": "Comparer Seedance 1.5 Pro vs Seedance 2.0",
+        "href": "/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0"
+      },
+      {
+        "label": "Comparer LTX 2.3 Pro vs Seedance 2.0",
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0"
       }
     ]
   },
   "compareLink": {
-    "label": "Voir Seedance 1.5 Pro vs Seedance 2.0 ->",
-    "href": "/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0"
+    "label": "Voir Seedance 2.0 vs Seedance 2.0 Fast ->",
+    "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
   },
   "bestUseCases": {
     "title": "Cas d'usage",

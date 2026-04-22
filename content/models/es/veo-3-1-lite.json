@@ -2,14 +2,14 @@
   "marketingName": "Google Veo 3.1 Lite",
   "versionLabel": "3.1 Lite",
   "seo": {
-    "title": "Veo 3.1 Lite (4–8s, 1080p) — especificaciones, precio y audio nativo",
-    "description": "Veo 3.1 Lite en MaxVideoAI: clips de 4–8s en 720p/1080p desde texto, imagen inicial o guiado opcional con último frame, con audio nativo siempre activo. Compara el precio frente a otros tiers Veo y genera con la billetera.",
+    "title": "Veo 3.1 Lite | Modelo de video IA, specs y precios | MaxVideoAI",
+    "description": "Usa Veo 3.1 Lite en MaxVideoAI para borradores con audio a menor coste, specs en tiempo real y precios antes de pasar los outputs seleccionados a Veo 3.1.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0a6e2df3-0107-4ea7-8f70-6e03e406f39b.jpg"
   },
-  "overview": "Veo 3.1 Lite es el tier Veo más barato en MaxVideoAI: clips de 4–8 s, 720p/1080p, workflows de texto, imagen inicial, control opcional con último frame, audio nativo siempre activo y precio por segundo para pruebas rápidas.",
+  "overview": "Veo 3.1 Lite es la variante Veo actual más económica para borradores cortos con audio, checks de timing y pruebas de prompt con audio nativo incluido y precios por segundo.",
   "hero": {
-    "title": "Veo 3.1 Lite – Video IA más económico con audio nativo",
-    "intro": "Clips cinematográficos de 4–8s en 720p/1080p a menor costo desde texto, imagen inicial o tomas guiadas por último frame, con audio nativo siempre incluido.",
+    "title": "Veo 3.1 Lite — variante Veo actual para borradores con audio a menor coste",
+    "intro": "Usa Veo 3.1 Lite cuando quieras una opción Veo actual más económica con audio nativo incluido para borradores sociales cortos, checks de timing y pruebas rápidas de prompt antes de pasar los runs seleccionados a Veo 3.1.",
     "badge": "720p/1080p · 4–8 s · Texto, imagen inicial y último frame",
     "ctaPrimary": {
       "label": "Probar Veo 3.1 Lite",
@@ -17,12 +17,24 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparar Veo 3.1 Lite vs Veo 3.1 Fast →",
+        "label": "Ver Veo 3.1",
+        "href": "/models/veo-3-1"
+      },
+      {
+        "label": "Comparar Veo 3.1 Fast vs Veo 3.1 Lite",
+        "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
+      },
+      {
+        "label": "Ver Veo 3.1 Fast",
         "href": "/models/veo-3-1-fast"
       },
       {
-        "label": "Abrir Generate + último frame →",
-        "href": "/app?engine=veo-3-1-lite"
+        "label": "Ver ejemplos de Veo",
+        "href": "/examples/veo"
+      },
+      {
+        "label": "Comparar Veo 3.1 vs Veo 3.1 Fast",
+        "href": "/ai-video-engines/veo-3-1-vs-veo-3-1-fast"
       }
     ]
   },
@@ -110,8 +122,8 @@
     ]
   },
   "compareLink": {
-    "label": "Comparar Veo 3.1 Lite vs Veo 3.1 Fast →",
-    "href": "/models/veo-3-1-fast"
+    "label": "Comparar Veo 3.1 Fast vs Veo 3.1 Lite ->",
+    "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
   },
   "prompts": [
     {
@@ -274,7 +286,7 @@
       "Veo 3.1: mayor fidelidad y audio más rico; ideal para entregables cliente y medios pagados.",
       "Workflow: prototipa en Lite y luego regenera los ganadores en Veo 3.1 Fast o Veo 3.1."
     ],
-    "comparisonCta": "Comparar Veo 3.1 Lite vs Veo 3.1 →",
+    "comparisonCta": "Comparar Veo 3.1 Fast vs Veo 3.1 Lite ->",
     "faqTitle": "FAQ – Veo 3.1 Lite",
     "faqs": [
       {

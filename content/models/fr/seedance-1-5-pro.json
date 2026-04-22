@@ -2,15 +2,15 @@
   "marketingName": "Seedance 1.5 Pro",
   "versionLabel": "v1.5 Pro",
   "seo": {
-    "title": "Seedance 1.5 Pro – Text & Image to Video cinématographique | MaxVideoAI",
-    "description": "Créez des clips cinématiques avec Seedance 1.5 Pro : camera_fixed, seed, image de fin optionnelle et audio natif. 4–12 s, formats flexibles.",
+    "title": "Seedance 1.5 Pro | Modèle vidéo IA, specs et prix | MaxVideoAI",
+    "description": "Utilisez le modèle Seedance 1.5 Pro encore pris en charge sur MaxVideoAI pour des clips courts, puis passez à Seedance 2.0 pour le workflow Seedance actuel.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a0297366-57f7-4ca8-b3b6-f02c7da4d7f2-job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab.jpg"
   },
-  "overview": "Seedance 1.5 Pro dans MaxVideoAI offre un contrôle court‑format avec camera_fixed, seed pour la répétabilité, image de fin optionnelle et audio natif. Générez des clips 4–12 s depuis texte ou image, avec un motion plus stable et des variantes cohérentes quand vous en avez besoin.",
+  "overview": "Seedance 1.5 Pro reste disponible comme ancienne version Seedance encore prise en charge pour des clips cinématiques courts, des variantes répétables et des setups camera_fixed.",
   "pricingNotes": "Tarification variable selon la résolution ; audio off coûte environ 50 % de moins que l’audio on.",
   "hero": {
-    "title": "Seedance 1.5 Pro – Contrôle du mouvement cinématique",
-    "intro": "Motion caméra fixe, seed control et rendus audio‑ready depuis texte ou une seule image.",
+    "title": "Seedance 1.5 Pro — ancien modèle Seedance encore pris en charge pour des clips cinématiques courts",
+    "intro": "Seedance 1.5 Pro reste disponible pour des clips cinématiques courts et répétables, tandis que Seedance 2.0 est désormais le modèle Seedance principal pour une meilleure continuité multi-plans, un audio plus riche et des workflows de référence plus larges.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
       "label": "Générer avec Seedance 1.5 Pro",
@@ -18,12 +18,16 @@
     },
     "secondaryLinks": [
       {
-        "label": "Voir des exemples Seedance",
-        "href": "/examples?engine=seedance-1-5-pro"
+        "label": "Voir Seedance 2.0",
+        "href": "/models/seedance-2-0"
       },
       {
-        "label": "Comparer les moteurs vidéo",
-        "href": "/models"
+        "label": "Voir les exemples Seedance",
+        "href": "/examples/seedance"
+      },
+      {
+        "label": "Comparer Seedance 1.5 Pro vs Seedance 2.0",
+        "href": "/ai-video-engines/seedance-1-5-pro-vs-seedance-2-0"
       }
     ]
   },

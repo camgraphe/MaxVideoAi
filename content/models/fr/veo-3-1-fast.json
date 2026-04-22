@@ -2,14 +2,14 @@
   "marketingName": "Google Veo 3.1 Fast",
   "versionLabel": "3.1 Fast",
   "seo": {
-    "title": "Veo 3.1 Fast (4–8s, 1080p) — spécifications, tarifs & audio optionnel",
-    "description": "Veo 3.1 Fast sur MaxVideoAI : clips 4–8s en 720p/1080p depuis texte, image de départ, guidage optionnel par dernière image ou Extend, avec audio optionnel. Comparez le prix à la seconde vs Veo 3.1 et générez via le portefeuille.",
+    "title": "Veo 3.1 Fast | Modèle vidéo IA, specs et prix | MaxVideoAI",
+    "description": "Utilisez Veo 3.1 Fast sur MaxVideoAI pour des brouillons plus rapides, une itération moins coûteuse, des specs live et les tarifs avant de faire remonter les bons rendus vers Veo 3.1.",
     "image": "/hero/veo3.jpg"
   },
-  "overview": "Veo 3.1 Fast est le niveau vitesse/coût de la famille Veo : clips 4–8 s, 720p/1080p, workflows texte, image de départ, guidage optionnel par dernière image et Extend, presets de cadrage/ton, audio natif optionnel et prix à la seconde pour des tests rapides.",
+  "overview": "Veo 3.1 Fast est la variante Veo actuelle la plus rapide pour les brouillons, les boucles de concept courtes et l’itération à moindre coût avec audio natif optionnel et tarifs à la seconde.",
   "hero": {
-    "title": "Veo 3.1 Fast – Vidéo IA haute vitesse avec audio optionnel",
-    "intro": "Clips ciné 4–8s en 720p/1080p à moindre coût depuis texte, image de départ ou plans guidés par dernière image — audio optionnel pour tester en volume.",
+    "title": "Veo 3.1 Fast — variante Veo actuelle pour des brouillons plus rapides et l’itération",
+    "intro": "Utilisez Veo 3.1 Fast pour des brouillons plus rapides, des boucles de concept courtes et une itération moins coûteuse avant de faire remonter les sorties retenues vers Veo 3.1.",
     "badge": "720p/1080p · 4–8 s · Texte, image de départ, dernière image & Extend",
     "ctaPrimary": {
       "label": "Essayer Veo 3.1 Fast",
@@ -17,12 +17,24 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparer Veo 3.1 Fast vs Veo 3.1 →",
+        "label": "Voir Veo 3.1",
         "href": "/models/veo-3-1"
       },
       {
-        "label": "Ouvrir Generate + dernière image →",
-        "href": "/app?engine=veo-3-1-fast"
+        "label": "Voir les exemples Veo",
+        "href": "/examples/veo"
+      },
+      {
+        "label": "Comparer Veo 3.1 vs Veo 3.1 Fast",
+        "href": "/ai-video-engines/veo-3-1-vs-veo-3-1-fast"
+      },
+      {
+        "label": "Comparer Veo 3.1 Fast vs Veo 3.1 Lite",
+        "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
+      },
+      {
+        "label": "Comparer Seedance 2.0 Fast vs Veo 3.1 Fast",
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
       }
     ]
   },
@@ -110,8 +122,8 @@
     ]
   },
   "compareLink": {
-    "label": "Comparer Veo 3.1 Fast vs Veo 3.1 →",
-    "href": "/models/veo-3-1"
+    "label": "Comparer Veo 3.1 vs Veo 3.1 Fast ->",
+    "href": "/ai-video-engines/veo-3-1-vs-veo-3-1-fast"
   },
   "prompts": [
     {
@@ -274,7 +286,7 @@
       "Veo 3.1 : fidélité plus élevée et audio plus riche; idéal pour livrables client et paid media.",
       "Workflow : prototypez en Fast, puis régénérez les gagnants en Veo 3.1."
     ],
-    "comparisonCta": "Comparer Veo 3.1 Fast vs Veo 3.1 →",
+    "comparisonCta": "Comparer Veo 3.1 vs Veo 3.1 Fast ->",
     "faqTitle": "FAQ – Veo 3.1 Fast",
     "faqs": [
       {

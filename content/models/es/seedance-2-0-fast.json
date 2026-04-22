@@ -2,14 +2,14 @@
   "marketingName": "Seedance 2.0 Fast",
   "versionLabel": "2.0 Fast",
   "seo": {
-    "title": "Seedance 2.0 Fast | Texto, imagen y reference-to-video rapido",
-    "description": "Usa Seedance 2.0 Fast en MaxVideoAI para iteraciones mas rapidas en texto a video, imagen a video y reference-to-video con audio."
+    "title": "Seedance 2.0 Fast | Modelo de video IA rapido, specs y precios | MaxVideoAI",
+    "description": "Usa Seedance 2.0 Fast en MaxVideoAI para borradores más rápidos, iteraciones multimodales y specs/precios visibles antes de generar."
   },
-  "overview": "Seedance 2.0 Fast es el tier de iteración rápida dentro de la familia Seedance 2 en Fal. Mantiene los mismos tres workflows que Seedance 2.0 estándar, pero está pensado sobre todo para pases de storyboard, checks de timing y comparaciones rápidas.",
+  "overview": "Seedance 2.0 Fast es el modelo Seedance rápido actual para borradores cortos, planificación de tomas y bucles de comparación antes del render final.",
   "pricingNotes": "Seedance 2 Fast sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra el precio final antes de enviar.",
   "hero": {
-    "title": "Seedance 2.0 Fast",
-    "intro": "Seedance 2.0 Fast conserva los tres workflows del tier estándar: text-to-video, image-to-video con imagen final opcional y reference-to-video con referencias de imagen, video y audio. Úsalo cuando quieras bucles de iteración más cortos, checks A/B más rápidos y un tier de borrador antes de pasar a Seedance 2.0 estándar.",
+    "title": "Seedance 2.0 Fast — modelo Seedance rápido actual para drafts e iteración",
+    "intro": "Usa Seedance 2.0 Fast para borradores más rápidos, planificación de tomas, checks de timing e iteraciones A/B antes de mover las direcciones aprobadas a Seedance 2.0.",
     "badge": "Tier rápido · 3 workflows · 480p/720p · Auto o 4-15 s · Audio nativo",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0 Fast",
@@ -17,22 +17,30 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver ejemplos de Seedance",
-        "href": "/examples/seedance"
-      },
-      {
         "label": "Ver Seedance 2.0 estándar",
         "href": "/models/seedance-2-0"
       },
       {
+        "label": "Ver ejemplos de Seedance",
+        "href": "/examples/seedance"
+      },
+      {
+        "label": "Comparar Seedance 2.0 vs Seedance 2.0 Fast",
+        "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
+      },
+      {
         "label": "Comparar Seedance 2.0 Fast vs Veo 3.1 Fast",
         "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast"
+      },
+      {
+        "label": "Comparar Seedance 2.0 Fast vs LTX 2.3 Fast",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
       }
     ]
   },
   "compareLink": {
-    "label": "Comparar Seedance 2.0 Fast vs LTX 2.3 Fast ->",
-    "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
+    "label": "Comparar Seedance 2.0 vs Seedance 2.0 Fast ->",
+    "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast"
   },
   "bestUseCases": {
     "title": "Casos de uso",

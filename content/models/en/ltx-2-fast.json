@@ -1,36 +1,36 @@
 {
-  "marketingName": "LTX-2 Fast",
+  "marketingName": "LTX 2 Fast",
   "versionLabel": "Fast",
   "seo": {
-    "title": "LTX-2 Fast (6–20s, up to 4K) — Video + Audio",
-    "description": "Generate 6–20s clips from text or images with synced audio, up to 4K and 25–50 fps. Built for rapid iteration—pay-as-you-go inside MaxVideoAI.",
+    "title": "LTX 2 Fast | AI Video Model, Specs & Pricing | MaxVideoAI",
+    "description": "Use the supported LTX 2 Fast model on MaxVideoAI for quick audio-ready drafts, then move to LTX 2.3 Fast for the current fast LTX workflow.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX-2 Fast in MaxVideoAI: 6–20s renders, 1080p/1440p/4K, 25 or 50 fps, text or image input, native audio on/off, priced per second.",
+  "overview": "LTX 2 Fast remains available on MaxVideoAI as a supported older fast LTX model for quick audio-ready drafts and legacy fast workflows.",
   "hero": {
-    "title": "LTX-2 Fast – AI Video with Native Audio",
-    "intro": "Fast 6–20s clips with synced audio — up to 4K and 25–50 fps for rapid iteration.",
+    "title": "LTX 2 Fast — supported older LTX model for fast audio-ready drafts",
+    "intro": "LTX 2 Fast remains available for quick audio-ready drafts and older fast workflows, while LTX 2.3 Fast is now the main current fast LTX option.",
     "badge": "1080p/1440p/4K · 6–20s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
-      "label": "Start generating with LTX-2 Fast",
+      "label": "Start generating with LTX 2 Fast",
       "href": "/app?engine=ltx-2-fast"
     },
     "secondaryLinks": [
-      {
-        "label": "See LTX 2.3 Pro",
-        "href": "/models/ltx-2-3-pro"
-      },
       {
         "label": "See LTX 2.3 Fast",
         "href": "/models/ltx-2-3-fast"
       },
       {
-        "label": "Compare LTX 2.3 Fast vs Pro",
-        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+        "label": "View LTX examples",
+        "href": "/examples/ltx"
       },
       {
-        "label": "Browse all LTX examples",
-        "href": "/examples/ltx"
+        "label": "See LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
+      },
+      {
+        "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
       }
     ]
   },
@@ -95,7 +95,7 @@
     }
   ],
   "promptStructure": {
-    "title": "Prompting LTX-2 Fast",
+    "title": "Prompting LTX 2 Fast",
     "quote": "Cinematic [subject] in [environment], [camera move], [lighting/style], [duration 6–20s], 16:9, audio on with [ambience/dialogue/music].",
     "description": "Keep it concise: subject + environment + motion + style + duration + audio cue.",
     "steps": [
@@ -136,11 +136,11 @@
   ],
   "faqs": [
     {
-      "q": "How long can LTX-2 Fast run?",
+      "q": "How long can LTX 2 Fast run?",
       "a": "6–20 seconds. Durations above 10 seconds must run at 1080p and 25 fps per Fal constraints."
     },
     {
-      "q": "Does LTX-2 Fast include audio?",
+      "q": "Does LTX 2 Fast include audio?",
       "a": "Yes, native audio is on by default. You can toggle it off for silent exports."
     },
     {
@@ -149,17 +149,17 @@
     }
   ],
   "custom": {
-    "whyTitle": "Why LTX-2 Fast inside MaxVideoAI",
-    "heroDesc1": "Create 6–20 second clips with native audio, 1080p–4K and 25/50 fps in one card. LTX-2 Fast is the “instant” tier of the LTX-2 family: perfect for rapid social cuts, drafts, storyboards and mood pieces when you want 4K quality without waiting.",
+    "whyTitle": "Why LTX 2 Fast inside MaxVideoAI",
+    "heroDesc1": "Create 6–20 second clips with native audio, 1080p–4K and 25/50 fps in one card. LTX 2 Fast is the “instant” tier of the LTX 2 family: perfect for rapid social cuts, drafts, storyboards and mood pieces when you want 4K quality without waiting.",
     "heroDesc2": "Above 10 seconds we automatically keep runs at 1080p/25 fps to match the Fal routing and keep turnarounds reliable.",
     "heroSupportLine": "Use it for hooks, pacing, and mood exploration, then regenerate winners in the premium tier.",
     "heroHighlights": [
       "Built for iteration speed||Make lots of variations fast without overthinking the first pass.",
       "More room per clip||Better for pacing, build-up, and “mini-scene” beats than ultra-short engines.",
       "Sound-ready drafts||Great for temp dialogue/ambience/SFX timing (or mute and finish audio in post).",
-      "Easy upgrade path||Keep the same prompt structure and rerun the keepers in LTX-2 Pro for polish."
+      "Easy upgrade path||Keep the same prompt structure and rerun the keepers in LTX 2 for polish."
     ],
-    "specTitle": "Real Specs – LTX-2 Fast in MaxVideoAI",
+    "specTitle": "Real Specs – LTX 2 Fast in MaxVideoAI",
     "specNote": "Specs reflect the live routing via Fal today.",
     "specSections": [
       {
@@ -174,7 +174,7 @@
       },
       {
         "title": "Draft workflow",
-        "intro": "The prompt format carries over to LTX-2 Pro, so upgrades are simple. Treat Fast as your draft layer.",
+        "intro": "The prompt format carries over to LTX 2, so upgrades are simple. Treat Fast as your draft layer.",
         "items": [
           "Reuse shot language for finals.",
           "Swap in stronger references later.",
@@ -183,21 +183,21 @@
         ]
       }
     ],
-    "whatTitle": "How LTX-2 Fast works in MaxVideoAI",
+    "whatTitle": "How LTX 2 Fast works in MaxVideoAI",
     "whatIntro1": "Pick text or image mode, set 6–20 seconds, choose resolution and fps, then prompt. Audio is on by default and can be toggled off.",
     "whatIntro2": "For 12–20s runs we automatically constrain to 1080p/25 fps to keep routes stable.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
-      "Select LTX-2 Fast, choose Text → Video or Image → Video",
+      "Select LTX 2 Fast, choose Text → Video or Image → Video",
       "Set duration (6–20s) and aspect ratio 16:9",
       "Pick resolution/fps (12–20s = 1080p/25)",
       "Toggle audio on/off, add prompt and optional seed/negative",
       "Upload one reference still for I2V",
       "See live price, then generate"
     ],
-    "galleryTitle": "LTX-2 Fast examples",
-    "galleryIntro": "Recent LTX-2 Fast renders with audio on/off for social clips and quick iterations.",
-    "galleryAllCta": "View all LTX-2 Fast examples →",
+    "galleryTitle": "LTX 2 Fast examples",
+    "galleryIntro": "Recent LTX 2 Fast renders with audio on/off for social clips and quick iterations.",
+    "galleryAllCta": "View all LTX 2 Fast examples →",
     "recreateLabel": "Recreate this shot →",
     "tipsTitle": "Tips & limitations",
     "strengths": [
@@ -248,43 +248,43 @@
       "Great for quick animatics from reference frames",
       "Keeps brand/product framing consistent"
     ],
-    "comparisonTitle": "When to pick LTX-2 Fast",
+    "comparisonTitle": "When to pick LTX 2 Fast",
     "comparisonPoints": [
-      "Use Fast for rapid social clips; switch to LTX-2 Pro for premium polish",
+      "Use Fast for rapid social clips; switch to LTX 2 for premium polish",
       "For multi-aspect needs, pair with Wan or Veo; Fast is 16:9 only",
       "For silent drafts, toggle audio off to reduce cost"
     ],
-    "comparisonCta": "Compare LTX-2 Fast vs Pro →",
-    "relatedTitle": "Compare legacy LTX-2 Fast with LTX 2.3",
-    "relatedSubtitle": "Move from the legacy Fast tier to the newer LTX 2.3 line for current routing and a cleaner model split.",
+    "comparisonCta": "Compare LTX 2 Fast vs Pro →",
+    "relatedTitle": "Newer LTX 2.3 versions",
+    "relatedSubtitle": "Use LTX 2.3 Fast as the main current fast LTX page, or LTX 2.3 Pro when the workflow needs the broader current LTX surface.",
     "relatedItems": [
       {
         "brand": "ltx",
         "title": "LTX 2.3 Fast",
-        "description": "Stay in a fast workflow but switch to the current LTX 2.3 Fast routing for newer text-to-video and image-to-video generation.",
+        "description": "Stay on a fast workflow but move to the current LTX 2.3 Fast routing for newer text-to-video and image-to-video generation.",
         "modelSlug": "ltx-2-3-fast",
-        "ctaLabel": "Compare LTX-2 Fast vs LTX 2.3 Fast →"
+        "ctaLabel": "See LTX 2.3 Fast ->"
       },
       {
         "brand": "ltx",
         "title": "LTX 2.3 Pro",
-        "description": "Step up to LTX 2.3 Pro when you need audio-to-video, extend, retake, and the broader current-generation LTX workflow set.",
+        "description": "Move up to LTX 2.3 Pro when the project needs audio-to-video, Extend, Retake, and the broader current-generation LTX workflow set.",
         "modelSlug": "ltx-2-3-pro",
-        "ctaLabel": "Compare LTX-2 Fast vs LTX 2.3 Pro →"
+        "ctaLabel": "See LTX 2.3 Pro ->"
       }
     ],
-    "finalPara1": "Ready to try LTX-2 Fast? Load your wallet and see the live price chip before you run.",
-    "finalPara2": "Swap to LTX-2 Pro when you need maximum fidelity and synced audio.",
-    "finalButton": "Open LTX-2 Fast in Generate →",
+    "finalPara1": "Ready to try LTX 2 Fast? Load your wallet and see the live price chip before you run.",
+    "finalPara2": "Swap to LTX 2 when you need maximum fidelity and synced audio.",
+    "finalButton": "Open LTX 2 Fast in Generate →",
     "promptingTitle": "How to Write a Great LTX 2 Fast Prompt",
-    "promptingIntro": "LTX-2 Fast prefers short prompts with one clear action and a single camera move.",
+    "promptingIntro": "LTX 2 Fast prefers short prompts with one clear action and a single camera move.",
     "promptingTip": "Tip: duration + fps are set in the UI - your prompt controls subject, action, camera, lighting, style, and optional sound cues.",
     "promptingGlobalPrinciples": [
       "One subject, one action, one camera move.",
       "Use concrete visual anchors.",
       "Keep prompts short; avoid long lists."
     ],
-    "tipsIntro": "LTX-2 Fast is most reliable when you treat it like a draft pass: simple shots, quick variations, then polish the winner.",
+    "tipsIntro": "LTX 2 Fast is most reliable when you treat it like a draft pass: simple shots, quick variations, then polish the winner.",
     "promptingEngineWhy": [
       "Fast is optimized for quick iterations; simple prompts win.",
       "Explicit camera language reduces drift.",

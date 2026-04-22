@@ -2,14 +2,14 @@
   "marketingName": "Kling 2.5 Turbo",
   "versionLabel": "2.5 Turbo",
   "seo": {
-    "title": "Kling 2.5 Turbo – AI Text-to-Video & Image-to-Video (1080p, 5–10s, Silent)",
-    "description": "Cinematic, silent 1080p clips in 5–10 seconds from text or a single image. Pro Text / Pro Image / Standard tiers, 16:9/9:16/1:1, price-before-render in MaxVideoAI.",
+    "title": "Kling 2.5 Turbo | AI Video Model, Specs & Pricing | MaxVideoAI",
+    "description": "Use Kling 2.5 Turbo on MaxVideoAI for fast silent AI video drafts, then move to Kling 3 Standard or Kling 3 Pro for the current Kling workflow.",
     "image": "/hero/kling-25.jpg"
   },
-  "overview": "Kling 2.5 Turbo in MaxVideoAI: cinematic, silent 1080p clips from text or one image, 5–10 seconds, 16:9/9:16/1:1. Choose Pro Text, Pro Image or Standard per render to balance quality and cost.",
+  "overview": "Kling 2.5 Turbo remains available as a supported older Kling model for fast silent 1080p drafts, short camera-led clips, and lower-cost look-dev.",
   "hero": {
-    "title": "Kling 2.5 Turbo – AI Text-to-Video & Image-to-Video in MaxVideoAI (1080p, 5–10s)",
-    "intro": "Cinematic, silent clips with standout motion and physics — built for camera-forward shots.",
+    "title": "Kling 2.5 Turbo — supported older Kling model for fast silent drafts",
+    "intro": "Kling 2.5 Turbo remains available for fast silent 1080p drafts and lower-cost look-dev, while Kling 3 Standard and Kling 3 Pro are now the current Kling options for multi-shot workflows and native audio.",
     "badge": "1080p · 5–10s · Text or Image input · Silent output",
     "ctaPrimary": {
       "label": "Start generating with Kling 2.5 Turbo",
@@ -17,8 +17,20 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare Kling vs Sora 2 Pro →",
-        "href": "/models/sora-2-pro"
+        "label": "See Kling 3 Standard",
+        "href": "/models/kling-3-standard"
+      },
+      {
+        "label": "See Kling 3 Pro",
+        "href": "/models/kling-3-pro"
+      },
+      {
+        "label": "View Kling examples",
+        "href": "/examples/kling"
+      },
+      {
+        "label": "Compare Kling 3 Pro vs Kling 3 Standard",
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard"
       }
     ]
   },
@@ -106,8 +118,8 @@
     ]
   },
   "compareLink": {
-    "label": "Compare Kling vs Sora 2 Pro →",
-    "href": "/models/sora-2-pro"
+    "label": "See Kling 3 Standard ->",
+    "href": "/models/kling-3-standard"
   },
   "prompts": [
     {

@@ -584,6 +584,13 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       href: buildModelHref(locale as AppLocale, slug),
     };
   });
+  const isSeedanceLanding = modelLanding?.slug === 'seedance';
+  const isKlingLanding = modelLanding?.slug === 'kling';
+  const isVeoLanding = modelLanding?.slug === 'veo';
+  const isLtxLanding = modelLanding?.slug === 'ltx';
+  const usesCurrentAndSupportedBlocks = isSeedanceLanding || isKlingLanding || isLtxLanding;
+  const primaryModelLinks = usesCurrentAndSupportedBlocks ? modelLinks.slice(0, 2) : modelLinks;
+  const supportedOlderModelLinks = usesCurrentAndSupportedBlocks ? modelLinks.slice(2) : [];
   const pricingPath = buildPricingHref(locale as AppLocale);
   const modelPagesLabel =
     locale === 'fr'
@@ -591,8 +598,232 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       : locale === 'es'
         ? 'Páginas de modelo relacionadas'
         : 'Related model pages';
+  const currentModelPagesLabel =
+    locale === 'fr'
+      ? 'Pages modèles actuelles'
+      : locale === 'es'
+        ? 'Páginas de modelo actuales'
+        : 'Current model pages';
+  const supportedOlderVersionLabel =
+    locale === 'fr'
+      ? 'Version plus ancienne prise en charge'
+      : locale === 'es'
+        ? 'Versión anterior compatible'
+        : 'Supported older version';
   const pricingLinkLabel =
     locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
+  const nextStepLinks = isSeedanceLanding
+    ? [
+        {
+          href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-0-fast'),
+          label:
+            locale === 'fr'
+              ? 'Comparer Seedance 2.0 vs Seedance 2.0 Fast'
+              : locale === 'es'
+                ? 'Comparar Seedance 2.0 vs Seedance 2.0 Fast'
+                : 'Compare Seedance 2.0 vs Seedance 2.0 Fast',
+        },
+        {
+          href: buildCompareHref(appLocale, 'seedance-2-0-vs-veo-3-1'),
+          label:
+            locale === 'fr'
+              ? 'Comparer Seedance 2.0 vs Veo 3.1'
+              : locale === 'es'
+                ? 'Comparar Seedance 2.0 vs Veo 3.1'
+                : 'Compare Seedance 2.0 vs Veo 3.1',
+        },
+        {
+          href: buildCompareHref(appLocale, 'seedance-1-5-pro-vs-seedance-2-0'),
+          label:
+            locale === 'fr'
+              ? 'Comparer Seedance 1.5 Pro vs Seedance 2.0'
+              : locale === 'es'
+                ? 'Comparar Seedance 1.5 Pro vs Seedance 2.0'
+                : 'Compare Seedance 1.5 Pro vs Seedance 2.0',
+        },
+        {
+          href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-seedance-2-0'),
+          label:
+            locale === 'fr'
+              ? 'Comparer LTX 2.3 Pro vs Seedance 2.0'
+              : locale === 'es'
+                ? 'Comparar LTX 2.3 Pro vs Seedance 2.0'
+                : 'Compare LTX 2.3 Pro vs Seedance 2.0',
+        },
+      ]
+    : isKlingLanding
+      ? [
+          {
+            href: buildCompareHref(appLocale, 'kling-3-pro-vs-kling-3-standard'),
+            label:
+              locale === 'fr'
+                ? 'Comparer Kling 3 Pro vs Kling 3 Standard'
+                : locale === 'es'
+                  ? 'Comparar Kling 3 Pro vs Kling 3 Standard'
+                  : 'Compare Kling 3 Pro vs Kling 3 Standard',
+          },
+          {
+            href: buildCompareHref(appLocale, 'kling-2-6-pro-vs-kling-3-pro'),
+            label:
+              locale === 'fr'
+                ? 'Comparer Kling 2.6 Pro vs Kling 3 Pro'
+                : locale === 'es'
+                  ? 'Comparar Kling 2.6 Pro vs Kling 3 Pro'
+                  : 'Compare Kling 2.6 Pro vs Kling 3 Pro',
+          },
+          {
+            href: buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1'),
+            label:
+              locale === 'fr'
+                ? 'Comparer Kling 3 Pro vs Veo 3.1'
+                : locale === 'es'
+                  ? 'Comparar Kling 3 Pro vs Veo 3.1'
+                  : 'Compare Kling 3 Pro vs Veo 3.1',
+          },
+          {
+            href: buildCompareHref(appLocale, 'kling-3-pro-vs-seedance-2-0'),
+            label:
+              locale === 'fr'
+                ? 'Comparer Kling 3 Pro vs Seedance 2.0'
+                : locale === 'es'
+                  ? 'Comparar Kling 3 Pro vs Seedance 2.0'
+                  : 'Compare Kling 3 Pro vs Seedance 2.0',
+          },
+          {
+            href: buildCompareHref(appLocale, 'kling-3-pro-vs-sora-2-pro'),
+            label:
+              locale === 'fr'
+                ? 'Comparer Kling 3 Pro vs Sora 2 Pro'
+                : locale === 'es'
+                  ? 'Comparar Kling 3 Pro vs Sora 2 Pro'
+                  : 'Compare Kling 3 Pro vs Sora 2 Pro',
+          },
+        ]
+      : isVeoLanding
+        ? [
+            {
+              href: buildCompareHref(appLocale, 'veo-3-1-vs-veo-3-1-fast'),
+              label:
+                locale === 'fr'
+                  ? 'Comparer Veo 3.1 vs Veo 3.1 Fast'
+                  : locale === 'es'
+                    ? 'Comparar Veo 3.1 vs Veo 3.1 Fast'
+                    : 'Compare Veo 3.1 vs Veo 3.1 Fast',
+            },
+            {
+              href: buildCompareHref(appLocale, 'veo-3-1-fast-vs-veo-3-1-lite'),
+              label:
+                locale === 'fr'
+                  ? 'Comparer Veo 3.1 Fast vs Veo 3.1 Lite'
+                  : locale === 'es'
+                    ? 'Comparar Veo 3.1 Fast vs Veo 3.1 Lite'
+                    : 'Compare Veo 3.1 Fast vs Veo 3.1 Lite',
+            },
+            {
+              href: buildCompareHref(appLocale, 'seedance-2-0-vs-veo-3-1'),
+              label:
+                locale === 'fr'
+                  ? 'Comparer Seedance 2.0 vs Veo 3.1'
+                  : locale === 'es'
+                    ? 'Comparar Seedance 2.0 vs Veo 3.1'
+                    : 'Compare Seedance 2.0 vs Veo 3.1',
+            },
+            {
+              href: buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1'),
+              label:
+                locale === 'fr'
+                  ? 'Comparer Kling 3 Pro vs Veo 3.1'
+                  : locale === 'es'
+                    ? 'Comparar Kling 3 Pro vs Veo 3.1'
+                    : 'Compare Kling 3 Pro vs Veo 3.1',
+            },
+            {
+              href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-veo-3-1'),
+              label:
+                locale === 'fr'
+                  ? 'Comparer LTX 2.3 Pro vs Veo 3.1'
+                  : locale === 'es'
+                    ? 'Comparar LTX 2.3 Pro vs Veo 3.1'
+                    : 'Compare LTX 2.3 Pro vs Veo 3.1',
+            },
+          ]
+        : isLtxLanding
+          ? [
+              {
+                href: buildCompareHref(appLocale, 'ltx-2-3-fast-vs-ltx-2-3-pro'),
+                label:
+                  locale === 'fr'
+                    ? 'Comparer LTX 2.3 Fast vs LTX 2.3 Pro'
+                    : locale === 'es'
+                      ? 'Comparar LTX 2.3 Fast vs LTX 2.3 Pro'
+                      : 'Compare LTX 2.3 Fast vs LTX 2.3 Pro',
+              },
+              {
+                href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-seedance-2-0'),
+                label:
+                  locale === 'fr'
+                    ? 'Comparer LTX 2.3 Pro vs Seedance 2.0'
+                    : locale === 'es'
+                      ? 'Comparar LTX 2.3 Pro vs Seedance 2.0'
+                      : 'Compare LTX 2.3 Pro vs Seedance 2.0',
+              },
+              {
+                href: buildCompareHref(appLocale, 'ltx-2-3-pro-vs-veo-3-1'),
+                label:
+                  locale === 'fr'
+                    ? 'Comparer LTX 2.3 Pro vs Veo 3.1'
+                    : locale === 'es'
+                      ? 'Comparar LTX 2.3 Pro vs Veo 3.1'
+                      : 'Compare LTX 2.3 Pro vs Veo 3.1',
+              },
+              {
+                href: buildCompareHref(appLocale, 'ltx-2-3-fast-vs-seedance-2-0-fast'),
+                label:
+                  locale === 'fr'
+                    ? 'Comparer LTX 2.3 Fast vs Seedance 2.0 Fast'
+                    : locale === 'es'
+                      ? 'Comparar LTX 2.3 Fast vs Seedance 2.0 Fast'
+                      : 'Compare LTX 2.3 Fast vs Seedance 2.0 Fast',
+              },
+            ]
+    : [
+        {
+          href: buildModelHref(appLocale, 'veo-3-1-fast'),
+          label:
+            locale === 'fr'
+              ? 'Voir le profil Veo 3.1 Fast'
+              : locale === 'es'
+                ? 'Ver el perfil de Veo 3.1 Fast'
+                : 'View Veo 3.1 Fast profile',
+        },
+        {
+          href: buildModelHref(appLocale, 'seedance-2-0'),
+          label:
+            locale === 'fr'
+              ? 'Voir le profil Seedance 2.0'
+              : locale === 'es'
+                ? 'Ver el perfil de Seedance 2.0'
+                : 'View Seedance 2.0 profile',
+        },
+        {
+          href: buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1'),
+          label:
+            locale === 'fr'
+              ? 'Comparer Kling 3 Pro vs Veo 3.1'
+              : locale === 'es'
+                ? 'Comparar Kling 3 Pro vs Veo 3.1'
+                : 'Compare Kling 3 Pro vs Veo 3.1',
+        },
+        {
+          href: buildCompareHref(appLocale, 'seedance-2-0-vs-sora-2'),
+          label:
+            locale === 'fr'
+              ? 'Comparer Seedance 2.0 vs Sora 2'
+              : locale === 'es'
+                ? 'Comparar Seedance 2.0 vs Sora 2'
+                : 'Compare Seedance 2.0 vs Sora 2',
+        },
+      ];
 
   const filteredEntries = selectedEngine
     ? allVideos
@@ -1010,16 +1241,32 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
 
           {isModelLanding && selectedEngine && modelLinks.length ? (
             <section className="mx-auto max-w-5xl">
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-text-secondary">
-                <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{modelPagesLabel}</span>
-                {modelLinks.map((model) => (
-                  <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
-                    {model.label}
+              <div className="flex flex-col items-center gap-3 text-sm text-text-secondary">
+                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                    {usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}
+                  </span>
+                  {primaryModelLinks.map((model) => (
+                    <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
+                      {model.label}
+                    </Link>
+                  ))}
+                  <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
+                    {pricingLinkLabel}
                   </Link>
-                ))}
-                <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
-                  {pricingLinkLabel}
-                </Link>
+                </div>
+                {supportedOlderModelLinks.length ? (
+                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                      {supportedOlderVersionLabel}
+                    </span>
+                    {supportedOlderModelLinks.map((model) => (
+                      <Link key={model.slug} href={model.href} className="font-semibold text-brand hover:text-brandHover">
+                        {model.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </section>
           ) : null}
@@ -1132,46 +1379,11 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   : 'Next steps'}
             </h2>
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <Link
-                href={buildModelHref(appLocale, 'veo-3-1-fast')}
-                className="font-semibold text-brand hover:text-brandHover"
-              >
-                {locale === 'fr'
-                  ? 'Voir le profil Veo 3.1 Fast'
-                  : locale === 'es'
-                    ? 'Ver el perfil de Veo 3.1 Fast'
-                    : 'View Veo 3.1 Fast profile'}
-              </Link>
-              <Link
-                href={buildModelHref(appLocale, 'seedance-2-0')}
-                className="font-semibold text-brand hover:text-brandHover"
-              >
-                {locale === 'fr'
-                  ? 'Voir le profil Seedance 2.0'
-                  : locale === 'es'
-                    ? 'Ver el perfil de Seedance 2.0'
-                    : 'View Seedance 2.0 profile'}
-              </Link>
-              <Link
-                href={buildCompareHref(appLocale, 'kling-3-pro-vs-veo-3-1')}
-                className="font-semibold text-brand hover:text-brandHover"
-              >
-                {locale === 'fr'
-                  ? 'Comparer Kling 3 Pro vs Veo 3.1'
-                  : locale === 'es'
-                    ? 'Comparar Kling 3 Pro vs Veo 3.1'
-                    : 'Compare Kling 3 Pro vs Veo 3.1'}
-              </Link>
-              <Link
-                href={buildCompareHref(appLocale, 'seedance-2-0-vs-sora-2')}
-                className="font-semibold text-brand hover:text-brandHover"
-              >
-                {locale === 'fr'
-                  ? 'Comparer Seedance 2.0 vs Sora 2'
-                  : locale === 'es'
-                    ? 'Comparar Seedance 2.0 vs Sora 2'
-                    : 'Compare Seedance 2.0 vs Sora 2'}
-              </Link>
+              {nextStepLinks.map((item) => (
+                <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </section>
 

@@ -1197,8 +1197,8 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const quickCompareShortcuts = [
     { a: 'seedance-2-0', b: 'veo-3-1', micro: quickCompareMicroLabels[0] ?? 'native audio vs ad-ready polish' },
     { a: 'seedance-2-0', b: 'kling-3-pro', micro: quickCompareMicroLabels[1] ?? 'multi-shot realism vs scene control' },
-    { a: 'seedance-2-0', b: 'sora-2', micro: quickCompareMicroLabels[2] ?? 'new flagship vs outgoing cinematic tier' },
     { a: 'seedance-2-0-fast', b: 'veo-3-1-fast', micro: quickCompareMicroLabels[3] ?? 'fast drafts vs fast audio polish' },
+    { a: 'seedance-2-0', b: 'sora-2', micro: quickCompareMicroLabels[2] ?? 'audio-native workflows vs cinematic continuity' },
     { a: 'seedance-2-0-fast', b: 'ltx-2-3-fast', micro: quickCompareMicroLabels[4] ?? 'rapid storyboard passes' },
     { a: 'kling-3-pro', b: 'veo-3-1', micro: quickCompareMicroLabels[5] ?? 'scene control vs ad-ready audio' },
   ].filter((shortcut) => cardBySlug.has(shortcut.a) && cardBySlug.has(shortcut.b));

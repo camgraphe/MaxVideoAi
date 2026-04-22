@@ -2,27 +2,35 @@
   "marketingName": "LTX 2.3 Fast",
   "versionLabel": "Fast",
   "seo": {
-    "title": "LTX 2.3 Fast Specs, Pricing & Max Length | MaxVideoAI",
-    "description": "LTX 2.3 Fast specs, pricing and max length. Compare 6–20s outputs, 1080p to 4K, 16:9 and 9:16, native audio, and first/last-frame control.",
+    "title": "LTX 2.3 Fast | AI Video Model, Specs & Pricing | MaxVideoAI",
+    "description": "Use LTX 2.3 Fast on MaxVideoAI for faster, lower-cost LTX drafts, longer tests, and current LTX specs and pricing before you render.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2.3 Fast in MaxVideoAI focuses on fast text-to-video and image-to-video generation, including native audio, start/end image transitions, 16:9 or 9:16 output, and longer 6 to 20 second clips.",
+  "overview": "LTX 2.3 Fast is the current fast LTX model on MaxVideoAI for faster, lower-cost drafts, longer test clips, and iteration loops.",
   "hero": {
-    "title": "LTX 2.3 Fast - fast generate-first LTX workflows",
-    "intro": "Use LTX 2.3 Fast when you want lower-cost, faster text-to-video or image-to-video runs with audio, portrait support, and longer 1080p tests before moving winners to Pro.",
+    "title": "LTX 2.3 Fast — current fast LTX model for longer drafts and iteration",
+    "intro": "Use LTX 2.3 Fast for faster, lower-cost LTX drafts, longer test clips, and iteration loops before moving selected outputs into LTX 2.3 Pro.",
     "badge": "T2V + I2V | 6-20 s | 1080p to 4K",
     "ctaPrimary": {
-      "label": "Start generating with LTX 2.3 Fast",
+      "label": "Generate with LTX 2.3 Fast",
       "href": "/app?engine=ltx-2-3-fast"
     },
     "secondaryLinks": [
       {
-        "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro ->",
-        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-fast"
+        "label": "See LTX 2.3 Pro",
+        "href": "/models/ltx-2-3-pro"
       },
       {
-        "label": "Browse all LTX examples ->",
+        "label": "View LTX examples",
         "href": "/examples/ltx"
+      },
+      {
+        "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+      },
+      {
+        "label": "Compare LTX 2.3 Fast vs Seedance 2.0 Fast",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
       }
     ]
   },
@@ -113,7 +121,7 @@
   },
   "compareLink": {
     "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro ->",
-    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-fast"
+    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
   },
   "prompts": [
     {
@@ -152,12 +160,30 @@
     "heroDesc2": "That makes it a cleaner fit for rapid concepting, social aspect-ratio variants and quick hook testing, especially when you want more clip length than ultra-short engines usually allow.",
     "heroSupportLine": "Use Fast for speed and volume, then promote only the winners to LTX 2.3 Pro if the project needs deeper control.",
     "heroSpecChips": [
-      { "label": "Text→Video", "icon": "textToVideo" },
-      { "label": "Image→Video", "icon": "imageToVideo" },
-      { "label": "Start + end image", "icon": "imageToVideo" },
-      { "label": "6–20s", "icon": "duration" },
-      { "label": "4K", "icon": "resolution" },
-      { "label": "Audio", "icon": "audio" }
+      {
+        "label": "Text→Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image→Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Start + end image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "6–20s",
+        "icon": "duration"
+      },
+      {
+        "label": "4K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Audio",
+        "icon": "audio"
+      }
     ],
     "whyTitle": "Why LTX 2.3 Fast is useful",
     "heroHighlights": [

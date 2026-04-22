@@ -2,9 +2,9 @@
   "popularComparisons": [
     { "left": "seedance-2-0", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
     { "left": "seedance-2-0", "right": "kling-3-pro", "tags": ["cinematic", "quality", "long"] },
-    { "left": "seedance-2-0", "right": "sora-2", "tags": ["audio", "quality", "general"] },
+    { "left": "ltx-2-3-pro", "right": "seedance-2-0", "tags": ["audio", "ads", "quality"] },
     { "left": "seedance-2-0-fast", "right": "veo-3-1-fast", "tags": ["fast", "audio", "quality"] },
-    { "left": "seedance-2-0-fast", "right": "ltx-2-3-fast", "tags": ["fast", "value", "storyboards"] },
+    { "left": "seedance-2-0", "right": "sora-2", "tags": ["audio", "quality", "general"] },
     { "left": "veo-3-1", "right": "kling-3-pro", "tags": ["audio", "ads", "quality"] },
     { "left": "ltx-2-3-pro", "right": "veo-3-1", "tags": ["audio", "ads", "quality"] },
     { "left": "ltx-2-3-fast", "right": "ltx-2-3-pro", "tags": ["fast", "audio", "quality"] },
@@ -44,7 +44,7 @@
       "id": "product",
       "pairs": [
         { "left": "seedance-2-0", "right": "kling-3-pro" },
-        { "left": "ltx-2-3-pro", "right": "veo-3-1" },
+        { "left": "ltx-2-3-pro", "right": "seedance-2-0" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "kling-3-standard", "right": "ltx-2-3-pro" }
       ]
@@ -120,7 +120,7 @@
     }
   ],
   "opponentOverrides": {
-    "seedance-2-0": ["veo-3-1", "kling-3-pro", "sora-2"],
+    "seedance-2-0": ["veo-3-1", "kling-3-pro", "ltx-2-3-pro"],
     "seedance-2-0-fast": ["veo-3-1-fast", "ltx-2-3-fast", "pika-text-to-video"],
     "sora-2": ["seedance-2-0", "veo-3-1", "kling-3-pro"],
     "veo-3-1": ["seedance-2-0", "kling-3-pro", "sora-2"],

@@ -2,27 +2,39 @@
   "marketingName": "LTX 2.3 Pro",
   "versionLabel": "2.3",
   "seo": {
-    "title": "LTX 2.3 Pro: specs, precio, audio, Extend y Retake | MaxVideoAI",
-    "description": "Specs y precio de LTX 2.3 Pro. Compara flujos de texto, imagen y audio, renders de 6–10 s, 1080p a 4K, 16:9/9:16, además de Extend y Retake.",
+    "title": "LTX 2.3 Pro | Modelo de video IA, specs y precios | MaxVideoAI",
+    "description": "Usa LTX 2.3 Pro en MaxVideoAI para generación de video de mayor fidelidad, workflows guiados por audio, Extend y Retake, con specs y precios visibles antes de renderizar.",
     "image": "/assets/placeholders/preview-16x9.png"
   },
-  "overview": "LTX 2.3 Pro en MaxVideoAI reúne los flujos de texto a video, imagen a video, audio a video, Extend y Retake en un solo modelo de Lightricks, con salida de 1080p a 4K en los modos de generación y herramientas dedicadas para retrabajar video fuente.",
+  "overview": "LTX 2.3 Pro es el modelo LTX actual en MaxVideoAI para generación de video de mayor fidelidad, workflows guiados por audio, Extend y Retake.",
   "hero": {
-    "title": "LTX 2.3 Pro - una sola página para generar, animar con audio, extender y corregir",
-    "intro": "Usa LTX 2.3 Pro cuando necesites generación de video desde texto, imagen o audio con mayor fidelidad, además de flujos Extend y Retake, sin salir de la misma página del modelo.",
+    "title": "LTX 2.3 Pro — modelo LTX actual para audio, Extend y Retake",
+    "intro": "LTX 2.3 Pro es el modelo LTX actual para generación de video de mayor fidelidad, workflows guiados por audio, Extend y Retake cuando necesitas la página LTX principal actual para trabajo de producción pulido.",
     "badge": "T2V + I2V + A2V + Extend + Retake",
     "ctaPrimary": {
-      "label": "Empezar con LTX 2.3 Pro",
+      "label": "Generar con LTX 2.3 Pro",
       "href": "/app?engine=ltx-2-3"
     },
     "secondaryLinks": [
       {
-        "label": "Comparar LTX 2.3 Pro vs LTX 2.3 Fast ->",
-        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+        "label": "Ver ejemplos de LTX",
+        "href": "/examples/ltx"
       },
       {
-        "label": "Ver todos los ejemplos de LTX ->",
-        "href": "/examples/ltx"
+        "label": "Ver LTX 2.3 Fast",
+        "href": "/models/ltx-2-3-fast"
+      },
+      {
+        "label": "Comparar LTX 2.3 Fast vs LTX 2.3 Pro",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+      },
+      {
+        "label": "Comparar LTX 2.3 Pro vs Seedance 2.0",
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0"
+      },
+      {
+        "label": "Comparar LTX 2.3 Pro vs Veo 3.1",
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-veo-3-1"
       }
     ]
   },
@@ -114,8 +126,8 @@
     ]
   },
   "compareLink": {
-    "label": "Comparar LTX 2.3 Pro vs LTX 2.3 Fast ->",
-    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+    "label": "Comparar LTX 2.3 Fast vs LTX 2.3 Pro ->",
+    "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
   },
   "prompts": [
     {
@@ -155,12 +167,29 @@
     "heroDesc2": "Eso importa en producción: puedes bloquear una toma desde texto, refinarla desde una imagen, probar una versión guiada por audio, extender la toma ganadora y luego retakear solo la sección rota sin cambiar de motor.",
     "heroSupportLine": "Ideal para equipos que quieren una sola interfaz LTX para ideación, animación guiada por sonido y correcciones editoriales rápidas.",
     "heroSpecChips": [
-      { "label": "Texto→Video", "icon": "textToVideo" },
-      { "label": "Imagen→Video", "icon": "imageToVideo" },
-      { "label": "Audio→Video (2–20 s)", "icon": "audio" },
-      { "label": "Generación: 6–10 s", "icon": "duration" },
-      { "label": "4K en generación", "icon": "resolution" },
-      { "label": "Extend / Retake desde video fuente" }
+      {
+        "label": "Texto→Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Imagen→Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Audio→Video (2–20 s)",
+        "icon": "audio"
+      },
+      {
+        "label": "Generación: 6–10 s",
+        "icon": "duration"
+      },
+      {
+        "label": "4K en generación",
+        "icon": "resolution"
+      },
+      {
+        "label": "Extend / Retake desde video fuente"
+      }
     ],
     "whyTitle": "Por qué LTX 2.3 Pro es estratégicamente útil",
     "heroHighlights": [

@@ -1,18 +1,18 @@
 {
-  "marketingName": "LTX-2 Pro",
-  "versionLabel": "Pro",
+  "marketingName": "LTX 2",
+  "versionLabel": "2",
   "seo": {
-    "title": "LTX-2 Pro (6–10s, hasta 4K) — video + audio premium",
-    "description": "Crea clips de 6–10s de alta fidelidad con audio sincronizado (1080p–4K, 25–50 fps). Para flujos premium—pago por uso en MaxVideoAI.",
+    "title": "LTX 2 | Modelo de video IA, specs y precios | MaxVideoAI",
+    "description": "Usa el modelo LTX 2 aún compatible en MaxVideoAI para clips cortos de alta fidelidad y luego pasa a LTX 2.3 Pro para el workflow LTX actual.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
-  "overview": "LTX-2 Pro en MaxVideoAI: clips cinematográficos de 6–10 s, 1080p/1440p/4K, 25 o 50 fps, entrada de texto o imagen, toggle de audio nativo, precio por segundo.",
+  "overview": "LTX 2 sigue disponible en MaxVideoAI como modelo LTX anterior aún compatible para clips cortos de alta fidelidad y workflows legacy todavía útiles.",
   "hero": {
-    "title": "LTX-2 Pro – Video IA de alta fidelidad con audio",
-    "intro": "Clips de alta fidelidad de 6–10s con audio sincronizado — 1080p–4K a 25–50 fps, para una producción pulida.",
+    "title": "LTX 2 — modelo LTX anterior aún compatible para clips cortos de alta fidelidad",
+    "intro": "LTX 2 sigue disponible para clips cortos de alta fidelidad y workflows legacy todavía útiles, mientras LTX 2.3 Pro es ahora el modelo LTX actual principal para workflows de audio, Extend y Retake.",
     "badge": "1080p/1440p/4K · 6–10 s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
-      "label": "Generar con LTX-2 Pro",
+      "label": "Generar con LTX 2",
       "href": "/app?engine=ltx-2"
     },
     "secondaryLinks": [
@@ -21,16 +21,16 @@
         "href": "/models/ltx-2-3-pro"
       },
       {
+        "label": "Ver ejemplos de LTX",
+        "href": "/examples/ltx"
+      },
+      {
         "label": "Ver LTX 2.3 Fast",
         "href": "/models/ltx-2-3-fast"
       },
       {
-        "label": "Comparar LTX 2.3 Pro vs Veo 3.1",
-        "href": "/ai-video-engines/ltx-2-3-pro-vs-veo-3-1"
-      },
-      {
-        "label": "Ver todos los ejemplos de LTX",
-        "href": "/examples/ltx"
+        "label": "Comparar LTX 2.3 Fast vs LTX 2.3 Pro",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
       }
     ]
   },
@@ -95,7 +95,7 @@
     }
   ],
   "promptStructure": {
-    "title": "Promptear LTX-2 Pro",
+    "title": "Promptear LTX 2",
     "quote": "[Sujeto] de alta fidelidad en [entorno], [movimiento de cámara], [luz/grade], [duración 6–10 s], 16:9, audio con [ambiente/música/diálogo].",
     "description": "Escribe como un storyboard pulido: sujeto, cámara, estilo, duración y cue de audio.",
     "steps": [
@@ -127,7 +127,7 @@
   ],
   "faqs": [
     {
-      "q": "¿Qué duraciones soporta LTX-2 Pro?",
+      "q": "¿Qué duraciones soporta LTX 2?",
       "a": "6–10 segundos por render en el routing Pro actual."
     },
     {
@@ -141,7 +141,7 @@
   ],
   "custom": {
     "heroSupportLine": "Ideal para spots premium de producto, brand stories y cutdowns listos para cliente cuando quieres el acabado más limpio.",
-    "whyTitle": "Por qué LTX-2 Pro es potente",
+    "whyTitle": "Por qué LTX 2 es potente",
     "heroDesc1": "Renders de alta fidelidad de 6–10 s con audio nativo, hasta 4K/50 fps, para historias premium y hero shots. LTX‑2 Pro es el tier de mayor calidad de la familia LTX‑2, pensado para campañas finales más que para borradores.",
     "heroDesc2": "Usa Pro cuando necesitas el detalle más limpio, motion estable y diseño sonoro sutil. Apaga el audio para sonorizar en post.",
     "heroHighlights": [
@@ -150,7 +150,7 @@
       "Dirección fiable con prompts claros||Beats simples + lenguaje de cámara se traducen bien.",
       "Pensado para producción||Mantén el sonido en drafts o silencia y termina en post."
     ],
-    "specTitle": "Especificaciones reales — LTX-2 Pro en MaxVideoAI",
+    "specTitle": "Especificaciones reales — LTX 2 en MaxVideoAI",
     "specNote": "Las specs reflejan el routing de Fal en producción.",
     "specSections": [
       {
@@ -174,21 +174,21 @@
         ]
       }
     ],
-    "whatTitle": "Cómo funciona LTX-2 Pro en MaxVideoAI",
+    "whatTitle": "Cómo funciona LTX 2 en MaxVideoAI",
     "whatIntro1": "Elige modo texto o imagen, ajusta 6–10 s, selecciona resolución y fps, y luego promtea. El audio está on por defecto y se puede apagar.",
     "whatIntro2": "Usa Pro cuando necesitas el detalle más limpio y sonido sincronizado para trabajo premium.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
-      "Selecciona LTX-2 Pro, luego Texto → Video o Imagen → Video",
+      "Selecciona LTX 2, luego Texto → Video o Imagen → Video",
       "Ajusta duración (6–10 s) y 16:9",
       "Elige resolución (1080p/1440p/4K) y fps (25/50)",
       "Audio on/off, añade prompt y seed/negativo opcional",
       "Sube un still de referencia para I2V",
       "Revisa el precio live y genera"
     ],
-    "galleryTitle": "Ejemplos LTX-2 Pro",
-    "galleryIntro": "Renders recientes de LTX-2 Pro con alta fidelidad y audio para spots premium y hero shots.",
-    "galleryAllCta": "Ver todos los ejemplos LTX-2 Pro →",
+    "galleryTitle": "Ejemplos LTX 2",
+    "galleryIntro": "Renders recientes de LTX 2 con alta fidelidad y audio para spots premium y hero shots.",
+    "galleryAllCta": "Ver todos los ejemplos LTX 2 →",
     "recreateLabel": "Recrear este plano →",
     "tipsTitle": "Consejos y límites",
     "strengths": [
@@ -241,34 +241,34 @@
       "Ideal para retratos hero o stills de producto ya aprobados",
       "Mantiene el encuadre acorde a las guías de marca"
     ],
-    "comparisonTitle": "Cuándo elegir LTX-2 Pro",
+    "comparisonTitle": "Cuándo elegir LTX 2",
     "comparisonPoints": [
       "Usa Pro para spots pulidos; usa Fast para ideación rápida",
       "Elige Pro si necesitas 4K/50 fps y máxima fidelidad",
       "Combínalo con Nano Banana para preparar keyframes fotorealistas"
     ],
-    "comparisonCta": "Comparar LTX-2 Pro vs Fast →",
-    "relatedTitle": "Compara el LTX-2 legacy con LTX 2.3",
-    "relatedSubtitle": "Pasa de la línea LTX-2 legacy a la generación LTX 2.3 para acceder a workflows más actuales y al routing vigente.",
+    "comparisonCta": "Comparar LTX 2 vs Fast →",
+    "relatedTitle": "Versiones LTX 2.3 más nuevas",
+    "relatedSubtitle": "Usa LTX 2.3 Pro como la página LTX actual principal, o LTX 2.3 Fast para el workflow fast actual.",
     "relatedItems": [
       {
         "brand": "ltx",
         "title": "LTX 2.3 Pro",
-        "description": "Muévete al flagship actual de LTX 2.3 para reunir texto→video, imagen→video, audio→video, extend y retake en una sola superficie.",
+        "description": "Pasa a la página LTX actual principal para workflows de texto→video, imagen→video, audio→video, Extend y Retake desde una sola superficie.",
         "modelSlug": "ltx-2-3-pro",
-        "ctaLabel": "Comparar LTX-2 Pro vs LTX 2.3 Pro →"
+        "ctaLabel": "Ver LTX 2.3 Pro ->"
       },
       {
         "brand": "ltx",
         "title": "LTX 2.3 Fast",
-        "description": "Mantén un workflow rápido, pero cambia al routing actual de LTX 2.3 Fast para iteración texto→video e imagen→video.",
+        "description": "Usa la página LTX fast actual cuando quieras iteración más rápida de texto→video e imagen→video sobre el routing LTX 2.3.",
         "modelSlug": "ltx-2-3-fast",
-        "ctaLabel": "Comparar LTX-2 Pro vs LTX 2.3 Fast →"
+        "ctaLabel": "Ver LTX 2.3 Fast ->"
       }
     ],
-    "finalPara1": "¿Listo para renderizar en LTX-2 Pro? Revisa el chip de precio antes de lanzar.",
-    "finalPara2": "Itera en LTX-2 Fast y luego cambia a Pro para finalizar.",
-    "finalButton": "Abrir LTX-2 Pro en Generate →",
+    "finalPara1": "¿Listo para renderizar en LTX 2? Revisa el chip de precio antes de lanzar.",
+    "finalPara2": "Itera en LTX 2 Fast y luego cambia a Pro para finalizar.",
+    "finalButton": "Abrir LTX 2 en Generate →",
     "promptingTitle": "Cómo escribir un gran prompt LTX 2",
     "promptingIntro": "LTX‑2 Pro responde a prompts estructurados tipo producción con dirección de cámara clara.",
     "promptingTip": "Tip: duración + fps se configuran en la UI - tu prompt controla sujeto, acción, cámara, luz, estilo y cues sonoros opcionales.",

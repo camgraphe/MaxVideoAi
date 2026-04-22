@@ -2,15 +2,15 @@
   "marketingName": "Kling 3 Standard",
   "versionLabel": "v3 Standard",
   "seo": {
-    "title": "Kling 3 Standard — texto/imagen a video + ejemplos",
-    "description": "Genera videos con Kling 3 Standard desde texto o imágenes en MaxVideoAI. Ejemplos que puedes recrear, tips de prompts y pago por uso—sin suscripción.",
+    "title": "Kling 3 Standard | Modelo de video IA, specs y precios | MaxVideoAI",
+    "description": "Usa Kling 3 Standard en MaxVideoAI para video IA multi-shot a menor costo, con audio nativo y specs y precios en vivo antes de renderizar.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/bb896348-7394-4ef3-9cff-ff392639c8db-job_99e0f0fa-6092-4b8a-8c08-e329c579d0f2.jpg"
   },
-  "overview": "Kling 3 Standard ofrece prompts multi‑shot, Elements reutilizables, frame final opcional y audio nativo con voice IDs en un tier más económico. Genera clips de 3–15 s desde texto o imagen en 1080p, con relaciones flexibles.",
+  "overview": "Kling 3 Standard es la variante Kling 3 actual de menor costo para prompts multi-shot, Elements reutilizables, frames finales opcionales y workflows de borrador con audio nativo.",
   "pricingNotes": "Tarificación por segundo: 0,252 $/s con audio, 0,168 $/s audio off, 0,308 $/s con voice control.",
   "hero": {
-    "title": "Kling 3 Standard – Storytelling multi‑shot a menor costo",
-    "intro": "Texto a video o imagen a video con Kling 3 Standard — para resultados cinematográficos limpios y iteración rápida.",
+    "title": "Kling 3 Standard — variante Kling actual para video multi-shot a menor costo",
+    "intro": "Usa Kling 3 Standard cuando quieras el workflow Kling 3 actual a menor costo: prompts multi-shot, Elements, frames finales opcionales y audio nativo para borradores, variantes y runs de producción intermedios antes de pasar los trabajos elegidos a Kling 3 Pro.",
     "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 3 Standard",
@@ -18,14 +18,26 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver ejemplos Kling",
-        "href": "/examples?engine=kling-3-standard"
+        "label": "Ver Kling 3 Pro",
+        "href": "/models/kling-3-pro"
       },
       {
-        "label": "Comparar modelos Kling",
-        "href": "/models"
+        "label": "Ver ejemplos Kling",
+        "href": "/examples/kling"
+      },
+      {
+        "label": "Comparar Kling 3 Pro vs Kling 3 Standard",
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard"
+      },
+      {
+        "label": "Comparar Kling 3 Pro vs Veo 3.1",
+        "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1"
       }
     ]
+  },
+  "compareLink": {
+    "label": "Comparar Kling 3 Pro vs Kling 3 Standard ->",
+    "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard"
   },
   "bestUseCases": {
     "title": "Mejores casos de uso",
