@@ -1102,14 +1102,14 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
           <div className="container-page max-w-6xl">
             <nav
               aria-label={browseByModelLabel}
-              className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-4 sm:py-2"
+              className="flex flex-col gap-2 py-2 lg:flex-row lg:items-center lg:gap-4 lg:py-2"
             >
               <span className="shrink-0 pl-1 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
                 {browseByModelLabel}
               </span>
 
               <div className="min-w-0 flex-1">
-                <div className="grid grid-cols-5 gap-1 rounded-xl bg-surface-2/70 p-1 sm:min-w-0 sm:grid-flow-col sm:auto-cols-fr sm:grid-cols-none">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(5.75rem,1fr))] gap-1 rounded-xl bg-surface-2/70 p-1 sm:grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] lg:grid-flow-col lg:auto-cols-fr lg:grid-cols-none">
                   <Link
                     href={buildEngineFilterHref(null)}
                     scroll={false}
