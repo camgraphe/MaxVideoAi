@@ -2770,35 +2770,6 @@ export default async function CompareDetailPage({
           ) : null}
         </header>
 
-        {pageOverride?.topCards?.length ? (
-          <section className="grid gap-3 md:grid-cols-2">
-            {pageOverride.topCards.map((card) => (
-              <article
-                key={card.title}
-                className="rounded-[20px] border border-hairline bg-surface/85 px-5 py-5 shadow-card"
-              >
-                <h2 className="text-base font-semibold text-text-primary">{card.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{card.body}</p>
-              </article>
-            ))}
-          </section>
-        ) : null}
-
-        {pageOverride?.primaryLinks?.length ? (
-          <section className="rounded-[20px] border border-hairline bg-surface/85 px-5 py-5 shadow-card">
-            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-muted">
-              {pageOverride.primaryLinksTitle ?? 'Recommended next steps'}
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              {pageOverride.primaryLinks.map((item) => (
-                <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         <section className="relative overflow-hidden rounded-[36px] border border-hairline bg-surface shadow-card">
           <div className="relative z-10 rounded-[32px] border border-transparent bg-gradient-to-b from-surface via-surface to-surface-2 p-6 sm:p-8">
             <div className="relative mt-2 grid grid-cols-2 gap-3 sm:gap-5">
@@ -3039,6 +3010,39 @@ export default async function CompareDetailPage({
                   ))}
                 </div>
               </div>
+
+              {pageOverride?.topCards?.length ? (
+                <section className="mt-6 rounded-[24px] border border-hairline bg-surface-2/70 p-4 shadow-sm sm:p-5">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {pageOverride.topCards.map((card) => (
+                      <article
+                        key={card.title}
+                        className="rounded-[18px] border border-hairline bg-surface/90 px-4 py-3"
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                          {card.title}
+                        </p>
+                        <p className="mt-1.5 text-sm leading-6 text-text-secondary">{card.body}</p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {pageOverride?.primaryLinks?.length ? (
+                <section className="mt-4 rounded-[24px] border border-hairline bg-surface/90 px-4 py-4 shadow-sm sm:px-5">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                    {pageOverride.primaryLinksTitle ?? 'Recommended next steps'}
+                  </h2>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                    {pageOverride.primaryLinks.map((item) => (
+                      <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
             </div>
           </div>
         </section>

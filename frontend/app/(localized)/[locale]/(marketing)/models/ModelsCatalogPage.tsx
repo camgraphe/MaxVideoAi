@@ -692,6 +692,45 @@ const USE_CASE_MAP: Record<string, string> = {
   'nano-banana-2': 'grounded stills and wide-format image edits',
 };
 
+const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<string, string>>> = {
+  fr: {
+    'seedance-2-0':
+      'Idéal pour des vidéos multi-plans premium, avec audio natif, synchronisation labiale précise et mouvement réaliste.',
+    'seedance-2-0-fast':
+      'Idéal pour tester vite : drafts Seedance, planification de plans et itérations, avec audio natif, lip-sync précis et génération rapide et stable.',
+    'kling-3-standard':
+      'Idéal pour créer des séquences cinématiques multi-plans, avec contrôle vocal et un rendu fidèle à vos instructions.',
+    'kling-3-pro':
+      'Idéal pour des séquences cinématiques multi-plans avec contrôle vocal, audio natif, lip-sync précis et forte contrôlabilité, en texte-vers-vidéo comme en image-vers-vidéo.',
+    'veo-3-1':
+      'Idéal pour créer des plans pub maîtrisés : références, contrôle final et extension, avec un rendu fidèle et synchronisé.',
+    'veo-3-1-fast':
+      'Idéal pour produire vite des cuts pub : image de départ, contrôle final et extension, avec un excellent rapport vitesse/coût.',
+    'ltx-2-3-fast':
+      'Idéal pour des itérations rapides avec LTX 2.3, en texte-vers-vidéo et image-vers-vidéo, avec une excellente vitesse, stabilité et des tarifs compétitifs.',
+    'sora-2':
+      'Idéal pour des scènes cinématiques et la continuité des personnages, avec une forte fidélité humaine et des tarifs compétitifs, en texte-vers-vidéo, image-vers-vidéo et lip-sync.',
+    'sora-2-pro':
+      'Idéal pour des plans cinématiques premium et des scènes hero, avec une forte fidélité humaine et une qualité visuelle élevée, en texte-vers-vidéo et image-vers-vidéo.',
+    'seedance-1-5-pro':
+      'Idéal pour des mouvements cinématiques avec verrouillage caméra, avec audio natif, lip-sync précis et des tarifs compétitifs, en texte-vers-vidéo comme en image-vers-vidéo.',
+    'veo-3-1-lite':
+      'Idéal pour des drafts Veo économiques, avec image de départ et contrôle début/fin, excellente rapidité et stabilité.',
+    'luma-ray-2':
+      'Idéal pour des générations cinématiques à partir d’une vidéo source, avec modification et recadrage, offrant une forte contrôlabilité et une haute qualité visuelle.',
+    'luma-ray-2-flash':
+      'Idéal pour des drafts cinématiques rapides à partir d’une vidéo source, avec modification et recadrage, rapides, stables et économiques.',
+    'pika-text-to-video':
+      'Idéal pour des clips social stylisés, rapides, stables et économiques, en texte-vers-vidéo et image-vers-vidéo, avec contrôle début/fin.',
+    'wan-2-6':
+      'Idéal pour des prompts structurés et des transitions propres, rapides, stables et économiques, en texte-vers-vidéo et image-vers-vidéo.',
+    'minimax-hailuo-02-text':
+      'Idéal pour des tests de concepts économiques, rapides et stables, en texte-vers-vidéo et image-vers-vidéo, avec contrôle début/fin.',
+    'nano-banana-2': 'Idéal pour des images fixes guidées et des retouches grand format, avec des performances fiables.',
+    'nano-banana-pro': 'Idéal pour des visuels de campagne et des retouches typographiques, avec des performances fiables.',
+  },
+};
+
 const DEFAULT_VALUE_SENTENCE = 'Best for {useCase} with strong {strengths} in {capabilities} workflows.';
 const DEFAULT_VALUE_SENTENCE_BY_LOCALE: Record<AppLocale, string> = {
   en: DEFAULT_VALUE_SENTENCE,
@@ -1038,6 +1077,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     galleryCopy.valueSentence?.capabilityFallback ?? DEFAULT_VALUE_CAPABILITY_FALLBACK[activeLocale];
   const conjunction = galleryCopy.valueSentence?.conjunction ?? DEFAULT_VALUE_CONJUNCTION[activeLocale];
   const useCaseMap = { ...USE_CASE_MAP, ...getLocalizedModelUseCases(activeLocale), ...(galleryCopy.valueSentence?.useCases ?? {}) };
+  const descriptionOverrides = MODEL_CARD_DESCRIPTION_OVERRIDES[activeLocale] ?? {};
   const capabilityMap = {
     ...DEFAULT_CAPABILITY_KEYWORDS,
     ...getLocalizedCapabilityKeywords(activeLocale),
@@ -1117,18 +1157,20 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
       .slice(0, 5) as string[];
     const compareDisabled = ['nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
     const bestForFallback = catalogEntry?.bestFor ? sanitizeDescription(catalogEntry.bestFor) : engineType;
-    const generatedDescription = buildValueSentence({
-      slug: engine.modelSlug,
-      strengths,
-      capabilities: capabilityKeywordsList,
-      fallback: bestForFallback,
-      template: valueTemplate,
-      strengthsFallback,
-      capabilityFallback,
-      conjunction,
-      useCaseMap,
-      capabilityMap,
-    });
+    const generatedDescription =
+      descriptionOverrides[engine.modelSlug] ??
+      buildValueSentence({
+        slug: engine.modelSlug,
+        strengths,
+        capabilities: capabilityKeywordsList,
+        fallback: bestForFallback,
+        template: valueTemplate,
+        strengthsFallback,
+        capabilityFallback,
+        conjunction,
+        useCaseMap,
+        capabilityMap,
+      });
     const microDescription = clampDescription(generatedDescription, 170);
     const pictogram = getEnginePictogram({
       id: engine.engine.id,

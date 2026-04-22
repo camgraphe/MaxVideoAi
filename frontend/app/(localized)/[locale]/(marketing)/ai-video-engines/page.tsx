@@ -217,7 +217,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
   },
   fr: {
     hero: {
-      title: 'Comparer les moteurs vidéo IA',
+      title: 'Comparatifs de moteurs vidéo IA',
       intro:
         'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les matchups utiles, filtrer sur les limites clés et valider le prix avant rendu. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
       compareNow: {
@@ -350,7 +350,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       {
         question: 'Peut-on comparer des moteurs texte-vers-vidéo et image-vers-vidéo ?',
         answer:
-          'Oui. Le hub inclut des matchups mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides. Oui - vous pouvez aussi inclure les moteurs vidéo-vers-vidéo quand ils sont disponibles.',
+          'Oui. L’espace inclut des matchups mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides. Oui - vous pouvez aussi inclure les moteurs vidéo-vers-vidéo quand ils sont disponibles.',
       },
       {
         question: 'Comment trancher entre deux moteurs proches ?',

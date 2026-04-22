@@ -304,7 +304,7 @@ const en: Dictionary = {
     languageLabel: 'Language',
     languages: [
       { locale: 'en', label: 'English' },
-      { locale: 'fr', label: 'French' },
+      { locale: 'fr', label: 'Français' },
     ],
   },
   home: {

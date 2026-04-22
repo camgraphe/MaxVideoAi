@@ -28,7 +28,7 @@
       }
     ],
     "login": "Se connecter",
-    "cta": "Lancer un rendu",
+    "cta": "Générer",
     "linkLabels": {
       "models": "Modèles",
       "examples": "Exemples",
@@ -123,7 +123,7 @@
       },
       "blog": {
         "items": {
-          "compare-ai-video-engines": "Comparer les moteurs vidéo IA",
+          "compare-ai-video-engines": "Comparatifs de moteurs vidéo IA",
           "sora-2-sequenced-prompts": "Prompts séquencés Sora 2",
           "veo-3-updates": "Mises à jour Veo 3"
         }
@@ -132,7 +132,7 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "Comparer les moteurs vidéo IA par cas d’usage | MaxVideoAI",
+      "title": "Comparatifs de moteurs vidéo IA par cas d’usage | MaxVideoAI",
       "description": "Comparez les moteurs vidéo IA côte à côte. Filtrez par texte-vers-vidéo, image-vers-vidéo, vidéo-vers-vidéo, audio, durée, résolution et prix pour choisir le bon moteur avant de générer."
     },
     "hero": {
@@ -222,7 +222,7 @@
     "languages": [
       {
         "locale": "en",
-        "label": "Anglais"
+        "label": "English"
       },
       {
         "locale": "fr",
@@ -230,7 +230,7 @@
       },
       {
         "locale": "es",
-        "label": "Espagnol"
+        "label": "Español"
       }
     ],
     "sections": {
@@ -319,8 +319,8 @@
     ],
     "hero": {
       "title": "Le bon moteur pour chaque plan.",
-      "subtitle": "De la vidéo IA pro, sans prise de tête. Vous voyez le prix avant de lancer, et vous gardez tout au même endroit.",
-      "primaryCta": "Lancer un rendu",
+      "subtitle": "Des vidéos IA pro en quelques clics. Prix transparent dès le départ, zéro surprise, tout sur une seule plateforme.",
+      "primaryCta": "Générer",
       "secondaryCta": "Voir des exemples",
       "workspaceCta": "Ouvrir l’espace de travail"
     },
@@ -343,16 +343,16 @@
       "moreLabel": "et d'autres moteurs"
     },
     "heroScreenshot": {
-      "title": "Tout sous les yeux.",
-      "body": "Le Composer, le prix en direct, la galerie et la file d’attente restent au même endroit : vous ajustez la consigne, comparez les sorties, et suivez les rendus sans quitter l’écran.",
-      "alt": "Espace de travail MaxVideo AI montrant le compositeur, la pastille de prix en direct et l'aperçu de la galerie dans un seul tableau de bord."
+      "title": "Tout au même endroit",
+      "body": "Le générateur, le prix en direct, la galerie et la file d’attente restent au même endroit : vous ajustez la consigne, comparez les sorties, et suivez les rendus sans quitter l’écran.",
+      "alt": "Espace de travail MaxVideo AI montrant le générateur, la pastille de prix en direct et l'aperçu de la galerie dans un seul tableau de bord."
     },
     "proofTabs": [
       {
         "id": "workspace",
         "label": "Espace de travail",
         "heading": "Accédez à l’espace de travail complet, prêt à l’emploi.",
-        "body": "Choisissez un moteur, définissez durée et résolution et le compositeur révèle les champs attendus. Pas de liste d'attente, pas de maquettes."
+        "body": "Choisissez un moteur, définissez durée et résolution et le générateur affiche les champs attendus. Pas de liste d'attente, pas de maquettes."
       },
       {
         "id": "price",
@@ -370,11 +370,11 @@
     "whyCards": [
       {
         "title": "Du concret, pas des promesses.",
-        "body": "Tarifs, Composer, crédits et historique : tout est disponible dès maintenant — sans liste d’attente, sans maquette."
+        "body": "Tarifs, Générateur, crédits et historique : tout est disponible dès maintenant — sans liste d’attente, sans maquette."
       },
       {
         "title": "Crédits prépayés : vous gardez le contrôle.",
-        "body": "Rechargez une fois, suivez la dépense depuis l’en-tête et profitez de remboursements automatiques quand un rendu échoue."
+        "body": "Rechargez une seule fois, suivez vos dépenses depuis l’en-tête et bénéficiez de remboursements automatiques en cas d’échec."
       },
       {
         "title": "Tous vos moteurs au même endroit.",
@@ -404,29 +404,29 @@
     "waysSection": {
       "eyebrow": "Espace de travail",
       "title": "Tout se trouve dans l'espace de travail.",
-      "subtitle": "Composer, crédits, liste des rendus et galerie restent côte à côte pour garder votre équipe alignée."
+      "subtitle": "Générateur, crédits, liste des rendus et galerie restent côte à côte pour garder votre équipe alignée."
     },
     "toolsWorkflow": {
       "eyebrow": "Workflow de référence",
-      "title": "Préparez le still avant de lancer la vidéo",
-      "body": "Générez l'image source, verrouillez le personnage ou corrigez l'angle avant de passer à la vidéo.",
+      "title": "Préparez votre image avant de lancer la vidéo.",
+      "body": "Générez l’image source, verrouillez le personnage et ajustez l’angle avant de passer à l’animation.",
       "cards": {
         "image": {
           "eyebrow": "Image",
           "title": "Créez le still source",
-          "body": "Créez le cadre de base dans Image avant de passer aux retouches, aux références ou au motion.",
+          "body": "Créez votre image de base dans l’outil Image, puis passez aux retouches, aux références ou à l’animation.",
           "cta": "Ouvrir Image"
         },
         "character": {
           "eyebrow": "Character Builder",
           "title": "Verrouillez la continuité du personnage",
-          "body": "Créez une ancre portrait ou une fiche 8 panneaux avant que le personnage doive survivre à plus d'une scène.",
+          "body": "Créez une ancre portrait ou une fiche 8 panneaux avant de l’utiliser dans plusieurs scènes.",
           "cta": "Ouvrir Character Builder"
         },
         "angle": {
           "eyebrow": "Angle",
-          "title": "Changez le point de vue",
-          "body": "Gardez l'image source et générez un angle plus fort avant le storyboard ou la vidéo.",
+          "title": "Changez de point de vue",
+          "body": "Conservez l’image source et générez un angle plus fort avant le storyboard ou la vidéo.",
           "cta": "Ouvrir Angle"
         }
       }
@@ -435,13 +435,13 @@
       "models": {
         "eyebrow": "Modèles",
         "title": "Consultez les pages modèle avant de choisir le moteur",
-        "body": "Ouvrez le hub models pour voir specs, limites, prix et notes de workflow avant de vous engager sur un moteur.",
-        "cta": "Voir les pages modèle"
+        "body": "Accédez aux fiches modèles : specs, limites, prix et recommandations de workflow, avant de choisir le bon moteur.",
+        "cta": "Voir les fiches modèles"
       },
       "examples": {
         "eyebrow": "Exemples",
         "title": "Vérifiez de vrais rendus avant d’écrire le prompt",
-        "body": "Parcourez la galerie Examples pour voir les prompts, les sorties et les choix de moteurs avant de lancer votre propre run.",
+        "body": "Parcourez la galerie d’exemples pour voir les prompts, les résultats et les modèles utilisés avant de lancer votre propre génération.",
         "cta": "Voir les exemples"
       }
     },
@@ -520,22 +520,22 @@
       ]
     },
     "pricing": {
-      "badge": "Avant de lancer",
+      "badge": "Avant de générer",
       "title": "Connaissez le coût avant de vous engager.",
-      "body": "MaxVideoAI reste wallet-first sur tous les moteurs : le prix est visible avant lancement, les échecs sont remboursés automatiquement et vous gardez vos dépenses sous contrôle dans un seul espace.",
+      "body": "MaxVideoAI fonctionne avec un portefeuille unique sur tous les modèles : prix visible avant lancement, remboursements automatiques en cas d’échec, et dépenses toujours sous contrôle, dans un seul espace.",
       "link": "Voir les tarifs"
     },
     "trust": {
       "cards": [
         {
           "eyebrow": "Prix visible",
-          "title": "Voyez le coût avant de cliquer sur Générer",
+          "title": "Voyez le prix avant de générer",
           "body": "Choisissez d’abord le moteur et les réglages. Le total se met à jour avant le lancement."
         },
         {
           "eyebrow": "Remboursement automatique",
-          "title": "Les rendus échoués recréditent automatiquement",
-          "body": "Les crédits reviennent sur votre portefeuille avec un reçu détaillé pour chaque échec."
+          "title": "Les rendus échoués sont recrédités automatiquement",
+          "body": "Les crédits sont remboursés sur votre portefeuille, avec un reçu détaillé pour chaque échec."
         },
         {
           "eyebrow": "Contrôle wallet-first",
@@ -566,7 +566,7 @@
         },
         {
           "q": "Puis-je activer l’audio ?",
-          "a": "Oui. Les moteurs mis en avant prennent en charge un toggle audio dans le compositeur, et la pastille de prix s’actualise dès que vous l’activez."
+          "a": "Oui. Les moteurs mis en avant prennent en charge un toggle audio dans le générateur, et la pastille de prix s’actualise dès que vous l’activez."
         },
         {
           "q": "Comment fonctionne la tarification ?",
@@ -627,28 +627,28 @@
       ],
       "definition": {
         "title": "Qu’est-ce qu’un générateur de vidéos IA ?",
-        "body": "Générez depuis un prompt, animez un still ou transformez une vidéo existante dans un seul espace, avec le prix visible avant le rendu."
+        "body": "Générez à partir d’un prompt, animez une image ou transformez une vidéo — tout dans un seul espace, avec le prix affiché avant le rendu."
       },
       "generateWays": {
         "title": "Générez des vidéos à votre façon",
         "items": [
           {
             "title": "Texte-vers-vidéo",
-            "body": "Rédigez un prompt et générez une nouvelle scène depuis zéro. Idéal pour l’idéation, le storyboard et les premiers tests rapides."
+            "body": "Générez une scène à partir d’un simple prompt. Idéal pour l’idéation, le storyboard et les tests rapides."
           },
           {
             "title": "Image-vers-vidéo",
-            "body": "Partez d’un still et ajoutez du mouvement sans perdre la composition. Idéal pour les personnages, les produits et les scènes de marque."
+            "body": "Animez une image sans perdre sa composition. Idéal pour les personnages, les produits et les scènes de marque."
           },
           {
             "title": "Vidéo-vers-vidéo",
-            "body": "Importez une vidéo et changez son style, son rythme ou son mouvement sans repartir de zéro. Idéal pour les variantes et les tests créatifs rapides."
+            "body": "Importez une vidéo et modifiez son style, son rythme ou son mouvement, sans repartir de zéro. Idéal pour les variantes et les tests créatifs rapides."
           }
         ]
       },
       "compare": {
         "title": "Comparez les moteurs vidéo IA avant de lancer le rendu",
-        "body": "MaxVideoAI vous permet de tester plusieurs moteurs dans un seul espace. Chaque modèle a ses points forts (vitesse, précision des consignes, mouvement, réalisme, style). Comparez les résultats côte à côte, choisissez le bon moteur pour chaque plan, et gardez le coût visible avant de générer.",
+        "body": "Testez et comparez plusieurs modèles dans un espace unifié. Analysez leurs forces (vitesse, précision, mouvement, réalisme, style), choisissez le bon pour chaque plan et gardez un contrôle total sur le coût avant génération.",
         "worksWith": "Compatible avec Seedance 2.0, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2, Hailuo 02... et d’autres.",
         "popularLinks": [
           {
@@ -704,7 +704,7 @@
   "pricing": {
     "hero": {
       "title": "Tarifs vidéo IA : prix avant génération.",
-      "subtitle": "Commencez avec des Crédits de démarrage (10 $).\nSans abonnement. Aucun engagement.",
+      "subtitle": "Démarrez avec 10 $ de crédits.\nSans abonnement, sans engagement.",
       "link": {
         "before": "Comparez les tarifs des moteurs dans notre ",
         "label": "comparatif vidéo IA",
@@ -720,7 +720,7 @@
     "comingSoonLabel": "À venir",
     "estimator": {
       "title": "Estimateur de coûts",
-      "subtitle": "Choisissez le moteur, la durée et la résolution pour voir le prix avant de mettre le rendu en file d'attente. Facturé uniquement si le rendu réussit.",
+      "subtitle": "Choisissez le modèle, la durée et la résolution pour voir le prix avant de lancer le rendu. Facturé uniquement en cas de succès.",
       "walletLink": "Vous voulez voir les prix dans l’app avant de générer ?",
       "walletLinkCta": "Ouvrir le générateur",
       "chargedNote": "Facturé uniquement si le rendu réussit.",
@@ -775,7 +775,7 @@
     },
     "examples": {
       "title": "Exemples de coûts",
-      "subtitle": "Runs réalistes pour planifier. Les prix évoluent avec les moteurs.",
+      "subtitle": "Rendus réalistes pour planifier. Les prix évoluent selon les modèles.",
       "labels": {
         "engine": "Moteur",
         "duration": "Durée",
@@ -839,7 +839,7 @@
     },
     "teams": {
       "title": "Équipes",
-      "description": "Approbations basées sur les rôles, portefeuilles partagés et transferts de livrables seront déployés ensuite. Rejoignez la bêta pour tester tôt les contrôles d'équipe.",
+      "description": "Approbations par rôle, portefeuilles partagés et transferts de livrables arrivent bientôt. Rejoignez la bêta pour tester en avant-première les contrôles d’équipe.",
       "comingSoonNote": "Les fonctionnalités Équipes sont en bêta privée. Contactez support@maxvideoai.com pour rejoindre le déploiement.",
       "points": [
         "Portefeuilles partagés basés sur les rôles avec approbations entre les services financiers, les producteurs et les parties prenantes.",
@@ -893,7 +893,7 @@
       "entries": [
         {
           "question": "Comment fonctionnent les crédits ?",
-          "answer": "Les Starter Credits ajoutent 10 $ à votre wallet. Dépensez-les comme du cash et rechargez quand vous voulez plus de runs."
+          "answer": "Les crédits de démarrage ajoutent 10 $ à votre portefeuille. Dépensez-les librement et rechargez quand vous en avez besoin."
         },
         {
           "question": "Expirent-ils ?",
@@ -901,18 +901,18 @@
         },
         {
           "question": "Que se passe-t-il si un rendu échoue ?",
-          "answer": "Les rendus en échec sont remboursés automatiquement en quelques minutes. Vous ne payez que lorsque le job aboutit."
+          "answer": "Les rendus échoués sont remboursés automatiquement en quelques minutes. Vous ne payez que lorsque le rendu aboutit."
         },
         {
           "question": "Quelles sont les remises membres ?",
-          "answer": "Dépensez 50 $ sur 30 jours pour économiser 5 %, 200 $ pour économiser 10 %. Les économies s'appliquent automatiquement à chaque run éligible."
+          "answer": "Dépensez 50 $ sur 30 jours et économisez 5 %, 200 $ pour économiser 10 %. Les réductions s’appliquent automatiquement à chaque génération éligible."
         }
       ]
     },
     "supplementalFaq": [
       {
         "question": "Puis-je utiliser Sora 2 en Europe ?",
-        "answer": "L’accès direct reste sous invitation. MaxVideoAI fournit un accès payant à Sora 2 depuis l’Europe via notre hub."
+        "answer": "L’accès direct reste sur invitation. MaxVideoAI propose un accès payant à Sora 2 depuis l’Europe via son espace."
       },
       {
         "question": "Les vidéos comportent-elles un filigrane ?",
@@ -1227,15 +1227,15 @@
         "title": "Modèles IA : specs, limites et prix",
         "subtitle": "Passez en revue les capacités, limites et prix des modèles vidéo et image avant de générer.",
         "bullets": [
-          "Ouvrez chaque modèle pour ses specs complètes, limites et signaux de prix.",
-          "Utilisez les hubs vidéo et image pour isoler plus vite la bonne shortlist."
+          "Ouvrez chaque modèle pour consulter ses specs complètes, ses limites et ses indications de prix.",
+          "Utilisez les hubs vidéo et image pour identifier rapidement les modèles les plus pertinents."
         ],
         "compareLabel": "Activer le mode Compare"
       },
       "legacyToggleLabel": "Afficher les anciens modèles",
       "grid": {
         "srTitle": "Modèles IA vidéo et image avec specs, limites et prix sur MaxVideoAI",
-        "bridgeText": "Utilisez les cartes modèle pour valider les capacités, puis ouvrez le hub vidéo ou image pour affiner la shortlist."
+        "bridgeText": "Consultez les fiches modèles pour valider les capacités, puis ouvrez les espaces vidéo ou image pour affiner votre sélection."
       },
       "quickCompare": {
         "title": "Vérifications modèles par scénario",
@@ -1259,7 +1259,7 @@
           },
           {
             "title": "Modèles image",
-            "description": "Ouvrez le hub image pour les images fixes, les retouches et les workflows guidés par références."
+            "description": "Ouvrez l’espace image pour les images fixes, les retouches et les workflows guidés par références."
           },
           {
             "title": "Limites et formats",
@@ -1277,7 +1277,7 @@
       },
       "reliability": {
         "title": "Contrôles utiles avant lancement",
-        "subtitle": "Validez type de média, contraintes de sortie et logique de facturation avant de choisir un workflow.",
+        "subtitle": "Validez le type de média, les contraintes de sortie et la logique de facturation avant de choisir un workflow.",
         "items": [
           {
             "title": "Type de média",
@@ -1295,11 +1295,11 @@
         "faq": [
           {
             "question": "Faut-il commencer par le hub vidéo ou le hub image ?",
-            "answer": "Utilisez le hub vidéo pour les workflows de mouvement et les pages de comparaison. Utilisez le hub image pour les images fixes, les retouches, les limites de références et les prix par image."
+            "answer": "Utilisez l’espace vidéo pour les workflows de mouvement et les pages de comparaison. Utilisez l’espace image pour les images fixes, les retouches, les limites de références et les prix par image."
           },
           {
             "question": "Tous les modèles du catalogue sont-ils des modèles vidéo ?",
-            "answer": "Non. Le catalogue couvre désormais les modèles vidéo et image, et d’autres catégories média pourront avoir leur hub dédié."
+            "answer": "Non. Le catalogue couvre désormais les modèles vidéo et image, et d’autres catégories média pourront avoir leur espace dédié."
           },
           {
             "question": "Comment interpréter les prix sur cette page ?",
@@ -1307,13 +1307,13 @@
           },
           {
             "question": "Où comparer les moteurs vidéo côte à côte ?",
-            "answer": "Utilisez le comparatif vidéo pour les comparaisons face à face. Les modèles image s’appuient aujourd’hui sur leurs fiches détaillées plutôt que sur ce hub comparatif."
+            "answer": "Utilisez le comparatif vidéo pour les comparaisons face à face. Les modèles image s’appuient aujourd’hui sur leurs fiches détaillées plutôt que sur cet espace comparatif."
           }
         ]
       },
       "cta": {
-        "title": "Commencez par le bon hub média",
-        "subtitle": "Ouvrez le hub vidéo ou image quand vous voulez des filtres, des textes et des prochaines étapes alignés sur ce workflow.",
+        "title": "Commencez par le bon espace média",
+        "subtitle": "Ouvrez l’espace vidéo ou image pour accéder à des filtres, des contenus et des étapes adaptés à votre workflow.",
         "pills": [
           "Modèles vidéo",
           "Modèles image",
@@ -1475,7 +1475,7 @@
     },
     "hero": {
       "title": "Exemples de vidéo IA que vous pouvez cloner.",
-      "subtitle": "Survolez pour boucler, cliquez pour agrandir. Chaque clip prévisualise le mouvement et le style que vous pouvez utiliser dans MaxVideo AI.",
+      "subtitle": "Survolez pour lire en boucle, cliquez pour agrandir.\nChaque clip prévisualise le mouvement et le style que vous pouvez recréer dans MaxVideoAI.",
       "body": "Parcourez des exemples vidéo IA avec prompt, format, durée et prix affichés par clip. Utilisez ce hub pour passer en revue des workflows texte-vers-vidéo IA, image-vers-vidéo IA et certains workflows vidéo-vers-vidéo IA par marque, puis ouvrez les pages modèles pour les specs, limites et prix exacts. Une page de marque peut inclure plusieurs modèles et modes."
     },
     "items": [
@@ -1657,7 +1657,7 @@
       ],
       "note": "Vous pouvez modifier le brief à tout moment; les mises à jour s’appliquent à tout l’espace de travail."
     },
-    "pricingCallout": "✅ Vous voyez toujours le prix avant de lancer un rendu.",
+    "pricingCallout": "✅ Vous voyez toujours le prix avant de générer.",
     "refundsTimeline": {
       "title": "Chronologie des remboursements",
       "steps": [
@@ -1908,12 +1908,12 @@
       "withAudio": "audio activé",
       "withoutAudio": "sortie muette"
     },
-    "create": {
-      "title": "Créer le vôtre",
-      "subtitle": "Envie de générer une vidéo comme celle-ci ?",
-      "body": "Lancez un rendu avec ce prompt ou chargez-le dans l'atelier pour le remixer avec votre moteur, durée ou audio préféré.",
-      "cta": "Lancer un rendu →"
-    },
+      "create": {
+        "title": "Créer le vôtre",
+        "subtitle": "Envie de générer une vidéo comme celle-ci ?",
+        "body": "Lancez un rendu avec ce prompt ou chargez-le dans l'atelier pour le remixer avec votre moteur, durée ou audio préféré.",
+        "cta": "Générer →"
+      },
     "recreate": {
       "title": "Recréer cette vidéo",
       "body": "Chargez ce rendu dans votre workspace avec les réglages d'origine.",
@@ -1932,7 +1932,7 @@
       "subtitle": "MaxVideo AI est le hub indépendant pour la production vidéo IA. Nous orientons chaque prise vers le moteur approprié, affichons le prix avant la génération et permettons à votre équipe de garder le contrôle sans dépendance fournisseur."
     },
     "paragraphs": [
-      "Nous pensons que les équipes professionnelles méritent de la clarté avant de lancer un rendu. Cela signifie transparence des prix, routage fiable et contexte partagé entre créatifs, producteurs et parties prenantes.",
+      "Nous pensons que les équipes professionnelles méritent de la clarté avant de générer. Cela signifie transparence des prix, routage fiable et contexte partagé entre créatifs, producteurs et parties prenantes.",
       "L'indépendance compte : nous restons neutres entre les moteurs, nous nous intégrons à Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, et des bêtas rotatives, et n'énumérons les marques déposées que pour décrire la compatibilité.",
       "Le produit est conçu pour les équipes ayant besoin de précision sans bruit. Interface discrète, paramètres par défaut premium, contrôles précis et puces « prix avant » qui tiennent la finance informée."
     ],
@@ -2258,8 +2258,8 @@
         "submitting": "Top-up en cours…"
       },
       "authGate": {
-        "title": "Créez un compte pour lancer un rendu",
-        "body": "Vous pouvez explorer l’espace de travail avec des rendus de démonstration, mais lancer un vrai rendu nécessite un compte.",
+        "title": "Créez un compte pour générer",
+        "body": "Vous pouvez explorer l’espace de travail avec des rendus de démonstration, mais générer un vrai rendu nécessite un compte.",
         "primary": "Créer un compte",
         "secondary": "Se connecter",
         "close": "Plus tard",
@@ -2413,7 +2413,7 @@
         }
       },
       "composer": {
-        "title": "Compositeur",
+        "title": "Générateur",
         "subtitle": "Améliorez le prompt · Relances non destructives",
         "badges": {
           "payg": "Paiement à l’usage",
@@ -2688,13 +2688,13 @@
       "title": "Facturation",
       "hero": {
         "title": "Prix avant génération.",
-        "subtitle": "Payez uniquement ce que vous exécutez. Commencez avec des Crédits de démarrage (10 $). Sans abonnement. Aucun engagement.",
+        "subtitle": "Payez uniquement ce que vous exécutez. Démarrez avec 10 $ de crédits. Sans abonnement, sans engagement.",
         "liveMode": "Mode live",
         "testMode": "Mode test"
       },
       "wallet": {
         "title": "Portefeuille",
-        "description": "Crédits de démarrage (10 $). Rechargez une fois, puis payez chaque rendu au centime près. Tout solde inutilisé reste à vous.",
+        "description": "Crédits de démarrage (10 $). Rechargez quand vous en avez besoin, puis payez chaque rendu au centime près. Tout solde inutilisé reste à vous.",
         "addFunds": "Ajouter {amount}",
         "quickAmount": "{amount}",
         "customLabel": "Montant personnalisé (USD)",
@@ -2905,7 +2905,7 @@
       },
       "library": {
         "button": "Bibliothèque",
-        "empty": "Aucune ressource enregistrée. Importez des références depuis le compositeur ou via cette page.",
+        "empty": "Aucune ressource enregistrée. Importez des références depuis le générateur ou via cette page.",
         "overlay": "Utiliser cette image",
         "assetFallback": "Ressource",
         "tabs": {
@@ -2918,8 +2918,8 @@
           "description": "Sélectionnez une image importée auparavant.",
           "close": "Fermer",
           "error": "Impossible de charger les ressources. Réessayez.",
-          "empty": "Aucune ressource enregistrée. Importez des références depuis le compositeur ou via cette page.",
-          "emptyUploads": "Aucune image chargée pour l’instant. Importez des références depuis le compositeur ou via cette page.",
+          "empty": "Aucune ressource enregistrée. Importez des références depuis le générateur ou via cette page.",
+          "emptyUploads": "Aucune image chargée pour l’instant. Importez des références depuis le générateur ou via cette page.",
           "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Enregistrez une image générée pour la voir ici."
         }
       }
@@ -2942,8 +2942,8 @@
         "title": "Ressources de la bibliothèque",
         "countLabel": "{count}",
         "loadError": "Impossible de charger les ressources importées.",
-        "empty": "Aucune ressource importée pour l’instant. Ajoutez des références depuis le compositeur ou en les déposant ici.",
-        "emptyUploads": "Aucune image chargée pour l’instant. Ajoutez des références depuis le compositeur ou en les déposant ici.",
+        "empty": "Aucune ressource importée pour l’instant. Ajoutez des références depuis le générateur ou en les déposant ici.",
+        "emptyUploads": "Aucune image chargée pour l’instant. Ajoutez des références depuis le générateur ou en les déposant ici.",
         "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Générez une image puis enregistrez-la dans votre bibliothèque.",
         "deleteError": "Suppression impossible pour cette image.",
         "deleteButton": "Supprimer",
@@ -4078,16 +4078,16 @@
       },
       "hero": {
         "badge": "Outils MaxVideoAI",
-        "title": "Préparez des références réutilisables avant l'image-to-video",
-        "body": "Ces outils interviennent avant la génération : verrouillez le personnage, corrigez l'angle, puis réutilisez de meilleurs repères visuels dans Image, l'image-to-video et le hub de modèles MaxVideoAI.",
+        "title": "Préparez des références réutilisables avant l'image-vers-vidéo",
+        "body": "Ces outils interviennent avant la génération : verrouillez le personnage, ajustez l’angle, puis réutilisez des repères visuels plus solides dans Image, l’image-vers-vidéo et l’espace modèles de MaxVideoAI.",
         "primaryCta": "Personnages IA cohérents",
         "secondaryCta": "Changer l'angle de caméra"
       },
       "cards": {
         "image": {
           "eyebrow": "Generate image",
-          "title": "Créez d'abord le still",
-          "body": "Commencez le frame dans Image avant de passer aux retouches, aux références ou au motion.",
+          "title": "Créez d’abord l’image",
+          "body": "Commencez par l’image dans Image, puis passez aux retouches, aux références ou à l’animation.",
           "cta": "Ouvrir Image",
           "imageAlt": "Image fixe générée dans l'espace Image de MaxVideoAI avant la vidéo."
         },
