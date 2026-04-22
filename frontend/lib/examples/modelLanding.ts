@@ -68,33 +68,36 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   veo: {
-    metaTitle: 'Veo Examples, Prompts & Settings | MaxVideoAI',
+    metaTitle: 'Veo 3.1 Examples, Prompts, Settings & Image-to-Video | MaxVideoAI',
     metaDescription:
-      'Browse Veo examples, prompts, settings, and per-clip pricing for Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite on MaxVideoAI.',
-    heroTitle: 'Veo examples, prompts and settings',
-    subtitle: 'Veo examples, prompts, and settings for current Veo workflows across 3.1, Fast, and Lite.',
+      'Browse Veo 3.1 examples, prompts, settings, image-to-video patterns, and per-clip pricing for Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite on MaxVideoAI.',
+    heroTitle: 'Veo 3.1 examples, prompts, settings and image-to-video patterns',
+    subtitle: 'Veo 3.1 examples, prompts, settings, and image-to-video patterns across the current Veo family.',
     intro:
-      'Browse Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite examples, prompts, and reusable settings, then open the model pages for specs, limits, and pricing.',
+      'Browse Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite examples, prompts, reusable settings, and image-to-video patterns, then open the model pages for specs, limits, and pricing. Use this page to study prompt structure, text-to-video AI patterns, and model-specific image-to-video settings before opening the matching Veo model page.',
     summary:
-      'Veo 3.1 leads this gallery, with Veo 3.1 Fast and Veo 3.1 Lite kept visible as current Veo variants for faster iteration and lower-cost audio-ready drafts.',
+      'Veo 3.1 leads this page for examples, prompts, settings, and image-to-video patterns, with Veo 3.1 Fast and Veo 3.1 Lite kept visible as current Veo variants for faster iteration and lower-cost audio-ready drafts.',
     promptPatterns:
-      'Veo examples usually improve when prompts specify shot objective first, then movement and lighting. Keep reference cues explicit when using image-led workflows.',
+      'Veo 3.1 examples usually improve when prompts specify shot objective first, then movement, lighting, and any image-to-video reference constraints.',
     strengthsLimits:
-      'Veo is strong on controllable framing and consistent movement in short runs. Capability details still vary by mode, so verify available options before large jobs.',
+      'Veo is strong on controllable framing and consistent movement in short text-to-video and image-to-video runs. Capability details still vary by mode, so verify available options before large jobs.',
     pricingNotes:
       'Per-clip price changes with duration, resolution, and audio behavior. Keep a stable preset to compare Veo outputs across multiple briefs.',
     faq: [
       {
-        question: 'Can I use these Veo examples for image-led workflows?',
-        answer: 'Yes. Many examples are designed for text-plus-reference usage and can be adapted to your source assets.',
+        question: 'How should I use Veo 3 for image-to-video?',
+        answer:
+          'Start from a strong source still, define one clear motion goal, and keep camera direction explicit. Veo 3.1 image-to-video workflows usually work best when the prompt extends the source image instead of replacing it completely.',
       },
       {
-        question: 'How do I keep Veo outputs consistent?',
-        answer: 'Reuse a stable prompt structure, keep camera language explicit, and iterate from one validated baseline.',
+        question: 'Which Veo 3 model should I use for prompt testing?',
+        answer:
+          'Start with Veo 3.1 Fast or Veo 3.1 Lite when you want cheaper draft passes and quicker prompt testing, then move to Veo 3.1 for stronger final-quality cinematic output and more reference-guided control.',
       },
       {
-        question: 'Where can I compare Veo pricing quickly?',
-        answer: 'Open the pricing surface from this page and compare equivalent durations and resolutions side by side.',
+        question: 'Can these Veo 3.1 examples help me structure text-to-video AI prompts?',
+        answer:
+          'Yes. Use them as Veo 3.1 text-to-video AI baselines by keeping the same subject, motion goal, camera direction, and format while changing only one prompt variable at a time.',
       },
     ],
   },
@@ -154,19 +157,20 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   kling: {
     metaTitle: 'Kling AI Video Examples, Prompts & Settings | MaxVideoAI',
     metaDescription:
-      'Browse Kling 3 Pro and Kling 3 Standard AI video examples, prompts, settings, and output patterns, then compare supported older Kling workflows on MaxVideoAI.',
+      'Browse Kling AI video examples, prompts, settings, and image-to-video patterns for Kling 3 Pro and Kling 3 Standard, then compare supported older Kling workflows on MaxVideoAI.',
     heroTitle: 'Kling AI Video Examples, Prompts & Settings',
-    subtitle: 'Video examples, prompts, settings, and model guidance for current Kling workflows and supported older versions.',
+    subtitle:
+      'Kling AI video examples, prompts, settings, image-to-video patterns, and model guidance for current Kling workflows and supported older versions.',
     intro:
-      'Browse Kling 3 Pro and Kling 3 Standard video examples, prompts, reusable settings, and output patterns, then explore supported older Kling setups for earlier workflows, short audio-ready clips, and fast draft passes. Use this page to compare prompt structures, motion control patterns, and model-specific settings before opening the matching Kling model page.',
+      'Browse Kling AI video examples, prompts, reusable settings, and image-to-video patterns for Kling 3 Pro and Kling 3 Standard, then explore supported older Kling setups for earlier workflows, short audio-ready clips, and fast draft passes. Use this page to compare Kling AI prompts, motion control patterns, and model-specific settings before opening the matching Kling model page.',
     summary:
-      'Kling 3 Pro and Kling 3 Standard lead this page for examples, prompts, settings, and output review, while Kling 2.6 Pro and Kling 2.5 Turbo remain available below as supported older Kling setups.',
+      'Kling 3 Pro and Kling 3 Standard lead this page for Kling AI video examples, prompts, settings, image-to-video patterns, and output review, while Kling 2.6 Pro and Kling 2.5 Turbo remain available below as supported older Kling setups.',
     promptPatterns:
-      'Start with one clear action, one camera instruction, and one style goal. Kling examples are easiest to compare when the prompt structure stays stable and only the model or setting changes.',
+      'Start with one clear action, one camera instruction, and one style goal. Kling AI prompts are easiest to compare when the prompt structure stays stable and only the model or setting changes.',
     strengthsLimits:
-      'Kling 3 Pro is the strongest current option for tighter scene control and more demanding multi-shot work, while Kling 3 Standard is the lower-cost current path for prompt testing, variants, and repeatable drafts.',
+      'Use a strong source image, one motion instruction, and one camera goal so Kling AI image-to-video outputs stay easier to compare across Pro and Standard.',
     pricingNotes:
-      'Keep duration, aspect ratio, and output settings aligned when comparing Kling results. That makes it easier to evaluate both prompt behavior and per-clip cost before opening a model page.',
+      'Keep duration, aspect ratio, and output settings aligned when comparing Kling AI video results. That makes it easier to evaluate prompt behavior, model fit, and per-clip cost before opening a model page.',
     faq: [
       {
         question: 'How long can Kling AI videos be?',
@@ -179,50 +183,52 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
           'Render time depends on the Kling model, clip length, settings, and queue load. Shorter draft runs on Kling 3 Standard or Kling 2.5 Turbo are usually the fastest way to test prompts, while longer multi-shot or audio-on renders generally take more time than short silent drafts.',
       },
       {
-        question: 'Which Kling model should I use for examples and prompt testing?',
+        question: 'Which Kling AI model should I use for prompts and examples?',
         answer:
           'Start with Kling 3 Standard when you want lower-cost prompt testing, repeatable draft passes, and current Kling 3 behavior. Move to Kling 3 Pro when you want stronger scene control, more demanding multi-shot sequences, and higher-priority final outputs.',
       },
       {
-        question: 'How should I adapt prompts for Kling 3 Pro vs Kling 3 Standard?',
+        question: 'How should I use Kling AI for image-to-video prompt testing?',
         answer:
-          'Keep the same core prompt structure on both models: one clear subject, one action per shot, and explicit camera direction. Kling 3 Pro can support denser multi-shot direction and more demanding continuity, while Kling 3 Standard works best when the shot structure stays tighter and easier to execute.',
+          'Start with one clear source image, one motion instruction, and one camera goal. Kling AI image-to-video tests are easiest to compare when the prompt structure stays stable and only the model or setting changes.',
       },
       {
-        question: 'Does every Kling model support audio the same way?',
+        question: 'How should I adapt Kling AI prompts for Kling 3 Pro vs Kling 3 Standard?',
         answer:
-          'No. Kling 3 Pro and Kling 3 Standard support native audio workflows, and Kling 2.6 Pro is also audio-ready for short clips. Kling 2.5 Turbo is built for silent video drafts, so sound should be added later in post.',
+          'Keep the same core prompt structure on both models: one clear subject, one action per shot, and explicit camera direction. Kling 3 Pro can support denser multi-shot direction and more demanding continuity, while Kling 3 Standard works best when the shot structure stays tighter and easier to execute.',
       },
     ],
   },
   seedance: {
-    metaTitle: 'Seedance Examples, Prompts & Settings | MaxVideoAI',
+    metaTitle: 'Seedance AI Video Examples, Prompts & Settings | MaxVideoAI',
     metaDescription:
-      'Browse Seedance examples, prompts, settings, and per-clip pricing for Seedance 2.0, Seedance 2.0 Fast, and the supported Seedance 1.5 Pro workflow on MaxVideoAI.',
-    heroTitle: 'Seedance examples, prompts and settings',
-    subtitle: 'Seedance examples, prompts, and settings for current Seedance workflows and supported older runs.',
+      'Browse Seedance AI video examples, prompts, settings, and per-clip pricing for Seedance 2.0, Seedance 2.0 Fast, and the supported Seedance 1.5 Pro workflow on MaxVideoAI.',
+    heroTitle: 'Seedance AI Video Examples, Prompts & Settings',
+    subtitle: 'Seedance AI video examples, prompts, settings, and outputs for current Seedance workflows and supported older runs.',
     intro:
-      'Browse Seedance examples, prompts, and reusable settings for Seedance 2.0 and Seedance 2.0 Fast, then explore the supported Seedance 1.5 Pro setup for older workflows and shorter clip patterns.',
+      'Browse Seedance AI video examples, prompts, and reusable settings for Seedance 2.0 and Seedance 2.0 Fast, then explore the supported Seedance 1.5 Pro setup for older workflows and shorter clip patterns. Use this page to compare Seedance video workflows, prompt structures, and output patterns before opening the matching Seedance model page.',
     summary:
-      'Seedance 2.0 and Seedance 2.0 Fast lead this gallery, while Seedance 1.5 Pro stays available below as a supported older setup for shorter, repeatable clips.',
+      'Seedance 2.0 and Seedance 2.0 Fast lead this Seedance AI video examples page, while Seedance 1.5 Pro stays available below as a supported older setup for shorter, repeatable clips.',
     promptPatterns:
-      'Lead with one core action, then define camera and environment constraints. Seedance runs respond best when the prompt sequence stays compact.',
+      'Lead with one core action, then define camera and environment constraints. Seedance AI video runs respond best when the prompt sequence stays compact.',
     strengthsLimits:
       'Seedance tends to work well for controlled movement and steady framing. Keep scene complexity moderate to maintain consistency across variants.',
     pricingNotes:
       'Evaluate Seedance on equivalent presets before scaling. The clearest cost signal comes from matching duration, resolution, and audio conditions.',
     faq: [
       {
-        question: 'Are these Seedance examples tuned for stable camera motion?',
-        answer: 'Yes. Most examples prioritize camera clarity and low-drift movement patterns.',
+        question: 'Are these Seedance AI video examples tuned for stable camera motion?',
+        answer: 'Yes. Most Seedance AI video examples on this page prioritize camera clarity and low-drift movement patterns.',
       },
       {
-        question: 'Can I use Seedance examples as production baselines?',
-        answer: 'Yes. They are designed to be cloned and iterated with minimal setup changes.',
+        question: 'Which Seedance AI video model should I start with for examples and prompt testing?',
+        answer:
+          'Start with Seedance 2.0 Fast when you want cheaper draft passes and quicker prompt testing, then move to Seedance 2.0 for stronger multi-shot quality, native audio, and more production-ready outputs.',
       },
       {
-        question: 'What settings affect Seedance pricing most?',
-        answer: 'Duration and resolution are the primary price drivers, followed by optional mode-specific add-ons.',
+        question: 'What settings affect Seedance video pricing most?',
+        answer:
+          'Duration and resolution are the primary price drivers across Seedance video workflows, followed by optional mode-specific add-ons.',
       },
     ],
   },
@@ -231,13 +237,13 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     metaDescription:
       'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, settings, outputs, and image-to-video patterns, then review supported LTX 2 workflows on MaxVideoAI.',
     heroTitle: 'LTX 2.3 prompt examples, settings and outputs',
-    subtitle: 'Prompt examples, settings, outputs, and image-to-video patterns for current LTX 2.3 workflows.',
+    subtitle: 'Prompt examples, settings, outputs, and image-to-video AI patterns for current LTX 2.3 workflows.',
     intro:
-      'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, reusable settings, and output patterns, then review supported LTX 2 and LTX 2 Fast setups for older workflows, historical prompt baselines, and migration context. Use this page to study prompt structure, image-to-video patterns, and model-specific settings before opening the matching LTX model page.',
+      'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, reusable settings, and output patterns, then review supported LTX 2 and LTX 2 Fast setups for older workflows, historical prompt baselines, and migration context. Use this page to study prompt structure, image-to-video AI patterns, and model-specific settings before opening the matching LTX model page.',
     summary:
       'LTX 2.3 Pro and LTX 2.3 Fast lead this page for prompt examples, reusable settings, outputs, and image-to-video patterns, with LTX 2 and LTX 2 Fast kept below for supported older workflows and migration context.',
     promptPatterns:
-      'Start from reusable LTX 2.3 prompt structures for product shots, short cinematic clips, and consistent motion tests before adapting them to your own scene.',
+      'Start from reusable LTX 2.3 prompt structures for product shots, short cinematic clips, and consistent motion tests that turn into repeatable video outputs before adapting them to your own scene.',
     strengthsLimits:
       'Use LTX 2.3 with a clear source image, one main motion instruction, and one camera goal so outputs stay easier to compare across Pro and Fast.',
     pricingNotes:
@@ -349,33 +355,36 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   veo: {
-    metaTitle: 'Exemples Veo, prompts et reglages | MaxVideoAI',
+    metaTitle: 'Exemples Veo 3.1, prompts, reglages et image-to-video | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples Veo, prompts, reglages et prix par clip pour Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite sur MaxVideoAI.',
-    heroTitle: 'Exemples Veo, prompts et reglages',
-    subtitle: 'Exemples Veo, prompts et reglages pour les workflows Veo actuels en 3.1, Fast et Lite.',
+      'Parcourez des exemples Veo 3.1, prompts, reglages, patterns image-to-video et prix par clip pour Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite sur MaxVideoAI.',
+    heroTitle: 'Exemples Veo 3.1, prompts, reglages et patterns image-to-video',
+    subtitle: 'Exemples Veo 3.1, prompts, reglages et patterns image-to-video sur la famille Veo actuelle.',
     intro:
-      'Parcourez des exemples Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite, avec des prompts et des reglages reutilisables, puis ouvrez les pages modele pour les specs, limites et tarifs.',
+      'Parcourez des exemples Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite, avec des prompts, des reglages reutilisables et des patterns image-to-video, puis ouvrez les pages modele pour les specs, limites et tarifs. Utilisez cette page pour etudier la structure des prompts, les patterns texte-vers-video IA et les reglages image-to-video propres a chaque modele avant d ouvrir la page Veo correspondante.',
     summary:
-      'Veo 3.1 mene cette galerie, avec Veo 3.1 Fast et Veo 3.1 Lite conserves comme variantes Veo actuelles pour une iteration plus rapide et des brouillons audio-ready moins couteux.',
+      'Veo 3.1 mene cette page pour les exemples, prompts, reglages et patterns image-to-video, avec Veo 3.1 Fast et Veo 3.1 Lite conserves comme variantes Veo actuelles pour une iteration plus rapide et des brouillons audio-ready moins couteux.',
     promptPatterns:
-      'Décrivez d’abord l’objectif du plan, puis la caméra et l’ambiance. En usage avec référence, gardez des contraintes explicites et faciles à relire.',
+      'Decrivez d abord l objectif du plan, puis la camera, l ambiance et les contraintes de reference utiles pour l image-to-video. Les exemples Veo 3.1 sont plus lisibles quand la structure du prompt reste stable.',
     strengthsLimits:
-      'Veo offre généralement un bon niveau de contrôle sur le cadrage et le mouvement sur des clips courts. Les capacités varient selon le mode actif et le type d’entrée.',
+      'Veo offre generalement un bon niveau de controle sur le cadrage et le mouvement sur des runs texte-to-video et image-to-video courts. Les capacites varient selon le mode actif et le type d entree.',
     pricingNotes:
       'Comparez les coûts avec des presets identiques en durée et résolution pour isoler la vraie différence entre moteurs.',
     faq: [
       {
-        question: 'Ces exemples Veo sont-ils adaptés aux usages avec image de référence ?',
-        answer: 'Oui, plusieurs exemples sont pensés pour un usage texte + référence.',
+        question: 'Comment utiliser Veo 3 pour l image-to-video ?',
+        answer:
+          'Partez d un still solide, definissez un seul objectif de mouvement et gardez une direction camera explicite. Les workflows Veo 3.1 en image-to-video fonctionnent mieux quand le prompt prolonge l image source au lieu de la remplacer completement.',
       },
       {
-        question: 'Comment garder des sorties Veo cohérentes ?',
-        answer: 'Réutilisez une structure de prompt stable et modifiez une variable à la fois.',
+        question: 'Quel modele Veo 3 utiliser pour tester des prompts ?',
+        answer:
+          'Commencez par Veo 3.1 Fast ou Veo 3.1 Lite si vous voulez des drafts moins chers et des tests de prompt plus rapides, puis passez a Veo 3.1 pour une sortie cinematique plus aboutie et un meilleur controle guide par references.',
       },
       {
-        question: 'Où comparer rapidement les coûts Veo ?',
-        answer: 'Depuis cette page, ouvrez le pricing avec les mêmes presets de durée et résolution.',
+        question: 'Ces exemples Veo 3.1 peuvent-ils servir de base pour des prompts texte-vers-video IA ?',
+        answer:
+          'Oui. Utilisez-les comme bases texte-vers-video IA en gardant le meme sujet, le meme objectif de mouvement, la meme direction camera et le meme format, puis ne changez qu une variable de prompt a la fois.',
       },
     ],
   },
@@ -433,64 +442,80 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   kling: {
-    metaTitle: 'Exemples Kling, prompts et réglages | MaxVideoAI',
+    metaTitle: 'Exemples vidéo IA Kling, prompts et réglages | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples Kling avec prompts, réglages et prix par clip pour Kling 3 Pro, Kling 3 Standard, et les workflows Kling 2.6 Pro et Kling 2.5 Turbo encore pris en charge sur MaxVideoAI.',
-    heroTitle: 'Exemples Kling, prompts et réglages',
-    subtitle: 'Exemples Kling, prompts et réglages pour les workflows Kling actuels et les versions encore prises en charge.',
+      'Parcourez des exemples vidéo IA Kling avec prompts, réglages et patterns image-to-video pour Kling 3 Pro et Kling 3 Standard, puis comparez les workflows Kling plus anciens encore pris en charge sur MaxVideoAI.',
+    heroTitle: 'Exemples vidéo IA Kling, prompts et réglages',
+    subtitle:
+      'Exemples vidéo IA Kling, prompts, réglages, patterns image-to-video et repères de modèle pour les workflows Kling actuels et les versions encore prises en charge.',
     intro:
-      'Parcourez des exemples Kling, des prompts et des réglages réutilisables pour Kling 3 Pro et Kling 3 Standard, puis explorez Kling 2.6 Pro et Kling 2.5 Turbo comme setups Kling plus anciens encore pris en charge pour des workflows antérieurs, des clips courts prêts pour l’audio et des drafts silencieux rapides.',
+      'Parcourez des exemples vidéo IA Kling, des prompts, des réglages réutilisables et des patterns image-to-video pour Kling 3 Pro et Kling 3 Standard, puis explorez les setups Kling plus anciens encore pris en charge pour des workflows antérieurs, des clips courts prêts pour l’audio et des drafts rapides. Utilisez cette page pour comparer des prompts Kling AI, des patterns de contrôle du mouvement et des réglages propres à chaque modèle avant d’ouvrir la page Kling correspondante.',
     summary:
-      'Kling 3 Pro et Kling 3 Standard structurent d’abord cette galerie, tandis que Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme setups Kling plus anciens encore pris en charge.',
+      'Kling 3 Pro et Kling 3 Standard mènent cette page pour les exemples vidéo IA Kling, les prompts, les réglages, les patterns image-to-video et la lecture des sorties, tandis que Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme setups Kling plus anciens encore pris en charge.',
     promptPatterns:
-      'Privilégiez des verbes d’action directs, une scène simple et une seule consigne caméra par plan.',
+      'Commencez par une action claire, une consigne caméra et un objectif visuel unique. Les prompts Kling AI se comparent mieux quand la structure du prompt reste stable et que seul le modèle ou le réglage change.',
     strengthsLimits:
-      'Kling fonctionne mieux quand la structure du prompt reste pensée plan par plan. Gardez des contraintes claires pour limiter la dérive entre variantes multi-plans.',
+      'Partez d’une image source solide, d’une seule instruction de mouvement et d’un objectif caméra clair afin que les sorties image-to-video de Kling AI restent plus faciles à comparer entre Pro et Standard.',
     pricingNotes:
-      'Pour comparer Kling correctement, conservez exactement la même durée et résolution entre moteurs.',
+      'Gardez la durée, le ratio et les réglages de sortie alignés quand vous comparez des résultats vidéo IA Kling. Cela aide à lire plus proprement le comportement du prompt, le choix de modèle et le coût par clip avant d’ouvrir une page modèle.',
     faq: [
       {
-        question: 'Quel style de prompt est le plus fiable avec Kling ?',
-        answer: 'Des prompts courts avec un objectif visuel principal et une caméra explicite.',
+        question: 'Quelle durée peuvent atteindre les vidéos Kling AI ?',
+        answer:
+          'Kling 3 Pro et Kling 3 Standard prennent en charge des rendus de 3 à 15 secondes en 1080p. Kling 2.6 Pro convient mieux à des clips audio-ready plus courts de 5 à 10 secondes, et Kling 2.5 Turbo sert surtout à des drafts silencieux rapides de 5 ou 10 secondes.',
       },
       {
-        question: 'Ces exemples Kling conviennent-ils à des créas publicitaires ?',
-        answer: 'Oui, ils sont pensés pour servir de base à des créas publicitaires puis être adaptés à vos variantes.',
+        question: 'Combien de temps Kling AI met-il pour générer une vidéo ?',
+        answer:
+          'Le temps de rendu dépend du modèle Kling, de la durée du clip, des réglages et de la file d’attente. Les runs de draft plus courts sur Kling 3 Standard ou Kling 2.5 Turbo sont généralement les plus rapides pour tester des prompts, tandis que les rendus multi-plans ou avec audio prennent plus de temps.',
       },
       {
-        question: 'Comment comparer le coût Kling ?',
-        answer: 'Fixez les mêmes presets et comparez prix + qualité de sortie.',
+        question: 'Quel modèle Kling AI utiliser pour les prompts et les exemples ?',
+        answer:
+          'Commencez par Kling 3 Standard si vous voulez tester des prompts à moindre coût, faire des drafts répétables et rester sur le comportement actuel de Kling 3. Passez à Kling 3 Pro si vous avez besoin d’un meilleur contrôle de scène, de séquences multi-plans plus exigeantes et de sorties finales plus prioritaires.',
+      },
+      {
+        question: 'Comment utiliser Kling AI pour des tests de prompt en image-to-video ?',
+        answer:
+          'Partez d’une image source claire, ajoutez une seule instruction de mouvement et un objectif caméra précis. Les tests Kling AI en image-to-video se lisent mieux quand la structure du prompt reste stable et que seul le modèle ou le réglage change.',
+      },
+      {
+        question: 'Comment adapter des prompts Kling AI entre Kling 3 Pro et Kling 3 Standard ?',
+        answer:
+          'Gardez la même structure de prompt sur les deux modèles : un sujet clair, une action par plan et une direction caméra explicite. Kling 3 Pro supporte mieux des consignes multi-plans plus denses et une continuité plus exigeante, tandis que Kling 3 Standard fonctionne mieux quand la structure du plan reste plus serrée.',
       },
     ],
   },
   seedance: {
-    metaTitle: 'Exemples Seedance, prompts et réglages | MaxVideoAI',
+    metaTitle: 'Exemples vidéo IA Seedance, prompts et réglages | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples Seedance avec prompts, réglages et prix par clip pour Seedance 2.0, Seedance 2.0 Fast et le workflow Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
-    heroTitle: 'Exemples Seedance, prompts et réglages',
-    subtitle: 'Exemples Seedance, prompts et réglages pour les workflows Seedance actuels et les versions encore prises en charge.',
+      'Parcourez des exemples vidéo IA Seedance avec prompts, réglages et prix par clip pour Seedance 2.0, Seedance 2.0 Fast et le workflow Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
+    heroTitle: 'Exemples vidéo IA Seedance, prompts et réglages',
+    subtitle: 'Exemples vidéo IA Seedance, prompts, réglages et sorties pour les workflows Seedance actuels et les versions encore prises en charge.',
     intro:
-      'Parcourez des exemples Seedance, des prompts et des réglages réutilisables pour Seedance 2.0 et Seedance 2.0 Fast, puis explorez la configuration Seedance 1.5 Pro encore prise en charge pour des workflows plus anciens et des clips plus courts.',
+      'Parcourez des exemples vidéo IA Seedance, des prompts et des réglages réutilisables pour Seedance 2.0 et Seedance 2.0 Fast, puis explorez la configuration Seedance 1.5 Pro encore prise en charge pour des workflows plus anciens et des clips plus courts. Utilisez cette page pour comparer des workflows vidéo Seedance, des structures de prompt et des patterns de sortie avant d’ouvrir la page modèle Seedance correspondante.',
     summary:
-      'Seedance 2.0 et Seedance 2.0 Fast structurent d’abord cette galerie, tandis que Seedance 1.5 Pro reste disponible plus bas comme setup plus ancien encore pris en charge pour des clips courts et répétables.',
+      'Seedance 2.0 et Seedance 2.0 Fast structurent d’abord cette page d’exemples vidéo IA Seedance, tandis que Seedance 1.5 Pro reste disponible plus bas comme setup plus ancien encore pris en charge pour des clips courts et répétables.',
     promptPatterns:
-      'Un objectif de plan clair, puis contraintes caméra/environnement. Les prompts compacts donnent les résultats les plus réguliers.',
+      'Un objectif de plan clair, puis contraintes caméra/environnement. Les prompts compacts donnent les résultats les plus réguliers sur les workflows vidéo IA Seedance.',
     strengthsLimits:
       'Seedance est utile quand vous cherchez une caméra stable et un mouvement lisible. Limitez la complexité de scène.',
     pricingNotes:
       'Comparez Seedance sur des presets identiques pour obtenir un signal coût fiable.',
     faq: [
       {
-        question: 'Ces exemples Seedance sont-ils optimisés pour la stabilité caméra ?',
-        answer: 'Oui, la plupart des exemples privilégient des mouvements lisibles et peu de dérive.',
+        question: 'Ces exemples vidéo IA Seedance sont-ils optimisés pour la stabilité caméra ?',
+        answer: 'Oui, la plupart des exemples vidéo IA Seedance de cette page privilégient des mouvements lisibles et peu de dérive.',
       },
       {
-        question: 'Peut-on utiliser ces exemples en base production ?',
-        answer: 'Oui, ils sont conçus pour être clonés et ajustés rapidement.',
+        question: 'Quel modèle vidéo IA Seedance faut-il utiliser pour les exemples et les tests de prompt ?',
+        answer:
+          'Commencez par Seedance 2.0 Fast si vous voulez des drafts moins coûteux et des tests de prompt plus rapides, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, l’audio natif et des sorties plus prêtes pour la production.',
       },
       {
-        question: 'Quels réglages impactent le plus le prix Seedance ?',
-        answer: 'Principalement la durée, puis la résolution et les options de mode.',
+        question: 'Quels réglages influencent le plus le prix sur les workflows vidéo Seedance ?',
+        answer:
+          'La durée et la résolution restent les premiers facteurs de prix sur les workflows vidéo Seedance, puis viennent les options propres au workflow.',
       },
     ],
   },
@@ -499,13 +524,13 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     metaDescription:
       'Parcourez des exemples de prompts LTX 2.3 Pro et LTX 2.3 Fast, des réglages, des sorties et des patterns image-vers-vidéo, puis consultez les workflows LTX 2 encore pris en charge sur MaxVideoAI.',
     heroTitle: 'Exemples de prompts, réglages et sorties LTX 2.3',
-    subtitle: 'Exemples de prompts, réglages, sorties et patterns image-vers-vidéo pour les workflows LTX 2.3 actuels.',
+    subtitle: 'Exemples de prompts, réglages, sorties et patterns image-vers-vidéo IA pour les workflows LTX 2.3 actuels.',
     intro:
-      'Parcourez les exemples de prompts, les réglages réutilisables et les patterns de sortie de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme setups encore pris en charge pour des workflows plus anciens, des bases de prompts historiques et du contexte de migration. Utilisez cette page pour étudier la structure des prompts, les patterns image-vers-vidéo et les réglages propres à chaque modèle avant d’ouvrir la page LTX correspondante.',
+      'Parcourez les exemples de prompts, les réglages réutilisables et les patterns de sortie de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme setups encore pris en charge pour des workflows plus anciens, des bases de prompts historiques et du contexte de migration. Utilisez cette page pour étudier la structure des prompts, les patterns image-vers-vidéo IA et les réglages propres à chaque modèle avant d’ouvrir la page LTX correspondante.',
     summary:
       'LTX 2.3 Pro et LTX 2.3 Fast mènent cette page pour les exemples de prompts, les réglages, les sorties et les patterns image-vers-vidéo, tandis que LTX 2 et LTX 2 Fast restent disponibles plus bas pour les workflows plus anciens et le contexte de migration.',
     promptPatterns:
-      'Commencez par des structures de prompts LTX 2.3 réutilisables pour des plans produit, des clips cinématiques courts et des tests de mouvement cohérents, puis adaptez-les à votre scène.',
+      'Commencez par des structures de prompts LTX 2.3 réutilisables pour des plans produit, des clips cinématiques courts et des tests de mouvement cohérents qui se transforment en sorties vidéo répétables, puis adaptez-les à votre scène.',
     strengthsLimits:
       'Utilisez LTX 2.3 avec une image source claire, une instruction de mouvement principale et un objectif caméra unique pour comparer plus proprement les sorties entre Pro et Fast.',
     pricingNotes:
@@ -617,33 +642,36 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   veo: {
-    metaTitle: 'Ejemplos de Veo, prompts y ajustes | MaxVideoAI',
+    metaTitle: 'Ejemplos de Veo 3.1, prompts, ajustes e image-to-video | MaxVideoAI',
     metaDescription:
-      'Consulta ejemplos de Veo, prompts, ajustes y precios por clip para Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite en MaxVideoAI.',
-    heroTitle: 'Ejemplos de Veo, prompts y ajustes',
-    subtitle: 'Ejemplos de Veo, prompts y ajustes para los workflows Veo actuales en 3.1, Fast y Lite.',
+      'Consulta ejemplos de Veo 3.1, prompts, ajustes, patrones image-to-video y precios por clip para Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite en MaxVideoAI.',
+    heroTitle: 'Ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video',
+    subtitle: 'Ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video en la familia Veo actual.',
     intro:
-      'Consulta ejemplos de Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite con prompts y ajustes reutilizables, y luego abre las páginas de modelo para ver specs, límites y precios.',
+      'Consulta ejemplos de Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite con prompts, ajustes reutilizables y patrones image-to-video, y luego abre las paginas de modelo para ver specs, limites y precios. Usa esta pagina para estudiar la estructura del prompt, los patrones de text-to-video AI y los ajustes image-to-video propios de cada modelo antes de abrir la pagina Veo correspondiente.',
     summary:
-      'Veo 3.1 lidera esta galería, con Veo 3.1 Fast y Veo 3.1 Lite visibles como variantes Veo actuales para iteración más rápida y borradores con audio a menor coste.',
+      'Veo 3.1 lidera esta pagina para ejemplos, prompts, ajustes y patrones image-to-video, con Veo 3.1 Fast y Veo 3.1 Lite visibles como variantes Veo actuales para iteracion mas rapida y borradores con audio a menor coste.',
     promptPatterns:
-      'Empieza por el objetivo de la toma y luego concreta la cámara y el ambiente. En trabajos con referencia, conviene dejar las restricciones bien explícitas y fáciles de revisar.',
+      'Empieza por el objetivo de la toma y luego concreta la camara, el ambiente y las restricciones de referencia utiles para image-to-video. Los ejemplos de Veo 3.1 funcionan mejor cuando la estructura del prompt se mantiene estable.',
     strengthsLimits:
-      'Veo suele ofrecer buen control de encuadre y movimiento en clips cortos. Las capacidades varían según el modo activo y el tipo de entrada.',
+      'Veo suele ofrecer buen control de encuadre y movimiento en runs cortos de text-to-video e image-to-video. Las capacidades varian segun el modo activo y el tipo de entrada.',
     pricingNotes:
       'Compara costos con presets iguales en duración y resolución para obtener una lectura más limpia.',
     faq: [
       {
-        question: '¿Estos ejemplos de Veo sirven para flujos con imagen de referencia?',
-        answer: 'Sí, varios ejemplos están pensados para uso texto + referencia.',
+        question: '¿Como deberia usar Veo 3 para image-to-video?',
+        answer:
+          'Parte de un still fuerte, define un solo objetivo de movimiento y mantén una direccion de camara explicita. Los workflows de Veo 3.1 en image-to-video suelen funcionar mejor cuando el prompt extiende la imagen fuente en lugar de reemplazarla por completo.',
       },
       {
-        question: '¿Cómo mantengo consistencia en Veo?',
-        answer: 'Reutiliza una estructura de prompt estable y cambia una variable por iteración.',
+        question: '¿Que modelo Veo 3 deberia usar para probar prompts?',
+        answer:
+          'Empieza con Veo 3.1 Fast o Veo 3.1 Lite cuando quieras borradores mas baratos y pruebas de prompt mas rapidas, y pasa a Veo 3.1 cuando necesites una salida cinematica mas pulida y mejor control guiado por referencias.',
       },
       {
-        question: '¿Dónde comparo rápido los costes de Veo?',
-        answer: 'Abre pricing desde esta página usando presets equivalentes.',
+        question: '¿Estos ejemplos de Veo 3.1 sirven como base para prompts de text-to-video AI?',
+        answer:
+          'Si. Utilizalos como base de text-to-video AI manteniendo el mismo sujeto, objetivo de movimiento, direccion de camara y formato, y cambia solo una variable del prompt cada vez.',
       },
     ],
   },
@@ -701,64 +729,80 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   kling: {
-    metaTitle: 'Ejemplos de Kling, prompts y ajustes | MaxVideoAI',
+    metaTitle: 'Ejemplos de video IA Kling, prompts y ajustes | MaxVideoAI',
     metaDescription:
-      'Revisa ejemplos de Kling con prompts, ajustes y precio por clip para Kling 3 Pro, Kling 3 Standard y los workflows Kling 2.6 Pro y Kling 2.5 Turbo aún compatibles en MaxVideoAI.',
-    heroTitle: 'Ejemplos de Kling, prompts y ajustes',
-    subtitle: 'Ejemplos de Kling, prompts y ajustes para los workflows Kling actuales y las versiones anteriores aún compatibles.',
+      'Revisa ejemplos de video IA de Kling con prompts, ajustes y patrones image-to-video para Kling 3 Pro y Kling 3 Standard, y compara workflows Kling antiguos aún compatibles en MaxVideoAI.',
+    heroTitle: 'Ejemplos de video IA Kling, prompts y ajustes',
+    subtitle:
+      'Ejemplos de video IA Kling, prompts, ajustes, patrones image-to-video y guía de modelo para workflows Kling actuales y versiones anteriores aún compatibles.',
     intro:
-      'Revisa ejemplos de Kling, prompts y ajustes reutilizables para Kling 3 Pro y Kling 3 Standard, y luego explora Kling 2.6 Pro y Kling 2.5 Turbo como setups Kling anteriores aún compatibles para workflows más antiguos, clips cortos listos para audio y borradores silenciosos rápidos.',
+      'Revisa ejemplos de video IA de Kling, prompts, ajustes reutilizables y patrones image-to-video para Kling 3 Pro y Kling 3 Standard, y luego explora setups Kling anteriores aún compatibles para workflows más antiguos, clips cortos listos para audio y borradores rápidos. Usa esta página para comparar prompts de Kling AI, patrones de control de movimiento y ajustes específicos de cada modelo antes de abrir la página Kling correspondiente.',
     summary:
-      'Kling 3 Pro y Kling 3 Standard lideran esta galería, mientras que Kling 2.6 Pro y Kling 2.5 Turbo siguen disponibles más abajo como setups Kling anteriores aún compatibles.',
+      'Kling 3 Pro y Kling 3 Standard lideran esta página para ejemplos de video IA Kling, prompts, ajustes, patrones image-to-video y revisión de salidas, mientras que Kling 2.6 Pro y Kling 2.5 Turbo siguen disponibles más abajo como setups Kling anteriores aún compatibles.',
     promptPatterns:
-      'Prioriza verbos de acción directos, una escena simple y una sola instrucción de cámara por toma.',
+      'Empieza con una acción clara, una instrucción de cámara y un objetivo visual. Los prompts de Kling AI se comparan mejor cuando la estructura del prompt se mantiene estable y solo cambian el modelo o el ajuste.',
     strengthsLimits:
-      'Kling funciona mejor cuando la estructura del prompt se mantiene plano por plano. Mantén restricciones claras para evitar deriva entre variantes multi-shot.',
+      'Parte de una imagen fuente sólida, una sola instrucción de movimiento y un objetivo de cámara claro para que las salidas image-to-video de Kling AI sean más fáciles de comparar entre Pro y Standard.',
     pricingNotes:
-      'Para comparar Kling de forma justa, usa duración y resolución idénticas entre motores.',
+      'Mantén alineados la duración, la relación de aspecto y los ajustes de salida al comparar resultados de video IA Kling. Así es más fácil evaluar el comportamiento del prompt, la elección de modelo y el coste por clip antes de abrir una página de modelo.',
     faq: [
       {
-        question: '¿Qué estilo de prompt es más fiable en Kling?',
-        answer: 'Prompts cortos con un objetivo visual principal y cámara explícita.',
+        question: '¿Cuánto pueden durar los videos de Kling AI?',
+        answer:
+          'Kling 3 Pro y Kling 3 Standard admiten renders de 3 a 15 segundos en 1080p. Kling 2.6 Pro encaja mejor en clips audio-ready más cortos de 5 a 10 segundos, y Kling 2.5 Turbo se usa sobre todo para borradores silenciosos rápidos de 5 o 10 segundos.',
       },
       {
-        question: '¿Estos ejemplos de Kling sirven para piezas publicitarias?',
-        answer: 'Sí, están pensados para clonarse rápido y adaptarse a distintas variantes de campaña.',
+        question: '¿Cuánto tarda Kling AI en generar un video?',
+        answer:
+          'El tiempo de render depende del modelo Kling, de la duración del clip, de los ajustes y de la cola. Las tandas de borrador más cortas en Kling 3 Standard o Kling 2.5 Turbo suelen ser la forma más rápida de probar prompts, mientras que los renders multi-shot o con audio tardan más.',
       },
       {
-        question: '¿Cómo comparo coste en Kling?',
-        answer: 'Mantén los mismos presets y compara precio junto con calidad de salida.',
+        question: '¿Qué modelo de Kling AI debería usar para prompts y ejemplos?',
+        answer:
+          'Empieza con Kling 3 Standard cuando quieras probar prompts a menor coste, hacer borradores repetibles y mantenerte en el comportamiento actual de Kling 3. Pasa a Kling 3 Pro cuando necesites más control de escena, secuencias multi-shot más exigentes y salidas finales prioritarias.',
+      },
+      {
+        question: '¿Cómo debería usar Kling AI para pruebas de prompt en image-to-video?',
+        answer:
+          'Parte de una imagen fuente clara, añade una sola instrucción de movimiento y un objetivo de cámara preciso. Las pruebas de Kling AI en image-to-video se leen mejor cuando la estructura del prompt se mantiene estable y solo cambian el modelo o el ajuste.',
+      },
+      {
+        question: '¿Cómo debería adaptar prompts de Kling AI entre Kling 3 Pro y Kling 3 Standard?',
+        answer:
+          'Mantén la misma estructura base en ambos modelos: un sujeto claro, una acción por toma y una dirección de cámara explícita. Kling 3 Pro soporta mejor instrucciones multi-shot más densas y continuidad más exigente, mientras que Kling 3 Standard funciona mejor cuando la estructura de la toma es más compacta.',
       },
     ],
   },
   seedance: {
-    metaTitle: 'Ejemplos de Seedance, prompts y ajustes | MaxVideoAI',
+    metaTitle: 'Ejemplos de video IA Seedance, prompts y ajustes | MaxVideoAI',
     metaDescription:
-      'Revisa ejemplos de Seedance con prompts, ajustes y precio por clip para Seedance 2.0, Seedance 2.0 Fast y el flujo Seedance 1.5 Pro aún compatible en MaxVideoAI.',
-    heroTitle: 'Ejemplos de Seedance, prompts y ajustes',
-    subtitle: 'Ejemplos de Seedance, prompts y ajustes para workflows Seedance actuales y versiones anteriores aún compatibles.',
+      'Revisa ejemplos de video IA de Seedance con prompts, ajustes y precio por clip para Seedance 2.0, Seedance 2.0 Fast y el flujo Seedance 1.5 Pro aún compatible en MaxVideoAI.',
+    heroTitle: 'Ejemplos de video IA Seedance, prompts y ajustes',
+    subtitle: 'Ejemplos de video IA Seedance, prompts, ajustes y salidas para workflows Seedance actuales y versiones anteriores aún compatibles.',
     intro:
-      'Revisa ejemplos de Seedance, prompts y ajustes reutilizables para Seedance 2.0 y Seedance 2.0 Fast, y luego explora la configuración de Seedance 1.5 Pro aún compatible para workflows más antiguos y patrones de clip más cortos.',
+      'Revisa ejemplos de video IA de Seedance, prompts y ajustes reutilizables para Seedance 2.0 y Seedance 2.0 Fast, y luego explora la configuración de Seedance 1.5 Pro aún compatible para workflows más antiguos y patrones de clip más cortos. Usa esta página para comparar workflows de video de Seedance, estructuras de prompt y patrones de salida antes de abrir la página de modelo Seedance correspondiente.',
     summary:
-      'Seedance 2.0 y Seedance 2.0 Fast lideran esta galería, mientras Seedance 1.5 Pro queda disponible más abajo como setup anterior aún compatible para clips cortos y repetibles.',
+      'Seedance 2.0 y Seedance 2.0 Fast lideran esta página de ejemplos de video IA de Seedance, mientras Seedance 1.5 Pro queda disponible más abajo como setup anterior aún compatible para clips cortos y repetibles.',
     promptPatterns:
-      'Define una acción central y luego restricciones de cámara y entorno. Los prompts compactos suelen dar resultados más estables.',
+      'Define una acción central y luego restricciones de cámara y entorno. Los prompts compactos suelen dar resultados más estables en workflows de video IA de Seedance.',
     strengthsLimits:
       'Seedance es útil cuando priorizas movimiento legible y cámara estable. Limita la complejidad de escena.',
     pricingNotes:
       'Compara Seedance con presets equivalentes para obtener una lectura de coste fiable.',
     faq: [
       {
-        question: '¿Estos ejemplos de Seedance están optimizados para estabilidad de cámara?',
-        answer: 'Sí, la mayoría prioriza movimiento claro y baja deriva.',
+        question: '¿Estos ejemplos de video IA de Seedance están optimizados para estabilidad de cámara?',
+        answer: 'Sí. La mayoría de los ejemplos de video IA de Seedance de esta página priorizan claridad de cámara y patrones de movimiento con poca deriva.',
       },
       {
-        question: '¿Puedo usar estos ejemplos como base de producción?',
-        answer: 'Sí, están diseñados para clonar y ajustar con cambios mínimos.',
+        question: '¿Qué modelo de video IA de Seedance debería usar para ejemplos y pruebas de prompt?',
+        answer:
+          'Empieza con Seedance 2.0 Fast cuando quieras borradores más baratos y pruebas de prompt más rápidas, y pasa a Seedance 2.0 cuando necesites mejor calidad multi-shot, audio nativo y salidas más listas para producción.',
       },
       {
-        question: '¿Qué ajustes impactan más el precio en Seedance?',
-        answer: 'Principalmente duración y resolución, luego opciones específicas del modo.',
+        question: '¿Qué ajustes afectan más al precio en los workflows de video de Seedance?',
+        answer:
+          'La duración y la resolución son los factores principales de precio en los workflows de video de Seedance, seguidos por opciones específicas de cada workflow.',
       },
     ],
   },
@@ -767,13 +811,13 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     metaDescription:
       'Consulta ejemplos de prompts de LTX 2.3 Pro y LTX 2.3 Fast, ajustes, salidas y patrones de imagen a video, y luego revisa los workflows LTX 2 aún compatibles en MaxVideoAI.',
     heroTitle: 'Ejemplos de prompts, ajustes y salidas de LTX 2.3',
-    subtitle: 'Ejemplos de prompts, ajustes, salidas y patrones de imagen a video para los workflows actuales de LTX 2.3.',
+    subtitle: 'Ejemplos de prompts, ajustes, salidas y patrones de imagen a video con IA para los workflows actuales de LTX 2.3.',
     intro:
-      'Consulta los ejemplos de prompts, ajustes reutilizables y patrones de salida de LTX 2.3 Pro y LTX 2.3 Fast, y luego revisa LTX 2 y LTX 2 Fast como setups aún compatibles para workflows anteriores, bases históricas de prompts y contexto de migración. Usa esta página para estudiar la estructura de prompts, los patrones de imagen a video y los ajustes específicos de cada modelo antes de abrir la página LTX correspondiente.',
+      'Consulta los ejemplos de prompts, ajustes reutilizables y patrones de salida de LTX 2.3 Pro y LTX 2.3 Fast, y luego revisa LTX 2 y LTX 2 Fast como setups aún compatibles para workflows anteriores, bases históricas de prompts y contexto de migración. Usa esta página para estudiar la estructura de prompts, los patrones de imagen a video con IA y los ajustes específicos de cada modelo antes de abrir la página LTX correspondiente.',
     summary:
       'LTX 2.3 Pro y LTX 2.3 Fast lideran esta página para ejemplos de prompts, ajustes, salidas y patrones de imagen a video, mientras LTX 2 y LTX 2 Fast se mantienen más abajo para workflows anteriores y contexto de migración.',
     promptPatterns:
-      'Empieza con estructuras de prompts reutilizables de LTX 2.3 para tomas de producto, clips cinematográficos cortos y pruebas de movimiento consistentes antes de adaptarlas a tu escena.',
+      'Empieza con estructuras de prompts reutilizables de LTX 2.3 para tomas de producto, clips cinematográficos cortos y pruebas de movimiento consistentes que se conviertan en salidas de video repetibles antes de adaptarlas a tu escena.',
     strengthsLimits:
       'Usa LTX 2.3 con una imagen fuente clara, una instrucción principal de movimiento y un único objetivo de cámara para comparar mejor las salidas entre Pro y Fast.',
     pricingNotes:
@@ -867,8 +911,8 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
         answer: 'Yes. Open an example and reuse its prompt and settings as a starting point in your workspace.',
       },
       {
-        question: 'Do examples include text-to-video and image-to-video?',
-        answer: 'Yes. The gallery includes multiple input styles depending on what each model supports.',
+        question: 'Do examples cover text-to-video AI, image-to-video AI, and video-to-video AI workflows?',
+        answer: 'Yes. The gallery covers text-to-video AI, image-to-video AI, and selected video-to-video AI workflows when the underlying models support them.',
       },
       {
         question: 'Is pricing shown for each example?',
@@ -896,8 +940,8 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
         answer: 'Oui. Ouvrez un exemple et réutilisez son prompt et ses réglages dans votre workspace.',
       },
       {
-        question: 'Les exemples couvrent-ils texte-vers-vidéo et image-vers-vidéo ?',
-        answer: 'Oui. La galerie regroupe plusieurs types d’entrées selon les capacités de chaque modèle.',
+        question: 'Les exemples couvrent-ils les workflows texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA ?',
+        answer: 'Oui. La galerie couvre le texte-vers-vidéo IA, l’image-vers-vidéo IA et certains workflows vidéo-vers-vidéo IA lorsque les modèles sous-jacents les prennent en charge.',
       },
       {
         question: 'Le prix est-il affiché pour chaque exemple ?',
@@ -925,8 +969,8 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
         answer: 'Sí. Abre un ejemplo y reutiliza su prompt y ajustes en tu workspace.',
       },
       {
-        question: '¿Los ejemplos incluyen texto a video e imagen a video?',
-        answer: 'Sí. La galería incluye varios tipos de entrada según lo que soporte cada modelo.',
+        question: '¿Los ejemplos incluyen workflows de text-to-video AI, image-to-video AI y video-to-video AI?',
+        answer: 'Sí. La galería cubre text-to-video AI, image-to-video AI y algunos workflows de video-to-video AI cuando los modelos subyacentes los admiten.',
       },
       {
         question: '¿Se muestra el precio por ejemplo?',

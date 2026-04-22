@@ -6,10 +6,10 @@
     "description": "Usa Veo 3.1 Fast en MaxVideoAI para borradores más rápidos, iteración de menor coste, specs en tiempo real y precios antes de pasar los outputs seleccionados a Veo 3.1.",
     "image": "/hero/veo3.jpg"
   },
-  "overview": "Veo 3.1 Fast es la variante Veo actual más rápida para borradores, loops cortos de concepto e iteración de menor coste con audio nativo opcional y precios por segundo.",
+  "overview": "Veo 3.1 Fast es la variante Google Veo 3.1 actual mas rapida para borradores text-to-video, pruebas image-to-video, loops cortos de concepto e iteracion de menor coste con audio nativo opcional y precios por segundo.",
   "hero": {
     "title": "Veo 3.1 Fast — variante Veo actual para borradores más rápidos e iteración",
-    "intro": "Usa Veo 3.1 Fast para borradores más rápidos, loops cortos de concepto e iteración de menor coste antes de pasar los outputs seleccionados a Veo 3.1.",
+    "intro": "Usa Google Veo 3.1 Fast como el workflow de video IA Veo 3 mas rapido para borradores text-to-video, pruebas image-to-video, loops cortos de concepto e iteracion de menor coste antes de pasar los outputs seleccionados a Veo 3.1.",
     "badge": "720p/1080p · 4–8 s · Texto, imagen inicial, último frame y Extend",
     "ctaPrimary": {
       "label": "Probar Veo 3.1 Fast",
@@ -21,7 +21,7 @@
         "href": "/models/veo-3-1"
       },
       {
-        "label": "Ver ejemplos de Veo",
+        "label": "Ver ejemplos de Veo 3.1",
         "href": "/examples/veo"
       },
       {
@@ -99,7 +99,7 @@
     }
   ],
   "promptStructure": {
-    "title": "Texto→Video con Veo 3.1 Fast",
+    "title": "Texto→Video con Google Veo 3.1 Fast",
     "quote": "Bosque con neblina al amanecer, plano medio centrado en una roca con musgo. La cámara avanza lentamente mientras aparecen rayos suaves entre los árboles, 6 segundos, 16:9 a 1080p. Audio: pájaros suaves y viento, sin diálogo.",
     "description": "Mantén los prompts cortos, de una sola escena y sensoriales. El objetivo es A/B testear rápido con cambios mínimos.",
     "steps": [
@@ -136,6 +136,10 @@
     }
   ],
   "faqs": [
+    {
+      "q": "Puedo usar Veo 3.1 Fast para probar text-to-video e image-to-video?",
+      "a": "Si. Veo 3.1 Fast admite runs rapidos de text-to-video y pruebas de image-to-video cuando quieres comparar prompts, encuadre y timing antes de finalizarlos en Veo 3.1."
+    },
     {
       "q": "¿Cuándo usar Veo 3.1 Fast en lugar de Veo 3.1?",
       "a": "Usa Fast para exploración, variantes sociales y revisiones internas; cambia a Veo 3.1 para tomas hero y medios pagados."
@@ -236,7 +240,7 @@
     "galleryIntro": "Explora clips generados con Veo 3.1 Fast usando los mismos presets que tienes.",
     "galleryAllCta": "Ver todos los ejemplos Veo 3.1 Fast →",
     "recreateLabel": "Recrear esta toma →",
-    "imageTitle": "Imagen→Video con Veo 3.1 Fast",
+    "imageTitle": "Flow image-to-video con Google Veo 3.1 Fast",
     "imageIntro": "Anima un solo still en un loop rápido o toma hero.",
     "imageFlow": [
       "Sube una foto lifestyle o de producto.",

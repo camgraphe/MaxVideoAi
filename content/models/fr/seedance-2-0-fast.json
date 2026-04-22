@@ -5,11 +5,11 @@
     "title": "Seedance 2.0 Fast | Modèle vidéo IA rapide, specs et prix | MaxVideoAI",
     "description": "Utilisez Seedance 2.0 Fast sur MaxVideoAI pour des brouillons plus rapides, des itérations multimodales et des specs/prix visibles avant génération."
   },
-  "overview": "Seedance 2.0 Fast est le modèle Seedance rapide actuel pour des brouillons plus courts, du shot planning et des boucles de comparaison avant rendu final.",
+  "overview": "Seedance 2.0 Fast est le modèle vidéo IA Seedance rapide actuel pour des brouillons plus courts, du shot planning et des boucles de comparaison avant rendu final.",
   "pricingNotes": "Seedance 2 Fast suit la formule tokens de Fal. MaxVideoAI ajoute sa marge et arrondit au centime supérieur ; Generate affiche le devis final avant validation.",
   "hero": {
     "title": "Seedance 2.0 Fast — modèle Seedance rapide actuel pour les drafts et l'itération",
-    "intro": "Utilisez Seedance 2.0 Fast pour des drafts plus rapides, du shot planning, des checks de timing et des itérations A/B avant de passer les directions validées dans Seedance 2.0.",
+    "intro": "Utilisez Seedance 2.0 Fast comme le modèle vidéo IA Seedance le plus rapide pour des drafts plus rapides, du shot planning, des checks de timing et des itérations A/B avant de passer les directions validées dans Seedance 2.0.",
     "badge": "Tier rapide · 3 workflows · 480p/720p · Auto ou 4-15 s · Audio natif",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.0 Fast",
@@ -21,7 +21,7 @@
         "href": "/models/seedance-2-0"
       },
       {
-        "label": "Voir les exemples Seedance",
+        "label": "Voir les exemples vidéo IA Seedance",
         "href": "/examples/seedance"
       },
       {
@@ -91,7 +91,7 @@
     },
     {
       "label": "Positionnement Fal",
-      "body": "La page publique Seedance de Fal regroupe Fast dans la même famille multimodale, avec audio natif et rendu cinématographique."
+      "body": "La page publique Seedance de Fal regroupe Fast dans la même famille vidéo IA Seedance, avec audio natif, rendu cinématographique et workflows multimodaux."
     }
   ],
   "promptStructure": {
@@ -136,7 +136,7 @@
   "faqs": [
     {
       "q": "Qu'est-ce que Seedance 2.0 Fast ?",
-      "a": "Seedance 2.0 Fast est le tier d'itération le plus rapide de la famille Seedance 2, pensé pour produire des brouillons plus vite avant de faire monter les versions gagnantes dans Seedance 2.0 standard."
+      "a": "Seedance 2.0 Fast est l’option vidéo IA Seedance la plus rapide dans la famille Seedance 2, pensée pour produire des brouillons plus vite avant de faire monter les versions gagnantes dans Seedance 2.0 standard."
     },
     {
       "q": "Seedance 2.0 Fast conserve-t-il text-to-video, image-to-video et reference-to-video ?",

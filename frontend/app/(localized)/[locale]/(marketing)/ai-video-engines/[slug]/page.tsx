@@ -1129,12 +1129,12 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           'Compare Seedance 1.5 Pro vs Seedance 2.0 on MaxVideoAI to see what changed in audio, multi-shot continuity, references, pricing, and when upgrading makes sense.',
       },
       heroIntro:
-        'Compare Seedance 1.5 Pro and Seedance 2.0 to see what changed in native audio, multi-shot continuity, and reference workflows, and decide when staying on 1.5 Pro is still enough versus when upgrading to 2.0 makes sense. Use this page to understand the trade-offs quickly before moving to the current Seedance model, the examples page, or the exact workflow that fits your use case.',
+        'Compare Seedance 1.5 Pro and Seedance 2.0 to see what changed between the older Seedance Pro workflow and the current Seedance AI video model in native audio, multi-shot continuity, and reference workflows. Use this page to understand the trade-offs quickly before moving to the current Seedance model, the Seedance AI video examples page, or the exact Seedance video workflow that fits your use case.',
       topCards: [
         {
           title: 'What changed',
           body:
-            'Seedance 2.0 is the newer Seedance workflow with stronger multi-shot continuity, broader reference inputs, and a more current audio-first production path than Seedance 1.5 Pro.',
+            'Seedance 2.0 is the newer Seedance AI video workflow with stronger multi-shot continuity, broader reference inputs, and a more current audio-first production path than Seedance 1.5 Pro.',
         },
         {
           title: 'When to stay on Seedance 1.5 Pro',
@@ -1160,7 +1160,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
         },
         {
           href: '/examples/seedance',
-          label: 'View Seedance examples',
+          label: 'View Seedance AI video examples',
         },
         {
           href: '/models/seedance-2-0-fast',
@@ -1184,7 +1184,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'Is Seedance 2.0 better than Seedance 1.5 Pro?',
             answer:
-              'For most current workflows, yes. Seedance 2.0 is the better default if you care about continuity, flexibility, and staying on the current model. Seedance 1.5 Pro is still good enough when the job is short, stable, and already works on the older setup.',
+              'For most current workflows, yes. Seedance 2.0 is the better default if you want the current Seedance AI video model for continuity, flexibility, and broader production use, while Seedance 1.5 Pro remains useful as an older Seedance Pro setup for shorter clips.',
           },
           {
             question: 'When should I upgrade from Seedance 1.5 Pro to Seedance 2.0?',
@@ -1204,6 +1204,125 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
         ],
       },
     },
+    'seedance-2-0-vs-seedance-2-0-fast': {
+      heroIntro:
+        'Compare Seedance 2.0 and Seedance 2.0 Fast to choose the right current Seedance AI video workflow for final multi-shot work, native audio, and workflow comparison. Use this page to see when standard Seedance is better for polished Seedance video output and when Fast is better for testing, timing checks, and cheaper iteration.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Open Seedance 2.0 model page',
+        },
+        {
+          href: '/examples/seedance',
+          label: 'View Seedance AI video examples',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Open Seedance 2.0 Fast model page',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers to help you choose the right current Seedance workflow.',
+        items: [
+          {
+            question: 'Which Seedance AI video model should I use for draft work?',
+            answer:
+              'Use Seedance 2.0 Fast for cheaper draft passes, faster testing, and workflow comparisons. Use Seedance 2.0 when you want stronger final-quality multi-shot output, native audio, and a more production-ready workflow.',
+          },
+          {
+            question: 'How is Seedance 2.0 different from Seedance 2.0 Fast?',
+            answer:
+              'Seedance 2.0 is the stronger current choice for polished multi-shot work, native audio, and more demanding reference-driven outputs, while Seedance 2.0 Fast is better for cheaper drafts, timing checks, and early iteration.',
+          },
+          {
+            question: 'Is Seedance 2.0 better for polished Seedance video output?',
+            answer:
+              'Yes. Seedance 2.0 is the better fit when the goal is polished Seedance video output, while Fast is the better fit when the goal is to test ideas and compare workflows quickly.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-vs-veo-3-1-fast': {
+      heroIntro:
+        'Compare Veo 3.1 and Veo 3.1 Fast to choose the right current Veo 3 AI workflow for polished text-to-video, image-to-video, faster draft passes, and native-audio control.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers to help you choose the right current Veo workflow.',
+        items: [
+          {
+            question: 'How should I use Veo 3 for text-to-video and draft testing?',
+            answer:
+              'Use Veo 3.1 Fast for cheaper draft passes, text-to-video prompt comparison, and quicker iteration. Use Veo 3.1 when you want stronger final-quality output, richer reference-guided control, and more polished image-to-video results.',
+          },
+          {
+            question: 'Can I use both Veo 3.1 and Veo 3.1 Fast for image-to-video?',
+            answer:
+              'Yes. Both can handle image-to-video workflows, but Veo 3.1 is the better fit for more polished results while Veo 3.1 Fast is the better fit for cheaper prompt and framing tests.',
+          },
+          {
+            question: 'When should I choose Veo 3.1 instead of Veo 3.1 Fast?',
+            answer:
+              'Choose Veo 3.1 when final quality, native audio polish, and stronger reference-guided control matter more than draft speed. Choose Fast when the goal is cheaper iteration and quicker workflow validation.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-fast-vs-veo-3-1-lite': {
+      heroIntro:
+        'Compare Veo 3.1 Fast and Veo 3.1 Lite to choose the right current Veo 3 AI workflow for cheaper text-to-video drafts, image-to-video tests, native-audio behavior, and faster iteration.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers to help you choose between the current Fast and Lite Veo tiers.',
+        items: [
+          {
+            question: 'Which Veo 3 model is better for image-to-video tests?',
+            answer:
+              'Both can work, but Veo 3.1 Lite is better for the cheapest audio-ready image-to-video tests, while Veo 3.1 Fast is better when you want broader flexibility and a smoother upgrade path into full Veo 3.1.',
+          },
+          {
+            question: 'Is Veo 3.1 Lite or Veo 3.1 Fast better for text-to-video drafts?',
+            answer:
+              'Veo 3.1 Lite is better when you want the lowest-cost audio-ready drafts. Veo 3.1 Fast is better when you want more output flexibility, optional audio, and a cleaner bridge into the main Veo 3.1 workflow.',
+          },
+          {
+            question: 'When should I choose Veo 3.1 Fast instead of Veo 3.1 Lite?',
+            answer:
+              'Choose Fast when you want broader workflow flexibility, optional audio control, and an easier upgrade path into Veo 3.1. Choose Lite when your priority is the cheapest current Veo testing with audio always on.',
+          },
+        ],
+      },
+    },
+    'kling-3-pro-vs-kling-3-standard': {
+      heroIntro:
+        'Compare Kling 3 Pro and Kling 3 Standard to choose the right current Kling AI model for multi-shot video, Kling image-to-video workflows, reusable Kling Elements, and native-audio output quality.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers to help you choose between the current Kling Pro and Standard tiers.',
+        items: [
+          {
+            question: 'Which current Kling AI model is better for image-to-video and prompt testing?',
+            answer:
+              'Kling 3 Standard is better for lower-cost prompt testing and repeatable image-to-video drafts, while Kling 3 Pro is better when you need tighter scene control and higher-priority final outputs.',
+          },
+          {
+            question: 'Do Kling 3 Pro and Kling 3 Standard both support Kling Elements?',
+            answer:
+              'Yes. Both current Kling models support Kling Elements for character and prop continuity, but Kling 3 Pro is the stronger choice when the sequence is more demanding or continuity matters more.',
+          },
+          {
+            question: 'When should I choose Kling 3 Pro instead of Kling 3 Standard?',
+            answer:
+              'Choose Kling 3 Pro when you need stronger scene control, more demanding multi-shot continuity, and higher-priority final output. Choose Kling 3 Standard when cost control and repeatable draft testing matter more.',
+          },
+        ],
+      },
+    },
   },
   fr: {
     'seedance-1-5-pro-vs-seedance-2-0': {
@@ -1213,12 +1332,12 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           'Comparez Seedance 1.5 Pro et Seedance 2.0 sur MaxVideoAI pour voir ce qui change sur l audio, la continuite multi-shot, les references, le prix, et quand passer a 2.0.',
       },
       heroIntro:
-        'Comparez Seedance 1.5 Pro et Seedance 2.0 pour voir ce qui change sur l audio natif, la continuite multi-shot et les workflows a references, puis decidez quand rester sur 1.5 Pro suffit encore et quand passer a 2.0 devient le meilleur choix. Utilisez cette page pour comprendre rapidement les compromis avant d ouvrir le modele Seedance actuel, la page d exemples, ou le workflow le plus adapte a votre usage.',
+        'Comparez Seedance 1.5 Pro et Seedance 2.0 pour voir ce qui change entre l ancien workflow Seedance Pro et le modele video IA Seedance actuel sur l audio natif, la continuite multi-shot et les workflows a references. Utilisez cette page pour comprendre rapidement les compromis avant d ouvrir le modele Seedance actuel, la page d exemples video IA Seedance, ou le workflow video Seedance le plus adapte a votre usage.',
       topCards: [
         {
           title: 'Ce qui change',
           body:
-            'Seedance 2.0 est le workflow Seedance le plus recent, avec une meilleure continuite multi-shot, des entrees de reference plus larges, et une approche audio-first plus actuelle que Seedance 1.5 Pro.',
+            'Seedance 2.0 est le workflow video IA Seedance le plus recent, avec une meilleure continuite multi-shot, des entrees de reference plus larges, et une approche audio-first plus actuelle que Seedance 1.5 Pro.',
         },
         {
           title: 'Quand rester sur Seedance 1.5 Pro',
@@ -1244,7 +1363,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
         },
         {
           href: '/examples/seedance',
-          label: 'Voir les exemples Seedance',
+          label: 'Voir les exemples video IA Seedance',
         },
         {
           href: '/models/seedance-2-0-fast',
@@ -1268,7 +1387,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'Seedance 2.0 est-il meilleur que Seedance 1.5 Pro ?',
             answer:
-              'Pour la plupart des workflows actuels, oui. Seedance 2.0 est le meilleur choix par defaut si vous cherchez plus de continuite, plus de flexibilite et le modele actuel. Seedance 1.5 Pro reste suffisant quand le travail est court, stable, et deja valide sur l ancien setup.',
+              'Pour la plupart des workflows actuels, oui. Seedance 2.0 est le meilleur choix par defaut si vous cherchez le modele video IA Seedance actuel pour plus de continuite, plus de flexibilite et un usage de production plus large, tandis que Seedance 1.5 Pro reste utile comme setup Seedance Pro plus ancien pour des clips courts.',
           },
           {
             question: 'Quand faut-il passer de Seedance 1.5 Pro a Seedance 2.0 ?',
@@ -1288,6 +1407,125 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
         ],
       },
     },
+    'seedance-2-0-vs-seedance-2-0-fast': {
+      heroIntro:
+        'Comparez Seedance 2.0 et Seedance 2.0 Fast pour choisir le bon workflow video IA Seedance actuel selon votre besoin de rendu multi-shot final, d audio natif et de comparaison de workflow. Utilisez cette page pour voir quand le Seedance standard convient mieux a une sortie video Seedance soignee et quand Fast convient mieux aux tests, aux checks de timing et a l iteration moins couteuse.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Ouvrir la page modele Seedance 2.0',
+        },
+        {
+          href: '/examples/seedance',
+          label: 'Voir les exemples video IA Seedance',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Ouvrir la page modele Seedance 2.0 Fast',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir le bon workflow Seedance actuel.',
+        items: [
+          {
+            question: 'Quel modele video IA Seedance faut-il utiliser pour le travail de draft ?',
+            answer:
+              'Utilisez Seedance 2.0 Fast pour des drafts moins couteux, des tests plus rapides et des comparaisons de workflow. Utilisez Seedance 2.0 quand vous voulez une sortie multi-shot plus aboutie, l audio natif et un workflow plus pret pour la production.',
+          },
+          {
+            question: 'Quelle difference entre Seedance 2.0 et Seedance 2.0 Fast ?',
+            answer:
+              'Seedance 2.0 est le choix actuel le plus solide pour un rendu multi-shot soigne, l audio natif et des sorties a references plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux drafts moins couteux, aux checks de timing et a l iteration initiale.',
+          },
+          {
+            question: 'Seedance 2.0 est-il meilleur pour une sortie video Seedance soignee ?',
+            answer:
+              'Oui. Seedance 2.0 convient mieux quand l objectif est une sortie video Seedance soignee, tandis que Fast convient mieux quand l objectif est de tester des idees et de comparer rapidement des workflows.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-vs-veo-3-1-fast': {
+      heroIntro:
+        'Comparez Veo 3.1 et Veo 3.1 Fast pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de texte-to-video soigne, d image-to-video, de drafts plus rapides et de controle sur l audio natif.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir le bon workflow Veo actuel.',
+        items: [
+          {
+            question: 'Comment utiliser Veo 3 pour le texte-to-video et les drafts ?',
+            answer:
+              'Utilisez Veo 3.1 Fast pour des drafts moins chers, la comparaison de prompts texte-to-video et une iteration plus rapide. Utilisez Veo 3.1 quand vous voulez une sortie finale plus solide, un meilleur controle guide par references et des resultats image-to-video plus soignes.',
+          },
+          {
+            question: 'Peut-on utiliser Veo 3.1 et Veo 3.1 Fast pour l image-to-video ?',
+            answer:
+              'Oui. Les deux peuvent gerer des workflows image-to-video, mais Veo 3.1 convient mieux a des resultats plus aboutis, tandis que Veo 3.1 Fast convient mieux a des tests de prompt et de cadrage moins chers.',
+          },
+          {
+            question: 'Quand faut-il choisir Veo 3.1 plutot que Veo 3.1 Fast ?',
+            answer:
+              'Choisissez Veo 3.1 quand la qualite finale, la finition sur l audio natif et un meilleur controle guide par references comptent plus que la vitesse de draft. Choisissez Fast quand l objectif est une iteration moins chere et une validation de workflow plus rapide.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-fast-vs-veo-3-1-lite': {
+      heroIntro:
+        'Comparez Veo 3.1 Fast et Veo 3.1 Lite pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de drafts texte-to-video moins chers, de tests image-to-video, de comportement audio et d iteration plus rapide.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre les tiers Veo Fast et Lite actuels.',
+        items: [
+          {
+            question: 'Quel modele Veo 3 convient le mieux pour des tests image-to-video ?',
+            answer:
+              'Les deux peuvent convenir, mais Veo 3.1 Lite est plus adapte aux tests image-to-video audio-ready les moins chers, tandis que Veo 3.1 Fast est plus adapte quand vous voulez plus de flexibilite et une montee plus fluide vers Veo 3.1.',
+          },
+          {
+            question: 'Veo 3.1 Lite ou Veo 3.1 Fast convient mieux a des drafts texte-to-video ?',
+            answer:
+              'Veo 3.1 Lite convient mieux quand vous voulez les drafts audio-ready les moins chers. Veo 3.1 Fast convient mieux quand vous voulez plus de flexibilite, un audio optionnel et un pont plus propre vers le workflow principal Veo 3.1.',
+          },
+          {
+            question: 'Quand faut-il choisir Veo 3.1 Fast plutot que Veo 3.1 Lite ?',
+            answer:
+              'Choisissez Fast quand vous voulez plus de flexibilite de workflow, un controle audio optionnel et un chemin de montee plus simple vers Veo 3.1. Choisissez Lite quand votre priorite est le testing Veo actuel le moins cher avec audio toujours actif.',
+          },
+        ],
+      },
+    },
+    'kling-3-pro-vs-kling-3-standard': {
+      heroIntro:
+        'Comparez Kling 3 Pro et Kling 3 Standard pour choisir le bon modele Kling IA actuel pour la video multi-shot, les workflows Kling en image-vers-video, les Kling Elements reutilisables et la qualite de sortie avec audio natif.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre les tiers Kling Pro et Standard actuels.',
+        items: [
+          {
+            question: 'Quel modele Kling IA actuel convient le mieux a l image-vers-video et aux tests de prompt ?',
+            answer:
+              'Kling 3 Standard convient mieux a des tests de prompt moins couteux et a des drafts image-vers-video repetables, tandis que Kling 3 Pro convient mieux quand vous avez besoin d un controle de scene plus serre et de sorties finales plus prioritaires.',
+          },
+          {
+            question: 'Kling 3 Pro et Kling 3 Standard supportent-ils tous les deux les Kling Elements ?',
+            answer:
+              'Oui. Les deux modeles Kling actuels supportent les Kling Elements pour la continuite des personnages et des props, mais Kling 3 Pro reste le meilleur choix quand la sequence est plus exigeante ou que la continuite compte davantage.',
+          },
+          {
+            question: 'Quand faut-il choisir Kling 3 Pro plutot que Kling 3 Standard ?',
+            answer:
+              'Choisissez Kling 3 Pro quand vous avez besoin d un meilleur controle de scene, d une continuite multi-shot plus exigeante et d une sortie finale plus prioritaire. Choisissez Kling 3 Standard quand le controle des couts et les tests repetables comptent davantage.',
+          },
+        ],
+      },
+    },
   },
   es: {
     'seedance-1-5-pro-vs-seedance-2-0': {
@@ -1297,12 +1535,12 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           'Compara Seedance 1.5 Pro y Seedance 2.0 en MaxVideoAI para ver que cambia en audio, continuidad multi-shot, referencias, precio y cuando conviene actualizar.',
       },
       heroIntro:
-        'Compara Seedance 1.5 Pro y Seedance 2.0 para ver que cambio en audio nativo, continuidad multi-shot y workflows con referencias, y decidir cuando quedarse en 1.5 Pro sigue siendo suficiente y cuando pasar a 2.0 tiene mas sentido. Usa esta pagina para entender rapido los trade-offs antes de abrir el modelo Seedance actual, la pagina de ejemplos o el workflow que mejor encaja con tu caso de uso.',
+        'Compara Seedance 1.5 Pro y Seedance 2.0 para ver que cambio entre el workflow Seedance Pro anterior y el modelo de video IA de Seedance actual en audio nativo, continuidad multi-shot y workflows con referencias. Usa esta pagina para entender rapido los trade-offs antes de abrir el modelo Seedance actual, la pagina de ejemplos de video IA de Seedance o el workflow de video de Seedance que mejor encaja con tu caso de uso.',
       topCards: [
         {
           title: 'Que cambio',
           body:
-            'Seedance 2.0 es el workflow Seedance mas reciente, con mejor continuidad multi-shot, entradas de referencia mas amplias y un camino de produccion audio-first mas actual que Seedance 1.5 Pro.',
+            'Seedance 2.0 es el workflow de video IA de Seedance mas reciente, con mejor continuidad multi-shot, entradas de referencia mas amplias y un camino de produccion audio-first mas actual que Seedance 1.5 Pro.',
         },
         {
           title: 'Cuando quedarse en Seedance 1.5 Pro',
@@ -1328,7 +1566,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
         },
         {
           href: '/examples/seedance',
-          label: 'Ver ejemplos de Seedance',
+          label: 'Ver ejemplos de video IA de Seedance',
         },
         {
           href: '/models/seedance-2-0-fast',
@@ -1352,7 +1590,7 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
           {
             question: 'Es Seedance 2.0 mejor que Seedance 1.5 Pro?',
             answer:
-              'Para la mayoria de workflows actuales, si. Seedance 2.0 es la mejor opcion por defecto si te importan la continuidad, la flexibilidad y mantenerte en el modelo actual. Seedance 1.5 Pro sigue siendo suficiente cuando el trabajo es corto, estable y ya funciona bien en el setup anterior.',
+              'Para la mayoria de workflows actuales, si. Seedance 2.0 es la mejor opcion por defecto si quieres el modelo de video IA de Seedance actual para mas continuidad, flexibilidad y un uso de produccion mas amplio, mientras que Seedance 1.5 Pro sigue siendo util como setup Seedance Pro anterior para clips mas cortos.',
           },
           {
             question: 'Cuando deberia pasar de Seedance 1.5 Pro a Seedance 2.0?',
@@ -1368,6 +1606,125 @@ const COMPARE_PAGE_OVERRIDES: Partial<Record<AppLocale, Record<string, ComparePa
             question: 'Que modelo es mejor para multi-shot y audio nativo?',
             answer:
               'Seedance 2.0 es la mejor opcion para continuidad multi-shot y para el workflow de audio nativo mas actual. Seedance 1.5 Pro conviene tratarlo como una opcion anterior mas simple para clips cortos.',
+          },
+        ],
+      },
+    },
+    'seedance-2-0-vs-seedance-2-0-fast': {
+      heroIntro:
+        'Compara Seedance 2.0 y Seedance 2.0 Fast para elegir el workflow de video IA de Seedance actual mas adecuado segun tu necesidad de trabajo multi-shot final, audio nativo y comparacion de workflow. Usa esta pagina para ver cuando el Seedance estandar encaja mejor en una salida de video de Seedance mas pulida y cuando Fast encaja mejor para pruebas, checks de timing e iteracion mas barata.',
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Abrir la pagina del modelo Seedance 2.0',
+        },
+        {
+          href: '/examples/seedance',
+          label: 'Ver ejemplos de video IA de Seedance',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Abrir la pagina del modelo Seedance 2.0 Fast',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir el workflow actual de Seedance adecuado.',
+        items: [
+          {
+            question: 'Que modelo de video IA de Seedance deberia usar para trabajo de borrador?',
+            answer:
+              'Usa Seedance 2.0 Fast para borradores mas baratos, pruebas mas rapidas y comparaciones de workflow. Usa Seedance 2.0 cuando quieras una salida multi-shot mas pulida, audio nativo y un workflow mas listo para produccion.',
+          },
+          {
+            question: 'En que se diferencia Seedance 2.0 de Seedance 2.0 Fast?',
+            answer:
+              'Seedance 2.0 es la opcion actual mas fuerte para trabajo multi-shot pulido, audio nativo y salidas mas exigentes guiadas por referencias, mientras que Seedance 2.0 Fast encaja mejor en borradores mas baratos, checks de timing e iteracion temprana.',
+          },
+          {
+            question: 'Es mejor Seedance 2.0 para una salida de video de Seedance mas pulida?',
+            answer:
+              'Si. Seedance 2.0 encaja mejor cuando el objetivo es una salida de video de Seedance mas pulida, mientras que Fast encaja mejor cuando el objetivo es probar ideas y comparar workflows rapidamente.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-vs-veo-3-1-fast': {
+      heroIntro:
+        'Compara Veo 3.1 y Veo 3.1 Fast para elegir el workflow de video IA Veo 3 actual mas adecuado segun tu necesidad de text-to-video mas pulido, image-to-video, borradores mas rapidos y control sobre el audio nativo.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir el workflow Veo actual adecuado.',
+        items: [
+          {
+            question: 'Como deberia usar Veo 3 para text-to-video y borradores?',
+            answer:
+              'Usa Veo 3.1 Fast para borradores mas baratos, comparacion de prompts text-to-video e iteracion mas rapida. Usa Veo 3.1 cuando quieras una salida final mas fuerte, mejor control guiado por referencias y resultados image-to-video mas pulidos.',
+          },
+          {
+            question: 'Puedo usar tanto Veo 3.1 como Veo 3.1 Fast para image-to-video?',
+            answer:
+              'Si. Ambos pueden manejar workflows de image-to-video, pero Veo 3.1 encaja mejor en resultados mas pulidos, mientras que Veo 3.1 Fast encaja mejor en pruebas mas baratas de prompt y encuadre.',
+          },
+          {
+            question: 'Cuando deberia elegir Veo 3.1 en lugar de Veo 3.1 Fast?',
+            answer:
+              'Elige Veo 3.1 cuando la calidad final, el pulido del audio nativo y un mejor control guiado por referencias importan mas que la velocidad del borrador. Elige Fast cuando el objetivo es una iteracion mas barata y una validacion de workflow mas rapida.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-fast-vs-veo-3-1-lite': {
+      heroIntro:
+        'Compara Veo 3.1 Fast y Veo 3.1 Lite para elegir el workflow de video IA Veo 3 actual mas adecuado segun tu necesidad de borradores text-to-video mas baratos, pruebas image-to-video, comportamiento del audio e iteracion mas rapida.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir entre los tiers Veo Fast y Lite actuales.',
+        items: [
+          {
+            question: 'Que modelo Veo 3 es mejor para pruebas de image-to-video?',
+            answer:
+              'Los dos pueden servir, pero Veo 3.1 Lite encaja mejor en las pruebas image-to-video con audio mas baratas, mientras que Veo 3.1 Fast encaja mejor cuando quieres mas flexibilidad y una subida mas fluida hacia Veo 3.1.',
+          },
+          {
+            question: 'Veo 3.1 Lite o Veo 3.1 Fast es mejor para borradores text-to-video?',
+            answer:
+              'Veo 3.1 Lite encaja mejor cuando quieres los borradores con audio mas baratos. Veo 3.1 Fast encaja mejor cuando quieres mas flexibilidad, audio opcional y un puente mas limpio hacia el workflow principal de Veo 3.1.',
+          },
+          {
+            question: 'Cuando deberia elegir Veo 3.1 Fast en lugar de Veo 3.1 Lite?',
+            answer:
+              'Elige Fast cuando quieras mas flexibilidad de workflow, control opcional del audio y una ruta de subida mas simple hacia Veo 3.1. Elige Lite cuando tu prioridad sea el testing Veo actual mas barato con audio siempre activado.',
+          },
+        ],
+      },
+    },
+    'kling-3-pro-vs-kling-3-standard': {
+      heroIntro:
+        'Compara Kling 3 Pro y Kling 3 Standard para elegir el modelo Kling AI actual adecuado para video multi-shot, workflows Kling de imagen-a-video, Kling Elements reutilizables y calidad de salida con audio nativo.',
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir entre los tiers actuales de Kling Pro y Standard.',
+        items: [
+          {
+            question: '¿Que modelo Kling AI actual es mejor para imagen-a-video y pruebas de prompt?',
+            answer:
+              'Kling 3 Standard es mejor para pruebas de prompt de menor coste y borradores repetibles de imagen-a-video, mientras que Kling 3 Pro es mejor cuando necesitas un control de escena mas preciso y salidas finales mas prioritarias.',
+          },
+          {
+            question: '¿Kling 3 Pro y Kling 3 Standard soportan ambos los Kling Elements?',
+            answer:
+              'Si. Ambos modelos Kling actuales soportan Kling Elements para continuidad de personajes y props, pero Kling 3 Pro es la mejor opcion cuando la secuencia es mas exigente o la continuidad importa mas.',
+          },
+          {
+            question: '¿Cuando deberia elegir Kling 3 Pro en lugar de Kling 3 Standard?',
+            answer:
+              'Elige Kling 3 Pro cuando necesites mejor control de escena, continuidad multi-shot mas exigente y una salida final mas prioritaria. Elige Kling 3 Standard cuando importe mas controlar el coste y repetir pruebas de borrador.',
           },
         ],
       },

@@ -6,11 +6,11 @@
     "description": "Utilisez le modèle Seedance 1.5 Pro encore pris en charge sur MaxVideoAI pour des clips courts, puis passez à Seedance 2.0 pour le workflow Seedance actuel.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a0297366-57f7-4ca8-b3b6-f02c7da4d7f2-job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab.jpg"
   },
-  "overview": "Seedance 1.5 Pro reste disponible comme ancienne version Seedance encore prise en charge pour des clips cinématiques courts, des variantes répétables et des setups camera_fixed.",
+  "overview": "Seedance 1.5 Pro reste disponible comme ancien workflow Seedance Pro encore pris en charge pour des clips cinématiques courts, des variantes répétables et des setups camera_fixed.",
   "pricingNotes": "Tarification variable selon la résolution ; audio off coûte environ 50 % de moins que l’audio on.",
   "hero": {
     "title": "Seedance 1.5 Pro — ancien modèle Seedance encore pris en charge pour des clips cinématiques courts",
-    "intro": "Seedance 1.5 Pro reste disponible pour des clips cinématiques courts et répétables, tandis que Seedance 2.0 est désormais le modèle Seedance principal pour une meilleure continuité multi-plans, un audio plus riche et des workflows de référence plus larges.",
+    "intro": "Seedance 1.5 Pro reste disponible comme ancien workflow Seedance Pro encore pris en charge pour des clips cinématiques courts et répétables, tandis que Seedance 2.0 est désormais le modèle Seedance principal pour une meilleure continuité multi-plans, un audio plus riche et des workflows de référence plus larges.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
       "label": "Générer avec Seedance 1.5 Pro",
@@ -22,7 +22,7 @@
         "href": "/models/seedance-2-0"
       },
       {
-        "label": "Voir les exemples Seedance",
+        "label": "Voir les exemples vidéo IA Seedance",
         "href": "/examples/seedance"
       },
       {
@@ -140,6 +140,10 @@
     {
       "q": "Quelles résolutions sont supportées ?",
       "a": "T2V supporte 480p et 720p. I2V supporte 480p, 720p et 1080p."
+    },
+    {
+      "q": "Seedance 1.5 Pro reste-t-il le workflow Seedance Pro principal sur MaxVideoAI ?",
+      "a": "Seedance 1.5 Pro reste le workflow Seedance Pro plus ancien encore pris en charge sur MaxVideoAI, mais Seedance 2.0 est désormais le modèle Seedance actuel principal pour des usages de production plus larges."
     }
   ],
   "custom": {

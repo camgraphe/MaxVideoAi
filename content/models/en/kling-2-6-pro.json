@@ -6,10 +6,10 @@
     "description": "Use Kling 2.6 Pro on MaxVideoAI for short audio-ready AI video clips, then compare it with Kling 3 Pro for the current Kling workflow.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg"
   },
-  "overview": "Kling 2.6 Pro remains available as a supported older Kling model for short cinematic clips with native audio, text or image input, and 1080p output.",
+  "overview": "Kling 2.6 Pro remains available as a supported older Kling AI model for short cinematic clips with native audio, text-to-video or image-to-video input, and 1080p output.",
   "hero": {
     "title": "Kling 2.6 Pro — supported older Kling model for short audio-ready clips",
-    "intro": "Kling 2.6 Pro remains available for short audio-ready cinematic clips, while Kling 3 Pro is now the main Kling model for stronger multi-shot control, Elements, and newer current-generation workflows.",
+    "intro": "Kling 2.6 Pro remains available as a supported older Kling AI model for short audio-ready clips, text-to-video or image-to-video inputs, and simpler cinematic workflows, while Kling 3 Pro is now the main current Kling model for stronger multi-shot control and Kling Elements.",
     "badge": "1080p · 5–10s · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 2.6 Pro",
@@ -21,7 +21,7 @@
         "href": "/models/kling-3-pro"
       },
       {
-        "label": "View Kling examples",
+        "label": "View Kling AI video examples",
         "href": "/examples/kling"
       },
       {
@@ -137,6 +137,10 @@
     {
       "q": "Which modes are supported?",
       "a": "Text → Video and Image → Video in a single card. No first/last frame in this routing."
+    },
+    {
+      "q": "Is Kling 2.6 Pro still good for image-to-video and short dialogue shots?",
+      "a": "Yes. Kling 2.6 Pro still works for short image-to-video clips and audio-ready talking shots, but it is best treated as an older workflow for shorter controlled beats rather than the main current Kling path."
     },
     {
       "q": "What durations work best?",

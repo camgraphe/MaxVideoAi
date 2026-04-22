@@ -6,11 +6,11 @@
     "description": "Usa Kling 3 Standard en MaxVideoAI para video IA multi-shot a menor costo, con audio nativo y specs y precios en vivo antes de renderizar.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/bb896348-7394-4ef3-9cff-ff392639c8db-job_99e0f0fa-6092-4b8a-8c08-e329c579d0f2.jpg"
   },
-  "overview": "Kling 3 Standard es la variante Kling 3 actual de menor costo para prompts multi-shot, Elements reutilizables, frames finales opcionales y workflows de borrador con audio nativo.",
+  "overview": "Kling 3 Standard es el modelo Kling AI actual de menor coste para prompts multi-shot, runs Kling de imagen-a-video, Kling Elements reutilizables, frames finales opcionales y workflows de borrador con audio nativo.",
   "pricingNotes": "Tarificación por segundo: 0,252 $/s con audio, 0,168 $/s audio off, 0,308 $/s con voice control.",
   "hero": {
     "title": "Kling 3 Standard — variante Kling actual para video multi-shot a menor costo",
-    "intro": "Usa Kling 3 Standard cuando quieras el workflow Kling 3 actual a menor costo: prompts multi-shot, Elements, frames finales opcionales y audio nativo para borradores, variantes y runs de producción intermedios antes de pasar los trabajos elegidos a Kling 3 Pro.",
+    "intro": "Usa Kling 3 Standard cuando quieras el modelo Kling AI actual de menor coste para video multi-shot, tests Kling de imagen-a-video, Kling Elements reutilizables, frames finales opcionales y audio nativo antes de pasar los trabajos elegidos a Kling 3 Pro.",
     "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 3 Standard",
@@ -22,7 +22,7 @@
         "href": "/models/kling-3-pro"
       },
       {
-        "label": "Ver ejemplos Kling",
+        "label": "Ver los ejemplos de video IA Kling",
         "href": "/examples/kling"
       },
       {
@@ -72,7 +72,7 @@
   "technicalOverview": [
     {
       "label": "Detalles",
-      "body": "Kling 3 Standard está pensado para generación estructurada: prompts multi‑shot, Elements reutilizables (@Element1…), frame final opcional y audio nativo con voice IDs. Úsalo cuando quieras control tipo storyboard y muchas variantes en un tier más económico."
+      "body": "Kling 3 Standard está pensado para generación estructurada: prompts multi‑shot, Kling Elements reutilizables (@Element1…), frame final opcional y audio nativo con voice IDs. Úsalo cuando quieras control tipo storyboard y muchas variantes en un tier más económico."
     },
     {
       "label": "Duración",
@@ -96,7 +96,7 @@
     },
     {
       "label": "Controles",
-      "body": "Escenas multi‑prompt, elements, shot type, voice IDs"
+      "body": "Escenas multi‑prompt, Kling Elements, shot type, voice IDs"
     },
     {
       "label": "Audio",
@@ -106,7 +106,7 @@
   "promptStructure": {
     "title": "Promptear Kling 3 Standard",
     "quote": "Escena 1: [plano]. Escena 2: [plano]. Escena 3: [plano]. Define la duración de cada escena.",
-    "description": "Divide un clip en escenas y ancla la continuidad con Elements y un frame final.",
+    "description": "Divide un clip en escenas y ancla la continuidad con Kling Elements y un frame final.",
     "steps": [
       "Divide el clip en escenas",
       "Asigna duraciones",
@@ -142,19 +142,23 @@
       "a": "Sí. Puedes dividir un clip en varias escenas con prompts separados."
     },
     {
-      "q": "¿Cuál es la diferencia vs Pro?",
-      "a": "Standard ofrece los mismos controles multi‑prompt y Elements a menor costo; Pro prioriza fidelidad premium."
+      "q": "¿Qué son los Kling Elements?",
+      "a": "Los Kling Elements te permiten definir personajes o props una vez y reutilizarlos entre planos para mantener identidad y continuidad de objeto con más estabilidad."
     },
     {
-      "q": "¿Soporta imagen‑a‑video?",
-      "a": "Sí. Usa una imagen inicial y un frame final opcional."
+      "q": "¿Es Kling 3 Standard un buen modelo Kling AI para probar imagen-a-video?",
+      "a": "Sí. Kling 3 Standard es un buen punto de partida de menor coste para tests repetibles de imagen-a-video, borradores y comparaciones de prompt antes de subir las direcciones ganadoras a Kling 3 Pro."
+    },
+    {
+      "q": "¿Cuál es la diferencia vs Pro?",
+      "a": "Standard ofrece los mismos controles multi‑prompt y Elements a menor costo; Pro prioriza fidelidad premium."
     }
   ],
   "custom": {
     "whyTitle": "Por qué Kling 3 Standard es potente",
     "heroHighlights": [
       "Generación multi‑shot estructurada||Divide un clip en varios prompts y beats de tiempo para control tipo storyboard",
-      "Elements reutilizables para consistencia||Define personajes/props una vez y referencia @Element1 / @Element2 para reducir el drift entre planos",
+      "Kling Elements reutilizables para consistencia||Define personajes/props una vez y referencia @Element1 / @Element2 para reducir el drift entre planos",
       "Audio nativo cuando lo necesitas||Genera diálogo + ambiente + SFX en la misma pasada, o apaga el audio para borradores silenciosos",
       "Control de frame final para mejores cierres||Usa un frame final opcional para aterrizar transiciones, match cuts y reveals de producto"
     ],

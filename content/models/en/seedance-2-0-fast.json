@@ -5,11 +5,11 @@
     "title": "Seedance 2.0 Fast | Fast AI Video Model, Specs & Pricing | MaxVideoAI",
     "description": "Use Seedance 2.0 Fast on MaxVideoAI for faster AI video drafts, multimodal iterations, and live specs and pricing before you render."
   },
-  "overview": "Seedance 2.0 Fast is the current fast Seedance model for quicker draft passes, shot planning, and comparison loops before final renders.",
+  "overview": "Seedance 2.0 Fast is the current fast Seedance AI video model for quicker draft passes, shot planning, and comparison loops before final renders.",
   "pricingNotes": "Seedance 2 Fast uses Fal token pricing. MaxVideoAI adds its margin and rounds up to the next cent; Generate shows the final quote before submission.",
   "hero": {
     "title": "Seedance 2.0 Fast — current fast Seedance model for draft passes and iteration",
-    "intro": "Use Seedance 2.0 Fast for quicker draft passes, shot planning, timing checks, and A/B iterations before moving approved directions into Seedance 2.0.",
+    "intro": "Use Seedance 2.0 Fast as the faster Seedance AI video model for quicker draft passes, shot planning, timing checks, and A/B iterations before moving approved directions into Seedance 2.0.",
     "badge": "Fast tier · 3 workflows · 480p/720p · Auto or 4-15s · Native audio",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0 Fast",
@@ -21,7 +21,7 @@
         "href": "/models/seedance-2-0"
       },
       {
-        "label": "View Seedance examples",
+        "label": "View Seedance AI video examples",
         "href": "/examples/seedance"
       },
       {
@@ -91,7 +91,7 @@
     },
     {
       "label": "Fal positioning",
-      "body": "Fal's public Seedance page groups Fast with the same cinematic, audio-native, multimodal endpoint family."
+      "body": "Fal's public Seedance page groups Fast with the same Seedance AI video family, keeping cinematic, audio-native, and multimodal workflows in the same endpoint stack."
     }
   ],
   "promptStructure": {
@@ -136,7 +136,7 @@
   "faqs": [
     {
       "q": "What is Seedance 2.0 Fast?",
-      "a": "Seedance 2.0 Fast is the quicker iteration tier inside the Seedance 2 family, designed for faster draft passes before you move winning directions into standard Seedance 2.0."
+      "a": "Seedance 2.0 Fast is the quicker Seedance AI video option inside the Seedance 2 family, designed for faster draft passes before you move winning directions into standard Seedance 2.0."
     },
     {
       "q": "Does Seedance 2.0 Fast keep text-to-video, image-to-video, and reference-to-video?",

@@ -6,10 +6,10 @@
     "description": "Usa Kling 2.6 Pro en MaxVideoAI para clips de video IA cortos listos para audio y compáralo con Kling 3 Pro para el workflow Kling actual.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg"
   },
-  "overview": "Kling 2.6 Pro sigue disponible como modelo Kling anterior aún compatible para clips cinematográficos cortos con audio nativo, entrada de texto o imagen y salida 1080p.",
+  "overview": "Kling 2.6 Pro sigue disponible como modelo Kling AI anterior aún compatible para clips cinematográficos cortos con audio nativo, entrada de texto-a-video o imagen-a-video y salida 1080p.",
   "hero": {
     "title": "Kling 2.6 Pro — modelo Kling anterior aún compatible para clips cortos con audio nativo",
-    "intro": "Kling 2.6 Pro sigue disponible para clips cinematográficos cortos listos para audio, mientras que Kling 3 Pro es ahora el modelo Kling principal para un mejor control multi-shot, Elements y workflows actuales.",
+    "intro": "Kling 2.6 Pro sigue disponible como modelo Kling AI anterior aún compatible para clips cortos listos para audio, entradas de texto-a-video o imagen-a-video y workflows cinematográficos más simples, mientras que Kling 3 Pro es ahora el modelo Kling actual principal para un mejor control multi-shot y los Kling Elements.",
     "badge": "1080p · 5–10 s · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Kling 2.6 Pro",
@@ -21,7 +21,7 @@
         "href": "/models/kling-3-pro"
       },
       {
-        "label": "Ver ejemplos de Kling",
+        "label": "Ver los ejemplos de video IA Kling",
         "href": "/examples/kling"
       },
       {
@@ -137,6 +137,10 @@
     {
       "q": "¿Qué modos soporta?",
       "a": "Texto → Video e Imagen → Video en una sola tarjeta. No hay first/last frame en este routing."
+    },
+    {
+      "q": "¿Sigue siendo util Kling 2.6 Pro para imagen-a-video y planos cortos con dialogo?",
+      "a": "Sí. Kling 2.6 Pro sigue sirviendo para clips cortos de imagen-a-video y planos hablados audio-ready, pero conviene tratarlo como un workflow anterior para beats controlados y más cortos, no como el camino Kling actual principal."
     },
     {
       "q": "¿Qué duraciones funcionan mejor?",

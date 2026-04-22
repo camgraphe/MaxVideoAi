@@ -6,11 +6,11 @@
     "description": "Utilisez Kling 3 Pro sur MaxVideoAI pour la vidéo IA multi-plans, le contrôle de scène, l’audio natif et les specs et prix live avant de générer.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
-  "overview": "Kling 3 Pro est le modèle Kling actuel sur MaxVideoAI pour la vidéo multi-plans, le contrôle de scène, les Elements réutilisables, les images de fin optionnelles et les workflows avec audio natif.",
+  "overview": "Kling 3 Pro est le modèle vidéo IA Kling actuel sur MaxVideoAI pour la vidéo multi-plans, les workflows Kling en image-vers-video, les Kling Elements réutilisables, les images de fin optionnelles et l’audio natif.",
   "pricingNotes": "Tarification par seconde : 0,336 $/s avec audio, 0,224 $/s audio off, 0,392 $/s avec voice control.",
   "hero": {
     "title": "Kling 3 Pro — modèle Kling actuel pour la vidéo multi-plans et le contrôle de scène",
-    "intro": "Kling 3 Pro est le modèle Kling actuel pour la vidéo multi-plans, les Elements réutilisables, les images de fin optionnelles et l’audio natif quand vous avez besoin du contrôle de scène le plus solide sur des pubs, trailers et séquences cinématiques.",
+    "intro": "Kling 3 Pro est le modèle Kling IA actuel pour la vidéo multi-plans, les workflows Kling en image-vers-video, les Kling Elements réutilisables, les images de fin optionnelles et l’audio natif quand vous avez besoin du contrôle de scène le plus solide sur des pubs, trailers et séquences cinématiques.",
     "badge": "1080p · 3–15 s · Multi‑prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Générer avec Kling 3 Pro",
@@ -18,7 +18,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "Voir des exemples Kling",
+        "label": "Voir les exemples video IA Kling",
         "href": "/examples/kling"
       },
       {
@@ -84,7 +84,7 @@
   "technicalOverview": [
     {
       "label": "Détails",
-      "body": "Kling 3 Pro est conçu pour une génération structurée : multi‑shot prompting (multi_prompt), Elements réutilisables (@Element1…), image de fin optionnelle et audio natif avec voice IDs. Traitez‑le comme un storyboard : étiquetez les plans, gardez une action claire par plan et réutilisez les mêmes ancrages (sujet, tenue/props, lumière) sur l’ensemble des plans."
+      "body": "Kling 3 Pro est conçu pour une génération structurée : multi‑shot prompting (multi_prompt), Kling Elements réutilisables (@Element1…), image de fin optionnelle et audio natif avec voice IDs. Traitez‑le comme un storyboard : étiquetez les plans, gardez une action claire par plan et réutilisez les mêmes ancrages (sujet, tenue/props, lumière) sur l’ensemble des plans."
     },
     {
       "label": "Durée",
@@ -108,7 +108,7 @@
     },
     {
       "label": "Contrôles",
-      "body": "Multi‑prompt par scène, elements, shot type, voice IDs"
+      "body": "Multi‑prompt par scène, Kling Elements, shot type, voice IDs"
     },
     {
       "label": "Audio",
@@ -118,7 +118,7 @@
   "promptStructure": {
     "title": "Prompter Kling 3 Pro",
     "quote": "Scène 1 : [plan]. Scène 2 : [plan]. Scène 3 : [plan]. Ajoutez une durée par scène et des indications audio.",
-    "description": "Utilisez le multi‑prompt pour structurer vos scènes et gardez la cohérence avec les Elements et une image de fin.",
+    "description": "Utilisez le multi‑prompt pour structurer vos scènes et gardez la cohérence avec les Kling Elements et une image de fin.",
     "steps": [
       "Découper le clip en 2–4 scènes",
       "Attribuer une durée à chaque scène",
@@ -154,19 +154,23 @@
       "a": "Il permet de découper un clip en plusieurs scènes avec prompts et durées distincts."
     },
     {
+      "q": "Que sont les Kling Elements ?",
+      "a": "Les Kling Elements vous permettent de définir une fois des personnages ou des props, puis de les réutiliser d’un plan à l’autre pour garder une identité et une continuité d’objet plus stables."
+    },
+    {
       "q": "Puis‑je contrôler les voix ?",
       "a": "Oui, en fournissant des voice IDs pour activer le voice control."
     },
     {
-      "q": "Kling 3 Pro supporte‑t‑il l’image‑vers‑vidéo ?",
-      "a": "Oui, avec une image de départ et une image de fin optionnelle."
+      "q": "Comment utiliser Kling AI pour l’image-vers-video et les scenes multi-plans ?",
+      "a": "Utilisez une image source ou un frame de depart clair, gardez une seule action lisible par plan, et reutilisez les memes ancrages Kling Elements entre scenes pour reduire la derive."
     }
   ],
   "custom": {
     "whyTitle": "Pourquoi Kling 3 Pro est puissant",
     "heroHighlights": [
       "Storyboards multi‑plans en un rendu||Dirigez un clip plan par plan (jusqu’à ~6 plans) au lieu de tout compresser dans un paragraphe",
-      "Elements pour des personnages et props stables||Définissez personnages/objets une fois, puis référencez‑les comme @Element1 / @Element2 pour réduire la dérive",
+      "Kling Elements pour des personnages et props stables||Définissez personnages/objets une fois, puis référencez‑les comme @Element1 / @Element2 pour réduire la dérive",
       "Voice control quand l’audio compte||Voice IDs optionnels pour garder la même voix entre prises ; référencez‑les comme <<<voice_1>>> / <<<voice_2>>> (max 2)",
       "Image de fin pour des finitions propres||Utilisez une image de fin optionnelle pour mieux atterrir transitions, match cuts et reveals produit",
       "Shot type pour une couverture plus rapide||Choisissez shot_type selon l’intention : “intelligent” pour couverture auto, “customize” pour un contrôle strict"
@@ -198,7 +202,7 @@
     "promptingTitle": "Comment prompter Kling 3 Pro pour le multi-plan",
     "promptingGuideLabel": "Guide de prompting Kling 3.0",
     "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
-    "promptingIntro": "Kling 3 Pro récompense un prompting de type storyboard avec multi_prompt, ancres @Element réutilisables, image de fin optionnelle et cues audio natives très courtes. Pensez comme un chef de plan, pas comme un romancier.",
+    "promptingIntro": "Kling 3 Pro récompense un prompting de type storyboard avec multi_prompt, ancres Kling Elements réutilisables, image de fin optionnelle et cues audio natives très courtes. Pensez comme un chef de plan, pas comme un romancier.",
     "promptingGlobalPrinciples": [
       "Pensez en plans, pas en clips : une action lisible par plan.",
       "Placez cadrage + mouvement caméra avant les adjectifs de style.",

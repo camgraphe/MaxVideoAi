@@ -678,8 +678,8 @@
         "description": "Réponses courtes aux questions fréquentes sur la génération vidéo IA.",
         "items": [
           {
-            "q": "Quel est le meilleur générateur de vidéos IA ?",
-            "a": "Cela dépend de ce que vous créez. Certains modèles excellent en mouvement cinématique, d’autres en vitesse, en précision de prompt ou en cohérence. MaxVideoAI vous aide à comparer plusieurs modèles vidéo IA pour choisir le plus adapté à chaque projet."
+            "q": "Comment choisir le meilleur modèle texte-vers-vidéo IA ?",
+            "a": "Commencez par décider ce qui compte le plus pour le plan : mouvement cinématique, fidélité au prompt, vitesse, coût ou cohérence. Comparez ensuite les modèles côte à côte pour choisir l’option texte-vers-vidéo IA la plus adaptée à ce projet, au lieu de supposer qu’un seul moteur est le meilleur pour tous les briefs."
           },
           {
             "q": "Puis-je générer des vidéos à partir de prompts texte ?",
@@ -832,6 +832,7 @@
       "points": [
         "La durée évolue linéairement (4 s / 8 s / 12 s).",
         "La résolution augmente le coût en 1080p vs 720p.",
+        "Les routes texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA peuvent avoir des prix différents selon le moteur et le type d’entrée.",
         "L’audio ajoute une légère prime sur les moteurs compatibles.",
         "Le niveau du moteur (Sora/Veo/Pika/MiniMax) fixe le tarif de base."
       ]
@@ -916,6 +917,10 @@
       {
         "question": "Les vidéos comportent-elles un filigrane ?",
         "answer": "Non. Les rendus livrés depuis MaxVideoAI arrivent sans watermark."
+      },
+      {
+        "question": "Les workflows texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA coûtent-ils la même chose ?",
+        "answer": "Pas toujours. Les routes texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA peuvent avoir des prix différents selon le moteur, le type d’entrée, la durée, la résolution et l’activation ou non de l’audio ou de contrôles supplémentaires."
       }
     ],
     "priceChipSuffix": "Prix avant génération.",
@@ -1471,7 +1476,7 @@
     "hero": {
       "title": "Exemples de vidéo IA que vous pouvez cloner.",
       "subtitle": "Survolez pour boucler, cliquez pour agrandir. Chaque clip prévisualise le mouvement et le style que vous pouvez utiliser dans MaxVideo AI.",
-      "body": "Parcourez des exemples vidéo IA avec prompt, format, durée et prix affichés par clip. Utilisez ce hub pour filtrer par marque, puis ouvrez les pages modèles pour les specs, limites et prix exacts. Une page de marque peut inclure plusieurs modèles et modes."
+      "body": "Parcourez des exemples vidéo IA avec prompt, format, durée et prix affichés par clip. Utilisez ce hub pour passer en revue des workflows texte-vers-vidéo IA, image-vers-vidéo IA et certains workflows vidéo-vers-vidéo IA par marque, puis ouvrez les pages modèles pour les specs, limites et prix exacts. Une page de marque peut inclure plusieurs modèles et modes."
     },
     "items": [
       {

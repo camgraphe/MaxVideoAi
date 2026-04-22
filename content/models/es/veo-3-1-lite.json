@@ -6,10 +6,10 @@
     "description": "Usa Veo 3.1 Lite en MaxVideoAI para borradores con audio a menor coste, specs en tiempo real y precios antes de pasar los outputs seleccionados a Veo 3.1.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0a6e2df3-0107-4ea7-8f70-6e03e406f39b.jpg"
   },
-  "overview": "Veo 3.1 Lite es la variante Veo actual más económica para borradores cortos con audio, checks de timing y pruebas de prompt con audio nativo incluido y precios por segundo.",
+  "overview": "Veo 3.1 Lite es la variante Google Veo 3.1 actual mas economica para borradores cortos de text-to-video e image-to-video, checks de timing y pruebas de prompt con audio nativo incluido y precios por segundo.",
   "hero": {
     "title": "Veo 3.1 Lite — variante Veo actual para borradores con audio a menor coste",
-    "intro": "Usa Veo 3.1 Lite cuando quieras una opción Veo actual más económica con audio nativo incluido para borradores sociales cortos, checks de timing y pruebas rápidas de prompt antes de pasar los runs seleccionados a Veo 3.1.",
+    "intro": "Usa Google Veo 3.1 Lite como el workflow de video IA Veo 3 de menor coste para borradores cortos de text-to-video e image-to-video con audio nativo siempre activado, y luego pasa los runs ganadores a Veo 3.1 Fast o Veo 3.1.",
     "badge": "720p/1080p · 4–8 s · Texto, imagen inicial y último frame",
     "ctaPrimary": {
       "label": "Probar Veo 3.1 Lite",
@@ -29,7 +29,7 @@
         "href": "/models/veo-3-1-fast"
       },
       {
-        "label": "Ver ejemplos de Veo",
+        "label": "Ver ejemplos de Veo 3.1",
         "href": "/examples/veo"
       },
       {
@@ -137,6 +137,10 @@
   ],
   "faqs": [
     {
+      "q": "Es Veo 3.1 Lite una buena opcion para probar prompts de image-to-video?",
+      "a": "Si. Veo 3.1 Lite encaja bien en pruebas de image-to-video mas baratas, borradores cortos con audio y checks rapidos de prompt antes de pasar los ganadores a tiers Veo superiores."
+    },
+    {
       "q": "¿Cuándo usar Veo 3.1 Lite en lugar de Veo 3.1?",
       "a": "Usa Veo 3.1 Lite para las pruebas Veo más baratas, variantes sociales y revisiones internas; cambia a Veo 3.1 Fast o Veo 3.1 cuando necesites más control o finales premium."
     },
@@ -236,7 +240,7 @@
     "galleryIntro": "Explora clips generados con Veo 3.1 Lite usando los mismos presets que tienes.",
     "galleryAllCta": "Ver todos los ejemplos Veo 3.1 Lite →",
     "recreateLabel": "Recrear esta toma →",
-    "imageTitle": "Imagen→Video con Veo 3.1 Lite",
+    "imageTitle": "Flow image-to-video con Google Veo 3.1 Lite",
     "imageIntro": "Anima un solo still en un loop rápido o toma hero.",
     "imageFlow": [
       "Sube una foto lifestyle o de producto.",

@@ -598,8 +598,8 @@
         "description": "Short answers for common AI video generation questions.",
         "items": [
           {
-            "q": "What's the best AI video generator?",
-            "a": "It depends on what you are making. Some models are better for cinematic motion, others for speed, prompt accuracy, or consistency. MaxVideoAI helps you compare multiple AI video models so you can choose the best option for each project."
+            "q": "How do I choose the best text-to-video AI model?",
+            "a": "Start by deciding what matters most for the shot: cinematic motion, prompt fidelity, speed, cost, or consistency. Then compare models side by side so you can choose the best text-to-video AI option for that specific project instead of assuming one model is best for every brief."
           },
           {
             "q": "Can I generate videos from text prompts?",
@@ -752,6 +752,7 @@
       "points": [
         "Duration scales linearly (4s / 8s / 12s).",
         "Resolution increases cost at 1080p vs 720p.",
+        "Text-to-video AI, image-to-video AI, and video-to-video AI routes can price differently depending on the engine and input type.",
         "Audio adds a small premium on supported engines.",
         "Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate."
       ]
@@ -832,6 +833,10 @@
       {
         "question": "Do videos have watermarks?",
         "answer": "No. Renders produced through MaxVideoAI are delivered without watermarks."
+      },
+      {
+        "question": "Do text-to-video AI, image-to-video AI, and video-to-video AI workflows cost the same?",
+        "answer": "Not always. Text-to-video AI, image-to-video AI, and video-to-video AI routes can price differently depending on the engine, input type, duration, resolution, and whether audio or extra controls are enabled."
       }
     ],
     "priceChipSuffix": "Price before you generate.",
@@ -1460,7 +1465,7 @@
     "hero": {
       "title": "AI video examples you can clone.",
       "subtitle": "Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI.",
-      "body": "Browse AI video examples with prompts, format, duration, and pricing shown per clip. Use this hub to filter by brand, then open model pages for exact specs, limits, and pricing. Brand pages can include multiple models and modes."
+      "body": "Browse AI video examples with prompts, format, duration, and pricing shown per clip. Use this hub to review text-to-video AI, image-to-video AI, and selected video-to-video AI workflows by brand, then open model pages for exact specs, limits, and pricing. Brand pages can include multiple models and modes."
     },
     "items": [
       {

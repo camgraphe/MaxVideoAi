@@ -5,11 +5,11 @@
     "title": "Seedance 2.0 | Modelo de video IA, precio, audio nativo y casos de uso | MaxVideoAI",
     "description": "Usa Seedance 2.0 en MaxVideoAI para video multi-shot, audio nativo, el precio actual, capacidades clave y los mejores casos de uso del workflow Seedance actual."
   },
-  "overview": "Seedance 2.0 es el modelo Seedance actual en MaxVideoAI para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico.",
+  "overview": "Seedance 2.0 es el modelo de video IA de Seedance actual en MaxVideoAI para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico.",
   "pricingNotes": "Seedance 2 sigue la fórmula de tokens de Fal. MaxVideoAI añade su margen y redondea al céntimo superior; Generate muestra el precio final antes de enviar.",
   "hero": {
     "title": "Seedance 2.0 — modelo Seedance actual para video multi-shot y audio nativo",
-    "intro": "Seedance 2.0 es el modelo Seedance actual para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar el precio, las capacidades clave, los mejores casos de uso y cuándo Seedance 2.0 encaja mejor que Fast o que versiones Seedance anteriores.",
+    "intro": "Seedance 2.0 es el modelo de video IA de Seedance actual para video multi-shot, audio nativo y workflows guiados por referencias cuando necesitas la ruta principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar el precio, las capacidades clave, los mejores casos de uso y cuándo este workflow de video de Seedance encaja mejor que Fast o que versiones Seedance anteriores.",
     "badge": "3 workflows · 480p/720p · Auto o 4-15 s · Audio nativo · 9 imágenes / 3 videos / 3 audios de referencia",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0",
@@ -17,7 +17,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver ejemplos de Seedance",
+        "label": "Ver ejemplos de video IA de Seedance",
         "href": "/examples/seedance"
       },
       {
@@ -79,7 +79,7 @@
   "technicalOverview": [
     {
       "label": "Rol",
-      "body": "El último modelo de video de ByteDance, basado en una arquitectura multimodal unificada de audio y video."
+      "body": "El último modelo de video IA de Seedance de ByteDance, basado en una arquitectura multimodal unificada de audio y video."
     },
     {
       "label": "Entradas",
@@ -156,7 +156,7 @@
   "faqs": [
     {
       "q": "¿Para qué es mejor Seedance 2.0?",
-      "a": "Seedance 2.0 funciona mejor para anuncios multi-shot pulidos, secuencias de marca, escenas guiadas por audio y workflows con referencias donde la continuidad importa más que la velocidad de borrador."
+      "a": "Seedance 2.0 funciona mejor para workflows de video IA de Seedance pulidos, anuncios multi-shot, secuencias de marca, escenas guiadas por audio y producciones con referencias donde la continuidad importa más que la velocidad de borrador."
     },
     {
       "q": "¿Seedance 2.0 incluye audio nativo?",
@@ -182,9 +182,9 @@
       "Precio y ruta actual||Usa Seedance 2.0 cuando quieras la ruta actual principal de Seedance y el precio final visible antes de generar.",
       "Audio nativo||Diálogo, ambiente, música y efectos sonoros pueden mantenerse dentro del mismo flujo de generación en lugar de tratarse como una capa aparte.",
       "Seedance 2.0 vs Seedance 2.0 Fast||Elige Seedance 2.0 para trabajo multi-shot más fuerte en calidad final, y Fast cuando la necesidad principal sea iteración de borradores y comparación de rutas.",
-      "Empieza con los ejemplos de Seedance||Abre primero la página de ejemplos si quieres ver patrones de salida, bases de prompts y ajustes antes de lanzar una producción real."
+      "Empieza con los ejemplos de video IA de Seedance||Abre primero la página de ejemplos si quieres ver patrones de salida, bases de prompts y ajustes antes de lanzar una producción real."
     ],
-    "heroSupportLine": "Empieza con los ejemplos de Seedance, usa Seedance 2.0 para el workflow multi-shot principal con audio nativo y compáralo con Fast cuando necesites borradores más rápidos.",
+    "heroSupportLine": "Empieza con los ejemplos de video IA de Seedance, usa Seedance 2.0 para el workflow multi-shot principal con audio nativo y compáralo con Fast cuando necesites borradores más rápidos.",
     "specTitle": "Especificaciones",
     "specNote": "Solo se listan puntos con fuente oficial; el precio final y los detalles de ruta se revisan dentro de Generate.",
     "specSections": [

@@ -6,11 +6,11 @@
     "description": "Usa el modelo Seedance 1.5 Pro aún compatible en MaxVideoAI para clips cortos, y pasa a Seedance 2.0 para el workflow Seedance actual.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a0297366-57f7-4ca8-b3b6-f02c7da4d7f2-job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab.jpg"
   },
-  "overview": "Seedance 1.5 Pro sigue disponible como versión anterior de Seedance aún compatible para clips cinematográficos cortos, variantes repetibles y setups camera_fixed.",
+  "overview": "Seedance 1.5 Pro sigue disponible como workflow Seedance Pro anterior aún compatible para clips cinematográficos cortos, variantes repetibles y setups camera_fixed.",
   "pricingNotes": "La tarificación varía por resolución; audio off cuesta aprox. 50% menos que audio on.",
   "hero": {
     "title": "Seedance 1.5 Pro — modelo Seedance anterior aún compatible para clips cinematográficos cortos",
-    "intro": "Seedance 1.5 Pro sigue disponible para clips cinematográficos cortos y repetibles, mientras que Seedance 2.0 es ahora el modelo Seedance principal para una mejor continuidad multi-shot, audio más rico y workflows de referencia más amplios.",
+    "intro": "Seedance 1.5 Pro sigue disponible como workflow Seedance Pro anterior aún compatible para clips cinematográficos cortos y repetibles, mientras que Seedance 2.0 es ahora el modelo Seedance principal para una mejor continuidad multi-shot, audio más rico y workflows de referencia más amplios.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
       "label": "Generar con Seedance 1.5 Pro",
@@ -22,7 +22,7 @@
         "href": "/models/seedance-2-0"
       },
       {
-        "label": "Ver ejemplos de Seedance",
+        "label": "Ver ejemplos de video IA de Seedance",
         "href": "/examples/seedance"
       },
       {
@@ -140,6 +140,10 @@
     {
       "q": "¿Qué resoluciones se soportan?",
       "a": "T2V soporta 480p y 720p. I2V soporta 480p, 720p y 1080p."
+    },
+    {
+      "q": "¿Sigue siendo Seedance 1.5 Pro el workflow Seedance Pro principal en MaxVideoAI?",
+      "a": "Seedance 1.5 Pro sigue siendo el workflow Seedance Pro anterior aún compatible en MaxVideoAI, pero Seedance 2.0 es ahora el modelo Seedance actual principal para trabajo de producción más amplio."
     }
   ],
   "custom": {

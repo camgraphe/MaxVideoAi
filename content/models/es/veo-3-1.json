@@ -2,14 +2,14 @@
   "marketingName": "Google Veo 3.1",
   "versionLabel": "3.1",
   "seo": {
-    "title": "Veo 3.1 | Modelo de video IA, specs y precios | MaxVideoAI",
+    "title": "Veo 3.1 | Modelo de video IA de Google, specs y precios | MaxVideoAI",
     "description": "Usa Veo 3.1 en MaxVideoAI para video IA cinematográfico, control guiado por referencias, audio nativo, specs en tiempo real y precios antes de generar.",
     "image": "/hero/veo3.jpg"
   },
-  "overview": "Veo 3.1 es el modelo Veo actual en MaxVideoAI para video cinematográfico, workflows guiados por referencias, control con imagen inicial y último frame, audio nativo y precios por segundo en tiempo real.",
+  "overview": "Veo 3.1 es el modelo de video IA de Google actual en MaxVideoAI para video cinematografico, workflows text-to-video e image-to-video, referencias, audio nativo y precios por segundo en tiempo real.",
   "hero": {
     "title": "Veo 3.1 — modelo Veo actual para video cinematográfico y control guiado por referencias",
-    "intro": "Veo 3.1 es el modelo Veo actual para video cinematográfico, workflows guiados por referencias, control con imagen inicial y último frame, y audio nativo cuando necesitas la vía principal de Veo para anuncios, films de producto y secuencias de marca más pulidas.",
+    "intro": "Google Veo 3.1 es el modelo de video IA Veo 3 actual para video cinematografico, workflows text-to-video e image-to-video, guiado por referencias y audio nativo cuando necesitas la via principal de Veo para anuncios, films de producto y secuencias de marca mas pulidas.",
     "badge": "720p/1080p · 4–8 s · Texto, imagen inicial, referencias y Extend",
     "ctaPrimary": {
       "label": "Generar con Veo 3.1",
@@ -17,7 +17,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver ejemplos de Veo",
+        "label": "Ver ejemplos de Veo 3.1",
         "href": "/examples/veo"
       },
       {
@@ -95,7 +95,7 @@
     },
     {
       "label": "Entradas",
-      "body": "Prompts de texto; Generate Video desde texto o una imagen inicial; guiado opcional con último frame; hasta 4 stills de referencia; Extend desde un video existente"
+      "body": "Prompts text-to-video; Generate Video desde texto o una imagen inicial; guiado opcional con ultimo frame; hasta 4 stills de referencia; Extend desde un video existente"
     },
     {
       "label": "Audio",
@@ -111,7 +111,7 @@
     }
   ],
   "promptStructure": {
-    "title": "Texto→Video con Veo 3.1",
+    "title": "Texto→Video con Google Veo 3.1",
     "quote": "Plano medio de [sujeto] en [entorno], [acción clara] durante 8 segundos. Cámara [movimiento], 16:9 a 1080p, look cinemático con [luz y color]. Audio: [ambiente] + [música/VO], sin subtítulos.",
     "description": "Escribe prompts como una nota de dirección concisa: cinematografía, sujeto, acción, contexto, estilo, audio, formato y duración.",
     "steps": [
@@ -149,6 +149,10 @@
   ],
   "faqs": [
     {
+      "q": "Que es Veo 3?",
+      "a": "En MaxVideoAI, Veo 3.1 es el modelo de video IA de Google actual para clips cinematicos cortos, prompts text-to-video, runs image-to-video, workflows guiados por referencias, audio nativo y extension."
+    },
+    {
       "q": "¿Veo 3.1 está disponible en Europa o Reino Unido?",
       "a": "Sí. MaxVideoAI enruta Veo mediante endpoints licenciados de DeepMind, sin contratos separados."
     },
@@ -158,7 +162,11 @@
     },
     {
       "q": "¿Veo 3.1 admite imagen→video?",
-      "a": "Sí. Empieza con un still (Imagen→Video) o usa 1–4 imágenes de referencia para guiar un clip Texto→Video."
+      "a": "Si. Google Veo 3.1 puede partir de un still en image-to-video o usar de 1 a 4 imagenes de referencia para guiar un clip en text-to-video."
+    },
+    {
+      "q": "Como uso Veo 3 para text-to-video?",
+      "a": "Empieza con un sujeto claro, una accion, una instruccion de camara y tu formato objetivo. Los prompts text-to-video de Veo 3.1 suelen funcionar mejor cuando el movimiento, la luz y los cues de audio son explicitos."
     },
     {
       "q": "¿Puedo pasar de 8 segundos?",
@@ -248,8 +256,8 @@
     "galleryIntro": "Mira renders de Veo 3.1 generados con los mismos ajustes que tienes en MaxVideoAI.",
     "galleryAllCta": "Ver todos los ejemplos de Veo 3.1 →",
     "recreateLabel": "Recrear esta toma →",
-    "imageTitle": "Flujo Imagen→Video con Veo 3.1 (+ Nano Banana)",
-    "imageIntro": "Combina Veo 3.1 con Nano Banana para fijar el estilo e iterar el movimiento.",
+    "imageTitle": "Flujo image-to-video con Google Veo 3.1 (+ Nano Banana)",
+    "imageIntro": "Combina Google Veo 3.1 con Nano Banana para fijar el estilo e iterar el movimiento.",
     "imageFlow": [
       "Genera 1–4 stills de referencia en Nano Banana (o importa tus stills de marca).",
       "Envíalos a Veo 3.1 como imágenes de referencia en Texto→Video, o parte de un solo still en Imagen→Video.",

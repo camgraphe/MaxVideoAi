@@ -6,11 +6,11 @@
     "description": "Use Kling 3 Pro on MaxVideoAI for multi-shot AI video, scene control, native audio, and live specs and pricing before you render.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
-  "overview": "Kling 3 Pro is the current Kling model on MaxVideoAI for multi-shot video, scene control, reusable Elements, optional end frames, and native audio workflows.",
+  "overview": "Kling 3 Pro is the current Kling AI video model on MaxVideoAI for multi-shot video, Kling image-to-video workflows, reusable Kling Elements, optional end frames, and native audio.",
   "pricingNotes": "Pricing is per second: $0.336/s with audio, $0.224/s audio off, $0.392/s with voice control.",
   "hero": {
     "title": "Kling 3 Pro — current Kling model for multi-shot video and scene control",
-    "intro": "Kling 3 Pro is the current Kling model for multi-shot video, reusable Elements, optional end frames, and native audio when you need the strongest scene control across ads, trailers, and cinematic sequences.",
+    "intro": "Kling 3 Pro is the current Kling AI model for multi-shot video, Kling image-to-video workflows, reusable Kling Elements, optional end frames, and native audio when you need the strongest scene control across ads, trailers, and cinematic sequences.",
     "badge": "1080p · 3–15s · Multi-prompt · Audio on/off",
     "ctaPrimary": {
       "label": "Start generating with Kling 3 Pro",
@@ -18,7 +18,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "View Kling examples",
+        "label": "View Kling AI video examples",
         "href": "/examples/kling"
       },
       {
@@ -84,7 +84,7 @@
   "technicalOverview": [
     {
       "label": "Details",
-      "body": "Kling 3 Pro is built for structured generation: multi-shot prompting (multi_prompt), reusable Elements (@Element1...), optional end frame, and native audio with optional voice IDs. Treat it like a storyboard pass: label shots, keep each shot to one clear action, and reuse the same anchors (subject, wardrobe/props, lighting) across shots."
+      "body": "Kling 3 Pro is built for structured generation: multi-shot prompting (multi_prompt), reusable Kling Elements (@Element1...), optional end frame, and native audio with optional voice IDs. Treat it like a storyboard pass: label shots, keep each shot to one clear action, and reuse the same anchors (subject, wardrobe/props, lighting) across shots."
     },
     {
       "label": "Duration",
@@ -108,7 +108,7 @@
     },
     {
       "label": "Controls",
-      "body": "Multi-prompt scenes, elements, shot type, voice IDs"
+      "body": "Multi-prompt scenes, Kling Elements, shot type, voice IDs"
     },
     {
       "label": "Audio",
@@ -118,7 +118,7 @@
   "promptStructure": {
     "title": "Prompting Kling 3 Pro",
     "quote": "Scene 1: [shot]. Scene 2: [shot]. Scene 3: [shot]. Add durations for each scene and include audio or dialogue cues.",
-    "description": "Use multi-prompt to break a clip into scenes and keep continuity with elements and an end frame.",
+    "description": "Use multi-prompt to break a clip into scenes and keep continuity with Kling Elements and an end frame.",
     "steps": [
       "Break the clip into 2–4 scenes",
       "Assign a duration to each scene",
@@ -154,19 +154,23 @@
       "a": "It lets you split a clip into multiple scenes with independent prompts and durations."
     },
     {
+      "q": "What are Kling Elements?",
+      "a": "Kling Elements let you define characters or props once, then reuse them across shots to keep identity and object continuity steadier in the same clip."
+    },
+    {
       "q": "Can I control voices?",
       "a": "Yes. Provide voice IDs to enable voice control (adds a small per-second fee)."
     },
     {
-      "q": "Does Kling 3 Pro support image-to-video?",
-      "a": "Yes. Use a start image and optionally an end frame for smoother transitions."
+      "q": "How should I use Kling AI for image-to-video and multi-shot scenes?",
+      "a": "Use one clear source image or start frame, keep one readable action per shot, and reuse the same Kling Elements anchors across scenes to reduce drift."
     }
   ],
   "custom": {
     "whyTitle": "Why Kling 3 Pro is powerful",
     "heroHighlights": [
       "Multi-shot storyboards in one render||Direct a clip shot-by-shot (up to ~6 shots) instead of cramming everything into one paragraph",
-      "Elements for stable characters and props||Define characters/objects once, then reference them as @Element1 / @Element2 across shots to reduce drift",
+      "Kling Elements for stable characters and props||Define characters/objects once, then reference them as @Element1 / @Element2 across shots to reduce drift",
       "Voice control when audio matters||Optional voice IDs let you keep the same voice across takes; reference them as <<<voice_1>>> / <<<voice_2>>> (max 2)",
       "End frame for cleaner finishes||Use an optional end frame to land transitions, match cuts, and product reveals more predictably",
       "Shot type for faster coverage||Choose shot_type depending on intent: \"intelligent\" for automatic coverage, \"customize\" for strict shot control"
@@ -198,7 +202,7 @@
     "promptingTitle": "How to Prompt Kling 3 Pro for Multi-shot Control",
     "promptingGuideLabel": "Kling 3.0 Prompting Guide",
     "promptingGuideUrl": "https://blog.fal.ai/kling-3-0-prompting-guide/",
-    "promptingIntro": "Kling 3 Pro rewards storyboard-style prompting with multi_prompt, reusable @Element anchors, optional end frame, and short native-audio cues. Think like a shot planner, not a prose writer.",
+    "promptingIntro": "Kling 3 Pro rewards storyboard-style prompting with multi_prompt, reusable Kling Elements anchors, optional end frame, and short native-audio cues. Think like a shot planner, not a prose writer.",
     "promptingGlobalPrinciples": [
       "Think in shots, not clips: one readable action per shot.",
       "Put framing + camera movement before style adjectives.",

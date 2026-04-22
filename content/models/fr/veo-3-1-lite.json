@@ -6,10 +6,10 @@
     "description": "Utilisez Veo 3.1 Lite sur MaxVideoAI pour des brouillons audio-ready à moindre coût, les specs live et les tarifs avant de faire remonter les sorties retenues vers Veo 3.1.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0a6e2df3-0107-4ea7-8f70-6e03e406f39b.jpg"
   },
-  "overview": "Veo 3.1 Lite est la variante Veo actuelle la moins chère pour des brouillons courts avec audio, des checks de timing et des tests de prompt avec audio natif inclus et tarifs à la seconde.",
+  "overview": "Veo 3.1 Lite est la variante Google Veo 3.1 actuelle la moins chere pour des brouillons texte-to-video et image-to-video courts, des checks de timing et des tests de prompt avec audio natif inclus et tarifs a la seconde.",
   "hero": {
     "title": "Veo 3.1 Lite — variante Veo actuelle pour des brouillons audio-ready à moindre coût",
-    "intro": "Utilisez Veo 3.1 Lite quand vous voulez une option Veo actuelle moins chère avec audio natif inclus pour des brouillons sociaux courts, des checks de timing et des tests de prompt rapides avant de faire remonter les runs retenus vers Veo 3.1.",
+    "intro": "Utilisez Google Veo 3.1 Lite comme workflow video IA Veo 3 a moindre cout pour des brouillons texte-to-video et image-to-video courts avec audio natif toujours actif, puis faites remonter les runs gagnants vers Veo 3.1 Fast ou Veo 3.1.",
     "badge": "720p/1080p · 4–8 s · Texte, image de départ & dernière image",
     "ctaPrimary": {
       "label": "Essayer Veo 3.1 Lite",
@@ -29,7 +29,7 @@
         "href": "/models/veo-3-1-fast"
       },
       {
-        "label": "Voir les exemples Veo",
+        "label": "Voir les exemples Veo 3.1",
         "href": "/examples/veo"
       },
       {
@@ -137,6 +137,10 @@
   ],
   "faqs": [
     {
+      "q": "Veo 3.1 Lite convient-il pour tester des prompts image-to-video ?",
+      "a": "Oui. Veo 3.1 Lite convient bien a des tests image-to-video moins chers, a des drafts courts audio-ready et a des checks de prompt rapides avant de faire remonter les gagnants vers des tiers Veo plus eleves."
+    },
+    {
       "q": "Quand utiliser Veo 3.1 Lite plutôt que Veo 3.1 ?",
       "a": "Utilisez Veo 3.1 Lite pour les tests Veo les moins chers, les variantes sociales et les reviews internes ; passez à Veo 3.1 Fast ou Veo 3.1 quand vous avez besoin de plus de contrôle ou de finals premium."
     },
@@ -236,7 +240,7 @@
     "galleryIntro": "Explorez des clips générés avec Veo 3.1 Lite en utilisant les mêmes presets que vous avez.",
     "galleryAllCta": "Voir tous les exemples Veo 3.1 Lite →",
     "recreateLabel": "Recréer ce plan →",
-    "imageTitle": "Image→Vidéo avec Veo 3.1 Lite",
+    "imageTitle": "Flow image-to-video avec Google Veo 3.1 Lite",
     "imageIntro": "Animez un still unique en loop rapide ou plan hero.",
     "imageFlow": [
       "Téléversez une photo lifestyle ou produit.",
