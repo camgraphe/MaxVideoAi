@@ -803,11 +803,11 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
   {
     slugA: 'ltx-2-fast',
     slugB: 'ltx-2',
-    nameA: 'LTX-2 Fast',
-    nameB: 'LTX-2 Pro',
+    nameA: 'LTX 2 Fast',
+    nameB: 'LTX 2',
     copyA: {
       en: {
-        title: 'Use LTX-2 Fast when you want:',
+        title: 'Use LTX 2 Fast when you want:',
         items: [
           'High-volume drafts and iteration speed',
           'Quick concept testing and pacing checks',
@@ -815,7 +815,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
         ],
       },
       fr: {
-        title: 'Utilisez LTX-2 Fast quand vous voulez :',
+        title: 'Utilisez LTX 2 Fast quand vous voulez :',
         items: [
           'Brouillons en volume et vitesse d’itération',
           'Tests de concepts rapides et vérification du pacing',
@@ -823,7 +823,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
         ],
       },
       es: {
-        title: 'Usa LTX-2 Fast cuando quieras:',
+        title: 'Usa LTX 2 Fast cuando quieras:',
         items: [
           'Borradores en volumen y velocidad de iteración',
           'Pruebas rápidas de concepto y pacing',
@@ -833,7 +833,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     },
     copyB: {
       en: {
-        title: 'Use LTX-2 Pro when you need:',
+        title: 'Use LTX 2 when you need:',
         items: [
           'Polished client-ready deliverables',
           'Higher resolution and smoother motion',
@@ -841,7 +841,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
         ],
       },
       fr: {
-        title: 'Utilisez LTX-2 Pro quand vous avez besoin :',
+        title: 'Utilisez LTX 2 quand vous avez besoin :',
         items: [
           'Livrables clients plus soignés',
           'Résolution plus élevée et mouvement plus fluide',
@@ -849,7 +849,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
         ],
       },
       es: {
-        title: 'Usa LTX-2 Pro cuando necesites:',
+        title: 'Usa LTX 2 cuando necesites:',
         items: [
           'Entregables más pulidos para cliente',
           'Más resolución y motion más suave',
@@ -979,7 +979,7 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     slugA: 'minimax-hailuo-02-text',
     slugB: 'ltx-2-fast',
     nameA: 'Hailuo 02',
-    nameB: 'LTX-2 Fast',
+    nameB: 'LTX 2 Fast',
     onlyFor: ['minimax-hailuo-02-text'],
     copyA: {
       en: {
@@ -1009,27 +1009,27 @@ const FOCUS_VS_PAIRS: FocusVsPair[] = [
     },
     copyB: {
       en: {
-        title: 'Use LTX-2 Fast when you need:',
+        title: 'Use LTX 2 Fast when you need:',
         items: [
           'More room per clip for pacing',
           'Drafts that stay closer to camera intent',
-          'An easy upgrade path to Pro',
+          'An easy upgrade path to LTX 2.3 Pro',
         ],
       },
       fr: {
-        title: 'Utilisez LTX-2 Fast quand vous avez besoin :',
+        title: 'Utilisez LTX 2 Fast quand vous avez besoin :',
         items: [
           'Plus de durée par clip pour le pacing',
           'Drafts plus proches de l’intention caméra',
-          'Chemin simple vers Pro',
+          'Chemin simple vers LTX 2.3 Pro',
         ],
       },
       es: {
-        title: 'Usa LTX-2 Fast cuando necesites:',
+        title: 'Usa LTX 2 Fast cuando necesites:',
         items: [
           'Más duración por clip para el pacing',
           'Borradores más cercanos a la intención de cámara',
-          'Camino fácil hacia Pro',
+          'Camino fácil hacia LTX 2.3 Pro',
         ],
       },
     },
