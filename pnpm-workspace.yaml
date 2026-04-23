@@ -1,12 +1,3 @@
 packages:
   - 'frontend'
   - 'packages/*'
-onlyBuiltDependencies:
-  - '@ffmpeg-installer/linux-x64'
-  - bufferutil
-  - esbuild
-  - sharp
-ignoredBuiltDependencies:
-  - '@ffmpeg-installer/darwin-arm64'
-  - '@vercel/speed-insights'
-  - unrs-resolver
