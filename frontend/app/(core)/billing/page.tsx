@@ -8,6 +8,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
 import { FEATURES } from '@/content/feature-flags';
+import { CreditCard } from 'lucide-react';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -208,6 +209,39 @@ type DispatchGaEventOptions = {
   maxAttempts?: number;
   retryDelayMs?: number;
 };
+
+function PaymentMethodsStrip() {
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Accepted payment methods">
+      <span
+        className="inline-flex h-7 min-w-[76px] items-center justify-center rounded-input border border-border bg-text-primary px-2.5 text-[11px] font-semibold text-bg"
+        aria-label="Apple Pay"
+      >
+        Apple Pay
+      </span>
+      <span
+        className="inline-flex h-7 min-w-[76px] items-center justify-center rounded-input border border-border bg-bg px-2.5 text-[11px] font-semibold text-text-primary"
+        aria-label="Google Pay"
+      >
+        <span className="text-[#4285F4]">G</span>
+        <span className="ml-1">Pay</span>
+      </span>
+      <span
+        className="inline-flex h-7 min-w-[76px] items-center justify-center gap-1.5 rounded-input border border-border bg-bg px-2.5 text-[11px] font-semibold text-text-secondary"
+        aria-label="Cards"
+      >
+        <CreditCard size={14} strokeWidth={2} aria-hidden="true" />
+        Card
+      </span>
+      <span
+        className="inline-flex h-7 min-w-[76px] items-center justify-center rounded-input border border-border bg-bg px-2.5 text-[11px] font-semibold text-[#003087]"
+        aria-label="PayPal"
+      >
+        PayPal
+      </span>
+    </div>
+  );
+}
 
 export default function BillingPage() {
   const { t } = useI18n();
@@ -886,6 +920,7 @@ export default function BillingPage() {
                   <p className={`text-xs ${currencyStatusClass}`}>{currencyStatus}</p>
                 </div>
               </div>
+              <PaymentMethodsStrip />
               <div className="mt-3 grid grid-gap-sm md:grid-cols-2">
                 {USD_TOPUP_TIERS.map((tier) => (
                   <Button
