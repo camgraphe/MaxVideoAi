@@ -54,12 +54,6 @@ type MemberStatus = {
   tiers?: MembershipTierInfo[];
 };
 
-const FALLBACK_MEMBERSHIP_TIERS: MembershipTierInfo[] = [
-  { tier: 'member', spendThresholdCents: 0, discountPercent: 0 },
-  { tier: 'plus', spendThresholdCents: 5_000, discountPercent: 0.05 },
-  { tier: 'pro', spendThresholdCents: 20_000, discountPercent: 0.1 },
-];
-
 export const dynamic = 'force-dynamic';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
@@ -419,10 +413,12 @@ function WalletExpressCheckout({
     labels.expressError,
     labels.expressClosed,
     labels.expressUnavailable,
+    locale,
     normalizedChargeCurrency,
     onPaymentFailed,
     onPaymentStarted,
     session,
+    stripePromise,
   ]);
 
   if (!session) {
@@ -1050,19 +1046,6 @@ export default function BillingPage() {
       return new Intl.NumberFormat(billingIntlLocale, { style: 'currency', currency }).format(amount);
     } catch {
       return `${currency} ${amount.toFixed(2)}`;
-    }
-  };
-
-  const formatThreshold = (amountCents: number, currency: string) => {
-    const amount = amountCents / 100;
-    try {
-      return new Intl.NumberFormat(billingIntlLocale, {
-        style: 'currency',
-        currency,
-        maximumFractionDigits: 0,
-      }).format(amount);
-    } catch {
-      return `${currency} ${Math.round(amount)}`;
     }
   };
 
