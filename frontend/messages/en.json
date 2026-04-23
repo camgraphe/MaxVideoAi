@@ -2801,6 +2801,8 @@
         "checkoutCta": "Continue to secure Stripe Checkout · {amount}",
         "checkoutNote": "Taxes and receipt are finalized by Stripe before payment.",
         "customLabel": "Custom amount",
+        "customPresetLabel": "Custom",
+        "customPresetHint": "Enter amount",
         "customPlaceholder": "Minimum $10",
         "customHint": "Enter any amount from $10.",
         "customCta": "Set amount",

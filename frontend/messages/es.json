@@ -2695,6 +2695,8 @@
         "checkoutCta": "Continuar al Checkout seguro de Stripe · {amount}",
         "checkoutNote": "Stripe finaliza los impuestos y el recibo antes del pago.",
         "customLabel": "Importe personalizado",
+        "customPresetLabel": "Personalizado",
+        "customPresetHint": "Introducir importe",
         "customPlaceholder": "Mínimo 10 $",
         "customHint": "Introduce cualquier importe desde 10 $.",
         "customCta": "Definir importe",

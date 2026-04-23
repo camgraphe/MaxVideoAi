@@ -2702,6 +2702,8 @@
         "checkoutCta": "Continuer vers le Checkout Stripe sécurisé · {amount}",
         "checkoutNote": "Les taxes et le reçu sont finalisés par Stripe avant paiement.",
         "customLabel": "Montant personnalisé",
+        "customPresetLabel": "Personnalisé",
+        "customPresetHint": "Saisir un montant",
         "customPlaceholder": "Minimum 10 $",
         "customHint": "Saisissez un montant à partir de 10 $.",
         "customCta": "Définir le montant",

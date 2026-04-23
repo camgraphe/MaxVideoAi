@@ -95,6 +95,8 @@ const DEFAULT_BILLING_COPY = {
     checkoutCta: 'Continue to secure Stripe Checkout · {amount}',
     checkoutNote: 'Taxes and receipt are finalized by Stripe before payment.',
     customLabel: 'Custom amount',
+    customPresetLabel: 'Custom',
+    customPresetHint: 'Enter amount',
     customPlaceholder: 'Minimum $10',
     customHint: 'Enter any amount from $10.',
     customCta: 'Set amount',
@@ -219,6 +221,15 @@ function formatReceiptSurfaceLabel(surface?: string | null): string | null {
     default:
       return null;
   }
+}
+
+function parseAmountToCents(value: string): number | null {
+  if (!value) return null;
+  const normalized = value.replace(',', '.').trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.round(parsed * 100);
 }
 
 type BillingCopy = Omit<typeof DEFAULT_BILLING_COPY, 'estimator'>;
@@ -476,12 +487,23 @@ export default function BillingPage() {
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [customAmountInput, setCustomAmountInput] = useState('');
+  const [customEditorOpen, setCustomEditorOpen] = useState(false);
   const [selectedTopupCents, setSelectedTopupCents] = useState(USD_TOPUP_TIERS[0]?.amountCents ?? 1000);
+  const customAmountCents = parseAmountToCents(customAmountInput);
+  const customAmountError = !customAmountInput.trim()
+    ? null
+    : customAmountCents == null
+      ? copy.wallet.customInvalid
+      : customAmountCents < 1000
+        ? copy.wallet.customMin
+        : null;
+  const customAmountValid = customAmountCents != null && customAmountCents >= 1000;
   const toggleReceipts = useCallback(() => setReceiptsCollapsed((prev) => !prev), []);
   const [topupQuotes, setTopupQuotes] = useState<Record<number, { amountMinor: number; currency: string }>>({});
   const userCurrencyOverrideRef = useRef(false);
   const autoCurrencyRef = useRef('USD');
   const conversionSentRef = useRef(false);
+  const customAmountInputRef = useRef<HTMLInputElement | null>(null);
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const loginRedirectTarget = pathname || '/billing';
 
@@ -790,7 +812,10 @@ export default function BillingPage() {
           headers,
           body: JSON.stringify({
             currency: normalizedChargeCurrency,
-            amounts: USD_TOPUP_TIERS.map((tier) => tier.amountCents),
+            amounts: [
+              ...USD_TOPUP_TIERS.map((tier) => tier.amountCents),
+              ...(customAmountValid && customAmountCents != null ? [customAmountCents] : []),
+            ],
           }),
         });
         const data = await res.json().catch(() => null);
@@ -824,7 +849,7 @@ export default function BillingPage() {
     return () => {
       canceled = true;
     };
-  }, [authLoading, session, normalizedChargeCurrency, walletQuoteError]);
+  }, [authLoading, customAmountCents, customAmountValid, session, normalizedChargeCurrency, walletQuoteError]);
 
   // no FX preview when using Checkout redirection
 
@@ -1029,15 +1054,6 @@ export default function BillingPage() {
     }
   };
 
-  const parseAmountToCents = (value: string): number | null => {
-    if (!value) return null;
-    const normalized = value.replace(',', '.').trim();
-    if (!normalized) return null;
-    const parsed = Number(normalized);
-    if (!Number.isFinite(parsed) || parsed <= 0) return null;
-    return Math.round(parsed * 100);
-  };
-
   const formatLocalAmount = useCallback((amountMinor: number, currency: string) => {
     const upper = (currency ?? 'USD').toUpperCase();
     const zeroDecimal = upper === 'JPY';
@@ -1074,15 +1090,10 @@ export default function BillingPage() {
             .replace('{selected}', normalizedChargeCurrency)
             .replace('{detected}', normalizedAutoCurrency);
   const currencyStatusClass = currencyError ? 'text-state-warning' : 'text-text-secondary';
-  const customAmountCents = parseAmountToCents(customAmountInput);
-  const customAmountError = !customAmountInput.trim()
-    ? null
-    : customAmountCents == null
-      ? copy.wallet.customInvalid
-      : customAmountCents < 1000
-        ? copy.wallet.customMin
-        : null;
-  const customAmountValid = customAmountCents != null && customAmountCents >= 1000;
+  const selectedPresetTier = USD_TOPUP_TIERS.find((entry) => entry.amountCents === selectedTopupCents) ?? null;
+  const customAmountSelected =
+    customAmountValid && selectedPresetTier == null && selectedTopupCents === customAmountCents;
+  const customCardActive = customEditorOpen || customAmountSelected;
   const visibleReceipts = receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items;
   const selectedTopupAmountLabel = formatUsdAmount(selectedTopupCents);
   const selectedTopupQuote = topupQuotes[selectedTopupCents];
@@ -1090,6 +1101,24 @@ export default function BillingPage() {
     selectedTopupQuote && normalizedChargeCurrency !== 'USD'
       ? `≈ ${formatLocalAmount(selectedTopupQuote.amountMinor, selectedTopupQuote.currency)}`
       : null;
+
+  const focusCustomAmountInput = useCallback(() => {
+    window.setTimeout(() => {
+      customAmountInputRef.current?.focus();
+      customAmountInputRef.current?.select();
+    }, 0);
+  }, []);
+
+  const openCustomAmountEditor = useCallback(() => {
+    setCustomEditorOpen(true);
+    focusCustomAmountInput();
+  }, [focusCustomAmountInput]);
+
+  const applyCustomAmount = useCallback(() => {
+    if (!customAmountValid || customAmountCents == null) return;
+    setSelectedTopupCents(customAmountCents);
+    setCustomEditorOpen(false);
+  }, [customAmountCents, customAmountValid]);
 
   if (authLoading) {
     return null;
@@ -1161,7 +1190,7 @@ export default function BillingPage() {
                   </div>
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-4">
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-5">
                   {USD_TOPUP_TIERS.map((tier) => {
                     const isSelected = selectedTopupCents === tier.amountCents;
                     const quote = topupQuotes[tier.amountCents];
@@ -1172,7 +1201,10 @@ export default function BillingPage() {
                         size="md"
                         variant="ghost"
                         aria-pressed={isSelected}
-                        onClick={() => setSelectedTopupCents(tier.amountCents)}
+                        onClick={() => {
+                          setSelectedTopupCents(tier.amountCents);
+                          setCustomEditorOpen(false);
+                        }}
                         className={`min-h-[58px] w-full flex-col items-start justify-between rounded-input border px-3 py-2 text-left sm:min-h-[74px] sm:py-3 ${
                           isSelected
                             ? 'border-brand bg-surface-2 text-text-primary shadow-card'
@@ -1190,7 +1222,70 @@ export default function BillingPage() {
                       </Button>
                     );
                   })}
+                  <Button
+                    type="button"
+                    size="md"
+                    variant="ghost"
+                    aria-pressed={customCardActive}
+                    onClick={openCustomAmountEditor}
+                    className={`col-span-2 min-h-[58px] w-full flex-col items-start justify-between rounded-input border px-3 py-2 text-left sm:col-span-1 sm:min-h-[74px] sm:py-3 ${
+                      customCardActive
+                        ? 'border-brand bg-surface-2 text-text-primary shadow-card'
+                        : 'border-border bg-bg text-text-secondary hover:border-border-hover hover:bg-surface-hover'
+                    }`}
+                  >
+                    <span className="text-sm font-semibold sm:text-base">{copy.wallet.customPresetLabel}</span>
+                    <span className="text-xs font-medium text-text-muted">
+                      {customAmountValid && customAmountCents != null
+                        ? formatUsdAmount(customAmountCents)
+                        : copy.wallet.customPresetHint}
+                    </span>
+                  </Button>
                 </div>
+
+                {customCardActive ? (
+                  <div className="mt-3 rounded-input border border-border bg-bg p-3">
+                    <label className="text-xs font-semibold uppercase tracking-micro text-text-muted" htmlFor="billing-custom-amount">
+                      {copy.wallet.customLabel}
+                    </label>
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">$</span>
+                        <Input
+                          ref={customAmountInputRef}
+                          id="billing-custom-amount"
+                          type="number"
+                          min={10}
+                          step={1}
+                          inputMode="decimal"
+                          value={customAmountInput}
+                          onChange={(event) => setCustomAmountInput(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key !== 'Enter') return;
+                            event.preventDefault();
+                            applyCustomAmount();
+                          }}
+                          placeholder={copy.wallet.customPlaceholder}
+                          className="bg-surface px-7"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!customAmountValid}
+                        onClick={applyCustomAmount}
+                        size="md"
+                        className={`px-4 ${
+                          customAmountValid ? '' : 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
+                        }`}
+                      >
+                        {copy.wallet.customCta}
+                      </Button>
+                    </div>
+                    <p className={`mt-2 text-xs ${customAmountError ? 'text-state-warning' : 'text-text-muted'}`}>
+                      {customAmountError ?? copy.wallet.customHint}
+                    </p>
+                  </div>
+                ) : null}
 
                 <div className="mt-3 rounded-input border border-brand bg-surface-2 p-3 sm:mt-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1228,42 +1323,6 @@ export default function BillingPage() {
                   onPaymentStarted={handleExpressTopupStarted}
                   onPaymentFailed={handleExpressTopupFailed}
                 />
-
-                <div className="mt-4 border-t border-border pt-4">
-                  <label className="text-xs font-semibold uppercase tracking-micro text-text-muted" htmlFor="billing-custom-amount">
-                    {copy.wallet.customLabel}
-                  </label>
-                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">$</span>
-                      <Input
-                        id="billing-custom-amount"
-                        type="number"
-                        min={10}
-                        step={1}
-                        inputMode="decimal"
-                        value={customAmountInput}
-                        onChange={(event) => setCustomAmountInput(event.target.value)}
-                        placeholder={copy.wallet.customPlaceholder}
-                        className="bg-bg px-7"
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      disabled={!customAmountValid}
-                      onClick={() => customAmountCents && setSelectedTopupCents(customAmountCents)}
-                      size="md"
-                      className={`px-4 ${
-                        customAmountValid ? '' : 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
-                      }`}
-                    >
-                      {copy.wallet.customCta}
-                    </Button>
-                  </div>
-                  <p className={`mt-2 text-xs ${customAmountError ? 'text-state-warning' : 'text-text-muted'}`}>
-                    {customAmountError ?? copy.wallet.customHint}
-                  </p>
-                </div>
                 <div className="mt-3 flex flex-col gap-1 text-left sm:hidden">
                   <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select-mobile">
                     {copy.wallet.currencyLabel}
