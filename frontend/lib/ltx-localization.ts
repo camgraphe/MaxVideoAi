@@ -454,14 +454,17 @@ const ASSET_DROPZONE_COPY: Record<UiLocale, AssetDropzoneCopy> = {
 
 const MODEL_CARD_USE_CASES: Record<UiLocale, Record<string, string>> = {
   en: {
+    'gpt-image-2': 'text-heavy stills, product photography, and controlled edits',
     'ltx-2-3': 'all-in-one LTX video workflows with audio and retakes',
     'ltx-2-3-fast': 'quick LTX 2.3 iterations for text and image video',
   },
   fr: {
+    'gpt-image-2': 'images riches en texte, packshots produit et edits controles',
     'ltx-2-3': 'workflows vidéo LTX tout-en-un avec audio, extend et retake',
     'ltx-2-3-fast': 'itérations LTX 2.3 rapides pour la génération texte et image vers vidéo',
   },
   es: {
+    'gpt-image-2': 'imagenes con texto, producto y edits controlados',
     'ltx-2-3': 'workflows de video LTX todo en uno con audio, extend y retake',
     'ltx-2-3-fast': 'iteraciones rápidas de LTX 2.3 para texto e imagen a video',
   },

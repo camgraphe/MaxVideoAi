@@ -320,6 +320,22 @@
     }
   },
   {
+    "engineId": "gpt-image-2",
+    "marketingName": "GPT Image 2",
+    "brandId": "openai",
+    "modelSlug": "gpt-image-2",
+    "family": "gpt-image",
+    "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "sora-2",
     "marketingName": "OpenAI Sora 2",
     "brandId": "openai",

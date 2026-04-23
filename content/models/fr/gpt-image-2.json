@@ -1,0 +1,180 @@
+{
+  "marketingName": "GPT Image 2",
+  "versionLabel": "2",
+  "seo": {
+    "title": "GPT Image 2 - text-to-image et edition OpenAI | MaxVideoAI",
+    "description": "Generez et editez des images avec GPT Image 2 dans MaxVideoAI. Text-to-image, image-to-image, presets Fal image_size, taille custom, niveaux de qualite, formats de sortie et mask URL optionnel.",
+    "image": "https://v3b.fal.media/files/b/0a9711ec/ogbMf2sTKAjNFA4vpWOrx_HRS2SDhR.png"
+  },
+  "overview": "GPT Image 2 est le modele image quality-first d'OpenAI dans MaxVideoAI. Une seule entree Image Lab couvre text-to-image et image-to-image, avec controle Fal image_size en preset ou objet width/height, quality, nombre de sorties, format et mask URL si l'edit doit rester dans une zone precise.",
+  "hero": {
+    "title": "GPT Image 2 - generation d'images et edits haute qualite",
+    "intro": "Generation OpenAI pour typographie nette, packshots realistes, mockups UI, infographies et edits guides par reference.",
+    "badge": "Texte -> Image · Image -> Image · Qualite Low / Medium / High",
+    "ctaPrimary": {
+      "label": "Lancer GPT Image 2",
+      "href": "/app/image?engine=gpt-image-2"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ouvrir l'Image Lab",
+        "href": "/app/image"
+      },
+      {
+        "label": "Voir les tarifs live",
+        "href": "/pricing"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d'usage",
+    "items": [
+      {
+        "title": "Texte lisible dans ads, posters et infographies",
+        "icon": "layout"
+      },
+      {
+        "title": "Photographie produit avec labels nets",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Mockups UI et ecrans d'app",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Edits de reference avec masks optionnels",
+        "icon": "layers"
+      }
+    ]
+  },
+  "promptStructure": {
+    "title": "Mini-guide de prompt",
+    "quote": "Scene, sujet, details importants, cas d'usage, contraintes, et pour les edits : changer ceci tout en preservant cela.",
+    "description": "GPT Image 2 repond bien aux prompts structures. Separez scene, sujet, composition, texte exact a rendre et contraintes d'edit. Pour les images riches en texte, indiquez le wording exact et son emplacement.",
+    "steps": [
+      "Scene et environnement",
+      "Sujet et cadrage",
+      "Texte exact ou labels a rendre",
+      "Matieres, lumiere, camera et style",
+      "Usage : packshot, ecran UI, poster ou infographie",
+      "Contraintes pour edits, masks et elements preserves"
+    ]
+  },
+  "tips": {
+    "title": "Conseils et limites",
+    "items": [
+      "Utilisez High pour les finals avec typographie, packaging ou packshots realistes.",
+      "Utilisez Low ou Medium pour explorer les layouts a moindre cout.",
+      "Utilisez auto image size en mode Edit si l'image source doit piloter le cadre.",
+      "Pour les formats custom, gardez des dimensions multiples de 16, max 3840 px sur le grand cote, et une surface entre 655 360 et 8 294 400 pixels.",
+      "Ajoutez un mask URL seulement si l'edit doit rester dans une region precise."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Still de campagne packaging",
+      "prompt": "Photo produit premium d'un sachet de cafe avec le label \"Summit Roast\", illustration montagne, notes de degustation lisibles, table bois rustique, lumiere matinale douce, faible profondeur de champ."
+    },
+    {
+      "title": "Infographie avec labels precis",
+      "prompt": "Infographie editoriale propre titree \"Creator Launch Checklist\", 12 modules nommes, typographie nette, fond blanc, espacement precis, accents bleu et graphite subtils."
+    },
+    {
+      "title": "Edit produit par reference",
+      "prompt": "Conserver la forme produit exacte et la hierarchie du label depuis la reference, remplacer le fond par une scene tabletop e-commerce lumineuse, retirer les reflets parasites, garder le texte lisible."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "GPT Image 2 supporte-t-il generation et edition ?",
+      "a": "Oui. MaxVideoAI expose une seule entree GPT Image 2 avec text-to-image vers openai/gpt-image-2 et image-to-image vers openai/gpt-image-2/edit."
+    },
+    {
+      "q": "Quels controles Fal sont disponibles ?",
+      "a": "L'Image Lab expose les presets image_size Fal, les tailles canoniques 1024x768, 1024x1024, 1024x1536, 1920x1080, 2560x1440 et 3840x2160, un mode Custom width/height, quality, num_images, output_format, les images de reference pour l'edit et mask_url optionnel."
+    },
+    {
+      "q": "Combien coute GPT Image 2 ?",
+      "a": "Le prix Fal suit la table quality x taille : 1024x768 coute 0,01 $ / 0,04 $ / 0,15 $ en Low / Medium / High ; 3840x2160 coute 0,02 $ / 0,11 $ / 0,41 $ avant les regles de compte MaxVideoAI."
+    }
+  ],
+  "pricingNotes": "Le pricing suit la table Fal quality et image_size : 1024x768 vaut 0,01 $ / 0,04 $ / 0,15 $ et 3840x2160 vaut 0,02 $ / 0,11 $ / 0,41 $ en Low / Medium / High.",
+  "custom": {
+    "heroEyebrow": "OpenAI - GPT Image 2",
+    "heroSupportLine": "Ideal pour images avec texte, packshots, mockups UI et edits controles.",
+    "heroSpecChips": [
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Controle qualite"
+      },
+      {
+        "label": "PNG / JPEG / WEBP"
+      },
+      {
+        "label": "Mask URL"
+      }
+    ],
+    "whyTitle": "Pourquoi GPT Image 2 se distingue",
+    "heroDesc1": "GPT Image 2 vise les stills haute fidelite ou rendu du texte, detail produit et adherence au prompt comptent plus que la vitesse brute.",
+    "heroDesc2": "Dans MaxVideoAI, il fonctionne comme Nano Banana : une entree modele, deux workflows, wallet partage, references reutilisables et pricing live avant lancement.",
+    "heroHighlights": [
+      "Texte lisible||Utile pour posters, labels, infographies et ecrans UI avec typographie propre.",
+      "Fidelite produit||Bon choix pour packaging, catalogue et e-commerce avec labels visibles.",
+      "Controles Fal||Image size preset ou width/height custom, quality, output format et mask URL partent directement dans la requete provider.",
+      "Workflow image unifie||Passez de Create a Edit sans quitter l'Image Lab."
+    ],
+    "whatTitle": "Comment GPT Image 2 fonctionne ici",
+    "whatIntro1": "Selectionnez GPT Image 2, choisissez Create ou Edit, reglez image count, image size, quality et output format, puis lancez depuis le meme wallet.",
+    "whatIntro2": "Pour les edits, ajoutez des references. Ajoutez un mask URL seulement si la transformation doit rester dans une zone precise.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Selectionnez GPT Image 2 dans l'Image Lab",
+      "Choisissez text-to-image ou edit",
+      "Reglez image size, quality, nombre de sorties et output format",
+      "Ajoutez references et mask URL optionnel pour les edits",
+      "Verifiez le prix live et lancez"
+    ],
+    "tipsTitle": "Conseils et limites",
+    "tipsIntro": "GPT Image 2 marche mieux quand le prompt separe sujet, composition, texte exact et contraintes.",
+    "strengths": [
+      "Utilisez High pour typographie et rendus produit finals.",
+      "Utilisez Low ou Medium pour explorer moins cher.",
+      "Pour les edits, dites ce qui change et ce qui reste.",
+      "Avec mask URL, gardez le mask public et aligne avec l'image source."
+    ],
+    "boundaries": [
+      "Images fixes uniquement.",
+      "Le composer MaxVideoAI permet actuellement jusqu'a 4 sorties par requete.",
+      "Le mode Edit exige au moins une image de reference.",
+      "Le mask est saisi sous forme d'URL."
+    ],
+    "safetyTitle": "Securite et ressemblance",
+    "safetyRules": [
+      "Pas de contenu sexuel ni de contenu impliquant des mineurs.",
+      "Pas de demandes haineuses, harcelantes ou de violence graphique.",
+      "N'usurpez pas l'identite de personnes reelles ou publiques sans consentement.",
+      "N'incluez pas de donnees personnelles privees ni de documents sensibles."
+    ],
+    "promptingTitle": "Comment ecrire un bon prompt GPT Image 2",
+    "promptingIntro": "Utilisez une structure scene, sujet, texte exact, details visuels, usage et contraintes.",
+    "promptingTip": "Astuce : mettez les mots exacts entre guillemets et decrivez ou chaque bloc de texte doit apparaitre.",
+    "promptingGlobalPrinciples": [
+      "Indiquez l'objet final : poster, packshot, ecran UI, infographie ou concept frame.",
+      "Donnez le texte exact quand la typographie compte.",
+      "Pour les edits, separez instructions a preserver et instructions a changer."
+    ],
+    "promptingEngineWhy": [
+      "Le modele est tres utile quand texte et layout font partie du brief image.",
+      "La qualite affecte le cout, donc brouillonnez moins cher puis relancez en High.",
+      "Les edits de reference sont meilleurs quand chaque source a un role clair."
+    ],
+    "promptingGuideLabel": "En savoir plus"
+  }
+}

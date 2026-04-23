@@ -554,6 +554,32 @@ test('Nano Banana 2 registry exposes image mappings and schema caps', () => {
   assert.equal(imageUrlsField?.maxCount, 14);
 });
 
+test('GPT Image 2 registry exposes unified generation and edit mappings', () => {
+  const registry = listFalEngines();
+  const gptImage2 = registry.find((entry) => entry.id === 'gpt-image-2');
+
+  assert.ok(gptImage2);
+  assert.equal(gptImage2?.modes.find((mode) => mode.mode === 't2i')?.falModelId, 'openai/gpt-image-2');
+  assert.equal(gptImage2?.modes.find((mode) => mode.mode === 'i2i')?.falModelId, 'openai/gpt-image-2/edit');
+  assert.deepEqual(
+    gptImage2?.engine.inputSchema?.optional?.find((field) => field.id === 'quality')?.values,
+    ['low', 'medium', 'high']
+  );
+  assert.equal(
+    gptImage2?.engine.inputSchema?.optional?.find((field) => field.id === 'resolution' && field.modes?.includes('t2i'))?.engineParam,
+    'image_size'
+  );
+  assert.ok(
+    gptImage2?.engine.inputSchema?.optional
+      ?.find((field) => field.id === 'resolution' && field.modes?.includes('t2i'))
+      ?.values?.includes('3840x2160')
+  );
+  assert.equal(
+    gptImage2?.engine.inputSchema?.optional?.find((field) => field.id === 'image_width')?.engineParam,
+    'image_size.width'
+  );
+});
+
 test('LTX 2.3 A2V requires audio input', () => {
   const missing = validateRequest('ltx-2-3', 'a2v', {});
   assert.equal(missing.ok, false);

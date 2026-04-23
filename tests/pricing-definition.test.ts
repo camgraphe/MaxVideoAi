@@ -37,6 +37,19 @@ test('Nano Banana 2 pricing definition includes resolution tiers and web search 
   assert.equal(definition?.addons?.enable_web_search?.flatCents, 1.5);
 });
 
+test('GPT Image 2 pricing definition exposes high-quality image size tiers', () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'gpt-image-2')?.engine;
+  assert.ok(engine);
+
+  const definition = buildPricingDefinition(engine);
+  assert.ok(definition);
+  assert.equal(definition?.baseUnitPriceCents, 15);
+  assert.equal(definition?.resolutionMultipliers['landscape_4_3'], 1);
+  assert.equal(definition?.resolutionMultipliers['landscape_16_9'], 16 / 15);
+  assert.equal(definition?.resolutionMultipliers['square_hd'], 22 / 15);
+  assert.equal(definition?.resolutionMultipliers['3840x2160'], 41 / 15);
+});
+
 test('Seedance 2 pricing definition exposes token-priced 480p and 720p tiers to the estimator', () => {
   const engine = listFalEngines().find((entry) => entry.id === 'seedance-2-0')?.engine;
   assert.ok(engine);

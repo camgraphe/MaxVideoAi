@@ -704,6 +704,26 @@
       }
     },
     {
+      "modelSlug": "gpt-image-2",
+      "sources": [
+        "https://fal.ai/models/openai/gpt-image-2/api",
+        "https://fal.ai/models/openai/gpt-image-2/edit/api",
+        "https://fal.ai/gpt-image-2"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "maxResolution": "Up to 4K canonical sizes",
+        "outputFormats": [
+          "PNG",
+          "JPEG",
+          "WEBP"
+        ],
+        "referenceImageStyle": "Supported",
+        "releaseDate": "Apr 2026"
+      }
+    },
+    {
       "modelSlug": "nano-banana",
       "sources": [
         "https://developers.googleblog.com/introducing-gemini-2-5-flash-image/",

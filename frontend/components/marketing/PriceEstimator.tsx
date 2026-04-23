@@ -94,6 +94,17 @@ const PER_IMAGE_ENGINE_CONFIG = new Map<
       ],
     },
   ],
+  [
+    'gpt-image-2',
+    {
+      rates: [
+        { value: '1024x768-low', label: 'Low 1024 x 768', rate: 0.01 },
+        { value: '1024x768-high', label: 'High 1024 x 768', rate: 0.15 },
+        { value: '1024x1024-high', label: 'High 1024 x 1024', rate: 0.22 },
+        { value: '3840x2160-high', label: 'High 3840 x 2160', rate: 0.41 },
+      ],
+    },
+  ],
 ]);
 const PER_IMAGE_ENGINE_IDS = new Set<string>(Array.from(PER_IMAGE_ENGINE_CONFIG.keys()));
 type EngineOptionOverrides = {

@@ -46,6 +46,11 @@ import {
   resolveRequestedAspectRatio,
   resolveRequestedResolution,
 } from '@/app/api/images/utils';
+import {
+  parseGptImage2SizeKey,
+  validateGptImage2CustomImageSize,
+  type GptImage2ImageSize,
+} from '@/lib/image/gptImage2';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 
@@ -547,8 +552,11 @@ function buildDefaultSettingsSnapshot(args: {
   numImages: number;
   resolvedAspectRatio: string | null;
   resolution: string;
+  customImageSize: GptImage2ImageSize | null;
   normalizedSeed: number | null;
   outputFormat: string | null;
+  quality: string | null;
+  maskUrl: string | null;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
   limitGenerations: boolean;
@@ -569,8 +577,11 @@ function buildDefaultSettingsSnapshot(args: {
       numImages: args.numImages,
       aspectRatio: args.resolvedAspectRatio ?? null,
       resolution: args.resolution,
+      customImageSize: args.customImageSize,
       seed: args.normalizedSeed,
       outputFormat: args.outputFormat,
+      quality: args.quality,
+      maskUrl: args.maskUrl,
       enableWebSearch: args.enableWebSearch,
       thinkingLevel: args.thinkingLevel,
       limitGenerations: args.limitGenerations,
@@ -1164,6 +1175,29 @@ export async function executeImageGeneration({
   }
   const resolution = resolutionResult.resolution;
   const shouldSendResolution = resolutionResult.configurable;
+  const parsedResolutionImageSize = engine.id === 'gpt-image-2' ? parseGptImage2SizeKey(resolution) : null;
+  let customImageSize: GptImage2ImageSize | null = parsedResolutionImageSize;
+  let providerImageSize: string | GptImage2ImageSize | null =
+    parsedResolutionImageSize ?? (shouldSendResolution ? normalizeFalImageResolution(resolution) : null);
+
+  if (engine.id === 'gpt-image-2' && resolution === 'custom') {
+    const customSizeResult = validateGptImage2CustomImageSize(body.customImageSize);
+    if (!customSizeResult.ok) {
+      fail(
+        mode,
+        'image_size_invalid',
+        customSizeResult.message,
+        400,
+        customSizeResult.detail,
+        {
+          engineId: engineEntry.id,
+          engineLabel: engineEntry.marketingName,
+        }
+      );
+    }
+    customImageSize = customSizeResult.size;
+    providerImageSize = customSizeResult.size;
+  }
 
   const normalizedSeed =
     getImageInputField(engine, 'seed', mode) && typeof body.seed === 'number' && Number.isFinite(body.seed)
@@ -1181,6 +1215,42 @@ export async function executeImageGeneration({
       'Selected output format is not available for this engine.',
       400,
       { allowed: outputFormatValues },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
+  }
+
+  const qualityValues = getImageFieldValues(engine, 'quality', mode);
+  const quality =
+    typeof body.quality === 'string'
+      ? canonicalizeImageFieldValue(qualityValues, body.quality)
+      : null;
+  if (typeof body.quality === 'string' && body.quality.trim().length && !quality) {
+    fail(
+      mode,
+      'quality_invalid',
+      'Selected quality is not available for this engine.',
+      400,
+      { allowed: qualityValues },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
+  }
+
+  const maskUrlField = getImageInputField(engine, 'mask_url', mode);
+  const maskUrl =
+    maskUrlField && typeof body.maskUrl === 'string' && body.maskUrl.trim().length ? body.maskUrl.trim() : null;
+  if (maskUrl && !/^https?:\/\//i.test(maskUrl)) {
+    fail(
+      mode,
+      'invalid_mask_url',
+      'Mask URL must be an absolute URL (https://...).',
+      400,
+      { url: maskUrl },
       {
         engineId: engineEntry.id,
         engineLabel: engineEntry.marketingName,
@@ -1230,6 +1300,8 @@ export async function executeImageGeneration({
           engine,
           durationSec,
           resolution,
+          customImageSize,
+          quality,
           membershipTier,
           currency: DISPLAY_CURRENCY,
           addons: enableWebSearch ? { enable_web_search: true } : undefined,
@@ -1244,7 +1316,8 @@ export async function executeImageGeneration({
 
   const jobAspectRatio = resolvedAspectRatio ?? null;
   const falAspectRatio = resolvedAspectRatio && resolvedAspectRatio !== 'auto' ? resolvedAspectRatio : null;
-  const falResolution = shouldSendResolution ? normalizeFalImageResolution(resolution) : null;
+  const resolutionField = getImageInputField(engine, 'resolution', mode);
+  const resolutionEngineParam = resolutionField?.engineParam;
 
   pricing.meta = {
     ...(pricing.meta ?? {}),
@@ -1257,10 +1330,13 @@ export async function executeImageGeneration({
       mode,
       numImages,
       resolution,
+      ...(customImageSize ? { customImageSize } : {}),
       ...(characterReferences.length ? { characterReferenceCount: characterReferences.length } : {}),
       ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}),
       ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
       ...(outputFormat ? { outputFormat } : {}),
+      ...(quality ? { quality } : {}),
+      ...(maskUrl ? { maskUrl } : {}),
       ...(enableWebSearch ? { enableWebSearch } : {}),
       ...(thinkingLevel ? { thinkingLevel } : {}),
       ...(limitGenerations ? { limitGenerations } : {}),
@@ -1289,8 +1365,11 @@ export async function executeImageGeneration({
         numImages,
         resolvedAspectRatio,
         resolution,
+        customImageSize,
         normalizedSeed,
         outputFormat,
+        quality,
+        maskUrl,
         enableWebSearch,
         thinkingLevel,
         limitGenerations,
@@ -1408,9 +1487,12 @@ export async function executeImageGeneration({
         num_images: numImages,
         ...(mode === 'i2i' ? { image_urls: resolvedReferenceUrls } : {}),
         ...(falAspectRatio ? { aspect_ratio: falAspectRatio } : {}),
-        ...(falResolution ? { resolution: falResolution } : {}),
+        ...(providerImageSize && resolutionEngineParam === 'image_size' ? { image_size: providerImageSize } : {}),
+        ...(providerImageSize && resolutionEngineParam !== 'image_size' ? { resolution: providerImageSize } : {}),
         ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
         ...(outputFormat ? { output_format: outputFormat } : {}),
+        ...(quality ? { quality } : {}),
+        ...(maskUrl ? { mask_url: maskUrl } : {}),
         ...(enableWebSearch ? { enable_web_search: true } : {}),
         ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
         ...(limitGenerations ? { limit_generations: true } : {}),
@@ -1542,6 +1624,8 @@ export async function executeImageGeneration({
               ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
               ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
               ...(outputFormat ? { output_format: outputFormat } : {}),
+              ...(quality ? { quality } : {}),
+              ...(maskUrl ? { mask_url: maskUrl } : {}),
               ...(enableWebSearch ? { enable_web_search: true } : {}),
               ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
               ...(limitGenerations ? { limit_generations: true } : {}),
@@ -1642,6 +1726,8 @@ export async function executeImageGeneration({
               ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
               ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
               ...(outputFormat ? { output_format: outputFormat } : {}),
+              ...(quality ? { quality } : {}),
+              ...(maskUrl ? { mask_url: maskUrl } : {}),
               ...(enableWebSearch ? { enable_web_search: true } : {}),
               ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),
               ...(limitGenerations ? { limit_generations: true } : {}),

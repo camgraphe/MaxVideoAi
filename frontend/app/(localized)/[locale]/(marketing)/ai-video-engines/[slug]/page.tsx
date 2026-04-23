@@ -140,7 +140,7 @@ type ShowdownEntry = {
 const TROPHY_COMPARISONS = compareConfig.trophyComparisons as string[];
 const RELATED_COMPARISONS =
   (compareConfig as { relatedComparisons?: Record<string, string[]> }).relatedComparisons ?? {};
-const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
+const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2']);
 const SHOWDOWNS =
   (compareConfig as { showdowns?: Record<string, Array<ShowdownEntry | null>> }).showdowns ?? {};
 const SHOWDOWN_OVERRIDES =

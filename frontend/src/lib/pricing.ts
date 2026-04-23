@@ -20,6 +20,11 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
 import type { Mode } from '@/types/engines';
+import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
+import {
+  normalizeGptImage2Quality,
+  resolveGptImage2PricingTier,
+} from '@/lib/image/gptImage2';
 
 const DECIMAL_PLACES = 6;
 const STANDARD_PRICING_MODES = new Set(['t2v', 'i2v', 't2i', 'i2i']);
@@ -351,6 +356,73 @@ function buildSeedance2Snapshot(params: {
   };
 }
 
+function buildGptImage2Snapshot(params: {
+  numImages: number;
+  imageSize: string;
+  customImageSize?: GptImage2ImageSize | null;
+  quality?: string | null;
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+}): PricingSnapshot {
+  const quality = normalizeGptImage2Quality(params.quality);
+  const tier = resolveGptImage2PricingTier(params.imageSize, params.customImageSize);
+  const unitCents = tier.prices[quality];
+  const imageCount = Math.max(1, Math.round(params.numImages));
+  const vendorShareCentsBase = unitCents * imageCount;
+  const marginAmount = Math.max(0, Math.round(vendorShareCentsBase * params.rule.marginPercent) + params.rule.marginFlatCents);
+  const subtotalBeforeDiscountCents = vendorShareCentsBase + marginAmount;
+  const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
+  const discountAmount =
+    discountPercent > 0 ? Math.round(subtotalBeforeDiscountCents * discountPercent) : 0;
+  const totalCents = Math.max(0, subtotalBeforeDiscountCents - discountAmount);
+  const discountAppliedToMargin = Math.min(marginAmount, discountAmount);
+  const platformFeeCents = Math.max(0, marginAmount - discountAppliedToMargin);
+  const vendorShareCents = Math.max(0, totalCents - platformFeeCents);
+
+  return {
+    currency: params.currency,
+    totalCents,
+    subtotalBeforeDiscountCents,
+    base: {
+      seconds: imageCount,
+      rate: unitCents / 100,
+      unit: 'image',
+      amountCents: vendorShareCentsBase,
+    },
+    addons: [],
+    margin: {
+      amountCents: marginAmount,
+      percentApplied: params.rule.marginPercent,
+      flatCents: params.rule.marginFlatCents,
+    },
+    discount: discountAmount
+      ? {
+          amountCents: discountAmount,
+          percentApplied: discountPercent,
+          tier: params.memberTier,
+        }
+      : undefined,
+    membershipTier: params.memberTier,
+    platformFeeCents,
+    vendorShareCents,
+    vendorAccountId: params.vendorAccountId ?? undefined,
+    meta: {
+      pricing_model: 'gpt_image_2_quality_size',
+      billed_image_size: tier.billingKey,
+      requested_image_size: tier.requestedKey,
+      requested_image_width: tier.width,
+      requested_image_height: tier.height,
+      quality,
+      base_unit_price_cents: unitCents,
+      estimated_from_nearest_canonical: tier.estimatedFromNearestCanonical,
+      source: 'fal.ai GPT Image 2 pricing table',
+    },
+  };
+}
+
 function getLumaRay2BasePriceEnv(engineId: string): string | undefined {
   if (engineId === 'lumaRay2_flash') {
     return (
@@ -509,6 +581,8 @@ export type PricingContext = {
   durationSec: number;
   resolution: string;
   aspectRatio?: string | null;
+  quality?: string | null;
+  customImageSize?: GptImage2ImageSize | null;
   mode?: Mode;
   membershipTier?: string | null;
   currency?: string;
@@ -599,6 +673,19 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
       workflow,
       durationSec,
       rateUsd,
+      rule,
+      memberTier,
+      memberTierDiscounts,
+      currency,
+      vendorAccountId,
+    });
+  } else if (engine.id === 'gpt-image-2') {
+    const currency = (context.currency ?? rule.currency ?? pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+    snapshot = buildGptImage2Snapshot({
+      numImages: durationSec,
+      imageSize: resolution,
+      customImageSize: context.customImageSize,
+      quality: context.quality,
       rule,
       memberTier,
       memberTierDiscounts,

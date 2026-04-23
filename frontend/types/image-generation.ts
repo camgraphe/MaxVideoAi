@@ -25,6 +25,8 @@ export interface ImageGenerationRequest {
   visibility?: 'public' | 'private';
   seed?: number;
   outputFormat?: 'jpeg' | 'png' | 'webp';
+  quality?: 'low' | 'medium' | 'high';
+  maskUrl?: string;
   enableWebSearch?: boolean;
   thinkingLevel?: 'minimal' | 'high';
   limitGenerations?: boolean;
@@ -33,6 +35,10 @@ export interface ImageGenerationRequest {
   jobId?: string;
   aspectRatio?: string;
   resolution?: string;
+  customImageSize?: {
+    width: number;
+    height: number;
+  } | null;
 }
 
 export interface GeneratedImage {
