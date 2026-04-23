@@ -35,13 +35,9 @@ test('wallet top-up Checkout uses Stripe dynamic payment methods for wallets', (
   assert.deepEqual(params.automatic_tax, { enabled: true });
 });
 
-test('wallet top-up Checkout keeps metadata and Connect transfer data on the PaymentIntent', () => {
+test('wallet top-up Checkout keeps PaymentIntent metadata', () => {
   const params = buildParams({
     paymentIntentMetadata: { kind: 'topup', wallet_amount_cents: '2500', settlement_currency: 'EUR' },
-    connectTransfer: {
-      destinationAccountId: 'acct_test_destination',
-      applicationFeeAmount: 300,
-    },
   });
 
   assert.deepEqual(params.payment_intent_data?.metadata, {
@@ -49,8 +45,6 @@ test('wallet top-up Checkout keeps metadata and Connect transfer data on the Pay
     wallet_amount_cents: '2500',
     settlement_currency: 'EUR',
   });
-  assert.equal(params.payment_intent_data?.application_fee_amount, 300);
-  assert.deepEqual(params.payment_intent_data?.transfer_data, { destination: 'acct_test_destination' });
 });
 
 test('wallet top-up Checkout can create Elements sessions for Express Checkout', () => {

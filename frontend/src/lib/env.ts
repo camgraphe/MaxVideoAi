@@ -21,10 +21,6 @@ const falKey =
   getOptionalEnv('NEXT_PUBLIC_FAL_API_KEY') ??
   getOptionalEnv('NEXT_PUBLIC_FAL_KEY');
 
-const rawPaymentMode = (getOptionalEnv('PAYMENT_MODE') ?? 'platform_only').toLowerCase();
-const PAYMENT_MODE: 'platform_only' | 'connect' =
-  rawPaymentMode === 'connect' ? 'connect' : 'platform_only';
-
 const RECEIPTS_PRICE_ONLY =
   (getOptionalEnv('RECEIPTS_PRICE_ONLY', 'true') ?? 'true').toLowerCase() === 'true';
 
@@ -43,7 +39,6 @@ export const ENV = {
   STRIPE_PRICE_PLUS: getOptionalEnv('STRIPE_PRICE_PLUS'),
   STRIPE_PRICE_PRO: getOptionalEnv('STRIPE_PRICE_PRO'),
   STRIPE_TAX_CODE_ELECTRONIC_SERVICES: getOptionalEnv('STRIPE_TAX_CODE_ELECTRONIC_SERVICES'),
-  COGS_VAULT_ACCOUNT_ID: getOptionalEnv('COGS_VAULT_ACCOUNT_ID'),
   CRON_SECRET: getOptionalEnv('CRON_SECRET'),
   EMAIL_FROM: getOptionalEnv('EMAIL_FROM'),
   EMAIL_FROM_NAME: getOptionalEnv('EMAIL_FROM_NAME'),
@@ -62,9 +57,6 @@ export const ENV = {
     getOptionalEnv('NEXT_PUBLIC_GA4_ID') ??
     getOptionalEnv('NEXT_PUBLIC_GA_ID'),
   GA4_API_SECRET: getOptionalEnv('GA4_API_SECRET'),
-  BATCH_TRANSFER_THRESHOLD_CENTS: getOptionalEnv('BATCH_TRANSFER_THRESHOLD_CENTS'),
-  BATCH_TRANSFER_CURRENCY: getOptionalEnv('BATCH_TRANSFER_CURRENCY'),
-  BATCH_TRANSFER_CRON: getOptionalEnv('BATCH_TRANSFER_CRON'),
   FAL_API_KEY: falKey,
   FAL_KEY: falKey,
   RESULT_PROVIDER:
@@ -83,17 +75,8 @@ export const ENV = {
   DEFAULT_CURRENCY: getOptionalEnv('DEFAULT_CURRENCY'),
   ENABLED_CURRENCIES: getOptionalEnv('ENABLED_CURRENCIES'),
   FX_MARGIN_BPS: getOptionalEnv('FX_MARGIN_BPS'),
-  PAYMENT_MODE,
   RECEIPTS_PRICE_ONLY,
 };
-
-export function isPlatformOnlyPayments(): boolean {
-  return ENV.PAYMENT_MODE === 'platform_only';
-}
-
-export function isConnectPayments(): boolean {
-  return ENV.PAYMENT_MODE === 'connect';
-}
 
 export function receiptsPriceOnlyEnabled(): boolean {
   return ENV.RECEIPTS_PRICE_ONLY;

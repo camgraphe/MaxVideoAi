@@ -266,10 +266,6 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
   sessionMetadata: Record<string, string>;
   paymentIntentMetadata: Record<string, string>;
   productTaxCode: string;
-  connectTransfer?: {
-    destinationAccountId: string;
-    applicationFeeAmount: number;
-  } | null;
 };
 
 export function buildWalletTopUpCheckoutSessionParams({
@@ -285,18 +281,10 @@ export function buildWalletTopUpCheckoutSessionParams({
   sessionMetadata,
   paymentIntentMetadata,
   productTaxCode,
-  connectTransfer = null,
 }: BuildWalletTopUpCheckoutSessionParamsArgs): WalletTopUpCheckoutSessionParams {
   const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData = {
     metadata: paymentIntentMetadata,
   };
-
-  if (connectTransfer) {
-    paymentIntentData.application_fee_amount = connectTransfer.applicationFeeAmount;
-    paymentIntentData.transfer_data = {
-      destination: connectTransfer.destinationAccountId,
-    };
-  }
 
   const params: WalletTopUpCheckoutSessionParams = {
     mode: 'payment',

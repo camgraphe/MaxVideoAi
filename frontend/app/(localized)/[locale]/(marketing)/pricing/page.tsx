@@ -237,7 +237,6 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const liveLabel = content.liveLabel ?? (locale === 'fr' ? 'En ligne' : locale === 'es' ? 'En vivo' : 'Live');
   const comingSoonLabel =
     content.comingSoonLabel ?? (locale === 'fr' ? 'À venir' : locale === 'es' ? 'Próximamente' : 'Coming soon');
-  const teams = content.teams;
   const member = content.member;
   const refunds = content.refunds;
   const faq = content.faq;
@@ -603,26 +602,6 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
             </ul>
           </section>
         ) : null}
-
-        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-            {teams.title}
-            <FlagPill live={FEATURES.pricing.teams} className="ml-3" liveLabel={liveLabel} soonLabel={comingSoonLabel} />
-          </h2>
-          <p className="mt-2 text-sm text-text-secondary">{teams.description}</p>
-          {FEATURES.pricing.teams ? (
-            <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
-              {teams.points.map((point) => (
-                <li key={point} className="flex items-start gap-2">
-                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-        ) : (
-          <p className="mt-4 text-sm text-text-secondary">{teams.comingSoonNote}</p>
-        )}
-      </section>
 
         <section className="grid grid-gap lg:grid-cols-[1.1fr_0.9fr]">
           <article

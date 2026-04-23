@@ -13,10 +13,7 @@ import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import dynamic from 'next/dynamic';
-import { FEATURES } from '@/content/feature-flags';
-import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 import { AudioWaveformThumb } from '@/components/ui/AudioWaveformThumb';
 import {
@@ -298,8 +295,6 @@ export default function JobsPage() {
     [videoGroups]
   );
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
-  const teamsLive = FEATURES.workflows.approvals && FEATURES.workflows.budgetControls;
-
   const handleRemoveGroup = useCallback(
     async (group: GroupSummary) => {
       const original = summaryMap.get(group.id);
@@ -608,29 +603,6 @@ export default function JobsPage() {
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-xl font-semibold text-text-primary">{copy.title}</h1>
           </div>
-
-          <section aria-labelledby="teams-beta" className="mb-4 rounded-card border border-hairline bg-surface p-4 shadow-card">
-            <h2 id="teams-beta" className="flex items-center gap-2 text-base font-semibold text-text-primary">
-              {copy.teams.title}
-              <FlagPill live={teamsLive} />
-              <span className="sr-only">{teamsLive ? copy.teams.srLive : copy.teams.srSoon}</span>
-            </h2>
-            {teamsLive ? (
-              <p className="mt-2 text-sm text-text-secondary">{copy.teams.live}</p>
-            ) : (
-              <p className="mt-2 text-sm text-text-secondary">
-                {copy.teams.beta.split('{email}')[0]}
-                <ObfuscatedEmailLink
-                  user="support"
-                  domain="maxvideo.ai"
-                  label={copy.teams.email}
-                  placeholder="support [at] maxvideo.ai"
-                  className="underline underline-offset-2"
-                />
-                {copy.teams.beta.split('{email}')[1] ?? ''}
-              </p>
-            )}
-          </section>
 
           {hasCuratedVideo ? (
             <div className="mb-4 rounded-card border border-hairline bg-surface p-4 text-sm text-text-secondary">

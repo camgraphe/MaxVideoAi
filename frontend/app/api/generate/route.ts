@@ -7,7 +7,7 @@ import { generateVideo, FalGenerationError } from '@/lib/fal';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import { getConfiguredEngine } from '@/server/engines';
 import Stripe from 'stripe';
-import { ENV, isConnectPayments, receiptsPriceOnlyEnabled } from '@/lib/env';
+import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
@@ -862,7 +862,6 @@ export async function POST(req: NextRequest) {
     }
   }
   const paymentMode: PaymentMode = payment.mode ?? (userId ? 'wallet' : 'platform');
-  const connectMode = isConnectPayments();
 
   let preferredCurrency: Currency | null = null;
   if (userId) {
@@ -933,7 +932,7 @@ export async function POST(req: NextRequest) {
   const pricingSnapshotJson = JSON.stringify(receiptSnapshot);
   const costBreakdownJson = !priceOnlyReceipts && costBreakdownUsd ? JSON.stringify(costBreakdownUsd) : null;
 
-  const vendorAccountId = connectMode ? pricing.vendorAccountId ?? engine.vendorAccountId ?? null : null;
+  const vendorAccountId: string | null = null;
   const applicationFeeCents = getPlatformFeeCents(pricing);
   const visibility: 'public' | 'private' = 'private';
   const indexable = false;
@@ -1932,11 +1931,6 @@ async function rollbackPendingPayment(params: {
       logMetric('rejected', { errorCode: 'PAYMENT_INTENT_MISSING', meta: { paymentMode } });
       return NextResponse.json({ ok: false, error: 'PaymentIntent required for direct mode' }, { status: 400 });
     }
-    if (connectMode && !vendorAccountId) {
-      logMetric('rejected', { errorCode: 'VENDOR_ACCOUNT_MISSING', meta: { paymentMode } });
-      return NextResponse.json({ ok: false, error: 'Vendor account missing for this engine' }, { status: 400 });
-    }
-
     const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
     const intent = await stripe.paymentIntents.retrieve(payment.paymentIntentId, { expand: ['latest_charge'] });
 
@@ -1974,10 +1968,6 @@ async function rollbackPendingPayment(params: {
         { status: 409 }
       );
     }
-    if (connectMode && intent.transfer_data?.destination && intent.transfer_data.destination !== vendorAccountId) {
-      return NextResponse.json({ ok: false, error: 'Payment vendor mismatch' }, { status: 409 });
-    }
-
     if (!preferredCurrency) {
       await ensureUserPreferredCurrency(String(userId), resolvedCurrencyLower);
       preferredCurrency = resolvedCurrencyLower;
@@ -2002,11 +1992,7 @@ async function rollbackPendingPayment(params: {
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       snapshot: receiptSnapshot,
-      applicationFeeCents: priceOnlyReceipts
-        ? null
-        : connectMode
-            ? Number(intent.metadata?.platform_fee_cents_usd ?? applicationFeeCents)
-            : null,
+      applicationFeeCents: null,
       vendorAccountId,
       stripePaymentIntentId,
       stripeChargeId,

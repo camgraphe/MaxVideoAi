@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { ENV, isConnectPayments, receiptsPriceOnlyEnabled } from '@/lib/env';
+import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { recordMockWalletTopUp } from '@/lib/wallet';
@@ -15,7 +15,6 @@ const stripe = stripeSecret
   : null;
 
 export const runtime = 'nodejs';
-const connectMode = isConnectPayments();
 const receiptsPriceOnly = receiptsPriceOnlyEnabled();
 const HANDLED_EVENT_TYPES = new Set(['checkout.session.completed', 'payment_intent.succeeded', 'charge.refunded']);
 
@@ -266,7 +265,7 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
         ? Number(session.metadata.platform_fee_cents)
         : undefined
     : undefined;
-  const destinationAcct = connectMode ? session.metadata.destination_account_id ?? undefined : undefined;
+  const destinationAcct = session.metadata.destination_account_id ?? undefined;
   const fxRate =
     session.metadata.fx_rate && Number.isFinite(Number(session.metadata.fx_rate))
       ? Number(session.metadata.fx_rate)
@@ -312,11 +311,9 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
 
   const kind = intent.metadata.kind ?? null;
   const destinationAcct =
-    connectMode
-      ? intent.metadata.destination_account_id ??
-        intent.metadata.vendor_account_id ??
-        null
-      : null;
+    intent.metadata.destination_account_id ??
+    intent.metadata.vendor_account_id ??
+    null;
 
   if (kind === 'topup') {
     const userId = intent.metadata.user_id;
@@ -334,8 +331,6 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
       : intent.metadata?.platform_fee_cents_usd
         ? Number(intent.metadata.platform_fee_cents_usd)
         : intent.application_fee_amount ?? undefined;
-    const vendorShareCents =
-      amountCents !== null && platformRevenueCents !== undefined ? amountCents - platformRevenueCents : null;
     const fxRate =
       intent.metadata?.fx_rate && Number.isFinite(Number(intent.metadata.fx_rate))
         ? Number(intent.metadata.fx_rate)
@@ -346,14 +341,6 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
         : null;
     const fxRateTimestamp = intent.metadata?.rate_timestamp ?? null;
     const originalCurrency = intent.metadata?.target_currency ?? settlementCurrency;
-
-    if (connectMode && destinationAcct && vendorShareCents && vendorShareCents !== 0) {
-      await upsertVendorBalance({
-        destinationAcct,
-        currency: currency ?? 'usd',
-        deltaCents: vendorShareCents,
-      });
-    }
 
     if (!amountCents || amountCents <= 0) return;
 
@@ -366,7 +353,7 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
       paymentIntentId: intent.id,
       chargeId,
       platformRevenueCents,
-      destinationAcct: connectMode ? destinationAcct ?? undefined : undefined,
+      destinationAcct: destinationAcct ?? undefined,
       metadata: {
         source: 'payment_intent.succeeded',
         fx_rate: intent.metadata?.fx_rate ?? null,
@@ -382,17 +369,6 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
       fxMarginBps,
       fxRateTimestamp,
     });
-  } else if (connectMode && destinationAcct) {
-    const totalCents = intent.amount_received ?? intent.amount ?? 0;
-    const appFee = intent.application_fee_amount ?? 0;
-    const vendorShare = totalCents - appFee;
-    if (vendorShare !== 0) {
-      await upsertVendorBalance({
-        destinationAcct,
-        currency: intent.currency ?? 'usd',
-        deltaCents: vendorShare,
-      });
-    }
   }
 }
 
@@ -498,7 +474,7 @@ async function recordTopup({
         paymentIntentId ?? null,
         chargeId ?? null,
         receiptsPriceOnly ? null : platformRevenueCents ?? null,
-        connectMode ? destinationAcct ?? null : null,
+        destinationAcct ?? null,
         originalAmountCents ?? normalizedSettlementAmount ?? normalizedWalletAmount,
         originalCurrency ? originalCurrency.toUpperCase() : settlementCurrencyUpper,
         fxRate ?? null,
@@ -593,56 +569,5 @@ async function recordTopup({
   } catch (error) {
     console.error('[stripe-webhook] Failed to persist top-up, using mock ledger', error);
     recordMockWalletTopUp(userId, normalizedWalletAmount, paymentIntentId, chargeId);
-  }
-}
-
-async function upsertVendorBalance({
-  destinationAcct,
-  currency,
-  deltaCents,
-}: {
-  destinationAcct: string;
-  currency: string;
-  deltaCents: number;
-}) {
-  if (!connectMode) {
-    console.log('[stripe-webhook] Skipping vendor balance update (platform-only mode)', {
-      destinationAcct,
-      currency,
-      deltaCents,
-    });
-    return;
-  }
-  if (!destinationAcct || !Number.isFinite(deltaCents) || deltaCents === 0) {
-    return;
-  }
-  if (!process.env.DATABASE_URL) {
-    console.log('[stripe-webhook] Skipping vendor balance update (no database)', {
-      destinationAcct,
-      currency,
-      deltaCents,
-    });
-    return;
-  }
-
-  const normalizedCurrency = currency ? currency.toLowerCase() : 'usd';
-
-  try {
-    await ensureBillingSchema();
-    await query(
-      `INSERT INTO vendor_balances (destination_acct, currency, pending_cents)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (destination_acct, currency)
-       DO UPDATE SET pending_cents = vendor_balances.pending_cents + EXCLUDED.pending_cents,
-                     updated_at = NOW()`,
-      [destinationAcct, normalizedCurrency, deltaCents]
-    );
-  } catch (error) {
-    console.error('[stripe-webhook] Failed to upsert vendor balance', {
-      destinationAcct,
-      currency: normalizedCurrency,
-      deltaCents,
-      error,
-    });
   }
 }

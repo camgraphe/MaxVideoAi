@@ -13,13 +13,10 @@ import deepmerge from 'deepmerge';
 import { usePathname } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { FlagPill } from '@/components/FlagPill';
-import { FEATURES } from '@/content/feature-flags';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
-import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
@@ -1139,8 +1136,6 @@ export default function BillingPage() {
     return null;
   }
 
-  const teamsLive = FEATURES.pricing.teams;
-
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
@@ -1522,37 +1517,6 @@ export default function BillingPage() {
             </div>
             </section>
 
-            <section className="mt-5 rounded-card border border-dashed border-border bg-surface p-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-text-primary">{copy.teams.title}</h2>
-                <FlagPill live={teamsLive} />
-                <span className="sr-only">{teamsLive ? copy.teams.statusLive : copy.teams.statusSoon}</span>
-              </div>
-              {teamsLive ? (
-                <>
-                  <p className="mt-1 text-sm text-text-secondary">{copy.teams.description}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
-                      {copy.teams.actions.invite}
-                    </Button>
-                    <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
-                      {copy.teams.actions.budgets}
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <p className="mt-2 text-sm text-text-secondary">
-                  {copy.teams.comingSoon.replace('{email}', copy.teams.contactEmail)}{' '}
-                  <ObfuscatedEmailLink
-                    user="support"
-                    domain="maxvideoai.com"
-                    label={copy.teams.contactEmail}
-                    placeholder="support [at] maxvideo.ai"
-                    className="font-semibold underline underline-offset-2"
-                  />
-                </p>
-              )}
-            </section>
           </div>
         </main>
       </div>

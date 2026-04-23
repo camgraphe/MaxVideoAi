@@ -14,7 +14,7 @@ import { authFetch } from '@/lib/authFetch';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { Button } from '@/components/ui/Button';
 
-type Tab = 'account' | 'team' | 'privacy' | 'notifications';
+type Tab = 'account' | 'privacy' | 'notifications';
 
 const DEFAULT_SETTINGS_COPY = {
   title: 'Settings',
@@ -94,7 +94,6 @@ export default function SettingsPage() {
     return null;
   }
 
-  const teamsLive = FEATURES.workflows.approvals && FEATURES.workflows.budgetControls;
   const notificationsLive = FEATURES.notifications.center;
 
   return (
@@ -107,15 +106,6 @@ export default function SettingsPage() {
 
           <nav className="mb-4 flex flex-wrap gap-2" aria-label="Settings tabs">
             <TabLink id="account" label={copy.tabs.account} active={tab === 'account'} onClick={() => setTab('account')} />
-            <TabLink
-              id="team"
-              label={copy.tabs.team}
-              active={tab === 'team'}
-              onClick={() => setTab('team')}
-              badgeLive={teamsLive}
-              badgeSrLive={copy.team.srLive}
-              badgeSrSoon={copy.team.srSoon}
-            />
             <TabLink id="privacy" label={copy.tabs.privacy} active={tab === 'privacy'} onClick={() => setTab('privacy')} />
             <TabLink
               id="notifications"
@@ -129,7 +119,6 @@ export default function SettingsPage() {
           </nav>
 
           {tab === 'account' && <AccountTab user={user} copy={copy.account} />}
-          {tab === 'team' && <TeamTab live={teamsLive} copy={copy.team} />}
           {tab === 'privacy' && <PrivacyTab guest={isGuest} copy={copy.privacy} />}
           {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} guest={isGuest} />}
         </main>
@@ -240,43 +229,6 @@ function AccountTab({ user, copy }: AccountTabProps) {
           </select>
         </label>
       </div>
-    </section>
-  );
-}
-
-function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) {
-  return (
-    <section className="rounded-card border border-border bg-surface p-4 shadow-card">
-      <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-text-primary">
-        {copy.title}
-        <FlagPill live={live} />
-        <span className="sr-only">{live ? copy.srLive : copy.srSoon}</span>
-      </h2>
-      {live ? (
-        <>
-          <p className="text-sm text-text-secondary">{copy.liveDescription}</p>
-          <div className="mt-3 flex gap-2">
-            <Button variant="outline" size="sm" className="border-border px-3 text-sm hover:bg-bg">
-              {copy.invite}
-            </Button>
-            <Button variant="outline" size="sm" className="border-border px-3 text-sm hover:bg-bg">
-              {copy.createProject}
-            </Button>
-          </div>
-        </>
-      ) : (
-        <div className="mt-2 rounded-xl border border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-          {copy.upcomingPrefix}
-          <ObfuscatedEmailLink
-            user="support"
-            domain="maxvideoai.com"
-            label={copy.upcomingEmail}
-            placeholder="support [at] maxvideoai.com"
-            className="underline underline-offset-2"
-          />
-          {copy.upcomingSuffix}
-        </div>
-      )}
     </section>
   );
 }

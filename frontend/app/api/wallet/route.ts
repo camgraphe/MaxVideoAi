@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import Stripe from 'stripe';
-import { ENV, isConnectPayments } from '@/lib/env';
-import { computePricingSnapshot, getPlatformFeeCents, getVendorShareCents } from '@/lib/pricing';
+import { ENV } from '@/lib/env';
+import { computePricingSnapshot } from '@/lib/pricing';
 import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp } from '@/lib/wallet';
@@ -321,29 +321,12 @@ export async function POST(req: NextRequest) {
       membershipTier: body.membershipTier,
     });
 
-    const destinationAccountId = isConnectPayments()
-      ? pricing.vendorAccountId ?? ENV.COGS_VAULT_ACCOUNT_ID ?? process.env.COGS_VAULT_ACCOUNT_ID
-      : null;
-
-    if (isConnectPayments() && !destinationAccountId) {
-      return NextResponse.json({ error: 'No destination account configured' }, { status: 503 });
-    }
-
-    const applicationFeeCents = getPlatformFeeCents(pricing);
-    const vendorShareCents = getVendorShareCents(pricing);
     const settlementCurrencyUpper = resolvedCurrencyUpper;
     const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = await convertCents(
       pricing.totalCents,
       WALLET_DISPLAY_CURRENCY_LOWER,
       resolvedCurrencyLower
     );
-    const totalUsd = Math.max(1, pricing.totalCents);
-    let applicationFeeSettlementCents = 0;
-    let vendorShareSettlementCents = 0;
-    if (isConnectPayments() && destinationAccountId) {
-      applicationFeeSettlementCents = totalUsd > 0 ? Math.round((settlementAmountCents * applicationFeeCents) / totalUsd) : 0;
-      vendorShareSettlementCents = Math.max(0, settlementAmountCents - applicationFeeSettlementCents);
-    }
     const jobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : `job_${randomUUID()}`;
     const metadata: Record<string, string> = {
       kind: 'run',
@@ -379,17 +362,6 @@ export async function POST(req: NextRequest) {
     if (pricingSnapshotJson.length <= 450) {
       metadata.pricing_snapshot = pricingSnapshotJson;
     }
-    if (isConnectPayments() && destinationAccountId) {
-      metadata.destination_account_id = destinationAccountId;
-      metadata.pricing_platform_fee_cents = String(applicationFeeCents);
-      metadata.pricing_vendor_share_cents = String(vendorShareCents);
-      metadata.vendor_share_cents = String(vendorShareCents);
-      metadata.platform_fee_cents_settlement = String(applicationFeeSettlementCents);
-      metadata.vendor_share_cents_settlement = String(vendorShareSettlementCents);
-    }
-    if (isConnectPayments() && pricing.vendorAccountId) {
-      metadata.vendor_account_id = pricing.vendorAccountId;
-    }
 
     try {
       const params: Stripe.PaymentIntentCreateParams = {
@@ -398,11 +370,6 @@ export async function POST(req: NextRequest) {
         automatic_payment_methods: { enabled: true },
         metadata,
       };
-
-      if (isConnectPayments() && destinationAccountId) {
-        params.application_fee_amount = applicationFeeSettlementCents;
-        params.transfer_data = { destination: destinationAccountId };
-      }
 
       const intent = await stripe.paymentIntents.create(params);
 
@@ -417,7 +384,7 @@ export async function POST(req: NextRequest) {
         fxSource,
         currencySource: currencyResolution.source,
         currencyCountry: currencyResolution.country ?? null,
-        mode: isConnectPayments() ? 'connect' : 'platform',
+        mode: 'platform',
       });
 
       return NextResponse.json({
@@ -443,12 +410,6 @@ export async function POST(req: NextRequest) {
   try {
     // Create a one-off Checkout Session for top-up
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-    const destinationAccountId =
-      isConnectPayments() ? ENV.COGS_VAULT_ACCOUNT_ID ?? process.env.COGS_VAULT_ACCOUNT_ID : null;
-
-    if (isConnectPayments() && !destinationAccountId) {
-      return NextResponse.json({ error: 'COGS vault account not configured' }, { status: 503 });
-    }
 
     const sessionMetadata: Record<string, string> = {
       kind: 'topup',
@@ -485,24 +446,6 @@ export async function POST(req: NextRequest) {
     sessionMetadata.fx_rate = fxRate.toString();
     sessionMetadata.fx_source = fxSource;
 
-    let platformFeeCentsUsd = 0;
-    let vendorShareCentsUsd = 0;
-    let platformFeeCentsSettlement = 0;
-    let vendorShareCentsSettlement = 0;
-    if (isConnectPayments() && destinationAccountId) {
-      platformFeeCentsUsd = Math.round(amountCents * 0.3);
-      vendorShareCentsUsd = Math.max(0, amountCents - platformFeeCentsUsd);
-      platformFeeCentsSettlement = amountCents > 0
-        ? Math.round((settlementAmountCents * platformFeeCentsUsd) / amountCents)
-        : 0;
-      vendorShareCentsSettlement = Math.max(0, settlementAmountCents - platformFeeCentsSettlement);
-      sessionMetadata.destination_account_id = destinationAccountId;
-      sessionMetadata.platform_fee_cents = String(platformFeeCentsSettlement);
-      sessionMetadata.vendor_share_cents = String(vendorShareCentsSettlement);
-      sessionMetadata.platform_fee_cents_usd = String(platformFeeCentsUsd);
-      sessionMetadata.vendor_share_cents_usd = String(vendorShareCentsUsd);
-    }
-
     const topupRedirectParams = new URLSearchParams({
       amount: (amountCents / 100).toFixed(2),
       amountCents: String(amountCents),
@@ -529,13 +472,6 @@ export async function POST(req: NextRequest) {
       sessionMetadata,
       paymentIntentMetadata,
       productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
-      connectTransfer:
-        isConnectPayments() && destinationAccountId
-          ? {
-              destinationAccountId,
-              applicationFeeAmount: platformFeeCentsSettlement,
-            }
-          : null,
     });
 
     const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
@@ -552,7 +488,7 @@ export async function POST(req: NextRequest) {
       currencySource: currencyResolution.source,
       currencyCountry: currencyResolution.country ?? null,
       userId,
-      mode: isConnectPayments() ? 'connect' : 'platform',
+      mode: 'platform',
     });
 
     if (isExpressCheckoutTopUp) {

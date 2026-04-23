@@ -12,7 +12,6 @@
     { "source": "/gallery", "destination": "/examples", "permanent": true }
   ],
   "crons": [
-    { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" },
     { "path": "/api/cron/fal-poll", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/reconcile-missing-jobs", "schedule": "*/10 * * * *" }
   ]
