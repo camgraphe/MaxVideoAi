@@ -18,6 +18,14 @@ export type AnalyticsRouteContext = {
   excludedFromGa4: boolean;
 };
 
+export function shouldLoadSpeedInsights(family: AnalyticsRouteFamily): boolean {
+  return family !== 'admin';
+}
+
+export function shouldLoadMarketingAnalytics(family: AnalyticsRouteFamily): boolean {
+  return family === 'marketing' || family === 'public_tools';
+}
+
 const LOCALE_PREFIXES = Array.from(
   new Set(
     Object.values(localePathnames)
