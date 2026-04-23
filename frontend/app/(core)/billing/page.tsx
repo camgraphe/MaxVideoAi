@@ -213,19 +213,8 @@ type DispatchGaEventOptions = {
 function PaymentMethodsStrip() {
   return (
     <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Accepted payment methods">
-      <span
-        className="inline-flex h-7 min-w-[76px] items-center justify-center rounded-input border border-border bg-text-primary px-2.5 text-[11px] font-semibold text-bg"
-        aria-label="Apple Pay"
-      >
-        Apple Pay
-      </span>
-      <span
-        className="inline-flex h-7 min-w-[76px] items-center justify-center rounded-input border border-border bg-bg px-2.5 text-[11px] font-semibold text-text-primary"
-        aria-label="Google Pay"
-      >
-        <span className="text-[#4285F4]">G</span>
-        <span className="ml-1">Pay</span>
-      </span>
+      <img src="/assets/payments/apple-pay.svg" alt="Apple Pay" width={166} height={106} className="h-7 w-auto" />
+      <img src="/assets/payments/google-pay.svg" alt="Google Pay" width={1094} height={742} className="h-7 w-auto" />
       <span
         className="inline-flex h-7 min-w-[76px] items-center justify-center gap-1.5 rounded-input border border-border bg-bg px-2.5 text-[11px] font-semibold text-text-secondary"
         aria-label="Cards"
@@ -233,12 +222,13 @@ function PaymentMethodsStrip() {
         <CreditCard size={14} strokeWidth={2} aria-hidden="true" />
         Card
       </span>
-      <span
-        className="inline-flex h-7 min-w-[76px] items-center justify-center rounded-input border border-border bg-bg px-2.5 text-[11px] font-semibold text-[#003087]"
-        aria-label="PayPal"
-      >
-        PayPal
-      </span>
+      <img
+        src="/assets/payments/paypal-mark.jpg"
+        alt="PayPal"
+        width={76}
+        height={48}
+        className="h-7 w-auto rounded-input border border-border"
+      />
     </div>
   );
 }
