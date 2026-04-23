@@ -11,7 +11,7 @@ export const generateMetadata = ({
 export default function ExamplesDefaultPage(props: { searchParams?: Record<string, string | string[] | undefined> }) {
   return (
     <DefaultMarketingLayout>
-      <ExamplesPage searchParams={props.searchParams ?? {}} />
+      <ExamplesPage params={{ locale: DEFAULT_LOCALE }} searchParams={props.searchParams ?? {}} />
     </DefaultMarketingLayout>
   );
 }

@@ -131,6 +131,7 @@ type ShowdownSide = {
 
 type ShowdownEntry = {
   slotId?: string;
+  title?: string;
   prompt?: string;
   left: ShowdownSide;
   right: ShowdownSide;
