@@ -84,6 +84,19 @@
     "unist-util-visit": "^5.0.0",
     "zod": "^3.23.8"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@ffmpeg-installer/linux-x64",
+      "bufferutil",
+      "esbuild",
+      "sharp"
+    ],
+    "ignoredBuiltDependencies": [
+      "@ffmpeg-installer/darwin-arm64",
+      "@vercel/speed-insights",
+      "unrs-resolver"
+    ]
+  },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,md,mdx,json}": [
       "node ../scripts/seo-guard.mjs"
