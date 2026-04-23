@@ -43,6 +43,18 @@ const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT * 2).to
 
 type ExampleSort = 'playlist' | 'date-desc' | 'date-asc' | 'duration-asc' | 'duration-desc' | 'engine-asc';
 
+function buildWatchAnchorText(locale: string, video: ExampleGalleryVideo): string {
+  const ratio = video.aspectRatio ?? 'Auto';
+  const duration = `${video.durationSec}s`;
+  if (locale === 'fr') {
+    return `Voir l'exemple video ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
+  }
+  if (locale === 'es') {
+    return `Ver ejemplo de video ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
+  }
+  return `Watch ${video.engineLabel} video example - ${video.prompt} - ${ratio} - ${duration}`;
+}
+
 export default function ExamplesGalleryGridClient({
   initialExamples,
   loadMoreLabel = 'Load more examples',
@@ -332,6 +344,7 @@ function ExampleCard({
   // Let next/image optimize the original poster once instead of wrapping a
   // pre-optimized /_next/image URL and breaking the request.
   const posterSrc = video.rawPosterUrl ?? null;
+  const watchAnchorText = buildWatchAnchorText(locale, video);
 
   return (
     <div
@@ -345,7 +358,9 @@ function ExampleCard({
         className="absolute inset-0 z-0"
         aria-label={altText}
         prefetch={false}
-      />
+      >
+        <span className="sr-only">{watchAnchorText}</span>
+      </Link>
       <div className="pointer-events-none relative z-10">
         <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-surface-on-media-dark-5')}>
           <div className="relative w-full" style={{ paddingBottom: mediaPadding }}>
