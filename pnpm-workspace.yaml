@@ -1,11 +1,12 @@
 packages:
   - 'frontend'
   - 'packages/*'
-allowBuilds:
-  '@ffmpeg-installer/darwin-arm64': false
-  '@ffmpeg-installer/linux-x64': true
-  '@vercel/speed-insights': false
-  bufferutil: true
-  esbuild: true
-  sharp: true
-  unrs-resolver: false
+onlyBuiltDependencies:
+  - '@ffmpeg-installer/linux-x64'
+  - bufferutil
+  - esbuild
+  - sharp
+ignoredBuiltDependencies:
+  - '@ffmpeg-installer/darwin-arm64'
+  - '@vercel/speed-insights'
+  - unrs-resolver
