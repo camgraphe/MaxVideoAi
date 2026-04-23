@@ -48,3 +48,19 @@ test('wallet top-up Checkout keeps metadata and Connect transfer data on the Pay
   assert.equal(params.payment_intent_data?.application_fee_amount, 300);
   assert.deepEqual(params.payment_intent_data?.transfer_data, { destination: 'acct_test_destination' });
 });
+
+test('wallet top-up Checkout can create Elements sessions for Express Checkout', () => {
+  const params = buildParams({
+    checkoutUiMode: 'elements',
+    successUrl: undefined,
+    cancelUrl: undefined,
+    returnUrl: 'https://maxvideoai.com/billing?status=success',
+  });
+
+  assert.equal(params.ui_mode, 'elements');
+  assert.equal(params.return_url, 'https://maxvideoai.com/billing?status=success');
+  assert.equal(params.success_url, undefined);
+  assert.equal(params.cancel_url, undefined);
+  assert.equal(params.payment_method_types, undefined);
+  assert.deepEqual(params.automatic_tax, { enabled: true });
+});

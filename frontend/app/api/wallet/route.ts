@@ -27,6 +27,8 @@ import { buildWalletTopUpCheckoutSessionParams } from '@/lib/stripe-checkout';
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
+const STRIPE_API_VERSION = '2023-10-16';
+const STRIPE_CHECKOUT_ELEMENTS_API_VERSION = '2026-03-25.dahlia' as Stripe.LatestApiVersion;
 
 export const dynamic = 'force-dynamic';
 
@@ -170,6 +172,8 @@ export async function POST(req: NextRequest) {
   }
 
   const amountCents = Math.max(1000, Number(body.amountCents ?? 0));
+  const requestMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
+  const isExpressCheckoutTopUp = requestMode === 'express_checkout' || requestMode === 'checkout_elements';
 
   let preferredCurrency: Currency | null = null;
   if (!useMock && databaseConfigured) {
@@ -189,6 +193,9 @@ export async function POST(req: NextRequest) {
   const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
 
   if (useMock || !ENV.STRIPE_SECRET_KEY || !databaseConfigured) {
+    if (isExpressCheckoutTopUp) {
+      return NextResponse.json({ error: 'Express checkout unavailable' }, { status: 503 });
+    }
     const balanceCents = applyMockWalletTopUp(userId, amountCents);
     return NextResponse.json({
       ok: true,
@@ -199,7 +206,9 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
+  const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, {
+    apiVersion: isExpressCheckoutTopUp ? STRIPE_CHECKOUT_ELEMENTS_API_VERSION : STRIPE_API_VERSION,
+  });
 
   if (body.mode === 'direct') {
     const engineId = String(body.engineId || '');
@@ -403,6 +412,7 @@ export async function POST(req: NextRequest) {
       settlement_currency: resolvedCurrencyUpper,
       currency: resolvedCurrencyUpper,
       currency_source: currencyResolution.source,
+      checkout_ui_mode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
     };
     const tier = findTopupTier({ usdAmountCents: amountCents });
     sessionMetadata.topup_tier_id = tier?.id ?? 'custom';
@@ -463,8 +473,10 @@ export async function POST(req: NextRequest) {
     const sessionParams = buildWalletTopUpCheckoutSessionParams({
       currency: resolvedCurrencyLower,
       settlementAmountCents,
+      checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
       successUrl,
       cancelUrl,
+      returnUrl: successUrl,
       sessionMetadata,
       paymentIntentMetadata,
       productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
@@ -477,10 +489,11 @@ export async function POST(req: NextRequest) {
           : null,
     });
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
 
     console.info('[payments] checkout session created', {
       sessionId: session.id,
+      checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
       amountCents,
       settlementAmountCents,
       settlementCurrency: resolvedCurrencyUpper,
@@ -492,6 +505,17 @@ export async function POST(req: NextRequest) {
       userId,
       mode: isConnectPayments() ? 'connect' : 'platform',
     });
+
+    if (isExpressCheckoutTopUp) {
+      if (!session.client_secret) {
+        throw new Error('missing_checkout_client_secret');
+      }
+      return NextResponse.json({
+        id: session.id,
+        clientSecret: session.client_secret,
+        client_secret: session.client_secret,
+      });
+    }
 
     return NextResponse.json({ id: session.id, url: session.url });
   } catch (error: unknown) {

@@ -1,14 +1,20 @@
 'use client';
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import {
+  loadStripe,
+  type Stripe,
+  type StripeCheckout,
+  type StripeCheckoutExpressCheckoutElement,
+  type StripeCheckoutLoadActionsResult,
+  type StripeExpressCheckoutElementReadyEvent,
+} from '@stripe/stripe-js';
 import deepmerge from 'deepmerge';
 import { usePathname } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
 import { FEATURES } from '@/content/feature-flags';
-import { CreditCard } from 'lucide-react';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -88,8 +94,16 @@ const DEFAULT_BILLING_COPY = {
     customPlaceholder: 'Enter amount (min $10)',
     customHint: 'Minimum top-up is $10.',
     customCta: 'Add custom amount',
+    customSelectCta: 'Use amount',
     customInvalid: 'Enter a valid amount.',
     customMin: 'Minimum is $10.',
+    selectedAmount: 'Selected',
+    chooseAmount: 'Choose',
+    expressTitle: 'Express checkout',
+    expressLoading: 'Checking availability…',
+    expressUnavailable: 'Express checkout unavailable in this browser.',
+    expressError: 'Express checkout unavailable.',
+    expressFallbackCta: 'Secure checkout',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     currencyLabel: 'Charge currency',
@@ -210,25 +224,215 @@ type DispatchGaEventOptions = {
   retryDelayMs?: number;
 };
 
-function PaymentMethodsStrip() {
+type StripeWithCheckoutElements = Stripe & {
+  initCheckoutElementsSdk?: (options: { clientSecret: Promise<string> | string }) => StripeCheckout;
+};
+
+type WalletExpressCheckoutProps = {
+  amountCents: number;
+  chargeCurrency: string;
+  localAmountLabel?: string | null;
+  session: { access_token?: string | null } | null;
+  labels: Pick<
+    BillingCopy['wallet'],
+    | 'selectedAmount'
+    | 'expressTitle'
+    | 'expressLoading'
+    | 'expressUnavailable'
+    | 'expressError'
+    | 'expressFallbackCta'
+  >;
+  onFallbackCheckout: (amountCents: number) => void;
+  onPaymentStarted: (amountCents: number) => void;
+  onPaymentFailed: (amountCents: number, reason?: string) => void;
+  onPaymentCancelled: (amountCents: number) => void;
+};
+
+function WalletExpressCheckout({
+  amountCents,
+  chargeCurrency,
+  localAmountLabel = null,
+  session,
+  labels,
+  onFallbackCheckout,
+  onPaymentStarted,
+  onPaymentFailed,
+  onPaymentCancelled,
+}: WalletExpressCheckoutProps) {
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
+  const [message, setMessage] = useState<string | null>(null);
+  const amountLabel = `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
+  const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
+
+  useEffect(() => {
+    let cancelled = false;
+    let expressElement: StripeCheckoutExpressCheckoutElement | null = null;
+
+    async function mountExpressCheckout() {
+      if (!session || !stripePromise || !mountRef.current) {
+        setStatus('idle');
+        setMessage(null);
+        return;
+      }
+
+      setStatus('loading');
+      setMessage(null);
+      const token = session.access_token ?? null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      try {
+        const response = await fetch('/api/wallet', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            amountCents,
+            currency: normalizedChargeCurrency.toLowerCase(),
+            mode: 'express_checkout',
+          }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(payload?.error ?? 'express_checkout_session_failed');
+        }
+        const clientSecret =
+          typeof payload?.clientSecret === 'string'
+            ? payload.clientSecret
+            : typeof payload?.client_secret === 'string'
+              ? payload.client_secret
+              : null;
+        if (!clientSecret) {
+          throw new Error('missing_checkout_client_secret');
+        }
+
+        const stripe = (await stripePromise) as StripeWithCheckoutElements | null;
+        const initCheckout = stripe?.initCheckout ?? stripe?.initCheckoutElementsSdk;
+        if (!stripe || !initCheckout || !mountRef.current || cancelled) {
+          throw new Error('stripe_checkout_elements_unavailable');
+        }
+
+        const checkout = initCheckout.call(stripe, { clientSecret });
+        const loadActionsPromise: Promise<StripeCheckoutLoadActionsResult> = checkout.loadActions();
+        expressElement = checkout.createExpressCheckoutElement({
+          buttonHeight: 44,
+          layout: { maxColumns: 2, maxRows: 2, overflow: 'auto' },
+          paymentMethodOrder: ['apple_pay', 'google_pay', 'paypal', 'link'],
+          paymentMethods: {
+            applePay: 'always',
+            googlePay: 'always',
+            paypal: 'auto',
+            link: 'auto',
+            amazonPay: 'never',
+            klarna: 'never',
+          },
+        } as Parameters<StripeCheckout['createExpressCheckoutElement']>[0]);
+
+        expressElement.on('ready', (event: StripeExpressCheckoutElementReadyEvent) => {
+          if (cancelled) return;
+          const methods = event.availablePaymentMethods;
+          const hasAnyMethod = Boolean(methods && Object.values(methods).some(Boolean));
+          setStatus(hasAnyMethod ? 'ready' : 'unavailable');
+          setMessage(hasAnyMethod ? null : labels.expressUnavailable);
+        });
+        expressElement.on('loaderror', (event) => {
+          if (cancelled) return;
+          setStatus('error');
+          setMessage(event.error?.message ?? labels.expressError);
+        });
+        expressElement.on('cancel', () => {
+          onPaymentCancelled(amountCents);
+        });
+        expressElement.on('confirm', async (event) => {
+          onPaymentStarted(amountCents);
+          try {
+            const loadActionsResult = await loadActionsPromise;
+            if (loadActionsResult.type !== 'success') {
+              throw new Error(loadActionsResult.error.message);
+            }
+            const result = await loadActionsResult.actions.confirm({
+              expressCheckoutConfirmEvent: event,
+            });
+            if (result.type === 'error') {
+              event.paymentFailed({ reason: 'fail', message: result.error.message });
+              onPaymentFailed(amountCents, result.error.message);
+              return;
+            }
+            const params = new URLSearchParams({
+              status: 'success',
+              amount: (amountCents / 100).toFixed(2),
+              amountCents: String(amountCents),
+              currency: 'USD',
+              settlementCurrency: normalizedChargeCurrency,
+            });
+            window.location.href = `/billing?${params.toString()}`;
+          } catch (error) {
+            const reason = error instanceof Error ? error.message : 'express_checkout_failed';
+            event.paymentFailed({ reason: 'fail', message: labels.expressError });
+            onPaymentFailed(amountCents, reason);
+            setStatus('error');
+            setMessage(labels.expressError);
+          }
+        });
+
+        expressElement.mount(mountRef.current);
+        const loadActionsResult = await loadActionsPromise;
+        if (cancelled) return;
+        if (loadActionsResult.type !== 'success') {
+          throw new Error(loadActionsResult.error.message);
+        }
+      } catch (error) {
+        if (cancelled) return;
+        const reason = error instanceof Error ? error.message : 'express_checkout_failed';
+        console.warn('[billing] express checkout unavailable', reason);
+        setStatus('error');
+        setMessage(labels.expressError);
+      }
+    }
+
+    void mountExpressCheckout();
+    return () => {
+      cancelled = true;
+      expressElement?.destroy();
+    };
+  }, [
+    amountCents,
+    labels.expressError,
+    labels.expressUnavailable,
+    normalizedChargeCurrency,
+    onPaymentCancelled,
+    onPaymentFailed,
+    onPaymentStarted,
+    session,
+  ]);
+
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Accepted payment methods">
-      <img src="/assets/payments/apple-pay.svg" alt="Apple Pay" width={166} height={106} className="h-7 w-auto" />
-      <img src="/assets/payments/google-pay.svg" alt="Google Pay" width={1094} height={742} className="h-7 w-auto" />
-      <span
-        className="inline-flex h-7 min-w-[76px] items-center justify-center gap-1.5 rounded-input border border-border bg-bg px-2.5 text-[11px] font-semibold text-text-secondary"
-        aria-label="Cards"
+    <div className="mt-4 rounded-input border border-border bg-bg p-3">
+      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm font-semibold text-text-primary">{labels.expressTitle}</p>
+        <p className="text-xs text-text-secondary">
+          {labels.selectedAmount}: <span className="font-semibold text-text-primary">{amountLabel}</span>
+          {localAmountLabel ? <span className="ml-1 text-text-muted">{localAmountLabel}</span> : null}
+        </p>
+      </div>
+      {session ? (
+        <div
+          ref={mountRef}
+          className={`min-h-[44px] ${status === 'unavailable' || status === 'error' ? 'hidden' : ''}`}
+          aria-label="Express checkout"
+        />
+      ) : null}
+      {session && status === 'loading' && <p className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
+      {message && <p className="mt-2 text-xs text-state-warning">{message}</p>}
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        onClick={() => onFallbackCheckout(amountCents)}
+        className="mt-3 w-full justify-center border border-border bg-surface text-text-primary hover:bg-surface-2"
       >
-        <CreditCard size={14} strokeWidth={2} aria-hidden="true" />
-        Card
-      </span>
-      <img
-        src="/assets/payments/paypal-mark.jpg"
-        alt="PayPal"
-        width={76}
-        height={48}
-        className="h-7 w-auto rounded-input border border-border"
-      />
+        {labels.expressFallbackCta}
+      </Button>
     </div>
   );
 }
@@ -269,6 +473,7 @@ export default function BillingPage() {
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [customAmountInput, setCustomAmountInput] = useState('');
+  const [selectedTopupCents, setSelectedTopupCents] = useState(USD_TOPUP_TIERS[0]?.amountCents ?? 1000);
   const toggleReceipts = useCallback(() => setReceiptsCollapsed((prev) => !prev), []);
   const [topupQuotes, setTopupQuotes] = useState<Record<number, { amountMinor: number; currency: string }>>({});
   const userCurrencyOverrideRef = useRef(false);
@@ -731,6 +936,28 @@ export default function BillingPage() {
     }
   }
 
+  const handleExpressTopupStarted = useCallback(
+    (amountCents: number) => {
+      triggerTopupStarted(amountCents, normalizedChargeCurrency);
+    },
+    [normalizedChargeCurrency, triggerTopupStarted]
+  );
+
+  const handleExpressTopupFailed = useCallback(
+    (amountCents: number, reason?: string) => {
+      triggerTopupFailed(amountCents, normalizedChargeCurrency, reason);
+      setToast(copy.errors.topupStart);
+    },
+    [copy.errors.topupStart, normalizedChargeCurrency, triggerTopupFailed]
+  );
+
+  const handleExpressTopupCancelled = useCallback(
+    (amountCents: number) => {
+      triggerTopupCancelled(amountCents, normalizedChargeCurrency);
+    },
+    [normalizedChargeCurrency, triggerTopupCancelled]
+  );
+
   async function loadMoreReceipts() {
     if (receipts.loading || receipts.nextCursor === null) return;
     setReceipts((s) => ({ ...s, loading: true }));
@@ -850,6 +1077,11 @@ export default function BillingPage() {
         : null;
   const customAmountValid = customAmountCents != null && customAmountCents >= 1000;
   const visibleReceipts = receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items;
+  const selectedTopupQuote = topupQuotes[selectedTopupCents];
+  const selectedTopupLocalLabel =
+    selectedTopupQuote && normalizedChargeCurrency !== 'USD'
+      ? `≈ ${formatLocalAmount(selectedTopupQuote.amountMinor, selectedTopupQuote.currency)}`
+      : null;
 
   if (authLoading) {
     return null;
@@ -910,40 +1142,66 @@ export default function BillingPage() {
                   <p className={`text-xs ${currencyStatusClass}`}>{currencyStatus}</p>
                 </div>
               </div>
-              <PaymentMethodsStrip />
               <div className="mt-3 grid grid-gap-sm md:grid-cols-2">
                 {USD_TOPUP_TIERS.map((tier) => (
-                  <Button
-                    key={tier.id}
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleTopUp(tier.amountCents)}
-                    className="group relative w-full justify-start overflow-hidden rounded-card border border-hairline bg-gradient-to-br from-brand-active via-brand-hover to-brand px-4 py-4 text-left text-on-inverse shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-text-muted hover:shadow-float"
-                  >
-                    <span className="pointer-events-none absolute inset-0 z-0 opacity-0 transition duration-300 group-hover:opacity-100" aria-hidden>
-                      <span className="absolute inset-0 bg-gradient-to-r from-surface-on-media-25 via-surface-on-media-10 to-transparent" />
-                      <span className="absolute -left-6 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-surface-on-media-40 blur-[65px]" />
-                    </span>
-                    <div className="relative z-10 flex items-center justify-between gap-4">
-                      <div className="flex flex-col">
-                        <span className="text-base font-semibold text-on-inverse">
-                          {copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}
+                  (() => {
+                    const isSelected = selectedTopupCents === tier.amountCents;
+                    return (
+                      <Button
+                        key={tier.id}
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        aria-pressed={isSelected}
+                        onClick={() => setSelectedTopupCents(tier.amountCents)}
+                        className={`group relative w-full justify-start overflow-hidden rounded-card border border-hairline bg-gradient-to-br from-brand-active via-brand-hover to-brand px-4 py-4 text-left text-on-inverse shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-text-muted hover:shadow-float ${
+                          isSelected ? 'ring-2 ring-ring ring-offset-2 ring-offset-surface' : ''
+                        }`}
+                      >
+                        <span className="pointer-events-none absolute inset-0 z-0 opacity-0 transition duration-300 group-hover:opacity-100" aria-hidden>
+                          <span className="absolute inset-0 bg-gradient-to-r from-surface-on-media-25 via-surface-on-media-10 to-transparent" />
+                          <span className="absolute -left-6 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-surface-on-media-40 blur-[65px]" />
                         </span>
-                        {topupQuotes[tier.amountCents] && normalizedChargeCurrency !== 'USD' && (
-                          <span className="text-xs text-on-media-90">
-                            ≈ {formatLocalAmount(topupQuotes[tier.amountCents].amountMinor, topupQuotes[tier.amountCents].currency)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end text-[11px] font-semibold uppercase tracking-micro text-on-media-85">
-                        <span className="rounded-full border border-surface-on-media-40 px-2 py-1 text-[10px]">Stripe</span>
-                        <span className="mt-2 text-on-media-70">Tap to top up</span>
-                      </div>
-                    </div>
-                  </Button>
+                        <div className="relative z-10 flex items-center justify-between gap-4">
+                          <div className="flex flex-col">
+                            <span className="text-base font-semibold text-on-inverse">
+                              {copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}
+                            </span>
+                            {topupQuotes[tier.amountCents] && normalizedChargeCurrency !== 'USD' && (
+                              <span className="text-xs text-on-media-90">
+                                ≈ {formatLocalAmount(topupQuotes[tier.amountCents].amountMinor, topupQuotes[tier.amountCents].currency)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end text-[11px] font-semibold uppercase tracking-micro text-on-media-85">
+                            <span className="rounded-full border border-surface-on-media-40 px-2 py-1 text-[10px]">
+                              {isSelected ? copy.wallet.selectedAmount : copy.wallet.chooseAmount}
+                            </span>
+                          </div>
+                        </div>
+                      </Button>
+                    );
+                  })()
                 ))}
               </div>
+              <WalletExpressCheckout
+                amountCents={selectedTopupCents}
+                chargeCurrency={normalizedChargeCurrency}
+                localAmountLabel={selectedTopupLocalLabel}
+                session={session}
+                labels={{
+                  selectedAmount: copy.wallet.selectedAmount,
+                  expressTitle: copy.wallet.expressTitle,
+                  expressLoading: copy.wallet.expressLoading,
+                  expressUnavailable: copy.wallet.expressUnavailable,
+                  expressError: copy.wallet.expressError,
+                  expressFallbackCta: copy.wallet.expressFallbackCta,
+                }}
+                onFallbackCheckout={handleTopUp}
+                onPaymentStarted={handleExpressTopupStarted}
+                onPaymentFailed={handleExpressTopupFailed}
+                onPaymentCancelled={handleExpressTopupCancelled}
+              />
               <div className="mt-4 rounded-input border border-border bg-bg px-3 py-3">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
                   {copy.wallet.customLabel}
@@ -965,13 +1223,13 @@ export default function BillingPage() {
                   <Button
                     type="button"
                     disabled={!customAmountValid}
-                    onClick={() => customAmountCents && handleTopUp(customAmountCents)}
+                    onClick={() => customAmountCents && setSelectedTopupCents(customAmountCents)}
                     size="md"
                     className={`px-4 ${
                       customAmountValid ? '' : 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
                     }`}
                   >
-                    {copy.wallet.customCta}
+                    {copy.wallet.customSelectCta}
                   </Button>
                 </div>
                 <p className={`mt-2 text-xs ${customAmountError ? 'text-state-warning' : 'text-text-muted'}`}>

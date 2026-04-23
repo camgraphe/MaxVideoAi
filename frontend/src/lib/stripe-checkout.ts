@@ -2,6 +2,16 @@ import type Stripe from 'stripe';
 
 type CheckoutAllowedCountry =
   Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry;
+type CheckoutUiMode = 'hosted' | 'elements';
+type WalletTopUpCheckoutSessionParams = Omit<
+  Stripe.Checkout.SessionCreateParams,
+  'ui_mode' | 'success_url' | 'cancel_url' | 'return_url'
+> & {
+  ui_mode?: Stripe.Checkout.SessionCreateParams.UiMode | 'elements';
+  success_url?: string;
+  cancel_url?: string;
+  return_url?: string;
+};
 
 export const WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES = [
   'AC',
@@ -246,8 +256,10 @@ export const WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES = [
 type BuildWalletTopUpCheckoutSessionParamsArgs = {
   currency: string;
   settlementAmountCents: number;
-  successUrl: string;
-  cancelUrl: string;
+  checkoutUiMode?: CheckoutUiMode;
+  successUrl?: string;
+  cancelUrl?: string;
+  returnUrl?: string;
   sessionMetadata: Record<string, string>;
   paymentIntentMetadata: Record<string, string>;
   productTaxCode: string;
@@ -260,13 +272,15 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
 export function buildWalletTopUpCheckoutSessionParams({
   currency,
   settlementAmountCents,
+  checkoutUiMode = 'hosted',
   successUrl,
   cancelUrl,
+  returnUrl,
   sessionMetadata,
   paymentIntentMetadata,
   productTaxCode,
   connectTransfer = null,
-}: BuildWalletTopUpCheckoutSessionParamsArgs): Stripe.Checkout.SessionCreateParams {
+}: BuildWalletTopUpCheckoutSessionParamsArgs): WalletTopUpCheckoutSessionParams {
   const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData = {
     metadata: paymentIntentMetadata,
   };
@@ -278,7 +292,7 @@ export function buildWalletTopUpCheckoutSessionParams({
     };
   }
 
-  return {
+  const params: WalletTopUpCheckoutSessionParams = {
     mode: 'payment',
     billing_address_collection: 'auto',
     automatic_tax: { enabled: true },
@@ -286,13 +300,6 @@ export function buildWalletTopUpCheckoutSessionParams({
     shipping_address_collection: {
       allowed_countries: WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES,
     },
-    custom_text: {
-      shipping_address: {
-        message: 'Used only to confirm tax location for this digital wallet top-up.',
-      },
-    },
-    success_url: successUrl,
-    cancel_url: cancelUrl,
     line_items: [
       {
         price_data: {
@@ -307,4 +314,25 @@ export function buildWalletTopUpCheckoutSessionParams({
     metadata: sessionMetadata,
     payment_intent_data: paymentIntentData,
   };
+
+  if (checkoutUiMode === 'elements') {
+    if (!returnUrl) {
+      throw new Error('returnUrl is required for Checkout Elements sessions');
+    }
+    params.ui_mode = 'elements';
+    params.return_url = returnUrl;
+    return params;
+  }
+
+  if (!successUrl || !cancelUrl) {
+    throw new Error('successUrl and cancelUrl are required for hosted Checkout sessions');
+  }
+  params.custom_text = {
+    shipping_address: {
+      message: 'Used only to confirm tax location for this digital wallet top-up.',
+    },
+  };
+  params.success_url = successUrl;
+  params.cancel_url = cancelUrl;
+  return params;
 }
