@@ -2687,22 +2687,33 @@
     "billing": {
       "title": "Facturation",
       "hero": {
-        "title": "Prix avant génération.",
-        "subtitle": "Payez uniquement ce que vous exécutez. Démarrez avec 10 $ de crédits. Sans abonnement, sans engagement.",
+        "title": "Ajouter des crédits",
+        "subtitle": "Choisissez un montant, puis finalisez le paiement dans le Checkout Stripe sécurisé.",
         "liveMode": "Mode live",
         "testMode": "Mode test"
       },
       "wallet": {
-        "title": "Portefeuille",
-        "description": "Crédits de démarrage (10 $). Rechargez quand vous en avez besoin, puis payez chaque rendu au centime près. Tout solde inutilisé reste à vous.",
-        "addFunds": "Ajouter {amount}",
+        "title": "Ajouter des crédits",
+        "description": "Votre solde paie uniquement les rendus réussis. Les crédits non utilisés restent dans votre portefeuille.",
+        "balanceLabel": "Solde actuel",
+        "addFunds": "{amount}",
         "quickAmount": "{amount}",
-        "customLabel": "Montant personnalisé (USD)",
-        "customPlaceholder": "Saisir un montant (min 10 $)",
-        "customHint": "Recharge minimale : 10 $.",
-        "customCta": "Ajouter un montant",
+        "selectedAmount": "Montant sélectionné",
+        "checkoutCta": "Continuer vers le Checkout Stripe sécurisé · {amount}",
+        "checkoutNote": "Les taxes et le reçu sont finalisés par Stripe avant paiement.",
+        "customLabel": "Montant personnalisé",
+        "customPlaceholder": "Minimum 10 $",
+        "customHint": "Saisissez un montant à partir de 10 $.",
+        "customCta": "Définir le montant",
+        "customSelectCta": "Définir le montant",
         "customInvalid": "Saisissez un montant valide.",
         "customMin": "Minimum : 10 $.",
+        "chooseAmount": "Sélectionner",
+        "expressTitle": "Paiement rapide",
+        "expressSubtitle": "Apple Pay, Google Pay, PayPal et Link apparaissent lorsqu’ils sont disponibles sur cet appareil.",
+        "expressLoading": "Recherche des options rapides…",
+        "expressUnavailable": "Le paiement rapide n’est pas disponible dans ce navigateur.",
+        "expressError": "Paiement rapide indisponible.",
         "autoTopUp": "Activer la recharge auto (optionnel)",
         "lowBalance": "Votre solde est faible. Rechargez pour continuer à créer.",
         "currencyLabel": "Devise facturée",
@@ -2773,11 +2784,11 @@
         }
       },
       "refunds": {
-        "title": "Remboursements & protections",
+        "title": "Protections",
         "points": [
-          "Rendu échoué : remboursement automatique.",
-          "Contrôle budget : définissez des limites souples/strictes par projet.",
-          "Sans verrouillage fournisseur : fonctionne avec les moteurs majeurs ; les marques appartiennent à leurs propriétaires."
+          "Les rendus échoués sont remboursés automatiquement.",
+          "Les reçus incluent les taxes et les détails de paiement.",
+          "Aucun abonnement. Ajoutez des crédits seulement quand vous en avez besoin."
         ]
       },
       "faq": {

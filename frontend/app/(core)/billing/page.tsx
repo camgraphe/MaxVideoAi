@@ -80,30 +80,33 @@ const PENDING_TOPUP_CANCELLED_STORAGE_KEY = 'mv-pending-topup-cancelled-event';
 const DEFAULT_BILLING_COPY = {
   title: 'Billing',
   hero: {
-    title: 'Price before you generate.',
-    subtitle: 'Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.',
+    title: 'Add credits',
+    subtitle: 'Choose an amount, then complete payment in secure Stripe Checkout.',
     liveMode: 'Live Mode',
     testMode: 'Test Mode',
   },
   wallet: {
-    title: 'Wallet',
-    description: 'Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.',
-    addFunds: 'Add {amount}',
+    title: 'Add credits',
+    description: 'Your balance pays for successful renders only. Unused credits stay in your wallet.',
+    balanceLabel: 'Current balance',
+    addFunds: '{amount}',
     quickAmount: '{amount}',
-    customLabel: 'Custom amount (USD)',
-    customPlaceholder: 'Enter amount (min $10)',
-    customHint: 'Minimum top-up is $10.',
-    customCta: 'Add custom amount',
-    customSelectCta: 'Use amount',
+    selectedAmount: 'Selected amount',
+    checkoutCta: 'Continue to secure Stripe Checkout · {amount}',
+    checkoutNote: 'Taxes and receipt are finalized by Stripe before payment.',
+    customLabel: 'Custom amount',
+    customPlaceholder: 'Minimum $10',
+    customHint: 'Enter any amount from $10.',
+    customCta: 'Set amount',
+    customSelectCta: 'Set amount',
     customInvalid: 'Enter a valid amount.',
     customMin: 'Minimum is $10.',
-    selectedAmount: 'Selected',
-    chooseAmount: 'Choose',
-    expressTitle: 'Express checkout',
-    expressLoading: 'Checking availability…',
-    expressUnavailable: 'Express checkout unavailable in this browser.',
+    chooseAmount: 'Select',
+    expressTitle: 'Fast pay options',
+    expressSubtitle: 'Apple Pay, Google Pay, PayPal, and Link appear when available on this device.',
+    expressLoading: 'Checking fast pay options…',
+    expressUnavailable: 'Fast pay is not available in this browser.',
     expressError: 'Express checkout unavailable.',
-    expressFallbackCta: 'Secure checkout',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     currencyLabel: 'Charge currency',
@@ -163,11 +166,11 @@ const DEFAULT_BILLING_COPY = {
     },
   },
   refunds: {
-    title: 'Refunds & Protections',
+    title: 'Protections',
     points: [
-      'Failed render: automatic refund.',
-      'Budget control: set soft/hard limits per project.',
-      'No vendor lock-in: Works with leading engines; trademarks belong to their owners.',
+      'Failed renders are refunded automatically.',
+      'Receipts include itemized tax and payment details.',
+      'No subscription. Add credits only when you need them.',
     ],
   },
   faq: {
@@ -237,12 +240,11 @@ type WalletExpressCheckoutProps = {
     BillingCopy['wallet'],
     | 'selectedAmount'
     | 'expressTitle'
+    | 'expressSubtitle'
     | 'expressLoading'
     | 'expressUnavailable'
     | 'expressError'
-    | 'expressFallbackCta'
   >;
-  onFallbackCheckout: (amountCents: number) => void;
   onPaymentStarted: (amountCents: number) => void;
   onPaymentFailed: (amountCents: number, reason?: string) => void;
   onPaymentCancelled: (amountCents: number) => void;
@@ -254,7 +256,6 @@ function WalletExpressCheckout({
   localAmountLabel = null,
   session,
   labels,
-  onFallbackCheckout,
   onPaymentStarted,
   onPaymentFailed,
   onPaymentCancelled,
@@ -406,33 +407,29 @@ function WalletExpressCheckout({
     session,
   ]);
 
+  if (!session) {
+    return null;
+  }
+
   return (
-    <div className="mt-4 rounded-input border border-border bg-bg p-3">
-      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-semibold text-text-primary">{labels.expressTitle}</p>
+    <div className={`mt-4 rounded-input border border-border bg-bg p-3 ${status === 'unavailable' || status === 'error' ? 'hidden' : ''}`}>
+      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-text-primary">{labels.expressTitle}</p>
+          <p className="mt-0.5 text-xs text-text-secondary">{labels.expressSubtitle}</p>
+        </div>
         <p className="text-xs text-text-secondary">
           {labels.selectedAmount}: <span className="font-semibold text-text-primary">{amountLabel}</span>
           {localAmountLabel ? <span className="ml-1 text-text-muted">{localAmountLabel}</span> : null}
         </p>
       </div>
-      {session ? (
-        <div
-          ref={mountRef}
-          className={`min-h-[44px] ${status === 'unavailable' || status === 'error' ? 'hidden' : ''}`}
-          aria-label="Express checkout"
-        />
-      ) : null}
-      {session && status === 'loading' && <p className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
+      <div
+        ref={mountRef}
+        className={`min-h-[44px] ${status === 'unavailable' || status === 'error' ? 'hidden' : ''}`}
+        aria-label="Express checkout"
+      />
+      {status === 'loading' && <p className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
       {message && <p className="mt-2 text-xs text-state-warning">{message}</p>}
-      <Button
-        type="button"
-        size="sm"
-        variant="ghost"
-        onClick={() => onFallbackCheckout(amountCents)}
-        className="mt-3 w-full justify-center border border-border bg-surface text-text-primary hover:bg-surface-2"
-      >
-        {labels.expressFallbackCta}
-      </Button>
     </div>
   );
 }
@@ -442,7 +439,9 @@ export default function BillingPage() {
   const rawCopy = t('workspace.billing', DEFAULT_BILLING_COPY);
   const copy = useMemo<BillingCopy>(() => {
     if (!rawCopy || typeof rawCopy !== 'object') return DEFAULT_BILLING_COPY;
-    return deepmerge(DEFAULT_BILLING_COPY, rawCopy as Partial<BillingCopy>);
+    return deepmerge(DEFAULT_BILLING_COPY, rawCopy as Partial<BillingCopy>, {
+      arrayMerge: (_destination, source) => source,
+    });
   }, [rawCopy]);
   const pathname = usePathname();
   const walletCurrencyDetected = copy.wallet.currencyDetected ?? DEFAULT_BILLING_COPY.wallet.currencyDetected;
@@ -1055,7 +1054,18 @@ export default function BillingPage() {
   }, []);
 
 
-  const formatUsdAmount = (amountCents: number) => `$${(amountCents / 100).toFixed(0)}`;
+  const formatUsdAmount = (amountCents: number) => {
+    const amount = amountCents / 100;
+    try {
+      return new Intl.NumberFormat(CURRENCY_LOCALE, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
+      }).format(amount);
+    } catch {
+      return `$${amount.toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
+    }
+  };
   const normalizedAutoCurrency = (autoCurrency || 'USD').toUpperCase();
   const currencyStatus = currencyError
     ? currencyError
@@ -1077,6 +1087,7 @@ export default function BillingPage() {
         : null;
   const customAmountValid = customAmountCents != null && customAmountCents >= 1000;
   const visibleReceipts = receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items;
+  const selectedTopupAmountLabel = formatUsdAmount(selectedTopupCents);
   const selectedTopupQuote = topupQuotes[selectedTopupCents];
   const selectedTopupLocalLabel =
     selectedTopupQuote && normalizedChargeCurrency !== 'USD'
@@ -1094,41 +1105,175 @@ export default function BillingPage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="relative flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+        <main className="relative flex-1 min-w-0 overflow-y-auto p-3 pb-36 sm:p-4 lg:p-7 lg:pb-10">
           {toast && (
             <div className="pointer-events-none absolute left-1/2 top-3 z-50 -translate-x-1/2 transform rounded-input border border-border bg-surface px-4 py-2 text-sm text-text-primary shadow-card">
               {toast}
             </div>
           )}
-          <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
-          {/* Pricing Hero */}
-          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
-            <h2 className="text-xl font-semibold text-text-primary">{copy.hero.title}</h2>
-            <p className="mt-1 text-sm text-text-secondary">{copy.hero.subtitle}</p>
-            {stripeMode !== 'disabled' && (
-              <div className="mt-2">
-                <span className={`rounded-full px-2 py-1 text-xs ${stripeMode==='test' ? 'bg-warning-bg text-warning' : 'bg-success-bg text-success'}`}>
-                  {stripeMode === 'test' ? copy.hero.testMode : copy.hero.liveMode}
-                </span>
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-3 flex flex-col gap-3 sm:mb-5 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.title}</p>
+                <h1 className="mt-1 text-xl font-semibold text-text-primary sm:text-3xl">{copy.wallet.title}</h1>
+                <p className="mt-1 max-w-2xl text-xs text-text-secondary sm:mt-2 sm:text-sm">{copy.hero.subtitle}</p>
               </div>
-            )}
-          </section>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+                <div className="rounded-input border border-border bg-surface px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{copy.wallet.balanceLabel}</p>
+                  <p className="text-base font-semibold text-text-primary">
+                    {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
+                  </p>
+                </div>
+                {stripeMode !== 'disabled' && (
+                  <div className="rounded-input border border-border bg-surface px-3 py-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Stripe</p>
+                    <p className={stripeMode === 'test' ? 'text-sm font-semibold text-state-warning' : 'text-sm font-semibold text-success'}>
+                      {stripeMode === 'test' ? copy.hero.testMode : copy.hero.liveMode}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <section className="mb-6 grid grid-gap-sm md:grid-cols-2">
-            <div className="rounded-card border border-border bg-surface p-4 shadow-card">
-              <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.wallet.title}</h2>
-              <p className="text-sm text-text-secondary">{copy.wallet.description}</p>
-              <p className="mt-1 text-2xl font-semibold text-text-primary">
-                {wallet ? `$${wallet.balance.toFixed(2)}` : authLoading ? '...' : '--'}
-              </p>
-              <div className="mt-3 flex flex-col gap-4 text-sm text-text-secondary sm:flex-row sm:items-start sm:gap-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select">
+            <section className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+              <div className="rounded-card border border-border bg-surface p-3 shadow-card sm:p-5">
+                <div className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:pb-4">
+                  <div>
+                    <h2 className="text-base font-semibold text-text-primary sm:text-lg">{copy.wallet.selectedAmount}</h2>
+                    <p className="mt-1 text-xs text-text-secondary sm:text-sm">{copy.wallet.description}</p>
+                  </div>
+                  <div className="hidden flex-col gap-1 text-left sm:flex sm:min-w-[160px]">
+                    <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select">
+                      {copy.wallet.currencyLabel}
+                    </label>
+                    <select
+                      id="billing-currency-select"
+                      className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={normalizedChargeCurrency}
+                      onChange={handleCurrencyChange}
+                      disabled={currencyLoading}
+                    >
+                      {currencyOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    <p className={`text-xs ${currencyStatusClass}`}>{currencyStatus}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-4">
+                  {USD_TOPUP_TIERS.map((tier) => {
+                    const isSelected = selectedTopupCents === tier.amountCents;
+                    const quote = topupQuotes[tier.amountCents];
+                    return (
+                      <Button
+                        key={tier.id}
+                        type="button"
+                        size="md"
+                        variant="ghost"
+                        aria-pressed={isSelected}
+                        onClick={() => setSelectedTopupCents(tier.amountCents)}
+                        className={`min-h-[58px] w-full flex-col items-start justify-between rounded-input border px-3 py-2 text-left sm:min-h-[74px] sm:py-3 ${
+                          isSelected
+                            ? 'border-brand bg-surface-2 text-text-primary shadow-card'
+                            : 'border-border bg-bg text-text-secondary hover:border-border-hover hover:bg-surface-hover'
+                        }`}
+                      >
+                        <span className="text-base font-semibold sm:text-lg">{copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}</span>
+                        {quote && normalizedChargeCurrency !== 'USD' ? (
+                          <span className="text-xs font-medium text-text-muted">
+                            ≈ {formatLocalAmount(quote.amountMinor, quote.currency)}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-medium text-text-muted">{isSelected ? copy.wallet.selectedAmount : copy.wallet.chooseAmount}</span>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-3 rounded-input border border-brand bg-surface-2 p-3 sm:mt-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.wallet.selectedAmount}</p>
+                      <p className="text-xl font-semibold text-text-primary sm:text-2xl">{selectedTopupAmountLabel}</p>
+                      {selectedTopupLocalLabel ? <p className="text-xs text-text-secondary">{selectedTopupLocalLabel}</p> : null}
+                    </div>
+                    <Button
+                      type="button"
+                      size="lg"
+                      onClick={() => handleTopUp(selectedTopupCents)}
+                      className="w-full whitespace-normal px-4 text-center leading-snug sm:w-auto sm:px-5"
+                    >
+                      {copy.wallet.checkoutCta.replace('{amount}', selectedTopupAmountLabel)}
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-xs text-text-secondary">{copy.wallet.checkoutNote}</p>
+                </div>
+
+                <WalletExpressCheckout
+                  amountCents={selectedTopupCents}
+                  chargeCurrency={normalizedChargeCurrency}
+                  localAmountLabel={selectedTopupLocalLabel}
+                  session={session}
+                  labels={{
+                    selectedAmount: copy.wallet.selectedAmount,
+                    expressTitle: copy.wallet.expressTitle,
+                    expressSubtitle: copy.wallet.expressSubtitle,
+                    expressLoading: copy.wallet.expressLoading,
+                    expressUnavailable: copy.wallet.expressUnavailable,
+                    expressError: copy.wallet.expressError,
+                  }}
+                  onPaymentStarted={handleExpressTopupStarted}
+                  onPaymentFailed={handleExpressTopupFailed}
+                  onPaymentCancelled={handleExpressTopupCancelled}
+                />
+
+                <div className="mt-4 border-t border-border pt-4">
+                  <label className="text-xs font-semibold uppercase tracking-micro text-text-muted" htmlFor="billing-custom-amount">
+                    {copy.wallet.customLabel}
+                  </label>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">$</span>
+                      <Input
+                        id="billing-custom-amount"
+                        type="number"
+                        min={10}
+                        step={1}
+                        inputMode="decimal"
+                        value={customAmountInput}
+                        onChange={(event) => setCustomAmountInput(event.target.value)}
+                        placeholder={copy.wallet.customPlaceholder}
+                        className="bg-bg px-7"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!customAmountValid}
+                      onClick={() => customAmountCents && setSelectedTopupCents(customAmountCents)}
+                      size="md"
+                      className={`px-4 ${
+                        customAmountValid ? '' : 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
+                      }`}
+                    >
+                      {copy.wallet.customCta}
+                    </Button>
+                  </div>
+                  <p className={`mt-2 text-xs ${customAmountError ? 'text-state-warning' : 'text-text-muted'}`}>
+                    {customAmountError ?? copy.wallet.customHint}
+                  </p>
+                </div>
+                <div className="mt-3 flex flex-col gap-1 text-left sm:hidden">
+                  <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select-mobile">
                     {copy.wallet.currencyLabel}
                   </label>
                   <select
-                    id="billing-currency-select"
-                    className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-w-[140px]"
+                    id="billing-currency-select-mobile"
+                    className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     value={normalizedChargeCurrency}
                     onChange={handleCurrencyChange}
                     disabled={currencyLoading}
@@ -1141,188 +1286,52 @@ export default function BillingPage() {
                   </select>
                   <p className={`text-xs ${currencyStatusClass}`}>{currencyStatus}</p>
                 </div>
+                {quoteLoading && <p className="mt-2 text-xs text-text-secondary">{walletQuoteLoading}</p>}
+                {quoteError && <p className="mt-2 text-xs text-state-warning">{quoteError}</p>}
+                {wallet && wallet.balance < 2 && <p className="mt-2 text-sm text-state-warning">{copy.wallet.lowBalance}</p>}
               </div>
-              <div className="mt-3 grid grid-gap-sm md:grid-cols-2">
-                {USD_TOPUP_TIERS.map((tier) => (
-                  (() => {
-                    const isSelected = selectedTopupCents === tier.amountCents;
-                    return (
-                      <Button
-                        key={tier.id}
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        aria-pressed={isSelected}
-                        onClick={() => setSelectedTopupCents(tier.amountCents)}
-                        className={`group relative w-full justify-start overflow-hidden rounded-card border border-hairline bg-gradient-to-br from-brand-active via-brand-hover to-brand px-4 py-4 text-left text-on-inverse shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-text-muted hover:shadow-float ${
-                          isSelected ? 'ring-2 ring-ring ring-offset-2 ring-offset-surface' : ''
-                        }`}
-                      >
-                        <span className="pointer-events-none absolute inset-0 z-0 opacity-0 transition duration-300 group-hover:opacity-100" aria-hidden>
-                          <span className="absolute inset-0 bg-gradient-to-r from-surface-on-media-25 via-surface-on-media-10 to-transparent" />
-                          <span className="absolute -left-6 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-surface-on-media-40 blur-[65px]" />
-                        </span>
-                        <div className="relative z-10 flex items-center justify-between gap-4">
-                          <div className="flex flex-col">
-                            <span className="text-base font-semibold text-on-inverse">
-                              {copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}
-                            </span>
-                            {topupQuotes[tier.amountCents] && normalizedChargeCurrency !== 'USD' && (
-                              <span className="text-xs text-on-media-90">
-                                ≈ {formatLocalAmount(topupQuotes[tier.amountCents].amountMinor, topupQuotes[tier.amountCents].currency)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-col items-end text-[11px] font-semibold uppercase tracking-micro text-on-media-85">
-                            <span className="rounded-full border border-surface-on-media-40 px-2 py-1 text-[10px]">
-                              {isSelected ? copy.wallet.selectedAmount : copy.wallet.chooseAmount}
-                            </span>
-                          </div>
-                        </div>
-                      </Button>
-                    );
-                  })()
-                ))}
-              </div>
-              <WalletExpressCheckout
-                amountCents={selectedTopupCents}
-                chargeCurrency={normalizedChargeCurrency}
-                localAmountLabel={selectedTopupLocalLabel}
-                session={session}
-                labels={{
-                  selectedAmount: copy.wallet.selectedAmount,
-                  expressTitle: copy.wallet.expressTitle,
-                  expressLoading: copy.wallet.expressLoading,
-                  expressUnavailable: copy.wallet.expressUnavailable,
-                  expressError: copy.wallet.expressError,
-                  expressFallbackCta: copy.wallet.expressFallbackCta,
-                }}
-                onFallbackCheckout={handleTopUp}
-                onPaymentStarted={handleExpressTopupStarted}
-                onPaymentFailed={handleExpressTopupFailed}
-                onPaymentCancelled={handleExpressTopupCancelled}
-              />
-              <div className="mt-4 rounded-input border border-border bg-bg px-3 py-3">
-                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                  {copy.wallet.customLabel}
-                </label>
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">$</span>
-                    <Input
-                      type="number"
-                      min={10}
-                      step={1}
-                      inputMode="decimal"
-                      value={customAmountInput}
-                      onChange={(event) => setCustomAmountInput(event.target.value)}
-                      placeholder={copy.wallet.customPlaceholder}
-                      className="bg-surface px-7"
-                    />
+
+              <aside className="space-y-4">
+                <section className="rounded-card border border-border bg-surface p-4 shadow-card">
+                  <h2 className="text-lg font-semibold text-text-primary">{copy.refunds.title}</h2>
+                  <ul className="mt-3 grid gap-2 text-sm text-text-secondary">
+                    {copy.refunds.points.map((point) => (
+                      <li key={point} className="flex gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden="true" />
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 border-t border-border pt-4">
+                    <h3 className="text-sm font-semibold text-text-primary">{copy.faq.title}</h3>
+                    <div className="mt-2 grid gap-2 text-sm text-text-secondary">
+                      {copy.faq.entries.map((entry, index) => (
+                        <p key={index}>
+                          <span className="font-medium text-text-primary">{entry.question}</span> {entry.answer}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                  <Button
-                    type="button"
-                    disabled={!customAmountValid}
-                    onClick={() => customAmountCents && setSelectedTopupCents(customAmountCents)}
-                    size="md"
-                    className={`px-4 ${
-                      customAmountValid ? '' : 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
-                    }`}
-                  >
-                    {copy.wallet.customSelectCta}
-                  </Button>
-                </div>
-                <p className={`mt-2 text-xs ${customAmountError ? 'text-state-warning' : 'text-text-muted'}`}>
-                  {customAmountError ?? copy.wallet.customHint}
-                </p>
-              </div>
-              {quoteLoading && (
-                <p className="mt-2 text-xs text-text-secondary">{walletQuoteLoading}</p>
-              )}
-              {quoteError && (
-                <p className="mt-2 text-xs text-state-warning">{quoteError}</p>
-              )}
-              {wallet && wallet.balance < 2 && (
-                <p className="mt-2 text-sm text-state-warning">{copy.wallet.lowBalance}</p>
-              )}
-            </div>
-            <div className="rounded-card border border-border bg-surface p-4 shadow-card">
-              <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.membership.title}</h2>
-              <p className="text-sm text-text-secondary">{copy.membership.description}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">
-                  {member?.tier ?? (authLoading ? '...' : '--')}
-                </span>
-                <span className="rounded-full bg-surface-2 px-2 py-1 text-xs text-brand">
-                  {typeof member?.savingsPct === 'number'
-                    ? copy.membership.savingsChip.replace('{percent}', String(member.savingsPct))
-                    : '--'}
-                </span>
-              </div>
-              <ul className="mt-3 list-disc pl-5 text-sm text-text-secondary">
-                {(member?.tiers ?? FALLBACK_MEMBERSHIP_TIERS).map((tier) => {
-                  const tierKey = tier.tier || 'member';
-                  const labelKey = tier.tier?.toLowerCase() ?? 'member';
-                  const tierLabel = copy.membership.labels[labelKey as keyof typeof copy.membership.labels] ?? copy.membership.defaultTier;
-                  if (tier.spendThresholdCents <= 0) {
-                    return (
-                      <li key={tierKey}>{copy.membership.defaultLine.replace('{tier}', tierLabel)}</li>
-                    );
-                  }
-                  const threshold = formatThreshold(
-                    tier.spendThresholdCents,
-                    (wallet?.currency ?? 'USD').toUpperCase()
-                  );
-                  const discountPct = Math.round(tier.discountPercent * 100);
-                  return (
-                    <li key={tierKey}>
-                      {copy.membership.thresholdLine
-                        .replace('{tier}', tierLabel)
-                        .replace('{amount}', threshold)
-                        .replace('{percent}', String(discountPct))}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </section>
+                </section>
 
-          {/* For Teams (optional module) */}
-          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-text-primary">{copy.teams.title}</h2>
-              <FlagPill live={teamsLive} />
-              <span className="sr-only">{teamsLive ? copy.teams.statusLive : copy.teams.statusSoon}</span>
-            </div>
-            {teamsLive ? (
-              <>
-                <p className="mt-1 text-sm text-text-secondary">{copy.teams.description}</p>
-                <div className="mt-3 flex gap-2">
-                  <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
-                    {copy.teams.actions.invite}
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
-                    {copy.teams.actions.budgets}
-                  </Button>
-                </div>
-                <p className="mt-2 text-xs text-text-muted">{copy.teams.note}</p>
-              </>
-            ) : (
-              <div className="mt-2 rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-secondary">
-                {copy.teams.comingSoon.replace('{email}', copy.teams.contactEmail)}{' '}
-                <ObfuscatedEmailLink
-                  user="support"
-                  domain="maxvideoai.com"
-                  label={copy.teams.contactEmail}
-                  placeholder="support [at] maxvideo.ai"
-                  className="underline underline-offset-2"
-                />
-                .
-              </div>
-            )}
-          </section>
+                <section className="rounded-card border border-border bg-surface p-4 shadow-card">
+                  <h2 className="text-lg font-semibold text-text-primary">{copy.membership.title}</h2>
+                  <p className="mt-1 text-sm text-text-secondary">{copy.membership.description}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">
+                      {member?.tier ?? '--'}
+                    </span>
+                    <span className="rounded-full bg-surface-2 px-2 py-1 text-xs text-brand">
+                      {typeof member?.savingsPct === 'number'
+                        ? copy.membership.savingsChip.replace('{percent}', String(member.savingsPct))
+                        : '--'}
+                    </span>
+                  </div>
+                </section>
+              </aside>
+            </section>
 
-          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
+            <section className="mt-5 rounded-card border border-border bg-surface p-4 shadow-card">
               <Button
                 type="button"
                 variant="ghost"
@@ -1437,31 +1446,40 @@ export default function BillingPage() {
                 </div>
               )}
             </div>
-          </section>
+            </section>
 
-          {/* Refunds & Protections */}
-          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
-            <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.refunds.title}</h2>
-            <ul className="list-disc pl-5 text-sm text-text-secondary">
-              {copy.refunds.points.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Micro‑FAQ */}
-          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
-            <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.faq.title}</h2>
-            <div className="grid gap-2 text-sm text-text-secondary">
-              {copy.faq.entries.map((entry, index) => (
-                <p key={index}>
-                  <span className="font-medium text-text-primary">{entry.question}</span> {entry.answer}
+            <section className="mt-5 rounded-card border border-dashed border-border bg-surface p-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-text-primary">{copy.teams.title}</h2>
+                <FlagPill live={teamsLive} />
+                <span className="sr-only">{teamsLive ? copy.teams.statusLive : copy.teams.statusSoon}</span>
+              </div>
+              {teamsLive ? (
+                <>
+                  <p className="mt-1 text-sm text-text-secondary">{copy.teams.description}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
+                      {copy.teams.actions.invite}
+                    </Button>
+                    <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
+                      {copy.teams.actions.budgets}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <p className="mt-2 text-sm text-text-secondary">
+                  {copy.teams.comingSoon.replace('{email}', copy.teams.contactEmail)}{' '}
+                  <ObfuscatedEmailLink
+                    user="support"
+                    domain="maxvideoai.com"
+                    label={copy.teams.contactEmail}
+                    placeholder="support [at] maxvideo.ai"
+                    className="font-semibold underline underline-offset-2"
+                  />
                 </p>
-              ))}
-            </div>
-            <p className="mt-3 text-xs text-text-muted">{copy.faq.footnote}</p>
-          </section>
-
+              )}
+            </section>
+          </div>
         </main>
       </div>
       {authModalOpen && (

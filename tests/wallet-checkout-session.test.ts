@@ -24,6 +24,10 @@ test('wallet top-up Checkout uses Stripe dynamic payment methods for wallets', (
 
   assert.equal(params.mode, 'payment');
   assert.equal(params.payment_method_types, undefined);
+  assert.equal(params.success_url, 'https://maxvideoai.com/billing?status=success');
+  assert.equal(params.cancel_url, 'https://maxvideoai.com/billing?status=cancelled');
+  assert.equal(params.ui_mode, undefined);
+  assert.equal(params.return_url, undefined);
   assert.equal(params.billing_address_collection, 'auto');
   assert.deepEqual(params.shipping_address_collection, {
     allowed_countries: WALLET_TOPUP_SHIPPING_ADDRESS_COUNTRIES,

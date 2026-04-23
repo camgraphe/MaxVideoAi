@@ -2680,22 +2680,33 @@
     "billing": {
       "title": "Facturación",
       "hero": {
-        "title": "Precio antes de generar.",
-        "subtitle": "Paga solo por lo que ejecutes. Comienza con Créditos iniciales (10 $). Sin suscripción. Sin compromiso.",
+        "title": "Añadir créditos",
+        "subtitle": "Elige un importe y finaliza el pago en el Checkout seguro de Stripe.",
         "liveMode": "Modo en vivo",
         "testMode": "Modo de prueba"
       },
       "wallet": {
-        "title": "Billetera",
-        "description": "Créditos iniciales (10 $). Recarga una vez y paga cada render al centavo. Cualquier saldo sin usar sigue siendo tuyo.",
-        "addFunds": "Añadir {amount}",
+        "title": "Añadir créditos",
+        "description": "Tu saldo paga solo renders completados. Los créditos no usados permanecen en tu billetera.",
+        "balanceLabel": "Saldo actual",
+        "addFunds": "{amount}",
         "quickAmount": "{amount}",
-        "customLabel": "Monto personalizado (USD)",
-        "customPlaceholder": "Introduce un monto (mín. $10)",
-        "customHint": "Recarga mínima: $10.",
-        "customCta": "Añadir monto",
+        "selectedAmount": "Importe seleccionado",
+        "checkoutCta": "Continuar al Checkout seguro de Stripe · {amount}",
+        "checkoutNote": "Stripe finaliza los impuestos y el recibo antes del pago.",
+        "customLabel": "Importe personalizado",
+        "customPlaceholder": "Mínimo 10 $",
+        "customHint": "Introduce cualquier importe desde 10 $.",
+        "customCta": "Definir importe",
+        "customSelectCta": "Definir importe",
         "customInvalid": "Introduce un monto válido.",
         "customMin": "Mínimo: $10.",
+        "chooseAmount": "Seleccionar",
+        "expressTitle": "Pago rápido",
+        "expressSubtitle": "Apple Pay, Google Pay, PayPal y Link aparecen cuando están disponibles en este dispositivo.",
+        "expressLoading": "Comprobando opciones rápidas…",
+        "expressUnavailable": "El pago rápido no está disponible en este navegador.",
+        "expressError": "Pago rápido no disponible.",
         "autoTopUp": "Activar recarga automática (opcional)",
         "lowBalance": "Tu saldo es bajo. Recarga para seguir creando.",
         "currencyLabel": "Moneda de cobro",
@@ -2766,11 +2777,11 @@
         }
       },
       "refunds": {
-        "title": "Reembolsos y protecciones",
+        "title": "Protecciones",
         "points": [
-          "Render fallido: reembolso automático.",
-          "Control de presupuesto: límites suaves/duros por proyecto.",
-          "Sin bloqueo de proveedor: funciona con los motores líderes; las marcas pertenecen a sus dueños."
+          "Los renders fallidos se reembolsan automáticamente.",
+          "Los recibos incluyen impuestos y detalles de pago.",
+          "Sin suscripción. Añade créditos solo cuando los necesites."
         ]
       },
       "faq": {

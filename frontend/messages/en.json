@@ -2786,22 +2786,33 @@
     "billing": {
       "title": "Billing",
       "hero": {
-        "title": "Price before you generate.",
-        "subtitle": "Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.",
+        "title": "Add credits",
+        "subtitle": "Choose an amount, then complete payment in secure Stripe Checkout.",
         "liveMode": "Live Mode",
         "testMode": "Test Mode"
       },
       "wallet": {
-        "title": "Wallet",
-        "description": "Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.",
-        "addFunds": "Add {amount}",
+        "title": "Add credits",
+        "description": "Your balance pays for successful renders only. Unused credits stay in your wallet.",
+        "balanceLabel": "Current balance",
+        "addFunds": "{amount}",
         "quickAmount": "{amount}",
-        "customLabel": "Custom amount (USD)",
-        "customPlaceholder": "Enter amount (min $10)",
-        "customHint": "Minimum top-up is $10.",
-        "customCta": "Add custom amount",
+        "selectedAmount": "Selected amount",
+        "checkoutCta": "Continue to secure Stripe Checkout · {amount}",
+        "checkoutNote": "Taxes and receipt are finalized by Stripe before payment.",
+        "customLabel": "Custom amount",
+        "customPlaceholder": "Minimum $10",
+        "customHint": "Enter any amount from $10.",
+        "customCta": "Set amount",
+        "customSelectCta": "Set amount",
         "customInvalid": "Enter a valid amount.",
         "customMin": "Minimum is $10.",
+        "chooseAmount": "Select",
+        "expressTitle": "Fast pay options",
+        "expressSubtitle": "Apple Pay, Google Pay, PayPal, and Link appear when available on this device.",
+        "expressLoading": "Checking fast pay options…",
+        "expressUnavailable": "Fast pay is not available in this browser.",
+        "expressError": "Express checkout unavailable.",
         "autoTopUp": "Enable auto top-up (optional)",
         "lowBalance": "Your balance is low. Top up to keep creating.",
         "currencyLabel": "Charge currency",
@@ -2872,11 +2883,11 @@
         }
       },
       "refunds": {
-        "title": "Refunds & Protections",
+        "title": "Protections",
         "points": [
-          "Failed render: automatic refund.",
-          "Budget control: set soft/hard limits per project.",
-          "No vendor lock-in: Works with leading engines; trademarks belong to their owners."
+          "Failed renders are refunded automatically.",
+          "Receipts include itemized tax and payment details.",
+          "No subscription. Add credits only when you need them."
         ]
       },
       "faq": {
