@@ -2816,6 +2816,7 @@
         "expressUnavailable": "Fast pay is not available in this browser.",
         "expressError": "Express checkout unavailable.",
         "expressClosed": "Fast pay window closed. No charge made.",
+        "expressAriaLabel": "Express checkout",
         "autoTopUp": "Enable auto top-up (optional)",
         "lowBalance": "Your balance is low. Top up to keep creating.",
         "currencyLabel": "Charge currency",

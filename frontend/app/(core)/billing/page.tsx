@@ -66,7 +66,6 @@ const FALLBACK_MEMBERSHIP_TIERS: MembershipTierInfo[] = [
 export const dynamic = 'force-dynamic';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
-const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 type LegacyCheckoutStripe = Stripe & {
   redirectToCheckout?: (params: { sessionId: string }) => Promise<{ error?: { message?: string } }>;
 };
@@ -110,6 +109,7 @@ const DEFAULT_BILLING_COPY = {
     expressUnavailable: 'Fast pay is not available in this browser.',
     expressError: 'Express checkout unavailable.',
     expressClosed: 'Fast pay window closed. No charge made.',
+    expressAriaLabel: 'Express checkout',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     currencyLabel: 'Charge currency',
@@ -247,7 +247,9 @@ type WalletExpressCheckoutProps = {
   amountCents: number;
   chargeCurrency: string;
   localAmountLabel?: string | null;
+  locale: string;
   session: { access_token?: string | null } | null;
+  stripePromise: Promise<Stripe | null> | null;
   labels: Pick<
     BillingCopy['wallet'],
     | 'selectedAmount'
@@ -257,6 +259,7 @@ type WalletExpressCheckoutProps = {
     | 'expressUnavailable'
     | 'expressError'
     | 'expressClosed'
+    | 'expressAriaLabel'
   >;
   onPaymentStarted: (amountCents: number) => void;
   onPaymentFailed: (amountCents: number, reason?: string) => void;
@@ -266,7 +269,9 @@ function WalletExpressCheckout({
   amountCents,
   chargeCurrency,
   localAmountLabel = null,
+  locale,
   session,
+  stripePromise,
   labels,
   onPaymentStarted,
   onPaymentFailed,
@@ -304,6 +309,7 @@ function WalletExpressCheckout({
             amountCents,
             currency: normalizedChargeCurrency.toLowerCase(),
             mode: 'express_checkout',
+            locale,
           }),
         });
         const payload = await response.json().catch(() => null);
@@ -441,7 +447,7 @@ function WalletExpressCheckout({
       <div
         ref={mountRef}
         className={`min-h-[44px] ${status === 'unavailable' || status === 'error' ? 'hidden' : ''}`}
-        aria-label="Express checkout"
+        aria-label={labels.expressAriaLabel}
       />
       {status === 'loading' && <p className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
       {message && <p className="mt-2 text-xs text-state-warning">{message}</p>}
@@ -450,7 +456,7 @@ function WalletExpressCheckout({
 }
 
 export default function BillingPage() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const rawCopy = t('workspace.billing', DEFAULT_BILLING_COPY);
   const copy = useMemo<BillingCopy>(() => {
     if (!rawCopy || typeof rawCopy !== 'object') return DEFAULT_BILLING_COPY;
@@ -458,6 +464,10 @@ export default function BillingPage() {
       arrayMerge: (_destination, source) => source,
     });
   }, [rawCopy]);
+  const stripePromise = useMemo(() => {
+    if (!PUBLISHABLE_KEY) return null;
+    return loadStripe(PUBLISHABLE_KEY, { locale });
+  }, [locale]);
   const pathname = usePathname();
   const walletCurrencyDetected = copy.wallet.currencyDetected ?? DEFAULT_BILLING_COPY.wallet.currencyDetected;
   const walletCurrencyOverride = copy.wallet.currencyOverride ?? DEFAULT_BILLING_COPY.wallet.currencyOverride;
@@ -506,6 +516,7 @@ export default function BillingPage() {
   const customAmountInputRef = useRef<HTMLInputElement | null>(null);
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const loginRedirectTarget = pathname || '/billing';
+  const billingIntlLocale = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : CURRENCY_LOCALE;
 
   useEffect(() => {
     autoCurrencyRef.current = autoCurrency;
@@ -931,7 +942,11 @@ export default function BillingPage() {
       const response = await fetch('/api/wallet', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ amountCents, currency: (chargeCurrency || 'USD').toLowerCase() }),
+        body: JSON.stringify({
+          amountCents,
+          currency: (chargeCurrency || 'USD').toLowerCase(),
+          locale,
+        }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
@@ -1020,7 +1035,7 @@ export default function BillingPage() {
 
   const dateFormatter = useMemo(
     () =>
-      new Intl.DateTimeFormat('en-US', {
+      new Intl.DateTimeFormat(billingIntlLocale, {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -1029,13 +1044,13 @@ export default function BillingPage() {
         second: '2-digit',
         timeZone: 'UTC',
       }),
-    []
+    [billingIntlLocale]
   );
 
   const formatMoney = (amountCents: number, currency: string) => {
     const amount = amountCents / 100;
     try {
-      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(amount);
+      return new Intl.NumberFormat(billingIntlLocale, { style: 'currency', currency }).format(amount);
     } catch {
       return `${currency} ${amount.toFixed(2)}`;
     }
@@ -1044,7 +1059,7 @@ export default function BillingPage() {
   const formatThreshold = (amountCents: number, currency: string) => {
     const amount = amountCents / 100;
     try {
-      return new Intl.NumberFormat(CURRENCY_LOCALE, {
+      return new Intl.NumberFormat(billingIntlLocale, {
         style: 'currency',
         currency,
         maximumFractionDigits: 0,
@@ -1060,17 +1075,17 @@ export default function BillingPage() {
     const divisor = zeroDecimal ? 1 : 100;
     const value = amountMinor / divisor;
     try {
-      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency: upper }).format(value);
+      return new Intl.NumberFormat(billingIntlLocale, { style: 'currency', currency: upper }).format(value);
     } catch {
       return `${upper} ${value.toFixed(zeroDecimal ? 0 : 2)}`;
     }
-  }, []);
+  }, [billingIntlLocale]);
 
 
   const formatUsdAmount = (amountCents: number) => {
     const amount = amountCents / 100;
     try {
-      return new Intl.NumberFormat(CURRENCY_LOCALE, {
+      return new Intl.NumberFormat(billingIntlLocale, {
         style: 'currency',
         currency: 'USD',
         maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
@@ -1310,7 +1325,9 @@ export default function BillingPage() {
                   amountCents={selectedTopupCents}
                   chargeCurrency={normalizedChargeCurrency}
                   localAmountLabel={selectedTopupLocalLabel}
+                  locale={locale}
                   session={session}
+                  stripePromise={stripePromise}
                   labels={{
                     selectedAmount: copy.wallet.selectedAmount,
                     expressTitle: copy.wallet.expressTitle,
@@ -1319,6 +1336,7 @@ export default function BillingPage() {
                     expressUnavailable: copy.wallet.expressUnavailable,
                     expressError: copy.wallet.expressError,
                     expressClosed: copy.wallet.expressClosed,
+                    expressAriaLabel: copy.wallet.expressAriaLabel,
                   }}
                   onPaymentStarted={handleExpressTopupStarted}
                   onPaymentFailed={handleExpressTopupFailed}

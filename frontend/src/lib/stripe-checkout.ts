@@ -260,6 +260,9 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
   successUrl?: string;
   cancelUrl?: string;
   returnUrl?: string;
+  locale?: Stripe.Checkout.SessionCreateParams.Locale;
+  productName?: string;
+  taxLocationMessage?: string;
   sessionMetadata: Record<string, string>;
   paymentIntentMetadata: Record<string, string>;
   productTaxCode: string;
@@ -276,6 +279,9 @@ export function buildWalletTopUpCheckoutSessionParams({
   successUrl,
   cancelUrl,
   returnUrl,
+  locale = 'auto',
+  productName = 'Wallet top-up',
+  taxLocationMessage = 'Used only to confirm tax location for this digital wallet top-up.',
   sessionMetadata,
   paymentIntentMetadata,
   productTaxCode,
@@ -294,6 +300,7 @@ export function buildWalletTopUpCheckoutSessionParams({
 
   const params: WalletTopUpCheckoutSessionParams = {
     mode: 'payment',
+    locale,
     billing_address_collection: 'auto',
     automatic_tax: { enabled: true },
     tax_id_collection: { enabled: true },
@@ -304,7 +311,7 @@ export function buildWalletTopUpCheckoutSessionParams({
       {
         price_data: {
           currency,
-          product_data: { name: 'Wallet top-up', tax_code: productTaxCode },
+          product_data: { name: productName, tax_code: productTaxCode },
           unit_amount: settlementAmountCents,
           tax_behavior: 'exclusive',
         },
@@ -329,7 +336,7 @@ export function buildWalletTopUpCheckoutSessionParams({
   }
   params.custom_text = {
     shipping_address: {
-      message: 'Used only to confirm tax location for this digital wallet top-up.',
+      message: taxLocationMessage,
     },
   };
   params.success_url = successUrl;

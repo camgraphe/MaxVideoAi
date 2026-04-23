@@ -2710,6 +2710,7 @@
         "expressUnavailable": "El pago rápido no está disponible en este navegador.",
         "expressError": "Pago rápido no disponible.",
         "expressClosed": "Ventana de pago rápido cerrada. No se aplicó ningún cargo.",
+        "expressAriaLabel": "Pago exprés",
         "autoTopUp": "Activar recarga automática (opcional)",
         "lowBalance": "Tu saldo es bajo. Recarga para seguir creando.",
         "currencyLabel": "Moneda de cobro",

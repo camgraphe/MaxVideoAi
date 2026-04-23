@@ -23,12 +23,33 @@ import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { findTopupTier } from '@/config/topupTiers';
 import { extractGaClientId } from '@/server/ga4';
 import { buildWalletTopUpCheckoutSessionParams } from '@/lib/stripe-checkout';
+import { defaultLocale, type AppLocale } from '@/i18n/locales';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
 const STRIPE_API_VERSION = '2023-10-16';
 const STRIPE_CHECKOUT_ELEMENTS_API_VERSION = '2026-03-25.dahlia' as Stripe.LatestApiVersion;
+const CHECKOUT_COPY_BY_LOCALE: Record<
+  AppLocale,
+  {
+    productName: string;
+    taxLocationMessage: string;
+  }
+> = {
+  en: {
+    productName: 'Wallet top-up',
+    taxLocationMessage: 'Used only to confirm tax location for this digital wallet top-up.',
+  },
+  fr: {
+    productName: 'Recharge portefeuille',
+    taxLocationMessage: 'Utilisee uniquement pour confirmer la localisation fiscale de cette recharge digitale.',
+  },
+  es: {
+    productName: 'Recarga de billetera',
+    taxLocationMessage: 'Se usa solo para confirmar la ubicacion fiscal de esta recarga digital.',
+  },
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -51,6 +72,29 @@ function hasAnalyticsConsent(req: NextRequest): boolean {
   const consentRaw = decodeCookieValue(req.cookies.get(CONSENT_COOKIE_NAME)?.value ?? null);
   const consent = parseConsent(consentRaw);
   return Boolean(consent?.categories.analytics);
+}
+
+function normalizeRequestLocale(value: unknown): AppLocale | null {
+  if (value === 'fr' || value === 'es' || value === 'en') {
+    return value;
+  }
+  return null;
+}
+
+function resolveCheckoutLocale(req: NextRequest, bodyLocale: unknown): AppLocale {
+  const explicitLocale = normalizeRequestLocale(bodyLocale);
+  if (explicitLocale) return explicitLocale;
+
+  const cookieLocale =
+    normalizeRequestLocale(req.cookies.get('NEXT_LOCALE')?.value) ??
+    normalizeRequestLocale(req.cookies.get('mv-locale')?.value) ??
+    normalizeRequestLocale(req.cookies.get('mvid_locale')?.value);
+  if (cookieLocale) return cookieLocale;
+
+  const acceptLanguage = req.headers.get('accept-language') ?? '';
+  if (/\bfr\b/i.test(acceptLanguage)) return 'fr';
+  if (/\bes\b/i.test(acceptLanguage)) return 'es';
+  return defaultLocale;
 }
 
 async function resolveAuthenticatedUser(): Promise<string | null> {
@@ -174,6 +218,8 @@ export async function POST(req: NextRequest) {
   const amountCents = Math.max(1000, Number(body.amountCents ?? 0));
   const requestMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
   const isExpressCheckoutTopUp = requestMode === 'express_checkout' || requestMode === 'checkout_elements';
+  const checkoutLocale = resolveCheckoutLocale(req, body.locale);
+  const checkoutCopy = CHECKOUT_COPY_BY_LOCALE[checkoutLocale];
 
   let preferredCurrency: Currency | null = null;
   if (!useMock && databaseConfigured) {
@@ -477,6 +523,9 @@ export async function POST(req: NextRequest) {
       successUrl,
       cancelUrl,
       returnUrl: successUrl,
+      locale: checkoutLocale,
+      productName: checkoutCopy.productName,
+      taxLocationMessage: checkoutCopy.taxLocationMessage,
       sessionMetadata,
       paymentIntentMetadata,
       productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
