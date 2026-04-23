@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
+import { authorizeCronRequest } from '@/server/vercel-cron';
 
 export const runtime = 'nodejs';
 
@@ -38,30 +39,15 @@ function unauthorized(reason: string, req: NextRequest) {
 }
 
 function authorize(req: NextRequest): NextResponse | null {
-  const overrideToken =
-    req.headers.get('x-cron-key')?.trim() ??
-    (req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() ?? '');
-
-  if (process.env.VERCEL === '1') {
-    const cronHeader = req.headers.get('x-vercel-cron');
-    const userAgent = req.headers.get('user-agent') ?? '';
-    const deploymentId = (process.env.VERCEL_DEPLOYMENT_ID ?? '').trim();
-    const incomingDeploymentId = (req.headers.get('x-vercel-deployment-id') ?? '').trim();
-    const looksLikeCron = Boolean(cronHeader || userAgent.toLowerCase().includes('vercel'));
-
-    if (!looksLikeCron && overrideToken !== CRON_SECRET) {
-      return unauthorized('missing-vercel-markers', req);
-    }
-    if (deploymentId && incomingDeploymentId && deploymentId !== incomingDeploymentId) {
-      return unauthorized('deployment-mismatch', req);
-    }
-    return null;
+  const auth = authorizeCronRequest(req.headers, {
+    cronSecret: CRON_SECRET,
+    deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+    overrideHeaderName: 'x-cron-key',
+    vercelEnv: process.env.VERCEL,
+  });
+  if (!auth.ok) {
+    return unauthorized(auth.reason, req);
   }
-
-  if (overrideToken !== CRON_SECRET) {
-    return unauthorized('missing-token', req);
-  }
-
   return null;
 }
 

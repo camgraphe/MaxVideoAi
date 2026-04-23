@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runFalPoll } from '@/server/fal-poll';
+import { authorizeCronRequest } from '@/server/vercel-cron';
 
 export const runtime = 'nodejs';
 
+const CRON_SECRET = (process.env.CRON_SECRET ?? '').trim();
 const POLL_TOKEN = (process.env.FAL_POLL_TOKEN ?? '').trim();
 
 function unauthorized(reason: string, req: NextRequest) {
@@ -20,41 +22,30 @@ function unauthorized(reason: string, req: NextRequest) {
 }
 
 async function triggerPoll(req: NextRequest) {
-  const overrideToken =
-    req.headers.get('x-fal-poll-token') ??
-    (req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '');
-
-  if (process.env.VERCEL === '1') {
-    const cronHeader = req.headers.get('x-vercel-cron');
-    const userAgent = req.headers.get('user-agent') ?? '';
-    const deploymentId = (process.env.VERCEL_DEPLOYMENT_ID ?? '').trim();
-    const incomingDeploymentId = (req.headers.get('x-vercel-deployment-id') ?? '').trim();
-
-    const looksLikeCron = Boolean(cronHeader || userAgent.toLowerCase().includes('vercel'));
-
-    if (!looksLikeCron && overrideToken !== POLL_TOKEN) {
-      return unauthorized('missing-vercel-markers', req);
-    }
-    if (deploymentId && incomingDeploymentId && deploymentId !== incomingDeploymentId) {
-      return unauthorized('deployment-mismatch', req);
-    }
-  } else {
-    if (overrideToken !== POLL_TOKEN) {
-      return unauthorized('missing-token', req);
-    }
+  const auth = authorizeCronRequest(req.headers, {
+    cronSecret: CRON_SECRET,
+    deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+    localTokens: [POLL_TOKEN],
+    overrideHeaderName: 'x-fal-poll-token',
+    vercelEnv: process.env.VERCEL,
+  });
+  if (!auth.ok) {
+    return unauthorized(auth.reason, req);
   }
 
   console.log('[cron-fal-poll] triggering Fal poll', {
     env: process.env.VERCEL === '1' ? 'vercel' : 'local',
+    authMode: auth.mode,
     hasCronHeader: Boolean(req.headers.get('x-vercel-cron')),
     ua: req.headers.get('user-agent') ?? null,
     deployment: req.headers.get('x-vercel-deployment-id') ?? null,
     source: req.headers.get('x-vercel-source') ?? null,
-    tokenLength: POLL_TOKEN.length,
+    cronSecretConfigured: Boolean(CRON_SECRET),
+    pollTokenConfigured: Boolean(POLL_TOKEN),
   });
 
-  if (!POLL_TOKEN) {
-    console.warn('[cron-fal-poll] proceeding without FAL_POLL_TOKEN; invoking poll directly');
+  if (!CRON_SECRET && !POLL_TOKEN) {
+    console.warn('[cron-fal-poll] proceeding without any local cron secret; invoking poll directly');
   }
 
   try {
