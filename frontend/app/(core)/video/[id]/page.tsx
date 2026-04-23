@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const { video, signals, isEligible } = page;
-  const metaTitle = buildMetaTitle(signals.title);
+  const metaTitle = buildMetaTitle(signals.metaTitle);
   const description = signals.metaDescription;
   const thumbnail = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? canonical;

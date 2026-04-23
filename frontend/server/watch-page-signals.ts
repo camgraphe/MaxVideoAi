@@ -63,6 +63,7 @@ export type WatchPageRelatedLink = {
 
 export type WatchPageDerivedSignals = {
   title: string;
+  metaTitle: string;
   metaDescription: string;
   videoDescription: string;
   intro: string;
@@ -540,6 +541,7 @@ export function deriveWatchPageSignals(params: {
   const primaryIntent = (entry?.videoPrimaryIntent as WatchPageIntent | undefined) ?? pickPrimaryIntent(capabilityTags, styleTags);
   const descriptor = extractDescriptor(promptText) ?? 'generated scene';
   const title = truncateText(entry?.seoTitleOverride ?? titlePattern(primaryIntent, engineLabel, descriptor), 86);
+  const metaTitle = truncateText(entry?.seoTitleOverride ?? entry?.seoTitle ?? title, 86);
   const introSentences = [
     `This ${engineLabel} ${formatModeLabel(snapshot.inputMode).toLowerCase()} example shows ${descriptor}.`,
     (() => {
@@ -617,6 +619,7 @@ export function deriveWatchPageSignals(params: {
 
   return {
     title,
+    metaTitle,
     metaDescription,
     videoDescription,
     intro,

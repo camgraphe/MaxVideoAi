@@ -1,8 +1,8 @@
 # MaxVideoAI - llms.txt
 
-# Purpose: Help LLMs quickly find the most authoritative pages about MaxVideoAI and its engines.
+Purpose: Help LLMs quickly find the most authoritative pages about MaxVideoAI and its engines.
 
-# Spec: https://llmstxt.org/
+Spec: https://llmstxt.org/
 
 ## Canonical
 

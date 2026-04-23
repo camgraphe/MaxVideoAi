@@ -68,7 +68,7 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
           [
             '<video:video>',
             `<video:thumbnail_loc>${escapeXml(thumbUrl)}</video:thumbnail_loc>`,
-            `<video:title>${escapeXml(signals.title)}</video:title>`,
+            `<video:title>${escapeXml(signals.metaTitle)}</video:title>`,
             `<video:description>${escapeXml(description)}</video:description>`,
             `<video:content_loc>${escapeXml(contentUrl)}</video:content_loc>`,
             `<video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`,
