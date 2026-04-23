@@ -107,6 +107,7 @@ const DEFAULT_BILLING_COPY = {
     expressLoading: 'Checking fast pay options…',
     expressUnavailable: 'Fast pay is not available in this browser.',
     expressError: 'Express checkout unavailable.',
+    expressClosed: 'Fast pay window closed. No charge made.',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     currencyLabel: 'Charge currency',
@@ -186,7 +187,7 @@ const DEFAULT_BILLING_COPY = {
   },
   toasts: {
     success: 'Payment successful. Funds added to your wallet.',
-    cancelled: 'Payment cancelled. No charges applied.',
+    cancelled: 'Checkout closed. No charge made.',
   },
   errors: {
     loadReceipts: 'Failed to load receipts',
@@ -244,10 +245,10 @@ type WalletExpressCheckoutProps = {
     | 'expressLoading'
     | 'expressUnavailable'
     | 'expressError'
+    | 'expressClosed'
   >;
   onPaymentStarted: (amountCents: number) => void;
   onPaymentFailed: (amountCents: number, reason?: string) => void;
-  onPaymentCancelled: (amountCents: number) => void;
 };
 
 function WalletExpressCheckout({
@@ -258,9 +259,9 @@ function WalletExpressCheckout({
   labels,
   onPaymentStarted,
   onPaymentFailed,
-  onPaymentCancelled,
 }: WalletExpressCheckoutProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const confirmStartedRef = useRef(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const amountLabel = `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
@@ -279,6 +280,7 @@ function WalletExpressCheckout({
 
       setStatus('loading');
       setMessage(null);
+      confirmStartedRef.current = false;
       const token = session.access_token ?? null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers.Authorization = `Bearer ${token}`;
@@ -342,9 +344,11 @@ function WalletExpressCheckout({
           setMessage(event.error?.message ?? labels.expressError);
         });
         expressElement.on('cancel', () => {
-          onPaymentCancelled(amountCents);
+          if (confirmStartedRef.current) return;
+          setMessage(labels.expressClosed);
         });
         expressElement.on('confirm', async (event) => {
+          confirmStartedRef.current = true;
           onPaymentStarted(amountCents);
           try {
             const loadActionsResult = await loadActionsPromise;
@@ -399,9 +403,9 @@ function WalletExpressCheckout({
   }, [
     amountCents,
     labels.expressError,
+    labels.expressClosed,
     labels.expressUnavailable,
     normalizedChargeCurrency,
-    onPaymentCancelled,
     onPaymentFailed,
     onPaymentStarted,
     session,
@@ -950,13 +954,6 @@ export default function BillingPage() {
     [copy.errors.topupStart, normalizedChargeCurrency, triggerTopupFailed]
   );
 
-  const handleExpressTopupCancelled = useCallback(
-    (amountCents: number) => {
-      triggerTopupCancelled(amountCents, normalizedChargeCurrency);
-    },
-    [normalizedChargeCurrency, triggerTopupCancelled]
-  );
-
   async function loadMoreReceipts() {
     if (receipts.loading || receipts.nextCursor === null) return;
     setReceipts((s) => ({ ...s, loading: true }));
@@ -1226,10 +1223,10 @@ export default function BillingPage() {
                     expressLoading: copy.wallet.expressLoading,
                     expressUnavailable: copy.wallet.expressUnavailable,
                     expressError: copy.wallet.expressError,
+                    expressClosed: copy.wallet.expressClosed,
                   }}
                   onPaymentStarted={handleExpressTopupStarted}
                   onPaymentFailed={handleExpressTopupFailed}
-                  onPaymentCancelled={handleExpressTopupCancelled}
                 />
 
                 <div className="mt-4 border-t border-border pt-4">

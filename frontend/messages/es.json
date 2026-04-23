@@ -2707,6 +2707,7 @@
         "expressLoading": "Comprobando opciones rápidas…",
         "expressUnavailable": "El pago rápido no está disponible en este navegador.",
         "expressError": "Pago rápido no disponible.",
+        "expressClosed": "Ventana de pago rápido cerrada. No se aplicó ningún cargo.",
         "autoTopUp": "Activar recarga automática (opcional)",
         "lowBalance": "Tu saldo es bajo. Recarga para seguir creando.",
         "currencyLabel": "Moneda de cobro",
@@ -2808,7 +2809,7 @@
       },
       "toasts": {
         "success": "Pago realizado con éxito. Fondos añadidos a tu billetera.",
-        "cancelled": "Pago cancelado. No se aplicaron cargos."
+        "cancelled": "Checkout cerrado. No se aplicó ningún cargo."
       },
       "errors": {
         "loadReceipts": "No se pudieron cargar los recibos",

@@ -2813,6 +2813,7 @@
         "expressLoading": "Checking fast pay options…",
         "expressUnavailable": "Fast pay is not available in this browser.",
         "expressError": "Express checkout unavailable.",
+        "expressClosed": "Fast pay window closed. No charge made.",
         "autoTopUp": "Enable auto top-up (optional)",
         "lowBalance": "Your balance is low. Top up to keep creating.",
         "currencyLabel": "Charge currency",
@@ -2914,7 +2915,7 @@
       },
       "toasts": {
         "success": "Payment successful. Funds added to your wallet.",
-        "cancelled": "Payment cancelled. No charges applied."
+        "cancelled": "Checkout closed. No charge made."
       },
       "errors": {
         "loadReceipts": "Failed to load receipts",

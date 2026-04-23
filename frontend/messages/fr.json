@@ -2714,6 +2714,7 @@
         "expressLoading": "Recherche des options rapides…",
         "expressUnavailable": "Le paiement rapide n’est pas disponible dans ce navigateur.",
         "expressError": "Paiement rapide indisponible.",
+        "expressClosed": "Fenêtre de paiement rapide fermée. Aucun débit appliqué.",
         "autoTopUp": "Activer la recharge auto (optionnel)",
         "lowBalance": "Votre solde est faible. Rechargez pour continuer à créer.",
         "currencyLabel": "Devise facturée",
@@ -2815,7 +2816,7 @@
       },
       "toasts": {
         "success": "Paiement réussi. Fonds ajoutés à votre portefeuille.",
-        "cancelled": "Paiement annulé. Aucun débit appliqué."
+        "cancelled": "Checkout fermé. Aucun débit appliqué."
       },
       "errors": {
         "loadReceipts": "Impossible de charger les reçus",
