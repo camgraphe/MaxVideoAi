@@ -148,5 +148,5 @@ export default async function ExamplesModelPage({
     engine: normalized,
     __engineFromPath: normalized,
   };
-  return <ExamplesPage searchParams={mergedSearchParams} />;
+  return <ExamplesPage params={{ locale: params.locale }} searchParams={mergedSearchParams} />;
 }

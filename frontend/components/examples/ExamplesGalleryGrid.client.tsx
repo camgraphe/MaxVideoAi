@@ -6,6 +6,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
+import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
 import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
 import mediaStyles from './examples-media.module.css';
 import masonryStyles from './examples-masonry.module.css';
@@ -139,7 +140,7 @@ export default function ExamplesGalleryGridClient({
   const columns = useMemo(() => splitIntoColumns(visibleVideos, columnCount), [visibleVideos, columnCount]);
   const altById = useMemo(() => {
     const alts = visibleVideos.map((video, index) => {
-      const promptSeed = video.promptFull ?? video.prompt;
+      const promptSeed = locale === 'en' ? video.promptFull ?? video.prompt : video.engineLabel;
       const baseAlt = getImageAlt({
         kind: 'renderThumb',
         engine: video.engineLabel,
@@ -178,9 +179,15 @@ export default function ExamplesGalleryGridClient({
                 showRecreateLink={false}
                 noPreviewLabel={noPreviewLabel}
                 audioAvailableLabel={audioAvailableLabel}
+                locale={locale}
                 altText={
                   altById.get(video.id) ??
-                  getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })
+                  getImageAlt({
+                    kind: 'renderThumb',
+                    engine: video.engineLabel,
+                    label: locale === 'en' ? video.prompt : video.engineLabel,
+                    locale,
+                  })
                 }
               />
             );
@@ -203,7 +210,16 @@ export default function ExamplesGalleryGridClient({
                     showRecreateLink
                     noPreviewLabel={noPreviewLabel}
                     audioAvailableLabel={audioAvailableLabel}
-                    altText={altById.get(video.id) ?? getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label: video.prompt, locale })}
+                    locale={locale}
+                    altText={
+                      altById.get(video.id) ??
+                      getImageAlt({
+                        kind: 'renderThumb',
+                        engine: video.engineLabel,
+                        label: locale === 'en' ? video.prompt : video.engineLabel,
+                        locale,
+                      })
+                    }
                   />
                 );
               })}
@@ -237,6 +253,7 @@ function ExampleCard({
   showRecreateLink,
   noPreviewLabel,
   audioAvailableLabel,
+  locale,
   altText,
 }: {
   video: ExampleGalleryVideo;
@@ -247,6 +264,7 @@ function ExampleCard({
   showRecreateLink: boolean;
   noPreviewLabel: string;
   audioAvailableLabel: string;
+  locale: string;
   altText: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -374,7 +392,13 @@ function ExampleCard({
               <span>{video.engineLabel}</span>
             )}
           </div>
-          <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary sm:text-sm">{video.prompt}</p>
+          <DeferredSourcePrompt
+            locale={locale}
+            prompt={video.prompt}
+            mode="inline"
+            promptClassName="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary sm:text-sm"
+            fallbackClassName="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary sm:text-sm"
+          />
           <p className="text-[10px] text-text-secondary sm:text-[11px]">
             {video.aspectRatio ?? 'Auto'} · {video.durationSec}s {videoReady ? '· Playing' : ''}
           </p>

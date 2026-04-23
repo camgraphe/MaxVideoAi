@@ -16,6 +16,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ExamplesHeroVideo } from '@/components/examples/ExamplesHeroVideo.client';
+import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { orderExamplesHubFamilyIds } from '@/lib/examples/familyOrder';
 import {
@@ -279,6 +280,7 @@ export async function generateMetadata({
 }
 
 type ExamplesPageProps = {
+  params: { locale: AppLocale };
   searchParams: Record<string, string | string[] | undefined>;
 };
 
@@ -332,6 +334,23 @@ function buildMainVideoHeroLine(locale: AppLocale, modelLabel: string, specificL
   return `${modelLabel} AI video example with prompt, settings, duration, aspect ratio, and pricing.`;
 }
 
+function buildLocalizedExampleLabel(
+  locale: AppLocale,
+  modelLabel: string,
+  aspectRatio?: string | null,
+  durationSec?: number | null
+): string {
+  const ratio = aspectRatio ?? 'Auto';
+  const duration = typeof durationSec === 'number' ? `${durationSec}s` : null;
+  if (locale === 'fr') {
+    return duration ? `Exemple ${modelLabel} · ${ratio} · ${duration}` : `Exemple ${modelLabel} · ${ratio}`;
+  }
+  if (locale === 'es') {
+    return duration ? `Ejemplo de ${modelLabel} · ${ratio} · ${duration}` : `Ejemplo de ${modelLabel} · ${ratio}`;
+  }
+  return duration ? `${modelLabel} video example · ${ratio} · ${duration}` : `${modelLabel} video example · ${ratio}`;
+}
+
 function getAspectRatioStyle(aspectRatio?: string | null): string {
   if (!aspectRatio) return '16 / 9';
   const [width, height] = aspectRatio.split(':').map(Number);
@@ -370,7 +389,7 @@ function resolveFilterDescriptor(
   return getExampleFamilyDescriptor(canonicalEngineId, { brandId: engineMeta?.brandId }) ?? null;
 }
 
-export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
+export default async function ExamplesPage({ params, searchParams }: ExamplesPageProps) {
   const internalEngineFromPath = Array.isArray(searchParams.__engineFromPath)
     ? searchParams.__engineFromPath[0]
     : searchParams.__engineFromPath;
@@ -378,7 +397,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     typeof internalEngineFromPath === 'string' && internalEngineFromPath.trim().length
       ? internalEngineFromPath.trim().toLowerCase()
       : '';
-  const { locale, dictionary } = await resolveDictionary();
+  const { locale, dictionary } = await resolveDictionary({ locale: params.locale });
   const appLocale = locale as AppLocale;
   const content = dictionary.examples;
   const modelLanding = engineFromPath ? getExampleModelLanding(appLocale, engineFromPath) : null;
@@ -882,10 +901,18 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
     const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
     const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta) : null;
-    const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
     const modelSlug =
       engineMeta?.modelSlug ?? (descriptor ? ENGINE_MODEL_LINKS[descriptor.id.toLowerCase()] : null);
     const modelHref = modelSlug ? buildModelHref(locale as AppLocale, modelSlug) : null;
+    const promptDisplay =
+      locale === 'en'
+        ? formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render')
+        : buildLocalizedExampleLabel(
+            locale as AppLocale,
+            engineMeta?.label ?? video.engineLabel ?? 'Engine',
+            video.aspectRatio ?? null,
+            video.durationSec
+          );
     return {
       id: video.id,
       href: `/video/${encodeURIComponent(video.id)}`,
@@ -894,7 +921,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       engineBrandId: engineMeta?.brandId,
       priceLabel: null,
       prompt: promptDisplay,
-      promptFull: video.prompt ?? null,
+      promptFull: locale === 'en' ? video.prompt ?? null : null,
       aspectRatio: video.aspectRatio ?? null,
       durationSec: video.durationSec,
       hasAudio: video.hasAudio,
@@ -981,7 +1008,10 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       const detailPath = `/video/${encodeURIComponent(video.id)}`;
       const absoluteUrl = `${SITE}${detailPath}`;
       const fallbackLabel = `MaxVideoAI example ${video.id}`;
-      const name = video.promptExcerpt || video.prompt || `${engineLabel} video example` || fallbackLabel;
+      const name =
+        locale === 'en'
+          ? video.promptExcerpt || video.prompt || `${engineLabel} video example` || fallbackLabel
+          : buildLocalizedExampleLabel(locale as AppLocale, engineLabel, video.aspectRatio ?? null, video.durationSec);
       return {
         '@type': 'ListItem',
         position: index + 1,
@@ -996,10 +1026,17 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     : baseExamplesUrl;
   const mainVideoModelLabel = modelLanding?.label ?? selectedOption?.label ?? mainVideo?.card.engineLabel ?? 'Model';
   const mainVideoTitle =
-    mainVideo?.video.promptExcerpt ||
-    mainVideo?.video.prompt ||
-    `${mainVideoModelLabel} example video`;
-  const mainVideoPromptFull = mainVideo?.video.prompt?.trim() || null;
+    locale === 'en'
+      ? mainVideo?.video.promptExcerpt ||
+        mainVideo?.video.prompt ||
+        `${mainVideoModelLabel} example video`
+      : buildLocalizedExampleLabel(
+          locale as AppLocale,
+          mainVideoModelLabel,
+          mainVideo?.video.aspectRatio ?? mainVideo?.card.aspectRatio ?? null,
+          mainVideo?.video.durationSec ?? null
+        );
+  const mainVideoPromptFull = locale === 'en' ? mainVideo?.video.prompt?.trim() || null : null;
   const mainVideoHeroLine = mainVideo
     ? buildMainVideoHeroLine(
         locale as AppLocale,
@@ -1246,14 +1283,16 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   </h2>
 
                   {mainVideoPromptFull ? (
-                    <details className="group">
-                      <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-micro text-text-muted transition hover:text-text-primary">
-                        {mainVideoCopy.fullPrompt}
-                      </summary>
-                      <p className="mt-2 text-sm leading-relaxed text-text-secondary whitespace-pre-line">
-                        {mainVideoPromptFull}
-                      </p>
-                    </details>
+                    <DeferredSourcePrompt
+                      locale={locale}
+                      prompt={mainVideoPromptFull}
+                      mode="details"
+                      className="group"
+                      summaryClassName="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-micro text-text-muted transition hover:text-text-primary"
+                      promptClassName="mt-2 whitespace-pre-line text-sm leading-relaxed text-text-secondary"
+                      fallbackClassName="text-sm leading-relaxed text-text-secondary"
+                      summaryLabel={mainVideoCopy.fullPrompt}
+                    />
                   ) : null}
 
                   <div className="flex flex-wrap items-center gap-3 pt-0.5">

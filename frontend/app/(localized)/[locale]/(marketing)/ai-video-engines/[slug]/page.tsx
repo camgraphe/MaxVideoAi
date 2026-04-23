@@ -19,6 +19,7 @@ import { canonicalizeFalModelSlug, listFalEngines } from '@/config/falEngines';
 import engineCatalog from '@/config/engine-catalog.json';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { ButtonLink } from '@/components/ui/Button';
+import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
 import { CompareEngineSelector } from './CompareEngineSelector.client';
 import { CompareScoreboard } from './CompareScoreboard.client';
 import { CopyPromptButton } from './CopyPromptButton.client';
@@ -188,6 +189,109 @@ function stripAudioReferencesForSilentPair(template: string, pairHasNativeAudio:
       /\(precios,\s*entradas,\s*resolución,\s*duración,\s*formatos,\s*audio y controles\)/g,
       '(precios, entradas, resolución, duración, formatos y controles)'
     );
+}
+
+const LOCALIZED_BEST_FOR: Partial<Record<AppLocale, Record<string, string>>> = {
+  fr: {
+    'Ads and B-roll': 'Publicités et plans B-roll',
+    'Budget Veo drafts': 'Brouillons Veo à petit budget',
+    'Cinematic dialogue': 'Dialogue cinématographique',
+    'Cinematic motion with camera lock': 'Mouvement cinématographique avec caméra verrouillée',
+    'Cinematic shots': 'Plans cinématographiques',
+    'Fast Seedance drafts, reference tests, and shot planning':
+      'Brouillons Seedance rapides, tests de références et préparation des plans',
+    'Fast cinematic drafts with modify and reframe': 'Brouillons cinématographiques rapides avec modify et reframe',
+    'Fast iterations': 'Itérations rapides',
+    'Flagship multi-shot video with native audio and references':
+      'Vidéo multi-plans premium avec audio natif et références',
+    'General purpose video': 'Vidéo polyvalente',
+    'Grounded stills and wide-format image edits': 'Stills réalistes et retouches d’images grand format',
+    'Multi-shot cinematic control': 'Contrôle cinématographique multi-plans',
+    'Multi-shot testing at lower cost': 'Tests multi-plans à moindre coût',
+    'Premium cinematic generation with modify and reframe': 'Génération cinématographique premium avec modify et reframe',
+    'Premium product stories': 'Histoires produit premium',
+    'Prompts or image loops': 'Prompts ou boucles à partir d’images',
+    'Rapid social clips': 'Clips sociaux rapides',
+    'Studio-grade Sora renders': 'Rendus Sora de niveau studio',
+    'Stylised text or image motion': 'Animation stylisée de texte ou d’image',
+  },
+  es: {
+    'Ads and B-roll': 'Anuncios y planos B-roll',
+    'Budget Veo drafts': 'Borradores Veo de bajo coste',
+    'Cinematic dialogue': 'Diálogo cinematográfico',
+    'Cinematic motion with camera lock': 'Movimiento cinematográfico con cámara bloqueada',
+    'Cinematic shots': 'Planos cinematográficos',
+    'Fast Seedance drafts, reference tests, and shot planning':
+      'Borradores rápidos de Seedance, pruebas de referencias y planificación de planos',
+    'Fast cinematic drafts with modify and reframe': 'Borradores cinematográficos rápidos con modify y reframe',
+    'Fast iterations': 'Iteraciones rápidas',
+    'Flagship multi-shot video with native audio and references':
+      'Video multi-shot premium con audio nativo y referencias',
+    'General purpose video': 'Video de uso general',
+    'Grounded stills and wide-format image edits': 'Imágenes fijas realistas y ediciones panorámicas',
+    'Multi-shot cinematic control': 'Control cinematográfico multi-shot',
+    'Multi-shot testing at lower cost': 'Pruebas multi-shot con menor coste',
+    'Premium cinematic generation with modify and reframe': 'Generación cinematográfica premium con modify y reframe',
+    'Premium product stories': 'Historias de producto premium',
+    'Prompts or image loops': 'Prompts o bucles desde imágenes',
+    'Rapid social clips': 'Clips sociales rápidos',
+    'Studio-grade Sora renders': 'Renders de Sora con nivel de estudio',
+    'Stylised text or image motion': 'Movimiento estilizado de texto o imagen',
+  },
+};
+
+const LOCALIZED_SHOWDOWN_TITLES: Partial<Record<AppLocale, Record<string, string>>> = {
+  fr: {
+    'Fast Motion + Physics (16:9)': 'Mouvement rapide + physique (16:9)',
+    'UGC Talking Head + Lip Sync (9:16)': 'Face caméra UGC + synchronisation labiale (9:16)',
+    'UGC Talking Head (9:16)': 'Face caméra UGC (9:16)',
+    'Hands + Product Demo + On-screen Text': 'Mains + démo produit + texte à l’écran',
+  },
+  es: {
+    'Fast Motion + Physics (16:9)': 'Movimiento rápido + física (16:9)',
+    'UGC Talking Head + Lip Sync (9:16)': 'UGC talking head + sincronización labial (9:16)',
+    'UGC Talking Head (9:16)': 'UGC talking head (9:16)',
+    'Hands + Product Demo + On-screen Text': 'Manos + demo de producto + texto en pantalla',
+  },
+};
+
+const LOCALIZED_SHOWDOWN_TESTS: Partial<Record<AppLocale, Record<string, string>>> = {
+  fr: {
+    'Human Fidelity + Audio/Lip Sync + Prompt Adherence':
+      'Fidélité humaine + audio/synchronisation labiale + adhérence au prompt',
+    'Human Fidelity + Prompt Adherence + Vertical Framing':
+      'Fidélité humaine + adhérence au prompt + cadrage vertical',
+    'Motion Realism + Temporal Consistency + Visual Quality':
+      'Réalisme du mouvement + cohérence temporelle + qualité visuelle',
+    'Hands/Fingers + Text & UI Legibility + Prompt Adherence':
+      'Mains/doigts + lisibilité du texte et de l’interface + adhérence au prompt',
+  },
+  es: {
+    'Human Fidelity + Audio/Lip Sync + Prompt Adherence':
+      'Fidelidad humana + audio/sincronización labial + adherencia al prompt',
+    'Human Fidelity + Prompt Adherence + Vertical Framing':
+      'Fidelidad humana + adherencia al prompt + encuadre vertical',
+    'Motion Realism + Temporal Consistency + Visual Quality':
+      'Realismo del movimiento + consistencia temporal + calidad visual',
+    'Hands/Fingers + Text & UI Legibility + Prompt Adherence':
+      'Manos/dedos + legibilidad de texto e interfaz + adherencia al prompt',
+  },
+};
+
+function localizeMappedValue(
+  value: string,
+  locale: AppLocale,
+  translations: Partial<Record<AppLocale, Record<string, string>>>
+): string {
+  if (locale === 'en') return value;
+  return translations[locale]?.[value] ?? value;
+}
+
+function localizeBestFor(value: string | null | undefined, locale: AppLocale): string | null {
+  const normalized = value?.trim();
+  if (!normalized) return null;
+  if (locale === 'en') return normalized;
+  return LOCALIZED_BEST_FOR[locale]?.[normalized] ?? null;
 }
 
 export const dynamicParams = true;
@@ -931,13 +1035,17 @@ function renderShowdownMedia(
   );
 }
 
-function buildGenerateHref(engineSlug: string, prompt: string, aspectRatio: string, mode: string) {
-  const params = new URLSearchParams({
-    engine: engineSlug,
-    prompt,
-    ar: aspectRatio,
-    mode,
-  });
+function buildGenerateHref(engineSlug: string, prompt?: string | null, aspectRatio?: string | null, mode?: string | null) {
+  const params = new URLSearchParams({ engine: engineSlug });
+  if (prompt) {
+    params.set('prompt', prompt);
+  }
+  if (aspectRatio) {
+    params.set('ar', aspectRatio);
+  }
+  if (mode) {
+    params.set('mode', mode);
+  }
   return `/app?${params.toString()}`;
 }
 
@@ -1925,6 +2033,7 @@ export default async function CompareDetailPage({
   const pairHasNativeAudio = Boolean(left.engine?.audio) || Boolean(right.engine?.audio);
   const criteriaCount = pairHasNativeAudio ? 11 : 10;
   const compareShowdowns = getCompareShowdowns({ pairHasNativeAudio });
+  const exposeSourcePrompt = activeLocale === 'en';
   const [leftPricingDisplay, rightPricingDisplay] = await Promise.all([
     resolvePricingDisplay(left, activeLocale, PRICING_ENGINES.get(left.modelSlug)),
     resolvePricingDisplay(right, activeLocale, PRICING_ENGINES.get(right.modelSlug)),
@@ -1958,6 +2067,25 @@ export default async function CompareDetailPage({
     : null;
   const prelaunchTryPromptLabel = hasPrelaunchEngine ? labels.tryPromptPrelaunch : labels.tryPrompt;
   const prelaunchOpensGeneratorLabel = hasPrelaunchEngine ? labels.opensGeneratorPrelaunch : labels.opensGenerator;
+  const showdownActionLabel = exposeSourcePrompt
+    ? prelaunchTryPromptLabel
+    : activeLocale === 'fr'
+      ? 'Ouvrir le générateur :'
+      : activeLocale === 'es'
+        ? 'Abrir el generador:'
+        : 'Open generator:';
+  const showdownActionHint = exposeSourcePrompt
+    ? prelaunchOpensGeneratorLabel
+    : activeLocale === 'fr'
+      ? 'Ouvre le générateur avec ce modèle.'
+      : activeLocale === 'es'
+        ? 'Abre el generador con este modelo.'
+        : 'Opens the generator with this model.';
+  const localizedPromptNote = activeLocale === 'fr'
+    ? 'Les prompts source restent en anglais pour conserver le meme test entre moteurs.'
+    : activeLocale === 'es'
+      ? 'Los prompts originales se mantienen en ingles para conservar la misma prueba entre motores.'
+      : 'Source prompts stay in English to keep the same test across engines.';
   const winnerSummaryHeading = hasPrelaunchEngine
     ? (compareCopy.scorecard?.winnerSummaryPrelaunch ?? 'Current leader (pre-launch)')
     : (compareCopy.scorecard?.winnerSummary ?? 'Winner summary');
@@ -2075,6 +2203,8 @@ export default async function CompareDetailPage({
     rightSide.placeholder = !hasMedia(rightSide);
     return {
       ...template,
+      title: localizeMappedValue(entry?.title ?? template.title, activeLocale, LOCALIZED_SHOWDOWN_TITLES),
+      whatItTests: localizeMappedValue(template.whatItTests, activeLocale, LOCALIZED_SHOWDOWN_TESTS),
       prompt: entry?.prompt ?? template.prompt,
       left: leftSide,
       right: rightSide,
@@ -2789,7 +2919,7 @@ export default async function CompareDetailPage({
                     />
                   </div>
                   {(() => {
-                    const bestFor = left.bestFor?.trim();
+                    const bestFor = localizeBestFor(left.bestFor, activeLocale);
                     const derived = deriveStrengths('left').join(', ');
                     const strengths = bestFor && !isPending(bestFor) ? bestFor : derived;
                     return strengths ? (
@@ -2817,7 +2947,7 @@ export default async function CompareDetailPage({
                     />
                   </div>
                   {(() => {
-                    const bestFor = right.bestFor?.trim();
+                    const bestFor = localizeBestFor(right.bestFor, activeLocale);
                     const derived = deriveStrengths('right').join(', ');
                     const strengths = bestFor && !isPending(bestFor) ? bestFor : derived;
                     return strengths ? (
@@ -3092,26 +3222,27 @@ export default async function CompareDetailPage({
                     <div className="rounded-card border border-hairline bg-surface-2 p-3 text-sm text-text-secondary">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{labels.prompt}</span>
-                        <CopyPromptButton
-                          prompt={entry.prompt}
-                          copyLabel={compareCopy.labels?.copyPrompt ?? 'Copy prompt'}
-                          copiedLabel={compareCopy.labels?.copied ?? 'Copied'}
-                        />
+                        {exposeSourcePrompt ? (
+                          <CopyPromptButton
+                            prompt={entry.prompt}
+                            copyLabel={compareCopy.labels?.copyPrompt ?? 'Copy prompt'}
+                            copiedLabel={compareCopy.labels?.copied ?? 'Copied'}
+                          />
+                        ) : null}
                       </div>
-                      <details className="group mt-2">
-                        <summary className="cursor-pointer list-none">
-                          <p className="line-clamp-3 whitespace-pre-line text-text-primary group-open:hidden">
-                            {entry.prompt}
-                          </p>
-                          <span className="mt-2 inline-flex text-xs font-semibold text-brand group-open:hidden">
-                            {labels.expandPrompt}
-                          </span>
-                          <span className="hidden text-xs font-semibold text-brand group-open:inline-flex">
-                            {labels.collapsePrompt}
-                          </span>
-                        </summary>
-                        <p className="mt-2 whitespace-pre-wrap text-text-primary">{entry.prompt}</p>
-                      </details>
+                      {exposeSourcePrompt ? (
+                        <DeferredSourcePrompt
+                          locale={activeLocale}
+                          prompt={entry.prompt}
+                          mode="details"
+                          className="mt-2"
+                          summaryClassName="cursor-pointer list-none text-xs font-semibold text-brand"
+                          promptClassName="mt-2 whitespace-pre-wrap text-text-primary"
+                          fallbackClassName="mt-2 text-sm text-text-secondary"
+                        />
+                      ) : (
+                        <p className="mt-2 text-sm text-text-secondary">{localizedPromptNote}</p>
+                      )}
                     </div>
                     <div className="grid grid-gap lg:grid-cols-2">
                       {renderShowdownMedia(
@@ -3132,9 +3263,14 @@ export default async function CompareDetailPage({
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
-                      <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{prelaunchTryPromptLabel}</span>
+                      <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{showdownActionLabel}</span>
                       <Link
-                        href={buildGenerateHref(left.modelSlug, entry.prompt, entry.aspectRatio, entry.mode)}
+                        href={buildGenerateHref(
+                          left.modelSlug,
+                          exposeSourcePrompt ? entry.prompt : null,
+                          entry.aspectRatio,
+                          entry.mode
+                        )}
                         rel="nofollow"
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
@@ -3146,7 +3282,12 @@ export default async function CompareDetailPage({
                             })}
                       </Link>
                       <Link
-                        href={buildGenerateHref(right.modelSlug, entry.prompt, entry.aspectRatio, entry.mode)}
+                        href={buildGenerateHref(
+                          right.modelSlug,
+                          exposeSourcePrompt ? entry.prompt : null,
+                          entry.aspectRatio,
+                          entry.mode
+                        )}
                         rel="nofollow"
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
@@ -3157,7 +3298,7 @@ export default async function CompareDetailPage({
                               engine: formatEngineShortName(right),
                             })}
                       </Link>
-                      <span className="text-xs text-text-muted">{prelaunchOpensGeneratorLabel}</span>
+                      <span className="text-xs text-text-muted">{showdownActionHint}</span>
                     </div>
                   </div>
                   </article>

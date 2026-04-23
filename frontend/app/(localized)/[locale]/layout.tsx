@@ -10,7 +10,7 @@ import GA4RouteTracker from '@/components/analytics/GA4RouteTracker';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
-import { defaultLocale, localeRegions, locales, type AppLocale } from '@/i18n/locales';
+import { localeRegions, locales, type AppLocale } from '@/i18n/locales';
 import { deserializeMessages } from '@/lib/i18n/server';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 type LocaleLayoutProps = {
@@ -57,8 +57,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   setRequestLocale(locale);
 
   const messages = deserializeMessages(await getMessages({ locale }));
-  const fallbackMessages =
-    locale === defaultLocale ? messages : deserializeMessages(await getMessages({ locale: defaultLocale }));
+  const fallbackMessages = messages;
 
   const homeUrl = `${NORMALIZED_SITE_URL}/`;
   const logoUrl = `${NORMALIZED_SITE_URL}/favicon-512.png`;
