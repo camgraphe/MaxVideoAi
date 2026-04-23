@@ -22,6 +22,7 @@ import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { findTopupTier } from '@/config/topupTiers';
 import { extractGaClientId } from '@/server/ga4';
+import { buildWalletTopUpCheckoutSessionParams } from '@/lib/stripe-checkout';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -456,45 +457,25 @@ export async function POST(req: NextRequest) {
     const successUrl = `${origin}/billing?status=success&${topupRedirectParams.toString()}`;
     const cancelUrl = `${origin}/billing?status=cancelled&${topupRedirectParams.toString()}`;
 
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode: 'payment',
-      payment_method_types: ['card'],
-      billing_address_collection: 'required',
-      automatic_tax: { enabled: true },
-      tax_id_collection: { enabled: true },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      line_items: [
-        {
-          price_data: {
-            currency: resolvedCurrencyLower,
-            product_data: { name: 'Wallet top-up', tax_code: STRIPE_TAX_CODE_ELECTRONIC_SERVICES },
-            unit_amount: settlementAmountCents,
-            tax_behavior: 'exclusive',
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: sessionMetadata,
-    };
-
     const paymentIntentMetadata: Record<string, string> = {
       ...sessionMetadata,
     };
-
-    if (isConnectPayments() && destinationAccountId) {
-      sessionParams.payment_intent_data = {
-        application_fee_amount: platformFeeCentsSettlement,
-        transfer_data: {
-          destination: destinationAccountId,
-        },
-        metadata: paymentIntentMetadata,
-      };
-    } else {
-      sessionParams.payment_intent_data = {
-        metadata: paymentIntentMetadata,
-      };
-    }
+    const sessionParams = buildWalletTopUpCheckoutSessionParams({
+      currency: resolvedCurrencyLower,
+      settlementAmountCents,
+      successUrl,
+      cancelUrl,
+      sessionMetadata,
+      paymentIntentMetadata,
+      productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
+      connectTransfer:
+        isConnectPayments() && destinationAccountId
+          ? {
+              destinationAccountId,
+              applicationFeeAmount: platformFeeCentsSettlement,
+            }
+          : null,
+    });
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
