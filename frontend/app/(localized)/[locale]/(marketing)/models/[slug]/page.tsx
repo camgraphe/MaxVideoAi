@@ -1778,40 +1778,6 @@ function buildProductSchema({
   };
 }
 
-function buildSoftwareSchema({
-  engine,
-  canonical,
-  description,
-  heroTitle,
-}: {
-  engine: FalEngineEntry;
-  canonical: string;
-  description: string;
-  heroTitle: string;
-}) {
-  const provider = resolveProviderInfo(engine);
-  const offer = buildOfferSchema(canonical, engine);
-  const applicationCategory = isImageOnlyModel(engine)
-    ? 'ImageGenerationApplication'
-    : supportsAudioGeneration(engine) && !supportsVideoGeneration(engine)
-      ? 'AudioGenerationApplication'
-      : 'VideoGenerationApplication';
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: heroTitle,
-    description,
-    applicationCategory,
-    operatingSystem: 'Web',
-    url: canonical,
-    provider: {
-      '@type': 'Organization',
-      name: provider.name,
-      url: provider.url,
-    },
-    offers: offer,
-  };
-}
 const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
 const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
@@ -3941,7 +3907,6 @@ function MarketingModelPageLayout({
     heroTitle,
     heroPosterAbsolute,
   });
-  const softwareSchema = buildSoftwareSchema({ engine, canonical, description: pageDescription, heroTitle });
   const schemaPayloads = [
     {
       '@context': 'https://schema.org',
@@ -3952,7 +3917,6 @@ function MarketingModelPageLayout({
       inLanguage,
     },
     productSchema,
-    softwareSchema,
     {
       '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',

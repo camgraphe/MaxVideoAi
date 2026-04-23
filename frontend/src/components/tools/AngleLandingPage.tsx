@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 
 const ANGLE_SOURCE_URL =
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/b2358480-cc56-4fcf-9376-cf010d7222ac.webp';
@@ -286,21 +287,13 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
       },
     ],
   };
-  const softwareJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': ['SoftwareApplication', 'WebApplication'],
+  const serviceJsonLd = buildMarketingServiceJsonLd({
     name: content.meta.schemaName,
-    applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'Web',
-    url: canonicalUrl,
     description: content.meta.schemaDescription,
-    featureList: content.meta.schemaFeatures,
-    isPartOf: {
-      '@type': 'WebSite',
-      name: 'MaxVideoAI',
-      url: 'https://maxvideoai.com',
-    },
-  };
+    serviceType: content.meta.schemaName,
+    category: content.meta.schemaFeatures[0],
+    url: canonicalUrl,
+  });
   const howToJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
@@ -683,7 +676,7 @@ export function AngleLandingPage({ content }: { content: AngleLandingContent }) 
 
       <FAQSchema questions={[...content.faq.items]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(howToJsonLd) }} />
     </div>
   );

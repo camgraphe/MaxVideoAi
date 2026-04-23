@@ -12,6 +12,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
+import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 import { listFalEngines } from '@/config/falEngines';
 import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
@@ -332,28 +333,33 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     { text: refunds.points[2], live: FEATURES.pricing.multiApproverTopups },
   ] as const;
 
-  const softwareSchema = {
-    '@context': 'https://schema.org',
-    '@type': ['SoftwareApplication', 'WebApplication'],
-    name: 'MaxVideoAI',
-    description:
-      'Estimate pricing and generate AI videos with per-clip cost visibility, model-level limits, and reusable workflows.',
-    applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'Web',
+  const pricingSchemaName =
+    locale === 'fr' ? 'Tarifs MaxVideoAI' : locale === 'es' ? 'Precios de MaxVideoAI' : 'MaxVideoAI pricing';
+  const pricingSchemaDescription =
+    locale === 'fr'
+      ? 'Estimez les coûts vidéo IA avec visibilité par clip, limites par modèle et workflows réutilisables.'
+      : locale === 'es'
+        ? 'Estima costes de video con IA con visibilidad por clip, límites por modelo y flujos reutilizables.'
+        : 'Estimate AI video pricing with per-clip cost visibility, model-level limits, and reusable workflows.';
+  const pricingServiceType =
+    locale === 'fr'
+      ? 'Tarification et estimation des coûts vidéo IA'
+      : locale === 'es'
+        ? 'Tarificación y estimación de costes de video con IA'
+        : 'AI video pricing and cost estimation';
+  const serviceSchema = buildMarketingServiceJsonLd({
+    name: pricingSchemaName,
+    description: pricingSchemaDescription,
+    serviceType: pricingServiceType,
+    category: locale === 'fr' ? 'Tarification' : locale === 'es' ? 'Precios' : 'Pricing',
+    url: canonical,
     offers: {
-      '@type': 'Offer',
       priceCurrency: starterCurrency,
       price: '10.00',
       availability: 'https://schema.org/InStock',
       url: canonical,
     },
-    publisher: {
-      '@type': 'Organization',
-      name: 'MaxVideoAI',
-      url: 'https://maxvideoai.com',
-      logo: 'https://maxvideoai.com/favicon-512.png',
-    },
-  };
+  });
 
   type TierCopy = {
     name?: string;
@@ -644,10 +650,10 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
       <script
-        id="pricing-software-jsonld"
+        id="pricing-service-jsonld"
         type="application/ld+json"
         suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
       <FAQSchema questions={faqJsonLdEntries} />
     </main>

@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 
 type ToolLink = {
   href: string;
@@ -157,21 +158,13 @@ export function ToolMarketingPage({
       },
     ],
   };
-  const softwareJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': ['SoftwareApplication', 'WebApplication'],
+  const serviceJsonLd = buildMarketingServiceJsonLd({
     name: breadcrumbTitle,
-    applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'Web',
-    url: canonicalUrl,
     description: schemaDescription,
-    featureList: schemaFeatures,
-    isPartOf: {
-      '@type': 'WebSite',
-      name: 'MaxVideoAI',
-      url: 'https://maxvideoai.com',
-    },
-  };
+    serviceType: breadcrumbTitle,
+    category: schemaFeatures[0],
+    url: canonicalUrl,
+  });
   const howToJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
@@ -364,7 +357,7 @@ export function ToolMarketingPage({
 
       <FAQSchema questions={faqs.slice(0, 6)} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(howToJsonLd) }} />
     </>
   );

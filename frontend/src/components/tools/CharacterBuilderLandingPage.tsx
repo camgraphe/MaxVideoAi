@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 
 const REFERENCE_ASSET_PORTRAIT_URL =
   'https://v3b.fal.media/files/b/0a9354bf/6jswQE7mDfBZzcMI6j1hD_AQ2sXgYY.png';
@@ -257,21 +258,13 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
     ],
   };
 
-  const softwareJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': ['SoftwareApplication', 'WebApplication'],
+  const serviceJsonLd = buildMarketingServiceJsonLd({
     name: content.meta.schemaName,
-    applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'Web',
-    url: canonicalUrl,
     description: content.meta.schemaDescription,
-    featureList: content.meta.schemaFeatures,
-    isPartOf: {
-      '@type': 'WebSite',
-      name: 'MaxVideoAI',
-      url: 'https://maxvideoai.com',
-    },
-  };
+    serviceType: content.meta.schemaName,
+    category: content.meta.schemaFeatures[0],
+    url: canonicalUrl,
+  });
 
   const howToJsonLd = {
     '@context': 'https://schema.org',
@@ -807,7 +800,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
 
       <FAQSchema questions={[...content.faq.items]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(howToJsonLd) }} />
     </div>
   );
