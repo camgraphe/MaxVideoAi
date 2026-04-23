@@ -1,3 +1,5 @@
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
+
 const DESCRIPTION =
   "Create your MaxVideoAI workspace account to generate videos with Sora, Veo, Pika, Kling and more. Sign in, manage credits, and keep every render in one hub.";
 
@@ -9,7 +11,7 @@ export default function Head() {
       <meta property="og:description" content={DESCRIPTION} />
       <meta name="twitter:description" content={DESCRIPTION} />
       <meta name="robots" content="noindex, nofollow" />
-      <link rel="canonical" href="https://maxvideoai.com/login" />
+      <link rel="canonical" href={`${SITE_ORIGIN}/login`} />
     </>
   );
 }

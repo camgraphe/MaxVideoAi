@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 
 type LegacyVideoPageProps = {
   params: { videoId: string };
 };
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
+const SITE = SITE_ORIGIN.replace(/\/$/, '');
 
 export async function generateMetadata({ params }: LegacyVideoPageProps): Promise<Metadata> {
   const canonical = `${SITE}/video/${encodeURIComponent(params.videoId)}`;

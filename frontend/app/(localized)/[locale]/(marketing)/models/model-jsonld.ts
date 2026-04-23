@@ -1,8 +1,9 @@
 import type { EngineAvailability } from '@/types/engines';
 import { getFalEngineBySlug } from '@/config/falEngines';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+const SITE = SITE_ORIGIN.replace(/\/$/, '');
 
 const AVAILABILITY_MAP: Record<EngineAvailability, string> = {
   available: 'https://schema.org/InStock',

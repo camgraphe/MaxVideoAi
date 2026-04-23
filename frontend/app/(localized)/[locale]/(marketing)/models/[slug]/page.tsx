@@ -12,6 +12,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
@@ -1254,7 +1255,7 @@ export function generateStaticParams() {
   return locales.flatMap((locale) => engines.map((entry) => ({ locale, slug: entry.modelSlug })));
 }
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+const SITE = SITE_ORIGIN.replace(/\/$/, '');
 const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
   luma: { name: 'Luma AI', url: 'https://lumalabs.ai' },
   openai: { name: 'OpenAI', url: 'https://openai.com' },

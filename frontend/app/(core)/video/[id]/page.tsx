@@ -8,13 +8,14 @@ import Script from 'next/script';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { ButtonLink } from '@/components/ui/Button';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { getVideoWatchPageDataById } from '@/server/video-seo';
 
 type PageProps = {
   params: { id: string };
 };
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
+const SITE = SITE_ORIGIN.replace(/\/$/, '');
 const FALLBACK_THUMB = `${SITE}/og/price-before.png`;
 const FALLBACK_POSTER = `${SITE}/og/price-before.png`;
 const TITLE_SUFFIX = ' — MaxVideoAI';

@@ -15,6 +15,7 @@ import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { HREFLANG_VARIANTS } from '@/lib/seo/alternateLocales';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { listEligibleSeoWatchVideos } from '@/server/video-seo';
 
 export type SitemapEntry = {
@@ -25,11 +26,7 @@ export type SitemapEntry = {
   disableAlternates?: boolean;
 };
 
-const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'https://maxvideoai.com';
-const SITE_URL =
-  RAW_SITE_URL.startsWith('http://') || RAW_SITE_URL.startsWith('https://')
-    ? RAW_SITE_URL.replace(/\/+$/, '')
-    : `https://${RAW_SITE_URL.replace(/\/+$/, '')}`;
+const SITE_URL = SITE_ORIGIN.replace(/\/+$/, '');
 
 const LOCALE_SITEMAP_PATHS: Record<AppLocale, string> = {
   en: '/sitemap-en.xml',

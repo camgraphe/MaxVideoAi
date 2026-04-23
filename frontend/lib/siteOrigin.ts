@@ -17,13 +17,14 @@ function toOrigin(value: string | null | undefined): string | null {
 }
 
 export function resolveSiteOrigin(): string {
+  const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase() ?? '';
   const configuredOrigin =
     toOrigin(process.env.NEXT_PUBLIC_SITE_URL) ??
     toOrigin(process.env.SITE_URL) ??
-    toOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL) ??
-    toOrigin(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+    toOrigin(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ??
+    toOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL);
 
-  if (process.env.NODE_ENV === 'production') {
+  if (vercelEnv === 'production') {
     return PRODUCTION_SITE_ORIGIN;
   }
 

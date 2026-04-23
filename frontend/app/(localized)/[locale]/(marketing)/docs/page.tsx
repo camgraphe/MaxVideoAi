@@ -10,8 +10,9 @@ import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { SITE_ORIGIN } from '@/lib/siteOrigin';
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+const SITE = SITE_ORIGIN.replace(/\/$/, '');
 const DOCS_SLUG_MAP = buildSlugMap('docs');
 
 export const revalidate = 60 * 10;
