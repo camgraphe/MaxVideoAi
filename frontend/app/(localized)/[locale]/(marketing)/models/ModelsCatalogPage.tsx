@@ -1619,6 +1619,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
             <Image
               src="/assets/marketing/models-hub-hero.png"
               alt=""
+              aria-hidden="true"
               fill
               sizes="(min-width: 1024px) 760px, 100vw"
               className="object-cover object-center opacity-95 drop-shadow-[0_36px_78px_rgba(46,99,216,0.14)] [mask-image:linear-gradient(90deg,transparent_0%,black_26%,black_100%)] dark:hidden"
@@ -1626,6 +1627,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
             <Image
               src="/assets/marketing/models-hub-hero-dark.png"
               alt=""
+              aria-hidden="true"
               fill
               sizes="(min-width: 1024px) 760px, 100vw"
               className="hidden object-cover object-center opacity-95 drop-shadow-[0_36px_86px_rgba(74,144,255,0.2)] [mask-image:linear-gradient(90deg,transparent_0%,black_26%,black_100%)] dark:block"
@@ -1838,6 +1840,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               <Image
                 src="/assets/marketing/models-hub-hero.png"
                 alt=""
+                aria-hidden="true"
                 fill
                 sizes="(min-width: 768px) 460px, 100vw"
                 className="object-cover object-center opacity-60 [mask-image:linear-gradient(90deg,transparent_0%,black_36%,black_100%)] dark:hidden"
@@ -1845,6 +1848,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               <Image
                 src="/assets/marketing/models-hub-hero-dark.png"
                 alt=""
+                aria-hidden="true"
                 fill
                 sizes="(min-width: 768px) 460px, 100vw"
                 className="hidden object-cover object-center opacity-70 [mask-image:linear-gradient(90deg,transparent_0%,black_36%,black_100%)] dark:block"
