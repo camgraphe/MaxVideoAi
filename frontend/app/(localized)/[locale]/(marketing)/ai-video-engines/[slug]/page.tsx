@@ -3344,7 +3344,6 @@ export default async function CompareDetailPage({
                           entry.aspectRatio,
                           entry.mode
                         )}
-                        rel="nofollow"
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
@@ -3361,7 +3360,6 @@ export default async function CompareDetailPage({
                           entry.aspectRatio,
                           entry.mode
                         )}
-                        rel="nofollow"
                         prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
