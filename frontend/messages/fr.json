@@ -2596,6 +2596,7 @@
         "imageSubtitle": "Générez des images fixes ou des retouches avec les moteurs image.",
         "engineLabel": "Moteur",
         "newVideo": "Nouvelle vidéo",
+        "generateAudio": "Générer audio",
         "useLastVideo": "Utiliser les réglages vidéo",
         "startVideoTemplate": "Démarrer depuis un template",
         "newImage": "Nouvelle image",
@@ -2623,8 +2624,11 @@
         "empty": "Aucun rendu pour l’instant. Lancez une génération pour remplir la bibliothèque.",
         "tabs": {
           "all": "Tous",
-          "completed": "Terminés",
-          "failed": "Échoués"
+          "video": "Vidéo",
+          "image": "Image",
+          "character": "Character",
+          "angle": "Angle",
+          "audio": "Audio"
         }
       },
       "insights": {
@@ -2654,6 +2658,17 @@
           "formatAuto": "Auto"
         },
         "defaultTitle": "Template"
+      },
+      "tools": {
+        "title": "Outils",
+        "subtitle": "Préparez des assets source plus solides avant de lancer une génération.",
+        "allTools": "Ouvrir tous les outils",
+        "characterTitle": "Créer un personnage",
+        "characterBody": "Construisez une référence personnage réutilisable pour vos workflows image et vidéo.",
+        "characterBadge": "Référence personnage",
+        "angleTitle": "Changer l’angle de vue",
+        "angleBody": "Générez un meilleur angle caméra depuis une image existante.",
+        "angleBadge": "Nouvelle perspective"
       },
       "engines": {
         "title": "Statut des moteurs",

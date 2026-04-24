@@ -437,8 +437,8 @@ export function HeaderBar() {
       ) : null}
       <header
         className={clsx(
-          'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-6 lg:px-8',
-          'border-b border-border bg-surface'
+          'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-5 lg:px-8',
+          'border-b border-hairline bg-surface/95 backdrop-blur-xl'
         )}
       >
         <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
@@ -446,7 +446,7 @@ export function HeaderBar() {
             type="button"
             variant="ghost"
             size="sm"
-            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
+            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 xl:hidden"
             aria-label={t('workspace.header.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -458,7 +458,7 @@ export function HeaderBar() {
           </Button>
           <LogoMark />
           <nav
-            className="hidden items-center gap-6 text-sm font-medium text-text-muted md:flex"
+            className="hidden items-center gap-7 text-sm font-medium text-text-secondary xl:flex"
             aria-label={t('workspace.header.marketingNav', 'Marketing navigation')}
           >
             {marketingLinks.map((item) => {
@@ -469,7 +469,7 @@ export function HeaderBar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    className="transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                   >
                     {label}
                   </Link>
@@ -494,7 +494,7 @@ export function HeaderBar() {
                   <Link
                     href={item.href}
                     aria-haspopup="menu"
-                    className="inline-flex items-center gap-1 transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    className="inline-flex items-center gap-1 transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     onClick={() => closeDesktopDropdown(200)}
                   >
                     <span>{label}</span>
@@ -508,7 +508,7 @@ export function HeaderBar() {
                   >
                     <div
                       className={clsx(
-                        'rounded-card border border-hairline bg-surface p-3 shadow-card',
+                        'rounded-card border border-hairline bg-surface p-2 shadow-float',
                         item.key === 'compare' ? 'min-w-[280px] w-max' : 'min-w-[240px]'
                       )}
                     >
@@ -549,7 +549,7 @@ export function HeaderBar() {
             <Link
               href="/billing"
               prefetch={false}
-              className="flex h-9 items-center gap-1 rounded-input px-1 py-1 text-text-primary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 sm:border sm:border-hairline sm:bg-surface/80 sm:px-2 sm:hover:border-border-hover sm:hover:bg-surface-hover lg:gap-2 lg:px-3"
+              className="flex h-10 items-center gap-1 rounded-input border border-hairline bg-surface px-2 py-1 text-text-primary shadow-sm transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 lg:gap-2 lg:px-3"
               aria-describedby={walletPromptOpen ? walletPromptId : undefined}
               onFocus={openWalletPrompt}
               onBlur={scheduleWalletPromptClose}
@@ -592,7 +592,7 @@ export function HeaderBar() {
               type="button"
               variant="ghost"
               size="sm"
-              className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
+              className="h-10 w-10 rounded-full border border-transparent p-0 text-text-secondary hover:border-hairline hover:bg-surface-2 hover:text-text-primary"
               aria-label={themeToggleLabel}
               onClick={toggleTheme}
             >
@@ -609,7 +609,7 @@ export function HeaderBar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setAccountMenuOpen((prev) => !prev)}
-                className="h-10 w-10 min-h-0 rounded-full border border-border bg-surface-2 p-0 text-sm font-semibold text-text-primary shadow-card hover:bg-surface-3"
+                className="h-10 w-10 min-h-0 rounded-full border border-hairline bg-surface-2 p-0 text-sm font-semibold text-text-primary shadow-sm hover:bg-surface-3"
                 aria-haspopup="menu"
                 aria-expanded={accountMenuOpen}
               >
@@ -883,9 +883,9 @@ export function HeaderBar() {
 function LogoMark() {
   const { t } = useI18n();
   return (
-    <Link href="/" className="flex items-center gap-1.5 sm:gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
-      <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} className="shrink-0" priority />
-      <span className="text-sm font-semibold tracking-tight text-text-primary sm:text-lg">MaxVideoAI</span>
+    <Link href="/" className="flex items-center gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
+      <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} className="shrink-0" priority />
+      <span className="text-sm font-semibold tracking-normal text-text-primary sm:text-lg">MaxVideoAI</span>
     </Link>
   );
 }

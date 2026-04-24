@@ -2695,6 +2695,7 @@
         "imageSubtitle": "Generate stills or edits with the image engines.",
         "engineLabel": "Engine",
         "newVideo": "New video",
+        "generateAudio": "Generate audio",
         "useLastVideo": "Use last video settings",
         "startVideoTemplate": "Start from template",
         "newImage": "New image",
@@ -2722,8 +2723,11 @@
         "empty": "No renders yet. Start a generation to populate your library.",
         "tabs": {
           "all": "All",
-          "completed": "Completed",
-          "failed": "Failed"
+          "video": "Video",
+          "image": "Image",
+          "character": "Character",
+          "angle": "Angle",
+          "audio": "Audio"
         }
       },
       "insights": {
@@ -2753,6 +2757,17 @@
           "formatAuto": "Auto"
         },
         "defaultTitle": "Template"
+      },
+      "tools": {
+        "title": "Tools",
+        "subtitle": "Prepare stronger source assets before you generate.",
+        "allTools": "Open all tools",
+        "characterTitle": "Create a character",
+        "characterBody": "Build a reusable character reference for image and video workflows.",
+        "characterBadge": "Character reference",
+        "angleTitle": "Change angle view",
+        "angleBody": "Generate a better camera angle from an existing image.",
+        "angleBadge": "New viewpoint"
       },
       "engines": {
         "title": "Engine status",
