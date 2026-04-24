@@ -1925,11 +1925,12 @@
       "title": "Confianza discreta para equipos de video con IA.",
       "subtitle": "MaxVideo AI es el núcleo independiente para la producción de video con IA. Enrutamos al motor adecuado para cada plano, mostramos el precio antes de generar y mantenemos a tu equipo en control sin bloqueo de proveedor."
     },
-    "paragraphs": [
-      "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
-      "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
-      "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle."
-    ],
+      "paragraphs": [
+        "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
+        "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
+        "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle.",
+        "Mantenemos el flujo de trabajo práctico: comparar modelos, preparar recursos, generar sólo cuando el coste y los ajustes están claros, y revisar los resultados desde un único workspace sin repartir el contexto entre paneles de proveedores."
+      ],
     "note": "Las marcas registradas y signos de servicio son propiedad de sus respectivos propietarios. MaxVideo AI se mantiene independiente para que puedas mantenerte al día sin cambiar de plataforma."
   },
   "contact": {
@@ -4109,7 +4110,7 @@
       },
       "cards": {
         "image": {
-          "eyebrow": "Generate image",
+          "eyebrow": "Generar imagen",
           "title": "Crea primero la imagen base",
           "body": "Empieza el frame en Image antes de pasar a ediciones, referencias o motion.",
           "cta": "Abrir Image",
@@ -4139,7 +4140,7 @@
           "image": {
             "eyebrow": "Image",
             "title": "Genera la imagen base",
-            "body": "Crea primero el frame base y luego llévalo a Character Builder, Angle o motion.",
+            "body": "Crea primero el fotograma base y luego llévalo a Character Builder, Angle o la preparación de video.",
             "cta": "Abrir Image"
           },
           "character": {

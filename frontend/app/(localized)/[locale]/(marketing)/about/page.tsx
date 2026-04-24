@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
@@ -33,7 +34,7 @@ const ABOUT_LINKS: Record<
   en: {
     prefix: 'Related pages:',
     links: [
-      { href: '/company', label: 'Company & Trust' },
+      { href: '/legal', label: 'Legal center' },
       { href: '/workflows', label: 'Workflows' },
       { href: '/docs', label: 'Docs' },
     ],
@@ -41,7 +42,7 @@ const ABOUT_LINKS: Record<
   fr: {
     prefix: 'Pages liées :',
     links: [
-      { href: '/company', label: 'Entreprise & confiance' },
+      { href: '/legal', label: 'Centre juridique' },
       { href: '/workflows', label: 'Flux de travail' },
       { href: '/docs', label: 'Docs' },
     ],
@@ -49,7 +50,7 @@ const ABOUT_LINKS: Record<
   es: {
     prefix: 'Páginas relacionadas:',
     links: [
-      { href: '/company', label: 'Empresa y confianza' },
+      { href: '/legal', label: 'Centro legal' },
       { href: '/workflows', label: 'Flujos de trabajo' },
       { href: '/docs', label: 'Docs' },
     ],
@@ -75,6 +76,10 @@ export default async function AboutPage({ params }: { params: { locale: AppLocal
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.about;
   const related = ABOUT_LINKS[params.locale] ?? ABOUT_LINKS.en;
+  const relatedLinks = related.links.map((item) => ({
+    ...item,
+    href: item.href === '/legal' ? localizePathFromEnglish(params.locale, item.href) : item.href,
+  }));
 
   return (
     <div className="container-page max-w-4xl section">
@@ -96,12 +101,12 @@ export default async function AboutPage({ params }: { params: { locale: AppLocal
 
         <p className="text-sm text-text-muted">
           <span className="font-medium text-text-secondary">{related.prefix}</span>{' '}
-          {related.links.map((item, index) => (
+          {relatedLinks.map((item, index) => (
             <span key={item.href}>
               <Link href={item.href} className="underline underline-offset-2 hover:text-text-primary">
                 {item.label}
               </Link>
-              {index < related.links.length - 1 ? ' · ' : null}
+              {index < relatedLinks.length - 1 ? ' · ' : null}
             </span>
           ))}
         </p>

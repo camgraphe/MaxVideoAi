@@ -27,12 +27,15 @@ const COMPANY_COPY: Record<
   {
     title: string;
     subtitle: string;
+    overview: string;
     links: Array<{ href: string; label: string; description: string }>;
   }
 > = {
   en: {
     title: 'Company & Trust',
     subtitle: 'Core trust and support pages, grouped in one index.',
+    overview:
+      'Use this hub when you need operational information before a production run: how the product is maintained, where to check service status, how to reach support, and which policies apply to generated media, billing, and brand-safe workflows.',
     links: [
       { href: '/about', label: 'About', description: 'Who we are and what we build.' },
       { href: '/contact', label: 'Contact', description: 'Support, partnerships, and press requests.' },
@@ -46,6 +49,8 @@ const COMPANY_COPY: Record<
   fr: {
     title: 'Entreprise & confiance',
     subtitle: 'Les pages de confiance et de support, regroupées dans un seul index.',
+    overview:
+      'Utilisez ce hub pour retrouver les informations opérationnelles avant une production : maintenance du produit, état du service, accès au support et politiques applicables aux médias générés, à la facturation et aux flux de travail compatibles avec la sécurité de marque.',
     links: [
       { href: '/about', label: 'À propos', description: 'Qui nous sommes et ce que nous construisons.' },
       { href: '/contact', label: 'Contact', description: 'Support, partenariats et demandes presse.' },
@@ -59,6 +64,8 @@ const COMPANY_COPY: Record<
   es: {
     title: 'Empresa y confianza',
     subtitle: 'Páginas clave de confianza y soporte agrupadas en un único índice.',
+    overview:
+      'Usa este hub para revisar la información operativa antes de una producción: mantenimiento del producto, estado del servicio, acceso a soporte y políticas aplicables a medios generados, facturación y flujos de trabajo seguros para la marca.',
     links: [
       { href: '/about', label: 'Acerca de', description: 'Quiénes somos y qué construimos.' },
       { href: '/contact', label: 'Contacto', description: 'Soporte, alianzas y solicitudes de prensa.' },
@@ -98,6 +105,7 @@ export default function CompanyPage({ params }: { params: { locale: AppLocale } 
         <header className="stack-gap-sm">
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{copy.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{copy.subtitle}</p>
+          <p className="text-sm leading-7 text-text-secondary">{copy.overview}</p>
         </header>
         <section className="rounded-card border border-hairline bg-surface p-6 shadow-card sm:p-8">
           <ul className="space-y-4">

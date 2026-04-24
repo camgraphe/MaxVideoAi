@@ -184,6 +184,37 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
           />
         </div>
       </section>
+
+      <section className="section">
+        <div className="container-page max-w-6xl stack-gap-md">
+          <div className="max-w-3xl stack-gap-xs">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-text-muted">
+              {content.bestStartingPoints.eyebrow}
+            </p>
+            <h2 className="text-3xl font-semibold text-text-primary">{content.bestStartingPoints.title}</h2>
+            <p className="text-sm leading-7 text-text-secondary">{content.bestStartingPoints.body}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {Object.entries(content.bestStartingPoints.cards).map(([key, card]) => (
+              <div key={key} className="rounded-card border border-hairline bg-surface p-5 shadow-card">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">{card.eyebrow}</p>
+                <h3 className="mt-3 text-lg font-semibold text-text-primary">{card.title}</h3>
+                <p className="mt-2 text-sm leading-7 text-text-secondary">{card.body}</p>
+                <Link
+                  href={key === 'image' ? '/app/image' : key === 'character' ? '/tools/character-builder' : '/tools/angle'}
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brandHover"
+                >
+                  {card.cta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            ))}
+          </div>
+          <ButtonLink href="/models" linkComponent={Link} variant="outline" className="w-fit">
+            {content.bestStartingPoints.modelHubCta}
+          </ButtonLink>
+        </div>
+      </section>
     </div>
   );
 }

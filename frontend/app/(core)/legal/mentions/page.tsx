@@ -263,7 +263,7 @@ export default async function MentionsLegalesPage() {
           <p>
             <strong>{copy.hosting.websiteLabel}</strong>{' '}
             <a href="https://vercel.com" className="text-brand underline hover:text-brandHover">
-              https://vercel.com
+              Vercel hosting website
             </a>
           </p>
         </section>
