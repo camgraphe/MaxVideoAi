@@ -689,35 +689,32 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
   const memberBenefitCopy = memberBenefits.get(memberTier);
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-5">
+    <div className="flex flex-col gap-3">
       <div
         className={clsx(
-          'price-estimator-border relative overflow-hidden rounded-[32px] border p-4 shadow-[0_20px_60px_-25px_rgba(17,24,39,0.35)] sm:p-6 lg:p-8',
+          'price-estimator-border relative overflow-hidden rounded-[24px] border shadow-card',
           isLite
             ? 'border-hairline bg-surface-glass-95'
-            : 'border-surface-on-media-40 bg-gradient-to-br from-surface via-surface-glass-95 to-surface-2'
+            : 'border-hairline bg-surface'
         )}
       >
-        {!isLite && (
-          <div className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute -left-28 top-[-96px] h-72 w-72 rounded-full bg-surface-2 opacity-70 blur-[140px]" />
-            <div className="absolute -right-24 bottom-[-120px] h-80 w-80 rounded-full bg-[#7c4dff]/12 blur-[160px]" />
-          </div>
-        )}
-        <div className="relative grid gap-2 sm:gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="flex flex-col gap-1.5 sm:gap-2">
-            <div className="space-y-0.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+        <div className="relative grid lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,0.92fr)]">
+          <div className="flex flex-col gap-4 p-5 sm:p-6">
+            <div className="space-y-1">
+              <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-hairline bg-surface-2 text-[10px] tracking-normal text-text-muted">
+                  1
+                </span>
                 {t('pricing.estimator.configureLabel', 'Configure')}
               </p>
-              <h3 className="text-lg font-semibold text-text-primary sm:text-xl">
+              <h3 className="text-xl font-semibold text-text-primary">
                 {dictionary.pricing.estimator.title}
               </h3>
-              <p className="text-sm text-text-secondary sm:text-[13px]">{dictionary.pricing.estimator.subtitle}</p>
+              <p className="max-w-xl text-sm leading-6 text-text-secondary">{dictionary.pricing.estimator.subtitle}</p>
             </div>
 
-            <div className="grid gap-1.5 sm:gap-2">
-              <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+            <div className="grid gap-3">
+              <div className="price-estimator-border price-estimator-surface relative rounded-[16px] border border-hairline bg-bg p-2 focus-within:z-20">
                 <div className="mt-0.5">
                   <EngineSelect
                     engines={engineSelectOptions}
@@ -732,10 +729,10 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                     className="w-full"
                   />
                   {selectedEngine?.description ? (
-                    <p className="mt-0.5 hidden text-xs text-text-muted sm:block">{selectedEngine.description}</p>
+                    <p className="mt-1 hidden text-xs text-text-muted sm:block">{selectedEngine.description}</p>
                   ) : null}
                   {selectedEngine?.audioIncluded ? (
-                    <div className="mt-0.5 hidden items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[11px] font-semibold text-text-secondary sm:inline-flex">
+                    <div className="mt-2 hidden items-center gap-2 rounded-full border border-hairline bg-surface px-3 py-1 text-[11px] font-semibold text-text-secondary sm:inline-flex">
                       <span className="text-[9px] leading-none text-text-muted">●</span>
                       <span>{t('pricing.estimator.audioIncluded', 'Audio included by default')}</span>
                     </div>
@@ -755,9 +752,9 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 </div>
               </div>
 
-              <div className="grid gap-1.5 sm:gap-2 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {selectedEngine?.showResolution !== false ? (
-                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[16px] border border-hairline bg-bg p-2 focus-within:z-20">
                     <SelectGroup
                       label={fields.resolution}
                       options={resolutionSelectOptions}
@@ -773,7 +770,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                     ) : null}
                   </div>
                 ) : (
-                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[16px] border border-hairline bg-bg p-3 focus-within:z-20">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
                       {t('pricing.estimator.engineRateLabel', 'Engine rate')}
                     </span>
@@ -788,7 +785,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 )}
 
                 {selectedEngine?.showDuration !== false ? (
-                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[16px] border border-hairline bg-bg p-2 focus-within:z-20">
                     <SelectGroup
                       label={fields.duration}
                       options={durationSelectOptions}
@@ -806,7 +803,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 ) : null}
 
                 {selectedEngine?.audioToggle ? (
-                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[16px] border border-hairline bg-bg p-2 focus-within:z-20">
                     <SelectGroup
                       label={t('pricing.estimator.audioLabel', 'Audio') ?? 'Audio'}
                       options={[
@@ -826,104 +823,109 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
 
           </div>
 
-          <aside className="flex flex-col gap-6">
-            <div className="price-estimator-border rounded-[28px] border border-surface-on-media-70 bg-surface-glass-95 p-4 text-sm text-text-secondary shadow-[0_28px_60px_-24px_rgba(15,23,42,0.3)] sm:p-5">
+          <aside className="border-t border-hairline bg-surface-2/70 p-5 text-sm text-text-secondary sm:p-6 lg:border-l lg:border-t-0">
+            <div className="stack-gap">
               <div className="stack-gap-sm">
-                <div className="stack-gap-sm">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                    {estimateLabels.heading}
+                <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-hairline bg-surface text-[10px] tracking-normal text-text-muted">
+                    2
                   </span>
-                  <p className="text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl">
-                    {formatCurrency(pricing.total, currency)}
-                  </p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                    {priceChipSuffix ?? t('pricing.priceChipSuffix', 'Price before you generate.')}
-                  </p>
+                  {estimateLabels.heading}
+                </span>
+                <p className="text-5xl font-semibold tracking-tight text-text-primary sm:text-6xl">
+                  {formatCurrency(pricing.total, currency)}
+                </p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-text-muted">
+                  {priceChipSuffix ?? t('pricing.priceChipSuffix', 'Price before you generate.')}
+                </p>
+              </div>
+
+              <dl className="grid gap-3 border-b border-hairline pb-4 text-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-text-secondary">{t('pricing.estimator.engineLabel', 'Engine')}</dt>
+                  <dd className="text-right font-semibold text-text-primary">{selectedEngine?.label ?? '—'}</dd>
                 </div>
-                <div className="grid grid-gap-sm sm:grid-gap">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                    {t('pricing.estimator.engineLabel', 'Engine')}
+                {selectedEngine?.showDuration !== false ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-text-secondary">{t('pricing.estimator.durationLabel', 'Duration')}</dt>
+                    <dd className="text-right font-semibold text-text-primary">{durationDisplay}</dd>
+                  </div>
+                ) : null}
+                {selectedEngine?.showResolution !== false ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-text-secondary">{t('pricing.estimator.resolutionLabel', 'Resolution')}</dt>
+                    <dd className="text-right font-semibold text-text-primary">
+                      {activeResolution?.label ?? selectedResolution?.toUpperCase()}
+                    </dd>
+                  </div>
+                ) : null}
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-text-secondary">{t('pricing.estimator.audioLabel', 'Audio') ?? 'Audio'}</dt>
+                  <dd className="text-right font-semibold text-text-primary">
+                    {selectedEngine?.audioIncluded || audioEnabled
+                      ? t('pricing.estimator.audioOn', 'On')
+                      : t('pricing.estimator.audioOff', 'Off')}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-text-secondary">{t('pricing.estimator.engineRateLabel', 'Engine rate')}</dt>
+                  <dd className="text-right font-semibold text-text-primary">
+                    {formatCurrency(rate, currency)}
+                    {selectedEngine?.rateUnit ?? '/s'}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="stack-gap-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                    {estimateLabels.memberChipPrefix}
                   </span>
-                  <p className="text-base font-semibold text-text-primary">{selectedEngine?.label ?? '—'}</p>
+                  <span className="rounded-full bg-state-success/15 px-3 py-1 text-xs font-semibold text-state-success">
+                    {memberTier === 'Member' ? memberNames.get('Member') ?? 'Member' : `${discountPercent}%`}
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 grid-gap-sm">
-                  {selectedEngine?.showDuration !== false ? (
-                    <div>
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                        {t('pricing.estimator.durationLabel', 'Duration')}
-                      </span>
-                      <p className="text-base font-semibold text-text-primary">{durationDisplay}</p>
-                    </div>
-                  ) : null}
-                  {selectedEngine?.showResolution !== false ? (
-                    <div>
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                        {t('pricing.estimator.resolutionLabel', 'Resolution')}
-                      </span>
-                      <p className="text-base font-semibold text-text-primary">
-                        {activeResolution?.label ?? selectedResolution?.toUpperCase()}
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                        {t('pricing.estimator.engineRateLabel', 'Engine rate')}
-                      </span>
-                      <p className="text-base font-semibold text-text-primary">
-                        {formatCurrency(rate, currency)}
-                        {selectedEngine?.rateUnit ?? ''}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="grid grid-gap-sm sm:grid-gap">
-                  <div>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                      {estimateLabels.memberChipPrefix}
-                    </span>
-                    <p className="text-base font-semibold text-text-primary">
-                      {memberTier === 'Member' ? memberNames.get('Member') ?? 'Member' : `${discountPercent}%`}
-                    </p>
-                    {memberBenefitCopy ? <p className="mt-1 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
+                {memberBenefitCopy ? <p className="text-xs text-text-muted">{memberBenefitCopy}</p> : null}
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                    {fields.memberStatus}
+                  </span>
+                  <div className="mt-2 grid grid-cols-3 gap-2 rounded-full border border-hairline bg-surface p-1">
+                    {MEMBER_ORDER.map((tier) => {
+                      const selected = tier === memberTier;
+                      return (
+                        <Button
+                          key={tier}
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setMemberTier(tier)}
+                          className={clsx(
+                            'member-status-pill min-h-0 h-8 rounded-full px-2 text-xs font-semibold',
+                            selected
+                              ? 'bg-text-primary !text-bg shadow-card hover:bg-text-primary hover:!text-bg'
+                              : 'bg-transparent !text-text-secondary hover:bg-surface-2 hover:!text-text-primary'
+                          )}
+                          aria-pressed={selected}
+                        >
+                          {memberNames.get(tier) ?? tier}
+                        </Button>
+                      );
+                    })}
                   </div>
-                  <div>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                      {fields.memberStatus}
-                    </span>
-                    <div className="mt-2 flex flex-wrap gap-1 sm:mt-3 sm:gap-1.5">
-                      {MEMBER_ORDER.map((tier) => {
-                        const selected = tier === memberTier;
-                        return (
-                          <Button
-                            key={tier}
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setMemberTier(tier)}
-                            className={clsx(
-                              'member-status-pill min-h-0 h-auto rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro',
-                              selected
-                                ? 'bg-text-primary !text-on-inverse shadow-[0_10px_25px_-12px_rgba(17,24,39,0.6)] hover:bg-text-primary hover:!text-on-inverse'
-                                : 'bg-surface-glass-70 !text-text-disabled hover:bg-surface-2 hover:!text-text-primary'
-                            )}
-                            aria-pressed={selected}
-                          >
-                            {memberNames.get(tier) ?? tier}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                    <p className="mt-1 text-[11px] text-text-muted sm:mt-2" aria-label={memberTooltipLabel} title={memberTooltipLabel}>
-                      {memberTooltipLabel}
-                    </p>
-                  </div>
+                  <p className="mt-2 text-[11px] text-text-muted" aria-label={memberTooltipLabel} title={memberTooltipLabel}>
+                    {memberTooltipLabel}
+                  </p>
                 </div>
+              </div>
+
+              <div className="stack-gap-xs text-xs text-text-muted">
                 {selectedEngine?.audioIncluded ? (
-                  <p className="text-xs font-semibold text-text-secondary">
+                  <p className="font-semibold text-text-secondary">
                     {t('pricing.estimator.audioIncluded', 'Audio included by default')}
                   </p>
                 ) : null}
-                <p className="text-xs text-text-muted">{chargedNote}</p>
+                <p>{chargedNote}</p>
               </div>
             </div>
           </aside>
