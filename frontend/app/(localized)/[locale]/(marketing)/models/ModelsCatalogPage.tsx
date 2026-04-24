@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Script from 'next/script';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { Clapperboard, Copy, Film, Sparkles, Timer, Wand2, Wallet } from 'lucide-react';
+import { ArrowRight, ChevronRight, Clapperboard, Copy, Film, Sparkles, Timer, Wand2, Wallet } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
@@ -892,6 +893,45 @@ function getEngineDisplayName(entry: FalEngineEntry): string {
     .trim();
 }
 
+function sentenceCaseHeroPart(value: string) {
+  const trimmed = value.trim().replace(/[.。]+$/, '');
+  if (!trimmed) return trimmed;
+  return `${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}.`;
+}
+
+function splitModelsHeroTitle(title: string) {
+  const parenMatch = title.match(/^(.*?)\s*\((.*?)\)\s*$/);
+  if (parenMatch) {
+    return {
+      lead: sentenceCaseHeroPart(parenMatch[1]),
+      accent: sentenceCaseHeroPart(parenMatch[2]),
+    };
+  }
+  const colonIndex = title.indexOf(':');
+  if (colonIndex > 0) {
+    return {
+      lead: sentenceCaseHeroPart(title.slice(0, colonIndex)),
+      accent: sentenceCaseHeroPart(title.slice(colonIndex + 1)),
+    };
+  }
+  return {
+    lead: sentenceCaseHeroPart(title),
+    accent: '',
+  };
+}
+
+function splitHeroAccentTitle(accent: string) {
+  const normalized = accent.trim();
+  const prefixMatch = normalized.match(/^(All|Toutes les|Todos los|Todas las)\s+(.+)$/i);
+  if (!prefixMatch) {
+    return { prefix: '', emphasis: normalized };
+  }
+  return {
+    prefix: `${prefixMatch[1]} `,
+    emphasis: prefixMatch[2],
+  };
+}
+
 export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: ModelsPageScope }) {
   const { locale, dictionary } = await resolveDictionary();
   const activeLocale = locale as AppLocale;
@@ -1230,6 +1270,8 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     scope === 'all'
       ? listingCopy.hero?.bullets ?? scopeDefaults.heroBullets
       : scopeDefaults.heroBullets;
+  const heroTitleParts = splitModelsHeroTitle(heroTitle);
+  const heroAccentParts = splitHeroAccentTitle(heroTitleParts.accent);
 
   const cardBySlug = new Map(modelCards.map((card) => [card.id, card]));
   const scopeTabs = (['all', 'video', 'image'] as const).map((value) => ({
@@ -1572,17 +1614,54 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
             </Link>
           ))}
         </nav>
-        <header className="stack-gap-sm -mt-2 items-center text-center sm:-mt-4">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
-          <p className="sm:max-w-[62ch] text-base leading-relaxed text-text-secondary">{heroSubhead}</p>
-          <ul className="grid gap-2 text-sm text-text-secondary sm:max-w-[62ch]">
-            {heroBullets.map((bullet) => (
-              <li key={bullet} className="flex items-center justify-center gap-2 text-center">
-                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-text-muted" aria-hidden="true" />
-                <span className="text-center">{bullet}</span>
-              </li>
-            ))}
-          </ul>
+        <header className="relative -mt-2 overflow-hidden px-1 py-10 sm:-mt-4 sm:py-12 lg:min-h-[340px] lg:px-0 lg:py-12">
+          <div className="pointer-events-none absolute inset-y-0 left-[34%] right-[-8%] hidden lg:block" aria-hidden="true">
+            <Image
+              src="/assets/marketing/models-hub-hero.png"
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 760px, 100vw"
+              className="object-cover object-center opacity-95 drop-shadow-[0_36px_78px_rgba(46,99,216,0.14)] [mask-image:linear-gradient(90deg,transparent_0%,black_26%,black_100%)] dark:hidden"
+            />
+            <Image
+              src="/assets/marketing/models-hub-hero-dark.png"
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 760px, 100vw"
+              className="hidden object-cover object-center opacity-95 drop-shadow-[0_36px_86px_rgba(74,144,255,0.2)] [mask-image:linear-gradient(90deg,transparent_0%,black_26%,black_100%)] dark:block"
+            />
+            <div className="absolute inset-y-0 left-0 w-[38%] bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_srgb,var(--bg)_78%,transparent)_46%,transparent_100%)] dark:bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_srgb,var(--bg)_68%,transparent)_48%,transparent_100%)]" />
+            <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,var(--bg)_0%,transparent_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent_0%,var(--bg)_100%)]" />
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-2/3 bg-[radial-gradient(circle_at_72%_48%,color-mix(in_srgb,var(--brand)_11%,transparent)_0%,transparent_58%)] lg:block" aria-hidden="true" />
+          <div className="relative z-10 max-w-[700px]">
+            <h1 className="text-balance text-[38px] font-semibold leading-[1.07] tracking-normal text-text-primary sm:text-[46px] lg:text-[50px]">
+              {heroTitleParts.lead}
+              {heroTitleParts.accent ? (
+                <>
+                  <br />
+                  <span className="sm:whitespace-nowrap">
+                    {heroAccentParts.prefix}
+                    <span className="text-brand">{heroAccentParts.emphasis}</span>
+                  </span>
+                </>
+              ) : null}
+            </h1>
+            <p className="mt-5 max-w-[58ch] text-base font-medium leading-relaxed text-text-secondary sm:text-lg">
+              {heroSubhead}
+            </p>
+            <ul className="mt-7 grid gap-4 text-sm text-text-secondary sm:grid-cols-2">
+              {heroBullets.slice(0, 2).map((bullet, index) => (
+                <li key={bullet} className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[var(--brand-border)] bg-[var(--brand-soft)] text-brand">
+                    <UIIcon icon={index === 0 ? Sparkles : Timer} size={18} />
+                  </span>
+                  <span className="pt-0.5 font-semibold leading-relaxed">{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </header>
 
         <section id="models-grid" className="stack-gap-md scroll-mt-24">
@@ -1599,19 +1678,24 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
             allowCompare={scope === 'video'}
           />
         </section>
-        <p className="text-sm text-text-secondary text-center">
-          {scope === 'all'
-            ? listingCopy.grid?.bridgeText ?? scopeDefaults.bridgeText
-            : scopeDefaults.bridgeText}
+        <p className="mx-auto flex max-w-4xl items-start gap-3 px-4 text-sm font-medium leading-relaxed text-text-secondary sm:items-center">
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--brand-border)] bg-[var(--brand-soft)] text-brand sm:mt-0">
+            <UIIcon icon={Sparkles} size={15} />
+          </span>
+          <span>
+            {scope === 'all'
+              ? listingCopy.grid?.bridgeText ?? scopeDefaults.bridgeText
+              : scopeDefaults.bridgeText}
+          </span>
         </p>
-        <div className="stack-gap-xl py-4 sm:py-10">
+        <div className="space-y-8 py-4 sm:py-8">
           {showVideoCompare && quickCompareShortcuts.length ? (
-            <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
-              <div className="stack-gap-xs">
-                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+            <section className="content-visibility-auto rounded-[16px] border border-hairline bg-surface/90 p-6 shadow-card dark:bg-white/5 sm:p-8">
+              <div>
+                <h2 className="text-2xl font-semibold leading-tight text-text-primary sm:text-3xl">
                   {listingCopy.quickCompare?.title ?? 'Model checks by common scenarios'}
                 </h2>
-                <p className="text-sm text-text-secondary">
+                <p className="mt-2 text-sm text-text-secondary">
                   {listingCopy.quickCompare?.subtitle ??
                     'Open useful side-by-side checks when you need a decision view after reviewing model specs.'}
                 </p>
@@ -1635,7 +1719,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                       key={`${shortcut.a}-${shortcut.b}`}
                       href={compareHref}
                       prefetch={false}
-                      className="min-w-[220px] rounded-2xl border border-hairline bg-bg/70 px-4 py-3 text-xs font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
+                      className="min-w-[220px] rounded-[12px] border border-hairline bg-bg/70 px-4 py-3 text-xs font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-border)]"
                     >
                       <div className="flex items-center gap-2">
                         <span className="flex items-center gap-1">
@@ -1654,14 +1738,14 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
             </section>
           ) : null}
 
-          <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
-            <div className="stack-gap-xs">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+          <section className="content-visibility-auto rounded-[16px] border border-hairline bg-surface/90 p-6 shadow-card dark:bg-white/5 sm:p-8">
+            <div>
+              <h2 className="text-2xl font-semibold leading-tight text-text-primary sm:text-3xl">
                 {scope === 'all'
                   ? listingCopy.chooseOutcome?.title ?? scopeDefaults.chooseOutcomeTitle
                   : scopeDefaults.chooseOutcomeTitle}
               </h2>
-              <p className="text-sm text-text-secondary">
+              <p className="mt-2 text-sm text-text-secondary">
                 {scope === 'all'
                   ? listingCopy.chooseOutcome?.subtitle ?? scopeDefaults.chooseOutcomeSubtitle
                   : scopeDefaults.chooseOutcomeSubtitle}
@@ -1671,16 +1755,16 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
               {outcomeTiles.map((tile) => (
                 <div
                   key={tile.title}
-                  className="rounded-2xl border border-hairline bg-bg/70 p-4 shadow-sm"
+                  className="rounded-[12px] border border-hairline bg-bg/70 p-5 shadow-sm transition hover:border-[var(--brand-border)]"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-text-primary">
-                      <UIIcon icon={tile.icon} size={16} />
+                    <span className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--brand-border)] bg-[var(--brand-soft)] text-brand">
+                      <UIIcon icon={tile.icon} size={18} />
                     </span>
                     <h3 className="text-sm font-semibold text-text-primary">{tile.title}</h3>
                   </div>
-                  <p className="mt-2 text-sm text-text-secondary">{tile.description}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <p className="mt-4 min-h-[4rem] text-sm font-medium leading-relaxed text-text-secondary">{tile.description}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {tile.engines.map((slug) => {
                       const card = cardBySlug.get(slug);
                       if (!card) return null;
@@ -1690,10 +1774,10 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                           key={slug}
                           href={{ pathname: '/models/[slug]', params: { slug } }}
                           prefetch={false}
-                          className="inline-flex items-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-micro text-text-primary shadow-sm transition hover:-translate-y-0.5 dark:text-white/90"
+                          className="inline-flex items-center rounded-[6px] border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-text-primary shadow-sm transition hover:-translate-y-0.5 dark:text-white/90"
                           style={{
-                            borderColor: color,
-                            backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
+                            borderColor: `color-mix(in srgb, ${color} 22%, transparent)`,
+                            backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
                           }}
                         >
                           {card.label}
@@ -1706,14 +1790,14 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
             </div>
           </section>
 
-          <section className="content-visibility-auto rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
-            <div className="stack-gap-xs">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+          <section className="content-visibility-auto rounded-[16px] border border-hairline bg-surface/90 p-6 shadow-card dark:bg-white/5 sm:p-8">
+            <div>
+              <h2 className="text-2xl font-semibold leading-tight text-text-primary sm:text-3xl">
                 {scope === 'all'
                   ? listingCopy.reliability?.title ?? scopeDefaults.reliabilityTitle
                   : scopeDefaults.reliabilityTitle}
               </h2>
-              <p className="text-sm text-text-secondary">
+              <p className="mt-2 text-sm text-text-secondary">
                 {scope === 'all'
                   ? listingCopy.reliability?.subtitle ?? scopeDefaults.reliabilitySubtitle
                   : scopeDefaults.reliabilitySubtitle}
@@ -1725,9 +1809,9 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                 { ...reliabilityItems[1], icon: Clapperboard },
                 { ...reliabilityItems[2], icon: Copy },
               ].map((item) => (
-                <div key={item.title} className="rounded-2xl border border-hairline bg-bg/70 p-4 shadow-sm">
+                <div key={item.title} className="rounded-[12px] border border-hairline bg-bg/70 p-4 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-text-primary">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-[var(--brand-border)] bg-[var(--brand-soft)] text-brand">
                       <UIIcon icon={item.icon} size={16} />
                     </span>
                     <h3 className="text-sm font-semibold text-text-primary">{item.title}</h3>
@@ -1736,53 +1820,62 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                 </div>
               ))}
             </div>
-            <div className="mt-6 grid gap-3">
+            <div className="mt-6 divide-y divide-hairline border-y border-hairline">
               {faqItems.map((item) => (
-                <details key={item.question} className="rounded-xl border border-hairline bg-bg/70 p-3">
-                  <summary className="cursor-pointer">
-                    <h3 className="inline text-sm font-semibold text-text-primary">{item.question}</h3>
+                <details key={item.question} className="group py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+                    <h3 className="text-sm font-semibold text-text-primary">{item.question}</h3>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-text-muted transition group-open:rotate-90" aria-hidden />
                   </summary>
-                  <p className="mt-2 text-sm text-text-secondary">{item.answer}</p>
+                  <p className="mt-3 max-w-3xl text-sm leading-relaxed text-text-secondary">{item.answer}</p>
                 </details>
               ))}
             </div>
           </section>
 
-          <section className="content-visibility-auto relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white/60 p-6 shadow-card dark:border-white/10 dark:bg-white/5 sm:p-8">
-            <span className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-purple-400/20 blur-3xl" />
-            <span className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-sky-400/20 blur-3xl" />
-            <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <section className="content-visibility-auto relative overflow-hidden rounded-[16px] border border-[var(--brand-border)] bg-[linear-gradient(105deg,color-mix(in_srgb,var(--brand)_11%,var(--surface))_0%,var(--surface)_52%,color-mix(in_srgb,var(--brand)_24%,var(--surface))_100%)] p-6 shadow-card dark:border-white/10 dark:bg-[linear-gradient(105deg,color-mix(in_srgb,var(--brand)_15%,var(--surface))_0%,var(--surface)_55%,color-mix(in_srgb,var(--brand)_24%,var(--surface))_100%)] sm:p-8">
+            <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] md:block" aria-hidden>
+              <Image
+                src="/assets/marketing/models-hub-hero.png"
+                alt=""
+                fill
+                sizes="(min-width: 768px) 460px, 100vw"
+                className="object-cover object-center opacity-60 [mask-image:linear-gradient(90deg,transparent_0%,black_36%,black_100%)] dark:hidden"
+              />
+              <Image
+                src="/assets/marketing/models-hub-hero-dark.png"
+                alt=""
+                fill
+                sizes="(min-width: 768px) 460px, 100vw"
+                className="hidden object-cover object-center opacity-70 [mask-image:linear-gradient(90deg,transparent_0%,black_36%,black_100%)] dark:block"
+              />
+            </div>
+            <div className="relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div className="max-w-xl">
-                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                <h2 className="text-2xl font-semibold leading-tight text-text-primary sm:text-3xl">
                   {scope === 'all' ? listingCopy.cta?.title ?? scopeDefaults.ctaTitle : scopeDefaults.ctaTitle}
                 </h2>
-                <p className="mt-2 text-sm text-text-secondary">
+                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
                   {scope === 'all'
                     ? listingCopy.cta?.subtitle ?? scopeDefaults.ctaSubtitle
                     : scopeDefaults.ctaSubtitle}
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                <div className="mt-5 flex flex-wrap gap-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-text-secondary">
                   {ctaPills.map((pill) => (
                     <span
                       key={pill}
-                      className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/80 px-3 py-1"
+                      className="inline-flex items-center rounded-[8px] border border-hairline bg-surface/85 px-3 py-1.5"
                     >
-                      <span className="h-1.5 w-1.5 rounded-full bg-text-muted" aria-hidden="true" />
                       {pill}
                     </span>
                   ))}
                 </div>
-                <p className="mt-3 text-xs text-text-muted">
-                  {scope === 'all'
-                    ? listingCopy.cta?.microcopy ?? scopeDefaults.ctaMicrocopy
-                    : scopeDefaults.ctaMicrocopy}
-                </p>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 md:pb-1">
                 <Link
                   href={scope === 'all' ? scopeDefaults.ctaPrimaryHref : scopeDefaults.ctaPrimaryHref}
                   prefetch={false}
-                  className="inline-flex items-center rounded-full bg-text-primary px-5 py-3 text-xs font-semibold uppercase tracking-micro text-bg transition hover:opacity-90"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-text-primary px-5 py-3 text-xs font-semibold text-bg shadow-[0_14px_28px_rgba(15,23,42,0.16)] transition hover:-translate-y-0.5 hover:opacity-90"
                   aria-label={scope === 'all'
                     ? listingCopy.cta?.primaryLabel ?? scopeDefaults.ctaPrimaryLabel
                     : scopeDefaults.ctaPrimaryLabel}
@@ -1790,10 +1883,11 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   {scope === 'all'
                     ? listingCopy.cta?.primaryLabel ?? scopeDefaults.ctaPrimaryLabel
                     : scopeDefaults.ctaPrimaryLabel}
+                  <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
                 <Link
                   href={scope === 'all' ? scopeDefaults.ctaSecondaryHref : scopeDefaults.ctaSecondaryHref}
-                  className="inline-flex items-center rounded-full border border-text-primary/40 bg-transparent px-5 py-3 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-text-primary/60"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-hairline bg-surface/85 px-5 py-3 text-xs font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-text-primary/40"
                   aria-label={scope === 'all'
                     ? listingCopy.cta?.secondaryLabel ?? scopeDefaults.ctaSecondaryLabel
                     : scopeDefaults.ctaSecondaryLabel}
@@ -1801,20 +1895,29 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   {scope === 'all'
                     ? listingCopy.cta?.secondaryLabel ?? scopeDefaults.ctaSecondaryLabel
                     : scopeDefaults.ctaSecondaryLabel}
+                  <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               </div>
             </div>
           </section>
-          <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
-            <h2 className="text-lg font-semibold text-text-primary">
-              {scopeDefaults.nextStepsTitle}
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              {scopeDefaults.nextStepLinks.map((item) => (
-                <Link key={item.label} href={item.href} className="font-semibold text-brand hover:text-brandHover">
-                  {item.label}
-                </Link>
-              ))}
+          <section className="rounded-[16px] border border-hairline bg-surface/90 px-5 py-5 shadow-card sm:px-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--brand-border)] bg-[var(--brand-soft)] text-brand">
+                <UIIcon icon={Sparkles} size={20} />
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold text-text-primary">
+                  {scopeDefaults.nextStepsTitle}
+                </h2>
+                <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                  {scopeDefaults.nextStepLinks.map((item) => (
+                    <Link key={item.label} href={item.href} className="inline-flex items-center gap-2 font-semibold text-brand hover:text-brandHover">
+                      {item.label}
+                      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
         </div>

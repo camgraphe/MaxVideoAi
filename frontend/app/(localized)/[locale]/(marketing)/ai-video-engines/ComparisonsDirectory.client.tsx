@@ -23,8 +23,8 @@ type ComparisonsDirectoryProps = {
 export function ComparisonsDirectory({
   entries,
   labels,
-  initialCount = 40,
-  step = 20,
+  initialCount = 24,
+  step = 24,
 }: ComparisonsDirectoryProps) {
   const [query, setQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(initialCount);
@@ -39,39 +39,50 @@ export function ComparisonsDirectory({
   const canLoadMore = visibleCount < filtered.length;
 
   return (
-    <div className="space-y-4 rounded-2xl border border-hairline bg-surface p-4 shadow-card sm:p-5">
-      <Input
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setVisibleCount(initialCount);
-        }}
-        placeholder={labels.searchPlaceholder}
-        className="max-w-md"
-      />
+    <div className="rounded-[16px] border border-hairline bg-surface p-4 shadow-card sm:p-5">
+      <div className="flex flex-col gap-3 border-b border-hairline pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <Input
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setVisibleCount(initialCount);
+          }}
+          placeholder={labels.searchPlaceholder}
+          className="h-11 w-full max-w-xl rounded-[12px] bg-bg text-sm"
+        />
+        <span className="shrink-0 text-xs font-semibold uppercase tracking-micro text-text-muted">
+          {visible.length}/{filtered.length}
+        </span>
+      </div>
 
       {visible.length ? (
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((entry) => (
             <Link
               key={entry.slug}
               href={{ pathname: '/ai-video-engines/[slug]', params: { slug: entry.slug } }}
               prefetch={false}
-              className="rounded-lg border border-hairline bg-bg px-3 py-2 text-sm text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+              className="group flex min-h-[54px] items-center justify-between gap-3 rounded-[12px] border border-hairline bg-bg px-3 py-2 text-sm text-text-secondary transition hover:border-brand/40 hover:bg-surface-2 hover:text-text-primary"
             >
-              <span className="font-semibold text-text-primary">{entry.label}</span>
+              <span className="min-w-0 font-semibold leading-snug text-text-primary">{entry.label}</span>
+              <span
+                aria-hidden
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface text-text-muted transition group-hover:bg-brand group-hover:text-on-brand"
+              >
+                →
+              </span>
             </Link>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-text-secondary">{labels.empty}</p>
+        <p className="mt-4 text-sm text-text-secondary">{labels.empty}</p>
       )}
 
       {canLoadMore ? (
         <button
           type="button"
           onClick={() => setVisibleCount((current) => current + step)}
-          className="rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+          className="mt-4 inline-flex min-h-[40px] items-center justify-center rounded-full border border-hairline bg-surface px-5 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
         >
           {labels.loadMore}
         </button>

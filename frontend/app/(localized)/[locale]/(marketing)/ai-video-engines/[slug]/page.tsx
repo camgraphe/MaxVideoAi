@@ -5,6 +5,7 @@ import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import clsx from 'clsx';
+import { ArrowLeft, ArrowRight, Trophy } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, locales } from '@/i18n/locales';
@@ -20,6 +21,7 @@ import engineCatalog from '@/config/engine-catalog.json';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { ButtonLink } from '@/components/ui/Button';
 import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { CompareEngineSelector } from './CompareEngineSelector.client';
 import { CompareScoreboard } from './CompareScoreboard.client';
 import { CopyPromptButton } from './CopyPromptButton.client';
@@ -375,21 +377,20 @@ function getEngineAccent(entry: EngineCatalogEntry): EngineAccent {
   };
 }
 
-function getEngineButtonStyle(entry: EngineCatalogEntry): CSSProperties | undefined {
+function getEngineToneVars(entry: EngineCatalogEntry, sweep: number | null): CSSProperties {
   const brandId = entry.brandId?.trim();
-  if (!brandId) return undefined;
+  const accent = brandId ? `var(--engine-${brandId}-bg)` : 'var(--brand)';
+  const ink = brandId ? `var(--engine-${brandId}-ink)` : 'var(--on-brand)';
+  const scoreSweep = typeof sweep === 'number' ? `${Math.max(0, Math.min(10, sweep)) * 36}deg` : '360deg';
   return {
-    backgroundColor: `var(--engine-${brandId}-bg)`,
-    color: `var(--engine-${brandId}-ink)`,
-  };
+    '--compare-accent': accent,
+    '--compare-ink': ink,
+    background: `conic-gradient(from 220deg, color-mix(in srgb, var(--compare-accent) 78%, var(--brand) 22%) 0deg ${scoreSweep}, color-mix(in srgb, var(--compare-accent) 18%, transparent) ${scoreSweep} 360deg)`,
+    boxShadow:
+      '0 0 0 8px color-mix(in srgb, var(--compare-accent) 10%, transparent), 0 20px 52px color-mix(in srgb, var(--compare-accent) 42%, transparent), 0 8px 18px rgba(15, 23, 42, 0.06)',
+  } as CSSProperties;
 }
 
-
-function resolveOverallTone(leftValue: number | null, rightValue: number | null): OverallTone {
-  if (typeof leftValue !== 'number' || typeof rightValue !== 'number') return 'none';
-  if (leftValue === rightValue) return 'tie';
-  return leftValue > rightValue ? 'left' : 'right';
-}
 
 function resolveEngines(slug: string) {
   const parts = slug.split('-vs-');
@@ -2090,19 +2091,6 @@ export default async function CompareDetailPage({
   const winnerSummaryHeading = hasPrelaunchEngine
     ? (compareCopy.scorecard?.winnerSummaryPrelaunch ?? 'Current leader (pre-launch)')
     : (compareCopy.scorecard?.winnerSummary ?? 'Winner summary');
-  const overallTone = resolveOverallTone(leftOverall, rightOverall);
-  const leftOverallClass =
-    overallTone === 'left'
-      ? 'bg-emerald-500 text-white'
-      : overallTone === 'right'
-        ? 'bg-orange-500 text-white'
-        : 'bg-surface-2 text-text-primary';
-  const rightOverallClass =
-    overallTone === 'right'
-      ? 'bg-emerald-500 text-white'
-      : overallTone === 'left'
-        ? 'bg-orange-500 text-white'
-        : 'bg-surface-2 text-text-primary';
   const reversedShowdownSlug = reverseCompareSlug(canonicalSlug);
   const showdownSourceSlug =
     SHOWDOWNS[canonicalSlug] != null ? canonicalSlug : reversedShowdownSlug && SHOWDOWNS[reversedShowdownSlug] != null
@@ -2213,8 +2201,6 @@ export default async function CompareDetailPage({
   }).filter(Boolean) as ShowdownSlot[];
   const leftAccent = getEngineAccent(left);
   const rightAccent = getEngineAccent(right);
-  const leftButtonStyle = getEngineButtonStyle(left);
-  const rightButtonStyle = getEngineButtonStyle(right);
   const leftIsPrelaunch = isPrelaunchAvailability(left);
   const rightIsPrelaunch = isPrelaunchAvailability(right);
   const leftCanGenerate = isEngineGeneratable(left);
@@ -2832,62 +2818,131 @@ export default async function CompareDetailPage({
     });
   }
   const summaryRows = winnerSummaryRows.slice(0, 3);
-  const resolveAccentDot = (accent: OverallTone | null) => {
-    if (accent === 'left') return leftAccent.barClass;
-    if (accent === 'right') return rightAccent.barClass;
-    return 'bg-neutral-300';
+  const resolveSummaryMarker = (rowId: string, accent: OverallTone | null) => {
+    if (rowId === 'pricing') {
+      return 'rounded-full bg-orange-500 shadow-[0_0_0_4px_rgba(249,115,22,0.12)]';
+    }
+    if (rowId === 'scorecard' || rowId === 'spec' || rowId === 'duration') {
+      return 'rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]';
+    }
+    if (accent === 'left') return clsx('rounded-full shadow-[0_0_0_4px_rgba(46,99,216,0.12)]', leftAccent.barClass);
+    if (accent === 'right') return clsx('rounded-full shadow-[0_0_0_4px_rgba(46,99,216,0.12)]', rightAccent.barClass);
+    return 'rounded-full bg-neutral-300';
   };
-  const summaryIcons: Record<string, JSX.Element> = {
-    scorecard: (
-      <svg viewBox="0 0 20 20" className="h-4 w-4 text-text-muted" aria-hidden>
-        <path
-          fill="currentColor"
-          d="M6.5 2.5h7a1 1 0 0 1 1 1V6a4 4 0 0 1-3 3.87V12h1.5a1 1 0 1 1 0 2h-7a1 1 0 1 1 0-2H7V9.87A4 4 0 0 1 4 6V3.5a1 1 0 0 1 1-1Zm1 2V6a2.5 2.5 0 1 0 5 0V4.5h-5Z"
-        />
-      </svg>
-    ),
-    pricing: (
-      <svg viewBox="0 0 20 20" className="h-4 w-4 text-text-muted" aria-hidden>
-        <path
-          fill="currentColor"
-          d="M10 2.5c-3.59 0-6.5 2.69-6.5 6 0 3.87 3.57 6.48 6.5 9 2.93-2.52 6.5-5.13 6.5-9 0-3.31-2.91-6-6.5-6Zm.75 3.25a.75.75 0 1 0-1.5 0v.65h-.5a1.5 1.5 0 1 0 0 3h1.25a.5.5 0 1 1 0 1H8.5a.75.75 0 1 0 0 1.5h.75v.6a.75.75 0 1 0 1.5 0v-.6h.5a1.5 1.5 0 1 0 0-3H9.5a.5.5 0 1 1 0-1h1.25a.75.75 0 1 0 0-1.5h-.5v-.65Z"
-        />
-      </svg>
-    ),
-    spec: (
-      <svg viewBox="0 0 20 20" className="h-4 w-4 text-text-muted" aria-hidden>
-        <path
-          fill="currentColor"
-          d="M4 5.5A1.5 1.5 0 0 1 5.5 4h9A1.5 1.5 0 0 1 16 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 14.5v-9Zm2 1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2H6Zm0 4a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H6Zm0 4a1 1 0 1 0 0 2h3a1 1 0 1 0 0-2H6Z"
-        />
-      </svg>
-    ),
-    duration: (
-      <svg viewBox="0 0 20 20" className="h-4 w-4 text-text-muted" aria-hidden>
-        <path
-          fill="currentColor"
-          d="M10 3.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Zm.75 1.75a.75.75 0 0 0-1.5 0v3.1c0 .27.15.52.4.65l2.2 1.2a.75.75 0 1 0 .72-1.32l-1.82-1V7.25Z"
-        />
-      </svg>
-    ),
+  const resolveSummaryLabelClass = (rowId: string) => {
+    if (rowId === 'scorecard' || rowId === 'spec' || rowId === 'duration') {
+      return 'text-emerald-600 dark:text-emerald-300';
+    }
+    if (rowId === 'pricing') {
+      return 'text-orange-600 dark:text-orange-300';
+    }
+    return 'text-text-muted';
+  };
+  const formatWinnerSummaryValue = (row: { id: string; value: string }) => {
+    if (row.id !== 'scorecard') return row.value;
+    return row.value
+      .replace(/^Leads on scorecard:\s*/i, '')
+      .replace(/^Scorecard winner:\s*/i, '')
+      .replace(/^Currently leads on scorecard \(provisional\):\s*/i, '');
+  };
+  const leftScoreStyle = getEngineToneVars(left, leftOverall);
+  const rightScoreStyle = getEngineToneVars(right, rightOverall);
+  const scorecardCriteriaLabel =
+    activeLocale === 'fr' ? 'Critères' : activeLocale === 'es' ? 'Criterios' : 'Criteria';
+  const generateWithLabel = formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+    engine: '',
+  }).trim();
+  const renderGenerateCard = (entry: EngineCatalogEntry, side: 'left' | 'right', canGenerate: boolean) => {
+    const isLeft = side === 'left';
+    const tone = isLeft
+      ? {
+          icon: 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-400/25 dark:bg-orange-400/10',
+          button:
+            'border-orange-200 bg-orange-50 text-orange-700 hover:border-orange-300 hover:bg-orange-100 dark:border-orange-400/25 dark:bg-orange-400/10 dark:text-orange-200 dark:hover:bg-orange-400/15',
+          link: 'text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200',
+        }
+      : {
+          icon: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10',
+          button:
+            'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200 dark:hover:bg-emerald-400/15',
+          link: 'text-emerald-600 hover:text-emerald-700 dark:text-emerald-300 dark:hover:text-emerald-200',
+        };
+
+    return (
+      <article className="rounded-[16px] border border-hairline bg-surface shadow-card">
+        <div className="flex items-center justify-between gap-4 px-4 py-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className={clsx('grid h-9 w-9 shrink-0 place-items-center rounded-full border shadow-sm', tone.icon)}>
+              <EngineIcon
+                engine={{ id: entry.modelSlug, label: formatEngineName(entry), brandId: entry.brandId }}
+                size={20}
+                rounded="full"
+              />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-text-secondary">
+                {generateWithLabel}
+              </p>
+              <p className="truncate text-base font-semibold leading-5 text-text-primary">
+                {formatEngineName(entry)}
+              </p>
+            </div>
+          </div>
+          {canGenerate ? (
+            <ButtonLink
+              href={`/app?engine=${entry.modelSlug}`}
+              variant="outline"
+              size="sm"
+              aria-label={formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
+                engine: formatEngineName(entry),
+              })}
+              className={clsx('h-10 w-10 shrink-0 rounded-[10px] p-0 shadow-none', tone.button)}
+            >
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </ButtonLink>
+          ) : null}
+        </div>
+        <div className="border-t border-hairline px-4 py-3">
+          <Link
+            href={{ pathname: '/models/[slug]', params: { slug: entry.modelSlug } }}
+            className={clsx('inline-flex items-center gap-1 text-xs font-semibold', tone.link)}
+          >
+            {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          </Link>
+        </div>
+      </article>
+    );
   };
 
   return (
-    <div className="container-page max-w-6xl section">
-      <div className="stack-gap-xl">
+    <div className="relative isolate overflow-hidden">
+      <div
+        className="pointer-events-none absolute right-0 top-24 -z-10 h-[760px] w-[46vw] opacity-70 dark:opacity-30"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at center, color-mix(in srgb, var(--brand) 30%, transparent) 1px, transparent 1px)',
+          backgroundSize: '16px 16px',
+          maskImage: 'linear-gradient(90deg, transparent, black 24%, black 74%, transparent)',
+        }}
+        aria-hidden
+      />
+      <div className="container-page max-w-[1040px] section">
+        <div className="space-y-4 sm:space-y-5">
         <div className="text-sm text-text-muted">
-          <Link href={compareHubHref} className="font-semibold text-brand hover:text-brandHover">
+          <Link href={compareHubHref} className="inline-flex items-center gap-2 font-semibold text-brand hover:text-brandHover">
+            <ArrowLeft className="h-4 w-4" aria-hidden />
             {compareCopy.hero?.back ?? 'Back to comparisons'}
           </Link>
         </div>
-        <header className="text-center">
+        <header className="mx-auto max-w-[760px] py-6 text-center sm:py-8">
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
             {compareCopy.hero?.kicker ?? 'Compare engines'}
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-text-primary sm:text-5xl">
+          <h1 className="mt-3 text-[34px] font-semibold leading-[1.08] tracking-normal text-text-primary sm:text-[46px]">
             {formatEngineName(left)} vs {formatEngineName(right)}
           </h1>
-          <p className="mt-4 text-sm text-text-secondary">
+          <p className="mt-4 text-sm leading-6 text-text-secondary">
             {formatTemplate(
               heroIntroTemplate,
               { left: formatEngineName(left), right: formatEngineName(right) }
@@ -2901,73 +2956,117 @@ export default async function CompareDetailPage({
           ) : null}
         </header>
 
-        <section className="relative overflow-hidden rounded-[36px] border border-hairline bg-surface shadow-card">
-          <div className="relative z-10 rounded-[32px] border border-transparent bg-gradient-to-b from-surface via-surface to-surface-2 p-6 sm:p-8">
-            <div className="relative mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-              <article className="relative rounded-[28px] border border-hairline bg-surface/80 p-4 sm:p-5 shadow-sm">
-                <div className="stack-gap-sm">
-                  <div className="flex justify-center">
-                    <div className={clsx('flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold shadow-inner sm:h-14 sm:w-14 sm:text-xl', leftOverallClass)}>
-                      {leftOverall != null ? leftOverall.toFixed(1) : '-'}
+        <section className="mx-auto max-w-[940px]">
+          <div className="relative grid gap-4 md:grid-cols-2">
+            <article className="relative flex overflow-visible rounded-[16px] border border-hairline bg-surface p-6 shadow-card">
+              <div className="flex w-full flex-col items-center gap-5 sm:flex-row-reverse">
+                <div
+                  className="relative isolate grid h-[96px] w-[96px] shrink-0 place-items-center rounded-full p-[3px]"
+                  style={leftScoreStyle}
+                >
+                  <span
+                    className="pointer-events-none absolute -inset-5 -z-10 rounded-full opacity-75 blur-2xl"
+                    style={{ background: 'color-mix(in srgb, var(--compare-accent) 45%, transparent)' }}
+                    aria-hidden
+                  />
+                  <div className="grid h-full w-full place-items-center rounded-full border border-white/80 bg-surface text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-surface-2">
+                    <div className="leading-none">
+                      <span className="text-[28px] font-semibold tracking-normal text-text-primary">
+                        {leftOverall != null ? leftOverall.toFixed(1) : '-'}
+                      </span>
+                      <span className="ml-0.5 align-super text-[10px] font-semibold text-text-muted">/10</span>
+                      <span className="mt-1 block text-[8px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                        Score
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <CompareEngineSelector
-                      options={resolvedLeftOptions}
-                      value={left.modelSlug}
-                      otherValue={right.modelSlug}
-                      side="left"
-                    />
-                  </div>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col items-center gap-3 text-center">
+                  <h2 className="text-2xl font-semibold tracking-normal text-text-primary">
+                    {formatEngineName(left)}
+                  </h2>
+                  <CompareEngineSelector
+                    options={resolvedLeftOptions}
+                    value={left.modelSlug}
+                    otherValue={right.modelSlug}
+                    side="left"
+                  />
                   {(() => {
                     const bestFor = localizeBestFor(left.bestFor, activeLocale);
                     const derived = deriveStrengths('left').join(', ');
                     const strengths = bestFor && !isPending(bestFor) ? bestFor : derived;
                     return strengths ? (
-                      <p className="text-center text-xs text-text-secondary sm:text-sm">
-                        {compareCopy.scorecard?.strengthsLabel ?? 'Strengths'}: {strengths}
+                      <p className="max-w-[280px] text-xs leading-5 text-text-secondary">
+                        <span className="font-semibold text-text-primary">
+                          {compareCopy.scorecard?.strengthsLabel ?? 'Strengths'}:
+                        </span>{' '}
+                        {strengths}
                       </p>
                     ) : null;
                   })()}
                 </div>
-              </article>
+              </div>
+            </article>
 
-              <article className="relative rounded-[28px] border border-hairline bg-surface/80 p-4 sm:p-5 shadow-sm">
-                <div className="stack-gap-sm text-right">
-                  <div className="flex justify-center">
-                    <div className={clsx('flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold shadow-inner sm:h-14 sm:w-14 sm:text-xl', rightOverallClass)}>
-                      {rightOverall != null ? rightOverall.toFixed(1) : '-'}
+            <article className="relative flex overflow-visible rounded-[16px] border border-hairline bg-surface p-6 shadow-card">
+              <div className="flex w-full flex-col items-center gap-5 sm:flex-row">
+                <div
+                  className="relative isolate grid h-[96px] w-[96px] shrink-0 place-items-center rounded-full p-[3px]"
+                  style={rightScoreStyle}
+                >
+                  <span
+                    className="pointer-events-none absolute -inset-5 -z-10 rounded-full opacity-75 blur-2xl"
+                    style={{ background: 'color-mix(in srgb, var(--compare-accent) 45%, transparent)' }}
+                    aria-hidden
+                  />
+                  <div className="grid h-full w-full place-items-center rounded-full border border-white/80 bg-surface text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-surface-2">
+                    <div className="leading-none">
+                      <span className="text-[28px] font-semibold tracking-normal text-text-primary">
+                        {rightOverall != null ? rightOverall.toFixed(1) : '-'}
+                      </span>
+                      <span className="ml-0.5 align-super text-[10px] font-semibold text-text-muted">/10</span>
+                      <span className="mt-1 block text-[8px] font-semibold uppercase tracking-[0.22em] text-text-muted">
+                        Score
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <CompareEngineSelector
-                      options={resolvedRightOptions}
-                      value={right.modelSlug}
-                      otherValue={left.modelSlug}
-                      side="right"
-                    />
-                  </div>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col items-center gap-3 text-center">
+                  <h2 className="text-2xl font-semibold tracking-normal text-text-primary">
+                    {formatEngineName(right)}
+                  </h2>
+                  <CompareEngineSelector
+                    options={resolvedRightOptions}
+                    value={right.modelSlug}
+                    otherValue={left.modelSlug}
+                    side="right"
+                  />
                   {(() => {
                     const bestFor = localizeBestFor(right.bestFor, activeLocale);
                     const derived = deriveStrengths('right').join(', ');
                     const strengths = bestFor && !isPending(bestFor) ? bestFor : derived;
                     return strengths ? (
-                      <p className="text-center text-xs text-text-secondary sm:text-sm">
-                        {compareCopy.scorecard?.strengthsLabel ?? 'Strengths'}: {strengths}
+                      <p className="max-w-[280px] text-xs leading-5 text-text-secondary">
+                        <span className="font-semibold text-text-primary">
+                          {compareCopy.scorecard?.strengthsLabel ?? 'Strengths'}:
+                        </span>{' '}
+                        {strengths}
                       </p>
                     ) : null;
                   })()}
                 </div>
-              </article>
+              </div>
+            </article>
 
-              <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-[10px] font-semibold uppercase tracking-micro text-on-brand shadow-lg sm:h-12 sm:w-12 sm:text-xs lg:h-14 lg:w-14 lg:text-sm">
-                  VS
-                </div>
+            <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 md:flex">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border-4 border-bg bg-brand text-[11px] font-semibold uppercase tracking-micro text-on-brand shadow-[0_16px_34px_rgba(46,99,216,0.28)]">
+                VS
               </div>
             </div>
+          </div>
 
-            <div className="mt-8 text-center">
+          <div className="mt-4 rounded-[16px] border border-hairline bg-surface p-4 shadow-card sm:p-8">
+            <div className="text-center">
               <h2 className="text-xl font-semibold text-text-primary">
                 {compareCopy.scorecard?.title ?? 'Scorecard (Side-by-Side)'}
               </h2>
@@ -2982,57 +3081,72 @@ export default async function CompareDetailPage({
                 <p className="mt-2 text-xs font-semibold text-text-muted">{scorecardProvisionalNote}</p>
               ) : null}
             </div>
+            <div className="mt-6 hidden items-center gap-3 text-[11px] font-semibold uppercase tracking-micro sm:grid sm:grid-cols-[minmax(0,1.6fr)_minmax(190px,1fr)_minmax(0,1.6fr)] sm:gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(210px,1fr)_minmax(0,2fr)]">
+              <span className="text-center text-brand">
+                {formatEngineName(left)}
+              </span>
+              <span className="text-center text-text-muted">{scorecardCriteriaLabel}</span>
+              <span className="text-center text-brand">
+                {formatEngineName(right)}
+              </span>
+            </div>
             <CompareScoreboard
               metrics={comparisonMetrics}
-              className="mt-6"
+              className="mt-4"
               naLabel={labels.na}
               pendingLabel={labels.pending}
             />
 
-            <div className="mt-6 mx-auto max-w-3xl">
-              <div className="rounded-card bg-surface/95 px-3 py-4 text-center shadow-card">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-hairline bg-surface-2">
-                    {summaryIcons.scorecard}
+            <div className="mx-auto mt-7 w-full">
+              <div className="relative overflow-hidden rounded-[18px] border border-[#cfe0ff] bg-[#eef5ff] px-5 pb-5 pt-5 text-center shadow-[0_16px_34px_rgba(46,99,216,0.10),inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-[#172338] dark:shadow-[0_16px_34px_rgba(0,0,0,0.24)]">
+                <div
+                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#eaf2ff_0%,#f7fbff_58%,#ffffff_100%)] dark:bg-[linear-gradient(180deg,rgba(46,99,216,0.22)_0%,rgba(18,26,37,0.94)_58%,rgba(18,26,37,0.98)_100%)]"
+                  aria-hidden
+                />
+                <div
+                  className="pointer-events-none absolute left-1/2 top-0 h-28 w-[340px] -translate-x-1/2 rounded-full bg-white/80 blur-2xl dark:bg-white/10"
+                  aria-hidden
+                />
+                <div
+                  className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent dark:via-white/30"
+                  aria-hidden
+                />
+                <div className="relative z-10 flex items-center justify-center gap-3">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white text-brand shadow-[0_12px_26px_rgba(46,99,216,0.14),inset_0_1px_0_rgba(255,255,255,0.95)] dark:border-white/10 dark:bg-white/8 dark:text-white">
+                    <Trophy className="h-5 w-5" aria-hidden />
                   </span>
-                  <h3 className="text-sm font-semibold text-text-primary">
+                  <h3 className="text-lg font-semibold text-text-primary">
                     {winnerSummaryHeading}
                   </h3>
                 </div>
-                <div className="mt-3 grid gap-2">
+                <div className="relative z-10 mt-4 grid gap-4">
                   {summaryRows.slice(0, 1).map((row) => (
                     <div
                       key={row.id}
-                      className="flex flex-col items-center gap-2 rounded-2xl bg-surface-2/70 px-3 py-2 text-center"
+                      className="flex flex-col items-center gap-2 text-center"
                     >
                       <div className="flex items-center gap-2">
-                        <span className={clsx('h-2.5 w-2.5 rounded-full opacity-80', resolveAccentDot(row.accent))} />
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface">
-                          {summaryIcons[row.icon]}
-                        </span>
-                        <span className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">
+                        <span className={clsx('h-2 w-2 opacity-90', resolveSummaryMarker(row.id, row.accent))} />
+                        <span className={clsx('text-[10px] font-semibold uppercase tracking-micro', resolveSummaryLabelClass(row.id))}>
                           {row.label}
                         </span>
                       </div>
-                      <p className="text-sm text-text-secondary">{row.value}</p>
+                      <p className="max-w-[620px] text-sm leading-6 text-text-secondary">{formatWinnerSummaryValue(row)}</p>
                     </div>
                   ))}
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-3 border-t border-[#dbe7fb] pt-4 sm:grid-cols-2 sm:divide-x sm:divide-[#dbe7fb] dark:border-white/10 dark:sm:divide-white/10">
                     {summaryRows.slice(1).map((row) => (
                       <div
                         key={row.id}
-                        className="flex flex-col items-center gap-2 rounded-2xl bg-surface-2/70 px-3 py-2 text-center"
+                        className="flex flex-col items-center gap-2 px-3 text-center"
                       >
                         <div className="flex items-center gap-2">
-                          <span className={clsx('h-2.5 w-2.5 rounded-full opacity-80', resolveAccentDot(row.accent))} />
-                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface">
-                            {summaryIcons[row.icon]}
-                          </span>
-                          <span className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">
+                          <span className={clsx('h-2 w-2 opacity-90', resolveSummaryMarker(row.id, row.accent))} />
+                          <span className={clsx('text-[10px] font-semibold uppercase tracking-micro', resolveSummaryLabelClass(row.id))}>
                             {row.label}
                           </span>
                         </div>
-                        <p className="text-sm text-text-secondary">{row.value}</p>
+                        <p className="text-sm leading-5 text-text-secondary">{row.value}</p>
                       </div>
                     ))}
                   </div>
@@ -3040,56 +3154,14 @@ export default async function CompareDetailPage({
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 items-center gap-3 sm:gap-4">
-              <div className="flex flex-col items-center gap-2">
-                {leftCanGenerate ? (
-                  <ButtonLink
-                    href={`/app?engine=${left.modelSlug}`}
-                    size="sm"
-                    style={leftButtonStyle}
-                    className={clsx(
-                      'w-full max-w-[180px] justify-center hover:brightness-95 active:brightness-90',
-                      !leftButtonStyle && leftAccent.buttonClass
-                    )}
-                  >
-                    {formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
-                      engine: formatEngineShortName(left),
-                    })}
-                  </ButtonLink>
-                ) : null}
-                <Link
-                  href={{ pathname: '/models/[slug]', params: { slug: left.modelSlug } }}
-                  className="text-xs font-semibold text-brand hover:text-brandHover"
-                >
-                  {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
-                </Link>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                {rightCanGenerate ? (
-                  <ButtonLink
-                    href={`/app?engine=${right.modelSlug}`}
-                    size="sm"
-                    style={rightButtonStyle}
-                    className={clsx(
-                      'w-full max-w-[180px] justify-center hover:brightness-95 active:brightness-90',
-                      !rightButtonStyle && rightAccent.buttonClass
-                    )}
-                  >
-                    {formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
-                      engine: formatEngineShortName(right),
-                    })}
-                  </ButtonLink>
-                ) : null}
-                <Link
-                  href={{ pathname: '/models/[slug]', params: { slug: right.modelSlug } }}
-                  className="text-xs font-semibold text-brand hover:text-brandHover"
-                >
-                  {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
-                </Link>
-              </div>
-            </div>
+          </div>
 
-            <div className="mt-10 border-t border-hairline pt-8">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {renderGenerateCard(left, 'left', leftCanGenerate)}
+            {renderGenerateCard(right, 'right', rightCanGenerate)}
+          </div>
+
+          <section className="mt-4 rounded-[16px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
               <h2 className="text-center text-2xl font-semibold text-text-primary">
                 {compareCopy.keySpecs?.title ?? 'Key Specs (Side-by-Side)'}
               </h2>
@@ -3174,8 +3246,7 @@ export default async function CompareDetailPage({
                   </div>
                 </section>
               ) : null}
-            </div>
-          </div>
+          </section>
         </section>
 
         
@@ -3386,6 +3457,7 @@ export default async function CompareDetailPage({
           </Link>
         </div>
       </div>
+    </div>
     </div>
   );
 }

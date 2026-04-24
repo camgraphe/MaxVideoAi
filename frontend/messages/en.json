@@ -989,7 +989,7 @@
   },
   "models": {
     "hero": {
-      "title": "AI Models (Specs, Limits, and Pricing)",
+      "title": "AI Models (All Specs, Limits & Pricing)",
       "subtitle": "Model catalog for video and image generation workflows.",
       "body": "Use this page as a model catalog to review capabilities, runtime limits, and pricing signals in one place. Keep side-by-side engine comparisons on the video engines page and use this page as the broader technical reference."
     },
@@ -1140,7 +1140,7 @@
     },
     "listing": {
       "hero": {
-        "title": "AI Models (Specs, Limits, and Pricing)",
+        "title": "AI Models (All Specs, Limits & Pricing)",
         "subtitle": "Review video and image model capabilities, limits, and pricing before you generate.",
         "bullets": [
           "Open any model for full specs, limits, and pricing details.",
@@ -1257,7 +1257,7 @@
       "audioAvailableLabel": "Audio available",
       "filters": {
         "sort": {
-          "label": "Sort",
+          "label": "Sort by",
           "options": {
             "featured": "Featured",
             "score": "Score",
@@ -1315,6 +1315,7 @@
             "all": "All"
           }
         },
+        "searchPlaceholder": "Search models...",
         "clear": "Clear filters"
       },
       "compareBar": {

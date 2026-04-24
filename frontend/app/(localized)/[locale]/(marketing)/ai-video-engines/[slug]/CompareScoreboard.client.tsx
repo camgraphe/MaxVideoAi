@@ -78,7 +78,7 @@ export function CompareScoreboard({
   );
 
   return (
-    <div ref={containerRef} className={clsx('grid gap-4', className)}>
+    <div ref={containerRef} className={clsx('grid gap-0 sm:gap-3.5', className)}>
       {rows.map((row) => {
         const leftIsNA = typeof row.leftValue !== 'number';
         const rightIsNA = typeof row.rightValue !== 'number';
@@ -116,29 +116,29 @@ export function CompareScoreboard({
         return (
           <div
             key={row.id}
-            className="grid items-center gap-3 grid-cols-[minmax(0,1fr)_minmax(140px,0.8fr)_minmax(0,1fr)] sm:gap-4 sm:grid-cols-[minmax(0,1.6fr)_minmax(200px,1fr)_minmax(0,1.6fr)] lg:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)_minmax(0,2fr)]"
+            className="grid grid-cols-2 items-center gap-x-3 gap-y-2 border-b border-hairline py-3 last:border-b-0 sm:grid-cols-[minmax(0,1.6fr)_minmax(190px,1fr)_minmax(0,1.6fr)] sm:gap-4 sm:border-b-0 sm:py-0 lg:grid-cols-[minmax(0,2fr)_minmax(210px,1fr)_minmax(0,2fr)]"
           >
-            <div className="flex items-center justify-end gap-2">
-            <div className="relative h-[7px] w-full max-w-[120px] sm:max-w-[160px] lg:max-w-[180px] overflow-hidden rounded-full bg-surface-5">
-              <div
-                className={clsx('h-full rounded-full transition-[width] duration-500 ease-out', leftToneClass)}
-                style={{
-                  width: animateBars ? leftWidth : '0%',
-                  marginLeft: 'auto',
-                }}
-              />
-            </div>
+            <div className="order-2 flex min-w-0 items-center justify-end gap-1.5 sm:order-none sm:gap-2">
               <div className="flex items-center gap-1 text-[11px] font-semibold text-text-primary sm:text-xs">
                 <span
-                  className={clsx('w-8 text-right tabular-nums', leftIsNA && 'text-text-muted')}
+                  className={clsx('w-7 text-right tabular-nums sm:w-8', leftIsNA && 'text-text-muted')}
                   title={leftIsNA ? pendingLabel : undefined}
                 >
                   {formatScore(row.leftValue, naLabel)}
                 </span>
               </div>
+              <div className="relative h-[6px] w-full min-w-0 overflow-hidden rounded-full bg-surface-5 sm:h-[7px] sm:max-w-[160px] lg:max-w-[180px]">
+                <div
+                  className={clsx('h-full rounded-full transition-[width] duration-500 ease-out', leftToneClass)}
+                  style={{
+                    width: animateBars ? leftWidth : '0%',
+                    marginLeft: 'auto',
+                  }}
+                />
+              </div>
             </div>
 
-            <div className="text-center">
+            <div className="order-1 col-span-2 text-center sm:order-none sm:col-span-1">
               <div className="flex items-center justify-center gap-1">
                 <p className="text-[11px] font-medium text-text-muted sm:text-xs">{row.label}</p>
                 {row.tooltip ? (
@@ -154,23 +154,23 @@ export function CompareScoreboard({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="order-3 flex min-w-0 items-center gap-1.5 sm:order-none sm:gap-2">
+              <div className="relative h-[6px] w-full min-w-0 overflow-hidden rounded-full bg-surface-5 sm:h-[7px] sm:max-w-[160px] lg:max-w-[180px]">
+                <div
+                  className={clsx('h-full rounded-full transition-[width] duration-500 ease-out', rightToneClass)}
+                  style={{
+                    width: animateBars ? rightWidth : '0%',
+                  }}
+                />
+              </div>
               <div className="flex items-center gap-1 text-[11px] font-semibold text-text-primary sm:text-xs">
                 <span
-                  className={clsx('w-8 tabular-nums', rightIsNA && 'text-text-muted')}
+                  className={clsx('w-7 tabular-nums sm:w-8', rightIsNA && 'text-text-muted')}
                   title={rightIsNA ? pendingLabel : undefined}
                 >
                   {formatScore(row.rightValue, naLabel)}
                 </span>
               </div>
-            <div className="relative h-[7px] w-full max-w-[120px] sm:max-w-[160px] lg:max-w-[180px] overflow-hidden rounded-full bg-surface-5">
-              <div
-                className={clsx('h-full rounded-full transition-[width] duration-500 ease-out', rightToneClass)}
-                style={{
-                  width: animateBars ? rightWidth : '0%',
-                }}
-              />
-            </div>
             </div>
           </div>
         );

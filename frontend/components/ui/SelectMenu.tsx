@@ -222,7 +222,7 @@ export function SelectMenu({
       {open ? (
         <div
           className={clsx(
-            'absolute left-0 right-0 z-[50] max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur dark:border-white/10 dark:bg-[#121a25]/95 dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
+            'absolute left-0 right-0 z-[50] overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur dark:border-white/10 dark:bg-[#121a25]/95 dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
             menuPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2'
           )}
         >
@@ -237,7 +237,13 @@ export function SelectMenu({
               />
             </div>
           ) : null}
-          <ul role="listbox" className="space-y-1 text-[12px]">
+          <ul
+            role="listbox"
+            className={clsx(
+              'space-y-1 overflow-y-auto overflow-x-hidden text-[12px]',
+              searchable ? 'max-h-56 pr-1' : 'max-h-60'
+            )}
+          >
             {filteredOptions.map((option, index) => {
               const isSelected = String(option.value) === String(value);
               const isHighlighted = index === highlightedIndex;
@@ -260,7 +266,7 @@ export function SelectMenu({
                       setOpen(false);
                     }}
                     className={clsx(
-                      'min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-left',
+                      'min-h-0 h-auto w-full justify-between overflow-hidden rounded-input px-3 py-2 text-left',
                       option.disabled
                         ? 'cursor-not-allowed text-text-muted/60 dark:text-white/25'
                         : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/70 dark:hover:bg-white/[0.08] dark:hover:text-white',
