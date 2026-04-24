@@ -41,6 +41,8 @@ test('GPT Image 2 pricing responds to Fal quality and image_size', async () => {
   });
 
   assert.equal(low.base.amountCents, 1);
+  assert.equal(low.margin.amountCents, 1);
+  assert.equal(low.totalCents, 2);
   assert.equal(low.meta?.quality, 'low');
   assert.equal(low.meta?.billed_image_size, '1024x768');
   assert.equal(highSquare.base.amountCents, 22);
@@ -50,6 +52,41 @@ test('GPT Image 2 pricing responds to Fal quality and image_size', async () => {
   assert.equal(custom4kMedium.base.amountCents, 11);
   assert.equal(custom4kMedium.meta?.requested_image_width, 3840);
   assert.equal(custom4kMedium.meta?.requested_image_height, 2160);
+});
+
+test('GPT Image 2 one-cent Fal cost is rounded up after margin', async () => {
+  const response = await estimateImagePricing(
+    new Request('http://localhost:3000/api/images/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engineId: 'gpt-image-2',
+        mode: 't2i',
+        numImages: 1,
+        resolution: '1024x768',
+        quality: 'low',
+      }),
+    }) as Parameters<typeof estimateImagePricing>[0]
+  );
+  const payload = (await response.json()) as {
+    ok?: boolean;
+    pricing?: {
+      totalCents: number;
+      base: { amountCents: number };
+      margin: { amountCents: number; percentApplied: number };
+      platformFeeCents: number;
+      vendorShareCents: number;
+    };
+  };
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.pricing?.base.amountCents, 1);
+  assert.equal(payload.pricing?.margin.amountCents, 1);
+  assert.equal(payload.pricing?.margin.percentApplied, 0.3);
+  assert.equal(payload.pricing?.totalCents, 2);
+  assert.equal(payload.pricing?.platformFeeCents, 1);
+  assert.equal(payload.pricing?.vendorShareCents, 1);
 });
 
 test('GPT Image 2 estimate is available to guests and returns the client price with margin', async () => {

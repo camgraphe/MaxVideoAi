@@ -28,6 +28,7 @@ import {
 
 const DECIMAL_PLACES = 6;
 const STANDARD_PRICING_MODES = new Set(['t2v', 'i2v', 't2i', 'i2i']);
+const CENT_EPSILON = 1e-9;
 
 export type RawPricingRule = {
   id: string;
@@ -109,6 +110,19 @@ function normaliseRule(raw: RawPricingRule): PricingRule {
   };
 }
 
+function computeRoundedUpMarginCents(baseCents: number, marginPercent = 0, flatCents = 0): number {
+  const normalizedBase = Number.isFinite(baseCents) ? Math.max(0, baseCents) : 0;
+  const normalizedMargin = Number.isFinite(marginPercent) ? Math.max(0, marginPercent) : 0;
+  const normalizedFlat = Number.isFinite(flatCents) ? Math.max(0, flatCents) : 0;
+  if (normalizedBase <= 0 && normalizedFlat <= 0) return 0;
+
+  const margin = Math.ceil(normalizedBase * normalizedMargin + normalizedFlat - CENT_EPSILON);
+  if (normalizedBase > 0 && (normalizedMargin > 0 || normalizedFlat > 0) && margin <= 0) {
+    return 1;
+  }
+  return Math.max(0, margin);
+}
+
 async function loadRules(): Promise<PricingRule[]> {
   if (cachedRules && Date.now() - cacheLoadedAt < CACHE_TTL_MS) {
     return cachedRules;
@@ -165,7 +179,7 @@ function buildLumaRay2Snapshot(params: {
   const baseSubtotalCents = Math.max(0, Math.round(baseSubtotalUsd * 100));
   const marginPercent = params.rule.marginPercent;
   const marginFlatCents = params.rule.marginFlatCents;
-  const marginAmount = Math.max(0, Math.round(baseSubtotalCents * marginPercent) + marginFlatCents);
+  const marginAmount = computeRoundedUpMarginCents(baseSubtotalCents, marginPercent, marginFlatCents);
   const subtotalBeforeDiscountCents = baseSubtotalCents + marginAmount;
 
   const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
@@ -237,7 +251,7 @@ function buildLumaRay2EditSnapshot(params: {
   const baseSubtotalCents = Math.max(0, Math.round(baseSubtotalUsd * 100));
   const marginPercent = params.rule.marginPercent;
   const marginFlatCents = params.rule.marginFlatCents;
-  const marginAmount = Math.max(0, Math.round(baseSubtotalCents * marginPercent) + marginFlatCents);
+  const marginAmount = computeRoundedUpMarginCents(baseSubtotalCents, marginPercent, marginFlatCents);
   const subtotalBeforeDiscountCents = baseSubtotalCents + marginAmount;
 
   const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
@@ -372,7 +386,11 @@ function buildGptImage2Snapshot(params: {
   const unitCents = tier.prices[quality];
   const imageCount = Math.max(1, Math.round(params.numImages));
   const vendorShareCentsBase = unitCents * imageCount;
-  const marginAmount = Math.max(0, Math.round(vendorShareCentsBase * params.rule.marginPercent) + params.rule.marginFlatCents);
+  const marginAmount = computeRoundedUpMarginCents(
+    vendorShareCentsBase,
+    params.rule.marginPercent,
+    params.rule.marginFlatCents
+  );
   const subtotalBeforeDiscountCents = vendorShareCentsBase + marginAmount;
   const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
   const discountAmount =

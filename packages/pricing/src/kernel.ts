@@ -1,4 +1,4 @@
-import { clampDuration, applyRounding, toMemberTier } from './utils';
+import { clampDuration, applyRounding, computeRoundedUpMarginCents, toMemberTier } from './utils';
 import type {
   PricingAddonLine,
   PricingEngineDefinition,
@@ -65,8 +65,11 @@ export function computePricingSnapshot(
 
   const platformFeePct = definition.platformFeePct ?? 0;
   const platformFeeFlatCents = definition.platformFeeFlatCents ?? 0;
-  const marginFromPercent = platformFeePct > 0 ? Math.round(subtotalBeforeMargin * platformFeePct) : 0;
-  const marginAmount = Math.max(0, marginFromPercent + platformFeeFlatCents);
+  const marginAmount = computeRoundedUpMarginCents(
+    subtotalBeforeMargin,
+    platformFeePct,
+    platformFeeFlatCents
+  );
   const subtotalBeforeDiscount = normaliseCents(subtotalBeforeMargin + marginAmount);
 
   const discountPercent = definition.memberTierDiscounts[memberTier] ?? 0;
