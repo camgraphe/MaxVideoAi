@@ -438,6 +438,10 @@ export function GalleryRail({
   const handleCardAction = useCallback(
     (group: GroupSummary, action: GroupedJobAction) => {
       const original = summaryIndex.get(group.id) ?? group;
+      if (action === 'open') {
+        handleCardOpen(original);
+        return;
+      }
       if (action === 'view') {
         handleCardView(original);
         return;
@@ -465,6 +469,7 @@ export function GalleryRail({
       handleCardCopy,
       handleCardDownload,
       handleCardSaveImage,
+      handleCardOpen,
       handleCardView,
       handleRemoveGroup,
       onGroupAction,
