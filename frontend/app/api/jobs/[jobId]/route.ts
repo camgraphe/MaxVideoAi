@@ -3,7 +3,8 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import { shouldUseFalApis } from '@/lib/result-provider';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
-import { buildFalProxyUrl } from '@/lib/fal-proxy';
+import { resolveFalModelId } from '@/lib/fal-catalog';
+import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
@@ -250,10 +251,28 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   // Optionally poll FAL once if pending and we have provider job id
   if (surface !== 'audio' && shouldUseFalApis() && job.provider_job_id && job.status !== 'completed' && job.status !== 'failed') {
     try {
-      const statusUrl = buildFalProxyUrl(`/status/${job.provider_job_id}`);
-      const sr = await fetch(statusUrl);
-      if (sr.ok) {
-        const sj = await sr.json();
+      const falModel = (await resolveFalModelId(job.engine_id)) ?? job.engine_id;
+      const falClient = getFalClient();
+      const statusInfo = (await falClient.queue
+        .status(falModel, { requestId: job.provider_job_id })
+        .catch(() => null)) as Record<string, unknown> | null;
+      if (statusInfo) {
+        const state = typeof statusInfo.status === 'string' ? statusInfo.status.toUpperCase() : undefined;
+        const queueResult =
+          state === 'COMPLETED'
+            ? ((await falClient.queue.result(falModel, { requestId: job.provider_job_id }).catch(() => null)) as
+                | Record<string, unknown>
+                | null)
+            : null;
+        const sj = (queueResult ? { ...statusInfo, response: queueResult, output: queueResult } : statusInfo) as {
+          response?: { video?: { url?: string } };
+          output?: { video?: string };
+          video_url?: string;
+          status?: string;
+          state?: string;
+          progress?: number;
+          percent?: number;
+        };
         const vUrl: string | undefined = sj?.response?.video?.url || sj?.output?.video || sj?.video_url;
         const st: string | undefined = sj?.status || sj?.state;
         const prog: number | undefined = sj?.progress || sj?.percent;

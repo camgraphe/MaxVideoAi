@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { route as falRoute } from '@fal-ai/server-proxy/nextjs';
-import { isFalProxyTargetAllowed } from '@/lib/fal-model-policy';
+import { createRouteHandler } from '@fal-ai/server-proxy/nextjs';
+import { FAL_PROXY_ALLOWED_ENDPOINTS, isFalProxyTargetAllowed } from '@/lib/fal-model-policy';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
@@ -10,7 +10,18 @@ if (!apiKey) {
   throw new Error('Missing FAL API key. Set FAL_KEY or FAL_API_KEY in your environment.');
 }
 
+const falRoute = createRouteHandler({
+  allowedEndpoints: FAL_PROXY_ALLOWED_ENDPOINTS,
+  allowUnauthorizedRequests: false,
+  isAuthenticated: async () => true,
+  resolveFalAuth: async () => `Key ${apiKey}`,
+});
+
 function guardFalProxyRequest(request: NextRequest) {
+  if (request.method !== 'GET' && request.method !== 'OPTIONS') {
+    return NextResponse.json({ error: 'fal_proxy_read_only' }, { status: 403 });
+  }
+
   const targetUrl = request.headers.get('x-fal-target-url');
   if (isFalProxyTargetAllowed(targetUrl)) {
     return null;
@@ -49,5 +60,5 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function OPTIONS(request: NextRequest) {
-  return runWithGuard(request, falRoute.GET);
+  return runWithGuard(request, async () => new Response(null, { status: 204 }));
 }
