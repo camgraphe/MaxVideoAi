@@ -2,8 +2,7 @@
 
 import clsx from 'clsx';
 import { useMemo } from 'react';
-import type { EngineCaps, Mode } from '@/types/engines';
-import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
+import type { EngineCaps, EngineModeUiCaps as CapabilityCaps, Mode } from '@/types/engines';
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';

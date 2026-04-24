@@ -17,7 +17,6 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/im
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 import type { JobSurface } from '@/types/billing';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
-import { getBaseEnginesByCategory } from '@/lib/engines';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -213,6 +212,11 @@ type UseEnginesOptions = {
   includeAverages?: boolean;
 };
 
+async function loadFallbackEngines(category: EngineCategory): Promise<EnginesResponse['engines']> {
+  const { getBaseEnginesByCategory } = await import('@/lib/engines');
+  return getBaseEnginesByCategory(category);
+}
+
 export function useEngines(category: EngineCategory = 'video', options?: UseEnginesOptions) {
   const params = new URLSearchParams();
   if (category !== 'video') {
@@ -222,7 +226,6 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
     params.set('includeAverages', '1');
   }
   const query = params.size > 0 ? `?${params.toString()}` : '';
-  const fallbackEngines = getBaseEnginesByCategory(category);
   return useSWR<EnginesResponse>(
     `static-engines:${category}:${options?.includeAverages ? 'avg' : 'base'}`,
     async () => {
@@ -234,14 +237,14 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
         if (!response.ok) {
           throw new Error(data?.error ?? `Engines request failed: ${response.status}`);
         }
-        return { engines: data?.engines ?? fallbackEngines };
+        return { engines: data?.engines ?? [] };
       } catch {
+        const fallbackEngines = await loadFallbackEngines(category);
         return { engines: fallbackEngines };
       }
     },
     {
       dedupingInterval: 5 * 60 * 1000,
-      fallbackData: { engines: fallbackEngines },
     }
   );
 }

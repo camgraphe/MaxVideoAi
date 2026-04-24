@@ -26,7 +26,7 @@ export type AssetBrowserToolLink = {
   label: string;
 };
 
-interface AssetLibraryBrowserProps {
+export interface AssetLibraryBrowserProps {
   assetType: 'image' | 'video';
   layout?: 'modal' | 'page';
   title: string;

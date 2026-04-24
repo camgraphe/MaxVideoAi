@@ -4,8 +4,7 @@
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import type { Ref, ReactNode } from 'react';
-import type { EngineCaps, EngineInputField, Mode, PreflightResponse } from '@/types/engines';
-import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
+import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode, PreflightResponse } from '@/types/engines';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';

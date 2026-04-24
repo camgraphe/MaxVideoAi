@@ -10,8 +10,7 @@ import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
-import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
+import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -26,7 +25,7 @@ import {
   type ComposerPromotedAction,
   type MultiPromptScene,
 } from '@/components/Composer';
-import { KlingElementsBuilder, type KlingElementState, type KlingElementAsset } from '@/components/KlingElementsBuilder';
+import type { KlingElementState, KlingElementAsset, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
 import { GalleryRail, type GalleryFeedState } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
@@ -55,7 +54,7 @@ import { readLastKnownUserId } from '@/lib/last-known';
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
+import type { AssetLibraryBrowserProps } from '@/components/library/AssetLibraryBrowser';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -82,6 +81,16 @@ import {
   localizeLtxField,
   normalizeUiLocale,
 } from '@/lib/ltx-localization';
+
+const AssetLibraryBrowser = dynamic<AssetLibraryBrowserProps>(
+  () => import('@/components/library/AssetLibraryBrowser').then((mod) => mod.AssetLibraryBrowser),
+  { ssr: false }
+);
+
+const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
+  () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
+  { ssr: false }
+);
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -866,13 +875,26 @@ function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mo
   return engine.modes[0] ?? 't2v';
 }
 
+function getModeCaps(engine: EngineCaps, mode: Mode): EngineModeUiCaps | undefined {
+  const exact = engine.modeCaps?.[mode];
+  if (exact) return exact;
+  return {
+    modes: [mode],
+    duration: { min: 1, default: engine.maxDurationSec || 1 },
+    resolution: engine.resolutions,
+    aspectRatio: engine.aspectRatios,
+    fps: engine.fps,
+    audioToggle: engine.audio,
+  };
+}
+
 function framesToSeconds(frames: number): number {
   if (!Number.isFinite(frames) || frames <= 0) return 1;
   return Math.max(1, Math.round(frames / 24));
 }
 
 function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | null | undefined): FormState {
-  const capability = getEngineCaps(engine.id, mode) as EngineCapabilityCaps | undefined;
+  const capability = getModeCaps(engine, mode);
   const isLumaRay2Engine = isLumaRay2EngineId(engine.id);
   const resetFastDefaultsOnEngineSwitch =
     (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') &&
@@ -4719,7 +4741,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const capability = useMemo(() => {
     if (!selectedEngine) return undefined;
-    return getEngineCaps(selectedEngine.id, submissionMode) ?? undefined;
+    return getModeCaps(selectedEngine, submissionMode);
   }, [selectedEngine, submissionMode]);
 
   const generateAudioField = useMemo(() => {

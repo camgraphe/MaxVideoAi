@@ -4,6 +4,7 @@
 
 import clsx from 'clsx';
 import useSWR from 'swr';
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
@@ -20,7 +21,7 @@ import { EngineSelect } from '@/components/ui/EngineSelect';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
-import { AssetLibraryBrowser, type AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
+import type { AssetLibraryBrowserProps, AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { supabase } from '@/lib/supabaseClient';
@@ -37,7 +38,6 @@ import type { Job } from '@/types/jobs';
 import type { VideoGroup } from '@/types/video-groups';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
-import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
@@ -72,10 +72,20 @@ import {
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
 import { authFetch } from '@/lib/authFetch';
-import { normalizeJobSurface } from '@/lib/job-surface';
+import { normalizeJobSurface } from '@/lib/job-surface-normalize';
 import { isPlaceholderMediaUrl, resolvePreferredMediaUrl } from '@/lib/media';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { countResolvedVisualSlots } from '@/lib/group-progress';
+
+const AssetLibraryBrowser = dynamic<AssetLibraryBrowserProps>(
+  () => import('@/components/library/AssetLibraryBrowser').then((mod) => mod.AssetLibraryBrowser),
+  { ssr: false }
+);
+
+const GroupViewerModal = dynamic(
+  () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
+  { ssr: false }
+);
 
 interface ImageWorkspaceCopy {
   hero: {

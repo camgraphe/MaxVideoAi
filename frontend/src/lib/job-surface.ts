@@ -1,6 +1,9 @@
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { parseStoredImageRenders } from '@/lib/image-renders';
-import type { JobSurface, UserAssetSource } from '@/types/billing';
+import type { JobSurface } from '@/types/billing';
+import { normalizeJobSurface, normalizeUserAssetSource } from '@/lib/job-surface-normalize';
+
+export { normalizeJobSurface, normalizeUserAssetSource };
 
 const IMAGE_ENGINE_ALIAS_SET = new Set(
   listFalEngines()
@@ -12,18 +15,6 @@ function readSurfaceFromSnapshot(snapshot: unknown): string | null {
   if (!snapshot || typeof snapshot !== 'object') return null;
   const value = (snapshot as Record<string, unknown>).surface;
   return typeof value === 'string' && value.trim().length ? value.trim().toLowerCase() : null;
-}
-
-export function normalizeJobSurface(value: unknown): JobSurface | null {
-  if (typeof value !== 'string') return null;
-  const normalized = value.trim().toLowerCase();
-  if (normalized === 'video' || normalized === 'image' || normalized === 'character' || normalized === 'angle' || normalized === 'audio') {
-    return normalized;
-  }
-  if (normalized === 'character-builder') {
-    return 'character';
-  }
-  return null;
 }
 
 export function deriveJobSurface(params: {
@@ -70,13 +61,4 @@ export function deriveJobSurface(params: {
 
 export function isImageLikeSurface(surface: JobSurface): boolean {
   return surface === 'image' || surface === 'character' || surface === 'angle';
-}
-
-export function normalizeUserAssetSource(value: unknown): UserAssetSource {
-  if (typeof value !== 'string') return 'generated';
-  const normalized = value.trim().toLowerCase();
-  if (normalized === 'upload' || normalized === 'generated' || normalized === 'character' || normalized === 'angle') {
-    return normalized;
-  }
-  return 'generated';
 }

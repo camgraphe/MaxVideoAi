@@ -4,6 +4,7 @@ import { getPricingKernel } from '@/lib/pricing-kernel';
 import type {
   EngineCaps,
   EngineInputField,
+  EngineModeUiCaps,
   ItemizationLine,
   PreflightRequest,
   PreflightResponse,
@@ -41,7 +42,14 @@ const REGISTRY_BY_CATEGORY = {
 function buildBaseEngines(entries: typeof REGISTRY_ENTRIES): EngineCaps[] {
   return entries
     .filter((entry) => entry.surfaces.app.enabled)
-    .map((entry) => cloneEngine(entry.engine))
+    .map((entry) =>
+      cloneEngine({
+        ...entry.engine,
+        modeCaps: Object.fromEntries(
+          entry.modes.map((modeConfig) => [modeConfig.mode, cloneModeUiCaps(modeConfig.ui)])
+        ),
+      })
+    )
     .filter((engine) => !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase()))
     .sort((a, b) => {
       const aDiscoveryPriority = REGISTRY_META_BY_ID.get(a.id)?.surfaces.app.discoveryRank;
@@ -63,6 +71,23 @@ function buildBaseEngines(entries: typeof REGISTRY_ENTRIES): EngineCaps[] {
 }
 
 const ENGINES_BASE: EngineCaps[] = buildBaseEngines(REGISTRY_BY_CATEGORY.video);
+
+function cloneModeUiCaps(caps: EngineModeUiCaps): EngineModeUiCaps {
+  return {
+    ...caps,
+    modes: [...caps.modes],
+    duration: caps.duration
+      ? 'options' in caps.duration
+        ? { ...caps.duration, options: [...caps.duration.options] }
+        : { ...caps.duration }
+      : undefined,
+    frames: caps.frames ? [...caps.frames] : undefined,
+    resolution: caps.resolution ? [...caps.resolution] : undefined,
+    aspectRatio: caps.aspectRatio ? [...caps.aspectRatio] : undefined,
+    fps: Array.isArray(caps.fps) ? [...caps.fps] : caps.fps,
+    acceptsImageFormats: caps.acceptsImageFormats ? [...caps.acceptsImageFormats] : undefined,
+  };
+}
 
 function cloneInputField(field: EngineInputField): EngineInputField {
   return {
@@ -88,6 +113,14 @@ export function cloneEngine(engine: EngineCaps): EngineCaps {
     providerMeta: engine.providerMeta ? { ...engine.providerMeta } : undefined,
     pricing: engine.pricing ? { ...engine.pricing } : undefined,
     pricingDetails: engine.pricingDetails ? { ...engine.pricingDetails } : undefined,
+    modeCaps: engine.modeCaps
+      ? Object.fromEntries(
+          Object.entries(engine.modeCaps).map(([mode, caps]) => [
+            mode,
+            caps ? cloneModeUiCaps(caps) : caps,
+          ])
+        )
+      : undefined,
   };
 }
 

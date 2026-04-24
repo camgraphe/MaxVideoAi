@@ -22,7 +22,7 @@ export type KlingElementState = {
   video: KlingElementAsset | null;
 };
 
-interface KlingElementsBuilderProps {
+export interface KlingElementsBuilderProps {
   elements: KlingElementState[];
   onAddElement: () => void;
   onRemoveElement: (id: string) => void;

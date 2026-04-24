@@ -142,6 +142,30 @@ export interface EngineInputSchema {
   };
 }
 
+export type EngineModeDurationCaps =
+  | {
+      options: Array<number | string>;
+      default?: number | string;
+    }
+  | {
+      min: number;
+      default: number;
+    };
+
+export interface EngineModeUiCaps {
+  modes: Mode[];
+  duration?: EngineModeDurationCaps;
+  frames?: number[];
+  resolution?: string[];
+  resolutionLocked?: boolean;
+  aspectRatio?: string[];
+  fps?: number | number[];
+  audioToggle?: boolean;
+  acceptsImageFormats?: string[];
+  maxUploadMB?: number;
+  notes?: string;
+}
+
 export interface EngineCaps {
   id: string;
   label: string;
@@ -183,6 +207,7 @@ export interface EngineCaps {
   availability: EngineAvailability;
   brandId?: string;
   brandAssetPolicy?: BrandAssetPolicy;
+  modeCaps?: Partial<Record<Mode, EngineModeUiCaps>>;
 }
 
 export interface EnginesResponse {
