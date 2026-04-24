@@ -34,7 +34,7 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
           ...option,
           disabled: String(option.value) === String(otherValue),
           label: (
-            <span className="inline-flex min-w-0 items-center gap-2">
+            <span className="flex min-w-0 max-w-full items-center gap-2">
               <EngineIcon
                 engine={{ id: String(option.value), label: labelText, brandId: brandId ?? undefined }}
                 size={20}
@@ -60,7 +60,7 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
         if (!raw) return String(option.value);
         return typeof raw.label === 'string' ? raw.label : String(raw.value);
       }}
-      buttonClassName="w-full max-w-[220px] min-w-0 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[12px] font-semibold text-text-primary shadow-none transition hover:bg-surface-2/80 sm:max-w-none sm:min-w-[280px] md:min-w-[320px] [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-70"
+      buttonClassName="h-9 w-full max-w-[220px] min-w-0 rounded-[10px] border border-hairline bg-bg/80 px-3 py-2 text-[12px] font-semibold text-text-primary shadow-sm transition hover:border-[var(--brand-border)] hover:bg-surface-2 sm:max-w-none sm:min-w-[180px] md:min-w-[210px] [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-70"
       onChange={(next) => {
         const nextValue = String(next);
         if (!nextValue || nextValue === value) return;

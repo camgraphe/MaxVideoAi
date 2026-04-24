@@ -1073,7 +1073,7 @@
   },
   "models": {
     "hero": {
-      "title": "Modelos IA: specs, límites y precios",
+      "title": "Modelos IA (Todas las specs, límites y precios)",
       "subtitle": "Catálogo de workflows de generación de video e imagen.",
       "body": "Usa esta página como catálogo técnico para revisar capacidades, límites runtime y señales de precio en un solo sitio. Mantén las comparaciones lado a lado en la página de motores de video y usa aquí la referencia técnica global."
     },
@@ -1113,7 +1113,7 @@
         "after": " para empezar con un prompt validado."
       }
     },
-    "cardCtaLabel": "Detalles completos →",
+    "cardCtaLabel": "Detalles →",
     "cardAriaPrefix": "Detalles completos",
     "engineTypeLabels": {
       "textImage": "Texto + imagen a video",
@@ -1224,7 +1224,7 @@
     },
     "listing": {
       "hero": {
-        "title": "Modelos IA: specs, límites y precios",
+        "title": "Modelos IA (Todas las specs, límites y precios)",
         "subtitle": "Revisa capacidades, límites y precios de modelos de video e imagen antes de generar.",
         "bullets": [
           "Abre cualquier modelo para ver specs completas, límites y señales de precio.",
@@ -1399,6 +1399,7 @@
             "all": "Todos"
           }
         },
+        "searchPlaceholder": "Buscar modelos...",
         "clear": "Limpiar filtros"
       },
       "compareBar": {
