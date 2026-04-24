@@ -5,6 +5,7 @@ import { computePricingSnapshot } from '@/lib/pricing';
 import { clampRequestedImageCount, getImageInputField, resolveRequestedResolution } from '../utils';
 import {
   parseGptImage2SizeKey,
+  resolveGptImage2AutoInputImageSize,
   validateGptImage2CustomImageSize,
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
         numImages?: number;
         resolution?: string;
         customImageSize?: GptImage2ImageSize | null;
+        referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
         quality?: string;
         enableWebSearch?: boolean;
       }
@@ -30,6 +32,7 @@ export async function POST(req: NextRequest) {
       numImages?: number;
       resolution?: string;
       customImageSize?: GptImage2ImageSize | null;
+      referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
       quality?: string;
       enableWebSearch?: boolean;
     } | null;
@@ -82,6 +85,11 @@ export async function POST(req: NextRequest) {
         );
       }
       customImageSize = customSizeResult.size;
+    }
+    if (engineCaps.id === 'gpt-image-2' && mode === 'i2i' && resolutionResult.resolution === 'auto') {
+      customImageSize = resolveGptImage2AutoInputImageSize(
+        Array.isArray(body?.referenceImageSizes) ? body.referenceImageSizes : []
+      );
     }
     const pricing = await computePricingSnapshot({
       engine: engineCaps,

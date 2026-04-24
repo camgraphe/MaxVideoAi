@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { route as falRoute } from '@fal-ai/server-proxy/nextjs';
 import { isFalProxyTargetAllowed } from '@/lib/fal-model-policy';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
@@ -23,6 +24,11 @@ function guardFalProxyRequest(request: NextRequest) {
 }
 
 async function runWithGuard(request: NextRequest, handler: (request: NextRequest) => Promise<Response>) {
+  const { userId } = await getRouteAuthContext(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'auth_required' }, { status: 401 });
+  }
+
   const blocked = guardFalProxyRequest(request);
   if (blocked) {
     return blocked;

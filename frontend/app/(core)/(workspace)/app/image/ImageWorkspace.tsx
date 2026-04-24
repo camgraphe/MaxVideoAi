@@ -521,6 +521,8 @@ type ReferenceSlotValue = {
   name?: string;
   status: 'ready' | 'uploading';
   source?: 'upload' | 'library' | 'paste' | 'character';
+  width?: number | null;
+  height?: number | null;
   characterReference?: CharacterReferenceSelection | null;
 };
 
@@ -528,6 +530,8 @@ type PersistedReferenceSlot =
   | {
       url: string;
       source?: ReferenceSlotValue['source'];
+      width?: number | null;
+      height?: number | null;
       characterReference?: PersistedCharacterReference | null;
     }
   | null;
@@ -603,8 +607,10 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
           record.source === 'character'
             ? (record.source as ReferenceSlotValue['source'])
             : undefined;
+        const width = typeof (record as { width?: unknown }).width === 'number' ? Math.round((record as { width: number }).width) : null;
+        const height = typeof (record as { height?: unknown }).height === 'number' ? Math.round((record as { height: number }).height) : null;
         const characterReference = parseCharacterReferenceEntry(record.characterReference);
-        return { url, source, characterReference };
+        return { url, source, width, height, characterReference };
       });
     const characterReferencesRaw = Array.isArray(raw.characterReferences) ? raw.characterReferences : [];
     const characterReferences = characterReferencesRaw.reduce<PersistedCharacterReference[]>((acc, entry) => {
@@ -960,8 +966,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [
     priceEstimateKey,
     setPriceEstimateKey,
-  ] = useState<[string, string, ImageGenerationMode, number, string, string, boolean, string, string] | null>(() =>
-    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, '', '', false, '', ''] : null
+  ] = useState<[string, string, ImageGenerationMode, number, string, string, boolean, string, string, string] | null>(() =>
+    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, '', '', false, '', '', ''] : null
   );
 
   useEffect(() => {
@@ -1095,6 +1101,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const visibleReferenceSlots = useMemo(
     () => referenceSlots.slice(0, baseReferenceSlotLimit),
     [baseReferenceSlotLimit, referenceSlots]
+  );
+  const referenceSizeSignature = useMemo(
+    () =>
+      visibleReferenceSlots
+        .filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready'))
+        .map((slot) => `${slot.width ?? ''}x${slot.height ?? ''}`)
+        .join('|'),
+    [visibleReferenceSlots]
   );
   const selectedCharacterReferences = useMemo(
     () =>
@@ -1297,8 +1311,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       enableWebSearch,
       customImageWidth,
       customImageHeight,
+      referenceSizeSignature,
     ]);
-  }, [selectedEngine, mode, numImages, resolution, quality, enableWebSearch, customImageWidth, customImageHeight]);
+  }, [selectedEngine, mode, numImages, resolution, quality, enableWebSearch, customImageWidth, customImageHeight, referenceSizeSignature]);
 
   const {
     data: pricingData,
@@ -1329,6 +1344,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           numImages: count,
           resolution: requestResolution || undefined,
           customImageSize: requestCustomImageSize,
+          referenceImageSizes: requestMode === 'i2i' ? readyReferenceSizes : undefined,
           quality: requestQuality || undefined,
           enableWebSearch: requestEnableWebSearch || undefined,
         }),
@@ -1474,6 +1490,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       visibleReferenceSlots
         .filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready'))
         .map((slot) => slot.url),
+    [visibleReferenceSlots]
+  );
+  const readyReferenceSizes = useMemo(
+    () =>
+      visibleReferenceSlots
+        .filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready'))
+        .map((slot) => ({ width: slot.width ?? null, height: slot.height ?? null })),
     [visibleReferenceSlots]
   );
   const combinedReferenceUrls = readyReferenceUrls;
@@ -1637,6 +1660,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   previewUrl: slot.url,
                   status: 'ready',
                   source: slot.source ?? 'library',
+                  width: slot.width ?? null,
+                  height: slot.height ?? null,
                 };
           });
           const migratedNext = mergeCharacterReferencesIntoSlots(next, parsed.characterReferences ?? [], MAX_REFERENCE_SLOTS);
@@ -1893,6 +1918,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         return {
           url,
           source: slot.source,
+          width: slot.width ?? null,
+          height: slot.height ?? null,
           characterReference: slot.characterReference
             ? {
                 id: slot.characterReference.id,
@@ -2102,6 +2129,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         const asset = payload.asset as {
           id: string;
           url: string;
+          width?: number | null;
+          height?: number | null;
         };
         setReferenceSlots((previous) => {
           const next = previous.slice();
@@ -2116,6 +2145,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
             name: file.name,
             status: 'ready',
             source: 'upload',
+            width: asset.width ?? null,
+            height: asset.height ?? null,
           };
           if (current.previewUrl && current.previewUrl !== asset.url) {
             try {
@@ -2222,6 +2253,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           previewUrl: asset.url,
           status: 'ready',
           source: 'library',
+          width: asset.width ?? null,
+          height: asset.height ?? null,
         };
         return next;
       });
@@ -2354,6 +2387,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           prompt: trimmedPrompt,
           numImages,
           imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
+          referenceImageSizes: mode === 'i2i' ? readyReferenceSizes : undefined,
           characterReferences: mode === 'i2i' ? selectedCharacterReferences : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,
@@ -2442,6 +2476,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       outputFormatField,
       quality,
       qualityField,
+      readyReferenceSizes,
       readyReferenceUrls,
       selectedCharacterReferences,
       maskUrl,

@@ -88,6 +88,25 @@ export function formatGptImage2SizeKey(size: GptImage2ImageSize): string {
   return `${Math.round(size.width)}x${Math.round(size.height)}`;
 }
 
+export function resolveGptImage2AutoInputImageSize(
+  referenceSizes: Array<{ width?: number | null; height?: number | null } | null | undefined>
+): GptImage2ImageSize | null {
+  const candidates = referenceSizes
+    .map((size) => {
+      const width = typeof size?.width === 'number' ? Math.round(size.width) : NaN;
+      const height = typeof size?.height === 'number' ? Math.round(size.height) : NaN;
+      return Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0
+        ? { width, height }
+        : null;
+    })
+    .filter((size): size is GptImage2ImageSize => Boolean(size));
+
+  if (!candidates.length) return null;
+  return candidates.reduce((largest, current) =>
+    current.width * current.height > largest.width * largest.height ? current : largest
+  );
+}
+
 export function getGptImage2PresetSize(value: string | null | undefined): GptImage2ImageSize | null {
   const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
   const preset = GPT_IMAGE_2_PRESET_SIZE_MAP[normalized];
@@ -196,12 +215,13 @@ export function resolveGptImage2PricingTier(
   const normalized = typeof imageSize === 'string' ? imageSize.trim().toLowerCase() : '';
   const parsedSize = parseGptImage2SizeKey(normalized);
   const preset = GPT_IMAGE_2_PRESET_SIZE_MAP[normalized] ?? GPT_IMAGE_2_PRESET_SIZE_MAP[GPT_IMAGE_2_DEFAULT_IMAGE_SIZE];
+  const useInferredSize = Boolean(customImageSize && (normalized === 'custom' || normalized === 'auto'));
   const requestedSize =
-    customImageSize && normalized === 'custom'
+    customImageSize && useInferredSize
       ? customImageSize
       : parsedSize ?? { width: preset.width, height: preset.height };
-  const exact = normalized !== 'custom' && !parsedSize ? null : findExactCanonicalSize(requestedSize);
-  const presetBilling = !parsedSize && normalized !== 'custom' ? preset.billingKey : null;
+  const exact = normalized !== 'custom' && normalized !== 'auto' && !parsedSize ? null : findExactCanonicalSize(requestedSize);
+  const presetBilling = !parsedSize && normalized !== 'custom' && !useInferredSize ? preset.billingKey : null;
   const canonical = presetBilling
     ? GPT_IMAGE_2_CANONICAL_SIZES.find((candidate) => candidate.key === presetBilling)
     : exact ?? findNearestCanonicalSize(requestedSize);

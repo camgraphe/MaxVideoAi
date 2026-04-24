@@ -9,6 +9,11 @@ test('fal proxy policy allows regular Fal targets', () => {
   assert.equal(isFalProxyTargetAllowed(null), true);
 });
 
+test('fal proxy policy blocks non-Fal targets', () => {
+  assert.equal(isFalProxyTargetAllowed('https://example.com/fal-ai/sora-2/text-to-video'), false);
+  assert.equal(isFalProxyTargetAllowed('http://queue.fal.run/fal-ai/sora-2/text-to-video'), false);
+});
+
 test('fal proxy policy blocks beatoven targets in path and query', () => {
   assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/beatoven/music-generation'), false);
   assert.equal(
