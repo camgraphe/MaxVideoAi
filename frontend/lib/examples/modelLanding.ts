@@ -355,31 +355,31 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
     ],
   },
   veo: {
-    metaTitle: 'Exemples Veo 3.1, prompts, reglages et image-to-video | MaxVideoAI',
+    metaTitle: 'Exemples Veo 3.1, prompts, reglages et image-vers-video | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples Veo 3.1, prompts, reglages, patterns image-to-video et prix par clip pour Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite sur MaxVideoAI.',
-    heroTitle: 'Exemples Veo 3.1, prompts, reglages et patterns image-to-video',
-    subtitle: 'Exemples Veo 3.1, prompts, reglages et patterns image-to-video sur la famille Veo actuelle.',
+      'Parcourez des exemples Veo 3.1, prompts, reglages, schemas image-vers-video et prix par clip pour Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite sur MaxVideoAI.',
+    heroTitle: 'Exemples Veo 3.1, prompts, reglages et schemas image-vers-video',
+    subtitle: 'Exemples Veo 3.1, prompts, reglages et schemas image-vers-video sur la famille Veo actuelle.',
     intro:
-      'Parcourez des exemples Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite, avec des prompts, des reglages reutilisables et des patterns image-to-video, puis ouvrez les pages modele pour les specs, limites et tarifs. Utilisez cette page pour etudier la structure des prompts, les patterns texte-vers-video IA et les reglages image-to-video propres a chaque modele avant d ouvrir la page Veo correspondante.',
+      'Parcourez des exemples Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite, avec des prompts, des reglages reutilisables et des schemas image-vers-video, puis ouvrez les pages modele pour les caracteristiques, limites et tarifs. Utilisez cette page pour etudier la structure des prompts, les schemas texte-vers-video IA et les reglages image-vers-video propres a chaque modele avant d ouvrir la page Veo correspondante.',
     summary:
-      'Veo 3.1 mene cette page pour les exemples, prompts, reglages et patterns image-to-video, avec Veo 3.1 Fast et Veo 3.1 Lite conserves comme variantes Veo actuelles pour une iteration plus rapide et des brouillons audio-ready moins couteux.',
+      'Veo 3.1 mene cette page pour les exemples, prompts, reglages et schemas image-vers-video, avec Veo 3.1 Fast et Veo 3.1 Lite conserves comme variantes Veo actuelles pour une iteration plus rapide et des brouillons prets pour l audio moins couteux.',
     promptPatterns:
-      'Decrivez d abord l objectif du plan, puis la camera, l ambiance et les contraintes de reference utiles pour l image-to-video. Les exemples Veo 3.1 sont plus lisibles quand la structure du prompt reste stable.',
+      'Decrivez d abord l objectif du plan, puis la camera, l ambiance et les contraintes de reference utiles pour l image-vers-video. Les exemples Veo 3.1 sont plus lisibles quand la structure du prompt reste stable.',
     strengthsLimits:
-      'Veo offre generalement un bon niveau de controle sur le cadrage et le mouvement sur des runs texte-to-video et image-to-video courts. Les capacites varient selon le mode actif et le type d entree.',
+      'Veo offre generalement un bon niveau de controle sur le cadrage et le mouvement sur des rendus texte-vers-video et image-vers-video courts. Les capacites varient selon le mode actif et le type d entree.',
     pricingNotes:
       'Comparez les coûts avec des presets identiques en durée et résolution pour isoler la vraie différence entre moteurs.',
     faq: [
       {
-        question: 'Comment utiliser Veo 3 pour l image-to-video ?',
+        question: 'Comment utiliser Veo 3 pour l image-vers-video ?',
         answer:
-          'Partez d un still solide, definissez un seul objectif de mouvement et gardez une direction camera explicite. Les workflows Veo 3.1 en image-to-video fonctionnent mieux quand le prompt prolonge l image source au lieu de la remplacer completement.',
+          'Partez d une image fixe solide, definissez un seul objectif de mouvement et gardez une direction camera explicite. Les flux Veo 3.1 en image-vers-video fonctionnent mieux quand le prompt prolonge l image source au lieu de la remplacer completement.',
       },
       {
         question: 'Quel modele Veo 3 utiliser pour tester des prompts ?',
         answer:
-          'Commencez par Veo 3.1 Fast ou Veo 3.1 Lite si vous voulez des drafts moins chers et des tests de prompt plus rapides, puis passez a Veo 3.1 pour une sortie cinematique plus aboutie et un meilleur controle guide par references.',
+          'Commencez par Veo 3.1 Fast ou Veo 3.1 Lite si vous voulez des brouillons moins chers et des tests de prompt plus rapides, puis passez a Veo 3.1 pour une sortie cinematique plus aboutie et un meilleur controle guide par references.',
       },
       {
         question: 'Ces exemples Veo 3.1 peuvent-ils servir de base pour des prompts texte-vers-video IA ?',
@@ -391,24 +391,24 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   luma: {
     metaTitle: 'Exemples Luma Ray 2 et Ray 2 Flash (prompts + reglages) | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples Luma Ray 2 et Ray 2 Flash avec prompts reutilisables, cas modify/reframe et reperes de prix par clip avant de choisir le tier premium ou rapide dans MaxVideoAI.',
-    subtitle: 'Exemples Luma Ray sur Ray 2 et Ray 2 Flash, avec prompts reutilisables, cas modify/reframe et signaux de prix.',
+      'Parcourez des exemples Luma Ray 2 et Ray 2 Flash avec prompts reutilisables, cas modify/reframe et reperes de prix par clip avant de choisir le niveau premium ou rapide dans MaxVideoAI.',
+    subtitle: 'Exemples Luma Ray sur Ray 2 et Ray 2 Flash, avec prompts reutilisables, cas modify/reframe et reperes de prix.',
     intro:
-      'Cette page est la vue famille de Luma Ray dans MaxVideoAI. Utilisez-la pour comparer rapidement les exemples Ray 2 et Ray 2 Flash avant de decider si le job doit partir sur le tier premium ou sur le tier draft plus rapide. Les pages modele portent les specs detaillees; cette galerie sert a lire les patterns de prompt, les workflows et les arbitrages de cout entre les deux modeles Luma publics.',
+      'Cette page est la vue famille de Luma Ray dans MaxVideoAI. Utilisez-la pour comparer rapidement les exemples Ray 2 et Ray 2 Flash avant de decider si le rendu doit partir sur le niveau premium ou sur le niveau brouillon plus rapide. Les pages modele portent les caracteristiques detaillees; cette galerie sert a lire les schemas de prompt, les flux et les arbitrages de cout entre les deux modeles Luma publics.',
     promptPatterns:
-      'Les exemples Luma sont plus utiles quand le prompt reste au niveau du plan et du workflow: generate net-new, animation depuis still, modify sur video source, ou reframe pour la livraison. Gardez une consigne compacte et dites clairement ce qui doit rester versus ce qui peut changer.',
+      'Les exemples Luma sont plus utiles quand le prompt reste au niveau du plan et du flux: generation neuve, animation depuis image fixe, modify sur video source, ou reframe pour la livraison. Gardez une consigne compacte et dites clairement ce qui doit rester et ce qui peut changer.',
     strengthsLimits:
       'Ray 2 est le meilleur choix pour des finals cinematographiques premium et un niveau de confiance plus eleve. Ray 2 Flash est la couche de throughput la moins couteuse pour valider des concepts, tester des passes modify plus rapides et preparer des declinaisons carre ou verticales. Aucun des deux modeles ne genere d audio natif, donc jugez-les sur le mouvement, le cadrage et le controle sur video source plutot que sur le lip sync.',
     pricingNotes:
-      'Gardez des durees et resolutions identiques pour comparer proprement les deux tiers Luma. Ray 2 justifie plus souvent le cout sur des shots finals, alors que Ray 2 Flash est la meilleure base pour l exploration, les edits sur video source et les variantes de livraison moins couteuses.',
+      'Gardez des durees et resolutions identiques pour comparer proprement les deux niveaux Luma. Ray 2 justifie plus souvent le cout sur des rendus finaux, alors que Ray 2 Flash est la meilleure base pour l exploration, les retouches sur video source et les variantes de livraison moins couteuses.',
     faq: [
       {
         question: 'Quand faut-il commencer par la page d exemples Luma ?',
-        answer: 'Commencez ici quand vous voulez comparer rapidement Ray 2 et Ray 2 Flash avant de choisir le tier premium ou rapide pour un vrai job.',
+        answer: 'Commencez ici quand vous voulez comparer rapidement Ray 2 et Ray 2 Flash avant de choisir le niveau premium ou rapide pour un vrai rendu.',
       },
       {
         question: 'Quelle difference saute le plus aux yeux entre Ray 2 et Ray 2 Flash dans les exemples ?',
-        answer: 'Ray 2 reste le tier premium pour les finals, tandis que Ray 2 Flash reste le tier rapide pour les drafts. Les workflows sont alignes, mais leur role en production est different.',
+        answer: 'Ray 2 reste le niveau premium pour les rendus finaux, tandis que Ray 2 Flash reste le niveau rapide pour les brouillons. Les flux sont alignes, mais leur role en production est different.',
       },
       {
         question: 'Peut-on comparer ici les usages modify et reframe ?',
@@ -444,40 +444,40 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   kling: {
     metaTitle: 'Exemples vidéo IA Kling, prompts et réglages | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples vidéo IA Kling avec prompts, réglages et patterns image-to-video pour Kling 3 Pro et Kling 3 Standard, puis comparez les workflows Kling plus anciens encore pris en charge sur MaxVideoAI.',
+      'Parcourez des exemples vidéo IA Kling avec prompts, réglages et schemas image-vers-video pour Kling 3 Pro et Kling 3 Standard, puis comparez les flux Kling plus anciens encore pris en charge sur MaxVideoAI.',
     heroTitle: 'Exemples vidéo IA Kling, prompts et réglages',
     subtitle:
-      'Exemples vidéo IA Kling, prompts, réglages, patterns image-to-video et repères de modèle pour les workflows Kling actuels et les versions encore prises en charge.',
+      'Exemples vidéo IA Kling, prompts, réglages, schemas image-vers-video et repères de modèle pour les flux Kling actuels et les versions encore prises en charge.',
     intro:
-      'Parcourez des exemples vidéo IA Kling, des prompts, des réglages réutilisables et des patterns image-to-video pour Kling 3 Pro et Kling 3 Standard, puis explorez les setups Kling plus anciens encore pris en charge pour des workflows antérieurs, des clips courts prêts pour l’audio et des drafts rapides. Utilisez cette page pour comparer des prompts Kling AI, des patterns de contrôle du mouvement et des réglages propres à chaque modèle avant d’ouvrir la page Kling correspondante.',
+      'Parcourez des exemples vidéo IA Kling, des prompts, des réglages réutilisables et des schemas image-vers-video pour Kling 3 Pro et Kling 3 Standard, puis explorez les configurations Kling plus anciennes encore prises en charge pour des flux antérieurs, des clips courts prêts pour l’audio et des brouillons rapides. Utilisez cette page pour comparer des prompts Kling AI, des schemas de contrôle du mouvement et des réglages propres à chaque modèle avant d’ouvrir la page Kling correspondante.',
     summary:
-      'Kling 3 Pro et Kling 3 Standard mènent cette page pour les exemples vidéo IA Kling, les prompts, les réglages, les patterns image-to-video et la lecture des sorties, tandis que Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme setups Kling plus anciens encore pris en charge.',
+      'Kling 3 Pro et Kling 3 Standard mènent cette page pour les exemples vidéo IA Kling, les prompts, les réglages, les schemas image-vers-video et la lecture des sorties, tandis que Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme configurations Kling plus anciennes encore prises en charge.',
     promptPatterns:
       'Commencez par une action claire, une consigne caméra et un objectif visuel unique. Les prompts Kling AI se comparent mieux quand la structure du prompt reste stable et que seul le modèle ou le réglage change.',
     strengthsLimits:
-      'Partez d’une image source solide, d’une seule instruction de mouvement et d’un objectif caméra clair afin que les sorties image-to-video de Kling AI restent plus faciles à comparer entre Pro et Standard.',
+      'Partez d’une image source solide, d’une seule instruction de mouvement et d’un objectif caméra clair afin que les sorties image-vers-video de Kling AI restent plus faciles à comparer entre Pro et Standard.',
     pricingNotes:
       'Gardez la durée, le ratio et les réglages de sortie alignés quand vous comparez des résultats vidéo IA Kling. Cela aide à lire plus proprement le comportement du prompt, le choix de modèle et le coût par clip avant d’ouvrir une page modèle.',
     faq: [
       {
         question: 'Quelle durée peuvent atteindre les vidéos Kling AI ?',
         answer:
-          'Kling 3 Pro et Kling 3 Standard prennent en charge des rendus de 3 à 15 secondes en 1080p. Kling 2.6 Pro convient mieux à des clips audio-ready plus courts de 5 à 10 secondes, et Kling 2.5 Turbo sert surtout à des drafts silencieux rapides de 5 ou 10 secondes.',
+          'Kling 3 Pro et Kling 3 Standard prennent en charge des rendus de 3 à 15 secondes en 1080p. Kling 2.6 Pro convient mieux à des clips courts prêts pour l’audio de 5 à 10 secondes, et Kling 2.5 Turbo sert surtout à des brouillons silencieux rapides de 5 ou 10 secondes.',
       },
       {
         question: 'Combien de temps Kling AI met-il pour générer une vidéo ?',
         answer:
-          'Le temps de rendu dépend du modèle Kling, de la durée du clip, des réglages et de la file d’attente. Les runs de draft plus courts sur Kling 3 Standard ou Kling 2.5 Turbo sont généralement les plus rapides pour tester des prompts, tandis que les rendus multi-plans ou avec audio prennent plus de temps.',
+          'Le temps de rendu dépend du modèle Kling, de la durée du clip, des réglages et de la file d’attente. Les rendus de brouillon plus courts sur Kling 3 Standard ou Kling 2.5 Turbo sont généralement les plus rapides pour tester des prompts, tandis que les rendus multi-plans ou avec audio prennent plus de temps.',
       },
       {
         question: 'Quel modèle Kling AI utiliser pour les prompts et les exemples ?',
         answer:
-          'Commencez par Kling 3 Standard si vous voulez tester des prompts à moindre coût, faire des drafts répétables et rester sur le comportement actuel de Kling 3. Passez à Kling 3 Pro si vous avez besoin d’un meilleur contrôle de scène, de séquences multi-plans plus exigeantes et de sorties finales plus prioritaires.',
+          'Commencez par Kling 3 Standard si vous voulez tester des prompts à moindre coût, faire des brouillons répétables et rester sur le comportement actuel de Kling 3. Passez à Kling 3 Pro si vous avez besoin d’un meilleur contrôle de scène, de séquences multi-plans plus exigeantes et de sorties finales plus prioritaires.',
       },
       {
-        question: 'Comment utiliser Kling AI pour des tests de prompt en image-to-video ?',
+        question: 'Comment utiliser Kling AI pour des tests de prompt en image-vers-video ?',
         answer:
-          'Partez d’une image source claire, ajoutez une seule instruction de mouvement et un objectif caméra précis. Les tests Kling AI en image-to-video se lisent mieux quand la structure du prompt reste stable et que seul le modèle ou le réglage change.',
+          'Partez d’une image source claire, ajoutez une seule instruction de mouvement et un objectif caméra précis. Les tests Kling AI en image-vers-video se lisent mieux quand la structure du prompt reste stable et que seul le modèle ou le réglage change.',
       },
       {
         question: 'Comment adapter des prompts Kling AI entre Kling 3 Pro et Kling 3 Standard ?',
@@ -489,15 +489,15 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   seedance: {
     metaTitle: 'Exemples vidéo IA Seedance, prompts et réglages | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples vidéo IA Seedance avec prompts, réglages et prix par clip pour Seedance 2.0, Seedance 2.0 Fast et le workflow Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
+      'Parcourez des exemples vidéo IA Seedance avec prompts, réglages et prix par clip pour Seedance 2.0, Seedance 2.0 Fast et le flux Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
     heroTitle: 'Exemples vidéo IA Seedance, prompts et réglages',
-    subtitle: 'Exemples vidéo IA Seedance, prompts, réglages et sorties pour les workflows Seedance actuels et les versions encore prises en charge.',
+    subtitle: 'Exemples vidéo IA Seedance, prompts, réglages et sorties pour les flux Seedance actuels et les versions encore prises en charge.',
     intro:
-      'Parcourez des exemples vidéo IA Seedance, des prompts et des réglages réutilisables pour Seedance 2.0 et Seedance 2.0 Fast, puis explorez la configuration Seedance 1.5 Pro encore prise en charge pour des workflows plus anciens et des clips plus courts. Utilisez cette page pour comparer des workflows vidéo Seedance, des structures de prompt et des patterns de sortie avant d’ouvrir la page modèle Seedance correspondante.',
+      'Parcourez des exemples vidéo IA Seedance, des prompts et des réglages réutilisables pour Seedance 2.0 et Seedance 2.0 Fast, puis explorez la configuration Seedance 1.5 Pro encore prise en charge pour des flux plus anciens et des clips plus courts. Utilisez cette page pour comparer des flux vidéo Seedance, des structures de prompt et des schemas de sortie avant d’ouvrir la page modèle Seedance correspondante.',
     summary:
-      'Seedance 2.0 et Seedance 2.0 Fast structurent d’abord cette page d’exemples vidéo IA Seedance, tandis que Seedance 1.5 Pro reste disponible plus bas comme setup plus ancien encore pris en charge pour des clips courts et répétables.',
+      'Seedance 2.0 et Seedance 2.0 Fast structurent d’abord cette page d’exemples vidéo IA Seedance, tandis que Seedance 1.5 Pro reste disponible plus bas comme configuration plus ancienne encore prise en charge pour des clips courts et répétables.',
     promptPatterns:
-      'Un objectif de plan clair, puis contraintes caméra/environnement. Les prompts compacts donnent les résultats les plus réguliers sur les workflows vidéo IA Seedance.',
+      'Un objectif de plan clair, puis contraintes caméra/environnement. Les prompts compacts donnent les résultats les plus réguliers sur les flux vidéo IA Seedance.',
     strengthsLimits:
       'Seedance est utile quand vous cherchez une caméra stable et un mouvement lisible. Limitez la complexité de scène.',
     pricingNotes:
@@ -510,25 +510,25 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quel modèle vidéo IA Seedance faut-il utiliser pour les exemples et les tests de prompt ?',
         answer:
-          'Commencez par Seedance 2.0 Fast si vous voulez des drafts moins coûteux et des tests de prompt plus rapides, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, l’audio natif et des sorties plus prêtes pour la production.',
+          'Commencez par Seedance 2.0 Fast si vous voulez des brouillons moins coûteux et des tests de prompt plus rapides, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, l’audio natif et des sorties plus prêtes pour la production.',
       },
       {
-        question: 'Quels réglages influencent le plus le prix sur les workflows vidéo Seedance ?',
+        question: 'Quels réglages influencent le plus le prix sur les flux vidéo Seedance ?',
         answer:
-          'La durée et la résolution restent les premiers facteurs de prix sur les workflows vidéo Seedance, puis viennent les options propres au workflow.',
+          'La durée et la résolution restent les premiers facteurs de prix sur les flux vidéo Seedance, puis viennent les options propres au flux.',
       },
     ],
   },
   ltx: {
     metaTitle: 'Exemples de prompts, réglages et sorties LTX 2.3 | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples de prompts LTX 2.3 Pro et LTX 2.3 Fast, des réglages, des sorties et des patterns image-vers-vidéo, puis consultez les workflows LTX 2 encore pris en charge sur MaxVideoAI.',
+      'Parcourez des exemples de prompts LTX 2.3 Pro et LTX 2.3 Fast, des réglages, des sorties et des schemas image-vers-vidéo, puis consultez les flux LTX 2 encore pris en charge sur MaxVideoAI.',
     heroTitle: 'Exemples de prompts, réglages et sorties LTX 2.3',
-    subtitle: 'Exemples de prompts, réglages, sorties et patterns image-vers-vidéo IA pour les workflows LTX 2.3 actuels.',
+    subtitle: 'Exemples de prompts, réglages, sorties et schemas image-vers-vidéo IA pour les flux LTX 2.3 actuels.',
     intro:
-      'Parcourez les exemples de prompts, les réglages réutilisables et les patterns de sortie de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme setups encore pris en charge pour des workflows plus anciens, des bases de prompts historiques et du contexte de migration. Utilisez cette page pour étudier la structure des prompts, les patterns image-vers-vidéo IA et les réglages propres à chaque modèle avant d’ouvrir la page LTX correspondante.',
+      'Parcourez les exemples de prompts, les réglages réutilisables et les schemas de sortie de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme configurations encore prises en charge pour des flux plus anciens, des bases de prompts historiques et du contexte de migration. Utilisez cette page pour étudier la structure des prompts, les schemas image-vers-vidéo IA et les réglages propres à chaque modèle avant d’ouvrir la page LTX correspondante.',
     summary:
-      'LTX 2.3 Pro et LTX 2.3 Fast mènent cette page pour les exemples de prompts, les réglages, les sorties et les patterns image-vers-vidéo, tandis que LTX 2 et LTX 2 Fast restent disponibles plus bas pour les workflows plus anciens et le contexte de migration.',
+      'LTX 2.3 Pro et LTX 2.3 Fast mènent cette page pour les exemples de prompts, les réglages, les sorties et les schemas image-vers-vidéo, tandis que LTX 2 et LTX 2 Fast restent disponibles plus bas pour les flux plus anciens et le contexte de migration.',
     promptPatterns:
       'Commencez par des structures de prompts LTX 2.3 réutilisables pour des plans produit, des clips cinématiques courts et des tests de mouvement cohérents qui se transforment en sorties vidéo répétables, puis adaptez-les à votre scène.',
     strengthsLimits:
@@ -559,14 +559,14 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quel modèle LTX utiliser : LTX 2.3 Pro ou LTX 2.3 Fast ?',
         answer:
-          'Utilisez LTX 2.3 Pro quand vous cherchez la meilleure qualité actuelle et des workflows avancés comme l’audio, Extend et Retake. Utilisez LTX 2.3 Fast quand vous voulez tester des prompts plus vite, à moindre coût, et itérer sur des brouillons plus longs.',
+          'Utilisez LTX 2.3 Pro quand vous cherchez la meilleure qualité actuelle et des flux avancés comme l’audio, Extend et Retake. Utilisez LTX 2.3 Fast quand vous voulez tester des prompts plus vite, à moindre coût, et itérer sur des brouillons plus longs.',
       },
     ],
   },
   pika: {
     subtitle: 'Exemples Pika pensés pour des boucles courtes, un style social affirmé et un montage rapide.',
     intro:
-      'Cette page Pika cible les formats courts et stylisés. Elle permet de cloner des schémas de mouvement efficaces puis d’ajuster le sujet et le style sans refaire tout le setup.',
+      'Cette page Pika cible les formats courts et stylisés. Elle permet de cloner des schémas de mouvement efficaces puis d’ajuster le sujet et le style sans refaire toute la configuration.',
     promptPatterns:
       'Commencez par le style, ajoutez ensuite l’action principale, puis une consigne de caméra concise.',
     strengthsLimits:
@@ -940,8 +940,8 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
         answer: 'Oui. Ouvrez un exemple et réutilisez son prompt et ses réglages dans votre workspace.',
       },
       {
-        question: 'Les exemples couvrent-ils les workflows texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA ?',
-        answer: 'Oui. La galerie couvre le texte-vers-vidéo IA, l’image-vers-vidéo IA et certains workflows vidéo-vers-vidéo IA lorsque les modèles sous-jacents les prennent en charge.',
+        question: 'Les exemples couvrent-ils les flux texte-vers-vidéo IA, image-vers-vidéo IA et vidéo-vers-vidéo IA ?',
+        answer: 'Oui. La galerie couvre le texte-vers-vidéo IA, l’image-vers-vidéo IA et certains flux vidéo-vers-vidéo IA lorsque les modèles sous-jacents les prennent en charge.',
       },
       {
         question: 'Le prix est-il affiché pour chaque exemple ?',
@@ -952,7 +952,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
         answer: 'Le comportement varie selon le mode, les réglages et le contexte de rendu.',
       },
       {
-        question: 'Où comparer les specs et limites des modèles ?',
+        question: 'Où comparer les caractéristiques et limites des modèles ?',
         answer: 'Utilisez les pages modèles pour les caractéristiques et limites, et la page moteurs pour choisir selon le cas d’usage.',
       },
       {
@@ -1029,7 +1029,7 @@ function buildGenericLocalizedModelData(
       subtitle: `Exemples ${label} sur toute la famille, avec prompts réutilisables, réglages et repères de prix.`,
       intro: `Utilisez cette page pour relire des exemples ${label} avant de lancer de nouveaux rendus. ${variantsSentence} Comparez mouvement, cadrage, durée et prix par clip, puis ouvrez les pages modèles liées pour les specs et limites propres à chaque mode.`,
       promptPatterns: `Les exemples ${label} sont plus fiables quand le prompt sépare sujet, mouvement caméra, environnement et durée. Commencez par un clip court, puis itérez sur le cadrage et le mouvement.`,
-      strengthsLimits: `Cette galerie sert à comparer comment la famille ${label} gère le mouvement, la composition et la cohérence. Les capacités changent encore selon le modèle et le mode, donc validez le workflow exact sur la page modèle avant de passer en production.`,
+      strengthsLimits: `Cette galerie sert à comparer comment la famille ${label} gère le mouvement, la composition et la cohérence. Les capacités changent encore selon le modèle et le mode, donc validez le flux exact sur la page modèle avant de passer en production.`,
       pricingNotes: `Le prix par clip varie selon le modèle, la durée, la résolution et le mode. Gardez le même brief pour comparer correctement coût et qualité dans la famille ${label}.`,
       faq: [
         {

@@ -326,7 +326,7 @@ function buildMainVideoHeroLine(locale: AppLocale, modelLabel: string, specificL
     return compactLeadCopy(normalizedSpecificLine, 110);
   }
   if (locale === 'fr') {
-    return `Exemple de video AI ${modelLabel} avec prompt, reglages, duree, format et prix.`;
+    return `Exemple de video IA ${modelLabel} avec prompt, reglages, duree, format et prix.`;
   }
   if (locale === 'es') {
     return `Ejemplo de video con IA de ${modelLabel} con prompt, ajustes, duracion, formato y precio.`;
@@ -451,7 +451,7 @@ export default async function ExamplesPage({ params, searchParams }: ExamplesPag
   const loadMoreLabel = paginationContent.loadMore ?? galleryUiCopy.loadMore;
   const longDescription =
     locale === 'fr'
-      ? "Parcourez des exemples de vidéo IA par marque, avec prompt, réglages, durée et prix par clip. Utilisez cette page pour comparer des patterns texte-vers-vidéo IA, image-vers-vidéo IA et certains workflows vidéo-vers-vidéo IA, puis ouvrez les pages modèles pour les caractéristiques, limites et détails de mode."
+      ? "Parcourez des exemples de vidéo IA par marque, avec prompt, réglages, durée et prix par clip. Utilisez cette page pour comparer des schémas texte-vers-vidéo IA, image-vers-vidéo IA et certains flux vidéo-vers-vidéo IA, puis ouvrez les pages modèles pour les caractéristiques, limites et détails de mode."
       : locale === 'es'
         ? 'Explora ejemplos de video con IA por marca, con prompt, ajustes, duración y precio por clip. Usa esta página para comparar patrones de text-to-video AI, image-to-video AI y algunos workflows de video-to-video AI, y abre las páginas de modelos para ver especificaciones, límites y detalles por modo.'
         : 'Browse AI video examples by model, including prompt, settings, duration, and price per clip. Use this hub to compare text-to-video AI, image-to-video AI, and selected video-to-video AI patterns across brands, then open model pages for specs, limits, and mode details.';
@@ -469,7 +469,7 @@ export default async function ExamplesPage({ params, searchParams }: ExamplesPag
   const heroLead = modelLanding ? heroBody : compactLeadCopy(heroBody, 152);
   const klingSectionTitles = isKlingLanding
     ? locale === 'fr'
-      ? ['Prompts Kling AI a reutiliser', 'Patterns image-to-video', 'Reglages et choix du modele']
+      ? ['Prompts Kling AI a reutiliser', 'Schemas image-vers-video', 'Reglages et choix du modele']
       : locale === 'es'
         ? ['Prompts de Kling AI para reutilizar', 'Patrones image-to-video', 'Ajustes y eleccion del modelo']
         : ['Kling AI prompts to reuse', 'Image-to-video prompt patterns', 'Settings and model fit']

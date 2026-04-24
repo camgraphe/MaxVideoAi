@@ -2799,6 +2799,7 @@ export default async function CompareDetailPage({
       value: formatTemplate(pricingTemplate, {
         engine: formatEngineName(pricingWinner === 'left' ? left : right),
         pricing: pricingSummary,
+        tarifs: pricingSummary,
       }),
       accent: pricingWinner,
     });

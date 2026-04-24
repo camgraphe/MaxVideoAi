@@ -345,6 +345,9 @@ function ExampleCard({
   // pre-optimized /_next/image URL and breaking the request.
   const posterSrc = video.rawPosterUrl ?? null;
   const watchAnchorText = buildWatchAnchorText(locale, video);
+  const playingLabel = locale === 'fr' ? 'Lecture' : locale === 'es' ? 'Reproduciendo' : 'Playing';
+  const recreateLabel =
+    locale === 'fr' ? 'Recréer ce plan' : locale === 'es' ? 'Recrear esta toma' : 'Recreate this shot';
 
   return (
     <div
@@ -415,7 +418,7 @@ function ExampleCard({
             fallbackClassName="line-clamp-2 text-[13px] font-semibold leading-snug text-text-primary sm:text-sm"
           />
           <p className="text-[10px] text-text-secondary sm:text-[11px]">
-            {video.aspectRatio ?? 'Auto'} · {video.durationSec}s {videoReady ? '· Playing' : ''}
+            {video.aspectRatio ?? 'Auto'} · {video.durationSec}s {videoReady ? `· ${playingLabel}` : ''}
           </p>
           {showRecreateLink && video.recreateHref ? (
             <div className="pt-1">
@@ -424,7 +427,7 @@ function ExampleCard({
                 prefetch={false}
                 className="pointer-events-auto text-[11px] font-semibold text-brand transition hover:text-brand-hover"
               >
-                Recreate this shot →
+                {recreateLabel} →
               </Link>
             </div>
           ) : null}

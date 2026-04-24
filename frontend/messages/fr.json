@@ -147,15 +147,15 @@
       },
       {
         "title": "Veo 3 : texte‑vers‑vidéo cinématique pour créatifs",
-        "body": "Veo 3.1 comble l’écart entre storyboard précis et mouvement abouti, surtout quand les livrables publicitaires exigent une voix off synchronisée. Notre routage garde la latence prévisible et permet aux réalisateurs de comparer preset rapide et file standard avant de réserver un studio. Consultez les garde‑fous, formats et exemples prêts pour la narration sur la {{veo:fiche Veo 3.1}} ou activez le mode Fast lorsque la vitesse d’itération prime sur l’audio ou la longueur. Le workspace expose aussi un changelog pour suivre les ajustements de motion control, de qualité audio ou de politique."
+        "body": "Veo 3.1 comble l’écart entre storyboard précis et mouvement abouti, surtout quand les livrables publicitaires exigent une voix off synchronisée. Notre routage garde la latence prévisible et permet aux réalisateurs de comparer préréglage rapide et file standard avant de réserver un studio. Consultez les garde‑fous, formats et exemples prêts pour la narration sur la {{veo:fiche Veo 3.1}} ou activez le mode rapide lorsque la vitesse d’itération prime sur l’audio ou la longueur. L’espace de travail expose aussi un changelog pour suivre les ajustements de contrôle du mouvement, de qualité audio ou de politique."
       },
       {
         "title": "Pika 2.2 pour le social rapide",
-        "body": "Quand il faut produire des boucles ludiques ou du short‑form, Pika 2.2 délivre plusieurs formats pour un budget réduit. MaxVideoAI propose des presets prêts à l’emploi afin de passer des reels verticaux aux visuels carrés sans quitter le workspace. Comparez texte‑vers‑vidéo et image‑vers‑vidéo dans notre {{pika:guide Pika}} et réutilisez des prompts déjà validés pour les campagnes brand safe. Des QA quotidiens signalent toute dérive de style afin de relancer, upscaler ou passer la main aux animateurs."
+        "body": "Quand il faut produire des boucles ludiques ou des formats courts, Pika 2.2 délivre plusieurs formats pour un budget réduit. MaxVideoAI propose des préréglages prêts à l’emploi afin de passer des reels verticaux aux visuels carrés sans quitter l’espace de travail. Comparez texte‑vers‑vidéo et image‑vers‑vidéo dans notre {{pika:guide Pika}} et réutilisez des prompts déjà validés pour les campagnes sûres pour la marque. Des contrôles qualité quotidiens signalent toute dérive de style afin de relancer, améliorer ou passer la main aux animateurs."
       },
       {
         "title": "Comment MaxVideoAI orchestre Fal.ai",
-        "body": "Fal.ai alimente l’ossature multi‑moteurs de MaxVideoAI, ce qui nous permet d’absorber les pics tout en offrant une interface cohérente. Notre couche d’orchestration garde les prompts portables, journalise chaque rendu et expose les diagnostics pour savoir quand relancer ou basculer vers un autre moteur comme {{veoFast:Veo 3.1 Fast}} ou {{hailuo:MiniMax Hailuo}} pour des rendus stylisés. Les équipes disposent aussi des grilles tarifaires, pistes d’audit et notes de conformité dans un même espace, avec des playbooks automatisés pour escalader les priorités ou changer de région lors des pics."
+        "body": "Fal.ai alimente l’ossature multi‑moteurs de MaxVideoAI, ce qui nous permet d’absorber les pics tout en offrant une interface cohérente. Notre couche d’orchestration garde les prompts portables, journalise chaque rendu et expose les diagnostics pour savoir quand relancer ou basculer vers un autre moteur comme {{veoFast:Veo 3.1 Fast}} ou {{hailuo:MiniMax Hailuo}} pour des rendus stylisés. Les équipes disposent aussi des grilles tarifaires, pistes d’audit et notes de conformité dans un même espace, avec des guides automatisés pour remonter les priorités ou changer de région lors des pics."
       }
     ],
     "comparison": {
@@ -166,7 +166,7 @@
           "label": "Sora 2",
           "title": "Priorité à la fidélité",
           "points": [
-            "Modèle frontier avec audio natif",
+            "Modèle de pointe avec audio natif",
             "Boucle de validation stricte, files plus longues",
             "Idéal pour les campagnes premium et les briefs ciné"
           ]
@@ -175,8 +175,8 @@
           "label": "Veo 3.1",
           "title": "Vitesse cinématique",
           "points": [
-            "Allie précision storyboard et itération rapide",
-            "Permutation simple entre files standard et fast",
+            "Allie précision du storyboard et itération rapide",
+            "Permutation simple entre files standard et rapide",
             "Audio prêt pour interviews, pubs et explainers"
           ]
         },
@@ -207,7 +207,7 @@
       }
     ],
     "cta": {
-      "body": "Vous cherchez des recettes de prompts séquencées ? Consultez les derniers guides sur le {{blog:blog MaxVideoAI}} pour des walkthroughs de narration et des nouvelles des moteurs."
+      "body": "Vous cherchez des recettes de prompts séquencées ? Consultez les derniers guides sur le {{blog:blog MaxVideoAI}} pour des pas-à-pas de narration et des nouvelles des moteurs."
     }
   },
   "footer": {
@@ -1477,12 +1477,12 @@
     "hero": {
       "title": "Exemples de vidéo IA que vous pouvez cloner.",
       "subtitle": "Survolez pour lire en boucle, cliquez pour agrandir.\nChaque clip prévisualise le mouvement et le style que vous pouvez recréer dans MaxVideoAI.",
-      "body": "Parcourez des exemples vidéo IA avec prompt, format, durée et prix affichés par clip. Utilisez ce hub pour passer en revue des workflows texte-vers-vidéo IA, image-vers-vidéo IA et certains workflows vidéo-vers-vidéo IA par marque, puis ouvrez les pages modèles pour les specs, limites et prix exacts. Une page de marque peut inclure plusieurs modèles et modes."
+      "body": "Parcourez des exemples vidéo IA avec prompt, format, durée et prix affichés par clip. Utilisez ce hub pour passer en revue des flux texte-vers-vidéo IA, image-vers-vidéo IA et certains flux vidéo-vers-vidéo IA par marque, puis ouvrez les pages modèles pour les caractéristiques, limites et prix exacts. Une page de marque peut inclure plusieurs modèles et modes."
     },
     "items": [
       {
         "title": "Sora 2 cinématique",
-        "engine": "Sora 2 · Text-to-video · 16:9",
+        "engine": "Sora 2 · Texte-vers-vidéo · 16:9",
         "description": "Passe cinématique capturant lumière atmosphérique et parallaxe.",
         "alt": "Exemple de clip Sora 2.",
         "meta": {
@@ -1501,7 +1501,7 @@
       },
       {
         "title": "Flythrough de marque Veo 3",
-        "engine": "Veo 3.1 · Image-to-video · 16:9",
+        "engine": "Veo 3.1 · Image-vers-vidéo · 16:9",
         "description": "Flythrough riche en profondeur qui met l'accent sur le contrôle caméra.",
         "alt": "Exemple de clip Veo 3.",
         "meta": {
@@ -1520,7 +1520,7 @@
       },
       {
         "title": "Storyboard Veo 3.1 Fast",
-        "engine": "Veo 3.1 Fast · Text-to-video · 16:9",
+        "engine": "Veo 3.1 Fast · Texte-vers-vidéo · 16:9",
         "description": "File rapide avec audio optionnel pour valider le motion avant le rendu final.",
         "alt": "Exemple de clip Veo 3.1 Fast.",
         "meta": {
@@ -1539,7 +1539,7 @@
       },
       {
         "title": "Boucle sociale Pika 2.2",
-        "engine": "Pika 2.2 · Text-to-video · 16:9",
+        "engine": "Pika 2.2 · Texte-vers-vidéo · 16:9",
         "description": "Boucle sociale rythmée avec accents de mouvement stylisés.",
         "alt": "Exemple de clip Pika 2.2.",
         "meta": {
@@ -1909,12 +1909,12 @@
       "withAudio": "audio activé",
       "withoutAudio": "sortie muette"
     },
-      "create": {
-        "title": "Créer le vôtre",
-        "subtitle": "Envie de générer une vidéo comme celle-ci ?",
-        "body": "Lancez un rendu avec ce prompt ou chargez-le dans l'atelier pour le remixer avec votre moteur, durée ou audio préféré.",
-        "cta": "Générer →"
-      },
+    "create": {
+      "title": "Créer le vôtre",
+      "subtitle": "Envie de générer une vidéo comme celle-ci ?",
+      "body": "Lancez un rendu avec ce prompt ou chargez-le dans l'atelier pour le remixer avec votre moteur, durée ou audio préféré.",
+      "cta": "Générer →"
+    },
     "recreate": {
       "title": "Recréer cette vidéo",
       "body": "Chargez ce rendu dans votre workspace avec les réglages d'origine.",
@@ -3791,133 +3791,133 @@
   },
   "comparePage": {
     "meta": {
-      "title": "{left} vs {right} — Specs & prix | MaxVideoAI",
-      "titleFallback": "Moteurs vidéo IA — Specs & prix | MaxVideoAI",
-      "description": "Comparez {left} vs {right} sur MaxVideoAI avec des prompts identiques, des specs clés et un scorecard sur 11 critères.",
+      "title": "{left} vs {right} — Caractéristiques & prix | MaxVideoAI",
+      "titleFallback": "Moteurs vidéo IA — Caractéristiques & prix | MaxVideoAI",
+      "description": "Comparez {left} vs {right} sur MaxVideoAI avec des prompts identiques, des caractéristiques clés et une grille de scores sur 11 critères.",
       "slugOverrides": {
         "kling-2-6-pro-vs-ltx-2": {
           "title": "Kling 2.6 Pro vs LTX 2 — Vitesse ou qualité | MaxVideoAI",
-          "description": "Test face à face avec prompts identiques : qualité, vitesse, prix, modes et scorecard en 11 points. Choisissez le gagnant selon le cas d'usage."
+          "description": "Test face à face avec prompts identiques : qualité, vitesse, prix, modes et grille de scores en 11 points. Choisissez le gagnant selon le cas d'usage."
         },
         "ltx-2-fast-vs-wan-2-6": {
           "title": "LTX 2 Fast vs WAN 2.6 — Qualité, vitesse & coût | MaxVideoAI",
-          "description": "Comparez LTX 2 Fast vs WAN 2.6 avec les mêmes prompts, les specs clés, le prix et un scorecard en 11 points. Voyez vitesse/stabilité vs support vidéo→vidéo."
+          "description": "Comparez LTX 2 Fast vs WAN 2.6 avec les mêmes prompts, les caractéristiques clés, le prix et une grille de scores en 11 points. Voyez vitesse/stabilité vs support vidéo→vidéo."
         },
         "veo-3-1-vs-veo-3-1-fast": {
           "title": "Veo 3.1 vs Veo 3.1 Fast | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Veo 3.1 vs Veo 3.1 Fast sur MaxVideoAI avec des prompts identiques : specs, tarifs, arbitrages de vitesse et qualité de sortie côte à côte."
+          "description": "Comparez Veo 3.1 vs Veo 3.1 Fast sur MaxVideoAI avec des prompts identiques : caractéristiques, tarifs, arbitrages de vitesse et qualité de sortie côte à côte."
         },
         "veo-3-1-fast-vs-veo-3-1-lite": {
           "title": "Veo 3.1 Fast vs Veo 3.1 Lite | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Veo 3.1 Fast vs Veo 3.1 Lite sur MaxVideoAI avec des prompts identiques : arbitrages fast vs lite, specs, tarifs, comportement audio natif et qualité de sortie côte à côte."
+          "description": "Comparez Veo 3.1 Fast vs Veo 3.1 Lite sur MaxVideoAI avec des prompts identiques : arbitrages rapide vs léger, caractéristiques, tarifs, comportement audio natif et qualité de sortie côte à côte."
         },
         "wan-2-5-vs-wan-2-6": {
-          "title": "WAN 2.5 vs WAN 2.6 — Quoi de neuf + specs | MaxVideoAI",
-          "description": "Voyez ce qui change dans WAN 2.6 vs 2.5 : clips plus longs, sortie multi-plan, support vidéo→vidéo, prix et scorecard en 11 points avec prompts identiques."
+          "title": "WAN 2.5 vs WAN 2.6 — nouveautés et caractéristiques | MaxVideoAI",
+          "description": "Voyez ce qui change dans WAN 2.6 vs 2.5 : clips plus longs, sortie multi-plan, support vidéo→vidéo, prix et grille de scores en 11 points avec prompts identiques."
         },
         "ltx-2-vs-wan-2-6": {
           "title": "LTX 2 vs WAN 2.6 — Qualité, modes & coût | MaxVideoAI",
-          "description": "Comparez LTX 2 vs WAN 2.6 avec les mêmes prompts : qualité, mouvement, texte, modes, prix et scorecard en 11 points. Choisissez le meilleur pour votre workflow."
+          "description": "Comparez LTX 2 vs WAN 2.6 avec les mêmes prompts : qualité, mouvement, texte, modes, prix et grille de scores en 11 points. Choisissez le meilleur pour votre flux de production."
         },
         "ltx-2-fast-vs-wan-2-5": {
           "title": "LTX 2 Fast vs WAN 2.5 — Qualité, vitesse & coût | MaxVideoAI",
-          "description": "Comparez LTX 2 Fast vs WAN 2.5 avec des prompts identiques, les specs clés, le prix et un scorecard en 11 points. Choisissez le meilleur moteur pour votre workflow."
+          "description": "Comparez LTX 2 Fast vs WAN 2.5 avec des prompts identiques, les caractéristiques clés, le prix et une grille de scores en 11 points. Choisissez le meilleur moteur pour votre flux de production."
         },
         "kling-3-pro-vs-wan-2-6": {
           "title": "Kling 3 Pro vs WAN 2.6 — Qualité, audio & coût | MaxVideoAI",
-          "description": "Comparez Kling 3 Pro vs WAN 2.6 avec des prompts identiques : qualité, audio, vitesse, modes, prix et scorecard en 11 points."
+          "description": "Comparez Kling 3 Pro vs WAN 2.6 avec des prompts identiques : qualité, audio, vitesse, modes, prix et grille de scores en 11 points."
         },
         "kling-3-pro-vs-veo-3-1": {
           "title": "Kling 3 Pro vs Veo 3.1 | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Kling 3 Pro vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : specs, prix, contrôle de scène, comportement de l’audio natif et qualité de sortie côte à côte."
+          "description": "Comparez Kling 3 Pro vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, contrôle de scène, comportement de l’audio natif et qualité de sortie côte à côte."
         },
         "ltx-2-3-pro-vs-veo-3-1": {
           "title": "LTX 2.3 Pro vs Veo 3.1 | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez LTX 2.3 Pro vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : specs, tarifs, comportement audio et qualité de sortie côte à côte."
+          "description": "Comparez LTX 2.3 Pro vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : caractéristiques, tarifs, comportement audio et qualité de sortie côte à côte."
         },
         "ltx-2-vs-veo-3-1-fast": {
           "title": "LTX 2 vs Veo 3.1 Fast — Vitesse ou qualité | MaxVideoAI",
-          "description": "Comparez LTX 2 vs Veo 3.1 Fast : vitesse / temps de file, coût, durée max et qualité de sortie, testés avec des prompts identiques et un scorecard."
+          "description": "Comparez LTX 2 vs Veo 3.1 Fast : vitesse / temps de file, coût, durée max et qualité de sortie, testés avec des prompts identiques et une grille de scores."
         },
         "ltx-2-vs-veo-3-1": {
           "title": "LTX 2 vs Veo 3.1 — Qualité, coût & modes | MaxVideoAI",
-          "description": "Comparez LTX 2 vs Google Veo 3.1 avec des prompts identiques : qualité, réalisme du mouvement, lisibilité du texte, modes, prix et scorecard en 11 points."
+          "description": "Comparez LTX 2 vs Google Veo 3.1 avec des prompts identiques : qualité, réalisme du mouvement, lisibilité du texte, modes, prix et grille de scores en 11 points."
         },
         "seedance-1-5-pro-vs-seedance-2-0": {
           "title": "Seedance 1.5 Pro vs Seedance 2.0 — ce qui change et quand passer à la nouvelle version | MaxVideoAI",
-          "description": "Comparez Seedance 1.5 Pro vs Seedance 2.0 : ce qui change, quand passer à la nouvelle version, les specs actuelles, les prix et les tests avec les mêmes prompts."
+          "description": "Comparez Seedance 1.5 Pro vs Seedance 2.0 : ce qui change, quand passer à la nouvelle version, les caractéristiques actuelles, les prix et les tests avec les mêmes prompts."
         },
         "seedance-2-0-vs-veo-3-1": {
           "title": "Seedance 2.0 vs Veo 3.1 | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Seedance 2.0 vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : specs, prix, workflows audio et résultats côte à côte."
+          "description": "Comparez Seedance 2.0 vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, flux audio et résultats côte à côte."
         },
         "seedance-2-0-vs-seedance-2-0-fast": {
           "title": "Seedance 2.0 vs Seedance 2.0 Fast | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Seedance 2.0 vs Seedance 2.0 Fast sur MaxVideoAI avec des prompts identiques : arbitrage standard vs fast, specs, prix et qualité de sortie côte à côte."
+          "description": "Comparez Seedance 2.0 vs Seedance 2.0 Fast sur MaxVideoAI avec des prompts identiques : arbitrage standard vs rapide, caractéristiques, prix et qualité de sortie côte à côte."
         },
         "kling-3-pro-vs-seedance-2-0": {
           "title": "Kling 3 Pro vs Seedance 2.0 | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Kling 3 Pro vs Seedance 2.0 sur MaxVideoAI avec des prompts identiques : specs, prix, contrôle de scène et qualité multi-plans."
+          "description": "Comparez Kling 3 Pro vs Seedance 2.0 sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, contrôle de scène et qualité multi-plans."
         },
         "seedance-2-0-fast-vs-veo-3-1-fast": {
           "title": "Seedance 2.0 Fast vs Veo 3.1 Fast | Comparatif de modèles vidéo IA rapides | MaxVideoAI",
-          "description": "Comparez Seedance 2.0 Fast vs Veo 3.1 Fast sur MaxVideoAI avec des prompts identiques : vitesse de draft, specs, prix et qualité de sortie."
+          "description": "Comparez Seedance 2.0 Fast vs Veo 3.1 Fast sur MaxVideoAI avec des prompts identiques : vitesse de brouillon, caractéristiques, prix et qualité de sortie."
         },
         "ltx-2-3-pro-vs-seedance-2-0": {
           "title": "LTX 2.3 Pro vs Seedance 2.0 | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez LTX 2.3 Pro vs Seedance 2.0 sur MaxVideoAI avec des prompts identiques : specs, prix, comportement audio et qualité de sortie côte à côte."
+          "description": "Comparez LTX 2.3 Pro vs Seedance 2.0 sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, comportement audio et qualité de sortie côte à côte."
         },
         "seedance-2-0-vs-sora-2": {
           "title": "Seedance 2.0 vs Sora 2 | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Seedance 2.0 vs Sora 2 sur MaxVideoAI avec des prompts identiques : specs, prix, comportement audio et qualité cinématique côte à côte."
+          "description": "Comparez Seedance 2.0 vs Sora 2 sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, comportement audio et qualité cinématique côte à côte."
         },
         "seedance-1-5-pro-vs-veo-3-1": {
           "title": "Seedance 1.5 Pro vs Veo 3.1 — Vitesse ou qualité | MaxVideoAI",
-          "description": "Comparez Seedance 1.5 Pro vs Google Veo 3.1 avec des prompts identiques : qualité cinéma, vitesse, prix, modes et scorecard en 11 points."
+          "description": "Comparez Seedance 1.5 Pro vs Google Veo 3.1 avec des prompts identiques : qualité cinéma, vitesse, prix, modes et grille de scores en 11 points."
         },
         "ltx-2-vs-seedance-2-0": {
           "title": "LTX 2 vs Seedance 2 — Scores & prix | MaxVideoAI",
-          "description": "Comparez LTX 2 vs Seedance 2.0 avec les mêmes prompts : qualité, vitesse, modes, prix et scorecard en 11 points pour choisir selon le cas d'usage."
+          "description": "Comparez LTX 2 vs Seedance 2.0 avec les mêmes prompts : qualité, vitesse, modes, prix et grille de scores en 11 points pour choisir selon le cas d'usage."
         },
         "kling-3-standard-vs-veo-3-1": {
           "title": "Kling 3 Std vs Veo 3.1 — Scores & prix | MaxVideoAI",
-          "description": "Comparez Kling 3 Standard vs Google Veo 3.1 avec des prompts identiques : qualité, vitesse, prix, modes et scorecard en 11 points."
+          "description": "Comparez Kling 3 Standard vs Google Veo 3.1 avec des prompts identiques : qualité, vitesse, prix, modes et grille de scores en 11 points."
         },
         "kling-3-pro-vs-sora-2": {
           "title": "Kling 3 Pro vs Sora 2 — Scores & prix | MaxVideoAI",
-          "description": "Comparez Kling 3 Pro vs OpenAI Sora 2 avec des prompts identiques : qualité, vitesse, durée max, prix et scorecard en 11 points."
+          "description": "Comparez Kling 3 Pro vs OpenAI Sora 2 avec des prompts identiques : qualité, vitesse, durée max, prix et grille de scores en 11 points."
         },
         "kling-3-pro-vs-sora-2-pro": {
           "title": "Kling 3 Pro vs Sora 2 Pro | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Kling 3 Pro vs Sora 2 Pro sur MaxVideoAI avec des prompts identiques : specs, prix, contrôle de scène, comportement audio et qualité de sortie côte à côte."
+          "description": "Comparez Kling 3 Pro vs Sora 2 Pro sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, contrôle de scène, comportement audio et qualité de sortie côte à côte."
         },
         "sora-2-vs-sora-2-pro": {
           "title": "Sora 2 vs Sora 2 Pro — Différences & coût | MaxVideoAI",
-          "description": "Comparez Sora 2 vs Sora 2 Pro : qualité de sortie, audio natif, résolution/durée max et prix, testés avec des prompts identiques et un scorecard."
+          "description": "Comparez Sora 2 vs Sora 2 Pro : qualité de sortie, audio natif, résolution/durée max et prix, testés avec des prompts identiques et une grille de scores."
         },
         "kling-3-pro-vs-kling-3-standard": {
           "title": "Kling 3 Pro vs Kling 3 Standard | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez Kling 3 Pro vs Kling 3 Standard sur MaxVideoAI avec des prompts identiques : workflow current premium vs workflow current à coût réduit, specs, prix et qualité de sortie côte à côte."
+          "description": "Comparez Kling 3 Pro vs Kling 3 Standard sur MaxVideoAI avec des prompts identiques : flux premium actuel vs flux actuel à coût réduit, caractéristiques, prix et qualité de sortie côte à côte."
         },
         "kling-2-6-pro-vs-kling-3-pro": {
           "title": "Kling 2.6 Pro vs Kling 3 Pro — ce qui change et quand passer à la nouvelle version | MaxVideoAI",
-          "description": "Comparez Kling 2.6 Pro vs Kling 3 Pro : ce qui change, quand passer à la nouvelle version, les specs actuelles, les prix et les tests avec les mêmes prompts."
+          "description": "Comparez Kling 2.6 Pro vs Kling 3 Pro : ce qui change, quand passer à la nouvelle version, les caractéristiques actuelles, les prix et les tests avec les mêmes prompts."
         },
         "kling-2-6-pro-vs-seedance-2-0": {
           "title": "Kling 2.6 Pro vs Seedance 2 — Scores & prix | MaxVideoAI",
-          "description": "Comparez Kling 2.6 Pro vs Seedance 2.0 avec des prompts identiques : qualité, audio, vitesse, prix et scorecard en 11 points."
+          "description": "Comparez Kling 2.6 Pro vs Seedance 2.0 avec des prompts identiques : qualité, audio, vitesse, prix et grille de scores en 11 points."
         },
         "kling-3-standard-vs-ltx-2": {
           "title": "Kling 3 Std vs LTX 2 — Vitesse ou qualité | MaxVideoAI",
-          "description": "Comparez Kling 3 Standard vs LTX 2 avec des prompts identiques : qualité, vitesse, prix, modes et scorecard en 11 points."
+          "description": "Comparez Kling 3 Standard vs LTX 2 avec des prompts identiques : qualité, vitesse, prix, modes et grille de scores en 11 points."
         },
         "ltx-2-3-fast-vs-ltx-2-3-pro": {
           "title": "LTX 2.3 Fast vs LTX 2.3 Pro | Comparatif de modèles vidéo IA | MaxVideoAI",
-          "description": "Comparez LTX 2.3 Fast vs LTX 2.3 Pro sur MaxVideoAI avec des prompts identiques : arbitrage fast vs pro actuel, specs, prix et qualité de sortie côte à côte."
+          "description": "Comparez LTX 2.3 Fast vs LTX 2.3 Pro sur MaxVideoAI avec des prompts identiques : arbitrage rapide vs pro actuel, caractéristiques, prix et qualité de sortie côte à côte."
         },
         "ltx-2-3-fast-vs-seedance-2-0-fast": {
           "title": "LTX 2.3 Fast vs Seedance 2.0 Fast | Comparatif de modèles vidéo IA rapides | MaxVideoAI",
-          "description": "Comparez LTX 2.3 Fast vs Seedance 2.0 Fast sur MaxVideoAI avec des prompts identiques : vitesse de draft, specs, prix et qualité de sortie côte à côte."
+          "description": "Comparez LTX 2.3 Fast vs Seedance 2.0 Fast sur MaxVideoAI avec des prompts identiques : vitesse de brouillon, caractéristiques, prix et qualité de sortie côte à côte."
         }
       },
       "descriptionFallback": "Comparaison face à face des moteurs vidéo IA avec les métriques et repères MaxVideoAI."
@@ -3925,13 +3925,13 @@
     "hero": {
       "back": "Retour aux comparatifs",
       "kicker": "Comparer les moteurs",
-      "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les specs clés et un scorecard sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
-      "introPrelaunch": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des prompts et rendus face à face (lorsqu’ils sont disponibles), les specs clés et un scorecard sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les specs complètes et des exemples de prompts.",
+      "intro": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des rendus face à face, les caractéristiques clés et une grille de scores sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les caractéristiques complètes et des exemples de prompts.",
+      "introPrelaunch": "Cette page compare {left} vs {right} sur MaxVideoAI avec les mêmes prompts, des prompts et rendus face à face (lorsqu’ils sont disponibles), les caractéristiques clés et une grille de scores sur 11 critères. Utilisez-la pour présélectionner la meilleure option, puis ouvrez chaque page moteur pour les caractéristiques complètes et des exemples de prompts.",
       "takeawaysTitle": "Points clés",
       "lastUpdatedLabel": "Mis à jour"
     },
     "scorecard": {
-      "title": "Scorecard (face à face)",
+      "title": "Grille de scores (face à face)",
       "subtitle": "Les scores reflètent la qualité et le contrôle sur MaxVideoAI selon 11 critères.",
       "provisionalNote": "Les scores pré-lancement sont provisoires et seront mis à jour dès que les rendus runtime et le prix final seront disponibles.",
       "strengthsLabel": "Points forts",
@@ -3959,9 +3959,9 @@
       "collapsePrompt": "Masquer le prompt complet"
     },
     "keySpecs": {
-      "title": "Specs clés (face à face)",
-      "subtitle": "Comparez les specs clés des modèles vidéo IA face à face (prix, entrées, résolution, durée, formats, audio et contrôles). Instantané haut niveau — voir la page moteur pour la liste complète et des exemples de prompts.",
-      "keyLabel": "Spec clé"
+      "title": "Caractéristiques clés (face à face)",
+      "subtitle": "Comparez les caractéristiques clés des modèles vidéo IA face à face (prix, entrées, résolution, durée, formats, audio et contrôles). Instantané haut niveau — voir la page moteur pour la liste complète et des exemples de prompts.",
+      "keyLabel": "Caractéristique clé"
     },
     "specLabels": {
       "pricing": "Tarifs (MaxVideoAI)",
@@ -3988,7 +3988,7 @@
       "subtitle": "Rendus face à face issus du même prompt sur MaxVideoAI. Prompts identiques ; les sorties peuvent varier selon le modèle.",
       "subtitlePrelaunch": "Prompts et rendus face à face (lorsqu’ils sont disponibles) sur MaxVideoAI. Les prompts sont identiques ; les sorties peuvent varier selon le modèle.",
       "note": "Jusqu’à 3 paires de prompts pour la clarté.",
-      "footer": "Cette comparaison face à face utilise des prompts identiques pour mettre en évidence les différences de mouvement, réalisme, fidélité humaine et lisibilité du texte. Pour les specs complètes, contrôles et plus d’exemples, ouvrez chaque page moteur."
+      "footer": "Cette comparaison face à face utilise des prompts identiques pour mettre en évidence les différences de mouvement, réalisme, fidélité humaine et lisibilité du texte. Pour les caractéristiques complètes, contrôles et plus d’exemples, ouvrez chaque page moteur."
     },
     "prelaunch": {
       "title": "Comparaison pré-lancement",
@@ -3996,7 +3996,7 @@
     },
     "faq": {
       "title": "FAQ",
-      "subtitle": "Réponses rapides sur {left} vs {right} sur MaxVideoAI (prix, modes, specs et raisons des écarts).",
+      "subtitle": "Réponses rapides sur {left} vs {right} sur MaxVideoAI (prix, modes, caractéristiques et raisons des écarts).",
       "validating": "en cours de validation",
       "pricingDiff": "Les tarifs varient selon le moteur et les réglages (durée, résolution, audio). Actuellement, {left} commence à {leftValue} vs {right} commence à {rightValue}.",
       "capabilityDiff": "{label} : {left} est {leftValue} vs {right} est {rightValue}.",
@@ -4006,9 +4006,9 @@
       "capabilityLabel": "Capacité",
       "outputLabel": "Résolution max",
       "q1": "Que sont {left} et {right} ?",
-      "a1": "{left} et {right} sont des moteurs de génération vidéo IA disponibles sur MaxVideoAI. Cette page les compare face à face avec les mêmes prompts, les specs clés et les données ci-dessus.",
+      "a1": "{left} et {right} sont des moteurs de génération vidéo IA disponibles sur MaxVideoAI. Cette page les compare face à face avec les mêmes prompts, les caractéristiques clés et les données ci-dessus.",
       "q2": "Quel est le meilleur : {left} ou {right} ?",
-      "a2": "Cela dépend du workflow. Utilisez le scorecard et les showdowns “même prompt” pour comparer l’adhérence au prompt, le réalisme du mouvement, la fidélité humaine et la lisibilité du texte — puis ouvrez chaque profil pour les détails complets.",
+      "a2": "Cela dépend du flux de production. Utilisez la grille de scores et les duels “même prompt” pour comparer l’adhérence au prompt, le réalisme du mouvement, la fidélité humaine et la lisibilité du texte — puis ouvrez chaque profil pour les détails complets.",
       "q3": "Lequel est le moins cher sur MaxVideoAI ?",
       "a3": "Les tarifs varient selon le moteur et les réglages (durée, résolution, audio). Actuellement, {left} commence à {leftValue} et {right} commence à {rightValue} (voir « Tarifs (MaxVideoAI) » pour les détails).",
       "q4": "Quelles sont les plus grandes différences entre {left} et {right} ?",
@@ -4017,24 +4017,24 @@
       "q6": "Supportent-ils First/Last frame ou les références ?",
       "a6": "First/Last frame est {firstLeft} vs {firstRight}. Image/style de référence : {refImgLeft} vs {refImgRight} ; Vidéo de référence : {refVidLeft} vs {refVidRight}.",
       "q7": "Quelles sont la résolution max, la durée et les ratios ?",
-      "a7": "Sortie max : {resLeft} / {durLeft} pour {left} et {resRight} / {durRight} pour {right}. Ratios supportés : {arLeft} vs {arRight} (voir Specs clés pour la liste complète).",
+      "a7": "Sortie max : {resLeft} / {durLeft} pour {left} et {resRight} / {durRight} pour {right}. Ratios supportés : {arLeft} vs {arRight} (voir les caractéristiques clés pour la liste complète).",
       "q8": "Supportent-ils l’audio natif et le lip sync ?",
       "a8": "Sortie audio : {audioOutLeft} vs {audioOutRight}. Audio natif : {audioGenLeft} vs {audioGenRight}, et lip sync : {lipLeft} vs {lipRight} (certains champs peuvent être en validation).",
       "q9": "MaxVideoAI ajoute-t-il un watermark ?",
       "a9": "Non. Les exports MaxVideoAI sont sans watermark (“Watermark : No (MaxVideoAI)”).",
       "q10": "Pourquoi les résultats diffèrent avec le même prompt ?",
       "a10": "Même avec des prompts identiques, les modèles interprètent différemment les instructions et utilisent des jeux de données distincts. C’est pourquoi la section Showdown existe : même prompt, rendus face à face.",
-      "q11": "Où trouver les specs complètes, contrôles et plus d’exemples de prompts ?",
-      "a11": "Ouvrez les pages moteur complètes pour toutes les specs, contrôles et plus de prompts : /models/{leftSlug} et /models/{rightSlug}. Vous pouvez aussi parcourir plus de rendus dans les galeries."
+      "q11": "Où trouver les caractéristiques complètes, contrôles et plus d’exemples de prompts ?",
+      "a11": "Ouvrez les pages moteur complètes pour toutes les caractéristiques, contrôles et plus de prompts : /models/{leftSlug} et /models/{rightSlug}. Vous pouvez aussi parcourir plus de rendus dans les galeries."
     },
     "summary": {
-      "scorecardLabel": "Leader du scorecard",
-      "scorecardLabelPrelaunch": "Leader actuel du scorecard (provisoire)",
+      "scorecardLabel": "Leader de la grille de scores",
+      "scorecardLabelPrelaunch": "Leader actuel de la grille de scores (provisoire)",
       "pricingLabel": "Moins cher sur MaxVideoAI",
       "durationLabel": "Durée max",
-      "scorecardTemplate": "Leader du scorecard : {engine} mène {wins}/{total}{best}.",
-      "scorecardTemplatePrelaunch": "Actuellement en tête du scorecard (provisoire) : {engine} mène {wins}/{total}{best}.",
-      "pricingTemplate": "Moins cher : {engine} ({pricing}).",
+      "scorecardTemplate": "Leader de la grille de scores : {engine} mène {wins}/{total}{best}.",
+      "scorecardTemplatePrelaunch": "Actuellement en tête de la grille de scores (provisoire) : {engine} mène {wins}/{total}{best}.",
+      "pricingTemplate": "Moins cher : {engine} ({tarifs}).",
       "durationTemplate": "Durée max : {engine} ({duration}).",
       "specTemplate": "{label} : {engine} ({leftValue} vs {rightValue}).",
       "resolutionTemplate": "Résolution max : {engine} ({leftValue} vs {rightValue}).",

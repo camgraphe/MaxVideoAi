@@ -229,7 +229,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       eyebrow: 'Comparer les moteurs',
       title: 'Comparatifs de moteurs vidéo IA',
       intro:
-        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les matchups utiles, filtrer sur les limites clés et valider le prix avant rendu. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
+        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant rendu. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
       compareNow: {
         left: 'Moteur A',
         right: 'Moteur B',
@@ -247,7 +247,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     },
     sections: {
       popularTitle: 'Comparatifs populaires',
-      popularIntro: 'Une sélection équilibrée des matchups les plus demandés entre familles de moteurs.',
+      popularIntro: 'Une sélection équilibrée des duels les plus demandés entre familles de moteurs.',
       useCasesTitle: 'Comparer par cas d’usage',
       useCasesIntro: 'Choisissez un objectif, puis ouvrez un comparatif recommandé.',
       enginesTitle: 'Choisir un moteur à comparer',
@@ -300,7 +300,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
     catalogLabels: {
       sortAll: 'Tous',
       toggles: {
-        includeWaitlistEarlyAccess: 'Inclure waitlist / accès anticipé',
+        includeWaitlistEarlyAccess: 'Inclure liste d’attente / accès anticipé',
       },
       filters: {
         mode: 'Mode',
@@ -324,7 +324,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
         resolution720: '720p+',
         resolution1080: '1080p+',
         resolution4k: '4K',
-        statusLive: 'Live',
+        statusLive: 'Disponible',
         statusEarly: 'Accès anticipé',
       },
       specs: {
@@ -337,12 +337,12 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
         no: 'Non',
         unknown: 'Inconnu',
         secondsSuffix: 's',
-        statusLive: 'Live',
+        statusLive: 'Disponible',
         statusEarly: 'Accès anticipé',
       },
       ctas: {
         model: 'Page modèle',
-        compare: 'Comparer vs',
+        compare: 'Comparer avec',
       },
       empty: 'Aucun moteur ne correspond à ces filtres.',
     },
@@ -365,7 +365,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       {
         question: 'Peut-on comparer des moteurs texte-vers-vidéo et image-vers-vidéo ?',
         answer:
-          'Oui. L’espace inclut des matchups mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides. Oui - vous pouvez aussi inclure les moteurs vidéo-vers-vidéo quand ils sont disponibles.',
+          'Oui. L’espace inclut des duels mixtes pour comparer des moteurs orientés prompt texte, image, ou hybrides. Vous pouvez aussi inclure les moteurs vidéo-vers-vidéo quand ils sont disponibles.',
       },
       {
         question: 'Comment trancher entre deux moteurs proches ?',
