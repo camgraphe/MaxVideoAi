@@ -525,10 +525,11 @@ export function MediaLightbox({
                           playsInline
                           autoPlay
                           muted
+                          preload="metadata"
                         />
                       ) : audioUrl ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(124,85,234,0.28),_transparent_52%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))] px-6 py-6 text-center">
-                          {thumbUrl ? <Image src={thumbUrl} alt="" fill className="object-cover opacity-20" /> : null}
+                          {thumbUrl ? <Image src={thumbUrl} alt="" fill className="object-cover opacity-20" sizes="(max-width: 1024px) 100vw, calc(100vw - 360px)" /> : null}
                           <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="/assets/icons/audio.svg" alt="" className="h-10 w-10 opacity-95" />
@@ -541,7 +542,7 @@ export function MediaLightbox({
                           </div>
                         </div>
                       ) : imageUrl || thumbUrl ? (
-                        <Image src={imageUrl ?? thumbUrl ?? ''} alt="" fill className="object-contain" />
+                        <Image src={imageUrl ?? thumbUrl ?? ''} alt="" fill className="object-contain" sizes="(max-width: 1024px) 100vw, calc(100vw - 360px)" />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[12px] font-medium uppercase tracking-micro text-text-muted">
                           Preview unavailable

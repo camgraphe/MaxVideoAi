@@ -567,6 +567,7 @@ export function CompositePreviewDock({
                                 src={item.thumb as string}
                                 alt=""
                                 fill
+                                sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
                                 className={clsx(
                                   'pointer-events-none transition-opacity duration-150',
                                   mediaFitClass,
@@ -599,6 +600,7 @@ export function CompositePreviewDock({
                             src={item.thumb}
                             alt=""
                             fill
+                            sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
                             className={clsx('pointer-events-none', mediaFitClass, shouldZoom ? 'transition-transform' : null)}
                             onLoadingComplete={() => markReady(itemKey)}
                           />

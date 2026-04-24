@@ -51,6 +51,9 @@ const IN_PROGRESS_POLL_MS = 5000;
 const IN_PROGRESS_LIMIT = 8;
 const RECENT_SAMPLE_LIMIT = 20;
 const TEMPLATE_LIMIT = 6;
+const DASHBOARD_ROW_THUMB_SIZES = '(max-width: 640px) calc(100vw - 48px), 112px';
+const DASHBOARD_CARD_THUMB_SIZES = '(max-width: 640px) calc(100vw - 48px), (max-width: 1280px) 50vw, 360px';
+const DASHBOARD_TOOL_THUMB_SIZES = '104px';
 
 const MediaLightbox = dynamic(
   () => import('@/components/MediaLightbox').then((mod) => mod.MediaLightbox),
@@ -1456,7 +1459,7 @@ function InProgressRow({
     <div className="flex flex-col gap-3 rounded-input border border-hairline bg-surface-2/70 p-2.5 sm:flex-row sm:items-center">
       <div className="relative h-20 w-full overflow-hidden rounded-input border border-hairline bg-surface sm:h-16 sm:w-28">
         {job.thumbUrl ? (
-          <Image src={job.thumbUrl} alt="" fill className="object-cover" />
+          <Image src={job.thumbUrl} alt="" fill className="object-cover" sizes={DASHBOARD_ROW_THUMB_SIZES} />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
         )}
@@ -1583,7 +1586,7 @@ function RecentGrid({
                   className="relative min-h-0 h-auto w-full aspect-[1.9/1] overflow-hidden rounded-card border border-hairline bg-[#05070d] p-0"
                 >
                   {group.hero.thumbUrl ? (
-                    <Image src={group.hero.thumbUrl} alt="" fill className="object-contain" />
+                    <Image src={group.hero.thumbUrl} alt="" fill className="object-contain" sizes={DASHBOARD_CARD_THUMB_SIZES} />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
                   )}
@@ -1776,7 +1779,13 @@ function ToolsPanel({ copy }: { copy: DashboardCopy }) {
               className="group flex gap-3 rounded-input border border-hairline bg-surface-2/70 p-2.5 transition-colors hover:border-border-hover hover:bg-surface"
             >
               <div className="relative h-[74px] w-[104px] shrink-0 overflow-hidden rounded-[6px] bg-[#05070d]">
-                <Image src={imageUrl} alt="" fill className="object-cover object-top transition-transform duration-200 group-hover:scale-[1.03]" />
+                <Image
+                  src={imageUrl}
+                  alt=""
+                  fill
+                  className="object-cover object-top transition-transform duration-200 group-hover:scale-[1.03]"
+                  sizes={DASHBOARD_TOOL_THUMB_SIZES}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
               </div>
               <div className="min-w-0 flex-1">

@@ -3150,6 +3150,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           <div className="flex w-[320px] justify-end pl-2 pr-0 py-4">
             <GalleryRail
               engine={selectedEngineCaps}
+              engineRegistry={engineCapsList}
               feedType="image"
               activeGroups={pendingGroups}
               jobFilter={isImageJob}
@@ -3163,6 +3164,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
           <GalleryRail
             engine={selectedEngineCaps}
+            engineRegistry={engineCapsList}
             feedType="image"
             activeGroups={pendingGroups}
             jobFilter={isImageJob}

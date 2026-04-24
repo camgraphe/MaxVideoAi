@@ -284,6 +284,7 @@ export function QuadPreviewPanel({
                           muted
                           playsInline
                           loop
+                          preload={isPlaying ? 'metadata' : 'none'}
                           poster={preview?.thumbUrl}
                         />
                       ) : tileStatus !== 'failed' && preview?.thumbUrl ? (
@@ -292,6 +293,7 @@ export function QuadPreviewPanel({
                           src={preview.thumbUrl}
                           alt=""
                           fill
+                          sizes="(max-width: 768px) 50vw, 320px"
                           className="absolute inset-0 object-cover pointer-events-none"
                           priority={false}
                         />
@@ -417,6 +419,7 @@ export function QuadPreviewPanel({
                         playsInline
                         autoPlay={isPlaying}
                         loop
+                        preload={isPlaying ? 'metadata' : 'none'}
                         poster={tile.thumbUrl}
                       />
                     ) : tile.status !== 'failed' && tile.thumbUrl ? (
@@ -424,7 +427,7 @@ export function QuadPreviewPanel({
                         src={tile.thumbUrl}
                         alt=""
                         fill
-                        sizes="(min-width: 768px) 50vw, 100vw"
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="absolute inset-0 object-cover pointer-events-none"
                         priority={false}
                       />

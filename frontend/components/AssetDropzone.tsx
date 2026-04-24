@@ -612,7 +612,7 @@ export function AssetDropzone({
                       </div>
                     ) : (
                       <>
-                        <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-cover" />
+                        <video src={asset.previewUrl} controls preload="metadata" className="absolute inset-0 h-full w-full bg-black object-cover" />
                         <AudioEqualizerBadge tone="light" size="sm" label={assetCopy.videoIncludesAudio} />
                       </>
                     )}

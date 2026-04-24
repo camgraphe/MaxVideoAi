@@ -1599,14 +1599,6 @@ const requestedEngineToken = useMemo(
   () => normalizeEngineToken(resolvedRequestedEngineId),
   [resolvedRequestedEngineId]
 );
-if (typeof window !== 'undefined') {
-  console.log('[generate] requested engine params', {
-    raw: requestedEngineId,
-    resolved: resolvedRequestedEngineId,
-    token: requestedEngineToken,
-    search: searchParams?.toString() ?? '',
-  });
-}
 const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
 const loginRedirectTarget = useMemo(() => {
   const base = pathname ?? '/app';
@@ -7042,6 +7034,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           <div className="flex w-[320px] justify-end pl-2 pr-0 py-4">
             <GalleryRail
               engine={selectedEngine}
+              engineRegistry={engines}
               activeGroups={normalizedPendingGroups}
               onOpenGroup={openGroupViaGallery}
               onGroupAction={handleGalleryGroupAction}
@@ -7055,6 +7048,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
           <GalleryRail
             engine={selectedEngine}
+            engineRegistry={engines}
             activeGroups={normalizedPendingGroups}
             onOpenGroup={openGroupViaGallery}
             onGroupAction={handleGalleryGroupAction}

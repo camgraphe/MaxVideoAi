@@ -122,7 +122,7 @@ function AudioJobCard({
         ) : (
           <button type="button" className="block h-full w-full text-left" onClick={onSelect}>
             <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_48%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))]">
-              <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+              <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" loading="lazy" decoding="async" />
               <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10">
                 <img src="/assets/icons/audio.svg" alt="" className="h-8 w-8 opacity-90" />
               </div>

@@ -210,6 +210,7 @@ type EngineCategory = 'video' | 'image' | 'all';
 
 type UseEnginesOptions = {
   includeAverages?: boolean;
+  enabled?: boolean;
 };
 
 async function loadFallbackEngines(category: EngineCategory): Promise<EnginesResponse['engines']> {
@@ -218,6 +219,7 @@ async function loadFallbackEngines(category: EngineCategory): Promise<EnginesRes
 }
 
 export function useEngines(category: EngineCategory = 'video', options?: UseEnginesOptions) {
+  const enabled = options?.enabled !== false;
   const params = new URLSearchParams();
   if (category !== 'video') {
     params.set('category', category);
@@ -227,7 +229,7 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
   }
   const query = params.size > 0 ? `?${params.toString()}` : '';
   return useSWR<EnginesResponse>(
-    `static-engines:${category}:${options?.includeAverages ? 'avg' : 'base'}`,
+    enabled ? `static-engines:${category}:${options?.includeAverages ? 'avg' : 'base'}` : null,
     async () => {
       try {
         const response = await fetch(`/api/engines${query}`, { credentials: 'include' });

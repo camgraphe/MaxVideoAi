@@ -29,6 +29,7 @@ export interface GalleryFeedState {
 
 interface Props {
   engine: EngineCaps;
+  engineRegistry?: EngineCaps[];
   feedType?: 'video' | 'image';
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
@@ -95,6 +96,7 @@ function resolveDisplayedActiveGroup(
 
 export function GalleryRail({
   engine,
+  engineRegistry,
   feedType = 'video',
   activeGroups = [],
   onOpenGroup,
@@ -106,8 +108,12 @@ export function GalleryRail({
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
   const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: feedType });
-  const { data: enginesData } = useEngines('video', { includeAverages: false });
-  const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
+  const hasEngineRegistry = Array.isArray(engineRegistry) && engineRegistry.length > 0;
+  const { data: enginesData } = useEngines('video', { includeAverages: false, enabled: !hasEngineRegistry });
+  const engineList = useMemo(
+    () => (hasEngineRegistry ? engineRegistry : enginesData?.engines ?? []),
+    [engineRegistry, enginesData?.engines, hasEngineRegistry]
+  );
   const jobs = useMemo(() => {
     if (Array.isArray(stableJobs) && stableJobs.length) return stableJobs;
     return data?.flatMap((page) => page.jobs) ?? [];

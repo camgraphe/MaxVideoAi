@@ -27,12 +27,14 @@ export type GroupedJobAction =
   | 'remove'
   | 'save-image';
 
+const GROUPED_JOB_THUMB_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px';
+
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const baseClass = clsx('h-full w-full pointer-events-none', className);
   if (src.startsWith('data:')) {
     return <img src={src} alt={alt} className={baseClass} />;
   }
-  return <Image src={src} alt={alt} fill className={baseClass} />;
+  return <Image src={src} alt={alt} fill className={baseClass} sizes={GROUPED_JOB_THUMB_SIZES} />;
 }
 
 function GroupPreviewMedia({
@@ -98,7 +100,7 @@ function GroupPreviewMedia({
           muted
           playsInline
           loop
-          preload="auto"
+          preload={shouldPlay ? 'metadata' : 'none'}
           onLoadedData={() => setVideoReady(true)}
         />
       </div>
@@ -300,7 +302,13 @@ export function GroupedJobCard({
                         shouldPlay={hovered}
                       />
                     ) : previewThumb ? (
-                      <Image src={previewThumb} alt="" fill className="pointer-events-none object-contain" />
+                      <Image
+                        src={previewThumb}
+                        alt=""
+                        fill
+                        className="pointer-events-none object-contain"
+                        sizes={GROUPED_JOB_THUMB_SIZES}
+                      />
                     ) : null}
                   </div>
                   <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />

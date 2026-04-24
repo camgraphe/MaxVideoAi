@@ -22,7 +22,7 @@ function ThumbImage({ src, alt, className }: { src: string; alt: string; classNa
   if (src.startsWith('data:')) {
     return <img src={src} alt={alt} className={baseClass} />;
   }
-  return <Image src={src} alt={alt} fill className={baseClass} />;
+  return <Image src={src} alt={alt} fill className={baseClass} sizes="(max-width: 640px) 50vw, 320px" />;
 }
 
 export function AudioWaveformThumb({

@@ -315,14 +315,14 @@ export function AssetLibraryBrowser({
                     <div key={asset.id} className="overflow-hidden rounded-card border border-border/70 bg-surface shadow-card transition hover:border-text-primary/60">
                       <div className="relative bg-placeholder" style={{ aspectRatio: '16 / 9' }}>
                         {asset.kind === 'video' ? (
-                          <video src={asset.url} controls className="h-full w-full bg-black object-cover" />
+                          <video src={asset.url} controls preload="metadata" className="h-full w-full bg-black object-cover" />
                         ) : (
                           <Image
                             src={asset.url}
                             alt=""
                             fill
                             className="object-cover"
-                            sizes="(min-width: 1280px) 32vw, (min-width: 768px) 48vw, 100vw"
+                            sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 390px"
                           />
                         )}
                       </div>

@@ -372,10 +372,11 @@ function ResultPreview({
               className="h-full w-full object-cover"
               controls
               playsInline
+              preload="metadata"
             />
           ) : result?.audioUrl ? (
             <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_48%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))] px-6 py-6 text-center">
-              <img src={previewThumb} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />
+              <img src={previewThumb} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" loading="lazy" decoding="async" />
               <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10">
                 <img src="/assets/icons/audio.svg" alt="" className="h-10 w-10 opacity-95" />
               </div>
@@ -384,7 +385,7 @@ function ResultPreview({
               </p>
               <p className="relative mt-2 text-2xl font-semibold text-white">{copy.preview.audioReady}</p>
               <div className="relative mt-5 w-full max-w-xl">
-                <audio controls src={result.audioUrl} className="w-full" />
+                <audio controls src={result.audioUrl} className="w-full" preload="metadata" />
               </div>
             </div>
           ) : sourceVideo?.url ? (
