@@ -13,7 +13,7 @@ type CompareNowWidgetProps = {
   options: SelectOption[];
   defaultLeft: string;
   defaultRight: string;
-  engineMetaBySlug: Record<string, { overall: number | null; strengths: string | null }>;
+  engineMetaBySlug: Record<string, { overall: number | null; strengths: string | null; modes?: string[] }>;
   labels: {
     left: string;
     right: string;
@@ -22,6 +22,7 @@ type CompareNowWidgetProps = {
     noResults: string;
     strengthsLabel: string;
     strengthsFallback: string;
+    modeLabels: Record<string, string>;
   };
   className?: string;
   embedded?: boolean;
@@ -38,9 +39,39 @@ function renderOptionLabel(option: SelectOption): ReactNode {
 
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
-      <EngineIcon engine={{ id: String(option.value), label, brandId: brandId ?? undefined }} size={20} className="shrink-0" />
+      <EngineIcon engine={{ id: String(option.value), label, brandId: brandId ?? undefined }} size={18} className="shrink-0" />
       <span className="truncate">{label}</span>
     </span>
+  );
+}
+
+function modeChipLabel(mode: string, labels: CompareNowWidgetProps['labels']) {
+  return labels.modeLabels[mode] ?? mode.toUpperCase();
+}
+
+function resolveSelectedLabel(value: string, options: SelectOption[]) {
+  const option = options.find((entry) => String(entry.value) === String(value));
+  return option ? resolveRawLabel(option) : value;
+}
+
+function ScoreCircle({ value }: { value: number | null }) {
+  const percentage = value == null ? 0 : Math.max(0, Math.min(100, value * 10));
+
+  return (
+    <div
+      className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full p-[2px] shadow-[0_12px_30px_rgba(59,130,246,0.13)] sm:h-[84px] sm:w-[84px]"
+      style={{
+        background: `conic-gradient(#bfdbfe ${percentage}%, #eef5ff 0)`,
+      }}
+    >
+      <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-surface text-center shadow-inner">
+        <span className="text-[20px] font-semibold leading-none text-text-primary sm:text-[24px]">
+          {value != null ? value.toFixed(1) : '-'}
+          {value != null ? <span className="ml-0.5 align-super text-[8px] font-semibold text-text-muted sm:text-[9px]">/10</span> : null}
+        </span>
+        <span className="mt-1 text-[6px] font-semibold uppercase tracking-[0.22em] text-text-muted sm:text-[7px]">Score</span>
+      </div>
+    </div>
   );
 }
 
@@ -86,26 +117,8 @@ export function CompareNowWidget({
   );
   const leftMeta = engineMetaBySlug[left] ?? { overall: null, strengths: null };
   const rightMeta = engineMetaBySlug[right] ?? { overall: null, strengths: null };
-  const overallTone =
-    typeof leftMeta.overall === 'number' && typeof rightMeta.overall === 'number'
-      ? leftMeta.overall === rightMeta.overall
-        ? 'tie'
-        : leftMeta.overall > rightMeta.overall
-          ? 'left'
-          : 'right'
-      : 'none';
-  const leftOverallClass =
-    overallTone === 'left'
-      ? 'bg-emerald-500 text-white'
-      : overallTone === 'right'
-        ? 'bg-orange-500 text-white'
-        : 'bg-surface-2 text-text-primary';
-  const rightOverallClass =
-    overallTone === 'right'
-      ? 'bg-emerald-500 text-white'
-      : overallTone === 'left'
-        ? 'bg-orange-500 text-white'
-        : 'bg-surface-2 text-text-primary';
+  const leftLabel = resolveSelectedLabel(left, options);
+  const rightLabel = resolveSelectedLabel(right, options);
 
   return (
     <div
@@ -115,97 +128,124 @@ export function CompareNowWidget({
       )}
     >
       <div className="relative">
-        <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
-          <article className="rounded-[28px] border border-hairline bg-surface/90 p-4 sm:p-5 shadow-sm">
-            <div className="stack-gap-sm">
-              <div className="flex justify-center">
-                <div
-                  className={clsx(
-                    'flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold shadow-inner sm:h-14 sm:w-14 sm:text-xl',
-                    leftOverallClass
-                  )}
-                >
-                  {leftMeta.overall != null ? leftMeta.overall.toFixed(1) : '-'}
+        <div className="relative">
+          <div className="grid gap-3.5 lg:grid-cols-2 lg:gap-6">
+            <article className="relative rounded-[14px] border border-hairline bg-surface/95 p-3.5 shadow-sm sm:p-5">
+              <div className="flex flex-col items-center gap-3.5 text-center lg:flex-row lg:justify-between">
+                <div className="order-2 w-full max-w-[290px] lg:order-1">
+                  <h3 className="text-lg font-semibold leading-tight text-text-primary sm:text-xl">{leftLabel}</h3>
+                  <div className="mx-auto mt-3 max-w-[260px]">
+                    <SelectMenu
+                      options={leftOptions}
+                      value={left}
+                      searchable
+                      searchPlaceholder={labels.searchPlaceholder}
+                      filterText={(option) => {
+                        const raw = options.find((entry) => String(entry.value) === String(option.value));
+                        return raw ? resolveRawLabel(raw) : String(option.value);
+                      }}
+                      noResultsLabel={labels.noResults}
+                      onChange={(value) => {
+                        const next = String(value);
+                        if (!next || next === right) return;
+                        setLeft(next);
+                      }}
+                      buttonClassName="min-h-[38px] rounded-[10px] bg-surface text-xs shadow-sm"
+                    />
+                  </div>
+                  <p className="mx-auto mt-3 min-h-8 max-w-[250px] text-[11px] leading-4 text-text-secondary">
+                    <span className="font-semibold text-text-primary">{labels.strengthsLabel}:</span>{' '}
+                    {leftMeta.strengths ?? labels.strengthsFallback}
+                  </p>
+                  {leftMeta.modes?.length ? (
+                    <div className="mt-2.5 flex flex-wrap justify-center gap-1">
+                      {leftMeta.modes.slice(0, 3).map((mode) => (
+                        <span
+                          key={`${left}-${mode}`}
+                          className="rounded-full bg-surface-2 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-micro text-brand"
+                        >
+                          {modeChipLabel(mode, labels)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="order-1 lg:order-2">
+                  <ScoreCircle value={leftMeta.overall} />
                 </div>
               </div>
-              <label className="text-xs font-semibold uppercase tracking-micro text-text-muted">{labels.left}</label>
-              <SelectMenu
-                options={leftOptions}
-                value={left}
-                searchable
-                searchPlaceholder={labels.searchPlaceholder}
-                filterText={(option) => {
-                  const raw = options.find((entry) => String(entry.value) === String(option.value));
-                  return raw ? resolveRawLabel(raw) : String(option.value);
-                }}
-                noResultsLabel={labels.noResults}
-                onChange={(value) => {
-                  const next = String(value);
-                  if (!next || next === right) return;
-                  setLeft(next);
-                }}
-              />
-              <p className="text-center text-sm text-text-secondary">
-                {labels.strengthsLabel}: {leftMeta.strengths ?? labels.strengthsFallback}
-              </p>
-            </div>
-          </article>
+            </article>
 
-          <article className="rounded-[28px] border border-hairline bg-surface/90 p-4 sm:p-5 shadow-sm">
-            <div className="stack-gap-sm">
-              <div className="flex justify-center">
-                <div
-                  className={clsx(
-                    'flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold shadow-inner sm:h-14 sm:w-14 sm:text-xl',
-                    rightOverallClass
-                  )}
-                >
-                  {rightMeta.overall != null ? rightMeta.overall.toFixed(1) : '-'}
+            <div className="flex justify-center lg:hidden" aria-hidden>
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand text-[10px] font-semibold uppercase tracking-micro text-on-brand shadow">
+                VS
+              </span>
+            </div>
+
+            <article className="relative rounded-[14px] border border-hairline bg-surface/95 p-3.5 shadow-sm sm:p-5">
+              <div className="flex flex-col items-center gap-3.5 text-center lg:flex-row lg:justify-between">
+                <div className="order-1">
+                  <ScoreCircle value={rightMeta.overall} />
+                </div>
+                <div className="order-2 w-full max-w-[290px]">
+                  <h3 className="text-lg font-semibold leading-tight text-text-primary sm:text-xl">{rightLabel}</h3>
+                  <div className="mx-auto mt-3 max-w-[260px]">
+                    <SelectMenu
+                      options={rightOptions}
+                      value={right}
+                      searchable
+                      searchPlaceholder={labels.searchPlaceholder}
+                      filterText={(option) => {
+                        const raw = options.find((entry) => String(entry.value) === String(option.value));
+                        return raw ? resolveRawLabel(raw) : String(option.value);
+                      }}
+                      noResultsLabel={labels.noResults}
+                      onChange={(value) => {
+                        const next = String(value);
+                        if (!next || next === left) return;
+                        setRight(next);
+                      }}
+                      buttonClassName="min-h-[38px] rounded-[10px] bg-surface text-xs shadow-sm"
+                    />
+                  </div>
+                  <p className="mx-auto mt-3 min-h-8 max-w-[250px] text-[11px] leading-4 text-text-secondary">
+                    <span className="font-semibold text-text-primary">{labels.strengthsLabel}:</span>{' '}
+                    {rightMeta.strengths ?? labels.strengthsFallback}
+                  </p>
+                  {rightMeta.modes?.length ? (
+                    <div className="mt-2.5 flex flex-wrap justify-center gap-1">
+                      {rightMeta.modes.slice(0, 3).map((mode) => (
+                        <span
+                          key={`${right}-${mode}`}
+                          className="rounded-full bg-surface-2 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-micro text-brand"
+                        >
+                          {modeChipLabel(mode, labels)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
-              <label className="text-xs font-semibold uppercase tracking-micro text-text-muted">{labels.right}</label>
-              <SelectMenu
-                options={rightOptions}
-                value={right}
-                searchable
-                searchPlaceholder={labels.searchPlaceholder}
-                filterText={(option) => {
-                  const raw = options.find((entry) => String(entry.value) === String(option.value));
-                  return raw ? resolveRawLabel(raw) : String(option.value);
-                }}
-                noResultsLabel={labels.noResults}
-                onChange={(value) => {
-                  const next = String(value);
-                  if (!next || next === left) return;
-                  setRight(next);
-                }}
-              />
-              <p className="text-center text-sm text-text-secondary">
-                {labels.strengthsLabel}: {rightMeta.strengths ?? labels.strengthsFallback}
-              </p>
-            </div>
-          </article>
+            </article>
+          </div>
+
+          <div
+            className="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:flex"
+            aria-hidden
+          >
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border-4 border-surface bg-brand text-[10px] font-semibold uppercase tracking-micro text-on-brand shadow-[0_14px_30px_rgba(46,99,216,0.24)]">
+              VS
+            </span>
+          </div>
         </div>
 
-        <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:flex" aria-hidden>
-          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-lg font-semibold uppercase tracking-micro text-on-brand shadow-lg">
-            VS
-          </span>
-        </div>
-
-        <div className="mt-3 flex justify-center lg:hidden">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand text-xs font-semibold uppercase tracking-micro text-on-brand shadow">
-            VS
-          </span>
-        </div>
-
-        <div className="mt-5 flex justify-center">
+        <div className="mt-3.5 flex justify-center">
           <Link
             href={href}
             prefetch={false}
-            className="inline-flex min-h-[42px] items-center justify-center rounded-input bg-brand px-7 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover"
+            className="inline-flex min-h-[38px] items-center justify-center gap-2 rounded-input bg-brand px-5 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover"
           >
-            {labels.compare}
+            {labels.compare} <span aria-hidden>→</span>
           </Link>
         </div>
       </div>

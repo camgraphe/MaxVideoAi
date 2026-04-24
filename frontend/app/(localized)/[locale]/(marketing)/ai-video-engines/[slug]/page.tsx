@@ -2958,8 +2958,8 @@ export default async function CompareDetailPage({
 
         <section className="mx-auto max-w-[940px]">
           <div className="relative grid gap-4 md:grid-cols-2">
-            <article className="relative overflow-visible rounded-[16px] border border-hairline bg-surface p-6 shadow-card">
-              <div className="flex flex-col items-center gap-5 sm:flex-row-reverse">
+            <article className="relative flex overflow-visible rounded-[16px] border border-hairline bg-surface p-6 shadow-card">
+              <div className="flex w-full flex-col items-center gap-5 sm:flex-row-reverse">
                 <div
                   className="relative isolate grid h-[96px] w-[96px] shrink-0 place-items-center rounded-full p-[3px]"
                   style={leftScoreStyle}
@@ -3008,8 +3008,8 @@ export default async function CompareDetailPage({
               </div>
             </article>
 
-            <article className="relative overflow-visible rounded-[16px] border border-hairline bg-surface p-6 shadow-card">
-              <div className="flex flex-col items-center gap-5 sm:flex-row">
+            <article className="relative flex overflow-visible rounded-[16px] border border-hairline bg-surface p-6 shadow-card">
+              <div className="flex w-full flex-col items-center gap-5 sm:flex-row">
                 <div
                   className="relative isolate grid h-[96px] w-[96px] shrink-0 place-items-center rounded-full p-[3px]"
                   style={rightScoreStyle}

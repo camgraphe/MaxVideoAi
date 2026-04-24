@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { FAQSchema } from '@/components/seo/FAQSchema';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -30,6 +31,7 @@ type HubFaqEntry = {
 
 type HubCopy = {
   hero: {
+    eyebrow: string;
     title: string;
     intro: string;
     compareNow: {
@@ -40,6 +42,7 @@ type HubCopy = {
       noResults: string;
       strengthsLabel: string;
       strengthsFallback: string;
+      modeLabels: Record<string, string>;
     };
   };
   sections: {
@@ -74,17 +77,23 @@ type HubCopy = {
 const HUB_COPY: Record<AppLocale, HubCopy> = {
   en: {
     hero: {
+      eyebrow: 'Compare engines',
       title: 'Compare AI video engines',
       intro:
         'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter by key limits, and validate pricing before you render. It covers text-to-video, image-to-video, and video-to-video engines, then routes you to the right fit for your shot.',
       compareNow: {
         left: 'Engine A',
         right: 'Engine B',
-        compare: 'Compare',
+        compare: 'Compare engines',
         searchPlaceholder: 'Search engine...',
         noResults: 'No results',
         strengthsLabel: 'Strengths',
         strengthsFallback: 'General purpose video',
+        modeLabels: {
+          t2v: 'Text-to-video',
+          i2v: 'Image-to-video',
+          v2v: 'Video-to-video',
+        },
       },
     },
     sections: {
@@ -217,17 +226,23 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
   },
   fr: {
     hero: {
+      eyebrow: 'Comparer les moteurs',
       title: 'Comparatifs de moteurs vidéo IA',
       intro:
         'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les matchups utiles, filtrer sur les limites clés et valider le prix avant rendu. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
       compareNow: {
         left: 'Moteur A',
         right: 'Moteur B',
-        compare: 'Comparer',
+        compare: 'Comparer les moteurs',
         searchPlaceholder: 'Rechercher un moteur...',
         noResults: 'Aucun résultat',
         strengthsLabel: 'Points forts',
         strengthsFallback: 'Usage général vidéo',
+        modeLabels: {
+          t2v: 'Texte-vers-vidéo',
+          i2v: 'Image-vers-vidéo',
+          v2v: 'Vidéo-vers-vidéo',
+        },
       },
     },
     sections: {
@@ -361,17 +376,23 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
   },
   es: {
     hero: {
+      eyebrow: 'Comparar motores',
       title: 'Comparar motores de video con IA',
       intro:
         'Elige dos motores y abre una comparativa lado a lado con un clic. Usa este hub para revisar matchups útiles, filtrar por límites clave y validar precios antes de generar. Cubre texto a video, imagen a video y video a video, y te guía al motor más adecuado para tu toma.',
       compareNow: {
         left: 'Motor A',
         right: 'Motor B',
-        compare: 'Comparar',
+        compare: 'Comparar motores',
         searchPlaceholder: 'Buscar motor...',
         noResults: 'Sin resultados',
         strengthsLabel: 'Fortalezas',
         strengthsFallback: 'Uso general de video',
+        modeLabels: {
+          t2v: 'Texto a video',
+          i2v: 'Imagen a video',
+          v2v: 'Video a video',
+        },
       },
     },
     sections: {
@@ -576,6 +597,7 @@ export default async function AiVideoEnginesPage() {
   const engines = getHubEngines();
   const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
   const scoreMap = await loadHubEngineScoreMap();
+  const enginesBySlug = new Map(engines.map((engine) => [engine.modelSlug, engine]));
 
   const engineOptions = engines.map((engine) => ({ value: engine.modelSlug, label: engine.marketingName }));
   const popularComparisons = getPopularComparisons(engines).slice(0, 12);
@@ -613,6 +635,7 @@ export default async function AiVideoEnginesPage() {
       {
         overall: scoreMap.get(engine.modelSlug) ?? null,
         strengths: engine.bestFor ?? null,
+        modes: engine.modes,
       },
     ])
   );
@@ -630,6 +653,14 @@ export default async function AiVideoEnginesPage() {
   const showSeedanceSpotlight = Boolean(seedancePrelaunch && !engines.some((engine) => engine.modelSlug === 'seedance-2-0'));
   const seedanceCompareSlug = buildCanonicalCompareSlug('seedance-2-0', 'sora-2');
   const enginesToggleLabel = copy.sections.enginesToggle.replace('{count}', String(engineCards.length));
+  const quickStartComparisons = [
+    strategicSeedanceVeoComparison ?? defaultComparison ?? null,
+    strategicKlingVeoComparison,
+    showSeedanceSpotlight ? null : strategicSeedanceSoraComparison,
+    showSeedanceSpotlight ? null : strategicPikaSeedanceComparison,
+  ]
+    .filter((entry): entry is { slug: string; label: string } => entry != null)
+    .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.slug === entry.slug) === index);
 
   const faqJsonLdEntries = copy.faq.slice(0, 5).map((entry) => ({
     question: entry.question,
@@ -637,148 +668,155 @@ export default async function AiVideoEnginesPage() {
   }));
 
   return (
-    <div className="container-page max-w-6xl section">
+    <div className="container-page max-w-6xl pb-[var(--section-padding-y)] pt-6 sm:pt-8">
       <div className="stack-gap-lg">
-        <section className="relative min-h-[56vh] overflow-hidden rounded-[30px] border border-hairline bg-surface shadow-card sm:min-h-[60vh]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,rgba(59,130,246,0.14)_0%,rgba(59,130,246,0.02)_45%,rgba(0,0,0,0)_70%)]" />
-          <div className="relative z-10 flex h-full flex-col justify-center gap-6 p-5 sm:p-8 lg:p-10">
-            <header className="stack-gap-sm text-center">
-              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{copy.hero.title}</h1>
-              <p className="mx-auto max-w-4xl text-base leading-relaxed text-text-secondary">{copy.hero.intro}</p>
+        <section className="relative overflow-hidden py-2 sm:py-4">
+          <div className="pointer-events-none absolute -left-28 top-28 hidden h-56 w-56 opacity-45 lg:block" aria-hidden>
+            <div className="absolute left-8 top-16 h-24 w-24 rotate-45 rounded-[10px] border border-brand/15 bg-brand/5 shadow-[0_28px_80px_rgba(59,130,246,0.16)]" />
+            <div className="absolute left-20 top-2 h-28 w-28 rotate-45 rounded-[10px] border border-brand/12 bg-white/40" />
+            <div className="absolute left-0 top-8 h-20 w-20 rotate-45 rounded-[8px] border border-brand/10 bg-brand/5" />
+          </div>
+          <div className="pointer-events-none absolute -right-28 top-24 hidden h-60 w-60 opacity-40 lg:block" aria-hidden>
+            <div className="absolute right-10 top-20 h-28 w-28 rotate-45 rounded-[10px] border border-emerald-400/18 bg-emerald-400/6 shadow-[0_28px_80px_rgba(16,185,129,0.14)]" />
+            <div className="absolute right-24 top-0 h-24 w-24 rotate-45 rounded-[10px] border border-emerald-400/12 bg-white/35" />
+            <div className="absolute right-0 top-4 h-20 w-20 rotate-45 rounded-[8px] border border-emerald-400/10 bg-emerald-400/6" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-5xl">
+            <header className="mx-auto max-w-3xl text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-text-muted">{copy.hero.eyebrow}</p>
+              <h1 className="mt-2.5 text-[30px] font-semibold leading-tight text-text-primary sm:text-[42px]">
+                {copy.hero.title}
+              </h1>
+              <p className="mx-auto mt-3 max-w-2xl text-[13px] leading-6 text-text-secondary sm:text-[15px]">{copy.hero.intro}</p>
+              {showSeedanceSpotlight ? (
+                <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs font-semibold">
+                  <Link
+                    href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }}
+                    className="rounded-full border border-hairline bg-bg px-3 py-1.5 text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                  >
+                    {copy.sections.prelaunchModelLabel}
+                  </Link>
+                  <Link
+                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: seedanceCompareSlug } }}
+                    className="rounded-full border border-hairline bg-bg px-3 py-1.5 text-brand transition hover:border-brand hover:text-brandHover"
+                  >
+                    {copy.sections.prelaunchCompareLabel}
+                  </Link>
+                  <Link
+                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pikaSeedanceCompareSlug } }}
+                    className="rounded-full border border-hairline bg-bg px-3 py-1.5 text-brand transition hover:border-brand hover:text-brandHover"
+                  >
+                    {copy.sections.prelaunchCompareSecondaryLabel}
+                  </Link>
+                </div>
+              ) : null}
             </header>
-            <CompareNowWidget
-              options={engineOptions}
-              defaultLeft="seedance-2-0"
-              defaultRight="veo-3-1"
-              engineMetaBySlug={engineMetaBySlug}
-              labels={copy.hero.compareNow}
-              embedded
-              className="rounded-2xl border border-hairline bg-surface/95 p-4 shadow-card sm:p-5"
-            />
-            {strategicSeedanceVeoComparison ?? defaultComparison ? (
-              <p className="text-center text-xs text-text-muted">
-                {copy.sections.quickStartLabel}:{' '}
-                <Link
-                  href={{
-                    pathname: '/ai-video-engines/[slug]',
-                    params: { slug: (strategicSeedanceVeoComparison ?? defaultComparison)?.slug ?? 'seedance-2-0-vs-veo-3-1' },
-                  }}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
-                  {(strategicSeedanceVeoComparison ?? defaultComparison)?.label}
-                </Link>
-                .
-              </p>
-            ) : null}
-            {strategicKlingVeoComparison &&
-            strategicKlingVeoComparison.slug !== (strategicSeedanceVeoComparison ?? defaultComparison)?.slug ? (
-              <p className="text-center text-xs text-text-muted">
-                {copy.sections.quickStartLabel}:{' '}
-                <Link
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: strategicKlingVeoComparison.slug } }}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
-                  {strategicKlingVeoComparison.label}
-                </Link>
-                .
-              </p>
-            ) : null}
-            {showSeedanceSpotlight ? (
-              <p className="text-center text-xs text-text-muted">
-                {copy.sections.prelaunchSpotlightLabel}:{' '}
-                <Link
-                  href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
-                  {copy.sections.prelaunchModelLabel}
-                </Link>
-                {' · '}
-                <Link
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: seedanceCompareSlug } }}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
-                  {copy.sections.prelaunchCompareLabel}
-                </Link>
-                {' · '}
-                <Link
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pikaSeedanceCompareSlug } }}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
-                  {copy.sections.prelaunchCompareSecondaryLabel}
-                </Link>
-                .
-              </p>
-            ) : null}
-            {!showSeedanceSpotlight && strategicSeedanceSoraComparison ? (
-              <p className="text-center text-xs text-text-muted">
-                {copy.sections.quickStartLabel}:{' '}
-                <Link
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: strategicSeedanceSoraComparison.slug } }}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
-                  {strategicSeedanceSoraComparison.label}
-                </Link>
-                .
-              </p>
-            ) : null}
-            {!showSeedanceSpotlight &&
-            strategicPikaSeedanceComparison &&
-            strategicPikaSeedanceComparison.slug !== defaultComparison?.slug ? (
-              <p className="text-center text-xs text-text-muted">
-                {copy.sections.quickStartLabel}:{' '}
-                <Link
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: strategicPikaSeedanceComparison.slug } }}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
-                  {strategicPikaSeedanceComparison.label}
-                </Link>
-                .
-              </p>
-            ) : null}
+
+            <div className="mx-auto mt-6 max-w-4xl stack-gap-sm">
+              <CompareNowWidget
+                options={engineOptions}
+                defaultLeft="seedance-2-0"
+                defaultRight="veo-3-1"
+                engineMetaBySlug={engineMetaBySlug}
+                labels={copy.hero.compareNow}
+                embedded
+                className="p-0"
+              />
+              {quickStartComparisons.length ? (
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs">
+                  <span className="font-semibold uppercase tracking-micro text-text-muted">
+                    {copy.sections.quickStartLabel}
+                  </span>
+                  {quickStartComparisons.map((comparison) => (
+                    <Link
+                      key={comparison.slug}
+                      href={{ pathname: '/ai-video-engines/[slug]', params: { slug: comparison.slug } }}
+                      className="font-semibold text-brand transition hover:text-brandHover"
+                    >
+                      {comparison.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
         </section>
 
         <section className="stack-gap">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.popularTitle}</h2>
-          <p className="text-sm text-text-secondary">{copy.sections.popularIntro}</p>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {popularComparisons.map((comparison) => (
-              <article key={comparison.slug} className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.popularTitle}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-text-secondary">{copy.sections.popularIntro}</p>
+            </div>
+            <Link href="#all-comparisons" className="text-sm font-semibold text-brand transition hover:text-brandHover">
+              {copy.sections.allComparisonsTitle} →
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {popularComparisons.slice(0, 6).map((comparison) => {
+              const leftEngine = enginesBySlug.get(comparison.leftSlug);
+              const rightEngine = enginesBySlug.get(comparison.rightSlug);
+
+              return (
+                <article
+                  key={comparison.slug}
+                  className="group rounded-[16px] border border-hairline bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/35"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex shrink-0 items-center -space-x-2">
+                      <EngineIcon
+                        engine={{ id: comparison.leftSlug, label: leftEngine?.marketingName ?? comparison.leftName }}
+                        size={42}
+                        rounded="full"
+                        className="ring-4 ring-surface"
+                      />
+                      <EngineIcon
+                        engine={{ id: comparison.rightSlug, label: rightEngine?.marketingName ?? comparison.rightName }}
+                        size={42}
+                        rounded="full"
+                        className="ring-4 ring-surface"
+                      />
+                    </div>
+                    <h3 className="min-w-0 text-base font-semibold leading-snug text-text-primary">
+                      <Link
+                        href={{ pathname: '/ai-video-engines/[slug]', params: { slug: comparison.slug } }}
+                        prefetch={false}
+                        className="hover:text-brandHover"
+                      >
+                        <span className="block truncate">{comparison.leftName}</span>
+                        <span className="block truncate">vs {comparison.rightName}</span>
+                      </Link>
+                    </h3>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {comparison.tags.map((tag) => (
+                      <span
+                        key={`${comparison.slug}-${tag}`}
+                        className="rounded-full border border-hairline bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-muted"
+                      >
+                        {copy.tagLabels[tag] ?? tag}
+                      </span>
+                    ))}
+                  </div>
                   <Link
                     href={{ pathname: '/ai-video-engines/[slug]', params: { slug: comparison.slug } }}
                     prefetch={false}
-                    className="hover:text-brandHover"
+                    className="mt-4 inline-flex text-sm font-semibold text-brand transition hover:text-brandHover"
                   >
-                    {comparison.label}
+                    {copy.popularCompareLabel} →
                   </Link>
-                </h3>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {comparison.tags.map((tag) => (
-                    <span
-                      key={`${comparison.slug}-${tag}`}
-                      className="rounded-full border border-hairline bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-muted"
-                    >
-                      {copy.tagLabels[tag] ?? tag}
-                    </span>
-                  ))}
-                </div>
-                <Link
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: comparison.slug } }}
-                  prefetch={false}
-                  className="mt-3 inline-flex text-sm font-semibold text-brand hover:text-brandHover"
-                >
-                  {copy.popularCompareLabel}
-                </Link>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </section>
 
         <section className="stack-gap">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.useCasesTitle}</h2>
-          <p className="text-sm text-text-secondary">{copy.sections.useCasesIntro}</p>
-          <p className="text-xs text-text-muted">{copy.sections.useCasesFallback}</p>
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.useCasesTitle}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{copy.sections.useCasesIntro}</p>
+          </div>
           <UseCaseExplorer buckets={useCaseBuckets} compareLabel={copy.popularCompareLabel} />
         </section>
 
@@ -809,10 +847,11 @@ export default async function AiVideoEnginesPage() {
           </details>
         </section>
 
-        <section className="stack-gap">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.allComparisonsTitle}</h2>
-          <p className="text-sm text-text-secondary">
-            {copy.sections.allComparisonsIntro}{' '}
+        <section id="all-comparisons" className="stack-gap scroll-mt-24">
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{copy.sections.allComparisonsTitle}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+              {copy.sections.allComparisonsIntro}{' '}
             <Link
               href={{ pathname: '/docs/[slug]', params: { slug: 'brand-safety' } }}
               className="font-semibold text-brand hover:text-brandHover"
@@ -820,11 +859,13 @@ export default async function AiVideoEnginesPage() {
               {copy.sections.complianceLabel}
             </Link>
             .
-          </p>
+            </p>
+          </div>
           <ComparisonsDirectory
             entries={allComparisonEntries}
             labels={copy.listLabels}
-            initialCount={allComparisonEntries.length}
+            initialCount={24}
+            step={24}
           />
         </section>
 
