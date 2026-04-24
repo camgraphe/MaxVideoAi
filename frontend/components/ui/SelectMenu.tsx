@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 
@@ -19,7 +19,8 @@ interface SelectMenuProps {
   className?: string;
   hideChevron?: boolean;
   buttonClassName?: string;
-  menuPlacement?: 'bottom' | 'top';
+  menuClassName?: string;
+  menuPlacement?: 'auto' | 'bottom' | 'top';
   searchable?: boolean;
   searchPlaceholder?: string;
   filterText?: (option: SelectOption) => string;
@@ -51,6 +52,7 @@ export function SelectMenu({
   className,
   hideChevron = false,
   buttonClassName,
+  menuClassName,
   menuPlacement = 'bottom',
   searchable = false,
   searchPlaceholder = 'Search...',
@@ -60,7 +62,11 @@ export function SelectMenu({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const [resolvedPlacement, setResolvedPlacement] = useState<'bottom' | 'top'>(
+    menuPlacement === 'top' ? 'top' : 'bottom'
+  );
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const selectedIndex = useMemo(
@@ -92,6 +98,36 @@ export function SelectMenu({
     const nextIndex = selectedFilteredIndex >= 0 ? selectedFilteredIndex : findFirstEnabled(filteredOptions);
     setHighlightedIndex(nextIndex);
   }, [filteredOptions, open, selectedFilteredIndex]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    if (menuPlacement !== 'auto') {
+      setResolvedPlacement(menuPlacement === 'top' ? 'top' : 'bottom');
+      return;
+    }
+
+    const updatePlacement = () => {
+      const container = containerRef.current;
+      const menu = menuRef.current;
+      if (!container || !menu) return;
+
+      const rect = container.getBoundingClientRect();
+      const menuHeight = menu.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const gap = 8;
+      const spaceBelow = viewportHeight - rect.bottom - gap;
+      const spaceAbove = rect.top - gap;
+      setResolvedPlacement(spaceBelow < menuHeight && spaceAbove > spaceBelow ? 'top' : 'bottom');
+    };
+
+    updatePlacement();
+    window.addEventListener('resize', updatePlacement);
+    window.addEventListener('scroll', updatePlacement, true);
+    return () => {
+      window.removeEventListener('resize', updatePlacement);
+      window.removeEventListener('scroll', updatePlacement, true);
+    };
+  }, [menuPlacement, open, filteredOptions.length]);
 
   useEffect(() => {
     if (!open || !searchable) return;
@@ -221,9 +257,11 @@ export function SelectMenu({
       </Button>
       {open ? (
         <div
+          ref={menuRef}
           className={clsx(
-            'absolute left-0 right-0 z-[50] overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur dark:border-white/10 dark:bg-[#121a25]/95 dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
-            menuPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2'
+            'absolute left-0 z-[80] w-full overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur dark:border-white/10 dark:bg-[#121a25]/95 dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
+            resolvedPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2',
+            menuClassName
           )}
         >
           {searchable ? (

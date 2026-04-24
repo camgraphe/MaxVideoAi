@@ -145,6 +145,8 @@ export function CompareNowWidget({
                         return raw ? resolveRawLabel(raw) : String(option.value);
                       }}
                       noResultsLabel={labels.noResults}
+                      menuPlacement="auto"
+                      menuClassName="min-w-[min(320px,calc(100vw-2rem))]"
                       onChange={(value) => {
                         const next = String(value);
                         if (!next || next === right) return;
@@ -200,6 +202,8 @@ export function CompareNowWidget({
                         return raw ? resolveRawLabel(raw) : String(option.value);
                       }}
                       noResultsLabel={labels.noResults}
+                      menuPlacement="auto"
+                      menuClassName="min-w-[min(320px,calc(100vw-2rem))]"
                       onChange={(value) => {
                         const next = String(value);
                         if (!next || next === left) return;
