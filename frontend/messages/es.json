@@ -2589,6 +2589,7 @@
         "imageSubtitle": "Genera imágenes o ediciones con los motores de imagen.",
         "engineLabel": "Motor",
         "newVideo": "Nuevo video",
+        "generateAudio": "Generar audio",
         "useLastVideo": "Usar últimos ajustes de video",
         "startVideoTemplate": "Empezar desde plantilla",
         "newImage": "Nueva imagen",
@@ -2616,8 +2617,11 @@
         "empty": "Aún no hay renders. Inicia una generación para llenar tu biblioteca.",
         "tabs": {
           "all": "Todos",
-          "completed": "Completados",
-          "failed": "Fallidos"
+          "video": "Video",
+          "image": "Imagen",
+          "character": "Character",
+          "angle": "Ángulo",
+          "audio": "Audio"
         }
       },
       "insights": {
@@ -2647,6 +2651,17 @@
           "formatAuto": "Auto"
         },
         "defaultTitle": "Plantilla"
+      },
+      "tools": {
+        "title": "Herramientas",
+        "subtitle": "Prepara assets fuente más sólidos antes de generar.",
+        "allTools": "Abrir herramientas",
+        "characterTitle": "Crear un personaje",
+        "characterBody": "Crea una referencia de personaje reutilizable para flujos de imagen y video.",
+        "characterBadge": "Referencia de personaje",
+        "angleTitle": "Cambiar ángulo de vista",
+        "angleBody": "Genera un mejor ángulo de cámara desde una imagen existente.",
+        "angleBadge": "Nueva perspectiva"
       },
       "engines": {
         "title": "Estado de los motores",

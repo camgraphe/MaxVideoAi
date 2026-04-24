@@ -5,13 +5,23 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { forwardRef, type Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  ArrowRight,
+  AudioWaveform,
+  Camera,
+  CalendarDays,
+  Clock3,
+  Sparkles,
+  UserRound,
+} from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getJobStatus, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
+import { deriveJobSurface } from '@/lib/job-surface';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import type { JobSurface } from '@/types/billing';
@@ -57,6 +67,7 @@ const DEFAULT_DASHBOARD_COPY = {
     imageSubtitle: 'Generate stills or edits with the image engines.',
     engineLabel: 'Engine',
     newVideo: 'New video',
+    generateAudio: 'Generate audio',
     useLastVideo: 'Use last video settings',
     startVideoTemplate: 'Start from template',
     newImage: 'New image',
@@ -89,8 +100,11 @@ const DEFAULT_DASHBOARD_COPY = {
     empty: 'No renders yet. Start a generation to populate your library.',
     tabs: {
       all: 'All',
-      completed: 'Completed',
-      failed: 'Failed',
+      video: 'Video',
+      image: 'Image',
+      character: 'Character',
+      angle: 'Angle',
+      audio: 'Audio',
     },
   },
   insights: {
@@ -99,6 +113,7 @@ const DEFAULT_DASHBOARD_COPY = {
     spend30: 'Spend 30d',
     avgCost: 'Avg cost',
     runway: 'Runway',
+    today: 'Today',
     runwayFallback: 'Runway estimate needs completed renders.',
     mostUsed: 'Most used',
   },
@@ -121,9 +136,21 @@ const DEFAULT_DASHBOARD_COPY = {
       formatAuto: 'Auto',
     },
   },
+  tools: {
+    title: 'Tools',
+    subtitle: 'Prepare stronger source assets before you generate.',
+    allTools: 'Open all tools',
+    characterTitle: 'Create a character',
+    characterBody: 'Build a reusable character reference for image and video workflows.',
+    characterBadge: 'Character reference',
+    angleTitle: 'Change angle view',
+    angleBody: 'Generate a better camera angle from an existing image.',
+    angleBadge: 'New viewpoint',
+  },
   engines: {
     title: 'Engine status',
     allOk: 'All engines operational',
+    viewStatus: 'View status',
     error: 'Failed to load engines.',
     queueLabel: 'queue: {count}',
   },
@@ -152,10 +179,17 @@ const DEFAULT_DASHBOARD_COPY = {
 } as const;
 
 type DashboardCopy = typeof DEFAULT_DASHBOARD_COPY;
+type RecentTypeTab = 'all' | JobSurface;
+
+const RECENT_TYPE_TABS: readonly RecentTypeTab[] = ['all', 'video', 'image', 'character', 'angle', 'audio'];
+const TOOL_CHARACTER_PREVIEW_URL = '/assets/tools/character-builder-workspace.png';
+const TOOL_ANGLE_PREVIEW_URL = '/assets/tools/angle-workspace.png';
 
 type TemplateEntry = {
   id: string;
   surface?: JobSurface | null;
+  href?: string | null;
+  demo?: boolean;
   prompt: string;
   engineLabel?: string | null;
   engineId?: string | null;
@@ -172,6 +206,34 @@ function resolveWorkspaceJobHref(jobId: string, surface?: JobSurface | null): st
   return surface === 'audio'
     ? `/app/audio?job=${encodeURIComponent(jobId)}`
     : `/app?job=${encodeURIComponent(jobId)}`;
+}
+
+function resolveRemixEntryHref(entry: MediaLightboxEntry): string | null {
+  const jobId = entry.jobId ?? entry.id;
+  if (!jobId) return null;
+  if (entry.curated && entry.videoUrl) {
+    return `/app?from=${encodeURIComponent(jobId)}`;
+  }
+  return resolveWorkspaceJobHref(jobId, entry.surface);
+}
+
+function resolveDashboardJobSurface(job: Job): JobSurface {
+  return deriveJobSurface({
+    surface: job.surface,
+    jobId: job.jobId,
+    engineId: job.engineId ?? null,
+    videoUrl: job.videoUrl ?? null,
+    renderIds: job.renderIds,
+  });
+}
+
+function resolveGroupSurface(group: GroupSummary): JobSurface {
+  if (group.hero.job) {
+    return resolveDashboardJobSurface(group.hero.job);
+  }
+  if (group.hero.audioUrl) return 'audio';
+  if (group.hero.videoUrl) return 'video';
+  return 'image';
 }
 
 export default function DashboardPage() {
@@ -200,12 +262,11 @@ export default function DashboardPage() {
   const [hasStoredImageForm, setHasStoredImageForm] = useState(false);
   const [imageSelectionResolved, setImageSelectionResolved] = useState(false);
   const [exportsSummary, setExportsSummary] = useState<{ total: number } | null>(null);
-  const [templates, setTemplates] = useState<TemplateEntry[]>([]);
+  const [, setTemplates] = useState<TemplateEntry[]>([]);
   const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
   const [memberSummary, setMemberSummary] = useState<{ spentToday?: number; spent30?: number } | null>(null);
-  const [recentTab, setRecentTab] = useState<'all' | 'completed' | 'failed'>('all');
+  const [recentTab, setRecentTab] = useState<RecentTypeTab>('all');
   const [lightbox, setLightbox] = useState<{ kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | null>(null);
-  const quickStartRef = useRef<HTMLDivElement | null>(null);
 
   const availableEngines = useMemo(() => {
     return (enginesData?.engines ?? []).filter((engine) => isEngineAvailable(engine));
@@ -480,12 +541,13 @@ export default function DashboardPage() {
     const filtered = normalizedGroups.filter((group) => {
       const status = group.hero.status ?? 'completed';
       if (status === 'pending') return false;
-      if (recentTab === 'failed') return status === 'failed';
-      if (recentTab === 'completed') return status !== 'failed';
+      if (recentTab !== 'all') return resolveGroupSurface(group) === recentTab;
       return true;
     });
     return filtered;
   }, [normalizedGroups, recentTab]);
+
+  const displayRecentGroups = recentGroups;
 
   const isInitialLoading = isLoading && jobs.length === 0 && normalizedGroups.length === 0;
 
@@ -670,26 +732,11 @@ export default function DashboardPage() {
     [copy.quickStarts.defaultTitle, pushTemplateEntry]
   );
 
-  const handleUseTemplate = useCallback(
-    (template: TemplateEntry) => {
-      router.push(resolveWorkspaceJobHref(template.id, template.surface));
-    },
-    [router]
-  );
-
-  const handleDeleteTemplate = useCallback((templateId: string) => {
-    setTemplates((prev) => {
-      const next = prev.filter((item) => item.id !== templateId);
-      writeTemplates(next);
-      return next;
-    });
-  }, []);
-
   const handleRemixEntry = useCallback(
     (entry: MediaLightboxEntry) => {
-      const jobId = entry.jobId ?? entry.id;
-      if (!jobId) return;
-      router.push(resolveWorkspaceJobHref(jobId, entry.surface));
+      const href = resolveRemixEntryHref(entry);
+      if (!href) return;
+      router.push(href);
     },
     [router]
   );
@@ -721,11 +768,11 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1 min-w-0">
+      <div className="flex min-h-[calc(100vh-var(--header-height))] min-w-0 flex-1">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-5 lg:p-7">
-          <div className="grid grid-gap lg:grid-cols-12">
-            <div className="min-w-0 stack-gap-lg lg:col-span-8">
+        <main className="min-h-[calc(100vh-var(--header-height))] min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
+          <div className="mx-auto grid w-full max-w-[1560px] gap-6 lg:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_372px]">
+            <div className="min-w-0 stack-gap-lg">
               <CreateHero
                 copy={copy}
                 videoEngines={availableEngines}
@@ -756,7 +803,7 @@ export default function DashboardPage() {
 
               <RecentGrid
                 copy={copy}
-                groups={recentGroups}
+                groups={displayRecentGroups}
                 isLoading={isInitialLoading}
                 isValidating={isValidating}
                 hasMore={Boolean(lastJobsPage?.nextCursor)}
@@ -768,7 +815,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            <div className="min-w-0 stack-gap-lg lg:col-span-4">
+            <div className="min-w-0 stack-gap-lg lg:sticky lg:top-0 lg:self-start">
               <InsightsPanel
                 copy={copy}
                 spendToday={spendTodayDisplay}
@@ -779,13 +826,7 @@ export default function DashboardPage() {
                 mostUsed={mostUsedEngine}
               />
 
-              <QuickStarts
-                copy={copy}
-                templates={templates}
-                onUseTemplate={handleUseTemplate}
-                onDeleteTemplate={handleDeleteTemplate}
-                ref={quickStartRef}
-              />
+              <ToolsPanel copy={copy} />
 
               <EngineStatusCompact
                 copy={copy}
@@ -894,21 +935,32 @@ function CreateHero({
   onUseLastImageSettings: () => void;
 }) {
   return (
-    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
+    <section className="rounded-card border border-hairline bg-surface p-5 shadow-card sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-text-primary">{copy.create.title}</h1>
           <p className="mt-1 text-sm text-text-secondary">{copy.create.subtitle}</p>
         </div>
+        <ButtonLink
+          href="/app/audio"
+          prefetch={false}
+          variant="outline"
+          size="sm"
+          className="border-[var(--brand-border)] px-4 text-brand hover:bg-[var(--brand-soft)] hover:text-brand"
+        >
+          <AudioWaveform className="h-4 w-4" aria-hidden />
+          {copy.create.generateAudio ?? DEFAULT_DASHBOARD_COPY.create.generateAudio}
+        </ButtonLink>
       </div>
 
-      <div className="mt-5 grid grid-gap lg:grid-cols-2">
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <CreateVideoCard
           copy={copy}
           engines={videoEngines}
           selectedEngineId={selectedVideoEngineId}
           selectedMode={selectedVideoMode}
           hasStoredForm={hasStoredVideoForm}
+          reserveLastSettingsSlot={hasStoredVideoForm || hasStoredImageForm}
           canStart={canStartVideo}
           onModeChange={onVideoModeChange}
           onEngineChange={onVideoEngineChange}
@@ -921,6 +973,7 @@ function CreateHero({
           selectedEngineId={selectedImageEngineId}
           selectedMode={selectedImageMode}
           hasStoredForm={hasStoredImageForm}
+          reserveLastSettingsSlot={hasStoredVideoForm || hasStoredImageForm}
           canStart={canStartImage}
           onModeChange={onImageModeChange}
           onEngineChange={onImageEngineChange}
@@ -938,6 +991,7 @@ function CreateVideoCard({
   selectedEngineId,
   selectedMode,
   hasStoredForm,
+  reserveLastSettingsSlot,
   canStart,
   onModeChange,
   onEngineChange,
@@ -949,6 +1003,7 @@ function CreateVideoCard({
   selectedEngineId: string;
   selectedMode: Mode;
   hasStoredForm: boolean;
+  reserveLastSettingsSlot: boolean;
   canStart: boolean;
   onModeChange: (mode: Mode) => void;
   onEngineChange: (engineId: string) => void;
@@ -956,14 +1011,14 @@ function CreateVideoCard({
   onUseLast: () => void;
 }) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex h-full min-h-[312px] flex-col rounded-card border border-hairline bg-surface-2/60 p-4">
+      <div className="min-h-[58px]">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">{copy.create.videoTitle}</h2>
           <p className="mt-1 text-sm text-text-secondary">{copy.create.videoSubtitle}</p>
         </div>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="mt-3 flex flex-1 flex-col">
         <div className="min-w-0">
           <EngineSelect
             engines={engines}
@@ -984,31 +1039,37 @@ function CreateVideoCard({
             variant="bar"
           />
         </div>
-        <Button
-          type="button"
-          onClick={onNew}
-          disabled={!canStart}
-          size="md"
-          className={clsx(
-            'w-full px-5 py-3 text-base font-semibold',
-            !canStart && 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
-          )}
-        >
-          {copy.create.newVideo}
-        </Button>
-      </div>
-      <div className="flex flex-wrap items-center gap-4">
-        {hasStoredForm ? (
+        <div className="mt-auto pt-3">
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={onUseLast}
-            className="border-border px-4 text-sm font-semibold text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+            onClick={onNew}
+            disabled={!canStart}
+            size="md"
+            className={clsx(
+              'w-full px-5 py-3 text-base font-semibold',
+              !canStart && '!bg-surface-disabled text-text-muted shadow-none hover:!bg-surface-disabled disabled:opacity-100'
+            )}
           >
-            {copy.create.useLastVideo}
+            <Sparkles className="h-4 w-4" aria-hidden />
+            {copy.create.newVideo}
           </Button>
-        ) : null}
+          {reserveLastSettingsSlot ? (
+            <div className="mt-2 min-h-[36px]">
+              {hasStoredForm ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onUseLast}
+                  className="min-h-[36px] border-hairline px-4 text-sm font-semibold text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+                >
+                  <Clock3 className="h-4 w-4" aria-hidden />
+                  {copy.create.useLastVideo}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -1020,6 +1081,7 @@ function CreateImageCard({
   selectedEngineId,
   selectedMode,
   hasStoredForm,
+  reserveLastSettingsSlot,
   canStart,
   onModeChange,
   onEngineChange,
@@ -1031,6 +1093,7 @@ function CreateImageCard({
   selectedEngineId: string;
   selectedMode: Mode;
   hasStoredForm: boolean;
+  reserveLastSettingsSlot: boolean;
   canStart: boolean;
   onModeChange: (mode: Mode) => void;
   onEngineChange: (engineId: string) => void;
@@ -1038,14 +1101,14 @@ function CreateImageCard({
   onUseLast: () => void;
 }) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex h-full min-h-[312px] flex-col rounded-card border border-hairline bg-surface-2/60 p-4">
+      <div className="min-h-[58px]">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">{copy.create.imageTitle}</h2>
           <p className="mt-1 text-sm text-text-secondary">{copy.create.imageSubtitle}</p>
         </div>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="mt-3 flex flex-1 flex-col">
         <div className="min-w-0">
           <EngineSelect
             engines={engines}
@@ -1063,32 +1126,262 @@ function CreateImageCard({
             variant="bar"
           />
         </div>
-        <Button
-          type="button"
-          onClick={onNew}
-          disabled={!canStart}
-          size="md"
-          className={clsx(
-            'w-full px-5 py-3 text-base font-semibold',
-            !canStart && 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
-          )}
-        >
-          {copy.create.newImage}
-        </Button>
-      </div>
-      <div className="flex flex-wrap items-center gap-4">
-        {hasStoredForm ? (
+        <div className="mt-auto pt-3">
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={onUseLast}
-            className="border-border px-4 text-sm font-semibold text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+            onClick={onNew}
+            disabled={!canStart}
+            size="md"
+            className={clsx(
+              'w-full px-5 py-3 text-base font-semibold',
+              !canStart && '!bg-surface-disabled text-text-muted shadow-none hover:!bg-surface-disabled disabled:opacity-100'
+            )}
           >
-            {copy.create.useLastImage}
+            <Sparkles className="h-4 w-4" aria-hidden />
+            {copy.create.newImage}
           </Button>
-        ) : null}
+          {reserveLastSettingsSlot ? (
+            <div className="mt-2 min-h-[36px]">
+              {hasStoredForm ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onUseLast}
+                  className="min-h-[36px] border-hairline px-4 text-sm font-semibold text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+                >
+                  <Clock3 className="h-4 w-4" aria-hidden />
+                  {copy.create.useLastImage}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
+    </div>
+  );
+}
+
+function SectionGlyph({ tone = 'brand' }: { tone?: 'brand' | 'success' | 'warning' }) {
+  return (
+    <span
+      className={clsx(
+        'flex h-6 w-6 shrink-0 items-center justify-center',
+        tone === 'brand' && 'text-brand',
+        tone === 'success' && 'text-success',
+        tone === 'warning' && 'text-warning'
+      )}
+      aria-hidden
+    >
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+        <path
+          d="M5.5 5.5v13"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          opacity="0.28"
+        />
+        <path
+          d="M10 7h8.5M10 12h6.5M10 17h8.5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function MetricDot({ tone = 'brand' }: { tone?: 'brand' | 'accent' | 'success' | 'muted' }) {
+  return (
+    <span
+      className={clsx(
+        'h-1.5 w-1.5 shrink-0 rounded-full',
+        tone === 'brand' && 'bg-brand',
+        tone === 'accent' && 'bg-accent',
+        tone === 'success' && 'bg-success',
+        tone === 'muted' && 'bg-text-muted'
+      )}
+      aria-hidden
+    />
+  );
+}
+
+function InProgressVisual() {
+  return (
+    <div className="relative hidden h-28 w-72 shrink-0 sm:block" aria-hidden>
+      <svg viewBox="0 0 360 180" className="h-full w-full overflow-visible">
+        <defs>
+          <linearGradient id="dashboardProgressGlow" x1="36" x2="326" y1="121" y2="129" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#F4F8FF" stopOpacity="0.12" />
+            <stop offset="0.22" stopColor="#CADAF5" stopOpacity="0.58" />
+            <stop offset="0.68" stopColor="#AFC6EC" stopOpacity="0.72" />
+            <stop offset="1" stopColor="#D8E7FF" stopOpacity="0.34" />
+          </linearGradient>
+          <linearGradient id="dashboardProgressCard" x1="101" x2="278" y1="42" y2="142" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#FBFDFF" />
+            <stop offset="0.34" stopColor="#DCE7F8" />
+            <stop offset="0.72" stopColor="#AFC3E4" />
+            <stop offset="1" stopColor="#7895C1" />
+          </linearGradient>
+          <linearGradient id="dashboardProgressCardEdge" x1="99" x2="272" y1="63" y2="151" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#A8BFE2" stopOpacity="0.88" />
+            <stop offset="1" stopColor="#506D99" stopOpacity="0.96" />
+          </linearGradient>
+          <linearGradient id="dashboardProgressPlay" x1="126" x2="193" y1="65" y2="111" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#7FA0D4" />
+            <stop offset="1" stopColor="#4F6F9D" />
+          </linearGradient>
+          <linearGradient id="dashboardProgressImageCard" x1="253" x2="331" y1="78" y2="137" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#FBFDFF" />
+            <stop offset="0.56" stopColor="#DCE7F8" />
+            <stop offset="1" stopColor="#AFC3E4" />
+          </linearGradient>
+          <linearGradient id="dashboardProgressMiniPlayer" x1="85" x2="300" y1="35" y2="119" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#FFFFFF" stopOpacity="0.92" />
+            <stop offset="0.52" stopColor="#D7E1F3" stopOpacity="0.86" />
+            <stop offset="1" stopColor="#8EA8CF" stopOpacity="0.9" />
+          </linearGradient>
+          <radialGradient id="dashboardProgressOrb" cx="0" cy="0" r="1" gradientTransform="matrix(27 0 0 27 77 121)" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#FFFFFF" stopOpacity="0.92" />
+            <stop offset="0.34" stopColor="#A0B9DD" />
+            <stop offset="1" stopColor="#6685B7" />
+          </radialGradient>
+          <filter
+            id="dashboardProgressSoftShadow"
+            x="24"
+            y="22"
+            width="314"
+            height="146"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow dx="0" dy="14" stdDeviation="10" floodColor="#637FA8" floodOpacity="0.22" />
+          </filter>
+          <filter
+            id="dashboardProgressTinyShadow"
+            x="48"
+            y="20"
+            width="276"
+            height="116"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow dx="0" dy="9" stdDeviation="7" floodColor="#637FA8" floodOpacity="0.16" />
+          </filter>
+          <filter
+            id="dashboardProgressGlowBlur"
+            x="0"
+            y="88"
+            width="360"
+            height="86"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feGaussianBlur stdDeviation="6" />
+          </filter>
+        </defs>
+        <ellipse cx="178" cy="132" rx="152" ry="27" fill="url(#dashboardProgressGlow)" filter="url(#dashboardProgressGlowBlur)" />
+        <ellipse cx="178" cy="129" rx="136" ry="22" fill="url(#dashboardProgressGlow)" opacity="0.72" />
+        <g filter="url(#dashboardProgressTinyShadow)">
+          <g transform="rotate(-16 130 70)" opacity="0.42">
+            <rect x="82" y="42" width="105" height="62" rx="16" fill="url(#dashboardProgressMiniPlayer)" stroke="#8FACD7" strokeOpacity="0.24" strokeWidth="2" />
+            <rect x="97" y="58" width="36" height="24" rx="7" fill="#6686BD" opacity="0.72" />
+            <path d="M112 64v12l11-6Z" fill="#FFFFFF" opacity="0.88" />
+            <path d="M143 64h26" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" opacity="0.52" />
+            <path d="M100 91h67" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" opacity="0.7" />
+            <path d="M100 91h35" stroke="#4F6E9B" strokeWidth="4" strokeLinecap="round" opacity="0.74" />
+          </g>
+          <g transform="rotate(10 250 61)" opacity="0.5">
+            <rect x="198" y="36" width="112" height="64" rx="17" fill="url(#dashboardProgressMiniPlayer)" stroke="#8FACD7" strokeOpacity="0.28" strokeWidth="2" />
+            <rect x="214" y="52" width="39" height="26" rx="7" fill="#6686BD" opacity="0.74" />
+            <path d="M230 58v13l12-6.5Z" fill="#FFFFFF" opacity="0.9" />
+            <path d="M263 58h28" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" opacity="0.52" />
+            <path d="M217 88h70" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" opacity="0.72" />
+            <path d="M217 88h42" stroke="#4F6E9B" strokeWidth="4" strokeLinecap="round" opacity="0.78" />
+          </g>
+          <g transform="rotate(-2 199 44)" opacity="0.34">
+            <rect x="146" y="23" width="104" height="54" rx="15" fill="url(#dashboardProgressMiniPlayer)" stroke="#8FACD7" strokeOpacity="0.2" strokeWidth="2" />
+            <rect x="160" y="37" width="34" height="22" rx="7" fill="#6686BD" opacity="0.62" />
+            <path d="M174 42v11l10-5.5Z" fill="#FFFFFF" opacity="0.86" />
+            <path d="M202 43h27" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" opacity="0.48" />
+            <path d="M162 67h59" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" opacity="0.62" />
+            <path d="M162 67h31" stroke="#4F6E9B" strokeWidth="3.5" strokeLinecap="round" opacity="0.7" />
+          </g>
+        </g>
+        <circle cx="77" cy="121" r="25" fill="url(#dashboardProgressOrb)" opacity="0.95" />
+        <circle cx="69" cy="112" r="7" fill="#FFFFFF" opacity="0.55" />
+        <g filter="url(#dashboardProgressSoftShadow)" transform="rotate(-7 186 91)">
+          <rect x="105" y="50" width="173" height="94" rx="23" fill="url(#dashboardProgressCardEdge)" />
+          <path
+            d="M119 42h139c12 0 22 10 22 22v57c0 12-10 22-22 22H119c-12 0-22-10-22-22V64c0-12 10-22 22-22Z"
+            fill="url(#dashboardProgressCard)"
+            stroke="#8FACD7"
+            strokeOpacity="0.42"
+            strokeWidth="2.4"
+          />
+          <path
+            d="M123 48h128c11 0 20 9 20 20v7c-38 8-102 9-164-2v-5c0-11 6-20 16-20Z"
+            fill="#FFFFFF"
+            opacity="0.22"
+          />
+          <rect
+            x="126"
+            y="66"
+            width="66"
+            height="45"
+            rx="10"
+            fill="url(#dashboardProgressPlay)"
+            stroke="#FFFFFF"
+            strokeOpacity="0.76"
+            strokeWidth="2"
+          />
+          <path d="M152 78v21l20-10.5Z" fill="#FFFFFF" opacity="0.94" />
+          <path d="M130 122h96" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" opacity="0.92" />
+          <path d="M130 122h58" stroke="#4F6E9B" strokeWidth="6" strokeLinecap="round" opacity="0.9" />
+          <path d="M199 122h21" stroke="#4F6E9B" strokeWidth="6" strokeLinecap="round" opacity="0.42" />
+          <path d="M205 86h38" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" opacity="0.7" />
+          <path d="M207 99h28" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" opacity="0.46" />
+          <circle cx="232" cy="68" r="5.4" fill="#FFFFFF" opacity="0.74" />
+          <circle cx="252" cy="70" r="4.4" fill="#D8E7FF" opacity="0.8" />
+          <circle cx="242" cy="79" r="3" fill="#FFFFFF" opacity="0.46" />
+        </g>
+        <g filter="url(#dashboardProgressSoftShadow)" transform="rotate(4 292 105)">
+          <rect
+            x="253"
+            y="79"
+            width="78"
+            height="59"
+            rx="13"
+            fill="url(#dashboardProgressImageCard)"
+            stroke="#8FACD7"
+            strokeOpacity="0.36"
+            strokeWidth="2"
+          />
+          <path d="M265 125l23-26 18 21 10-11 7 16Z" fill="#B6C9E9" opacity="0.92" />
+          <path d="M268 125l20-22 15 17 8-8 10 13Z" fill="#FFFFFF" opacity="0.34" />
+          <circle cx="272" cy="92" r="5.5" fill="#FFFFFF" opacity="0.9" />
+          <path
+            d="m312 88 5 3 5-3-3 5 3 5-5-3-5 3 3-5Z"
+            fill="#FFFFFF"
+            opacity="0.9"
+          />
+        </g>
+        <circle cx="49" cy="105" r="2.7" fill="var(--brand)" opacity="0.68" />
+        <path d="M57 99h10M62 94v10" stroke="#C4D4EF" strokeWidth="2.1" strokeLinecap="round" opacity="0.72" />
+        <circle cx="291" cy="50" r="2.2" fill="#FFFFFF" opacity="0.64" />
+        <circle cx="306" cy="47" r="1.7" fill="var(--brand)" opacity="0.5" />
+        <path
+          d="M329 104c8 1 13 5 14 12 1 7-3 13-9 16-7 3-14 0-17-6-4-8 2-17 12-22Z"
+          fill="#D5E5FF"
+          opacity="0.78"
+        />
+        <path
+          d="M330 108c5 1 9 4 9 9s-3 9-8 11c-5 1-10-1-12-6-2-6 3-12 11-14Z"
+          fill="#FFFFFF"
+          opacity="0.45"
+        />
+      </svg>
     </div>
   );
 }
@@ -1102,20 +1395,44 @@ function InProgressList({
   jobs: Job[];
   onOpen: (job: Job) => void;
 }) {
-  return (
-    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-primary">{copy.inProgress.title}</h2>
-      </div>
-      {!jobs.length ? (
-        <p className="text-sm text-text-secondary">{copy.inProgress.empty}</p>
-      ) : (
-        <div className="stack-gap-sm">
-          {jobs.map((job) => (
-            <InProgressRow key={job.jobId} job={job} copy={copy} onOpen={onOpen} />
-          ))}
+  if (!jobs.length) {
+    return (
+      <section className="overflow-hidden rounded-card border border-hairline bg-surface p-4 shadow-card sm:p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2.5">
+              <SectionGlyph />
+              <h2 className="text-lg font-semibold text-text-primary">{copy.inProgress.title}</h2>
+            </div>
+            <p className="mt-1 text-sm text-text-secondary">{copy.inProgress.empty}</p>
+          </div>
+          <InProgressVisual />
         </div>
-      )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <SectionGlyph />
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold text-text-primary">{copy.inProgress.title}</h2>
+            <p className="mt-0.5 text-sm text-text-secondary">
+              {`${jobs.length} active render${jobs.length > 1 ? 's' : ''}`}
+            </p>
+          </div>
+        </div>
+        <span className="hidden items-center gap-1.5 rounded-pill border border-hairline bg-surface-2 px-2.5 py-1 text-xs font-semibold text-text-secondary sm:inline-flex">
+          Live queue
+        </span>
+      </div>
+      <div className="stack-gap-sm px-4 py-3">
+        {jobs.map((job) => (
+          <InProgressRow key={job.jobId} job={job} copy={copy} onOpen={onOpen} />
+        ))}
+      </div>
     </section>
   );
 }
@@ -1136,8 +1453,8 @@ function InProgressRow({
   const prompt = job.prompt ? truncate(job.prompt, 140) : '';
 
   return (
-    <div className="flex flex-col gap-4 rounded-card border border-border bg-bg/60 p-3 sm:flex-row sm:items-center">
-      <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-surface sm:h-14 sm:w-24">
+    <div className="flex flex-col gap-3 rounded-input border border-hairline bg-surface-2/70 p-2.5 sm:flex-row sm:items-center">
+      <div className="relative h-20 w-full overflow-hidden rounded-input border border-hairline bg-surface sm:h-16 sm:w-28">
         {job.thumbUrl ? (
           <Image src={job.thumbUrl} alt="" fill className="object-cover" />
         ) : (
@@ -1146,12 +1463,17 @@ function InProgressRow({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-4">
-          <p className="truncate text-sm font-semibold text-text-primary">{job.engineLabel}</p>
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="truncate text-sm font-semibold text-text-primary">{job.engineLabel}</p>
+            <span className="shrink-0 rounded-pill border border-[var(--brand-border)] bg-[var(--brand-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-brand">
+              {job.status ?? 'running'}
+            </span>
+          </div>
           {price ? <span className="text-xs font-semibold text-text-primary">{price}</span> : null}
         </div>
         <p className="mt-1 truncate text-xs text-text-muted">{prompt}</p>
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-surface">
-          <div className="h-full rounded-full bg-brand" style={{ width: `${progress}%` }} />
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface">
+          <div className="h-full rounded-full bg-[image:var(--brand-gradient)]" style={{ width: `${progress}%` }} />
         </div>
         <div className="mt-1 flex items-center justify-between text-xs text-text-muted">
           <span>{copy.inProgress.progressLabel}: {progress}%</span>
@@ -1164,7 +1486,7 @@ function InProgressRow({
           variant="outline"
           size="sm"
           onClick={() => onOpen(job)}
-          className="border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+          className="border-hairline px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
         >
           {copy.inProgress.open}
         </Button>
@@ -1172,7 +1494,7 @@ function InProgressRow({
           href={resolveWorkspaceJobHref(job.jobId, job.surface)}
           variant="outline"
           size="sm"
-          className="border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+          className="border-hairline px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
         >
           {copy.inProgress.remix}
         </ButtonLink>
@@ -1201,11 +1523,11 @@ function RecentGrid({
   onOpenGroup: (group: GroupSummary) => void;
   onSaveTemplate: (group: GroupSummary) => void;
   onLoadMore: () => void;
-  tab: 'all' | 'completed' | 'failed';
-  onTabChange: (tab: 'all' | 'completed' | 'failed') => void;
+  tab: RecentTypeTab;
+  onTabChange: (tab: RecentTypeTab) => void;
 }) {
   return (
-    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
+    <section className="rounded-card border border-hairline bg-surface p-5 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-lg font-semibold text-text-primary">{copy.recent.title}</h2>
         <ButtonLink
@@ -1213,13 +1535,13 @@ function RecentGrid({
           prefetch={false}
           variant="outline"
           size="sm"
-          className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+          className="border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
         >
           {copy.recent.viewAll}
         </ButtonLink>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        {(['all', 'completed', 'failed'] as const).map((value) => (
+        {RECENT_TYPE_TABS.map((value) => (
           <Button
             key={value}
             type="button"
@@ -1230,7 +1552,7 @@ function RecentGrid({
               'px-3 py-1 text-xs font-semibold',
               tab === value
                 ? 'border border-brand shadow-card'
-                : 'border border-border bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
+                : 'border border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
             )}
           >
             {copy.recent.tabs[value]}
@@ -1241,7 +1563,7 @@ function RecentGrid({
       {isLoading && !groups.length ? (
         <div className="mt-4 grid grid-gap-sm sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={`recent-skeleton-${index}`} className="h-56 rounded-card border border-border bg-bg/60" />
+            <div key={`recent-skeleton-${index}`} className="h-[138px] rounded-card border border-hairline bg-surface-2/70" />
           ))}
         </div>
       ) : !groups.length ? (
@@ -1252,16 +1574,16 @@ function RecentGrid({
             const isCurated = Boolean(group.hero.job?.curated);
             const jobId = group.hero.jobId ?? group.hero.id;
             return (
-              <div key={group.id} className="flex flex-col gap-2">
+              <div key={group.id} className="flex flex-col gap-1.5">
                 <Button
                   type="button"
                   size="sm"
                   variant="ghost"
                   onClick={() => onOpenGroup(group)}
-                  className="relative min-h-0 h-auto w-full aspect-video overflow-hidden rounded-card border border-border bg-bg p-0"
+                  className="relative min-h-0 h-auto w-full aspect-[1.9/1] overflow-hidden rounded-card border border-hairline bg-[#05070d] p-0"
                 >
                   {group.hero.thumbUrl ? (
-                    <Image src={group.hero.thumbUrl} alt="" fill className="object-cover" />
+                    <Image src={group.hero.thumbUrl} alt="" fill className="object-contain" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
                   )}
@@ -1278,7 +1600,7 @@ function RecentGrid({
                         rel="noreferrer"
                         variant="outline"
                         size="sm"
-                        className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                        className="border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
                       >
                         {copy.actions.download}
                       </ButtonLink>
@@ -1288,7 +1610,7 @@ function RecentGrid({
                         href={resolveWorkspaceJobHref(jobId, group.hero.job?.surface ?? null)}
                         variant="outline"
                         size="sm"
-                        className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                        className="border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
                       >
                         {copy.actions.remix}
                       </ButtonLink>
@@ -1299,7 +1621,7 @@ function RecentGrid({
                         variant="outline"
                         size="sm"
                         onClick={() => onSaveTemplate(group)}
-                        className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                        className="border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
                       >
                         {copy.actions.template}
                       </Button>
@@ -1318,7 +1640,7 @@ function RecentGrid({
             variant="outline"
             size="sm"
             onClick={onLoadMore}
-            className="border-border px-4 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+            className="border-hairline px-4 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
             disabled={isValidating}
           >
             {copy.actions.loadMore}
@@ -1346,129 +1668,145 @@ function InsightsPanel({
   runwayFallback: string | null;
   mostUsed: string | null;
 }) {
+  const metrics: Array<{ label: string; value: string; tone: 'brand' | 'accent' | 'success' | 'muted' }> = [
+    { label: copy.insights.spendToday, value: spendToday, tone: 'brand' },
+    { label: copy.insights.spend30, value: spend30, tone: 'accent' },
+    { label: copy.insights.avgCost, value: avgCost, tone: 'muted' },
+    { label: copy.insights.runway, value: runway, tone: 'success' },
+  ];
+
   return (
-    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
-      <h3 className="text-lg font-semibold text-text-primary">{copy.insights.title}</h3>
-      <div className="mt-4 grid grid-gap-sm text-sm">
-        <InsightRow label={copy.insights.spendToday} value={spendToday} />
-        <InsightRow label={copy.insights.spend30} value={spend30} />
-        <InsightRow label={copy.insights.avgCost} value={avgCost} />
-        <InsightRow label={copy.insights.runway} value={runway} />
+    <section className="overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <SectionGlyph />
+          <h3 className="text-lg font-semibold text-text-primary">{copy.insights.title}</h3>
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-input border border-hairline bg-surface-2 px-2.5 py-1 text-xs font-semibold text-text-primary">
+          {copy.insights.today ?? DEFAULT_DASHBOARD_COPY.insights.today}
+          <CalendarDays className="h-3.5 w-3.5 text-text-muted" aria-hidden />
+        </span>
       </div>
-      {runwayFallback ? (
-        <p className="mt-3 text-xs text-text-muted">{runwayFallback}</p>
-      ) : null}
-      {mostUsed ? (
-        <p className="mt-3 text-xs text-text-muted">
-          {copy.insights.mostUsed}: <span className="font-semibold text-text-primary">{mostUsed}</span>
-        </p>
-      ) : null}
+      <div className="grid gap-2 px-4 py-3 text-sm">
+        {metrics.map((metric) => (
+          <InsightRow
+            key={metric.label}
+            label={metric.label}
+            value={metric.value}
+            tone={metric.tone}
+          />
+        ))}
+      </div>
+      <div className="border-t border-hairline px-4 py-3">
+        {runwayFallback ? (
+          <p className="text-xs text-text-muted">{runwayFallback}</p>
+        ) : null}
+        {mostUsed ? (
+          <div className="mt-2 flex items-center gap-2 text-xs text-text-muted">
+            <MetricDot tone="brand" />
+            <span>
+              {copy.insights.mostUsed}: <span className="font-semibold text-text-primary">{mostUsed}</span>
+            </span>
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
 
-function InsightRow({ label, value }: { label: string; value: string }) {
+function InsightRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: 'brand' | 'accent' | 'success' | 'muted';
+}) {
   return (
-    <div className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2">
-      <span className="text-text-muted">{label}</span>
-      <span className="font-semibold text-text-primary">{value}</span>
+    <div className="flex items-center justify-between gap-3 rounded-input border border-hairline bg-surface-2/70 px-3 py-2">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <MetricDot tone={tone} />
+        <span className="truncate text-text-muted">{label}</span>
+      </div>
+      <span className="shrink-0 font-semibold text-text-primary">{value}</span>
     </div>
   );
 }
 
-  const QuickStarts = forwardRef(function QuickStarts(
-  {
-    copy,
-    templates,
-    onUseTemplate,
-    onDeleteTemplate,
-  }: {
-    copy: DashboardCopy;
-    templates: TemplateEntry[];
-    onUseTemplate: (template: TemplateEntry) => void;
-    onDeleteTemplate: (templateId: string) => void;
-  },
-  ref: Ref<HTMLDivElement>
-) {
+function ToolsPanel({ copy }: { copy: DashboardCopy }) {
+  const tools = [
+    {
+      href: '/app/tools/character-builder',
+      title: copy.tools.characterTitle,
+      body: copy.tools.characterBody,
+      badge: copy.tools.characterBadge,
+      imageUrl: TOOL_CHARACTER_PREVIEW_URL,
+      Icon: UserRound,
+    },
+    {
+      href: '/app/tools/angle',
+      title: copy.tools.angleTitle,
+      body: copy.tools.angleBody,
+      badge: copy.tools.angleBadge,
+      imageUrl: TOOL_ANGLE_PREVIEW_URL,
+      Icon: Camera,
+    },
+  ];
+
   return (
-    <section ref={ref} className="rounded-card border border-border bg-surface p-5 shadow-card">
-      <h3 className="text-lg font-semibold text-text-primary">{copy.quickStarts.title}</h3>
-      {!templates.length ? (
-        <p className="mt-3 text-sm text-text-secondary">{copy.quickStarts.empty}</p>
-      ) : (
-        <div className="mt-4 stack-gap-sm">
-          {templates.map((template) => (
-            <div key={template.id} className="rounded-input border border-border bg-bg px-3 py-3">
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-surface sm:h-16 sm:w-28">
-                  {template.thumbUrl ? (
-                    <Image src={template.thumbUrl} alt="" fill className="object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[11px] text-text-muted">
-                      {copy.actions.noPreview}
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-text-primary">
-                        {template.engineLabel ?? copy.create.engineLabel}
-                      </p>
-                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-text-muted">
-                        <span>
-                          {copy.quickStarts.meta.format}: {template.aspectRatio ?? copy.quickStarts.meta.formatAuto}
-                        </span>
-                        <span>
-                          {copy.quickStarts.meta.duration}: {formatDurationShort(template.durationSec)}
-                        </span>
-                        <span>
-                          {copy.quickStarts.meta.audio}: {formatAudioLabel(template.hasAudio, copy)}
-                        </span>
-                        <span>
-                          {copy.quickStarts.meta.price}: {formatTemplatePrice(template)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onUseTemplate(template)}
-                        className="border-border px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
-                      >
-                        {copy.quickStarts.use}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onDeleteTemplate(template.id)}
-                        className="border-border px-2 py-1 text-xs font-semibold text-text-muted hover:bg-surface-2 hover:text-text-primary"
-                      >
-                        {copy.quickStarts.remove}
-                      </Button>
-                    </div>
-                  </div>
-                  {template.prompt ? (
-                    <p className="mt-2 text-xs text-text-muted">
-                      {truncate(template.prompt, 110)}
-                    </p>
-                  ) : null}
-                </div>
+    <section className="overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <SectionGlyph />
+          <h3 className="text-lg font-semibold text-text-primary">{copy.tools.title}</h3>
+        </div>
+        <span className="rounded-pill border border-hairline bg-surface-2 px-2.5 py-1 text-[11px] font-semibold text-text-muted">
+          {tools.length}
+        </span>
+      </div>
+      <div className="px-4 py-3">
+        <p className="text-sm leading-5 text-text-secondary">{copy.tools.subtitle}</p>
+        <div className="mt-3 flex flex-col gap-2">
+          {tools.map(({ href, title, body, badge, imageUrl, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              prefetch={false}
+              className="group flex gap-3 rounded-input border border-hairline bg-surface-2/70 p-2.5 transition-colors hover:border-border-hover hover:bg-surface"
+            >
+              <div className="relative h-[74px] w-[104px] shrink-0 overflow-hidden rounded-[6px] bg-[#05070d]">
+                <Image src={imageUrl} alt="" fill className="object-cover object-top transition-transform duration-200 group-hover:scale-[1.03]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
               </div>
-            </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
+                      <Icon className="h-3.5 w-3.5 shrink-0 text-brand" aria-hidden />
+                      <span className="line-clamp-2">{title}</span>
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-xs leading-4 text-text-muted">{body}</p>
+                  </div>
+                  <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand" aria-hidden />
+                </div>
+                <span className="mt-2 inline-flex rounded-pill border border-hairline bg-surface px-2 py-0.5 text-[11px] font-semibold text-text-secondary">
+                  {badge}
+                </span>
+              </div>
+            </Link>
           ))}
         </div>
-      )}
-      <Link href="/jobs" prefetch={false} className="mt-4 inline-flex text-xs font-semibold text-brand hover:underline">
-        {copy.quickStarts.manage}
-      </Link>
+      </div>
+      <div className="border-t border-hairline px-4 py-3">
+        <Link href="/app/tools" prefetch={false} className="inline-flex items-center gap-2 text-xs font-semibold text-brand hover:underline">
+          {copy.tools.allTools}
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+        </Link>
+      </div>
     </section>
   );
-});
-QuickStarts.displayName = 'QuickStarts';
+}
 
 function EngineStatusCompact({
   copy,
@@ -1481,9 +1819,12 @@ function EngineStatusCompact({
 }) {
   if (enginesError) {
     return (
-      <section className="rounded-card border border-border bg-surface p-5 shadow-card">
-        <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
-        <p className="mt-2 text-sm text-state-warning">{copy.engines.error}</p>
+      <section className="overflow-hidden rounded-card border border-warning-border bg-surface shadow-card">
+        <div className="flex items-center gap-2.5 border-b border-warning-border px-4 py-3">
+          <SectionGlyph tone="warning" />
+          <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
+        </div>
+        <p className="px-4 py-3 text-sm text-warning">{copy.engines.error}</p>
       </section>
     );
   }
@@ -1491,20 +1832,35 @@ function EngineStatusCompact({
   const flagged = engines.filter((engine) => isEngineAlert(engine));
 
   return (
-    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
-      <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
+    <section className="overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <SectionGlyph tone="success" />
+          <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
+        </div>
+      </div>
       {flagged.length === 0 ? (
-        <p className="mt-2 text-sm text-text-secondary">{copy.engines.allOk}</p>
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-input border border-success-border bg-success-bg px-3 py-2.5">
+            <p className="flex items-center gap-2 text-sm font-medium text-text-primary">
+              <MetricDot tone="success" />
+              {copy.engines.allOk}
+            </p>
+            <span className="rounded-pill bg-surface px-2 py-1 text-[11px] font-semibold text-success">OK</span>
+          </div>
+        </div>
       ) : (
-        <div className="mt-3 space-y-2">
+        <div className="space-y-2 px-4 py-3">
           {flagged.map((engine) => (
-            <div key={engine.id} className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2 text-xs">
-              <span className="font-semibold text-text-primary">{engine.label}</span>
-              <span className="text-text-muted">
-                {engine.status}
-                {typeof engine.queueDepth === 'number'
-                  ? ` · ${copy.engines.queueLabel.replace('{count}', String(engine.queueDepth))}`
-                  : ''}
+            <div key={engine.id} className="flex items-center justify-between gap-3 rounded-input border border-hairline bg-surface-2/70 px-3 py-2 text-xs">
+              <span className="min-w-0 truncate font-semibold text-text-primary">{engine.label}</span>
+              <span className="inline-flex shrink-0 items-center gap-1 text-text-muted">
+                <span>
+                  {engine.status}
+                  {typeof engine.queueDepth === 'number'
+                    ? ` · ${copy.engines.queueLabel.replace('{count}', String(engine.queueDepth))}`
+                    : ''}
+                </span>
               </span>
             </div>
           ))}
@@ -1803,24 +2159,6 @@ function formatEta(label?: string | null, seconds?: number | null): string {
       return `${Math.round(seconds / 60)}m`;
     }
     return `${Math.round(seconds)}s`;
-  }
-  return '—';
-}
-
-function formatDurationShort(value?: number | null): string {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return '—';
-  return `${Math.round(value)}s`;
-}
-
-function formatAudioLabel(value: boolean | null | undefined, copy: DashboardCopy): string {
-  if (value === true) return copy.quickStarts.meta.audioOn;
-  if (value === false) return copy.quickStarts.meta.audioOff;
-  return copy.quickStarts.meta.audioUnknown;
-}
-
-function formatTemplatePrice(template: TemplateEntry): string {
-  if (typeof template.priceCents === 'number' && Number.isFinite(template.priceCents)) {
-    return formatCurrencyLocal(template.priceCents / 100, template.currency ?? undefined);
   }
   return '—';
 }

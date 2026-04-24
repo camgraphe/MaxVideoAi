@@ -687,6 +687,7 @@ const USE_CASE_MAP: Record<string, string> = {
   'ltx-2': 'fast iteration with responsive motion',
   'ltx-2-fast': 'rapid testing and quick iteration',
   'minimax-hailuo-02-text': 'budget-friendly concept tests',
+  'gpt-image-2': 'text-heavy stills, product photography, and controlled edits',
   'nano-banana': 'storyboards and still-first workflows',
   'nano-banana-pro': 'campaign stills and typography-focused edits',
   'nano-banana-2': 'grounded stills and wide-format image edits',
@@ -726,6 +727,8 @@ const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<string,
       'Idéal pour des prompts structurés et des transitions propres, rapides, stables et économiques, en texte-vers-vidéo et image-vers-vidéo.',
     'minimax-hailuo-02-text':
       'Idéal pour des tests de concepts économiques, rapides et stables, en texte-vers-vidéo et image-vers-vidéo, avec contrôle début/fin.',
+    'gpt-image-2':
+      'Idéal pour des images riches en texte, des packshots produit, des mockups UI et des edits guides par reference.',
     'nano-banana-2': 'Idéal pour des images fixes guidées et des retouches grand format, avec des performances fiables.',
     'nano-banana-pro': 'Idéal pour des visuels de campagne et des retouches typographiques, avec des performances fiables.',
   },
@@ -1031,6 +1034,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     'ltx-2-fast',
     'ltx-2',
     'minimax-hailuo-02-text',
+    'gpt-image-2',
     'nano-banana-2',
     'nano-banana-pro',
     'nano-banana',
@@ -1155,7 +1159,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     const capabilities = capabilityKeywordsList
       .filter((cap) => cap !== 'Lip sync' && cap !== 'Audio')
       .slice(0, 5) as string[];
-    const compareDisabled = ['nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
+    const compareDisabled = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2'].includes(engine.modelSlug);
     const bestForFallback = catalogEntry?.bestFor ? sanitizeDescription(catalogEntry.bestFor) : engineType;
     const generatedDescription =
       descriptionOverrides[engine.modelSlug] ??
@@ -1296,7 +1300,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Identifica modelos para generar imágenes fijas sin referencias de entrada.'
                     : 'Shortlist models for still generation without source references.',
-              engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
+              engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
               icon: Film,
             },
             {
@@ -1307,7 +1311,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Comprueba qué modelos manejan mejor las referencias y la edición con varias imágenes.'
                     : 'Check which models best support references and multi-image edits.',
-              engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
+              engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
               icon: Clapperboard,
             },
             {
@@ -1318,7 +1322,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Revisa ratios amplios, extremos y formatos de archivo disponibles.'
                     : 'Review wide and extreme aspect ratios plus available file formats.',
-              engines: ['nano-banana-2', 'nano-banana-pro'],
+              engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
               icon: Sparkles,
             },
             {
@@ -1329,7 +1333,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Comprueba cuántas imágenes de referencia acepta cada modelo en edit.'
                     : 'Check how many reference images each model accepts for edit runs.',
-              engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
+              engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
               icon: Timer,
             },
             {
@@ -1340,7 +1344,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Compara drafts, finales y costes extra como grounding web.'
                     : 'Compare draft, final, and add-on costs such as web grounding.',
-              engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
+              engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
               icon: Wand2,
             },
             {
@@ -1351,7 +1355,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Abre las fichas de modelo para prompts, recomendaciones y restricciones detalladas.'
                     : 'Open model profiles for prompts, tips, and detailed constraints.',
-              engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
+              engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
               icon: Copy,
             },
           ]
@@ -1375,7 +1379,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                   : activeLocale === 'es'
                     ? 'Abre el hub de imagen para imágenes fijas, ediciones y flujos guiados por referencias.'
                     : 'Open the image hub for stills, edits, and reference-led workflows.',
-              engines: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'],
+              engines: ['gpt-image-2', 'nano-banana-2', 'nano-banana-pro'],
               icon: Clapperboard,
             },
             {

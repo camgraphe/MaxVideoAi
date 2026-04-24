@@ -215,7 +215,7 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'OpenAI compact logo',
       dark: 'OpenAI compact logo (dark mode)',
     },
-    engineIds: ['sora-2', 'sora2', 'sora-2-pro', 'sora2pro'],
+    engineIds: ['sora-2', 'sora2', 'sora-2-pro', 'sora2pro', 'gpt-image-2', 'openai/gpt-image-2', 'openai/gpt-image-2/edit'],
   },
   {
     id: 'wan',

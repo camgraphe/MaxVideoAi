@@ -120,7 +120,7 @@ export function GalleryRail({
     if (!jobFilter) return surfaceSafeJobs;
     return surfaceSafeJobs.filter(jobFilter);
   }, [jobFilter, surfaceSafeJobs]);
-  const [currentVisibilityTime, setCurrentVisibilityTime] = useState(() => Date.now());
+  const [currentVisibilityTime, setCurrentVisibilityTime] = useState(0);
   const visibleJobs = useMemo(() => {
     return filteredJobs.filter((job) => !isExpiredRefundedFailedGalleryItem(job, currentVisibilityTime));
   }, [filteredJobs, currentVisibilityTime]);
@@ -138,6 +138,7 @@ export function GalleryRail({
     return () => window.removeEventListener('jobs:hidden', handleHidden);
   }, [mutate]);
   useEffect(() => {
+    setCurrentVisibilityTime(Date.now());
     const intervalId = window.setInterval(() => {
       setCurrentVisibilityTime(Date.now());
     }, 5_000);
@@ -179,6 +180,7 @@ export function GalleryRail({
     () => normalizeGroupSummaries(historicalGroups),
     [historicalGroups]
   );
+  const [hasMounted, setHasMounted] = useState(false);
 
   const combinedGroups = useMemo(() => {
     const nonCurated = [...normalizedActiveGroups, ...normalizedHistoricalGroups].filter(
@@ -187,9 +189,10 @@ export function GalleryRail({
     if (nonCurated.length) return nonCurated;
     return [...normalizedActiveGroups, ...normalizedHistoricalGroups];
   }, [normalizedActiveGroups, normalizedHistoricalGroups]);
+  const renderedGroups = useMemo(() => (hasMounted ? combinedGroups : []), [combinedGroups, hasMounted]);
   const sampleOnly = useMemo(
-    () => combinedGroups.length > 0 && combinedGroups.every((group) => group.hero.job?.curated === true),
-    [combinedGroups]
+    () => renderedGroups.length > 0 && renderedGroups.every((group) => group.hero.job?.curated === true),
+    [renderedGroups]
   );
   const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
 
@@ -206,6 +209,10 @@ export function GalleryRail({
   const isDesktopVariant = variant === 'desktop';
   const railThumbHeight = 24;
   const railTrackOffset = 12;
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
   const handleRemoveJob = useCallback(
     async (job: Job) => {
       if (job.curated) {
@@ -536,8 +543,8 @@ export function GalleryRail({
   }, [isDesktopVariant, railTrackOffset]);
 
   useEffect(() => {
-    onFeedStateChange?.({ visibleGroups: combinedGroups, sampleOnly });
-  }, [combinedGroups, onFeedStateChange, sampleOnly]);
+    onFeedStateChange?.({ visibleGroups: renderedGroups, sampleOnly });
+  }, [onFeedStateChange, renderedGroups, sampleOnly]);
 
   useEffect(() => {
     const element = sentinelRef.current;
@@ -590,17 +597,17 @@ export function GalleryRail({
     };
   }, [updateRailProgress]);
 
-  const isInitialLoading = isLoading && filteredJobs.length === 0;
-  const isFetchingMore = isValidating && filteredJobs.length > 0;
+  const isInitialLoading = hasMounted && isLoading && filteredJobs.length === 0;
+  const isFetchingMore = hasMounted && isValidating && filteredJobs.length > 0;
   const railThumbOffset = railProgress * (railTrackHeight - railThumbHeight);
 
   useEffect(() => {
     updateRailProgress();
-  }, [combinedGroups.length, isFetchingMore, isInitialLoading, updateRailProgress]);
+  }, [isFetchingMore, isInitialLoading, renderedGroups.length, updateRailProgress]);
 
   const cards = (
     <>
-      {combinedGroups.map((group) => {
+      {renderedGroups.map((group) => {
         const engineId = group.hero.engineId;
         const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
         return (
@@ -648,11 +655,11 @@ export function GalleryRail({
     </header>
   );
 
-  const curatedBanner = hasCuratedJobs ? (
+  const curatedBanner = hasMounted && hasCuratedJobs ? (
     <div className="rounded-card border border-hairline bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary">{copy.curated}</div>
   ) : null;
 
-  const errorBanner = error ? (
+  const errorBanner = hasMounted && error ? (
     <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-warning-border bg-warning-bg px-3 py-2 text-[12px] text-warning">
       <span role="alert">{copy.error}</span>
       <Button

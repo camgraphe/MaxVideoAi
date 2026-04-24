@@ -1781,7 +1781,7 @@ function buildProductSchema({
 
 const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
-const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
+const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2']);
 
 function buildDetailSlugMap(slug: string) {
   return locales.reduce<Record<AppLocale, string>>((acc, locale) => {
@@ -3772,7 +3772,10 @@ function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = (() => {
     const isNanoBananaFamily =
-      engine.modelSlug === 'nano-banana' || engine.modelSlug === 'nano-banana-pro' || engine.modelSlug === 'nano-banana-2';
+      engine.modelSlug === 'nano-banana' ||
+      engine.modelSlug === 'nano-banana-pro' ||
+      engine.modelSlug === 'nano-banana-2' ||
+      engine.modelSlug === 'gpt-image-2';
     const isVideoPrepModel =
       engine.modelSlug === 'veo-3-1' ||
       engine.modelSlug === 'kling-3-pro' ||
@@ -3861,7 +3864,7 @@ function MarketingModelPageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = ['nano-banana', 'nano-banana-pro', 'nano-banana-2'].includes(engine.modelSlug);
+  const hideExamplesSection = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2'].includes(engine.modelSlug);
   const hasExamples = galleryVideos.length > 0 && !hideExamplesSection;
   const galleryPreviewAlts = dedupeAltsInList(
     galleryVideos.slice(0, 6).map((video, index) => ({

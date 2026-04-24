@@ -12,8 +12,8 @@ const baseClasses =
   'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-60';
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-brand text-on-brand hover:bg-brandHover active:bg-brandActive',
-  outline: 'border border-hairline text-text-primary hover:border-border-hover hover:bg-surface-hover active:border-border-hover active:bg-surface-2',
+  primary: 'bg-[image:var(--brand-gradient)] text-on-brand shadow-[var(--shadow-brand-button)] hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95',
+  outline: 'border border-hairline bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover active:border-border-hover active:bg-surface-2',
   ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-hover active:bg-surface-2',
 };
 

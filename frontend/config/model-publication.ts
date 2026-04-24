@@ -114,6 +114,7 @@ export const LEGACY_APP_DISCOVERY_PRIORITY = [
   'veo-3-1-lite',
   'pika-text-to-video',
   'minimax-hailuo-02-text',
+  'gpt-image-2',
   'nano-banana-2',
   'nano-banana-pro',
   'nano-banana',

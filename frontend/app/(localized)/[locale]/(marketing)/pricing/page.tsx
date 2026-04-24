@@ -1,4 +1,20 @@
 import type { Metadata } from 'next';
+import {
+  BarChart3,
+  Calculator,
+  CheckCircle2,
+  Clock3,
+  Crown,
+  Film,
+  ImageIcon,
+  Mic2,
+  Monitor,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+  WalletCards,
+  type LucideIcon,
+} from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -217,6 +233,100 @@ const DEFAULT_PRICE_FACTORS: Record<AppLocale, { title: string; points: string[]
 
 const serializeJsonLd = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
 
+const EXAMPLE_CARD_VISUALS: Array<{ Icon: LucideIcon; accentClass: string; chartClass: string }> = [
+  { Icon: Film, accentClass: 'bg-surface-3 text-text-secondary', chartClass: 'text-text-muted' },
+  { Icon: ImageIcon, accentClass: 'bg-state-success/10 text-state-success', chartClass: 'text-state-success' },
+  { Icon: Mic2, accentClass: 'bg-state-warning/10 text-state-warning', chartClass: 'text-state-warning' },
+];
+
+const MEMBER_TIER_VISUALS: Array<{ Icon: LucideIcon; accentClass: string }> = [
+  { Icon: UserRound, accentClass: 'bg-surface-3 text-text-secondary' },
+  { Icon: Sparkles, accentClass: 'bg-surface-3 text-text-secondary' },
+  { Icon: Crown, accentClass: 'bg-state-warning/10 text-state-warning' },
+];
+
+const PRICE_FACTOR_ICONS: LucideIcon[] = [Clock3, Monitor, ImageIcon, Mic2, Sparkles];
+
+function PricingHeroVisual({ side }: { side: 'left' | 'right' }) {
+  if (side === 'left') {
+    return (
+      <div
+        aria-hidden
+        className="relative h-44 w-56 rotate-[-4deg] rounded-[22px] border border-hairline bg-surface-glass-90 p-4 shadow-[0_24px_70px_-50px_rgba(17,24,39,0.55)]"
+      >
+        <div className="overflow-hidden rounded-[16px] border border-hairline bg-bg">
+          <div className="flex items-center gap-1.5 border-b border-hairline bg-surface px-3 py-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-state-warning/60" />
+            <span className="h-1.5 w-1.5 rounded-full bg-state-success/60" />
+            <span className="ml-auto h-1.5 w-10 rounded-full bg-surface-3" />
+          </div>
+          <div className="grid h-20 grid-cols-[1.1fr_0.9fr] gap-2 p-3">
+            <div className="rounded-[12px] bg-surface-3" />
+            <div className="space-y-2">
+              <div className="h-2 w-full rounded-full bg-text-muted/20" />
+              <div className="h-2 w-3/4 rounded-full bg-text-muted/15" />
+              <div className="h-6 w-14 rounded-full bg-state-success/10" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 space-y-2">
+          <div className="h-2 w-24 rounded-full bg-text-muted/20" />
+          <div className="h-2 w-16 rounded-full bg-hairline" />
+        </div>
+        <div className="absolute -bottom-5 -right-7 rounded-[16px] border border-hairline bg-surface px-4 py-3 text-left shadow-card">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Quote</p>
+          <p className="text-lg font-semibold text-text-primary">$4.16</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div aria-hidden className="relative h-44 w-64 rotate-[3deg] rounded-[22px] border border-hairline bg-surface-glass-90 p-4 shadow-[0_24px_70px_-50px_rgba(17,24,39,0.55)]">
+      <div className="flex items-center justify-between">
+        <div className="h-2 w-20 rounded-full bg-text-muted/20" />
+        <div className="rounded-full border border-hairline bg-bg px-2 py-1 text-[10px] font-semibold text-text-muted">$ / render</div>
+      </div>
+      <div className="mt-5 grid gap-2">
+        {[68, 48, 58, 38].map((width, index) => (
+          <div key={width} className="grid grid-cols-[56px_1fr_34px] items-center gap-2">
+            <div className="h-2 rounded-full bg-text-muted/15" />
+            <div className="h-2 rounded-full bg-surface-3">
+              <span
+                className={index === 1 ? 'block h-2 rounded-full bg-state-success/35' : 'block h-2 rounded-full bg-text-muted/25'}
+                style={{ width: `${width}%` }}
+              />
+            </div>
+            <div className="h-2 rounded-full bg-text-muted/15" />
+          </div>
+        ))}
+      </div>
+      <div className="absolute -bottom-5 left-6 right-6 rounded-[16px] border border-hairline bg-surface px-4 py-3 shadow-card">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Before queue</p>
+          <span className="h-2 w-2 rounded-full bg-state-success" />
+        </div>
+        <p className="mt-1 text-sm font-semibold text-text-primary">Visible price</p>
+      </div>
+    </div>
+  );
+}
+
+function MiniSparkline({ className }: { className: string }) {
+  return (
+    <svg aria-hidden viewBox="0 0 122 42" className={`h-12 w-32 ${className}`}>
+      <path
+        d="M3 34 C16 22 24 20 34 26 C45 33 48 13 60 15 C72 17 74 25 85 18 C98 9 104 11 119 4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="4"
+      />
+    </svg>
+  );
+}
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'pricing.meta' });
@@ -401,10 +511,6 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           : 'Save {percent}% on every render'),
   };
   const exampleCosts = content.examples ?? DEFAULT_EXAMPLE_COSTS[locale];
-  const exampleLabels = {
-    ...DEFAULT_EXAMPLE_COSTS[locale].labels,
-    ...(exampleCosts.labels ?? {}),
-  };
   const exampleCards: ExampleCardConfig[] =
     Array.isArray(exampleCosts.cards) && exampleCosts.cards.length
       ? (exampleCosts.cards as ExampleCardConfig[])
@@ -456,186 +562,306 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
   const heroTitleLines = (content.hero.title ?? '').split('\n').map((line) => line.trim()).filter(Boolean);
   const heroSubtitleLines = (content.hero.subtitle ?? '').split('\n').map((line) => line.trim()).filter(Boolean);
-  const heroHeadline = heroTitleLines[0] ?? content.hero.title;
-  const heroSupportingLines = heroTitleLines.slice(1).concat(heroSubtitleLines);
+  const heroTitle = heroTitleLines[0] ?? content.hero.title;
+  const heroTitleSeparatorIndex = heroTitle.indexOf(':');
+  const heroHeadline = heroTitleSeparatorIndex >= 0 ? heroTitle.slice(0, heroTitleSeparatorIndex + 1) : heroTitle;
+  const heroAccentLine = heroTitleSeparatorIndex >= 0 ? heroTitle.slice(heroTitleSeparatorIndex + 1).trim() : null;
+  const heroEyebrow =
+    locale === 'fr' ? 'Prix transparents' : locale === 'es' ? 'Precios transparentes' : 'Transparent pricing';
+  const starterCreditLine =
+    locale === 'fr'
+      ? 'Commencez avec les Starter Credits (10 $).'
+      : locale === 'es'
+        ? 'Empieza con Starter Credits (10 $).'
+        : 'Start with Starter Credits ($10).';
+  const noSubscriptionLine =
+    locale === 'fr'
+      ? 'Pas d’abonnement. Pas d’engagement.'
+      : locale === 'es'
+        ? 'Sin suscripción. Sin permanencia.'
+        : 'No subscription. No lock-in.';
+  const heroBodyLines = heroSubtitleLines.length ? heroSubtitleLines : [starterCreditLine, noSubscriptionLine];
+  const livePricingLine =
+    locale === 'fr'
+      ? 'Envie de voir les prix en temps réel avant génération ?'
+      : locale === 'es'
+        ? '¿Quieres ver precios en tiempo real antes de generar?'
+        : 'Want to see real-time prices before you generate?';
+  const openGeneratorLabel =
+    content.calculator?.cta ??
+    (locale === 'fr' ? 'Ouvrir le générateur' : locale === 'es' ? 'Abrir el generador' : 'Open the generator');
+  const previewTitle = content.calculator?.title ?? 'Preview prices in the app';
+  const previewDescription =
+    content.calculator?.description ??
+    (locale === 'fr'
+      ? 'Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.'
+      : locale === 'es'
+        ? 'Abre el generador para ver el precio exacto antes de crear el video.'
+        : 'Open the generator to see the exact price before you create a video.');
+  const refundFeatureIcons: LucideIcon[] = [ShieldCheck, WalletCards, CheckCircle2];
+  const isNoSubscriptionCopy = (line: string) => {
+    const normalized = line.toLowerCase();
+    return (
+      normalized.includes('no subscription') ||
+      normalized.includes('lock-in') ||
+      normalized.includes('abonnement') ||
+      normalized.includes('engagement') ||
+      normalized.includes('suscripción') ||
+      normalized.includes('permanencia')
+    );
+  };
 
   return (
-    <main className="container-page max-w-6xl section">
+    <main className="container-page max-w-6xl py-10 sm:py-14">
       <div className="stack-gap-lg">
-        <header className="halo-hero halo-hero-offset mx-auto max-w-3xl stack-gap-sm text-center">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroHeadline}</h1>
-          {heroSupportingLines.length ? (
-            <div className="space-y-2 text-base leading-relaxed text-text-secondary">
-              {heroSupportingLines.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
+        <header className="relative overflow-hidden rounded-[32px] border border-hairline bg-[linear-gradient(180deg,var(--surface),rgba(250,251,254,0.76))] px-4 pb-8 pt-7 text-center shadow-[0_24px_80px_-58px_rgba(17,24,39,0.55)] sm:px-8 sm:pb-10 sm:pt-9">
+          <div className="absolute -left-10 top-12 hidden scale-90 lg:block">
+            <PricingHeroVisual side="left" />
+          </div>
+          <div className="absolute -right-4 top-14 hidden scale-90 lg:block">
+            <PricingHeroVisual side="right" />
+          </div>
+          <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-4">
+            <span className="inline-flex items-center rounded-full border border-hairline bg-bg px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted shadow-card">
+              {heroEyebrow}
+            </span>
+            <h1 className="text-4xl font-semibold tracking-tight text-text-primary sm:text-6xl">
+              {heroHeadline}
+              {heroAccentLine ? (
+                <>
+                  <br />
+                  <span className="text-text-secondary">{heroAccentLine}</span>
+                </>
+              ) : null}
+            </h1>
+            <div className="flex flex-col items-center gap-3 text-base leading-7 text-text-secondary">
+              {heroBodyLines.map((line) =>
+                isNoSubscriptionCopy(line) ? (
+                  <p
+                    key={line}
+                    className="rounded-[18px] border border-hairline bg-bg px-5 py-3 text-lg font-semibold tracking-tight text-text-primary shadow-card sm:text-xl"
+                  >
+                    {line}
+                  </p>
+                ) : (
+                  <p key={line}>{line}</p>
+                )
+              )}
             </div>
-          ) : null}
-          {heroLink ? (
-            <p className="text-base leading-relaxed text-text-secondary">
-              {heroLink.before}
-              <Link href={compareBlogHref} className="font-semibold text-brand hover:text-brandHover">
-                {heroLink.label ?? 'AI video comparison'}
-              </Link>
-              {heroLink.after}
-            </p>
-          ) : null}
+            {heroLink ? (
+              <p className="text-sm leading-6 text-text-secondary">
+                {heroLink.before}
+                <Link
+                  href={compareBlogHref}
+                  className="font-semibold text-text-primary underline decoration-text-muted/30 underline-offset-4 hover:decoration-text-primary"
+                >
+                  {heroLink.label ?? 'AI video comparison'}
+                </Link>
+                {heroLink.after}
+              </p>
+            ) : null}
+          </div>
         </header>
 
         <section id="estimator" className="scroll-mt-28">
-          <div className="mx-auto max-w-4xl">
+          <div className="mx-auto max-w-5xl">
             <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
           </div>
-          <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
+          <div className="mx-auto mt-5 flex max-w-3xl flex-col items-center gap-2 rounded-[18px] border border-hairline bg-surface px-4 py-3 text-center text-xs text-text-muted shadow-card sm:flex-row sm:justify-center">
             <FlagPill live={FEATURES.pricing.publicCalculator} liveLabel={liveLabel} soonLabel={comingSoonLabel} />
             <span>
-              {content.estimator.walletLink}{' '}
-              <Link href={generatorHref} prefetch={false} className="font-semibold text-brand hover:text-brandHover">
-                {content.estimator.walletLinkCta}
+              {livePricingLine}{' '}
+              <Link href={generatorHref} prefetch={false} className="font-semibold text-text-primary underline decoration-text-muted/30 underline-offset-4 hover:decoration-text-primary">
+                {openGeneratorLabel}
               </Link>
-              .
-              {!FEATURES.pricing.publicCalculator ? (
-                <span className="ml-1 text-xs text-text-muted">
-                  ({locale === 'fr' ? 'à venir' : locale === 'es' ? 'próximamente' : 'coming soon'})
-                </span>
-              ) : null}
             </span>
           </div>
         </section>
 
-        <section aria-labelledby="example-costs">
-          <h2 id="example-costs" className="scroll-mt-28 text-2xl font-semibold text-text-primary sm:text-3xl">
-            {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS[locale].title}
-          </h2>
-          <p className="mb-4 text-sm text-text-secondary">
-            {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS[locale].subtitle}
-          </p>
-          <div className="grid grid-cols-1 grid-gap-sm sm:grid-cols-3">
-            {resolvedExampleCards.map((card) => (
-              <div key={card.title} className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
-                <div className="text-sm font-medium text-text-primary">{card.title}</div>
-                <dl className="mt-2 text-sm text-text-secondary">
-                  <div className="flex justify-between">
-                    <dt>{exampleLabels.engine}</dt>
-                    <dd>{card.engine}</dd>
+        <section aria-labelledby="example-costs" className="scroll-mt-28">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <h2 id="example-costs" className="text-2xl font-semibold text-text-primary">
+                {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS[locale].title}
+              </h2>
+              <p className="mt-1 text-sm text-text-secondary">
+                {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS[locale].subtitle}
+              </p>
+            </div>
+            <div className="hidden h-px w-28 bg-hairline sm:block" aria-hidden />
+          </div>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {resolvedExampleCards.map((card, index) => {
+              const visual = EXAMPLE_CARD_VISUALS[index % EXAMPLE_CARD_VISUALS.length];
+              const Icon = visual.Icon;
+              return (
+                <article key={card.title} className="rounded-card border border-hairline bg-surface p-5 shadow-card">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-hairline ${visual.accentClass}`}>
+                        <Icon className="h-5 w-5" strokeWidth={1.8} />
+                      </span>
+                      <div>
+                        <h3 className="text-base font-semibold text-text-primary">{card.title}</h3>
+                        <p className="mt-1 text-xs text-text-muted">
+                          {card.duration} · {card.resolution} · {card.audio}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <dt>{exampleLabels.duration}</dt>
-                    <dd>{card.duration}</dd>
+                  <div className="mt-5 flex items-end justify-between gap-4">
+                    <div>
+                      <p className="text-3xl font-semibold tracking-tight text-text-primary">{card.price ?? '—'}</p>
+                      <p className="mt-2 inline-flex rounded-full bg-surface-2 px-2 py-1 text-xs font-semibold text-text-secondary">
+                        {card.engine}
+                      </p>
+                    </div>
+                    <MiniSparkline className={visual.chartClass} />
                   </div>
-                  <div className="flex justify-between">
-                    <dt>{exampleLabels.resolution}</dt>
-                    <dd>{card.resolution}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>{exampleLabels.audio}</dt>
-                    <dd>{card.audio}</dd>
-                  </div>
-                </dl>
-                <div className="mt-3 text-base font-semibold text-text-primary">
-                  {card.price ?? '—'}
-                </div>
-                {card.note ? <div className="text-xs text-text-muted">{card.note}</div> : null}
-              </div>
-            ))}
+                  {card.note ? (
+                    <p className="mt-3 line-clamp-2 text-xs leading-5 text-text-muted">{card.note}</p>
+                  ) : null}
+                </article>
+              );
+            })}
           </div>
         </section>
 
-        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-            {member.title}
-            <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" liveLabel={liveLabel} soonLabel={comingSoonLabel} />
-          </h2>
-          <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
-          <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
-            {formattedTiers.map((tier) => (
-              <div key={tier.name} className="rounded-card border border-hairline bg-surface-2 p-4">
-                <p className="text-sm font-semibold text-text-primary">{tier.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-micro text-text-muted">{tier.requirement}</p>
-                <p className="mt-3 text-sm text-text-secondary">{tier.benefit}</p>
-              </div>
-            ))}
+        <section className="rounded-card border border-hairline bg-surface p-5 shadow-card sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="flex items-center gap-3 text-2xl font-semibold text-text-primary">
+                {member.title}
+                <FlagPill
+                  live={FEATURES.pricing.memberTiers}
+                  liveLabel={liveLabel}
+                  soonLabel={comingSoonLabel}
+                />
+              </h2>
+              <p className="mt-1 text-sm text-text-secondary">{member.subtitle}</p>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {formattedTiers.map((tier, index) => {
+              const visual = MEMBER_TIER_VISUALS[index % MEMBER_TIER_VISUALS.length];
+              const Icon = visual.Icon;
+              return (
+                <article key={tier.name} className="rounded-[18px] border border-hairline bg-bg p-5">
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-hairline ${visual.accentClass}`}>
+                    <Icon className="h-5 w-5" strokeWidth={1.8} />
+                  </span>
+                  <h3 className="mt-4 text-base font-semibold text-text-primary">{tier.name}</h3>
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+                    {tier.requirement}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-text-secondary">{tier.benefit}</p>
+                </article>
+              );
+            })}
           </div>
         </section>
 
         <section className="rounded-card border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-card">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">{exploreTitle}</span>
             <div className="flex flex-wrap gap-2">
               {exploreLinks.map((link) => {
                 const key = `${link.label}-${typeof link.href === 'string' ? link.href : link.href.pathname}`;
                 return (
-                <Link
-                  key={key}
-                  href={link.href}
-                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                >
-                  {link.label}
-                </Link>
+                  <Link
+                    key={key}
+                    href={link.href}
+                    className="inline-flex min-h-8 items-center rounded-full border border-hairline bg-bg px-3 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                  >
+                    {link.label}
+                  </Link>
                 );
               })}
             </div>
           </div>
         </section>
 
-        <section className="rounded-card border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-            {content.calculator?.title ?? 'Preview prices in the app'}
-          </h2>
-          <p className="mt-2">
-            {content.calculator?.description ??
-              (locale === 'fr'
-                ? 'Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.'
-                : locale === 'es'
-                  ? 'Abre el generador para ver el precio exacto antes de crear el video.'
-                  : 'Open the generator to see the exact price before you create a video.')}
-          </p>
-          <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm" linkComponent={Link}>
-            {content.calculator?.cta ??
-              (locale === 'fr' ? 'Ouvrir le générateur' : locale === 'es' ? 'Abrir el generador' : 'Open the generator')}{' '}
-            <span aria-hidden>→</span>
-          </TextLink>
+        <section className="grid items-center gap-6 rounded-card border border-hairline bg-surface p-5 text-sm text-text-secondary shadow-card sm:p-6 lg:grid-cols-[1fr_300px]">
+          <div className="flex gap-4">
+            <span className="flex h-14 w-14 flex-none items-center justify-center rounded-[18px] border border-hairline bg-surface-3 text-text-secondary">
+              <Calculator className="h-6 w-6" strokeWidth={1.8} />
+            </span>
+            <div>
+              <h2 className="text-2xl font-semibold text-text-primary">{previewTitle}</h2>
+              <p className="mt-2 max-w-2xl leading-6">{previewDescription}</p>
+              <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm text-text-primary" linkComponent={Link}>
+                {openGeneratorLabel}
+              </TextLink>
+            </div>
+          </div>
+          <div aria-hidden className="relative hidden h-28 items-center justify-end lg:flex">
+            <div className="relative w-48 overflow-hidden rounded-[18px] border border-hairline bg-bg p-4 shadow-card">
+              <p className="text-[10px] font-semibold text-text-muted">Price before you generate</p>
+              <p className="mt-1 text-xl font-semibold text-text-primary">$4.16</p>
+              <span className="mt-3 inline-flex rounded-full bg-text-primary px-4 py-2 text-xs font-semibold text-bg">
+                Generate
+              </span>
+            </div>
+          </div>
         </section>
+
         {priceFactors.points?.length ? (
-          <section aria-labelledby="price-factors">
-            <h2 id="price-factors" className="text-2xl font-semibold text-text-primary sm:text-3xl">
+          <section aria-labelledby="price-factors" className="scroll-mt-28">
+            <h2 id="price-factors" className="text-2xl font-semibold text-text-primary">
               {priceFactors.title ?? DEFAULT_PRICE_FACTORS[locale].title}
             </h2>
-            <ul className="mt-2 space-y-1 text-sm text-text-secondary">
-              {priceFactors.points.map((point) => (
-                <li key={point}>• {point}</li>
-              ))}
-            </ul>
+            <div className="mt-5 grid gap-3 md:grid-cols-5">
+              {priceFactors.points.map((point, index) => {
+                const Icon = PRICE_FACTOR_ICONS[index % PRICE_FACTOR_ICONS.length];
+                return (
+                  <article key={point} className="rounded-[18px] border border-hairline bg-surface p-4 shadow-card">
+                    <Icon className="h-5 w-5 text-text-secondary" strokeWidth={1.8} />
+                    <p className="mt-3 text-xs leading-5 text-text-secondary">{point}</p>
+                  </article>
+                );
+              })}
+            </div>
           </section>
         ) : null}
 
-        <section className="grid grid-gap lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <article
             id="refunds-protections"
             className="scroll-mt-28 rounded-card border border-hairline bg-surface p-6 shadow-card"
           >
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-              {refunds.title}
-            </h2>
-            <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
-              {refundFeatureItems.map((item) => (
-                <li key={item.text} className="flex items-start gap-2">
-                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                  <span className="inline-flex flex-wrap items-center gap-2">
-                    {item.text}
-                    <FlagPill live={item.live} liveLabel={liveLabel} soonLabel={comingSoonLabel} />
-                  </span>
-                </li>
-              ))}
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-hairline bg-surface-3 text-text-secondary">
+                <ShieldCheck className="h-6 w-6" strokeWidth={1.8} />
+              </span>
+              <h2 className="text-2xl font-semibold text-text-primary">{refunds.title}</h2>
+            </div>
+            <ul className="mt-5 grid gap-4 text-sm text-text-secondary">
+              {refundFeatureItems.map((item, index) => {
+                const Icon = refundFeatureIcons[index % refundFeatureIcons.length];
+                return (
+                  <li key={item.text} className="flex items-start gap-3">
+                    <Icon className="mt-0.5 h-4 w-4 flex-none text-text-secondary" strokeWidth={1.9} />
+                    <span className="inline-flex flex-wrap items-center gap-2 leading-6">
+                      {item.text}
+                      <FlagPill live={item.live} liveLabel={liveLabel} soonLabel={comingSoonLabel} />
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </article>
           <article className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faq.title}</h2>
-            <dl className="mt-4 stack-gap">
-              {faqEntries.map((entry) => (
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-hairline bg-surface-3 text-text-secondary">
+                <BarChart3 className="h-6 w-6" strokeWidth={1.8} />
+              </span>
+              <h2 className="text-2xl font-semibold text-text-primary">{faq.title}</h2>
+            </div>
+            <dl className="mt-5 grid gap-4">
+              {faqEntries.slice(0, 4).map((entry) => (
                 <div key={entry.question}>
                   <dt className="text-sm font-semibold text-text-primary">{entry.question}</dt>
-                  <dd className="mt-1 text-sm text-text-secondary">{entry.answer}</dd>
+                  <dd className="mt-1 text-sm leading-6 text-text-secondary">{entry.answer}</dd>
                 </div>
               ))}
             </dl>

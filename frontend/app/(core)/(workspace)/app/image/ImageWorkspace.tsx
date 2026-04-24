@@ -65,6 +65,12 @@ import {
   getImageInputField,
   getReferenceConstraints,
 } from '@/lib/image/inputSchema';
+import {
+  GPT_IMAGE_2_SIZE_CONSTRAINTS,
+  parseGptImage2SizeKey,
+  validateGptImage2CustomImageSize,
+  type GptImage2ImageSize,
+} from '@/lib/image/gptImage2';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobSurface } from '@/lib/job-surface';
 import { isPlaceholderMediaUrl, resolvePreferredMediaUrl } from '@/lib/media';
@@ -118,6 +124,12 @@ interface ImageWorkspaceCopy {
     seedPlaceholder: string;
     outputFormatLabel: string;
     outputFormatHint: string;
+    qualityLabel: string;
+    qualityHint: string;
+    customWidthLabel: string;
+    customHeightLabel: string;
+    maskUrlLabel: string;
+    maskUrlPlaceholder: string;
     enableWebSearchLabel: string;
     enableWebSearchHint: string;
     thinkingLevelLabel: string;
@@ -275,6 +287,12 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     seedPlaceholder: 'Optional',
     outputFormatLabel: 'Output format',
     outputFormatHint: 'Choose the file type for the final images.',
+    qualityLabel: 'Quality',
+    qualityHint: 'Controls model fidelity and cost when supported.',
+    customWidthLabel: 'Width',
+    customHeightLabel: 'Height',
+    maskUrlLabel: 'Mask URL',
+    maskUrlPlaceholder: 'Optional public mask image URL',
     enableWebSearchLabel: 'Web search',
     enableWebSearchHint: 'Ground the request with current web context when supported.',
     thinkingLevelLabel: 'Thinking level',
@@ -392,6 +410,45 @@ function formatTemplate(template: string, values: Record<string, string | number
   }, template);
 }
 
+function formatImageSizeLabel(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  const labels: Record<string, string> = {
+    auto: 'Auto',
+    square: 'Square',
+    square_hd: 'Square HD',
+    portrait_4_3: 'Portrait 4:3',
+    portrait_16_9: 'Portrait 16:9',
+    landscape_4_3: 'Landscape 4:3',
+    landscape_16_9: 'Landscape 16:9',
+    custom: 'Custom size',
+  };
+  const parsed = parseGptImage2SizeKey(normalized);
+  if (parsed) {
+    return `${parsed.width} x ${parsed.height}`;
+  }
+  return labels[normalized] ?? value.toUpperCase();
+}
+
+function formatQualityLabel(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'low') return 'Low';
+  if (normalized === 'medium') return 'Medium';
+  if (normalized === 'high') return 'High';
+  return value;
+}
+
+function buildCustomImageSize(width: string, height: string): GptImage2ImageSize | null {
+  const parsedWidth = Number(width);
+  const parsedHeight = Number(height);
+  if (!Number.isFinite(parsedWidth) || !Number.isFinite(parsedHeight)) {
+    return null;
+  }
+  return {
+    width: Math.round(parsedWidth),
+    height: Math.round(parsedHeight),
+  };
+}
+
 const MAX_REFERENCE_SLOTS = MAX_REFERENCE_IMAGES;
 const DEFAULT_VISIBLE_REFERENCE_SLOTS = 4;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
@@ -401,7 +458,7 @@ const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_A
   : 25;
 
 const IMAGE_COMPOSER_STORAGE_KEY = 'maxvideoai.image.composer.v1';
-const IMAGE_COMPOSER_STORAGE_VERSION = 3;
+const IMAGE_COMPOSER_STORAGE_VERSION = 4;
 const IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS = 1200;
 
 function normalizeEngineToken(value: string): string {
@@ -484,8 +541,11 @@ type PersistedImageComposerState = {
   numImages: number;
   aspectRatio: string | null;
   resolution: string | null;
+  customImageSize: GptImage2ImageSize | null;
   seed: number | null;
   outputFormat: string | null;
+  quality: string | null;
+  maskUrl: string | null;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
   limitGenerations: boolean;
@@ -497,7 +557,7 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
   try {
     const raw = JSON.parse(value) as Partial<PersistedImageComposerState> | null;
     if (!raw || typeof raw !== 'object') return null;
-    if (raw.version !== 1 && raw.version !== 2 && raw.version !== IMAGE_COMPOSER_STORAGE_VERSION) return null;
+    if (![1, 2, 3, IMAGE_COMPOSER_STORAGE_VERSION].includes(Number(raw.version))) return null;
     if (typeof raw.engineId !== 'string' || raw.engineId.trim().length === 0) return null;
     const mode = raw.mode === 't2i' || raw.mode === 'i2i' ? raw.mode : 't2i';
     const prompt = typeof raw.prompt === 'string' ? raw.prompt : '';
@@ -505,9 +565,25 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
       typeof raw.numImages === 'number' && Number.isFinite(raw.numImages) ? Math.round(raw.numImages) : 1;
     const aspectRatio = typeof raw.aspectRatio === 'string' ? raw.aspectRatio : null;
     const resolution = typeof raw.resolution === 'string' ? raw.resolution : null;
+    const rawCustomImageSize =
+      raw.customImageSize && typeof raw.customImageSize === 'object'
+        ? (raw.customImageSize as Partial<GptImage2ImageSize>)
+        : null;
+    const customImageSize =
+      typeof rawCustomImageSize?.width === 'number' &&
+      Number.isFinite(rawCustomImageSize.width) &&
+      typeof rawCustomImageSize?.height === 'number' &&
+      Number.isFinite(rawCustomImageSize.height)
+        ? {
+            width: Math.round(rawCustomImageSize.width),
+            height: Math.round(rawCustomImageSize.height),
+          }
+        : null;
     const seed =
       typeof raw.seed === 'number' && Number.isFinite(raw.seed) ? Math.round(raw.seed) : null;
     const outputFormat = typeof raw.outputFormat === 'string' ? raw.outputFormat : null;
+    const quality = typeof raw.quality === 'string' ? raw.quality : null;
+    const maskUrl = typeof raw.maskUrl === 'string' ? raw.maskUrl : null;
     const enableWebSearch = raw.enableWebSearch === true;
     const thinkingLevel = typeof raw.thinkingLevel === 'string' ? raw.thinkingLevel : null;
     const limitGenerations = raw.limitGenerations === true;
@@ -546,8 +622,11 @@ function parsePersistedImageComposerState(value: string): PersistedImageComposer
       numImages,
       aspectRatio,
       resolution,
+      customImageSize,
       seed,
       outputFormat,
+      quality,
+      maskUrl,
       enableWebSearch,
       thinkingLevel,
       limitGenerations,
@@ -847,8 +926,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [numImages, setNumImages] = useState(1);
   const [aspectRatio, setAspectRatio] = useState<string | null>(null);
   const [resolution, setResolution] = useState<string | null>(null);
+  const [customImageWidth, setCustomImageWidth] = useState<string>('');
+  const [customImageHeight, setCustomImageHeight] = useState<string>('');
   const [seed, setSeed] = useState<string>('');
   const [outputFormat, setOutputFormat] = useState<string | null>(null);
+  const [quality, setQuality] = useState<string | null>(null);
+  const [maskUrl, setMaskUrl] = useState<string>('');
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   const [thinkingLevel, setThinkingLevel] = useState<string | null>(null);
   const [limitGenerations, setLimitGenerations] = useState(false);
@@ -877,8 +960,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [
     priceEstimateKey,
     setPriceEstimateKey,
-  ] = useState<[string, string, ImageGenerationMode, number, string, boolean] | null>(() =>
-    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, '', false] : null
+  ] = useState<[string, string, ImageGenerationMode, number, string, string, boolean, string, string] | null>(() =>
+    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, '', '', false, '', ''] : null
   );
 
   useEffect(() => {
@@ -925,6 +1008,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     () => getImageInputField(selectedEngineCaps ?? null, 'resolution', mode),
     [selectedEngineCaps, mode]
   );
+  const customImageWidthField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'image_width', mode),
+    [selectedEngineCaps, mode]
+  );
+  const customImageHeightField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'image_height', mode),
+    [selectedEngineCaps, mode]
+  );
   const resolutionOptions = useMemo(
     () =>
       getImageFieldValues(
@@ -957,6 +1048,18 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   );
   const outputFormatOptions = useMemo(
     () => getImageFieldValues(selectedEngineCaps ?? null, 'output_format', mode),
+    [selectedEngineCaps, mode]
+  );
+  const qualityField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'quality', mode),
+    [selectedEngineCaps, mode]
+  );
+  const qualityOptions = useMemo(
+    () => getImageFieldValues(selectedEngineCaps ?? null, 'quality', mode),
+    [selectedEngineCaps, mode]
+  );
+  const maskUrlField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'mask_url', mode),
     [selectedEngineCaps, mode]
   );
   const seedField = useMemo(
@@ -1081,6 +1184,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   }, [resolutionField, resolutionOptions, selectedEngineCaps, mode]);
 
   useEffect(() => {
+    if (!customImageWidthField || !customImageHeightField) {
+      setCustomImageWidth('');
+      setCustomImageHeight('');
+      return;
+    }
+    const defaultWidth =
+      getImageFieldDefaultNumber(selectedEngineCaps ?? null, 'image_width', mode) ??
+      GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultWidth;
+    const defaultHeight =
+      getImageFieldDefaultNumber(selectedEngineCaps ?? null, 'image_height', mode) ??
+      GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultHeight;
+    setCustomImageWidth((previous) => (previous.trim().length ? previous : String(defaultWidth)));
+    setCustomImageHeight((previous) => (previous.trim().length ? previous : String(defaultHeight)));
+  }, [customImageHeightField, customImageWidthField, selectedEngineCaps, mode]);
+
+  useEffect(() => {
     if (!seedField) {
       setSeed('');
       return;
@@ -1111,6 +1230,27 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       return defaultValue;
     });
   }, [outputFormatField, outputFormatOptions, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!qualityField || !qualityOptions.length) {
+      setQuality(null);
+      return;
+    }
+    const defaultValue =
+      getImageFieldDefaultString(selectedEngineCaps ?? null, 'quality', mode) ?? qualityOptions[0] ?? null;
+    setQuality((previous) => {
+      if (previous && qualityOptions.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [qualityField, qualityOptions, selectedEngineCaps, mode]);
+
+  useEffect(() => {
+    if (!maskUrlField) {
+      setMaskUrl('');
+    }
+  }, [maskUrlField]);
 
   useEffect(() => {
     if (!enableWebSearchField) {
@@ -1147,15 +1287,39 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   useEffect(() => {
     if (!selectedEngine) return;
-    setPriceEstimateKey(['image-pricing', selectedEngine.id, mode, numImages, resolution ?? '', enableWebSearch]);
-  }, [selectedEngine, mode, numImages, resolution, enableWebSearch]);
+    setPriceEstimateKey([
+      'image-pricing',
+      selectedEngine.id,
+      mode,
+      numImages,
+      resolution ?? '',
+      quality ?? '',
+      enableWebSearch,
+      customImageWidth,
+      customImageHeight,
+    ]);
+  }, [selectedEngine, mode, numImages, resolution, quality, enableWebSearch, customImageWidth, customImageHeight]);
 
   const {
     data: pricingData,
     error: pricingError,
   } = useSWR(
     priceEstimateKey,
-    async ([, engineId, requestMode, count, requestResolution, requestEnableWebSearch]) => {
+    async ([
+      ,
+      engineId,
+      requestMode,
+      count,
+      requestResolution,
+      requestQuality,
+      requestEnableWebSearch,
+      requestCustomWidth,
+      requestCustomHeight,
+    ]) => {
+      const requestCustomImageSize =
+        requestResolution === 'custom'
+          ? buildCustomImageSize(requestCustomWidth, requestCustomHeight)
+          : null;
       const response = await authFetch('/api/images/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1164,6 +1328,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           mode: requestMode,
           numImages: count,
           resolution: requestResolution || undefined,
+          customImageSize: requestCustomImageSize,
+          quality: requestQuality || undefined,
           enableWebSearch: requestEnableWebSearch || undefined,
         }),
       });
@@ -1407,9 +1573,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         const defaultResolution = getImageInputField(engineMatch.engineCaps, 'resolution', nextMode)
           ? getDefaultResolution(engineMatch.engineCaps, nextMode)
           : null;
-        setResolution(
-          parsed.resolution && allowedResolutions.includes(parsed.resolution) ? parsed.resolution : defaultResolution
-        );
+        const nextResolution =
+          parsed.resolution && allowedResolutions.includes(parsed.resolution) ? parsed.resolution : defaultResolution;
+        setResolution(nextResolution);
+        const parsedSizeFromResolution = parseGptImage2SizeKey(nextResolution);
+        const restoredCustomSize = parsed.customImageSize ?? parsedSizeFromResolution;
+        const defaultCustomWidth =
+          getImageFieldDefaultNumber(engineMatch.engineCaps, 'image_width', nextMode) ??
+          GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultWidth;
+        const defaultCustomHeight =
+          getImageFieldDefaultNumber(engineMatch.engineCaps, 'image_height', nextMode) ??
+          GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultHeight;
+        setCustomImageWidth(String(restoredCustomSize?.width ?? defaultCustomWidth));
+        setCustomImageHeight(String(restoredCustomSize?.height ?? defaultCustomHeight));
         const allowedAspectRatios = getAspectRatioOptions(engineMatch.engineCaps, nextMode);
         const defaultAspectRatio = getDefaultAspectRatio(engineMatch.engineCaps, nextMode);
         setAspectRatio(
@@ -1423,6 +1599,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setOutputFormat(
           parsed.outputFormat && outputFormats.includes(parsed.outputFormat) ? parsed.outputFormat : defaultOutputFormat
         );
+        const qualityValues = getImageFieldValues(engineMatch.engineCaps, 'quality', nextMode);
+        const defaultQuality =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'quality', nextMode) ?? qualityValues[0] ?? null;
+        setQuality(parsed.quality && qualityValues.includes(parsed.quality) ? parsed.quality : defaultQuality);
+        setMaskUrl(getImageInputField(engineMatch.engineCaps, 'mask_url', nextMode) ? parsed.maskUrl ?? '' : '');
         setEnableWebSearch(
           getImageInputField(engineMatch.engineCaps, 'enable_web_search', nextMode)
             ? parsed.enableWebSearch
@@ -1480,6 +1661,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     return trimmed.length ? trimmed : null;
   }, [searchParams]);
 
+  const requestedEngineId = useMemo(() => {
+    const raw = searchParams?.get('engine');
+    if (!raw) return null;
+    const trimmed = raw.trim();
+    return trimmed.length ? trimmed : null;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!requestedEngineId) return;
+    const engineMatch = findImageEngine(engines, requestedEngineId);
+    if (!engineMatch) return;
+    setEngineId(engineMatch.id);
+    setMode((previous) => (engineMatch.modes.includes(previous) ? previous : engineMatch.modes[0] ?? 't2i'));
+  }, [engines, requestedEngineId]);
+
   const applyImageSettingsSnapshot = useCallback(
     (snapshot: unknown, { selectJobId }: { selectJobId?: string } = {}) => {
       if (!snapshot || typeof snapshot !== 'object') {
@@ -1531,9 +1727,25 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       }
       const aspectRatioRaw = typeof core.aspectRatio === 'string' ? core.aspectRatio : null;
       const resolutionRaw = typeof core.resolution === 'string' ? core.resolution : null;
+      const customImageSizeRaw =
+        core.customImageSize && typeof core.customImageSize === 'object'
+          ? (core.customImageSize as Partial<GptImage2ImageSize>)
+          : null;
+      const customImageSizeRawParsed =
+        typeof customImageSizeRaw?.width === 'number' &&
+        Number.isFinite(customImageSizeRaw.width) &&
+        typeof customImageSizeRaw?.height === 'number' &&
+        Number.isFinite(customImageSizeRaw.height)
+          ? {
+              width: Math.round(customImageSizeRaw.width),
+              height: Math.round(customImageSizeRaw.height),
+            }
+          : null;
       const seedRaw =
         typeof core.seed === 'number' && Number.isFinite(core.seed) ? Math.round(core.seed) : null;
       const outputFormatRaw = typeof core.outputFormat === 'string' ? core.outputFormat : null;
+      const qualityRaw = typeof core.quality === 'string' ? core.quality : null;
+      const maskUrlRaw = typeof core.maskUrl === 'string' ? core.maskUrl : null;
       const enableWebSearchRaw = core.enableWebSearch === true;
       const thinkingLevelRaw = typeof core.thinkingLevel === 'string' ? core.thinkingLevel : null;
       const limitGenerationsRaw = core.limitGenerations === true;
@@ -1549,7 +1761,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         const defaultResolution = getImageInputField(engineMatch.engineCaps, 'resolution', resolvedMode)
           ? getDefaultResolution(engineMatch.engineCaps, resolvedMode)
           : null;
-        setResolution(resolutionRaw && allowedResolutions.includes(resolutionRaw) ? resolutionRaw : defaultResolution);
+        const nextResolution =
+          resolutionRaw && allowedResolutions.includes(resolutionRaw) ? resolutionRaw : defaultResolution;
+        setResolution(nextResolution);
+        const parsedSizeFromResolution = parseGptImage2SizeKey(nextResolution);
+        const restoredCustomSize = customImageSizeRawParsed ?? parsedSizeFromResolution;
+        const defaultCustomWidth =
+          getImageFieldDefaultNumber(engineMatch.engineCaps, 'image_width', resolvedMode) ??
+          GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultWidth;
+        const defaultCustomHeight =
+          getImageFieldDefaultNumber(engineMatch.engineCaps, 'image_height', resolvedMode) ??
+          GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultHeight;
+        setCustomImageWidth(String(restoredCustomSize?.width ?? defaultCustomWidth));
+        setCustomImageHeight(String(restoredCustomSize?.height ?? defaultCustomHeight));
         const allowedAspectRatios = getAspectRatioOptions(engineMatch.engineCaps, resolvedMode);
         const defaultAspectRatio = getDefaultAspectRatio(engineMatch.engineCaps, resolvedMode);
         setAspectRatio(
@@ -1563,6 +1787,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setOutputFormat(
           outputFormatRaw && outputFormats.includes(outputFormatRaw) ? outputFormatRaw : defaultOutputFormat
         );
+        const qualityValues = getImageFieldValues(engineMatch.engineCaps, 'quality', resolvedMode);
+        const defaultQuality =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'quality', resolvedMode) ?? qualityValues[0] ?? null;
+        setQuality(qualityRaw && qualityValues.includes(qualityRaw) ? qualityRaw : defaultQuality);
+        setMaskUrl(getImageInputField(engineMatch.engineCaps, 'mask_url', resolvedMode) ? maskUrlRaw ?? '' : '');
         setEnableWebSearch(
           getImageInputField(engineMatch.engineCaps, 'enable_web_search', resolvedMode)
             ? enableWebSearchRaw
@@ -1583,9 +1812,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         );
       } else {
         setResolution(resolutionRaw);
+        const restoredCustomSize = customImageSizeRawParsed ?? parseGptImage2SizeKey(resolutionRaw);
+        setCustomImageWidth(restoredCustomSize ? String(restoredCustomSize.width) : '');
+        setCustomImageHeight(restoredCustomSize ? String(restoredCustomSize.height) : '');
         setAspectRatio(aspectRatioRaw);
         setSeed(seedRaw == null ? '' : String(seedRaw));
         setOutputFormat(outputFormatRaw);
+        setQuality(qualityRaw);
+        setMaskUrl(maskUrlRaw ?? '');
         setEnableWebSearch(enableWebSearchRaw);
         setThinkingLevel(thinkingLevelRaw);
         setLimitGenerations(limitGenerationsRaw);
@@ -1688,8 +1922,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       numImages,
       aspectRatio,
       resolution,
+      customImageSize: resolution === 'custom' ? buildCustomImageSize(customImageWidth, customImageHeight) : null,
       seed: seed.trim().length ? Math.round(Number(seed)) : null,
       outputFormat,
+      quality,
+      maskUrl: maskUrl.trim().length ? maskUrl.trim() : null,
       enableWebSearch,
       thinkingLevel,
       limitGenerations,
@@ -1722,15 +1959,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     };
   }, [
     aspectRatio,
+    customImageHeight,
+    customImageWidth,
     enableWebSearch,
     engineId,
     engines,
     limitGenerations,
+    maskUrl,
     mode,
     numImages,
     outputFormat,
     persistableReferenceSlots,
     prompt,
+    quality,
     resolution,
     seed,
     storageHydrated,
@@ -1767,6 +2008,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const setNumImagesPreset = useCallback((value: number) => {
     setNumImages(clampRequestedImageCount(selectedEngineCaps ?? null, mode, value));
   }, [selectedEngineCaps, mode]);
+
+  const setResolutionPreset = useCallback((value: string) => {
+    setResolution(value);
+    const parsedSize = parseGptImage2SizeKey(value);
+    if (parsedSize) {
+      setCustomImageWidth(String(parsedSize.width));
+      setCustomImageHeight(String(parsedSize.height));
+    }
+  }, []);
 
   const showUnsupportedFormatError = useCallback(() => {
     setError(
@@ -2058,6 +2308,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setError(resolvedCopy.errors.referenceMissing);
         return;
       }
+      const trimmedMaskUrl = maskUrlField ? maskUrl.trim() : '';
+      if (trimmedMaskUrl && !/^https?:\/\//i.test(trimmedMaskUrl)) {
+        setError('Mask URL must be an absolute http(s) URL.');
+        return;
+      }
+      const customImageSize = resolution === 'custom' ? buildCustomImageSize(customImageWidth, customImageHeight) : null;
+      if (resolution === 'custom') {
+        const customSizeResult = validateGptImage2CustomImageSize(customImageSize);
+        if (!customSizeResult.ok) {
+          setError(customSizeResult.message);
+          return;
+        }
+      }
       setError(null);
       setStatusMessage(null);
       const pendingId = `img_${crypto.randomUUID()}`;
@@ -2094,10 +2357,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           characterReferences: mode === 'i2i' ? selectedCharacterReferences : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,
+          customImageSize,
           seed: seedField ? normalizedSeed : undefined,
           outputFormat: outputFormatField
             ? ((outputFormat ?? undefined) as 'jpeg' | 'png' | 'webp' | undefined)
             : undefined,
+          quality: qualityField ? ((quality ?? undefined) as 'low' | 'medium' | 'high' | undefined) : undefined,
+          maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: enableWebSearchField ? enableWebSearch : undefined,
           thinkingLevel: thinkingLevelField
             ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
@@ -2161,6 +2427,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       resolvedCopy.messages.success,
       aspectRatio,
       aspectRatioField,
+      customImageHeight,
+      customImageWidth,
       enableWebSearch,
       enableWebSearchField,
       limitGenerations,
@@ -2172,8 +2440,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       selectedEngine,
       outputFormat,
       outputFormatField,
+      quality,
+      qualityField,
       readyReferenceUrls,
       selectedCharacterReferences,
+      maskUrl,
+      maskUrlField,
       thinkingLevel,
       thinkingLevelField,
       mutateJobs,
@@ -2393,9 +2665,17 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     () =>
       resolutionOptions.map((option) => ({
         value: option,
-        label: option.toUpperCase(),
+        label: formatImageSizeLabel(option),
       })),
     [resolutionOptions]
+  );
+  const qualitySelectOptions = useMemo(
+    () =>
+      qualityOptions.map((option) => ({
+        value: option,
+        label: formatQualityLabel(option),
+      })),
+    [qualityOptions]
   );
   const outputFormatSelectOptions = useMemo(
     () =>
@@ -2423,8 +2703,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const showNumImagesControl = Boolean(imageCountField);
   const showAspectRatioControl = Boolean(aspectRatioField) && aspectRatioSelectOptions.length > 0;
   const showResolutionControl = Boolean(resolutionField) && resolutionSelectOptions.length > 0;
+  const showQualityControl = Boolean(qualityField) && qualitySelectOptions.length > 0;
   const showSeedControl = Boolean(seedField);
   const showOutputFormatControl = Boolean(outputFormatField) && outputFormatSelectOptions.length > 0;
+  const showCustomImageSizeControl =
+    Boolean(customImageWidthField && customImageHeightField) && resolution === 'custom';
   const showEnableWebSearchControl = Boolean(enableWebSearchField);
   const showThinkingLevelControl = Boolean(thinkingLevelField) && thinkingLevelSelectOptions.length > 0;
   const showLimitGenerationsControl = Boolean(limitGenerationsField);
@@ -2696,8 +2979,17 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                           ? {
                               value: resolution ?? String(resolutionSelectOptions[0]?.value ?? ''),
                               options: resolutionSelectOptions,
-                              onChange: setResolution,
+                              onChange: setResolutionPreset,
                               disabled: isResolutionLocked,
+                            }
+                          : undefined
+                      }
+                      quality={
+                        showQualityControl
+                          ? {
+                              value: quality ?? String(qualitySelectOptions[0]?.value ?? ''),
+                              options: qualitySelectOptions,
+                              onChange: setQuality,
                             }
                           : undefined
                       }
@@ -2753,6 +3045,31 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                 value: thinkingLevel ?? String(thinkingLevelSelectOptions[0]?.value ?? ''),
                                 options: thinkingLevelSelectOptions,
                                 onChange: setThinkingLevel,
+                            }
+                            : undefined
+                        }
+                        customImageSize={
+                          showCustomImageSizeControl
+                            ? {
+                                widthLabel: resolvedCopy.composer.customWidthLabel,
+                                heightLabel: resolvedCopy.composer.customHeightLabel,
+                                widthValue: customImageWidth,
+                                heightValue: customImageHeight,
+                                min: 16,
+                                max: GPT_IMAGE_2_SIZE_CONSTRAINTS.maxEdge,
+                                step: GPT_IMAGE_2_SIZE_CONSTRAINTS.multipleOf,
+                                onWidthChange: setCustomImageWidth,
+                                onHeightChange: setCustomImageHeight,
+                              }
+                            : undefined
+                        }
+                        maskUrl={
+                          maskUrlField
+                            ? {
+                                label: resolvedCopy.composer.maskUrlLabel,
+                                placeholder: resolvedCopy.composer.maskUrlPlaceholder,
+                                value: maskUrl,
+                                onChange: setMaskUrl,
                               }
                             : undefined
                         }

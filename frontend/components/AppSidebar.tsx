@@ -1,30 +1,26 @@
 'use client';
 
 import clsx from 'clsx';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState, useId } from 'react';
+import { useMemo } from 'react';
 import {
-  AudioLines,
-  BookOpen,
-  Image as ImageIcon,
-  LayoutDashboard,
-  ListVideo,
+  AudioWaveform,
+  Check,
+  Clapperboard,
+  Home,
+  Images,
+  LibraryBig,
+  ListChecks,
   LucideIcon,
-  PanelLeftOpen,
-  PanelRightOpen,
-  Pin,
-  PinOff,
-  Settings as SettingsIcon,
-  Sparkles,
+  SlidersHorizontal,
   Wrench,
-  Wallet,
+  WalletCards,
 } from 'lucide-react';
 import { Chip } from '@/components/ui/Chip';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { Button } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 import { FEATURES } from '@/content/feature-flags';
 
 type NavItemDefinition = {
@@ -42,7 +38,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
   { id: 'generate-audio', label: 'Generate Audio', badge: null, icon: 'generate-audio', href: '/app/audio' },
   ...(FEATURES.workflows.toolsSection
-    ? [{ id: 'tools', label: 'Tools', badge: 'beta', badgeKey: 'toolsBeta', icon: 'tools', href: '/app/tools' }]
+    ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/app/tools' }]
     : []),
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
@@ -51,114 +47,25 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
 ];
 
 const NAV_ICON_MAP: Record<string, LucideIcon> = {
-  dashboard: LayoutDashboard,
-  generate: Sparkles,
-  'generate-image': ImageIcon,
-  'generate-audio': AudioLines,
+  dashboard: Home,
+  generate: Clapperboard,
+  'generate-image': Images,
+  'generate-audio': AudioWaveform,
   tools: Wrench,
-  library: BookOpen,
-  jobs: ListVideo,
-  billing: Wallet,
-  settings: SettingsIcon,
+  library: LibraryBig,
+  jobs: ListChecks,
+  billing: WalletCards,
+  settings: SlidersHorizontal,
 };
-
-const COLLAPSED_STORAGE_KEY = 'sidebarCollapsed';
-const PIN_STORAGE_KEY = 'sidebarPinned';
 
 type NavItem = (typeof NAV_ITEMS)[number];
 
-function getStoredBoolean(key: string, fallback: boolean) {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const value = window.localStorage.getItem(key);
-    return value === null ? fallback : JSON.parse(value);
-  } catch (error) {
-    console.warn(`[AppSidebar] Unable to read ${key} from localStorage`, error);
-    return fallback;
-  }
-}
-
 export function AppSidebar() {
   const { t } = useI18n();
-  const [collapsed, setCollapsed] = useState<boolean>(true);
-  const [pinned, setPinned] = useState<boolean>(false);
-  const tooltipBaseId = useId();
-
   const navigationItems = useMemo(() => NAV_ITEMS, []);
   const pathname = usePathname();
 
-  useEffect(() => {
-    setCollapsed(getStoredBoolean(COLLAPSED_STORAGE_KEY, true));
-    setPinned(getStoredBoolean(PIN_STORAGE_KEY, false));
-  }, []);
-
-  useEffect(() => {
-    if (pinned) {
-      setCollapsed(false);
-    }
-  }, [pinned]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(collapsed));
-  }, [collapsed]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(pinned));
-  }, [pinned]);
-
-  useEffect(() => {
-    function handleShortcut(event: KeyboardEvent) {
-      if (!(event.metaKey || event.ctrlKey)) return;
-      if (event.key.toLowerCase() !== 'b') return;
-      event.preventDefault();
-      setCollapsed((previous) => {
-        const next = !previous;
-        if (next) {
-          setPinned(false);
-        }
-        return next;
-      });
-    }
-
-    window.addEventListener('keydown', handleShortcut);
-    return () => window.removeEventListener('keydown', handleShortcut);
-  }, []);
-
-  const handleCollapsedToggle = () => {
-    setCollapsed((previous) => {
-      const next = !previous;
-      if (next) {
-        setPinned(false);
-      }
-      return next;
-    });
-  };
-
-  const handlePinToggle = () => {
-    setPinned((previous) => {
-      const next = !previous;
-      if (next) {
-        setCollapsed(false);
-      }
-      return next;
-    });
-  };
-
-  const handleMouseEnter = () => {
-    if (!pinned) {
-      setCollapsed(false);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!pinned) {
-      setCollapsed(true);
-    }
-  };
-
-  const renderNavItem = (item: NavItem, collapsedNav: boolean, tooltipBase: string) => {
+  const renderNavItem = (item: NavItem) => {
     const normalizedPath = pathname?.replace(/\/+$/, '') || '/';
     const normalizedHref = item.href.replace(/\/+$/, '') || '/';
     const matchesExact = normalizedPath === normalizedHref;
@@ -168,149 +75,96 @@ export function AppSidebar() {
       item.id === 'generate'
         ? matchesExact
         : matchesExact || matchesSubroute || (item.id === 'generate-image' && normalizedPath === '/app/image');
-    const tooltipId = `${tooltipBase}-${item.id}`;
     const label = t(`workspace.sidebar.links.${item.id}`, item.label);
     const badgeLabel = item.badge
       ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
       : null;
-    const IconComponent = NAV_ICON_MAP[item.id] ?? LayoutDashboard;
+    const IconComponent = NAV_ICON_MAP[item.id] ?? Home;
 
     return (
-      <li key={item.id} className="relative">
+      <li key={item.id} className="group/sidebar-item relative">
         <Link
           href={item.href}
           prefetch={false}
           className={clsx(
-            'group relative flex w-full items-center rounded-card px-2 py-1.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            collapsedNav ? 'justify-center' : 'gap-3 px-3',
+            'relative flex min-h-[42px] w-full items-center rounded-input border border-transparent text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'gap-2 px-2',
             active
-              ? 'text-text-primary'
-              : 'text-text-muted hover:bg-surface-2/60 hover:text-text-primary'
+              ? 'bg-[var(--brand-soft)] text-brand'
+              : 'text-text-secondary hover:bg-surface hover:text-text-primary'
           )}
           aria-current={active ? 'page' : undefined}
-          aria-describedby={collapsedNav ? tooltipId : undefined}
         >
           <span
             className={clsx(
-              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-brand transition-opacity',
-              active ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
-            )}
-            aria-hidden
-          />
-          <span
-            className={clsx(
-              'flex items-center justify-center rounded-input transition-colors duration-150',
-              collapsedNav ? 'h-9 w-9' : 'h-9 w-9',
+              'flex h-6 w-6 shrink-0 items-center justify-center transition-colors duration-150',
               active
-                ? 'text-text-primary'
-                : 'text-text-muted group-hover:bg-surface-2/60 group-hover:text-text-primary'
+                ? 'text-brand'
+                : 'text-text-muted group-hover/sidebar-item:text-text-primary'
             )}
             aria-hidden
           >
-            <UIIcon icon={IconComponent} size={20} />
+            <UIIcon icon={IconComponent} size={19} strokeWidth={1.9} />
           </span>
-          {!collapsedNav && (
-            <span className="flex items-center gap-2">
-              <span>{label}</span>
-              {badgeLabel && (
-                <Chip className="px-2 py-0.5 text-[10px]" variant="outline">
-                  {badgeLabel}
-                </Chip>
-              )}
-            </span>
-          )}
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="truncate">{label}</span>
+            {badgeLabel && (
+              <Chip className="px-2 py-0.5 text-[10px]" variant="outline">
+                {badgeLabel}
+              </Chip>
+            )}
+          </span>
         </Link>
-        {collapsedNav && (
-          <div
-            id={tooltipId}
-            role="tooltip"
-            className="pointer-events-none absolute left-[76px] top-1/2 z-[1000] -translate-y-1/2 whitespace-nowrap rounded-card border border-border bg-surface px-3 py-1 text-xs font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
-          >
-            {label}
-          </div>
-        )}
       </li>
     );
   };
 
   return (
     <aside
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={clsx(
-        'relative hidden min-h-[calc(100vh-var(--header-height))] md:flex flex-col border-r border-hairline bg-surface transition-[width] duration-300 ease-in-out',
-        collapsed ? 'w-[78px]' : 'w-64'
-      )}
+      className="sticky top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[188px] shrink-0 flex-col border-r border-hairline bg-surface-2/90 md:flex"
     >
-      <div
-        className={clsx(
-          'items-center px-4 pt-6',
-          collapsed ? 'flex flex-col gap-4' : 'flex flex-row items-center justify-between gap-4 pb-2'
-        )}
-        aria-label={t('workspace.sidebar.aria.controls', 'Sidebar controls')}
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleCollapsedToggle}
-          className="h-10 w-10 min-h-0 rounded-input border border-hairline bg-surface/70 p-0 text-text-secondary hover:-translate-y-0.5 hover:bg-surface/80 hover:text-text-primary"
-        >
-          <UIIcon icon={collapsed ? PanelRightOpen : PanelLeftOpen} size={20} />
-          <span className="sr-only">
-            {collapsed
-              ? t('workspace.sidebar.aria.expand', 'Expand sidebar')
-              : t('workspace.sidebar.aria.collapse', 'Collapse sidebar')}
-          </span>
-        </Button>
-
-        {!collapsed ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handlePinToggle}
-            className="h-10 w-10 min-h-0 rounded-input border border-hairline bg-surface/70 p-0 text-text-secondary hover:bg-surface/80 hover:text-text-primary"
-          >
-            <UIIcon icon={pinned ? PinOff : Pin} size={18} />
-            <span className="sr-only">
-              {pinned
-                ? t('workspace.sidebar.aria.unpin', 'Unpin sidebar')
-                : t('workspace.sidebar.aria.pin', 'Pin sidebar open')}
-            </span>
-          </Button>
-        ) : null}
-      </div>
-
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         <nav
           aria-label={t('workspace.sidebar.aria.menu', 'App menu')}
-          className={clsx(
-            'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6 pt-2'
-          )}
+          className="flex-none items-start justify-start overflow-y-auto px-2.5 pb-3 pt-4"
         >
           <ul
-            className="mt-2 w-full flex flex-col gap-1.5"
+            className="mt-2 flex w-full flex-col gap-1"
           >
-            {navigationItems.map((item) => renderNavItem(item, collapsed, tooltipBaseId))}
+            {navigationItems.map((item) => renderNavItem(item))}
           </ul>
         </nav>
-        <div className="mt-auto px-4 pb-5">
-          <Link
-            href="/"
-            aria-label={t('workspace.sidebar.aria.home', 'Go to home')}
-            className={clsx(
-              'flex items-center justify-center rounded-card border border-hairline bg-surface/80 shadow-card transition',
-              collapsed ? 'mx-auto h-11 w-11' : 'h-12'
-            )}
-          >
-            <Image
-              src="/assets/branding/logo-mark.svg"
-              alt="MaxVideoAI logo mark"
-              width={collapsed ? 22 : 26}
-              height={collapsed ? 22 : 26}
-            />
-          </Link>
+        <div className="mt-auto px-3 pb-5 pt-3">
+          <div className="rounded-card border border-hairline bg-surface p-4 shadow-sm">
+            <p className="text-xs text-text-secondary">
+              {t('workspace.sidebar.newModel.label', 'New model')}
+            </p>
+            <p className="mt-1 text-base font-semibold text-brand">
+              {t('workspace.sidebar.newModel.name', 'Seedance 2.0')}
+            </p>
+            <ul className="mt-3 space-y-2 text-xs text-text-secondary">
+              <li className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
+                {t('workspace.sidebar.newModel.quality1', 'Cinematic motion')}
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
+                {t('workspace.sidebar.newModel.quality2', 'Multi-shot continuity')}
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
+                {t('workspace.sidebar.newModel.quality3', 'Native audio workflow')}
+              </li>
+            </ul>
+            <ButtonLink
+              href="/app?engine=seedance-2-0"
+              prefetch={false}
+              size="sm"
+              className="mt-4 w-full"
+            >
+              {t('workspace.sidebar.newModel.cta', 'Try now')}
+            </ButtonLink>
+          </div>
         </div>
       </div>
     </aside>

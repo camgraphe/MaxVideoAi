@@ -2,23 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
-import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { clampRequestedImageCount, getImageInputField, resolveRequestedResolution } from '../utils';
+import {
+  parseGptImage2SizeKey,
+  validateGptImage2CustomImageSize,
+  type GptImage2ImageSize,
+} from '@/lib/image/gptImage2';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  const { userId } = await getRouteAuthContext(req);
-  if (!userId) {
-    return NextResponse.json({ ok: false, error: 'auth_required' }, { status: 401 });
-  }
-
   let body:
     | {
         engineId?: string;
         mode?: ImageGenerationMode;
         numImages?: number;
         resolution?: string;
+        customImageSize?: GptImage2ImageSize | null;
+        quality?: string;
         enableWebSearch?: boolean;
       }
     | null = null;
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest) {
       mode?: ImageGenerationMode;
       numImages?: number;
       resolution?: string;
+      customImageSize?: GptImage2ImageSize | null;
+      quality?: string;
       enableWebSearch?: boolean;
     } | null;
   } catch {
@@ -63,10 +66,29 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const parsedResolutionSize = parseGptImage2SizeKey(resolutionResult.resolution);
+    let customImageSize: GptImage2ImageSize | null = parsedResolutionSize;
+    if (engineCaps.id === 'gpt-image-2' && resolutionResult.resolution === 'custom') {
+      const customSizeResult = validateGptImage2CustomImageSize(body?.customImageSize);
+      if (!customSizeResult.ok) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: 'image_size_invalid',
+            message: customSizeResult.message,
+            detail: customSizeResult.detail,
+          },
+          { status: 400 }
+        );
+      }
+      customImageSize = customSizeResult.size;
+    }
     const pricing = await computePricingSnapshot({
       engine: engineCaps,
       durationSec: numImages,
       resolution: resolutionResult.resolution,
+      customImageSize,
+      quality: typeof body?.quality === 'string' ? body.quality : undefined,
       currency: engineCaps.pricing?.currency ?? 'USD',
       addons:
         getImageInputField(engineCaps, 'enable_web_search', mode) && body?.enableWebSearch === true

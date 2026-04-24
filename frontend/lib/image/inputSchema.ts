@@ -32,7 +32,14 @@ export function getImageInputField(
         (field.modes?.includes(mode) || field.requiredInModes?.includes(mode))
     ) ?? null;
   if (prioritized) return prioritized;
-  return fields.find((field) => field.id === fieldId) ?? null;
+  return (
+    fields.find(
+      (field) =>
+        field.id === fieldId &&
+        (!Array.isArray(field.modes) || field.modes.length === 0) &&
+        (!Array.isArray(field.requiredInModes) || field.requiredInModes.length === 0)
+    ) ?? null
+  );
 }
 
 export function canonicalizeImageFieldValue(values: string[], candidate: string | null | undefined): string | null {

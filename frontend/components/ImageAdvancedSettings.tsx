@@ -18,6 +18,23 @@ interface ImageAdvancedSettingsProps {
     value: string;
     onChange: (value: string) => void;
   };
+  maskUrl?: {
+    label: string;
+    placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+  };
+  customImageSize?: {
+    widthLabel: string;
+    heightLabel: string;
+    widthValue: string;
+    heightValue: string;
+    min: number;
+    max: number;
+    step: number;
+    onWidthChange: (value: string) => void;
+    onHeightChange: (value: string) => void;
+  };
   enableWebSearch?: {
     label: string;
     value: boolean;
@@ -66,14 +83,16 @@ function AdvancedSelect({
 export function ImageAdvancedSettings({
   title,
   seed,
+  maskUrl,
+  customImageSize,
   enableWebSearch,
   thinkingLevel,
   limitGenerations,
 }: ImageAdvancedSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const hasContent = useMemo(
-    () => Boolean(seed || enableWebSearch || thinkingLevel || limitGenerations),
-    [enableWebSearch, limitGenerations, seed, thinkingLevel]
+    () => Boolean(seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || limitGenerations),
+    [customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel]
   );
 
   if (!hasContent) return null;
@@ -122,6 +141,53 @@ export function ImageAdvancedSettings({
               options={thinkingLevel.options}
               onChange={(value) => thinkingLevel.onChange(String(value))}
             />
+          ) : null}
+          {customImageSize ? (
+            <>
+              <label className="flex min-w-0 flex-col gap-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                  {customImageSize.widthLabel}
+                </span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={customImageSize.min}
+                  max={customImageSize.max}
+                  step={customImageSize.step}
+                  value={customImageSize.widthValue}
+                  onChange={(event) => customImageSize.onWidthChange(event.currentTarget.value)}
+                  className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+              <label className="flex min-w-0 flex-col gap-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                  {customImageSize.heightLabel}
+                </span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={customImageSize.min}
+                  max={customImageSize.max}
+                  step={customImageSize.step}
+                  value={customImageSize.heightValue}
+                  onChange={(event) => customImageSize.onHeightChange(event.currentTarget.value)}
+                  className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+            </>
+          ) : null}
+          {maskUrl ? (
+            <label className="flex min-w-0 flex-col gap-1.5 md:col-span-2">
+              <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{maskUrl.label}</span>
+              <input
+                type="url"
+                inputMode="url"
+                placeholder={maskUrl.placeholder}
+                value={maskUrl.value}
+                onChange={(event) => maskUrl.onChange(event.currentTarget.value)}
+                className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </label>
           ) : null}
           {enableWebSearch ? (
             <AdvancedSelect

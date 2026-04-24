@@ -8334,7 +8334,7 @@
       },
       "app": {
         "enabled": true,
-        "discoveryRank": 9
+        "discoveryRank": 10
       },
       "pricing": {
         "includeInEstimator": true
@@ -8590,7 +8590,7 @@
       },
       "app": {
         "enabled": true,
-        "discoveryRank": 8
+        "discoveryRank": 9
       },
       "pricing": {
         "includeInEstimator": true
@@ -8886,7 +8886,7 @@
       },
       "app": {
         "enabled": true,
-        "discoveryRank": 7
+        "discoveryRank": 8
       },
       "pricing": {
         "includeInEstimator": true
@@ -9206,5 +9206,385 @@
       }
     },
     "bestFor": "Grounded stills and wide-format image edits"
+  },
+  {
+    "engineId": "gpt-image-2",
+    "modelSlug": "gpt-image-2",
+    "marketingName": "GPT Image 2",
+    "provider": "OpenAI",
+    "brandId": "openai",
+    "family": "gpt-image",
+    "familyExamplesPage": null,
+    "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 7,
+        "variantGroup": "gpt-image",
+        "variantLabel": "2"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "high-quality product still"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "gpt-image-2",
+      "label": "GPT Image 2",
+      "provider": "OpenAI",
+      "version": "2",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 4,
+      "resolutions": [
+        "landscape_4_3",
+        "square_hd",
+        "square",
+        "portrait_4_3",
+        "portrait_16_9",
+        "landscape_16_9",
+        "custom",
+        "auto"
+      ],
+      "aspectRatios": [
+        "auto",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [
+        1
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the image to generate, or the edit to apply to the references."
+          }
+        ],
+        "optional": [
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Number of images",
+            "min": 1,
+            "max": 4,
+            "step": 1,
+            "default": 1,
+            "description": "Generate up to 4 images per request."
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "description": "Add source images for edit mode.",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 4,
+            "source": "either"
+          },
+          {
+            "id": "resolution",
+            "engineParam": "image_size",
+            "type": "enum",
+            "label": "Image size",
+            "modes": [
+              "t2i"
+            ],
+            "values": [
+              "landscape_4_3",
+              "square_hd",
+              "square",
+              "portrait_4_3",
+              "portrait_16_9",
+              "landscape_16_9",
+              "1024x768",
+              "1024x1024",
+              "1024x1536",
+              "1920x1080",
+              "2560x1440",
+              "3840x2160",
+              "custom"
+            ],
+            "default": "landscape_4_3",
+            "description": "Fal image_size preset or canonical custom size for text-to-image requests."
+          },
+          {
+            "id": "resolution",
+            "engineParam": "image_size",
+            "type": "enum",
+            "label": "Image size",
+            "modes": [
+              "i2i"
+            ],
+            "values": [
+              "auto",
+              "landscape_4_3",
+              "square_hd",
+              "square",
+              "portrait_4_3",
+              "portrait_16_9",
+              "landscape_16_9",
+              "1024x768",
+              "1024x1024",
+              "1024x1536",
+              "1920x1080",
+              "2560x1440",
+              "3840x2160",
+              "custom"
+            ],
+            "default": "auto",
+            "description": "Use auto to infer the output size, or send a Fal image_size preset/custom object."
+          },
+          {
+            "id": "image_width",
+            "engineParam": "image_size.width",
+            "type": "number",
+            "label": "Custom width",
+            "modes": [
+              "t2i",
+              "i2i"
+            ],
+            "min": 16,
+            "max": 3840,
+            "step": 16,
+            "default": 1024,
+            "description": "Used when Image size is Custom. Fal requires multiples of 16 and max edge 3840px."
+          },
+          {
+            "id": "image_height",
+            "engineParam": "image_size.height",
+            "type": "number",
+            "label": "Custom height",
+            "modes": [
+              "t2i",
+              "i2i"
+            ],
+            "min": 16,
+            "max": 3840,
+            "step": 16,
+            "default": 768,
+            "description": "Used when Image size is Custom. Total pixels must stay between 655,360 and 8,294,400."
+          },
+          {
+            "id": "quality",
+            "type": "enum",
+            "label": "Quality",
+            "values": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "high",
+            "description": "Higher quality costs more and improves fidelity."
+          },
+          {
+            "id": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "default": "png"
+          },
+          {
+            "id": "mask_url",
+            "type": "image",
+            "label": "Mask image URL",
+            "description": "Optional public mask image URL for edit requests.",
+            "modes": [
+              "i2i"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "url"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 25,
+          "imageSize": {
+            "multipleOf": 16,
+            "minPixels": 655360,
+            "maxPixels": 8294400,
+            "maxEdge": 3840,
+            "maxAspectRatio": 3
+          }
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 15,
+          "byResolution": {
+            "1024x768": 15,
+            "1024x1024": 22,
+            "1024x1536": 17,
+            "1920x1080": 16,
+            "2560x1440": 23,
+            "3840x2160": 41,
+            "landscape_4_3": 15,
+            "portrait_4_3": 15,
+            "square": 22,
+            "square_hd": 22,
+            "portrait_16_9": 17,
+            "landscape_16_9": 16,
+            "custom": 15,
+            "auto": 22
+          }
+        }
+      },
+      "pricing": {
+        "unit": "image",
+        "base": 0.15,
+        "byResolution": {
+          "1024x768": 0.15,
+          "1024x1024": 0.22,
+          "1024x1536": 0.17,
+          "1920x1080": 0.16,
+          "2560x1440": 0.23,
+          "3840x2160": 0.41,
+          "landscape_4_3": 0.15,
+          "portrait_4_3": 0.15,
+          "square": 0.22,
+          "square_hd": 0.22,
+          "portrait_16_9": 0.17,
+          "landscape_16_9": 0.16,
+          "custom": 0.15,
+          "auto": 0.22
+        },
+        "currency": "USD",
+        "notes": "Fal pricing varies by quality and image_size: 1024x768 costs $0.01/$0.04/$0.15, while 3840x2160 costs $0.02/$0.11/$0.41 for Low/Medium/High."
+      },
+      "updatedAt": "2026-04-23T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "fal.ai",
+        "modelSlug": "openai/gpt-image-2"
+      },
+      "availability": "available",
+      "brandId": "openai"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "openai/gpt-image-2",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "landscape_4_3",
+            "square_hd",
+            "square",
+            "portrait_4_3",
+            "portrait_16_9",
+            "landscape_16_9",
+            "1024x768",
+            "1024x1024",
+            "1024x1536",
+            "1920x1080",
+            "2560x1440",
+            "3840x2160",
+            "custom"
+          ],
+          "notes": "Quality-first image generation with strong text rendering, photorealism, and product-shot fidelity."
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "openai/gpt-image-2/edit",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "auto",
+            "landscape_4_3",
+            "square_hd",
+            "square",
+            "portrait_4_3",
+            "portrait_16_9",
+            "landscape_16_9",
+            "1024x768",
+            "1024x1024",
+            "1024x1536",
+            "1920x1080",
+            "2560x1440",
+            "3840x2160",
+            "custom"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 25,
+          "notes": "Upload references for fine-grained edits; optional mask URL and quality controls map to the Fal edit endpoint."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
   }
 ]

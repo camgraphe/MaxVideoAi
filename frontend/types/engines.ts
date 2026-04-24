@@ -28,9 +28,15 @@ export type Resolution =
   | '2k'
   | '512P'
   | '768P'
+  | 'square'
   | 'square_hd'
   | 'landscape_hd'
   | 'portrait_hd'
+  | 'portrait_4_3'
+  | 'portrait_16_9'
+  | 'landscape_4_3'
+  | 'landscape_16_9'
+  | 'custom'
   | 'auto';
 export type AspectRatio =
   | '16:9'
