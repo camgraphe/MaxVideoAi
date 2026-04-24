@@ -48,6 +48,7 @@ import {
 } from '@/app/api/images/utils';
 import {
   parseGptImage2SizeKey,
+  resolveGptImage2AutoInputImageSize,
   validateGptImage2CustomImageSize,
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
@@ -255,15 +256,21 @@ function buildCharacterReferencePrompt(prompt: string, characterReferences: Char
   return `${prompt}\n\nCharacter reference instructions:\n${instruction}`;
 }
 
-async function getStoredAssetMimeByUrl(userId: string, urls: string[]): Promise<Map<string, string>> {
+type StoredAssetInfo = {
+  mime?: string | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+async function getStoredAssetInfoByUrl(userId: string, urls: string[]): Promise<Map<string, StoredAssetInfo>> {
   if (!urls.length) {
     return new Map();
   }
 
   try {
     await ensureAssetSchema();
-    const rows = await query<{ url: string; mime_type: string | null }>(
-      `SELECT url, mime_type
+    const rows = await query<{ url: string; mime_type: string | null; width: number | null; height: number | null }>(
+      `SELECT url, mime_type, width, height
        FROM user_assets
        WHERE user_id = $1
          AND url = ANY($2::text[])`,
@@ -271,11 +278,15 @@ async function getStoredAssetMimeByUrl(userId: string, urls: string[]): Promise<
     );
     return new Map(
       rows
-        .filter(
-          (row): row is { url: string; mime_type: string } =>
-            typeof row.url === 'string' && typeof row.mime_type === 'string'
-        )
-        .map((row) => [row.url, row.mime_type])
+        .filter((row) => typeof row.url === 'string')
+        .map((row) => [
+          row.url,
+          {
+            mime: row.mime_type,
+            width: typeof row.width === 'number' ? row.width : null,
+            height: typeof row.height === 'number' ? row.height : null,
+          },
+        ])
     );
   } catch (error) {
     console.warn('[images] unable to inspect stored asset formats', error);
@@ -286,9 +297,9 @@ async function getStoredAssetMimeByUrl(userId: string, urls: string[]): Promise<
 function isReferenceImageSupported(
   allowedFormats: string[],
   url: string,
-  storedAssetMimeByUrl: Map<string, string>
+  storedAssetInfoByUrl: Map<string, StoredAssetInfo>
 ): boolean {
-  const storedMime = storedAssetMimeByUrl.get(url) ?? null;
+  const storedMime = storedAssetInfoByUrl.get(url)?.mime ?? null;
   const supportedByMime = isSupportedImageMime(allowedFormats, storedMime);
   if (supportedByMime != null) {
     return supportedByMime;
@@ -1054,12 +1065,13 @@ export async function executeImageGeneration({
   }
 
   const supportedReferenceFormats = getSupportedImageFormats(engine);
+  let storedAssetInfoByUrl = new Map<string, StoredAssetInfo>();
   if (supportedReferenceFormats.length && combinedImageUrls.length) {
-    const storedAssetMimeByUrl = await getStoredAssetMimeByUrl(userId, combinedImageUrls);
+    storedAssetInfoByUrl = await getStoredAssetInfoByUrl(userId, combinedImageUrls);
     const normalizedReferenceByUrl = new Map<string, { url: string; mime: string }>();
 
     for (const referenceUrl of [...new Set(combinedImageUrls)]) {
-      if (isReferenceImageSupported(supportedReferenceFormats, referenceUrl, storedAssetMimeByUrl)) {
+      if (isReferenceImageSupported(supportedReferenceFormats, referenceUrl, storedAssetInfoByUrl)) {
         continue;
       }
 
@@ -1071,7 +1083,7 @@ export async function executeImageGeneration({
           engineId: engine.id,
         });
         normalizedReferenceByUrl.set(referenceUrl, normalizedReference);
-        storedAssetMimeByUrl.set(normalizedReference.url, normalizedReference.mime);
+        storedAssetInfoByUrl.set(normalizedReference.url, { mime: normalizedReference.mime });
       } catch (error) {
         const reason = error instanceof Error && error.message ? error.message : 'Unable to normalize reference image.';
         console.warn('[images] failed to normalize reference image for engine', {
@@ -1109,7 +1121,7 @@ export async function executeImageGeneration({
     }
 
     const invalidImageFormatUrl = combinedImageUrls.find(
-      (entry) => !isReferenceImageSupported(supportedReferenceFormats, entry, storedAssetMimeByUrl)
+      (entry) => !isReferenceImageSupported(supportedReferenceFormats, entry, storedAssetInfoByUrl)
     );
     if (invalidImageFormatUrl) {
       fail(
@@ -1179,6 +1191,11 @@ export async function executeImageGeneration({
   let customImageSize: GptImage2ImageSize | null = parsedResolutionImageSize;
   let providerImageSize: string | GptImage2ImageSize | null =
     parsedResolutionImageSize ?? (shouldSendResolution ? normalizeFalImageResolution(resolution) : null);
+  if (engine.id === 'gpt-image-2' && mode === 'i2i' && resolution === 'auto') {
+    customImageSize = resolveGptImage2AutoInputImageSize(
+      combinedImageUrls.map((url) => storedAssetInfoByUrl.get(url))
+    );
+  }
 
   if (engine.id === 'gpt-image-2' && resolution === 'custom') {
     const customSizeResult = validateGptImage2CustomImageSize(body.customImageSize);

@@ -1,4 +1,10 @@
 const DISALLOWED_FAL_MODELS = ['beatoven/music-generation'] as const;
+const ALLOWED_FAL_PROXY_HOSTS = new Set([
+  'api.fal.ai',
+  'fal.ai',
+  'queue.fal.run',
+  'fal.run',
+]);
 
 function normalizeFalIdentifier(value: string): string {
   return value.trim().toLowerCase().replace(/^\/+|\/+$/g, '');
@@ -22,6 +28,10 @@ export function isFalProxyTargetAllowed(targetUrl: string | null | undefined): b
 
   try {
     const parsed = new URL(targetUrl);
+    if (parsed.protocol !== 'https:' || !ALLOWED_FAL_PROXY_HOSTS.has(parsed.hostname.toLowerCase())) {
+      return false;
+    }
+
     if (isBlockedFalIdentifier(parsed.pathname)) {
       return false;
     }
@@ -40,4 +50,3 @@ export function isFalProxyTargetAllowed(targetUrl: string | null | undefined): b
     return !isBlockedFalIdentifier(targetUrl);
   }
 }
-

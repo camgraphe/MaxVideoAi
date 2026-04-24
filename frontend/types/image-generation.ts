@@ -19,6 +19,10 @@ export interface ImageGenerationRequest {
   prompt: string;
   numImages?: number;
   imageUrls?: string[];
+  referenceImageSizes?: Array<{
+    width?: number | null;
+    height?: number | null;
+  }>;
   characterReferences?: CharacterReferenceSelection[];
   allowIndex?: boolean;
   indexable?: boolean;
