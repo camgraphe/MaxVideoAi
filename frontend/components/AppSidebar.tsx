@@ -121,7 +121,7 @@ export function AppSidebar() {
 
   return (
     <aside
-      className="sticky top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[188px] shrink-0 flex-col border-r border-hairline bg-surface-2/90 md:flex"
+      className="sticky top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[188px] shrink-0 flex-col border-r border-hairline bg-surface-2 md:flex"
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <nav

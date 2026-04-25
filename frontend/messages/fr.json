@@ -3092,7 +3092,9 @@
       },
       "hero": {
         "eyebrow": "Générer de l’audio",
-        "title": "Espace audio"
+        "title": "Créer un audio",
+        "body": "Générez des voix réalistes ou des ambiances sonores avec un contrôle avancé.",
+        "history": "Historique"
       },
       "modes": {
         "music_only": {
@@ -3147,14 +3149,23 @@
       "controls": {
         "eyebrow": "Réglages",
         "title": "Réglages audio",
+        "configureStep": "Configurer",
+        "customizeStep": "Personnaliser",
+        "generateStep": "Générer",
+        "chooseType": "Choisissez le type d’audio à générer",
         "mood": "Ambiance",
         "intensity": "Intensité",
         "duration": "Durée",
-        "script": "Script",
+        "prompt": "Prompt audio",
+        "promptMusicPlaceholder": "Décris la musique : genre, rythme, émotion, instruments, et la place qu’elle doit prendre dans le montage.",
+        "promptCinematicPlaceholder": "Décris le sound design voulu : environnement, impacts, transitions, texture, et ce qui doit rester subtil.",
+        "script": "Script de narration",
         "scriptVoiceOnlyPlaceholder": "Rédige la voix off que tu veux générer.",
         "scriptCinematicPlaceholder": "Rédige la narration ou le dialogue à poser sur le mix audio cinématique.",
         "estimatedDuration": "~{seconds}s estimées",
         "voiceSample": "Extrait vocal",
+        "uploadVoiceSample": "Importer un extrait vocal",
+        "uploadVoiceSampleHint": ".wav, .mp3 jusqu’à 50MB",
         "uploadSample": "Importer un extrait",
         "cloneEnabled": "Clonage de voix activé",
         "defaultVoice": "Voix par défaut",
@@ -3207,11 +3218,27 @@
         "exportToggle": {
           "label": "Exporter un fichier audio",
           "description": "Enregistre aussi un fichier audio séparé."
+        },
+        "advanced": {
+          "title": "Options avancées",
+          "description": "Affinez les paramètres de génération audio"
+        },
+        "selectedVoice": "Femme · Naturelle · FR",
+        "chooseVoice": "Choisir une voix",
+        "providerStack": "Pile de modèles",
+        "providerStackDescription": "{provider} prépare la base audio, puis MaxVideoAI masterise le rendu final selon la sortie choisie.",
+        "providers": {
+          "voice": "Gemini 3.1 Flash TTS",
+          "music": "MiniMax Music 2.6",
+          "sfx": "Mirelo SFX + MMAudio",
+          "mix": "Mastering FFmpeg"
         }
       },
       "pricing": {
-        "eyebrow": "Tarif",
+        "eyebrow": "Prix estimé",
+        "durationEyebrow": "Estimation",
         "missingInputs": "Ajoute les entrées requises",
+        "missingPrompt": "Ajoute un prompt audio.",
         "missingSourceVideo": "Ajoute une vidéo source.",
         "missingOptions": "Règle les options requises.",
         "summary": "{output} • {duration}",
@@ -3228,7 +3255,7 @@
       },
       "rail": {
         "eyebrow": "Derniers rendus",
-        "title": "Historique audio",
+        "title": "Historique",
         "viewAll": "Tout voir",
         "loadFailed": "Impossible de charger les derniers rendus.",
         "retry": "Réessayer",

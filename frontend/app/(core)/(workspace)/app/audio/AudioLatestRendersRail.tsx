@@ -4,11 +4,14 @@
 
 import deepmerge from 'deepmerge';
 import { useMemo } from 'react';
+import { MoreVertical, Play, Volume2 } from 'lucide-react';
 
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { useInfiniteJobs } from '@/lib/api';
+import { formatAudioDurationLabel } from '@/lib/audio-generation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
+import { UIIcon } from '@/components/ui/UIIcon';
 import { DEFAULT_AUDIO_WORKSPACE_COPY, formatAudioPackLabel, type AudioWorkspaceCopy } from './copy';
 
 type AudioLatestRendersRailProps = {
@@ -46,10 +49,6 @@ function resolveAudioJobPrice(job: Job, locale?: string): string | null {
   );
 }
 
-function resolveThumb(job: Job): string {
-  return job.thumbUrl ?? '/assets/frames/thumb-16x9.svg';
-}
-
 function resolveOutputLabel(job: Job, copy: AudioWorkspaceCopy): string {
   if (job.videoUrl && job.audioUrl) return copy.rail.outputs.videoAndAudio;
   if (job.videoUrl) return copy.rail.outputs.video;
@@ -68,6 +67,31 @@ function resolveJobLabel(job: Job, copy: AudioWorkspaceCopy): string {
     formatAudioPackLabel(copy, settingsPack) ??
     formatAudioPackLabel(copy, job.engineLabel) ??
     job.engineLabel
+  );
+}
+
+function WaveformBars({ seed }: { seed: string }) {
+  const bars = useMemo(() => {
+    let hash = 0;
+    for (let index = 0; index < seed.length; index += 1) {
+      hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+    }
+    return Array.from({ length: 72 }, (_, index) => {
+      const value = Math.sin((hash + index * 17) * 0.19) + Math.cos((hash + index * 11) * 0.11);
+      return 18 + Math.abs(value) * 23 + ((index % 9) / 9) * 12;
+    });
+  }, [seed]);
+
+  return (
+    <div className="flex h-12 items-center gap-[2px]" aria-hidden>
+      {bars.map((height, index) => (
+        <span
+          key={`${seed}-wave-${index}`}
+          className="w-[2px] rounded-full bg-brand shadow-[0_0_12px_rgba(46,99,216,0.22)]"
+          style={{ height: `${Math.min(52, Math.max(8, height))}%` }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -99,64 +123,48 @@ function AudioJobCard({
   locale: string;
 }) {
   const priceLabel = resolveAudioJobPrice(job, locale);
-  const durationLabel = typeof job.durationSec === 'number' ? `${job.durationSec}s` : null;
-  const thumb = resolveThumb(job);
+  const durationLabel = typeof job.durationSec === 'number' ? formatAudioDurationLabel(job.durationSec) : null;
 
   return (
     <article
       className={[
-        'overflow-hidden rounded-card border bg-surface shadow-card transition',
-        active ? 'border-brand ring-1 ring-brand/30' : 'border-border hover:border-border-hover',
+        'overflow-hidden rounded-[10px] border bg-surface p-3 shadow-card transition',
+        active ? 'border-brand ring-1 ring-brand/30' : 'border-hairline hover:border-brand/45',
       ].join(' ')}
     >
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-bg">
-        {job.videoUrl ? (
-          <video
-            controls
-            src={job.videoUrl}
-            poster={thumb}
-            className="h-full w-full object-cover"
-            playsInline
-            preload="metadata"
-          />
-        ) : (
-          <button type="button" className="block h-full w-full text-left" onClick={onSelect}>
-            <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_48%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))]">
-              <img src={thumb} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" loading="lazy" decoding="async" />
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10">
-                <img src="/assets/icons/audio.svg" alt="" className="h-8 w-8 opacity-90" />
-              </div>
-            </div>
-          </button>
-        )}
-        <div className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+      <button type="button" className="block w-full text-left" onClick={onSelect}>
+        <div className="inline-flex rounded-[6px] border border-success-border bg-success-bg px-2 py-1 text-[10px] font-semibold uppercase tracking-micro text-success">
           {resolveStatusLabel(job, copy)}
         </div>
-      </div>
-      <div className="space-y-3 px-3 py-3">
-        <div className="flex items-start justify-between gap-3">
+        <div className="mt-3 rounded-[8px] bg-[linear-gradient(180deg,var(--surface),var(--bg))] px-3 py-2">
+          <WaveformBars seed={job.jobId} />
+        </div>
+
+        <div className="mt-3 flex items-center gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-on-brand shadow-[0_10px_22px_rgba(46,99,216,0.18)]">
+            <UIIcon icon={Play} size={15} />
+          </span>
+          <span className="text-xs font-semibold text-text-primary">0:00 / {durationLabel ?? '--'}</span>
+          <span className="h-1 flex-1 rounded-full bg-surface-3" />
+          <Volume2 className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden />
+          <MoreVertical className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden />
+        </div>
+
+        <div className="mt-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-text-primary">{resolveJobLabel(job, copy)}</p>
-            <p className="mt-1 text-xs text-text-secondary">{resolveOutputLabel(job, copy)}</p>
+            <p className="mt-1 truncate text-xs text-text-secondary">{resolveOutputLabel(job, copy)}</p>
           </div>
-          {priceLabel ? <span className="text-sm font-semibold text-text-primary">{priceLabel}</span> : null}
+          {priceLabel ? <span className="rounded-[6px] border border-hairline bg-bg px-2 py-1 text-xs font-semibold text-text-primary">{priceLabel}</span> : null}
         </div>
-        <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.12em] text-text-muted">
-          {durationLabel ? <span>{durationLabel}</span> : null}
-          <span>{formatDateTime(job.createdAt, locale)}</span>
-        </div>
-        {!job.videoUrl && job.audioUrl ? (
-          <audio
-            controls
-            src={job.audioUrl}
-            className="w-full"
-            onClick={(event) => event.stopPropagation()}
-          />
-        ) : null}
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onSelect}>
-            {copy.rail.open}
-          </Button>
+        <p className="mt-3 text-xs text-text-muted">{formatDateTime(job.createdAt, locale)}</p>
+      </button>
+
+      <div className="mt-3 flex gap-2">
+        <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onSelect}>
+          {copy.rail.open}
+        </Button>
+        <div className="flex">
           {job.videoUrl ? (
             <ButtonLink href={job.videoUrl} target="_blank" rel="noreferrer" variant="ghost" size="sm">
               {copy.rail.file}
@@ -202,16 +210,15 @@ export default function AudioLatestRendersRail({
 
   return (
     <aside className={variant === 'desktop' ? 'flex min-h-0 w-full flex-1 flex-col' : 'flex flex-col'}>
-      <div className="flex items-center justify-between px-1 pb-3">
+      <div className="flex items-center justify-between pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.rail.eyebrow}</p>
-          <h2 className="mt-1 text-lg font-semibold text-text-primary">{copy.rail.title}</h2>
+          <h2 className="text-xl font-semibold text-text-primary">{copy.rail.title}</h2>
         </div>
-        <ButtonLink href="/jobs" variant="ghost" size="sm">
+        <ButtonLink href="/jobs" variant="ghost" size="sm" className="text-brand">
           {copy.rail.viewAll}
         </ButtonLink>
       </div>
-      <div className={variant === 'desktop' ? 'scrollbar-rail mt-1 min-h-0 flex-1 overflow-y-auto pr-4 pt-3' : ''}>
+      <div className={variant === 'desktop' ? 'scrollbar-rail min-h-0 flex-1 overflow-y-auto pr-1' : ''}>
         <div className="space-y-3">
           {error ? (
             <div className="rounded-card border border-border bg-surface p-4 text-sm text-state-warning">

@@ -5,6 +5,26 @@
 import deepmerge from 'deepmerge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import {
+  AudioLines,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  Clapperboard,
+  Clock3,
+  Coins,
+  FileVideo,
+  Gauge,
+  Languages,
+  Mic2,
+  Music2,
+  Play,
+  SlidersHorizontal,
+  Sparkles,
+  Upload,
+  Video,
+  type LucideIcon,
+} from 'lucide-react';
 
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { authFetch } from '@/lib/authFetch';
@@ -13,10 +33,15 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
+import { SelectMenu } from '@/components/ui/SelectMenu';
+import { UIIcon } from '@/components/ui/UIIcon';
 import {
   AUDIO_INTENSITY_VALUES,
   AUDIO_LANGUAGE_VALUES,
+  AUDIO_MUSIC_DURATION_OPTIONS_SEC,
   AUDIO_MOOD_VALUES,
+  AUDIO_PROMPT_MAX_LENGTH,
+  AUDIO_SCRIPT_MAX_LENGTH,
   AUDIO_VOICE_DELIVERY_VALUES,
   AUDIO_VOICE_PROFILE_VALUES,
   buildAudioPricingSnapshot,
@@ -28,6 +53,7 @@ import {
   coerceAudioVoiceGender,
   coerceAudioVoiceProfile,
   estimateVoiceScriptDurationSec,
+  formatAudioDurationLabel,
   getAudioPackConfig,
   type AudioIntensity,
   type AudioLanguage,
@@ -43,7 +69,6 @@ import {
   buildAudioModeOptions,
   DEFAULT_AUDIO_WORKSPACE_COPY,
   formatAudioOutputKind,
-  translateAudioProcessingMessage,
   type AudioWorkspaceCopy,
 } from './copy';
 
@@ -69,6 +94,7 @@ type GeneratedSourceVideo = {
 
 type AudioJobSettingsSnapshot = {
   pack?: string | null;
+  prompt?: string | null;
   mood?: string | null;
   intensity?: string | null;
   durationSec?: number | null;
@@ -124,7 +150,6 @@ type AudioResultState = {
   outputKind: AudioOutputKind;
 };
 
-const DURATION_OPTIONS = [3, 5, 8, 10, 15, 20] as const;
 const DEFAULT_PACK: AudioPackId = 'cinematic';
 const DEFAULT_MOOD: AudioMood = 'epic';
 const DEFAULT_INTENSITY: AudioIntensity = 'standard';
@@ -134,16 +159,33 @@ const DEFAULT_VOICE_DELIVERY: AudioVoiceDelivery = 'cinematic';
 const DEFAULT_LANGUAGE: AudioLanguage = 'auto';
 const DEFAULT_MANUAL_DURATION_SEC = 8;
 const AUDIO_VOICE_GENDER_VALUES = ['female', 'male', 'neutral'] as const;
-
-function formatCurrency(amount: number, currency = 'USD', locale?: string): string {
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-    }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(2)}`;
+const AUDIO_MODE_META: Record<
+  AudioPackId,
+  {
+    icon: LucideIcon;
+    providerKey: keyof AudioWorkspaceCopy['controls']['providers'];
   }
+> = {
+  music_only: {
+    icon: Music2,
+    providerKey: 'music',
+  },
+  voice_only: {
+    icon: Mic2,
+    providerKey: 'voice',
+  },
+  cinematic: {
+    icon: Clapperboard,
+    providerKey: 'sfx',
+  },
+  cinematic_voice: {
+    icon: AudioLines,
+    providerKey: 'mix',
+  },
+};
+
+function resolveProviderLabel(copy: AudioWorkspaceCopy, pack: AudioPackId): string {
+  return copy.controls.providers[AUDIO_MODE_META[pack].providerKey];
 }
 
 function formatDateTime(value: string, locale?: string): string {
@@ -159,6 +201,18 @@ function formatCopy(template: string, values: Record<string, string | number>): 
   return Object.entries(values).reduce((resolved, [key, value]) => {
     return resolved.split(`{${key}}`).join(String(value));
   }, template);
+}
+
+function formatCurrency(amountCents?: number | null, currency = 'USD', locale?: string): string {
+  if (typeof amountCents !== 'number') return '-';
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+    }).format(amountCents / 100);
+  } catch {
+    return `${currency} ${(amountCents / 100).toFixed(2)}`;
+  }
 }
 
 function resolveUiErrorMessage(
@@ -244,61 +298,110 @@ function AudioModePicker({
   onChange: (pack: AudioPackId) => void;
 }) {
   return (
-    <div className="grid gap-3 md:grid-cols-2">
+    <div className="grid gap-2 md:grid-cols-2 2xl:grid-cols-4">
       {options.map((mode) => (
-        <button
+        <AudioModeCard
           key={mode.id}
-          type="button"
+          mode={mode}
+          active={value === mode.id}
           onClick={() => onChange(mode.id)}
-          className={[
-            'rounded-card border p-4 text-left transition',
-            value === mode.id
-              ? 'border-brand bg-brand/5 shadow-card'
-              : 'border-border bg-surface hover:border-border-hover hover:bg-surface-hover',
-          ].join(' ')}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-text-primary">{mode.label}</span>
-            <span
-              className={[
-                'h-2.5 w-2.5 rounded-full',
-                value === mode.id ? 'bg-brand' : 'bg-border',
-              ].join(' ')}
-            />
-          </div>
-          <p className="mt-2 text-sm text-text-secondary">{mode.description}</p>
-        </button>
+        />
       ))}
     </div>
   );
 }
 
-function OptionPillGroup({
-  value,
-  options,
-  onChange,
+function AudioModeCard({
+  mode,
+  active,
+  onClick,
 }: {
-  value: string;
-  options: Array<{ value: string; label: string }>;
-  onChange: (next: string) => void;
+  mode: { id: AudioPackId; label: string; description: string };
+  active: boolean;
+  onClick: () => void;
 }) {
+  const Icon = AUDIO_MODE_META[mode.id].icon;
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => onChange(option.value)}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={[
+        'group relative min-h-[86px] overflow-hidden rounded-[10px] border px-3.5 py-3 text-left transition duration-200',
+        active
+          ? 'border-brand bg-brand-soft shadow-[0_14px_34px_rgba(46,99,216,0.12)] ring-1 ring-brand/25'
+          : 'border-hairline bg-surface hover:border-brand/45 hover:bg-surface-hover hover:shadow-card',
+      ].join(' ')}
+    >
+      <div className="flex items-start gap-3">
+        <span
           className={[
-            'rounded-full border px-3 py-1.5 text-sm font-medium transition',
-            value === option.value
-              ? 'border-brand bg-brand text-on-brand'
-              : 'border-border bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover',
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-[9px] transition',
+            active
+              ? 'bg-brand text-on-brand shadow-[0_10px_28px_rgba(46,99,216,0.22)]'
+              : 'bg-brand-soft text-brand group-hover:bg-brand-soft-hover',
           ].join(' ')}
         >
-          {option.label}
-        </button>
-      ))}
+          <UIIcon icon={Icon} size={21} strokeWidth={1.9} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-text-primary">{mode.label}</span>
+          <span className="mt-1 block text-xs leading-5 text-text-secondary">{mode.description}</span>
+        </span>
+        <span
+          className={[
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition',
+            active
+              ? 'border-brand bg-brand text-on-brand'
+              : 'border-hairline bg-surface text-transparent group-hover:border-brand/45',
+          ].join(' ')}
+          aria-hidden
+        >
+          {active ? <Check className="h-3.5 w-3.5" /> : null}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function AudioInlineSelectLabel({ icon, label }: { icon: LucideIcon; label: string }) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-2">
+      <UIIcon icon={icon} size={15} strokeWidth={1.8} />
+      <span className="truncate">{label}</span>
+    </span>
+  );
+}
+
+function AudioSelectControl({
+  label,
+  value,
+  options,
+  icon,
+  onChange,
+}: {
+  label: string;
+  value: string | number | boolean;
+  options: Array<{ value: string | number | boolean; label: string; disabled?: boolean }>;
+  icon: LucideIcon;
+  onChange: (next: string | number | boolean) => void;
+}) {
+  return (
+    <div className="min-w-0">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">{label}</span>
+      <SelectMenu
+        options={options.map((option) => ({
+          ...option,
+          label: <AudioInlineSelectLabel icon={icon} label={option.label} />,
+        }))}
+        value={value}
+        onChange={(next) => onChange(String(next))}
+        className="min-w-0"
+        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none dark:border-white/10 dark:bg-surface dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-surface-hover"
+        menuClassName="min-w-[180px]"
+        menuPlacement="top"
+      />
     </div>
   );
 }
@@ -315,7 +418,7 @@ function ToggleRow({
   onChange: (next: boolean) => void;
 }) {
   return (
-    <label className="flex items-start justify-between gap-4 rounded-card border border-border bg-surface px-4 py-3">
+    <label className="flex items-start justify-between gap-4 rounded-[10px] border border-hairline bg-surface px-4 py-3 shadow-sm">
       <div className="min-w-0">
         <p className="text-sm font-semibold text-text-primary">{label}</p>
         {description ? <p className="mt-1 text-sm text-text-secondary">{description}</p> : null}
@@ -334,111 +437,6 @@ function ToggleRow({
   );
 }
 
-function ResultPreview({
-  result,
-  sourceVideo,
-  activeJob,
-  isLoading,
-  copy,
-}: {
-  result: AudioResultState | null;
-  sourceVideo: SourceVideoState | null;
-  activeJob: ActiveAudioJobState | null;
-  isLoading: boolean;
-  copy: AudioWorkspaceCopy;
-}) {
-  const previewThumb = result?.thumbUrl ?? sourceVideo?.thumbUrl ?? '/assets/frames/thumb-16x9.svg';
-  const hasRenderableOutput = Boolean(result?.videoUrl || result?.audioUrl);
-  const showOverlay = !hasRenderableOutput && (isLoading || activeJob?.status === 'pending' || activeJob?.status === 'running');
-  const overlayMessage =
-    translateAudioProcessingMessage(
-      copy,
-      activeJob?.message ?? (isLoading ? copy.preview.loadingMessage : copy.preview.processingMessage)
-    ) ?? copy.preview.processingMessage;
-  const overlayProgress = activeJob?.progress ?? 0;
-
-  return (
-    <section className="rounded-card border border-border bg-surface-glass-80 shadow-card">
-      <div className="border-b border-border px-5 py-4">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.preview.eyebrow}</p>
-        <h2 className="mt-1 text-xl font-semibold text-text-primary">{copy.preview.title}</h2>
-      </div>
-      <div className="p-4">
-        <div className="relative overflow-hidden rounded-card border border-border bg-bg" style={{ aspectRatio: '16 / 9' }}>
-          {result?.videoUrl ? (
-            <video
-              src={result.videoUrl}
-              poster={previewThumb}
-              className="h-full w-full object-cover"
-              controls
-              playsInline
-              preload="metadata"
-            />
-          ) : result?.audioUrl ? (
-            <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_48%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))] px-6 py-6 text-center">
-              <img src={previewThumb} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" loading="lazy" decoding="async" />
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10">
-                <img src="/assets/icons/audio.svg" alt="" className="h-10 w-10 opacity-95" />
-              </div>
-              <p className="relative mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
-                {formatAudioOutputKind(copy, result.outputKind)}
-              </p>
-              <p className="relative mt-2 text-2xl font-semibold text-white">{copy.preview.audioReady}</p>
-              <div className="relative mt-5 w-full max-w-xl">
-                <audio controls src={result.audioUrl} className="w-full" preload="metadata" />
-              </div>
-            </div>
-          ) : sourceVideo?.url ? (
-            <video
-              src={sourceVideo.url}
-              poster={sourceVideo.thumbUrl ?? undefined}
-              className="h-full w-full object-cover"
-              muted
-              playsInline
-              loop
-              autoPlay
-              preload="metadata"
-            />
-          ) : (
-            <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-bg/70 px-6 text-center">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.14),_transparent_46%)]" />
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-border bg-surface shadow-card">
-                <img src="/assets/icons/audio.svg" alt="" className="h-8 w-8 opacity-75" />
-              </div>
-              <p className="relative mt-5 text-sm font-semibold text-text-primary">{copy.preview.emptyTitle}</p>
-              <p className="relative mt-2 max-w-xl text-sm text-text-secondary">{copy.preview.emptyBody}</p>
-            </div>
-          )}
-
-          {showOverlay ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-55 px-6 text-center text-white backdrop-blur-[2px]">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/25 border-t-white" />
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-white/75">{copy.preview.processingLabel}</p>
-              <p className="mt-2 text-2xl font-semibold">{Math.max(0, Math.min(100, overlayProgress))}%</p>
-              <p className="mt-2 max-w-lg text-sm text-white/80">{overlayMessage}</p>
-            </div>
-          ) : null}
-        </div>
-
-        {(result?.videoUrl || result?.audioUrl) ? (
-          <div className="mt-4 flex flex-wrap gap-3">
-            {result.videoUrl ? (
-              <ButtonLink href={result.videoUrl} target="_blank" rel="noreferrer" variant="outline" size="sm">
-                {copy.preview.openVideoFile}
-              </ButtonLink>
-            ) : null}
-            {result.audioUrl ? (
-              <ButtonLink href={result.audioUrl} target="_blank" rel="noreferrer" variant="outline" size="sm">
-                {copy.preview.openAudioFile}
-              </ButtonLink>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    </section>
-  );
-}
-
 export default function AudioWorkspace() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -453,6 +451,7 @@ export default function AudioWorkspace() {
   const [pack, setPack] = useState<AudioPackId>(DEFAULT_PACK);
   const [mood, setMood] = useState<AudioMood>(DEFAULT_MOOD);
   const [intensity, setIntensity] = useState<AudioIntensity>(DEFAULT_INTENSITY);
+  const [prompt, setPrompt] = useState('');
   const [script, setScript] = useState('');
   const [voiceGender, setVoiceGender] = useState<AudioVoiceGender>(DEFAULT_VOICE_GENDER);
   const [voiceProfile, setVoiceProfile] = useState<AudioVoiceProfile>(DEFAULT_VOICE_PROFILE);
@@ -539,6 +538,17 @@ export default function AudioWorkspace() {
       })),
     [copy]
   );
+  const durationOptions = useMemo(() => {
+    const values = [...AUDIO_MUSIC_DURATION_OPTIONS_SEC] as number[];
+    if (!values.includes(manualDurationSec)) {
+      values.push(manualDurationSec);
+      values.sort((a, b) => a - b);
+    }
+    return values.map((value) => ({
+      value,
+      label: formatAudioDurationLabel(value),
+    }));
+  }, [manualDurationSec]);
 
   const handlePackChange = useCallback((nextPack: AudioPackId) => {
     manualWorkspaceOverrideRef.current = true;
@@ -622,6 +632,7 @@ export default function AudioWorkspace() {
       });
 
       setPack(nextPack);
+      setPrompt(detail.settingsSnapshot?.prompt ?? '');
       setMood(nextMood);
       setIntensity(nextIntensity);
       setScript(detail.settingsSnapshot?.script ?? '');
@@ -856,15 +867,18 @@ export default function AudioWorkspace() {
       mood: showMood ? mood : null,
       durationSec: estimatedDurationSec,
       voiceMode: showVoiceFields ? (voiceSample ? 'clone' : 'standard') : null,
+      script: showVoiceFields ? script : null,
+      musicEnabled: showMusicToggle ? musicEnabled : getAudioPackConfig(pack).defaultMusicEnabled,
     });
-  }, [estimatedDurationSec, mood, pack, showMood, showVoiceFields, voiceSample]);
+  }, [estimatedDurationSec, mood, musicEnabled, pack, script, showMood, showMusicToggle, showVoiceFields, voiceSample]);
 
   const canGenerate =
     Boolean(user) &&
     !isGenerating &&
     (!sourceVideoRequired || Boolean(sourceVideo?.url)) &&
     (pack !== 'music_only' || Boolean(sourceVideo?.url) || manualDurationSec >= 3) &&
-    (!packConfig.requiresScript || script.trim().length > 0);
+    (!packConfig.requiresScript || script.trim().length > 0) &&
+    ((packConfig.includesVoice && pack !== 'cinematic') || prompt.trim().length > 0);
 
   const handleSourceFileSelect = useCallback(async (fileList: FileList | null) => {
     const file = fileList?.[0];
@@ -954,6 +968,7 @@ export default function AudioWorkspace() {
         sourceVideoUrl: sourceVideo?.url ?? undefined,
         sourceJobId: sourceVideo?.jobId ?? undefined,
         pack,
+        prompt: !showVoiceFields ? prompt.trim() : undefined,
         mood: showMood ? mood : undefined,
         intensity: showIntensity ? intensity : undefined,
         script: packConfig.requiresScript ? script.trim() : undefined,
@@ -1002,6 +1017,7 @@ export default function AudioWorkspace() {
     musicEnabled,
     pack,
     packConfig.requiresScript,
+    prompt,
     pathname,
     router,
     script,
@@ -1030,6 +1046,28 @@ export default function AudioWorkspace() {
     [pathname, router]
   );
 
+  const composerIsScript = showVoiceFields;
+  const composerLabel = composerIsScript ? copy.controls.script : copy.controls.prompt;
+  const composerValue = composerIsScript ? script : prompt;
+  const composerMaxLength = composerIsScript ? AUDIO_SCRIPT_MAX_LENGTH : AUDIO_PROMPT_MAX_LENGTH;
+  const composerPlaceholder = composerIsScript
+    ? pack === 'voice_only'
+      ? copy.controls.scriptVoiceOnlyPlaceholder
+      : copy.controls.scriptCinematicPlaceholder
+    : pack === 'music_only'
+      ? copy.controls.promptMusicPlaceholder
+      : copy.controls.promptCinematicPlaceholder;
+  const generationHint = !showVoiceFields && !prompt.trim().length
+    ? copy.pricing.missingPrompt
+    : sourceVideoRequired && !sourceVideo?.url
+      ? copy.pricing.missingSourceVideo
+      : quote
+        ? formatCopy(copy.pricing.summary, {
+            output: formatAudioOutputKind(copy, currentOutputKind),
+            duration: estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-',
+          })
+        : copy.pricing.missingOptions;
+
   if (authLoading) {
     return <div className="flex-1" />;
   }
@@ -1055,340 +1093,383 @@ export default function AudioWorkspace() {
   }
 
   return (
-    <div className="flex flex-1 min-w-0 flex-col xl:flex-row">
-      <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
-        <main className="flex flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] overflow-y-auto p-5 lg:p-7">
-          {notice ? (
-            <div role="status" aria-live="polite" className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
-              {notice}
-            </div>
-          ) : null}
+    <div className="flex flex-1 min-w-0 flex-col bg-bg xl:flex-row">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-7 lg:py-6">
+          <div className="mx-auto flex w-full max-w-[980px] flex-col gap-4 pb-28">
+            {notice ? (
+              <div role="status" aria-live="polite" className="rounded-[10px] border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
+                {notice}
+              </div>
+            ) : null}
 
-          <div className="grid gap-[var(--stack-gap-lg)] xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px] xl:items-start">
-            <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
-              <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div className="flex items-start gap-4">
+                <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-[9px] border border-hairline bg-surface text-brand shadow-sm">
+                  <UIIcon icon={AudioLines} size={20} strokeWidth={1.9} />
+                </span>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.hero.eyebrow}</p>
-                  <h1 className="mt-2 text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>
+                  <h1 className="mt-1 text-2xl font-semibold tracking-normal text-text-primary md:text-3xl">{copy.hero.title}</h1>
+                  <p className="mt-1 max-w-2xl text-sm text-text-secondary">{copy.hero.body}</p>
                 </div>
+              </div>
+            </div>
 
+            <section className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-sm font-semibold text-text-primary">{copy.controls.chooseType}</h2>
+              </div>
+              <div className="mt-3">
                 <AudioModePicker value={pack} options={modeOptions} onChange={handlePackChange} />
-
-                <div className="rounded-card border border-border bg-bg/60 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-text-primary">{copy.source.title}</h2>
-                      <p className="mt-1 text-xs text-text-secondary">
-                        {sourceVideoRequired
-                          ? copy.source.required
-                          : copy.source.optional}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isUploadingSource}
-                        onClick={() => sourceInputRef.current?.click()}
-                      >
-                        {isUploadingSource ? copy.source.uploading : copy.source.upload}
-                      </Button>
-                      <Button type="button" variant="outline" size="sm" onClick={() => setGeneratedPickerOpen(true)}>
-                        {copy.source.useGenerated}
-                      </Button>
-                      {sourceVideo ? (
-                        <Button type="button" variant="ghost" size="sm" onClick={handleClearSourceVideo}>
-                          {copy.source.clear}
-                        </Button>
-                      ) : null}
-                    </div>
-                    <input
-                      ref={sourceInputRef}
-                      type="file"
-                      accept="video/*"
-                      className="sr-only"
-                      onChange={(event) => {
-                        void handleSourceFileSelect(event.target.files);
-                      }}
-                    />
-                  </div>
-                  {sourceVideo ? (
-                    <div className="mt-4 flex flex-wrap items-center gap-4 rounded-card border border-border bg-surface px-4 py-3">
-                      <div className="h-16 w-24 overflow-hidden rounded-card border border-border bg-bg">
-                        <video
-                          src={sourceVideo.url}
-                          poster={sourceVideo.thumbUrl ?? undefined}
-                          className="h-full w-full object-cover"
-                          muted
-                          playsInline
-                          loop
-                          autoPlay
-                          preload="metadata"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-text-primary">{sourceVideo.label}</p>
-                        <p className="mt-1 text-xs text-text-secondary">
-                          {sourceVideo.durationSec ? `${sourceVideo.durationSec}s` : copy.source.durationPending}{sourceVideo.aspectRatio ? ` • ${sourceVideo.aspectRatio}` : ''}
-                        </p>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
               </div>
             </section>
 
-            <ResultPreview
-              result={result}
-              sourceVideo={sourceVideo}
-              activeJob={activeJob}
-              isLoading={isGenerating}
-              copy={copy}
-            />
-          </div>
-
-          <section className="rounded-card border border-border bg-surface-glass-80 shadow-card">
-            <div className="border-b border-border px-5 py-4">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.controls.eyebrow}</p>
-              <h2 className="mt-1 text-xl font-semibold text-text-primary">{copy.controls.title}</h2>
-            </div>
-            <div className="space-y-5 p-5">
-              {showMood ? (
-                <div>
-                  <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.mood}</span>
-                  <OptionPillGroup
-                    value={mood}
-                    options={moodOptions}
-                    onChange={(next) => {
-                      const nextMood = coerceAudioMood(next) ?? DEFAULT_MOOD;
-                      setMood(nextMood);
-                    }}
-                  />
-                </div>
-              ) : null}
-
-              {showIntensity ? (
-                <div>
-                  <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.intensity}</span>
-                  <OptionPillGroup
-                    value={intensity}
-                    options={intensityOptions}
-                    onChange={(next) => {
-                      const nextIntensity = coerceAudioIntensity(next) ?? DEFAULT_INTENSITY;
-                      setIntensity(nextIntensity);
-                    }}
-                  />
-                </div>
-              ) : null}
-
-              {showManualDuration ? (
-                <div>
-                  <p className="text-sm font-semibold text-text-primary">{copy.controls.duration}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {DURATION_OPTIONS.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => setManualDurationSec(option)}
-                        className={[
-                          'rounded-full border px-3 py-1.5 text-sm font-medium transition',
-                          manualDurationSec === option
-                            ? 'border-brand bg-brand text-on-brand'
-                            : 'border-border bg-surface text-text-primary hover:border-border-hover',
-                        ].join(' ')}
-                      >
-                        {option}s
-                      </button>
-                    ))}
+            {(sourceVideoRequired || sourceVideo) ? (
+              <section className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[9px] bg-brand-soft text-brand">
+                      <UIIcon icon={FileVideo} size={22} />
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="text-sm font-semibold text-text-primary">{copy.source.title}</h2>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {sourceVideoRequired ? copy.source.required : copy.source.optional}
+                      </p>
+                      {sourceVideo ? (
+                        <p className="mt-2 truncate text-sm font-semibold text-text-primary">
+                          {sourceVideo.label}
+                          <span className="ml-2 text-xs font-medium text-text-muted">
+                            {sourceVideo.durationSec ? formatAudioDurationLabel(sourceVideo.durationSec) : copy.source.durationPending}
+                          </span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isUploadingSource}
+                      onClick={() => sourceInputRef.current?.click()}
+                    >
+                      <UIIcon icon={Upload} size={16} />
+                      {isUploadingSource ? copy.source.uploading : copy.source.upload}
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setGeneratedPickerOpen(true)}>
+                      <UIIcon icon={Video} size={16} />
+                      {copy.source.useGenerated}
+                    </Button>
+                    {sourceVideo ? (
+                      <Button type="button" variant="ghost" size="sm" onClick={handleClearSourceVideo}>
+                        {copy.source.clear}
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
-              ) : null}
+                <input
+                  ref={sourceInputRef}
+                  type="file"
+                  accept="video/*"
+                  className="sr-only"
+                  onChange={(event) => {
+                    void handleSourceFileSelect(event.target.files);
+                  }}
+                />
+                {sourceVideo ? (
+                  <div className="mt-3 flex items-center gap-3 rounded-[10px] border border-hairline bg-bg px-3 py-2">
+                    <div className="h-12 w-20 overflow-hidden rounded-[8px] border border-hairline bg-surface">
+                      <video src={sourceVideo.url} poster={sourceVideo.thumbUrl ?? undefined} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+                    </div>
+                    <p className="min-w-0 flex-1 truncate text-xs text-text-secondary">
+                      {sourceVideo.aspectRatio ? `${sourceVideo.aspectRatio} · ` : ''}
+                      {sourceVideo.durationSec ? formatAudioDurationLabel(sourceVideo.durationSec) : copy.source.durationPending}
+                    </p>
+                    <CheckCircle2 className="h-5 w-5 text-success" aria-hidden />
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
 
+            <section className="rounded-[12px] border border-hairline bg-surface shadow-card">
+              <label className="block p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="text-base font-semibold text-text-primary">{composerLabel}</span>
+                  <span className="shrink-0 text-xs text-text-muted">{composerValue.length} / {composerMaxLength}</span>
+                </div>
+                <Textarea
+                  rows={9}
+                  value={composerValue}
+                  onChange={(event) => {
+                    if (composerIsScript) {
+                      setScript(event.target.value);
+                    } else {
+                      setPrompt(event.target.value);
+                    }
+                  }}
+                  placeholder={composerPlaceholder}
+                  className="min-h-[260px] resize-y bg-bg pr-4 text-base leading-7"
+                  maxLength={composerMaxLength}
+                />
+                {pack === 'voice_only' && script.trim().length ? (
+                  <p className="mt-2 text-xs text-text-secondary">
+                    {formatCopy(copy.controls.estimatedDuration, { seconds: estimatedDurationSec ?? '-' })}
+                  </p>
+                ) : null}
+              </label>
+            </section>
+
+            <section className="grid gap-4 lg:grid-cols-2">
               {showVoiceFields ? (
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.script}</span>
-                    <Textarea
-                      rows={6}
-                      value={script}
-                      onChange={(event) => setScript(event.target.value)}
-                      placeholder={
-                        pack === 'voice_only'
-                          ? copy.controls.scriptVoiceOnlyPlaceholder
-                          : copy.controls.scriptCinematicPlaceholder
-                      }
-                    />
-                    {pack === 'voice_only' && script.trim().length ? (
-                      <p className="mt-2 text-xs text-text-secondary">
-                        {formatCopy(copy.controls.estimatedDuration, { seconds: estimatedDurationSec ?? '—' })}
-                      </p>
-                    ) : null}
-                  </label>
-                  <div className="rounded-card border border-border bg-bg/60 p-4">
-                    <p className="text-sm font-semibold text-text-primary">{copy.controls.voiceSample}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                <div className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-base font-semibold text-text-primary">{copy.controls.voice}</p>
+                      <p className="mt-1 text-sm text-text-secondary">{copy.controls.selectedVoice}</p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm">
+                      {copy.controls.chooseVoice}
+                    </Button>
+                  </div>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="flex items-center gap-3 rounded-[10px] border border-hairline bg-bg px-3 py-3">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand">
+                          <UIIcon icon={Play} size={16} />
+                        </span>
+                      <span className="min-w-0 flex-1 truncate text-sm text-text-secondary">{copy.controls.selectedVoice}</span>
+                        <AudioLines className="h-4 w-4 text-brand" aria-hidden />
+                      </div>
+                    <div className="rounded-[10px] border border-hairline bg-bg px-3 py-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-text-primary">{copy.controls.voiceSample}</p>
+                          <p className="mt-1 truncate text-xs text-text-secondary">
+                            {voiceSample ? voiceSample.name : copy.controls.uploadVoiceSampleHint}
+                          </p>
+                        </div>
+                        {voiceSample ? (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setVoiceSample(null)}>
+                            {copy.source.clear}
+                          </Button>
+                        ) : null}
+                      </div>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
+                        className="mt-3 w-full justify-center"
                         disabled={isUploadingVoice}
                         onClick={() => voiceInputRef.current?.click()}
                       >
-                        {isUploadingVoice ? copy.source.uploading : copy.controls.uploadSample}
+                        <UIIcon icon={Upload} size={16} />
+                        {isUploadingVoice ? copy.source.uploading : copy.controls.uploadVoiceSample}
                       </Button>
-                      {voiceSample ? (
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setVoiceSample(null)}>
-                          {copy.source.clear}
-                        </Button>
-                      ) : null}
-                    </div>
-                    <input
-                      ref={voiceInputRef}
-                      type="file"
-                      accept="audio/*"
-                      className="sr-only"
-                      onChange={(event) => {
-                        void handleVoiceFileSelect(event.target.files);
-                      }}
-                    />
-                    {voiceSample ? (
-                      <div className="mt-4 rounded-card border border-border bg-surface px-3 py-3">
-                        <p className="truncate text-sm font-semibold text-text-primary">{voiceSample.name}</p>
-                        <p className="mt-1 text-xs text-text-secondary">{copy.controls.cloneEnabled}</p>
-                      </div>
-                    ) : (
-                      <div className="mt-4 rounded-card border border-dashed border-border bg-surface px-3 py-3 text-sm text-text-secondary">
-                        {copy.controls.defaultVoice}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-
-              {showVoiceFields ? (
-                <div className={showVoiceGender ? 'grid gap-4 md:grid-cols-4' : 'grid gap-4 md:grid-cols-3'}>
-                  {showVoiceGender ? (
-                    <div>
-                      <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.voiceType}</span>
-                      <OptionPillGroup
-                        value={voiceGender}
-                        options={voiceGenderOptions}
-                        onChange={(next) => {
-                          const nextGender = coerceAudioVoiceGender(next) ?? DEFAULT_VOICE_GENDER;
-                          setVoiceGender(nextGender);
+                      <input
+                        ref={voiceInputRef}
+                        type="file"
+                        accept="audio/*"
+                        className="sr-only"
+                        onChange={(event) => {
+                          void handleVoiceFileSelect(event.target.files);
                         }}
                       />
                     </div>
-                  ) : null}
-                  <div>
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.voice}</span>
-                    <OptionPillGroup
-                      value={voiceProfile}
-                      options={voiceProfileOptions}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card lg:col-span-2">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  {showMood ? (
+                    <AudioSelectControl
+                      label={copy.controls.mood}
+                      value={mood}
+                      options={moodOptions}
+                      icon={Sparkles}
                       onChange={(next) => {
-                        const nextProfile = coerceAudioVoiceProfile(next) ?? DEFAULT_VOICE_PROFILE;
-                        setVoiceProfile(nextProfile);
+                        const nextMood = coerceAudioMood(next) ?? DEFAULT_MOOD;
+                        setMood(nextMood);
                       }}
                     />
-                  </div>
-                  <div>
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.delivery}</span>
-                    <OptionPillGroup
+                  ) : null}
+                  {showVoiceGender ? (
+                    <AudioSelectControl
+                      label={copy.controls.voiceType}
+                      value={voiceGender}
+                      options={voiceGenderOptions}
+                      icon={Mic2}
+                      onChange={(next) => {
+                        const nextGender = coerceAudioVoiceGender(String(next)) ?? DEFAULT_VOICE_GENDER;
+                        setVoiceGender(nextGender);
+                      }}
+                    />
+                  ) : null}
+                  {showVoiceFields ? (
+                    <AudioSelectControl
+                      label={copy.controls.voice}
+                      value={voiceProfile}
+                      options={voiceProfileOptions}
+                      icon={AudioLines}
+                      onChange={(next) => {
+                        setVoiceProfile(coerceAudioVoiceProfile(String(next)) ?? DEFAULT_VOICE_PROFILE);
+                      }}
+                    />
+                  ) : null}
+                  {showVoiceFields ? (
+                    <AudioSelectControl
+                      label={copy.controls.delivery}
                       value={voiceDelivery}
                       options={voiceDeliveryOptions}
+                      icon={Play}
                       onChange={(next) => {
-                        const nextDelivery = coerceAudioVoiceDelivery(next) ?? DEFAULT_VOICE_DELIVERY;
+                        const nextDelivery = coerceAudioVoiceDelivery(String(next)) ?? DEFAULT_VOICE_DELIVERY;
                         setVoiceDelivery(nextDelivery);
                       }}
                     />
-                  </div>
-                  <div>
-                    <span className="mb-2 block text-sm font-semibold text-text-primary">{copy.controls.language}</span>
-                    <OptionPillGroup
+                  ) : null}
+                  {showIntensity ? (
+                    <AudioSelectControl
+                      label={copy.controls.intensity}
+                      value={intensity}
+                      options={intensityOptions}
+                      icon={Gauge}
+                      onChange={(next) => {
+                        const nextIntensity = coerceAudioIntensity(next) ?? DEFAULT_INTENSITY;
+                        setIntensity(nextIntensity);
+                      }}
+                    />
+                  ) : null}
+                  {showVoiceFields ? (
+                    <AudioSelectControl
+                      label={copy.controls.language}
                       value={language}
                       options={languageOptions}
+                      icon={Languages}
                       onChange={(next) => {
-                        const nextLanguage = coerceAudioLanguage(next) ?? DEFAULT_LANGUAGE;
+                        const nextLanguage = coerceAudioLanguage(String(next)) ?? DEFAULT_LANGUAGE;
                         setLanguage(nextLanguage);
                       }}
                     />
-                  </div>
+                  ) : null}
+                  {showManualDuration ? (
+                    <AudioSelectControl
+                      label={copy.controls.duration}
+                      value={manualDurationSec}
+                      options={durationOptions}
+                      icon={Clock3}
+                      onChange={(next) => {
+                        const numericDuration = Number(next);
+                        if (durationOptions.some((option) => option.value === numericDuration)) {
+                          setManualDurationSec(numericDuration);
+                        }
+                      }}
+                    />
+                  ) : null}
                 </div>
-              ) : null}
 
-              {showMusicToggle ? (
-                <ToggleRow
-                  label={copy.controls.musicToggle.label}
-                  description={copy.controls.musicToggle.description}
-                  checked={musicEnabled}
-                  onChange={setMusicEnabled}
-                />
-              ) : null}
-
-              {showExportToggle ? (
-                <ToggleRow
-                  label={copy.controls.exportToggle.label}
-                  description={copy.controls.exportToggle.description}
-                  checked={exportAudioFile}
-                  onChange={setExportAudioFile}
-                />
-              ) : null}
-
-              <div className="rounded-card border border-border bg-bg/60 px-4 py-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.pricing.eyebrow}</p>
-                    <p className="mt-1 text-2xl font-semibold text-text-primary">
-                      {quote ? formatCurrency(quote.totalCents / 100, quote.currency, locale) : copy.pricing.missingInputs}
-                    </p>
-                    <p className="mt-1 text-sm text-text-secondary">
-                      {quote
-                        ? formatCopy(copy.pricing.summary, {
-                            output: formatAudioOutputKind(copy, currentOutputKind),
-                            duration: `${estimatedDurationSec ?? '—'}s`,
-                          })
-                        : sourceVideoRequired
-                          ? copy.pricing.missingSourceVideo
-                          : copy.pricing.missingOptions}
-                    </p>
+                <details className="group mt-4 rounded-[10px] border border-hairline bg-bg">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary">
+                      <UIIcon icon={SlidersHorizontal} size={16} />
+                      {copy.controls.advanced.title}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-text-muted transition group-open:rotate-180" aria-hidden />
+                  </summary>
+                  <div className="grid gap-3 border-t border-hairline p-4 md:grid-cols-2">
+                    {showMusicToggle ? (
+                      <ToggleRow
+                        label={copy.controls.musicToggle.label}
+                        description={copy.controls.musicToggle.description}
+                        checked={musicEnabled}
+                        onChange={setMusicEnabled}
+                      />
+                    ) : null}
+                    {showExportToggle ? (
+                      <ToggleRow
+                        label={copy.controls.exportToggle.label}
+                        description={copy.controls.exportToggle.description}
+                        checked={exportAudioFile}
+                        onChange={setExportAudioFile}
+                      />
+                    ) : null}
+                    <div className="rounded-[10px] border border-hairline bg-surface px-4 py-3">
+                      <p className="text-sm font-semibold text-text-primary">{copy.controls.providerStack}</p>
+                      <p className="mt-1 text-sm text-text-secondary">{resolveProviderLabel(copy, pack)}</p>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      type="button"
-                      size="lg"
-                      onClick={handleGenerate}
-                      disabled={!canGenerate}
-                      className="min-w-[180px]"
-                    >
+                </details>
+              </div>
+            </section>
+
+            <div className="xl:hidden">
+              <AudioLatestRendersRail
+                activeJobId={activeJob?.jobId ?? result?.jobId ?? null}
+                onSelectJob={handleSelectLatestJob}
+                variant="mobile"
+              />
+            </div>
+          </div>
+
+          <div className="fixed bottom-0 left-0 right-0 z-[80] border-t border-hairline bg-bg px-4 py-3 shadow-[0_-18px_44px_rgba(15,23,42,0.08)] md:left-[188px] lg:px-7 xl:right-[332px]">
+            <div className="mx-auto flex w-full max-w-[980px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex min-w-[132px] items-center gap-2 rounded-[9px] border border-hairline bg-surface px-3 py-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-bg text-text-secondary">
+                      <UIIcon icon={Clock3} size={19} />
+                    </span>
+                    <div>
+                      <p className="text-xs text-text-muted">{copy.pricing.durationEyebrow}</p>
+                    <p className="text-sm font-semibold text-text-primary">
+                      ~ {estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-'}
+                    </p>
+                    </div>
+                  </div>
+                <div className="flex min-w-[132px] items-center gap-2 rounded-[9px] border border-hairline bg-surface px-3 py-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-bg text-text-secondary">
+                      <UIIcon icon={Coins} size={19} />
+                    </span>
+                    <div>
+                      <p className="text-xs text-text-muted">{copy.pricing.eyebrow}</p>
+                    <p className="text-sm font-semibold text-text-primary">
+                        {quote ? formatCurrency(quote.totalCents, quote.currency, locale) : '-'}
+                      </p>
+                    </div>
+                  </div>
+                {activeJob?.status === 'running' || activeJob?.status === 'pending' ? (
+                  <div className="rounded-[9px] border border-brand/25 bg-brand-soft px-3 py-2 text-sm font-semibold text-brand">
+                    {activeJob.progress}%
+                  </div>
+                ) : null}
+                </div>
+
+              <div className="flex flex-col gap-2 sm:min-w-[360px] sm:flex-row sm:items-center sm:justify-end">
+                <p className="text-sm text-text-secondary sm:text-right">{generationHint}</p>
+                <div className="flex w-full shrink-0 sm:w-auto">
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={handleGenerate}
+                    disabled={!canGenerate}
+                    className="min-w-0 flex-1 rounded-r-none sm:min-w-[210px]"
+                  >
+                      <UIIcon icon={AudioLines} size={18} />
                       {isGenerating ? copy.pricing.generating : copy.pricing.generate}
                     </Button>
-                    {quote ? (
-                      <Button type="button" variant="outline" size="lg" disabled className="min-w-[180px]">
-                        {formatCopy(copy.pricing.thisRender, {
-                          amount: formatCurrency(quote.totalCents / 100, quote.currency, locale),
-                        })}
-                      </Button>
-                    ) : null}
+                    <Button type="button" size="lg" disabled={!canGenerate} className="rounded-l-none border-l border-white/25 px-3">
+                      <ChevronDown className="h-4 w-4" aria-hidden />
+                    </Button>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
+          </div>
         </main>
       </div>
 
-      <aside className="hidden h-[calc(125vh-var(--header-height))] w-full max-w-[336px] shrink-0 flex-col border-l border-border bg-bg/80 px-3 pb-6 pt-4 xl:flex">
+      <aside className="hidden h-[calc(100vh-var(--header-height))] w-full max-w-[332px] shrink-0 flex-col border-l border-hairline bg-surface-2 px-4 pb-6 pt-6 xl:flex">
         <AudioLatestRendersRail activeJobId={activeJob?.jobId ?? result?.jobId ?? null} onSelectJob={handleSelectLatestJob} />
       </aside>
-
-      <div className="border-t border-border px-4 py-4 xl:hidden">
-        <AudioLatestRendersRail
-          activeJobId={activeJob?.jobId ?? result?.jobId ?? null}
-          onSelectJob={handleSelectLatestJob}
-          variant="mobile"
-        />
-      </div>
 
       {generatedPickerOpen ? (
         <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-surface-on-media-dark-55 px-4">
@@ -1423,7 +1504,7 @@ export default function AudioWorkspace() {
                 </div>
               ) : null}
               {!generatedVideosError && !generatedVideos.length && !isGeneratedVideosLoading ? (
-                <div className="rounded-card border border-border bg-bg/60 p-5 text-sm text-text-secondary">
+                <div className="rounded-card border border-border bg-bg p-5 text-sm text-text-secondary">
                   {copy.picker.empty}
                 </div>
               ) : null}
@@ -1460,7 +1541,7 @@ export default function AudioWorkspace() {
                           ) : null}
                         </div>
                         <p className="text-xs text-text-secondary">
-                          {video.durationSec ? `${video.durationSec}s` : copy.source.durationPending}{video.aspectRatio ? ` • ${video.aspectRatio}` : ''}
+                          {video.durationSec ? formatAudioDurationLabel(video.durationSec) : copy.source.durationPending}{video.aspectRatio ? ` • ${video.aspectRatio}` : ''}
                         </p>
                         <p className="text-xs text-text-muted">{formatDateTime(video.createdAt, locale)}</p>
                       </div>

@@ -1102,11 +1102,11 @@ function BrowseEnginesModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-hairline bg-surface-glass-90 px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute right-4 top-4 rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {modalCopy.close}
         </button>
-        <header className="border-b border-hairline bg-bg/70 px-6 pb-5 pt-6">
+        <header className="border-b border-hairline bg-bg px-6 pb-5 pt-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-xl space-y-2">
               <h2 className="text-xl font-semibold text-text-primary">{modalCopy.title}</h2>
@@ -1274,7 +1274,7 @@ function BrowseEnginesModal({
               );
             })}
             {!filteredEngines.length && (
-              <div className="col-span-full rounded-input border border-dashed border-border bg-bg/50 px-6 py-12 text-center text-sm text-text-muted">
+              <div className="col-span-full rounded-input border border-dashed border-border bg-bg px-6 py-12 text-center text-sm text-text-muted">
                 {modalCopy.empty}
               </div>
             )}

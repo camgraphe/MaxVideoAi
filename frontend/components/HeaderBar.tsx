@@ -438,7 +438,7 @@ export function HeaderBar() {
       <header
         className={clsx(
           'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-5 lg:px-8',
-          'border-b border-hairline bg-surface/95 backdrop-blur-xl'
+          'border-b border-hairline bg-surface'
         )}
       >
         <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
@@ -446,7 +446,7 @@ export function HeaderBar() {
             type="button"
             variant="ghost"
             size="sm"
-            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 xl:hidden"
+            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface p-2 text-text-primary hover:bg-surface-2 xl:hidden"
             aria-label={t('workspace.header.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -705,7 +705,7 @@ export function HeaderBar() {
         </div>
       </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-surface-glass-95 px-4 py-6 sm:px-6">
+        <div className="fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6">
           <div className="mx-auto flex max-w-sm items-center justify-end">
             <Button
               type="button"
@@ -764,7 +764,7 @@ export function HeaderBar() {
                             'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             isActive
                               ? 'border-border bg-surface-2 text-text-primary'
-                              : 'border-hairline bg-bg/40 text-text-primary hover:bg-surface-2'
+                              : 'border-hairline bg-bg text-text-primary hover:bg-surface-2'
                           )}
                           onClick={() => setMobileMenuOpen(false)}
                         >

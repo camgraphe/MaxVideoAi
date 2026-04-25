@@ -259,7 +259,7 @@ export function SelectMenu({
         <div
           ref={menuRef}
           className={clsx(
-            'absolute left-0 z-[80] w-full overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur dark:border-white/10 dark:bg-[#121a25]/95 dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
+            'absolute left-0 z-[80] w-full overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
             resolvedPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2',
             menuClassName
           )}

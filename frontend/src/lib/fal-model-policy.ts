@@ -9,11 +9,16 @@ const ALLOWED_FAL_PROXY_HOSTS = new Set([
 ]);
 const ALLOWED_FAL_STORAGE_PATHS = new Set(['/storage/upload/initiate', '/storage/upload/initiate-multipart']);
 const EXTRA_FAL_PROXY_ENDPOINTS = [
+  'fal-ai/ace-step',
+  'fal-ai/gemini-3.1-flash-tts',
   'fal-ai/thinksound/audio',
   'fal-ai/lyria2',
+  'fal-ai/mmaudio-v2/text-to-audio',
+  'fal-ai/minimax-music/v2.6',
   'fal-ai/minimax/speech-2.8-hd',
   'fal-ai/minimax/speech-02-hd',
   'fal-ai/minimax/voice-clone',
+  'fal-ai/stable-audio-25/text-to-audio',
 ] as const;
 
 export const FAL_PROXY_ALLOWED_ENDPOINTS = Array.from(

@@ -51,3 +51,16 @@ test('fal model policy rejects blocked models directly', () => {
   assert.throws(() => assertFalModelAllowed('beatoven/music-generation'), /blocked by policy/i);
   assert.doesNotThrow(() => assertFalModelAllowed('fal-ai/lyria2'));
 });
+
+test('fal proxy policy allows audio generation endpoints', () => {
+  [
+    'fal-ai/gemini-3.1-flash-tts',
+    'fal-ai/minimax-music/v2.6',
+    'fal-ai/mmaudio-v2/text-to-audio',
+    'fal-ai/stable-audio-25/text-to-audio',
+    'fal-ai/ace-step',
+  ].forEach((endpoint) => {
+    assert.ok(FAL_PROXY_ALLOWED_ENDPOINTS.includes(endpoint));
+    assert.equal(isFalProxyTargetAllowed(`https://queue.fal.run/${endpoint}`), true);
+  });
+});

@@ -258,7 +258,7 @@ export function MarketingNav() {
             type="button"
             size="sm"
             variant="ghost"
-            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 lg:hidden"
+            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface p-2 text-text-primary hover:bg-surface-2 lg:hidden"
             aria-label={t('nav.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -397,7 +397,7 @@ export function MarketingNav() {
                   size="sm"
                   variant="ghost"
                   onClick={() => setAccountMenuOpen((prev) => !prev)}
-                  className="min-h-0 h-10 w-10 rounded-full border border-hairline bg-gradient-to-br from-surface-2 via-surface-glass-95 to-surface text-sm font-semibold text-text-primary shadow-card hover:brightness-110"
+                  className="min-h-0 h-10 w-10 rounded-full border border-hairline bg-surface-2 text-sm font-semibold text-text-primary shadow-card hover:bg-surface-3"
                   aria-haspopup="menu"
                   aria-expanded={accountMenuOpen}
                 >
@@ -497,7 +497,7 @@ export function MarketingNav() {
       </div>
     </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-surface-glass-95 px-4 py-6 sm:px-6">
+        <div className="fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6">
           <div className="mx-auto flex max-w-sm items-center justify-end">
             <Button
               type="button"

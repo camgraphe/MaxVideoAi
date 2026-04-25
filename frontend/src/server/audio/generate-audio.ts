@@ -3,9 +3,10 @@ import { randomUUID } from 'node:crypto';
 import {
   AUDIO_MAX_DURATION_SEC,
   AUDIO_MIN_DURATION_SEC,
+  AUDIO_PROMPT_MAX_LENGTH,
+  AUDIO_SCRIPT_MAX_LENGTH,
   AUDIO_SURFACE,
   buildAudioPricingSnapshot,
-  clampAudioDuration,
   coerceAudioIntensity,
   coerceAudioLanguage,
   coerceAudioMood,
@@ -14,6 +15,7 @@ import {
   coerceAudioVoiceGender,
   coerceAudioVoiceProfile,
   estimateVoiceScriptDurationSec,
+  formatAudioDurationLabel,
   getAudioPackConfig,
   resolveAudioOutputKind,
   resolveAudioVoiceMode,
@@ -54,6 +56,7 @@ type NormalizedAudioGenerateInput = {
   sourceVideoUrl: string | null;
   sourceJobId: string | null;
   pack: AudioPackId;
+  prompt: string | null;
   mood: AudioMood | null;
   intensity: AudioIntensity;
   script: string | null;
@@ -128,10 +131,40 @@ function normalizeOptionalBoolean(value: unknown): boolean | null {
   return null;
 }
 
-function buildPromptSummary(input: { pack: AudioPackId; mood: AudioMood | null; script: string | null }): string {
+function validateTextLength(value: string | null, maxLength: number, field: string, label: string): void {
+  if (value && value.length > maxLength) {
+    throw new AudioGenerationError(`${label} must be ${maxLength} characters or fewer.`, {
+      status: 400,
+      code: `${field}_too_long`,
+      field,
+    });
+  }
+}
+
+function validateAudioDurationInRange(
+  durationSec: number,
+  options: { field: string; code: string; label: string }
+): number {
+  if (!Number.isFinite(durationSec) || durationSec < AUDIO_MIN_DURATION_SEC || durationSec > AUDIO_MAX_DURATION_SEC) {
+    throw new AudioGenerationError(
+      `${options.label} must be between ${formatAudioDurationLabel(AUDIO_MIN_DURATION_SEC)} and ${formatAudioDurationLabel(AUDIO_MAX_DURATION_SEC)}.`,
+      {
+        status: 400,
+        code: options.code,
+        field: options.field,
+      }
+    );
+  }
+  return Math.round(durationSec);
+}
+
+function buildPromptSummary(input: { pack: AudioPackId; prompt: string | null; mood: AudioMood | null; script: string | null }): string {
   const base = getAudioPackConfig(input.pack).label;
   if (input.script) {
     return `${base} • ${input.script.slice(0, 80).trim()}`;
+  }
+  if (input.prompt) {
+    return `${base} • ${input.prompt.slice(0, 80).trim()}`;
   }
   if (input.mood) {
     return `${base} • ${input.mood}`;
@@ -162,6 +195,9 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   }
 
   const packConfig = getAudioPackConfig(pack);
+  const prompt = normalizeString(body.prompt);
+  validateTextLength(prompt, AUDIO_PROMPT_MAX_LENGTH, 'prompt', 'Audio prompt');
+
   const sourceVideoUrl = normalizeString(body.sourceVideoUrl);
   const sourceJobId = normalizeString(body.sourceJobId);
   if (packConfig.requiresVideo && !sourceVideoUrl && !sourceJobId) {
@@ -169,6 +205,13 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
       status: 400,
       code: 'source_video_required',
       field: 'sourceVideoUrl',
+    });
+  }
+  if ((pack === 'music_only' || pack === 'cinematic') && !prompt) {
+    throw new AudioGenerationError('An audio prompt is required for this mode.', {
+      status: 400,
+      code: 'audio_prompt_required',
+      field: 'prompt',
     });
   }
 
@@ -200,6 +243,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   }
 
   const script = normalizeString(body.script);
+  validateTextLength(script, AUDIO_SCRIPT_MAX_LENGTH, 'script', 'Narration script');
   if (packConfig.requiresScript && !script) {
     throw new AudioGenerationError('A narration script is required for this mode.', {
       status: 400,
@@ -307,6 +351,14 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   }
 
   const durationInput = normalizeOptionalInteger(body.durationSec);
+  const requestedDurationSec =
+    durationInput == null
+      ? null
+      : validateAudioDurationInRange(durationInput, {
+          field: 'durationSec',
+          code: 'audio_duration_invalid',
+          label: 'Duration',
+        });
   if (pack === 'music_only' && !sourceVideoUrl && !sourceJobId && durationInput == null) {
     throw new AudioGenerationError('Duration is required when generating music without a video.', {
       status: 400,
@@ -321,6 +373,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     sourceVideoUrl,
     sourceJobId,
     pack,
+    prompt,
     mood,
     intensity: intensity ?? 'standard',
     script,
@@ -329,7 +382,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     voiceProfile,
     voiceDelivery,
     language,
-    durationSec: durationInput == null ? null : clampAudioDuration(durationInput),
+    durationSec: requestedDurationSec,
     musicEnabled: packConfig.supportsMusicToggle ? musicEnabledInput ?? packConfig.defaultMusicEnabled : false,
     exportAudioFile: packConfig.supportsAudioExport ? exportAudioFileInput ?? false : false,
     locale,
@@ -471,21 +524,17 @@ export function resolveAudioRenderDuration(params: {
         field: 'sourceVideoUrl',
       });
     }
-    if (params.probedDurationSec < AUDIO_MIN_DURATION_SEC || params.probedDurationSec > AUDIO_MAX_DURATION_SEC) {
-      throw new AudioGenerationError(`Source video must be between ${AUDIO_MIN_DURATION_SEC}s and ${AUDIO_MAX_DURATION_SEC}s.`, {
-        status: 400,
-        code: 'source_video_duration_invalid',
-        field: 'sourceVideoUrl',
-      });
-    }
+    validateAudioDurationInRange(params.probedDurationSec, {
+      field: 'sourceVideoUrl',
+      code: 'source_video_duration_invalid',
+      label: 'Source video',
+    });
   } else if (params.sourceVideoUrl && params.probedDurationSec) {
-    if (params.probedDurationSec < AUDIO_MIN_DURATION_SEC || params.probedDurationSec > AUDIO_MAX_DURATION_SEC) {
-      throw new AudioGenerationError(`Source video must be between ${AUDIO_MIN_DURATION_SEC}s and ${AUDIO_MAX_DURATION_SEC}s.`, {
-        status: 400,
-        code: 'source_video_duration_invalid',
-        field: 'sourceVideoUrl',
-      });
-    }
+    validateAudioDurationInRange(params.probedDurationSec, {
+      field: 'sourceVideoUrl',
+      code: 'source_video_duration_invalid',
+      label: 'Source video',
+    });
   }
 
   if (params.pack === 'voice_only') {
@@ -493,10 +542,18 @@ export function resolveAudioRenderDuration(params: {
   }
 
   if (params.pack === 'music_only') {
-    return clampAudioDuration(params.probedDurationSec ?? params.requestedDurationSec ?? AUDIO_MIN_DURATION_SEC);
+    return validateAudioDurationInRange(params.probedDurationSec ?? params.requestedDurationSec ?? AUDIO_MIN_DURATION_SEC, {
+      field: 'durationSec',
+      code: 'audio_duration_invalid',
+      label: 'Duration',
+    });
   }
 
-  return clampAudioDuration(params.probedDurationSec ?? AUDIO_MIN_DURATION_SEC);
+  return validateAudioDurationInRange(params.probedDurationSec ?? AUDIO_MIN_DURATION_SEC, {
+    field: 'sourceVideoUrl',
+    code: 'source_video_duration_invalid',
+    label: 'Source video',
+  });
 }
 
 export async function generateAudioRun(params: {
@@ -554,10 +611,13 @@ export async function generateAudioRun(params: {
     durationSec,
     mood: normalized.mood ?? null,
     voiceMode: normalized.voiceMode,
+    script: normalized.script,
+    musicEnabled: normalized.musicEnabled,
   });
   const pricingSnapshotJson = JSON.stringify(pricingSnapshot);
   const promptSummary = buildPromptSummary({
     pack: normalized.pack,
+    prompt: normalized.prompt,
     mood: normalized.mood,
     script: normalized.script,
   });
@@ -565,6 +625,7 @@ export async function generateAudioRun(params: {
     schemaVersion: 2,
     surface: AUDIO_SURFACE,
     pack: normalized.pack,
+    prompt: normalized.prompt,
     mood: normalized.mood,
     intensity: normalized.intensity,
     durationSec,
@@ -600,8 +661,8 @@ export async function generateAudioRun(params: {
       surface: AUDIO_SURFACE,
       billingProductKey: packConfig.billingProductKey,
       pricingSnapshotJson,
-      applicationFeeCents: 0,
-      vendorAccountId: null,
+      applicationFeeCents: pricingSnapshot.platformFeeCents ?? pricingSnapshot.margin.amountCents,
+      vendorAccountId: pricingSnapshot.vendorAccountId ?? null,
       stripePaymentIntentId: null,
       stripeChargeId: null,
     });
@@ -695,6 +756,7 @@ export async function generateAudioRun(params: {
         durationSec,
         mood: normalized.mood!,
         intensity: normalized.intensity,
+        prompt: normalized.prompt,
       });
     }
 
@@ -707,6 +769,7 @@ export async function generateAudioRun(params: {
         durationSec,
         mood: normalized.mood!,
         intensity: normalized.intensity,
+        prompt: normalized.prompt,
       });
     }
 

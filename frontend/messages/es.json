@@ -3204,7 +3204,9 @@
       },
       "pricing": {
         "eyebrow": "Precio",
+        "durationEyebrow": "Duración est.",
         "missingInputs": "Agrega los datos requeridos",
+        "missingPrompt": "Agrega un prompt de audio.",
         "missingSourceVideo": "Agrega un video fuente.",
         "missingOptions": "Configura las opciones requeridas.",
         "summary": "{output} • {duration}",

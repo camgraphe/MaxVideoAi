@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { AUDIO_MAX_DURATION_SEC } from '../frontend/src/lib/audio-generation';
 import { AudioGenerationError, resolveAudioRenderDuration, validateAudioGenerateRequest } from '../frontend/src/server/audio/generate-audio';
 
 test('audio validation requires a source video for cinematic modes', () => {
@@ -35,6 +36,7 @@ test('audio validation allows voice-over-only without a source video', () => {
     sourceJobId: null,
     sourceVideoUrl: null,
     pack: 'voice_only',
+    prompt: null,
     mood: null,
     intensity: 'standard',
     script: 'Trailer-ready narration.',
@@ -67,11 +69,29 @@ test('audio validation requires a script for voice modes that include narration'
   );
 });
 
+test('audio validation requires a prompt for prompt-led modes', () => {
+  assert.throws(
+    () =>
+      validateAudioGenerateRequest({
+        pack: 'music_only',
+        mood: 'dreamy',
+        durationSec: 8,
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof AudioGenerationError);
+      assert.equal(error.code, 'audio_prompt_required');
+      assert.equal(error.field, 'prompt');
+      return true;
+    }
+  );
+});
+
 test('audio validation requires a duration for standalone music-only renders', () => {
   assert.throws(
     () =>
       validateAudioGenerateRequest({
         pack: 'music_only',
+        prompt: 'Soft ambient bed for a product intro.',
         mood: 'dreamy',
       }),
     (error: unknown) => {
@@ -83,11 +103,43 @@ test('audio validation requires a duration for standalone music-only renders', (
   );
 });
 
+test('audio validation accepts longer standalone music durations', () => {
+  const input = validateAudioGenerateRequest({
+    pack: 'music_only',
+    prompt: 'Long cinematic ambient score with slow evolving pads.',
+    mood: 'dreamy',
+    intensity: 'subtle',
+    durationSec: 120,
+  });
+
+  assert.equal(input.durationSec, 120);
+});
+
+test('audio validation rejects requested durations above provider-aligned limits instead of silently clamping', () => {
+  assert.throws(
+    () =>
+      validateAudioGenerateRequest({
+        pack: 'music_only',
+        prompt: 'Long cinematic ambient score.',
+        mood: 'dreamy',
+        durationSec: AUDIO_MAX_DURATION_SEC + 1,
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof AudioGenerationError);
+      assert.equal(error.code, 'audio_duration_invalid');
+      assert.equal(error.field, 'durationSec');
+      assert.match(error.message, /3m10s/);
+      return true;
+    }
+  );
+});
+
 test('audio validation normalizes cinematic voice settings', () => {
   const input = validateAudioGenerateRequest({
     sourceJobId: ' job_123 ',
     sourceVideoUrl: ' https://example.com/source.mp4 ',
     pack: ' cinematic_voice ',
+    prompt: ' Optional sonic direction. ',
     mood: ' Dark ',
     intensity: ' intense ',
     script: '  Trailer-ready narration.  ',
@@ -105,6 +157,7 @@ test('audio validation normalizes cinematic voice settings', () => {
     sourceJobId: 'job_123',
     sourceVideoUrl: 'https://example.com/source.mp4',
     pack: 'cinematic_voice',
+    prompt: 'Optional sonic direction.',
     mood: 'dark',
     intensity: 'intense',
     script: 'Trailer-ready narration.',
@@ -127,6 +180,7 @@ test('audio validation rejects voice options on non-voice modes', () => {
     () =>
       validateAudioGenerateRequest({
         pack: 'music_only',
+        prompt: 'Dreamy music bed.',
         mood: 'dreamy',
         durationSec: 8,
         voiceGender: 'male',
@@ -151,6 +205,39 @@ test('audio duration resolution allows music-only without a source video', () =>
   });
 
   assert.equal(duration, 8);
+});
+
+test('audio duration resolution accepts longer source-backed renders within provider limits', () => {
+  const duration = resolveAudioRenderDuration({
+    pack: 'cinematic',
+    sourceVideoUrl: 'https://example.com/source.mp4',
+    requiresVideo: true,
+    probedDurationSec: 120,
+    requestedDurationSec: null,
+    script: null,
+  });
+
+  assert.equal(duration, 120);
+});
+
+test('audio duration resolution rejects source videos above provider-aligned limits', () => {
+  assert.throws(
+    () =>
+      resolveAudioRenderDuration({
+        pack: 'cinematic',
+        sourceVideoUrl: 'https://example.com/source.mp4',
+        requiresVideo: true,
+        probedDurationSec: AUDIO_MAX_DURATION_SEC + 1,
+        requestedDurationSec: null,
+        script: null,
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof AudioGenerationError);
+      assert.equal(error.code, 'source_video_duration_invalid');
+      assert.equal(error.field, 'sourceVideoUrl');
+      return true;
+    }
+  );
 });
 
 test('audio duration resolution still requires a probed duration for cinematic packs', () => {
