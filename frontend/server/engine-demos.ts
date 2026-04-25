@@ -19,7 +19,7 @@ const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
   },
   'veo-3-1': {
     videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
-    posterUrl: '/hero/veo3.jpg',
+    posterUrl: '/hero/veo-3-1-hero.jpg',
     hasAudio: true,
   },
   'veo-3-1-lite': {

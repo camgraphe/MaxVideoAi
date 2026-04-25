@@ -51,6 +51,7 @@
           "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
+          "kling-3-4k": "Kling 3 4K",
           "kling-3-pro": "Kling 3 Pro",
           "ltx-2": "LTX 2",
           "ltx-2-fast": "LTX 2 Fast",
@@ -73,6 +74,7 @@
           "hailuo": "Hailuo",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
+          "kling-3-4k": "Kling 3 4K",
           "kling-3-pro": "Kling 3 Pro",
           "ltx-2": "LTX 2",
           "pika-text-to-video": "Pika 2.2",
@@ -90,6 +92,7 @@
           "kling-3-pro-vs-sora-2": "Kling 3 Pro vs Sora 2",
           "kling-3-pro-vs-sora-2-pro": "Kling 3 Pro vs Sora 2 Pro",
           "kling-3-pro-vs-veo-3-1": "Kling 3 Pro vs Veo 3.1",
+          "kling-3-4k-vs-kling-3-pro": "Kling 3 4K vs Kling 3 Pro",
           "kling-3-pro-vs-kling-3-standard": "Kling 3 Pro vs Kling 3 Standard",
           "kling-2-6-pro-vs-kling-3-pro": "Kling 2.6 Pro vs Kling 3 Pro",
           "kling-3-pro-vs-seedance-1-5-pro": "Kling 3 Pro vs Seedance 1.5 Pro",
@@ -473,7 +476,7 @@
           },
           "media": {
             "videoSrc": "/assets/gallery/robot-look.mp4",
-            "posterSrc": "/hero/veo3.jpg",
+            "posterSrc": "/hero/veo-3-1-hero.jpg",
             "hasAudio": true
           }
         },
@@ -493,7 +496,7 @@
           },
           "media": {
             "videoSrc": "/assets/gallery/robot-eyes.mp4",
-            "posterSrc": "/hero/veo3.jpg",
+            "posterSrc": "/hero/veo-3-1-hero.jpg",
             "hasAudio": true
           }
         },
@@ -3892,6 +3895,10 @@
         "kling-3-pro-vs-kling-3-standard": {
           "title": "Kling 3 Pro vs Kling 3 Standard | Comparación de modelos de video IA | MaxVideoAI",
           "description": "Compara Kling 3 Pro vs Kling 3 Standard en MaxVideoAI con prompts idénticos: workflow current premium vs workflow current de menor costo, specs, precios y calidad de salida lado a lado."
+        },
+        "kling-3-4k-vs-kling-3-pro": {
+          "title": "Kling 3 4K vs Kling 3 Pro | 4K nativo vs 1080p | MaxVideoAI",
+          "description": "Compara Kling 3 4K y Kling 3 Pro en MaxVideoAI: entrega 4K nativa, iteracion 1080p, precios, modos y cuando usar cada ruta."
         },
         "kling-2-6-pro-vs-kling-3-pro": {
           "title": "Kling 2.6 Pro vs Kling 3 Pro — qué cambió y cuándo actualizar | MaxVideoAI",

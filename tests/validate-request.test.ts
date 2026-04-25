@@ -407,6 +407,21 @@ test('Kling 3 prompt length is capped before provider submission', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Kling 3 4K accepts multi-prompt shot plans', () => {
+  const valid = validateRequest('kling-3-4k', 't2v', {
+    prompt: '',
+    multi_prompt: [
+      { prompt: 'Wide establishing shot of the product on a graphite table.', duration: 3 },
+      { prompt: 'Macro push-in across the lens and metal edge.', duration: 3 },
+    ],
+    duration: 6,
+    resolution: '4k',
+    aspect_ratio: '16:9',
+  });
+
+  assert.deepEqual(valid, OK);
+});
+
 test('Kling 3 i2v enforces valid element inputs before provider submission', () => {
   const basePayload = {
     prompt: 'Animate this still',

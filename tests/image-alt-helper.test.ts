@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { dedupeAltsInList, deriveShortPromptLabel, getImageAlt } from '../frontend/lib/image-alt';
+import { dedupeAltsInList, deriveShortPromptLabel, getImageAlt, withAltSuffix } from '../frontend/lib/image-alt';
 
 test('getImageAlt returns non-empty localized alt', () => {
   const en = getImageAlt({
@@ -56,4 +56,17 @@ test('dedupeAltsInList appends stable suffixes for duplicates', () => {
   assert.equal(out.get('a'), 'Sora 2 AI video example: rainy city');
   assert.equal(out.get('b'), 'Sora 2 AI video example: rainy city (drone)');
   assert.equal(out.get('c'), 'Sora 2 AI video example: rainy city (Example 3)');
+});
+
+test('withAltSuffix preserves suffix on long alt text', () => {
+  const longAlt = getImageAlt({
+    kind: 'renderThumb',
+    engine: 'Luma Ray 2 Flash',
+    label: 'A premium sneaker floats on a matte black pedestal inside a dark studio with subtle rim light and polished product reflections '.repeat(2),
+    locale: 'en',
+  });
+  const suffixed = withAltSuffix(longAlt, 'Example 2');
+
+  assert.ok(suffixed.length <= 140);
+  assert.ok(suffixed.endsWith('(Example 2)'));
 });

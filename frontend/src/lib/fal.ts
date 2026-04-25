@@ -233,6 +233,13 @@ function normalizeFalVideoResolution(value: string | undefined): string | undefi
   return value;
 }
 
+export function resolveFalVideoResolutionInput(engineId: string, value: string | undefined): string | undefined {
+  if (engineId === 'kling-3-4k') {
+    return undefined;
+  }
+  return normalizeFalVideoResolution(value);
+}
+
 function unwrapFalResponse(payload: unknown): FalRunResponse | null {
   if (!payload || typeof payload !== 'object') {
     return null;
@@ -385,7 +392,7 @@ async function generateViaFal(
     }
   } else {
     requestBody = {
-      resolution: normalizeFalVideoResolution(payload.resolution),
+      resolution: resolveFalVideoResolutionInput(payload.engineId, payload.resolution),
       fps: payload.fps,
     };
     if (payload.prompt.trim().length) {

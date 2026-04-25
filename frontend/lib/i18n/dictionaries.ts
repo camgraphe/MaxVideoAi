@@ -408,7 +408,7 @@ const en: Dictionary = {
           },
           media: {
             videoSrc: '/assets/gallery/robot-look.mp4',
-            posterSrc: '/hero/veo3.jpg',
+            posterSrc: '/hero/veo-3-1-hero.jpg',
             hasAudio: true,
           },
         },
@@ -423,7 +423,7 @@ const en: Dictionary = {
           },
         media: {
           videoSrc: '/assets/gallery/robot-eyes.mp4',
-          posterSrc: '/hero/veo3.jpg',
+          posterSrc: '/hero/veo-3-1-hero.jpg',
           hasAudio: true,
         },
       },

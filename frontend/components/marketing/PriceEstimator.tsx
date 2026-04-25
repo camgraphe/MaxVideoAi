@@ -98,10 +98,24 @@ const PER_IMAGE_ENGINE_CONFIG = new Map<
     'gpt-image-2',
     {
       rates: [
-        { value: '1024x768-low', label: 'Low 1024 x 768', rate: 0.01 },
-        { value: '1024x768-high', label: 'High 1024 x 768', rate: 0.15 },
-        { value: '1024x1024-high', label: 'High 1024 x 1024', rate: 0.22 },
-        { value: '3840x2160-high', label: 'High 3840 x 2160', rate: 0.41 },
+        { value: '1024x768-low', label: '1024 x 768 · Low', rate: 0.01 },
+        { value: '1024x768-medium', label: '1024 x 768 · Medium', rate: 0.04 },
+        { value: '1024x768-high', label: '1024 x 768 · High', rate: 0.15 },
+        { value: '1024x1024-low', label: '1024 x 1024 · Low', rate: 0.01 },
+        { value: '1024x1024-medium', label: '1024 x 1024 · Medium', rate: 0.06 },
+        { value: '1024x1024-high', label: '1024 x 1024 · High', rate: 0.22 },
+        { value: '1024x1536-low', label: '1024 x 1536 · Low', rate: 0.01 },
+        { value: '1024x1536-medium', label: '1024 x 1536 · Medium', rate: 0.05 },
+        { value: '1024x1536-high', label: '1024 x 1536 · High', rate: 0.17 },
+        { value: '1920x1080-low', label: '1920 x 1080 · Low', rate: 0.01 },
+        { value: '1920x1080-medium', label: '1920 x 1080 · Medium', rate: 0.04 },
+        { value: '1920x1080-high', label: '1920 x 1080 · High', rate: 0.16 },
+        { value: '2560x1440-low', label: '2560 x 1440 · Low', rate: 0.01 },
+        { value: '2560x1440-medium', label: '2560 x 1440 · Medium', rate: 0.06 },
+        { value: '2560x1440-high', label: '2560 x 1440 · High', rate: 0.23 },
+        { value: '3840x2160-low', label: '3840 x 2160 · Low', rate: 0.02 },
+        { value: '3840x2160-medium', label: '3840 x 2160 · Medium', rate: 0.11 },
+        { value: '3840x2160-high', label: '3840 x 2160 · High', rate: 0.41 },
       ],
     },
   ],
@@ -141,6 +155,19 @@ function SelectGroup({
 function centsToDollars(cents?: number | null) {
   if (typeof cents !== 'number' || Number.isNaN(cents)) return null;
   return cents / 100;
+}
+
+function applyPerImageDisplayMargin(baseRateUsd: number, marginPercent = 0, marginFlatCents = 0) {
+  const baseCents = Math.max(0, Math.round(baseRateUsd * 100));
+  if (!baseCents) return 0;
+  const normalizedMargin = Number.isFinite(marginPercent) ? Math.max(0, marginPercent) : 0;
+  const normalizedFlat = Number.isFinite(marginFlatCents) ? Math.max(0, marginFlatCents) : 0;
+  const marginCents = Math.ceil(baseCents * normalizedMargin + normalizedFlat - 1e-9);
+  const effectiveMargin =
+    (normalizedMargin > 0 || normalizedFlat > 0) && marginCents <= 0
+      ? 1
+      : Math.max(0, marginCents);
+  return (baseCents + effectiveMargin) / 100;
 }
 
 function resolveAudioAddonKey(
@@ -292,7 +319,7 @@ function buildEngineOption(
   if (perImageConfig) {
     rates = perImageConfig.rates.map((rate) => ({
       ...rate,
-      rate: rate.rate * defaultMultiplier,
+      rate: applyPerImageDisplayMargin(rate.rate, defaultMarginPct, engineRule?.marginFlatCents ?? undefined),
     }));
   } else {
     rates = resolutionSources

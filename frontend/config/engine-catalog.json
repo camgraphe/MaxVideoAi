@@ -35,6 +35,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -302,6 +303,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -587,6 +589,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -1068,6 +1071,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -1503,6 +1507,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -1871,6 +1876,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -2358,6 +2364,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -2844,6 +2851,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -3134,6 +3142,7 @@
       "publishedModelSlugs": [
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -3154,6 +3163,7 @@
         "suggestOpponents": [],
         "publishedPairs": [
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -3447,6 +3457,7 @@
       "publishedModelSlugs": [
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -3467,6 +3478,7 @@
         "suggestOpponents": [],
         "publishedPairs": [
           "kling-2-5-turbo",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -3765,6 +3777,7 @@
       "publishedModelSlugs": [
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -3783,13 +3796,14 @@
       },
       "compare": {
         "suggestOpponents": [
-          "veo-3-1",
-          "sora-2",
-          "seedance-1-5-pro"
+          "kling-3-standard",
+          "kling-3-4k",
+          "veo-3-1"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-standard",
           "ltx-2",
           "ltx-2-3-fast",
@@ -3971,24 +3985,24 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 33.6
+          "default": 16.8
         },
         "addons": {
           "audio_off": {
-            "perSecondCents": -11.2
+            "perSecondCents": -5.6
           },
           "voice_control": {
-            "perSecondCents": 5.6
+            "perSecondCents": 2.8
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.336,
+        "base": 0.168,
         "currency": "USD",
-        "notes": "$0.224/s audio off, $0.336/s audio on, $0.392/s voice control"
+        "notes": "Fal cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
       },
-      "updatedAt": "2026-02-09T00:00:00Z",
+      "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "kling",
@@ -4111,6 +4125,7 @@
       "publishedModelSlugs": [
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -4128,10 +4143,15 @@
         "includeInFamilyCopy": true
       },
       "compare": {
-        "suggestOpponents": [],
+        "suggestOpponents": [
+          "kling-3-pro",
+          "kling-3-4k",
+          "ltx-2-3-fast"
+        ],
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "ltx-2",
           "ltx-2-3-fast",
@@ -4313,24 +4333,24 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 25.2
+          "default": 12.6
         },
         "addons": {
           "audio_off": {
-            "perSecondCents": -8.4
+            "perSecondCents": -4.2
           },
           "voice_control": {
-            "perSecondCents": 5.6
+            "perSecondCents": 2.8
           }
         }
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.252,
+        "base": 0.126,
         "currency": "USD",
-        "notes": "$0.168/s audio off, $0.252/s audio on, $0.308/s voice control"
+        "notes": "Fal cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
       },
-      "updatedAt": "2026-02-09T00:00:00Z",
+      "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "kling",
@@ -4441,6 +4461,343 @@
     "bestFor": "Multi-shot testing at lower cost"
   },
   {
+    "engineId": "kling-3-4k",
+    "modelSlug": "kling-3-4k",
+    "marketingName": "Kling 3 4K",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ]
+    },
+    "versionLabel": "v3 4K",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "kling-3-pro",
+          "veo-3-1",
+          "sora-2-pro"
+        ],
+        "publishedPairs": [
+          "kling-3-pro",
+          "kling-3-standard",
+          "veo-3-1",
+          "sora-2-pro"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "kling-3",
+        "variantLabel": "4K"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "kling-3-4k",
+      "label": "Kling 3 4K",
+      "provider": "Kling by Kuaishou",
+      "version": "3 4K",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "4k"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {
+        "cfg_scale": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 25,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "observed"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "4k"
+            ],
+            "default": "4k"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "default": "blur, distort, and low quality"
+          },
+          {
+            "id": "generate_audio",
+            "type": "enum",
+            "label": "Audio",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true"
+          },
+          {
+            "id": "cfg_scale",
+            "type": "number",
+            "label": "CFG scale",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "default": 0.5
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End frame (optional)",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 25
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 42,
+          "byResolution": {
+            "4k": 42
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.42,
+        "byResolution": {
+          "4k": 0.42
+        },
+        "currency": "USD",
+        "notes": "Fal cost: $0.420/s native 4K output. MaxVideoAI display prices add platform margin before showing quotes."
+      },
+      "updatedAt": "2026-04-25T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "fal-ai/kling-video/v3/4k/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "kling"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/kling-video/v3/4k/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "audioToggle": true,
+          "notes": "Native 4K output in one step; use for final delivery renders."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/kling-video/v3/4k/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 25,
+          "audioToggle": true,
+          "notes": "Animate a source frame directly to native 4K output."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
     "engineId": "seedance-1-5-pro",
     "modelSlug": "seedance-1-5-pro",
     "marketingName": "Seedance 1.5 Pro",
@@ -4477,6 +4834,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -4849,6 +5207,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -5348,6 +5707,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -5843,6 +6203,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -6159,6 +6520,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -6536,6 +6898,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -6828,6 +7191,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -7194,6 +7558,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -7742,6 +8107,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2",
@@ -8049,6 +8415,7 @@
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
+          "kling-3-4k",
           "kling-3-pro",
           "kling-3-standard",
           "ltx-2-3-fast",

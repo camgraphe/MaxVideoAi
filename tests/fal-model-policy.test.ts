@@ -21,6 +21,13 @@ test('fal proxy policy allows configured Fal targets', () => {
   assert.equal(isFalProxyTargetAllowed(null), true);
 });
 
+test('fal proxy policy allows native Kling 3 4K endpoints', () => {
+  assert.ok(FAL_PROXY_ALLOWED_ENDPOINTS.includes('fal-ai/kling-video/v3/4k/text-to-video'));
+  assert.ok(FAL_PROXY_ALLOWED_ENDPOINTS.includes('fal-ai/kling-video/v3/4k/image-to-video'));
+  assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/kling-video/v3/4k/text-to-video'), true);
+  assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/kling-video/v3/4k/image-to-video'), true);
+});
+
 test('fal proxy policy blocks non-Fal targets', () => {
   assert.equal(isFalProxyTargetAllowed('https://example.com/fal-ai/sora-2/text-to-video'), false);
   assert.equal(isFalProxyTargetAllowed('http://queue.fal.run/fal-ai/sora-2/text-to-video'), false);

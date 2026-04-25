@@ -184,6 +184,7 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       'kling25_turbo',
       'kling-2-5-turbo',
       'kling-2-6-pro',
+      'kling-3-4k',
       'kling-3-pro',
       'kling-3-standard',
       'kling3',

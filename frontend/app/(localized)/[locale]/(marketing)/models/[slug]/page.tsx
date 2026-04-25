@@ -16,7 +16,7 @@ import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
-import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
+import { dedupeAltsInList, getImageAlt, inferRenderTag, withAltSuffix } from '@/lib/image-alt';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -26,6 +26,7 @@ import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import { computeMarketingPricePoints, computeMarketingPriceRange, type MarketingPricePoint } from '@/lib/pricing-marketing';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { getLocalizedHeroChipLabels, getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
 import { serializeJsonLd } from '../model-jsonld';
@@ -235,6 +236,10 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
   'kling-3-standard': {
     hero: 'job_99e0f0fa-6092-4b8a-8c08-e329c579d0f2',
     demo: 'job_6e7885fd-e180-46b2-9bf0-f84d3a92ca28',
+  },
+  'kling-3-4k': {
+    hero: 'marketing-kling-3-4k-hero-6s',
+    demo: 'marketing-kling-3-4k-demo-6s',
   },
   'seedance-1-5-pro': {
     hero: 'job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab',
@@ -1811,6 +1816,13 @@ function formatCurrency(locale: AppLocale, currency: string, amount: number) {
   }).format(amount);
 }
 
+function formatMarketingImagePricePoint(point: MarketingPricePoint, engineId: string, locale: AppLocale) {
+  const amount = formatCurrency(locale, point.currency, point.cents / 100);
+  const resolution = formatResolutionLabel(engineId, point.resolution);
+  const quality = point.quality ? ` ${point.quality}` : '';
+  return `${resolution}${quality} ${amount}/image`;
+}
+
 function formatPerSecondLabel(locale: AppLocale, currency: string, perSecond: number): string {
   return `${formatPerSecond(locale, currency, perSecond)}/s`;
 }
@@ -2027,46 +2039,21 @@ async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLocale): 
 }
 
 async function buildPricePerImageLabel(engine: EngineCaps, locale: AppLocale): Promise<string | null> {
-  const resolution = resolveDefaultResolution(engine);
-  if (!resolution) return null;
   try {
-    const snapshot = await computePricingSnapshot({
-      engine,
-      durationSec: 1,
-      resolution,
-      membershipTier: 'member',
-    });
-    const currency = snapshot.currency ?? engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD';
-    return `${formatCurrency(locale, currency, snapshot.totalCents / 100)}/image`;
+    const range = await computeMarketingPriceRange(engine, { memberTier: 'member', limit: null });
+    if (!range) return null;
+    return `${formatCurrency(locale, range.currency, range.min.cents / 100)}/image`;
   } catch {
     return null;
   }
 }
 
 async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale): Promise<KeySpecRow[]> {
-  const resolutions = resolvePricingResolutions(engineCaps);
-  if (!resolutions.length) return [];
-
   const rowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
-  const results = new Map<string, { label: string; cents: number }>();
-  for (const resolution of resolutions) {
-    try {
-      const snapshot = await computePricingSnapshot({
-        engine: engineCaps,
-        durationSec: 1,
-        resolution,
-        membershipTier: 'member',
-      });
-      const currency = snapshot.currency ?? engineCaps.pricingDetails?.currency ?? engineCaps.pricing?.currency ?? 'USD';
-      const amount = formatCurrency(locale, currency, snapshot.totalCents / 100);
-      results.set(resolution, { label: `${amount}/image`, cents: snapshot.totalCents });
-    } catch {
-      // ignore pricing failures for marketing surface
-    }
-  }
+  const points = await computeMarketingPricePoints(engineCaps, { memberTier: 'member', limit: null });
 
-  if (!results.size) return [];
-  const values = Array.from(results.values()).map((entry) => entry.label);
+  if (!points.length) return [];
+  const values = points.map((point) => `${formatCurrency(locale, point.currency, point.cents / 100)}/image`);
   const same = new Set(values).size === 1;
   if (same) {
     return [
@@ -2079,14 +2066,7 @@ async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale)
     ];
   }
 
-  const lines = resolutions
-    .map((resolution) => {
-      const entry = results.get(resolution);
-      if (!entry) return null;
-      const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
-      return `${displayResolution} ${entry.label}`;
-    })
-    .filter((line): line is string => Boolean(line));
+  const lines = points.map((point) => formatMarketingImagePricePoint(point, engineCaps.id, locale));
 
   if (!lines.length) return [];
   return [
@@ -2859,9 +2839,9 @@ const MODEL_OG_IMAGE_MAP: Record<string, string> = {
     'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
   'sora-2-pro':
     'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
-  'veo-3-1': '/hero/veo3.jpg',
-  'veo-3-1-fast': '/hero/veo3.jpg',
-  'veo-3-1-lite': '/hero/veo3.jpg',
+  'veo-3-1': '/hero/veo-3-1-hero.jpg',
+  'veo-3-1-fast': '/hero/veo-3-1-hero.jpg',
+  'veo-3-1-lite': '/hero/veo-3-1-hero.jpg',
   'pika-text-to-video': '/hero/pika-22.jpg',
   'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
 };
@@ -3860,6 +3840,10 @@ function MarketingModelPageLayout({
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
+  const mediaAltContexts = {
+    hero: 'hero',
+    demo: 'demo',
+  };
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
@@ -4095,6 +4079,7 @@ function MarketingModelPageLayout({
                     hideLabel
                     hidePrompt
                     metaLines={heroMetaLines}
+                    altContext={mediaAltContexts.hero}
                     autoPlayDelayMs={HERO_AUTOPLAY_DELAY_MS}
                     waitForLcp
                     showPlayButton={false}
@@ -4408,6 +4393,7 @@ function MarketingModelPageLayout({
                         label={copy.demoTitle ?? 'Sora 2 demo'}
                         locale={locale}
                         audioBadgeLabel={audioBadgeLabel}
+                        altContext={mediaAltContexts.demo}
                         hideLabel
                         promptLabel={useDemoMediaPrompt ? undefined : copy.demoPromptLabel ?? undefined}
                         promptLines={useDemoMediaPrompt ? [] : copy.demoPrompt}
@@ -4723,6 +4709,7 @@ function MediaPreview({
   hideLabel = false,
   hidePrompt = false,
   metaLines = [],
+  altContext,
   autoPlayDelayMs,
   waitForLcp = false,
   showPlayButton = true,
@@ -4739,6 +4726,7 @@ function MediaPreview({
   hideLabel?: boolean;
   hidePrompt?: boolean;
   metaLines?: Array<{ label: string; value: string }>;
+  altContext?: string;
   autoPlayDelayMs?: number;
   waitForLcp?: boolean;
   showPlayButton?: boolean;
@@ -4760,7 +4748,7 @@ function MediaPreview({
     prompt: media.prompt ?? label,
     locale,
   });
-  const resolvedAltText = altText;
+  const resolvedAltText = altContext ? withAltSuffix(altText, altContext) : altText;
   const resolvedAudioBadgeLabel = audioBadgeLabel ?? (PRICE_AUDIO_LABELS[locale] ?? PRICE_AUDIO_LABELS.en).on;
   const resolvedRenderLinkLabel =
     renderLinkLabel ?? (locale === 'fr' ? 'Voir le rendu →' : locale === 'es' ? 'Ver render →' : 'View render →');

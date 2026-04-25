@@ -7,7 +7,7 @@
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
   "overview": "Kling 3 Pro is the current Kling AI video model on MaxVideoAI for multi-shot video, Kling image-to-video workflows, reusable Kling Elements, optional end frames, and native audio.",
-  "pricingNotes": "Pricing is per second: $0.336/s with audio, $0.224/s audio off, $0.392/s with voice control.",
+  "pricingNotes": "Member display estimates include the MaxVideoAI margin: about $0.22/s with audio, $0.15/s audio off, and $0.26/s with voice control.",
   "hero": {
     "title": "Kling 3 Pro — current Kling model for multi-shot video and scene control",
     "intro": "Kling 3 Pro is the current Kling AI model for multi-shot video, Kling image-to-video workflows, reusable Kling Elements, optional end frames, and native audio when you need the strongest scene control across ads, trailers, and cinematic sequences.",
@@ -20,6 +20,10 @@
       {
         "label": "View Kling AI video examples",
         "href": "/examples/kling"
+      },
+      {
+        "label": "See Kling 3 4K",
+        "href": "/models/kling-3-4k"
       },
       {
         "label": "See Kling 3 Standard",

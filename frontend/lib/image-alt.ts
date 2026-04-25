@@ -168,8 +168,14 @@ function normalizeAltKey(alt: string): string {
   return sanitizeAltText(alt, 140).toLowerCase();
 }
 
-function withSuffix(alt: string, suffix: string): string {
-  return sanitizeAltText(`${alt} (${suffix})`, 140);
+export function withAltSuffix(alt: string, suffix: string): string {
+  const cleanSuffix = cleanToken(suffix);
+  if (!cleanSuffix) return sanitizeAltText(alt, 140);
+
+  const suffixText = ` (${cleanSuffix})`;
+  const baseMaxLength = Math.max(20, 140 - suffixText.length);
+  const base = sanitizeAltText(alt, baseMaxLength).replace(/\s*\.\.\.$/, '').trim();
+  return sanitizeAltText(`${base}${suffixText}`, 140);
 }
 
 export function dedupeAltsInList(items: AltListItem[]): Map<string, string> {
@@ -208,12 +214,12 @@ export function dedupeAltsInList(items: AltListItem[]): Map<string, string> {
       const cleanTag = cleanToken(item.tag);
       if (cleanTag && !usedTagSuffixes.has(cleanTag.toLowerCase())) {
         usedTagSuffixes.add(cleanTag.toLowerCase());
-        result.set(item.id, withSuffix(item.alt, cleanTag));
+        result.set(item.id, withAltSuffix(item.alt, cleanTag));
         return;
       }
 
       const fallback = `${LOCALE_EXAMPLE_WORD[locale]} ${idx + 1}`;
-      result.set(item.id, withSuffix(item.alt, fallback));
+      result.set(item.id, withAltSuffix(item.alt, fallback));
     });
   }
 

@@ -474,6 +474,7 @@
         "firstLastFrame": "Supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Supported",
+        "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
           "16:9",
@@ -505,6 +506,7 @@
         "firstLastFrame": "Supported",
         "referenceImageStyle": "Supported",
         "referenceVideo": "Supported",
+        "maxResolution": "1080p",
         "maxDuration": "15s",
         "aspectRatios": [
           "16:9",
@@ -517,6 +519,38 @@
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "kling-3-4k",
+      "sources": [
+        "https://fal.ai/models/fal-ai/kling-video/v3/4k/text-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/v3/4k/text-to-video/api",
+        "https://fal.ai/models/fal-ai/kling-video/v3/4k/image-to-video",
+        "https://fal.ai/models/fal-ai/kling-video/v3/4k/image-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxResolution": "4K",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Not listed for native 4K route",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)"
       }
