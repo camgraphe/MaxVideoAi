@@ -6,7 +6,7 @@
     "description": "Use Kling 3 4K on MaxVideoAI for native 4K text-to-video and image-to-video delivery renders with 3-15s clips and native audio.",
     "image": "/hero/kling-3-4k-hero.jpg"
   },
-  "overview": "Kling 3 4K is the native 4K Kling AI video route for final delivery renders, text-to-video prompts, image-to-video references, multi-shot control, and native audio without a separate upscale step.",
+  "overview": "Kling 3 4K is the native 4K Kling AI video route for final delivery renders, text-to-video prompts, image-to-video references, multi-prompt shot control, and native audio without a separate upscale step.",
   "pricingNotes": "Member display estimates include the MaxVideoAI margin: about $0.55/s for native 4K output, so use this route for approved final renders.",
   "hero": {
     "title": "Kling 3 4K - native 4K video generation",
@@ -85,11 +85,11 @@
   ],
   "promptStructure": {
     "title": "Prompting Kling 3 4K",
-    "quote": "Use the same approved prompt recipe from Standard or Pro, then render the final version in native 4K.",
+    "quote": "Use the same approved single-prompt or multi-prompt recipe from Standard or Pro, then render the final version in native 4K.",
     "description": "Keep the shot plan tight and avoid using 4K for early prompt exploration.",
     "steps": [
       "Validate composition in Standard or Pro",
-      "Move the approved prompt to Kling 3 4K",
+      "Move the approved single-prompt or multi-prompt plan to Kling 3 4K",
       "Keep one clear action per shot",
       "Use image references for final framing",
       "Render native 4K for delivery"

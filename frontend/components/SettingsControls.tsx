@@ -47,6 +47,7 @@ interface Props {
   durationManaged?: boolean;
   durationManagedLabel?: string;
   showKlingV3Controls?: boolean;
+  showKlingV3VoiceControls?: boolean;
   klingShotType?: 'customize' | 'intelligent';
   onKlingShotTypeChange?: (value: 'customize' | 'intelligent') => void;
   voiceIdsValue?: string;
@@ -185,6 +186,7 @@ export function SettingsControls({
   durationManaged = false,
   durationManagedLabel,
   showKlingV3Controls = false,
+  showKlingV3VoiceControls = true,
   klingShotType = 'customize',
   onKlingShotTypeChange,
   voiceIdsValue = '',
@@ -550,20 +552,22 @@ export function SettingsControls({
                       <span className="text-[11px] text-text-muted">Shot type is locked to customize for image-to-video.</span>
                     ) : null}
                   </label>
-                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
-                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
-                    <input
-                      type="text"
-                      placeholder="voice_1, voice_2"
-                      value={voiceIdsValue}
-                      onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
-                      className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
-                    {voiceControlActive ? (
-                      <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
-                    ) : null}
-                  </label>
+                  {showKlingV3VoiceControls ? (
+                    <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                      <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
+                      <input
+                        type="text"
+                        placeholder="voice_1, voice_2"
+                        value={voiceIdsValue}
+                        onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
+                        className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                      <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
+                      {voiceControlActive ? (
+                        <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
+                      ) : null}
+                    </label>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -1053,20 +1057,22 @@ export function SettingsControls({
                       </span>
                     )}
                   </label>
-                  <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                    <span className="text-[12px] uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
-                    <input
-                      type="text"
-                      placeholder="voice_1, voice_2"
-                      value={voiceIdsValue}
-                      onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
-                      className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
-                    {voiceControlActive && (
-                      <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
-                    )}
-                  </label>
+                  {showKlingV3VoiceControls ? (
+                    <label className="flex flex-col gap-2 text-sm text-text-secondary">
+                      <span className="text-[12px] uppercase tracking-micro text-text-muted">Voice IDs (CSV)</span>
+                      <input
+                        type="text"
+                        placeholder="voice_1, voice_2"
+                        value={voiceIdsValue}
+                        onChange={(e) => onVoiceIdsChange?.(e.currentTarget.value)}
+                        className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                      <span className="text-[11px] text-text-muted">Voice control pricing: $0.392/s</span>
+                      {voiceControlActive && (
+                        <span className="text-[11px] text-text-muted">Audio locked on while voice control is enabled.</span>
+                      )}
+                    </label>
+                  ) : null}
                 </div>
               </div>
             )}

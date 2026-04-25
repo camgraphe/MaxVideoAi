@@ -5525,7 +5525,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'textImage',
     seoText:
-      'Kling 3 4K routes prompts and image-to-video jobs to native 4K output for delivery-grade cinematic clips without a separate upscale step.',
+      'Kling 3 4K routes single prompts, multi-prompt shot plans, and image-to-video jobs to native 4K output for delivery-grade cinematic clips without a separate upscale step.',
     media: {
       videoUrl: 'https://v3b.fal.media/files/b/0a97a910/Cqtl7vJrGsMBpq7Cxbkhs_output.mp4',
       imagePath: '/hero/kling-3-4k-hero.jpg',

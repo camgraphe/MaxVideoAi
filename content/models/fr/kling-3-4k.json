@@ -6,7 +6,7 @@
     "description": "Utilisez Kling 3 4K sur MaxVideoAI pour des rendus texte-vers-video et image-vers-video en 4K natif, avec clips de 3 a 15 s et audio natif.",
     "image": "/hero/kling-3-4k-hero.jpg"
   },
-  "overview": "Kling 3 4K est la route Kling IA en 4K natif pour les rendus finaux, les prompts texte-vers-video, les references image-vers-video, le controle multi-plans et l'audio natif sans etape d'upscale separee.",
+  "overview": "Kling 3 4K est la route Kling IA en 4K natif pour les rendus finaux, les prompts texte-vers-video, les references image-vers-video, le controle multi-prompt par plans et l'audio natif sans etape d'upscale separee.",
   "pricingNotes": "Les estimations affichées aux membres incluent la marge MaxVideoAI : environ 0,55 $/s pour la sortie 4K native. Gardez cette route pour les rendus finaux validés.",
   "hero": {
     "title": "Kling 3 4K - generation video 4K native",
@@ -85,11 +85,11 @@
   ],
   "promptStructure": {
     "title": "Prompter Kling 3 4K",
-    "quote": "Reprenez la meme recette validee dans Standard ou Pro, puis rendez la version finale en 4K natif.",
+    "quote": "Reprenez la meme recette validee en prompt simple ou multi-prompt dans Standard ou Pro, puis rendez la version finale en 4K natif.",
     "description": "Gardez un plan de shots court et evitez d'utiliser la 4K pour l'exploration initiale.",
     "steps": [
       "Valider la composition dans Standard ou Pro",
-      "Passer le prompt approuve dans Kling 3 4K",
+      "Passer le prompt approuve ou le plan multi-prompt dans Kling 3 4K",
       "Garder une action claire par plan",
       "Utiliser les references image pour le cadrage final",
       "Rendre en 4K natif pour la livraison"
