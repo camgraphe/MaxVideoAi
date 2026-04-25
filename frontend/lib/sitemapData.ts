@@ -316,6 +316,20 @@ function getLatestEntryDate(entries: { lastModified?: string }[]): string | unde
   return latest;
 }
 
+async function getVideoSitemapLastModified(): Promise<string | undefined> {
+  const manual = getManualSitemapLastModified(getSitemapFileName('/sitemap-video.xml'));
+  if (manual) {
+    return manual;
+  }
+
+  const watchVideos = await listEligibleSeoWatchVideos();
+  return getLatestEntryDate(
+    watchVideos.map(({ entry, video }) => ({
+      lastModified: formatLastModified(entry.publishedAt || video.createdAt),
+    }))
+  );
+}
+
 export async function getLocaleSitemapEntries(locale: AppLocale): Promise<SitemapEntry[]> {
   const seen = new Set<string>();
   const entries: SitemapEntry[] = [];
@@ -420,7 +434,7 @@ export async function buildSitemapIndexXml(): Promise<string> {
   const videoPath = '/sitemap-video.xml';
   entries.push({
     loc: buildAbsoluteUrl(videoPath),
-    lastModified: getManualSitemapLastModified(getSitemapFileName(videoPath)),
+    lastModified: await getVideoSitemapLastModified(),
   });
 
   const body = entries
