@@ -88,6 +88,11 @@
       "minimax-hailuo-02-text-vs-pika-text-to-video",
       "kling-2-6-pro-vs-veo-3-1",
       "kling-2-6-pro-vs-sora-2"
+    ],
+    "kling-3-4k-vs-kling-3-pro": [
+      "kling-3-pro-vs-kling-3-standard",
+      "kling-3-4k-vs-veo-3-1",
+      "kling-3-4k-vs-sora-2-pro"
     ]
   },
   "showdownOverrides": {

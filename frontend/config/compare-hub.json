@@ -2,6 +2,7 @@
   "popularComparisons": [
     { "left": "seedance-2-0", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
     { "left": "seedance-2-0", "right": "kling-3-pro", "tags": ["cinematic", "quality", "long"] },
+    { "left": "kling-3-4k", "right": "kling-3-pro", "tags": ["4k", "delivery", "quality"] },
     { "left": "ltx-2-3-pro", "right": "seedance-2-0", "tags": ["audio", "ads", "quality"] },
     { "left": "seedance-2-0-fast", "right": "veo-3-1-fast", "tags": ["fast", "audio", "quality"] },
     { "left": "seedance-2-0", "right": "sora-2", "tags": ["audio", "quality", "general"] },

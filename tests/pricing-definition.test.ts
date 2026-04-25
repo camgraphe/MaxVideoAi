@@ -61,3 +61,33 @@ test('Seedance 2 pricing definition exposes token-priced 480p and 720p tiers to 
   assert.ok(typeof definition?.resolutionMultipliers['720p'] === 'number');
   assert.ok((definition?.resolutionMultipliers['720p'] ?? 0) > (definition?.resolutionMultipliers['480p'] ?? 0));
 });
+
+test('Kling 3 pricing definitions match current fal vendor rates', () => {
+  const standard = listFalEngines().find((entry) => entry.id === 'kling-3-standard')?.engine;
+  const pro = listFalEngines().find((entry) => entry.id === 'kling-3-pro')?.engine;
+  assert.ok(standard);
+  assert.ok(pro);
+
+  const standardDefinition = buildPricingDefinition(standard);
+  const proDefinition = buildPricingDefinition(pro);
+
+  assert.equal(standardDefinition?.baseUnitPriceCents, 12.6);
+  assert.equal(standardDefinition?.addons?.audio_off?.perSecondCents, -4.2);
+  assert.equal(standardDefinition?.addons?.voice_control?.perSecondCents, 2.8);
+  assert.equal(proDefinition?.baseUnitPriceCents, 16.8);
+  assert.equal(proDefinition?.addons?.audio_off?.perSecondCents, -5.6);
+  assert.equal(proDefinition?.addons?.voice_control?.perSecondCents, 2.8);
+});
+
+test('Kling 3 4K pricing definition exposes the native 4K rate', () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'kling-3-4k')?.engine;
+  assert.ok(engine);
+
+  const definition = buildPricingDefinition(engine);
+  assert.ok(definition);
+  assert.equal(definition.baseUnitPriceCents, 42);
+  assert.equal(definition.resolutionMultipliers['4k'], 1);
+  assert.equal(definition.addons?.audio_off, undefined);
+  assert.equal(definition.durationSteps.min, 3);
+  assert.equal(definition.durationSteps.max, 15);
+});

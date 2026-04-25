@@ -88,8 +88,8 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(fast.surfaces.compare.includeInHub, true);
   assert.equal(seedance.surfaces.modelPage.indexable, true);
   assert.equal(fast.surfaces.modelPage.indexable, true);
-  assert.equal(seedance.surfaces.compare.publishedPairs.length, 21);
-  assert.equal(fast.surfaces.compare.publishedPairs.length, 21);
+  assert.equal(seedance.surfaces.compare.publishedPairs.length, 22);
+  assert.equal(fast.surfaces.compare.publishedPairs.length, 22);
   ['veo-3-1', 'kling-3-pro', 'sora-2', 'seedance-1-5-pro', 'seedance-2-0-fast'].forEach((slug) =>
     assert.ok(seedance.surfaces.compare.publishedPairs.includes(slug), `Seedance 2.0 missing published pair ${slug}`)
   );
@@ -192,7 +192,7 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.slice(0, 6).map((item) => item.key),
-    ['seedance-2-0', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'wan-2-6', 'kling-3-pro']
+    ['seedance-2-0', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'wan-2-6', 'kling-3-4k']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
@@ -227,6 +227,7 @@ test('Header model menu keeps the Veo family expanded with a dedicated Lite slot
     'veo-3-1',
     'veo-3-1-lite',
     'wan-2-6',
+    'kling-3-4k',
     'kling-3-pro',
   ]);
 });

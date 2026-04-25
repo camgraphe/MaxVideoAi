@@ -487,5 +487,183 @@
         }
       }
     ]
+  },
+  {
+    "engine": "Kling 3 Pro Text to Video",
+    "catalogSlug": "kling-3-pro",
+    "falSlug": "fal-ai/kling-video/v3/pro/text-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v3/pro/text-to-video",
+    "last_checked_at": "2026-04-25T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "audio": "off" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.112
+        }
+      },
+      {
+        "variant": { "audio": "on" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.168
+        }
+      },
+      {
+        "variant": { "audio": "voice_control" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.196
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 3 Pro Image to Video",
+    "catalogSlug": "kling-3-pro",
+    "falSlug": "fal-ai/kling-video/v3/pro/image-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v3/pro/image-to-video",
+    "last_checked_at": "2026-04-25T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "audio": "off" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.112
+        }
+      },
+      {
+        "variant": { "audio": "on" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.168
+        }
+      },
+      {
+        "variant": { "audio": "voice_control" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.196
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 3 Standard Text to Video",
+    "catalogSlug": "kling-3-standard",
+    "falSlug": "fal-ai/kling-video/v3/standard/text-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v3/standard/text-to-video",
+    "last_checked_at": "2026-04-25T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "audio": "off" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.084
+        }
+      },
+      {
+        "variant": { "audio": "on" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.126
+        }
+      },
+      {
+        "variant": { "audio": "voice_control" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.154
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 3 Standard Image to Video",
+    "catalogSlug": "kling-3-standard",
+    "falSlug": "fal-ai/kling-video/v3/standard/image-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video",
+    "last_checked_at": "2026-04-25T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "audio": "off" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.084
+        }
+      },
+      {
+        "variant": { "audio": "on" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.126
+        }
+      },
+      {
+        "variant": { "audio": "voice_control" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.154
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 3 4K Text to Video",
+    "catalogSlug": "kling-3-4k",
+    "falSlug": "fal-ai/kling-video/v3/4k/text-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v3/4k/text-to-video",
+    "last_checked_at": "2026-04-25T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "4k" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.42
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 3 4K Image to Video",
+    "catalogSlug": "kling-3-4k",
+    "falSlug": "fal-ai/kling-video/v3/4k/image-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v3/4k/image-to-video",
+    "last_checked_at": "2026-04-25T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "4k" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.42
+        }
+      }
+    ]
   }
 ]

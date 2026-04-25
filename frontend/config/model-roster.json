@@ -176,6 +176,22 @@
     }
   },
   {
+    "engineId": "kling-3-4k",
+    "marketingName": "Kling 3 4K",
+    "brandId": "kling",
+    "modelSlug": "kling-3-4k",
+    "family": "kling",
+    "versionLabel": "v3 4K",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "kling-3-pro",
     "marketingName": "Kling 3 Pro",
     "brandId": "kling",

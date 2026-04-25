@@ -1,0 +1,128 @@
+{
+  "marketingName": "Kling 3 4K",
+  "versionLabel": "v3 4K",
+  "seo": {
+    "title": "Kling 3 4K | Modelo de video IA 4K nativo | MaxVideoAI",
+    "description": "Usa Kling 3 4K en MaxVideoAI para renders texto-a-video e imagen-a-video en 4K nativo, con clips de 3 a 15 s y audio nativo.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
+  },
+  "overview": "Kling 3 4K es la ruta Kling AI de 4K nativo para renders finales, prompts texto-a-video, referencias imagen-a-video, control multi-shot y audio nativo sin un paso separado de upscale.",
+  "pricingNotes": "Tarificación por segundo: 0,420 $/s para salida 4K nativa.",
+  "hero": {
+    "title": "Kling 3 4K - generacion de video 4K nativa",
+    "intro": "Usa Kling 3 4K cuando un prompt o una referencia de imagen ya esta listo para entrega final y quieres salida 4K nativa desde los endpoints Kling v3 4K.",
+    "badge": "4K nativo · 3-15 s · Texto o imagen · Audio on/off",
+    "ctaPrimary": {
+      "label": "Generar con Kling 3 4K",
+      "href": "/app?engine=kling-3-4k"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ver Kling 3 Pro",
+        "href": "/models/kling-3-pro"
+      },
+      {
+        "label": "Ver Kling 3 Standard",
+        "href": "/models/kling-3-standard"
+      },
+      {
+        "label": "Ver los ejemplos de video IA Kling",
+        "href": "/examples/kling"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Comparar Kling 3 Pro vs Kling 3 4K ->",
+    "href": "/ai-video-engines/kling-3-4k-vs-kling-3-pro"
+  },
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      {
+        "title": "Renders finales en 4K",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Planos producto premium y anuncios",
+        "icon": "product"
+      },
+      {
+        "title": "Imagen-a-video de alta resolucion tras aprobacion",
+        "icon": "layers"
+      },
+      {
+        "title": "Masters de campaña para edicion y recorte",
+        "icon": "scissors"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen tecnico",
+  "technicalOverview": [
+    {
+      "label": "Detalles",
+      "body": "Kling 3 4K usa endpoints fal de 4K nativo, asi que conviene tratarlo como una ruta de entrega y no como el modelo mas barato para explorar."
+    },
+    {
+      "label": "Duracion",
+      "body": "3-15 s por render"
+    },
+    {
+      "label": "Resolucion",
+      "body": "4K nativo"
+    },
+    {
+      "label": "Relacion",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto -> Video; Imagen -> Video (PNG/JPG/WebP), frame final opcional"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo activable o desactivable; fal lista la misma tarifa 4K en ambos casos"
+    }
+  ],
+  "promptStructure": {
+    "title": "Promptear Kling 3 4K",
+    "quote": "Usa la misma receta aprobada en Standard o Pro y renderiza la version final en 4K nativo.",
+    "description": "Mantén el plan de shots acotado y evita usar 4K para exploracion inicial.",
+    "steps": [
+      "Validar composicion en Standard o Pro",
+      "Mover el prompt aprobado a Kling 3 4K",
+      "Mantener una accion clara por plano",
+      "Usar referencias de imagen para el encuadre final",
+      "Renderizar en 4K nativo para entrega"
+    ]
+  },
+  "tips": {
+    "title": "Consejos y limites",
+    "items": [
+      "Usa Kling 3 4K despues de aprobar la direccion creativa.",
+      "El 4K nativo cuesta mas que Kling 3 Pro en 1080p.",
+      "Mantén prompts concisos y por plano.",
+      "Usa Standard o Pro para iterar a menor coste."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Reveal producto 4K nativo",
+      "prompt": "Reveal producto cinematografico en 4K nativo: reflejos macro sobre un dispositivo pulido, dolly push lento, iluminacion de estudio controlada, bordes nitidos, audio ambiental sutil."
+    },
+    {
+      "title": "Master campaña viaje 4K",
+      "prompt": "Plano hero de viaje 16:9 en 4K nativo: amanecer sobre un hotel en acantilado, glide de dron suave, bruma calida, espuma del mar, sensacion de campaña de lujo."
+    }
+  ],
+  "faqTitle": "FAQ - Kling 3 4K en MaxVideoAI",
+  "faqs": [
+    {
+      "q": "¿Kling 3 4K es un upscale?",
+      "a": "No. Kling 3 4K usa endpoints 4K nativos, asi que el video se genera directamente en 4K en vez de ampliarse desde un render 1080p."
+    },
+    {
+      "q": "¿Cuando usar Kling 3 4K?",
+      "a": "Usalo para renders finales despues de validar el prompt, la referencia de imagen y el plan de shots en Kling 3 Standard o Kling 3 Pro."
+    }
+  ]
+}

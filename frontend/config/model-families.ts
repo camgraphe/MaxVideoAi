@@ -38,12 +38,12 @@ export const MODEL_FAMILIES = [
     navLabel: 'Kling 3 Pro',
     brandId: 'kling',
     defaultModelSlug: 'kling-3-pro',
-    routeAliases: ['kling-2-5-turbo', 'kling-2-6-pro', 'kling-3-standard', 'kling-3-pro'],
+    routeAliases: ['kling-2-5-turbo', 'kling-2-6-pro', 'kling-3-standard', 'kling-3-pro', 'kling-3-4k'],
     prefixes: ['kling', 'fal-ai/kling-video'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['kling-3-pro', 'kling-3-standard', 'kling-2-6-pro', 'kling-2-5-turbo'],
+      publishedModelSlugs: ['kling-3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-2-6-pro', 'kling-2-5-turbo'],
     },
   },
   {
