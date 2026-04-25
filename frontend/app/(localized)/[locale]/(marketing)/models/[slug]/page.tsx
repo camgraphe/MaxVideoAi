@@ -26,6 +26,7 @@ import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import { computeMarketingPricePoints, computeMarketingPriceRange, type MarketingPricePoint } from '@/lib/pricing-marketing';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { getLocalizedHeroChipLabels, getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
 import { serializeJsonLd } from '../model-jsonld';
@@ -1811,6 +1812,13 @@ function formatCurrency(locale: AppLocale, currency: string, amount: number) {
   }).format(amount);
 }
 
+function formatMarketingImagePricePoint(point: MarketingPricePoint, engineId: string, locale: AppLocale) {
+  const amount = formatCurrency(locale, point.currency, point.cents / 100);
+  const resolution = formatResolutionLabel(engineId, point.resolution);
+  const quality = point.quality ? ` ${point.quality}` : '';
+  return `${resolution}${quality} ${amount}/image`;
+}
+
 function formatPerSecondLabel(locale: AppLocale, currency: string, perSecond: number): string {
   return `${formatPerSecond(locale, currency, perSecond)}/s`;
 }
@@ -2027,46 +2035,21 @@ async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLocale): 
 }
 
 async function buildPricePerImageLabel(engine: EngineCaps, locale: AppLocale): Promise<string | null> {
-  const resolution = resolveDefaultResolution(engine);
-  if (!resolution) return null;
   try {
-    const snapshot = await computePricingSnapshot({
-      engine,
-      durationSec: 1,
-      resolution,
-      membershipTier: 'member',
-    });
-    const currency = snapshot.currency ?? engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD';
-    return `${formatCurrency(locale, currency, snapshot.totalCents / 100)}/image`;
+    const range = await computeMarketingPriceRange(engine, { memberTier: 'member', limit: null });
+    if (!range) return null;
+    return `${formatCurrency(locale, range.currency, range.min.cents / 100)}/image`;
   } catch {
     return null;
   }
 }
 
 async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale): Promise<KeySpecRow[]> {
-  const resolutions = resolvePricingResolutions(engineCaps);
-  if (!resolutions.length) return [];
-
   const rowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
-  const results = new Map<string, { label: string; cents: number }>();
-  for (const resolution of resolutions) {
-    try {
-      const snapshot = await computePricingSnapshot({
-        engine: engineCaps,
-        durationSec: 1,
-        resolution,
-        membershipTier: 'member',
-      });
-      const currency = snapshot.currency ?? engineCaps.pricingDetails?.currency ?? engineCaps.pricing?.currency ?? 'USD';
-      const amount = formatCurrency(locale, currency, snapshot.totalCents / 100);
-      results.set(resolution, { label: `${amount}/image`, cents: snapshot.totalCents });
-    } catch {
-      // ignore pricing failures for marketing surface
-    }
-  }
+  const points = await computeMarketingPricePoints(engineCaps, { memberTier: 'member', limit: null });
 
-  if (!results.size) return [];
-  const values = Array.from(results.values()).map((entry) => entry.label);
+  if (!points.length) return [];
+  const values = points.map((point) => `${formatCurrency(locale, point.currency, point.cents / 100)}/image`);
   const same = new Set(values).size === 1;
   if (same) {
     return [
@@ -2079,14 +2062,7 @@ async function buildPricePerImageRows(engineCaps: EngineCaps, locale: AppLocale)
     ];
   }
 
-  const lines = resolutions
-    .map((resolution) => {
-      const entry = results.get(resolution);
-      if (!entry) return null;
-      const displayResolution = formatResolutionLabel(engineCaps.id, resolution);
-      return `${displayResolution} ${entry.label}`;
-    })
-    .filter((line): line is string => Boolean(line));
+  const lines = points.map((point) => formatMarketingImagePricePoint(point, engineCaps.id, locale));
 
   if (!lines.length) return [];
   return [

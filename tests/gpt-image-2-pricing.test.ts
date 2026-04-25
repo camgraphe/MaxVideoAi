@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
+import { computeMarketingPricePoints, computeMarketingPriceRange } from '../frontend/src/lib/pricing-marketing.ts';
 import { POST as estimateImagePricing } from '../frontend/app/api/images/estimate/route.ts';
 import { resolveGptImage2AutoInputImageSize } from '../frontend/lib/image/gptImage2.ts';
 
@@ -52,6 +53,22 @@ test('GPT Image 2 pricing responds to Fal quality and image_size', async () => {
   assert.equal(custom4kMedium.base.amountCents, 11);
   assert.equal(custom4kMedium.meta?.requested_image_width, 3840);
   assert.equal(custom4kMedium.meta?.requested_image_height, 2160);
+});
+
+test('GPT Image 2 marketing pricing includes low, medium, and high image tiers', async () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'gpt-image-2')?.engine;
+  assert.ok(engine);
+
+  const points = await computeMarketingPricePoints(engine, { memberTier: 'member', limit: null });
+  const range = await computeMarketingPriceRange(engine, { memberTier: 'member', limit: null });
+
+  assert.equal(points.length, 18);
+  assert.ok(points.some((point) => point.resolution === '1024x768' && point.quality === 'low' && point.cents === 2));
+  assert.ok(points.some((point) => point.resolution === '3840x2160' && point.quality === 'high' && point.cents === 54));
+  assert.equal(range?.min.cents, 2);
+  assert.equal(range?.min.quality, 'low');
+  assert.equal(range?.max.cents, 54);
+  assert.equal(range?.max.quality, 'high');
 });
 
 test('GPT Image 2 one-cent Fal cost is rounded up after margin', async () => {
