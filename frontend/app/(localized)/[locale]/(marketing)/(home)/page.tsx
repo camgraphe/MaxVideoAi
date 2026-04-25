@@ -100,7 +100,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     engineId: 'veo-3-1',
     label: 'Veo 3.1',
     videoSrc: '/hero/veo3.mp4',
-    posterSrc: '/hero/veo3.jpg',
+    posterSrc: '/hero/veo-3-1-hero.jpg',
     durationSec: 8,
     resolution: '1080p',
     fallbackPriceLabel: 'from $0.40',

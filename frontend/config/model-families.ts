@@ -43,7 +43,7 @@ export const MODEL_FAMILIES = [
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['kling-3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-2-6-pro', 'kling-2-5-turbo'],
+      publishedModelSlugs: ['kling-3-pro', 'kling-3-standard', 'kling-3-4k', 'kling-2-6-pro', 'kling-2-5-turbo'],
     },
   },
   {

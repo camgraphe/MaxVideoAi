@@ -697,9 +697,17 @@ function parseResolutionLabel(label: string) {
   return Number.isNaN(value) ? null : value;
 }
 
+function formatPriceLabel(label: string) {
+  const normalized = label.trim().toLowerCase();
+  if (normalized === '4k') return '4K';
+  if (normalized === '2k') return '2K';
+  if (normalized === '1k') return '1K';
+  return label;
+}
+
 function formatPriceLine(label: string | null, cents: number) {
   const value = `$${(cents / 100).toFixed(2)}/s`;
-  return label ? `${label}: ${value}` : value;
+  return label ? `${formatPriceLabel(label)}: ${value}` : value;
 }
 
 function getPrelaunchPricingLabel(locale: AppLocale) {
@@ -907,6 +915,13 @@ function localizeSpecDetailValue(
   if (lower === 'no (maxvideoai)') {
     return locale === 'fr' ? 'Non (MaxVideoAI)' : locale === 'es' ? 'No (MaxVideoAI)' : normalized;
   }
+  if (lower === 'not listed for native 4k route') {
+    return locale === 'fr'
+      ? 'Non listé pour la route 4K native'
+      : locale === 'es'
+        ? 'No listado para la ruta 4K nativa'
+        : 'Not listed for native 4K route';
+  }
   return value;
 }
 
@@ -1059,7 +1074,7 @@ function pickCapabilityDifference(
   rightStatus: string,
   templates: { value: string; pending: string },
   validatingLabel: string
-): string {
+): string | null {
   const leftNormalized = leftStatus.toLowerCase();
   const rightNormalized = rightStatus.toLowerCase();
   const leftPending = leftNormalized.includes('pending') || leftNormalized.includes('validated');
@@ -1069,14 +1084,56 @@ function pickCapabilityDifference(
       label,
       left: formatEngineName(left),
       right: formatEngineName(right),
-      leftValue: leftStatus.toLowerCase(),
-      rightValue: rightStatus.toLowerCase(),
+      leftValue: formatCapabilityValue(leftStatus),
+      rightValue: formatCapabilityValue(rightStatus),
     });
   }
-  return formatTemplate(templates.pending, {
-    label,
-    status: leftStatus === rightStatus ? leftStatus.toLowerCase() : validatingLabel,
-  });
+  if (leftPending || rightPending) {
+    return formatTemplate(templates.pending, {
+      label,
+      status: leftStatus === rightStatus ? formatCapabilityValue(leftStatus) : validatingLabel,
+    });
+  }
+  return null;
+}
+
+function formatCapabilityValue(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+  return `${trimmed.charAt(0).toLocaleLowerCase()}${trimmed.slice(1)}`.replace(/\b4k\b/gi, '4K');
+}
+
+function getFallbackCapabilityDifference(locale: AppLocale) {
+  if (locale === 'fr') {
+    return 'Modes clés : les deux moteurs couvrent les mêmes routes principales; la vraie différence se joue sur la résolution, le coût et le niveau de finition.';
+  }
+  if (locale === 'es') {
+    return 'Modos clave: ambos motores cubren las mismas rutas principales; la diferencia real está en la resolución, el costo y el nivel de acabado.';
+  }
+  return 'Core modes: both engines cover the same main routes; the real difference is resolution, cost, and delivery polish.';
+}
+
+function pickFirstCapabilityDifference(
+  left: EngineCatalogEntry,
+  right: EngineCatalogEntry,
+  candidates: Array<{ label: string; leftStatus: string; rightStatus: string }>,
+  templates: { value: string; pending: string },
+  validatingLabel: string,
+  locale: AppLocale
+) {
+  for (const candidate of candidates) {
+    const diff = pickCapabilityDifference(
+      left,
+      right,
+      candidate.label,
+      candidate.leftStatus,
+      candidate.rightStatus,
+      templates,
+      validatingLabel
+    );
+    if (diff) return diff;
+  }
+  return getFallbackCapabilityDifference(locale);
 }
 
 function pickOutputDifference(
@@ -2034,7 +2091,8 @@ export default async function CompareDetailPage({
   const rightSpecs = buildSpecValues(right, rightKeySpecs);
   const pairHasNativeAudio = Boolean(left.engine?.audio) || Boolean(right.engine?.audio);
   const criteriaCount = pairHasNativeAudio ? 11 : 10;
-  const compareShowdowns = getCompareShowdowns({ pairHasNativeAudio });
+  const pairHasKling3Native4k = left.modelSlug === 'kling-3-4k' || right.modelSlug === 'kling-3-4k';
+  const compareShowdowns = pairHasKling3Native4k ? [] : getCompareShowdowns({ pairHasNativeAudio });
   const exposeSourcePrompt = activeLocale === 'en';
   const [leftPricingDisplay, rightPricingDisplay] = await Promise.all([
     resolvePricingDisplay(left, activeLocale, PRICING_ENGINES.get(left.modelSlug)),
@@ -2050,12 +2108,15 @@ export default async function CompareDetailPage({
       }
     : null;
   const heroIntroTemplate = replaceCriteriaCount(
-    hasPrelaunchEngine
-      ? (compareCopy.hero?.introPrelaunch ??
-        `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`)
-      : (pageOverride?.heroIntro ??
-        compareCopy.hero?.intro ??
-        `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`),
+    pairHasKling3Native4k
+      ? (pageOverride?.heroIntro ??
+        `This page compares {left} vs {right} on MaxVideoAI across native 4K delivery, iteration cost, key specs, and a scorecard across ${criteriaCount} criteria. Use it to decide when 4K is worth the premium before opening each engine profile for full specs.`)
+      : hasPrelaunchEngine
+        ? (compareCopy.hero?.introPrelaunch ??
+          `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side prompts and renders (when available), key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`)
+        : (pageOverride?.heroIntro ??
+          compareCopy.hero?.intro ??
+          `This page compares {left} vs {right} on MaxVideoAI using the same prompts, side-by-side renders, key specs, and a scorecard across ${criteriaCount} criteria. Use it to shortlist the best fit — then open each engine profile for full specs and prompt examples.`),
     criteriaCount
   );
   const showdownSubtitle = hasPrelaunchEngine
@@ -2321,14 +2382,30 @@ export default async function CompareDetailPage({
       compareCopy.faq?.outputPending ??
       '{label}: data is still being validated for one or both engines.',
   };
-  const faqCapabilityDiff = pickCapabilityDifference(
+  const faqCapabilityDiff = pickFirstCapabilityDifference(
     left,
     right,
-    compareCopy.faq?.capabilityLabel ?? 'Capability',
-    faqV2vLeft,
-    faqV2vRight,
+    [
+      { label: specLabels.lipSync ?? 'Lip sync', leftStatus: faqLipLeft, rightStatus: faqLipRight },
+      {
+        label: specLabels.nativeAudioGeneration ?? 'Native audio generation',
+        leftStatus: faqAudioGenLeft,
+        rightStatus: faqAudioGenRight,
+      },
+      { label: specLabels.firstLastFrame ?? 'First/Last frame', leftStatus: faqFirstLastLeft, rightStatus: faqFirstLastRight },
+      {
+        label: specLabels.referenceImageStyle ?? 'Reference image / style reference',
+        leftStatus: faqRefImgLeft,
+        rightStatus: faqRefImgRight,
+      },
+      { label: specLabels.referenceVideo ?? 'Reference video', leftStatus: faqRefVidLeft, rightStatus: faqRefVidRight },
+      { label: specLabels.videoToVideo ?? 'Video-to-Video', leftStatus: faqV2vLeft, rightStatus: faqV2vRight },
+      { label: specLabels.imageToVideo ?? 'Image-to-Video', leftStatus: faqI2vLeft, rightStatus: faqI2vRight },
+      { label: specLabels.textToVideo ?? 'Text-to-Video', leftStatus: faqT2vLeft, rightStatus: faqT2vRight },
+    ],
     capabilityTemplates,
-    validatingLabel
+    validatingLabel,
+    activeLocale
   );
   const faqOutputDiff = pickOutputDifference(
     formatEngineName(left),
@@ -2340,6 +2417,29 @@ export default async function CompareDetailPage({
     validatingLabel
   );
   const faqTemplates = compareCopy.faq ?? {};
+  const kling3Native4kFaqCopy = pairHasKling3Native4k
+    ? activeLocale === 'fr'
+      ? {
+          a1: '{left} et {right} sont des moteurs de génération vidéo IA disponibles sur MaxVideoAI. Cette page compare la livraison 4K native, le coût d’itération, les caractéristiques clés et les données ci-dessus.',
+          a2: 'Cela dépend du flux de production. Utilisez la grille de scores et les caractéristiques pour décider si le plan a besoin d’une livraison 4K native ou d’une route d’itération moins coûteuse, puis ouvrez chaque profil pour les détails complets.',
+          q10: 'Pourquoi les résultats peuvent-ils différer entre ces routes ?',
+          a10: 'Même avec des instructions proches, les modèles interprètent différemment les contraintes et les réglages. Pour Kling 3 4K, comparez d’abord les caractéristiques et l’échelle de coût, puis rendez seulement les plans finalisés en 4K native.',
+        }
+      : activeLocale === 'es'
+        ? {
+            a1: '{left} y {right} son motores de generación de video IA disponibles en MaxVideoAI. Esta página compara entrega 4K nativa, costo de iteración, specs clave y los datos anteriores.',
+            a2: 'Depende de tu flujo de trabajo. Usa el scorecard y las specs para decidir si el plano necesita entrega 4K nativa o una ruta de iteración de menor costo, luego abre cada perfil para los detalles completos.',
+            q10: '¿Por qué pueden diferir los resultados entre estas rutas?',
+            a10: 'Incluso con instrucciones similares, los modelos interpretan las restricciones y los ajustes de forma distinta. Para Kling 3 4K, compara primero las specs y la escala de costo, luego renderiza en 4K nativo solo los planos aprobados.',
+          }
+        : {
+            a1: '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares native 4K delivery, iteration cost, key specs, and performance data shown above.',
+            a2: 'It depends on your workflow. Use the scorecard and specs to decide whether the job needs native 4K delivery or a lower-cost iteration route, then open each engine profile for full details.',
+            q10: 'Why can results differ between these routes?',
+            a10: 'Even with similar instructions, models interpret constraints and settings differently. For Kling 3 4K, compare the specs and cost ladder first, then render only approved final shots in native 4K.',
+          }
+    : null;
+
   const generatedFaqItems = [
     {
       question: formatTemplate(
@@ -2347,7 +2447,8 @@ export default async function CompareDetailPage({
         { left: formatEngineName(left), right: formatEngineName(right) }
       ),
       answer: formatTemplate(
-        faqTemplates.a1 ??
+        kling3Native4kFaqCopy?.a1 ??
+          faqTemplates.a1 ??
           '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares them side-by-side using the same prompts, key specs, and performance data shown above.',
         { left: formatEngineName(left), right: formatEngineName(right) }
       ),
@@ -2358,6 +2459,7 @@ export default async function CompareDetailPage({
         { left: formatEngineName(left), right: formatEngineName(right) }
       ),
       answer:
+        kling3Native4kFaqCopy?.a2 ??
         faqTemplates.a2 ??
         'It depends on your workflow. Use the scorecard and the “same prompt” showdowns to compare prompt adherence, motion realism, human fidelity, and text legibility — then open each engine profile for full details.',
     },
@@ -2460,8 +2562,12 @@ export default async function CompareDetailPage({
         'No. MaxVideoAI exports are watermark-free (“Watermark: No (MaxVideoAI)”).',
     },
     {
-      question: faqTemplates.q10 ?? 'Why do results look different with the same prompt?',
+      question:
+        kling3Native4kFaqCopy?.q10 ??
+        faqTemplates.q10 ??
+        'Why do results look different with the same prompt?',
       answer:
+        kling3Native4kFaqCopy?.a10 ??
         faqTemplates.a10 ??
         'Even with identical prompts, models interpret instructions differently and use different training data and generation strategies. That’s why the Showdown section exists: same prompt, side-by-side outputs.',
     },
@@ -2515,8 +2621,10 @@ export default async function CompareDetailPage({
 
   const webPageDescriptionTemplate = replaceCriteriaCount(
     metaOverride?.description ??
-      compareCopy.meta?.description ??
-      `Compare {left} vs {right} with the same prompts, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`,
+      (pairHasKling3Native4k
+        ? `Compare {left} vs {right} across native 4K delivery, iteration cost, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`
+        : compareCopy.meta?.description ??
+          `Compare {left} vs {right} with the same prompts, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`),
     criteriaCount
   );
 

@@ -68,8 +68,8 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'veo-3-1', label: 'Veo 3.1' },
   { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
   { slug: 'wan-2-6', label: 'Wan 2.6' },
-  { slug: 'kling-3-4k', label: 'Kling 3 4K' },
   { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
+  { slug: 'kling-3-4k', label: 'Kling 3 4K' },
 ];
 
 const HEADER_EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'ltx', 'kling', 'wan'] as const;

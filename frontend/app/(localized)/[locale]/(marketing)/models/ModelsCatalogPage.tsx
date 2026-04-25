@@ -677,6 +677,7 @@ const USE_CASE_MAP: Record<string, string> = {
   'kling-2-6-pro': 'motion-realistic cinematic clips',
   'kling-3-standard': 'multi-shot cinematic sequences with voice control',
   'kling-3-pro': 'multi-shot cinematic sequences with voice control',
+  'kling-3-4k': 'native 4K final delivery renders',
   'kling-2-5-turbo': 'fast iterations with stable prompt adherence',
   'wan-2-6': 'structured prompts with clean transitions',
   'wan-2-5': 'budget-friendly prompt testing',
@@ -704,6 +705,8 @@ const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<string,
       'Idéal pour créer des séquences cinématiques multi-plans, avec contrôle vocal et un rendu fidèle à vos instructions.',
     'kling-3-pro':
       'Idéal pour des séquences cinématiques multi-plans avec contrôle vocal, audio natif, lip-sync précis et forte contrôlabilité, en texte-vers-vidéo comme en image-vers-vidéo.',
+    'kling-3-4k':
+      'Idéal pour les masters finaux en 4K native : sorties premium, grands écrans et rendus approuvés après validation en Standard ou Pro.',
     'veo-3-1':
       'Idéal pour créer des plans pub maîtrisés : références, contrôle final et extension, avec un rendu fidèle et synchronisé.',
     'veo-3-1-fast':
@@ -1056,6 +1059,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     'seedance-2-0-fast',
     'kling-3-pro',
     'kling-3-standard',
+    'kling-3-4k',
     'veo-3-1',
     'veo-3-1-fast',
     'ltx-2-3-pro',
@@ -1316,13 +1320,13 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
           {
             title: outcomeCopy[3]?.title ?? 'Limits and formats',
             description: outcomeCopy[3]?.description ?? 'Duration, max resolution, audio, and format constraints by model.',
-            engines: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'ltx-2-3-pro', 'sora-2'],
+            engines: ['seedance-2-0', 'kling-3-pro', 'kling-3-4k', 'veo-3-1', 'ltx-2-3-pro', 'sora-2'],
             icon: Sparkles,
           },
           {
             title: outcomeCopy[4]?.title ?? 'Pricing per model and mode',
             description: outcomeCopy[4]?.description ?? 'Use per-second pricing and mode support to estimate cost accurately.',
-            engines: ['seedance-2-0', 'seedance-2-0-fast', 'veo-3-1', 'ltx-2-3-fast', 'wan-2-6'],
+            engines: ['seedance-2-0', 'seedance-2-0-fast', 'kling-3-standard', 'kling-3-4k', 'veo-3-1', 'ltx-2-3-fast', 'wan-2-6'],
             icon: Wand2,
           },
           {

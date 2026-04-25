@@ -4,10 +4,10 @@
   "seo": {
     "title": "Kling 3 4K | Modele video IA 4K natif | MaxVideoAI",
     "description": "Utilisez Kling 3 4K sur MaxVideoAI pour des rendus texte-vers-video et image-vers-video en 4K natif, avec clips de 3 a 15 s et audio natif.",
-    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
+    "image": "/hero/kling-3-4k-hero.jpg"
   },
   "overview": "Kling 3 4K est la route Kling IA en 4K natif pour les rendus finaux, les prompts texte-vers-video, les references image-vers-video, le controle multi-plans et l'audio natif sans etape d'upscale separee.",
-  "pricingNotes": "Tarification par seconde : 0,420 $/s pour la sortie 4K native.",
+  "pricingNotes": "Les estimations affichées aux membres incluent la marge MaxVideoAI : environ 0,55 $/s pour la sortie 4K native. Gardez cette route pour les rendus finaux validés.",
   "hero": {
     "title": "Kling 3 4K - generation video 4K native",
     "intro": "Utilisez Kling 3 4K quand un prompt ou une reference image est pret pour la livraison finale et que vous voulez une sortie 4K native directement depuis les endpoints Kling v3 4K.",
@@ -124,5 +124,37 @@
       "q": "Quand utiliser Kling 3 4K ?",
       "a": "Utilisez-le pour les rendus finaux apres avoir valide le prompt, la reference image et le plan de shots dans Kling 3 Standard ou Kling 3 Pro."
     }
-  ]
+  ],
+  "custom": {
+    "galleryTitle": "Exemples de livraison Kling 3 4K",
+    "galleryIntro": "Revoyez les shots Kling approuvés qui méritent une sortie 4K native : masters produit, pubs premium, grands écrans et validations image-vers-video haute resolution.",
+    "galleryAllCta": "Voir tous les exemples Kling 3 4K ->",
+    "quickPricingTitle": "Ladder de coût recommandé",
+    "quickPricingItems": [
+      "Brouillonnez dans Kling 3 Standard pour obtenir plus de variantes au tarif Kling 3 le plus bas.",
+      "Passez les meilleures directions dans Kling 3 Pro pour le principal rendu 1080p de validation.",
+      "Utilisez Kling 3 4K uniquement pour les rendus finaux approuvés, quand la clarté 4K native justifie le prix par seconde plus élevé."
+    ],
+    "relatedTitle": "La place de Kling 3 4K",
+    "relatedSubtitle": "Gardez 4K comme étape de livraison dans la famille Kling, pas comme remplacement du modèle Pro.",
+    "relatedItems": [
+      {
+        "brand": "Kling",
+        "title": "Kling 3 Pro",
+        "description": "Utilisez Pro pour le principal passage créatif, le contrôle multi-plans et les validations 1080p avant export final 4K.",
+        "modelSlug": "kling-3-pro",
+        "ctaLabel": "Comparer Kling 3 Pro vs 4K ->"
+      },
+      {
+        "brand": "Kling",
+        "title": "Kling 3 Standard",
+        "description": "Utilisez Standard pour tester les prompts et les variantes storyboard avant de dépenser sur Pro ou 4K.",
+        "modelSlug": "kling-3-standard",
+        "ctaLabel": "Comparer Standard vs 4K ->"
+      }
+    ],
+    "finalPara1": "Kling 3 4K est le plus pertinent quand la direction créative est déjà prouvée. Traitez-le comme la route de master 4K natif pour les shots approuvés.",
+    "finalPara2": "Pour la plupart des équipes, le workflow efficace reste Standard pour explorer, Pro pour valider, puis 4K uniquement pour la livraison finale.",
+    "finalButton": "Rendre un shot final Kling 3 4K"
+  }
 }

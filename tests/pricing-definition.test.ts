@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildPricingDefinition } from '../frontend/src/lib/pricing-definition.ts';
+import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
 
 test('LTX 2.3 Pro pricing definition uses standard generate duration caps', () => {
   const engine = listFalEngines().find((entry) => entry.id === 'ltx-2-3')?.engine;
@@ -90,4 +91,42 @@ test('Kling 3 4K pricing definition exposes the native 4K rate', () => {
   assert.equal(definition.addons?.audio_off, undefined);
   assert.equal(definition.durationSteps.min, 3);
   assert.equal(definition.durationSteps.max, 15);
+});
+
+test('Kling 3 displayed quotes include the MaxVideoAI margin', async () => {
+  const standard = listFalEngines().find((entry) => entry.id === 'kling-3-standard')?.engine;
+  const pro = listFalEngines().find((entry) => entry.id === 'kling-3-pro')?.engine;
+  const native4k = listFalEngines().find((entry) => entry.id === 'kling-3-4k')?.engine;
+  assert.ok(standard);
+  assert.ok(pro);
+  assert.ok(native4k);
+
+  const standardSnapshot = await computePricingSnapshot({
+    engine: standard,
+    durationSec: 5,
+    resolution: '1080p',
+    membershipTier: 'member',
+  });
+  const proSnapshot = await computePricingSnapshot({
+    engine: pro,
+    durationSec: 5,
+    resolution: '1080p',
+    membershipTier: 'member',
+  });
+  const native4kSnapshot = await computePricingSnapshot({
+    engine: native4k,
+    durationSec: 5,
+    resolution: '4k',
+    membershipTier: 'member',
+  });
+
+  assert.equal(standardSnapshot.base.amountCents, 63);
+  assert.equal(standardSnapshot.margin.amountCents, 19);
+  assert.equal(standardSnapshot.totalCents, 82);
+  assert.equal(proSnapshot.base.amountCents, 84);
+  assert.equal(proSnapshot.margin.amountCents, 26);
+  assert.equal(proSnapshot.totalCents, 110);
+  assert.equal(native4kSnapshot.base.amountCents, 210);
+  assert.equal(native4kSnapshot.margin.amountCents, 63);
+  assert.equal(native4kSnapshot.totalCents, 273);
 });

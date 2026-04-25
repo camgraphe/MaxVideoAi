@@ -157,14 +157,14 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   kling: {
     metaTitle: 'Kling AI Video Examples, Prompts & Settings | MaxVideoAI',
     metaDescription:
-      'Browse Kling AI video examples, prompts, settings, and image-to-video patterns for Kling 3 Pro and Kling 3 Standard, then compare supported older Kling workflows on MaxVideoAI.',
+      'Browse Kling AI video examples, prompts, settings, and image-to-video patterns for Kling 3 Pro, Kling 3 Standard, and native Kling 3 4K delivery renders, then compare supported older Kling workflows on MaxVideoAI.',
     heroTitle: 'Kling AI Video Examples, Prompts & Settings',
     subtitle:
       'Kling AI video examples, prompts, settings, image-to-video patterns, and model guidance for current Kling workflows and supported older versions.',
     intro:
-      'Browse Kling AI video examples, prompts, reusable settings, and image-to-video patterns for Kling 3 Pro and Kling 3 Standard, then explore supported older Kling setups for earlier workflows, short audio-ready clips, and fast draft passes. Use this page to compare Kling AI prompts, motion control patterns, and model-specific settings before opening the matching Kling model page.',
+      'Browse Kling AI video examples, prompts, reusable settings, and image-to-video patterns for Kling 3 Pro, Kling 3 Standard, and native Kling 3 4K final renders, then explore supported older Kling setups for earlier workflows, short audio-ready clips, and fast draft passes. Use this page to compare Kling AI prompts, motion control patterns, and model-specific settings before opening the matching Kling model page.',
     summary:
-      'Kling 3 Pro and Kling 3 Standard lead this page for Kling AI video examples, prompts, settings, image-to-video patterns, and output review, while Kling 2.6 Pro and Kling 2.5 Turbo remain available below as supported older Kling setups.',
+      'Kling 3 Pro and Kling 3 Standard lead this page for everyday Kling AI video examples, while Kling 3 4K is the native 4K delivery option for approved final renders. Kling 2.6 Pro and Kling 2.5 Turbo remain available below as supported older Kling setups.',
     promptPatterns:
       'Start with one clear action, one camera instruction, and one style goal. Kling AI prompts are easiest to compare when the prompt structure stays stable and only the model or setting changes.',
     strengthsLimits:
@@ -185,7 +185,7 @@ const EN_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Which Kling AI model should I use for prompts and examples?',
         answer:
-          'Start with Kling 3 Standard when you want lower-cost prompt testing, repeatable draft passes, and current Kling 3 behavior. Move to Kling 3 Pro when you want stronger scene control, more demanding multi-shot sequences, and higher-priority final outputs.',
+          'Start with Kling 3 Standard when you want lower-cost prompt testing, repeatable draft passes, and current Kling 3 behavior. Move to Kling 3 Pro when you want stronger scene control, then use Kling 3 4K only for approved native 4K delivery renders.',
       },
       {
         question: 'How should I use Kling AI for image-to-video prompt testing?',
@@ -444,14 +444,14 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   kling: {
     metaTitle: 'Exemples vidéo IA Kling, prompts et réglages | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples vidéo IA Kling avec prompts, réglages et schemas image-vers-video pour Kling 3 Pro et Kling 3 Standard, puis comparez les flux Kling plus anciens encore pris en charge sur MaxVideoAI.',
+      'Parcourez des exemples vidéo IA Kling avec prompts, réglages et schemas image-vers-video pour Kling 3 Pro, Kling 3 Standard et les rendus finaux Kling 3 4K natifs, puis comparez les flux Kling plus anciens encore pris en charge sur MaxVideoAI.',
     heroTitle: 'Exemples vidéo IA Kling, prompts et réglages',
     subtitle:
       'Exemples vidéo IA Kling, prompts, réglages, schemas image-vers-video et repères de modèle pour les flux Kling actuels et les versions encore prises en charge.',
     intro:
-      'Parcourez des exemples vidéo IA Kling, des prompts, des réglages réutilisables et des schemas image-vers-video pour Kling 3 Pro et Kling 3 Standard, puis explorez les configurations Kling plus anciennes encore prises en charge pour des flux antérieurs, des clips courts prêts pour l’audio et des brouillons rapides. Utilisez cette page pour comparer des prompts Kling AI, des schemas de contrôle du mouvement et des réglages propres à chaque modèle avant d’ouvrir la page Kling correspondante.',
+      'Parcourez des exemples vidéo IA Kling, des prompts, des réglages réutilisables et des schemas image-vers-video pour Kling 3 Pro, Kling 3 Standard et les rendus finaux Kling 3 4K natifs, puis explorez les configurations Kling plus anciennes encore prises en charge pour des flux antérieurs, des clips courts prêts pour l’audio et des brouillons rapides. Utilisez cette page pour comparer des prompts Kling AI, des schemas de contrôle du mouvement et des réglages propres à chaque modèle avant d’ouvrir la page Kling correspondante.',
     summary:
-      'Kling 3 Pro et Kling 3 Standard mènent cette page pour les exemples vidéo IA Kling, les prompts, les réglages, les schemas image-vers-video et la lecture des sorties, tandis que Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme configurations Kling plus anciennes encore prises en charge.',
+      'Kling 3 Pro et Kling 3 Standard mènent cette page pour les exemples vidéo IA Kling du quotidien, tandis que Kling 3 4K sert de route de livraison native 4K pour les rendus finaux validés. Kling 2.6 Pro et Kling 2.5 Turbo restent disponibles plus bas comme configurations Kling plus anciennes encore prises en charge.',
     promptPatterns:
       'Commencez par une action claire, une consigne caméra et un objectif visuel unique. Les prompts Kling AI se comparent mieux quand la structure du prompt reste stable et que seul le modèle ou le réglage change.',
     strengthsLimits:
@@ -472,7 +472,7 @@ const FR_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: 'Quel modèle Kling AI utiliser pour les prompts et les exemples ?',
         answer:
-          'Commencez par Kling 3 Standard si vous voulez tester des prompts à moindre coût, faire des brouillons répétables et rester sur le comportement actuel de Kling 3. Passez à Kling 3 Pro si vous avez besoin d’un meilleur contrôle de scène, de séquences multi-plans plus exigeantes et de sorties finales plus prioritaires.',
+          'Commencez par Kling 3 Standard si vous voulez tester des prompts à moindre coût, faire des brouillons répétables et rester sur le comportement actuel de Kling 3. Passez à Kling 3 Pro pour un meilleur contrôle de scène, puis utilisez Kling 3 4K uniquement pour les rendus finaux natifs 4K validés.',
       },
       {
         question: 'Comment utiliser Kling AI pour des tests de prompt en image-vers-video ?',
@@ -731,14 +731,14 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
   kling: {
     metaTitle: 'Ejemplos de video IA Kling, prompts y ajustes | MaxVideoAI',
     metaDescription:
-      'Revisa ejemplos de video IA de Kling con prompts, ajustes y patrones image-to-video para Kling 3 Pro y Kling 3 Standard, y compara workflows Kling antiguos aún compatibles en MaxVideoAI.',
+      'Revisa ejemplos de video IA de Kling con prompts, ajustes y patrones image-to-video para Kling 3 Pro, Kling 3 Standard y renders finales Kling 3 4K nativos, y compara workflows Kling antiguos aún compatibles en MaxVideoAI.',
     heroTitle: 'Ejemplos de video IA Kling, prompts y ajustes',
     subtitle:
       'Ejemplos de video IA Kling, prompts, ajustes, patrones image-to-video y guía de modelo para workflows Kling actuales y versiones anteriores aún compatibles.',
     intro:
-      'Revisa ejemplos de video IA de Kling, prompts, ajustes reutilizables y patrones image-to-video para Kling 3 Pro y Kling 3 Standard, y luego explora setups Kling anteriores aún compatibles para workflows más antiguos, clips cortos listos para audio y borradores rápidos. Usa esta página para comparar prompts de Kling AI, patrones de control de movimiento y ajustes específicos de cada modelo antes de abrir la página Kling correspondiente.',
+      'Revisa ejemplos de video IA de Kling, prompts, ajustes reutilizables y patrones image-to-video para Kling 3 Pro, Kling 3 Standard y renders finales Kling 3 4K nativos, y luego explora setups Kling anteriores aún compatibles para workflows más antiguos, clips cortos listos para audio y borradores rápidos. Usa esta página para comparar prompts de Kling AI, patrones de control de movimiento y ajustes específicos de cada modelo antes de abrir la página Kling correspondiente.',
     summary:
-      'Kling 3 Pro y Kling 3 Standard lideran esta página para ejemplos de video IA Kling, prompts, ajustes, patrones image-to-video y revisión de salidas, mientras que Kling 2.6 Pro y Kling 2.5 Turbo siguen disponibles más abajo como setups Kling anteriores aún compatibles.',
+      'Kling 3 Pro y Kling 3 Standard lideran esta página para ejemplos de video IA Kling de uso diario, mientras Kling 3 4K queda como ruta de entrega 4K nativa para renders finales aprobados. Kling 2.6 Pro y Kling 2.5 Turbo siguen disponibles más abajo como setups Kling anteriores aún compatibles.',
     promptPatterns:
       'Empieza con una acción clara, una instrucción de cámara y un objetivo visual. Los prompts de Kling AI se comparan mejor cuando la estructura del prompt se mantiene estable y solo cambian el modelo o el ajuste.',
     strengthsLimits:
@@ -759,7 +759,7 @@ const ES_MODEL_DATA: Partial<Record<CanonicalSlug, LocalizedModelDescriptor>> = 
       {
         question: '¿Qué modelo de Kling AI debería usar para prompts y ejemplos?',
         answer:
-          'Empieza con Kling 3 Standard cuando quieras probar prompts a menor coste, hacer borradores repetibles y mantenerte en el comportamiento actual de Kling 3. Pasa a Kling 3 Pro cuando necesites más control de escena, secuencias multi-shot más exigentes y salidas finales prioritarias.',
+          'Empieza con Kling 3 Standard cuando quieras probar prompts a menor coste, hacer borradores repetibles y mantenerte en el comportamiento actual de Kling 3. Pasa a Kling 3 Pro para mayor control de escena y usa Kling 3 4K solo para renders finales nativos 4K aprobados.',
       },
       {
         question: '¿Cómo debería usar Kling AI para pruebas de prompt en image-to-video?',

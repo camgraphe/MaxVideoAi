@@ -9,6 +9,7 @@ const OUTPUT_CSV = path.resolve(process.cwd(), process.env.AUDIT_OUTPUT_CSV || '
 const OUTPUT_SUMMARY = path.resolve(process.cwd(), process.env.AUDIT_OUTPUT_SUMMARY || 'image-audit-summary.md');
 const EXCLUDE_METADATA_FROM_ISSUES = process.env.AUDIT_EXCLUDE_METADATA_ISSUES !== 'false';
 const FORCE_AUDIT_ORIGIN = process.env.AUDIT_FORCE_ORIGIN !== 'false';
+const AUDIT_CONCURRENCY = Math.max(1, Number.parseInt(process.env.AUDIT_CONCURRENCY || '8', 10) || 8);
 
 const ENGINE_ONLY_ALTS = new Set([
   'sora',
@@ -131,7 +132,11 @@ function isSiteAsset(imageUrl) {
   if (!imageUrl) return false;
   try {
     const u = new URL(imageUrl);
-    const host = u.hostname === 'maxvideoai.com' || u.hostname.endsWith('.maxvideoai.com');
+    const auditHost = new URL(SITE_ORIGIN).hostname;
+    const host =
+      u.hostname === auditHost ||
+      u.hostname === 'maxvideoai.com' ||
+      u.hostname.endsWith('.maxvideoai.com');
     if (!host) return false;
     return u.pathname.startsWith('/_next/static') || u.pathname.startsWith('/assets') || u.pathname.startsWith('/hero');
   } catch {
@@ -174,8 +179,24 @@ function hasLogoOrIconHint(filename, alt) {
   );
 }
 
+function canonicalImageUrl(imageUrl) {
+  try {
+    const parsed = new URL(imageUrl);
+    if (parsed.pathname === '/_next/image') {
+      const source = parsed.searchParams.get('url');
+      if (source) return canonicalImageUrl(new URL(source, parsed.origin).toString());
+    }
+    parsed.searchParams.delete('w');
+    parsed.searchParams.delete('q');
+    return parsed.toString();
+  } catch {
+    return imageUrl;
+  }
+}
+
 function canHaveAltIssue(record) {
   if (!EXCLUDE_METADATA_FROM_ISSUES) return true;
+  if (record.aria_hidden) return false;
   return record.element_type !== 'og:image' && record.element_type !== 'jsonld-thumbnail';
 }
 
@@ -196,24 +217,29 @@ function collectFlags(record) {
 }
 
 function markDuplicateFlags(records) {
-  const freq = new Map();
+  const sourcesByAlt = new Map();
   for (const record of records) {
     if (!canHaveAltIssue(record)) continue;
     if (record.is_missing_alt || record.is_empty_alt) continue;
+    if (hasLogoOrIconHint(record.filename, record.alt_text)) continue;
     const normalized = (record.alt_text ?? '').trim().toLowerCase();
     if (!normalized) continue;
-    freq.set(normalized, (freq.get(normalized) ?? 0) + 1);
+    const key = `${record.page_url}||${normalized}`;
+    if (!sourcesByAlt.has(key)) sourcesByAlt.set(key, new Set());
+    sourcesByAlt.get(key).add(canonicalImageUrl(record.image_url));
   }
   for (const record of records) {
     if (!canHaveAltIssue(record)) continue;
     if (record.is_missing_alt || record.is_empty_alt) continue;
+    if (hasLogoOrIconHint(record.filename, record.alt_text)) continue;
     const normalized = (record.alt_text ?? '').trim().toLowerCase();
     if (!normalized) continue;
-    if ((freq.get(normalized) ?? 0) > 1 && !record.alt_quality_flags.includes('duplicated')) {
+    const key = `${record.page_url}||${normalized}`;
+    if ((sourcesByAlt.get(key)?.size ?? 0) > 1 && !record.alt_quality_flags.includes('duplicated')) {
       record.alt_quality_flags.push('duplicated');
     }
   }
-  return freq;
+  return new Map([...sourcesByAlt.entries()].map(([key, sources]) => [key, sources.size]));
 }
 
 async function fetchText(url) {
@@ -274,6 +300,7 @@ function extractOgImages(html) {
       alt_text: '',
       is_empty_alt: false,
       is_missing_alt: false,
+      aria_hidden: false,
       source_index: match.index ?? 0,
     });
   }
@@ -293,6 +320,7 @@ function extractJsonLdThumbnails(html) {
       alt_text: '',
       is_empty_alt: false,
       is_missing_alt: false,
+      aria_hidden: false,
       source_index: index,
     });
   };
@@ -331,14 +359,16 @@ function extractImagesAndPosters(html) {
     const src = extractAttr(tag, 'src') ?? extractAttr(tag, 'data-src') ?? '';
     const altAttr = extractAttr(tag, 'alt');
     const hasAlt = /\balt\s*=/.test(tag);
+    const ariaHidden = (extractAttr(tag, 'aria-hidden') ?? '').toLowerCase() === 'true';
     const isNext = /\bdata-nimg\b/.test(tag);
     const isSvg = src.toLowerCase().split('?')[0].endsWith('.svg');
     out.push({
       element_type: isSvg ? 'svg' : isNext ? 'next-image' : 'img',
       image_url: src,
       alt_text: altAttr ?? '',
-      is_empty_alt: hasAlt && (altAttr ?? '').trim() === '',
-      is_missing_alt: !hasAlt,
+      is_empty_alt: !ariaHidden && hasAlt && (altAttr ?? '').trim() === '',
+      is_missing_alt: !ariaHidden && !hasAlt,
+      aria_hidden: ariaHidden,
       source_index: match.index ?? 0,
     });
   }
@@ -356,6 +386,7 @@ function extractImagesAndPosters(html) {
       alt_text: ariaLabel,
       is_empty_alt: !ariaHidden && ariaLabel.trim() === '',
       is_missing_alt: !ariaHidden && ariaLabel.trim() === '',
+      aria_hidden: ariaHidden,
       source_index: match.index ?? 0,
     });
   }
@@ -385,7 +416,7 @@ async function run() {
 
   const records = [];
   const failures = [];
-  const concurrency = 8;
+  const concurrency = AUDIT_CONCURRENCY;
   let cursor = 0;
 
   async function worker() {
@@ -410,6 +441,7 @@ async function run() {
             alt_text: item.alt_text ?? '',
             is_empty_alt: Boolean(item.is_empty_alt),
             is_missing_alt: Boolean(item.is_missing_alt),
+            aria_hidden: Boolean(item.aria_hidden),
             alt_quality_flags: [],
             context_hint: getContextHint(html, item.source_index ?? 0),
             is_site_asset: isSiteAsset(absolute),
@@ -435,6 +467,7 @@ async function run() {
     'alt_text',
     'is_empty_alt',
     'is_missing_alt',
+    'aria_hidden',
     'alt_quality_flags',
     'context_hint',
     'is_site_asset',
@@ -452,6 +485,7 @@ async function run() {
         r.alt_text,
         r.is_empty_alt ? 'true' : 'false',
         r.is_missing_alt ? 'true' : 'false',
+        r.aria_hidden ? 'true' : 'false',
         r.alt_quality_flags.join('|'),
         r.context_hint,
         r.is_site_asset ? 'true' : 'false',
@@ -467,8 +501,11 @@ async function run() {
   const duplicated = [];
   const fileCounts = new Map();
 
-  for (const [alt, count] of duplicateFreq.entries()) {
-    if (count > 1) duplicated.push({ alt, count });
+  for (const [key, count] of duplicateFreq.entries()) {
+    if (count > 1) {
+      const [, alt] = key.split('||');
+      duplicated.push({ alt, count });
+    }
   }
 
   for (const r of records) {

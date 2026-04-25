@@ -192,7 +192,7 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.slice(0, 6).map((item) => item.key),
-    ['seedance-2-0', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'wan-2-6', 'kling-3-4k']
+    ['seedance-2-0', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'wan-2-6', 'kling-3-pro']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
@@ -227,8 +227,8 @@ test('Header model menu keeps the Veo family expanded with a dedicated Lite slot
     'veo-3-1',
     'veo-3-1-lite',
     'wan-2-6',
-    'kling-3-4k',
     'kling-3-pro',
+    'kling-3-4k',
   ]);
 });
 

@@ -1805,7 +1805,7 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.168,
     currency: 'USD',
-    notes: '$0.112/s audio off, $0.168/s audio on, $0.196/s voice control',
+    notes: 'Fal cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -1939,7 +1939,7 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.126,
     currency: 'USD',
-    notes: '$0.084/s audio off, $0.126/s audio on, $0.154/s voice control',
+    notes: 'Fal cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -2078,7 +2078,7 @@ const KLING_3_4K_ENGINE: EngineCaps = {
       '4k': 0.42,
     },
     currency: 'USD',
-    notes: '$0.420/s native 4K output',
+    notes: 'Fal cost: $0.420/s native 4K output. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -4384,7 +4384,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     demoUrl: 'https://v3b.fal.media/files/b/kangaroo/oUCiZjQwEy6bIQdPUSLDF_output.mp4',
     media: {
       videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
-      imagePath: '/hero/veo3.jpg',
+      imagePath: '/hero/veo-3-1-hero.jpg',
       altText: 'Demo video generated with Veo 3.1',
     },
     prompts: [
@@ -4501,7 +4501,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     demoUrl: '/hero/veo3.mp4',
     media: {
       videoUrl: '/hero/veo3.mp4',
-      imagePath: '/hero/veo3.jpg',
+      imagePath: '/hero/veo-3-1-hero.jpg',
       altText: 'Fast rendering sample with Veo 3.1 Fast',
     },
     prompts: [
@@ -4610,7 +4610,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     demoUrl: 'https://v3b.fal.media/files/b/0a946880/sfDxO-znDhQthS00Pa2Ns_d99979ba04614c3d963ebaa342627b3c.mp4',
     media: {
       videoUrl: 'https://v3b.fal.media/files/b/0a946880/sfDxO-znDhQthS00Pa2Ns_d99979ba04614c3d963ebaa342627b3c.mp4',
-      imagePath: '/hero/veo3.jpg',
+      imagePath: '/hero/veo-3-1-hero.jpg',
       altText: 'Demo video generated with Veo 3.1 Lite',
     },
     prompts: [
@@ -5527,10 +5527,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'Kling 3 4K routes prompts and image-to-video jobs to native 4K output for delivery-grade cinematic clips without a separate upscale step.',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a8500c6/RZ0L5FqW2FFFnCnpcYYDV_output.mp4',
-      imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
-      altText: 'Kling 3 4K render: cinematic duel with glowing energy blades',
+      videoUrl: 'https://v3b.fal.media/files/b/0a97a910/Cqtl7vJrGsMBpq7Cxbkhs_output.mp4',
+      imagePath: '/hero/kling-3-4k-hero.jpg',
+      altText: 'Kling 3 4K native 4K product hero render',
     },
     prompts: [
       {

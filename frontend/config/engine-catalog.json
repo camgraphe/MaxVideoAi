@@ -3140,9 +3140,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "kling-3-4k",
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -3455,9 +3455,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "kling-3-4k",
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -3775,9 +3775,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "kling-3-4k",
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -3796,9 +3796,9 @@
       },
       "compare": {
         "suggestOpponents": [
+          "kling-3-standard",
           "kling-3-4k",
-          "veo-3-1",
-          "sora-2"
+          "veo-3-1"
         ],
         "publishedPairs": [
           "kling-2-5-turbo",
@@ -4000,7 +4000,7 @@
         "unit": "USD/s",
         "base": 0.168,
         "currency": "USD",
-        "notes": "$0.112/s audio off, $0.168/s audio on, $0.196/s voice control"
+        "notes": "Fal cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
@@ -4123,9 +4123,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "kling-3-4k",
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -4143,7 +4143,11 @@
         "includeInFamilyCopy": true
       },
       "compare": {
-        "suggestOpponents": [],
+        "suggestOpponents": [
+          "kling-3-pro",
+          "kling-3-4k",
+          "ltx-2-3-fast"
+        ],
         "publishedPairs": [
           "kling-2-5-turbo",
           "kling-2-6-pro",
@@ -4344,7 +4348,7 @@
         "unit": "USD/s",
         "base": 0.126,
         "currency": "USD",
-        "notes": "$0.084/s audio off, $0.126/s audio on, $0.154/s voice control"
+        "notes": "Fal cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
@@ -4467,9 +4471,9 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
-        "kling-3-4k",
         "kling-3-pro",
         "kling-3-standard",
+        "kling-3-4k",
         "kling-2-6-pro",
         "kling-2-5-turbo"
       ]
@@ -4682,7 +4686,7 @@
           "4k": 0.42
         },
         "currency": "USD",
-        "notes": "$0.420/s native 4K output"
+        "notes": "Fal cost: $0.420/s native 4K output. MaxVideoAI display prices add platform margin before showing quotes."
       },
       "updatedAt": "2026-04-25T00:00:00Z",
       "ttlSec": 600,
