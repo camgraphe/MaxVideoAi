@@ -12,7 +12,7 @@ import { normalizeFalDurationValueForModel } from '../frontend/src/lib/fal.ts';
 import { getVisibleAssetSlotCount } from '../frontend/lib/asset-slot-layout.ts';
 import { getSeedanceAssetState, getSeedanceFieldBlockKey, getUnifiedSeedanceMode } from '../frontend/lib/seedance-workflow.ts';
 import { ENGINE_SELECT_FAMILY_PRIORITY, getEngineSelectFamilyRank } from '../frontend/src/lib/engine-family-priority.ts';
-import { getExampleFamilyIds } from '../frontend/lib/model-families.ts';
+import { getExampleFamilyCurrentModelSlugs, getExampleFamilyIds, getExampleFamilyModelSlugs } from '../frontend/lib/model-families.ts';
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
 import { canonicalizeFalModelSlug, getFalEngineBySlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
@@ -244,6 +244,19 @@ test('Examples hub family order follows the current business priority without re
     'pika',
     'hailuo',
   ]);
+});
+
+test('Examples family current model groups do not classify new delivery models as older', () => {
+  assert.deepEqual(getExampleFamilyModelSlugs('kling'), [
+    'kling-3-pro',
+    'kling-3-standard',
+    'kling-3-4k',
+    'kling-2-6-pro',
+    'kling-2-5-turbo',
+  ]);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('kling'), ['kling-3-pro', 'kling-3-standard', 'kling-3-4k']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), ['seedance-2-0', 'seedance-2-0-fast']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('ltx'), ['ltx-2-3-pro', 'ltx-2-3-fast']);
 });
 
 test('Engine select uses the same family priority as the examples hub', () => {

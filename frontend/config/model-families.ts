@@ -44,6 +44,7 @@ export const MODEL_FAMILIES = [
       stage: 'indexed',
       showInNav: true,
       publishedModelSlugs: ['kling-3-pro', 'kling-3-standard', 'kling-3-4k', 'kling-2-6-pro', 'kling-2-5-turbo'],
+      currentModelSlugs: ['kling-3-pro', 'kling-3-standard', 'kling-3-4k'],
     },
   },
   {
@@ -114,6 +115,7 @@ export const MODEL_FAMILIES = [
       stage: 'indexed',
       showInNav: true,
       publishedModelSlugs: ['seedance-2-0', 'seedance-2-0-fast', 'seedance-1-5-pro'],
+      currentModelSlugs: ['seedance-2-0', 'seedance-2-0-fast'],
     },
   },
   {
@@ -129,6 +131,7 @@ export const MODEL_FAMILIES = [
       stage: 'indexed',
       showInNav: true,
       publishedModelSlugs: ['ltx-2-3-pro', 'ltx-2-3-fast', 'ltx-2', 'ltx-2-fast'],
+      currentModelSlugs: ['ltx-2-3-pro', 'ltx-2-3-fast'],
     },
   },
   {

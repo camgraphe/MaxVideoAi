@@ -65,6 +65,7 @@ const FAMILY_STATE = (() => {
   const resolverModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const copyCandidateSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const publishedModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
+  const currentModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const variantLabelsByFamily = new Map<ModelFamilyId, string[]>();
   const engineAliasesByFamily = new Map<ModelFamilyId, string[]>();
 
@@ -140,8 +141,10 @@ const FAMILY_STATE = (() => {
     const publishedModelSlugs = publishedFromConfig.length
       ? publishedFromConfig
       : sortFamilyModelSlugs(family, copyCandidateSlugs);
+    const currentModelSlugs = examplesPage.currentModelSlugs.filter((slug) => publishedModelSlugs.includes(slug));
 
     publishedModelSlugsByFamily.set(familyId, publishedModelSlugs);
+    currentModelSlugsByFamily.set(familyId, currentModelSlugs);
     variantLabelsByFamily.set(
       familyId,
       unique(
@@ -183,6 +186,7 @@ const FAMILY_STATE = (() => {
     navFamilyIds,
     resolverModelSlugsByFamily,
     publishedModelSlugsByFamily,
+    currentModelSlugsByFamily,
     variantLabelsByFamily,
     engineAliasesByFamily,
   };
@@ -238,6 +242,12 @@ export function getExampleFamilyModelSlugs(familyId: string): string[] {
   if (published.length) return published.slice();
   const resolverModelSlugs = FAMILY_STATE.resolverModelSlugsByFamily.get(family.id as ModelFamilyId) ?? [];
   return sortFamilyModelSlugs(family, resolverModelSlugs);
+}
+
+export function getExampleFamilyCurrentModelSlugs(familyId: string): string[] {
+  const family = getModelFamilyDefinition(familyId);
+  if (!family) return [];
+  return [...(FAMILY_STATE.currentModelSlugsByFamily.get(family.id as ModelFamilyId) ?? [])];
 }
 
 export function getExampleFamilyPrimaryModelSlug(familyId: string): string | null {

@@ -48,6 +48,7 @@ export type ModelFamilyExamplesPageConfig = {
   stage: ModelPublicationStage;
   showInNav: boolean;
   publishedModelSlugs: string[];
+  currentModelSlugs: string[];
 };
 
 export type ModelSurfaceDefaultsInput = {
@@ -265,6 +266,7 @@ export function getDefaultFamilyExamplesPageConfig(): ModelFamilyExamplesPageCon
     stage: 'hidden',
     showInNav: false,
     publishedModelSlugs: [],
+    currentModelSlugs: [],
   };
 }
 
@@ -276,6 +278,7 @@ export function normalizeFamilyExamplesPageConfig(
     stage: value?.stage ?? defaults.stage,
     showInNav: value?.showInNav ?? defaults.showInNav,
     publishedModelSlugs: normalizeStringArray(value?.publishedModelSlugs) ?? defaults.publishedModelSlugs,
+    currentModelSlugs: normalizeStringArray(value?.currentModelSlugs) ?? defaults.currentModelSlugs,
   };
 }
 
