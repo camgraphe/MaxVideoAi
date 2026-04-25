@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
@@ -91,6 +93,18 @@ test('Kling 3 4K pricing definition exposes the native 4K rate', () => {
   assert.equal(definition.addons?.audio_off, undefined);
   assert.equal(definition.durationSteps.min, 3);
   assert.equal(definition.durationSteps.max, 15);
+});
+
+test('Kling 3 4K benchmark specs mark effective lip sync support', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    specs?: Array<{ modelSlug?: string; keySpecs?: Record<string, unknown> }>;
+  };
+  const native4k = benchmarkData.specs?.find((entry) => entry.modelSlug === 'kling-3-4k');
+
+  assert.ok(native4k);
+  assert.equal(native4k.keySpecs?.lipSync, 'Supported');
+  assert.equal(native4k.keySpecs?.nativeAudioGeneration, 'Supported');
 });
 
 test('Kling 3 displayed quotes include the MaxVideoAI margin', async () => {

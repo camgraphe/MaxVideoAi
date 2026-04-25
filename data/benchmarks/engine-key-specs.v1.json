@@ -550,7 +550,7 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Not listed for native 4K route",
+        "lipSync": "Supported",
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)"
       }
