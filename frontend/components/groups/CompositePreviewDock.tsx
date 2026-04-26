@@ -13,6 +13,7 @@ import { UIIcon } from '@/components/ui/UIIcon';
 import { parseAspectRatio } from '@/lib/aspect';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
 
 const DEFAULT_PREVIEW_COPY = {
   title: 'Composite Preview',
@@ -112,6 +113,7 @@ export function CompositePreviewDock({
   const [isSafari, setIsSafari] = useState(false);
   const [readyItems, setReadyItems] = useState<Record<string, boolean>>({});
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const lastPrimaryReadyEventKeyRef = useRef<string | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const controls = {
@@ -201,6 +203,27 @@ export function CompositePreviewDock({
     return padded;
   }, [group]);
 
+  const activeVideoKey = useMemo(() => {
+    const index = slots.findIndex((item) => item && isVideo(item));
+    const item = index >= 0 ? slots[index] : null;
+    return item ? `${item.id}-${index}` : null;
+  }, [slots]);
+
+  const handleMediaReady = useCallback(
+    (itemKey: string) => {
+      markReady(itemKey);
+    },
+    [markReady]
+  );
+
+  useEffect(() => {
+    if (!activeVideoKey || !readyItems[activeVideoKey] || lastPrimaryReadyEventKeyRef.current === activeVideoKey) return;
+    lastPrimaryReadyEventKeyRef.current = activeVideoKey;
+    const warmupWindow = window as Window & { __maxVideoPrimaryVideoReady?: boolean };
+    warmupWindow.__maxVideoPrimaryVideoReady = true;
+    window.dispatchEvent(new Event(PRIMARY_VIDEO_READY_EVENT));
+  }, [activeVideoKey, readyItems]);
+
   useEffect(() => {
     videoRefs.current.forEach((video) => {
       video.loop = isLooping;
@@ -219,7 +242,8 @@ export function CompositePreviewDock({
 
   useEffect(() => {
     videoRefs.current.forEach((video) => {
-      if (isPlaying) {
+      const isActivePreview = video.dataset.previewVideo === 'active';
+      if (isPlaying && isActivePreview) {
         const playPromise = video.play();
         if (playPromise && typeof playPromise.catch === 'function') {
           playPromise.catch(() => undefined);
@@ -228,7 +252,7 @@ export function CompositePreviewDock({
         video.pause();
       }
     });
-  }, [isPlaying, group?.id]);
+  }, [activeVideoKey, isPlaying, group?.id]);
 
   const registerVideo = useCallback(
     (itemId: string) => {
@@ -239,7 +263,11 @@ export function CompositePreviewDock({
         }
         element.loop = isLooping;
         element.muted = isMuted;
-        if (isPlaying) {
+        element.dataset.previewVideo = itemId === activeVideoKey ? 'active' : 'idle';
+        if (itemId === activeVideoKey && element.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          handleMediaReady(itemId);
+        }
+        if (isPlaying && itemId === activeVideoKey) {
           const playPromise = element.play();
           if (playPromise && typeof playPromise.catch === 'function') {
             playPromise.catch(() => undefined);
@@ -250,7 +278,7 @@ export function CompositePreviewDock({
         videoRefs.current.set(itemId, element);
       };
     },
-    [isLooping, isMuted, isPlaying]
+    [activeVideoKey, handleMediaReady, isLooping, isMuted, isPlaying]
   );
 
   const gridClass = group ? GRID_CLASS[group.layout] ?? 'grid-cols-1' : 'grid-cols-1';
@@ -539,6 +567,7 @@ export function CompositePreviewDock({
                     if (itemStatusRaw === 'pending' || itemStatusRaw === 'loading' || !item.url) return 'pending';
                     return 'completed';
                   })();
+                  const shouldPlayVideo = isPlaying && itemKey === activeVideoKey;
                   const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
                   const hasAudio =
@@ -578,6 +607,7 @@ export function CompositePreviewDock({
                             ) : null}
                             <video
                               ref={registerVideo(itemKey)}
+                              data-preview-video={shouldPlayVideo ? 'active' : 'idle'}
                               src={item.url}
                               poster={item.thumb}
                               className={clsx(
@@ -589,10 +619,11 @@ export function CompositePreviewDock({
                               )}
                               muted={isMuted}
                               playsInline
-                              preload="metadata"
+                              preload={shouldPlayVideo ? 'auto' : 'none'}
                               loop={isLooping}
-                              autoPlay={isPlaying}
-                              onLoadedData={() => markReady(itemKey)}
+                              autoPlay={shouldPlayVideo}
+                              onLoadedData={() => handleMediaReady(itemKey)}
+                              onCanPlay={() => handleMediaReady(itemKey)}
                             />
                           </>
                         ) : item.thumb ? (

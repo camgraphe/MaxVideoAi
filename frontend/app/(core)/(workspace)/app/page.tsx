@@ -6801,7 +6801,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   </div>
                 ) : (
                   <div className="grid grid-gap-sm sm:grid-cols-2">
-                    {normalizedPendingGroups.map((group) => {
+                    {normalizedPendingGroups.map((group, index) => {
                       const engineId = group.hero.engineId;
                       const engine = engineId ? engineMap.get(engineId) ?? null : null;
                       return (
@@ -6812,6 +6812,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           onOpen={handleActiveGroupOpen}
                           onAction={handleActiveGroupAction}
                           allowRemove={false}
+                          eagerPreview={index === 0}
                         />
                       );
                     })}

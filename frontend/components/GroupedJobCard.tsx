@@ -42,11 +42,13 @@ function GroupPreviewMedia({
   audioUrl,
   audioLabel,
   shouldPlay,
+  shouldWarm,
 }: {
   preview: GroupSummary['previews'][number] | undefined;
   audioUrl?: string | null;
   audioLabel?: string | null;
   shouldPlay: boolean;
+  shouldWarm: boolean;
 }) {
   const hasVideo = Boolean(preview?.videoUrl);
   const hasAudioOnly = Boolean(audioUrl) && !hasVideo;
@@ -64,16 +66,36 @@ function GroupPreviewMedia({
     const element = videoRef.current;
     if (!element) return;
     if (shouldPlay) {
-      const playPromise = element.play();
-      if (playPromise) {
-        playPromise.catch(() => {
-          /* ignore autoplay rejection */
-        });
+      element.preload = 'auto';
+      if (element.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+        element.load();
+      }
+      if (element.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        const playPromise = element.play();
+        if (playPromise) {
+          playPromise.catch(() => {
+            /* ignore autoplay rejection */
+          });
+        }
       }
     } else {
       element.pause();
+      if (shouldWarm && element.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+        element.load();
+      }
     }
-  }, [hasVideo, preview?.videoUrl, shouldPlay]);
+  }, [hasVideo, preview?.videoUrl, shouldPlay, shouldWarm]);
+
+  const handleCanPlay = () => {
+    setVideoReady(true);
+    if (!shouldPlay || !videoRef.current) return;
+    const playPromise = videoRef.current.play();
+    if (playPromise) {
+      playPromise.catch(() => {
+        /* ignore autoplay rejection */
+      });
+    }
+  };
 
   if (hasVideo && preview?.videoUrl) {
     const poster = thumbSrc ?? undefined;
@@ -100,8 +122,9 @@ function GroupPreviewMedia({
           muted
           playsInline
           loop
-          preload={shouldPlay ? 'metadata' : 'none'}
+          preload={shouldPlay ? 'auto' : shouldWarm ? 'metadata' : 'none'}
           onLoadedData={() => setVideoReady(true)}
+          onCanPlay={handleCanPlay}
         />
       </div>
     );
@@ -140,6 +163,7 @@ export interface GroupedJobCardProps {
   imageLibrarySavingLabel?: string;
   recreateHref?: string;
   recreateLabel?: string;
+  eagerPreview?: boolean;
 }
 
 export function GroupedJobCard({
@@ -160,6 +184,7 @@ export function GroupedJobCard({
   imageLibrarySavingLabel = 'Saving…',
   recreateHref,
   recreateLabel = 'Generate same settings',
+  eagerPreview = false,
 }: GroupedJobCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -242,6 +267,13 @@ export function GroupedJobCard({
   const heroHasAudio = Boolean(group.hero.job?.hasAudio);
 
   const [hovered, setHovered] = useState(false);
+  const [isPreviewWarm, setIsPreviewWarm] = useState(eagerPreview);
+
+  useEffect(() => {
+    if (eagerPreview) {
+      setIsPreviewWarm(true);
+    }
+  }, [eagerPreview]);
 
   return (
     <Card
@@ -255,9 +287,15 @@ export function GroupedJobCard({
         role="button"
         tabIndex={0}
         onClick={() => onOpen?.(group)}
-        onPointerEnter={() => setHovered(true)}
+        onPointerEnter={() => {
+          setIsPreviewWarm(true);
+          setHovered(true);
+        }}
         onPointerLeave={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
+        onFocus={() => {
+          setIsPreviewWarm(true);
+          setHovered(true);
+        }}
         onBlur={() => setHovered(false)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -300,6 +338,7 @@ export function GroupedJobCard({
                         audioUrl={memberAudioUrl}
                         audioLabel={preview?.videoUrl ? null : 'Audio'}
                         shouldPlay={hovered}
+                        shouldWarm={isPreviewWarm || hovered}
                       />
                     ) : previewThumb ? (
                       <Image
