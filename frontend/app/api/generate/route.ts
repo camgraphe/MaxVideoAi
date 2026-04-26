@@ -16,6 +16,7 @@ import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
+import { ensureFastStartVideo } from '@/server/video-faststart';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
@@ -2582,7 +2583,7 @@ async function rollbackPendingPayment(params: {
         : null) ??
     placeholderThumb;
   let previewFrame = thumb;
-  const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
+  let video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
   const videoAsset = generationResult.video ?? null;
   const providerMode = generationResult.provider;
   const status = generationResult.status ?? (video ? 'completed' : 'queued');
@@ -2648,11 +2649,26 @@ async function rollbackPendingPayment(params: {
         ? generationResult.videoUrl
         : null) ?? null;
   const isSourceAbsolute = Boolean(sourceVideoUrl && /^https?:\/\//i.test(sourceVideoUrl));
-  if (sourceVideoUrl && isSourceAbsolute && isPlaceholderThumbnail(thumb)) {
-    const generatedThumb = await ensureJobThumbnail({
+  if (sourceVideoUrl && isSourceAbsolute) {
+    const fastStartVideo = await ensureFastStartVideo({
       jobId,
       userId,
       videoUrl: sourceVideoUrl,
+    });
+    if (fastStartVideo) {
+      video = fastStartVideo;
+      if (videoAsset) {
+        videoAsset.url = fastStartVideo;
+      }
+    }
+  }
+
+  const thumbnailSourceVideoUrl = video ?? sourceVideoUrl;
+  if (thumbnailSourceVideoUrl && /^https?:\/\//i.test(thumbnailSourceVideoUrl) && isPlaceholderThumbnail(thumb)) {
+    const generatedThumb = await ensureJobThumbnail({
+      jobId,
+      userId,
+      videoUrl: thumbnailSourceVideoUrl,
       aspectRatio: aspectRatio ?? undefined,
       existingThumbUrl: thumb,
     });

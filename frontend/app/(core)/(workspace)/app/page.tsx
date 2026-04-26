@@ -4443,10 +4443,52 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           return;
         }
         const payload = (await response.json().catch(() => null)) as
-          | { ok?: boolean; settingsSnapshot?: unknown }
+          | {
+              ok?: boolean;
+              settingsSnapshot?: unknown;
+              videoUrl?: string;
+              thumbUrl?: string;
+              aspectRatio?: string;
+              progress?: number;
+              status?: string;
+            }
           | null;
-        if (!payload?.ok || !payload.settingsSnapshot) return;
-        applyVideoSettingsSnapshot(payload.settingsSnapshot);
+        if (!payload?.ok) return;
+        if (payload.settingsSnapshot) {
+          applyVideoSettingsSnapshot(payload.settingsSnapshot);
+        }
+
+        const nextVideoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : null;
+        const nextThumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : null;
+        if (!nextVideoUrl && !nextThumbUrl) return;
+
+        setSelectedPreview((current) => {
+          if (!current || (current.id !== jobId && current.localKey !== jobId)) return current;
+          return {
+            ...current,
+            videoUrl: nextVideoUrl ?? current.videoUrl,
+            thumbUrl: nextThumbUrl ?? current.thumbUrl,
+            aspectRatio: payload.aspectRatio ?? current.aspectRatio,
+            progress: typeof payload.progress === 'number' ? payload.progress : current.progress,
+            status: payload.status === 'failed' ? 'failed' : payload.status === 'pending' ? 'pending' : current.status,
+          };
+        });
+
+        setCompositeOverride((current) => {
+          if (!current) return current;
+          let changed = false;
+          const items = current.items.map((item) => {
+            if (item.id !== jobId && item.jobId !== jobId) return item;
+            changed = true;
+            return {
+              ...item,
+              url: nextVideoUrl ?? item.url,
+              thumb: nextThumbUrl ?? item.thumb,
+              aspect: payload.aspectRatio === '9:16' || payload.aspectRatio === '1:1' ? payload.aspectRatio : item.aspect,
+            };
+          });
+          return changed ? { ...current, items } : current;
+        });
       } catch {
         // ignore best-effort recalls from gallery
       }

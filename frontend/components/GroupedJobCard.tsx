@@ -84,47 +84,57 @@ function GroupPreviewMedia({
     setVideoReady(true);
   }, []);
 
+  const playPreviewVideo = useCallback(() => {
+    const element = videoRef.current;
+    if (!element) return;
+    element.preload = 'auto';
+    if (
+      element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
+      (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)
+    ) {
+      element.load();
+    }
+    if (element.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      return;
+    }
+    const playPromise = element.play();
+    if (playPromise) {
+      playPromise.catch(() => {
+        /* ignore autoplay rejection */
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (!hasVideo) return;
     const element = videoRef.current;
     if (!element) return;
     if (shouldPlay) {
-      element.preload = 'auto';
-      if (
-        element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
-        (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA)
-      ) {
-        element.load();
-      }
-      if (element.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
-        const playPromise = element.play();
-        if (playPromise) {
-          playPromise.catch(() => {
-            /* ignore autoplay rejection */
-          });
-        }
-      }
+      playPreviewVideo();
     } else {
       element.pause();
       if (
         shouldWarm &&
         (element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
-          (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA))
+          (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_CURRENT_DATA))
       ) {
         element.preload = 'auto';
         element.load();
       }
     }
-  }, [hasVideo, preview?.videoUrl, shouldPlay, shouldWarm]);
+  }, [hasVideo, playPreviewVideo, preview?.videoUrl, shouldPlay, shouldWarm]);
 
   const handleCanPlay = () => {
     markVideoReady();
-    if (!shouldPlay || !videoRef.current) return;
-    const playPromise = videoRef.current.play();
-    if (playPromise) {
-      playPromise.catch(() => {
-        /* ignore autoplay rejection */
-      });
+    if (shouldPlay) {
+      playPreviewVideo();
+    }
+  };
+
+  const handleLoadedData = () => {
+    markVideoReady();
+    if (shouldPlay) {
+      playPreviewVideo();
     }
   };
 
@@ -138,7 +148,7 @@ function GroupPreviewMedia({
             alt=""
             className={clsx(
               'absolute inset-0 object-contain transition-opacity duration-150 ease-out',
-              videoReady && shouldPlay ? 'opacity-0' : 'opacity-100'
+              shouldPlay ? 'opacity-0' : 'opacity-100'
             )}
           />
         ) : null}
@@ -152,9 +162,10 @@ function GroupPreviewMedia({
           )}
           muted
           playsInline
+          autoPlay={shouldPlay}
           loop
           preload={shouldPlay || shouldWarm ? 'auto' : 'none'}
-          onLoadedData={markVideoReady}
+          onLoadedData={handleLoadedData}
           onCanPlay={handleCanPlay}
         />
       </div>

@@ -230,10 +230,13 @@ export function CompositePreviewDock({
 
   const playVideoWhenReady = useCallback((video: HTMLVideoElement) => {
     video.preload = 'auto';
-    if (video.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+    if (
+      video.networkState === HTMLMediaElement.NETWORK_EMPTY ||
+      (video.networkState === HTMLMediaElement.NETWORK_IDLE && video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)
+    ) {
       video.load();
     }
-    if (video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
       return;
     }
     const playPromise = video.play();
@@ -253,10 +256,13 @@ export function CompositePreviewDock({
   );
 
   const handleVideoLoadedData = useCallback(
-    (itemKey: string) => {
+    (itemKey: string, video: HTMLVideoElement) => {
       handleMediaReady(itemKey);
+      if (itemKey === activeVideoKey && isPlaying) {
+        playVideoWhenReady(video);
+      }
     },
-    [handleMediaReady]
+    [activeVideoKey, handleMediaReady, isPlaying, playVideoWhenReady]
   );
 
   useEffect(() => {
@@ -650,7 +656,7 @@ export function CompositePreviewDock({
                                   'pointer-events-none z-10 transition-opacity duration-150',
                                   mediaFitClass,
                                   shouldZoom ? 'transition-transform' : null,
-                                  isVideoReady ? 'opacity-0' : 'opacity-100'
+                                  isVideoReady || shouldPlayVideo ? 'opacity-0' : 'opacity-100'
                                 )}
                               />
                             ) : null}
@@ -666,9 +672,10 @@ export function CompositePreviewDock({
                               )}
                               muted={isMuted}
                               playsInline
+                              autoPlay={shouldPlayVideo}
                               preload={shouldPlayVideo ? 'auto' : 'metadata'}
                               loop={isLooping}
-                              onLoadedData={() => handleVideoLoadedData(itemKey)}
+                              onLoadedData={(event) => handleVideoLoadedData(itemKey, event.currentTarget)}
                               onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
                             />
                           </>
