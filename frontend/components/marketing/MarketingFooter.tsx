@@ -56,6 +56,7 @@ export function MarketingFooter() {
     { slug: 'veo-3-1-lite', labelKey: 'footer.sections.engines.items.veo3_1lite', fallback: 'Veo 3.1 Lite' },
     { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
     { slug: 'sora-2-pro', labelKey: 'footer.sections.engines.items.sora2pro', fallback: 'Sora 2 Pro' },
+    { slug: 'pika-text-to-video', labelKey: 'footer.sections.engines.items.pikaTextToVideo', fallback: 'Pika Text to Video' },
   ];
   const engineLinks: FooterLink[] = engineItems
     .filter((item) => modelSlugSet.has(item.slug))

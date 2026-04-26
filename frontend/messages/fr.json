@@ -56,7 +56,7 @@
           "seedance-1-5-pro": "Seedance 1.5 Pro",
           "ltx-2": "LTX 2",
           "ltx-2-fast": "LTX 2 Fast",
-          "pika-text-to-video": "Pika 2.2",
+          "pika-text-to-video": "Pika Text to Video",
           "wan-2-6": "Wan 2.6",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02"
         }
@@ -250,6 +250,7 @@
           "veo3_1lite": "Veo 3.1 Lite",
           "ltx23pro": "LTX 2.3 Pro",
           "pika22": "Pika 2.2",
+          "pikaTextToVideo": "Pika Text to Video",
           "ltx2": "LTX 2",
           "seedance1_5pro": "Seedance 1.5 Pro"
         }
@@ -318,9 +319,9 @@
     "redesign": {
       "hero": {
         "eyebrow": "Workspace vidéo IA multi-moteurs, sans abonnement",
-        "badgeChips": ["Tarification à l’usage", "Prix avant génération", "Moteurs toujours à jour"],
+        "badgeChips": ["Générateur vidéo IA multi-moteurs", "Prix avant rendu", "À l’usage · sans abonnement"],
         "title": "Arrêtez de deviner quel modèle vidéo IA utiliser.",
-        "subtitle": "Comparez Sora, Veo, Kling, LTX, Seedance, Wan, Pika et plus, voyez le prix avant chaque rendu, puis générez avec le bon moteur pour chaque plan.",
+        "subtitle": "Comparez Sora, Veo, Kling, LTX, Seedance, Wan, Pika et plus, prévisualisez de vrais résultats, voyez le prix avant rendu, puis générez avec le bon modèle pour chaque plan.",
         "primaryCta": "Lancer un rendu",
         "secondaryCta": "Voir les exemples",
         "examplesCta": "Comparer les moteurs",
@@ -332,24 +333,20 @@
         ],
         "valueCards": [
           {
-            "title": "Prix avant génération",
-            "body": "Voyez le coût de chaque rendu avant de lancer.",
-            "icon": "price"
+            "title": "Comparer les moteurs",
+            "body": "Modèles, exemples et comparatifs avant de dépenser vos crédits."
           },
           {
-            "title": "Moteurs toujours à jour",
-            "body": "Accédez aux derniers modèles vidéo IA.",
-            "icon": "engines"
+            "title": "Devis live",
+            "body": "Voyez le coût total avant le départ de chaque rendu."
           },
           {
-            "title": "Comparez avec confiance",
-            "body": "Comparez les résultats et les usages au même endroit.",
-            "icon": "compare"
+            "title": "Exemples par moteur",
+            "body": "Parcourez de vrais rendus par famille de modèles."
           },
           {
-            "title": "Paiement à l’usage",
-            "body": "Pas d’abonnement. Pas de surprise.",
-            "icon": "payg"
+            "title": "Sans abonnement",
+            "body": "Rechargez au besoin. Les rendus échoués sont remboursés."
           }
         ],
         "mockup": {
@@ -373,8 +370,8 @@
               "tags": ["Audio", "Référence", "Poli"]
             },
             {
-              "engineId": "veo-3-1",
-              "name": "Veo 3.1",
+              "engineId": "veo-3-1-lite",
+              "name": "Veo 3.1 Lite",
               "provider": "Google",
               "bestFor": "Motion réaliste",
               "fallbackPrice": "dès 0,45 $ / 5 s",
@@ -426,9 +423,9 @@
               "tags": ["Story", "Personnage", "Audio"]
             }
           ],
-          "quoteLabel": "Prix estimé",
+          "quoteLabel": "Devis avant rendu",
           "quoteValue": "0,34 $",
-          "quoteMeta": "5 s · 1080p · audio si disponible",
+          "quoteMeta": "5 s · 1080p · image-vers-vidéo",
           "outputLabel": "Aperçus de sortie",
           "queueLabel": "Statut du rendu",
           "queueItems": ["Aperçu en rendu", "Reçu enregistré", "Historique mis à jour"],
@@ -441,6 +438,7 @@
       },
       "proof": {
         "liveValue": "Live",
+        "pricingSubLabel": "Avant chaque rendu",
         "items": [
           { "id": "engines", "label": "Moteurs IA" },
           { "id": "providers", "label": "Fournisseurs" },
@@ -449,7 +447,7 @@
           { "id": "videoToVideo", "label": "Vidéo-vers-vidéo" },
           { "id": "audio", "label": "Audio disponible" },
           { "id": "fourK", "label": "Options" },
-          { "id": "pricing", "label": "Prix" }
+          { "id": "pricing", "label": "Prix live" }
         ]
       },
       "shotTypes": {
@@ -461,134 +459,146 @@
             "title": "Brouillons rapides et tests économiques",
             "body": "Validez prompts, rythme et composition avant de passer sur des moteurs premium.",
             "engines": ["LTX 2.3 Fast", "Veo 3.1 Lite"],
-            "cta": "Voir les modèles rapides",
-            "href": { "pathname": "/models/[slug]", "params": { "slug": "ltx-2-3-fast" } }
+            "cta": "Voir les exemples LTX",
+            "href": { "pathname": "/examples/[model]", "params": { "model": "ltx" } }
           },
           {
             "id": "cinematic-realism",
             "title": "Réalisme cinématographique",
             "body": "Utilisez des moteurs plus forts pour le mouvement, la lumière et les plans de campagne premium.",
-            "engines": ["Veo 3.1", "Seedance 2.0", "Kling 3"],
-            "cta": "Voir les exemples ciné",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "veo" } }
+            "engines": ["Seedance 2.0", "Veo 3.1", "Kling 3"],
+            "cta": "Voir les exemples Seedance",
+            "href": { "pathname": "/examples/[model]", "params": { "model": "seedance" } }
           },
           {
             "id": "character-scenes",
             "title": "Scènes avec personnages",
             "body": "Partez de références cohérentes, puis choisissez des moteurs adaptés aux scènes narratives.",
             "engines": ["Sora 2", "Seedance", "LTX"],
-            "cta": "Créer des références personnage",
+            "cta": "Ouvrir Character Builder",
             "href": { "pathname": "/tools/character-builder" }
           },
           {
             "id": "product-ads",
             "title": "Plans produit et publicités",
             "body": "Créez des reveals produit, des pubs UGC et du motion de marque contrôlé.",
-            "engines": ["Seedance", "Veo", "Kling"],
-            "cta": "Voir les exemples produit",
-            "href": { "pathname": "/examples" }
+            "engines": ["Veo 3.1", "Seedance", "Kling"],
+            "cta": "Voir les exemples Veo",
+            "href": { "pathname": "/examples/[model]", "params": { "model": "veo" } }
           },
           {
             "id": "camera-motion",
             "title": "Mouvement caméra",
             "body": "Comparez les moteurs quand la caméra, les transitions et la géométrie du plan comptent.",
-            "engines": ["Kling 3", "Veo", "Wan"],
-            "cta": "Comparer le motion",
-            "href": { "pathname": "/ai-video-engines/[slug]", "params": { "slug": "kling-3-pro-vs-veo-3-1" } }
+            "engines": ["Kling 3 Pro", "Veo", "Wan"],
+            "cta": "Voir les exemples Kling",
+            "href": { "pathname": "/examples/[model]", "params": { "model": "kling" } }
           },
           {
             "id": "audio-native",
-            "title": "Clips avec audio natif",
+            "title": "Workflows avec audio disponible",
             "body": "Choisissez des moteurs audio ou audio-ready quand le son fait partie du rendu.",
             "engines": ["Sora 2", "Veo 3.1", "Seedance"],
-            "cta": "Comparer les moteurs audio",
+            "cta": "Comparer les moteurs avec audio",
             "href": { "pathname": "/ai-video-engines" }
           }
         ]
       },
       "examples": {
-        "title": "De vrais rendus. De vrais prompts. De vrais prix.",
-        "subtitle": "Parcourez des exemples vidéo IA clonables avec modèle, prompt, réglages, durée et coût estimé.",
-        "cta": "Cloner cet exemple",
-        "viewPrompt": "Voir le prompt",
+        "title": "De vrais rendus. De vrais usages. De vrais prix.",
+        "subtitle": "Ouvrez des pages d’exemples vidéo IA par famille de moteurs, puis consultez prompts, réglages, durée et coût sur la page dédiée.",
+        "cta": "Parcourir tous les exemples",
+        "viewPrompt": "Cloner les réglages",
         "fallbackCards": [
           {
-            "id": "fallback-sora",
-            "title": "Scène narrative avec personnage",
-            "engine": "Sora 2",
-            "engineId": "sora-2",
+            "id": "fallback-ltx",
+            "title": "Exemples LTX",
+            "engine": "LTX 2.3 Fast",
+            "engineId": "ltx-2-3-fast",
+            "modelSlug": "ltx-2-3-fast",
             "mode": "Texte-vers-vidéo",
-            "duration": "8 s",
-            "price": "dès 0,80 $",
-            "prompt": "Un moment personnage crédible avec mouvement caméra contrôlé et lumière naturelle.",
-            "imageSrc": "/hero/sora2.jpg",
-            "imageAlt": "Exemple vidéo IA cinématographique Sora 2.",
-            "examplesSlug": "sora"
-          },
-          {
-            "id": "fallback-veo",
-            "title": "Reveal produit cinématique",
-            "engine": "Veo 3.1",
-            "engineId": "veo-3-1",
-            "mode": "Image-vers-vidéo",
-            "duration": "8 s",
-            "price": "dès 0,40 $",
-            "prompt": "Un reveal produit premium avec motion fluide, composition forte et support audio.",
-            "imageSrc": "/hero/veo-3-1-hero.jpg",
-            "imageAlt": "Exemple vidéo IA Veo 3.1.",
-            "examplesSlug": "veo"
+            "duration": "5 s",
+            "price": "devis live",
+            "useCase": "Brouillons rapides et tests à faible coût",
+            "cta": "Voir les exemples LTX",
+            "imageSrc": "/hero/luma-dream.jpg",
+            "imageAlt": "Exemple vidéo IA LTX pour itération rapide.",
+            "examplesSlug": "ltx"
           },
           {
             "id": "fallback-kling",
-            "title": "Test de mouvement caméra",
+            "title": "Exemples Kling",
             "engine": "Kling 3 Pro",
             "engineId": "kling-3-pro",
+            "modelSlug": "kling-3-pro",
             "mode": "Image-vers-vidéo",
             "duration": "10 s",
             "price": "prix avant rendu",
-            "prompt": "Un mouvement caméra dynamique avec sujet stable et motion réaliste.",
+            "useCase": "Mouvements caméra et scènes dynamiques",
+            "cta": "Voir les exemples Kling",
             "imageSrc": "/hero/kling-3-4k-hero.jpg",
             "imageAlt": "Exemple Kling AI de mouvement caméra.",
             "examplesSlug": "kling"
           },
           {
             "id": "fallback-seedance",
-            "title": "Scène guidée par référence",
+            "title": "Exemples Seedance",
             "engine": "Seedance 2.0",
             "engineId": "seedance-2-0",
+            "modelSlug": "seedance-2-0",
             "mode": "Référence-vers-vidéo",
             "duration": "10 s",
             "price": "devis live",
-            "prompt": "Un plan reference-first avec sujet cohérent, rythme propre et audio natif.",
+            "useCase": "Réalisme cinématographique et plans commerciaux",
+            "cta": "Voir les exemples Seedance",
             "imageSrc": "/hero/seedance-2-0.jpg",
             "imageAlt": "Exemple vidéo IA Seedance 2.0.",
             "examplesSlug": "seedance"
           },
           {
+            "id": "fallback-veo",
+            "title": "Exemples Veo",
+            "engine": "Veo 3.1",
+            "engineId": "veo-3-1",
+            "modelSlug": "veo-3-1",
+            "mode": "Image-vers-vidéo",
+            "duration": "8 s",
+            "price": "devis live",
+            "useCase": "Réalisme premium et image-vers-vidéo",
+            "cta": "Voir les exemples Veo",
+            "imageSrc": "/hero/veo-3-1-hero.jpg",
+            "imageAlt": "Exemple vidéo IA Veo 3.1.",
+            "examplesSlug": "veo"
+          },
+          {
+            "id": "fallback-sora",
+            "title": "Exemples Sora",
+            "engine": "Sora 2",
+            "engineId": "sora-2",
+            "modelSlug": "sora-2-pro",
+            "mode": "Texte-vers-vidéo",
+            "duration": "8 s",
+            "price": "devis live",
+            "useCase": "Scènes narratives et personnages",
+            "cta": "Voir les exemples Sora",
+            "imageSrc": "/hero/sora2.jpg",
+            "imageAlt": "Exemple vidéo IA cinématographique Sora 2.",
+            "examplesSlug": "sora"
+          },
+          {
             "id": "fallback-wan",
-            "title": "Prompt multi-plan structuré",
+            "title": "Exemples Wan",
             "engine": "Wan 2.6",
             "engineId": "wan-2-6",
+            "modelSlug": "wan-2-6",
             "mode": "Vidéo-vers-vidéo",
             "duration": "10 s",
             "price": "devis live",
-            "prompt": "Une séquence structurée avec beats clairs, transitions et continuité de référence.",
+            "useCase": "Prompts structurés et workflows vidéo-vers-vidéo",
+            "cta": "Voir les exemples Wan",
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Exemple vidéo IA Wan 2.6.",
             "examplesSlug": "wan"
-          },
-          {
-            "id": "fallback-pika",
-            "title": "Loop social rapide",
-            "engine": "Pika 2.2",
-            "engineId": "pika-text-to-video",
-            "mode": "Texte-vers-vidéo",
-            "duration": "5 s",
-            "price": "dès 0,20 $",
-            "prompt": "Une boucle courte et stylisée pour tester rapidement des variantes créatives.",
-            "imageSrc": "/hero/pika-22.jpg",
-            "imageAlt": "Exemple vidéo IA social Pika 2.2.",
-            "examplesSlug": "pika"
           }
         ]
       },
@@ -597,12 +607,12 @@
         "subtitle": "Les moteurs diffèrent sur le mouvement, le réalisme, l’adhérence au prompt, l’audio, la vitesse, la résolution et le coût. Comparez-les côte à côte avant de choisir.",
         "cta": "Comparer les modèles",
         "cards": [
-          { "id": "sora-standard-pro", "slug": "sora-2-vs-sora-2-pro", "title": "Sora 2 vs Sora 2 Pro", "body": "Comparez les routes Sora standard et premium pour narration, personnages et plans studio.", "badges": ["qualité", "audio", "coût"] },
-          { "id": "ltx-fast", "slug": "ltx-2-3-fast-vs-ltx-2-fast", "title": "LTX 2.3 Fast vs LTX 2 Fast", "body": "Trouvez la meilleure couche de brouillon pour tester prompts, motion et coûts.", "badges": ["vitesse", "prix", "drafts"] },
-          { "id": "ltx-wan", "slug": "ltx-2-fast-vs-wan-2-6", "title": "LTX 2 Fast vs Wan 2.6", "body": "Comparez l’itération rapide LTX aux prompts structurés et continuités de Wan.", "badges": ["motion", "valeur", "workflow"] },
           { "id": "seedance-upgrade", "slug": "seedance-1-5-pro-vs-seedance-2-0", "title": "Seedance 1.5 Pro vs Seedance 2.0", "body": "Voyez quand passer au workflow Seedance récent pour audio, références et multi-plans.", "badges": ["upgrade", "audio", "références"] },
-          { "id": "veo-fast-lite", "slug": "veo-3-1-fast-vs-veo-3-1-lite", "title": "Veo 3.1 Fast vs Veo 3.1 Lite", "body": "Comparez les routes Veo économiques quand vitesse et coût passent avant le flagship.", "badges": ["vitesse", "prix", "Veo"] },
-          { "id": "kling-pro-standard", "slug": "kling-3-pro-vs-kling-3-standard", "title": "Kling 3 Pro vs Kling 3 Standard", "body": "Choisissez le bon niveau Kling pour mouvement caméra, comportement actuel et coût.", "badges": ["motion", "réalisme", "coût"] }
+          { "id": "ltx-legacy-fast", "slug": "ltx-2-vs-ltx-2-3-fast", "title": "LTX 2 vs LTX 2.3 Fast", "body": "Comparez l’ancien comportement LTX à la route rapide actuelle pour itérer à moindre coût.", "badges": ["vitesse", "prix", "drafts"] },
+          { "id": "ltx-seedance", "slug": "ltx-2-3-fast-vs-seedance-2-0", "title": "LTX 2.3 Fast vs Seedance 2.0", "body": "Choisissez entre brouillons économiques et rendu Seedance plus poli avant de dépenser.", "badges": ["valeur", "qualité", "workflow"] },
+          { "id": "ltx-veo", "slug": "ltx-2-3-fast-vs-veo-3-1", "title": "LTX 2.3 Fast vs Veo 3.1", "body": "Comparez le test de prompt rapide au réalisme premium de Veo pour un même brief.", "badges": ["vitesse", "réalisme", "coût"] },
+          { "id": "kling-ltx", "slug": "kling-3-pro-vs-ltx-2-3-pro", "title": "Kling 3 Pro vs LTX 2.3 Pro", "body": "Choisissez la meilleure route pour mouvement caméra, qualité de production et coût.", "badges": ["motion", "réalisme", "prix"] },
+          { "id": "sora-standard-pro", "slug": "sora-2-vs-sora-2-pro", "title": "Sora 2 vs Sora 2 Pro", "body": "Comparez les routes Sora standard et premium pour narration, personnages et plans studio.", "badges": ["qualité", "audio", "coût"] }
         ]
       },
       "workflow": {
@@ -624,10 +634,8 @@
           { "id": "video-to-video", "title": "Vidéo vers vidéo", "body": "Transformez ou restylez des clips existants.", "href": "/app", "icon": "video" },
           { "id": "generate-image", "title": "Générer une image", "body": "Créez les frames sources avant animation.", "href": "/app/image", "icon": "generateImage" },
           { "id": "character-builder", "title": "Character Builder", "body": "Créez des personnages cohérents.", "href": { "pathname": "/tools/character-builder" }, "icon": "character" },
-          { "id": "angle-tool", "title": "Angle Finder", "body": "Trouvez le bon point de vue ou angle caméra.", "href": { "pathname": "/tools/angle" }, "icon": "angle" },
-          { "id": "extend-video", "title": "Extend Video", "body": "Prolongez un clip avec les moteurs compatibles.", "href": "/app", "icon": "extend" },
-          { "id": "retake", "title": "Retake", "body": "Regénérez en conservant réglages ou structure.", "href": "/app", "icon": "retake" },
-          { "id": "audio-to-video", "title": "Audio vers vidéo", "body": "Générez ou enrichissez des clips avec audio quand disponible.", "href": "/app", "icon": "audio" },
+          { "id": "angle-tool", "title": "Outil Angle", "body": "Trouvez le bon point de vue ou angle caméra.", "href": { "pathname": "/tools/angle" }, "icon": "angle" },
+          { "id": "upscale", "title": "AI Upscale", "body": "Améliorez la résolution d’images ou de sorties quand c’est pris en charge.", "href": { "pathname": "/tools/upscale" }, "icon": "image" },
           { "id": "compare-engines", "title": "Comparer les moteurs", "body": "Choisissez le bon modèle avant rendu.", "href": { "pathname": "/ai-video-engines" }, "icon": "compare" }
         ]
       },
@@ -653,7 +661,7 @@
           { "providerKey": "ByteDance", "provider": "ByteDance", "model": "Seedance" },
           { "providerKey": "Lightricks", "provider": "Lightricks", "model": "LTX" },
           { "providerKey": "Wan", "provider": "Wan", "model": "Wan" },
-          { "providerKey": "Pika", "provider": "Pika", "model": "Pika" },
+          { "providerKey": "Pika", "provider": "Pika", "model": "Pika Text to Video" },
           { "providerKey": "MiniMax", "provider": "MiniMax", "model": "Hailuo" },
           { "providerKey": "Luma AI", "provider": "Luma", "model": "Ray" }
         ]

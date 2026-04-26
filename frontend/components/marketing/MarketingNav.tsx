@@ -19,6 +19,7 @@ import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navig
 export function MarketingNav() {
   const pathname = usePathname();
   const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
+  const isHomePage = /^\/(?:fr|es)?\/?$/.test(pathname ?? '');
   const { locale, t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -251,8 +252,8 @@ export function MarketingNav() {
 
   return (
     <>
-    <header className="sticky top-0 z-40 border-b border-hairline bg-surface">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className={clsx('sticky top-0 z-40 border-b border-hairline bg-surface', isHomePage && 'home-monochrome')}>
+      <div className="mx-auto flex h-16 max-w-[1460px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 sm:gap-6">
           <Button
             type="button"
@@ -282,7 +283,7 @@ export function MarketingNav() {
             />
             <span className="text-sm font-semibold tracking-tight sm:text-lg">{compactBrand}</span>
           </Link>
-          <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary lg:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-5 text-sm font-medium text-text-secondary lg:flex xl:gap-7">
             {links.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
               const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
@@ -364,7 +365,7 @@ export function MarketingNav() {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3">
+        <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3 lg:gap-4">
           <div className="hidden items-center gap-1 md:flex">
             <LanguageToggle variant="icon" />
             <Button
@@ -497,7 +498,7 @@ export function MarketingNav() {
       </div>
     </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6">
+        <div className={clsx('fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6', isHomePage && 'home-monochrome')}>
           <div className="mx-auto flex max-w-sm items-center justify-end">
             <Button
               type="button"

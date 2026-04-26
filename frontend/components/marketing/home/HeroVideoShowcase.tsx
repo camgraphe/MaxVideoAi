@@ -3,17 +3,26 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRight, Maximize2, Pause, Play, Volume2 } from 'lucide-react';
+import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 export type HeroVideoShowcaseItem = {
   id: string;
+  engineId?: string;
   name: string;
   provider: string;
   bestFor: string;
+  chips?: string[];
+  mediaInfo?: string;
   price: string;
   estimateLabel: string;
   estimateValue: string;
   estimateMeta: string;
+  priceNote?: string;
+  examplesHref?: LocalizedLinkHref;
+  modelHref?: LocalizedLinkHref;
+  examplesLabel?: string;
+  modelLabel?: string;
   posterSrc: string;
   videoSrc?: string | null;
   duration: string;
@@ -51,6 +60,9 @@ export function HeroVideoShowcase({
 
   if (!selected) return null;
 
+  const primaryPrice = selected.estimateValue || selected.price;
+  const ratePrice = selected.price && selected.price !== primaryPrice ? selected.price : null;
+
   async function handlePlayToggle() {
     const video = videoRef.current;
     if (!video || !selected.videoSrc) {
@@ -77,59 +89,16 @@ export function HeroVideoShowcase({
   }
 
   const timeLabel = progress > 0 ? '0:02' : '0:00';
-  const stackItems = [
-    items[(selectedIndex + 1) % items.length],
-    items[(selectedIndex + 2) % items.length],
-    items[(selectedIndex + 3) % items.length],
-  ].filter(Boolean);
-  const stackCardTransforms = [
-    'translate3d(48px, 12px, -42px) rotateX(2deg) rotateY(-11deg) rotateZ(-0.65deg) scale(0.992)',
-    'translate3d(94px, 22px, -84px) rotateX(2deg) rotateY(-16deg) rotateZ(-1deg) scale(0.986)',
-    'translate3d(138px, 32px, -126px) rotateX(2deg) rotateY(-21deg) rotateZ(-1.35deg) scale(0.98)',
-  ];
 
   return (
-    <div className="relative mx-auto w-full max-w-[800px] overflow-visible px-0 xl:pr-[112px]">
-      <div className="absolute -inset-8 rounded-[46px] bg-[radial-gradient(circle_at_62%_8%,rgba(99,102,241,0.34),transparent_32%),radial-gradient(circle_at_20%_95%,rgba(14,165,233,0.20),transparent_34%)] blur-2xl" />
-
-      <div className="relative overflow-visible [perspective:760px] [transform-style:preserve-3d]">
-        {stackItems.map((item, index) => (
-          <div
-            key={`${item.id}-stack`}
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden rounded-[28px] border border-white/18 bg-[#070b14] shadow-[0_38px_96px_-48px_rgba(15,23,42,0.95)] xl:block"
-            style={{
-              transform: stackCardTransforms[index],
-              transformOrigin: 'center center',
-              transformStyle: 'preserve-3d',
-            }}
-          >
-            <Image
-              src={item.posterSrc}
-              alt=""
-              fill
-              sizes="660px"
-              className="object-cover opacity-95"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,7,18,0.08),rgba(3,7,18,0.52)),linear-gradient(180deg,rgba(3,7,18,0.10),rgba(3,7,18,0.72))]" />
-            <div className="absolute right-4 top-4 rounded-[12px] border border-white/14 bg-black/36 px-3 py-2 text-right text-white backdrop-blur-md">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/72">{item.name}</p>
-              <p className="mt-1 text-sm font-semibold">{item.price}</p>
-            </div>
-          </div>
-        ))}
-
-      <div
-        data-hero-player="main"
-        className="relative z-10 overflow-hidden rounded-[28px] border border-white/24 bg-[#070b14] shadow-[0_36px_104px_-44px_rgba(15,23,42,0.95)]"
-        style={{
-          transform: 'translateZ(64px) rotateX(2deg) rotateY(-8.8deg) rotateZ(-0.8deg)',
-          transformOrigin: 'center center',
-          transformStyle: 'preserve-3d',
-        }}
-      >
-        <div className="relative overflow-hidden bg-[#050912]" style={{ aspectRatio: '1.42 / 1' }}>
+    <div className="relative mx-auto w-full max-w-[830px] overflow-visible px-0">
+      <div className="absolute -inset-6 rounded-[42px] bg-[radial-gradient(circle_at_58%_10%,rgba(17,24,39,0.16),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(120,113,108,0.12),transparent_36%)] blur-2xl dark:bg-[radial-gradient(circle_at_58%_10%,rgba(255,255,255,0.10),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(148,163,184,0.11),transparent_36%)]" />
+      <div className="relative">
+        <div
+          data-hero-player="main"
+          className="relative z-10 overflow-hidden rounded-[22px] border border-white/24 bg-[#070b14] shadow-[0_30px_86px_-44px_rgba(15,23,42,0.95)]"
+        >
+          <div className="relative overflow-hidden bg-[#050912]" style={{ aspectRatio: '1.62 / 1' }}>
           {selected.videoSrc ? (
             <video
               ref={videoRef}
@@ -157,34 +126,39 @@ export function HeroVideoShowcase({
               alt={selected.imageAlt}
               fill
               priority
-              sizes="(max-width: 1023px) 100vw, 660px"
+              sizes="(max-width: 767px) 100vw, (max-width: 1399px) 58vw, 830px"
               className="object-cover"
             />
           )}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34)_0%,rgba(3,7,18,0.04)_38%,rgba(3,7,18,0.72)_100%)]" />
 
-          <div className="absolute left-5 top-5 text-white sm:left-6 sm:top-6">
-            <p className="text-lg font-semibold leading-none tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)]">
+          <div className="absolute left-5 top-5 max-w-[58%] text-white sm:left-7 sm:top-7">
+            <div className="flex flex-wrap gap-1.5">
+              {(selected.chips?.length ? selected.chips : [selected.bestFor, selected.provider]).slice(0, 3).map((chip) => (
+                <span key={chip} className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md">
+                  {chip}
+                </span>
+              ))}
+            </div>
+            <p className="mt-3 text-xl font-semibold leading-none tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)]">
               {selected.name}
             </p>
-            <p className="mt-2 text-sm font-medium text-white/86 drop-shadow-[0_2px_10px_rgba(0,0,0,0.72)]">{selected.price}</p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              <span className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md">
-                {selected.bestFor}
-              </span>
-              <span className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md">
-                {selected.provider}
-              </span>
-            </div>
+            <p className="mt-2 text-sm font-medium text-white/86 drop-shadow-[0_2px_10px_rgba(0,0,0,0.72)]">
+              {selected.mediaInfo ?? `${selected.provider} · ${selected.duration}`}
+            </p>
           </div>
 
-          <div className="absolute right-4 top-4 min-w-[124px] rounded-[16px] border border-white/18 bg-black/52 px-3.5 py-3 text-left text-white shadow-[0_18px_48px_-24px_rgba(0,0,0,0.95)] backdrop-blur-lg sm:right-6 sm:top-6 sm:min-w-[142px]">
+          <div className="absolute right-4 top-4 min-w-[124px] rounded-[16px] border border-white/18 bg-black/50 px-3.5 py-3 text-left text-white shadow-[0_18px_48px_-24px_rgba(0,0,0,0.95)] backdrop-blur-lg sm:right-6 sm:top-6 sm:min-w-[142px]">
             <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/68">{selected.estimateLabel}</p>
-            <p className="mt-1 flex items-end gap-1.5 text-2xl font-semibold leading-none tracking-tight sm:text-[28px]">
-              {selected.estimateValue}
-              <span className="pb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/74">USD</span>
+            <p className="mt-1 text-2xl font-semibold leading-none tracking-tight sm:text-[28px]">
+              {primaryPrice}
             </p>
-            <p className="mt-1.5 text-[10px] font-medium leading-tight text-white/78 sm:text-[11px]">{selected.estimateMeta}</p>
+            <p className="mt-1.5 text-[10px] font-medium leading-tight text-white/78 sm:text-[11px]">
+              {selected.estimateMeta}
+            </p>
+            {selected.priceNote || ratePrice ? (
+              <p className="mt-1.5 text-[10px] font-semibold leading-tight text-white/84 sm:text-[11px]">{selected.priceNote ?? ratePrice}</p>
+            ) : null}
           </div>
 
           <button
@@ -192,7 +166,7 @@ export function HeroVideoShowcase({
             aria-label={isPlaying ? pauseLabel : playLabel}
             aria-pressed={isPlaying}
             onClick={handlePlayToggle}
-            className="absolute left-1/2 top-1/2 inline-flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14]"
+            className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14]"
           >
             <UIIcon icon={isPlaying ? Pause : Play} size={28} />
           </button>
@@ -219,7 +193,7 @@ export function HeroVideoShowcase({
                 aria-valuenow={Math.round(progress)}
               >
                 <div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,#6d5dfc,#9d8cff)] transition-[width] duration-300"
+                  className="h-full rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.88),rgba(229,231,235,0.98))] transition-[width] duration-300"
                   style={{ width: `${Math.max(12, progress)}%` }}
                 />
               </div>
@@ -244,10 +218,9 @@ export function HeroVideoShowcase({
           </div>
         </div>
       </div>
-      </div>
 
-      <div className="relative z-20 mt-4">
-        <div className="grid grid-cols-3 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+      <div className="relative z-20 mt-5">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
           {items.map((item, index) => {
             const selectedThumb = index === selectedIndex;
             return (
@@ -259,15 +232,15 @@ export function HeroVideoShowcase({
                 onClick={() => selectEngine(index)}
                 className={
                   selectedThumb
-                    ? 'relative aspect-[11/12] min-w-0 overflow-hidden rounded-[15px] border border-[#6d5dfc] bg-[#070b14] shadow-[0_0_0_2px_rgba(109,93,252,0.28),0_20px_38px_-24px_rgba(29,32,88,0.78)] focus:outline-none focus:ring-2 focus:ring-brand/60 sm:h-[104px] sm:w-[96px] xl:h-[108px] xl:w-[100px]'
-                    : 'relative aspect-[11/12] min-w-0 overflow-hidden rounded-[15px] border border-white/70 bg-[#070b14] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.72)] transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_16px_34px_-28px_rgba(79,70,229,0.58)] focus:outline-none focus:ring-2 focus:ring-brand/50 sm:h-[104px] sm:w-[96px] xl:h-[108px] xl:w-[100px] dark:border-white/14'
+                    ? 'relative aspect-[0.92] min-w-0 overflow-hidden rounded-[15px] border border-white/90 bg-[#070b14] shadow-[0_0_0_2px_rgba(17,24,39,0.28),0_20px_38px_-24px_rgba(3,7,18,0.78)] focus:outline-none focus:ring-2 focus:ring-slate-400/70 dark:border-white/70 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.22),0_20px_38px_-24px_rgba(0,0,0,0.92)]'
+                    : 'relative aspect-[0.92] min-w-0 overflow-hidden rounded-[15px] border border-white/70 bg-[#070b14] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.72)] transition hover:-translate-y-0.5 hover:border-white/90 hover:shadow-[0_16px_34px_-28px_rgba(3,7,18,0.62)] focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:border-white/14'
                 }
               >
                 <Image
                   src={item.posterSrc}
                   alt={item.imageAlt}
                   fill
-                  sizes="(max-width: 639px) 50vw, 100px"
+                  sizes="(max-width: 639px) 33vw, 132px"
                   className="object-cover"
                   loading="eager"
                 />
@@ -287,10 +260,33 @@ export function HeroVideoShowcase({
           type="button"
           aria-label={nextLabel}
           onClick={selectNext}
-          className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-hairline bg-surface/95 text-brand shadow-card backdrop-blur transition hover:border-brand/30 hover:bg-brand/5 focus:outline-none focus:ring-2 focus:ring-brand/50 2xl:grid"
+          className="absolute -right-5 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-hairline bg-surface/95 text-text-primary shadow-card backdrop-blur transition hover:border-slate-300 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:hover:border-white/20 dark:hover:bg-white/10 xl:grid"
         >
           <UIIcon icon={ChevronRight} size={18} />
         </button>
+        {(selected.examplesHref || selected.modelHref) ? (
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
+            {selected.examplesHref ? (
+              <Link
+                href={selected.examplesHref}
+                className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-text-primary shadow-[0_12px_30px_-22px_rgba(15,23,42,0.55)] transition hover:border-text-muted hover:bg-white dark:border-white/12 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+              >
+                {selected.examplesLabel ?? `View ${selected.name} examples`}
+                <span aria-hidden="true">→</span>
+              </Link>
+            ) : null}
+            {selected.modelHref ? (
+              <Link
+                href={selected.modelHref}
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-text-secondary transition hover:text-text-primary"
+              >
+                {selected.modelLabel ?? `Open ${selected.name} model`}
+                <span aria-hidden="true">→</span>
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
       </div>
     </div>
   );

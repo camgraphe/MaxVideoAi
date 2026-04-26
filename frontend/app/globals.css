@@ -14,6 +14,34 @@
   color-scheme: dark;
 }
 
+.home-monochrome {
+  --brand: #111827;
+  --brand-hover: #030712;
+  --brand-active: #000000;
+  --brand-soft: rgba(17, 24, 39, 0.08);
+  --brand-soft-hover: rgba(17, 24, 39, 0.12);
+  --brand-border: rgba(17, 24, 39, 0.18);
+  --brand-gradient: linear-gradient(135deg, #161b24 0%, #0f141d 52%, #030712 100%);
+  --brand-gradient-strong: linear-gradient(135deg, #0f141d 0%, #080b11 52%, #000000 100%);
+  --shadow-brand-button: 0 16px 34px rgba(3, 7, 18, 0.24);
+  --on-brand: #ffffff;
+  --ring: rgba(17, 24, 39, 0.42);
+}
+
+[data-theme="dark"] .home-monochrome {
+  --brand: #f8fafc;
+  --brand-hover: #ffffff;
+  --brand-active: #e5e7eb;
+  --brand-soft: rgba(248, 250, 252, 0.1);
+  --brand-soft-hover: rgba(248, 250, 252, 0.16);
+  --brand-border: rgba(248, 250, 252, 0.2);
+  --brand-gradient: linear-gradient(135deg, #f8fafc 0%, #d1d5db 58%, #9ca3af 100%);
+  --brand-gradient-strong: linear-gradient(135deg, #ffffff 0%, #e5e7eb 58%, #cbd5e1 100%);
+  --shadow-brand-button: 0 18px 36px rgba(255, 255, 255, 0.1);
+  --on-brand: #030712;
+  --ring: rgba(248, 250, 252, 0.38);
+}
+
 * {
   outline-color: theme('colors.ring');
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { logAdminAction } from '@/server/admin-audit';
@@ -7,6 +8,7 @@ import {
   updateHomepageSection,
   listHomepageSections,
   HOMEPAGE_SECTION_TYPES,
+  HOMEPAGE_SLOTS_CACHE_TAG,
 } from '@/server/homepage';
 
 type RouteParams = {
@@ -90,6 +92,11 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         videoId: section?.videoId ?? videoId ?? null,
       },
     });
+    revalidateTag(HOMEPAGE_SLOTS_CACHE_TAG);
+    revalidatePath('/');
+    revalidatePath('/en');
+    revalidatePath('/fr');
+    revalidatePath('/es');
     return NextResponse.json({ ok: true, section });
   } catch (error) {
     console.error('[admin/homepage/:id] failed to update', error);
@@ -130,6 +137,11 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         videoId: section?.videoId ?? null,
       },
     });
+    revalidateTag(HOMEPAGE_SLOTS_CACHE_TAG);
+    revalidatePath('/');
+    revalidatePath('/en');
+    revalidatePath('/fr');
+    revalidatePath('/es');
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/homepage/:id] failed to delete', error);

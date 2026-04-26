@@ -10,6 +10,10 @@ type SlotVideo = {
   id: string;
   engineLabel?: string;
   durationSec?: number;
+  aspectRatio?: string;
+  hasAudio?: boolean;
+  finalPriceCents?: number | null;
+  currency?: string | null;
   thumbUrl?: string;
   videoUrl?: string;
   createdAt?: string;
@@ -66,6 +70,10 @@ async function fetchVideoPreview(videoId: string): Promise<SlotVideo | null> {
     id: typeof video.id === 'string' ? video.id : typeof video.videoId === 'string' ? video.videoId : videoId,
     engineLabel: typeof video.engineLabel === 'string' ? video.engineLabel : undefined,
     durationSec: typeof video.durationSec === 'number' ? video.durationSec : undefined,
+    aspectRatio: typeof video.aspectRatio === 'string' ? video.aspectRatio : undefined,
+    hasAudio: typeof video.hasAudio === 'boolean' ? video.hasAudio : undefined,
+    finalPriceCents: typeof video.finalPriceCents === 'number' ? video.finalPriceCents : null,
+    currency: typeof video.currency === 'string' ? video.currency : null,
     thumbUrl: typeof video.thumbUrl === 'string' ? video.thumbUrl : undefined,
     videoUrl: typeof video.videoUrl === 'string' ? video.videoUrl : undefined,
     createdAt: typeof video.createdAt === 'string' ? video.createdAt : undefined,
@@ -214,7 +222,7 @@ export function HomepageVideoManager({
         {!embedded ? (
           <header className="space-y-1">
             <h2 className="text-lg font-semibold text-text-primary">Hero spotlight videos</h2>
-            <p className="text-sm text-text-secondary">Configure the four hero tiles displayed above the fold.</p>
+            <p className="text-sm text-text-secondary">Configure the five hero video selectors displayed above the fold.</p>
           </header>
         ) : null}
         <div className="grid grid-gap-sm lg:grid-cols-2">

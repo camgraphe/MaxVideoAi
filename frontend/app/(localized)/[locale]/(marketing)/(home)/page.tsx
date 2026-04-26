@@ -4,11 +4,16 @@ import { getTranslations } from 'next-intl/server';
 import { listFalEngines } from '@/config/falEngines';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { HOMEPAGE_PRICE_PREFIX_BY_LOCALE } from '@/lib/homepage-price-label';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { localeRegions, type AppLocale } from '@/i18n/locales';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { listExamples, type GalleryVideo } from '@/server/videos';
+import { getHomepageSlotsCached, type HomepageSlotWithVideo } from '@/server/homepage';
 import type { Mode } from '@/types/engines';
+import type { HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
 import {
   AiVideoToolbox,
   ComparisonPreview,
@@ -36,6 +41,7 @@ export const revalidate = 60;
 
 type ProofConfig = {
   liveValue: string;
+  pricingSubLabel?: string;
   items: Array<{ id: string; label: string }>;
 };
 
@@ -44,10 +50,13 @@ type FallbackExampleCard = {
   title: string;
   engine: string;
   engineId: string;
+  modelSlug?: string;
   mode: string;
   duration: string;
   price?: string;
-  prompt: string;
+  useCase: string;
+  cta: string;
+  cloneCta?: string;
   imageSrc: string;
   imageAlt: string;
   examplesSlug: string;
@@ -142,9 +151,68 @@ const EXAMPLE_ENGINE_PRIORITY = [
   'kling-3-standard',
 ] as const;
 
+const HOME_ROUTE_MAP = {
+  app: '/app',
+  imageApp: '/app/image',
+  models: { pathname: '/models' },
+  examples: { pathname: '/examples' },
+  compare: { pathname: '/ai-video-engines' },
+  pricing: { pathname: '/pricing' },
+  tools: { pathname: '/tools' },
+  characterBuilder: { pathname: '/tools/character-builder' },
+  angleTool: { pathname: '/tools/angle' },
+  upscaleTool: { pathname: '/tools/upscale' },
+} satisfies Record<string, LocalizedLinkHref>;
+
+const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = {
+  Pika: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } },
+};
+
+const HOMEPAGE_EXAMPLE_FAMILIES = ['ltx', 'kling', 'seedance', 'veo', 'sora', 'wan'] as const;
+type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
+
+type HeroEngineId = 'kling-3-pro' | 'seedance-2-0' | 'veo-3-1-lite' | 'ltx-2-3-fast' | 'sora-2';
+
+const HERO_ENGINE_TARGETS: Record<
+  HeroEngineId,
+  {
+    name: string;
+    exampleFamily: HomepageExampleFamily;
+    modelSlug: string;
+    mode: Mode;
+  }
+> = {
+  'kling-3-pro': { name: 'Kling 3 Pro', exampleFamily: 'kling', modelSlug: 'kling-3-pro', mode: 'i2v' },
+  'seedance-2-0': { name: 'Seedance 2.0', exampleFamily: 'seedance', modelSlug: 'seedance-2-0', mode: 'i2v' },
+  'veo-3-1-lite': { name: 'Veo 3.1 Lite', exampleFamily: 'veo', modelSlug: 'veo-3-1-lite', mode: 'i2v' },
+  'ltx-2-3-fast': { name: 'LTX 2.3 Fast', exampleFamily: 'ltx', modelSlug: 'ltx-2-3-fast', mode: 't2v' },
+  'sora-2': { name: 'Sora 2', exampleFamily: 'sora', modelSlug: 'sora-2', mode: 't2v' },
+};
+
+const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
+  ltx: 'ltx-2-3-fast',
+  kling: 'kling-3-pro',
+  seedance: 'seedance-2-0',
+  veo: 'veo-3-1',
+  sora: 'sora-2-pro',
+  wan: 'wan-2-6',
+};
+
+const ALLOWED_TOOL_CARD_IDS = new Set([
+  'text-to-video',
+  'image-to-video',
+  'video-to-video',
+  'generate-image',
+  'character-builder',
+  'angle-tool',
+  'upscale',
+  'compare-engines',
+]);
+
 const FALLBACK_MODE_BY_ENGINE: Record<string, Mode> = {
   'sora-2': 't2v',
   'veo-3-1': 'i2v',
+  'veo-3-1-lite': 'i2v',
   'kling-3-pro': 'i2v',
   'kling-3-standard': 't2v',
   'seedance-2-0': 'ref2v',
@@ -200,10 +268,20 @@ function resolveProofValue(id: string, stats: EngineStats, proof: ProofConfig): 
 }
 
 function buildProofStats(content: RedesignContent, stats: EngineStats): ProofStat[] {
+  const hrefByProofId: Partial<Record<string, LocalizedLinkHref>> = {
+    engines: HOME_ROUTE_MAP.models,
+    providers: HOME_ROUTE_MAP.models,
+    textToVideo: HOME_ROUTE_MAP.models,
+    imageToVideo: HOME_ROUTE_MAP.models,
+    videoToVideo: HOME_ROUTE_MAP.models,
+    pricing: HOME_ROUTE_MAP.pricing,
+  };
+
   return content.proof.items.map((item) => ({
     id: item.id,
-    value: resolveProofValue(item.id, stats, content.proof),
-    label: item.label,
+    value: item.id === 'pricing' ? item.label : resolveProofValue(item.id, stats, content.proof),
+    label: item.id === 'pricing' ? content.proof.pricingSubLabel ?? 'Before every render' : item.label,
+    href: hrefByProofId[item.id],
   }));
 }
 
@@ -217,31 +295,29 @@ function buildHeroContent(locale: AppLocale, content: RedesignContent): HomeHero
       ...content.hero.mockup,
       engineRecommendations: content.hero.mockup.engineRecommendations.map((recommendation) => {
         const engine = engineById.get(recommendation.engineId);
+        const linkMeta = buildHeroEngineLinks(locale, recommendation.engineId, recommendation.name);
+        const modeLabel = linkMeta.mode ? resolveModeLabel(linkMeta.mode, content) : null;
         const pricing = engine?.pricingHint;
         const formattedPrice =
           pricing && pricing.amountCents > 0
-            ? [
-                formatCurrency(locale, pricing.currency, pricing.amountCents),
-                pricing.durationSeconds ? `/ ${pricing.durationSeconds}s` : null,
-              ]
-                .filter(Boolean)
-                .join(' ')
+            ? formatStartingPrice(locale, pricing.currency, pricing.amountCents, pricing.durationSeconds)
             : recommendation.fallbackPrice;
 
         return {
           ...recommendation,
+          name: linkMeta.name,
           provider: engine?.provider ?? recommendation.provider,
           price: formattedPrice || recommendation.fallbackPrice,
+          modeLabel: modeLabel ?? undefined,
+          rateLabel: formatRateNote(locale, formattedPrice || recommendation.fallbackPrice),
+          examplesHref: linkMeta.examplesHref,
+          modelHref: linkMeta.modelHref,
+          examplesLabel: linkMeta.examplesLabel,
+          modelLabel: linkMeta.modelLabel,
         };
       }),
     },
   };
-}
-
-function truncate(value: string, max = 120) {
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= max) return normalized;
-  return `${normalized.slice(0, max - 1).trimEnd()}…`;
 }
 
 function formatCurrency(locale: AppLocale, currency: string | null | undefined, cents: number | null | undefined) {
@@ -252,6 +328,70 @@ function formatCurrency(locale: AppLocale, currency: string | null | undefined, 
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(cents / 100);
+}
+
+function formatStartingPrice(
+  locale: AppLocale,
+  currency: string | null | undefined,
+  cents: number | null | undefined,
+  durationSeconds?: number | null
+) {
+  const formatted = formatCurrency(locale, currency, cents);
+  if (!formatted) return null;
+  const prefix = HOMEPAGE_PRICE_PREFIX_BY_LOCALE[locale] ?? HOMEPAGE_PRICE_PREFIX_BY_LOCALE.en;
+  return `${prefix} ${formatted}${durationSeconds ? ` / ${durationSeconds}s` : ''}`;
+}
+
+function formatRateNote(locale: AppLocale, price: string) {
+  if (locale === 'fr') return `Tarif ${price}`;
+  if (locale === 'es') return `Tarifa ${price}`;
+  return `Rate ${price}`;
+}
+
+function heroExampleLabel(locale: AppLocale, name: string, family: HomepageExampleFamily) {
+  const familyLabel = family === 'ltx' ? 'LTX' : name;
+  if (locale === 'fr') return `Voir les exemples ${familyLabel}`;
+  if (locale === 'es') return `Ver ejemplos ${familyLabel}`;
+  return `View ${familyLabel} examples`;
+}
+
+function heroModelLabel(locale: AppLocale, name: string) {
+  if (locale === 'fr') return `Ouvrir le modèle ${name}`;
+  if (locale === 'es') return `Abrir modelo ${name}`;
+  return `Open ${name} model`;
+}
+
+function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName: string) {
+  const normalizedEngineId = normalizeEngineId(engineId) ?? engineId;
+  const target = HERO_ENGINE_TARGETS[normalizedEngineId as HeroEngineId];
+  if (!target) {
+    const family = resolveExampleCanonicalSlug(normalizedEngineId) as HomepageExampleFamily | null;
+    const modelSlug = normalizedEngineId;
+    return {
+      name: fallbackName,
+      modeLabel: null,
+      examplesHref: family ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref) : undefined,
+      modelHref: { pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref,
+      examplesLabel: family ? heroExampleLabel(locale, fallbackName, family) : undefined,
+      modelLabel: heroModelLabel(locale, fallbackName),
+    };
+  }
+  return {
+    name: target.name,
+    modeLabel: null as string | null,
+    examplesHref: { pathname: '/examples/[model]', params: { model: target.exampleFamily } } satisfies LocalizedLinkHref,
+    modelHref: { pathname: '/models/[slug]', params: { slug: target.modelSlug } } satisfies LocalizedLinkHref,
+    examplesLabel: heroExampleLabel(locale, target.name, target.exampleFamily),
+    modelLabel: heroModelLabel(locale, target.name),
+    mode: target.mode,
+  };
+}
+
+function formatVideoTime(seconds: number | null | undefined) {
+  const safeSeconds = typeof seconds === 'number' && Number.isFinite(seconds) ? Math.max(0, Math.round(seconds)) : 5;
+  const minutes = Math.floor(safeSeconds / 60);
+  const remaining = String(safeSeconds % 60).padStart(2, '0');
+  return `${minutes}:${remaining}`;
 }
 
 function resolveModeLabel(mode: string | null | undefined, content: RedesignContent) {
@@ -269,6 +409,98 @@ function extractMode(video: GalleryVideo): Mode | 'unknown' {
   return FALLBACK_MODE_BY_ENGINE[canonical] ?? 'unknown';
 }
 
+async function loadProgrammedHomepageHeroSlots(): Promise<HomepageSlotWithVideo[]> {
+  try {
+    const slots = await getHomepageSlotsCached();
+    return slots.hero;
+  } catch (error) {
+    console.warn('[home] failed to load programmed homepage hero slots', error);
+    return [];
+  }
+}
+
+function buildProgrammedHeroItems(
+  locale: AppLocale,
+  content: RedesignContent,
+  slots: HomepageSlotWithVideo[]
+): HeroVideoShowcaseItem[] {
+  const engines = listFalEngines();
+  const engineById = new Map(
+    engines.flatMap((entry) => {
+      const normalizedId = normalizeEngineId(entry.id) ?? entry.id;
+      return [
+        [entry.id, entry],
+        [entry.modelSlug, entry],
+        [normalizedId, entry],
+      ] as const;
+    })
+  );
+
+  return slots
+    .filter((slot) => Boolean(slot.video?.thumbUrl || slot.video?.videoUrl))
+    .map((slot) => {
+      const video = slot.video!;
+      const normalizedEngineId = normalizeEngineId(video.engineId) ?? video.engineId;
+      const engine = engineById.get(video.engineId) ?? engineById.get(normalizedEngineId);
+      const linkMeta = buildHeroEngineLinks(locale, normalizedEngineId, video.engineLabel);
+      const durationSeconds = video.durationSec || engine?.pricingHint?.durationSeconds || null;
+      const duration = formatVideoTime(durationSeconds);
+      const resolution = video.aspectRatio ?? '1080p';
+      const mode = resolveModeLabel(linkMeta.mode ?? extractMode(video), content);
+      const mediaInfo = [
+        video.engineLabel,
+        typeof video.durationSec === 'number' ? `${video.durationSec}s` : null,
+        video.aspectRatio ?? null,
+        video.hasAudio ? 'audio' : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      const chips = [
+        mode === (content.modeLabels.unknown ?? 'AI video') ? engine?.provider ?? null : mode,
+        typeof video.durationSec === 'number' ? `${video.durationSec}s` : null,
+        video.aspectRatio ?? null,
+      ].filter((chip): chip is string => Boolean(chip));
+      const startingPrice =
+        (engine?.pricingHint
+          ? formatStartingPrice(locale, engine.pricingHint.currency, engine.pricingHint.amountCents, engine.pricingHint.durationSeconds)
+          : null) ??
+        formatStartingPrice(locale, video.currency, video.finalPriceCents, video.durationSec) ??
+        content.hero.mockup.engineRecommendations.find((recommendation) => recommendation.engineId === normalizedEngineId)?.fallbackPrice ??
+        content.hero.mockup.quoteValue;
+      const finalQuote = formatCurrency(locale, video.currency, video.finalPriceCents);
+
+      return {
+        id: `programmed-${slot.key}-${video.id}`,
+        engineId: normalizedEngineId,
+        name: linkMeta.name,
+        provider: engine?.provider ?? video.engineLabel,
+        bestFor: chips[0] ?? mode,
+        chips,
+        mediaInfo,
+        price: startingPrice,
+        estimateLabel: content.hero.mockup.quoteLabel,
+        estimateValue: finalQuote ?? startingPrice,
+        estimateMeta: [
+          typeof video.durationSec === 'number' ? `${video.durationSec}s` : null,
+          resolution,
+          mode,
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        priceNote: formatRateNote(locale, startingPrice),
+        examplesHref: linkMeta.examplesHref,
+        modelHref: linkMeta.modelHref,
+        examplesLabel: linkMeta.examplesLabel,
+        modelLabel: linkMeta.modelLabel,
+        posterSrc: video.thumbUrl ?? '/assets/placeholders/preview-16x9.png',
+        videoSrc: video.videoUrl ?? null,
+        duration,
+        resolution,
+        imageAlt: `${video.engineLabel} AI video programmed for the MaxVideoAI homepage.`,
+      };
+    });
+}
+
 function sortExamplesByPriority(videos: GalleryVideo[]) {
   const priority = new Map<string, number>(EXAMPLE_ENGINE_PRIORITY.map((id, index) => [id, index]));
   return [...videos].sort((left, right) => {
@@ -280,86 +512,81 @@ function sortExamplesByPriority(videos: GalleryVideo[]) {
 
 async function loadHomepageExamples(locale: AppLocale, content: RedesignContent): Promise<HomeExampleCard[]> {
   const videos = await listExamples('playlist', 40).catch(() => [] as GalleryVideo[]);
-  const seen = new Set<string>();
-  const realExamples = sortExamplesByPriority(videos)
-    .filter((video) => {
-      const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
-      if (!EXAMPLE_ENGINE_PRIORITY.includes(engineId as (typeof EXAMPLE_ENGINE_PRIORITY)[number])) return false;
-      if (seen.has(engineId)) return false;
-      seen.add(engineId);
-      return Boolean(video.thumbUrl);
-    })
-    .slice(0, 7)
-    .map<HomeExampleCard>((video) => {
-      const mode = extractMode(video);
-      const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
-      return {
-        id: video.id,
-        title: video.engineLabel,
-        engineId,
-        engine: video.engineLabel,
-        mode: resolveModeLabel(mode, content),
-        duration: `${video.durationSec}s`,
-        price: formatCurrency(locale, video.currency, video.finalPriceCents),
-        prompt: truncate(video.promptExcerpt || video.prompt, 118),
-        imageSrc: video.thumbUrl ?? '/assets/placeholders/thumb-16x9.png',
-        videoSrc: video.videoUrl ?? null,
-        imageAlt: `${video.engineLabel} AI video example generated in MaxVideoAI.`,
-        href: `/app?from=${encodeURIComponent(video.id)}`,
-        promptHref: `/video/${encodeURIComponent(video.id)}`,
-      };
-    });
+  const fallbackByFamily = new Map(content.examples.fallbackCards.map((card) => [card.examplesSlug, card]));
+  const realByFamily = new Map<HomepageExampleFamily, GalleryVideo>();
 
-  const fallbackExamples = content.examples.fallbackCards.map<HomeExampleCard>((card) => ({
-    id: card.id,
-    title: card.title,
-    engineId: card.engineId,
-    engine: card.engine,
-    mode: card.mode,
-    duration: card.duration,
-    price: card.price ?? null,
-    prompt: card.prompt,
-    imageSrc: card.imageSrc,
-    imageAlt: card.imageAlt,
-    href: `/app?engine=${encodeURIComponent(card.engineId)}`,
-    promptHref: { pathname: '/examples/[model]', params: { model: card.examplesSlug } },
-  }));
-
-  const combined = [...realExamples];
-  fallbackExamples.forEach((example) => {
-    if (combined.length >= 9) return;
-    if (combined.some((item) => item.engine === example.engine)) return;
-    combined.push(example);
+  sortExamplesByPriority(videos).forEach((video) => {
+    if (!video.thumbUrl) return;
+    const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
+    const family = resolveExampleCanonicalSlug(engineId);
+    if (!family || !HOMEPAGE_EXAMPLE_FAMILIES.includes(family as HomepageExampleFamily)) return;
+    const typedFamily = family as HomepageExampleFamily;
+    if (!realByFamily.has(typedFamily)) {
+      realByFamily.set(typedFamily, video);
+    }
   });
 
-  return combined.slice(0, 9);
+  return HOMEPAGE_EXAMPLE_FAMILIES.flatMap<HomeExampleCard>((family) => {
+    const fallback = fallbackByFamily.get(family);
+    const video = realByFamily.get(family);
+    if (!fallback && !video) return [];
+
+    const engineId = video ? normalizeEngineId(video.engineId) ?? video.engineId : fallback!.engineId;
+    const modelSlug = fallback?.modelSlug ?? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family];
+    const mode = video ? resolveModeLabel(extractMode(video), content) : fallback!.mode;
+    const duration = video?.durationSec ? `${video.durationSec}s` : fallback!.duration;
+    const price = video ? formatCurrency(locale, video.currency, video.finalPriceCents) ?? fallback?.price ?? null : fallback?.price ?? null;
+
+    return [
+      {
+        id: `examples-${family}`,
+        title: fallback?.title ?? `${video!.engineLabel} examples`,
+        engineId,
+        engine: video?.engineLabel ?? fallback!.engine,
+        mode,
+        duration,
+        price,
+        useCase: fallback?.useCase ?? 'Real AI video examples grouped by engine family.',
+        imageSrc: video?.thumbUrl ?? fallback!.imageSrc,
+        videoSrc: null,
+        imageAlt: fallback?.imageAlt ?? `${video!.engineLabel} AI video example generated in MaxVideoAI.`,
+        href: { pathname: '/examples/[model]', params: { model: family } },
+        modelHref: { pathname: '/models/[slug]', params: { slug: modelSlug } },
+        cloneHref: video ? `/app?from=${encodeURIComponent(video.id)}` : undefined,
+        ctaLabel: fallback?.cta ?? 'Open examples',
+        cloneLabel: fallback?.cloneCta ?? content.examples.viewPrompt,
+      },
+    ];
+  });
 }
 
 function buildComparisonCards(content: RedesignContent): ComparisonCard[] {
-  return content.comparisons.cards.map((card) => {
-    const isPublished = isPublishedComparisonSlug(card.slug);
-    return {
+  return content.comparisons.cards
+    .filter((card) => isPublishedComparisonSlug(card.slug))
+    .map((card) => ({
       id: card.id,
       title: card.title,
       body: card.body,
       badges: card.badges,
       cta: content.comparisons.cta,
-      href: isPublished
-        ? { pathname: '/ai-video-engines/[slug]', params: { slug: card.slug } }
-        : { pathname: '/ai-video-engines' },
-    };
-  });
+      href: { pathname: '/ai-video-engines/[slug]', params: { slug: card.slug } },
+    }));
 }
 
 function filterProviderItems(content: RedesignContent): ProviderItem[] {
   const providers = new Set(listFalEngines().map((entry) => entry.provider.toLowerCase()));
   return content.providers.items
     .filter((item) => providers.has(item.providerKey.toLowerCase()))
-    .map(({ provider, model }) => ({ provider, model }));
+    .map(({ provider, model, href, providerKey }) => ({
+      provider,
+      model,
+      href: href ?? PROVIDER_MODEL_LINKS[providerKey],
+    }));
 }
 
 function filterToolCards(content: RedesignContent, stats: EngineStats): ToolCard[] {
   return content.toolbox.cards.filter((tool) => {
+    if (!ALLOWED_TOOL_CARD_IDS.has(tool.id)) return false;
     if (tool.id === 'extend-video') return stats.extend > 0;
     if (tool.id === 'retake') return stats.retake > 0;
     if (tool.id === 'audio-to-video') return stats.audioToVideo > 0 || stats.audio > 0;
@@ -441,7 +668,11 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const stats = computeEngineStats();
   const proofStats = buildProofStats(content, stats);
   const hero = buildHeroContent(locale, content);
-  const examples = await loadHomepageExamples(locale, content);
+  const [examples, programmedHeroSlots] = await Promise.all([
+    loadHomepageExamples(locale, content),
+    loadProgrammedHomepageHeroSlots(),
+  ]);
+  const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const comparisons = buildComparisonCards(content);
   const providers = filterProviderItems(content);
   const tools = filterToolCards(content, stats);
@@ -450,8 +681,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const itemListSchema = buildItemListSchema(content, providers);
 
   return (
-    <div>
-      <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} />
+    <div className="home-monochrome">
+      <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} programmedHeroItems={programmedHeroItems} />
       <ShotTypeEngineSelector copy={content.shotTypes} cards={content.shotTypes.cards} />
       <RealExamplesPreview copy={content.examples} examples={examples} />
       <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
