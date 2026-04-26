@@ -67,7 +67,10 @@ function GroupPreviewMedia({
     if (!element) return;
     if (shouldPlay) {
       element.preload = 'auto';
-      if (element.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+      if (
+        element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
+        (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA)
+      ) {
         element.load();
       }
       if (element.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
@@ -80,7 +83,12 @@ function GroupPreviewMedia({
       }
     } else {
       element.pause();
-      if (shouldWarm && element.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+      if (
+        shouldWarm &&
+        (element.networkState === HTMLMediaElement.NETWORK_EMPTY ||
+          (element.networkState === HTMLMediaElement.NETWORK_IDLE && element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA))
+      ) {
+        element.preload = 'auto';
         element.load();
       }
     }
@@ -122,7 +130,7 @@ function GroupPreviewMedia({
           muted
           playsInline
           loop
-          preload={shouldPlay ? 'auto' : shouldWarm ? 'metadata' : 'none'}
+          preload={shouldPlay || shouldWarm ? 'auto' : 'none'}
           onLoadedData={() => setVideoReady(true)}
           onCanPlay={handleCanPlay}
         />

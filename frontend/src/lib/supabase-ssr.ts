@@ -100,11 +100,11 @@ export async function getRouteAuthContext(req?: NextRequest) {
     }
   }
 
-  const [{ data: sessionData }, { data: userData }] = await Promise.all([
+  const [{ data: sessionData }, { data: claimsData }] = await Promise.all([
     supabase.auth.getSession(),
-    supabase.auth.getUser(),
+    supabase.auth.getClaims(),
   ]);
   const session = sessionData.session ?? null;
-  const sessionUserId = userData.user?.id ?? null;
+  const sessionUserId = typeof claimsData?.claims?.sub === 'string' ? claimsData.claims.sub : null;
   return { supabase, session, userId: sessionUserId };
 }

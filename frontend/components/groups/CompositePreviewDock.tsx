@@ -627,7 +627,7 @@ export function CompositePreviewDock({
                               )}
                               muted={isMuted}
                               playsInline
-                              preload={shouldPlayVideo ? 'auto' : 'none'}
+                              preload={shouldPlayVideo ? 'auto' : 'metadata'}
                               loop={isLooping}
                               onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
                             />

@@ -73,10 +73,10 @@ const DEFAULT_GALLERY_COPY = {
 
 type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
 const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
-const INITIAL_EAGER_PREVIEW_COUNT = 2;
+const INITIAL_EAGER_PREVIEW_COUNT = 0;
 const BACKGROUND_WARM_PREVIEW_LIMIT = 6;
-const BACKGROUND_WARM_START_DELAY_MS = 1000;
-const BACKGROUND_WARM_STEP_DELAY_MS = 650;
+const BACKGROUND_WARM_START_DELAY_MS = 250;
+const BACKGROUND_WARM_STEP_DELAY_MS = 900;
 
 function resolveDisplayedActiveGroup(
   feedType: 'video' | 'image',

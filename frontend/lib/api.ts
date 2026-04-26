@@ -291,7 +291,9 @@ async function fetchJobsPage(
 type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType, JobFeedSurface];
 
 export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; surface?: JobFeedSurface }) {
-  const [cacheKey, setCacheKey] = useState<string | null>('server');
+  const [cacheKey, setCacheKey] = useState<string | null>(() =>
+    typeof window === 'undefined' ? null : readLastKnownUserId()
+  );
   const feedType: JobFeedType =
     options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
   const feedSurface: JobFeedSurface =

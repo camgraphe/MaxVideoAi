@@ -224,6 +224,18 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_user_visible_created_id_idx
+          ON app_jobs (user_id, created_at DESC, id DESC)
+          WHERE user_id IS NOT NULL AND hidden IS NOT TRUE;
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_user_surface_visible_created_id_idx
+          ON app_jobs (user_id, surface, created_at DESC, id DESC)
+          WHERE user_id IS NOT NULL AND hidden IS NOT TRUE;
+      `);
+
+      await query(`
         CREATE INDEX IF NOT EXISTS app_jobs_provider_job_idx
           ON app_jobs (provider_job_id)
           WHERE provider_job_id IS NOT NULL;
