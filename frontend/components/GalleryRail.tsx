@@ -74,9 +74,26 @@ const DEFAULT_GALLERY_COPY = {
 type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
 const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
 const INITIAL_EAGER_PREVIEW_COUNT = 0;
-const BACKGROUND_WARM_PREVIEW_LIMIT = 6;
-const BACKGROUND_WARM_START_DELAY_MS = 250;
-const BACKGROUND_WARM_STEP_DELAY_MS = 900;
+const BACKGROUND_WARM_PREVIEW_LIMIT = 10;
+const BACKGROUND_WARM_START_DELAY_MS = 200;
+const BACKGROUND_WARM_STEP_DELAY_MS = 550;
+
+type NavigatorWithConnection = Navigator & {
+  connection?: {
+    effectiveType?: string;
+    saveData?: boolean;
+  };
+};
+
+function resolveBackgroundWarmPreviewLimit(): number {
+  if (typeof navigator === 'undefined') return BACKGROUND_WARM_PREVIEW_LIMIT;
+  const connection = (navigator as NavigatorWithConnection).connection;
+  if (connection?.saveData) return 0;
+  const effectiveType = connection?.effectiveType;
+  if (effectiveType === 'slow-2g' || effectiveType === '2g') return 1;
+  if (effectiveType === '3g') return 4;
+  return BACKGROUND_WARM_PREVIEW_LIMIT;
+}
 
 function resolveDisplayedActiveGroup(
   feedType: 'video' | 'image',
@@ -217,7 +234,7 @@ export function GalleryRail({
     };
     const handlePrimaryReady = () => {
       clearTimers();
-      const targetCount = Math.min(BACKGROUND_WARM_PREVIEW_LIMIT, Math.max(INITIAL_EAGER_PREVIEW_COUNT, renderedGroups.length));
+      const targetCount = Math.min(resolveBackgroundWarmPreviewLimit(), Math.max(INITIAL_EAGER_PREVIEW_COUNT, renderedGroups.length));
       for (let count = INITIAL_EAGER_PREVIEW_COUNT + 1; count <= targetCount; count += 1) {
         const delay =
           BACKGROUND_WARM_START_DELAY_MS +
@@ -676,6 +693,7 @@ export function GalleryRail({
             metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
             eagerPreview={feedType === 'video' && index < backgroundWarmCount}
+            warmOnVisible={feedType === 'video'}
           />
         );
       })}

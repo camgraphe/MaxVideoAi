@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { Card } from '@/components/ui/Card';
@@ -28,6 +28,21 @@ export type GroupedJobAction =
   | 'save-image';
 
 const GROUPED_JOB_THUMB_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px';
+
+type NavigatorWithConnection = Navigator & {
+  connection?: {
+    effectiveType?: string;
+    saveData?: boolean;
+  };
+};
+
+function shouldWarmVisiblePreview(): boolean {
+  if (typeof navigator === 'undefined') return true;
+  const connection = (navigator as NavigatorWithConnection).connection;
+  if (connection?.saveData) return false;
+  const effectiveType = connection?.effectiveType;
+  return effectiveType !== 'slow-2g' && effectiveType !== '2g';
+}
 
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const baseClass = clsx('h-full w-full pointer-events-none', className);
@@ -54,12 +69,20 @@ function GroupPreviewMedia({
   const hasAudioOnly = Boolean(audioUrl) && !hasVideo;
   const thumbSrc = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoReadyRef = useRef(false);
   const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     if (!hasVideo) return;
+    videoReadyRef.current = false;
     setVideoReady(false);
   }, [hasVideo, preview?.videoUrl]);
+
+  const markVideoReady = useCallback(() => {
+    if (videoReadyRef.current) return;
+    videoReadyRef.current = true;
+    setVideoReady(true);
+  }, []);
 
   useEffect(() => {
     if (!hasVideo) return;
@@ -95,7 +118,7 @@ function GroupPreviewMedia({
   }, [hasVideo, preview?.videoUrl, shouldPlay, shouldWarm]);
 
   const handleCanPlay = () => {
-    setVideoReady(true);
+    markVideoReady();
     if (!shouldPlay || !videoRef.current) return;
     const playPromise = videoRef.current.play();
     if (playPromise) {
@@ -131,7 +154,7 @@ function GroupPreviewMedia({
           playsInline
           loop
           preload={shouldPlay || shouldWarm ? 'auto' : 'none'}
-          onLoadedData={() => setVideoReady(true)}
+          onLoadedData={markVideoReady}
           onCanPlay={handleCanPlay}
         />
       </div>
@@ -172,6 +195,7 @@ export interface GroupedJobCardProps {
   recreateHref?: string;
   recreateLabel?: string;
   eagerPreview?: boolean;
+  warmOnVisible?: boolean;
 }
 
 export function GroupedJobCard({
@@ -193,8 +217,10 @@ export function GroupedJobCard({
   recreateHref,
   recreateLabel = 'Generate same settings',
   eagerPreview = false,
+  warmOnVisible = false,
 }: GroupedJobCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -283,8 +309,27 @@ export function GroupedJobCard({
     }
   }, [eagerPreview]);
 
+  useEffect(() => {
+    if (!warmOnVisible || isPreviewWarm || isImageGroup) return undefined;
+    if (typeof IntersectionObserver === 'undefined' || !shouldWarmVisiblePreview()) return undefined;
+    const element = cardRef.current;
+    if (!element) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setIsPreviewWarm(true);
+        observer.disconnect();
+      },
+      { root: null, rootMargin: '420px 0px', threshold: 0.01 }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [isImageGroup, isPreviewWarm, warmOnVisible]);
+
   return (
     <Card
+      ref={cardRef}
       className={clsx(
         'relative overflow-visible rounded-card border border-border bg-surface-glass-90 p-0 shadow-card',
         menuOpen && 'z-30'

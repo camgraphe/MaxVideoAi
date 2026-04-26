@@ -111,7 +111,20 @@ export function CompositePreviewDock({
   const [isMuted, setIsMuted] = useState(true);
   const [isLooping, setIsLooping] = useState(true);
   const [readyItems, setReadyItems] = useState<Record<string, boolean>>({});
+  const readyItemsRef = useRef<Record<string, boolean>>({});
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const videoRefCallbacksRef = useRef<Map<string, (element: HTMLVideoElement | null) => void>>(new Map());
+  const playbackStateRef = useRef<{
+    activeVideoKey: string | null;
+    isLooping: boolean;
+    isMuted: boolean;
+    isPlaying: boolean;
+  }>({
+    activeVideoKey: null,
+    isLooping: true,
+    isMuted: true,
+    isPlaying: true,
+  });
   const lastPrimaryReadyEventKeyRef = useRef<string | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
@@ -130,15 +143,17 @@ export function CompositePreviewDock({
   };
 
   useEffect(() => {
+    readyItemsRef.current = {};
     videoRefs.current.clear();
+    videoRefCallbacksRef.current.clear();
     setReadyItems({});
   }, [group?.id]);
 
   const markReady = useCallback((itemKey: string) => {
-    setReadyItems((prev) => {
-      if (prev[itemKey]) return prev;
-      return { ...prev, [itemKey]: true };
-    });
+    if (readyItemsRef.current[itemKey]) return;
+    const next = { ...readyItemsRef.current, [itemKey]: true };
+    readyItemsRef.current = next;
+    setReadyItems(next);
   }, []);
 
   useEffect(() => {
@@ -199,6 +214,12 @@ export function CompositePreviewDock({
     const item = index >= 0 ? slots[index] : null;
     return item ? `${item.id}-${index}` : null;
   }, [slots]);
+  playbackStateRef.current = {
+    activeVideoKey,
+    isLooping,
+    isMuted,
+    isPlaying,
+  };
 
   const handleMediaReady = useCallback(
     (itemKey: string) => {
@@ -231,6 +252,13 @@ export function CompositePreviewDock({
     [activeVideoKey, handleMediaReady, isPlaying, playVideoWhenReady]
   );
 
+  const handleVideoLoadedData = useCallback(
+    (itemKey: string) => {
+      handleMediaReady(itemKey);
+    },
+    [handleMediaReady]
+  );
+
   useEffect(() => {
     if (!activeVideoKey || !readyItems[activeVideoKey] || lastPrimaryReadyEventKeyRef.current === activeVideoKey) return;
     lastPrimaryReadyEventKeyRef.current = activeVideoKey;
@@ -256,38 +284,49 @@ export function CompositePreviewDock({
   }, [isMuted, playVideoWhenReady]);
 
   useEffect(() => {
-    videoRefs.current.forEach((video) => {
-      const isActivePreview = video.dataset.previewVideo === 'active';
+    videoRefs.current.forEach((video, itemId) => {
+      const isActivePreview = itemId === activeVideoKey;
+      video.dataset.previewVideo = isActivePreview ? 'active' : 'idle';
+      video.loop = isLooping;
+      video.muted = isMuted;
       if (isPlaying && isActivePreview) {
         playVideoWhenReady(video);
       } else {
         video.pause();
       }
     });
-  }, [activeVideoKey, group?.id, isPlaying, playVideoWhenReady]);
+  }, [activeVideoKey, group?.id, isLooping, isMuted, isPlaying, playVideoWhenReady]);
 
   const registerVideo = useCallback(
     (itemId: string) => {
-      return (element: HTMLVideoElement | null) => {
+      const existing = videoRefCallbacksRef.current.get(itemId);
+      if (existing) return existing;
+
+      const callback = (element: HTMLVideoElement | null) => {
         if (!element) {
           videoRefs.current.delete(itemId);
           return;
         }
-        element.loop = isLooping;
-        element.muted = isMuted;
-        element.dataset.previewVideo = itemId === activeVideoKey ? 'active' : 'idle';
-        if (itemId === activeVideoKey && element.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        const playback = playbackStateRef.current;
+        const isActivePreview = itemId === playback.activeVideoKey;
+        element.loop = playback.isLooping;
+        element.muted = playback.isMuted;
+        element.dataset.previewVideo = isActivePreview ? 'active' : 'idle';
+        if (isActivePreview && element.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
           handleMediaReady(itemId);
         }
-        if (isPlaying && itemId === activeVideoKey) {
+        if (playback.isPlaying && isActivePreview) {
           playVideoWhenReady(element);
         } else {
           element.pause();
         }
         videoRefs.current.set(itemId, element);
       };
+
+      videoRefCallbacksRef.current.set(itemId, callback);
+      return callback;
     },
-    [activeVideoKey, handleMediaReady, isLooping, isMuted, isPlaying, playVideoWhenReady]
+    [handleMediaReady, playVideoWhenReady]
   );
 
   const gridClass = group ? GRID_CLASS[group.layout] ?? 'grid-cols-1' : 'grid-cols-1';
@@ -629,6 +668,7 @@ export function CompositePreviewDock({
                               playsInline
                               preload={shouldPlayVideo ? 'auto' : 'metadata'}
                               loop={isLooping}
+                              onLoadedData={() => handleVideoLoadedData(itemKey)}
                               onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
                             />
                           </>
