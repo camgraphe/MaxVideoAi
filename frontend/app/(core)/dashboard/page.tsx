@@ -107,6 +107,7 @@ const DEFAULT_DASHBOARD_COPY = {
       image: 'Image',
       character: 'Character',
       angle: 'Angle',
+      upscale: 'Upscale',
       audio: 'Audio',
     },
   },

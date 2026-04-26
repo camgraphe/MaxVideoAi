@@ -13,7 +13,7 @@ const VISITOR_STARTER_LOOKUP_LIMIT = 120;
 const VISITOR_IMAGE_LOOKUP_LIMIT = 120;
 const VISITOR_SPEND_TODAY_SAMPLE_SIZE = 4;
 
-type VisitorImageLikeSurface = Extract<JobSurface, 'image' | 'character' | 'angle'>;
+type VisitorImageLikeSurface = Extract<JobSurface, 'image' | 'character' | 'angle' | 'upscale'>;
 
 type VisitorImageLikeRow = {
   job_id: string;

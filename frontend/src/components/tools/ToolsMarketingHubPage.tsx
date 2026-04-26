@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Camera, ImagePlus, Sparkles } from 'lucide-react';
+import { ArrowRight, Camera, ImagePlus, Maximize2, Sparkles } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/types';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
@@ -115,7 +115,7 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
       </section>
 
       <section className="border-t border-hairline bg-surface section">
-        <div className="container-page max-w-6xl grid gap-5 lg:grid-cols-3">
+        <div className="container-page max-w-6xl grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           <ToolCard
             icon={<ImagePlus className="h-5 w-5" />}
             eyebrow={content.cards.image.eyebrow}
@@ -182,6 +182,39 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
               </div>
             }
           />
+          <ToolCard
+            icon={<Maximize2 className="h-5 w-5" />}
+            eyebrow={content.cards.upscale.eyebrow}
+            title={content.cards.upscale.title}
+            body={content.cards.upscale.body}
+            href="/tools/upscale"
+            cta={content.cards.upscale.cta}
+            toolName="upscale"
+            targetFamily="public_tools"
+            ctaLocation="tools_hub_card_upscale"
+            visual={
+              <div className="grid aspect-[16/10] grid-cols-2 gap-3 rounded-[22px] bg-[#eef3fa] p-3">
+                <div className="relative overflow-hidden rounded-[16px]">
+                  <Image
+                    src={ANGLE_CARD_BACKGROUND_URL}
+                    alt={content.cards.upscale.imageAlt}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 260px"
+                    className="scale-110 object-cover object-top blur-[1px]"
+                  />
+                </div>
+                <div className="relative overflow-hidden rounded-[16px]">
+                  <Image
+                    src={ANGLE_CARD_BACKGROUND_URL}
+                    alt={content.cards.upscale.imageAlt}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 260px"
+                    className="object-cover object-top"
+                  />
+                </div>
+              </div>
+            }
+          />
         </div>
       </section>
 
@@ -194,14 +227,22 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
             <h2 className="text-3xl font-semibold text-text-primary">{content.bestStartingPoints.title}</h2>
             <p className="text-sm leading-7 text-text-secondary">{content.bestStartingPoints.body}</p>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {Object.entries(content.bestStartingPoints.cards).map(([key, card]) => (
               <div key={key} className="rounded-card border border-hairline bg-surface p-5 shadow-card">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">{card.eyebrow}</p>
                 <h3 className="mt-3 text-lg font-semibold text-text-primary">{card.title}</h3>
                 <p className="mt-2 text-sm leading-7 text-text-secondary">{card.body}</p>
                 <Link
-                  href={key === 'image' ? '/app/image' : key === 'character' ? '/tools/character-builder' : '/tools/angle'}
+                  href={
+                    key === 'image'
+                      ? '/app/image'
+                      : key === 'character'
+                        ? '/tools/character-builder'
+                        : key === 'upscale'
+                          ? '/tools/upscale'
+                          : '/tools/angle'
+                  }
                   className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brandHover"
                 >
                   {card.cta}

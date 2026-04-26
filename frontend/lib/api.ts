@@ -15,6 +15,7 @@ import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@
 import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
+import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
 import type { JobSurface } from '@/types/billing';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
 
@@ -299,7 +300,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     options?.surface === 'image' ||
     options?.surface === 'audio' ||
     options?.surface === 'character' ||
-    options?.surface === 'angle'
+    options?.surface === 'angle' ||
+    options?.surface === 'upscale'
       ? options.surface
       : 'all';
   const lastRevalidateRef = useRef<number>(0);
@@ -784,6 +786,33 @@ export async function runAngleTool(payload: AngleToolRequest): Promise<AngleTool
     const error = new Error(data.error?.message ?? `Angle tool failed (${response.status})`);
     Object.assign(error, {
       code: data.error?.code ?? 'angle_tool_failed',
+      detail: data.error?.detail,
+      status: response.status,
+    });
+    throw error;
+  }
+
+  return data;
+}
+
+export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<UpscaleToolResponse> {
+  const response = await authFetch('/api/tools/upscale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as
+    | (UpscaleToolResponse & { error?: { code?: string; message?: string; detail?: unknown } })
+    | null;
+
+  if (!data) {
+    throw new Error('Upscale tool response malformed');
+  }
+
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.error?.message ?? `Upscale tool failed (${response.status})`);
+    Object.assign(error, {
+      code: data.error?.code ?? 'upscale_tool_failed',
       detail: data.error?.detail,
       status: response.status,
     });

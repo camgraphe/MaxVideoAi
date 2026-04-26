@@ -20,7 +20,14 @@ function normalizeUnitKind(value: unknown): BillingProductUnitKind {
 }
 
 function normalizeSurface(value: unknown): JobSurface {
-  return value === 'video' || value === 'character' || value === 'angle' || value === 'audio' ? value : 'image';
+  return value === 'video' ||
+    value === 'image' ||
+    value === 'character' ||
+    value === 'angle' ||
+    value === 'audio' ||
+    value === 'upscale'
+    ? value
+    : 'image';
 }
 
 function toInteger(value: unknown, fallback = 0): number {

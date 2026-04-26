@@ -14,6 +14,11 @@ export type VideoDimensions = {
   height: number;
 };
 
+export type VideoMetadata = VideoDimensions & {
+  durationSec: number;
+  fps: number;
+};
+
 export async function detectMediaDuration(
   mediaUrl: string,
   options: DetectOptions = {},
@@ -137,6 +142,82 @@ export async function detectVideoDimensions(
     const reason =
       error instanceof Error && typeof error.message === 'string' ? error.message : 'unknown error running ffprobe';
     console.warn('[video-metadata] ffprobe failed', { videoUrl, reason });
+    return null;
+  }
+}
+
+function parseFrameRate(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes('/')) {
+    const [numeratorRaw, denominatorRaw] = trimmed.split('/');
+    const numerator = Number(numeratorRaw);
+    const denominator = Number(denominatorRaw);
+    if (Number.isFinite(numerator) && Number.isFinite(denominator) && denominator > 0) {
+      return numerator / denominator;
+    }
+    return null;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+export async function detectVideoMetadata(
+  videoUrl: string,
+  options: DetectOptions = {}
+): Promise<VideoMetadata | null> {
+  if (!ffprobe.path) {
+    console.warn('[video-metadata] ffprobe binary not available.');
+    return null;
+  }
+  if (!videoUrl || !/^https?:\/\//i.test(videoUrl)) {
+    return null;
+  }
+
+  const timeoutMs = options.timeoutMs ?? 12_000;
+  const args = [
+    '-v',
+    'error',
+    '-select_streams',
+    'v:0',
+    '-show_entries',
+    'stream=width,height,r_frame_rate:format=duration',
+    '-of',
+    'json',
+    videoUrl,
+  ];
+
+  try {
+    const { stdout } = await execFileAsync(ffprobe.path, args, { timeout: timeoutMs, maxBuffer: 1024 * 1024 });
+    const parsed = JSON.parse(stdout) as {
+      streams?: Array<{ width?: number; height?: number; r_frame_rate?: string }>;
+      format?: { duration?: string };
+    };
+    const stream = parsed.streams?.[0];
+    const width = Number(stream?.width);
+    const height = Number(stream?.height);
+    const durationSec = Number(parsed.format?.duration);
+    const fps = parseFrameRate(stream?.r_frame_rate ?? '') ?? 30;
+    if (
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
+      !Number.isFinite(durationSec) ||
+      width <= 0 ||
+      height <= 0 ||
+      durationSec <= 0
+    ) {
+      return null;
+    }
+    return {
+      width: Math.round(width),
+      height: Math.round(height),
+      durationSec,
+      fps: Math.max(1, Math.round(fps)),
+    };
+  } catch (error) {
+    const reason =
+      error instanceof Error && typeof error.message === 'string' ? error.message : 'unknown error running ffprobe';
+    console.warn('[video-metadata] ffprobe metadata failed', { videoUrl, reason });
     return null;
   }
 }

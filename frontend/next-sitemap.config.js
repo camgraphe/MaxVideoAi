@@ -19,6 +19,7 @@ const MARKETING_CORE_PATHS = [
   '/tools',
   '/tools/angle',
   '/tools/character-builder',
+  '/tools/upscale',
   '/sitemap-video.xml',
   '/workflows',
   '/pricing',

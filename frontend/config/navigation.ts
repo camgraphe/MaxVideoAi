@@ -48,7 +48,7 @@ const compareLink = (slug: string): LocalizedLinkHref => ({
   params: { slug },
 });
 
-const toolLink = (slug: 'character-builder' | 'angle'): LocalizedLinkHref => ({
+const toolLink = (slug: 'character-builder' | 'angle' | 'upscale'): LocalizedLinkHref => ({
   pathname: `/tools/${slug}`,
 });
 
@@ -130,6 +130,7 @@ export const MARKETING_NAV_COMPARE: MarketingNavItem[] = COMPARE_MENU.map((item)
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
+  { key: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
   { key: 'image', label: 'Generate image', href: '/app/image' },
 ];
 

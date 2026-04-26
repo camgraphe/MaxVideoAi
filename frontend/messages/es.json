@@ -315,6 +315,261 @@
     "crawlerNote": "MaxVideoAI permite que los rastreadores de IA (GPTBot, OAI-SearchBot, Google-Extended y CCBot) indexen las páginas públicas de modelos y la documentación con fines educativos y de investigación."
   },
   "home": {
+    "redesign": {
+      "hero": {
+        "eyebrow": "Workspace de video IA multi-motor de pago por uso",
+        "badgeChips": ["Pago por uso", "Precio antes de generar", "Motores siempre actualizados"],
+        "title": "Deja de adivinar qué modelo de video IA usar.",
+        "subtitle": "Compara Sora, Veo, Kling, LTX, Seedance, Wan, Pika y más, mira el precio antes de cada render y genera con el modelo adecuado para cada plano.",
+        "primaryCta": "Iniciar un render",
+        "secondaryCta": "Ver ejemplos",
+        "examplesCta": "Comparar motores",
+        "trustBadges": [
+          "Precio antes de generar",
+          "Paga solo renders correctos",
+          "Sin suscripción",
+          "Reembolso automático si falla"
+        ],
+        "valueCards": [
+          {
+            "title": "Precio antes de generar",
+            "body": "Ve el coste de cada render antes de empezar.",
+            "icon": "price"
+          },
+          {
+            "title": "Motores siempre actualizados",
+            "body": "Accede a los últimos modelos de video IA.",
+            "icon": "engines"
+          },
+          {
+            "title": "Compara con confianza",
+            "body": "Resultados y usos lado a lado en un solo lugar.",
+            "icon": "compare"
+          },
+          {
+            "title": "Pago por uso",
+            "body": "Sin suscripciones. Sin sorpresas.",
+            "icon": "payg"
+          }
+        ],
+        "mockup": {
+          "promptLabel": "1. Describe el plano",
+          "prompt": "Plano cinematográfico de producto, movimiento de cámara controlado, luz natural, motion limpio, audio si está disponible.",
+          "shotTypeLabel": "¿Qué estás creando?",
+          "shotTypes": ["Anuncio cinematográfico", "Plano de producto", "Escena con personaje", "Borrador rápido", "Movimiento de cámara"],
+          "engineLabel": "2. Compara motores recomendados",
+          "engineRecommendations": [
+            {
+              "engineId": "seedance-2-0",
+              "name": "Seedance 2.0",
+              "provider": "ByteDance",
+              "bestFor": "Realismo cinematográfico",
+              "fallbackPrice": "desde 0,36 $ / 5 s",
+              "scores": [
+                { "label": "Motion", "value": 92 },
+                { "label": "Realismo", "value": 90 },
+                { "label": "Velocidad", "value": 78 }
+              ],
+              "tags": ["Audio", "Referencia", "Pulido"]
+            },
+            {
+              "engineId": "veo-3-1",
+              "name": "Veo 3.1",
+              "provider": "Google",
+              "bestFor": "Movimiento realista",
+              "fallbackPrice": "desde 0,45 $ / 5 s",
+              "scores": [
+                { "label": "Motion", "value": 89 },
+                { "label": "Realismo", "value": 94 },
+                { "label": "Velocidad", "value": 70 }
+              ],
+              "tags": ["1080p", "Audio", "Premium"]
+            },
+            {
+              "engineId": "kling-3-pro",
+              "name": "Kling 3 Pro",
+              "provider": "Kuaishou",
+              "bestFor": "Movimiento de cámara",
+              "fallbackPrice": "desde 0,29 $ / 5 s",
+              "selected": true,
+              "scores": [
+                { "label": "Motion", "value": 94 },
+                { "label": "Realismo", "value": 86 },
+                { "label": "Velocidad", "value": 74 }
+              ],
+              "tags": ["Cámara", "Audio", "Multi-plano"]
+            },
+            {
+              "engineId": "ltx-2-3-fast",
+              "name": "LTX 2.3 Fast",
+              "provider": "Lightricks",
+              "bestFor": "Borradores rápidos",
+              "fallbackPrice": "desde 0,18 $ / 5 s",
+              "scores": [
+                { "label": "Motion", "value": 72 },
+                { "label": "Realismo", "value": 68 },
+                { "label": "Velocidad", "value": 96 }
+              ],
+              "tags": ["Rápido", "Barato", "Draft"]
+            },
+            {
+              "engineId": "sora-2",
+              "name": "Sora 2",
+              "provider": "OpenAI",
+              "bestFor": "Escenas narrativas",
+              "fallbackPrice": "desde 0,55 $ / 5 s",
+              "scores": [
+                { "label": "Motion", "value": 84 },
+                { "label": "Realismo", "value": 88 },
+                { "label": "Velocidad", "value": 66 }
+              ],
+              "tags": ["Historia", "Personaje", "Audio"]
+            }
+          ],
+          "quoteLabel": "Precio estimado",
+          "quoteValue": "0,34 $",
+          "quoteMeta": "5 s · 1080p · audio si está disponible",
+          "outputLabel": "Previsualizaciones",
+          "queueLabel": "Estado del render",
+          "queueItems": ["Preview en render", "Recibo guardado", "Historial actualizado"],
+          "generateCta": "Generar con este motor",
+          "refundNote": "Créditos devueltos si la generación falla",
+          "playLabel": "Reproducir preview del motor",
+          "pauseLabel": "Pausar preview del motor",
+          "nextLabel": "Mostrar el siguiente preview de motor"
+        }
+      },
+      "proof": {
+        "liveValue": "Live",
+        "items": [
+          { "id": "engines", "label": "Motores IA" },
+          { "id": "providers", "label": "Proveedores" },
+          { "id": "textToVideo", "label": "Texto a video" },
+          { "id": "imageToVideo", "label": "Imagen a video" },
+          { "id": "videoToVideo", "label": "Video a video" },
+          { "id": "audio", "label": "Audio disponible" },
+          { "id": "fourK", "label": "Opciones" },
+          { "id": "pricing", "label": "Precio" }
+        ]
+      },
+      "shotTypes": {
+        "title": "Elige el mejor motor según el plano.",
+        "subtitle": "Cada modelo destaca en usos distintos. Elige un caso, compara motores y gasta créditos con más criterio.",
+        "cards": [
+          { "id": "fast-drafts", "title": "Borradores rápidos y pruebas baratas", "body": "Valida prompts, ritmo y composición antes de usar motores premium.", "engines": ["LTX 2.3 Fast", "Veo 3.1 Lite"], "cta": "Ver modelos rápidos", "href": { "pathname": "/models/[slug]", "params": { "slug": "ltx-2-3-fast" } } },
+          { "id": "cinematic-realism", "title": "Realismo cinematográfico", "body": "Usa motores más fuertes para movimiento, luz y planos de campaña premium.", "engines": ["Veo 3.1", "Seedance 2.0", "Kling 3"], "cta": "Ver ejemplos cinemáticos", "href": { "pathname": "/examples/[model]", "params": { "model": "veo" } } },
+          { "id": "character-scenes", "title": "Escenas con personajes", "body": "Parte de referencias consistentes y elige motores pensados para narrativa.", "engines": ["Sora 2", "Seedance", "LTX"], "cta": "Crear referencias de personaje", "href": { "pathname": "/tools/character-builder" } },
+          { "id": "product-ads", "title": "Producto y anuncios", "body": "Crea reveals de producto, anuncios UGC y motion de marca controlado.", "engines": ["Seedance", "Veo", "Kling"], "cta": "Ver ejemplos de producto", "href": { "pathname": "/examples" } },
+          { "id": "camera-motion", "title": "Movimiento de cámara", "body": "Compara motores cuando importan cámara, transiciones y geometría del plano.", "engines": ["Kling 3", "Veo", "Wan"], "cta": "Comparar motion", "href": { "pathname": "/ai-video-engines/[slug]", "params": { "slug": "kling-3-pro-vs-veo-3-1" } } },
+          { "id": "audio-native", "title": "Clips con audio nativo", "body": "Elige motores con audio o workflows listos para audio cuando el sonido importa.", "engines": ["Sora 2", "Veo 3.1", "Seedance"], "cta": "Comparar motores con audio", "href": { "pathname": "/ai-video-engines" } }
+        ]
+      },
+      "examples": {
+        "title": "Resultados reales. Prompts reales. Precios reales.",
+        "subtitle": "Explora ejemplos de video IA clonables con modelo, prompt, ajustes, duración y coste estimado.",
+        "cta": "Clonar este ejemplo",
+        "viewPrompt": "Ver prompt",
+        "fallbackCards": [
+          { "id": "fallback-sora", "title": "Escena narrativa con personaje", "engine": "Sora 2", "engineId": "sora-2", "mode": "Texto a video", "duration": "8 s", "price": "desde 0,80 $", "prompt": "Un momento de personaje creíble con cámara controlada y luz natural.", "imageSrc": "/hero/sora2.jpg", "imageAlt": "Ejemplo cinematográfico de video IA con Sora 2.", "examplesSlug": "sora" },
+          { "id": "fallback-veo", "title": "Reveal de producto cinematográfico", "engine": "Veo 3.1", "engineId": "veo-3-1", "mode": "Imagen a video", "duration": "8 s", "price": "desde 0,40 $", "prompt": "Un reveal premium con motion fluido, composición fuerte y soporte de audio.", "imageSrc": "/hero/veo-3-1-hero.jpg", "imageAlt": "Ejemplo de video IA con Veo 3.1.", "examplesSlug": "veo" },
+          { "id": "fallback-kling", "title": "Prueba de cámara", "engine": "Kling 3 Pro", "engineId": "kling-3-pro", "mode": "Imagen a video", "duration": "10 s", "price": "precio antes del render", "prompt": "Un movimiento de cámara dinámico con sujeto estable y motion realista.", "imageSrc": "/hero/kling-3-4k-hero.jpg", "imageAlt": "Ejemplo Kling AI de movimiento de cámara.", "examplesSlug": "kling" },
+          { "id": "fallback-seedance", "title": "Escena guiada por referencia", "engine": "Seedance 2.0", "engineId": "seedance-2-0", "mode": "Referencia a video", "duration": "10 s", "price": "cotización live", "prompt": "Un plano reference-first con sujeto consistente, ritmo limpio y audio nativo.", "imageSrc": "/hero/seedance-2-0.jpg", "imageAlt": "Ejemplo de video IA con Seedance 2.0.", "examplesSlug": "seedance" },
+          { "id": "fallback-wan", "title": "Prompt multi-plano estructurado", "engine": "Wan 2.6", "engineId": "wan-2-6", "mode": "Video a video", "duration": "10 s", "price": "cotización live", "prompt": "Una secuencia estructurada con beats claros, transiciones y continuidad.", "imageSrc": "/hero/wan-26.jpg", "imageAlt": "Ejemplo de video IA con Wan 2.6.", "examplesSlug": "wan" },
+          { "id": "fallback-pika", "title": "Loop social rápido", "engine": "Pika 2.2", "engineId": "pika-text-to-video", "mode": "Texto a video", "duration": "5 s", "price": "desde 0,20 $", "prompt": "Un loop corto y estilizado para probar variantes creativas rápidamente.", "imageSrc": "/hero/pika-22.jpg", "imageAlt": "Ejemplo social de video IA con Pika 2.2.", "examplesSlug": "pika" }
+        ]
+      },
+      "comparisons": {
+        "title": "Compara modelos de video IA antes de gastar créditos.",
+        "subtitle": "Los motores difieren en movimiento, realismo, fidelidad al prompt, audio, velocidad, resolución y coste. Compáralos lado a lado antes de elegir.",
+        "cta": "Comparar modelos",
+        "cards": [
+          { "id": "sora-standard-pro", "slug": "sora-2-vs-sora-2-pro", "title": "Sora 2 vs Sora 2 Pro", "body": "Compara rutas Sora estándar y premium para narrativa, personajes y planos de estudio.", "badges": ["calidad", "audio", "coste"] },
+          { "id": "ltx-fast", "slug": "ltx-2-3-fast-vs-ltx-2-fast", "title": "LTX 2.3 Fast vs LTX 2 Fast", "body": "Encuentra la mejor capa de borrador para probar prompts, motion y coste.", "badges": ["velocidad", "precio", "drafts"] },
+          { "id": "ltx-wan", "slug": "ltx-2-fast-vs-wan-2-6", "title": "LTX 2 Fast vs Wan 2.6", "body": "Compara la iteración rápida de LTX con prompts estructurados y continuidad de Wan.", "badges": ["motion", "valor", "workflow"] },
+          { "id": "seedance-upgrade", "slug": "seedance-1-5-pro-vs-seedance-2-0", "title": "Seedance 1.5 Pro vs Seedance 2.0", "body": "Entiende cuándo usar el workflow Seedance reciente para audio, referencias y multi-shot.", "badges": ["upgrade", "audio", "referencias"] },
+          { "id": "veo-fast-lite", "slug": "veo-3-1-fast-vs-veo-3-1-lite", "title": "Veo 3.1 Fast vs Veo 3.1 Lite", "body": "Compara rutas Veo económicas cuando velocidad y coste pesan más que el flagship.", "badges": ["velocidad", "precio", "Veo"] },
+          { "id": "kling-pro-standard", "slug": "kling-3-pro-vs-kling-3-standard", "title": "Kling 3 Pro vs Kling 3 Standard", "body": "Elige el nivel Kling adecuado para cámara, comportamiento actual y coste.", "badges": ["motion", "realismo", "coste"] }
+        ]
+      },
+      "workflow": {
+        "title": "Construye la referencia antes de animarla.",
+        "subtitle": "Genera una imagen fuente, bloquea la continuidad del personaje, ajusta el ángulo y pasa a video con el motor correcto.",
+        "steps": [
+          { "title": "Genera o sube una imagen fuente", "body": "Crea un still o trae una referencia antes de la etapa de video.", "toolLabel": "Generar imagen", "href": "/app/image" },
+          { "title": "Bloquea la consistencia del personaje", "body": "Crea una referencia reutilizable para escenas, variantes y storyboards.", "toolLabel": "Character Builder", "href": { "pathname": "/tools/character-builder" } },
+          { "title": "Elige ángulo y composición", "body": "Encuentra el punto de vista correcto antes de gastar créditos en animación.", "toolLabel": "Herramienta Angle", "href": { "pathname": "/tools/angle" } },
+          { "title": "Genera el video final", "body": "Pasa a texto a video, imagen a video o video a video con el mejor motor.", "toolLabel": "Abrir workspace", "href": "/app" }
+        ]
+      },
+      "toolbox": {
+        "title": "Tu toolbox de video IA en un solo workspace.",
+        "subtitle": "Prepara, genera, edita y compara salidas de video IA sin saltar entre plataformas.",
+        "cards": [
+          { "id": "text-to-video", "title": "Texto a Video", "body": "Genera videos desde prompts.", "href": "/app", "icon": "text" },
+          { "id": "image-to-video", "title": "Imagen a Video", "body": "Anima imágenes fijas.", "href": "/app", "icon": "image" },
+          { "id": "video-to-video", "title": "Video a Video", "body": "Transforma o cambia el estilo de clips existentes.", "href": "/app", "icon": "video" },
+          { "id": "generate-image", "title": "Generar imagen", "body": "Crea frames fuente antes de animar.", "href": "/app/image", "icon": "generateImage" },
+          { "id": "character-builder", "title": "Character Builder", "body": "Crea personajes consistentes.", "href": { "pathname": "/tools/character-builder" }, "icon": "character" },
+          { "id": "angle-tool", "title": "Angle Finder", "body": "Encuentra el punto de vista o ángulo correcto.", "href": { "pathname": "/tools/angle" }, "icon": "angle" },
+          { "id": "extend-video", "title": "Extend Video", "body": "Continúa un clip con motores compatibles.", "href": "/app", "icon": "extend" },
+          { "id": "retake", "title": "Retake", "body": "Regenera preservando ajustes o estructura.", "href": "/app", "icon": "retake" },
+          { "id": "audio-to-video", "title": "Audio a Video", "body": "Genera o mejora clips con audio cuando esté disponible.", "href": "/app", "icon": "audio" },
+          { "id": "compare-engines", "title": "Comparar motores", "body": "Elige el modelo correcto antes de renderizar.", "href": { "pathname": "/ai-video-engines" }, "icon": "compare" }
+        ]
+      },
+      "pricingTrust": {
+        "title": "Conoce el coste antes de comprometerte.",
+        "subtitle": "MaxVideoAI muestra la cotización antes de iniciar el render. Los créditos solo se cobran cuando la generación termina correctamente. Empieza con Starter Credits ($10).",
+        "cta": "Ver precios",
+        "cards": [
+          { "title": "Cotización live", "body": "Ve el precio antes de cada render." },
+          { "title": "Pago por uso", "body": "Sin suscripción. Añade créditos cuando los necesites." },
+          { "title": "Auto-reembolsos", "body": "Las generaciones fallidas devuelven créditos automáticamente." },
+          { "title": "Recibos", "body": "Sigue motor, ajustes, duración y coste de cada render." }
+        ]
+      },
+      "providers": {
+        "title": "Un workspace para los principales motores de video IA.",
+        "subtitle": "Usa proveedores compatibles desde una consola creativa de producción.",
+        "cta": "Ver todos los modelos",
+        "items": [
+          { "providerKey": "OpenAI", "provider": "OpenAI", "model": "Sora" },
+          { "providerKey": "Google", "provider": "Google", "model": "Veo y Nano Banana" },
+          { "providerKey": "Kling by Kuaishou", "provider": "Kling / Kuaishou", "model": "Kling" },
+          { "providerKey": "ByteDance", "provider": "ByteDance", "model": "Seedance" },
+          { "providerKey": "Lightricks", "provider": "Lightricks", "model": "LTX" },
+          { "providerKey": "Wan", "provider": "Wan", "model": "Wan" },
+          { "providerKey": "Pika", "provider": "Pika", "model": "Pika" },
+          { "providerKey": "MiniMax", "provider": "MiniMax", "model": "Hailuo" },
+          { "providerKey": "Luma AI", "provider": "Luma", "model": "Ray" }
+        ]
+      },
+      "faq": {
+        "title": "FAQ del workspace de video IA",
+        "subtitle": "Respuestas claras para elegir, comparar y generar con modelos de video IA.",
+        "items": [
+          { "question": "¿Qué es MaxVideoAI?", "answer": "MaxVideoAI es un workspace de generación de video IA multi-motor de pago por uso para comparar y generar videos con Sora, Veo, Kling, LTX, Seedance, Wan, Pika y más." },
+          { "question": "¿Puedo comparar modelos de video IA antes de generar?", "answer": "Sí. MaxVideoAI permite comparar motores de video IA por caso de uso, calidad, movimiento, audio, velocidad, duración, resolución y precio." },
+          { "question": "¿Cómo funciona el precio?", "answer": "Ves el precio antes de cada render. Los créditos solo se cobran cuando la generación termina correctamente." },
+          { "question": "¿Qué modelo de video IA debería elegir?", "answer": "Depende del plano. LTX sirve para iterar rápido, Seedance y Veo para salida cinematográfica pulida, Kling para movimiento y cámara, Sora para escenas narrativas y de personajes, y Wan o Pika para estilos o pruebas de presupuesto." },
+          { "question": "¿Puedo crear desde texto, imagen o video?", "answer": "Sí. MaxVideoAI admite texto a video, imagen a video, video a video y workflows reference-first según el motor seleccionado." },
+          { "question": "¿MaxVideoAI incluye herramientas creativas?", "answer": "Sí. MaxVideoAI incluye herramientas y workflows para generación de imagen, consistencia de personajes, preparación de ángulos, generación de video, comparación de modelos y gestión de salidas, según el motor y disponibilidad." }
+        ]
+      },
+      "seoKeywordBlock": "MaxVideoAI es un hub de generador de video IA para generación de video IA multi-motor. Compara modelos de video IA, revisa ejemplos reales, usa precios de pago por uso, ve el precio live antes del render y crea salidas de texto a video, imagen a video y video a video con Sora, Veo, Kling, LTX, Seedance, Wan, Pika y más.",
+      "modeLabels": {
+        "t2v": "Texto a video",
+        "i2v": "Imagen a video",
+        "v2v": "Video a video",
+        "ref2v": "Referencia a video",
+        "r2v": "Referencia a video",
+        "fl2v": "Primera/última imagen",
+        "a2v": "Audio a video",
+        "extend": "Extender video",
+        "retake": "Retake",
+        "unknown": "Video IA"
+      }
+    },
     "badges": [
       "Pago por uso",
       "Precio antes de generar",
@@ -583,8 +838,8 @@
     },
     "priceChipSuffix": "Visible antes de lanzar.",
     "meta": {
-      "title": "Generador de video con IA multi-motor — Pago por uso | MaxVideoAI",
-      "description": "Compara Sora, Veo, Kling y más, y genera video con IA (texto a video, imagen a video o video a video). Precio antes de generar. Pago por uso."
+      "title": "Workspace de video IA multi-motor — Precio antes del render | MaxVideoAI",
+      "description": "Compara Sora, Veo, Kling, LTX, Seedance, Wan, Pika y más antes de generar. Crea texto a video, imagen a video y video a video con pago por uso."
     },
     "compare": {
       "title": "Modelos de video con IA en un solo panel",
@@ -4138,6 +4393,13 @@
           "body": "Cambia el punto de vista, prueba composiciones alternativas y genera fotogramas listos para movimiento sin rehacer toda la imagen.",
           "cta": "Explorar herramienta",
           "imageAlt": "Captura de la interfaz Angle de MaxVideoAI."
+        },
+        "upscale": {
+          "eyebrow": "Upscale IA",
+          "title": "Aumenta resolución antes del siguiente flujo",
+          "body": "Upscalea imágenes o videos cortos con SeedVR2, Topaz, FlashVSR y Recraft, y reutiliza el asset más nítido en Image, Video o Library.",
+          "cta": "Explorar herramienta",
+          "imageAlt": "Interfaz de upscale IA con vista antes y después."
         }
       },
       "bestStartingPoints": {
@@ -4163,9 +4425,65 @@
             "title": "Cambia el ángulo desde una imagen",
             "body": "Conserva el frame que ya funciona y genera el punto de vista que encaja con el siguiente paso.",
             "cta": "Abrir Angle"
+          },
+          "upscale": {
+            "eyebrow": "Upscale",
+            "title": "Sube la resolución antes de reutilizar",
+            "body": "Limpia una imagen o clip corto antes de usarlo como referencia, asset de prompt o entregable.",
+            "cta": "Abrir Upscale"
           }
         }
       }
+    },
+    "upscale": {
+      "meta": {
+        "title": "Upscale IA de imagen y video | SeedVR2, Topaz, FlashVSR, Recraft",
+        "description": "Upscalea imágenes y videos cortos con modelos actuales de fal.ai como SeedVR2, Topaz, FlashVSR y Recraft antes de reutilizarlos en MaxVideoAI.",
+        "keywords": [
+          "upscale IA",
+          "upscaler imagen IA",
+          "upscaler video IA",
+          "seedvr upscale",
+          "topaz upscale fal",
+          "flashvsr upscale",
+          "recraft crisp upscale"
+        ],
+        "imageAlt": "Vista antes y después de upscale IA para imagen y video."
+      },
+      "hero": {
+        "badge": "Upscale imagen + video",
+        "title": "Upscalea assets antes de enviarlos por el pipeline",
+        "body": "Usa los endpoints de fal.ai más relevantes en una herramienta de MaxVideoAI: SeedVR2 para imagen y video, Topaz para mejora premium, FlashVSR para video rápido y Recraft Crisp para imágenes con más detalle.",
+        "primaryCta": "Abrir Upscale",
+        "secondaryCta": "Ver herramientas",
+        "beforeLabel": "Fuente",
+        "afterLabel": "Upscale"
+      },
+      "models": {
+        "eyebrow": "Ruteo de modelos",
+        "title": "Los mejores modelos fal.ai según el tipo de asset",
+        "body": "La primera versión expone los modelos más útiles ahora, con precio dinámico para video y una superficie compartida que luego puede aparecer en Image, Video, Library y acciones de jobs.",
+        "cards": [
+          { "title": "SeedVR2 Imagen + Video", "body": "Ruta por defecto para upscale controlado por factor o resolución objetivo.", "badge": "Default" },
+          { "title": "Topaz Imagen + Video", "body": "Ruta premium para assets de entrega y fuentes más difíciles.", "badge": "Premium" },
+          { "title": "FlashVSR Video", "body": "Opción rápida de video para pasadas de postproducción más económicas.", "badge": "Rápido" },
+          { "title": "Recraft Crisp", "body": "Upscale de imagen centrado en detalles y rostros para referencias nítidas.", "badge": "Detalle" }
+        ]
+      },
+      "workflow": {
+        "eyebrow": "Workflow",
+        "title": "Primero como herramienta autónoma, luego reutilizable en todas partes",
+        "steps": [
+          { "title": "Sube o pega una URL", "body": "Empieza con una imagen o video corto desde Library, almacenamiento o una URL externa." },
+          { "title": "Elige modo de calidad", "body": "Selecciona SeedVR2, Topaz, FlashVSR o Recraft según coste, velocidad y calidad." },
+          { "title": "Reutiliza la salida", "body": "Guarda el resultado en Library y prepara la misma acción para futuros botones contextuales de upscale." }
+        ]
+      },
+      "faq": [
+        { "q": "¿Puede upscale video?", "a": "Sí. La primera integración servidor soporta videos cortos con precio dinámico basado en metadatos y un límite conservador de duración." },
+        { "q": "¿Qué modelo es el default?", "a": "SeedVR2 es el default para imagen y video porque soporta controles actuales por resolución objetivo y factor." },
+        { "q": "¿Upscale aparecerá en otros lugares?", "a": "Sí. La implementación usa una superficie dedicada upscale para exponer luego la misma acción desde Library, jobs generados, Image y Video." }
+      ]
     },
     "angle": {
       "meta": {

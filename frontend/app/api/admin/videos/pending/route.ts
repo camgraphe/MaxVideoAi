@@ -67,6 +67,8 @@ function parseSurface(value: string | null): ModerationSurface {
       return 'character';
     case 'angle':
       return 'angle';
+    case 'upscale':
+      return 'upscale';
     default:
       return 'video';
   }
@@ -84,6 +86,10 @@ function buildSurfaceFilterClause(surface: ModerationSurface, params: Array<stri
     return `(surface = $${directIndex} OR job_id LIKE 'tool_angle_%' OR settings_snapshot->>'surface' = 'angle')`;
   }
 
+  if (surface === 'upscale') {
+    return `(surface = $${directIndex} OR job_id LIKE 'tool_upscale_%' OR settings_snapshot->>'surface' = 'upscale')`;
+  }
+
   if (surface === 'image') {
     params.push(IMAGE_ENGINE_ALIASES);
     const imageAliasIndex = params.length;
@@ -95,9 +101,10 @@ function buildSurfaceFilterClause(surface: ModerationSurface, params: Array<stri
           OR render_ids IS NOT NULL
           OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
         )
-        AND COALESCE(surface, '') NOT IN ('character', 'angle')
-        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('character-builder', 'angle', 'video')
+        AND COALESCE(surface, '') NOT IN ('character', 'angle', 'upscale')
+        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('character-builder', 'angle', 'upscale', 'video')
         AND job_id NOT LIKE 'tool_angle_%'
+        AND job_id NOT LIKE 'tool_upscale_%'
       )
     )`;
   }
@@ -113,8 +120,9 @@ function buildSurfaceFilterClause(surface: ModerationSurface, params: Array<stri
       )
       AND NOT (
         COALESCE(surface, '') = 'audio'
-        OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio')
+        OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale')
         OR job_id LIKE 'tool_angle_%'
+        OR job_id LIKE 'tool_upscale_%'
         OR render_ids IS NOT NULL
         OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
       )
