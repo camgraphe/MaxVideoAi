@@ -110,7 +110,6 @@ export function CompositePreviewDock({
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isLooping, setIsLooping] = useState(true);
-  const [isSafari, setIsSafari] = useState(false);
   const [readyItems, setReadyItems] = useState<Record<string, boolean>>({});
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
   const lastPrimaryReadyEventKeyRef = useRef<string | null>(null);
@@ -134,14 +133,6 @@ export function CompositePreviewDock({
     videoRefs.current.clear();
     setReadyItems({});
   }, [group?.id]);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-    const ua = navigator.userAgent;
-    const isSafariBrowser =
-      /safari/i.test(ua) && !/chrome|chromium|crios|fxios|edg|opr|brave|vivaldi/i.test(ua);
-    setIsSafari(isSafariBrowser);
-  }, []);
 
   const markReady = useCallback((itemKey: string) => {
     setReadyItems((prev) => {
@@ -216,6 +207,30 @@ export function CompositePreviewDock({
     [markReady]
   );
 
+  const playVideoWhenReady = useCallback((video: HTMLVideoElement) => {
+    video.preload = 'auto';
+    if (video.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+      video.load();
+    }
+    if (video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
+      return;
+    }
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => undefined);
+    }
+  }, []);
+
+  const handleVideoCanPlay = useCallback(
+    (itemKey: string, video: HTMLVideoElement) => {
+      handleMediaReady(itemKey);
+      if (itemKey === activeVideoKey && isPlaying) {
+        playVideoWhenReady(video);
+      }
+    },
+    [activeVideoKey, handleMediaReady, isPlaying, playVideoWhenReady]
+  );
+
   useEffect(() => {
     if (!activeVideoKey || !readyItems[activeVideoKey] || lastPrimaryReadyEventKeyRef.current === activeVideoKey) return;
     lastPrimaryReadyEventKeyRef.current = activeVideoKey;
@@ -234,25 +249,22 @@ export function CompositePreviewDock({
     videoRefs.current.forEach((video) => {
       const previous = video.muted;
       video.muted = isMuted;
-      if (!video.muted && previous !== video.muted) {
-        void video.play().catch(() => undefined);
+      if (!video.muted && previous !== video.muted && video.dataset.previewVideo === 'active') {
+        playVideoWhenReady(video);
       }
     });
-  }, [isMuted]);
+  }, [isMuted, playVideoWhenReady]);
 
   useEffect(() => {
     videoRefs.current.forEach((video) => {
       const isActivePreview = video.dataset.previewVideo === 'active';
       if (isPlaying && isActivePreview) {
-        const playPromise = video.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-          playPromise.catch(() => undefined);
-        }
+        playVideoWhenReady(video);
       } else {
         video.pause();
       }
     });
-  }, [activeVideoKey, isPlaying, group?.id]);
+  }, [activeVideoKey, group?.id, isPlaying, playVideoWhenReady]);
 
   const registerVideo = useCallback(
     (itemId: string) => {
@@ -264,21 +276,18 @@ export function CompositePreviewDock({
         element.loop = isLooping;
         element.muted = isMuted;
         element.dataset.previewVideo = itemId === activeVideoKey ? 'active' : 'idle';
-        if (itemId === activeVideoKey && element.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        if (itemId === activeVideoKey && element.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
           handleMediaReady(itemId);
         }
         if (isPlaying && itemId === activeVideoKey) {
-          const playPromise = element.play();
-          if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise.catch(() => undefined);
-          }
+          playVideoWhenReady(element);
         } else {
           element.pause();
         }
         videoRefs.current.set(itemId, element);
       };
     },
-    [activeVideoKey, handleMediaReady, isLooping, isMuted, isPlaying]
+    [activeVideoKey, handleMediaReady, isLooping, isMuted, isPlaying, playVideoWhenReady]
   );
 
   const gridClass = group ? GRID_CLASS[group.layout] ?? 'grid-cols-1' : 'grid-cols-1';
@@ -554,7 +563,6 @@ export function CompositePreviewDock({
                   const itemStatusRaw = typeof item.meta?.status === 'string' ? String(item.meta.status).toLowerCase() : null;
                   const itemKey = item.id ? `${item.id}-${index}` : `dock-item-${index}`;
                   const isVideoReady = Boolean(readyItems[itemKey]);
-                  const showSafariThumb = isSafari && item.thumb;
                   const aspectHint = resolveAspectHint(item);
                   const parsedAspect = parseAspectRatio(aspectHint?.replace('/', ':') ?? null);
                   const aspectRatio = parsedAspect ? parsedAspect.width / parsedAspect.height : null;
@@ -568,6 +576,7 @@ export function CompositePreviewDock({
                     return 'completed';
                   })();
                   const shouldPlayVideo = isPlaying && itemKey === activeVideoKey;
+                  const showReadyThumb = Boolean(item.thumb);
                   const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
                   const hasAudio =
@@ -591,14 +600,15 @@ export function CompositePreviewDock({
                       <div className="absolute inset-0">
                         {itemStatus === 'completed' && video ? (
                           <>
-                            {showSafariThumb ? (
+                            {showReadyThumb ? (
                               <Image
                                 src={item.thumb as string}
                                 alt=""
                                 fill
+                                priority={shouldPlayVideo}
                                 sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
                                 className={clsx(
-                                  'pointer-events-none transition-opacity duration-150',
+                                  'pointer-events-none z-10 transition-opacity duration-150',
                                   mediaFitClass,
                                   shouldZoom ? 'transition-transform' : null,
                                   isVideoReady ? 'opacity-0' : 'opacity-100'
@@ -611,19 +621,15 @@ export function CompositePreviewDock({
                               src={item.url}
                               poster={item.thumb}
                               className={clsx(
-                                'h-full w-full',
+                                'relative z-0 h-full w-full',
                                 mediaFitClass,
-                                shouldZoom ? 'transition-transform duration-150' : null,
-                                isSafari ? 'transition-opacity duration-150' : null,
-                                isSafari && !isVideoReady ? 'opacity-0' : 'opacity-100'
+                                shouldZoom ? 'transition-transform duration-150' : null
                               )}
                               muted={isMuted}
                               playsInline
                               preload={shouldPlayVideo ? 'auto' : 'none'}
                               loop={isLooping}
-                              autoPlay={shouldPlayVideo}
-                              onLoadedData={() => handleMediaReady(itemKey)}
-                              onCanPlay={() => handleMediaReady(itemKey)}
+                              onCanPlay={(event) => handleVideoCanPlay(itemKey, event.currentTarget)}
                             />
                           </>
                         ) : item.thumb ? (
