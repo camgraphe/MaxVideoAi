@@ -10,8 +10,10 @@ import { defaultLocale, locales } from '@/i18n/locales';
 import { getLocalizedUrl } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
-import { getEntryBySlug } from '@/lib/content/markdown';
+import { getContentEntries, getEntryBySlug, type ContentEntry } from '@/lib/content/markdown';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import { EXAMPLES_HERO_SELECTION_LIMIT, pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
+import { listExampleFamilyPage } from '@/server/videos';
 import engineCatalog from '@/config/engine-catalog.json';
 import compareConfig from '@/config/compare-config.json';
 
@@ -28,6 +30,10 @@ interface BestForEntry {
   topPicks?: string[];
   relatedComparisons?: string[];
 }
+
+type RelatedGuideEntry = BestForEntry & {
+  displayTitle: string;
+};
 
 type EngineCatalogEntry = {
   engineId?: string;
@@ -99,6 +105,8 @@ const DETAIL_COPY: Record<
     backToTop: string;
     criteria: string;
     quickLinks: string;
+    tier: string;
+    browseAllExamples: string;
   }
 > = {
   en: {
@@ -137,6 +145,8 @@ const DETAIL_COPY: Record<
     backToTop: 'Back to top',
     criteria: 'Decision criteria',
     quickLinks: 'Quick links',
+    tier: 'Tier',
+    browseAllExamples: 'Browse all examples',
   },
   fr: {
     eyebrow: 'Meilleur pour',
@@ -144,7 +154,7 @@ const DETAIL_COPY: Record<
     shortlistDescription: 'Les cards reprennent le style des pages modèles, avec les moteurs les plus adaptés en premier.',
     ranked: 'Sélection classée',
     rank: 'Rang',
-    topPick: 'Top pick',
+    topPick: 'Premier choix',
     provider: 'Fournisseur',
     fit: 'Meilleur usage',
     evidence: 'Pourquoi ça matche',
@@ -174,6 +184,8 @@ const DETAIL_COPY: Record<
     backToTop: 'Retour en haut',
     criteria: 'Critères de décision',
     quickLinks: 'Liens rapides',
+    tier: 'Niveau',
+    browseAllExamples: 'Voir tous les exemples',
   },
   es: {
     eyebrow: 'Mejor para',
@@ -181,7 +193,7 @@ const DETAIL_COPY: Record<
     shortlistDescription: 'Las cards reutilizan el lenguaje visual de las páginas de modelos, con los motores más adecuados primero.',
     ranked: 'Selección ordenada',
     rank: 'Puesto',
-    topPick: 'Top pick',
+    topPick: 'Primera opción',
     provider: 'Proveedor',
     fit: 'Mejor uso',
     evidence: 'Por qué encaja',
@@ -211,6 +223,8 @@ const DETAIL_COPY: Record<
     backToTop: 'Volver arriba',
     criteria: 'Criterios de decisión',
     quickLinks: 'Enlaces rápidos',
+    tier: 'Nivel',
+    browseAllExamples: 'Ver todos los ejemplos',
   },
 };
 
@@ -277,19 +291,73 @@ const USECASE_CRITERIA: Record<string, Record<AppLocale, string[]>> = {
   },
 };
 
-const USECASE_CHIPS: Record<string, string[]> = {
-  'image-to-video': ['Image fidelity', 'Motion control', 'Subject lock', 'Reference frames', 'Cost control'],
-  'cinematic-realism': ['Camera language', 'Lighting', 'Motion physics', 'Visual polish', 'Cost control'],
-  'character-reference': ['Identity lock', 'Wardrobe', 'Props', 'Shot continuity', 'Input limits'],
-  'reference-to-video': ['References', 'Style frames', 'Audio cues', 'Product consistency', 'Output control'],
-  'multi-shot-video': ['Shot order', 'Continuity', 'Scene labels', 'Prompt structure', 'Final edit'],
-  '4k-video': ['Native 4K', 'Detail retention', 'Upscale path', 'Final delivery', 'Cost control'],
-  ads: ['Product clarity', 'Offer framing', 'Visual polish', 'Variant testing', 'Review speed'],
-  'ugc-ads': ['Creator realism', 'Dialogue', 'Face consistency', 'Hook testing', 'Social proof'],
-  'product-videos': ['Packshot stability', 'Textures', 'Clean reveals', 'Ecommerce motion', 'Brand fit'],
-  'lipsync-dialogue': ['Mouth timing', 'Voice sync', 'Face consistency', 'Audio options', 'Short dialogue'],
-  'fast-drafts': ['Speed', 'Low cost', 'Rough timing', 'Variant testing', 'Review loop'],
-  'stylized-anime': ['Line quality', 'Style consistency', 'Color blocks', 'Stylized motion', 'Creative tests'],
+const USECASE_CHIPS: Record<string, Record<AppLocale, string[]>> = {
+  'image-to-video': {
+    en: ['Image fidelity', 'Motion control', 'Subject lock', 'Reference frames', 'Cost control'],
+    fr: ['Fidélité image', 'Contrôle du mouvement', 'Sujet verrouillé', 'Frames de référence', 'Contrôle du coût'],
+    es: ['Fidelidad de imagen', 'Control de movimiento', 'Sujeto estable', 'Frames de referencia', 'Control de costo'],
+  },
+  'cinematic-realism': {
+    en: ['Camera language', 'Lighting', 'Motion physics', 'Visual polish', 'Cost control'],
+    fr: ['Langage caméra', 'Lumière', 'Physique du mouvement', 'Rendu visuel', 'Contrôle du coût'],
+    es: ['Lenguaje de cámara', 'Iluminación', 'Física del movimiento', 'Pulido visual', 'Control de costo'],
+  },
+  'character-reference': {
+    en: ['Identity lock', 'Wardrobe', 'Props', 'Shot continuity', 'Input limits'],
+    fr: ['Identité verrouillée', 'Tenue', 'Accessoires', 'Continuité des plans', 'Limites d’entrée'],
+    es: ['Identidad estable', 'Vestuario', 'Props', 'Continuidad de planos', 'Límites de entrada'],
+  },
+  'reference-to-video': {
+    en: ['References', 'Style frames', 'Audio cues', 'Product consistency', 'Output control'],
+    fr: ['Références', 'Style frames', 'Repères audio', 'Cohérence produit', 'Contrôle du rendu'],
+    es: ['Referencias', 'Style frames', 'Señales de audio', 'Consistencia de producto', 'Control de salida'],
+  },
+  'multi-shot-video': {
+    en: ['Shot order', 'Continuity', 'Scene labels', 'Prompt structure', 'Final edit'],
+    fr: ['Ordre des plans', 'Continuité', 'Labels de scène', 'Structure du prompt', 'Montage final'],
+    es: ['Orden de planos', 'Continuidad', 'Etiquetas de escena', 'Estructura del prompt', 'Edición final'],
+  },
+  '4k-video': {
+    en: ['Native 4K', 'Detail retention', 'Upscale path', 'Final delivery', 'Cost control'],
+    fr: ['4K native', 'Détails conservés', 'Chemin upscale', 'Livraison finale', 'Contrôle du coût'],
+    es: ['4K nativo', 'Retención de detalle', 'Ruta de upscale', 'Entrega final', 'Control de costo'],
+  },
+  ads: {
+    en: ['Product clarity', 'Offer framing', 'Visual polish', 'Variant testing', 'Review speed'],
+    fr: ['Clarté produit', 'Angle offre', 'Rendu propre', 'Tests de variantes', 'Vitesse de review'],
+    es: ['Claridad de producto', 'Marco de oferta', 'Pulido visual', 'Pruebas de variantes', 'Velocidad de revisión'],
+  },
+  'ugc-ads': {
+    en: ['Creator realism', 'Dialogue', 'Face consistency', 'Hook testing', 'Social proof'],
+    fr: ['Réalisme créateur', 'Dialogue', 'Cohérence visage', 'Tests de hooks', 'Preuve sociale'],
+    es: ['Realismo de creador', 'Diálogo', 'Consistencia facial', 'Pruebas de hooks', 'Prueba social'],
+  },
+  'product-videos': {
+    en: ['Packshot stability', 'Textures', 'Clean reveals', 'Ecommerce motion', 'Brand fit'],
+    fr: ['Stabilité packshot', 'Textures', 'Reveals propres', 'Mouvement ecommerce', 'Fit marque'],
+    es: ['Estabilidad de packshot', 'Texturas', 'Reveals limpios', 'Movimiento ecommerce', 'Encaje de marca'],
+  },
+  'lipsync-dialogue': {
+    en: ['Mouth timing', 'Voice sync', 'Face consistency', 'Audio options', 'Short dialogue'],
+    fr: ['Timing bouche', 'Sync voix', 'Cohérence visage', 'Options audio', 'Dialogue court'],
+    es: ['Timing de boca', 'Sync de voz', 'Consistencia facial', 'Opciones de audio', 'Diálogo corto'],
+  },
+  'fast-drafts': {
+    en: ['Speed', 'Low cost', 'Rough timing', 'Variant testing', 'Review loop'],
+    fr: ['Vitesse', 'Coût bas', 'Timing brouillon', 'Tests de variantes', 'Boucle de review'],
+    es: ['Velocidad', 'Bajo costo', 'Timing preliminar', 'Pruebas de variantes', 'Ciclo de revisión'],
+  },
+  'stylized-anime': {
+    en: ['Line quality', 'Style consistency', 'Color blocks', 'Stylized motion', 'Creative tests'],
+    fr: ['Qualité du trait', 'Cohérence de style', 'Aplats de couleur', 'Mouvement stylisé', 'Tests créatifs'],
+    es: ['Calidad de línea', 'Consistencia de estilo', 'Bloques de color', 'Movimiento estilizado', 'Pruebas creativas'],
+  },
+};
+
+const DECISION_CRITERIA_FILLERS: Record<AppLocale, string[]> = {
+  en: ['Cost efficiency and speed', 'Reliability and consistency'],
+  fr: ['Efficacité coût et vitesse', 'Fiabilité et cohérence'],
+  es: ['Eficiencia de costo y velocidad', 'Fiabilidad y consistencia'],
 };
 
 const USECASE_MISTAKES: Record<AppLocale, string[]> = {
@@ -314,23 +382,6 @@ const USECASE_MISTAKES: Record<AppLocale, string[]> = {
     'Saltar los borradores e ir directo a premium.',
     'No revisar el costo antes de generar.',
   ],
-};
-
-const HERO_IMAGES: Record<string, string> = {
-  'seedance-2-0': '/hero/showcase-seedance-2-0.jpg',
-  'seedance-2-0-fast': '/hero/showcase-seedance-2-0.jpg',
-  'kling-3-pro': '/hero/showcase-kling-3-pro.jpg',
-  'kling-3-standard': '/hero/showcase-kling-3-pro.jpg',
-  'kling-3-4k': '/hero/kling-3-4k-hero.jpg',
-  'veo-3-1': '/hero/showcase-veo-3-1.jpg',
-  'veo-3-1-fast': '/hero/showcase-veo-3-1.jpg',
-  'sora-2-pro': '/hero/showcase-sora-2.jpg',
-  'sora-2': '/hero/showcase-sora-2.jpg',
-  'ltx-2-3-pro': '/hero/showcase-ltx-2-3-fast.jpg',
-  'ltx-2-3-fast': '/hero/showcase-ltx-2-3-fast.jpg',
-  'pika-text-to-video': '/hero/pika-22.jpg',
-  'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
-  'wan-2-6': '/hero/wan-26.jpg',
 };
 
 export const dynamicParams = false;
@@ -369,21 +420,23 @@ async function getLocalizedBestForEntry(locale: AppLocale, slug: string) {
 }
 
 async function resolveAvailableLocales(slug: string): Promise<AppLocale[]> {
-  const available: AppLocale[] = [];
-  for (const locale of locales) {
-    const localized = await getEntryBySlug(`content/${locale}/best-for`, slug);
-    if (localized) {
-      available.push(locale);
-      continue;
-    }
-    if (locale === 'en') {
-      const fallback = await getEntryBySlug('content/en/best-for', slug);
-      if (fallback) {
-        available.push(locale);
+  const available = await Promise.all(
+    locales.map(async (locale) => {
+      const localized = await getEntryBySlug(`content/${locale}/best-for`, slug);
+      if (localized) {
+        return locale;
       }
-    }
-  }
-  return available.length ? available : (['en'] as AppLocale[]);
+      if (locale === 'en') {
+        const fallback = await getEntryBySlug('content/en/best-for', slug);
+        if (fallback) {
+          return locale;
+        }
+      }
+      return null;
+    })
+  );
+  const filtered = available.filter((locale): locale is AppLocale => Boolean(locale));
+  return filtered.length ? filtered : (['en'] as AppLocale[]);
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -412,7 +465,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     availableLocales: seo.availableLocales,
     canonicalOverride: seo.canonicalOverride,
     robots: seo.robots,
-    keywords: entry ? buildBestForKeywords(entry) : undefined,
+    keywords: entry ? buildBestForKeywords(locale, entry, title) : undefined,
   });
 }
 
@@ -422,8 +475,11 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
     notFound();
   }
   const locale = params.locale ?? 'en';
-  const content = await getBestForEntry(locale, entry.slug);
-  const scores = await loadEngineScores();
+  const [content, scores, relatedGuides] = await Promise.all([
+    getBestForEntry(locale, entry.slug),
+    loadEngineScores(),
+    resolveRelatedBestForGuides(locale, entry.slug),
+  ]);
   const topPicks = resolveTopPicks(entry, scores);
   const copy = DETAIL_COPY[locale] ?? DETAIL_COPY.en;
   const criteria = getUsecaseCriteria(locale, entry.slug);
@@ -435,12 +491,13 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
       scores,
       criteria,
       copy,
+      locale,
     })
   );
+  const examplePicks = await resolveExamplePreviewPicks(rankedPicks);
   const heroTitle = getBestForDisplayTitle(locale, entry, content?.title);
   const heroDescription = buildBestForHeroDescription(locale, entry, content?.description);
-  const chips = USECASE_CHIPS[entry.slug] ?? criteria;
-  const relatedGuides = getRelatedBestForGuides(entry.slug);
+  const chips = getUsecaseChips(locale, entry.slug, criteria);
   const alsoAvailable = getAlsoAvailableModels(entry.slug, topPicks);
   const canonicalUrl = getLocalizedUrl(locale, `/ai-video-engines/best-for/${entry.slug}`);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(locale, entry, heroTitle, canonicalUrl);
@@ -502,6 +559,7 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
               entry={entry}
               picks={rankedPicks.slice(0, 3)}
               relatedComparisons={entry.relatedComparisons ?? []}
+              locale={locale}
               copy={copy}
             />
           </div>
@@ -528,18 +586,18 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
             </section>
 
             <ChooseEngineStrip picks={rankedPicks} copy={copy} />
-            <ExamplesPreview picks={rankedPicks} copy={copy} />
+            <ExamplesPreview picks={examplePicks} copy={copy} />
 
             <section className="grid gap-3 lg:grid-cols-2">
-              <EditorialReasonCard entry={entry} picks={rankedPicks} copy={copy} />
+              <EditorialReasonCard entry={entry} picks={rankedPicks} locale={locale} copy={copy} />
               <MistakesCard locale={locale} copy={copy} />
             </section>
 
-            <BestForContent locale={locale} slug={entry.slug} contentComing={copy.contentComing} />
+            <BestForContent content={content} contentComing={copy.contentComing} />
           </main>
 
           <aside className="space-y-4 lg:sticky lg:top-24">
-            <CriteriaCard criteria={criteria} copy={copy} />
+            <CriteriaCard criteria={criteria} locale={locale} copy={copy} />
             <CompareCard comparisons={entry.relatedComparisons ?? []} copy={copy} />
             <RelatedGuidesCard guides={relatedGuides} copy={copy} />
             <QuickLinksCard copy={copy} />
@@ -568,23 +626,30 @@ type RankedPick = {
   bullets: string[];
 };
 
+type ExamplePreviewPick = RankedPick & {
+  examplesSlug: string;
+  heroThumbUrl?: string | null;
+};
+
 function TopPicksPanel({
   entry,
   picks,
   relatedComparisons,
+  locale,
   copy,
 }: {
   entry: BestForEntry;
   picks: RankedPick[];
   relatedComparisons: string[];
+  locale: AppLocale;
   copy: (typeof DETAIL_COPY)[AppLocale];
 }) {
   return (
     <section className="rounded-[18px] border border-hairline bg-surface p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
       <div className="flex items-center justify-between gap-3 px-1">
-        <h2 className="text-sm font-semibold text-text-primary">{getTopPicksTitle(entry.slug)}</h2>
+        <h2 className="text-sm font-semibold text-text-primary">{getTopPicksTitle(locale, entry.slug)}</h2>
         <span className="rounded-full border border-hairline bg-surface-2 px-3 py-1 text-xs font-semibold text-text-secondary">
-          Tier {entry.tier}
+          {copy.tier} {entry.tier}
         </span>
       </div>
       <div className="mt-4 overflow-hidden rounded-[14px] border border-hairline">
@@ -735,7 +800,7 @@ function ChooseEngineStrip({ picks, copy }: { picks: RankedPick[]; copy: (typeof
   );
 }
 
-function ExamplesPreview({ picks, copy }: { picks: RankedPick[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+function ExamplesPreview({ picks, copy }: { picks: ExamplePreviewPick[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
   return (
     <section id="examples" className="space-y-4">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
@@ -744,7 +809,7 @@ function ExamplesPreview({ picks, copy }: { picks: RankedPick[]; copy: (typeof D
           <p className="mt-1 text-sm text-text-secondary">{copy.examplesDescription}</p>
         </div>
         <Link href={{ pathname: '/examples' }} className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brandHover">
-          Browse all examples
+          {copy.browseAllExamples}
           <ChevronRight className="h-4 w-4" aria-hidden />
         </Link>
       </div>
@@ -752,23 +817,28 @@ function ExamplesPreview({ picks, copy }: { picks: RankedPick[]; copy: (typeof D
         {picks.map((pick) => (
           <Link
             key={pick.slug}
-            href={{ pathname: '/examples/[model]', params: { model: getExamplesSlug(pick) } }}
+            href={{ pathname: '/examples/[model]', params: { model: pick.examplesSlug } }}
             className="group relative min-h-[116px] overflow-hidden rounded-[14px] border border-hairline bg-surface shadow-sm"
           >
             <Image
-              src={HERO_IMAGES[pick.slug] ?? '/assets/placeholders/preview-16x9.png'}
+              src={pick.heroThumbUrl ?? '/assets/placeholders/preview-16x9.png'}
               alt=""
               fill
               sizes="(min-width: 1280px) 230px, (min-width: 640px) 50vw, 100vw"
               className="object-cover transition duration-300 group-hover:scale-105"
             />
-            <span className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/20 to-transparent" aria-hidden />
-            <span className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-text-primary shadow-sm">
+            <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/42 to-black/8" aria-hidden />
+            <span className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/92 via-black/68 to-transparent" aria-hidden />
+            <span className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-text-primary shadow-sm">
               <PlayCircle className="h-5 w-5" aria-hidden />
             </span>
-            <span className="absolute bottom-4 left-4 right-4">
-              <span className="block text-sm font-semibold text-white">{pick.engine?.marketingName ?? pick.slug}</span>
-              <span className="block text-xs text-white/78">{pick.criterion}</span>
+            <span className="absolute bottom-3 left-3 right-3 z-10 rounded-[10px] bg-black/42 px-3 py-2 shadow-[0_10px_26px_rgba(0,0,0,0.28)] backdrop-blur-[2px]">
+              <span className="block text-sm font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]">
+                {pick.engine?.marketingName ?? pick.slug}
+              </span>
+              <span className="mt-0.5 block text-xs leading-snug text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65)]">
+                {pick.criterion}
+              </span>
             </span>
           </Link>
         ))}
@@ -780,10 +850,12 @@ function ExamplesPreview({ picks, copy }: { picks: RankedPick[]; copy: (typeof D
 function EditorialReasonCard({
   entry,
   picks,
+  locale,
   copy,
 }: {
   entry: BestForEntry;
   picks: RankedPick[];
+  locale: AppLocale;
   copy: (typeof DETAIL_COPY)[AppLocale];
 }) {
   return (
@@ -793,7 +865,7 @@ function EditorialReasonCard({
         {picks.slice(0, 4).map((pick) => (
           <p key={pick.slug}>
             <strong className="font-semibold text-text-primary">{pick.engine?.marketingName ?? pick.slug}</strong>{' '}
-            {buildReasonSentence(entry.slug, pick)}
+            {buildReasonSentence(locale, entry.slug, pick)}
           </p>
         ))}
       </div>
@@ -824,8 +896,16 @@ function MistakesCard({ locale, copy }: { locale: AppLocale; copy: (typeof DETAI
   );
 }
 
-function CriteriaCard({ criteria, copy }: { criteria: string[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
-  const filledCriteria = criteria.concat(USECASE_MISTAKES.en).slice(0, 5);
+function CriteriaCard({
+  criteria,
+  locale,
+  copy,
+}: {
+  criteria: string[];
+  locale: AppLocale;
+  copy: (typeof DETAIL_COPY)[AppLocale];
+}) {
+  const filledCriteria = criteria.concat(DECISION_CRITERIA_FILLERS[locale] ?? DECISION_CRITERIA_FILLERS.en).slice(0, 5);
   return (
     <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
       <p className="text-sm font-semibold text-text-primary">{copy.criteria}</p>
@@ -865,7 +945,7 @@ function CompareCard({ comparisons, copy }: { comparisons: string[]; copy: (type
   );
 }
 
-function RelatedGuidesCard({ guides, copy }: { guides: BestForEntry[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+function RelatedGuidesCard({ guides, copy }: { guides: RelatedGuideEntry[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
   return (
     <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
       <p className="text-sm font-semibold text-text-primary">{copy.relatedGuides}</p>
@@ -876,7 +956,7 @@ function RelatedGuidesCard({ guides, copy }: { guides: BestForEntry[]; copy: (ty
             href={{ pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: guide.slug } }}
             className="block text-sm font-semibold text-brand transition hover:text-brandHover"
           >
-            {guide.title}
+            {guide.displayTitle}
           </Link>
         ))}
       </div>
@@ -914,8 +994,7 @@ function QuickLinksCard({ copy }: { copy: (typeof DETAIL_COPY)[AppLocale] }) {
   );
 }
 
-async function BestForContent({ locale, slug, contentComing }: { locale: AppLocale; slug: string; contentComing: string }) {
-  const content = await getBestForEntry(locale, slug);
+function BestForContent({ content, contentComing }: { content: ContentEntry | null; contentComing: string }) {
   if (!content) {
     return (
       <div className="rounded-card border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">
@@ -1006,6 +1085,7 @@ function buildRankedPick({
   scores,
   criteria,
   copy,
+  locale,
 }: {
   usecaseSlug: string;
   modelSlug: string;
@@ -1013,6 +1093,7 @@ function buildRankedPick({
   scores: Map<string, EngineScore>;
   criteria: string[];
   copy: (typeof DETAIL_COPY)[AppLocale];
+  locale: AppLocale;
 }): RankedPick {
   const engine = ENGINE_BY_SLUG.get(modelSlug);
   const score = getFitScore(usecaseSlug, scores.get(modelSlug) ?? (engine?.engineId ? scores.get(engine.engineId) : undefined));
@@ -1025,9 +1106,38 @@ function buildRankedPick({
     criterion,
     score: score ?? fallbackScore,
     accent: getEngineAccent(modelSlug),
-    reason: buildPickReason(usecaseSlug, criterion, rank),
-    bullets: buildPickBullets(criteria, rank),
+    reason: buildPickReason(locale, usecaseSlug, criterion, rank),
+    bullets: buildPickBullets(locale, criteria, rank),
   };
+}
+
+async function resolveExamplePreviewPicks(picks: RankedPick[]): Promise<ExamplePreviewPick[]> {
+  const examplesSlugs = Array.from(new Set(picks.map((pick) => getExamplesSlug(pick))));
+  const heroThumbEntries = await Promise.all(
+    examplesSlugs.map(async (examplesSlug) => {
+      try {
+        const result = await listExampleFamilyPage(examplesSlug, {
+          sort: 'playlist',
+          limit: EXAMPLES_HERO_SELECTION_LIMIT,
+          offset: 0,
+        });
+        const heroVideo = pickFirstPlayableVideo(result.items);
+        return [examplesSlug, heroVideo?.thumbUrl ?? null] as const;
+      } catch {
+        return [examplesSlug, null] as const;
+      }
+    })
+  );
+  const heroThumbBySlug = new Map(heroThumbEntries);
+
+  return picks.map((pick) => {
+    const examplesSlug = getExamplesSlug(pick);
+    return {
+      ...pick,
+      examplesSlug,
+      heroThumbUrl: heroThumbBySlug.get(examplesSlug) ?? null,
+    };
+  });
 }
 
 function getBestForDisplayTitle(locale: AppLocale, entry?: BestForEntry, fallbackTitle?: string) {
@@ -1064,9 +1174,22 @@ function buildBestForMetaDescription(locale: AppLocale, entry: BestForEntry, fal
   return `${fallbackDescription ?? entry.description ?? entry.title}.${engineText} by quality, control, consistency, cost, and workflow fit.`;
 }
 
-function buildBestForKeywords(entry: BestForEntry) {
+function buildBestForKeywords(locale: AppLocale, entry: BestForEntry, localizedTitle: string) {
   const engines = (entry.topPicks ?? []).map((slug) => ENGINE_BY_SLUG.get(slug)?.marketingName ?? slug);
-  return Array.from(new Set([entry.title, `${entry.slug.replace(/-/g, ' ')} AI video generator`, ...engines, ...(USECASE_CHIPS[entry.slug] ?? [])]));
+  const genericKeyword =
+    locale === 'fr'
+      ? `${entry.slug.replace(/-/g, ' ')} générateur vidéo IA`
+      : locale === 'es'
+        ? `${entry.slug.replace(/-/g, ' ')} generador de video con IA`
+        : `${entry.slug.replace(/-/g, ' ')} AI video generator`;
+  return Array.from(
+    new Set([
+      localizedTitle,
+      genericKeyword,
+      ...engines,
+      ...getUsecaseChips(locale, entry.slug, []),
+    ])
+  );
 }
 
 function formatList(items: string[]) {
@@ -1079,30 +1202,91 @@ function formatScore(score?: number) {
   return typeof score === 'number' && Number.isFinite(score) ? score.toFixed(1) : '-';
 }
 
-function buildPickReason(usecaseSlug: string, criterion: string, rank: number) {
-  const prefix = rank === 1 ? 'Best balance of' : rank === 2 ? 'Strong option for' : 'Useful when you need';
-  const suffixes: Record<string, string> = {
-    'cinematic-realism': 'cinematic camera direction',
-    'character-reference': 'stable identity across shots',
-    'reference-to-video': 'controlled reference workflows',
-    'multi-shot-video': 'planned sequences',
-    '4k-video': 'final delivery detail',
-    ads: 'campaign-ready output',
-    'ugc-ads': 'creator-style social clips',
-    'product-videos': 'clean product storytelling',
-    'lipsync-dialogue': 'speaking character control',
-    'fast-drafts': 'fast iteration loops',
-    'stylized-anime': 'stylized motion',
-    'image-to-video': 'motion from approved images',
+function buildPickReason(locale: AppLocale, usecaseSlug: string, criterion: string, rank: number) {
+  const prefixes: Record<AppLocale, string[]> = {
+    en: ['Best balance of', 'Strong option for', 'Useful when you need'],
+    fr: ['Meilleur équilibre pour', 'Option forte pour', 'Utile si vous cherchez'],
+    es: ['Mejor equilibrio para', 'Opción fuerte para', 'Útil si necesitas'],
   };
-  return `${prefix} ${criterion.toLowerCase()} for ${suffixes[usecaseSlug] ?? 'this use case'}.`;
+  const suffixes: Record<string, Record<AppLocale, string>> = {
+    'cinematic-realism': {
+      en: 'cinematic camera direction',
+      fr: 'une direction caméra cinématique',
+      es: 'dirección de cámara cinematográfica',
+    },
+    'character-reference': {
+      en: 'stable identity across shots',
+      fr: 'une identité stable entre les plans',
+      es: 'identidad estable entre planos',
+    },
+    'reference-to-video': {
+      en: 'controlled reference workflows',
+      fr: 'des workflows de référence contrôlés',
+      es: 'workflows de referencia controlados',
+    },
+    'multi-shot-video': {
+      en: 'planned sequences',
+      fr: 'des séquences planifiées',
+      es: 'secuencias planificadas',
+    },
+    '4k-video': {
+      en: 'final delivery detail',
+      fr: 'le niveau de détail final',
+      es: 'detalle para entrega final',
+    },
+    ads: {
+      en: 'campaign-ready output',
+      fr: 'un rendu prêt pour campagne',
+      es: 'salidas listas para campaña',
+    },
+    'ugc-ads': {
+      en: 'creator-style social clips',
+      fr: 'des clips sociaux style créateur',
+      es: 'clips sociales estilo creador',
+    },
+    'product-videos': {
+      en: 'clean product storytelling',
+      fr: 'un storytelling produit propre',
+      es: 'storytelling de producto limpio',
+    },
+    'lipsync-dialogue': {
+      en: 'speaking character control',
+      fr: 'le contrôle de personnages parlants',
+      es: 'control de personajes con diálogo',
+    },
+    'fast-drafts': {
+      en: 'fast iteration loops',
+      fr: 'des boucles d’itération rapides',
+      es: 'ciclos rápidos de iteración',
+    },
+    'stylized-anime': {
+      en: 'stylized motion',
+      fr: 'du mouvement stylisé',
+      es: 'movimiento estilizado',
+    },
+    'image-to-video': {
+      en: 'motion from approved images',
+      fr: 'l’animation depuis images validées',
+      es: 'movimiento desde imágenes aprobadas',
+    },
+  };
+  const prefix = prefixes[locale]?.[Math.min(rank - 1, 2)] ?? prefixes.en[Math.min(rank - 1, 2)];
+  const suffix = suffixes[usecaseSlug]?.[locale] ?? suffixes[usecaseSlug]?.en ?? (locale === 'fr' ? 'ce cas d’usage' : locale === 'es' ? 'este caso de uso' : 'this use case');
+  const connector = locale === 'en' ? 'for' : locale === 'es' ? 'en' : 'sur';
+  return `${prefix} ${criterion.toLowerCase()} ${connector} ${suffix}.`;
 }
 
-function buildPickBullets(criteria: string[], rank: number) {
+function buildPickBullets(locale: AppLocale, criteria: string[], rank: number) {
   const primary = criteria[(rank - 1) % criteria.length] ?? criteria[0] ?? 'Use-case fit';
   const secondary = criteria[rank % criteria.length] ?? criteria[1] ?? 'Reliable output';
   const tertiary = criteria[(rank + 1) % criteria.length] ?? criteria[2] ?? 'Efficient review loop';
-  return [`Strong ${primary.toLowerCase()}`, `Good ${secondary.toLowerCase()}`, `Practical ${tertiary.toLowerCase()}`];
+  const labels: Record<AppLocale, [string, string, string]> = {
+    en: ['Strong', 'Good', 'Practical'],
+    fr: ['Fort sur', 'Bon sur', 'Pratique pour'],
+    es: ['Fuerte en', 'Bueno en', 'Práctico para'],
+  };
+  const [first, second, third] = labels[locale] ?? labels.en;
+  return [`${first} ${primary.toLowerCase()}`, `${second} ${secondary.toLowerCase()}`, `${third} ${tertiary.toLowerCase()}`];
 }
 
 function pickComparisonSlug(picks: RankedPick[], relatedComparisons: string[]) {
@@ -1117,22 +1301,70 @@ function getExamplesSlug(pick: RankedPick) {
   return pick.engine?.family ?? pick.slug;
 }
 
-function getTopPicksTitle(slug: string) {
-  const labels: Record<string, string> = {
-    'cinematic-realism': 'Top picks for cinematic shots',
-    'character-reference': 'Top picks for character reference',
-    'reference-to-video': 'Top picks for reference-to-video',
-    'multi-shot-video': 'Top picks for multi-shot video',
-    '4k-video': 'Top picks for 4K delivery',
-    ads: 'Top picks for ads',
-    'ugc-ads': 'Top picks for UGC videos',
-    'product-videos': 'Top picks for product videos',
-    'lipsync-dialogue': 'Top picks for dialogue',
-    'fast-drafts': 'Top picks for fast drafts',
-    'stylized-anime': 'Top picks for stylized video',
-    'image-to-video': 'Top picks for image-to-video',
+function getTopPicksTitle(locale: AppLocale, slug: string) {
+  const labels: Record<string, Record<AppLocale, string>> = {
+    'cinematic-realism': {
+      en: 'Top picks for cinematic shots',
+      fr: 'Meilleurs choix pour plans cinéma',
+      es: 'Mejores opciones para planos cinematográficos',
+    },
+    'character-reference': {
+      en: 'Top picks for character reference',
+      fr: 'Meilleurs choix pour character reference',
+      es: 'Mejores opciones para character reference',
+    },
+    'reference-to-video': {
+      en: 'Top picks for reference-to-video',
+      fr: 'Meilleurs choix pour reference-to-video',
+      es: 'Mejores opciones para reference-to-video',
+    },
+    'multi-shot-video': {
+      en: 'Top picks for multi-shot video',
+      fr: 'Meilleurs choix pour multi-shot',
+      es: 'Mejores opciones para multi-shot',
+    },
+    '4k-video': {
+      en: 'Top picks for 4K delivery',
+      fr: 'Meilleurs choix pour livraison 4K',
+      es: 'Mejores opciones para entrega 4K',
+    },
+    ads: {
+      en: 'Top picks for ads',
+      fr: 'Meilleurs choix pour publicités',
+      es: 'Mejores opciones para anuncios',
+    },
+    'ugc-ads': {
+      en: 'Top picks for UGC videos',
+      fr: 'Meilleurs choix pour vidéos UGC',
+      es: 'Mejores opciones para videos UGC',
+    },
+    'product-videos': {
+      en: 'Top picks for product videos',
+      fr: 'Meilleurs choix pour vidéos produit',
+      es: 'Mejores opciones para videos de producto',
+    },
+    'lipsync-dialogue': {
+      en: 'Top picks for dialogue',
+      fr: 'Meilleurs choix pour dialogue',
+      es: 'Mejores opciones para diálogo',
+    },
+    'fast-drafts': {
+      en: 'Top picks for fast drafts',
+      fr: 'Meilleurs choix pour drafts rapides',
+      es: 'Mejores opciones para borradores rápidos',
+    },
+    'stylized-anime': {
+      en: 'Top picks for stylized video',
+      fr: 'Meilleurs choix pour vidéo stylisée',
+      es: 'Mejores opciones para video estilizado',
+    },
+    'image-to-video': {
+      en: 'Top picks for image-to-video',
+      fr: 'Meilleurs choix image-to-video',
+      es: 'Mejores opciones image-to-video',
+    },
   };
-  return labels[slug] ?? 'Top picks';
+  return labels[slug]?.[locale] ?? labels[slug]?.en ?? (locale === 'fr' ? 'Meilleurs choix' : locale === 'es' ? 'Mejores opciones' : 'Top picks');
 }
 
 function getRelatedBestForGuides(slug: string) {
@@ -1152,6 +1384,25 @@ function getRelatedBestForGuides(slug: string) {
   };
   const targets = relatedBySlug[slug] ?? BEST_FOR_PAGES.filter((entry) => entry.slug !== slug).slice(0, 4).map((entry) => entry.slug);
   return targets.map((target) => getEntry(target)).filter((entry): entry is BestForEntry => Boolean(entry)).slice(0, 5);
+}
+
+async function resolveRelatedBestForGuides(locale: AppLocale, slug: string): Promise<RelatedGuideEntry[]> {
+  const guides = getRelatedBestForGuides(slug);
+  const localizedRoot = locale === defaultLocale ? 'content/en/best-for' : `content/${locale}/best-for`;
+  const [localizedEntries, englishEntries] = await Promise.all([
+    getContentEntries(localizedRoot),
+    locale === defaultLocale ? Promise.resolve([]) : getContentEntries('content/en/best-for'),
+  ]);
+  const localizedBySlug = new Map(localizedEntries.map((entry) => [entry.slug, entry]));
+  const englishBySlug = new Map(englishEntries.map((entry) => [entry.slug, entry]));
+
+  return guides.map((guide) => {
+    const content = localizedBySlug.get(guide.slug) ?? englishBySlug.get(guide.slug);
+    return {
+      ...guide,
+      displayTitle: content?.title ?? guide.title,
+    };
+  });
 }
 
 function getAlsoAvailableModels(slug: string, topPicks: string[]) {
@@ -1176,8 +1427,15 @@ function getAlsoAvailableModels(slug: string, topPicks: string[]) {
     .slice(0, 3);
 }
 
-function buildReasonSentence(usecaseSlug: string, pick: RankedPick) {
-  return `ranks here because it gives MaxVideoAI users a practical route to ${pick.criterion.toLowerCase()} while keeping the workflow suitable for ${usecaseSlug.replace(/-/g, ' ')}.`;
+function buildReasonSentence(locale: AppLocale, usecaseSlug: string, pick: RankedPick) {
+  const usecaseLabel = getUsecaseLabel(locale, usecaseSlug);
+  if (locale === 'fr') {
+    return `est classé ici car il donne aux utilisateurs MaxVideoAI une route pratique vers ${pick.criterion.toLowerCase()}, tout en gardant le workflow adapté à ${usecaseLabel}.`;
+  }
+  if (locale === 'es') {
+    return `está aquí porque da a los usuarios de MaxVideoAI una ruta práctica hacia ${pick.criterion.toLowerCase()}, manteniendo el workflow adecuado para ${usecaseLabel}.`;
+  }
+  return `ranks here because it gives MaxVideoAI users a practical route to ${pick.criterion.toLowerCase()} while keeping the workflow suitable for ${usecaseLabel}.`;
 }
 
 function serializeJsonLd(data: unknown): string {
@@ -1239,6 +1497,28 @@ function getFitScore(slug: string, score?: EngineScore) {
 
 function getUsecaseCriteria(locale: AppLocale, slug: string) {
   return USECASE_CRITERIA[slug]?.[locale] ?? USECASE_CRITERIA[slug]?.en ?? USECASE_CRITERIA['image-to-video'].en;
+}
+
+function getUsecaseChips(locale: AppLocale, slug: string, fallback: string[]) {
+  return USECASE_CHIPS[slug]?.[locale] ?? USECASE_CHIPS[slug]?.en ?? fallback;
+}
+
+function getUsecaseLabel(locale: AppLocale, slug: string) {
+  const labels: Record<string, Record<AppLocale, string>> = {
+    'cinematic-realism': { en: 'cinematic realism', fr: 'un rendu cinématique', es: 'realismo cinematográfico' },
+    'character-reference': { en: 'character reference', fr: 'la character reference', es: 'character reference' },
+    'reference-to-video': { en: 'reference-to-video', fr: 'le reference-to-video', es: 'reference-to-video' },
+    'multi-shot-video': { en: 'multi-shot video', fr: 'la vidéo multi-shot', es: 'video multi-shot' },
+    '4k-video': { en: '4K video', fr: 'la vidéo 4K', es: 'video 4K' },
+    ads: { en: 'ads', fr: 'les publicités', es: 'anuncios' },
+    'ugc-ads': { en: 'UGC videos', fr: 'les vidéos UGC', es: 'videos UGC' },
+    'product-videos': { en: 'product videos', fr: 'les vidéos produit', es: 'videos de producto' },
+    'lipsync-dialogue': { en: 'lip sync and dialogue', fr: 'le lip sync et le dialogue', es: 'lip sync y diálogo' },
+    'fast-drafts': { en: 'fast drafts', fr: 'les drafts rapides', es: 'borradores rápidos' },
+    'stylized-anime': { en: 'anime and stylized video', fr: 'la vidéo anime et stylisée', es: 'anime y video estilizado' },
+    'image-to-video': { en: 'image-to-video', fr: 'l’image-to-video', es: 'image-to-video' },
+  };
+  return labels[slug]?.[locale] ?? labels[slug]?.en ?? slug.replace(/-/g, ' ');
 }
 
 function getEngineAccent(slug: string) {

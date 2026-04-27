@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getLocalizedUrl } from '@/lib/metadataUrls';
+import { getContentEntries } from '@/lib/content/markdown';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import engineCatalog from '@/config/engine-catalog.json';
 import compareConfig from '@/config/compare-config.json';
@@ -15,6 +16,11 @@ interface BestForEntry {
   tier: number;
   topPicks?: string[];
 }
+
+type HubBestForEntry = BestForEntry & {
+  displayTitle: string;
+  displayDescription?: string;
+};
 
 const BEST_FOR_PAGES = compareConfig.bestForPages as BestForEntry[];
 const ENGINE_CATALOG = engineCatalog as Array<{
@@ -153,11 +159,12 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default function BestForHubPage({ params }: { params: { locale: AppLocale } }) {
+export default async function BestForHubPage({ params }: { params: { locale: AppLocale } }) {
   const locale = params.locale ?? 'en';
   const copy = HUB_COPY[locale] ?? HUB_COPY.en;
+  const guides = await resolveHubGuides(locale);
   const featuredModels = getFeaturedHubModels();
-  const itemListJsonLd = buildHubItemListJsonLd(locale);
+  const itemListJsonLd = buildHubItemListJsonLd(locale, guides, copy.title);
   const webPageJsonLd = buildHubWebPageJsonLd(locale, copy);
 
   return (
@@ -250,9 +257,9 @@ export default function BestForHubPage({ params }: { params: { locale: AppLocale
           </aside>
         </header>
 
-        {BEST_FOR_PAGES.length ? (
+        {guides.length ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {BEST_FOR_PAGES.map((entry) => (
+            {guides.map((entry) => (
               <Link
                 key={entry.slug}
                 href={{ pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: entry.slug } }}
@@ -277,9 +284,9 @@ export default function BestForHubPage({ params }: { params: { locale: AppLocale
                     })}
                   </div>
                 </div>
-                <h2 className="mt-5 text-xl font-semibold leading-tight text-text-primary">{entry.title}</h2>
-                {entry.description ? (
-                  <p className="mt-3 max-w-md text-sm leading-relaxed text-text-secondary">{entry.description}</p>
+                <h2 className="mt-5 text-xl font-semibold leading-tight text-text-primary">{entry.displayTitle}</h2>
+                {entry.displayDescription ? (
+                  <p className="mt-3 max-w-md text-sm leading-relaxed text-text-secondary">{entry.displayDescription}</p>
                 ) : null}
                 <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand transition group-hover:text-brandHover">
                   {copy.viewGuide}
@@ -337,20 +344,39 @@ function getFeaturedHubModels() {
   return Array.from(new Set(slugs)).slice(0, 6);
 }
 
+async function resolveHubGuides(locale: AppLocale): Promise<HubBestForEntry[]> {
+  const localizedRoot = locale === 'en' ? 'content/en/best-for' : `content/${locale}/best-for`;
+  const [localizedEntries, englishEntries] = await Promise.all([
+    getContentEntries(localizedRoot),
+    locale === 'en' ? Promise.resolve([]) : getContentEntries('content/en/best-for'),
+  ]);
+  const localizedBySlug = new Map(localizedEntries.map((entry) => [entry.slug, entry]));
+  const englishBySlug = new Map(englishEntries.map((entry) => [entry.slug, entry]));
+
+  return BEST_FOR_PAGES.map((entry) => {
+    const content = localizedBySlug.get(entry.slug) ?? englishBySlug.get(entry.slug);
+    return {
+      ...entry,
+      displayTitle: content?.title ?? entry.title,
+      displayDescription: content?.description ?? entry.description,
+    };
+  });
+}
+
 function serializeJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
-function buildHubItemListJsonLd(locale: AppLocale) {
+function buildHubItemListJsonLd(locale: AppLocale, guides: HubBestForEntry[], title: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Best AI video engines by use case',
+    name: title,
     itemListOrder: 'https://schema.org/ItemListOrderAscending',
-    itemListElement: BEST_FOR_PAGES.map((entry, index) => ({
+    itemListElement: guides.map((entry, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      name: entry.title,
+      name: entry.displayTitle,
       url: getLocalizedUrl(locale, `/ai-video-engines/best-for/${entry.slug}`),
     })),
   };
