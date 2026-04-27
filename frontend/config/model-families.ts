@@ -119,6 +119,22 @@ export const MODEL_FAMILIES = [
     },
   },
   {
+    id: 'happy-horse',
+    label: 'Happy Horse',
+    navLabel: 'Happy Horse 1.0',
+    brandId: 'alibaba',
+    defaultModelSlug: 'happy-horse-1-0',
+    routeAliases: ['happy-horse-1-0'],
+    aliases: ['happyhorse', 'happy-horse', 'happyhorse-1-0', 'happy-horse-1.0', 'alibaba-happy-horse'],
+    prefixes: ['happy-horse', 'happyhorse', 'alibaba/happy-horse'],
+    examplesPage: {
+      stage: 'hidden',
+      showInNav: false,
+      publishedModelSlugs: ['happy-horse-1-0'],
+      currentModelSlugs: ['happy-horse-1-0'],
+    },
+  },
+  {
     id: 'ltx',
     label: 'LTX',
     navLabel: 'LTX',

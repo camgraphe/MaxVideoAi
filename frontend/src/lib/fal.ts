@@ -606,6 +606,10 @@ async function generateViaFal(
       addToArray('image_urls', trimmed);
       return;
     }
+    if (expectsSingleSourceVideo && (payload.engineId === 'happy-horse-1-0' || requestBody.reference_image_urls)) {
+      addToArray('reference_image_urls', trimmed);
+      return;
+    }
     addToArray('reference_images', trimmed);
   });
 

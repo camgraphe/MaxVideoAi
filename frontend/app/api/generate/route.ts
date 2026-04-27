@@ -1784,6 +1784,9 @@ async function rollbackPendingPayment(params: {
   if (mode === 'ref2v' && normalizedReferenceImages.length) {
     validationPayload.image_urls = normalizedReferenceImages;
   }
+  if (mode === 'v2v' && normalizedReferenceImages.length) {
+    validationPayload.reference_image_urls = normalizedReferenceImages;
+  }
   if (mode === 'r2v' && videoUrls.length) {
     validationPayload.video_urls = videoUrls;
   }

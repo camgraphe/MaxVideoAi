@@ -1,5 +1,21 @@
 [
   {
+    "engineId": "happy-horse-1-0",
+    "marketingName": "Happy Horse 1.0",
+    "brandId": "alibaba",
+    "modelSlug": "happy-horse-1-0",
+    "family": "happy-horse",
+    "versionLabel": "1.0",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "seedance-1-5-pro",
     "marketingName": "Seedance 1.5 Pro",
     "brandId": "bytedance",

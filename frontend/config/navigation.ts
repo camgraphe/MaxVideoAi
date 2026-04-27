@@ -65,7 +65,6 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 const MODEL_MENU: LabeledSlug[] = [
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
-  { slug: 'pika-text-to-video', label: 'Pika Text to Video' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
   { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
   { slug: 'wan-2-6', label: 'Wan 2.6' },
@@ -73,8 +72,8 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'kling-3-4k', label: 'Kling 3 4K' },
 ];
 
-const HEADER_EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'ltx', 'kling', 'wan', 'sora'] as const;
-const FOOTER_EXAMPLE_FAMILIES = ['veo', 'seedance', 'ltx', 'kling', 'wan', 'sora'] as const;
+const HEADER_EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'ltx', 'kling', 'wan'] as const;
+const FOOTER_EXAMPLE_FAMILIES = ['veo', 'seedance', 'ltx', 'kling', 'wan'] as const;
 const AVAILABLE_EXAMPLE_FAMILY_IDS = getExampleNavFamilyIds();
 
 const EXAMPLES_MENU: LabeledSlug[] = HEADER_EXAMPLE_FAMILY_PRIORITY

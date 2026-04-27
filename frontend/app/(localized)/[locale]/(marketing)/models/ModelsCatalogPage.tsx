@@ -23,6 +23,7 @@ import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { getLocalizedCapabilityKeywords, getLocalizedModelUseCases } from '@/lib/ltx-localization';
 import engineCatalog from '@/config/engine-catalog.json';
 const MODELS_SLUG_MAP = buildSlugMap('models');
+const MODELS_HERO_IMAGE_URL = '/assets/models/models-hero-horses-reference.png';
 type ModelsPageScope = Extract<ModelCatalogScope, 'all' | 'video' | 'image'>;
 
 const DEFAULT_ENGINE_TYPE_LABELS = {
@@ -1597,78 +1598,73 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   };
 
   return (
-    <main className="container-page max-w-6xl section">
-      <div className="stack-gap-lg">
-        <nav
-          aria-label={activeLocale === 'fr' ? 'Vues du catalogue modèles' : activeLocale === 'es' ? 'Vistas del catálogo de modelos' : 'Model catalog views'}
-          className="flex flex-wrap justify-center gap-2"
-        >
-          {scopeTabs.map((tab) => (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-micro transition ${
-                tab.active
-                  ? 'border-text-primary bg-text-primary text-bg'
-                  : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-              }`}
-              aria-current={tab.active ? 'page' : undefined}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </nav>
-        <header className="relative -mt-2 overflow-hidden px-1 py-10 sm:-mt-4 sm:py-12 lg:min-h-[340px] lg:px-0 lg:py-12">
-          <div className="pointer-events-none absolute inset-y-0 left-[34%] right-[-8%] hidden lg:block" aria-hidden="true">
-            <Image
-              src="/assets/marketing/models-hub-hero.png"
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="(min-width: 1024px) 760px, 100vw"
-              className="object-cover object-center opacity-95 drop-shadow-[0_36px_78px_rgba(46,99,216,0.14)] [mask-image:linear-gradient(90deg,transparent_0%,black_26%,black_100%)] dark:hidden"
-            />
-            <Image
-              src="/assets/marketing/models-hub-hero-dark.png"
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="(min-width: 1024px) 760px, 100vw"
-              className="hidden object-cover object-center opacity-95 drop-shadow-[0_36px_86px_rgba(74,144,255,0.2)] [mask-image:linear-gradient(90deg,transparent_0%,black_26%,black_100%)] dark:block"
-            />
-            <div className="absolute inset-y-0 left-0 w-[38%] bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_srgb,var(--bg)_78%,transparent)_46%,transparent_100%)] dark:bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_srgb,var(--bg)_68%,transparent)_48%,transparent_100%)]" />
-            <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,var(--bg)_0%,transparent_100%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent_0%,var(--bg)_100%)]" />
-          </div>
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-2/3 bg-[radial-gradient(circle_at_72%_48%,color-mix(in_srgb,var(--brand)_11%,transparent)_0%,transparent_58%)] lg:block" aria-hidden="true" />
-          <div className="relative z-10 max-w-[700px]">
-            <h1 className="text-balance text-[38px] font-semibold leading-[1.07] tracking-normal text-text-primary sm:text-[46px] lg:text-[50px]">
+    <main className="bg-bg text-text-primary">
+      <section className="relative isolate overflow-hidden border-b border-hairline bg-[linear-gradient(180deg,#fbfdff_0%,#f7faff_68%,#f3f6fb_100%)] dark:bg-[linear-gradient(180deg,#070b12_0%,#0b111c_68%,#0f1724_100%)]">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <Image
+            src={MODELS_HERO_IMAGE_URL}
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center opacity-[0.82] mix-blend-multiply dark:opacity-[0.38] dark:mix-blend-screen dark:invert"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,250,252,0.96)_0%,rgba(248,250,252,0.82)_39%,rgba(248,250,252,0.32)_72%,rgba(248,250,252,0.12)_100%)] dark:bg-[linear-gradient(90deg,rgba(7,11,18,0.96)_0%,rgba(7,11,18,0.82)_42%,rgba(7,11,18,0.38)_74%,rgba(7,11,18,0.18)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent_0%,var(--bg)_100%)]" />
+        </div>
+        <div className="container-page relative z-10 max-w-[1248px] py-14 sm:py-16 lg:min-h-[520px] lg:py-20">
+          <nav
+            aria-label={activeLocale === 'fr' ? 'Vues du catalogue modèles' : activeLocale === 'es' ? 'Vistas del catálogo de modelos' : 'Model catalog views'}
+            className="flex flex-wrap gap-2"
+          >
+            {scopeTabs.map((tab) => (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                className={`rounded-full border px-5 py-2.5 text-xs font-semibold uppercase tracking-micro shadow-sm transition ${
+                  tab.active
+                    ? 'border-text-primary bg-text-primary text-bg'
+                    : 'border-hairline bg-surface/88 text-text-secondary backdrop-blur hover:border-text-muted hover:text-text-primary'
+                }`}
+                aria-current={tab.active ? 'page' : undefined}
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </nav>
+          <header className="mt-12 max-w-[710px] sm:mt-14">
+            <h1 className="text-balance text-[42px] font-semibold leading-[1.04] tracking-normal text-text-primary sm:text-[56px] lg:text-[64px]">
               {heroTitleParts.lead}
               {heroTitleParts.accent ? (
                 <>
                   <br />
-                  <span className="sm:whitespace-nowrap">
+                  <span>
                     {heroAccentParts.prefix}
-                    <span className="text-brand">{heroAccentParts.emphasis}</span>
+                    {heroAccentParts.emphasis}
                   </span>
                 </>
               ) : null}
             </h1>
-            <p className="mt-5 max-w-[58ch] text-base font-medium leading-relaxed text-text-secondary sm:text-lg">
+            <p className="mt-6 max-w-[62ch] text-base font-medium leading-relaxed text-text-secondary sm:text-lg">
               {heroSubhead}
             </p>
-            <ul className="mt-7 grid gap-4 text-sm text-text-secondary sm:grid-cols-2">
+            <ul className="mt-8 grid gap-5 text-sm text-text-secondary sm:grid-cols-2">
               {heroBullets.slice(0, 2).map((bullet, index) => (
-                <li key={bullet} className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[var(--brand-border)] bg-[var(--brand-soft)] text-brand">
+                <li key={bullet} className="flex items-center gap-4">
+                  <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-hairline bg-surface/85 text-text-primary shadow-sm backdrop-blur">
                     <UIIcon icon={index === 0 ? Sparkles : Timer} size={18} />
                   </span>
-                  <span className="pt-0.5 font-semibold leading-relaxed">{bullet}</span>
+                  <span className="font-semibold leading-relaxed">{bullet}</span>
                 </li>
               ))}
             </ul>
-          </div>
-        </header>
+          </header>
+        </div>
+      </section>
+
+      <div className="container-page max-w-[1248px] py-10 sm:py-12">
+        <div className="stack-gap-lg">
 
         <section id="models-grid" className="stack-gap-md scroll-mt-24">
           <h2 className="sr-only">
@@ -1842,20 +1838,12 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
           <section className="content-visibility-auto relative overflow-hidden rounded-[16px] border border-[var(--brand-border)] bg-[linear-gradient(105deg,color-mix(in_srgb,var(--brand)_11%,var(--surface))_0%,var(--surface)_52%,color-mix(in_srgb,var(--brand)_24%,var(--surface))_100%)] p-6 shadow-card dark:border-white/10 dark:bg-[linear-gradient(105deg,color-mix(in_srgb,var(--brand)_15%,var(--surface))_0%,var(--surface)_55%,color-mix(in_srgb,var(--brand)_24%,var(--surface))_100%)] sm:p-8">
             <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] md:block" aria-hidden>
               <Image
-                src="/assets/marketing/models-hub-hero.png"
+                src={MODELS_HERO_IMAGE_URL}
                 alt=""
                 aria-hidden="true"
                 fill
                 sizes="(min-width: 768px) 460px, 100vw"
-                className="object-cover object-center opacity-60 [mask-image:linear-gradient(90deg,transparent_0%,black_36%,black_100%)] dark:hidden"
-              />
-              <Image
-                src="/assets/marketing/models-hub-hero-dark.png"
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="(min-width: 768px) 460px, 100vw"
-                className="hidden object-cover object-center opacity-70 [mask-image:linear-gradient(90deg,transparent_0%,black_36%,black_100%)] dark:block"
+                className="object-cover object-center opacity-[0.56] mix-blend-multiply [mask-image:linear-gradient(90deg,transparent_0%,black_36%,black_100%)] dark:opacity-[0.38] dark:mix-blend-screen dark:invert"
               />
             </div>
             <div className="relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -1929,6 +1917,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
             </div>
           </section>
         </div>
+      </div>
       </div>
       <Script id="models-breadcrumb-jsonld" type="application/ld+json">
         {JSON.stringify(breadcrumbJsonLd)}

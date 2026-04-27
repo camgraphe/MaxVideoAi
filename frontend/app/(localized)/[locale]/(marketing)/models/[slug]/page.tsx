@@ -1270,6 +1270,7 @@ const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
   kling: { name: 'Kling by Kuaishou', url: 'https://www.kuaishou.com/en' },
   wan: { name: 'Wan AI', url: 'https://www.wan-ai.com' },
   lightricks: { name: 'Lightricks', url: 'https://www.lightricks.com' },
+  alibaba: { name: 'Alibaba', url: 'https://www.alibabagroup.com' },
 };
 const AVAILABILITY_SCHEMA_MAP: Record<string, string> = {
   available: 'https://schema.org/InStock',

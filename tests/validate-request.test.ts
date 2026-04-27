@@ -422,6 +422,95 @@ test('Kling 3 4K accepts multi-prompt shot plans', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Happy Horse 1.0 validates text, image, R2V, and V2V workflow inputs', () => {
+  const textValid = validateRequest('happy-horse-1-0', 't2v', {
+    prompt: 'Native audio product launch with a talking creator',
+    duration: 5,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(textValid, OK);
+
+  const missingImage = validateRequest('happy-horse-1-0', 'i2v', {
+    prompt: 'Animate the campaign still',
+    duration: 5,
+    resolution: '1080p',
+  });
+  assert.equal(missingImage.ok, false);
+  assert.equal(missingImage.error?.field, 'image_url');
+
+  const imageValid = validateRequest('happy-horse-1-0', 'i2v', {
+    image_url: 'https://example.com/start.png',
+    duration: 5,
+    resolution: '720p',
+  });
+  assert.deepEqual(imageValid, OK);
+
+  const imageAspectInvalid = validateRequest('happy-horse-1-0', 'i2v', {
+    image_url: 'https://example.com/start.png',
+    duration: 5,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(imageAspectInvalid.ok, false);
+  assert.equal(imageAspectInvalid.error?.field, 'aspect_ratio');
+
+  const missingReferences = validateRequest('happy-horse-1-0', 'ref2v', {
+    prompt: 'Use character1 in a studio launch clip',
+    duration: 5,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(missingReferences.ok, false);
+  assert.equal(missingReferences.error?.field, 'image_urls');
+
+  const tooManyReferences = validateRequest('happy-horse-1-0', 'ref2v', {
+    prompt: 'Use the characters in the references',
+    image_urls: Array.from({ length: 10 }, (_, index) => `https://example.com/ref-${index + 1}.png`),
+    duration: 5,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(tooManyReferences.ok, false);
+  assert.equal(tooManyReferences.error?.field, 'image_urls');
+  assert.deepEqual(tooManyReferences.error?.allowed, [1, 9]);
+
+  const r2vValid = validateRequest('happy-horse-1-0', 'ref2v', {
+    prompt: 'Use character1 and character2 in a short product demo',
+    image_urls: ['https://example.com/ref-1.png', 'https://example.com/ref-2.png'],
+    duration: 5,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(r2vValid, OK);
+
+  const missingVideo = validateRequest('happy-horse-1-0', 'v2v', {
+    prompt: 'Warm studio relight',
+    resolution: '1080p',
+  });
+  assert.equal(missingVideo.ok, false);
+  assert.equal(missingVideo.error?.field, 'video_url');
+
+  const tooManyEditReferences = validateRequest('happy-horse-1-0', 'v2v', {
+    video_url: 'https://example.com/source.mp4',
+    prompt: 'Warm studio relight',
+    reference_image_urls: Array.from({ length: 6 }, (_, index) => `https://example.com/edit-ref-${index + 1}.png`),
+    resolution: '1080p',
+  });
+  assert.equal(tooManyEditReferences.ok, false);
+  assert.equal(tooManyEditReferences.error?.field, 'reference_image_urls');
+  assert.deepEqual(tooManyEditReferences.error?.allowed, [0, 5]);
+
+  const v2vValid = validateRequest('happy-horse-1-0', 'v2v', {
+    video_url: 'https://example.com/source.mp4',
+    prompt: 'Warm studio relight',
+    reference_image_urls: Array.from({ length: 5 }, (_, index) => `https://example.com/edit-ref-${index + 1}.png`),
+    resolution: '1080p',
+    audio_setting: 'auto',
+  });
+  assert.deepEqual(v2vValid, OK);
+});
+
 test('Kling 3 i2v enforces valid element inputs before provider submission', () => {
   const basePayload = {
     prompt: 'Animate this still',

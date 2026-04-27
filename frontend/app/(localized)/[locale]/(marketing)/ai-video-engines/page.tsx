@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
@@ -24,7 +23,6 @@ import { EnginesCatalog, type EngineCatalogCard } from './EnginesCatalog.client'
 import { ComparisonsDirectory } from './ComparisonsDirectory.client';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
-const COMPARE_HERO_IMAGE_URL = '/assets/compare/compare-hero-reference.png';
 
 type HubFaqEntry = {
   question: string;
@@ -692,27 +690,21 @@ export default async function AiVideoEnginesPage() {
   }));
 
   return (
-    <div className="container-page max-w-6xl pb-[var(--section-padding-y)] pt-6 sm:pt-8">
-      <div className="stack-gap-lg">
-        <section className="relative overflow-hidden rounded-[8px] border border-hairline bg-bg px-4 py-12 shadow-[0_18px_54px_rgba(33,49,78,0.06)] sm:px-8 sm:py-16">
-          <Image
-            src={COMPARE_HERO_IMAGE_URL}
-            alt=""
-            aria-hidden="true"
-            fill
-            priority
-            sizes="(min-width: 1280px) 1152px, 100vw"
-            className="pointer-events-none object-cover object-center dark:brightness-[0.72] dark:contrast-110 dark:invert"
-          />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.94)_0%,rgba(255,255,255,0.78)_36%,rgba(247,249,253,0.36)_70%,rgba(247,249,253,0.10)_100%)] dark:bg-[radial-gradient(circle_at_50%_28%,rgba(3,7,18,0.74)_0%,rgba(3,7,18,0.54)_42%,rgba(3,7,18,0.22)_76%,rgba(3,7,18,0.08)_100%)]" />
+    <div className="bg-bg">
+      <section className="relative overflow-hidden border-b border-hairline bg-bg px-4 py-14 sm:px-8 sm:py-20">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[url('/assets/compare/compare-hero-reference-light.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/compare/compare-hero-reference-dark.webp')] dark:opacity-70"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.58)_34%,rgba(247,249,253,0.14)_70%,rgba(247,249,253,0.02)_100%)] dark:bg-[radial-gradient(circle_at_50%_24%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
 
-          <div className="relative z-10 mx-auto max-w-5xl">
-            <header className="mx-auto max-w-3xl text-center">
+        <div className="container-page relative z-10 mx-auto max-w-[1220px]">
+            <header className="mx-auto max-w-[760px] text-center">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-text-muted">{copy.hero.eyebrow}</p>
-              <h1 className="mt-2.5 text-[30px] font-semibold leading-tight text-text-primary sm:text-[42px]">
+              <h1 className="mt-3 text-4xl font-semibold leading-[1.04] text-text-primary sm:text-6xl">
                 {copy.hero.title}
               </h1>
-              <p className="mx-auto mt-3 max-w-2xl text-[13px] leading-6 text-text-secondary sm:text-[15px]">{copy.hero.intro}</p>
+              <p className="mx-auto mt-5 max-w-[680px] text-base leading-7 text-text-secondary">{copy.hero.intro}</p>
               {showSeedanceSpotlight ? (
                 <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs font-semibold">
                   <Link
@@ -737,7 +729,7 @@ export default async function AiVideoEnginesPage() {
               ) : null}
             </header>
 
-            <div className="mx-auto mt-6 max-w-4xl stack-gap-sm">
+            <div className="mx-auto mt-8 max-w-[980px] stack-gap-sm">
               <CompareNowWidget
                 options={engineOptions}
                 defaultLeft="seedance-2-0"
@@ -767,6 +759,8 @@ export default async function AiVideoEnginesPage() {
           </div>
         </section>
 
+      <div className="container-page max-w-[1220px] pb-[var(--section-padding-y)] pt-8">
+      <div className="stack-gap-lg">
         <section className="stack-gap">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
@@ -916,6 +910,7 @@ export default async function AiVideoEnginesPage() {
         </section>
 
         <FAQSchema questions={faqJsonLdEntries} />
+      </div>
       </div>
     </div>
   );

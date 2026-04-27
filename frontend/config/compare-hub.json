@@ -1,5 +1,9 @@
 {
   "popularComparisons": [
+    { "left": "happy-horse-1-0", "right": "seedance-2-0", "tags": ["audio", "unified", "quality"] },
+    { "left": "happy-horse-1-0", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
+    { "left": "happy-horse-1-0", "right": "kling-3-pro", "tags": ["lipsync", "reference", "quality"] },
+    { "left": "happy-horse-1-0", "right": "sora-2-pro", "tags": ["audio", "video-edit", "quality"] },
     { "left": "seedance-2-0", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
     { "left": "seedance-2-0", "right": "kling-3-pro", "tags": ["cinematic", "quality", "long"] },
     { "left": "kling-3-4k", "right": "kling-3-pro", "tags": ["4k", "delivery", "quality"] },
@@ -18,6 +22,7 @@
     {
       "id": "cinematic",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "seedance-2-0" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "kling-3-pro" },
         { "left": "seedance-1-5-pro", "right": "kling-3-pro" }
@@ -26,6 +31,7 @@
     {
       "id": "ads",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "ltx-2-3-pro", "right": "veo-3-1" },
         { "left": "veo-3-1", "right": "kling-2-6-pro" },
@@ -44,6 +50,7 @@
     {
       "id": "product",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "seedance-2-0" },
         { "left": "seedance-2-0", "right": "kling-3-pro" },
         { "left": "ltx-2-3-pro", "right": "seedance-2-0" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
@@ -62,6 +69,8 @@
     {
       "id": "audio",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "seedance-2-0" },
+        { "left": "happy-horse-1-0", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "sora-2" },
         { "left": "veo-3-1", "right": "kling-3-pro" },
@@ -88,6 +97,7 @@
     {
       "id": "best-quality",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "seedance-2-0" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "kling-3-pro" },
         { "left": "sora-2-pro", "right": "kling-3-pro" },
@@ -97,6 +107,7 @@
     {
       "id": "text-to-video",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "seedance-2-0" },
         { "left": "seedance-2-0", "right": "kling-3-pro" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "wan-2-6", "right": "kling-2-6-pro" }
@@ -105,6 +116,7 @@
     {
       "id": "image-to-video",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "wan-2-6", "right": "veo-3-1" },
         { "left": "seedance-2-0-fast", "right": "veo-3-1-fast" },
@@ -114,6 +126,7 @@
     {
       "id": "video-to-video",
       "pairs": [
+        { "left": "happy-horse-1-0", "right": "sora-2-pro" },
         { "left": "wan-2-6", "right": "veo-3-1" },
         { "left": "wan-2-6", "right": "kling-3-standard" },
         { "left": "wan-2-6", "right": "ltx-2" }
@@ -121,6 +134,7 @@
     }
   ],
   "opponentOverrides": {
+    "happy-horse-1-0": ["seedance-2-0", "veo-3-1", "kling-3-pro", "sora-2-pro"],
     "seedance-2-0": ["veo-3-1", "kling-3-pro", "ltx-2-3-pro"],
     "seedance-2-0-fast": ["veo-3-1-fast", "ltx-2-3-fast", "pika-text-to-video"],
     "sora-2": ["seedance-2-0", "veo-3-1", "kling-3-pro"],

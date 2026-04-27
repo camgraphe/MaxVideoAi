@@ -1,0 +1,168 @@
+{
+  "marketingName": "Happy Horse 1.0",
+  "versionLabel": "1.0",
+  "seo": {
+    "title": "Happy Horse 1.0 | Modele video IA unifie avec audio natif | MaxVideoAI",
+    "description": "Utilisez Happy Horse 1.0 sur MaxVideoAI pour texte-vers-video, image-vers-video, R2V par references image, edition video, audio natif et lip-sync.",
+    "image": "/assets/models/models-hero-horses-reference.png"
+  },
+  "overview": "Happy Horse 1.0 est le modele video IA unifie d'Alibaba dans MaxVideoAI pour les prompts texte, les images de depart, le controle R2V par references image et l'edition video-to-video avec audio synchronise natif et lip-sync.",
+  "pricingNotes": "Les runs texte, image et R2V utilisent les tarifs Fal par seconde selon la resolution. L'edition video est facturee au tarif combine entree/sortie : elle coute donc deux fois le tarif standard de la resolution choisie.",
+  "hero": {
+    "title": "Happy Horse 1.0 - generation video unifiee avec audio natif",
+    "intro": "Generez depuis un texte, animez une image, guidez une scene avec jusqu'a neuf images de reference, ou editez un clip existant depuis la meme fiche Happy Horse.",
+    "badge": "Texte · Image · R2V · V2V · 720p/1080p · Audio natif · Lip-sync",
+    "ctaPrimary": {
+      "label": "Generer avec Happy Horse 1.0",
+      "href": "/app?engine=happy-horse-1-0"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Comparer Happy Horse vs Seedance 2.0",
+        "href": "/ai-video-engines/happy-horse-1-0-vs-seedance-2-0"
+      },
+      {
+        "label": "Comparer Happy Horse vs Veo 3.1",
+        "href": "/ai-video-engines/happy-horse-1-0-vs-veo-3-1"
+      },
+      {
+        "label": "Voir Kling 3 Pro",
+        "href": "/models/kling-3-pro"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Comparer Happy Horse 1.0 vs Seedance 2.0 ->",
+    "href": "/ai-video-engines/happy-horse-1-0-vs-seedance-2-0"
+  },
+  "bestUseCases": {
+    "title": "Meilleurs cas d'usage",
+    "items": [
+      {
+        "title": "Clips porte-parole et dialogue avec audio natif",
+        "icon": "ugc"
+      },
+      {
+        "title": "Workflow unifie texte, image, R2V et V2V",
+        "icon": "layers"
+      },
+      {
+        "title": "Coherence personnage ou produit guidee par references",
+        "icon": "product"
+      },
+      {
+        "title": "Editions video pilotees en langage naturel",
+        "icon": "scissors"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Vue technique",
+  "technicalOverview": [
+    {
+      "label": "Workflows",
+      "body": "Texte-vers-video, image-vers-video, generation R2V par references image et edition video sont exposes comme un seul modele dans MaxVideoAI."
+    },
+    {
+      "label": "Duree",
+      "body": "3-15 s pour les sorties generees ; l'edition video accepte des sources de 3-60 s et limite la sortie aux 15 premieres secondes."
+    },
+    {
+      "label": "Resolution",
+      "body": "720p ou 1080p"
+    },
+    {
+      "label": "References R2V",
+      "body": "1-9 images, appelees character1 a character9 dans le prompt."
+    },
+    {
+      "label": "Edition V2V",
+      "body": "Une video source, jusqu'a cinq images de reference optionnelles, et audio en mode auto ou origin."
+    },
+    {
+      "label": "Audio",
+      "body": "L'audio synchronise natif et le lip-sync font partie du flux de generation."
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompter Happy Horse 1.0",
+    "quote": "Sujet + action + camera + indice audio + references propres au workflow.",
+    "description": "Gardez des prompts directs et donnez un role clair a chaque reference. En R2V, nommez les images character1, character2, etc.",
+    "steps": [
+      "Choisir le workflow : texte, image, R2V ou V2V",
+      "Decrire le sujet et l'action visible",
+      "Ajouter mouvement camera et lumiere",
+      "Preciser les indices d'audio natif ou de dialogue",
+      "Nommer explicitement les references en R2V ou V2V"
+    ]
+  },
+  "tips": {
+    "title": "Conseils et limites",
+    "items": [
+      "Utilisez T2V pour les idees neuves et les plans porte-parole avec audio natif.",
+      "Utilisez I2V quand un visuel cle ou une premiere image est deja valide.",
+      "Utilisez R2V quand l'identite, les vetements, le produit ou la continuite comptent.",
+      "Utilisez V2V quand le clip source a le bon mouvement mais doit changer de direction visuelle."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Clip lancement audio natif",
+      "prompt": "Clip lancement produit 16:9 en studio, createur confiant face camera avec lip-sync naturel, lumiere chaude, push camera subtil, room tone propre et musique de lancement douce."
+    },
+    {
+      "title": "Demo R2V a deux personnages",
+      "prompt": "Utilise character1 et character2 depuis les images de reference dans une demo produit cinematographique a deux personnes, vetements coherents, visages stables, dialogue synchronise naturel."
+    },
+    {
+      "title": "Refresh par edition video",
+      "prompt": "Edite le clip importe en scene de lancement premium : conserve la personne et le rythme, transforme la lumiere en studio dore chaud, garde un audio naturel avec parole synchronisee."
+    }
+  ],
+  "faqTitle": "FAQ - Happy Horse 1.0 dans MaxVideoAI",
+  "faqs": [
+    {
+      "q": "Quelles entrees Happy Horse 1.0 supporte-t-il ?",
+      "a": "MaxVideoAI expose Happy Horse 1.0 comme un seul modele avec texte-vers-video, image-vers-video, references image R2V et edition video-to-video."
+    },
+    {
+      "q": "Happy Horse supporte-t-il le lip-sync ?",
+      "a": "Oui. Happy Horse est traite comme un modele audio natif avec parole synchronisee et lip-sync integres au flux de generation."
+    },
+    {
+      "q": "Pourquoi le V2V est-il facture differemment ?",
+      "a": "Fal facture l'edition video Happy Horse au tarif combine entree/sortie. Le V2V coute donc deux fois le prix par seconde standard pour la meme resolution."
+    }
+  ],
+  "custom": {
+    "galleryTitle": "Demos modele Happy Horse 1.0",
+    "galleryIntro": "Consultez les clips de la page modele pour l'audio natif, le lip-sync et l'edition video. Les pages de comparaison restent volontairement orientees specs et texte pour ce lancement.",
+    "galleryAllCta": "Lancer une generation Happy Horse ->",
+    "quickPricingTitle": "Route tarifaire",
+    "quickPricingItems": [
+      "Utilisez 720p pour iterer moins cher en texte, image et R2V.",
+      "Utilisez 1080p quand le plan est pret pour review ou publication.",
+      "Utilisez V2V apres selection du clip source, car l'edition video utilise le tarif entree/sortie double."
+    ],
+    "relatedTitle": "Ou Happy Horse se place",
+    "relatedSubtitle": "Utilisez Happy Horse quand audio natif, lip-sync et plusieurs workflows d'entree comptent plus qu'un modele specialise sur un seul mode.",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Comparez avec Seedance quand la decision porte sur le controle reference, l'audio natif et la generation multi-shot.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Comparer Happy Horse vs Seedance 2.0 ->"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1",
+        "description": "Comparez avec Veo quand le realisme cinematographique premium et la sortie audio native sont centraux.",
+        "modelSlug": "veo-3-1",
+        "ctaLabel": "Comparer Happy Horse vs Veo 3.1 ->"
+      }
+    ],
+    "finalPara1": "Happy Horse 1.0 est le plus fort quand le brief demande un seul modele pour couvrir prompt, animation image, coherence par references et edition d'une video source.",
+    "finalPara2": "Pour un lancement, commencez en texte ou R2V pour poser le plan, puis utilisez V2V quand un clip valide doit etre edite.",
+    "finalButton": "Generer avec Happy Horse 1.0"
+  }
+}

@@ -768,6 +768,13 @@ function isModeValue(value: unknown): value is Mode {
   );
 }
 
+function getEngineModeLabel(engineId: string | null | undefined, mode: Mode, locale?: string | null): string {
+  if (engineId === 'happy-horse-1-0' && mode === 'ref2v') {
+    return 'R2V';
+  }
+  return getLocalizedModeLabel(mode, locale);
+}
+
 function coerceStoredExtraInputValues(value: unknown): Record<string, unknown> | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>((acc, [key, entry]) => {
@@ -4868,7 +4875,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         .filter((mode) => selectedEngine.modes.includes(mode))
         .map((mode) => ({
           mode,
-          label: getLocalizedModeLabel(mode, uiLocale),
+          label: getEngineModeLabel(selectedEngine.id, mode, uiLocale),
           disabled: audioWorkflowLocked,
           disabledReason,
         })),
@@ -6846,7 +6853,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     mode={activeMode}
                     onModeChange={handleModeChange}
                     modeOptions={engineModeOptions}
-                    modeLabel={getLocalizedModeLabel(activeMode, uiLocale)}
+                    modeLabel={getEngineModeLabel(selectedEngine?.id, activeMode, uiLocale)}
                     showModeBadge={false}
                   />
                 }

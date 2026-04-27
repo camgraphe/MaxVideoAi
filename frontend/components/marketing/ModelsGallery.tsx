@@ -318,7 +318,7 @@ export function ModelsGallery({
   const filterClearLabel = filtersCopy.clear ?? DEFAULT_COPY.filters.clear;
   const searchPlaceholder = filtersCopy.searchPlaceholder ?? DEFAULT_COPY.filters.searchPlaceholder;
   const filterSelectButtonClassName =
-    'h-10 min-w-[100px] rounded-[10px] border-hairline bg-bg px-3 text-xs font-semibold text-text-primary shadow-sm hover:border-[var(--brand-border)] hover:bg-surface-2';
+    'h-11 min-w-[136px] rounded-[8px] border-hairline bg-bg px-4 text-xs font-semibold text-text-primary shadow-sm hover:border-[var(--brand-border)] hover:bg-surface-2';
   const sortLabel = sortCopy.label ?? 'Sort by';
   const modeLabel = modeCopy.label ?? 'Mode';
   const formatLabel = formatCopy.label ?? 'Format';
@@ -616,7 +616,7 @@ export function ModelsGallery({
   return (
     <>
       <div
-        className="mt-0 flex flex-col gap-3 rounded-[14px] border border-hairline bg-surface-glass-95 px-4 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.055),0_3px_10px_rgba(15,23,42,0.025)] backdrop-blur md:flex-row md:items-center md:justify-between dark:bg-surface-glass-80"
+        className="mt-0 flex flex-col gap-4 rounded-[8px] border border-hairline bg-surface-glass-95 px-5 py-5 shadow-[0_18px_44px_rgba(15,23,42,0.07),0_4px_14px_rgba(15,23,42,0.035)] backdrop-blur md:flex-row md:items-center md:justify-between dark:bg-surface-glass-80 sm:px-8"
         id="models-compare-toggle"
       >
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -684,25 +684,25 @@ export function ModelsGallery({
             <button
               type="button"
               onClick={clearFilters}
-              className="h-10 rounded-[10px] border border-hairline bg-bg px-3 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+              className="h-11 rounded-[8px] border border-hairline bg-bg px-3 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
             >
               {filterClearLabel}
             </button>
           ) : null}
         </div>
-        <label className="relative min-w-0 md:w-[280px] lg:w-[300px]">
+        <label className="relative min-w-0 md:w-[300px] lg:w-[340px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" aria-hidden="true" />
           <span className="sr-only">{searchPlaceholder}</span>
           <input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder={searchPlaceholder}
-            className="h-10 w-full rounded-[10px] border border-hairline bg-bg pl-9 pr-3 text-sm font-medium text-text-primary shadow-sm outline-none transition placeholder:text-text-muted/75 hover:border-[var(--brand-border)] focus:border-[var(--brand-border)] focus:ring-2 focus:ring-[color:var(--brand-border)]"
+            className="h-11 w-full rounded-[8px] border border-hairline bg-bg pl-9 pr-3 text-sm font-medium text-text-primary shadow-sm outline-none transition placeholder:text-text-muted/75 hover:border-[var(--brand-border)] focus:border-[var(--brand-border)] focus:ring-2 focus:ring-[color:var(--brand-border)]"
           />
         </label>
       </div>
 
-      <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
         {sortedCards.slice(0, visibleCount).map((card) => (
           <ModelCard
             key={card.id}
@@ -846,16 +846,16 @@ function ModelCard({
     'mt-1 min-h-[1.65rem] tabular-nums font-semibold leading-tight tracking-normal text-text-primary dark:text-white';
   const priceValueClass =
     (card.stats?.priceFrom?.length ?? 0) > 7
-      ? 'text-[14px] sm:text-[15px]'
+      ? 'text-[11px] sm:text-[15px]'
       : (card.stats?.priceFrom?.length ?? 0) > 6
-        ? 'text-[15px] sm:text-[16px]'
-        : 'text-[18px] sm:text-[19px]';
+        ? 'text-[12px] sm:text-[16px]'
+        : 'text-[12px] sm:text-[19px]';
   const maxResolutionValueClass =
     (card.stats?.maxResolution?.length ?? 0) >= 9
-      ? 'text-[11px] sm:text-[12px]'
+      ? 'text-[10px] sm:text-[12px]'
       : (card.stats?.maxResolution?.length ?? 0) > 7
-        ? 'text-[13px] sm:text-[14px]'
-        : 'text-[17px] sm:text-[18px]';
+        ? 'text-[11px] sm:text-[14px]'
+        : 'text-[12px] sm:text-[18px]';
   const capabilityItems = [...(card.capabilities ?? [])];
   if (card.filterMeta?.lipSync && !capabilityItems.includes('Lip sync')) {
     capabilityItems.push('Lip sync');
@@ -894,7 +894,7 @@ function ModelCard({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={`group relative isolate flex min-h-[24.5rem] cursor-pointer flex-col overflow-hidden rounded-[16px] border border-hairline bg-surface bg-[image:var(--card-surface)] p-6 text-text-primary shadow-[0_18px_44px_rgba(15,23,42,0.055),0_4px_12px_rgba(15,23,42,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--card-border-hover)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.085),0_8px_20px_rgba(15,23,42,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--card-focus-ring)] dark:border-white/10 dark:bg-[image:var(--card-surface-dark)] dark:text-white dark:hover:border-[color:var(--card-border-hover-dark)] dark:focus-visible:ring-[color:var(--card-focus-ring-dark)] ${
+      className={`group relative isolate flex min-h-[21rem] cursor-pointer flex-col overflow-hidden rounded-[8px] border border-hairline bg-surface bg-[image:var(--card-surface)] p-3.5 text-text-primary shadow-[0_18px_44px_rgba(15,23,42,0.055),0_4px_12px_rgba(15,23,42,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--card-border-hover)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.085),0_8px_20px_rgba(15,23,42,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--card-focus-ring)] dark:border-white/10 dark:bg-[image:var(--card-surface-dark)] dark:text-white dark:hover:border-[color:var(--card-border-hover-dark)] dark:focus-visible:ring-[color:var(--card-focus-ring-dark)] sm:min-h-[24.5rem] sm:p-6 ${
         selected ? 'ring-2 ring-emerald-500/35 border-emerald-400/60' : ''
       }`}
       style={
@@ -931,12 +931,12 @@ function ModelCard({
       }
       aria-label={`${normalizedCtaLabel} ${card.label}`}
     >
-      <span className="pointer-events-none absolute inset-px rounded-[15px] border border-white/75 opacity-80 dark:border-white/[0.04]" aria-hidden />
+      <span className="pointer-events-none absolute inset-px rounded-[7px] border border-white/75 opacity-80 dark:border-white/[0.04]" aria-hidden />
       <div className="relative z-10 flex h-full flex-col">
         {scoreValue ? (
           <div className="absolute right-0 top-0">
             <div
-              className="relative isolate grid h-[74px] w-[74px] place-items-center rounded-full p-[2px]"
+              className="relative isolate grid h-[54px] w-[54px] place-items-center rounded-full p-[2px] sm:h-[74px] sm:w-[74px]"
               style={{ background: scoreRingBackground, boxShadow: scoreGlow }}
             >
               <span
@@ -947,44 +947,44 @@ function ModelCard({
               <span className="absolute inset-[2px] z-10 rounded-full border border-hairline bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-white/10 dark:bg-surface" />
               <div className="relative z-20 flex flex-col items-center justify-center leading-none">
                 <div className="flex items-end gap-0.5">
-                  <span className="tabular-nums text-[24px] font-semibold tracking-normal text-text-primary dark:text-white">
+                  <span className="tabular-nums text-[17px] font-semibold tracking-normal text-text-primary dark:text-white sm:text-[24px]">
                     {scoreValue}
                   </span>
-                  <span className="mb-[3px] text-[8px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/58">
+                  <span className="mb-[2px] text-[6px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-white/58 sm:mb-[3px] sm:text-[8px] sm:tracking-[0.18em]">
                     /10
                   </span>
                 </div>
-                <span className="mt-1 text-[7px] font-semibold uppercase tracking-[0.26em] text-slate-400 dark:text-white/56">
+                <span className="mt-0.5 text-[5px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/56 sm:mt-1 sm:text-[7px] sm:tracking-[0.26em]">
                   Score
                 </span>
               </div>
             </div>
           </div>
         ) : null}
-        <div className="min-h-8 min-w-0 pr-24">
+        <div className="min-h-7 min-w-0 pr-14 sm:min-h-8 sm:pr-24">
           {card.provider ? (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-3 py-1.5 text-[11px] font-semibold tracking-normal text-[color:var(--provider-badge-text)] shadow-[0_7px_18px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-2 py-1 text-[10px] font-semibold tracking-normal text-[color:var(--provider-badge-text)] shadow-[0_7px_18px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[11px]">
                 <EngineIcon
                   engine={{ id: card.engineId ?? card.id, label: card.label, brandId: card.brandId ?? undefined }}
-                  size={16}
+                  size={14}
                   framed={false}
                   rounded="full"
                   className="shrink-0"
                 />
-                {card.provider}
+                <span className="truncate">{card.provider}</span>
               </span>
             </div>
           ) : null}
         </div>
-        <h3 className="mt-4 line-clamp-2 pr-20 text-balance text-[23px] font-semibold leading-[1.08] tracking-normal text-text-primary dark:text-white sm:text-[24px]">
+        <h3 className="mt-3 line-clamp-2 pr-10 text-balance text-[18px] font-semibold leading-[1.08] tracking-normal text-text-primary dark:text-white sm:mt-4 sm:pr-20 sm:text-[24px]">
           {card.label}
         </h3>
 
         {card.strengths?.length ? (
-          <p className="mt-7 flex items-center gap-2 text-[12px] leading-5 text-text-secondary dark:text-white/90">
+          <p className="mt-4 flex items-center gap-1.5 text-[10px] leading-4 text-text-secondary dark:text-white/90 sm:mt-7 sm:gap-2 sm:text-[12px] sm:leading-5">
             <span
-              className="h-2.5 w-2.5 rounded-full border-2 border-white shadow-[0_0_0_1px_color-mix(in_srgb,currentColor_18%,transparent),0_0_14px_currentColor] dark:border-slate-950"
+              className="h-2 w-2 shrink-0 rounded-full border-2 border-white shadow-[0_0_0_1px_color-mix(in_srgb,currentColor_18%,transparent),0_0_14px_currentColor] dark:border-slate-950 sm:h-2.5 sm:w-2.5"
               style={{ backgroundColor: accent, color: accent }}
               aria-hidden
             />
@@ -997,9 +997,9 @@ function ModelCard({
 
         {card.stats ? (
           <dl
-            className="mt-5 grid grid-cols-3 overflow-hidden rounded-[12px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] text-text-secondary shadow-[0_8px_22px_rgba(15,23,42,0.035),inset_0_1px_0_rgba(255,255,255,0.94)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white/84 dark:shadow-none"
+            className="mt-4 grid grid-cols-3 overflow-hidden rounded-[8px] border border-[color:var(--spec-panel-border)] bg-[image:var(--spec-panel-bg)] text-text-secondary shadow-[0_8px_22px_rgba(15,23,42,0.035),inset_0_1px_0_rgba(255,255,255,0.94)] dark:border-[color:var(--spec-panel-border-dark)] dark:bg-[image:var(--spec-panel-bg-dark)] dark:text-white/84 dark:shadow-none sm:mt-5 sm:rounded-[12px]"
           >
-            <div className="min-w-0 border-r border-r-[color:var(--spec-divider)] px-4 py-3.5 dark:border-r-[color:var(--spec-divider-dark)]">
+            <div className="min-w-0 border-r border-r-[color:var(--spec-divider)] px-2 py-2.5 dark:border-r-[color:var(--spec-divider-dark)] sm:px-4 sm:py-3.5">
               <dt className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/60">
                 {statsLabels.from}
               </dt>
@@ -1007,18 +1007,18 @@ function ModelCard({
                 {card.stats.priceFrom ?? '—'}
               </dd>
             </div>
-            <div className="min-w-0 border-r border-r-[color:var(--spec-divider)] px-4 py-3.5 dark:border-r-[color:var(--spec-divider-dark)]">
+            <div className="min-w-0 border-r border-r-[color:var(--spec-divider)] px-2 py-2.5 dark:border-r-[color:var(--spec-divider-dark)] sm:px-4 sm:py-3.5">
               <dt
                 className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/60"
                 aria-label={card.statsLabels?.duration ? statsLabels.typeLong : statsLabels.maxDurLong}
               >
                 {card.statsLabels?.duration ? statsLabels.typeShort : statsLabels.maxDurShort}
               </dt>
-              <dd className={`${secondarySpecValueClass} text-[18px] sm:text-[19px]`}>
+              <dd className={`${secondarySpecValueClass} text-[12px] sm:text-[19px]`}>
                 {card.stats.maxDuration ?? '—'}
               </dd>
             </div>
-            <div className="min-w-0 px-4 py-3.5">
+            <div className="min-w-0 px-2 py-2.5 sm:px-4 sm:py-3.5">
               <dt
                 className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/60"
                 aria-label={statsLabels.maxResLong}
@@ -1033,7 +1033,7 @@ function ModelCard({
         ) : null}
 
         {visibleCapabilities.length ? (
-          <div className="mt-4 flex flex-wrap items-center gap-2.5">
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-4 sm:gap-2.5">
             {visibleCapabilities.map((cap) => {
               const tooltip = cap === 'Audio' ? audioAvailableLabel : capabilityTooltips[cap] ?? cap;
               const CapabilityIcon = getCapabilityIcon(cap);
@@ -1042,9 +1042,9 @@ function ModelCard({
                   key={cap}
                   title={tooltip}
                   aria-label={tooltip}
-                  className="inline-flex min-h-7 items-center gap-1.5 rounded-[8px] border border-[color:var(--chip-border)] bg-[color:var(--chip-bg)] px-2.5 py-[0.34rem] text-[10px] font-semibold tracking-normal text-[color:var(--chip-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_1px_2px_rgba(15,23,42,0.025)] transition group-hover:border-[color:var(--card-border-hover)] dark:border-[color:var(--chip-border-dark)] dark:bg-[color:var(--chip-bg-dark)] dark:text-[color:var(--chip-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:group-hover:border-[color:var(--card-border-hover-dark)]"
+                  className="inline-flex min-h-6 items-center gap-1 rounded-[7px] border border-[color:var(--chip-border)] bg-[color:var(--chip-bg)] px-1.5 py-[0.24rem] text-[9px] font-semibold tracking-normal text-[color:var(--chip-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_1px_2px_rgba(15,23,42,0.025)] transition group-hover:border-[color:var(--card-border-hover)] dark:border-[color:var(--chip-border-dark)] dark:bg-[color:var(--chip-bg-dark)] dark:text-[color:var(--chip-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:group-hover:border-[color:var(--card-border-hover-dark)] sm:min-h-7 sm:gap-1.5 sm:rounded-[8px] sm:px-2.5 sm:py-[0.34rem] sm:text-[10px]"
                 >
-                  <CapabilityIcon className="h-3 w-3" strokeWidth={2.2} aria-hidden />
+                  <CapabilityIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={2.2} aria-hidden />
                   {cap}
                 </span>
               );
@@ -1052,8 +1052,8 @@ function ModelCard({
           </div>
         ) : null}
 
-        <div className="mt-6 min-h-[5.35rem]">
-          <p className="line-clamp-4 text-[13px] font-semibold leading-[1.55] text-text-secondary dark:text-white/[0.9]">
+        <div className="mt-4 min-h-[4.3rem] sm:mt-6 sm:min-h-[5.35rem]">
+          <p className="line-clamp-4 text-[11px] font-semibold leading-[1.45] text-text-secondary dark:text-white/[0.9] sm:text-[13px] sm:leading-[1.55]">
             {card.description}
           </p>
         </div>

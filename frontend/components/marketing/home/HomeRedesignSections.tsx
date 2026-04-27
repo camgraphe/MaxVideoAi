@@ -252,6 +252,7 @@ const REFERENCE_WORKFLOW_VISUALS = [
 ] as const;
 
 const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-fast', 'wan-2-6'] as const;
+const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.png';
 const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
   'kling-3-pro': 'image-to-video',
   'seedance-2-0': 'image-to-video',
@@ -514,7 +515,16 @@ export function HomeHero({
 
   return (
     <section className="relative overflow-hidden border-b border-hairline bg-bg">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(17,24,39,0.12),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(107,114,128,0.10),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0)_52%)] dark:bg-[radial-gradient(circle_at_72%_20%,rgba(255,255,255,0.10),transparent_32%),radial-gradient(circle_at_30%_78%,rgba(148,163,184,0.10),transparent_34%),linear-gradient(180deg,rgba(5,10,20,0.98),rgba(8,13,26,0.1)_58%)]" />
+      <Image
+        src={HOME_HERO_IMAGE_URL}
+        alt=""
+        aria-hidden="true"
+        fill
+        priority
+        sizes="100vw"
+        className="pointer-events-none object-cover object-center opacity-65 dark:brightness-[0.72] dark:contrast-110 dark:invert dark:opacity-50"
+      />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(circle_at_72%_20%,rgba(3,7,18,0.74),transparent_32%),radial-gradient(circle_at_30%_78%,rgba(3,7,18,0.42),transparent_34%),linear-gradient(180deg,rgba(5,10,20,0.92),rgba(8,13,26,0.24)_58%,rgba(8,13,26,0.08)_100%)]" />
       <div className="container-page relative grid max-w-[1400px] gap-7 py-10 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:items-start xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
         <div className="scrollbar-rail -mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0 xl:col-span-2 xl:pb-0">
           {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
