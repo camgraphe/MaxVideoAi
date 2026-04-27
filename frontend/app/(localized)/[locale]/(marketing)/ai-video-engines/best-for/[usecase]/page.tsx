@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
-import type { CSSProperties } from 'react';
-import { ArrowUp, ChevronRight } from 'lucide-react';
+import { ArrowUp, Check, ChevronRight, PlayCircle } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { defaultLocale, locales } from '@/i18n/locales';
+import { getLocalizedUrl } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 import { getEntryBySlug } from '@/lib/content/markdown';
@@ -34,6 +35,7 @@ type EngineCatalogEntry = {
   marketingName: string;
   provider?: string;
   brandId?: string;
+  family?: string;
   bestFor?: string;
 };
 
@@ -74,6 +76,22 @@ const DETAIL_COPY: Record<
     topReason: string;
     shortlistReason: string;
     viewModel: string;
+    viewExamples: string;
+    compareWith: string;
+    compareShortlistCta: string;
+    examplesCta: string;
+    alsoAvailable: string;
+    chooseTitle: string;
+    examplesTitle: string;
+    examplesDescription: string;
+    whyTitle: string;
+    mistakesTitle: string;
+    fullAnalysis: string;
+    relatedGuides: string;
+    allGuides: string;
+    score: string;
+    overall: string;
+    criteriaNote: string;
     compareShortlist: string;
     compareDescription: string;
     contentComing: string;
@@ -96,6 +114,22 @@ const DETAIL_COPY: Record<
     topReason: 'Primary recommendation for this search intent, based on the criteria above.',
     shortlistReason: 'Strong shortlist option when this criterion matters for the final video.',
     viewModel: 'View model',
+    viewExamples: 'View examples',
+    compareWith: 'Compare vs',
+    compareShortlistCta: 'Compare the shortlist',
+    examplesCta: 'View cinematic examples',
+    alsoAvailable: 'Also available',
+    chooseTitle: 'When should you choose each engine?',
+    examplesTitle: 'Examples to review first',
+    examplesDescription: 'Preview real output direction before making a decision.',
+    whyTitle: 'Why these models rank here',
+    mistakesTitle: 'Avoid these mistakes',
+    fullAnalysis: 'Read the full analysis',
+    relatedGuides: 'Related best-for guides',
+    allGuides: 'View all guides',
+    score: 'Score',
+    overall: 'Best overall',
+    criteriaNote: 'Scores combine quality, control, consistency, and cost efficiency.',
     compareShortlist: 'Compare the shortlist',
     compareDescription: 'Useful side-by-side pages for validating tradeoffs before picking a model.',
     contentComing: 'Content coming soon.',
@@ -117,6 +151,22 @@ const DETAIL_COPY: Record<
     topReason: 'Recommandation principale pour cette intention de recherche, d’après les critères ci-dessus.',
     shortlistReason: 'Option forte de la shortlist quand ce critère compte dans la vidéo finale.',
     viewModel: 'Voir le modèle',
+    viewExamples: 'Voir les exemples',
+    compareWith: 'Comparer avec',
+    compareShortlistCta: 'Comparer la shortlist',
+    examplesCta: 'Voir les exemples cinéma',
+    alsoAvailable: 'Aussi disponible',
+    chooseTitle: 'Quand choisir chaque moteur ?',
+    examplesTitle: 'Exemples à vérifier d’abord',
+    examplesDescription: 'Prévisualisez le rendu avant de choisir un moteur.',
+    whyTitle: 'Pourquoi ces modèles sont classés ici',
+    mistakesTitle: 'Erreurs à éviter',
+    fullAnalysis: 'Lire l’analyse complète',
+    relatedGuides: 'Guides Best-for liés',
+    allGuides: 'Voir tous les guides',
+    score: 'Score',
+    overall: 'Meilleur choix',
+    criteriaNote: 'Les scores combinent qualité, contrôle, cohérence et efficacité coût.',
     compareShortlist: 'Comparer la shortlist',
     compareDescription: 'Des pages côte à côte utiles pour valider les compromis avant de choisir un modèle.',
     contentComing: 'Contenu bientôt disponible.',
@@ -138,6 +188,22 @@ const DETAIL_COPY: Record<
     topReason: 'Recomendación principal para esta intención de búsqueda, según los criterios anteriores.',
     shortlistReason: 'Opción fuerte de la shortlist cuando este criterio pesa en el video final.',
     viewModel: 'Ver modelo',
+    viewExamples: 'Ver ejemplos',
+    compareWith: 'Comparar con',
+    compareShortlistCta: 'Comparar la shortlist',
+    examplesCta: 'Ver ejemplos cinematográficos',
+    alsoAvailable: 'También disponible',
+    chooseTitle: '¿Cuándo elegir cada motor?',
+    examplesTitle: 'Ejemplos para revisar primero',
+    examplesDescription: 'Previsualiza la dirección del resultado antes de elegir un motor.',
+    whyTitle: 'Por qué estos modelos están aquí',
+    mistakesTitle: 'Evita estos errores',
+    fullAnalysis: 'Leer el análisis completo',
+    relatedGuides: 'Guías Best-for relacionadas',
+    allGuides: 'Ver todas las guías',
+    score: 'Puntuación',
+    overall: 'Mejor opción',
+    criteriaNote: 'Las puntuaciones combinan calidad, control, consistencia y eficiencia de costo.',
     compareShortlist: 'Comparar la shortlist',
     compareDescription: 'Páginas lado a lado útiles para validar compromisos antes de elegir modelo.',
     contentComing: 'Contenido próximamente.',
@@ -211,6 +277,62 @@ const USECASE_CRITERIA: Record<string, Record<AppLocale, string[]>> = {
   },
 };
 
+const USECASE_CHIPS: Record<string, string[]> = {
+  'image-to-video': ['Image fidelity', 'Motion control', 'Subject lock', 'Reference frames', 'Cost control'],
+  'cinematic-realism': ['Camera language', 'Lighting', 'Motion physics', 'Visual polish', 'Cost control'],
+  'character-reference': ['Identity lock', 'Wardrobe', 'Props', 'Shot continuity', 'Input limits'],
+  'reference-to-video': ['References', 'Style frames', 'Audio cues', 'Product consistency', 'Output control'],
+  'multi-shot-video': ['Shot order', 'Continuity', 'Scene labels', 'Prompt structure', 'Final edit'],
+  '4k-video': ['Native 4K', 'Detail retention', 'Upscale path', 'Final delivery', 'Cost control'],
+  ads: ['Product clarity', 'Offer framing', 'Visual polish', 'Variant testing', 'Review speed'],
+  'ugc-ads': ['Creator realism', 'Dialogue', 'Face consistency', 'Hook testing', 'Social proof'],
+  'product-videos': ['Packshot stability', 'Textures', 'Clean reveals', 'Ecommerce motion', 'Brand fit'],
+  'lipsync-dialogue': ['Mouth timing', 'Voice sync', 'Face consistency', 'Audio options', 'Short dialogue'],
+  'fast-drafts': ['Speed', 'Low cost', 'Rough timing', 'Variant testing', 'Review loop'],
+  'stylized-anime': ['Line quality', 'Style consistency', 'Color blocks', 'Stylized motion', 'Creative tests'],
+};
+
+const USECASE_MISTAKES: Record<AppLocale, string[]> = {
+  en: [
+    'Choosing a model without matching the use case.',
+    'Ignoring references, style frames, or input limits.',
+    'Overcomplicating the first-pass prompt.',
+    'Skipping draft passes and going straight to premium.',
+    'Not checking cost before generation.',
+  ],
+  fr: [
+    'Choisir un modèle sans matcher le cas d’usage.',
+    'Ignorer les références, style frames ou limites d’input.',
+    'Complexifier le prompt dès la première passe.',
+    'Sauter les drafts et aller directement sur du premium.',
+    'Ne pas vérifier le coût avant génération.',
+  ],
+  es: [
+    'Elegir un modelo sin ajustar el caso de uso.',
+    'Ignorar referencias, style frames o límites de entrada.',
+    'Complicar demasiado el primer prompt.',
+    'Saltar los borradores e ir directo a premium.',
+    'No revisar el costo antes de generar.',
+  ],
+};
+
+const HERO_IMAGES: Record<string, string> = {
+  'seedance-2-0': '/hero/showcase-seedance-2-0.jpg',
+  'seedance-2-0-fast': '/hero/showcase-seedance-2-0.jpg',
+  'kling-3-pro': '/hero/showcase-kling-3-pro.jpg',
+  'kling-3-standard': '/hero/showcase-kling-3-pro.jpg',
+  'kling-3-4k': '/hero/kling-3-4k-hero.jpg',
+  'veo-3-1': '/hero/showcase-veo-3-1.jpg',
+  'veo-3-1-fast': '/hero/showcase-veo-3-1.jpg',
+  'sora-2-pro': '/hero/showcase-sora-2.jpg',
+  'sora-2': '/hero/showcase-sora-2.jpg',
+  'ltx-2-3-pro': '/hero/showcase-ltx-2-3-fast.jpg',
+  'ltx-2-3-fast': '/hero/showcase-ltx-2-3-fast.jpg',
+  'pika-text-to-video': '/hero/pika-22.jpg',
+  'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
+  'wan-2-6': '/hero/wan-26.jpg',
+};
+
 export const dynamicParams = false;
 
 export async function generateStaticParams(): Promise<Params[]> {
@@ -272,11 +394,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const entry = getEntry(params.usecase);
   const localizedContent = await getLocalizedBestForEntry(locale, params.usecase);
   const content = localizedContent ?? (await getEntryBySlug('content/en/best-for', params.usecase));
-  const title = content?.title ?? entry?.title ?? 'Best for - MaxVideoAI';
-  const description =
-    content?.description ??
-    (entry ? `Editorial guide to pick the best AI video engines for ${entry.title.toLowerCase()}.` : undefined) ??
-    'Editorial guide to pick the best AI video engines by use case.';
+  const title = getBestForDisplayTitle(locale, entry, content?.title);
+  const description = entry
+    ? buildBestForMetaDescription(locale, entry, content?.description)
+    : 'Editorial guide to pick the best AI video engines by use case.';
   const seo = resolveLocalizedFallbackSeo({
     locale,
     hasLocalizedVersion: locale === defaultLocale || Boolean(localizedContent),
@@ -285,12 +406,13 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   });
   return buildSeoMetadata({
     locale,
-    title: `${title} - MaxVideoAI`,
+    title,
     description,
     englishPath: `/ai-video-engines/best-for/${params.usecase}`,
     availableLocales: seo.availableLocales,
     canonicalOverride: seo.canonicalOverride,
     robots: seo.robots,
+    keywords: entry ? buildBestForKeywords(entry) : undefined,
   });
 }
 
@@ -305,105 +427,122 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
   const topPicks = resolveTopPicks(entry, scores);
   const copy = DETAIL_COPY[locale] ?? DETAIL_COPY.en;
   const criteria = getUsecaseCriteria(locale, entry.slug);
+  const rankedPicks = topPicks.map((slug, index) =>
+    buildRankedPick({
+      usecaseSlug: entry.slug,
+      modelSlug: slug,
+      rank: index + 1,
+      scores,
+      criteria,
+      copy,
+    })
+  );
+  const heroTitle = getBestForDisplayTitle(locale, entry, content?.title);
+  const heroDescription = buildBestForHeroDescription(locale, entry, content?.description);
+  const chips = USECASE_CHIPS[entry.slug] ?? criteria;
+  const relatedGuides = getRelatedBestForGuides(entry.slug);
+  const alsoAvailable = getAlsoAvailableModels(entry.slug, topPicks);
+  const canonicalUrl = getLocalizedUrl(locale, `/ai-video-engines/best-for/${entry.slug}`);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(locale, entry, heroTitle, canonicalUrl);
+  const itemListJsonLd = buildBestForItemListJsonLd(rankedPicks, canonicalUrl);
+  const webPageJsonLd = buildBestForWebPageJsonLd(heroTitle, heroDescription, canonicalUrl);
+
   return (
-    <div id="top" className="container-page max-w-7xl section">
-      <div className="stack-gap-lg">
-        <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center">
-          <div className="stack-gap-sm">
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.eyebrow}</p>
-            <h1 className="max-w-4xl text-3xl font-semibold text-text-primary sm:text-5xl">
-              {content?.title ?? entry.title}
-            </h1>
-            <p className="max-w-3xl text-base leading-relaxed text-text-secondary">
-              {content?.description ?? entry.description ?? 'Editorial guidance for picking the best AI video engines by use case.'}
-            </p>
-          </div>
-          <BestForHeroPanel entry={entry} topPicks={topPicks} criteria={criteria} copy={copy} />
-        </header>
+    <div id="top" className="container-page max-w-7xl section pt-8 sm:pt-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(webPageJsonLd) }} />
 
-        <section className="stack-gap-sm" aria-labelledby="best-for-shortlist">
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.ranked}</p>
-              <h2 id="best-for-shortlist" className="mt-2 text-2xl font-semibold text-text-primary">
-                {copy.shortlist}
-              </h2>
-            </div>
-            <p className="max-w-xl text-sm leading-relaxed text-text-secondary">{copy.shortlistDescription}</p>
-          </div>
-          <div className="grid grid-gap sm:grid-cols-2 xl:grid-cols-4">
-          {topPicks.map((slug) => {
-            const engine = ENGINE_BY_SLUG.get(slug);
-            const fitScore = getFitScore(entry.slug, scores.get(slug) ?? (engine?.engineId ? scores.get(engine.engineId) : undefined));
-            return (
-              <BestForModelCard
-                key={slug}
-                slug={slug}
-                engine={engine}
-                rank={topPicks.indexOf(slug) + 1}
-                fitScore={fitScore}
-                criterion={criteria[topPicks.indexOf(slug) % criteria.length]}
-                copy={copy}
-              />
-            );
-          })}
-          </div>
-        </section>
+      <div className="space-y-12">
+        <header className="space-y-8">
+          <nav className="flex items-center gap-2 text-xs font-medium text-text-muted" aria-label="Breadcrumb">
+            <Link href={{ pathname: '/ai-video-engines/best-for' }} className="transition hover:text-brand">
+              {copy.eyebrow}
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+            <span className="text-text-secondary">{entry.slug.replace(/-/g, ' ')}</span>
+          </nav>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-          <BestForContent locale={locale} slug={entry.slug} contentComing={copy.contentComing} />
-          <aside className="stack-gap-sm lg:sticky lg:top-24">
-            <section className="rounded-[16px] border border-hairline bg-surface bg-[image:linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,250,252,0.92))] p-5 shadow-card dark:bg-[image:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))]">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.criteria}</p>
-              <div className="mt-4 space-y-3">
-                {criteria.map((criterion, index) => (
-                  <div key={criterion} className="flex items-start gap-3">
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-brand/20 bg-brand/10 text-xs font-semibold text-brand">
-                      {index + 1}
-                    </span>
-                    <p className="text-sm leading-relaxed text-text-secondary">{criterion}</p>
-                  </div>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_456px] lg:items-start">
+            <div className="max-w-4xl pt-2">
+              <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow}</p>
+              <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.02] tracking-normal text-text-primary sm:text-5xl">
+                {heroTitle}
+              </h1>
+              <p className="mt-5 max-w-3xl text-lg leading-relaxed text-text-secondary">{heroDescription}</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {chips.slice(0, 5).map((chip) => (
+                  <span
+                    key={chip}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-text-secondary shadow-sm"
+                  >
+                    <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
+                    {chip}
+                  </span>
                 ))}
               </div>
-            </section>
-
-            {entry.relatedComparisons?.length ? (
-              <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
-                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.compareShortlist}</p>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{copy.compareDescription}</p>
-                <div className="mt-4 space-y-2">
-                  {entry.relatedComparisons.map((slug) => (
-                    <Link
-                      key={slug}
-                      href={{ pathname: '/ai-video-engines/[slug]', params: { slug } }}
-                      className="group flex items-center justify-between gap-3 rounded-card border border-hairline bg-surface-2 px-3 py-3 text-sm font-semibold text-text-primary transition hover:border-brand/40 hover:text-brandHover"
-                    >
-                      <span>{buildComparisonLabel(slug)}</span>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" aria-hidden />
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.quickLinks}</p>
-              <div className="mt-4 grid gap-2">
-                <Link
-                  href={{ pathname: '/ai-video-engines/best-for' }}
-                  className="rounded-card border border-hairline bg-surface-2 px-3 py-3 text-sm font-semibold text-brand transition hover:border-brand/40 hover:text-brandHover"
-                >
-                  {copy.backToHub}
-                </Link>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <a
-                  href="#top"
-                  className="inline-flex items-center justify-center gap-2 rounded-card border border-hairline bg-surface-2 px-3 py-3 text-sm font-semibold text-text-primary transition hover:border-brand/40 hover:text-brandHover"
+                  href="#compare-shortlist"
+                  className="inline-flex items-center justify-center rounded-card bg-text-primary px-5 py-3 text-sm font-semibold text-surface shadow-card transition hover:-translate-y-0.5 hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
                 >
-                  <ArrowUp className="h-4 w-4" aria-hidden />
-                  {copy.backToTop}
+                  {copy.compareShortlistCta}
+                </a>
+                <a
+                  href="#examples"
+                  className="inline-flex items-center justify-center gap-2 rounded-card border border-hairline bg-surface px-5 py-3 text-sm font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-brand/35 hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
+                >
+                  {copy.examplesCta}
+                  <ChevronRight className="h-4 w-4" aria-hidden />
                 </a>
               </div>
+            </div>
+
+            <TopPicksPanel
+              entry={entry}
+              picks={rankedPicks.slice(0, 3)}
+              relatedComparisons={entry.relatedComparisons ?? []}
+              copy={copy}
+            />
+          </div>
+        </header>
+
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <main className="space-y-10">
+            <section id="compare-shortlist" className="space-y-4" aria-labelledby="best-for-shortlist">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                <div>
+                  <h2 id="best-for-shortlist" className="text-2xl font-semibold text-text-primary">
+                    {copy.shortlist}
+                  </h2>
+                  <p className="mt-1 text-sm leading-relaxed text-text-secondary">{copy.shortlistDescription}</p>
+                </div>
+                <p className="max-w-md text-xs leading-relaxed text-text-muted">{copy.criteriaNote}</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {rankedPicks.map((pick) => (
+                  <RankedShortlistCard key={pick.slug} pick={pick} relatedComparisons={entry.relatedComparisons ?? []} copy={copy} />
+                ))}
+              </div>
+              {alsoAvailable.length ? <AlsoAvailableRow models={alsoAvailable} copy={copy} /> : null}
             </section>
+
+            <ChooseEngineStrip picks={rankedPicks} copy={copy} />
+            <ExamplesPreview picks={rankedPicks} copy={copy} />
+
+            <section className="grid gap-3 lg:grid-cols-2">
+              <EditorialReasonCard entry={entry} picks={rankedPicks} copy={copy} />
+              <MistakesCard locale={locale} copy={copy} />
+            </section>
+
+            <BestForContent locale={locale} slug={entry.slug} contentComing={copy.contentComing} />
+          </main>
+
+          <aside className="space-y-4 lg:sticky lg:top-24">
+            <CriteriaCard criteria={criteria} copy={copy} />
+            <CompareCard comparisons={entry.relatedComparisons ?? []} copy={copy} />
+            <RelatedGuidesCard guides={relatedGuides} copy={copy} />
+            <QuickLinksCard copy={copy} />
           </aside>
         </div>
       </div>
@@ -418,138 +557,360 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
   );
 }
 
-function BestForHeroPanel({
+type RankedPick = {
+  slug: string;
+  engine?: EngineCatalogEntry;
+  rank: number;
+  criterion: string;
+  score?: number;
+  accent: string;
+  reason: string;
+  bullets: string[];
+};
+
+function TopPicksPanel({
   entry,
-  topPicks,
-  criteria,
+  picks,
+  relatedComparisons,
   copy,
 }: {
   entry: BestForEntry;
-  topPicks: string[];
-  criteria: string[];
+  picks: RankedPick[];
+  relatedComparisons: string[];
   copy: (typeof DETAIL_COPY)[AppLocale];
 }) {
   return (
-    <div className="relative isolate overflow-hidden rounded-[20px] border border-hairline bg-surface bg-[image:radial-gradient(circle_at_18%_18%,rgba(99,102,241,0.18),transparent_30%),linear-gradient(145deg,rgba(255,255,255,0.96),rgba(248,250,252,0.86))] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:bg-[image:radial-gradient(circle_at_18%_18%,rgba(129,140,248,0.18),transparent_30%),linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.025))]">
-      <span className="pointer-events-none absolute inset-px rounded-[19px] border border-white/70 dark:border-white/[0.05]" aria-hidden />
-      <div className="relative z-10">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.ranked}</p>
-          <span className="rounded-full border border-hairline bg-surface/80 px-3 py-1 text-xs font-semibold text-text-secondary">
-            Tier {entry.tier}
-          </span>
-        </div>
-        <div className="mt-5 space-y-3">
-          {topPicks.slice(0, 3).map((slug, index) => {
-            const engine = ENGINE_BY_SLUG.get(slug);
-            return (
-              <div
-                key={slug}
-                className="flex items-center gap-3 rounded-[14px] border border-hairline bg-surface/82 p-3 shadow-[0_10px_24px_rgba(15,23,42,0.045)] backdrop-blur"
-              >
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-text-primary text-xs font-semibold text-surface">
-                  {index + 1}
-                </span>
-                <EngineIcon
-                  engine={{ id: slug, label: engine?.marketingName ?? slug, brandId: engine?.brandId }}
-                  size={44}
-                  rounded="xl"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-text-primary">{engine?.marketingName ?? slug}</p>
-                  <p className="text-xs leading-snug text-text-secondary">{criteria[index % criteria.length]}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          {criteria.map((criterion, index) => (
-            <div key={criterion} className="min-h-[88px] rounded-[14px] border border-hairline bg-surface/74 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">0{index + 1}</p>
-              <p className="mt-2 text-xs leading-snug text-text-secondary">{criterion}</p>
+    <section className="rounded-[18px] border border-hairline bg-surface p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+      <div className="flex items-center justify-between gap-3 px-1">
+        <h2 className="text-sm font-semibold text-text-primary">{getTopPicksTitle(entry.slug)}</h2>
+        <span className="rounded-full border border-hairline bg-surface-2 px-3 py-1 text-xs font-semibold text-text-secondary">
+          Tier {entry.tier}
+        </span>
+      </div>
+      <div className="mt-4 overflow-hidden rounded-[14px] border border-hairline">
+        {picks.map((pick) => (
+          <div key={pick.slug} className="grid grid-cols-[32px_42px_minmax(0,1fr)_58px] items-center gap-3 border-b border-hairline bg-surface px-3 py-3 last:border-b-0">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-text-primary text-xs font-semibold text-surface">
+              {pick.rank}
+            </span>
+            <EngineIcon
+              engine={{ id: pick.slug, label: pick.engine?.marketingName ?? pick.slug, brandId: pick.engine?.brandId }}
+              size={36}
+              rounded="xl"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-text-primary">{pick.engine?.marketingName ?? pick.slug}</p>
+              <p className="truncate text-xs font-semibold text-brand">{pick.rank === 1 ? copy.overall : pick.criterion}</p>
+              <p className="truncate text-xs text-text-secondary">{pick.reason}</p>
             </div>
-          ))}
+            <div className="rounded-[12px] bg-brand/10 px-2 py-2 text-center">
+              <p className="text-lg font-semibold tabular-nums text-brand">{formatScore(pick.score)}</p>
+              <p className="text-[10px] text-text-muted">{copy.score}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Link
+        href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pickComparisonSlug(picks, relatedComparisons) } }}
+        className="mt-4 inline-flex items-center gap-2 px-1 text-sm font-semibold text-brand transition hover:text-brandHover"
+      >
+        {copy.compareShortlistCta}
+        <ChevronRight className="h-4 w-4" aria-hidden />
+      </Link>
+    </section>
+  );
+}
+
+function RankedShortlistCard({
+  pick,
+  relatedComparisons,
+  copy,
+}: {
+  pick: RankedPick;
+  relatedComparisons: string[];
+  copy: (typeof DETAIL_COPY)[AppLocale];
+}) {
+  const compareSlug = findComparisonForPick(pick.slug, relatedComparisons);
+  return (
+    <article className="group flex min-h-[20rem] flex-col rounded-[14px] border border-hairline bg-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card">
+      <div className="flex items-start justify-between gap-3">
+        <span className="rounded-full border border-brand/20 bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
+          {pick.rank === 1 ? copy.topPick : `${copy.rank} ${pick.rank}`}
+        </span>
+        <span className="grid h-12 w-12 place-items-center rounded-full border border-hairline bg-surface-2 text-base font-semibold tabular-nums text-text-primary">
+          {formatScore(pick.score)}
+        </span>
+      </div>
+
+      <div className="mt-5 flex items-center gap-3">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-text-primary text-[11px] font-semibold text-surface">
+          {pick.rank}
+        </span>
+        <EngineIcon
+          engine={{ id: pick.slug, label: pick.engine?.marketingName ?? pick.slug, brandId: pick.engine?.brandId }}
+          size={38}
+          rounded="xl"
+        />
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold leading-tight text-text-primary">{pick.engine?.marketingName ?? pick.slug}</h3>
+          <p className="truncate text-xs text-text-secondary">{pick.engine?.provider ?? copy.provider}</p>
         </div>
       </div>
+
+      <div className="mt-5">
+        <p className="text-[11px] font-semibold uppercase tracking-micro text-brand">{copy.fit}</p>
+        <p className="mt-1 text-sm font-semibold leading-snug text-text-primary">{pick.criterion}</p>
+        <div className="mt-3 h-px bg-hairline" />
+        <ul className="mt-3 space-y-2">
+          {pick.bullets.map((bullet) => (
+            <li key={bullet} className="flex items-start gap-2 text-xs leading-relaxed text-text-secondary">
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" aria-hidden />
+              <span>{bullet}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-auto flex flex-wrap gap-x-4 gap-y-2 pt-5 text-xs font-semibold">
+        <Link href={{ pathname: '/models/[slug]', params: { slug: pick.slug } }} className="text-brand transition hover:text-brandHover">
+          {copy.viewModel} →
+        </Link>
+        <Link
+          href={{ pathname: '/examples/[model]', params: { model: getExamplesSlug(pick) } }}
+          className="text-brand transition hover:text-brandHover"
+        >
+          {copy.viewExamples} →
+        </Link>
+        {compareSlug ? (
+          <Link href={{ pathname: '/ai-video-engines/[slug]', params: { slug: compareSlug } }} className="text-brand transition hover:text-brandHover">
+            {copy.compareWith} →
+          </Link>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function AlsoAvailableRow({ models, copy }: { models: EngineCatalogEntry[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-hairline bg-surface-2 px-4 py-3">
+      <p className="mr-1 text-xs font-semibold text-text-primary">{copy.alsoAvailable}:</p>
+      {models.map((engine) => (
+        <Link
+          key={engine.modelSlug}
+          href={{ pathname: '/models/[slug]', params: { slug: engine.modelSlug } }}
+          className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:border-brand/30 hover:text-brand"
+        >
+          {engine.marketingName}
+          <ChevronRight className="h-3 w-3" aria-hidden />
+        </Link>
+      ))}
     </div>
   );
 }
 
-function BestForModelCard({
-  slug,
-  engine,
-  rank,
-  fitScore,
-  criterion,
+function ChooseEngineStrip({ picks, copy }: { picks: RankedPick[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-2xl font-semibold text-text-primary">{copy.chooseTitle}</h2>
+      <div className="grid overflow-hidden rounded-[14px] border border-hairline bg-surface shadow-sm md:grid-cols-2 xl:grid-cols-4">
+        {picks.map((pick) => (
+          <article key={pick.slug} className="border-b border-hairline p-4 last:border-b-0 md:border-r md:last:border-r-0 xl:border-b-0">
+            <div className="flex items-center gap-3">
+              <EngineIcon
+                engine={{ id: pick.slug, label: pick.engine?.marketingName ?? pick.slug, brandId: pick.engine?.brandId }}
+                size={36}
+                rounded="xl"
+              />
+              <h3 className="font-semibold text-text-primary">{pick.engine?.marketingName ?? pick.slug}</h3>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-text-secondary">{pick.reason}</p>
+            <p className="mt-4 inline-flex rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
+              {pick.rank === 1 ? copy.overall : pick.criterion}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ExamplesPreview({ picks, copy }: { picks: RankedPick[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  return (
+    <section id="examples" className="space-y-4">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <h2 className="text-2xl font-semibold text-text-primary">{copy.examplesTitle}</h2>
+          <p className="mt-1 text-sm text-text-secondary">{copy.examplesDescription}</p>
+        </div>
+        <Link href={{ pathname: '/examples' }} className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brandHover">
+          Browse all examples
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        </Link>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {picks.map((pick) => (
+          <Link
+            key={pick.slug}
+            href={{ pathname: '/examples/[model]', params: { model: getExamplesSlug(pick) } }}
+            className="group relative min-h-[116px] overflow-hidden rounded-[14px] border border-hairline bg-surface shadow-sm"
+          >
+            <Image
+              src={HERO_IMAGES[pick.slug] ?? '/assets/placeholders/preview-16x9.png'}
+              alt=""
+              fill
+              sizes="(min-width: 1280px) 230px, (min-width: 640px) 50vw, 100vw"
+              className="object-cover transition duration-300 group-hover:scale-105"
+            />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/20 to-transparent" aria-hidden />
+            <span className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-text-primary shadow-sm">
+              <PlayCircle className="h-5 w-5" aria-hidden />
+            </span>
+            <span className="absolute bottom-4 left-4 right-4">
+              <span className="block text-sm font-semibold text-white">{pick.engine?.marketingName ?? pick.slug}</span>
+              <span className="block text-xs text-white/78">{pick.criterion}</span>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function EditorialReasonCard({
+  entry,
+  picks,
   copy,
 }: {
-  slug: string;
-  engine?: EngineCatalogEntry;
-  rank: number;
-  fitScore?: number;
-  criterion: string;
+  entry: BestForEntry;
+  picks: RankedPick[];
   copy: (typeof DETAIL_COPY)[AppLocale];
 }) {
-  const accent = getEngineAccent(slug);
-  const style = buildBestForCardStyle(accent);
-  const scoreLabel = typeof fitScore === 'number' && fitScore > 0 ? fitScore.toFixed(1) : null;
-
   return (
-    <article
-      className="group relative isolate flex min-h-[23rem] flex-col overflow-hidden rounded-[16px] border border-hairline bg-surface bg-[image:var(--best-card-surface)] p-5 text-text-primary shadow-[0_18px_44px_rgba(15,23,42,0.055),0_4px_12px_rgba(15,23,42,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--best-card-border-hover)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.085),0_8px_20px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-[image:var(--best-card-surface-dark)] dark:text-white dark:hover:border-[color:var(--best-card-border-hover-dark)]"
-      style={style}
-    >
-      <span className="pointer-events-none absolute inset-px rounded-[15px] border border-white/75 opacity-80 dark:border-white/[0.04]" aria-hidden />
-      <div className="relative z-10 flex h-full flex-col">
-        <div className="flex items-start justify-between gap-4">
-          <span className="rounded-full border border-[color:var(--best-chip-border)] bg-[color:var(--best-chip-bg)] px-3 py-1 text-xs font-semibold text-[color:var(--best-chip-text)] dark:border-[color:var(--best-chip-border-dark)] dark:bg-[color:var(--best-chip-bg-dark)] dark:text-[color:var(--best-chip-text-dark)]">
-            {rank === 1 ? copy.topPick : `${copy.rank} ${rank}`}
-          </span>
-          {scoreLabel ? (
-            <div className="grid h-[62px] w-[62px] shrink-0 place-items-center rounded-full border border-hairline bg-surface shadow-sm">
-              <span className="text-lg font-semibold tabular-nums text-text-primary">{scoreLabel}</span>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="mt-6 flex items-center gap-3">
-          <EngineIcon
-            engine={{ id: slug, label: engine?.marketingName ?? slug, brandId: engine?.brandId }}
-            size={54}
-            rounded="xl"
-          />
-          <div className="min-w-0">
-            <h3 className="truncate text-lg font-semibold text-text-primary">{engine?.marketingName ?? slug}</h3>
-            <p className="mt-1 text-sm text-text-secondary">{engine?.provider ?? copy.provider}</p>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-2 rounded-[14px] border border-[color:var(--best-panel-border)] bg-[image:var(--best-panel-bg)] p-4 dark:border-[color:var(--best-panel-border-dark)] dark:bg-[image:var(--best-panel-bg-dark)]">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{copy.fit}</p>
-            <p className="mt-1 text-sm font-semibold leading-snug text-text-primary">{criterion}</p>
-          </div>
-          <div className="h-px bg-[color:var(--best-divider)] dark:bg-[color:var(--best-divider-dark)]" />
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{copy.evidence}</p>
-            <p className="mt-1 text-sm leading-relaxed text-text-secondary">
-              {rank === 1 ? copy.topReason : copy.shortlistReason}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-auto pt-5">
-          <Link
-            href={{ pathname: '/models/[slug]', params: { slug } }}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-brand transition hover:text-brandHover"
-          >
-            {copy.viewModel}
-            <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden />
-          </Link>
-        </div>
+    <section className="rounded-[14px] border border-hairline bg-surface p-5 shadow-sm">
+      <h2 className="text-xl font-semibold text-text-primary">{copy.whyTitle}</h2>
+      <div className="mt-4 space-y-3 text-sm leading-relaxed text-text-secondary">
+        {picks.slice(0, 4).map((pick) => (
+          <p key={pick.slug}>
+            <strong className="font-semibold text-text-primary">{pick.engine?.marketingName ?? pick.slug}</strong>{' '}
+            {buildReasonSentence(entry.slug, pick)}
+          </p>
+        ))}
       </div>
-    </article>
+      <a href="#full-analysis" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brandHover">
+        {copy.fullAnalysis}
+        <ChevronRight className="h-4 w-4" aria-hidden />
+      </a>
+    </section>
+  );
+}
+
+function MistakesCard({ locale, copy }: { locale: AppLocale; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  const mistakes = USECASE_MISTAKES[locale] ?? USECASE_MISTAKES.en;
+  return (
+    <section className="rounded-[14px] border border-hairline bg-surface p-5 shadow-sm">
+      <h2 className="text-xl font-semibold text-text-primary">{copy.mistakesTitle}</h2>
+      <ul className="mt-4 space-y-3">
+        {mistakes.map((mistake) => (
+          <li key={mistake} className="flex items-start gap-3 text-sm leading-relaxed text-text-secondary">
+            <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-text-primary/5 text-text-primary">
+              <Check className="h-3.5 w-3.5" aria-hidden />
+            </span>
+            <span>{mistake}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function CriteriaCard({ criteria, copy }: { criteria: string[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  const filledCriteria = criteria.concat(USECASE_MISTAKES.en).slice(0, 5);
+  return (
+    <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
+      <p className="text-sm font-semibold text-text-primary">{copy.criteria}</p>
+      <div className="mt-4 space-y-3">
+        {filledCriteria.map((criterion, index) => (
+          <div key={`${criterion}-${index}`} className="flex items-start gap-3">
+            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-brand/20 bg-brand/10 text-xs font-semibold text-brand">
+              {index + 1}
+            </span>
+            <p className="text-sm leading-relaxed text-text-secondary">{criterion}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CompareCard({ comparisons, copy }: { comparisons: string[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  if (!comparisons.length) return null;
+  return (
+    <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
+      <p className="text-sm font-semibold text-text-primary">{copy.compareShortlist}</p>
+      <p className="mt-2 text-sm leading-relaxed text-text-secondary">{copy.compareDescription}</p>
+      <div className="mt-4 space-y-2">
+        {comparisons.map((slug) => (
+          <Link
+            key={slug}
+            href={{ pathname: '/ai-video-engines/[slug]', params: { slug } }}
+            className="group flex items-center justify-between gap-3 rounded-card border border-hairline bg-surface-2 px-3 py-3 text-sm font-semibold text-brand transition hover:border-brand/40 hover:text-brandHover"
+          >
+            <span>{buildComparisonLabel(slug)}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-0.5" aria-hidden />
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RelatedGuidesCard({ guides, copy }: { guides: BestForEntry[]; copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  return (
+    <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
+      <p className="text-sm font-semibold text-text-primary">{copy.relatedGuides}</p>
+      <div className="mt-4 space-y-3">
+        {guides.map((guide) => (
+          <Link
+            key={guide.slug}
+            href={{ pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: guide.slug } }}
+            className="block text-sm font-semibold text-brand transition hover:text-brandHover"
+          >
+            {guide.title}
+          </Link>
+        ))}
+      </div>
+      <Link
+        href={{ pathname: '/ai-video-engines/best-for' }}
+        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brandHover"
+      >
+        {copy.allGuides}
+        <ChevronRight className="h-4 w-4" aria-hidden />
+      </Link>
+    </section>
+  );
+}
+
+function QuickLinksCard({ copy }: { copy: (typeof DETAIL_COPY)[AppLocale] }) {
+  return (
+    <section className="rounded-[16px] border border-hairline bg-surface p-5 shadow-card">
+      <p className="text-sm font-semibold text-text-primary">{copy.quickLinks}</p>
+      <div className="mt-4 grid gap-2">
+        <Link
+          href={{ pathname: '/ai-video-engines/best-for' }}
+          className="rounded-card border border-hairline bg-surface-2 px-3 py-3 text-sm font-semibold text-brand transition hover:border-brand/40 hover:text-brandHover"
+        >
+          {copy.backToHub}
+        </Link>
+        <a
+          href="#top"
+          className="inline-flex items-center justify-center gap-2 rounded-card border border-hairline bg-surface-2 px-3 py-3 text-sm font-semibold text-text-primary transition hover:border-brand/40 hover:text-brandHover"
+        >
+          <ArrowUp className="h-4 w-4" aria-hidden />
+          {copy.backToTop}
+        </a>
+      </div>
+    </section>
   );
 }
 
@@ -564,7 +925,7 @@ async function BestForContent({ locale, slug, contentComing }: { locale: AppLoca
   }
 
   return (
-    <article className="rounded-[16px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
+    <article id="full-analysis" className="rounded-[16px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
       <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: content.content }} />
     </article>
   );
@@ -638,6 +999,237 @@ function resolveTopPicks(entry: BestForEntry, scores: Map<string, EngineScore>):
   return ranked.length ? ranked : ENGINE_CATALOG.slice(0, 3).map((engine) => engine.modelSlug);
 }
 
+function buildRankedPick({
+  usecaseSlug,
+  modelSlug,
+  rank,
+  scores,
+  criteria,
+  copy,
+}: {
+  usecaseSlug: string;
+  modelSlug: string;
+  rank: number;
+  scores: Map<string, EngineScore>;
+  criteria: string[];
+  copy: (typeof DETAIL_COPY)[AppLocale];
+}): RankedPick {
+  const engine = ENGINE_BY_SLUG.get(modelSlug);
+  const score = getFitScore(usecaseSlug, scores.get(modelSlug) ?? (engine?.engineId ? scores.get(engine.engineId) : undefined));
+  const criterion = criteria[(rank - 1) % criteria.length] ?? criteria[0] ?? copy.fit;
+  const fallbackScore = Math.max(6.8, 8.6 - rank * 0.22);
+  return {
+    slug: modelSlug,
+    engine,
+    rank,
+    criterion,
+    score: score ?? fallbackScore,
+    accent: getEngineAccent(modelSlug),
+    reason: buildPickReason(usecaseSlug, criterion, rank),
+    bullets: buildPickBullets(criteria, rank),
+  };
+}
+
+function getBestForDisplayTitle(locale: AppLocale, entry?: BestForEntry, fallbackTitle?: string) {
+  if (!entry) return fallbackTitle ?? 'Best AI video engines by use case';
+  if (locale !== 'en') return fallbackTitle ?? entry.title;
+  const intentLabels: Record<string, string> = {
+    'image-to-video': 'image-to-video',
+    'cinematic-realism': 'cinematic realism',
+    'character-reference': 'character reference',
+    'reference-to-video': 'reference-to-video',
+    'multi-shot-video': 'multi-shot video',
+    '4k-video': '4K video',
+    ads: 'ads',
+    'ugc-ads': 'UGC videos',
+    'product-videos': 'product videos',
+    'lipsync-dialogue': 'lip sync and dialogue',
+    'fast-drafts': 'fast drafts',
+    'stylized-anime': 'anime and stylized video',
+  };
+  return `Best AI video engines for ${intentLabels[entry.slug] ?? entry.title.replace(/^Best\s+/i, '').toLowerCase()}`;
+}
+
+function buildBestForHeroDescription(locale: AppLocale, entry: BestForEntry, fallbackDescription?: string) {
+  if (locale !== 'en') return fallbackDescription ?? entry.description ?? 'Editorial guidance for picking the best AI video engines by use case.';
+  const names = (entry.topPicks ?? []).slice(0, 3).map((slug) => ENGINE_BY_SLUG.get(slug)?.marketingName ?? slug);
+  if (!names.length) return fallbackDescription ?? entry.description ?? 'Compare AI video engines before spending credits.';
+  return `Compare ${formatList(names)} for ${entry.title.replace(/^Best\s+/i, '').replace(/\s+AI generator$/i, '').toLowerCase()} before spending credits.`;
+}
+
+function buildBestForMetaDescription(locale: AppLocale, entry: BestForEntry, fallbackDescription?: string) {
+  if (locale !== 'en') return fallbackDescription ?? entry.description ?? 'Compare the best AI video engines by use case.';
+  const names = (entry.topPicks ?? []).slice(0, 3).map((slug) => ENGINE_BY_SLUG.get(slug)?.marketingName ?? slug);
+  const engineText = names.length ? ` Compare ${formatList(names)}` : ' Compare leading AI video engines';
+  return `${fallbackDescription ?? entry.description ?? entry.title}.${engineText} by quality, control, consistency, cost, and workflow fit.`;
+}
+
+function buildBestForKeywords(entry: BestForEntry) {
+  const engines = (entry.topPicks ?? []).map((slug) => ENGINE_BY_SLUG.get(slug)?.marketingName ?? slug);
+  return Array.from(new Set([entry.title, `${entry.slug.replace(/-/g, ' ')} AI video generator`, ...engines, ...(USECASE_CHIPS[entry.slug] ?? [])]));
+}
+
+function formatList(items: string[]) {
+  if (items.length <= 1) return items[0] ?? '';
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
+function formatScore(score?: number) {
+  return typeof score === 'number' && Number.isFinite(score) ? score.toFixed(1) : '-';
+}
+
+function buildPickReason(usecaseSlug: string, criterion: string, rank: number) {
+  const prefix = rank === 1 ? 'Best balance of' : rank === 2 ? 'Strong option for' : 'Useful when you need';
+  const suffixes: Record<string, string> = {
+    'cinematic-realism': 'cinematic camera direction',
+    'character-reference': 'stable identity across shots',
+    'reference-to-video': 'controlled reference workflows',
+    'multi-shot-video': 'planned sequences',
+    '4k-video': 'final delivery detail',
+    ads: 'campaign-ready output',
+    'ugc-ads': 'creator-style social clips',
+    'product-videos': 'clean product storytelling',
+    'lipsync-dialogue': 'speaking character control',
+    'fast-drafts': 'fast iteration loops',
+    'stylized-anime': 'stylized motion',
+    'image-to-video': 'motion from approved images',
+  };
+  return `${prefix} ${criterion.toLowerCase()} for ${suffixes[usecaseSlug] ?? 'this use case'}.`;
+}
+
+function buildPickBullets(criteria: string[], rank: number) {
+  const primary = criteria[(rank - 1) % criteria.length] ?? criteria[0] ?? 'Use-case fit';
+  const secondary = criteria[rank % criteria.length] ?? criteria[1] ?? 'Reliable output';
+  const tertiary = criteria[(rank + 1) % criteria.length] ?? criteria[2] ?? 'Efficient review loop';
+  return [`Strong ${primary.toLowerCase()}`, `Good ${secondary.toLowerCase()}`, `Practical ${tertiary.toLowerCase()}`];
+}
+
+function pickComparisonSlug(picks: RankedPick[], relatedComparisons: string[]) {
+  return relatedComparisons[0] ?? (picks.length >= 2 ? `${picks[0].slug}-vs-${picks[1].slug}` : 'seedance-2-0-vs-veo-3-1');
+}
+
+function findComparisonForPick(slug: string, relatedComparisons: string[]) {
+  return relatedComparisons.find((comparison) => comparison.split('-vs-').includes(slug)) ?? relatedComparisons[0];
+}
+
+function getExamplesSlug(pick: RankedPick) {
+  return pick.engine?.family ?? pick.slug;
+}
+
+function getTopPicksTitle(slug: string) {
+  const labels: Record<string, string> = {
+    'cinematic-realism': 'Top picks for cinematic shots',
+    'character-reference': 'Top picks for character reference',
+    'reference-to-video': 'Top picks for reference-to-video',
+    'multi-shot-video': 'Top picks for multi-shot video',
+    '4k-video': 'Top picks for 4K delivery',
+    ads: 'Top picks for ads',
+    'ugc-ads': 'Top picks for UGC videos',
+    'product-videos': 'Top picks for product videos',
+    'lipsync-dialogue': 'Top picks for dialogue',
+    'fast-drafts': 'Top picks for fast drafts',
+    'stylized-anime': 'Top picks for stylized video',
+    'image-to-video': 'Top picks for image-to-video',
+  };
+  return labels[slug] ?? 'Top picks';
+}
+
+function getRelatedBestForGuides(slug: string) {
+  const relatedBySlug: Record<string, string[]> = {
+    'cinematic-realism': ['fast-drafts', 'multi-shot-video', 'product-videos', 'character-reference', '4k-video'],
+    'image-to-video': ['reference-to-video', 'product-videos', 'character-reference', 'ads'],
+    'character-reference': ['reference-to-video', 'ugc-ads', 'multi-shot-video', 'product-videos'],
+    'reference-to-video': ['image-to-video', 'character-reference', 'product-videos', 'ads'],
+    'multi-shot-video': ['cinematic-realism', 'character-reference', 'ads', 'fast-drafts'],
+    '4k-video': ['cinematic-realism', 'product-videos', 'ads', 'fast-drafts'],
+    ads: ['ugc-ads', 'product-videos', 'cinematic-realism', 'reference-to-video'],
+    'ugc-ads': ['ads', 'lipsync-dialogue', 'character-reference', 'fast-drafts'],
+    'product-videos': ['ads', 'image-to-video', 'reference-to-video', '4k-video'],
+    'lipsync-dialogue': ['ugc-ads', 'character-reference', 'cinematic-realism', 'fast-drafts'],
+    'fast-drafts': ['cinematic-realism', 'ads', 'multi-shot-video', '4k-video'],
+    'stylized-anime': ['fast-drafts', 'image-to-video', 'multi-shot-video', 'character-reference'],
+  };
+  const targets = relatedBySlug[slug] ?? BEST_FOR_PAGES.filter((entry) => entry.slug !== slug).slice(0, 4).map((entry) => entry.slug);
+  return targets.map((target) => getEntry(target)).filter((entry): entry is BestForEntry => Boolean(entry)).slice(0, 5);
+}
+
+function getAlsoAvailableModels(slug: string, topPicks: string[]) {
+  const preferred: Record<string, string[]> = {
+    'cinematic-realism': ['ltx-2-3-fast', 'wan-2-6', 'pika-text-to-video'],
+    'image-to-video': ['sora-2-pro', 'veo-3-1-fast', 'pika-text-to-video'],
+    'character-reference': ['seedance-2-0', 'sora-2-pro', 'veo-3-1'],
+    'reference-to-video': ['sora-2-pro', 'veo-3-1-fast', 'wan-2-6'],
+    'multi-shot-video': ['ltx-2-3-pro', 'wan-2-6', 'pika-text-to-video'],
+    '4k-video': ['kling-3-pro', 'veo-3-1', 'sora-2-pro'],
+    ads: ['veo-3-1-fast', 'sora-2-pro', 'pika-text-to-video'],
+    'ugc-ads': ['ltx-2-3-pro', 'veo-3-1-fast', 'pika-text-to-video'],
+    'product-videos': ['kling-3-4k', 'veo-3-1-fast', 'pika-text-to-video'],
+    'lipsync-dialogue': ['ltx-2-3-pro', 'sora-2', 'pika-text-to-video'],
+    'fast-drafts': ['pika-text-to-video', 'minimax-hailuo-02-text', 'wan-2-6'],
+    'stylized-anime': ['seedance-2-0', 'wan-2-6', 'ltx-2-3-fast'],
+  };
+  return (preferred[slug] ?? [])
+    .filter((modelSlug) => !topPicks.includes(modelSlug))
+    .map((modelSlug) => ENGINE_BY_SLUG.get(modelSlug))
+    .filter((engine): engine is EngineCatalogEntry => Boolean(engine))
+    .slice(0, 3);
+}
+
+function buildReasonSentence(usecaseSlug: string, pick: RankedPick) {
+  return `ranks here because it gives MaxVideoAI users a practical route to ${pick.criterion.toLowerCase()} while keeping the workflow suitable for ${usecaseSlug.replace(/-/g, ' ')}.`;
+}
+
+function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
+function buildBreadcrumbJsonLd(locale: AppLocale, entry: BestForEntry, title: string, canonicalUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Best for',
+        item: getLocalizedUrl(locale, '/ai-video-engines/best-for'),
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: title || entry.title,
+        item: canonicalUrl,
+      },
+    ],
+  };
+}
+
+function buildBestForItemListJsonLd(picks: RankedPick[], canonicalUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `Ranked AI video engines for ${canonicalUrl.split('/').pop()?.replace(/-/g, ' ') ?? 'this use case'}`,
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
+    itemListElement: picks.map((pick) => ({
+      '@type': 'ListItem',
+      position: pick.rank,
+      name: pick.engine?.marketingName ?? pick.slug,
+      url: getLocalizedUrl(defaultLocale, `/models/${pick.slug}`),
+    })),
+  };
+}
+
+function buildBestForWebPageJsonLd(title: string, description: string, canonicalUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: title,
+    url: canonicalUrl,
+    description,
+  };
+}
+
 function getFitScore(slug: string, score?: EngineScore) {
   if (!score) return undefined;
   const weights = USECASE_WEIGHTS[slug] ?? {};
@@ -659,25 +1251,4 @@ function getEngineAccent(slug: string) {
   if (slug.includes('minimax')) return '#f97316';
   if (slug.includes('wan')) return '#6366f1';
   return '#6366f1';
-}
-
-function buildBestForCardStyle(accent: string): CSSProperties {
-  return {
-    '--best-card-surface': `linear-gradient(180deg, color-mix(in srgb, ${accent} 1%, #ffffff 99%) 0%, color-mix(in srgb, ${accent} 2%, #fbfdff 98%) 100%)`,
-    '--best-card-surface-dark': `linear-gradient(180deg, color-mix(in srgb, ${accent} 5%, var(--surface) 95%) 0%, var(--surface-3) 100%)`,
-    '--best-card-border-hover': `color-mix(in srgb, ${accent} 14%, #dbe4ee 86%)`,
-    '--best-card-border-hover-dark': `color-mix(in srgb, ${accent} 22%, #334155 78%)`,
-    '--best-chip-bg': `color-mix(in srgb, ${accent} 3%, white 97%)`,
-    '--best-chip-bg-dark': `color-mix(in srgb, ${accent} 8%, #0f172a 92%)`,
-    '--best-chip-border': `color-mix(in srgb, ${accent} 24%, #d8dfeb 76%)`,
-    '--best-chip-border-dark': `color-mix(in srgb, ${accent} 16%, #334155 84%)`,
-    '--best-chip-text': `color-mix(in srgb, ${accent} 36%, #1f2937 64%)`,
-    '--best-chip-text-dark': `color-mix(in srgb, ${accent} 18%, #f8fafc 82%)`,
-    '--best-panel-bg': `linear-gradient(180deg, color-mix(in srgb, ${accent} 1%, #ffffff 99%) 0%, color-mix(in srgb, ${accent} 2%, #f8fafc 98%) 100%)`,
-    '--best-panel-bg-dark': 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%)',
-    '--best-panel-border': `color-mix(in srgb, ${accent} 9%, #dbe4ee 91%)`,
-    '--best-panel-border-dark': `color-mix(in srgb, ${accent} 15%, #334155 85%)`,
-    '--best-divider': `color-mix(in srgb, ${accent} 8%, #d7dee8 92%)`,
-    '--best-divider-dark': `color-mix(in srgb, ${accent} 16%, #334155 84%)`,
-  } as CSSProperties;
 }
