@@ -144,8 +144,8 @@ function addDocsUrl(urls, locale, slug) {
 
 function addBestForUrl(urls, locale, slug) {
   if (locale === 'en') urls.add(toAbsoluteUrl(`/ai-video-engines/best-for/${slug}`));
-  if (locale === 'fr') urls.add(toAbsoluteUrl(`/fr/ai-video-engines/best-for/${slug}`));
-  if (locale === 'es') urls.add(toAbsoluteUrl(`/es/ai-video-engines/best-for/${slug}`));
+  if (locale === 'fr') urls.add(toAbsoluteUrl(`/fr/comparatif/best-for/${slug}`));
+  if (locale === 'es') urls.add(toAbsoluteUrl(`/es/comparativa/best-for/${slug}`));
 }
 
 function collectUrlsFromChangedFiles(changedFiles) {

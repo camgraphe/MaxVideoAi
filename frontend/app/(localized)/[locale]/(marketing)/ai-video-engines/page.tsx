@@ -594,6 +594,28 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 export default async function AiVideoEnginesPage() {
   const { locale } = await resolveDictionary();
   const copy = getCopy(locale);
+  const bestForCta =
+    {
+      en: {
+        title: 'Need a recommendation instead of a matchup?',
+        body: 'Open the Best-for guides for use-case rankings across cinematics, references, ads, UGC, 4K, and multi-shot sequences.',
+        label: 'Browse Best-for guides',
+      },
+      fr: {
+        title: 'Besoin d’une recommandation plutôt que d’un duel ?',
+        body: 'Ouvrez les guides Best-for pour choisir par cas d’usage : cinéma, références, ads, UGC, 4K et séquences multi-shot.',
+        label: 'Voir les guides Best-for',
+      },
+      es: {
+        title: '¿Necesitas una recomendación en lugar de un duelo?',
+        body: 'Abre las guías Best-for para elegir por caso de uso: cine, referencias, anuncios, UGC, 4K y secuencias multi-shot.',
+        label: 'Ver guías Best-for',
+      },
+    }[locale] ?? {
+      title: 'Need a recommendation instead of a matchup?',
+      body: 'Open the Best-for guides for use-case rankings across cinematics, references, ads, UGC, 4K, and multi-shot sequences.',
+      label: 'Browse Best-for guides',
+    };
   const engines = getHubEngines();
   const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
   const scoreMap = await loadHubEngineScoreMap();
@@ -818,6 +840,16 @@ export default async function AiVideoEnginesPage() {
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">{copy.sections.useCasesIntro}</p>
           </div>
           <UseCaseExplorer buckets={useCaseBuckets} compareLabel={copy.popularCompareLabel} />
+          <div className="rounded-2xl border border-hairline bg-surface p-5 shadow-card">
+            <h3 className="text-base font-semibold text-text-primary">{bestForCta.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{bestForCta.body}</p>
+            <Link
+              href={{ pathname: '/ai-video-engines/best-for' }}
+              className="mt-4 inline-flex text-sm font-semibold text-brand transition hover:text-brandHover"
+            >
+              {bestForCta.label} →
+            </Link>
+          </div>
         </section>
 
         <section className="stack-gap">
