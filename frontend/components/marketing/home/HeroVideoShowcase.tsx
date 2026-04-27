@@ -187,18 +187,19 @@ export function HeroVideoShowcase({
           className="relative z-10 overflow-hidden rounded-[22px] border border-white/24 bg-[#070b14] shadow-[0_30px_86px_-44px_rgba(15,23,42,0.95)]"
         >
           <div className="relative overflow-hidden bg-[#050912]" style={{ aspectRatio: '1.62 / 1' }}>
-          {selected.videoSrc ? (
-            <video
-              ref={videoRef}
-              key={selected.id}
-              className="absolute inset-0 h-full w-full object-cover"
-              poster={selected.posterSrc}
-              preload="metadata"
-              autoPlay
-              muted={isMuted}
-              playsInline
-              loop
-              onPause={() => setIsPlaying(false)}
+            {selected.videoSrc ? (
+              <video
+                ref={videoRef}
+                key={selected.id}
+                aria-label={`${selected.name} preview video`}
+                className="absolute inset-0 h-full w-full object-cover"
+                poster={selected.posterSrc}
+                preload="metadata"
+                autoPlay
+                muted={isMuted}
+                playsInline
+                loop
+                onPause={() => setIsPlaying(false)}
               onPlay={() => setIsPlaying(true)}
               onTimeUpdate={(event) => {
                 const video = event.currentTarget;
@@ -238,13 +239,13 @@ export function HeroVideoShowcase({
             </div>
           </div>
 
-          <div className="absolute right-4 top-4 min-w-[124px] rounded-[16px] border border-white/18 bg-black/50 px-3.5 py-3 text-left text-white shadow-[0_18px_48px_-24px_rgba(0,0,0,0.95)] backdrop-blur-lg sm:right-6 sm:top-6 sm:min-w-[142px]">
-            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/68">{selected.estimateLabel}</p>
-            <p className="mt-1 text-2xl font-semibold leading-none tracking-tight sm:text-[28px]">
+          <div className="absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
+            <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{selected.estimateLabel}</p>
+            <p className="mt-0.5 text-lg font-semibold leading-none tracking-tight sm:text-xl">
               {primaryPrice}
             </p>
-            <p className="mt-1.5 text-[10px] font-medium leading-tight text-white/78 sm:text-[11px]">{quoteRenderMeta}</p>
-            {ratePerSecond ? <p className="mt-1.5 text-[10px] font-semibold leading-tight text-white/84 sm:text-[11px]">{ratePerSecond}</p> : null}
+            <p className="mt-0.5 text-[8px] font-medium leading-tight text-white/70 sm:text-[9px]">{quoteRenderMeta}</p>
+            {ratePerSecond ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{ratePerSecond}</p> : null}
           </div>
 
           {hasUserPaused ? (

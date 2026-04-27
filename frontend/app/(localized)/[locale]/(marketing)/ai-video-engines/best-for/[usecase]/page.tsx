@@ -360,7 +360,7 @@ const DECISION_CRITERIA_FILLERS: Record<AppLocale, string[]> = {
   es: ['Eficiencia de costo y velocidad', 'Fiabilidad y consistencia'],
 };
 
-const USECASE_MISTAKES: Record<AppLocale, string[]> = {
+const USECASE_MISTAKE_FALLBACKS: Record<AppLocale, string[]> = {
   en: [
     'Choosing a model without matching the use case.',
     'Ignoring references, style frames, or input limits.',
@@ -590,7 +590,7 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
 
             <section className="grid gap-3 lg:grid-cols-2">
               <EditorialReasonCard entry={entry} picks={rankedPicks} locale={locale} copy={copy} />
-              <MistakesCard locale={locale} copy={copy} />
+              <MistakesCard locale={locale} usecaseSlug={entry.slug} criteria={criteria} copy={copy} />
             </section>
 
             <BestForContent content={content} contentComing={copy.contentComing} />
@@ -823,6 +823,7 @@ function ExamplesPreview({ picks, copy }: { picks: ExamplePreviewPick[]; copy: (
             <Image
               src={pick.heroThumbUrl ?? '/assets/placeholders/preview-16x9.png'}
               alt=""
+              aria-hidden="true"
               fill
               sizes="(min-width: 1280px) 230px, (min-width: 640px) 50vw, 100vw"
               className="object-cover transition duration-300 group-hover:scale-105"
@@ -877,8 +878,18 @@ function EditorialReasonCard({
   );
 }
 
-function MistakesCard({ locale, copy }: { locale: AppLocale; copy: (typeof DETAIL_COPY)[AppLocale] }) {
-  const mistakes = USECASE_MISTAKES[locale] ?? USECASE_MISTAKES.en;
+function MistakesCard({
+  locale,
+  usecaseSlug,
+  criteria,
+  copy,
+}: {
+  locale: AppLocale;
+  usecaseSlug: string;
+  criteria: string[];
+  copy: (typeof DETAIL_COPY)[AppLocale];
+}) {
+  const mistakes = buildUsecaseMistakes(locale, usecaseSlug, criteria);
   return (
     <section className="rounded-[14px] border border-hairline bg-surface p-5 shadow-sm">
       <h2 className="text-xl font-semibold text-text-primary">{copy.mistakesTitle}</h2>
@@ -894,6 +905,41 @@ function MistakesCard({ locale, copy }: { locale: AppLocale; copy: (typeof DETAI
       </ul>
     </section>
   );
+}
+
+function buildUsecaseMistakes(locale: AppLocale, usecaseSlug: string, criteria: string[]) {
+  const label = getUsecaseLabel(locale, usecaseSlug);
+  const primary = criteria[0] ?? USECASE_MISTAKE_FALLBACKS[locale]?.[0] ?? USECASE_MISTAKE_FALLBACKS.en[0];
+  const secondary = criteria[1] ?? USECASE_MISTAKE_FALLBACKS[locale]?.[1] ?? USECASE_MISTAKE_FALLBACKS.en[1];
+  const tertiary = criteria[2] ?? USECASE_MISTAKE_FALLBACKS[locale]?.[2] ?? USECASE_MISTAKE_FALLBACKS.en[2];
+
+  if (locale === 'fr') {
+    return [
+      `Choisir un moteur pour ${label} sans vérifier ${primary.toLowerCase()}.`,
+      `Multiplier les références alors que ${secondary.toLowerCase()} doit rester prioritaire.`,
+      `Passer directement au modèle premium avant d’avoir validé ${tertiary.toLowerCase()}.`,
+      'Oublier de contrôler le coût avant de générer.',
+      'Comparer seulement les fiches modèles sans ouvrir les exemples réels liés à ce cas d’usage.',
+    ];
+  }
+
+  if (locale === 'es') {
+    return [
+      `Elegir un motor para ${label} sin comprobar ${primary.toLowerCase()}.`,
+      `Añadir demasiadas referencias cuando ${secondary.toLowerCase()} debería ser la prioridad.`,
+      `Pasar directo al modelo premium antes de validar ${tertiary.toLowerCase()}.`,
+      'Olvidar revisar el coste antes de generar.',
+      'Comparar solo fichas de modelos sin abrir ejemplos reales de este caso de uso.',
+    ];
+  }
+
+  return [
+    `Choosing an engine for ${label} without checking ${primary.toLowerCase()}.`,
+    `Adding too many references when ${secondary.toLowerCase()} should stay primary.`,
+    `Going straight to a premium model before validating ${tertiary.toLowerCase()}.`,
+    'Forgetting to check the cost before generation.',
+    'Comparing model pages only without opening real examples for this use case.',
+  ];
 }
 
 function CriteriaCard({

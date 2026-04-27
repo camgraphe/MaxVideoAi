@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
@@ -23,6 +24,7 @@ import { EnginesCatalog, type EngineCatalogCard } from './EnginesCatalog.client'
 import { ComparisonsDirectory } from './ComparisonsDirectory.client';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
+const COMPARE_HERO_IMAGE_URL = '/assets/compare/compare-hero-reference.png';
 
 type HubFaqEntry = {
   question: string;
@@ -692,17 +694,17 @@ export default async function AiVideoEnginesPage() {
   return (
     <div className="container-page max-w-6xl pb-[var(--section-padding-y)] pt-6 sm:pt-8">
       <div className="stack-gap-lg">
-        <section className="relative overflow-hidden py-2 sm:py-4">
-          <div className="pointer-events-none absolute -left-28 top-28 hidden h-56 w-56 opacity-45 lg:block" aria-hidden>
-            <div className="absolute left-8 top-16 h-24 w-24 rotate-45 rounded-[10px] border border-brand/15 bg-brand/5 shadow-[0_28px_80px_rgba(59,130,246,0.16)]" />
-            <div className="absolute left-20 top-2 h-28 w-28 rotate-45 rounded-[10px] border border-brand/12 bg-white/40" />
-            <div className="absolute left-0 top-8 h-20 w-20 rotate-45 rounded-[8px] border border-brand/10 bg-brand/5" />
-          </div>
-          <div className="pointer-events-none absolute -right-28 top-24 hidden h-60 w-60 opacity-40 lg:block" aria-hidden>
-            <div className="absolute right-10 top-20 h-28 w-28 rotate-45 rounded-[10px] border border-emerald-400/18 bg-emerald-400/6 shadow-[0_28px_80px_rgba(16,185,129,0.14)]" />
-            <div className="absolute right-24 top-0 h-24 w-24 rotate-45 rounded-[10px] border border-emerald-400/12 bg-white/35" />
-            <div className="absolute right-0 top-4 h-20 w-20 rotate-45 rounded-[8px] border border-emerald-400/10 bg-emerald-400/6" />
-          </div>
+        <section className="relative overflow-hidden rounded-[8px] border border-hairline bg-bg px-4 py-12 shadow-[0_18px_54px_rgba(33,49,78,0.06)] sm:px-8 sm:py-16">
+          <Image
+            src={COMPARE_HERO_IMAGE_URL}
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            sizes="(min-width: 1280px) 1152px, 100vw"
+            className="pointer-events-none object-cover object-center dark:brightness-[0.72] dark:contrast-110 dark:invert"
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.94)_0%,rgba(255,255,255,0.78)_36%,rgba(247,249,253,0.36)_70%,rgba(247,249,253,0.10)_100%)] dark:bg-[radial-gradient(circle_at_50%_28%,rgba(3,7,18,0.74)_0%,rgba(3,7,18,0.54)_42%,rgba(3,7,18,0.22)_76%,rgba(3,7,18,0.08)_100%)]" />
 
           <div className="relative z-10 mx-auto max-w-5xl">
             <header className="mx-auto max-w-3xl text-center">

@@ -4,6 +4,7 @@ import {
   BadgeDollarSign,
   Atom,
   AudioWaveform,
+  BarChart3,
   Box,
   CircleDollarSign,
   Clapperboard,
@@ -15,6 +16,7 @@ import {
   Mic2,
   RefreshCcw,
   RotateCw,
+  Scale,
   SlidersHorizontal,
   Sparkles,
   SplitSquareHorizontal,
@@ -134,6 +136,7 @@ export type HomeExampleCard = {
   modelHref?: LocalizedLinkHref;
   cloneHref?: LocalizedLinkHref;
   ctaLabel: string;
+  modelCtaLabel?: string;
   cloneLabel?: string;
 };
 
@@ -144,6 +147,8 @@ export type ComparisonCard = {
   badges: string[];
   cta: string;
   href: LocalizedLinkHref;
+  imageSrc?: string;
+  imageAlt?: string;
 };
 
 export type WorkflowStep = {
@@ -157,6 +162,7 @@ export type ToolCard = {
   id: string;
   title: string;
   body: string;
+  shortBody?: string;
   href: LocalizedLinkHref;
   icon: ToolIconKey;
 };
@@ -182,6 +188,19 @@ type SectionCopy = {
   subtitle: string;
   eyebrow?: string;
   cta?: string;
+  primaryCta?: string;
+  secondaryCta?: string;
+  scorecardTitle?: string;
+  scorecardSubtitle?: string;
+  scorecardLeftLabel?: string;
+  scorecardRightLabel?: string;
+  scorecardCriteriaLabel?: string;
+  scorecardRows?: Array<{ label: string; left: number; right: number }>;
+  featureCards?: Array<{ title: string; body: string }>;
+  modelsCta?: string;
+  libraryTitle?: string;
+  libraryBody?: string;
+  providerLabel?: string;
   hubCtaTitle?: string;
   hubCtaBody?: string;
   guideLabel?: string;
@@ -213,6 +232,24 @@ const TOOL_ICONS: Record<ToolIconKey, LucideIcon> = {
   audio: Mic2,
   compare: SlidersHorizontal,
 };
+
+const TOOLBOX_VISUALS: Record<string, string> = {
+  'text-to-video': '/hero/showcase-ltx-2-3-fast.jpg',
+  'image-to-video': '/hero/best-for-image-to-video.webp',
+  'video-to-video': '/hero/wan-26.jpg',
+  'generate-image': '/hero/best-for-cinematic-realism.webp',
+  'character-builder': '/assets/tools/character-builder-workspace.png',
+  'angle-tool': '/assets/tools/angle-workspace.png',
+  upscale: '/hero/luma-dream.jpg',
+  'compare-engines': '/assets/marketing/vs-kling-sora-scorecard.png',
+};
+
+const REFERENCE_WORKFLOW_VISUALS = [
+  '/assets/marketing/reference-workflow-source-image.webp',
+  '/assets/marketing/reference-workflow-character-consistency.webp',
+  '/assets/marketing/reference-workflow-angle-composition.webp',
+  '/assets/marketing/reference-workflow-final-video.webp',
+] as const;
 
 const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-fast', 'wan-2-6'] as const;
 const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
@@ -286,6 +323,33 @@ const BEST_FOR_CARD_VISUALS: Record<string, { imageSrc: string; icon: LucideIcon
   ads: { imageSrc: '/hero/best-for-product-ads.webp', icon: BadgeDollarSign },
 };
 
+const COMPARISON_CARD_MEDIA: Record<string, { imageSrc: string; imageAlt: string }> = {
+  'seedance-upgrade': {
+    imageSrc: '/hero/best-for-cinematic-realism.webp',
+    imageAlt: 'Cinematic AI video comparison preview for Seedance models.',
+  },
+  'ltx-legacy-fast': {
+    imageSrc: '/hero/best-for-fast-drafts-city.webp',
+    imageAlt: 'Fast draft AI video comparison preview for LTX models.',
+  },
+  'ltx-seedance': {
+    imageSrc: '/hero/showcase-seedance-2-0.jpg',
+    imageAlt: 'AI video comparison preview between LTX and Seedance.',
+  },
+  'ltx-veo': {
+    imageSrc: '/hero/best-for-image-to-video.webp',
+    imageAlt: 'AI video comparison preview between LTX and Veo.',
+  },
+  'kling-ltx': {
+    imageSrc: '/hero/showcase-kling-3-pro.jpg',
+    imageAlt: 'Camera motion AI video comparison preview between Kling and LTX.',
+  },
+  'sora-standard-pro': {
+    imageSrc: '/hero/showcase-sora-2.jpg',
+    imageAlt: 'AI video comparison preview for Sora models.',
+  },
+};
+
 function SectionHeader({
   eyebrow,
   title,
@@ -353,7 +417,7 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
       price: engine.price ?? engine.fallbackPrice,
       estimateLabel: copy.quoteLabel,
       estimateValue: copy.quoteValue,
-      estimateMeta: '5s render',
+      estimateMeta: '5s generation',
       examplesHref: engine.examplesHref,
       modelHref: engine.modelHref,
       examplesLabel: engine.examplesLabel,
@@ -610,6 +674,7 @@ export function ShotTypeEngineSelector({
                   <Image
                     src={visual.imageSrc}
                     alt=""
+                    aria-hidden="true"
                     fill
                     sizes="(max-width: 639px) 50vw, (max-width: 1279px) 50vw, 320px"
                     className="object-cover transition duration-500 group-hover:scale-[1.04]"
@@ -676,12 +741,20 @@ export function ShotTypeEngineSelector({
   );
 }
 
-export function RealExamplesPreview({ copy, examples }: { copy: SectionCopy & { viewPrompt?: string }; examples: HomeExampleCard[] }) {
+export function RealExamplesPreview({
+  copy,
+  examples,
+  providers,
+}: {
+  copy: SectionCopy & { viewPrompt?: string };
+  examples: HomeExampleCard[];
+  providers?: ProviderItem[];
+}) {
   return (
     <section className="border-b border-hairline bg-surface section">
       <div className="container-page max-w-[1200px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {examples.map((example) => (
             <article key={example.id} className="overflow-hidden rounded-card border border-hairline bg-bg shadow-card">
               <Link
@@ -692,33 +765,33 @@ export function RealExamplesPreview({ copy, examples }: { copy: SectionCopy & { 
                 data-analytics-cta-location="examples_preview"
                 data-analytics-target-family="examples"
               >
-                <div className="relative aspect-[16/10] overflow-hidden bg-surface-3">
+                <div className="relative aspect-[4/3] overflow-hidden bg-surface-3 sm:aspect-[16/10]">
                   <Image
                     src={example.imageSrc}
                     alt={example.imageAlt}
                     fill
-                    sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 380px"
+                    sizes="(max-width: 767px) 50vw, (max-width: 1023px) 50vw, 380px"
                     className="object-cover transition duration-500 group-hover:scale-[1.03]"
                     loading="lazy"
                   />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/75 to-transparent p-3 text-on-inverse">
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/75 to-transparent p-2 text-on-inverse sm:gap-3 sm:p-3">
                     <div>
-                      <p className="text-sm font-semibold">{example.engine}</p>
-                      <p className="text-xs text-on-media-80">{example.mode} · {example.duration}</p>
+                      <p className="text-xs font-semibold sm:text-sm">{example.engine}</p>
+                      <p className="text-[11px] text-on-media-80 sm:text-xs">{example.mode} · {example.duration}</p>
                     </div>
-                    {example.price ? (
-                      <span className="rounded-pill bg-white px-2.5 py-1 text-xs font-semibold text-[#111827]">{example.price}</span>
+                    {example.price && /[$€£]|\d/.test(example.price) ? (
+                      <span className="rounded-pill bg-white px-2 py-0.5 text-[11px] font-semibold text-[#111827] sm:px-2.5 sm:py-1 sm:text-xs">{example.price}</span>
                     ) : null}
                   </div>
                 </div>
               </Link>
-              <div className="p-4">
-                <h3 className="text-base font-semibold text-text-primary">{example.title}</h3>
-                <p className="mt-2 min-h-[3rem] text-sm leading-6 text-text-secondary">{example.useCase}</p>
-                <div className="mt-4 flex flex-wrap items-center gap-3">
+              <div className="p-3 sm:p-4">
+                <h3 className="text-sm font-semibold leading-5 text-text-primary sm:text-base">{example.title}</h3>
+                <p className="mt-1.5 overflow-hidden text-xs leading-5 text-text-secondary [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:mt-2 sm:text-sm sm:leading-6">{example.useCase}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-hairline pt-3 sm:mt-4 sm:gap-3 sm:pt-4">
                   <Link
                     href={example.href}
-                    className="text-sm font-semibold text-brand hover:text-brandHover"
+                    className="text-xs font-semibold text-brand hover:text-brandHover sm:text-sm"
                     data-analytics-event="example_category_click"
                     data-analytics-cta-name={example.id}
                     data-analytics-cta-location="examples_preview_cta"
@@ -726,11 +799,22 @@ export function RealExamplesPreview({ copy, examples }: { copy: SectionCopy & { 
                   >
                     {example.ctaLabel}
                   </Link>
-                  {example.cloneHref ? (
+                  {example.modelHref ? (
+                    <Link
+                      href={example.modelHref}
+                      className="text-xs font-medium text-text-muted underline underline-offset-4 hover:text-text-primary sm:text-sm"
+                      data-analytics-event="model_card_click"
+                      data-analytics-cta-name={example.id}
+                      data-analytics-cta-location="examples_preview_model"
+                      data-analytics-target-family="models"
+                    >
+                      {example.modelCtaLabel ?? 'Open model'}
+                    </Link>
+                  ) : example.cloneHref ? (
                     <Link
                       href={example.cloneHref}
                       prefetch={false}
-                      className="text-sm font-medium text-text-muted underline underline-offset-4 hover:text-text-primary"
+                      className="text-xs font-medium text-text-muted underline underline-offset-4 hover:text-text-primary sm:text-sm"
                       data-analytics-event="example_clone_click"
                       data-analytics-cta-name={example.id}
                       data-analytics-cta-location="examples_preview_clone"
@@ -744,11 +828,61 @@ export function RealExamplesPreview({ copy, examples }: { copy: SectionCopy & { 
             </article>
           ))}
         </div>
-        {copy.cta ? (
-          <div className="flex justify-center">
-            <ButtonLink href={{ pathname: '/examples' }} linkComponent={Link} variant="outline" size="lg">
-              {copy.cta}
+        <div className="rounded-[24px] border border-hairline bg-bg p-5 shadow-card sm:flex sm:items-center sm:justify-between sm:gap-6">
+          <div>
+            <h3 className="text-lg font-semibold text-text-primary">{copy.libraryTitle ?? 'Want the full library?'}</h3>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-text-secondary">{copy.libraryBody ?? copy.subtitle}</p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3 sm:mt-0 sm:shrink-0">
+            <ButtonLink
+              href={{ pathname: '/examples' }}
+              linkComponent={Link}
+              size="md"
+              data-analytics-event="example_category_click"
+              data-analytics-cta-name="all_examples"
+              data-analytics-cta-location="examples_library_cta"
+              data-analytics-target-family="examples"
+            >
+              {copy.cta ?? 'Browse all examples'}
             </ButtonLink>
+            <ButtonLink
+              href={{ pathname: '/models' }}
+              linkComponent={Link}
+              variant="outline"
+              size="md"
+              data-analytics-event="model_card_click"
+              data-analytics-cta-name="all_models"
+              data-analytics-cta-location="examples_library_cta"
+              data-analytics-target-family="models"
+            >
+              {copy.modelsCta ?? 'View all models'}
+            </ButtonLink>
+          </div>
+        </div>
+        {providers?.length ? (
+          <div className="flex flex-wrap items-center justify-center gap-2 rounded-[20px] border border-hairline bg-white/70 px-4 py-3 text-sm shadow-[0_16px_44px_rgba(15,23,42,0.05)] dark:bg-white/[0.045]">
+            <span className="mr-1 font-semibold text-text-primary">{copy.providerLabel ?? 'Supported engines and providers'}</span>
+            {providers.map((item) =>
+              item.href ? (
+                <Link
+                  key={`${item.provider}-${item.model}`}
+                  href={item.href}
+                  className="rounded-pill border border-hairline bg-surface px-3 py-1 font-medium text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                >
+                  {item.model}
+                </Link>
+              ) : (
+                <span
+                  key={`${item.provider}-${item.model}`}
+                  className="rounded-pill border border-hairline bg-surface px-3 py-1 font-medium text-text-secondary"
+                >
+                  {item.model}
+                </span>
+              )
+            )}
+            <Link href={{ pathname: '/models' }} className="ml-1 text-sm font-semibold text-brand hover:text-brandHover">
+              {copy.modelsCta ?? 'View all models'}
+            </Link>
           </div>
         ) : null}
       </div>
@@ -756,34 +890,140 @@ export function RealExamplesPreview({ copy, examples }: { copy: SectionCopy & { 
   );
 }
 
-export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; comparisons: ComparisonCard[] }) {
+function ComparisonScorecard({ copy }: { copy: SectionCopy }) {
   return (
-    <section className="border-b border-hairline bg-bg section">
-      <div className="container-page max-w-[1200px] stack-gap-lg">
-        <SectionHeader title={copy.title} subtitle={copy.subtitle} />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div
+      className="relative flex min-h-[190px] items-center justify-center overflow-visible rounded-[32px] bg-[radial-gradient(circle_at_50%_44%,rgba(59,130,246,0.12),transparent_62%)] sm:min-h-[260px] lg:min-h-[360px]"
+      role="img"
+      aria-label={`${copy.scorecardTitle ?? 'Scorecard'}: ${copy.scorecardLeftLabel ?? 'Seedance 1.5 Pro'} compared with ${copy.scorecardRightLabel ?? 'Seedance 2.0'}`}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.72),transparent)] dark:bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.08),transparent)]" />
+      <Image
+        src="/assets/marketing/comparison-scorecard-transparent.png"
+        alt="Side-by-side AI video model scorecard comparing Seedance 1.5 Pro and Seedance 2.0 across prompt adherence, visual quality, motion, audio and pricing."
+        width={1280}
+        height={853}
+        sizes="(max-width: 1023px) 92vw, 700px"
+        className="relative z-10 h-auto max-h-[210px] w-full max-w-[640px] object-contain drop-shadow-[0_28px_70px_rgba(15,23,42,0.13)] sm:max-h-[300px] lg:max-h-[390px] lg:max-w-[720px]"
+        loading="lazy"
+      />
+    </div>
+  );
+}
+
+export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; comparisons: ComparisonCard[] }) {
+  const featureCards =
+    copy.featureCards && copy.featureCards.length > 0
+      ? copy.featureCards
+      : [
+          { title: '11 comparison criteria', body: 'Quality, motion, audio, cost and more' },
+          { title: 'Real outputs', body: 'See examples from each model' },
+          { title: 'Live pricing', body: 'Know the cost before you generate' },
+          { title: 'Updated often', body: 'Benchmarks refresh as models evolve' },
+        ];
+
+  return (
+    <section className="relative overflow-hidden border-b border-hairline bg-bg section">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(15,23,42,0.05),transparent_26%),linear-gradient(90deg,transparent,rgba(148,163,184,0.09),transparent)] dark:bg-[radial-gradient(circle_at_10%_10%,rgba(255,255,255,0.05),transparent_28%)]" />
+      <div className="container-page max-w-[1280px] stack-gap-lg">
+        <div className="relative grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+          <div>
+            {copy.eyebrow ? (
+              <span className="inline-flex items-center gap-2 rounded-pill border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold uppercase tracking-micro text-brand shadow-sm">
+                <UIIcon icon={Scale} size={15} strokeWidth={1.9} />
+                {copy.eyebrow}
+              </span>
+            ) : null}
+            <h2 className="mt-5 max-w-[620px] text-4xl font-semibold leading-[1.04] text-text-primary sm:text-5xl">
+              {copy.title}
+            </h2>
+            <p className="mt-5 max-w-[560px] text-base leading-7 text-text-secondary">{copy.subtitle}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <ButtonLink
+                href={{ pathname: '/ai-video-engines' }}
+                linkComponent={Link}
+                size="lg"
+                data-analytics-event="comparison_card_click"
+                data-analytics-cta-name="all_comparisons"
+                data-analytics-cta-location="comparison_intro"
+                data-analytics-target-family="compare"
+              >
+                {copy.primaryCta ?? 'Explore all comparisons'}
+                <span aria-hidden="true">→</span>
+              </ButtonLink>
+              <ButtonLink
+                href={{ pathname: '/models' }}
+                linkComponent={Link}
+                variant="outline"
+                size="lg"
+                data-analytics-event="model_card_click"
+                data-analytics-cta-name="all_models"
+                data-analytics-cta-location="comparison_intro"
+                data-analytics-target-family="models"
+              >
+                {copy.secondaryCta ?? 'View all models'}
+              </ButtonLink>
+            </div>
+          </div>
+          <ComparisonScorecard copy={copy} />
+        </div>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           {comparisons.map((comparison) => (
             <Link
               key={comparison.id}
               href={comparison.href}
-              className="group rounded-card border border-hairline bg-surface p-5 shadow-card transition hover:border-brand/40 hover:shadow-float"
+              className="group flex h-full flex-col rounded-[20px] border border-hairline bg-surface p-2 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float sm:p-2.5"
               data-analytics-event="comparison_card_click"
               data-analytics-cta-name={comparison.id}
               data-analytics-cta-location="comparison_preview"
               data-analytics-target-family="compare"
             >
-              <h3 className="text-xl font-semibold text-text-primary">{comparison.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">{comparison.body}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {comparison.badges.map((badge) => (
-                  <span key={badge} className="rounded-pill border border-brand/20 bg-brand/5 px-2.5 py-1 text-xs font-semibold text-brand">
-                    {badge}
-                  </span>
-                ))}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[124px_minmax(0,1fr)] sm:items-stretch sm:gap-3 lg:grid-cols-[132px_minmax(0,1fr)]">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[14px] bg-surface-3 sm:h-[124px] sm:aspect-auto lg:h-[132px]">
+                  <Image
+                    src={comparison.imageSrc ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageSrc ?? '/hero/showcase-seedance-2-0.jpg'}
+                    alt={comparison.imageAlt ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageAlt ?? `${comparison.title} AI video comparison preview.`}
+                    fill
+                    sizes="(max-width: 639px) 50vw, (max-width: 1023px) 220px, 132px"
+                    className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="flex min-w-0 flex-col">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="overflow-hidden text-sm font-semibold leading-[1.18] text-text-primary [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:text-[17px]">{comparison.title}</h3>
+                    <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border border-hairline bg-bg text-brand sm:inline-flex">
+                      <UIIcon icon={Scale} size={16} strokeWidth={1.9} />
+                    </span>
+                  </div>
+                  <p className="mt-1 overflow-hidden text-xs leading-5 text-text-secondary [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:mt-1.5 sm:text-sm">{comparison.body}</p>
+                  <div className="mt-2 flex min-w-0 flex-nowrap gap-1 overflow-hidden">
+                    {comparison.badges.slice(0, 3).map((badge) => (
+                      <span key={badge} className="min-w-0 truncate rounded-pill border border-hairline bg-bg px-1.5 py-0.5 text-[10px] font-semibold leading-4 text-text-primary last:hidden sm:last:inline-block sm:px-2 sm:text-[11px] sm:leading-5">
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <p className="mt-5 text-sm font-semibold text-brand group-hover:text-brandHover">{comparison.cta}</p>
             </Link>
           ))}
+        </div>
+        <div className="grid gap-3 rounded-[20px] border border-hairline bg-surface/85 p-4 shadow-card sm:grid-cols-2 lg:grid-cols-4">
+          {featureCards.map((feature, index) => {
+            const icons = [BarChart3, Video, CircleDollarSign, RefreshCcw] as const;
+            return (
+              <div key={feature.title} className="flex items-start gap-3">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] border border-hairline bg-bg text-text-primary">
+                  <UIIcon icon={icons[index] ?? BarChart3} size={18} strokeWidth={1.8} />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-text-primary">{feature.title}</span>
+                  <span className="mt-0.5 block text-xs leading-5 text-text-secondary">{feature.body}</span>
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -795,24 +1035,40 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
     <section className="border-b border-hairline bg-surface section">
       <div className="container-page max-w-[1200px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
-        <div className="grid gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {steps.map((step, index) => (
             <Link
               key={step.title}
               href={step.href}
-              className="group rounded-card border border-hairline bg-bg p-5 shadow-card transition hover:border-brand/40"
+              className="group relative flex min-h-[178px] flex-col overflow-hidden rounded-card border border-hairline bg-bg p-3 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:min-h-[218px] sm:p-5"
               data-analytics-event="tool_card_click"
               data-analytics-cta-name={step.toolLabel}
               data-analytics-cta-location="reference_workflow"
               data-analytics-tool-name={step.toolLabel}
               data-analytics-tool-surface="public"
             >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-card border border-brand/20 bg-brand/10 text-sm font-semibold text-brand">
+              <Image
+                src={REFERENCE_WORKFLOW_VISUALS[index] ?? REFERENCE_WORKFLOW_VISUALS[0]}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 300px"
+                className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                loading="lazy"
+              />
+              <span className="absolute inset-0 bg-gradient-to-b from-white/92 via-white/78 to-white/55 dark:from-surface/90 dark:via-surface/76 dark:to-surface/56" />
+              <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/60 to-transparent dark:from-black/24" />
+              <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-card border border-hairline bg-white/78 text-xs font-semibold text-text-primary shadow-sm backdrop-blur dark:bg-white/[0.08] sm:h-9 sm:w-9 sm:text-sm">
                 {index + 1}
               </span>
-              <h3 className="mt-4 text-lg font-semibold text-text-primary">{step.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">{step.body}</p>
-              <p className="mt-5 text-sm font-semibold text-brand group-hover:text-brandHover">{step.toolLabel}</p>
+              <div className="relative z-10 mt-auto">
+                <h3 className="text-sm font-semibold leading-5 text-text-primary sm:text-lg sm:leading-6">{step.title}</h3>
+                <p className="mt-1.5 overflow-hidden text-xs leading-5 text-text-secondary [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:mt-2 sm:text-sm sm:leading-6 sm:[-webkit-line-clamp:3]">{step.body}</p>
+                <p className="mt-3 text-xs font-semibold text-text-primary group-hover:text-brand sm:mt-5 sm:text-sm">
+                  {step.toolLabel}
+                  <span aria-hidden="true" className="ml-2 transition group-hover:translate-x-1">→</span>
+                </p>
+              </div>
             </Link>
           ))}
         </div>
@@ -823,28 +1079,69 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
 
 export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: ToolCard[] }) {
   return (
-    <section className="border-b border-hairline bg-bg section">
-      <div className="container-page max-w-[1200px] stack-gap-lg">
+    <section className="relative overflow-hidden border-b border-hairline bg-bg section">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(15,23,42,0.055),transparent_34%),linear-gradient(180deg,transparent,rgba(148,163,184,0.08))] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06),transparent_34%)]" />
+      <div className="container-page relative max-w-[1200px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {tools.map((tool) => (
             <Link
               key={tool.id}
               href={tool.href}
-              className="group rounded-card border border-hairline bg-surface p-4 shadow-card transition hover:border-brand/40"
+              className="group relative min-h-[158px] overflow-hidden rounded-card border border-hairline bg-surface p-3 pb-11 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[188px] sm:p-4 sm:pb-12"
               data-analytics-event="tool_card_click"
               data-analytics-cta-name={tool.id}
               data-analytics-cta-location="toolbox"
               data-analytics-tool-name={tool.id}
               data-analytics-tool-surface="public"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-card border border-brand/20 bg-brand/10 text-brand">
-                <UIIcon icon={TOOL_ICONS[tool.icon]} size={20} />
+              <Image
+                src={TOOLBOX_VISUALS[tool.id] ?? '/hero/showcase-seedance-2-0.jpg'}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="(max-width: 767px) 50vw, (max-width: 1199px) 25vw, 280px"
+                className="object-cover opacity-[0.18] transition duration-500 group-hover:scale-[1.04] group-hover:opacity-[0.25] dark:opacity-[0.23] dark:group-hover:opacity-[0.32]"
+                loading="lazy"
+              />
+              <span className="absolute inset-0 bg-gradient-to-b from-bg via-bg/88 to-bg/45 dark:from-surface dark:via-surface/90 dark:to-surface/55" />
+              <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/10 to-transparent dark:from-black/30" />
+              <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-[11px] border border-hairline bg-white/75 text-text-primary shadow-sm backdrop-blur dark:bg-white/[0.08] sm:h-9 sm:w-9">
+                <UIIcon icon={TOOL_ICONS[tool.icon]} size={18} strokeWidth={1.9} />
               </span>
-              <h3 className="mt-4 text-base font-semibold text-text-primary">{tool.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">{tool.body}</p>
+              <h3 className="relative z-10 mt-4 pr-6 text-sm font-semibold leading-5 text-text-primary sm:text-base">{tool.title}</h3>
+              <p className="relative z-10 mt-1.5 pr-6 text-xs leading-5 text-text-secondary sm:hidden">{tool.shortBody ?? tool.body}</p>
+              <p className="relative z-10 mt-2 hidden pr-7 text-sm leading-6 text-text-secondary sm:block">{tool.body}</p>
+              <span className="absolute bottom-3 right-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-white/82 text-brand shadow-sm backdrop-blur transition group-hover:translate-x-0.5 group-hover:border-brand/30 dark:bg-white/[0.08]">
+                <span aria-hidden="true">→</span>
+              </span>
             </Link>
           ))}
+        </div>
+        <div className="flex flex-wrap justify-center gap-3">
+          <ButtonLink
+            href="/app"
+            linkComponent={Link}
+            size="lg"
+            data-analytics-event="tool_card_click"
+            data-analytics-cta-name="open_workspace"
+            data-analytics-cta-location="toolbox_cta"
+            data-analytics-target-family="workspace"
+          >
+            {copy.primaryCta ?? 'Open workspace'}
+          </ButtonLink>
+          <ButtonLink
+            href={{ pathname: '/tools' }}
+            linkComponent={Link}
+            variant="outline"
+            size="lg"
+            data-analytics-event="tool_card_click"
+            data-analytics-cta-name="browse_tools"
+            data-analytics-cta-location="toolbox_cta"
+            data-analytics-target-family="tools"
+          >
+            {copy.secondaryCta ?? 'Browse all tools'}
+          </ButtonLink>
         </div>
       </div>
     </section>

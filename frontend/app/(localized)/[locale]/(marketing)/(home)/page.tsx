@@ -21,7 +21,6 @@ import {
   ComparisonPreview,
   HomeFaq,
   HomeHero,
-  ProviderEngineStrip,
   RealExamplesPreview,
   ReferenceWorkflow,
   SeoKeywordBlock,
@@ -61,7 +60,8 @@ type FallbackExampleCard = {
   cloneCta?: string;
   imageSrc: string;
   imageAlt: string;
-  examplesSlug: string;
+  examplesSlug?: HomepageExampleFamily;
+  modelCta?: string;
 };
 
 type ComparisonConfig = {
@@ -70,6 +70,8 @@ type ComparisonConfig = {
   title: string;
   body: string;
   badges: string[];
+  imageSrc?: string;
+  imageAlt?: string;
 };
 
 type BestForPageConfig = {
@@ -117,6 +119,10 @@ type RedesignContent = {
     title: string;
     subtitle: string;
     cta: string;
+    modelsCta?: string;
+    libraryTitle?: string;
+    libraryBody?: string;
+    providerLabel?: string;
     viewPrompt: string;
     fallbackCards: FallbackExampleCard[];
   };
@@ -134,6 +140,8 @@ type RedesignContent = {
   toolbox: {
     title: string;
     subtitle: string;
+    primaryCta?: string;
+    secondaryCta?: string;
     cards: ToolCard[];
   };
   pricingTrust: {
@@ -212,7 +220,7 @@ const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = {
   Pika: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } },
 };
 
-const HOMEPAGE_EXAMPLE_FAMILIES = ['ltx', 'kling', 'seedance', 'veo', 'sora', 'wan'] as const;
+const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'wan'] as const;
 type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
 
 type HeroEngineId = 'seedance-2-0' | 'kling-3-pro' | 'veo-3-1-lite' | 'ltx-2-3-fast' | 'wan-2-6';
@@ -242,11 +250,10 @@ const HERO_ENGINE_TARGETS: Record<
 };
 
 const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
-  ltx: 'ltx-2-3-fast',
-  kling: 'kling-3-pro',
   seedance: 'seedance-2-0',
+  kling: 'kling-3-pro',
+  ltx: 'ltx-2-3-fast',
   veo: 'veo-3-1',
-  sora: 'sora-2-pro',
   wan: 'wan-2-6',
 };
 
@@ -332,7 +339,7 @@ function buildProofStats(content: RedesignContent, stats: EngineStats): ProofSta
   return content.proof.items.map((item) => ({
     id: item.id,
     value: item.id === 'pricing' ? item.label : resolveProofValue(item.id, stats, content.proof),
-    label: item.id === 'pricing' ? content.proof.pricingSubLabel ?? 'Before every render' : item.label,
+    label: item.id === 'pricing' ? content.proof.pricingSubLabel ?? 'Before you generate' : item.label,
     href: hrefByProofId[item.id],
   }));
 }
@@ -547,7 +554,7 @@ function buildProgrammedHeroItems(
         price: startingPrice,
         estimateLabel: content.hero.mockup.quoteLabel,
         estimateValue: finalQuote ?? startingPrice,
-        estimateMeta: typeof video.durationSec === 'number' ? `${video.durationSec}s render` : `${duration} render`,
+        estimateMeta: typeof video.durationSec === 'number' ? `${video.durationSec}s generation` : `${duration} generation`,
         examplesHref: linkMeta.examplesHref,
         modelHref: linkMeta.modelHref,
         examplesLabel: linkMeta.examplesLabel,
@@ -572,7 +579,6 @@ function sortExamplesByPriority(videos: GalleryVideo[]) {
 
 async function loadHomepageExamples(locale: AppLocale, content: RedesignContent): Promise<HomeExampleCard[]> {
   const videos = await listExamples('playlist', 40).catch(() => [] as GalleryVideo[]);
-  const fallbackByFamily = new Map(content.examples.fallbackCards.map((card) => [card.examplesSlug, card]));
   const realByFamily = new Map<HomepageExampleFamily, GalleryVideo>();
 
   sortExamplesByPriority(videos).forEach((video) => {
@@ -586,35 +592,34 @@ async function loadHomepageExamples(locale: AppLocale, content: RedesignContent)
     }
   });
 
-  return HOMEPAGE_EXAMPLE_FAMILIES.flatMap<HomeExampleCard>((family) => {
-    const fallback = fallbackByFamily.get(family);
-    const video = realByFamily.get(family);
-    if (!fallback && !video) return [];
-
-    const engineId = video ? normalizeEngineId(video.engineId) ?? video.engineId : fallback!.engineId;
-    const modelSlug = fallback?.modelSlug ?? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family];
-    const mode = video ? resolveModeLabel(extractMode(video), content) : fallback!.mode;
-    const duration = video?.durationSec ? `${video.durationSec}s` : fallback!.duration;
-    const price = video ? formatCurrency(locale, video.currency, video.finalPriceCents) ?? fallback?.price ?? null : fallback?.price ?? null;
+  return content.examples.fallbackCards.flatMap<HomeExampleCard>((fallback) => {
+    const family = fallback.examplesSlug;
+    const video = family ? realByFamily.get(family) : null;
+    const engineId = video ? normalizeEngineId(video.engineId) ?? video.engineId : fallback.engineId;
+    const modelSlug = fallback.modelSlug ?? (family ? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family] : fallback.engineId);
+    const href = family
+      ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref)
+      : ({ pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref);
 
     return [
       {
-        id: `examples-${family}`,
-        title: fallback?.title ?? `${video!.engineLabel} examples`,
+        id: fallback.id,
+        title: fallback.title,
         engineId,
-        engine: video?.engineLabel ?? fallback!.engine,
-        mode,
-        duration,
-        price,
-        useCase: fallback?.useCase ?? 'Real AI video examples grouped by engine family.',
-        imageSrc: video?.thumbUrl ?? fallback!.imageSrc,
+        engine: fallback.engine,
+        mode: fallback.mode,
+        duration: fallback.duration,
+        price: fallback.price ?? null,
+        useCase: fallback.useCase,
+        imageSrc: video?.thumbUrl ?? fallback.imageSrc,
         videoSrc: null,
-        imageAlt: fallback?.imageAlt ?? `${video!.engineLabel} AI video example generated in MaxVideoAI.`,
-        href: { pathname: '/examples/[model]', params: { model: family } },
-        modelHref: { pathname: '/models/[slug]', params: { slug: modelSlug } },
-        cloneHref: video ? `/app?from=${encodeURIComponent(video.id)}` : undefined,
-        ctaLabel: fallback?.cta ?? 'Open examples',
-        cloneLabel: fallback?.cloneCta ?? content.examples.viewPrompt,
+        imageAlt: fallback.imageAlt,
+        href,
+        modelHref: family ? ({ pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref) : undefined,
+        cloneHref: undefined,
+        ctaLabel: fallback.cta,
+        modelCtaLabel: fallback.modelCta,
+        cloneLabel: fallback.cloneCta ?? content.examples.viewPrompt,
       },
     ];
   });
@@ -630,6 +635,8 @@ function buildComparisonCards(content: RedesignContent): ComparisonCard[] {
       badges: card.badges,
       cta: content.comparisons.cta,
       href: { pathname: '/ai-video-engines/[slug]', params: { slug: card.slug } },
+      imageSrc: card.imageSrc,
+      imageAlt: card.imageAlt,
     }));
 }
 
@@ -672,8 +679,8 @@ function buildSoftwareSchema(content: RedesignContent) {
     },
     featureList: [
       'Pay-as-you-go multi-engine AI video generation workspace',
-      'Compare AI video models before rendering',
-      'Live price before render',
+      'Compare AI video models before generating',
+      'Live price before you generate',
       'Text-to-video, image-to-video, video-to-video and reference workflows',
       'Auto-refunds on failed generation jobs',
     ],
@@ -745,12 +752,11 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     <div className="home-monochrome">
       <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} programmedHeroItems={programmedHeroItems} />
       <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} />
-      <RealExamplesPreview copy={content.examples} examples={examples} />
+      <RealExamplesPreview copy={content.examples} examples={examples} providers={providers} />
       <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
       <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
       <AiVideoToolbox copy={content.toolbox} tools={tools} />
       <TransparentPricingBlock copy={content.pricingTrust} cards={content.pricingTrust.cards} />
-      <ProviderEngineStrip copy={content.providers} providers={providers} />
       <SeoKeywordBlock text={content.seoKeywordBlock} />
       <HomeFaq copy={content.faq} items={content.faq.items} />
       <Script id="home-webapp-jsonld" type="application/ld+json">
