@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 import { listFalEngines } from '@/config/falEngines';
+import compareConfig from '@/config/compare-config.json';
+import engineCatalog from '@/config/engine-catalog.json';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
@@ -70,6 +72,28 @@ type ComparisonConfig = {
   badges: string[];
 };
 
+type BestForPageConfig = {
+  slug: string;
+  title: string;
+  description?: string;
+  tier: number;
+  topPicks?: string[];
+};
+
+type EngineCatalogEntry = {
+  modelSlug: string;
+  marketingName: string;
+  provider?: string;
+  brandId?: string;
+};
+
+type BestForCardCopy = {
+  slug: string;
+  title: string;
+  body: string;
+  cta: string;
+};
+
 type ProviderConfig = ProviderItem & {
   providerKey: string;
 };
@@ -80,7 +104,14 @@ type RedesignContent = {
   shotTypes: {
     title: string;
     subtitle: string;
-    cards: ShotTypeCard[];
+    eyebrow?: string;
+    cta?: string;
+    hubCtaTitle?: string;
+    hubCtaBody?: string;
+    guideLabel?: string;
+    topPicksLabel?: string;
+    moreGuidesTitle?: string;
+    cards: BestForCardCopy[];
   };
   examples: {
     title: string;
@@ -151,6 +182,18 @@ const EXAMPLE_ENGINE_PRIORITY = [
   'ltx-2-3-pro',
   'kling-3-standard',
 ] as const;
+
+const BEST_FOR_MAIN_SLUGS = [
+  'cinematic-realism',
+  'image-to-video',
+  'fast-drafts',
+  'ads',
+] as const;
+
+const BEST_FOR_PAGES = compareConfig.bestForPages as BestForPageConfig[];
+const BEST_FOR_BY_SLUG = new Map(BEST_FOR_PAGES.map((entry) => [entry.slug, entry]));
+const ENGINE_CATALOG = engineCatalog as EngineCatalogEntry[];
+const ENGINE_BY_MODEL_SLUG = new Map(ENGINE_CATALOG.map((entry) => [entry.modelSlug, entry]));
 
 const HOME_ROUTE_MAP = {
   app: '/app',
@@ -326,6 +369,37 @@ function buildHeroContent(locale: AppLocale, content: RedesignContent): HomeHero
       }),
     },
   };
+}
+
+function buildBestForGuideCards(content: RedesignContent, slugs: readonly string[]): ShotTypeCard[] {
+  const copyBySlug = new Map(content.shotTypes.cards.map((card) => [card.slug, card]));
+
+  return slugs.flatMap((slug) => {
+    const entry = BEST_FOR_BY_SLUG.get(slug);
+    const localized = copyBySlug.get(slug);
+    if (!entry || !localized) return [];
+
+    return [
+      {
+        id: slug,
+        slug,
+        title: localized.title,
+        body: localized.body || entry.description || '',
+        cta: localized.cta,
+        href: { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: slug } },
+        tier: entry.tier,
+        topPicks: (entry.topPicks ?? []).slice(0, 3).map((modelSlug) => {
+          const engine = ENGINE_BY_MODEL_SLUG.get(modelSlug);
+          return {
+            slug: modelSlug,
+            label: engine?.marketingName ?? modelSlug,
+            brandId: engine?.brandId,
+            provider: engine?.provider,
+          };
+        }),
+      },
+    ];
+  });
 }
 
 function formatCurrency(locale: AppLocale, currency: string | null | undefined, cents: number | null | undefined) {
@@ -659,6 +733,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     loadProgrammedHomepageHeroSlots(),
   ]);
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
+  const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
   const comparisons = buildComparisonCards(content);
   const providers = filterProviderItems(content);
   const tools = filterToolCards(content, stats);
@@ -669,7 +744,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   return (
     <div className="home-monochrome">
       <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} programmedHeroItems={programmedHeroItems} />
-      <ShotTypeEngineSelector copy={content.shotTypes} cards={content.shotTypes.cards} />
+      <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} />
       <RealExamplesPreview copy={content.examples} examples={examples} />
       <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
       <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />

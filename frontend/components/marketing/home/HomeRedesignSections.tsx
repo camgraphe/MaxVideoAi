@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
+import { EngineIcon } from '@/components/ui/EngineIcon';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { HeroVideoShowcase, type HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
 
@@ -99,13 +100,22 @@ export type ProofStat = {
   href?: LocalizedLinkHref;
 };
 
+export type BestForTopPick = {
+  slug: string;
+  label: string;
+  brandId?: string;
+  provider?: string;
+};
+
 export type ShotTypeCard = {
   id: string;
+  slug: string;
   title: string;
   body: string;
-  engines: string[];
   cta: string;
   href: LocalizedLinkHref;
+  tier: number;
+  topPicks: BestForTopPick[];
 };
 
 export type HomeExampleCard = {
@@ -170,7 +180,13 @@ export type FaqItem = {
 type SectionCopy = {
   title: string;
   subtitle: string;
+  eyebrow?: string;
   cta?: string;
+  hubCtaTitle?: string;
+  hubCtaBody?: string;
+  guideLabel?: string;
+  topPicksLabel?: string;
+  moreGuidesTitle?: string;
 };
 
 type ToolIconKey =
@@ -263,13 +279,11 @@ const HERO_ENGINE_MEDIA: Record<string, { posterSrc: string; videoSrc?: string; 
   },
 };
 
-const SHOT_TYPE_VISUALS: Record<string, { imageSrc: string; price: string }> = {
-  'fast-drafts': { imageSrc: '/hero/luma-dream.jpg', price: 'from $0.07/s' },
-  'cinematic-realism': { imageSrc: '/hero/kling-3-4k-demo.jpg', price: 'from $0.11/s' },
-  'character-scenes': { imageSrc: '/hero/sora2.jpg', price: 'from $0.13/s' },
-  'product-ads': { imageSrc: '/hero/veo-3-1-hero.jpg', price: 'from $0.17/s' },
-  'camera-motion': { imageSrc: '/hero/kling-3-4k-demo.jpg', price: 'from $0.11/s' },
-  'audio-native': { imageSrc: '/hero/seedance-2-0.jpg', price: 'from $0.18/s' },
+const BEST_FOR_CARD_VISUALS: Record<string, { imageSrc: string; icon: LucideIcon }> = {
+  'cinematic-realism': { imageSrc: '/hero/best-for-cinematic-realism.webp', icon: Clapperboard },
+  'image-to-video': { imageSrc: '/hero/best-for-image-to-video.webp', icon: ImageIcon },
+  'fast-drafts': { imageSrc: '/hero/best-for-fast-drafts-city.webp', icon: Sparkles },
+  ads: { imageSrc: '/hero/best-for-product-ads.webp', icon: BadgeDollarSign },
 };
 
 function SectionHeader({
@@ -370,6 +384,32 @@ function renderHeroTitle(title: string) {
   );
 }
 
+function renderBestForTitle(title: string) {
+  const highlightTargets = ['use case.', 'l’usage.', 'cas d’usage.', 'caso de uso.'];
+  const target = highlightTargets.find((candidate) => title.toLowerCase().endsWith(candidate));
+
+  if (!target) return title;
+
+  const start = title.length - target.length;
+  return (
+    <>
+      {title.slice(0, start)}
+      <span className="text-brand">{title.slice(start)}</span>
+    </>
+  );
+}
+
+function formatBestForPickLabel(label: string) {
+  return label
+    .replace(/^Seedance 2\.0 Fast$/i, 'Seedance Fast')
+    .replace(/^Seedance 2\.0$/i, 'Seedance')
+    .replace(/^Kling 3 (Pro|Standard)$/i, 'Kling')
+    .replace(/^Veo 3\.1 Fast$/i, 'Veo Fast')
+    .replace(/^Veo 3\.1$/i, 'Veo')
+    .replace(/^LTX 2\.3 Fast$/i, 'LTX')
+    .replace(/^LTX 2\.3 Pro$/i, 'LTX');
+}
+
 export function HomeHero({
   copy,
   proofStats,
@@ -399,10 +439,10 @@ export function HomeHero({
       {copy.valueCards.map((card) => (
         <div
           key={card.title}
-          className="min-h-[112px] rounded-[18px] border border-black/[0.07] bg-white/68 p-4 text-left backdrop-blur transition hover:border-black/[0.12] hover:bg-white/82 dark:border-white/10 dark:bg-white/[0.055] dark:hover:border-white/15 dark:hover:bg-white/[0.075]"
+          className="min-h-[86px] rounded-[14px] border border-black/[0.07] bg-white/68 p-3 text-left backdrop-blur transition hover:border-black/[0.12] hover:bg-white/82 dark:border-white/10 dark:bg-white/[0.055] dark:hover:border-white/15 dark:hover:bg-white/[0.075] sm:min-h-[112px] sm:rounded-[18px] sm:p-4"
         >
-          <span className="block text-[15px] font-semibold leading-5 text-text-primary">{card.title}</span>
-          <span className="mt-2 block max-w-[18rem] text-xs leading-5 text-text-secondary">{card.body}</span>
+          <span className="block text-[13px] font-semibold leading-4 text-text-primary sm:text-[15px] sm:leading-5">{card.title}</span>
+          <span className="mt-1.5 block max-w-[18rem] text-[11px] leading-4 text-text-secondary line-clamp-2 sm:mt-2 sm:text-xs sm:leading-5">{card.body}</span>
         </div>
       ))}
     </>
@@ -467,24 +507,24 @@ export function HomeHero({
         </div>
         <div className="min-w-0 xl:col-start-2 xl:row-span-2 xl:row-start-2 xl:self-center">
           <HeroVideoShowcase
-          items={videoItems}
-          playLabel={copy.mockup.playLabel}
-          pauseLabel={copy.mockup.pauseLabel}
-        />
+            items={videoItems}
+            playLabel={copy.mockup.playLabel}
+            pauseLabel={copy.mockup.pauseLabel}
+          />
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:col-start-1 xl:row-start-3">{valueCards}</div>
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:col-start-1 xl:row-start-3">{valueCards}</div>
       </div>
       <div className="container-page relative max-w-[1460px] pb-10">
-        <div className="grid gap-px overflow-hidden rounded-[18px] border border-hairline bg-hairline shadow-card backdrop-blur sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+        <div className="grid grid-cols-4 gap-px overflow-hidden rounded-[16px] border border-hairline bg-hairline shadow-card backdrop-blur sm:grid-cols-4 lg:grid-cols-8">
           {proofStats.map((stat) => {
             const content = (
               <>
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center text-text-primary">
-                <UIIcon icon={PROOF_ICONS[stat.id] ?? Sparkles} size={25} strokeWidth={1.75} />
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-text-primary sm:h-8 sm:w-8">
+                <UIIcon icon={PROOF_ICONS[stat.id] ?? Sparkles} size={18} strokeWidth={1.75} className="sm:h-6 sm:w-6" />
               </span>
-              <span>
-                <span className="block text-base font-semibold leading-none text-text-primary">{stat.value}</span>
-                <span className="mt-1 block text-xs font-medium leading-4 text-text-secondary">{stat.label}</span>
+              <span className="min-w-0 text-center sm:text-left">
+                <span className="block text-sm font-semibold leading-none text-text-primary sm:text-base">{stat.value}</span>
+                <span className="mt-1 block text-[10px] font-medium leading-3 text-text-secondary sm:text-xs sm:leading-4">{stat.label}</span>
               </span>
               </>
             );
@@ -493,12 +533,12 @@ export function HomeHero({
               <Link
                 key={stat.label}
                 href={stat.href}
-                className="flex items-center justify-center gap-3 bg-white/92 px-3 py-4 transition hover:bg-bg focus:outline-none focus:ring-2 focus:ring-brand/40 dark:bg-surface/72"
+                className="flex min-h-[72px] flex-col items-center justify-center gap-1.5 bg-white/92 px-1.5 py-2 transition hover:bg-bg focus:outline-none focus:ring-2 focus:ring-brand/40 dark:bg-surface/72 sm:min-h-0 sm:flex-row sm:gap-2.5 sm:px-3 sm:py-4"
               >
                 {content}
               </Link>
             ) : (
-              <div key={stat.label} className="flex items-center justify-center gap-3 bg-white/92 px-3 py-4 dark:bg-surface/72">
+              <div key={stat.label} className="flex min-h-[72px] flex-col items-center justify-center gap-1.5 bg-white/92 px-1.5 py-2 dark:bg-surface/72 sm:min-h-0 sm:flex-row sm:gap-2.5 sm:px-3 sm:py-4">
                 {content}
               </div>
             );
@@ -524,58 +564,113 @@ export function ProofBar({ stats }: { stats: ProofStat[] }) {
   );
 }
 
-export function ShotTypeEngineSelector({ copy, cards }: { copy: SectionCopy; cards: ShotTypeCard[] }) {
+export function ShotTypeEngineSelector({
+  copy,
+  cards,
+}: {
+  copy: SectionCopy;
+  cards: ShotTypeCard[];
+}) {
+  const guideLabel = copy.guideLabel ?? 'Best-for guide';
+  const topPicksLabel = copy.topPicksLabel ?? 'Top picks';
+
   return (
-    <section className="border-b border-hairline bg-bg py-16 sm:py-20">
-      <div className="container-page max-w-[1400px] stack-gap-lg">
-        <SectionHeader title={copy.title} subtitle={copy.subtitle} />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {cards.map((card) => (
-            <Link
-              key={card.id}
-              href={card.href}
-              className="group relative min-h-[290px] overflow-hidden rounded-[18px] border border-white/12 bg-[#070b14] p-4 shadow-[0_24px_54px_-34px_rgba(15,23,42,0.76)] transition hover:-translate-y-1 hover:shadow-[0_30px_70px_-36px_rgba(3,7,18,0.55)]"
-              data-analytics-event="shot_type_card_click"
-              data-analytics-cta-name={card.id}
-              data-analytics-cta-location="shot_type_selector"
-              data-analytics-target-family="models"
-            >
-              <Image
-                src={SHOT_TYPE_VISUALS[card.id]?.imageSrc ?? '/assets/placeholders/preview-16x9.png'}
-                alt=""
-                fill
-                sizes="(max-width: 767px) 100vw, (max-width: 1279px) 33vw, 210px"
-                className="object-cover transition duration-500 group-hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,11,20,0.08)_0%,rgba(7,11,20,0.45)_44%,rgba(7,11,20,0.94)_100%)]" />
-              <div className="relative z-10 flex h-full min-h-[258px] flex-col">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="rounded-full bg-black/48 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-                    {SHOT_TYPE_VISUALS[card.id]?.price ?? 'Live price'}
-                  </span>
-                  <span className="rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-semibold text-white/80 backdrop-blur">
-                    {card.engines[0]}
+    <section className="relative overflow-hidden border-b border-hairline bg-bg py-12 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(17,24,39,0.08),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0)_48%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(148,163,184,0.12),transparent_34%),linear-gradient(180deg,rgba(8,13,26,0.92),rgba(8,13,26,0)_48%)]" />
+      <div className="container-page relative max-w-[1360px] stack-gap-lg">
+        <div className="mx-auto max-w-4xl text-center">
+          {copy.eyebrow ? (
+            <span className="inline-flex rounded-full bg-brand/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand">
+              {copy.eyebrow}
+            </span>
+          ) : null}
+          <h2 className="mt-4 text-2xl font-semibold leading-tight text-text-primary sm:text-4xl md:text-5xl">
+            {renderBestForTitle(copy.title)}
+          </h2>
+          <p className="mx-auto mt-3 max-w-3xl text-sm leading-6 text-text-secondary sm:mt-4 sm:text-base sm:leading-7">{copy.subtitle}</p>
+        </div>
+        <div className="grid grid-cols-2 items-stretch gap-3 sm:gap-5 xl:grid-cols-4">
+          {cards.map((card) => {
+            const visual = BEST_FOR_CARD_VISUALS[card.slug] ?? {
+              imageSrc: '/assets/placeholders/preview-16x9.png',
+              icon: Sparkles,
+            };
+
+            return (
+              <Link
+                key={card.id}
+                href={card.href}
+                className="group flex h-full min-h-0 flex-col overflow-hidden rounded-[16px] border border-hairline bg-white/88 shadow-[0_12px_32px_rgba(15,23,42,0.055),0_3px_10px_rgba(15,23,42,0.03)] transition hover:-translate-y-1 hover:border-text-muted/35 hover:shadow-[0_26px_62px_rgba(15,23,42,0.11)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-white/[0.055] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)] dark:hover:border-white/20 sm:rounded-[20px]"
+                data-analytics-event="shot_type_card_click"
+                data-analytics-cta-name={card.id}
+                data-analytics-cta-location="shot_type_selector"
+                data-analytics-target-family="best-for"
+              >
+                <div className="relative aspect-[16/9.8] overflow-hidden bg-surface-3 sm:aspect-[16/8.2]">
+                  <Image
+                    src={visual.imageSrc}
+                    alt=""
+                    fill
+                    sizes="(max-width: 639px) 50vw, (max-width: 1279px) 50vw, 320px"
+                    className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/32 via-black/5 to-black/12" />
+                  <span className="absolute left-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/18 bg-[#111827]/90 text-white shadow-[0_12px_28px_rgba(0,0,0,0.28)] backdrop-blur sm:left-4 sm:top-4 sm:h-11 sm:w-11">
+                    <UIIcon icon={visual.icon} size={18} strokeWidth={1.75} className="sm:h-[22px] sm:w-[22px]" />
                   </span>
                 </div>
-                <div className="mt-auto">
-                  <h3 className="text-lg font-semibold leading-6 text-white">{card.title}</h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                {card.engines.map((engine) => (
-                  <span key={engine} className="rounded-pill border border-white/12 bg-white/12 px-2.5 py-1 text-[11px] font-semibold text-white/85">
-                    {engine}
+                <div className="flex flex-1 flex-col p-3 sm:p-4">
+                  <span className="inline-flex w-fit rounded-full bg-brand/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-brand sm:px-2.5 sm:py-1 sm:text-[10px] sm:tracking-[0.08em]">
+                    {guideLabel}
                   </span>
-                ))}
+                  <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-tight text-text-primary sm:mt-3 sm:text-lg">{card.title}</h3>
+                  <p className="mt-1.5 line-clamp-2 text-xs leading-4 text-text-secondary sm:mt-2 sm:text-sm sm:leading-5">{card.body}</p>
+                  <div className="mt-3 border-t border-hairline pt-2 sm:mt-4 sm:pt-3">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-text-muted sm:text-[10px] sm:tracking-[0.08em]">{topPicksLabel}</p>
+                    <div className="mt-1.5 flex flex-wrap gap-1 sm:mt-2 sm:gap-1.5">
+                      {card.topPicks.slice(0, 3).map((pick) => (
+                        <span
+                          key={pick.slug}
+                          className="inline-flex max-w-full items-center gap-1 rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-text-primary sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[11px]"
+                        >
+                          <EngineIcon engine={{ id: pick.slug, label: pick.label, brandId: pick.brandId }} size={16} rounded="full" />
+                          <span className="truncate">{formatBestForPickLabel(pick.label)}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-white/80">{card.body}</p>
-                  <p className="mt-5 text-sm font-semibold text-white/84 group-hover:text-white">
+                  <p className="mt-auto pt-3 text-xs font-semibold text-brand transition group-hover:text-brandHover sm:pt-4 sm:text-sm">
                     {card.cta} <span aria-hidden="true">→</span>
                   </p>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
+        {copy.cta ? (
+          <Link
+            href={{ pathname: '/ai-video-engines/best-for' }}
+            className="group mx-auto flex max-w-[620px] items-center gap-4 rounded-[22px] border border-hairline bg-white/82 p-4 text-left shadow-[0_18px_50px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-text-muted/35 hover:shadow-[0_24px_64px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-white/[0.055]"
+            data-analytics-event="shot_type_card_click"
+            data-analytics-cta-name="best-for-hub"
+            data-analytics-cta-location="shot_type_hub_cta"
+            data-analytics-target-family="best-for"
+          >
+            <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-brand/10 text-brand">
+              <UIIcon icon={Layers3} size={24} strokeWidth={1.8} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-semibold text-text-primary">{copy.hubCtaTitle ?? copy.cta}</span>
+              {copy.hubCtaBody ? (
+                <span className="mt-1 block text-sm leading-5 text-text-secondary">{copy.hubCtaBody}</span>
+              ) : null}
+            </span>
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-2 text-text-primary transition group-hover:translate-x-1 group-hover:text-brand">
+              <span aria-hidden="true">→</span>
+            </span>
+          </Link>
+        ) : null}
       </div>
     </section>
   );

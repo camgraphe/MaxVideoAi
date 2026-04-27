@@ -370,56 +370,38 @@
         ]
       },
       "shotTypes": {
-        "title": "Choose the best engine by shot type.",
-        "subtitle": "Different models are better for different shots. Pick a use case and compare the engines before spending credits.",
+        "title": "Find the right engine by use case.",
+        "subtitle": "Explore a few high-impact creative decisions, or browse the full Best-For hub for every workflow.",
+        "eyebrow": "Best for X",
+        "cta": "View all best-for guides",
+        "hubCtaTitle": "View all best-for guides",
+        "hubCtaBody": "Browse all use cases and find the right engine for every job.",
+        "guideLabel": "Best-for guide",
+        "topPicksLabel": "Top picks",
         "cards": [
           {
-            "id": "fast-drafts",
-            "title": "Fast drafts & cheap tests",
-            "body": "Validate prompts, pacing and composition before using premium engines.",
-            "engines": ["LTX 2.3 Fast", "Veo 3.1 Lite"],
-            "cta": "View LTX examples",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "ltx" } }
-          },
-          {
-            "id": "cinematic-realism",
+            "slug": "cinematic-realism",
             "title": "Cinematic realism",
-            "body": "Use stronger engines for polished motion, lighting and premium campaign shots.",
-            "engines": ["Seedance 2.0", "Veo 3.1", "Kling 3"],
-            "cta": "View Seedance examples",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "seedance" } }
+            "body": "Compare engines for lighting, camera motion and polished visual direction.",
+            "cta": "Open cinematic guide"
           },
           {
-            "id": "character-scenes",
-            "title": "Character scenes",
-            "body": "Start from consistent references, then choose engines built for narrative scenes.",
-            "engines": ["Sora 2", "Seedance", "LTX"],
-            "cta": "Open Character Builder",
-            "href": { "pathname": "/tools/character-builder" }
+            "slug": "image-to-video",
+            "title": "Image-to-video",
+            "body": "Turn a still image, style frame or product shot into controlled motion.",
+            "cta": "Open image-to-video guide"
           },
           {
-            "id": "product-ads",
-            "title": "Product and ad shots",
-            "body": "Create clean product reveals, UGC-style ads and controlled brand motion.",
-            "engines": ["Veo 3.1", "Seedance", "Kling"],
-            "cta": "View Veo examples",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "veo" } }
+            "slug": "fast-drafts",
+            "title": "Fast drafts",
+            "body": "Find cheaper, faster routes for prompt tests and concept exploration.",
+            "cta": "Open fast drafts guide"
           },
           {
-            "id": "camera-motion",
-            "title": "Camera motion",
-            "body": "Compare engines when camera moves, transitions and shot geometry matter.",
-            "engines": ["Kling 3 Pro", "Veo", "Wan"],
-            "cta": "View Kling examples",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "kling" } }
-          },
-          {
-            "id": "audio-native",
-            "title": "Audio-supported workflows",
-            "body": "Pick engines with native audio or audio-ready workflows when sound matters.",
-            "engines": ["Sora 2", "Veo 3.1", "Seedance"],
-            "cta": "Compare audio-supported engines",
-            "href": { "pathname": "/ai-video-engines" }
+            "slug": "ads",
+            "title": "Product ads",
+            "body": "Shortlist engines for product ads, paid social variants and campaign assets.",
+            "cta": "Open ads guide"
           }
         ]
       },

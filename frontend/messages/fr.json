@@ -450,56 +450,38 @@
         ]
       },
       "shotTypes": {
-        "title": "Choisissez le meilleur moteur selon le plan.",
-        "subtitle": "Chaque modèle a ses forces. Choisissez un cas d’usage, comparez les moteurs, puis dépensez vos crédits au bon endroit.",
+        "title": "Trouvez le bon moteur selon l’usage.",
+        "subtitle": "Explorez quelques décisions créatives à fort impact, ou ouvrez le hub Best-For complet pour tous les workflows.",
+        "eyebrow": "Best for X",
+        "cta": "Voir tous les guides best-for",
+        "hubCtaTitle": "Voir tous les guides best-for",
+        "hubCtaBody": "Parcourez tous les cas d’usage et trouvez le bon moteur pour chaque job.",
+        "guideLabel": "Guide best-for",
+        "topPicksLabel": "Top picks",
         "cards": [
           {
-            "id": "fast-drafts",
-            "title": "Brouillons rapides et tests économiques",
-            "body": "Validez prompts, rythme et composition avant de passer sur des moteurs premium.",
-            "engines": ["LTX 2.3 Fast", "Veo 3.1 Lite"],
-            "cta": "Voir les exemples LTX",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "ltx" } }
-          },
-          {
-            "id": "cinematic-realism",
+            "slug": "cinematic-realism",
             "title": "Réalisme cinématographique",
-            "body": "Utilisez des moteurs plus forts pour le mouvement, la lumière et les plans de campagne premium.",
-            "engines": ["Seedance 2.0", "Veo 3.1", "Kling 3"],
-            "cta": "Voir les exemples Seedance",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "seedance" } }
+            "body": "Comparez les moteurs pour lumière, mouvement caméra et direction visuelle premium.",
+            "cta": "Ouvrir le guide cinéma"
           },
           {
-            "id": "character-scenes",
-            "title": "Scènes avec personnages",
-            "body": "Partez de références cohérentes, puis choisissez des moteurs adaptés aux scènes narratives.",
-            "engines": ["Sora 2", "Seedance", "LTX"],
-            "cta": "Ouvrir Character Builder",
-            "href": { "pathname": "/tools/character-builder" }
+            "slug": "image-to-video",
+            "title": "Image-vers-vidéo",
+            "body": "Animez une image, un style frame ou un plan produit avec un mouvement contrôlé.",
+            "cta": "Ouvrir le guide image-vers-vidéo"
           },
           {
-            "id": "product-ads",
-            "title": "Plans produit et publicités",
-            "body": "Créez des reveals produit, des pubs UGC et du motion de marque contrôlé.",
-            "engines": ["Veo 3.1", "Seedance", "Kling"],
-            "cta": "Voir les exemples Veo",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "veo" } }
+            "slug": "fast-drafts",
+            "title": "Drafts rapides",
+            "body": "Trouvez des routes plus rapides et économiques pour tester prompts et concepts.",
+            "cta": "Ouvrir le guide drafts"
           },
           {
-            "id": "camera-motion",
-            "title": "Mouvement caméra",
-            "body": "Comparez les moteurs quand la caméra, les transitions et la géométrie du plan comptent.",
-            "engines": ["Kling 3 Pro", "Veo", "Wan"],
-            "cta": "Voir les exemples Kling",
-            "href": { "pathname": "/examples/[model]", "params": { "model": "kling" } }
-          },
-          {
-            "id": "audio-native",
-            "title": "Workflows avec audio disponible",
-            "body": "Choisissez des moteurs audio ou audio-ready quand le son fait partie du rendu.",
-            "engines": ["Sora 2", "Veo 3.1", "Seedance"],
-            "cta": "Comparer les moteurs avec audio",
-            "href": { "pathname": "/ai-video-engines" }
+            "slug": "ads",
+            "title": "Publicités produit",
+            "body": "Shortlistez les moteurs pour pubs produit, variantes paid social et assets de campagne.",
+            "cta": "Ouvrir le guide ads"
           }
         ]
       },

@@ -450,15 +450,39 @@
         ]
       },
       "shotTypes": {
-        "title": "Elige el mejor motor según el plano.",
-        "subtitle": "Cada modelo destaca en usos distintos. Elige un caso, compara motores y gasta créditos con más criterio.",
+        "title": "Encuentra el motor correcto por caso de uso.",
+        "subtitle": "Explora algunas decisiones creativas de alto impacto o abre el hub Best-For completo para cada workflow.",
+        "eyebrow": "Best for X",
+        "cta": "Ver todas las guías best-for",
+        "hubCtaTitle": "Ver todas las guías best-for",
+        "hubCtaBody": "Explora todos los casos de uso y encuentra el motor correcto para cada trabajo.",
+        "guideLabel": "Guía best-for",
+        "topPicksLabel": "Top picks",
         "cards": [
-          { "id": "fast-drafts", "title": "Borradores rápidos y pruebas baratas", "body": "Valida prompts, ritmo y composición antes de usar motores premium.", "engines": ["LTX 2.3 Fast", "Veo 3.1 Lite"], "cta": "Ver ejemplos LTX", "href": { "pathname": "/examples/[model]", "params": { "model": "ltx" } } },
-          { "id": "cinematic-realism", "title": "Realismo cinematográfico", "body": "Usa motores más fuertes para movimiento, luz y planos de campaña premium.", "engines": ["Seedance 2.0", "Veo 3.1", "Kling 3"], "cta": "Ver ejemplos Seedance", "href": { "pathname": "/examples/[model]", "params": { "model": "seedance" } } },
-          { "id": "character-scenes", "title": "Escenas con personajes", "body": "Parte de referencias consistentes y elige motores pensados para narrativa.", "engines": ["Sora 2", "Seedance", "LTX"], "cta": "Abrir Character Builder", "href": { "pathname": "/tools/character-builder" } },
-          { "id": "product-ads", "title": "Producto y anuncios", "body": "Crea reveals de producto, anuncios UGC y motion de marca controlado.", "engines": ["Veo 3.1", "Seedance", "Kling"], "cta": "Ver ejemplos Veo", "href": { "pathname": "/examples/[model]", "params": { "model": "veo" } } },
-          { "id": "camera-motion", "title": "Movimiento de cámara", "body": "Compara motores cuando importan cámara, transiciones y geometría del plano.", "engines": ["Kling 3 Pro", "Veo", "Wan"], "cta": "Ver ejemplos Kling", "href": { "pathname": "/examples/[model]", "params": { "model": "kling" } } },
-          { "id": "audio-native", "title": "Workflows con audio disponible", "body": "Elige motores con audio o workflows listos para audio cuando el sonido importa.", "engines": ["Sora 2", "Veo 3.1", "Seedance"], "cta": "Comparar motores con audio", "href": { "pathname": "/ai-video-engines" } }
+          {
+            "slug": "cinematic-realism",
+            "title": "Realismo cinematográfico",
+            "body": "Compara motores para iluminación, movimiento de cámara y dirección visual pulida.",
+            "cta": "Abrir guía cinematográfica"
+          },
+          {
+            "slug": "image-to-video",
+            "title": "Imagen a video",
+            "body": "Anima una imagen, style frame o plano de producto con movimiento controlado.",
+            "cta": "Abrir guía image-to-video"
+          },
+          {
+            "slug": "fast-drafts",
+            "title": "Borradores rápidos",
+            "body": "Encuentra rutas más rápidas y económicas para probar prompts y conceptos.",
+            "cta": "Abrir guía de borradores"
+          },
+          {
+            "slug": "ads",
+            "title": "Anuncios de producto",
+            "body": "Preselecciona motores para anuncios de producto, variantes paid social y assets de campaña.",
+            "cta": "Abrir guía de anuncios"
+          }
         ]
       },
       "examples": {
