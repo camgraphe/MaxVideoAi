@@ -46,6 +46,8 @@ export interface PriceEstimatorProps {
   variant?: 'full' | 'lite';
   pricingRules?: PricingRuleLite[];
   enginePricingOverrides?: Record<string, EnginePricingDetails | null | undefined>;
+  defaultEngineId?: string;
+  defaultDurationSec?: number;
 }
 
 const MEMBER_ORDER: MemberTier[] = ['Member', 'Plus', 'Pro'];
@@ -430,7 +432,13 @@ function formatCurrency(value: number, currency: string) {
   }).format(value);
 }
 
-export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOverrides }: PriceEstimatorProps) {
+export function PriceEstimator({
+  variant = 'full',
+  pricingRules,
+  enginePricingOverrides,
+  defaultEngineId,
+  defaultDurationSec,
+}: PriceEstimatorProps) {
   const { t, dictionary } = useI18n();
   const kernel = getPricingKernel();
 
@@ -516,7 +524,9 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
       .filter((entry): entry is EngineCaps => Boolean(entry));
   }, [engineOptions]);
 
-  const [selectedEngineId, setSelectedEngineId] = useState(() => engineOptions[0]?.id ?? '');
+  const [selectedEngineId, setSelectedEngineId] = useState(
+    () => engineOptions.find((option) => option.id === defaultEngineId)?.id ?? engineOptions[0]?.id ?? ''
+  );
   const selectedEngine = useMemo(() => engineOptions.find((option) => option.id === selectedEngineId) ?? engineOptions[0], [engineOptions, selectedEngineId]);
   const [engineMode, setEngineMode] = useState<Mode>('t2v');
 
@@ -538,6 +548,15 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
 
   const [duration, setDuration] = useState(() => {
     if (!selectedEngine) return 12;
+    if (
+      typeof defaultDurationSec === 'number' &&
+      defaultDurationSec >= selectedEngine.minDuration &&
+      defaultDurationSec <= selectedEngine.maxDuration &&
+      (!selectedEngine.durationOptions.length ||
+        selectedEngine.durationOptions.some((option) => option.value === defaultDurationSec))
+    ) {
+      return defaultDurationSec;
+    }
     if (selectedEngine.durationOptions.length) {
       return selectedEngine.defaultDuration;
     }

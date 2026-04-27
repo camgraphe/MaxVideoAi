@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import {
   BarChart3,
   Calculator,
@@ -39,6 +40,7 @@ import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
+const PRICING_HERO_IMAGE_URL = '/assets/pricing/pricing-hero-reference.png';
 
 export const revalidate = 60 * 10;
 
@@ -246,71 +248,6 @@ const MEMBER_TIER_VISUALS: Array<{ Icon: LucideIcon; accentClass: string }> = [
 ];
 
 const PRICE_FACTOR_ICONS: LucideIcon[] = [Clock3, Monitor, ImageIcon, Mic2, Sparkles];
-
-function PricingHeroVisual({ side }: { side: 'left' | 'right' }) {
-  if (side === 'left') {
-    return (
-      <div
-        aria-hidden
-        className="relative h-44 w-56 rotate-[-4deg] rounded-[22px] border border-hairline bg-surface-glass-90 p-4 shadow-[0_24px_70px_-50px_rgba(17,24,39,0.55)]"
-      >
-        <div className="overflow-hidden rounded-[16px] border border-hairline bg-bg">
-          <div className="flex items-center gap-1.5 border-b border-hairline bg-surface px-3 py-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-state-warning/60" />
-            <span className="h-1.5 w-1.5 rounded-full bg-state-success/60" />
-            <span className="ml-auto h-1.5 w-10 rounded-full bg-surface-3" />
-          </div>
-          <div className="grid h-20 grid-cols-[1.1fr_0.9fr] gap-2 p-3">
-            <div className="rounded-[12px] bg-surface-3" />
-            <div className="space-y-2">
-              <div className="h-2 w-full rounded-full bg-text-muted/20" />
-              <div className="h-2 w-3/4 rounded-full bg-text-muted/15" />
-              <div className="h-6 w-14 rounded-full bg-state-success/10" />
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 space-y-2">
-          <div className="h-2 w-24 rounded-full bg-text-muted/20" />
-          <div className="h-2 w-16 rounded-full bg-hairline" />
-        </div>
-        <div className="absolute -bottom-5 -right-7 rounded-[16px] border border-hairline bg-surface px-4 py-3 text-left shadow-card">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Quote</p>
-          <p className="text-lg font-semibold text-text-primary">$4.16</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div aria-hidden className="relative h-44 w-64 rotate-[3deg] rounded-[22px] border border-hairline bg-surface-glass-90 p-4 shadow-[0_24px_70px_-50px_rgba(17,24,39,0.55)]">
-      <div className="flex items-center justify-between">
-        <div className="h-2 w-20 rounded-full bg-text-muted/20" />
-        <div className="rounded-full border border-hairline bg-bg px-2 py-1 text-[10px] font-semibold text-text-muted">$ / render</div>
-      </div>
-      <div className="mt-5 grid gap-2">
-        {[68, 48, 58, 38].map((width, index) => (
-          <div key={width} className="grid grid-cols-[56px_1fr_34px] items-center gap-2">
-            <div className="h-2 rounded-full bg-text-muted/15" />
-            <div className="h-2 rounded-full bg-surface-3">
-              <span
-                className={index === 1 ? 'block h-2 rounded-full bg-state-success/35' : 'block h-2 rounded-full bg-text-muted/25'}
-                style={{ width: `${width}%` }}
-              />
-            </div>
-            <div className="h-2 rounded-full bg-text-muted/15" />
-          </div>
-        ))}
-      </div>
-      <div className="absolute -bottom-5 left-6 right-6 rounded-[16px] border border-hairline bg-surface px-4 py-3 shadow-card">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Before queue</p>
-          <span className="h-2 w-2 rounded-full bg-state-success" />
-        </div>
-        <p className="mt-1 text-sm font-semibold text-text-primary">Visible price</p>
-      </div>
-    </div>
-  );
-}
 
 function MiniSparkline({ className }: { className: string }) {
   return (
@@ -612,20 +549,25 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   };
 
   return (
-    <main className="container-page max-w-6xl py-10 sm:py-14">
-      <div className="stack-gap-lg">
-        <header className="relative overflow-hidden rounded-[32px] border border-hairline bg-[linear-gradient(180deg,var(--surface),rgba(250,251,254,0.76))] px-4 pb-8 pt-7 text-center shadow-[0_24px_80px_-58px_rgba(17,24,39,0.55)] sm:px-8 sm:pb-10 sm:pt-9">
-          <div className="absolute -left-10 top-12 hidden scale-90 lg:block">
-            <PricingHeroVisual side="left" />
-          </div>
-          <div className="absolute -right-4 top-14 hidden scale-90 lg:block">
-            <PricingHeroVisual side="right" />
-          </div>
-          <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-4">
-            <span className="inline-flex items-center rounded-full border border-hairline bg-bg px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted shadow-card">
+    <main className="bg-bg">
+      <header className="relative min-h-[520px] overflow-hidden border-b border-hairline bg-bg">
+        <Image
+          src={PRICING_HERO_IMAGE_URL}
+          alt=""
+          aria-hidden="true"
+          fill
+          priority
+          sizes="100vw"
+          className="pointer-events-none object-cover object-center dark:brightness-[0.72] dark:contrast-110 dark:invert"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.93)_0%,rgba(255,255,255,0.76)_34%,rgba(247,249,253,0.36)_68%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.66)_0%,rgba(3,7,18,0.48)_38%,rgba(3,7,18,0.20)_72%,rgba(3,7,18,0.06)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bg to-transparent" />
+        <div className="container-page relative flex min-h-[520px] max-w-[1220px] items-center justify-center pb-24 pt-14 text-center">
+          <div className="mx-auto flex max-w-[760px] flex-col items-center gap-4">
+            <span className="inline-flex items-center rounded-pill border border-hairline bg-white/72 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#356BE8] shadow-sm backdrop-blur dark:bg-white/10">
               {heroEyebrow}
             </span>
-            <h1 className="text-4xl font-semibold tracking-tight text-text-primary sm:text-6xl">
+            <h1 className="text-4xl font-semibold leading-[1.04] tracking-tight text-text-primary sm:text-6xl">
               {heroHeadline}
               {heroAccentLine ? (
                 <>
@@ -639,7 +581,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
                 isNoSubscriptionCopy(line) ? (
                   <p
                     key={line}
-                    className="rounded-[18px] border border-hairline bg-bg px-5 py-3 text-lg font-semibold tracking-tight text-text-primary shadow-card sm:text-xl"
+                    className="rounded-[14px] border border-hairline bg-white/76 px-5 py-3 text-lg font-semibold tracking-tight text-text-primary shadow-card backdrop-blur sm:text-xl dark:bg-white/10"
                   >
                     {line}
                   </p>
@@ -661,11 +603,19 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
               </p>
             ) : null}
           </div>
-        </header>
+        </div>
+      </header>
 
+      <div className="container-page relative z-10 -mt-14 max-w-[1220px] pb-14">
+        <div className="stack-gap-lg">
         <section id="estimator" className="scroll-mt-28">
           <div className="mx-auto max-w-5xl">
-            <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
+            <PriceEstimator
+              pricingRules={pricingRulesLite}
+              enginePricingOverrides={enginePricingOverrides}
+              defaultEngineId="veo-3-1-lite"
+              defaultDurationSec={4}
+            />
           </div>
           <div className="mx-auto mt-5 flex max-w-3xl flex-col items-center gap-2 rounded-[18px] border border-hairline bg-surface px-4 py-3 text-center text-xs text-text-muted shadow-card sm:flex-row sm:justify-center">
             <FlagPill live={FEATURES.pricing.publicCalculator} liveLabel={liveLabel} soonLabel={comingSoonLabel} />
@@ -695,10 +645,15 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
               const visual = EXAMPLE_CARD_VISUALS[index % EXAMPLE_CARD_VISUALS.length];
               const Icon = visual.Icon;
               return (
-                <article key={card.title} className="rounded-card border border-hairline bg-surface p-5 shadow-card">
+                <article
+                  key={card.title}
+                  className={`rounded-[8px] border bg-white p-5 shadow-[0_18px_54px_rgba(33,49,78,0.06)] transition hover:-translate-y-1 hover:shadow-float dark:bg-white/[0.055] ${
+                    index === 1 ? 'border-[#356BE8]/70' : 'border-hairline'
+                  }`}
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <span className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-hairline ${visual.accentClass}`}>
+                      <span className={`flex h-11 w-11 items-center justify-center rounded-[8px] border border-hairline ${visual.accentClass}`}>
                         <Icon className="h-5 w-5" strokeWidth={1.8} />
                       </span>
                       <div>
@@ -727,7 +682,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </div>
         </section>
 
-        <section className="rounded-card border border-hairline bg-surface p-5 shadow-card sm:p-6">
+        <section className="rounded-[8px] border border-hairline bg-white p-5 shadow-[0_18px_54px_rgba(33,49,78,0.06)] dark:bg-white/[0.055] sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="flex items-center gap-3 text-2xl font-semibold text-text-primary">
@@ -746,8 +701,8 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
               const visual = MEMBER_TIER_VISUALS[index % MEMBER_TIER_VISUALS.length];
               const Icon = visual.Icon;
               return (
-                <article key={tier.name} className="rounded-[18px] border border-hairline bg-bg p-5">
-                  <span className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-hairline ${visual.accentClass}`}>
+                <article key={tier.name} className="rounded-[8px] border border-hairline bg-bg p-5">
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-[8px] border border-hairline ${visual.accentClass}`}>
                     <Icon className="h-5 w-5" strokeWidth={1.8} />
                   </span>
                   <h3 className="mt-4 text-base font-semibold text-text-primary">{tier.name}</h3>
@@ -867,6 +822,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
             </dl>
           </article>
         </section>
+        </div>
       </div>
 
       <script
