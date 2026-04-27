@@ -140,13 +140,14 @@ type EngineStats = {
 };
 
 const EXAMPLE_ENGINE_PRIORITY = [
-  'kling-3-pro',
-  'ltx-2-3-fast',
-  'sora-2',
   'seedance-2-0',
+  'kling-3-pro',
   'veo-3-1',
+  'veo-3-1-lite',
+  'ltx-2-3-fast',
   'wan-2-6',
   'pika-text-to-video',
+  'sora-2',
   'ltx-2-3-pro',
   'kling-3-standard',
 ] as const;
@@ -171,7 +172,15 @@ const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = {
 const HOMEPAGE_EXAMPLE_FAMILIES = ['ltx', 'kling', 'seedance', 'veo', 'sora', 'wan'] as const;
 type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
 
-type HeroEngineId = 'kling-3-pro' | 'seedance-2-0' | 'veo-3-1-lite' | 'ltx-2-3-fast' | 'sora-2';
+type HeroEngineId = 'seedance-2-0' | 'kling-3-pro' | 'veo-3-1-lite' | 'ltx-2-3-fast' | 'wan-2-6';
+
+const HERO_VIDEO_CHIPS: Record<string, string[]> = {
+  'kling-3-pro': ['Cinematic', 'Camera move'],
+  'seedance-2-0': ['Cinematic', 'Realism'],
+  'veo-3-1-lite': ['Realistic', 'Premium'],
+  'ltx-2-3-fast': ['Fast draft', 'Low cost'],
+  'wan-2-6': ['Video-to-video', 'Structured'],
+};
 
 const HERO_ENGINE_TARGETS: Record<
   HeroEngineId,
@@ -186,7 +195,7 @@ const HERO_ENGINE_TARGETS: Record<
   'seedance-2-0': { name: 'Seedance 2.0', exampleFamily: 'seedance', modelSlug: 'seedance-2-0', mode: 'i2v' },
   'veo-3-1-lite': { name: 'Veo 3.1 Lite', exampleFamily: 'veo', modelSlug: 'veo-3-1-lite', mode: 'i2v' },
   'ltx-2-3-fast': { name: 'LTX 2.3 Fast', exampleFamily: 'ltx', modelSlug: 'ltx-2-3-fast', mode: 't2v' },
-  'sora-2': { name: 'Sora 2', exampleFamily: 'sora', modelSlug: 'sora-2', mode: 't2v' },
+  'wan-2-6': { name: 'Wan 2.6', exampleFamily: 'wan', modelSlug: 'wan-2-6', mode: 'v2v' },
 };
 
 const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
@@ -309,7 +318,6 @@ function buildHeroContent(locale: AppLocale, content: RedesignContent): HomeHero
           provider: engine?.provider ?? recommendation.provider,
           price: formattedPrice || recommendation.fallbackPrice,
           modeLabel: modeLabel ?? undefined,
-          rateLabel: formatRateNote(locale, formattedPrice || recommendation.fallbackPrice),
           examplesHref: linkMeta.examplesHref,
           modelHref: linkMeta.modelHref,
           examplesLabel: linkMeta.examplesLabel,
@@ -340,12 +348,6 @@ function formatStartingPrice(
   if (!formatted) return null;
   const prefix = HOMEPAGE_PRICE_PREFIX_BY_LOCALE[locale] ?? HOMEPAGE_PRICE_PREFIX_BY_LOCALE.en;
   return `${prefix} ${formatted}${durationSeconds ? ` / ${durationSeconds}s` : ''}`;
-}
-
-function formatRateNote(locale: AppLocale, price: string) {
-  if (locale === 'fr') return `Tarif ${price}`;
-  if (locale === 'es') return `Tarifa ${price}`;
-  return `Rate ${price}`;
 }
 
 function heroExampleLabel(locale: AppLocale, name: string, family: HomepageExampleFamily) {
@@ -447,19 +449,10 @@ function buildProgrammedHeroItems(
       const duration = formatVideoTime(durationSeconds);
       const resolution = video.aspectRatio ?? '1080p';
       const mode = resolveModeLabel(linkMeta.mode ?? extractMode(video), content);
-      const mediaInfo = [
-        video.engineLabel,
-        typeof video.durationSec === 'number' ? `${video.durationSec}s` : null,
-        video.aspectRatio ?? null,
-        video.hasAudio ? 'audio' : null,
-      ]
-        .filter(Boolean)
-        .join(' · ');
-      const chips = [
-        mode === (content.modeLabels.unknown ?? 'AI video') ? engine?.provider ?? null : mode,
-        typeof video.durationSec === 'number' ? `${video.durationSec}s` : null,
-        video.aspectRatio ?? null,
-      ].filter((chip): chip is string => Boolean(chip));
+      const recommended = content.hero.mockup.engineRecommendations.find((recommendation) => recommendation.engineId === normalizedEngineId);
+      const durationLabel = typeof video.durationSec === 'number' ? `${video.durationSec}s` : `${Number(duration.replace(/^0:/, ''))}s`;
+      const mediaInfo = [mode, durationLabel, video.aspectRatio ?? null].filter(Boolean).join(' · ');
+      const chips = HERO_VIDEO_CHIPS[normalizedEngineId] ?? (recommended?.bestFor ? [recommended.bestFor] : [mode]);
       const startingPrice =
         (engine?.pricingHint
           ? formatStartingPrice(locale, engine.pricingHint.currency, engine.pricingHint.amountCents, engine.pricingHint.durationSeconds)
@@ -480,14 +473,7 @@ function buildProgrammedHeroItems(
         price: startingPrice,
         estimateLabel: content.hero.mockup.quoteLabel,
         estimateValue: finalQuote ?? startingPrice,
-        estimateMeta: [
-          typeof video.durationSec === 'number' ? `${video.durationSec}s` : null,
-          resolution,
-          mode,
-        ]
-          .filter(Boolean)
-          .join(' · '),
-        priceNote: formatRateNote(locale, startingPrice),
+        estimateMeta: typeof video.durationSec === 'number' ? `${video.durationSec}s render` : `${duration} render`,
         examplesHref: linkMeta.examplesHref,
         modelHref: linkMeta.modelHref,
         examplesLabel: linkMeta.examplesLabel,

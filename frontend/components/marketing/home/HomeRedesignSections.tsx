@@ -89,7 +89,6 @@ export type HomeHeroContent = {
     refundNote: string;
     playLabel: string;
     pauseLabel: string;
-    nextLabel: string;
   };
 };
 
@@ -199,13 +198,20 @@ const TOOL_ICONS: Record<ToolIconKey, LucideIcon> = {
   compare: SlidersHorizontal,
 };
 
-const HERO_VIDEO_ORDER = ['kling-3-pro', 'seedance-2-0', 'veo-3-1-lite', 'ltx-2-3-fast', 'sora-2'] as const;
+const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-fast', 'wan-2-6'] as const;
 const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
   'kling-3-pro': 'image-to-video',
   'seedance-2-0': 'image-to-video',
   'veo-3-1-lite': 'image-to-video',
   'ltx-2-3-fast': 'text-to-video',
-  'sora-2': 'text-to-video',
+  'wan-2-6': 'video-to-video',
+};
+const HERO_VIDEO_CHIPS: Record<string, string[]> = {
+  'kling-3-pro': ['Cinematic', 'Camera move'],
+  'seedance-2-0': ['Cinematic', 'Realism'],
+  'veo-3-1-lite': ['Realistic', 'Premium'],
+  'ltx-2-3-fast': ['Fast draft', 'Low cost'],
+  'wan-2-6': ['Video-to-video', 'Structured'],
 };
 
 const PROOF_ICONS: Record<string, LucideIcon> = {
@@ -222,32 +228,37 @@ const PROOF_ICONS: Record<string, LucideIcon> = {
 const HERO_ENGINE_MEDIA: Record<string, { posterSrc: string; videoSrc?: string; resolution: string; duration: string }> = {
   'kling-3-pro': {
     posterSrc: '/hero/showcase-kling-3-pro.jpg',
-    resolution: '1080p',
+    resolution: '16:9',
     duration: '0:05',
   },
   'seedance-2-0': {
     posterSrc: '/hero/showcase-seedance-2-0.jpg',
-    resolution: '1080p',
+    resolution: '16:9',
     duration: '0:05',
   },
   'veo-3-1': {
     posterSrc: '/hero/showcase-veo-3-1.jpg',
-    resolution: '1080p',
+    resolution: '16:9',
     duration: '0:05',
   },
   'veo-3-1-lite': {
     posterSrc: '/hero/showcase-veo-3-1.jpg',
-    resolution: '1080p',
+    resolution: '16:9',
     duration: '0:05',
   },
   'ltx-2-3-fast': {
     posterSrc: '/hero/showcase-ltx-2-3-fast.jpg',
-    resolution: '1080p',
+    resolution: '16:9',
+    duration: '0:05',
+  },
+  'wan-2-6': {
+    posterSrc: '/hero/wan-26.jpg',
+    resolution: '16:9',
     duration: '0:05',
   },
   'sora-2': {
     posterSrc: '/hero/showcase-sora-2.jpg',
-    resolution: '1080p',
+    resolution: '16:9',
     duration: '0:05',
   },
 };
@@ -313,6 +324,9 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
     const preview = findPreviewForEngine(engine.engineId, engine.name, previews);
     const fallbackMedia = HERO_ENGINE_MEDIA[engine.engineId] ?? HERO_ENGINE_MEDIA['kling-3-pro'];
     const engineName = engine.engineId === 'kling-3-pro' ? 'Kling 3 Pro' : engine.name;
+    const durationLabel = fallbackMedia.duration.startsWith('0:')
+      ? `${Number(fallbackMedia.duration.slice(2))}s`
+      : fallbackMedia.duration;
 
     return {
       id: engine.engineId,
@@ -320,13 +334,12 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
       name: engineName,
       provider: engine.provider,
       bestFor: engine.bestFor,
-      chips: engine.tags?.length ? engine.tags.slice(0, 3) : [engine.bestFor, engine.provider],
-      mediaInfo: `${engine.provider} · ${fallbackMedia.duration} · ${fallbackMedia.resolution}`,
+      chips: HERO_VIDEO_CHIPS[engine.engineId] ?? (engine.tags?.length ? engine.tags.slice(0, 2) : [engine.bestFor, engine.provider]),
+      mediaInfo: [engine.modeLabel ?? HERO_VIDEO_MODE_LABELS[engine.engineId], durationLabel, fallbackMedia.resolution].filter(Boolean).join(' · '),
       price: engine.price ?? engine.fallbackPrice,
       estimateLabel: copy.quoteLabel,
       estimateValue: copy.quoteValue,
-      estimateMeta: ['5s', fallbackMedia.resolution, engine.modeLabel ?? HERO_VIDEO_MODE_LABELS[engine.engineId]].filter(Boolean).join(' · '),
-      priceNote: engine.rateLabel ?? engine.price ?? engine.fallbackPrice,
+      estimateMeta: '5s render',
       examplesHref: engine.examplesHref,
       modelHref: engine.modelHref,
       examplesLabel: engine.examplesLabel,
@@ -398,23 +411,23 @@ export function HomeHero({
   return (
     <section className="relative overflow-hidden border-b border-hairline bg-bg">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(17,24,39,0.12),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(107,114,128,0.10),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0)_52%)] dark:bg-[radial-gradient(circle_at_72%_20%,rgba(255,255,255,0.10),transparent_32%),radial-gradient(circle_at_30%_78%,rgba(148,163,184,0.10),transparent_34%),linear-gradient(180deg,rgba(5,10,20,0.98),rgba(8,13,26,0.1)_58%)]" />
-      <div className="container-page relative grid max-w-[1460px] gap-7 py-10 xl:grid-cols-[minmax(390px,0.78fr)_minmax(0,1.22fr)] xl:items-start xl:gap-8 xl:py-14">
-        <div className="min-w-0 xl:col-start-1 xl:row-start-1 xl:pr-1">
-          <div className="scrollbar-rail -mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
-            {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
-              <span
-                key={badge}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-pill border border-brand/15 bg-brand/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand shadow-sm sm:gap-2 sm:px-3 sm:text-[11px] sm:tracking-[0.08em]"
-              >
-                <UIIcon icon={index === 1 ? CircleDollarSign : index === 2 ? RefreshCcw : BadgeDollarSign} size={14} />
-                {badge}
-              </span>
-            ))}
-          </div>
-          <h1 className="mt-8 max-w-[18ch] text-4xl font-semibold leading-[1.04] text-text-primary sm:text-5xl md:text-[2.65rem] lg:text-[3.05rem] xl:text-[3.65rem]">
+      <div className="container-page relative grid max-w-[1400px] gap-7 py-10 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:items-start xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
+        <div className="scrollbar-rail -mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0 xl:col-span-2 xl:pb-0">
+          {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
+            <span
+              key={badge}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-pill border border-brand/15 bg-brand/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand shadow-sm sm:gap-2 sm:px-3 sm:text-[11px] sm:tracking-[0.08em]"
+            >
+              <UIIcon icon={index === 1 ? CircleDollarSign : index === 2 ? RefreshCcw : BadgeDollarSign} size={14} />
+              {badge}
+            </span>
+          ))}
+        </div>
+        <div className="min-w-0 xl:col-start-1 xl:row-start-2 xl:pr-1">
+          <h1 className="mt-8 max-w-[20ch] text-4xl font-semibold leading-[1.04] text-text-primary sm:text-5xl md:text-[2.65rem] lg:text-[3.05rem] xl:text-[3.65rem]">
             {renderHeroTitle(copy.title)}
           </h1>
-          <p className="mt-5 max-w-[38rem] text-base leading-7 text-text-secondary xl:text-lg xl:leading-8">{copy.subtitle}</p>
+          <p className="mt-5 max-w-[42rem] text-base leading-7 text-text-secondary xl:text-lg xl:leading-8">{copy.subtitle}</p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <ButtonLink
               href="/app"
@@ -452,15 +465,14 @@ export function HomeHero({
             </Link>
           </div>
         </div>
-        <div className="min-w-0 xl:col-start-2 xl:row-span-2 xl:row-start-1">
+        <div className="min-w-0 xl:col-start-2 xl:row-span-2 xl:row-start-2 xl:self-center">
           <HeroVideoShowcase
-            items={videoItems}
-            playLabel={copy.mockup.playLabel}
-            pauseLabel={copy.mockup.pauseLabel}
-            nextLabel={copy.mockup.nextLabel}
-          />
+          items={videoItems}
+          playLabel={copy.mockup.playLabel}
+          pauseLabel={copy.mockup.pauseLabel}
+        />
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:col-start-1 xl:row-start-2">{valueCards}</div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:col-start-1 xl:row-start-3">{valueCards}</div>
       </div>
       <div className="container-page relative max-w-[1460px] pb-10">
         <div className="grid gap-px overflow-hidden rounded-[18px] border border-hairline bg-hairline shadow-card backdrop-blur sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8">

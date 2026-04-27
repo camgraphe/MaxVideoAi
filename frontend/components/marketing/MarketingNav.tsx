@@ -36,10 +36,9 @@ export function MarketingNav() {
   const maybeLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : MARKETING_TOP_NAV_LINKS;
   const login = t('nav.login', 'Log in');
-  const cta = t('nav.cta', 'Start a render');
+  const cta = t('nav.cta', 'Generate');
   const generateLabel = t('nav.generate', 'Generate');
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
-  const ctaLabelMobile = locale === 'fr' ? 'Lancer' : locale === 'es' ? 'Generar' : 'Render';
   const generateLabelMobile = locale === 'fr' ? 'Generer' : locale === 'es' ? 'Generar' : 'Generate';
   const isAuthenticated = Boolean(email);
   const themeStorageKey = 'mv-theme';
@@ -483,14 +482,13 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex h-9 items-center whitespace-nowrap rounded-pill bg-brand px-3 text-xs font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-input bg-[image:var(--brand-gradient)] px-6 py-3 text-sm font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_start_app"
                 data-analytics-cta-location="marketing_nav_desktop"
                 data-analytics-target-family="workspace"
               >
-                <span className="sm:hidden">{ctaLabelMobile}</span>
-                <span className="hidden sm:inline">{cta}</span>
+                <span>{cta}</span>
               </Link>
             </>
           )}
@@ -635,7 +633,7 @@ export function MarketingNav() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
+                  className="block rounded-input bg-[image:var(--brand-gradient)] px-6 py-3 text-center text-base font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95"
                   onClick={() => setMobileMenuOpen(false)}
                   data-analytics-event="cta_click"
                   data-analytics-cta-name="marketing_nav_start_app"

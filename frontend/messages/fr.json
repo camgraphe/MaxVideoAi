@@ -220,7 +220,7 @@
         "href": "/legal"
       }
     ],
-    "brandNote": "Centre indépendant pour la vidéo IA professionnelle — prix affiché avant génération, restez sur les derniers moteurs, un espace de travail pour chaque plan. Fonctionne avec Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, et plus. Les marques appartiennent à leurs propriétaires.",
+    "brandNote": "Centre indépendant pour la vidéo IA professionnelle — prix affiché avant génération, restez sur les derniers moteurs, un espace de travail pour chaque plan. Fonctionne avec Seedance, Kling, Veo, LTX, Wan, Pika, Sora et plus. Les marques appartiennent à leurs propriétaires.",
     "languageLabel": "Langue",
     "languages": [
       {
@@ -321,8 +321,8 @@
         "eyebrow": "Workspace vidéo IA multi-moteurs, sans abonnement",
         "badgeChips": ["Générateur vidéo IA multi-moteurs", "Prix avant rendu", "À l’usage · sans abonnement"],
         "title": "Arrêtez de deviner quel modèle vidéo IA utiliser.",
-        "subtitle": "Comparez Sora, Veo, Kling, LTX, Seedance, Wan, Pika et plus, prévisualisez de vrais résultats, voyez le prix avant rendu, puis générez avec le bon modèle pour chaque plan.",
-        "primaryCta": "Lancer un rendu",
+        "subtitle": "Comparez Seedance, Kling, Veo, LTX et plus, prévisualisez de vrais résultats, voyez le coût avant lancement, puis choisissez le bon moteur vidéo IA pour chaque plan.",
+        "primaryCta": "Générer",
         "secondaryCta": "Voir les exemples",
         "examplesCta": "Comparer les moteurs",
         "trustBadges": [
@@ -410,20 +410,20 @@
               "tags": ["Rapide", "Éco", "Draft"]
             },
             {
-              "engineId": "sora-2",
-              "name": "Sora 2",
-              "provider": "OpenAI",
-              "bestFor": "Scènes narratives",
-              "fallbackPrice": "dès 0,55 $ / 5 s",
+              "engineId": "wan-2-6",
+              "name": "Wan 2.6",
+              "provider": "Wan",
+              "bestFor": "Workflows vidéo-vers-vidéo",
+              "fallbackPrice": "dès 0,22 $ / 5 s",
               "scores": [
-                { "label": "Motion", "value": 84 },
-                { "label": "Réalisme", "value": 88 },
-                { "label": "Vitesse", "value": 66 }
+                { "label": "Motion", "value": 82 },
+                { "label": "Réalisme", "value": 78 },
+                { "label": "Vitesse", "value": 76 }
               ],
-              "tags": ["Story", "Personnage", "Audio"]
+              "tags": ["Vidéo-vers-vidéo", "Structuré", "Flexible"]
             }
           ],
-          "quoteLabel": "Devis avant rendu",
+          "quoteLabel": "Coût de ce rendu",
           "quoteValue": "0,34 $",
           "quoteMeta": "5 s · 1080p · image-vers-vidéo",
           "outputLabel": "Aperçus de sortie",
@@ -432,8 +432,7 @@
           "generateCta": "Générer avec ce moteur",
           "refundNote": "Crédits rendus si la génération échoue",
           "playLabel": "Lire l’aperçu du moteur",
-          "pauseLabel": "Mettre l’aperçu en pause",
-          "nextLabel": "Afficher l’aperçu moteur suivant"
+          "pauseLabel": "Mettre l’aperçu en pause"
         }
       },
       "proof": {
@@ -655,13 +654,13 @@
         "subtitle": "Utilisez les fournisseurs pris en charge depuis une console de production créative unique.",
         "cta": "Voir tous les modèles",
         "items": [
-          { "providerKey": "OpenAI", "provider": "OpenAI", "model": "Sora" },
-          { "providerKey": "Google", "provider": "Google", "model": "Veo et Nano Banana" },
-          { "providerKey": "Kling by Kuaishou", "provider": "Kling / Kuaishou", "model": "Kling" },
           { "providerKey": "ByteDance", "provider": "ByteDance", "model": "Seedance" },
+          { "providerKey": "Kling by Kuaishou", "provider": "Kling / Kuaishou", "model": "Kling" },
+          { "providerKey": "Google", "provider": "Google", "model": "Veo et Nano Banana" },
           { "providerKey": "Lightricks", "provider": "Lightricks", "model": "LTX" },
           { "providerKey": "Wan", "provider": "Wan", "model": "Wan" },
           { "providerKey": "Pika", "provider": "Pika", "model": "Pika Text to Video" },
+          { "providerKey": "OpenAI", "provider": "OpenAI", "model": "Sora" },
           { "providerKey": "MiniMax", "provider": "MiniMax", "model": "Hailuo" },
           { "providerKey": "Luma AI", "provider": "Luma", "model": "Ray" }
         ]
@@ -961,7 +960,7 @@
     "priceChipSuffix": "Visible avant lancement.",
     "meta": {
       "title": "Espace vidéo IA multi-moteurs — Prix avant rendu | MaxVideoAI",
-      "description": "Comparez Sora, Veo, Kling, LTX, Seedance, Wan, Pika et plus avant de générer. Créez en texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo avec paiement à l’usage."
+      "description": "Comparez Seedance, Kling, Veo, LTX, Wan, Pika et plus avant de générer. Prévisualisez de vrais résultats, voyez le coût avant lancement et créez avec paiement à l’usage."
     },
     "compare": {
       "title": "Comparer les moteurs en un coup d’œil",

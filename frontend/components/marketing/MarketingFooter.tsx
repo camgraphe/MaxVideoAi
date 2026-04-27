@@ -49,18 +49,19 @@ export function MarketingFooter() {
   }));
 
   const engineItems = [
-    { slug: 'ltx-2-3-fast', labelKey: 'footer.sections.engines.items.ltx23fast', fallback: 'LTX 2.3 Fast' },
-    { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
     { slug: 'seedance-2-0', labelKey: 'footer.sections.engines.items.seedance2_0', fallback: 'Seedance 2.0' },
+    { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
     { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
     { slug: 'veo-3-1-lite', labelKey: 'footer.sections.engines.items.veo3_1lite', fallback: 'Veo 3.1 Lite' },
+    { slug: 'ltx-2-3-fast', labelKey: 'footer.sections.engines.items.ltx23fast', fallback: 'LTX 2.3 Fast' },
+    { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
     { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
-    { slug: 'sora-2-pro', labelKey: 'footer.sections.engines.items.sora2pro', fallback: 'Sora 2 Pro' },
     { slug: 'pika-text-to-video', labelKey: 'footer.sections.engines.items.pikaTextToVideo', fallback: 'Pika Text to Video' },
+    { slug: 'sora-2-pro', labelKey: 'footer.sections.engines.items.sora2pro', fallback: 'Sora 2 Pro' },
   ];
   const engineLinks: FooterLink[] = engineItems
     .filter((item) => modelSlugSet.has(item.slug))
-    .map((item) => ({
+    .map<FooterLink>((item) => ({
       key: item.slug,
       label: labelFor(item.labelKey, item.fallback),
       href: { pathname: '/models/[slug]', params: { slug: item.slug } },
@@ -92,13 +93,20 @@ export function MarketingFooter() {
       fallback: 'Kling 3 Pro vs LTX 2.3 Pro',
     },
   ];
-  const comparisonLinks: FooterLink[] = comparisonItems
+  const comparisonLinks: FooterLink[] = [
+    ...comparisonItems
     .filter((item) => modelSlugSet.has(item.left) && modelSlugSet.has(item.right))
     .map((item) => ({
       key: `${item.left}-vs-${item.right}`,
       label: labelFor(item.labelKey, item.fallback),
       href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalCompareSlug(item.left, item.right) } },
-    }));
+    })),
+    {
+      key: 'best-for',
+      label: labelFor('footer.sections.comparisons.items.bestFor', 'Best models by use case'),
+      href: { pathname: '/ai-video-engines/best-for' },
+    },
+  ];
 
   const exampleLinks: FooterLink[] = [
     ...MARKETING_FOOTER_EXAMPLES.map((item) => ({

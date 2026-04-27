@@ -28,7 +28,7 @@
       }
     ],
     "login": "Log in",
-    "cta": "Start a render",
+    "cta": "Generate",
     "linkLabels": {
       "models": "Models",
       "examples": "Examples",
@@ -140,7 +140,7 @@
         "href": "/legal"
       }
     ],
-    "brandNote": "Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
+    "brandNote": "Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Seedance, Kling, Veo, LTX, Wan, Pika, Sora, and more. Trademarks belong to their owners.",
     "languageLabel": "Language",
     "languages": [
       {
@@ -241,8 +241,8 @@
         "eyebrow": "Pay-as-you-go multi-engine AI video workspace",
         "badgeChips": ["Multi-engine AI video generator", "Price before render", "Pay-as-you-go · no subscription"],
         "title": "Stop guessing which AI video model to use.",
-        "subtitle": "Compare Sora, Veo, Kling, LTX, Seedance, Wan, Pika and more, preview real outputs, see the price before render, and generate with the right model for every shot.",
-        "primaryCta": "Start a render",
+        "subtitle": "Compare Seedance, Kling, Veo, LTX and more, preview real outputs, see the cost before launch, and choose the right AI video engine for every shot.",
+        "primaryCta": "Generate",
         "secondaryCta": "See examples",
         "examplesCta": "Compare engines",
         "trustBadges": [
@@ -330,20 +330,20 @@
               "tags": ["Fast", "Cheap", "Draft"]
             },
             {
-              "engineId": "sora-2",
-              "name": "Sora 2",
-              "provider": "OpenAI",
-              "bestFor": "Narrative scenes",
-              "fallbackPrice": "from $0.55 / 5s",
+              "engineId": "wan-2-6",
+              "name": "Wan 2.6",
+              "provider": "Wan",
+              "bestFor": "Video-to-video workflows",
+              "fallbackPrice": "from $0.22 / 5s",
               "scores": [
-                { "label": "Motion", "value": 84 },
-                { "label": "Realism", "value": 88 },
-                { "label": "Speed", "value": 66 }
+                { "label": "Motion", "value": 82 },
+                { "label": "Realism", "value": 78 },
+                { "label": "Speed", "value": 76 }
               ],
-              "tags": ["Story", "Character", "Audio"]
+              "tags": ["Video-to-video", "Structured", "Flexible"]
             }
           ],
-          "quoteLabel": "Quote before render",
+          "quoteLabel": "Cost for this render",
           "quoteValue": "$0.34",
           "quoteMeta": "5s · 1080p · image-to-video",
           "outputLabel": "Output previews",
@@ -352,8 +352,7 @@
           "generateCta": "Generate with this engine",
           "refundNote": "Credits returned if generation fails",
           "playLabel": "Play engine preview",
-          "pauseLabel": "Pause engine preview",
-          "nextLabel": "Show next engine preview"
+          "pauseLabel": "Pause engine preview"
         }
       },
       "proof": {
@@ -575,13 +574,13 @@
         "subtitle": "Use supported providers from one creative production console without juggling dashboards.",
         "cta": "View all models",
         "items": [
-          { "providerKey": "OpenAI", "provider": "OpenAI", "model": "Sora" },
-          { "providerKey": "Google", "provider": "Google", "model": "Veo and Nano Banana" },
-          { "providerKey": "Kling by Kuaishou", "provider": "Kling / Kuaishou", "model": "Kling" },
           { "providerKey": "ByteDance", "provider": "ByteDance", "model": "Seedance" },
+          { "providerKey": "Kling by Kuaishou", "provider": "Kling / Kuaishou", "model": "Kling" },
+          { "providerKey": "Google", "provider": "Google", "model": "Veo and Nano Banana" },
           { "providerKey": "Lightricks", "provider": "Lightricks", "model": "LTX" },
           { "providerKey": "Wan", "provider": "Wan", "model": "Wan" },
           { "providerKey": "Pika", "provider": "Pika", "model": "Pika Text to Video" },
+          { "providerKey": "OpenAI", "provider": "OpenAI", "model": "Sora" },
           { "providerKey": "MiniMax", "provider": "MiniMax", "model": "Hailuo" },
           { "providerKey": "Luma AI", "provider": "Luma", "model": "Ray" }
         ]
@@ -620,7 +619,7 @@
     "hero": {
       "title": "The right engine for every shot.",
       "subtitle": "Professional AI video, minus the hassle. Price before you generate. One hub for your work.",
-      "primaryCta": "Start a render",
+      "primaryCta": "Generate",
       "secondaryCta": "See examples",
       "workspaceCta": "Open the workspace"
     },
@@ -881,7 +880,7 @@
     "priceChipSuffix": "Shown before you launch.",
     "meta": {
       "title": "Multi-engine AI video workspace — Price before render | MaxVideoAI",
-      "description": "Compare Sora, Veo, Kling, LTX, Seedance, Wan, Pika and more before you render. Generate text-to-video, image-to-video and video-to-video with pay-as-you-go pricing."
+      "description": "Compare Seedance, Kling, Veo, LTX, Wan, Pika and more before you render. Preview real outputs, see the cost before launch and generate with pay-as-you-go pricing."
     },
     "compare": {
       "title": "AI video engines in one view",
@@ -2281,8 +2280,8 @@
     "create": {
       "title": "Create your own",
       "subtitle": "Want to create a video like this?",
-      "body": "Start a render from this prompt or load it in the workspace to remix with your preferred engine, duration, or audio settings.",
-      "cta": "Start a render →"
+      "body": "Generate from this prompt or load it in the workspace to remix with your preferred engine, duration, or audio settings.",
+      "cta": "Generate →"
     },
     "recreate": {
       "title": "Recreate this video",

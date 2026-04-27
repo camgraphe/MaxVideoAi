@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { ChevronRight, Maximize2, Pause, Play, Volume2 } from 'lucide-react';
+import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 
@@ -30,43 +30,129 @@ export type HeroVideoShowcaseItem = {
   imageAlt: string;
 };
 
+function parsePriceAmount(value?: string | null) {
+  if (!value) return null;
+  const match = value.match(/([$€£])?\s*([0-9]+(?:[.,][0-9]+)?)/);
+  if (!match) return null;
+  const amount = Number(match[2].replace(',', '.'));
+  if (!Number.isFinite(amount)) return null;
+  return { amount, symbol: match[1] ?? '$' };
+}
+
+function parseDurationSeconds(value?: string | null) {
+  if (!value) return null;
+  const clock = value.match(/(\d+):(\d{2})/);
+  if (clock) return Number(clock[1]) * 60 + Number(clock[2]);
+  const seconds = value.match(/(\d+(?:[.,]\d+)?)\s*s\b/i);
+  if (seconds) {
+    const parsed = Number(seconds[1].replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function formatPlaybackTime(seconds: number) {
+  const safeSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  const minutes = Math.floor(safeSeconds / 60);
+  const remaining = String(safeSeconds % 60).padStart(2, '0');
+  return `${minutes}:${remaining}`;
+}
+
+function buildRatePerSecondLabel(selected: HeroVideoShowcaseItem, primaryPrice: string, fallbackPrice: string | null) {
+  const durationSeconds = parseDurationSeconds(selected.duration) ?? parseDurationSeconds(selected.estimateMeta);
+  const total = parsePriceAmount(primaryPrice);
+  if (durationSeconds && durationSeconds > 0 && total) {
+    return `${total.symbol}${(total.amount / durationSeconds).toFixed(2)}/sec`;
+  }
+
+  const rateSource = selected.priceNote ?? fallbackPrice ?? selected.price;
+  const rateAmount = parsePriceAmount(rateSource);
+  const rateDurationSeconds = parseDurationSeconds(rateSource);
+  if (rateAmount && rateDurationSeconds && rateDurationSeconds > 0) {
+    return `${rateAmount.symbol}${(rateAmount.amount / rateDurationSeconds).toFixed(2)}/sec`;
+  }
+  return null;
+}
+
+function getDurationShortLabel(value: string) {
+  const seconds = parseDurationSeconds(value);
+  return seconds ? `${seconds}s` : value;
+}
+
 export function HeroVideoShowcase({
   items,
   playLabel,
   pauseLabel,
-  nextLabel,
 }: {
   items: HeroVideoShowcaseItem[];
   playLabel: string;
   pauseLabel: string;
-  nextLabel: string;
 }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasUserPaused, setHasUserPaused] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const selected = items[selectedIndex] ?? items[0];
 
   useEffect(() => {
+    let cancelled = false;
+
+    setHasUserPaused(false);
+    setIsMuted(true);
     setIsPlaying(false);
     setProgress(0);
+    setCurrentTime(0);
     const video = videoRef.current;
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-      video.load();
+    if (!video || !selected?.videoSrc) {
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [selected?.id]);
+
+    video.pause();
+    video.currentTime = 0;
+    video.muted = true;
+    video.load();
+    video
+      .play()
+      .then(() => {
+        if (!cancelled) setIsPlaying(!video.paused);
+      })
+      .catch(() => {
+        if (!cancelled) setIsPlaying(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selected?.id, selected?.videoSrc]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) video.muted = isMuted;
+  }, [isMuted, selected?.id]);
 
   if (!selected) return null;
 
   const primaryPrice = selected.estimateValue || selected.price;
   const ratePrice = selected.price && selected.price !== primaryPrice ? selected.price : null;
+  const [modeLabel, , formatLabelFromMedia] = (selected.mediaInfo ?? '').split(' · ');
+  const quoteRenderMeta = [getDurationShortLabel(selected.duration), modeLabel?.toLowerCase(), formatLabelFromMedia ?? selected.resolution]
+    .filter(Boolean)
+    .join(' · ');
+  const ratePerSecond = buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
 
   async function handlePlayToggle() {
     const video = videoRef.current;
     if (!video || !selected.videoSrc) {
-      setIsPlaying((value) => !value);
+      setIsPlaying((value) => {
+        const next = !value;
+        setHasUserPaused(!next);
+        return next;
+      });
       setProgress((value) => (value > 0 ? 0 : 38));
       return;
     }
@@ -74,25 +160,27 @@ export function HeroVideoShowcase({
     if (video.paused) {
       await video.play().catch(() => undefined);
       setIsPlaying(!video.paused);
+      if (!video.paused) setHasUserPaused(false);
     } else {
       video.pause();
       setIsPlaying(false);
+      setHasUserPaused(true);
     }
+  }
+
+  function handleMuteToggle() {
+    setIsMuted((value) => !value);
   }
 
   function selectEngine(index: number) {
     setSelectedIndex(index);
   }
 
-  function selectNext() {
-    setSelectedIndex((index) => (items.length ? (index + 1) % items.length : 0));
-  }
-
-  const timeLabel = progress > 0 ? '0:02' : '0:00';
+  const timeLabel = formatPlaybackTime(currentTime);
 
   return (
-    <div className="relative mx-auto w-full max-w-[830px] overflow-visible px-0">
-      <div className="absolute -inset-6 rounded-[42px] bg-[radial-gradient(circle_at_58%_10%,rgba(17,24,39,0.16),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(120,113,108,0.12),transparent_36%)] blur-2xl dark:bg-[radial-gradient(circle_at_58%_10%,rgba(255,255,255,0.10),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(148,163,184,0.11),transparent_36%)]" />
+    <div className="relative mx-auto w-full max-w-[710px] overflow-visible px-0 xl:mr-0">
+      <div className="absolute -inset-5 rounded-[38px] bg-[radial-gradient(circle_at_58%_10%,rgba(17,24,39,0.14),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(120,113,108,0.10),transparent_36%)] blur-2xl dark:bg-[radial-gradient(circle_at_58%_10%,rgba(255,255,255,0.09),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(148,163,184,0.10),transparent_36%)]" />
       <div className="relative">
         <div
           data-hero-player="main"
@@ -105,14 +193,16 @@ export function HeroVideoShowcase({
               key={selected.id}
               className="absolute inset-0 h-full w-full object-cover"
               poster={selected.posterSrc}
-              preload="none"
-              muted
+              preload="metadata"
+              autoPlay
+              muted={isMuted}
               playsInline
               loop
               onPause={() => setIsPlaying(false)}
               onPlay={() => setIsPlaying(true)}
               onTimeUpdate={(event) => {
                 const video = event.currentTarget;
+                setCurrentTime(video.currentTime);
                 if (video.duration && Number.isFinite(video.duration)) {
                   setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
                 }
@@ -126,26 +216,26 @@ export function HeroVideoShowcase({
               alt={selected.imageAlt}
               fill
               priority
-              sizes="(max-width: 767px) 100vw, (max-width: 1399px) 58vw, 830px"
+              sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
               className="object-cover"
             />
           )}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34)_0%,rgba(3,7,18,0.04)_38%,rgba(3,7,18,0.72)_100%)]" />
 
           <div className="absolute left-5 top-5 max-w-[58%] text-white sm:left-7 sm:top-7">
-            <div className="flex flex-wrap gap-1.5">
+            <p className="text-xl font-semibold leading-none tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)]">
+              {selected.name}
+            </p>
+            <p className="mt-2 text-sm font-medium text-white/86 drop-shadow-[0_2px_10px_rgba(0,0,0,0.72)]">
+              {selected.mediaInfo ?? `${selected.provider} · ${selected.bestFor}`}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {(selected.chips?.length ? selected.chips : [selected.bestFor, selected.provider]).slice(0, 3).map((chip) => (
                 <span key={chip} className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md">
                   {chip}
                 </span>
               ))}
             </div>
-            <p className="mt-3 text-xl font-semibold leading-none tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)]">
-              {selected.name}
-            </p>
-            <p className="mt-2 text-sm font-medium text-white/86 drop-shadow-[0_2px_10px_rgba(0,0,0,0.72)]">
-              {selected.mediaInfo ?? `${selected.provider} · ${selected.duration}`}
-            </p>
           </div>
 
           <div className="absolute right-4 top-4 min-w-[124px] rounded-[16px] border border-white/18 bg-black/50 px-3.5 py-3 text-left text-white shadow-[0_18px_48px_-24px_rgba(0,0,0,0.95)] backdrop-blur-lg sm:right-6 sm:top-6 sm:min-w-[142px]">
@@ -153,23 +243,21 @@ export function HeroVideoShowcase({
             <p className="mt-1 text-2xl font-semibold leading-none tracking-tight sm:text-[28px]">
               {primaryPrice}
             </p>
-            <p className="mt-1.5 text-[10px] font-medium leading-tight text-white/78 sm:text-[11px]">
-              {selected.estimateMeta}
-            </p>
-            {selected.priceNote || ratePrice ? (
-              <p className="mt-1.5 text-[10px] font-semibold leading-tight text-white/84 sm:text-[11px]">{selected.priceNote ?? ratePrice}</p>
-            ) : null}
+            <p className="mt-1.5 text-[10px] font-medium leading-tight text-white/78 sm:text-[11px]">{quoteRenderMeta}</p>
+            {ratePerSecond ? <p className="mt-1.5 text-[10px] font-semibold leading-tight text-white/84 sm:text-[11px]">{ratePerSecond}</p> : null}
           </div>
 
-          <button
-            type="button"
-            aria-label={isPlaying ? pauseLabel : playLabel}
-            aria-pressed={isPlaying}
-            onClick={handlePlayToggle}
-            className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14]"
-          >
-            <UIIcon icon={isPlaying ? Pause : Play} size={28} />
-          </button>
+          {hasUserPaused ? (
+            <button
+              type="button"
+              aria-label={playLabel}
+              aria-pressed={false}
+              onClick={handlePlayToggle}
+              className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14]"
+            >
+              <UIIcon icon={Play} size={28} />
+            </button>
+          ) : null}
 
           <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.72))] px-3 pb-3 pt-9 text-white sm:px-5">
             <div className="flex items-center gap-3">
@@ -202,10 +290,12 @@ export function HeroVideoShowcase({
               </span>
               <button
                 type="button"
-                aria-label="Muted preview"
-                className="hidden h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 sm:inline-flex"
+                aria-label={isMuted ? 'Turn preview sound on' : 'Turn preview sound off'}
+                aria-pressed={!isMuted}
+                onClick={handleMuteToggle}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80"
               >
-                <UIIcon icon={Volume2} size={18} />
+                <UIIcon icon={isMuted ? VolumeX : Volume2} size={18} />
               </button>
               <button
                 type="button"
@@ -219,8 +309,8 @@ export function HeroVideoShowcase({
         </div>
       </div>
 
-      <div className="relative z-20 mt-5">
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+      <div className="relative z-20 mt-4">
+        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
           {items.map((item, index) => {
             const selectedThumb = index === selectedIndex;
             return (
@@ -232,23 +322,23 @@ export function HeroVideoShowcase({
                 onClick={() => selectEngine(index)}
                 className={
                   selectedThumb
-                    ? 'relative aspect-[0.92] min-w-0 overflow-hidden rounded-[15px] border border-white/90 bg-[#070b14] shadow-[0_0_0_2px_rgba(17,24,39,0.28),0_20px_38px_-24px_rgba(3,7,18,0.78)] focus:outline-none focus:ring-2 focus:ring-slate-400/70 dark:border-white/70 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.22),0_20px_38px_-24px_rgba(0,0,0,0.92)]'
-                    : 'relative aspect-[0.92] min-w-0 overflow-hidden rounded-[15px] border border-white/70 bg-[#070b14] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.72)] transition hover:-translate-y-0.5 hover:border-white/90 hover:shadow-[0_16px_34px_-28px_rgba(3,7,18,0.62)] focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:border-white/14'
+                    ? 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/90 bg-[#070b14] shadow-[0_0_0_2px_rgba(17,24,39,0.24),0_18px_34px_-24px_rgba(3,7,18,0.76)] focus:outline-none focus:ring-2 focus:ring-slate-400/70 dark:border-white/70 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.20),0_18px_34px_-24px_rgba(0,0,0,0.9)]'
+                    : 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/70 bg-[#070b14] shadow-[0_12px_26px_-24px_rgba(15,23,42,0.7)] transition hover:-translate-y-0.5 hover:border-white/90 hover:shadow-[0_14px_30px_-24px_rgba(3,7,18,0.6)] focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:border-white/14'
                 }
               >
                 <Image
                   src={item.posterSrc}
                   alt={item.imageAlt}
                   fill
-                  sizes="(max-width: 639px) 33vw, 132px"
+                  sizes="(max-width: 639px) 33vw, 118px"
                   className="object-cover"
                   loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/86 via-black/10 to-transparent" />
-                <span className="absolute bottom-8 left-2.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/92 text-[#151827]">
+                <span className="absolute bottom-7 left-2.5 inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white/92 text-[#151827]">
                   <UIIcon icon={Play} size={10} />
                 </span>
-                <span className="absolute bottom-2.5 left-2.5 right-2 truncate text-left text-[11px] font-semibold leading-tight text-white">
+                <span className="absolute bottom-2 left-2.5 right-2 truncate text-left text-[10.5px] font-semibold leading-tight text-white">
                   {item.name}
                 </span>
                 {selectedThumb ? <span className="absolute bottom-3 right-2.5 h-2 w-2 rounded-full bg-white" /> : null}
@@ -256,14 +346,6 @@ export function HeroVideoShowcase({
             );
           })}
         </div>
-        <button
-          type="button"
-          aria-label={nextLabel}
-          onClick={selectNext}
-          className="absolute -right-5 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-hairline bg-surface/95 text-text-primary shadow-card backdrop-blur transition hover:border-slate-300 hover:bg-slate-100/70 focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:hover:border-white/20 dark:hover:bg-white/10 xl:grid"
-        >
-          <UIIcon icon={ChevronRight} size={18} />
-        </button>
         {(selected.examplesHref || selected.modelHref) ? (
           <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
             {selected.examplesHref ? (

@@ -89,7 +89,7 @@ export function HeaderBar() {
   const walletPromptId = useId();
   const themeStorageKey = 'mv-theme';
   const loginLabel = t('nav.login', 'Log in');
-  const ctaLabel = t('nav.cta', 'Start a render');
+  const ctaLabel = t('nav.cta', 'Generate');
   const createAccountMobile = locale === 'fr' ? 'Creer' : locale === 'es' ? 'Crear' : 'Create';
   const signInMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Sign in';
   const themeToggleLabel =

@@ -28,7 +28,7 @@
       }
     ],
     "login": "Iniciar sesión",
-    "cta": "Empezar a generar",
+    "cta": "Generar",
     "linkLabels": {
       "models": "Modelos",
       "examples": "Ejemplos",
@@ -220,7 +220,7 @@
         "href": "/legal"
       }
     ],
-    "brandNote": "Centro independiente para video profesional con IA: precio antes de generar, acceso a los motores más recientes y un espacio de trabajo para cada toma. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02 y más. Las marcas pertenecen a sus respectivos propietarios.",
+    "brandNote": "Centro independiente para video profesional con IA: precio antes de generar, acceso a los motores más recientes y un espacio de trabajo para cada toma. Funciona con Seedance, Kling, Veo, LTX, Wan, Pika, Sora y más. Las marcas pertenecen a sus respectivos propietarios.",
     "languageLabel": "Idioma",
     "languages": [
       {
@@ -321,8 +321,8 @@
         "eyebrow": "Workspace de video IA multi-motor de pago por uso",
         "badgeChips": ["Generador de video IA multi-motor", "Precio antes del render", "Pago por uso · sin suscripción"],
         "title": "Deja de adivinar qué modelo de video IA usar.",
-        "subtitle": "Compara Sora, Veo, Kling, LTX, Seedance, Wan, Pika y más, previsualiza resultados reales, mira el precio antes del render y genera con el modelo adecuado para cada plano.",
-        "primaryCta": "Iniciar un render",
+        "subtitle": "Compara Seedance, Kling, Veo, LTX y más, previsualiza resultados reales, mira el coste antes de lanzar y elige el motor de video IA adecuado para cada plano.",
+        "primaryCta": "Generar",
         "secondaryCta": "Ver ejemplos",
         "examplesCta": "Comparar motores",
         "trustBadges": [
@@ -410,20 +410,20 @@
               "tags": ["Rápido", "Barato", "Draft"]
             },
             {
-              "engineId": "sora-2",
-              "name": "Sora 2",
-              "provider": "OpenAI",
-              "bestFor": "Escenas narrativas",
-              "fallbackPrice": "desde 0,55 $ / 5 s",
+              "engineId": "wan-2-6",
+              "name": "Wan 2.6",
+              "provider": "Wan",
+              "bestFor": "Workflows video a video",
+              "fallbackPrice": "desde 0,22 $ / 5 s",
               "scores": [
-                { "label": "Motion", "value": 84 },
-                { "label": "Realismo", "value": 88 },
-                { "label": "Velocidad", "value": 66 }
+                { "label": "Motion", "value": 82 },
+                { "label": "Realismo", "value": 78 },
+                { "label": "Velocidad", "value": 76 }
               ],
-              "tags": ["Historia", "Personaje", "Audio"]
+              "tags": ["Video a video", "Estructurado", "Flexible"]
             }
           ],
-          "quoteLabel": "Cotización antes del render",
+          "quoteLabel": "Coste de este render",
           "quoteValue": "0,34 $",
           "quoteMeta": "5 s · 1080p · imagen a video",
           "outputLabel": "Previsualizaciones",
@@ -432,8 +432,7 @@
           "generateCta": "Generar con este motor",
           "refundNote": "Créditos devueltos si la generación falla",
           "playLabel": "Reproducir preview del motor",
-          "pauseLabel": "Pausar preview del motor",
-          "nextLabel": "Mostrar el siguiente preview de motor"
+          "pauseLabel": "Pausar preview del motor"
         }
       },
       "proof": {
@@ -529,13 +528,13 @@
         "subtitle": "Usa proveedores compatibles desde una consola creativa de producción.",
         "cta": "Ver todos los modelos",
         "items": [
-          { "providerKey": "OpenAI", "provider": "OpenAI", "model": "Sora" },
-          { "providerKey": "Google", "provider": "Google", "model": "Veo y Nano Banana" },
-          { "providerKey": "Kling by Kuaishou", "provider": "Kling / Kuaishou", "model": "Kling" },
           { "providerKey": "ByteDance", "provider": "ByteDance", "model": "Seedance" },
+          { "providerKey": "Kling by Kuaishou", "provider": "Kling / Kuaishou", "model": "Kling" },
+          { "providerKey": "Google", "provider": "Google", "model": "Veo y Nano Banana" },
           { "providerKey": "Lightricks", "provider": "Lightricks", "model": "LTX" },
           { "providerKey": "Wan", "provider": "Wan", "model": "Wan" },
           { "providerKey": "Pika", "provider": "Pika", "model": "Pika Text to Video" },
+          { "providerKey": "OpenAI", "provider": "OpenAI", "model": "Sora" },
           { "providerKey": "MiniMax", "provider": "MiniMax", "model": "Hailuo" },
           { "providerKey": "Luma AI", "provider": "Luma", "model": "Ray" }
         ]
@@ -574,7 +573,7 @@
     "hero": {
       "title": "El motor ideal para cada toma.",
       "subtitle": "Video profesional con IA, sin complicaciones. Ves el precio antes de generar, y lo haces todo desde un solo lugar.",
-      "primaryCta": "Empezar a generar",
+      "primaryCta": "Generar",
       "secondaryCta": "Ver ejemplos",
       "workspaceCta": "Abrir el espacio de trabajo"
     },
@@ -835,7 +834,7 @@
     "priceChipSuffix": "Visible antes de lanzar.",
     "meta": {
       "title": "Workspace de video IA multi-motor — Precio antes del render | MaxVideoAI",
-      "description": "Compara Sora, Veo, Kling, LTX, Seedance, Wan, Pika y más antes de generar. Crea texto a video, imagen a video y video a video con pago por uso."
+      "description": "Compara Seedance, Kling, Veo, LTX, Wan, Pika y más antes de generar. Previsualiza resultados reales, mira el coste antes de lanzar y crea con pago por uso."
     },
     "compare": {
       "title": "Modelos de video con IA en un solo panel",
@@ -2159,8 +2158,8 @@
     "create": {
       "title": "Crea la tuya",
       "subtitle": "¿Quieres generar un video como este?",
-      "body": "Inicia un render con este prompt o cárgalo en el workspace para remezclarlo con tu motor, duración o audio preferido.",
-      "cta": "Iniciar un render →"
+      "body": "Genera desde este prompt o cárgalo en el workspace para remezclarlo con tu motor, duración o audio preferido.",
+      "cta": "Generar →"
     },
     "recreate": {
       "title": "Recrear este video",
