@@ -23,7 +23,7 @@ import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { getLocalizedCapabilityKeywords, getLocalizedModelUseCases } from '@/lib/ltx-localization';
 import engineCatalog from '@/config/engine-catalog.json';
 const MODELS_SLUG_MAP = buildSlugMap('models');
-const MODELS_HERO_IMAGE_URL = '/assets/models/models-hero-horses-reference.png';
+const MODELS_HERO_IMAGE_URL = '/assets/models/models-hero-horses-reference.webp';
 type ModelsPageScope = Extract<ModelCatalogScope, 'all' | 'video' | 'image'>;
 
 const DEFAULT_ENGINE_TYPE_LABELS = {

@@ -42,8 +42,24 @@ const fixtures: LocaleFixture[] = [
       es: ['Upscalea assets'],
     },
     forbiddenTextByLocale: {
-      fr: ['Upscale assets before they move through the pipeline'],
-      es: ['Upscale assets before they move through the pipeline'],
+      fr: [
+        'Upscale assets before they move through the pipeline',
+        'Upscale Studio',
+        'Delivery asset',
+        'Input',
+        'Pricing',
+        'Output',
+        'One output, reused everywhere',
+      ],
+      es: [
+        'Upscale assets before they move through the pipeline',
+        'Upscale Studio',
+        'Delivery asset',
+        'Input',
+        'Pricing',
+        'Output',
+        'One output, reused everywhere',
+      ],
     },
   },
 ];

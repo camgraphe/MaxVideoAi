@@ -9,7 +9,7 @@ const IMAGE_CARD_BACKGROUND_URL =
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp';
 const CHARACTER_CARD_BACKGROUND_URL = '/assets/tools/character-builder-workspace.png';
 const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
-const TOOLS_HERO_IMAGE_URL = '/assets/tools/tools-hero-reference.png';
+const TOOLS_HERO_IMAGE_URL = '/assets/tools/tools-hero-reference.webp';
 
 type ToolsMarketingHubContent = Dictionary['toolMarketing']['hub'];
 

@@ -587,13 +587,12 @@
         ]
       },
       "examples": {
-        "title": "Explora resultados reales por motor.",
-        "subtitle": "Abre páginas de ejemplos enfocadas, revisa el modelo detrás de cada resultado y ve el coste antes de generar.",
+        "title": "Previsualiza resultados reales antes de elegir un motor.",
+        "subtitle": "Compara resultados reales de Seedance, Kling, LTX, Veo, Wan y Pika, y revisa specs, límites y precios antes de generar.",
         "cta": "Ver todos los ejemplos",
-        "modelsCta": "Ver todos los modelos",
-        "libraryTitle": "¿Quieres la biblioteca completa?",
-        "libraryBody": "Explora todas las salidas reales o abre el catálogo completo de modelos antes de generar.",
-        "providerLabel": "Motores y proveedores compatibles",
+        "modelsCta": "Ver todas las specs",
+        "compareLink": "Comparar motores",
+        "providerLabel": "Motores compatibles:",
         "viewPrompt": "Clonar ajustes",
         "fallbackCards": [
           {
@@ -605,9 +604,9 @@
             "mode": "Referencia a video",
             "duration": "12 s",
             "price": "4,72 US$",
-            "useCase": "Realismo cinematográfico y piezas comerciales",
-            "cta": "Ver ejemplos de Seedance",
-            "modelCta": "Abrir modelo Seedance",
+            "useCase": "Realismo cinematográfico",
+            "cta": "Ver ejemplos",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/seedance-2-0.jpg",
             "imageAlt": "Ejemplo de video IA Seedance 2.0 para piezas comerciales cinematográficas.",
             "examplesSlug": "seedance"
@@ -621,9 +620,9 @@
             "mode": "Imagen a video",
             "duration": "15 s",
             "price": "4,37 US$",
-            "useCase": "Movimiento de cámara y escenas dinámicas",
-            "cta": "Ver ejemplos de Kling",
-            "modelCta": "Abrir modelo Kling",
+            "useCase": "Movimiento de cámara",
+            "cta": "Ver ejemplos",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/kling-3-4k-hero.jpg",
             "imageAlt": "Ejemplo de video IA Kling 3 Pro para movimiento de cámara y escenas dinámicas.",
             "examplesSlug": "kling"
@@ -637,9 +636,9 @@
             "mode": "Texto a video",
             "duration": "10 s",
             "price": "0,52 US$",
-            "useCase": "Borradores rápidos y pruebas de bajo coste",
-            "cta": "Ver ejemplos de LTX",
-            "modelCta": "Abrir modelo LTX",
+            "useCase": "Borradores rápidos",
+            "cta": "Ver ejemplos",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
             "imageAlt": "Ejemplo de video IA LTX 2.3 Fast para borradores rápidos.",
             "examplesSlug": "ltx"
@@ -653,9 +652,9 @@
             "mode": "Imagen a video",
             "duration": "6 s",
             "price": "3,12 US$",
-            "useCase": "Realismo premium e imagen a video",
-            "cta": "Ver ejemplos de Veo",
-            "modelCta": "Abrir modelo Veo",
+            "useCase": "Realismo premium",
+            "cta": "Ver ejemplos",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/veo-3-1-hero.jpg",
             "imageAlt": "Ejemplo de video IA Veo 3.1 para realismo premium e imagen a video.",
             "examplesSlug": "veo"
@@ -666,12 +665,12 @@
             "engine": "Wan 2.6",
             "engineId": "wan-2-6",
             "modelSlug": "wan-2-6",
-            "mode": "Video IA",
+            "mode": "Video a video",
             "duration": "5 s",
             "price": "0,65 US$",
-            "useCase": "Prompts estructurados y flujos de video a video",
-            "cta": "Ver ejemplos de Wan",
-            "modelCta": "Abrir modelo Wan",
+            "useCase": "Workflows de video estructurados",
+            "cta": "Ver ejemplos",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Ejemplo de video IA Wan 2.6 para flujos de video estructurados.",
             "examplesSlug": "wan"
@@ -683,13 +682,13 @@
             "engineId": "pika-text-to-video",
             "modelSlug": "pika-text-to-video",
             "mode": "Texto a video",
-            "duration": "Video IA",
-            "price": "coste antes de generar",
-            "useCase": "Estilos creativos y experimentos de prompt",
-            "cta": "Abrir modelo Pika",
-            "modelCta": "Abrir modelo Pika",
+            "duration": "",
+            "useCase": "Experimentos creativos de prompt",
+            "cta": "Ver ejemplos",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/pika-22.jpg",
-            "imageAlt": "Experimento de estilo de video IA con Pika Text to Video."
+            "imageAlt": "Experimento de estilo de video IA con Pika Text to Video.",
+            "examplesSlug": "pika"
           }
         ]
       },
@@ -3840,7 +3839,9 @@
       },
       "hero": {
         "eyebrow": "Generar audio",
-        "title": "Espacio de audio"
+        "title": "Espacio de audio",
+        "body": "Genera voces realistas o paisajes sonoros con control avanzado.",
+        "history": "Historial"
       },
       "modes": {
         "music_only": {
@@ -3895,14 +3896,23 @@
       "controls": {
         "eyebrow": "Controles",
         "title": "Configuración de audio",
+        "configureStep": "Configurar",
+        "customizeStep": "Personalizar",
+        "generateStep": "Generar",
+        "chooseType": "Elige el tipo de audio que quieres crear",
         "mood": "Ambiente",
         "intensity": "Intensidad",
         "duration": "Duración",
+        "prompt": "Prompt de audio",
+        "promptMusicPlaceholder": "Describe la música: género, ritmo, emoción, instrumentos y dónde debe encajar en el montaje.",
+        "promptCinematicPlaceholder": "Describe el diseño sonoro que quieres: entorno, impactos, transiciones, textura y qué debe mantenerse sutil.",
         "script": "Script",
         "scriptVoiceOnlyPlaceholder": "Escribe la voz en off independiente que quieres renderizar.",
         "scriptCinematicPlaceholder": "Escribe la narración o el diálogo que debe ir sobre la mezcla de audio cinematográfica.",
         "estimatedDuration": "~{seconds}s estimados",
         "voiceSample": "Muestra de voz",
+        "uploadVoiceSample": "Subir muestra de voz",
+        "uploadVoiceSampleHint": ".wav, .mp3 hasta 50MB",
         "uploadSample": "Subir muestra",
         "cloneEnabled": "Clonado de voz activado",
         "defaultVoice": "Voz por defecto",
@@ -3955,6 +3965,20 @@
         "exportToggle": {
           "label": "Exportar archivo de audio",
           "description": "Guarda también un archivo de audio separado."
+        },
+        "advanced": {
+          "title": "Opciones avanzadas",
+          "description": "Ajusta los parámetros de generación de audio"
+        },
+        "selectedVoice": "Mujer · Natural · ES",
+        "chooseVoice": "Elegir una voz",
+        "providerStack": "Pila de modelos",
+        "providerStackDescription": "{provider} prepara la pista base y luego MaxVideoAI masteriza el render final para la salida elegida.",
+        "providers": {
+          "voice": "Gemini 3.1 Flash TTS",
+          "music": "MiniMax Music 2.6",
+          "sfx": "Mirelo SFX + MMAudio",
+          "mix": "Mastering FFmpeg"
         }
       },
       "pricing": {
@@ -4957,7 +4981,39 @@
         "primaryCta": "Abrir Upscale",
         "secondaryCta": "Ver herramientas",
         "beforeLabel": "Fuente",
-        "afterLabel": "Upscale"
+        "afterLabel": "Upscale",
+        "studioLabel": "Estudio Upscale",
+        "stackLabel": "SeedVR2 · Topaz",
+        "readyBadge": "4x listo",
+        "deliveryLabel": "Asset de entrega",
+        "stats": [
+          {
+            "value": "6",
+            "label": "modelos fal.ai"
+          },
+          {
+            "value": "20s",
+            "label": "límite de video"
+          },
+          {
+            "value": "1",
+            "label": "superficie compartida"
+          }
+        ],
+        "metrics": [
+          {
+            "label": "Entrada",
+            "value": "Imagen / video"
+          },
+          {
+            "label": "Precio",
+            "value": "Video dinámico"
+          },
+          {
+            "label": "Salida",
+            "value": "Lista para la biblioteca"
+          }
+        ]
       },
       "models": {
         "eyebrow": "Ruteo de modelos",
@@ -4987,8 +5043,12 @@
         ]
       },
       "workflow": {
-        "eyebrow": "Workflow",
+        "eyebrow": "Flujo",
         "title": "Primero como herramienta autónoma, luego reutilizable en todas partes",
+        "overlay": {
+          "title": "Una salida, reutilizable en todas partes",
+          "body": "La misma superficie de upscale está lista para Library, acciones de jobs y futuros flujos de generación."
+        },
         "steps": [
           {
             "title": "Sube o pega una URL",
@@ -5017,7 +5077,11 @@
           "q": "¿Upscale aparecerá en otros lugares?",
           "a": "Sí. La implementación usa una superficie dedicada upscale para exponer luego la misma acción desde Library, jobs generados, Image y Video."
         }
-      ]
+      ],
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Detalles del upscale"
+      }
     },
     "angle": {
       "meta": {

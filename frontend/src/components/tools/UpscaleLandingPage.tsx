@@ -36,12 +36,20 @@ function SectionIntro({
   );
 }
 
-function HeroVisual({ beforeLabel, afterLabel }: { beforeLabel: string; afterLabel: string }) {
+function HeroVisual({
+  beforeLabel,
+  afterLabel,
+  hero,
+}: {
+  beforeLabel: string;
+  afterLabel: string;
+  hero: UpscaleLandingContent['hero'];
+}) {
   return (
     <div className="rounded-[32px] border border-slate-950/10 bg-[linear-gradient(135deg,#111827,#1f2937_52%,#172554)] p-4 shadow-[0_42px_120px_rgba(15,23,42,0.22)]">
       <div className="flex items-center justify-between border-b border-white/10 px-2 pb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
-        <span>Upscale Studio</span>
-        <span>SeedVR2 · Topaz</span>
+        <span>{hero.studioLabel}</span>
+        <span>{hero.stackLabel}</span>
       </div>
 
       <div className="grid gap-4 pt-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
@@ -73,25 +81,21 @@ function HeroVisual({ beforeLabel, afterLabel }: { beforeLabel: string; afterLab
               className="object-cover"
             />
             <div className="absolute right-3 top-3 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-              4x ready
+              {hero.readyBadge}
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
             <span>{afterLabel}</span>
-            <span>Delivery asset</span>
+            <span>{hero.deliveryLabel}</span>
           </div>
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-3">
-        {[
-          ['Input', 'Image / video'],
-          ['Pricing', 'Dynamic video'],
-          ['Output', 'Library ready'],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-[18px] border border-white/10 bg-white/[0.06] px-3 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-            <p className="mt-1 truncate text-sm font-semibold text-white">{value}</p>
+        {hero.metrics.map((metric) => (
+          <div key={metric.label} className="rounded-[18px] border border-white/10 bg-white/[0.06] px-3 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{metric.label}</p>
+            <p className="mt-1 truncate text-sm font-semibold text-white">{metric.value}</p>
           </div>
         ))}
       </div>
@@ -141,20 +145,16 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
               </ButtonLink>
             </div>
             <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
-              {[
-                ['6', 'fal.ai models'],
-                ['20s', 'video cap'],
-                ['1', 'shared surface'],
-              ].map(([value, label]) => (
-                <div key={label} className="border-l border-hairline pl-4">
-                  <p className="text-2xl font-semibold text-text-primary">{value}</p>
-                  <p className="mt-1 text-xs text-text-muted">{label}</p>
+              {content.hero.stats.map((stat) => (
+                <div key={stat.label} className="border-l border-hairline pl-4">
+                  <p className="text-2xl font-semibold text-text-primary">{stat.value}</p>
+                  <p className="mt-1 text-xs text-text-muted">{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <HeroVisual beforeLabel={content.hero.beforeLabel} afterLabel={content.hero.afterLabel} />
+          <HeroVisual beforeLabel={content.hero.beforeLabel} afterLabel={content.hero.afterLabel} hero={content.hero} />
         </div>
       </section>
 
@@ -186,8 +186,8 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
           <div className="relative aspect-[16/11] overflow-hidden rounded-[28px] border border-hairline bg-bg shadow-card">
             <Image src={DETAIL_IMAGE_URL} alt="" fill sizes="(max-width: 1024px) 100vw, 560px" className="object-cover" />
             <div className="absolute inset-x-5 bottom-5 rounded-[20px] border border-white/20 bg-black/45 p-4 text-white backdrop-blur">
-              <p className="text-sm font-semibold">One output, reused everywhere</p>
-              <p className="mt-1 text-xs leading-5 text-slate-200">The same upscale surface is ready for Library, job actions, and future generation flows.</p>
+              <p className="text-sm font-semibold">{content.workflow.overlay.title}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-200">{content.workflow.overlay.body}</p>
             </div>
           </div>
 
@@ -212,7 +212,7 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
 
       <section className="section">
         <div className="container-page max-w-5xl stack-gap-md">
-          <SectionIntro eyebrow="FAQ" title="Upscale details" />
+          <SectionIntro eyebrow={content.faqSection.eyebrow} title={content.faqSection.title} />
           <div className="grid gap-3">
             {content.faq.map((entry) => (
               <div key={entry.q} className="rounded-[18px] border border-hairline bg-surface p-5">

@@ -268,7 +268,7 @@ const REFERENCE_WORKFLOW_VISUALS = [
 ] as const;
 
 const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-pro', 'happy-horse-1-0'] as const;
-const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.png';
+const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.webp';
 const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
   'kling-3-pro': 'image-to-video',
   'seedance-2-0': 'image-to-video',

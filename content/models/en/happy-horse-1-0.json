@@ -4,7 +4,7 @@
   "seo": {
     "title": "Happy Horse 1.0 | Unified AI Video Model with Native Audio | MaxVideoAI",
     "description": "Use Happy Horse 1.0 on MaxVideoAI for text-to-video, image-to-video, R2V reference images, video editing, native audio, and lip-sync.",
-    "image": "/assets/models/models-hero-horses-reference.png"
+    "image": "/assets/models/models-hero-horses-reference.webp"
   },
   "overview": "Happy Horse 1.0 is Alibaba's unified AI video model on MaxVideoAI for text prompts, first-frame images, R2V reference-image control, and video-to-video editing with native synchronized audio and lip-sync.",
   "pricingNotes": "Text, image, and R2V runs use standard per-second rates by resolution. Video edit is billed at a combined input/output rate, so it costs double the standard rate for the selected resolution.",

@@ -587,13 +587,12 @@
         ]
       },
       "examples": {
-        "title": "Explorez de vrais résultats par moteur.",
-        "subtitle": "Ouvrez des pages d’exemples ciblées, vérifiez le modèle derrière chaque résultat et voyez le coût avant de générer.",
+        "title": "Prévisualisez de vrais résultats avant de choisir un moteur.",
+        "subtitle": "Comparez de vrais rendus Seedance, Kling, LTX, Veo, Wan et Pika, puis consultez les spécifications, limites et prix complets avant de générer.",
         "cta": "Parcourir tous les exemples",
-        "modelsCta": "Voir tous les modèles",
-        "libraryTitle": "Vous voulez toute la bibliothèque ?",
-        "libraryBody": "Parcourez toutes les sorties réelles ou ouvrez le catalogue complet des modèles avant de générer.",
-        "providerLabel": "Moteurs et fournisseurs pris en charge",
+        "modelsCta": "Voir toutes les spécifications",
+        "compareLink": "Comparer les moteurs",
+        "providerLabel": "Moteurs pris en charge :",
         "viewPrompt": "Cloner les réglages",
         "fallbackCards": [
           {
@@ -605,9 +604,9 @@
             "mode": "Référence vers vidéo",
             "duration": "12 s",
             "price": "4,72 $",
-            "useCase": "Réalisme cinématique et plans commerciaux",
-            "cta": "Voir les exemples Seedance",
-            "modelCta": "Ouvrir le modèle Seedance",
+            "useCase": "Réalisme cinématographique",
+            "cta": "Voir les exemples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/seedance-2-0.jpg",
             "imageAlt": "Exemple vidéo IA Seedance 2.0 pour plans commerciaux cinématiques.",
             "examplesSlug": "seedance"
@@ -621,9 +620,9 @@
             "mode": "Image vers vidéo",
             "duration": "15 s",
             "price": "4,37 $",
-            "useCase": "Mouvements caméra et scènes dynamiques",
-            "cta": "Voir les exemples Kling",
-            "modelCta": "Ouvrir le modèle Kling",
+            "useCase": "Mouvements caméra",
+            "cta": "Voir les exemples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/kling-3-4k-hero.jpg",
             "imageAlt": "Exemple vidéo IA Kling 3 Pro pour mouvement caméra et scènes dynamiques.",
             "examplesSlug": "kling"
@@ -637,9 +636,9 @@
             "mode": "Texte vers vidéo",
             "duration": "10 s",
             "price": "0,52 $",
-            "useCase": "Brouillons rapides et tests à faible coût",
-            "cta": "Voir les exemples LTX",
-            "modelCta": "Ouvrir le modèle LTX",
+            "useCase": "Brouillons rapides",
+            "cta": "Voir les exemples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
             "imageAlt": "Exemple vidéo IA LTX 2.3 Fast pour génération rapide de brouillons.",
             "examplesSlug": "ltx"
@@ -653,9 +652,9 @@
             "mode": "Image vers vidéo",
             "duration": "6 s",
             "price": "3,12 $",
-            "useCase": "Réalisme premium et image-vers-vidéo",
-            "cta": "Voir les exemples Veo",
-            "modelCta": "Ouvrir le modèle Veo",
+            "useCase": "Réalisme premium",
+            "cta": "Voir les exemples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/veo-3-1-hero.jpg",
             "imageAlt": "Exemple vidéo IA Veo 3.1 pour réalisme premium et image-vers-vidéo.",
             "examplesSlug": "veo"
@@ -666,12 +665,12 @@
             "engine": "Wan 2.6",
             "engineId": "wan-2-6",
             "modelSlug": "wan-2-6",
-            "mode": "Vidéo IA",
+            "mode": "Vidéo vers vidéo",
             "duration": "5 s",
             "price": "0,65 $",
-            "useCase": "Prompts structurés et workflows vidéo-vers-vidéo",
-            "cta": "Voir les exemples Wan",
-            "modelCta": "Ouvrir le modèle Wan",
+            "useCase": "Workflows vidéo structurés",
+            "cta": "Voir les exemples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Exemple vidéo IA Wan 2.6 pour workflows vidéo structurés.",
             "examplesSlug": "wan"
@@ -683,13 +682,13 @@
             "engineId": "pika-text-to-video",
             "modelSlug": "pika-text-to-video",
             "mode": "Texte vers vidéo",
-            "duration": "Vidéo IA",
-            "price": "coût avant de générer",
-            "useCase": "Styles créatifs et expérimentations de prompts",
-            "cta": "Ouvrir le modèle Pika",
-            "modelCta": "Ouvrir le modèle Pika",
+            "duration": "",
+            "useCase": "Expériences créatives de prompts",
+            "cta": "Voir les exemples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/pika-22.jpg",
-            "imageAlt": "Expérimentation de style vidéo IA Pika Text to Video."
+            "imageAlt": "Expérimentation de style vidéo IA Pika Text to Video.",
+            "examplesSlug": "pika"
           }
         ]
       },
@@ -4989,7 +4988,39 @@
         "primaryCta": "Ouvrir Upscale",
         "secondaryCta": "Voir tous les outils",
         "beforeLabel": "Source",
-        "afterLabel": "Upscale"
+        "afterLabel": "Upscale",
+        "studioLabel": "Studio Upscale",
+        "stackLabel": "SeedVR2 · Topaz",
+        "readyBadge": "4x prêt",
+        "deliveryLabel": "Asset livrable",
+        "stats": [
+          {
+            "value": "6",
+            "label": "modèles fal.ai"
+          },
+          {
+            "value": "20s",
+            "label": "limite vidéo"
+          },
+          {
+            "value": "1",
+            "label": "surface partagée"
+          }
+        ],
+        "metrics": [
+          {
+            "label": "Entrée",
+            "value": "Image / vidéo"
+          },
+          {
+            "label": "Prix",
+            "value": "Vidéo dynamique"
+          },
+          {
+            "label": "Sortie",
+            "value": "Prête pour la bibliothèque"
+          }
+        ]
       },
       "models": {
         "eyebrow": "Routage modèles",
@@ -5019,8 +5050,12 @@
         ]
       },
       "workflow": {
-        "eyebrow": "Workflow",
+        "eyebrow": "Flux",
         "title": "Un outil autonome d'abord, réutilisable partout ensuite",
+        "overlay": {
+          "title": "Une sortie, réutilisable partout",
+          "body": "La même surface upscale est prête pour la Bibliothèque, les actions de jobs et les futurs flux de génération."
+        },
         "steps": [
           {
             "title": "Uploader ou coller une URL",
@@ -5049,7 +5084,11 @@
           "q": "Upscale apparaîtra-t-il ailleurs ?",
           "a": "Oui. L'implémentation utilise une surface dédiée upscale pour exposer ensuite la même action depuis Bibliothèque, les jobs générés, Image et Vidéo."
         }
-      ]
+      ],
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Détails de l'upscale"
+      }
     },
     "angle": {
       "meta": {

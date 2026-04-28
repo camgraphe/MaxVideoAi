@@ -11,7 +11,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
-const BLOG_HERO_IMAGE_URL = '/assets/blog/blog-hero-reference.png';
+const BLOG_HERO_IMAGE_URL = '/assets/blog/blog-hero-reference.webp';
 const BLOG_META = {
   en: {
     title: 'Blog — MaxVideoAI',

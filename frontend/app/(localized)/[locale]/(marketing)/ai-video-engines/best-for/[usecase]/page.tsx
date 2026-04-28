@@ -10,6 +10,7 @@ import { defaultLocale, locales } from '@/i18n/locales';
 import { getLocalizedUrl } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
+import { canonicalizePublishedCompareSlug, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { getContentEntries, getEntryBySlug, type ContentEntry } from '@/lib/content/markdown';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { EXAMPLES_HERO_SELECTION_LIMIT, pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
@@ -499,9 +500,10 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
   const heroDescription = buildBestForHeroDescription(locale, entry, content?.description);
   const chips = getUsecaseChips(locale, entry.slug, criteria);
   const alsoAvailable = getAlsoAvailableModels(entry.slug, topPicks);
+  const relatedComparisons = getPublishedRelatedComparisons(entry);
   const canonicalUrl = getLocalizedUrl(locale, `/ai-video-engines/best-for/${entry.slug}`);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(locale, entry, heroTitle, canonicalUrl);
-  const itemListJsonLd = buildBestForItemListJsonLd(rankedPicks, canonicalUrl);
+  const itemListJsonLd = buildBestForItemListJsonLd(locale, rankedPicks, canonicalUrl);
   const webPageJsonLd = buildBestForWebPageJsonLd(heroTitle, heroDescription, canonicalUrl);
 
   return (
@@ -517,7 +519,7 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
               {copy.eyebrow}
             </Link>
             <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-            <span className="text-text-secondary">{entry.slug.replace(/-/g, ' ')}</span>
+            <span className="text-text-secondary">{heroTitle}</span>
           </nav>
 
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_456px] lg:items-start">
@@ -558,7 +560,7 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
             <TopPicksPanel
               entry={entry}
               picks={rankedPicks.slice(0, 3)}
-              relatedComparisons={entry.relatedComparisons ?? []}
+              relatedComparisons={relatedComparisons}
               locale={locale}
               copy={copy}
             />
@@ -579,7 +581,7 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {rankedPicks.map((pick) => (
-                  <RankedShortlistCard key={pick.slug} pick={pick} relatedComparisons={entry.relatedComparisons ?? []} copy={copy} />
+                  <RankedShortlistCard key={pick.slug} pick={pick} relatedComparisons={relatedComparisons} copy={copy} />
                 ))}
               </div>
               {alsoAvailable.length ? <AlsoAvailableRow models={alsoAvailable} copy={copy} /> : null}
@@ -598,7 +600,7 @@ export default async function BestForDetailPage({ params }: { params: Params }) 
 
           <aside className="space-y-4 lg:sticky lg:top-24">
             <CriteriaCard criteria={criteria} locale={locale} copy={copy} />
-            <CompareCard comparisons={entry.relatedComparisons ?? []} copy={copy} />
+            <CompareCard comparisons={relatedComparisons} copy={copy} />
             <RelatedGuidesCard guides={relatedGuides} copy={copy} />
             <QuickLinksCard copy={copy} />
           </aside>
@@ -644,6 +646,8 @@ function TopPicksPanel({
   locale: AppLocale;
   copy: (typeof DETAIL_COPY)[AppLocale];
 }) {
+  const comparisonSlug = pickComparisonSlug(picks, relatedComparisons);
+
   return (
     <section className="rounded-[18px] border border-hairline bg-surface p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
       <div className="flex items-center justify-between gap-3 px-1">
@@ -675,13 +679,15 @@ function TopPicksPanel({
           </div>
         ))}
       </div>
-      <Link
-        href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pickComparisonSlug(picks, relatedComparisons) } }}
-        className="mt-4 inline-flex items-center gap-2 px-1 text-sm font-semibold text-brand transition hover:text-brandHover"
-      >
-        {copy.compareShortlistCta}
-        <ChevronRight className="h-4 w-4" aria-hidden />
-      </Link>
+      {comparisonSlug ? (
+        <Link
+          href={{ pathname: '/ai-video-engines/[slug]', params: { slug: comparisonSlug } }}
+          className="mt-4 inline-flex items-center gap-2 px-1 text-sm font-semibold text-brand transition hover:text-brandHover"
+        >
+          {copy.compareShortlistCta}
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        </Link>
+      ) : null}
     </section>
   );
 }
@@ -1335,12 +1341,32 @@ function buildPickBullets(locale: AppLocale, criteria: string[], rank: number) {
   return [`${first} ${primary.toLowerCase()}`, `${second} ${secondary.toLowerCase()}`, `${third} ${tertiary.toLowerCase()}`];
 }
 
+function getPublishedRelatedComparisons(entry: BestForEntry) {
+  return Array.from(
+    new Set(
+      (entry.relatedComparisons ?? [])
+        .filter((slug) => isPublishedComparisonSlug(slug))
+        .map((slug) => canonicalizePublishedCompareSlug(slug))
+    )
+  );
+}
+
 function pickComparisonSlug(picks: RankedPick[], relatedComparisons: string[]) {
-  return relatedComparisons[0] ?? (picks.length >= 2 ? `${picks[0].slug}-vs-${picks[1].slug}` : 'seedance-2-0-vs-veo-3-1');
+  const explicit = relatedComparisons.find((slug) => isPublishedComparisonSlug(slug));
+  if (explicit) return canonicalizePublishedCompareSlug(explicit);
+  for (let index = 0; index < picks.length; index += 1) {
+    for (let nextIndex = index + 1; nextIndex < picks.length; nextIndex += 1) {
+      const candidate = `${picks[index].slug}-vs-${picks[nextIndex].slug}`;
+      if (isPublishedComparisonSlug(candidate)) {
+        return canonicalizePublishedCompareSlug(candidate);
+      }
+    }
+  }
+  return null;
 }
 
 function findComparisonForPick(slug: string, relatedComparisons: string[]) {
-  return relatedComparisons.find((comparison) => comparison.split('-vs-').includes(slug)) ?? relatedComparisons[0];
+  return relatedComparisons.find((comparison) => comparison.split('-vs-').includes(slug)) ?? null;
 }
 
 function getExamplesSlug(pick: RankedPick) {
@@ -1396,7 +1422,7 @@ function getTopPicksTitle(locale: AppLocale, slug: string) {
     },
     'fast-drafts': {
       en: 'Top picks for fast drafts',
-      fr: 'Meilleurs choix pour drafts rapides',
+      fr: 'Meilleurs choix pour brouillons rapides',
       es: 'Mejores opciones para borradores rápidos',
     },
     'stylized-anime': {
@@ -1406,8 +1432,8 @@ function getTopPicksTitle(locale: AppLocale, slug: string) {
     },
     'image-to-video': {
       en: 'Top picks for image-to-video',
-      fr: 'Meilleurs choix image-to-video',
-      es: 'Mejores opciones image-to-video',
+      fr: 'Meilleurs choix image vers vidéo',
+      es: 'Mejores opciones de imagen a video',
     },
   };
   return labels[slug]?.[locale] ?? labels[slug]?.en ?? (locale === 'fr' ? 'Meilleurs choix' : locale === 'es' ? 'Mejores opciones' : 'Top picks');
@@ -1476,10 +1502,10 @@ function getAlsoAvailableModels(slug: string, topPicks: string[]) {
 function buildReasonSentence(locale: AppLocale, usecaseSlug: string, pick: RankedPick) {
   const usecaseLabel = getUsecaseLabel(locale, usecaseSlug);
   if (locale === 'fr') {
-    return `est classé ici car il donne aux utilisateurs MaxVideoAI une route pratique vers ${pick.criterion.toLowerCase()}, tout en gardant le workflow adapté à ${usecaseLabel}.`;
+    return `est classé ici car il donne aux utilisateurs MaxVideoAI une route pratique vers ${pick.criterion.toLowerCase()}, tout en gardant le flux adapté à ${usecaseLabel}.`;
   }
   if (locale === 'es') {
-    return `está aquí porque da a los usuarios de MaxVideoAI una ruta práctica hacia ${pick.criterion.toLowerCase()}, manteniendo el workflow adecuado para ${usecaseLabel}.`;
+    return `está aquí porque da a los usuarios de MaxVideoAI una ruta práctica hacia ${pick.criterion.toLowerCase()}, manteniendo el flujo adecuado para ${usecaseLabel}.`;
   }
   return `ranks here because it gives MaxVideoAI users a practical route to ${pick.criterion.toLowerCase()} while keeping the workflow suitable for ${usecaseLabel}.`;
 }
@@ -1509,7 +1535,7 @@ function buildBreadcrumbJsonLd(locale: AppLocale, entry: BestForEntry, title: st
   };
 }
 
-function buildBestForItemListJsonLd(picks: RankedPick[], canonicalUrl: string) {
+function buildBestForItemListJsonLd(locale: AppLocale, picks: RankedPick[], canonicalUrl: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
@@ -1519,7 +1545,7 @@ function buildBestForItemListJsonLd(picks: RankedPick[], canonicalUrl: string) {
       '@type': 'ListItem',
       position: pick.rank,
       name: pick.engine?.marketingName ?? pick.slug,
-      url: getLocalizedUrl(defaultLocale, `/models/${pick.slug}`),
+      url: getLocalizedUrl(locale, `/models/${pick.slug}`),
     })),
   };
 }
@@ -1552,17 +1578,17 @@ function getUsecaseChips(locale: AppLocale, slug: string, fallback: string[]) {
 function getUsecaseLabel(locale: AppLocale, slug: string) {
   const labels: Record<string, Record<AppLocale, string>> = {
     'cinematic-realism': { en: 'cinematic realism', fr: 'un rendu cinématique', es: 'realismo cinematográfico' },
-    'character-reference': { en: 'character reference', fr: 'la character reference', es: 'character reference' },
-    'reference-to-video': { en: 'reference-to-video', fr: 'le reference-to-video', es: 'reference-to-video' },
-    'multi-shot-video': { en: 'multi-shot video', fr: 'la vidéo multi-shot', es: 'video multi-shot' },
+    'character-reference': { en: 'character reference', fr: 'la référence personnage', es: 'referencia de personaje' },
+    'reference-to-video': { en: 'reference-to-video', fr: 'la vidéo guidée par référence', es: 'video guiado por referencia' },
+    'multi-shot-video': { en: 'multi-shot video', fr: 'la vidéo multi-plan', es: 'video multi-plano' },
     '4k-video': { en: '4K video', fr: 'la vidéo 4K', es: 'video 4K' },
     ads: { en: 'ads', fr: 'les publicités', es: 'anuncios' },
     'ugc-ads': { en: 'UGC videos', fr: 'les vidéos UGC', es: 'videos UGC' },
     'product-videos': { en: 'product videos', fr: 'les vidéos produit', es: 'videos de producto' },
-    'lipsync-dialogue': { en: 'lip sync and dialogue', fr: 'le lip sync et le dialogue', es: 'lip sync y diálogo' },
-    'fast-drafts': { en: 'fast drafts', fr: 'les drafts rapides', es: 'borradores rápidos' },
+    'lipsync-dialogue': { en: 'lip sync and dialogue', fr: 'la synchronisation labiale et le dialogue', es: 'sincronización labial y diálogo' },
+    'fast-drafts': { en: 'fast drafts', fr: 'les brouillons rapides', es: 'borradores rápidos' },
     'stylized-anime': { en: 'anime and stylized video', fr: 'la vidéo anime et stylisée', es: 'anime y video estilizado' },
-    'image-to-video': { en: 'image-to-video', fr: 'l’image-to-video', es: 'image-to-video' },
+    'image-to-video': { en: 'image-to-video', fr: "l'image vers vidéo", es: 'imagen a video' },
   };
   return labels[slug]?.[locale] ?? labels[slug]?.en ?? slug.replace(/-/g, ' ');
 }

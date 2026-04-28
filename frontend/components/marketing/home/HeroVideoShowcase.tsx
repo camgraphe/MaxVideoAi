@@ -333,7 +333,7 @@ export function HeroVideoShowcase({
                   fill
                   sizes="(max-width: 639px) 33vw, 118px"
                   className="object-cover"
-                  loading="eager"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.06)_40%,rgba(0,0,0,0.50)_72%,rgba(0,0,0,0.82)_100%)]" />
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(0,0,0,0.62),rgba(0,0,0,0.26)_48%,transparent_78%)]" />

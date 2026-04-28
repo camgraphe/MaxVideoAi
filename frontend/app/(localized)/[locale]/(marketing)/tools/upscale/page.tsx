@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     englishPath: '/tools/upscale',
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
-    image: '/assets/tools/angle-workspace.png',
+    image: '/assets/tools/tools-hero-reference.webp',
     imageAlt: content.meta.imageAlt,
   });
 }

@@ -5918,7 +5918,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     demoUrl: 'https://v3b.fal.media/files/b/0a97deaa/M8WW7HdKsIUyN03aGVgGK_itq8UxaL.mp4',
     media: {
       videoUrl: 'https://v3b.fal.media/files/b/0a97deaa/M8WW7HdKsIUyN03aGVgGK_itq8UxaL.mp4',
-      imagePath: '/assets/models/models-hero-horses-reference.png',
+      imagePath: '/assets/models/models-hero-horses-reference.webp',
       altText: 'Happy Horse 1.0 unified video model hero preview',
     },
     prompts: [

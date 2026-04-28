@@ -507,13 +507,12 @@
         ]
       },
       "examples": {
-        "title": "Explore real outputs by engine.",
-        "subtitle": "Open focused example pages, check the model behind each result, and see the cost before you generate.",
+        "title": "Preview real outputs before you choose an engine.",
+        "subtitle": "Compare real Seedance, Kling, LTX, Veo, Wan and Pika outputs, then check full specs, limits and pricing before you generate.",
         "cta": "Browse all examples",
-        "modelsCta": "View all models",
-        "libraryTitle": "Want the full library?",
-        "libraryBody": "Browse every real output or open the full model catalog before you generate.",
-        "providerLabel": "Supported engines and providers",
+        "modelsCta": "View all model specs",
+        "compareLink": "Compare engines",
+        "providerLabel": "Supported engines:",
         "viewPrompt": "Clone settings",
         "fallbackCards": [
           {
@@ -525,9 +524,9 @@
             "mode": "Reference-to-video",
             "duration": "12s",
             "price": "$4.72",
-            "useCase": "Cinematic realism and commercial shots",
-            "cta": "View Seedance examples",
-            "modelCta": "Open Seedance model",
+            "useCase": "Cinematic realism",
+            "cta": "View examples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/seedance-2-0.jpg",
             "imageAlt": "Seedance 2.0 AI video example for cinematic commercial shots.",
             "examplesSlug": "seedance"
@@ -541,9 +540,9 @@
             "mode": "Image-to-video",
             "duration": "15s",
             "price": "$4.37",
-            "useCase": "Camera motion and dynamic scenes",
-            "cta": "View Kling examples",
-            "modelCta": "Open Kling model",
+            "useCase": "Camera motion",
+            "cta": "View examples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/kling-3-4k-hero.jpg",
             "imageAlt": "Kling 3 Pro AI video example for camera motion and dynamic scenes.",
             "examplesSlug": "kling"
@@ -557,9 +556,9 @@
             "mode": "Text-to-video",
             "duration": "10s",
             "price": "$0.52",
-            "useCase": "Fast drafts and low-cost tests",
-            "cta": "View LTX examples",
-            "modelCta": "Open LTX model",
+            "useCase": "Fast drafts",
+            "cta": "View examples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
             "imageAlt": "LTX 2.3 Fast AI video example for fast draft generation.",
             "examplesSlug": "ltx"
@@ -573,9 +572,9 @@
             "mode": "Image-to-video",
             "duration": "6s",
             "price": "$3.12",
-            "useCase": "Premium realism and image-to-video",
-            "cta": "View Veo examples",
-            "modelCta": "Open Veo model",
+            "useCase": "Premium realism",
+            "cta": "View examples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/veo-3-1-hero.jpg",
             "imageAlt": "Veo 3.1 AI video example for premium realism and image-to-video.",
             "examplesSlug": "veo"
@@ -586,12 +585,12 @@
             "engine": "Wan 2.6",
             "engineId": "wan-2-6",
             "modelSlug": "wan-2-6",
-            "mode": "AI video",
+            "mode": "Video-to-video",
             "duration": "5s",
             "price": "$0.65",
-            "useCase": "Structured prompts and video-to-video workflows",
-            "cta": "View Wan examples",
-            "modelCta": "Open Wan model",
+            "useCase": "Structured video workflows",
+            "cta": "View examples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Wan 2.6 AI video example for structured video workflows.",
             "examplesSlug": "wan"
@@ -603,13 +602,13 @@
             "engineId": "pika-text-to-video",
             "modelSlug": "pika-text-to-video",
             "mode": "Text-to-video",
-            "duration": "AI video",
-            "price": "cost before you generate",
-            "useCase": "Creative styles and prompt experiments",
-            "cta": "Open Pika model",
-            "modelCta": "Open Pika model",
+            "duration": "",
+            "useCase": "Creative prompt experiments",
+            "cta": "View examples",
+            "modelCta": "Specs & pricing",
             "imageSrc": "/hero/pika-22.jpg",
-            "imageAlt": "Pika Text to Video AI video style experiment."
+            "imageAlt": "Pika Text to Video AI video style experiment.",
+            "examplesSlug": "pika"
           }
         ]
       },
@@ -4978,7 +4977,39 @@
         "primaryCta": "Open Upscale",
         "secondaryCta": "View all tools",
         "beforeLabel": "Source",
-        "afterLabel": "Upscaled"
+        "afterLabel": "Upscaled",
+        "studioLabel": "Upscale Studio",
+        "stackLabel": "SeedVR2 · Topaz",
+        "readyBadge": "4x ready",
+        "deliveryLabel": "Delivery asset",
+        "stats": [
+          {
+            "value": "6",
+            "label": "fal.ai models"
+          },
+          {
+            "value": "20s",
+            "label": "video cap"
+          },
+          {
+            "value": "1",
+            "label": "shared surface"
+          }
+        ],
+        "metrics": [
+          {
+            "label": "Input",
+            "value": "Image / video"
+          },
+          {
+            "label": "Pricing",
+            "value": "Dynamic video"
+          },
+          {
+            "label": "Output",
+            "value": "Library ready"
+          }
+        ]
       },
       "models": {
         "eyebrow": "Model routing",
@@ -5010,6 +5041,10 @@
       "workflow": {
         "eyebrow": "Workflow",
         "title": "Designed as a standalone tool first, reusable everywhere next",
+        "overlay": {
+          "title": "One output, reused everywhere",
+          "body": "The same upscale surface is ready for Library, job actions, and future generation flows."
+        },
         "steps": [
           {
             "title": "Upload or paste a URL",
@@ -5038,7 +5073,11 @@
           "q": "Will Upscale appear elsewhere?",
           "a": "Yes. The implementation uses a dedicated upscale surface so the same action can later be exposed from Library, generated jobs, Image, and Video flows."
         }
-      ]
+      ],
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Upscale details"
+      }
     },
     "angle": {
       "meta": {

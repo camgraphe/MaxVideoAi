@@ -40,7 +40,7 @@ import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
-const PRICING_HERO_IMAGE_URL = '/assets/pricing/pricing-hero-reference.png';
+const PRICING_HERO_IMAGE_URL = '/assets/pricing/pricing-hero-reference.webp';
 
 export const revalidate = 60 * 10;
 
