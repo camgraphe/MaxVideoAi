@@ -7,6 +7,7 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
+import { ensureFastStartVideo } from '@/server/video-faststart';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
@@ -322,12 +323,18 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
         if (vUrl) {
           status = 'completed';
           progress = 100;
-          videoUrl = normalizeMediaUrl(vUrl) ?? vUrl;
+          const normalizedProviderVideoUrl = normalizeMediaUrl(vUrl) ?? vUrl;
+          videoUrl =
+            (await ensureFastStartVideo({
+              jobId,
+              userId: job.user_id ?? undefined,
+              videoUrl: normalizedProviderVideoUrl,
+            })) ?? normalizedProviderVideoUrl;
           if (/^https?:\/\//i.test(vUrl) && isPlaceholderThumbnail(thumbUrl)) {
             const generatedThumb = await ensureJobThumbnail({
               jobId,
               userId: job.user_id ?? undefined,
-              videoUrl: vUrl,
+              videoUrl,
               aspectRatio: job.aspect_ratio ?? undefined,
               existingThumbUrl: thumbUrl ?? undefined,
               force: true,
@@ -389,6 +396,27 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     }
   }
 
+  let responseVideoUrl = normalizedVideoUrl;
+  if (surface !== 'audio' && job.status === 'completed' && responseVideoUrl) {
+    const fastStartVideo = await ensureFastStartVideo({
+      jobId,
+      userId: job.user_id ?? undefined,
+      videoUrl: responseVideoUrl,
+    });
+    if (fastStartVideo && fastStartVideo !== responseVideoUrl) {
+      responseVideoUrl = fastStartVideo;
+      await query(
+        `UPDATE app_jobs
+            SET video_url = $2,
+                updated_at = NOW()
+          WHERE job_id = $1`,
+        [jobId, fastStartVideo]
+      ).catch((error) => {
+        console.warn('[api/jobs] failed to persist fast-start video', { jobId, error });
+      });
+    }
+  }
+
   return json({
     ok: true,
     jobId,
@@ -397,7 +425,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     createdAt: job.created_at,
     status: job.status,
     progress: job.progress,
-    videoUrl: normalizedVideoUrl ?? undefined,
+    videoUrl: responseVideoUrl ?? undefined,
     audioUrl: normalizedAudioUrl ?? undefined,
     thumbUrl: normalizedThumbUrl ?? undefined,
     aspectRatio: job.aspect_ratio ?? undefined,

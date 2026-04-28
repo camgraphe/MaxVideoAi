@@ -19,6 +19,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { countResolvedVisualSlots, mergeImageProgressGroup } from '@/lib/group-progress';
 import { isExpiredRefundedFailedGalleryItem } from '@/lib/gallery-retention';
+import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
 
 type GalleryVariant = 'desktop' | 'mobile';
 
@@ -72,6 +73,27 @@ const DEFAULT_GALLERY_COPY = {
 
 type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
 const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
+const INITIAL_EAGER_PREVIEW_COUNT = 0;
+const BACKGROUND_WARM_PREVIEW_LIMIT = 10;
+const BACKGROUND_WARM_START_DELAY_MS = 200;
+const BACKGROUND_WARM_STEP_DELAY_MS = 550;
+
+type NavigatorWithConnection = Navigator & {
+  connection?: {
+    effectiveType?: string;
+    saveData?: boolean;
+  };
+};
+
+function resolveBackgroundWarmPreviewLimit(): number {
+  if (typeof navigator === 'undefined') return BACKGROUND_WARM_PREVIEW_LIMIT;
+  const connection = (navigator as NavigatorWithConnection).connection;
+  if (connection?.saveData) return 0;
+  const effectiveType = connection?.effectiveType;
+  if (effectiveType === 'slow-2g' || effectiveType === '2g') return 1;
+  if (effectiveType === '3g') return 4;
+  return BACKGROUND_WARM_PREVIEW_LIMIT;
+}
 
 function resolveDisplayedActiveGroup(
   feedType: 'video' | 'image',
@@ -108,6 +130,7 @@ export function GalleryRail({
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
   const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: feedType });
+  const [backgroundWarmCount, setBackgroundWarmCount] = useState(INITIAL_EAGER_PREVIEW_COUNT);
   const hasEngineRegistry = Array.isArray(engineRegistry) && engineRegistry.length > 0;
   const { data: enginesData } = useEngines('video', { includeAverages: false, enabled: !hasEngineRegistry });
   const engineList = useMemo(
@@ -118,6 +141,11 @@ export function GalleryRail({
     if (Array.isArray(stableJobs) && stableJobs.length) return stableJobs;
     return data?.flatMap((page) => page.jobs) ?? [];
   }, [data, stableJobs]);
+
+  useEffect(() => {
+    setBackgroundWarmCount(INITIAL_EAGER_PREVIEW_COUNT);
+  }, [feedType]);
+
   const surfaceSafeJobs = useMemo(() => {
     if (feedType !== 'video') return jobs;
     return jobs.filter((job) => job.surface !== 'audio');
@@ -196,6 +224,39 @@ export function GalleryRail({
     return [...normalizedActiveGroups, ...normalizedHistoricalGroups];
   }, [normalizedActiveGroups, normalizedHistoricalGroups]);
   const renderedGroups = useMemo(() => (hasMounted ? combinedGroups : []), [combinedGroups, hasMounted]);
+  useEffect(() => {
+    if (feedType !== 'video') return undefined;
+
+    let timers: number[] = [];
+    const clearTimers = () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      timers = [];
+    };
+    const handlePrimaryReady = () => {
+      clearTimers();
+      const targetCount = Math.min(resolveBackgroundWarmPreviewLimit(), Math.max(INITIAL_EAGER_PREVIEW_COUNT, renderedGroups.length));
+      for (let count = INITIAL_EAGER_PREVIEW_COUNT + 1; count <= targetCount; count += 1) {
+        const delay =
+          BACKGROUND_WARM_START_DELAY_MS +
+          (count - INITIAL_EAGER_PREVIEW_COUNT - 1) * BACKGROUND_WARM_STEP_DELAY_MS;
+        timers.push(
+          window.setTimeout(() => {
+            setBackgroundWarmCount((current) => Math.max(current, count));
+          }, delay)
+        );
+      }
+    };
+
+    const warmupWindow = window as Window & { __maxVideoPrimaryVideoReady?: boolean };
+    window.addEventListener(PRIMARY_VIDEO_READY_EVENT, handlePrimaryReady);
+    if (warmupWindow.__maxVideoPrimaryVideoReady) {
+      handlePrimaryReady();
+    }
+    return () => {
+      clearTimers();
+      window.removeEventListener(PRIMARY_VIDEO_READY_EVENT, handlePrimaryReady);
+    };
+  }, [feedType, renderedGroups.length]);
   const sampleOnly = useMemo(
     () => renderedGroups.length > 0 && renderedGroups.every((group) => group.hero.job?.curated === true),
     [renderedGroups]
@@ -618,7 +679,7 @@ export function GalleryRail({
 
   const cards = (
     <>
-      {renderedGroups.map((group) => {
+      {renderedGroups.map((group, index) => {
         const engineId = group.hero.engineId;
         const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
         return (
@@ -631,6 +692,8 @@ export function GalleryRail({
             allowRemove={allowCardRemoval(group)}
             metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
+            eagerPreview={feedType === 'video' && index < backgroundWarmCount}
+            warmOnVisible={feedType === 'video'}
           />
         );
       })}

@@ -3,6 +3,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { resolveFalModelId, resolveEngineIdFromModelSlug } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
+import { ensureFastStartVideo } from '@/server/video-faststart';
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
@@ -870,7 +871,18 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     }
   }
 
-  const finalVideoUrl = nextVideoUrl ?? job.video_url;
+  let finalVideoUrl = nextVideoUrl ?? job.video_url;
+  if (finalVideoUrl && !isImageEngine && nextStatus === 'completed') {
+    const fastStartVideo = await ensureFastStartVideo({
+      jobId: job.job_id,
+      userId: job.user_id ?? undefined,
+      videoUrl: finalVideoUrl,
+    });
+    if (fastStartVideo) {
+      finalVideoUrl = fastStartVideo;
+      nextVideoUrl = fastStartVideo;
+    }
+  }
   const finalThumbUrl = resolvedThumbUrl ?? fallbackThumbnail(job.aspect_ratio);
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
   const isMediaMissing = !finalVideoUrl && !hasImageMedia;

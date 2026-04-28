@@ -2,13 +2,14 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PriceFactorsBar, type PriceFactorKind } from '@/components/PriceFactorsBar';
 import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
+import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
 import type { EngineCaps, PreflightResponse } from '@/types/engines';
 
 export type QuadTileAction = 'continue' | 'refine' | 'branch' | 'copy' | 'open';
@@ -122,6 +123,7 @@ export function QuadPreviewPanel({
 }: QuadPreviewPanelProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const lastPrimaryReadyEventKeyRef = useRef<string | null>(null);
 
   const sortedTiles = useMemo(() => [...tiles].sort((a, b) => a.iterationIndex - b.iterationIndex), [tiles]);
   const iterationCount = sortedTiles[0]?.iterationCount ?? iterations ?? 1;
@@ -186,7 +188,8 @@ export function QuadPreviewPanel({
   useEffect(() => {
     const videos = Array.from(document.querySelectorAll<HTMLVideoElement>('[data-quad-video]'));
     videos.forEach((video) => {
-      if (isPlaying) {
+      const isActivePreview = video.dataset.quadVideo === 'active';
+      if (isPlaying && isActivePreview) {
         const promise = video.play();
         if (promise && typeof promise.catch === 'function') {
           promise.catch(() => undefined);
@@ -195,7 +198,7 @@ export function QuadPreviewPanel({
         video.pause();
       }
     });
-  }, [isPlaying, sortedTiles]);
+  }, [heroKey, isPlaying, sortedTiles]);
 
   const lightboxEntries: MediaLightboxEntry[] = useMemo(
     () =>
@@ -219,6 +222,17 @@ export function QuadPreviewPanel({
 
   const groupTitle = `Prise ×${iterationCount}`;
   const heroTile = sortedTiles.find((tile) => tile.localKey === heroKey) ?? sortedTiles[0];
+  const heroKeyResolved = heroTile?.localKey ?? null;
+  const handlePrimaryVideoReady = useCallback(
+    (tileKey?: string | null) => {
+      if (!tileKey || tileKey !== heroKeyResolved || lastPrimaryReadyEventKeyRef.current === tileKey) return;
+      lastPrimaryReadyEventKeyRef.current = tileKey;
+      const warmupWindow = window as Window & { __maxVideoPrimaryVideoReady?: boolean };
+      warmupWindow.__maxVideoPrimaryVideoReady = true;
+      window.dispatchEvent(new Event(PRIMARY_VIDEO_READY_EVENT));
+    },
+    [heroKeyResolved]
+  );
 
   return (
     <Card className="space-y-4 p-4">
@@ -266,6 +280,7 @@ export function QuadPreviewPanel({
                     : null;
                 const showPendingOverlay = tileStatus !== 'completed' && tileStatus !== 'failed';
                 const showFailedOverlay = tileStatus === 'failed';
+                const shouldPlayPreview = Boolean(isPlaying && preview?.localKey === heroTile?.localKey);
 
                 return (
                   <div
@@ -276,16 +291,18 @@ export function QuadPreviewPanel({
                     <div className={clsx('relative h-full w-full', cellAspect)}>
                       {tileStatus !== 'failed' && preview?.videoUrl ? (
                         <video
-                          data-quad-video
+                          data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                           data-quad-fallback
                           src={preview.videoUrl}
                           className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-                          autoPlay={isPlaying}
+                          autoPlay={shouldPlayPreview}
                           muted
                           playsInline
                           loop
-                          preload={isPlaying ? 'metadata' : 'none'}
+                          preload={shouldPlayPreview ? 'auto' : 'none'}
                           poster={preview?.thumbUrl}
+                          onLoadedData={() => handlePrimaryVideoReady(preview?.localKey)}
+                          onCanPlay={() => handlePrimaryVideoReady(preview?.localKey)}
                         />
                       ) : tileStatus !== 'failed' && preview?.thumbUrl ? (
                         <Image
@@ -363,6 +380,7 @@ export function QuadPreviewPanel({
             const isFailed = tile.status === 'failed';
             const failureMessage =
               tile.message && typeof tile.message === 'string' ? tile.message.replace(/\s+/g, ' ').trim() : null;
+            const shouldPlayPreview = Boolean(isPlaying && tile.localKey === heroTile?.localKey);
 
             return (
               <div
@@ -410,17 +428,19 @@ export function QuadPreviewPanel({
                   <div className="relative h-full w-full">
                     {tile.status !== 'failed' && tile.videoUrl ? (
                       <video
-                        data-quad-video
+                        data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                         data-quad-tile-fallback
                         key={tile.videoUrl}
                         src={tile.videoUrl}
                         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
                         muted
                         playsInline
-                        autoPlay={isPlaying}
+                        autoPlay={shouldPlayPreview}
                         loop
-                        preload={isPlaying ? 'metadata' : 'none'}
+                        preload={shouldPlayPreview ? 'auto' : 'none'}
                         poster={tile.thumbUrl}
+                        onLoadedData={() => handlePrimaryVideoReady(tile.localKey)}
+                        onCanPlay={() => handlePrimaryVideoReady(tile.localKey)}
                       />
                     ) : tile.status !== 'failed' && tile.thumbUrl ? (
                       <Image

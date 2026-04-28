@@ -2,6 +2,7 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureJobThumbnail } from '@/server/thumbnails';
+import { ensureFastStartVideo } from '@/server/video-faststart';
 
 type FetchOptions = {
   jobId: string;
@@ -87,6 +88,23 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
 
   if (videoUrl) {
     videoUrl = normalizeMediaUrl(videoUrl) ?? videoUrl;
+    const fastStartVideo = await ensureFastStartVideo({
+      jobId: options.jobId,
+      userId: options.userId ?? undefined,
+      videoUrl,
+    });
+    if (fastStartVideo) {
+      videoUrl = fastStartVideo;
+      normalized.data = normalized.data ?? {};
+      (normalized.data as Record<string, unknown>).video_url = fastStartVideo;
+      if (
+        (normalized.data as Record<string, unknown>).video &&
+        typeof (normalized.data as Record<string, unknown>).video === 'object'
+      ) {
+        ((normalized.data as Record<string, unknown>).video as Record<string, unknown>).url = fastStartVideo;
+      }
+      normalized.video_url = fastStartVideo;
+    }
   }
   if (thumbUrl) {
     thumbUrl = normalizeMediaUrl(thumbUrl) ?? thumbUrl;

@@ -269,6 +269,8 @@ export async function GET(req: NextRequest) {
   const typeParam = url.searchParams.get('type');
   const feedType = typeParam === 'image' || typeParam === 'video' ? typeParam : 'all';
   const requestedSurface = normalizeJobSurface(url.searchParams.get('surface'));
+  const shouldRefreshStaleFalJobs =
+    url.searchParams.get('refreshStale') === '1' || url.searchParams.get('refreshStale') === 'true';
   const { userId } = await getRouteAuthContext(req);
 
   if (!userId) {
@@ -438,26 +440,28 @@ type JobRow = {
       }
     }
 
-    const staleJobs = rows.filter((row) => {
-      const surface = deriveJobSurface({
-        surface: row.surface,
-        settingsSnapshot: row.settings_snapshot,
-        jobId: row.job_id,
-        engineId: row.engine_id,
-        videoUrl: row.video_url,
-        renderIds: row.render_ids,
-      });
-      if (surface !== 'video') {
-        return false;
-      }
-      if (!row.provider_job_id) return false;
-      const status = (row.status ?? '').toLowerCase();
-      if (status === 'failed' || status === 'cancelled' || status === 'canceled' || status === 'error') return false;
-      const missingVideo = !row.video_url;
-      const missingThumb = !row.thumb_url;
-      if (!missingVideo && status === 'completed') return false;
-      return missingVideo || missingThumb;
-    });
+    const staleJobs = shouldRefreshStaleFalJobs
+      ? rows.filter((row) => {
+          const surface = deriveJobSurface({
+            surface: row.surface,
+            settingsSnapshot: row.settings_snapshot,
+            jobId: row.job_id,
+            engineId: row.engine_id,
+            videoUrl: row.video_url,
+            renderIds: row.render_ids,
+          });
+          if (surface !== 'video') {
+            return false;
+          }
+          if (!row.provider_job_id) return false;
+          const status = (row.status ?? '').toLowerCase();
+          if (status === 'failed' || status === 'cancelled' || status === 'canceled' || status === 'error') return false;
+          const missingVideo = !row.video_url;
+          const missingThumb = !row.thumb_url;
+          if (!missingVideo && status === 'completed') return false;
+          return missingVideo || missingThumb;
+        })
+      : [];
 
     if (staleJobs.length) {
       console.info('[api/jobs] refreshing stale Fal jobs', {

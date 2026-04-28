@@ -523,9 +523,9 @@ export function MediaLightbox({
                           className="absolute inset-0 h-full w-full object-contain"
                           controls
                           playsInline
-                          autoPlay
+                          autoPlay={index === 0}
                           muted
-                          preload="metadata"
+                          preload={index === 0 ? 'auto' : 'none'}
                         />
                       ) : audioUrl ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(124,85,234,0.28),_transparent_52%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.88))] px-6 py-6 text-center">
