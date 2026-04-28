@@ -257,19 +257,23 @@ export function Composer({
   }, [assetFields, assets]);
   const orderedAssetFields = useMemo(() => {
     const useCustomAssetOrder =
-      engine.id.startsWith('ltx-2-3') || engine.id.startsWith('lumaRay2') || engine.id.startsWith('seedance-2-0');
+      engine.id.startsWith('ltx-2-3') ||
+      engine.id.startsWith('lumaRay2') ||
+      engine.id.startsWith('seedance-2-0') ||
+      engine.id === 'happy-horse-1-0';
     if (!useCustomAssetOrder) {
       return assetFields;
     }
 
     const order = new Map<string, number>([
       ['image_url', 0],
+      ['video_url', 0],
       ['end_image_url', 1],
       ['image_urls', 2],
-      ['video_urls', 3],
-      ['audio_urls', 4],
-      ['audio_url', 5],
-      ['video_url', 6],
+      ['reference_image_urls', 3],
+      ['video_urls', 4],
+      ['audio_urls', 5],
+      ['audio_url', 6],
     ]);
 
     return [...assetFields].sort((left, right) => {
@@ -281,7 +285,10 @@ export function Composer({
       return left.field.id.localeCompare(right.field.id);
     });
   }, [assetFields, engine.id]);
-  const useLtxAssetGridLayout = engine.id.startsWith('ltx-2-3') || engine.id.startsWith('seedance-2-0');
+  const useLtxAssetGridLayout =
+    engine.id.startsWith('ltx-2-3') ||
+    engine.id.startsWith('seedance-2-0') ||
+    engine.id === 'happy-horse-1-0';
   const assetFieldLayoutClass = useMemo(() => {
     if (!useLtxAssetGridLayout) {
       return 'flex flex-wrap gap-4';

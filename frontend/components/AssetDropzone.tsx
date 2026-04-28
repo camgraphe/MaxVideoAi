@@ -23,6 +23,12 @@ function resolveSlotLabel(
   const sequence = slotIndex + 1;
   const normalizedId = String(field.id ?? '').toLowerCase();
 
+  if (field.slotLabelPattern) {
+    return field.slotLabelPattern
+      .replace(/\{n\}/g, String(sequence))
+      .replace(/\{index\}/g, String(sequence));
+  }
+
   if (normalizedId === 'image_url' || normalizedId === 'input_image') return assetCopy.startImageSlot;
   if (normalizedId === 'end_image_url') return assetCopy.endImageSlot;
   if (normalizedId === 'first_frame_url') return assetCopy.firstFrameSlot;
@@ -490,7 +496,7 @@ export function AssetDropzone({
             const isCollectionAddTile = isCollectionField && asset == null && filledAssetCount > 0;
             const filledSingleSlot = flattenSlotSurface && asset != null;
             const allowClick = asset == null || asset?.kind !== 'audio';
-            const slotLabel = isCollectionField && asset == null ? null : resolveSlotLabel(field, role, slotIndex, assetCopy);
+            const slotLabel = resolveSlotLabel(field, role, slotIndex, assetCopy);
             const isLockedEmptySlot = disabled && !asset;
             const slotDescription =
               isLockedEmptySlot

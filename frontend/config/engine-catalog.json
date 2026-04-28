@@ -4928,10 +4928,7 @@
         "videoMaxDurationSec": 60,
         "videoCodecs": [
           "mp4",
-          "mov",
-          "webm",
-          "m4v",
-          "gif"
+          "mov"
         ],
         "promptMaxChars": 2500,
         "promptMaxCharsSource": "official"
@@ -4981,7 +4978,8 @@
             ],
             "minCount": 1,
             "maxCount": 9,
-            "source": "either"
+            "source": "either",
+            "slotLabelPattern": "character{n}"
           },
           {
             "id": "video_url",
@@ -5082,7 +5080,8 @@
             ],
             "minCount": 0,
             "maxCount": 5,
-            "source": "either"
+            "source": "either",
+            "slotLabelPattern": "@Image{n}"
           },
           {
             "id": "audio_setting",
@@ -5097,6 +5096,34 @@
               "origin"
             ],
             "default": "auto"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed",
+            "description": "Optional random seed for reproducible Happy Horse generations. Fal accepts 0-2147483647.",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v"
+            ],
+            "min": 0,
+            "max": 2147483647,
+            "step": 1
+          },
+          {
+            "id": "enable_safety_checker",
+            "type": "boolean",
+            "label": "Safety checker",
+            "description": "Enable Fal input and output moderation.",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v"
+            ],
+            "default": true
           }
         ],
         "constraints": {
@@ -5107,13 +5134,15 @@
             "bmp",
             "webp",
             "mp4",
-            "mov",
-            "webm",
-            "m4v",
-            "gif"
+            "mov"
           ],
           "maxImageSizeMB": 10,
-          "maxVideoSizeMB": 100
+          "maxVideoSizeMB": 100,
+          "minImageSidePx": 300,
+          "minReferenceImageSidePx": 400,
+          "imageAspectRatioRange": "1:2.5 to 2.5:1",
+          "videoAspectRatioRange": "1:2.5 to 2.5:1",
+          "sourceVideoMaxOutputSec": 15
         }
       },
       "pricingDetails": {

@@ -428,6 +428,8 @@ test('Happy Horse 1.0 validates text, image, R2V, and V2V workflow inputs', () =
     duration: 5,
     resolution: '1080p',
     aspect_ratio: '16:9',
+    seed: 12345,
+    enable_safety_checker: true,
   });
   assert.deepEqual(textValid, OK);
 
@@ -507,8 +509,18 @@ test('Happy Horse 1.0 validates text, image, R2V, and V2V workflow inputs', () =
     reference_image_urls: Array.from({ length: 5 }, (_, index) => `https://example.com/edit-ref-${index + 1}.png`),
     resolution: '1080p',
     audio_setting: 'auto',
+    seed: 12345,
+    enable_safety_checker: false,
   });
   assert.deepEqual(v2vValid, OK);
+
+  const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-0')?.engine;
+  assert.ok(engine);
+  const fields = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
+  assert.ok(fields.some((field) => field.id === 'seed' && field.modes?.length === 4));
+  assert.ok(fields.some((field) => field.id === 'enable_safety_checker' && field.default === true));
+  assert.equal(fields.find((field) => field.id === 'image_urls')?.slotLabelPattern, 'character{n}');
+  assert.equal(fields.find((field) => field.id === 'reference_image_urls')?.slotLabelPattern, '@Image{n}');
 });
 
 test('Kling 3 i2v enforces valid element inputs before provider submission', () => {

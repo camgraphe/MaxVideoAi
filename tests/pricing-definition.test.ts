@@ -143,6 +143,31 @@ test('Happy Horse benchmark specs mark unified native audio support', () => {
   assert.equal(happyHorse.keySpecs?.nativeAudioGeneration, 'Supported');
 });
 
+test('Happy Horse is distributed across relevant best-for pages', () => {
+  const comparePath = path.join(process.cwd(), 'frontend/config/compare-config.json');
+  const compareData = JSON.parse(fs.readFileSync(comparePath, 'utf8')) as {
+    bestForPages?: Array<{ slug: string; topPicks?: string[] }>;
+  };
+  const topPicksBySlug = new Map(compareData.bestForPages?.map((entry) => [entry.slug, entry.topPicks ?? []]) ?? []);
+
+  [
+    'image-to-video',
+    'cinematic-realism',
+    'character-reference',
+    'reference-to-video',
+    'ads',
+    'ugc-ads',
+    'product-videos',
+    'lipsync-dialogue',
+  ].forEach((slug) => {
+    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), true, `${slug} should include Happy Horse`);
+  });
+
+  ['4k-video', 'fast-drafts', 'stylized-anime'].forEach((slug) => {
+    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), false, `${slug} should not include Happy Horse`);
+  });
+});
+
 test('Kling 3 displayed quotes include the MaxVideoAI margin', async () => {
   const standard = listFalEngines().find((entry) => entry.id === 'kling-3-standard')?.engine;
   const pro = listFalEngines().find((entry) => entry.id === 'kling-3-pro')?.engine;

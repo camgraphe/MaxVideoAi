@@ -4715,6 +4715,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
     return activeMode;
   }, [activeMode, allowsUnifiedVeoFirstLast, hasLastFrameInput, hasPrimaryImageInput]);
+  const showSafetyCheckerControl = useMemo(() => {
+    const schema = selectedEngine?.inputSchema;
+    if (!schema) return false;
+    return [...(schema.required ?? []), ...(schema.optional ?? [])].some((field) => {
+      if (field.id !== 'enable_safety_checker') return false;
+      return !field.modes || field.modes.includes(submissionMode);
+    });
+  }, [selectedEngine, submissionMode]);
   const effectiveDurationSec = useMemo(() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
@@ -6997,6 +7005,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onCameraFixedChange={handleCameraFixedChange}
                       safetyChecker={safetyCheckerValue}
                       onSafetyCheckerChange={handleSafetyCheckerChange}
+                      showSafetyCheckerControl={showSafetyCheckerControl}
                       advancedFields={inputSchemaSummary.secondaryFields}
                       advancedFieldValues={form.extraInputValues}
                       onAdvancedFieldChange={handleExtraInputValueChange}
