@@ -796,7 +796,7 @@ export async function runAngleTool(payload: AngleToolRequest): Promise<AngleTool
 }
 
 export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<UpscaleToolResponse> {
-  const response = await authFetch('/api/tools/upscale', {
+  const response = await authFetch(`/api/tools/upscale/${payload.mediaType}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

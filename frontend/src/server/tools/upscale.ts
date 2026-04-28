@@ -12,9 +12,7 @@ import { getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { isStorageConfigured, recordUserAsset, uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
-import { detectVideoMetadata, type VideoMetadata } from '@/server/media/detect-has-audio';
 import {
   UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
   clampUpscaleFactor,
@@ -44,6 +42,28 @@ const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 
 type RunUpscaleToolInput = UpscaleToolRequest & {
   userId: string;
+};
+
+export type VideoMetadata = {
+  width: number;
+  height: number;
+  durationSec: number;
+  fps: number;
+};
+
+type ImageThumbnailBatchInput = {
+  jobId: string;
+  userId?: string | null;
+  imageUrls: string[];
+  maxDimension?: number;
+  concurrency?: number;
+  fetchTimeoutMs?: number;
+  processingTimeoutMs?: number;
+};
+
+export type RunUpscaleToolDependencies = {
+  createImageThumbnailBatch?: (input: ImageThumbnailBatchInput) => Promise<Array<string | null>>;
+  detectVideoMetadata?: (videoUrl: string, options?: { timeoutMs?: number }) => Promise<VideoMetadata | null>;
 };
 
 type PendingUpscaleReceipt = {
@@ -741,7 +761,10 @@ function toValidationMessage(error: ValidationError): string {
   return messages.length ? messages.slice(0, 3).join(' · ') : error.message || 'Validation failed';
 }
 
-export async function runUpscaleTool(input: RunUpscaleToolInput): Promise<UpscaleToolResponse> {
+export async function runUpscaleToolBase(
+  input: RunUpscaleToolInput,
+  dependencies: RunUpscaleToolDependencies = {}
+): Promise<UpscaleToolResponse> {
   const mediaType = input.mediaType;
   const engine = getUpscaleToolEngine(input.engineId, mediaType);
   const mode = resolveUpscaleMode(engine, input.mode);
@@ -753,7 +776,15 @@ export async function runUpscaleTool(input: RunUpscaleToolInput): Promise<Upscal
   const priceOnlyReceipts = receiptsPriceOnlyEnabled();
 
   const videoMetadata =
-    mediaType === 'video' ? await detectVideoMetadata(input.mediaUrl, { timeoutMs: 15_000 }) : null;
+    mediaType === 'video' && dependencies.detectVideoMetadata
+      ? await dependencies.detectVideoMetadata(input.mediaUrl, { timeoutMs: 15_000 })
+      : null;
+  if (mediaType === 'video' && !dependencies.detectVideoMetadata) {
+    throw new UpscaleToolError('Video metadata detection is not configured for this route.', {
+      status: 500,
+      code: 'video_metadata_dependency_missing',
+    });
+  }
   if (mediaType === 'video' && !videoMetadata) {
     throw new UpscaleToolError('Unable to read video metadata for dynamic upscale pricing.', {
       status: 422,
@@ -930,7 +961,13 @@ export async function runUpscaleTool(input: RunUpscaleToolInput): Promise<Upscal
     let renderIdsJson: string | null = null;
     let heroRenderId: string | null = null;
     if (mediaType === 'image') {
-      const [imageThumb] = await createImageThumbnailBatch({
+      if (!dependencies.createImageThumbnailBatch) {
+        throw new UpscaleToolError('Image thumbnail generation is not configured for this route.', {
+          status: 500,
+          code: 'image_thumbnail_dependency_missing',
+        });
+      }
+      const [imageThumb] = await dependencies.createImageThumbnailBatch({
         jobId,
         userId: input.userId,
         imageUrls: [persistedOutput.url],
