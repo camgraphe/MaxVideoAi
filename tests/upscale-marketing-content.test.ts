@@ -83,3 +83,20 @@ test('upscale landing renders the model guide table', () => {
   assert.match(source, /content\.modelGuide/);
   assert.match(source, /modelGuide\.rows\.map/);
 });
+
+test('upscale landing hero uses app screenshots with default preview media in light and dark mode', () => {
+  const source = fs.readFileSync(path.join(process.cwd(), 'frontend/src/components/tools/UpscaleLandingPage.tsx'), 'utf8');
+  const pageSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(localized)/[locale]/(marketing)/tools/upscale/page.tsx'),
+    'utf8'
+  );
+
+  assert.match(source, /upscale-hero-app-light\.webp/);
+  assert.match(source, /upscale-hero-app-dark\.webp/);
+  assert.match(source, /role="img"/);
+  assert.match(source, /aria-label=\{imageAlt\}/);
+  assert.doesNotMatch(source, /SOURCE_IMAGE_URL|OUTPUT_IMAGE_URL/);
+  assert.doesNotMatch(source, /hero\.studioLabel|hero\.stackLabel/);
+  assert.doesNotMatch(source, /<HeroVisual imageAlt=\{content\.meta\.imageAlt\} hero=/);
+  assert.match(pageSource, /image: '\/assets\/tools\/upscale-hero-app-light\.webp'/);
+});

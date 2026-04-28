@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     englishPath: '/tools/upscale',
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
-    image: '/assets/tools/tools-hero-reference.webp',
+    image: '/assets/tools/upscale-hero-app-light.webp',
     imageAlt: content.meta.imageAlt,
   });
 }

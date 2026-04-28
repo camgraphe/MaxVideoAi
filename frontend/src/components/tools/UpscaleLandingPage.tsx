@@ -5,10 +5,6 @@ import { Link } from '@/i18n/navigation';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { ButtonLink } from '@/components/ui/Button';
 
-const SOURCE_IMAGE_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp';
-const OUTPUT_IMAGE_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
 const DETAIL_IMAGE_URL =
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/7a859184-b718-4481-ae01-35efe66f4c9a.webp';
 
@@ -36,69 +32,14 @@ function SectionIntro({
   );
 }
 
-function HeroVisual({
-  beforeLabel,
-  afterLabel,
-  hero,
-}: {
-  beforeLabel: string;
-  afterLabel: string;
-  hero: UpscaleLandingContent['hero'];
-}) {
+function HeroVisual({ imageAlt }: { imageAlt: string }) {
   return (
-    <div className="rounded-[32px] border border-slate-950/10 bg-[linear-gradient(135deg,#111827,#1f2937_52%,#172554)] p-4 shadow-[0_42px_120px_rgba(15,23,42,0.22)]">
-      <div className="flex items-center justify-between border-b border-white/10 px-2 pb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
-        <span>{hero.studioLabel}</span>
-        <span>{hero.stackLabel}</span>
-      </div>
-
-      <div className="grid gap-4 pt-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
-        <div className="rounded-[24px] border border-white/10 bg-white/[0.06] p-3">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-black">
-            <Image
-              src={SOURCE_IMAGE_URL}
-              alt={beforeLabel}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 360px"
-              className="scale-110 object-cover blur-[1.2px] saturate-[0.88]"
-            />
-          </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
-            <span>{beforeLabel}</span>
-            <span>1.2 MP</span>
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-white/10 bg-white/[0.08] p-3">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-black">
-            <Image
-              src={OUTPUT_IMAGE_URL}
-              alt={afterLabel}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 460px"
-              className="object-cover"
-            />
-            <div className="absolute right-3 top-3 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-              {hero.readyBadge}
-            </div>
-          </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
-            <span>{afterLabel}</span>
-            <span>{hero.deliveryLabel}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        {hero.metrics.map((metric) => (
-          <div key={metric.label} className="rounded-[18px] border border-white/10 bg-white/[0.06] px-3 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{metric.label}</p>
-            <p className="mt-1 truncate text-sm font-semibold text-white">{metric.value}</p>
-          </div>
-        ))}
-      </div>
+    <div
+      role="img"
+      aria-label={imageAlt}
+      className="aspect-[16/10] overflow-hidden rounded-[28px] bg-[url('/assets/tools/upscale-hero-app-light.webp')] bg-cover bg-top shadow-[0_42px_120px_rgba(15,23,42,0.18)] dark:bg-[url('/assets/tools/upscale-hero-app-dark.webp')] dark:shadow-[0_42px_120px_rgba(0,0,0,0.42)]"
+    >
+      <div className="h-full w-full bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.00)_58%,rgba(255,255,255,0.10))] dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.02),rgba(3,7,18,0.00)_58%,rgba(3,7,18,0.12))]" />
     </div>
   );
 }
@@ -155,7 +96,7 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
             </div>
           </div>
 
-          <HeroVisual beforeLabel={content.hero.beforeLabel} afterLabel={content.hero.afterLabel} hero={content.hero} />
+          <HeroVisual imageAlt={content.meta.imageAlt} />
         </div>
       </section>
 
