@@ -1051,31 +1051,39 @@
       },
       "faq": {
         "title": "FAQ de l’espace vidéo IA",
-        "subtitle": "Réponses courtes pour choisir, comparer et générer avec des modèles vidéo IA.",
+        "subtitle": "Réponses courtes pour choisir le bon modèle vidéo IA avant de dépenser des crédits.",
         "items": [
           {
-            "question": "Qu’est-ce que MaxVideoAI ?",
-            "answer": "MaxVideoAI est un workspace de génération vidéo IA multi-moteurs à l’usage pour comparer et générer des vidéos avec Seedance, Kling, Veo, LTX, Wan, Pika, Sora et plus."
+            "question": "Quel est le meilleur générateur vidéo IA aujourd’hui ?",
+            "answer": "Le meilleur générateur vidéo IA dépend du plan. Seedance est fort pour le mouvement cinématique et les workflows guidés par référence, Kling est utile pour les mouvements caméra, Veo est solide pour le réalisme poli, LTX convient aux brouillons rapides, et Wan ou Pika peuvent servir certains styles ou tests budget. MaxVideoAI vous aide à comparer les moteurs avant de générer."
           },
           {
-            "question": "Puis-je comparer les modèles vidéo IA avant de générer ?",
-            "answer": "Oui. MaxVideoAI vous permet de comparer les moteurs vidéo IA par cas d’usage, qualité de sortie, mouvement, audio, vitesse, durée, résolution et prix."
+            "question": "Comment créer des vidéos générées par IA ?",
+            "answer": "Commencez avec un prompt texte, une image ou un clip existant. Choisissez ensuite le moteur qui correspond au plan, vérifiez le prix et lancez un test court. Sur MaxVideoAI, vous pouvez prévisualiser des exemples réels, comparer les moteurs vidéo IA et voir le coût avant de dépenser des crédits."
           },
           {
-            "question": "Comment fonctionne la tarification ?",
-            "answer": "Vous voyez le coût avant le début de chaque génération. Les crédits sont débités uniquement quand la génération réussit."
+            "question": "Puis-je générer des vidéos IA à partir d’une image ?",
+            "answer": "Oui. L’image-vers-vidéo IA transforme une image fixe, une photo produit, une frame de personnage ou une image de référence en clip animé. C’est souvent la meilleure option pour garder la composition, le personnage, le produit ou le style visuel sous contrôle."
           },
           {
-            "question": "Quel modèle vidéo IA choisir ?",
-            "answer": "Commencez par le cas d’usage. Seedance est fort pour les workflows cinématographiques et guidés par référence, Kling pour le mouvement caméra, Veo pour le réalisme poli, LTX pour les drafts rapides, et Wan ou Pika pour certains styles ou tests budget. Sora reste disponible pour certains workflows narratifs quand il est pertinent."
+            "question": "Quelle différence entre le texte-vers-vidéo et l’image-vers-vidéo IA ?",
+            "answer": "Le texte-vers-vidéo IA part d’un prompt écrit et crée une scène à partir de zéro. L’image-vers-vidéo IA part d’une image fixe et y ajoute du mouvement. Le texte-vers-vidéo sert mieux l’idéation, tandis que l’image-vers-vidéo est souvent meilleure pour les visuels contrôlés, les produits, les personnages et les plans de marque."
           },
           {
-            "question": "Puis-je créer depuis un texte, une image ou une vidéo ?",
-            "answer": "Oui. MaxVideoAI prend en charge le texte-vers-vidéo, l’image-vers-vidéo, la vidéo-vers-vidéo et les workflows reference-first selon le moteur choisi."
+            "question": "Où trouver des exemples de prompts vidéo IA ?",
+            "answer": "Pour des exemples de prompts vidéo IA, utilisez le hub d’exemples afin de parcourir de vraies sorties vidéo IA avec prompts, moteurs, formats, durée et prix. Vous pouvez comparer Seedance, Kling, LTX, Veo, Wan, Happy Horse et plus avant de construire votre propre génération."
           },
           {
-            "question": "MaxVideoAI inclut-il des outils créatifs ?",
-            "answer": "Oui. MaxVideoAI inclut des outils et workflows pour génération d’image, cohérence personnage, préparation d’angle, génération vidéo, comparaison de modèles et gestion des sorties selon le moteur et les fonctionnalités disponibles."
+            "question": "Combien coûte la génération vidéo IA ?",
+            "answer": "Le coût de génération vidéo IA dépend du moteur, de la durée, de la résolution, du mode et de la prise en charge audio. MaxVideoAI affiche le prix estimé avant chaque génération, pour comparer les options avant de dépenser des crédits."
+          },
+          {
+            "question": "Existe-t-il un générateur vidéo IA au paiement à l’usage ?",
+            "answer": "Oui. MaxVideoAI fonctionne avec des crédits au paiement à l’usage au lieu d’imposer un abonnement. Vous ajoutez des crédits quand nécessaire, voyez le prix avant de générer et les générations échouées sont remboursées automatiquement."
+          },
+          {
+            "question": "Quelles limites vérifier avant de choisir un modèle vidéo IA ?",
+            "answer": "Avant de choisir un modèle vidéo IA, vérifiez les limites du modèle : durée, résolution, ratio, audio, prise en charge texte-vers-vidéo ou image-vers-vidéo, images de référence et prix. Certains modèles sont meilleurs pour les brouillons courts, d’autres pour le réalisme cinématique, le mouvement caméra ou les sorties commerciales polies."
           }
         ]
       },

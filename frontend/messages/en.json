@@ -971,31 +971,39 @@
       },
       "faq": {
         "title": "AI video workspace FAQ",
-        "subtitle": "Clear answers for choosing, comparing and generating with AI video models.",
+        "subtitle": "Short answers for choosing the right AI video model before you spend credits.",
         "items": [
           {
-            "question": "What is MaxVideoAI?",
-            "answer": "MaxVideoAI is a pay-as-you-go multi-engine AI video generation workspace for comparing and generating videos with Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more."
+            "question": "What is the best AI video generator right now?",
+            "answer": "The best AI video generator depends on the shot. Seedance is strong for cinematic motion and reference-guided workflows, Kling is useful for camera movement, Veo is strong for polished realism, LTX is good for fast drafts, and Wan or Pika can fit specific styles or budget tests. MaxVideoAI helps you compare engines before you generate."
           },
           {
-            "question": "Can I compare AI video models before generating?",
-            "answer": "Yes. MaxVideoAI lets you compare AI video engines by use case, output quality, motion, audio, speed, duration, resolution and price."
+            "question": "How do I make AI-generated videos?",
+            "answer": "To make AI-generated videos, start with a text prompt, image, or existing clip. Then choose the engine that matches the shot, check the price, and generate a short test. On MaxVideoAI, you can preview real examples, compare AI video engines, and see the cost before spending credits."
           },
           {
-            "question": "How does pricing work?",
-            "answer": "You see the cost before every generation starts. Credits are charged only when the generation succeeds."
+            "question": "Can I generate AI videos from an image?",
+            "answer": "Yes. Image-to-video AI turns a still image, product shot, character frame, or reference image into a moving clip. It is often the best option when you want to keep the composition, character, product, or visual style grounded."
           },
           {
-            "question": "Which AI video model should I choose?",
-            "answer": "Start with the use case. Seedance is strong for cinematic and reference-guided workflows, Kling for camera motion, Veo for polished realism, LTX for fast drafts, and Wan or Pika for specific styles or budget tests. Sora remains available for selected narrative workflows when relevant."
+            "question": "What is the difference between text-to-video and image-to-video AI?",
+            "answer": "A text-to-video AI workflow starts from a written prompt and creates a scene from scratch. An image-to-video AI workflow starts from a still image and adds motion to it. Text-to-video is better for ideation, while image-to-video is usually better for controlled visuals, products, characters, and branded shots."
           },
           {
-            "question": "Can I create from text, image or video?",
-            "answer": "Yes. MaxVideoAI supports text-to-video, image-to-video, video-to-video and reference-first workflows depending on the selected engine."
+            "question": "Where can I find AI video prompt examples?",
+            "answer": "For AI video prompt examples, use the examples hub to browse real AI video examples with prompts, engines, formats, duration, and pricing. You can compare Seedance, Kling, LTX, Veo, Wan, Happy Horse and more before building your own generation."
           },
           {
-            "question": "Does MaxVideoAI include creative tools?",
-            "answer": "Yes. MaxVideoAI includes tools and workflows for image generation, character consistency, angle preparation, video generation, model comparison and output management, depending on the selected engine and feature availability."
+            "question": "How much does AI video generation cost?",
+            "answer": "AI video generation cost depends on the engine, duration, resolution, mode, and audio support. MaxVideoAI shows the estimated price before each generation, so you can compare options before spending credits."
+          },
+          {
+            "question": "Is there a pay-as-you-go AI video generator?",
+            "answer": "Yes. MaxVideoAI is a pay-as-you-go AI video generator instead of forcing a subscription. You add credits when needed, see the price before you generate, and failed generations are refunded automatically."
+          },
+          {
+            "question": "What limits should I check before choosing an AI video model?",
+            "answer": "Before choosing an AI video model, check model limits such as duration, resolution, aspect ratio, audio support, text-to-video or image-to-video support, reference image support, and price. Some models are better for short fast drafts, while others are better for cinematic realism, camera motion, or polished commercial outputs."
           }
         ]
       },

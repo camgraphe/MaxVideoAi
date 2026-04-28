@@ -25,6 +25,7 @@ import {
   ReferenceWorkflow,
   ShotTypeEngineSelector,
   TransparentPricingBlock,
+  WorkflowSeoSummary,
   type ComparisonCard,
   type FaqItem,
   type HomeExampleCard,
@@ -34,6 +35,7 @@ import {
   type ShotTypeCard,
   type ToolCard,
   type TrustCard,
+  type WorkflowSeoSummaryCopy,
   type WorkflowStep,
 } from '@/components/marketing/home/HomeRedesignSections';
 
@@ -928,6 +930,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.home.redesign as RedesignContent;
+  const workflowSeoCopy = dictionary.home.seoContent as WorkflowSeoSummaryCopy | undefined;
+  const startupFameLabel = dictionary.home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
   const stats = computeEngineStats();
   const hero = buildHeroContent(locale, content);
   const [examples, programmedHeroSlots, successfulGenerationCount] = await Promise.all([
@@ -949,12 +953,13 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   return (
     <div className="home-monochrome">
       <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} programmedHeroItems={programmedHeroItems} />
-      <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} />
+      <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} startupFameLabel={startupFameLabel} />
       <RealExamplesPreview copy={content.examples} examples={examples} providers={providers} />
       <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
       <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
       <AiVideoToolbox copy={content.toolbox} tools={tools} />
       <TransparentPricingBlock copy={content.pricingTrust} cards={content.pricingTrust.cards} />
+      {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} /> : null}
       <HomeFaq copy={content.faq} items={content.faq.items} />
       <Script id="home-webapp-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
