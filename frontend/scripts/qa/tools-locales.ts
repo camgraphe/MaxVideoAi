@@ -6,6 +6,7 @@ const TOOLS_INTERNAL_PATHS = [
   '/blog',
   '/tools/angle',
   '/tools/character-builder',
+  '/tools/upscale',
 ];
 
 const fixtures: LocaleFixture[] = [
@@ -31,6 +32,34 @@ const fixtures: LocaleFixture[] = [
     forbiddenTextByLocale: {
       fr: ['Create a reusable character reference for consistent AI images and video'],
       es: ['Create a reusable character reference for consistent AI images and video'],
+    },
+  },
+  {
+    englishPath: '/tools/upscale',
+    localizableInternalPaths: TOOLS_INTERNAL_PATHS,
+    requiredTextByLocale: {
+      fr: ['Upscalez vos assets'],
+      es: ['Upscalea assets'],
+    },
+    forbiddenTextByLocale: {
+      fr: [
+        'Upscale assets before they move through the pipeline',
+        'Upscale Studio',
+        'Delivery asset',
+        'Input',
+        'Pricing',
+        'Output',
+        'One output, reused everywhere',
+      ],
+      es: [
+        'Upscale assets before they move through the pipeline',
+        'Upscale Studio',
+        'Delivery asset',
+        'Input',
+        'Pricing',
+        'Output',
+        'One output, reused everywhere',
+      ],
     },
   },
 ];

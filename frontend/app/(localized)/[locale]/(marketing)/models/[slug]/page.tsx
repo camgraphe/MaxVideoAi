@@ -269,6 +269,10 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: 'job_e658a8d1-8ed8-4494-8247-19ef4e45102d',
     demo: 'job_b13fdbfe-eb04-4000-b88f-abd2dcde7e1b',
   },
+  'happy-horse-1-0': {
+    hero: 'job_24d59992-532b-43e3-b382-12310d973af1',
+    demo: 'job_b67e3f62-b117-4e89-997d-e11eb8f48c4a',
+  },
 };
 
 const PREP_LINK_VISUALS = {
@@ -1105,7 +1109,7 @@ type BestUseCaseIconKey =
   | 'scissors'
   | 'wind'
   | 'coins';
-type BestUseCaseItem = { title: string; icon: BestUseCaseIconKey; chips?: string[] };
+type BestUseCaseItem = { title: string; icon: BestUseCaseIconKey; chips?: string[]; href?: string | null };
 type RelatedItem = {
   brand: string;
   title: string;
@@ -1270,6 +1274,7 @@ const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
   kling: { name: 'Kling by Kuaishou', url: 'https://www.kuaishou.com/en' },
   wan: { name: 'Wan AI', url: 'https://www.wan-ai.com' },
   lightricks: { name: 'Lightricks', url: 'https://www.lightricks.com' },
+  alibaba: { name: 'Alibaba', url: 'https://www.alibabagroup.com' },
 };
 const AVAILABILITY_SCHEMA_MAP: Record<string, string> = {
   available: 'https://schema.org/InStock',
@@ -1329,6 +1334,11 @@ const SECTION_SCROLL_MARGIN = 'scroll-mt-[calc(var(--header-height)+64px)]';
 const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
 const HERO_AUTOPLAY_DELAY_MS = 1800;
 const GENERIC_TRUST_LINE = 'Pay-as-you-go · Price shown before you generate';
+const HERO_LIMITS_LINES: Record<AppLocale, string> = {
+  en: 'Model limits: duration, resolution, aspect ratio, audio, and input modes vary by engine.',
+  fr: 'Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le moteur.',
+  es: 'Límites del modelo: duración, resolución, relación de aspecto, audio y modos de entrada varían según el motor.',
+};
 const BEST_USE_CASE_ICON_KEYS: BestUseCaseIconKey[] = [
   'ads',
   'ugc',
@@ -2424,6 +2434,14 @@ function normalizeMaxResolution(value: string) {
   return value;
 }
 
+function formatHeroLimitChip(label: string | undefined, value: string) {
+  return label ? `${label}: ${value}` : value;
+}
+
+function resolveHeroLimitsLine(locale: AppLocale) {
+  return HERO_LIMITS_LINES[locale] ?? HERO_LIMITS_LINES.en;
+}
+
 function buildAutoHeroSpecChips(values: KeySpecValues | null, locale: AppLocale): HeroSpecChip[] {
   if (!values) return [];
   const chips: HeroSpecChip[] = [];
@@ -2443,8 +2461,8 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null, locale: AppLocale)
   if (isSupported(values.imageToImage)) add(labels.imageToImage, 'imageToVideo');
   if (isSupported(values.textToVideo)) add(labels.textToVideo, 'textToVideo');
   if (isSupported(values.imageToVideo)) add(labels.imageToVideo, 'imageToVideo');
-  if (resolution) add(resolution, 'resolution');
-  if (duration) add(duration, 'duration');
+  if (resolution) add(formatHeroLimitChip(labels.maxResolution, resolution), 'resolution');
+  if (duration) add(formatHeroLimitChip(labels.maxDuration, duration), 'duration');
   if (aspect) add(aspect, 'aspectRatio');
   if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add(labels.audio, 'audio');
 
@@ -2606,6 +2624,7 @@ function normalizeBestUseCaseItems(value: unknown, locale?: AppLocale): BestUseC
           : '';
     if (!title) continue;
     const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
+    const href = typeof obj.href === 'string' && obj.href.trim() ? obj.href.trim() : null;
     const icon =
       (rawIcon && BEST_USE_CASE_ICON_KEYS.includes(rawIcon as BestUseCaseIconKey)
         ? rawIcon
@@ -2615,6 +2634,7 @@ function normalizeBestUseCaseItems(value: unknown, locale?: AppLocale): BestUseC
       title,
       icon,
       chips,
+      href,
     });
   }
   return items;
@@ -3614,6 +3634,7 @@ function MarketingModelPageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues, locale);
+  const heroLimitsLine = isVideoEngine ? resolveHeroLimitsLine(locale) : null;
   const heroMetaLabels = getLocalizedModelMetaLabels(locale);
   const heroTrustLine =
     locale === 'en'
@@ -3759,6 +3780,7 @@ function MarketingModelPageLayout({
     const isVideoPrepModel =
       engine.modelSlug === 'veo-3-1' ||
       engine.modelSlug === 'kling-3-pro' ||
+      engine.modelSlug === 'happy-horse-1-0' ||
       engine.modelSlug === 'sora-2-pro' ||
       engine.modelSlug === 'ltx-2-3-pro' ||
       engine.modelSlug === 'ltx-2-3-fast';
@@ -4010,6 +4032,11 @@ function MarketingModelPageLayout({
                   ))}
                 </div>
               ) : null}
+              {heroLimitsLine ? (
+                <p className="mx-auto max-w-2xl text-xs font-medium leading-5 text-text-muted">
+                  {heroLimitsLine}
+                </p>
+              ) : null}
               {showHeroDescriptions && heroDesc1 ? (
                 <p className="text-base leading-relaxed text-text-secondary">{heroDesc1}</p>
               ) : null}
@@ -4098,15 +4125,26 @@ function MarketingModelPageLayout({
                       <div className="flex flex-wrap gap-1.5">
                         {bestUseCaseItems.map((item, index) => {
                           const Icon = item.icon ? BEST_USE_CASE_ICON_MAP[item.icon] : null;
-                          return (
+                          const chip = (
                             <Chip
-                              key={`${item.title}-${index}`}
                               variant="outline"
                               className="px-2.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-text-secondary"
                             >
                               {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
                               <span>{item.title}</span>
                             </Chip>
+                          );
+                          if (!item.href) {
+                            return <span key={`${item.title}-${index}`}>{chip}</span>;
+                          }
+                          return (
+                            <Link
+                              key={`${item.title}-${index}`}
+                              href={item.href}
+                              className="inline-flex rounded-full transition hover:border-brand/35 hover:text-brandHover focus:outline-none focus:ring-2 focus:ring-brand/35"
+                            >
+                              {chip}
+                            </Link>
                           );
                         })}
                       </div>

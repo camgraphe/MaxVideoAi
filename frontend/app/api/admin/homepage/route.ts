@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { logAdminAction } from '@/server/admin-audit';
-import { createHomepageSection, listHomepageSections, HOMEPAGE_SECTION_TYPES } from '@/server/homepage';
+import { createHomepageSection, listHomepageSections, HOMEPAGE_SECTION_TYPES, HOMEPAGE_SLOTS_CACHE_TAG } from '@/server/homepage';
 
 const VALID_TYPES = new Set(HOMEPAGE_SECTION_TYPES);
 
@@ -96,6 +97,11 @@ export async function POST(req: NextRequest) {
         videoId: section.videoId,
       },
     });
+    revalidateTag(HOMEPAGE_SLOTS_CACHE_TAG);
+    revalidatePath('/');
+    revalidatePath('/en');
+    revalidatePath('/fr');
+    revalidatePath('/es');
     return NextResponse.json({ ok: true, section });
   } catch (error) {
     console.error('[admin/homepage] failed to create section', error);

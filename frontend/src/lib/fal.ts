@@ -234,7 +234,7 @@ function normalizeFalVideoResolution(value: string | undefined): string | undefi
 }
 
 export function resolveFalVideoResolutionInput(engineId: string, value: string | undefined): string | undefined {
-  if (engineId === 'kling-3-4k') {
+  if (engineId.startsWith('kling-')) {
     return undefined;
   }
   return normalizeFalVideoResolution(value);
@@ -391,10 +391,13 @@ async function generateViaFal(
       requestBody.api_key = apiKey;
     }
   } else {
+    const resolution = resolveFalVideoResolutionInput(payload.engineId, payload.resolution);
     requestBody = {
-      resolution: resolveFalVideoResolutionInput(payload.engineId, payload.resolution),
       fps: payload.fps,
     };
+    if (resolution) {
+      requestBody.resolution = resolution;
+    }
     if (payload.prompt.trim().length) {
       requestBody.prompt = payload.prompt;
     }
@@ -604,6 +607,10 @@ async function generateViaFal(
     if (!trimmed) return;
     if (expectsImageArray) {
       addToArray('image_urls', trimmed);
+      return;
+    }
+    if (expectsSingleSourceVideo && (payload.engineId === 'happy-horse-1-0' || requestBody.reference_image_urls)) {
+      addToArray('reference_image_urls', trimmed);
       return;
     }
     addToArray('reference_images', trimmed);

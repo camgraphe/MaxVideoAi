@@ -1,245 +1,917 @@
 import type { Metadata } from 'next';
-import Image, { getImageProps } from 'next/image';
-import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
-import { ButtonLink } from '@/components/ui/Button';
-import { TextLink } from '@/components/ui/TextLink';
-import { resolveDictionary } from '@/lib/i18n/server';
-import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
-import { DeferredGenerateWaysMobileTabs } from '@/components/marketing/DeferredGenerateWaysMobileTabs';
-import { CURRENCY_LOCALE } from '@/lib/intl';
 import { listFalEngines } from '@/config/falEngines';
-import { getHomepageSlotsCached, HERO_SLOT_KEYS } from '@/server/homepage';
+import compareConfig from '@/config/compare-config.json';
+import engineCatalog from '@/config/engine-catalog.json';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { getImageAlt } from '@/lib/image-alt';
-import type { EngineCaps } from '@/types/engines';
-import type { AppLocale } from '@/i18n/locales';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { HOMEPAGE_PRICE_PREFIX_BY_LOCALE } from '@/lib/homepage-price-label';
+import { resolveDictionary } from '@/lib/i18n/server';
+import { localeRegions, type AppLocale } from '@/i18n/locales';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { computePricingSnapshot } from '@/lib/pricing';
-import { HOMEPAGE_PRICE_PREFIX_BY_LOCALE, normalizeHomepageAdminPriceLabel } from '@/lib/homepage-price-label';
+import { listExampleFamilyPage, listExamples, type GalleryVideo } from '@/server/videos';
+import { getHomepageSlotsCached, getSuccessfulGenerationCountCached, type HomepageSlotWithVideo } from '@/server/homepage';
+import type { Mode } from '@/types/engines';
+import type { HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
+import {
+  AiVideoToolbox,
+  ComparisonPreview,
+  HomeFaq,
+  HomeHero,
+  RealExamplesPreview,
+  ReferenceWorkflow,
+  ShotTypeEngineSelector,
+  TransparentPricingBlock,
+  WorkflowSeoSummary,
+  type ComparisonCard,
+  type FaqItem,
+  type HomeExampleCard,
+  type HomeHeroContent,
+  type ProviderItem,
+  type ProofStat,
+  type ShotTypeCard,
+  type ToolCard,
+  type TrustCard,
+  type WorkflowSeoSummaryCopy,
+  type WorkflowStep,
+} from '@/components/marketing/home/HomeRedesignSections';
 
 export const revalidate = 60;
 
-type HeroTileConfig = {
-  id: string;
-  engineId: string;
-  label: string;
-  videoSrc: string;
-  posterSrc: string;
-  durationSec: number;
-  resolution: string;
-  fallbackPriceLabel: string;
-  minPriceCents?: number;
-  minPriceCurrency?: string;
-  showAudioIcon?: boolean;
-  alt: string;
-  examplesSlug?: string | null;
-  adminPriceLabel?: string | null;
+type ProofConfig = {
+  items: Array<{ id: string; label: string }>;
 };
 
-function ReferenceStartCard({
-  eyebrow,
-  title,
-  body,
-  href,
-  cta,
-  imageSrc,
-  imageAlt,
-}: {
-  eyebrow: string;
+type FallbackExampleCard = {
+  id: string;
   title: string;
-  body: string;
-  href: string;
+  engine: string;
+  engineId: string;
+  modelSlug?: string;
+  mode: string;
+  duration: string;
+  price?: string;
+  useCase: string;
   cta: string;
+  cloneCta?: string;
   imageSrc: string;
   imageAlt: string;
-}) {
-  return (
-    <article className="reference-start-card group flex h-full flex-col overflow-hidden rounded-card border border-hairline bg-surface shadow-card">
-      <div className="reference-start-card__media relative aspect-[1.08] overflow-hidden border-b border-hairline bg-surface-2">
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          sizes="(max-width: 1024px) 100vw, 360px"
-          className="object-cover transition duration-500 group-hover:scale-[1.03]"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,15,28,0.55)_0%,rgba(8,15,28,0.16)_24%,rgba(8,15,28,0)_42%),linear-gradient(0deg,rgba(8,15,28,0.44)_0%,rgba(8,15,28,0)_32%)]" />
-        <span className="absolute left-4 top-4 rounded-full border border-white/32 bg-[rgba(8,15,28,0.68)] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-[0_10px_24px_-14px_rgba(0,0,0,0.7)] backdrop-blur-md">
-          {eyebrow}
-        </span>
-      </div>
-      <div className="reference-start-card__body flex flex-1 flex-col p-6">
-        <h3 className="text-2xl font-semibold tracking-tight text-text-primary">{title}</h3>
-        <p className="mt-3 text-sm leading-7 text-text-secondary">{body}</p>
-        <ButtonLink href={href} linkComponent={Link} variant="outline" size="lg" className="mt-6 w-fit">
-          {cta}
-        </ButtonLink>
-      </div>
-    </article>
-  );
-}
+  examplesSlug?: HomepageExampleFamily;
+  showExamplesCta?: boolean;
+  modelCta?: string;
+};
 
-const HERO_TILES: readonly HeroTileConfig[] = [
-  {
-    id: 'seedance-2-0',
-    engineId: 'seedance-2-0',
-    label: 'Seedance 2.0',
-    videoSrc: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
-    posterSrc: '/hero/seedance-2-0.jpg',
-    durationSec: 10,
-    resolution: '1080p',
-    fallbackPriceLabel: 'confirm live price',
-    showAudioIcon: true,
-    alt: 'Seedance 2.0  -  example clip',
-    examplesSlug: 'seedance-2-0',
-  },
-  {
-    id: 'veo-3-1',
-    engineId: 'veo-3-1',
-    label: 'Veo 3.1',
-    videoSrc: '/hero/veo3.mp4',
-    posterSrc: '/hero/veo-3-1-hero.jpg',
-    durationSec: 8,
-    resolution: '1080p',
-    fallbackPriceLabel: 'from $0.40',
-    minPriceCents: 40,
-    showAudioIcon: true,
-    alt: 'Veo 3.1  -  example clip',
-    examplesSlug: 'veo-3-1',
-  },
-  {
-    id: 'sora-2',
-    engineId: 'sora-2',
-    label: 'Sora 2',
-    videoSrc: '/hero/sora2.mp4',
-    posterSrc: '/hero/sora2.jpg',
-    durationSec: 8,
-    resolution: '1080p',
-    fallbackPriceLabel: 'from $0.52',
-    minPriceCents: 52,
-    showAudioIcon: true,
-    alt: 'Sora 2  -  example clip',
-    examplesSlug: 'sora-2',
-  },
-  {
-    id: 'pika-22',
-    engineId: 'pika-text-to-video',
-    label: 'Pika 2.2',
-    videoSrc: '/hero/pika-22.mp4',
-    posterSrc: '/hero/pika-22.jpg',
-    durationSec: 6,
-    resolution: '1080p',
-    fallbackPriceLabel: 'from $0.24',
-    minPriceCents: 24,
-    alt: 'Pika 2.2  -  example clip',
-    examplesSlug: 'pika-2-2',
-  },
+type ComparisonConfig = {
+  id: string;
+  slug: string;
+  title: string;
+  body: string;
+  badges: string[];
+  imageSrc?: string;
+  imageAlt?: string;
+};
+
+type ComparisonMediaItem = {
+  imageSrc: string;
+  imageAlt: string;
+  label?: string;
+};
+
+type BestForPageConfig = {
+  slug: string;
+  title: string;
+  description?: string;
+  tier: number;
+  topPicks?: string[];
+};
+
+type EngineCatalogEntry = {
+  modelSlug: string;
+  marketingName: string;
+  provider?: string;
+  brandId?: string;
+};
+
+type BestForCardCopy = {
+  slug: string;
+  title: string;
+  body: string;
+  cta: string;
+};
+
+type ProviderConfig = ProviderItem & {
+  providerKey: string;
+};
+
+type RedesignContent = {
+  hero: HomeHeroContent;
+  proof: ProofConfig;
+  shotTypes: {
+    title: string;
+    subtitle: string;
+    eyebrow?: string;
+    cta?: string;
+    hubCtaTitle?: string;
+    hubCtaBody?: string;
+    guideLabel?: string;
+    topPicksLabel?: string;
+    moreGuidesTitle?: string;
+    cards: BestForCardCopy[];
+  };
+  examples: {
+    title: string;
+    subtitle: string;
+    cta: string;
+    modelsCta?: string;
+    compareLink?: string;
+    libraryTitle?: string;
+    libraryBody?: string;
+    providerLabel?: string;
+    viewPrompt: string;
+    fallbackCards: FallbackExampleCard[];
+  };
+  comparisons: {
+    title: string;
+    subtitle: string;
+    cta: string;
+    cards: ComparisonConfig[];
+  };
+  workflow: {
+    title: string;
+    subtitle: string;
+    steps: WorkflowStep[];
+  };
+  toolbox: {
+    title: string;
+    subtitle: string;
+    primaryCta?: string;
+    secondaryCta?: string;
+    cards: ToolCard[];
+  };
+  pricingTrust: {
+    title: string;
+    subtitle: string;
+    cta: string;
+    cards: TrustCard[];
+  };
+  providers: {
+    title: string;
+    subtitle: string;
+    cta: string;
+    items: ProviderConfig[];
+  };
+  faq: {
+    title: string;
+    subtitle: string;
+    items: FaqItem[];
+  };
+  modeLabels: Partial<Record<Mode | 'unknown', string>>;
+};
+
+type EngineStats = {
+  total: number;
+  providers: number;
+  textToVideo: number;
+  imageToVideo: number;
+  videoToVideo: number;
+  audio: number;
+  fourK: number;
+  extend: number;
+  retake: number;
+  audioToVideo: number;
+};
+
+const EXAMPLE_ENGINE_PRIORITY = [
+  'seedance-2-0',
+  'kling-3-pro',
+  'veo-3-1',
+  'veo-3-1-lite',
+  'ltx-2-3-pro',
+  'happy-horse-1-0',
+  'pika-text-to-video',
+  'sora-2',
+  'ltx-2-3-fast',
+  'wan-2-6',
+  'kling-3-standard',
 ] as const;
 
-const HERO_POSTER_WIDTH = 1200;
-const HERO_POSTER_HEIGHT = 675;
-const HERO_POSTER_QUALITY = 72;
-
-function buildOptimizedPoster(src: string): string {
-  if (!src) return src;
-  if (src.startsWith('/_next/image') || src.includes('/_next/image?')) {
-    return src;
-  }
-  const { props } = getImageProps({
-    src,
-    alt: '',
-    width: HERO_POSTER_WIDTH,
-    height: HERO_POSTER_HEIGHT,
-    quality: HERO_POSTER_QUALITY,
-    priority: true,
-  });
-  return props.src;
-}
-
-type WorksWithBrandItem = {
-  label: string;
-  slug?: string;
-};
-
-const WORKS_WITH_BRAND_LINKS: readonly WorksWithBrandItem[] = [
-  { label: 'Seedance 2.0', slug: 'seedance-2-0' },
-  { label: 'Kling 3', slug: 'kling-3-pro' },
-  { label: 'Veo 3.1', slug: 'veo-3-1' },
-  { label: 'LTX 2.3', slug: 'ltx-2-3-pro' },
-  { label: 'Sora 2', slug: 'sora-2' },
-  { label: 'Wan 2.6', slug: 'wan-2-6' },
-  { label: 'Pika 2.2', slug: 'pika-text-to-video' },
-  { label: 'Hailuo 02', slug: 'minimax-hailuo-02-text' },
-  { label: 'Nano Banana', slug: 'nano-banana' },
+const BEST_FOR_MAIN_SLUGS = [
+  'cinematic-realism',
+  'image-to-video',
+  'fast-drafts',
+  'ads',
 ] as const;
 
-const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
-  'seedance-2-0': 'seedance-2-0',
-  'seedance-2-0-fast': 'seedance-2-0-fast',
-  'sora-2': 'sora-2',
-  'sora-2-pro': 'sora-2-pro',
-  'veo-3-1': 'veo-3-1',
-  'veo-3-1-fast': 'veo-3-1-fast',
-  'pika-text-to-video': 'pika-2-2',
-  'pika-2-2': 'pika-2-2',
-  'minimax-hailuo-02-text': 'minimax-hailuo-02',
-  'minimax-hailuo-02': 'minimax-hailuo-02',
+const BEST_FOR_PAGES = compareConfig.bestForPages as BestForPageConfig[];
+const BEST_FOR_BY_SLUG = new Map(BEST_FOR_PAGES.map((entry) => [entry.slug, entry]));
+const ENGINE_CATALOG = engineCatalog as EngineCatalogEntry[];
+const ENGINE_BY_MODEL_SLUG = new Map(ENGINE_CATALOG.map((entry) => [entry.modelSlug, entry]));
+
+const HOME_ROUTE_MAP = {
+  app: '/app',
+  imageApp: '/app/image',
+  models: { pathname: '/models' },
+  examples: { pathname: '/examples' },
+  compare: { pathname: '/ai-video-engines' },
+  pricing: { pathname: '/pricing' },
+  tools: { pathname: '/tools' },
+  characterBuilder: { pathname: '/tools/character-builder' },
+  angleTool: { pathname: '/tools/angle' },
+  upscaleTool: { pathname: '/tools/upscale' },
+} satisfies Record<string, LocalizedLinkHref>;
+
+const SUCCESSFUL_GENERATION_PROOF_MINIMUM = 10_000;
+
+const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = {
+  Pika: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } },
+  Alibaba: { pathname: '/examples/[model]', params: { model: 'happy-horse' } },
 };
 
-const HERO_AUDIO_BADGE_BY_LOCALE: Record<AppLocale, string> = {
-  en: 'Audio available. Preview plays muted on this page.',
-  fr: 'Audio disponible. La prévisualisation est lue sans son sur cette page.',
-  es: 'Audio disponible. La vista previa se reproduce sin sonido en esta página.',
+const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'wan', 'happy-horse'] as const;
+type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
+
+type HeroEngineId = 'seedance-2-0' | 'kling-3-pro' | 'veo-3-1-lite' | 'ltx-2-3-pro' | 'happy-horse-1-0';
+
+const HERO_VIDEO_CHIPS: Record<string, string[]> = {
+  'kling-3-pro': ['Cinematic', 'Camera move'],
+  'seedance-2-0': ['Cinematic', 'Realism'],
+  'veo-3-1-lite': ['Realistic', 'Premium'],
+  'ltx-2-3-pro': ['Audio', 'Retake'],
+  'happy-horse-1-0': ['Lip-sync', 'Unified'],
 };
 
-const HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE: Record<AppLocale, string> = {
-  en: 'Generate with {engine} settings',
-  fr: 'Générer avec les réglages {engine}',
-  es: 'Generar con ajustes de {engine}',
-};
-
-const HERO_LIGHTBOX_COPY_BY_LOCALE: Record<
-  AppLocale,
+const HERO_ENGINE_TARGETS: Record<
+  HeroEngineId,
   {
-    openPreviewAria: string;
-    openGeneratorAria: string;
-    dialogAria: string;
-    modelPage: string;
-    generateLikeThis: string;
-    viewDetails: string;
-    closePreview: string;
+    name: string;
+    exampleFamily?: HomepageExampleFamily;
+    modelSlug: string;
+    mode: Mode;
   }
 > = {
-  en: {
-    openPreviewAria: 'Preview {label}',
-    openGeneratorAria: 'Open {label} generator',
-    dialogAria: '{label} preview',
-    modelPage: 'Model page',
-    generateLikeThis: 'Generate like this',
-    viewDetails: 'View details',
-    closePreview: 'Close preview',
+  'kling-3-pro': { name: 'Kling 3 Pro', exampleFamily: 'kling', modelSlug: 'kling-3-pro', mode: 'i2v' },
+  'seedance-2-0': { name: 'Seedance 2.0', exampleFamily: 'seedance', modelSlug: 'seedance-2-0', mode: 'i2v' },
+  'veo-3-1-lite': { name: 'Veo 3.1 Lite', exampleFamily: 'veo', modelSlug: 'veo-3-1-lite', mode: 'i2v' },
+  'ltx-2-3-pro': { name: 'LTX 2.3 Pro', exampleFamily: 'ltx', modelSlug: 'ltx-2-3-pro', mode: 'a2v' },
+  'happy-horse-1-0': { name: 'Happy Horse 1.0', exampleFamily: 'happy-horse', modelSlug: 'happy-horse-1-0', mode: 'ref2v' },
+};
+
+const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
+  seedance: 'seedance-2-0',
+  kling: 'kling-3-pro',
+  ltx: 'ltx-2-3-pro',
+  veo: 'veo-3-1',
+  wan: 'wan-2-6',
+  'happy-horse': 'happy-horse-1-0',
+};
+
+const HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES: Partial<Record<string, { videoId?: string; imageSrc?: string }>> = {
+  'veo-3-1': {
+    videoId: 'job_c36e082d-cd1d-4a25-9f17-02246a878eb9',
   },
-  fr: {
-    openPreviewAria: 'Prévisualiser {label}',
-    openGeneratorAria: 'Ouvrir le générateur {label}',
-    dialogAria: 'Prévisualisation de {label}',
-    modelPage: 'Page modèle',
-    generateLikeThis: 'Générer comme ceci',
-    viewDetails: 'Voir les détails',
-    closePreview: 'Fermer la prévisualisation',
+  'wan-2-6': {
+    videoId: 'job_110f0282-bf5e-4d58-ab34-8b117c94d4e4',
   },
-  es: {
-    openPreviewAria: 'Previsualizar {label}',
-    openGeneratorAria: 'Abrir generador de {label}',
-    dialogAria: 'Previsualización de {label}',
-    modelPage: 'Página del modelo',
-    generateLikeThis: 'Generar así',
-    viewDetails: 'Ver detalles',
-    closePreview: 'Cerrar previsualización',
+  'happy-horse-1-0': {
+    imageSrc:
+      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp',
   },
 };
+
+const ALLOWED_TOOL_CARD_IDS = new Set([
+  'text-to-video',
+  'image-to-video',
+  'video-to-video',
+  'generate-image',
+  'character-builder',
+  'angle-tool',
+  'upscale',
+  'compare-engines',
+]);
+
+const FALLBACK_MODE_BY_ENGINE: Record<string, Mode> = {
+  'sora-2': 't2v',
+  'veo-3-1': 'i2v',
+  'veo-3-1-lite': 'i2v',
+  'kling-3-pro': 'i2v',
+  'kling-3-standard': 't2v',
+  'seedance-2-0': 'ref2v',
+  'ltx-2-3-fast': 't2v',
+  'ltx-2-3-pro': 'a2v',
+  'wan-2-6': 'r2v',
+  'pika-text-to-video': 't2v',
+  'happy-horse-1-0': 'ref2v',
+};
+
+function countMode(engines: ReturnType<typeof listFalEngines>, mode: Mode) {
+  return engines.filter((entry) => entry.engine.modes.includes(mode)).length;
+}
+
+function computeEngineStats(): EngineStats {
+  const engines = listFalEngines();
+  return {
+    total: engines.length,
+    providers: new Set(engines.map((entry) => entry.provider)).size,
+    textToVideo: countMode(engines, 't2v'),
+    imageToVideo: countMode(engines, 'i2v'),
+    videoToVideo: countMode(engines, 'v2v'),
+    audio: engines.filter((entry) => entry.engine.audio).length,
+    fourK: engines.filter((entry) =>
+      (entry.engine.resolutions ?? []).some((resolution) => String(resolution).toLowerCase().includes('4k'))
+    ).length,
+    extend: engines.filter((entry) => entry.engine.extend || entry.engine.modes.includes('extend')).length,
+    retake: countMode(engines, 'retake'),
+    audioToVideo: countMode(engines, 'a2v'),
+  };
+}
+
+function resolveProofValue(id: string, stats: EngineStats): string {
+  switch (id) {
+    case 'engines':
+      return String(stats.total);
+    case 'providers':
+      return String(stats.providers);
+    case 'textToVideo':
+      return String(stats.textToVideo);
+    case 'imageToVideo':
+      return String(stats.imageToVideo);
+    case 'videoToVideo':
+      return String(stats.videoToVideo);
+    case 'audio':
+      return String(stats.audio);
+    case 'fourK':
+      return stats.fourK > 0 ? '4K' : '1080p+';
+    default:
+      return '';
+  }
+}
+
+function formatProofNumber(locale: AppLocale, value: number): string {
+  return new Intl.NumberFormat(localeRegions[locale] ?? 'en-US', {
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function buildProofStats(content: RedesignContent, stats: EngineStats, locale: AppLocale, successfulGenerationCount: number | null): ProofStat[] {
+  const hrefByProofId: Partial<Record<string, LocalizedLinkHref>> = {
+    engines: HOME_ROUTE_MAP.models,
+    providers: HOME_ROUTE_MAP.models,
+    textToVideo: HOME_ROUTE_MAP.models,
+    imageToVideo: HOME_ROUTE_MAP.models,
+    videoToVideo: HOME_ROUTE_MAP.models,
+    audio: HOME_ROUTE_MAP.models,
+    fourK: HOME_ROUTE_MAP.models,
+    successfulGenerations: HOME_ROUTE_MAP.examples,
+  };
+
+  return content.proof.items.flatMap((item) => {
+    if (item.id === 'successfulGenerations') {
+      if (successfulGenerationCount == null || successfulGenerationCount < SUCCESSFUL_GENERATION_PROOF_MINIMUM) return [];
+      return [
+        {
+          id: item.id,
+          value: formatProofNumber(locale, successfulGenerationCount),
+          label: item.label,
+          href: hrefByProofId[item.id],
+        },
+      ];
+    }
+
+    return [
+      {
+        id: item.id,
+        value: resolveProofValue(item.id, stats),
+        label: item.label,
+        href: hrefByProofId[item.id],
+      },
+    ];
+  });
+}
+
+function buildHeroContent(locale: AppLocale, content: RedesignContent): HomeHeroContent {
+  const engines = listFalEngines();
+  const engineById = new Map(engines.flatMap((entry) => [[entry.id, entry], [entry.modelSlug, entry]]));
+
+  return {
+    ...content.hero,
+    mockup: {
+      ...content.hero.mockup,
+      engineRecommendations: content.hero.mockup.engineRecommendations.map((recommendation) => {
+        const engine = engineById.get(recommendation.engineId);
+        const linkMeta = buildHeroEngineLinks(locale, recommendation.engineId, recommendation.name);
+        const modeLabel = linkMeta.mode ? resolveModeLabel(linkMeta.mode, content) : null;
+        const pricing = engine?.pricingHint;
+        const formattedPrice =
+          pricing && pricing.amountCents > 0
+            ? formatStartingPrice(locale, pricing.currency, pricing.amountCents, pricing.durationSeconds)
+            : recommendation.fallbackPrice;
+
+        return {
+          ...recommendation,
+          name: linkMeta.name,
+          provider: engine?.provider ?? recommendation.provider,
+          price: formattedPrice || recommendation.fallbackPrice,
+          modeLabel: modeLabel ?? undefined,
+          examplesHref: linkMeta.examplesHref,
+          modelHref: linkMeta.modelHref,
+          examplesLabel: linkMeta.examplesLabel,
+          modelLabel: linkMeta.modelLabel,
+        };
+      }),
+    },
+  };
+}
+
+function buildBestForGuideCards(content: RedesignContent, slugs: readonly string[]): ShotTypeCard[] {
+  const copyBySlug = new Map(content.shotTypes.cards.map((card) => [card.slug, card]));
+
+  return slugs.flatMap((slug) => {
+    const entry = BEST_FOR_BY_SLUG.get(slug);
+    const localized = copyBySlug.get(slug);
+    if (!entry || !localized) return [];
+
+    return [
+      {
+        id: slug,
+        slug,
+        title: localized.title,
+        body: localized.body || entry.description || '',
+        cta: localized.cta,
+        href: { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: slug } },
+        tier: entry.tier,
+        topPicks: (entry.topPicks ?? []).slice(0, 3).map((modelSlug) => {
+          const engine = ENGINE_BY_MODEL_SLUG.get(modelSlug);
+          return {
+            slug: modelSlug,
+            label: engine?.marketingName ?? modelSlug,
+            brandId: engine?.brandId,
+            provider: engine?.provider,
+          };
+        }),
+      },
+    ];
+  });
+}
+
+function formatCurrency(locale: AppLocale, currency: string | null | undefined, cents: number | null | undefined) {
+  if (typeof cents !== 'number' || !Number.isFinite(cents)) return null;
+  return new Intl.NumberFormat(localeRegions[locale] ?? 'en-US', {
+    style: 'currency',
+    currency: currency ?? 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
+}
+
+function formatStartingPrice(
+  locale: AppLocale,
+  currency: string | null | undefined,
+  cents: number | null | undefined,
+  durationSeconds?: number | null
+) {
+  const formatted = formatCurrency(locale, currency, cents);
+  if (!formatted) return null;
+  const prefix = HOMEPAGE_PRICE_PREFIX_BY_LOCALE[locale] ?? HOMEPAGE_PRICE_PREFIX_BY_LOCALE.en;
+  return `${prefix} ${formatted}${durationSeconds ? ` / ${durationSeconds}s` : ''}`;
+}
+
+function heroExampleLabel(locale: AppLocale, name: string, family: HomepageExampleFamily) {
+  const familyLabel = family === 'ltx' ? 'LTX' : name;
+  if (locale === 'fr') return `Voir les exemples ${familyLabel}`;
+  if (locale === 'es') return `Ver ejemplos ${familyLabel}`;
+  return `View ${familyLabel} examples`;
+}
+
+function heroModelLabel() {
+  return 'Specs & pricing';
+}
+
+function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName: string) {
+  const normalizedEngineId = normalizeEngineId(engineId) ?? engineId;
+  const target = HERO_ENGINE_TARGETS[normalizedEngineId as HeroEngineId];
+  if (!target) {
+    const family = resolveExampleCanonicalSlug(normalizedEngineId) as HomepageExampleFamily | null;
+    const modelSlug = normalizedEngineId;
+    return {
+      name: fallbackName,
+      modeLabel: null,
+      examplesHref: family ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref) : undefined,
+      modelHref: { pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref,
+      examplesLabel: family ? heroExampleLabel(locale, fallbackName, family) : undefined,
+      modelLabel: heroModelLabel(),
+    };
+  }
+  return {
+    name: target.name,
+    modeLabel: null as string | null,
+    examplesHref: target.exampleFamily
+      ? ({ pathname: '/examples/[model]', params: { model: target.exampleFamily } } satisfies LocalizedLinkHref)
+      : undefined,
+    modelHref: { pathname: '/models/[slug]', params: { slug: target.modelSlug } } satisfies LocalizedLinkHref,
+    examplesLabel: target.exampleFamily ? heroExampleLabel(locale, target.name, target.exampleFamily) : undefined,
+    modelLabel: heroModelLabel(),
+    mode: target.mode,
+  };
+}
+
+function formatVideoTime(seconds: number | null | undefined) {
+  const safeSeconds = typeof seconds === 'number' && Number.isFinite(seconds) ? Math.max(0, Math.round(seconds)) : 5;
+  const minutes = Math.floor(safeSeconds / 60);
+  const remaining = String(safeSeconds % 60).padStart(2, '0');
+  return `${minutes}:${remaining}`;
+}
+
+function resolveModeLabel(mode: string | null | undefined, content: RedesignContent) {
+  const normalized = (mode ?? 'unknown') as Mode | 'unknown';
+  return content.modeLabels[normalized] ?? content.modeLabels.unknown ?? 'AI video';
+}
+
+function extractMode(video: GalleryVideo): Mode | 'unknown' {
+  const settings = video.settingsSnapshot;
+  if (settings && typeof settings === 'object' && 'mode' in settings) {
+    const mode = (settings as { mode?: unknown }).mode;
+    if (typeof mode === 'string') return mode as Mode;
+  }
+  const canonical = normalizeEngineId(video.engineId) ?? video.engineId;
+  return FALLBACK_MODE_BY_ENGINE[canonical] ?? 'unknown';
+}
+
+async function loadProgrammedHomepageHeroSlots(): Promise<HomepageSlotWithVideo[]> {
+  try {
+    const slots = await getHomepageSlotsCached();
+    return slots.hero;
+  } catch (error) {
+    console.warn('[home] failed to load programmed homepage hero slots', error);
+    return [];
+  }
+}
+
+async function loadSuccessfulGenerationCount(): Promise<number | null> {
+  try {
+    return await getSuccessfulGenerationCountCached();
+  } catch (error) {
+    console.warn('[home] failed to load successful generation count', error);
+    return null;
+  }
+}
+
+function buildProgrammedHeroItems(
+  locale: AppLocale,
+  content: RedesignContent,
+  slots: HomepageSlotWithVideo[]
+): HeroVideoShowcaseItem[] {
+  const engines = listFalEngines();
+  const engineById = new Map(
+    engines.flatMap((entry) => {
+      const normalizedId = normalizeEngineId(entry.id) ?? entry.id;
+      return [
+        [entry.id, entry],
+        [entry.modelSlug, entry],
+        [normalizedId, entry],
+      ] as const;
+    })
+  );
+
+  return slots
+    .filter((slot) => Boolean(slot.video?.thumbUrl || slot.video?.videoUrl))
+    .map((slot) => {
+      const video = slot.video!;
+      const normalizedEngineId = normalizeEngineId(video.engineId) ?? video.engineId;
+      const engine = engineById.get(video.engineId) ?? engineById.get(normalizedEngineId);
+      const linkMeta = buildHeroEngineLinks(locale, normalizedEngineId, video.engineLabel);
+      const durationSeconds = video.durationSec || engine?.pricingHint?.durationSeconds || null;
+      const duration = formatVideoTime(durationSeconds);
+      const resolution = video.aspectRatio ?? '1080p';
+      const mode = resolveModeLabel(linkMeta.mode ?? extractMode(video), content);
+      const recommended = content.hero.mockup.engineRecommendations.find((recommendation) => recommendation.engineId === normalizedEngineId);
+      const durationLabel = typeof video.durationSec === 'number' ? `${video.durationSec}s` : `${Number(duration.replace(/^0:/, ''))}s`;
+      const mediaInfo = [mode, durationLabel, video.aspectRatio ?? null].filter(Boolean).join(' · ');
+      const chips = HERO_VIDEO_CHIPS[normalizedEngineId] ?? (recommended?.bestFor ? [recommended.bestFor] : [mode]);
+      const startingPrice =
+        (engine?.pricingHint
+          ? formatStartingPrice(locale, engine.pricingHint.currency, engine.pricingHint.amountCents, engine.pricingHint.durationSeconds)
+          : null) ??
+        formatStartingPrice(locale, video.currency, video.finalPriceCents, video.durationSec) ??
+        content.hero.mockup.engineRecommendations.find((recommendation) => recommendation.engineId === normalizedEngineId)?.fallbackPrice ??
+        content.hero.mockup.quoteValue;
+      const finalQuote = formatCurrency(locale, video.currency, video.finalPriceCents);
+
+      return {
+        id: `programmed-${slot.key}-${video.id}`,
+        engineId: normalizedEngineId,
+        name: linkMeta.name,
+        provider: engine?.provider ?? video.engineLabel,
+        bestFor: chips[0] ?? mode,
+        chips,
+        mediaInfo,
+        price: startingPrice,
+        estimateLabel: content.hero.mockup.quoteLabel,
+        estimateValue: finalQuote ?? startingPrice,
+        estimateMeta: typeof video.durationSec === 'number' ? `${video.durationSec}s generation` : `${duration} generation`,
+        examplesHref: linkMeta.examplesHref,
+        modelHref: linkMeta.modelHref,
+        examplesLabel: linkMeta.examplesLabel,
+        modelLabel: linkMeta.modelLabel,
+        posterSrc: video.thumbUrl ?? '/assets/placeholders/preview-16x9.png',
+        videoSrc: video.videoUrl ?? null,
+        duration,
+        resolution,
+        imageAlt: `${video.engineLabel} AI video programmed for the MaxVideoAI homepage.`,
+      };
+    });
+}
+
+function sortExamplesByPriority(videos: GalleryVideo[]) {
+  const priority = new Map<string, number>(EXAMPLE_ENGINE_PRIORITY.map((id, index) => [id, index]));
+  return [...videos].sort((left, right) => {
+    const leftId = normalizeEngineId(left.engineId) ?? left.engineId;
+    const rightId = normalizeEngineId(right.engineId) ?? right.engineId;
+    return (priority.get(leftId) ?? 99) - (priority.get(rightId) ?? 99);
+  });
+}
+
+function preferHomepageExampleVideo(
+  videos: GalleryVideo[],
+  targetEngineId: string,
+  family: HomepageExampleFamily | undefined,
+  preferredVideoId?: string
+): GalleryVideo | null {
+  const normalizedTarget = normalizeEngineId(targetEngineId) ?? targetEngineId;
+  const usable = videos.filter((video) => {
+    if (!video.thumbUrl) return false;
+    const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
+    if (engineId === normalizedTarget) return true;
+    return family ? resolveExampleCanonicalSlug(engineId) === family : false;
+  });
+  const preferred = preferredVideoId ? usable.find((video) => video.id === preferredVideoId && video.aspectRatio === '16:9') : null;
+  if (preferred) return preferred;
+  const exactEngine = usable.filter((video) => (normalizeEngineId(video.engineId) ?? video.engineId) === normalizedTarget);
+  const exact16x9 = exactEngine.find((video) => video.aspectRatio === '16:9');
+  if (exact16x9) return exact16x9;
+  const family16x9 = usable.find((video) => video.aspectRatio === '16:9');
+  return exactEngine[0] ?? family16x9 ?? usable[0] ?? null;
+}
+
+function formatHomepageExampleDuration(locale: AppLocale, video: GalleryVideo | null, fallback: string): string {
+  if (typeof video?.durationSec === 'number' && Number.isFinite(video.durationSec) && video.durationSec > 0) {
+    return locale === 'fr' ? `${video.durationSec} s` : `${video.durationSec}s`;
+  }
+  return fallback;
+}
+
+function formatHomepageExamplePrice(locale: AppLocale, video: GalleryVideo | null, fallback?: string): string | null {
+  return formatCurrency(locale, video?.currency, video?.finalPriceCents) ?? fallback ?? null;
+}
+
+async function loadHomepageExamples(locale: AppLocale, content: RedesignContent): Promise<HomeExampleCard[]> {
+  const [latestVideos, playlistVideos, familyPools] = await Promise.all([
+    listExamples('date-desc', 120).catch(() => [] as GalleryVideo[]),
+    listExamples('playlist', 120).catch(() => [] as GalleryVideo[]),
+    Promise.all(
+      HOMEPAGE_EXAMPLE_FAMILIES.map(async (family) => {
+        const result = await listExampleFamilyPage(family, { sort: 'date-desc', limit: 24, offset: 0 }).catch(() => ({
+          items: [] as GalleryVideo[],
+          total: 0,
+          limit: 24,
+          offset: 0,
+          hasMore: false,
+        }));
+        return [family, result.items] as const;
+      })
+    ),
+  ]);
+  const familyVideos = new Map(familyPools);
+  const globalCandidates = [...latestVideos, ...sortExamplesByPriority(playlistVideos)];
+
+  return content.examples.fallbackCards.flatMap<HomeExampleCard>((fallback) => {
+    const family = fallback.examplesSlug;
+    const familyCandidates = family ? familyVideos.get(family) ?? [] : [];
+    const override = HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES[fallback.engineId];
+    const video = preferHomepageExampleVideo([...globalCandidates, ...familyCandidates], fallback.engineId, family, override?.videoId);
+    const engineId = video ? normalizeEngineId(video.engineId) ?? video.engineId : fallback.engineId;
+    const modelSlug = fallback.modelSlug ?? (family ? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family] : fallback.engineId);
+    const href = family
+      ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref)
+      : ({ pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref);
+
+    return [
+      {
+        id: fallback.id,
+        title: fallback.title,
+        engineId,
+        engine: fallback.engine,
+        mode: fallback.mode,
+        duration: formatHomepageExampleDuration(locale, video, fallback.duration),
+        price: formatHomepageExamplePrice(locale, video, fallback.price),
+        useCase: fallback.useCase,
+        imageSrc: override?.imageSrc ?? video?.thumbUrl ?? fallback.imageSrc,
+        videoSrc: null,
+        imageAlt: fallback.imageAlt,
+        href,
+        modelHref: family ? ({ pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref) : undefined,
+        cloneHref: undefined,
+        ctaLabel: fallback.cta,
+        examplesCtaVisible: fallback.showExamplesCta !== false,
+        modelCtaLabel: fallback.modelCta,
+        cloneLabel: fallback.cloneCta ?? content.examples.viewPrompt,
+      },
+    ];
+  });
+}
+
+function splitComparisonSlug(slug: string): [string, string] | null {
+  const [left, right] = slug.split('-vs-');
+  if (!left || !right) return null;
+  return [left, right];
+}
+
+function resolveComparisonEngineLabel(slug: string): string {
+  return ENGINE_BY_MODEL_SLUG.get(slug)?.marketingName ?? slug.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function compactComparisonLabel(label: string): string {
+  return label
+    .replace(/^Google\s+/i, '')
+    .replace(/^LTX Video 2\.0 Pro$/i, 'LTX 2')
+    .replace(/\s+Text to Video$/i, '')
+    .trim();
+}
+
+async function loadComparisonExamplePools(
+  cards: ComparisonConfig[],
+  usedImageSrcs: Set<string>
+): Promise<Map<HomepageExampleFamily, GalleryVideo[]>> {
+  const families = new Set<HomepageExampleFamily>();
+
+  cards.forEach((card) => {
+    const pair = splitComparisonSlug(card.slug);
+    if (!pair) return;
+    pair.forEach((engineSlug) => {
+      const family = resolveExampleCanonicalSlug(engineSlug);
+      if (family && HOMEPAGE_EXAMPLE_FAMILIES.includes(family as HomepageExampleFamily)) {
+        families.add(family as HomepageExampleFamily);
+      }
+    });
+  });
+
+  const entries = await Promise.all(
+    Array.from(families).map(async (family) => {
+      const result = await listExampleFamilyPage(family, { sort: 'playlist', limit: 14, offset: 0 }).catch((error) => {
+        console.warn(`[home] failed to load comparison thumbnails for "${family}"`, error);
+        return { items: [] as GalleryVideo[] };
+      });
+      const videos = result.items.filter((video) => video.thumbUrl && !usedImageSrcs.has(video.thumbUrl));
+      return [family, videos] as const;
+    })
+  );
+
+  return new Map(entries);
+}
+
+function takeComparisonMediaFromFamily(
+  pool: GalleryVideo[],
+  usedImageSrcs: Set<string>,
+  label: string,
+  title: string
+): ComparisonMediaItem | null {
+  const video = pool.find((candidate) => candidate.thumbUrl && !usedImageSrcs.has(candidate.thumbUrl));
+  if (!video?.thumbUrl) return null;
+  usedImageSrcs.add(video.thumbUrl);
+  return {
+    imageSrc: video.thumbUrl,
+    imageAlt: `${label} example thumbnail used in the ${title} comparison card.`,
+    label: compactComparisonLabel(label),
+  };
+}
+
+async function buildComparisonCardsWithExampleMedia(
+  content: RedesignContent,
+  homepageExamples: HomeExampleCard[]
+): Promise<ComparisonCard[]> {
+  const publishedCards = content.comparisons.cards.filter((card) => isPublishedComparisonSlug(card.slug));
+  const usedImageSrcs = new Set(
+    homepageExamples
+      .map((example) => example.imageSrc)
+      .filter((imageSrc): imageSrc is string => Boolean(imageSrc) && !imageSrc.startsWith('/assets/placeholders/'))
+  );
+  const pools = await loadComparisonExamplePools(publishedCards, usedImageSrcs);
+
+  return content.comparisons.cards
+    .filter((card) => isPublishedComparisonSlug(card.slug))
+    .map((card) => {
+      const pair = splitComparisonSlug(card.slug);
+      const media = pair?.flatMap((engineSlug) => {
+        const family = resolveExampleCanonicalSlug(engineSlug) as HomepageExampleFamily | null;
+        if (!family || !HOMEPAGE_EXAMPLE_FAMILIES.includes(family)) return [];
+        const label = resolveComparisonEngineLabel(engineSlug);
+        const item = takeComparisonMediaFromFamily(pools.get(family) ?? [], usedImageSrcs, label, card.title);
+        return item ? [item] : [];
+      });
+
+      return {
+        id: card.id,
+        title: card.title,
+        body: card.body,
+        badges: card.badges,
+        cta: content.comparisons.cta,
+        href: { pathname: '/ai-video-engines/[slug]', params: { slug: card.slug } },
+        imageSrc: card.imageSrc,
+        imageAlt: card.imageAlt,
+        media: media && media.length >= 2 ? media : undefined,
+      };
+    });
+}
+
+function filterProviderItems(content: RedesignContent): ProviderItem[] {
+  const providers = new Set(listFalEngines().map((entry) => entry.provider.toLowerCase()));
+  return content.providers.items
+    .filter((item) => providers.has(item.providerKey.toLowerCase()))
+    .map(({ provider, model, href, providerKey }) => ({
+      provider,
+      model,
+      href: href ?? PROVIDER_MODEL_LINKS[providerKey],
+    }));
+}
+
+function filterToolCards(content: RedesignContent, stats: EngineStats): ToolCard[] {
+  return content.toolbox.cards.filter((tool) => {
+    if (!ALLOWED_TOOL_CARD_IDS.has(tool.id)) return false;
+    if (tool.id === 'extend-video') return stats.extend > 0;
+    if (tool.id === 'retake') return stats.retake > 0;
+    if (tool.id === 'audio-to-video') return stats.audioToVideo > 0 || stats.audio > 0;
+    if (tool.id === 'video-to-video') return stats.videoToVideo > 0;
+    return true;
+  });
+}
+
+function buildSoftwareSchema(content: RedesignContent) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'MaxVideoAI',
+    applicationCategory: 'VideoEditorApplication',
+    operatingSystem: 'Web',
+    url: 'https://maxvideoai.com',
+    description: content.hero.subtitle,
+    offers: {
+      '@type': 'Offer',
+      price: '10.00',
+      priceCurrency: 'USD',
+      description: content.pricingTrust.subtitle,
+    },
+    featureList: [
+      'Pay-as-you-go multi-engine AI video generation workspace',
+      'Compare AI video models before generating',
+      'Live price before you generate',
+      'Text-to-video, image-to-video, video-to-video and reference workflows',
+      'Auto-refunds on failed generation jobs',
+    ],
+  };
+}
+
+function buildOrganizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'MaxVideo AI',
+    url: 'https://maxvideoai.com',
+    logo: 'https://maxvideoai.com/favicon-512.png',
+    sameAs: [],
+    description:
+      'Independent hub for AI video generation. Price before you generate. Works with Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.',
+  };
+}
+
+function buildFaqSchema(items: FaqItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+function buildItemListSchema(content: RedesignContent, providers: ProviderItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: content.providers.title,
+    itemListElement: providers.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: `${item.provider} ${item.model}`,
+    })),
+  };
+}
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -254,888 +926,53 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-type MiniFaqProps = {
-  faq?: {
-    title?: string;
-    description?: string;
-    items?: Array<{ q: string; a: string }>;
-  } | null;
-};
-
-const HERO_SEO_PARAGRAPH =
-  'MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every render so you can pick the right engine with confidence.';
-
-const HERO_MICRO_POINTS = [
-  'Text-to-video, image-to-video, and video-to-video workflows',
-  'Compare results across multiple AI video models',
-  'Pay-as-you-go pricing with cost shown before you generate',
-] as const;
-
-const DEFINITION_BLOCK_COPY =
-  'An AI video generator creates clips with artificial intelligence. You can turn text prompts into video, animate still images (image-to-video), or transform existing footage (video-to-video). Because each model balances quality, speed, and consistency differently, comparing models before you render helps you pick the right one for each shot.';
-
-const GENERATE_WAYS_COPY = [
-  {
-    title: 'Text-to-Video AI',
-    body: 'Write a prompt and generate new scenes from scratch. Best for ideation, storyboards, and fast first passes.',
-  },
-  {
-    title: 'Image-to-Video AI',
-    body: 'Start from a still and add motion while keeping the composition grounded. Best for character, product, and brand-led shots.',
-  },
-  {
-    title: 'Video-to-Video AI',
-    body: 'Upload footage and change style, pacing, or motion behavior without starting over. Best for alternate versions and rapid creative testing.',
-  },
-] as const;
-
-const POPULAR_COMPARISON_LINKS = [
-  { label: 'Seedance 2.0 vs Veo 3.1 comparison', slug: 'seedance-2-0-vs-veo-3-1' },
-  { label: 'Seedance 2.0 vs Kling 3 Pro comparison', slug: 'kling-3-pro-vs-seedance-2-0' },
-  { label: 'LTX 2.3 Pro vs Seedance 2.0 comparison', slug: 'ltx-2-3-pro-vs-seedance-2-0' },
-  { label: 'Seedance 2.0 Fast vs Veo 3.1 Fast comparison', slug: 'seedance-2-0-fast-vs-veo-3-1-fast' },
-  { label: 'Seedance 2.0 vs Sora 2 comparison', slug: 'seedance-2-0-vs-sora-2' },
-] as const;
-
-function MiniFAQ({ faq }: MiniFaqProps) {
-  const fallback = {
-    title: 'FAQ',
-    description: 'Short answers to the most common questions.',
-    items: [
-      {
-        q: 'Is Sora 2 available in the EU?',
-        a: 'Sora 2 availability is limited. MaxVideoAI routes your brief to supported engines today and keeps Sora-ready presets for later.',
-      },
-      {
-        q: 'Can I add audio?',
-        a: 'Yes. Engines surfaced on the homepage support audio toggles in the composer. The live price updates when you enable audio.',
-      },
-      {
-        q: 'How does pricing work?',
-        a: 'You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job.',
-      },
-      {
-        q: "What’s the refund policy?",
-        a: 'Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend.',
-      },
-    ],
-  };
-
-  const resolvedTitle = faq?.title ?? fallback.title;
-  const resolvedDescription = faq?.description ?? fallback.description;
-  const items =
-    Array.isArray(faq?.items) && faq.items.length
-      ? faq.items
-      : fallback.items;
-
-  return (
-    <section aria-labelledby="mini-faq-heading" className="container-page section max-w-[1200px]">
-      <div className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
-        <h2 id="mini-faq-heading" className="text-xl font-semibold text-text-primary">
-          {resolvedTitle}
-        </h2>
-        <p className="mb-4 text-sm text-muted-foreground">{resolvedDescription}</p>
-        <div className="stack-gap-sm">
-          {items.map((item) => (
-            <details key={item.q} className="group rounded-lg border border-hairline bg-surface/60 p-4 transition hover:border-text-muted">
-              <summary className="flex cursor-pointer select-none list-none items-center justify-between text-sm font-medium text-text-primary">
-                <span>{item.q}</span>
-                <span className="ml-3 text-muted-foreground transition-transform group-open:rotate-180">▾</span>
-              </summary>
-              <div className="mt-2 text-sm text-text-secondary">{item.a}</div>
-            </details>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-type HeroTilePricingInput = {
-  id: string;
-  engineId?: string;
-  durationSec?: number;
-  resolution?: string;
-  fallbackPriceLabel: string;
-  minPriceCents?: number | null;
-  minPriceCurrency?: string | null;
-};
-
-function pickResolution(resolutions: string[] | undefined, requested: string | undefined) {
-  if (!resolutions || !resolutions.length) {
-    return requested ?? '1080p';
-  }
-  if (requested && resolutions.includes(requested)) return requested;
-  const nonAuto = resolutions.find((value) => value !== 'auto') ?? resolutions[0];
-  return nonAuto ?? requested ?? '1080p';
-}
-
-function truncateText(value: string | null | undefined, maxChars = 140): string | null {
-  if (!value) return null;
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (!normalized) return null;
-  if (normalized.length <= maxChars) return normalized;
-  return `${normalized.slice(0, maxChars).trimEnd()}...`;
-}
-
-async function resolveHeroTilePrices(
-  tiles: HeroTilePricingInput[],
-  options?: { pricePrefix?: string }
-) {
-  const engineIndex = new Map<string, EngineCaps>(
-    listFalEngines().map((entry) => [entry.engine.id, entry.engine])
-  );
-  const prefix = options?.pricePrefix ?? 'from';
-  const formatPriceLabel = (cents: number, currency: string) =>
-    `${prefix} ${new Intl.NumberFormat(CURRENCY_LOCALE, {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2,
-    }).format(cents / 100)}`;
-
-  const entries = await Promise.all(
-    tiles.map(async (tile) => {
-      const canonicalId = normalizeEngineId(tile.engineId);
-      const minPriceCents = tile.minPriceCents ?? null;
-      const minPriceCurrency = tile.minPriceCurrency ?? 'USD';
-      const fallbackLabel =
-        minPriceCents != null ? formatPriceLabel(minPriceCents, minPriceCurrency) : tile.fallbackPriceLabel;
-
-      if (!canonicalId || !tile.durationSec) {
-        return [tile.id, fallbackLabel] as const;
-      }
-
-      try {
-        const engineCaps = engineIndex.get(canonicalId) ?? engineIndex.get(tile.engineId ?? '');
-        if (!engineCaps) {
-          return [tile.id, fallbackLabel] as const;
-        }
-        const resolution = pickResolution(engineCaps.resolutions as string[] | undefined, tile.resolution);
-        const snapshot = await computePricingSnapshot({
-          engine: engineCaps,
-          durationSec: tile.durationSec,
-          resolution,
-          membershipTier: 'member',
-        });
-        let cents = snapshot.totalCents;
-        let currency = snapshot.currency;
-        if (minPriceCents != null && minPriceCents < snapshot.totalCents) {
-          cents = minPriceCents;
-          currency = minPriceCurrency;
-        }
-        return [tile.id, formatPriceLabel(cents, currency)] as const;
-      } catch {
-        return [tile.id, fallbackLabel] as const;
-      }
-    })
-  );
-
-  return Object.fromEntries(entries);
-}
-
 export default async function HomePage({ params }: { params: { locale: AppLocale } }) {
   const locale = params.locale;
-  const { dictionary } = await resolveDictionary({ locale: params.locale });
-  const home = dictionary.home;
-  const seoDescription =
-    home.meta?.description ??
-    'Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly.';
-  const defaultBadges = ['Pay-as-you-go pricing', 'Price before you generate', 'Always-current engines'];
-  const badgeLabelMap: Record<string, string> = {
-    'PAY-AS-YOU-GO': 'Pay-as-you-go pricing',
-    'PRICE-BEFORE': 'Price before you generate',
-    'ALWAYS-CURRENT': 'Always-current engines',
-  };
-  const rawBadges = Array.isArray(home.badges) && home.badges.length ? home.badges : defaultBadges;
-  const badges = rawBadges.map((badge) => badgeLabelMap[badge] ?? badge);
-  const hero = home.hero;
-  const workspaceCtaLabel = home.hero?.workspaceCta ?? hero.primaryCta;
-  const worksWith = home.worksWith;
-  const worksWithBrandItems: readonly WorksWithBrandItem[] = WORKS_WITH_BRAND_LINKS;
-  const worksWithCaption = worksWith.caption;
-  const worksWithSuffix = home.worksWith?.moreLabel ?? null;
-  const heroScreenshot = home.heroScreenshot;
-  const pricingPreviewLabel = home.pricingPreviewLabel ?? 'Preview pricing';
-  const startupFameLabel = home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
-  const seoContent = home.seoContent ?? {};
-  const heroSeoParagraph = seoContent.heroParagraph ?? HERO_SEO_PARAGRAPH;
-  const heroMicroPoints =
-    Array.isArray(seoContent.heroPoints) && seoContent.heroPoints.length
-      ? seoContent.heroPoints
-      : HERO_MICRO_POINTS;
-  const definitionBody = seoContent.definition?.body ?? DEFINITION_BLOCK_COPY;
-  const generateWaysTitle = seoContent.generateWays?.title ?? 'Generate videos your way';
-  const generateWaysItems =
-    Array.isArray(seoContent.generateWays?.items) && seoContent.generateWays.items.length
-      ? seoContent.generateWays.items
-      : GENERATE_WAYS_COPY;
-  const generateWaysCards = generateWaysItems.map((item, index) => {
-    const visuals = [
-      {
-        imageSrc: 'https://v3b.fal.media/files/b/0a92ef89/pnoNbRn5PCLOiRFxqTIp5_yMdhmu89.jpg',
-        imageAlt: 'Text-to-video example still.',
-      },
-      {
-        imageSrc: 'https://v3b.fal.media/files/b/0a92ed4c/Qv-Gu3HgGLdZTP-Guq6wn_gm2TaSRT.jpg',
-        imageAlt: 'Image-to-video reference still.',
-      },
-      {
-        imageSrc: 'https://v3b.fal.media/files/b/0a935643/1_y_Iw3TbDfMgsI9Kggki_XflHpwqR.jpg',
-        imageAlt: 'Video-to-video example still.',
-      },
-    ][index] ?? {
-      imageSrc: 'https://v3b.fal.media/files/b/0a92ef89/pnoNbRn5PCLOiRFxqTIp5_yMdhmu89.jpg',
-      imageAlt: 'AI video example still.',
-    };
-    return {
-      ...item,
-      ...visuals,
-    };
-  });
-  const compactHeroPoints = heroMicroPoints.slice(0, 2);
-  const compareSeo = seoContent.compare ?? {};
-  const compareSeoTitle = compareSeo.title ?? 'Compare AI video models - before you render';
-  const compareSeoBody =
-    compareSeo.body ??
-    'MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every render.';
-  const compareSeoLinks =
-    Array.isArray(compareSeo.popularLinks) && compareSeo.popularLinks.length
-      ? compareSeo.popularLinks.filter((item): item is { label: string; slug: string } => {
-          return typeof item?.label === 'string' && typeof item?.slug === 'string';
-        })
-      : POPULAR_COMPARISON_LINKS;
-  const compareSeoAllLabel = compareSeo.seeAllLabel ?? 'See all AI video engine comparisons';
-  const compareSeoImageAlt =
-    compareSeo.imageAlt ?? 'MaxVideoAI comparison page screenshot showing two AI engines side by side.';
-  const faqSeo = seoContent.faq;
-  const localizedFaq =
-    faqSeo && Array.isArray(faqSeo.items) && faqSeo.items.length
-      ? faqSeo
-      : home.faq;
-  const defaultWhyCards = [
-    { title: 'Live product, not a roadmap.', body: 'Log in and use the same workspace we run internally today.' },
-    { title: 'Wallet-first billing.', body: 'Top up once, monitor spend, and get automatic refunds on failed renders.' },
-    {
-      title: 'All your engines in one place.',
-      body: 'Switch between Seedance, Kling, Veo, LTX, Sora, and more without juggling dashboards.',
-    },
-  ];
-  const whyCards = Array.isArray(home.whyCards) && home.whyCards.length ? home.whyCards : defaultWhyCards;
-  const pricing = home.pricing;
-  const trust = home.trust;
-  const trustCards = Array.isArray(trust.cards)
-    ? (trust.cards as Array<{ eyebrow: string; title: string; body: string }>)
-    : [];
-  const trustQuote =
-    trust.quote && typeof trust.quote === 'object'
-      ? (trust.quote as {
-          eyebrow?: string;
-          value?: string;
-          status?: string;
-          meta?: string[];
-          note?: string;
-        })
-      : null;
-  const toolsWorkflow = home.toolsWorkflow;
-  const generateWaysResources = home.generateWaysResources ?? {};
-  const homepageSlots = await getHomepageSlotsCached();
-  const heroLightboxCopy = HERO_LIGHTBOX_COPY_BY_LOCALE[locale] ?? HERO_LIGHTBOX_COPY_BY_LOCALE.en;
+  const { dictionary } = await resolveDictionary({ locale });
+  const content = dictionary.home.redesign as RedesignContent;
+  const workflowSeoCopy = dictionary.home.seoContent as WorkflowSeoSummaryCopy | undefined;
+  const startupFameLabel = dictionary.home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
+  const stats = computeEngineStats();
+  const hero = buildHeroContent(locale, content);
+  const [examples, programmedHeroSlots, successfulGenerationCount] = await Promise.all([
+    loadHomepageExamples(locale, content),
+    loadProgrammedHomepageHeroSlots(),
+    loadSuccessfulGenerationCount(),
+  ]);
+  const proofStats = buildProofStats(content, stats, locale, successfulGenerationCount);
+  const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
+  const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
+  const comparisons = await buildComparisonCardsWithExampleMedia(content, examples);
+  const providers = filterProviderItems(content);
+  const tools = filterToolCards(content, stats);
+  const softwareSchema = buildSoftwareSchema(content);
+  const organizationSchema = buildOrganizationSchema();
+  const faqSchema = buildFaqSchema(content.faq.items);
+  const itemListSchema = buildItemListSchema(content, providers);
 
-  const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
-    const slot = homepageSlots.hero.find((entry) => entry.key === key);
-    const fallback = HERO_TILES[index] ?? HERO_TILES[0];
-    const video = slot?.video ?? null;
-    const label = slot?.title || video?.engineLabel || fallback.label;
-    const videoSrc = video?.videoUrl ?? fallback.videoSrc;
-    const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
-    const videoPosterSrc = buildOptimizedPoster(posterSrc);
-    const rawAdminPriceLabel = slot?.subtitle?.trim() || null;
-    const adminPriceLabel = rawAdminPriceLabel ? normalizeHomepageAdminPriceLabel(rawAdminPriceLabel, locale) : null;
-    const promptSummary = truncateText(video?.promptExcerpt ?? video?.prompt ?? slot?.subtitle ?? null, 80);
-    const alt = getImageAlt({
-      kind: 'renderThumb',
-      engine: label,
-      label: promptSummary ?? `${label} homepage highlight`,
-      prompt: video?.promptExcerpt ?? video?.prompt ?? null,
-      locale,
-    });
-    const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
-    const durationSec = video?.durationSec ?? fallback.durationSec;
-    const resolution = fallback.resolution;
-
-    const canonicalSlug =
-      HERO_TILE_EXAMPLE_SLUGS[engineId] ??
-      fallback.examplesSlug ??
-      (engineId.includes('/') ? null : engineId);
-    const detailHref = video?.id ? `/video/${encodeURIComponent(video.id)}` : null;
-    const generateHref = video?.id ? `/app?from=${encodeURIComponent(video.id)}` : null;
-    const canonicalModelSlug = canonicalSlug ? normalizeEngineId(canonicalSlug) ?? canonicalSlug : null;
-    const modelHref = canonicalModelSlug ? `/models/${encodeURIComponent(canonicalModelSlug)}` : null;
-    const detailMeta = video
-      ? {
-          prompt: truncateText(video.promptExcerpt ?? video.prompt ?? null, 140),
-          engineLabel: video.engineLabel ?? label,
-          durationSec: video.durationSec ?? null,
-        }
-      : null;
-
-    return {
-      id: key,
-      label,
-      videoSrc,
-      posterSrc,
-      videoPosterSrc,
-      alt,
-      showAudioIcon: fallback.showAudioIcon ?? false,
-      engineId,
-      durationSec,
-      resolution,
-      fallbackPriceLabel: adminPriceLabel ?? fallback.fallbackPriceLabel,
-      minPriceCents: fallback.minPriceCents ?? null,
-      minPriceCurrency: fallback.minPriceCurrency ?? 'USD',
-      examplesSlug: canonicalSlug,
-      detailHref,
-      generateHref,
-      modelHref,
-      detailMeta,
-      adminPriceLabel,
-    };
-  });
-
-  const heroPriceMap: Record<string, string> =
-    heroTileConfigs.some((tile) => !tile.adminPriceLabel)
-      ? await resolveHeroTilePrices(
-          heroTileConfigs
-            .filter((tile) => !tile.adminPriceLabel)
-            .map((tile) => ({
-              id: tile.id,
-              engineId: tile.engineId,
-              durationSec: tile.durationSec,
-              resolution: tile.resolution,
-              fallbackPriceLabel: tile.fallbackPriceLabel,
-              minPriceCents: tile.minPriceCents,
-              minPriceCurrency: tile.minPriceCurrency,
-            })),
-          { pricePrefix: HOMEPAGE_PRICE_PREFIX_BY_LOCALE[locale] ?? HOMEPAGE_PRICE_PREFIX_BY_LOCALE.en }
-        )
-      : {};
-
-  const softwareSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'MaxVideoAI',
-    applicationCategory: 'Video',
-    operatingSystem: 'Web',
-    offers: {
-      '@type': 'Offer',
-      price: '5.00',
-      priceCurrency: 'USD',
-      category: 'Starter credits',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '3200',
-    },
-    description: seoDescription,
-    url: 'https://maxvideoai.com',
-  };
   return (
-    <div>
-      <section className="container-page section max-w-[1200px] flex flex-col items-center gap-3 pt-4 pb-5 text-center sm:gap-6 sm:pt-10 sm:pb-12 lg:gap-8 lg:pt-12 lg:pb-14 halo-hero">
-        <div className="mx-auto grid w-full max-w-[330px] grid-cols-2 gap-1.5 px-2 sm:flex sm:w-auto sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center sm:gap-4 sm:px-0">
-          {badges.map((badge, index) => (
-            <span
-              key={badge}
-              className={`min-w-0 whitespace-nowrap overflow-hidden text-ellipsis text-center rounded-pill border border-hairline bg-surface py-0.5 text-[9px] font-semibold uppercase leading-none tracking-micro text-text-secondary sm:shrink-0 sm:px-3 sm:py-1 sm:text-xs ${
-                badges.length === 3 && index === 2
-                  ? 'col-span-2 mx-auto w-auto max-w-[90%] px-2.5 sm:col-auto sm:mx-0 sm:max-w-none sm:px-3'
-                  : 'w-full px-1.5 sm:w-auto'
-              }`}
-            >
-              {badge}
-            </span>
-          ))}
-        </div>
-        <div className="flex flex-col gap-3 sm:gap-5">
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-4xl">{hero.title}</h1>
-          <p className="mx-auto text-sm leading-relaxed text-text-secondary sm:max-w-[62ch] sm:text-lg">
-            {hero.subtitle}
-          </p>
-          <p className="mx-auto text-xs leading-relaxed text-text-secondary sm:-mt-2 sm:max-w-[72ch] sm:text-sm">
-            {heroSeoParagraph}
-          </p>
-        </div>
-        <div className="flex w-full flex-nowrap items-center justify-center gap-2 sm:w-auto sm:gap-4">
-          <ButtonLink
-            href="/app"
-            prefetch={false}
-            size="md"
-            className="min-h-[38px] px-3 py-2 text-[11px] shadow-card whitespace-nowrap sm:min-h-[48px] sm:px-6 sm:py-3 sm:text-sm"
-            linkComponent={Link}
-          >
-            {hero.primaryCta}
-          </ButtonLink>
-          <ButtonLink
-            href={{ pathname: '/examples' }}
-            variant="outline"
-            size="md"
-            className="min-h-[38px] px-3 py-2 text-[11px] whitespace-nowrap sm:min-h-[48px] sm:px-6 sm:py-3 sm:text-sm"
-            linkComponent={Link}
-          >
-            {hero.secondaryCta}
-          </ButtonLink>
-        </div>
-        <div className="grid w-full grid-cols-2 gap-2 sm:grid-gap-sm">
-          {heroTileConfigs.map((tile, index) => (
-            <HeroMediaTile
-              key={tile.id}
-              label={tile.label}
-              priceLabel={tile.adminPriceLabel ?? heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
-              videoSrc={tile.videoSrc}
-              posterSrc={tile.posterSrc}
-              videoPosterSrc={tile.videoPosterSrc}
-              alt={tile.alt}
-              showAudioIcon={tile.showAudioIcon}
-              priority={index === 0}
-              detailHref={tile.detailHref}
-              generateHref={tile.generateHref}
-              modelHref={tile.modelHref}
-              detailMeta={tile.detailMeta}
-              authenticatedHref="/generate"
-              guestHref="/login?next=/generate"
-              overlayHref={tile.generateHref ?? undefined}
-              audioBadgeLabel={HERO_AUDIO_BADGE_BY_LOCALE[locale] ?? HERO_AUDIO_BADGE_BY_LOCALE.en}
-              overlayLabel={(HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE[locale] ?? HERO_OVERLAY_LABEL_TEMPLATE_BY_LOCALE.en).replace(
-                '{engine}',
-                tile.label
-              )}
-              lightboxCopy={heroLightboxCopy}
-            />
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {compactHeroPoints.map((point) => (
-            <div
-              key={point}
-              className="inline-flex items-center rounded-pill border border-hairline bg-surface/70 px-3 py-1.5 text-[11px] font-medium text-text-primary shadow-card sm:text-xs"
-            >
-              {point}
-            </div>
-          ))}
-        </div>
-        <p className="text-center text-sm text-muted-foreground">
-          <Link href={{ pathname: '/pricing' }} className="underline underline-offset-2">
-            {pricingPreviewLabel}
-          </Link>
-        </p>
-      </section>
-
-      <section className="border-t border-hairline bg-surface text-text-secondary section-compact">
-        <div className="container-page flex max-w-[1200px] flex-col items-center gap-4 text-center">
-          <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-            {worksWith.label}
-          </span>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-2xl font-semibold text-text-primary sm:text-3xl">
-            {worksWithBrandItems.map((item) => (
-              item.slug ? (
-                <Link
-                  key={item.label}
-                  href={{ pathname: '/models/[slug]', params: { slug: item.slug } }}
-                  className="transition hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <span key={item.label}>{item.label}</span>
-              )
-            ))}
-          </div>
-          {worksWithSuffix ? (
-            <Link
-              href={{ pathname: '/models' }}
-              className="text-sm font-medium text-text-muted underline decoration-transparent underline-offset-4 transition hover:text-text-primary hover:decoration-current"
-            >
-              {worksWithSuffix}
-            </Link>
-          ) : null}
-          <p className="text-xs text-text-muted">{worksWithCaption}</p>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-bg section py-10 sm:py-12 lg:py-16 halo-workspace-left">
-        <div className="container-page flex max-w-[1200px] flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-center">
-          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[38%] lg:pr-4">
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
-            <div className="rounded-[22px] border border-hairline bg-surface p-2 shadow-float lg:hidden">
-              <div className="relative w-full overflow-hidden rounded-[16px]">
-                <Image
-                  src="/assets/marketing/app-dashboard.webp"
-                  alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
-                  width={1679}
-                  height={1127}
-                  sizes="100vw"
-                  className="h-auto w-full"
-                />
-              </div>
-            </div>
-            <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
-            <ButtonLink
-              href="/app"
-              prefetch={false}
-              size="md"
-              className="w-fit"
-              linkComponent={Link}
-            >
-              {workspaceCtaLabel}
-            </ButtonLink>
-          </div>
-          <div className="relative hidden w-full lg:ml-auto lg:block lg:w-[62%]">
-            <div className="rounded-[24px] border border-hairline bg-surface p-2 shadow-float">
-              <div className="overflow-hidden rounded-[18px]">
-                <Image
-                  src="/assets/marketing/app-dashboard.webp"
-                  alt={getImageAlt({ kind: 'uiShot', label: heroScreenshot.alt, locale })}
-                  width={1679}
-                  height={1127}
-                  sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
-                  priority
-                  className="h-auto w-full"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-surface section-compact">
-        <div className="container-page max-w-[1200px] stack-gap-lg">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div className="max-w-3xl">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{generateWaysTitle}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-text-secondary sm:text-base">{definitionBody}</p>
-            </div>
-            <a
-              href="https://startupfa.me/s/maxvideoai?utm_source=maxvideoai.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex flex-wrap items-center justify-center gap-3 rounded-pill border border-hairline bg-bg px-4 py-2 transition hover:border-text-muted hover:bg-surface/80 lg:justify-self-end"
-              aria-label={startupFameLabel}
-            >
-              <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted sm:text-xs">
-                {startupFameLabel}
-              </span>
-              <span className="inline-flex items-center rounded-full border border-[#d9d3cb] bg-[#f6f1ea] px-3 py-1 text-[11px] font-semibold text-[#5d4b37]">
-                Featured on Startup Fame
-              </span>
-            </a>
-          </div>
-          <DeferredGenerateWaysMobileTabs items={generateWaysCards} />
-          <div className="hidden gap-4 sm:grid lg:grid-cols-3">
-            {generateWaysCards.map((item, index) => (
-              <div
-                key={item.title}
-                className="rounded-[22px] border border-hairline bg-bg px-5 py-5 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.18)]"
-              >
-                <div className="relative -mx-2 -mt-2 mb-4 overflow-hidden rounded-[16px] border border-hairline bg-surface">
-                  <Image
-                    src={item.imageSrc}
-                    alt={item.imageAlt}
-                    width={1200}
-                    height={750}
-                    sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
-                    className="aspect-[16/10] w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
-                </div>
-                <span className="inline-flex rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 className="mt-4 text-base font-semibold text-text-primary">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="rounded-[20px] border border-hairline bg-bg px-4 py-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="space-y-3">
-                <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                    {generateWaysResources.models?.eyebrow ?? 'Models'}
-                  </span>
-                  <p className="mt-2 text-sm text-text-secondary">
-                    {generateWaysResources.models?.body ??
-                      'Open the model hub for specs, limits, pricing, and workflow notes before you commit to one engine.'}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {heroTileConfigs.slice(0, 3).map((tile) =>
-                    tile.modelHref ? (
-                      <Link
-                        key={`home-model-link-${tile.id}`}
-                        href={tile.modelHref}
-                        className="inline-flex items-center rounded-pill border border-hairline bg-surface px-3 py-1.5 text-sm font-medium text-text-primary transition hover:border-text-muted hover:bg-surface/80"
-                      >
-                        {tile.label}
-                      </Link>
-                    ) : null
-                  )}
-                  <Link
-                    href={{ pathname: '/models' }}
-                    className="inline-flex items-center rounded-pill border border-brand/30 bg-brand/5 px-3 py-1.5 text-sm font-medium text-brand transition hover:border-brand/50 hover:bg-brand/10 hover:text-brandHover"
-                  >
-                    {generateWaysResources.models?.cta ?? 'Browse model pages'}
-                  </Link>
-                </div>
-              </div>
-              <div className="h-px w-full bg-hairline lg:h-14 lg:w-px" />
-              <div className="flex flex-col items-start gap-3 lg:min-w-[260px]">
-                <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                    {generateWaysResources.examples?.eyebrow ?? 'Examples'}
-                  </span>
-                  <p className="mt-2 text-sm text-text-secondary">
-                    {generateWaysResources.examples?.body ??
-                      'Browse the examples gallery to review prompts, outputs, and engine choices before you launch your own run.'}
-                  </p>
-                </div>
-                <ButtonLink href="/examples" linkComponent={Link} variant="outline" size="md" className="w-fit">
-                  {generateWaysResources.examples?.cta ?? 'Browse examples'}
-                </ButtonLink>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-bg section">
-        <div className="container-page max-w-[1200px] stack-gap-lg">
-          <div className="max-w-3xl">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-              {toolsWorkflow.eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
-              {toolsWorkflow.title}
-            </h2>
-            <p className="mt-4 text-sm leading-7 text-text-secondary sm:text-base">{toolsWorkflow.body}</p>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-3">
-            <ReferenceStartCard
-              eyebrow={toolsWorkflow.cards.image.eyebrow}
-              title={toolsWorkflow.cards.image.title}
-              body={toolsWorkflow.cards.image.body}
-              href="/app/image"
-              cta={toolsWorkflow.cards.image.cta}
-              imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp"
-              imageAlt="Image workspace result prepared before video generation."
-            />
-            <ReferenceStartCard
-              eyebrow={toolsWorkflow.cards.character.eyebrow}
-              title={toolsWorkflow.cards.character.title}
-              body={toolsWorkflow.cards.character.body}
-              href="/tools/character-builder"
-              cta={toolsWorkflow.cards.character.cta}
-              imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/762032e6-d6f1-41cd-a1f3-690a60188a74.webp"
-              imageAlt="Reusable character reference generated before prompts and video."
-            />
-            <ReferenceStartCard
-              eyebrow={toolsWorkflow.cards.angle.eyebrow}
-              title={toolsWorkflow.cards.angle.title}
-              body={toolsWorkflow.cards.angle.body}
-              href="/tools/angle"
-              cta={toolsWorkflow.cards.angle.cta}
-              imageSrc="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6cff997e-f531-455d-819f-a0481b4cda5c-tool_angle_57d123d8-acdd-4667-9ad4-fdb256313b6a-1.webp"
-              imageAlt="Alternate camera angle generated from one source image before video."
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-surface section py-10 sm:py-12 lg:py-16">
-        <div className="container-page flex max-w-[1200px] flex-col items-center gap-[var(--grid-gap-xl)] lg:flex-row-reverse lg:items-center">
-          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[38%] lg:pl-4">
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{compareSeoTitle}</h2>
-            <div className="rounded-[22px] border border-hairline bg-bg p-2 shadow-float lg:hidden">
-              <div className="relative w-full overflow-hidden rounded-[16px]">
-                <Image
-                  src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
-                  alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
-                  width={2278}
-                  height={1928}
-                  sizes="100vw"
-                  className="h-auto w-full"
-                />
-              </div>
-            </div>
-            <p className="text-sm leading-relaxed text-text-secondary sm:text-base">{compareSeoBody}</p>
-            <div className="flex flex-wrap gap-3 text-sm">
-              {compareSeoLinks.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: item.slug } }}
-                  className="inline-flex items-center rounded-pill border border-brand/30 bg-brand/5 px-3 py-1.5 font-medium text-brand transition hover:border-brand/50 hover:bg-brand/10 hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 dark:border-hairline dark:bg-surface-2 dark:text-text-primary dark:hover:border-brand/40 dark:hover:bg-surface"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link
-                href={{ pathname: '/ai-video-engines' }}
-                className="inline-flex items-center rounded-pill border border-brand/40 bg-brand px-3 py-1.5 font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 dark:border-brand/30"
-              >
-                {compareSeoAllLabel}
-              </Link>
-            </div>
-          </div>
-          <div className="relative hidden w-full lg:block lg:w-[62%]">
-            <div className="rounded-[24px] border border-hairline bg-bg p-2 shadow-float">
-              <div className="overflow-hidden rounded-[18px]">
-                <Image
-                  src="/assets/marketing/vs-kling-sora-scorecard.png?v=3"
-                  alt={getImageAlt({ kind: 'uiShot', label: compareSeoImageAlt, locale })}
-                  width={2278}
-                  height={1928}
-                  sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
-                  className="h-auto w-full"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="container-page mt-8 max-w-[1200px]">
-          <div className="grid gap-3 md:grid-cols-3">
-            {whyCards.map((item) => (
-              <article key={item.title} className="rounded-2xl border border-hairline bg-bg p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-hairline bg-bg section">
-        <div className="container-page max-w-[1200px]">
-          <div className="max-w-3xl">
-            <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-              {pricing.badge}
-            </span>
-            <h2 className="mt-4 text-balance text-3xl font-semibold text-text-primary sm:text-4xl">
-              {pricing.title}
-            </h2>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-text-secondary sm:text-lg">
-              {pricing.body}
-            </p>
-          </div>
-
-          <div className="mt-8 grid gap-3 lg:grid-cols-[1.24fr_0.96fr]">
-            <article className="rounded-card border border-hairline bg-gradient-to-br from-brand/5 via-surface to-surface p-6 shadow-card">
-              <span className="rounded-pill border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand">
-                {trustCards[0]?.eyebrow}
-              </span>
-              <h3 className="mt-4 text-xl font-semibold text-text-primary">{trustCards[0]?.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-text-secondary">{trustCards[0]?.body}</p>
-              <div className="mt-5 rounded-2xl border border-brand/10 bg-surface p-4 shadow-[0_16px_36px_-24px_rgba(47,91,191,0.45)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
-                <div className="flex flex-wrap gap-2">
-                  {trustQuote?.meta?.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted dark:border-white/10 dark:bg-white/[0.06] dark:text-text-secondary"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-4 flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                      {trustQuote?.eyebrow}
-                    </p>
-                    <p className="mt-1 text-3xl font-semibold tracking-tight text-text-primary">{trustQuote?.value}</p>
-                  </div>
-                  <p className="max-w-[12rem] text-right text-sm font-medium leading-6 text-text-secondary">
-                    {trustQuote?.status}
-                  </p>
-                </div>
-                {trustQuote?.note ? (
-                  <p className="mt-3 text-xs leading-5 text-text-muted">{trustQuote.note}</p>
-                ) : null}
-              </div>
-              <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-text-muted">
-                <TextLink href={{ pathname: '/pricing' }} className="text-sm" linkComponent={Link}>
-                  {pricing.link}
-                </TextLink>
-                {trust.footnote ? <span className="text-xs uppercase tracking-micro text-text-muted">{trust.footnote}</span> : null}
-              </div>
-            </article>
-
-            <div className="grid gap-3">
-              {trustCards.slice(1).map((card) => (
-                <article key={card.title} className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-                  <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                    {card.eyebrow}
-                  </span>
-                  <h3 className="mt-4 text-lg font-semibold text-text-primary">{card.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-text-secondary">{card.body}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="border-t border-hairline bg-surface">
-        <MiniFAQ faq={localizedFaq} />
-      </section>
-      <Script id="software-jsonld" type="application/ld+json">
+    <div className="home-monochrome">
+      <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} programmedHeroItems={programmedHeroItems} />
+      <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} startupFameLabel={startupFameLabel} />
+      <RealExamplesPreview copy={content.examples} examples={examples} providers={providers} />
+      <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
+      <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
+      <AiVideoToolbox copy={content.toolbox} tools={tools} />
+      <TransparentPricingBlock copy={content.pricingTrust} cards={content.pricingTrust.cards} />
+      {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} /> : null}
+      <HomeFaq copy={content.faq} items={content.faq.items} />
+      <Script id="home-webapp-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>
-      <Script
-        id="home-organization-jsonld"
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            name: 'MaxVideo AI',
-            url: 'https://maxvideoai.com',
-            logo: 'https://maxvideoai.com/favicon-512.png',
-            sameAs: [],
-            description:
-              'Independent hub for AI video generation. Price before you generate. Works with Sora, Veo, LTX-2, Kling, Pika, MiniMax, Wan, Nano Banana.',
-          }),
-        }}
-      />
-      <Script
-        id="home-software-jsonld"
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'SoftwareApplication',
-            name: 'MaxVideo AI',
-            applicationCategory: 'VideoEditorApplication',
-            operatingSystem: 'Web',
-            url: 'https://maxvideoai.com',
-            offers: {
-              '@type': 'Offer',
-              price: '0',
-              priceCurrency: 'USD',
-              description: 'Pay-as-you-go. Load credits to render; no subscription.',
-            },
-            featureList: [
-              'Multi-engine routing (Sora, Veo, LTX-2, Kling, Pika, MiniMax, Wan, Nano Banana)',
-              'Live pricing before render',
-              'Wallet-first billing with automatic refunds',
-              'Composer, gallery, and job tracking in one workspace',
-            ],
-            publisher: {
-              '@type': 'Organization',
-              name: 'MaxVideo AI',
-            },
-          }),
-        }}
-      />
-      </div>
+      <Script id="home-organization-jsonld" type="application/ld+json">
+        {JSON.stringify(organizationSchema)}
+      </Script>
+      <Script id="home-faq-jsonld" type="application/ld+json">
+        {JSON.stringify(faqSchema)}
+      </Script>
+      <Script id="home-provider-itemlist-jsonld" type="application/ld+json">
+        {JSON.stringify(itemListSchema)}
+      </Script>
+    </div>
   );
 }

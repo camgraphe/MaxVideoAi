@@ -76,6 +76,10 @@ import {
   UNIFIED_SEEDANCE_ENGINE_IDS,
 } from '@/lib/seedance-workflow';
 import {
+  getUnifiedHappyHorseMode,
+  isHappyHorseEngineId,
+} from '@/lib/happy-horse-workflow';
+import {
   getLocalizedModeLabel,
   getLocalizedWorkflowCopy,
   localizeLtxField,
@@ -195,7 +199,7 @@ type UserAsset = {
   canDelete?: boolean;
 };
 
-type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle';
+type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale';
 type AssetLibraryKind = 'image' | 'video';
 type UploadableAssetKind = 'image' | 'video' | 'audio';
 type UploadFailurePayload = { error?: unknown; maxMB?: unknown } | null;
@@ -277,17 +281,20 @@ const DEFAULT_WORKSPACE_COPY = {
     emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
     emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
     emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
+    emptyUpscale: 'No upscale assets saved yet. Save an upscale result first.',
     tabs: {
       all: 'All',
       upload: 'Uploaded',
       generated: 'Generated',
       character: 'Character',
       angle: 'Angle',
+      upscale: 'Upscale',
     },
     shortcuts: {
       createImage: 'Create image',
       changeAngle: 'Change angle',
       characterBuilder: 'Character builder',
+      upscale: 'Upscale',
     },
   },
 } as const;
@@ -470,6 +477,8 @@ function AssetLibraryModal({
         ? copyAssetLibrary.emptyCharacter
       : source === 'angle'
         ? copyAssetLibrary.emptyAngle
+      : source === 'upscale'
+        ? copyAssetLibrary.emptyUpscale
         : assetType === 'video'
           ? uiLocale === 'fr'
             ? "Aucune vidéo enregistrée pour l’instant. Importez ou générez une vidéo pour la voir ici."
@@ -533,8 +542,8 @@ function AssetLibraryModal({
     [assetType, importEndpoint, importFailedLabel, onSelect]
   );
   const sourceOptions = assetType === 'video'
-    ? (['all', 'upload', 'generated'] as const)
-    : (['all', 'upload', 'generated', 'character', 'angle'] as const);
+    ? (['all', 'upload', 'generated', 'upscale'] as const)
+    : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const);
   const searchPlaceholder =
     copyAssetLibrary.searchPlaceholder ??
     (uiLocale === 'fr' ? 'Rechercher des assets…' : uiLocale === 'es' ? 'Buscar assets…' : 'Search assets…');
@@ -563,6 +572,9 @@ function AssetLibraryModal({
     characterBuilder:
       copyAssetLibrary.shortcuts?.characterBuilder ??
       (uiLocale === 'fr' ? 'Character Builder' : uiLocale === 'es' ? 'Character Builder' : 'Character builder'),
+    upscale:
+      copyAssetLibrary.shortcuts?.upscale ??
+      (uiLocale === 'fr' ? 'Upscale' : uiLocale === 'es' ? 'Upscale' : 'Upscale'),
   };
   const browserToolLinks =
     assetType === 'image'
@@ -570,6 +582,7 @@ function AssetLibraryModal({
           { href: '/app/image', label: shortcutLabels.createImage },
           { href: '/app/tools/angle', label: shortcutLabels.changeAngle },
           { href: '/app/tools/character-builder', label: shortcutLabels.characterBuilder },
+          { href: '/app/tools/upscale', label: shortcutLabels.upscale },
         ]
       : [];
 
@@ -766,6 +779,13 @@ function isModeValue(value: unknown): value is Mode {
     value === 't2i' ||
     value === 'i2i'
   );
+}
+
+function getEngineModeLabel(engineId: string | null | undefined, mode: Mode, locale?: string | null): string {
+  if (engineId === 'happy-horse-1-0' && mode === 'ref2v') {
+    return 'R2V';
+  }
+  return getLocalizedModeLabel(mode, locale);
 }
 
 function coerceStoredExtraInputValues(value: unknown): Record<string, unknown> | undefined {
@@ -2922,7 +2942,8 @@ const showNotice = useCallback((message: string) => {
           : `/api/user-assets?limit=60&source=${encodeURIComponent(source)}`;
       const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
       if (kind === 'video' && source !== 'upload') {
-        requests.push(authFetch(`/api/jobs?limit=60&type=video`));
+        const jobsUrl = source === 'upscale' ? '/api/jobs?limit=60&surface=upscale' : '/api/jobs?limit=60&type=video';
+        requests.push(authFetch(jobsUrl));
       }
 
       const [assetResponse, jobsResponse] = await Promise.all(requests);
@@ -4056,6 +4077,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     selectedEngine?.id === 'kling-3-pro' || selectedEngine?.id === 'kling-3-standard';
   const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
   const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
+  const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
   const multiPromptTotalSec = useMemo(
     () => multiPromptScenes.reduce((sum, scene) => sum + (scene.duration || 0), 0),
     [multiPromptScenes]
@@ -4699,6 +4721,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (isUnifiedSeedance) {
       return getUnifiedSeedanceMode(inputAssets);
     }
+    if (isUnifiedHappyHorse && (form?.mode === 't2v' || !form?.mode)) {
+      return getUnifiedHappyHorseMode(inputAssets);
+    }
     const modes = selectedEngine.modes;
     if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
     if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
@@ -4707,7 +4732,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
     if (modes.includes('t2v')) return 't2v';
     return modes[0] ?? 't2v';
-  }, [form?.mode, inputAssets, isUnifiedSeedance, referenceInputStatus.hasAudio, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
+  }, [form?.mode, inputAssets, isUnifiedHappyHorse, isUnifiedSeedance, referenceInputStatus.hasAudio, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
 
   const audioToVideoSupported = Boolean(selectedEngine?.modes.includes('a2v'));
   const audioWorkflowLocked = referenceInputStatus.hasAudio && audioToVideoSupported;
@@ -4750,6 +4775,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
     return activeMode;
   }, [activeMode, allowsUnifiedVeoFirstLast, hasLastFrameInput, hasPrimaryImageInput]);
+  const showSafetyCheckerControl = useMemo(() => {
+    const schema = selectedEngine?.inputSchema;
+    if (!schema) return false;
+    return [...(schema.required ?? []), ...(schema.optional ?? [])].some((field) => {
+      if (field.id !== 'enable_safety_checker') return false;
+      return !field.modes || field.modes.includes(submissionMode);
+    });
+  }, [selectedEngine, submissionMode]);
   const effectiveDurationSec = useMemo(() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
@@ -4910,7 +4943,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         .filter((mode) => selectedEngine.modes.includes(mode))
         .map((mode) => ({
           mode,
-          label: getLocalizedModeLabel(mode, uiLocale),
+          label: getEngineModeLabel(selectedEngine.id, mode, uiLocale),
           disabled: audioWorkflowLocked,
           disabledReason,
         })),
@@ -5071,6 +5104,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       ) {
         return true;
       }
+      if (
+        isUnifiedHappyHorse &&
+        activeMode === 't2v' &&
+        (field.type === 'image' || field.type === 'video') &&
+        (field.modes.includes('i2v') || field.modes.includes('ref2v') || field.modes.includes('v2v'))
+      ) {
+        return true;
+      }
       if (allowsUnifiedVeoFirstLast && field.id === 'last_frame_url' && field.modes.includes('fl2v')) return true;
       if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
       if (!allowsCrossModeAssets) return false;
@@ -5169,7 +5210,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       negativePromptField,
       negativePromptRequired,
     };
-  }, [selectedEngine, activeMode, allowsUnifiedVeoFirstLast, isUnifiedSeedance, uiLocale]);
+  }, [selectedEngine, activeMode, allowsUnifiedVeoFirstLast, isUnifiedHappyHorse, isUnifiedSeedance, uiLocale]);
 
   const extraInputFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
@@ -5622,6 +5663,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
 
     const referenceSlots = referenceAssetFieldIds.size > 0 ? referenceAssetFieldIds : genericImageFieldIds;
+    const activeReferenceSlots =
+      selectedEngine.id === 'happy-horse-1-0'
+        ? submissionMode === 'v2v'
+          ? new Set(['reference_image_urls'])
+          : submissionMode === 'ref2v'
+            ? new Set(['image_urls'])
+            : referenceSlots
+        : referenceSlots;
     const primaryAttachment =
       inputsPayload?.find(
         (attachment) => typeof attachment.slotId === 'string' && primaryAssetFieldIds.has(attachment.slotId)
@@ -5633,11 +5682,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             const slotId = attachment.slotId;
             if (slotId && primaryAssetFieldIds.has(slotId)) return false;
             if (slotId && frameAssetFieldIds.has(slotId)) return false;
-            if (!slotId) return referenceSlots.size === 0;
-            if (referenceSlots.size === 0) {
+            if (!slotId) return activeReferenceSlots.size === 0;
+            if (activeReferenceSlots.size === 0) {
               return !primaryAssetFieldIds.has(slotId);
             }
-            return referenceSlots.has(slotId);
+            return activeReferenceSlots.has(slotId);
           })
           .map((attachment) => attachment.url)
           .filter((url, index, self) => self.indexOf(url) === index)
@@ -5776,7 +5825,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             return;
           }
         } else if (referenceImageUrls.length === 0) {
-          showComposerError('Add 1–4 reference images before running Reference → Video.');
+          showComposerError(
+            selectedEngine.id === 'happy-horse-1-0'
+              ? 'Add 1–9 reference images before running Happy Horse R2V.'
+              : 'Add 1–4 reference images before running Reference → Video.'
+          );
           return;
         }
       }
@@ -6889,7 +6942,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     mode={activeMode}
                     onModeChange={handleModeChange}
                     modeOptions={engineModeOptions}
-                    modeLabel={getLocalizedModeLabel(activeMode, uiLocale)}
+                    modeLabel={getEngineModeLabel(selectedEngine?.id, activeMode, uiLocale)}
                     showModeBadge={false}
                   />
                 }
@@ -7033,6 +7086,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onCameraFixedChange={handleCameraFixedChange}
                       safetyChecker={safetyCheckerValue}
                       onSafetyCheckerChange={handleSafetyCheckerChange}
+                      showSafetyCheckerControl={showSafetyCheckerControl}
                       advancedFields={inputSchemaSummary.secondaryFields}
                       advancedFieldValues={form.extraInputValues}
                       onAdvancedFieldChange={handleExtraInputValueChange}

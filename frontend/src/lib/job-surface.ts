@@ -35,6 +35,9 @@ export function deriveJobSurface(params: {
   if (jobId.startsWith('tool_angle_') || jobId.startsWith('angle_')) {
     return 'angle';
   }
+  if (jobId.startsWith('tool_upscale_') || jobId.startsWith('upscale_')) {
+    return 'upscale';
+  }
 
   const parsedRenders = parseStoredImageRenders(params.renderIds);
   if (parsedRenders.entries.length > 0) {
@@ -60,5 +63,5 @@ export function deriveJobSurface(params: {
 }
 
 export function isImageLikeSurface(surface: JobSurface): boolean {
-  return surface === 'image' || surface === 'character' || surface === 'angle';
+  return surface === 'image' || surface === 'character' || surface === 'angle' || surface === 'upscale';
 }

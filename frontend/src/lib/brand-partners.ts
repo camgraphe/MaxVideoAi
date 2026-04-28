@@ -11,7 +11,8 @@ export type PartnerBrandId =
   | 'wan'
   | 'lightricks'
   | 'bytedance'
-  | 'google';
+  | 'google'
+  | 'alibaba';
 
 type AssetFit = 'contain' | 'cover';
 
@@ -293,6 +294,41 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       'bytedance/seedance-2.0/image-to-video',
       'bytedance/seedance-2.0/fast/text-to-video',
       'bytedance/seedance-2.0/fast/image-to-video',
+    ],
+  },
+  {
+    id: 'alibaba',
+    label: 'Alibaba',
+    shortText: 'Alibaba',
+    policy: allowLogos(
+      'https://www.alibabagroup.com/en-US/resource-logos',
+      'Use the official Alibaba Group media assets without distortion; source files come from www.alibabagroup.com.'
+    ),
+    defaultAvailability: 'available',
+    availabilityLink: 'https://www.alibabagroup.com/en-US',
+    compactMark: {
+      light: { src: '/brand/partners/alibaba/alibaba-icon.png', scale: 0.82 },
+      dark: { src: '/brand/partners/alibaba/alibaba-icon.png', scale: 0.82 },
+    },
+    wordmark: {
+      light: { src: '/brand/partners/alibaba/alibaba-wordmark.png', scale: 0.9 },
+      dark: { src: '/brand/partners/alibaba/alibaba-wordmark.png', scale: 0.9 },
+    },
+    alt: {
+      light: 'Alibaba compact logo',
+      dark: 'Alibaba compact logo (dark mode)',
+    },
+    engineIds: [
+      'happy-horse-1-0',
+      'alibaba-happy-horse',
+      'happyhorse',
+      'happy-horse',
+      'happyhorse-1-0',
+      'happy-horse-1.0',
+      'alibaba/happy-horse/text-to-video',
+      'alibaba/happy-horse/image-to-video',
+      'alibaba/happy-horse/reference-to-video',
+      'alibaba/happy-horse/video-edit',
     ],
   },
   {

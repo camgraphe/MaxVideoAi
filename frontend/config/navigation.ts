@@ -6,10 +6,20 @@ export type MarketingNavItem = {
   key: string;
   label: string;
   href: LocalizedLinkHref;
+  emphasized?: boolean;
+};
+
+export type MarketingNavSection = {
+  key: string;
+  titleKey?: string;
+  titleFallback?: string;
+  hideTitle?: boolean;
+  items: MarketingNavItem[];
 };
 
 export type MarketingNavDropdown = {
   items: MarketingNavItem[];
+  sections?: MarketingNavSection[];
   allHref: LocalizedLinkHref;
   allLabelKey: string;
   allLabelFallback: string;
@@ -48,7 +58,17 @@ const compareLink = (slug: string): LocalizedLinkHref => ({
   params: { slug },
 });
 
-const toolLink = (slug: 'character-builder' | 'angle'): LocalizedLinkHref => ({
+const bestForLink = (usecase?: string): LocalizedLinkHref =>
+  usecase
+    ? {
+        pathname: '/ai-video-engines/best-for/[usecase]',
+        params: { usecase },
+      }
+    : {
+        pathname: '/ai-video-engines/best-for',
+      };
+
+const toolLink = (slug: 'character-builder' | 'angle' | 'upscale'): LocalizedLinkHref => ({
   pathname: `/tools/${slug}`,
 });
 
@@ -101,6 +121,13 @@ const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'kling-3-pro-vs-ltx-2-3-pro', label: 'Kling 3 Pro vs LTX 2.3 Pro' },
 ];
 
+const BEST_FOR_USE_CASES: Array<LabeledSlug & { key: string }> = [
+  { key: 'cinematic-realism', slug: 'cinematic-realism', label: 'Cinematic realism' },
+  { key: 'image-to-video', slug: 'image-to-video', label: 'Image-to-video' },
+  { key: 'fast-drafts', slug: 'fast-drafts', label: 'Fast drafts' },
+  { key: 'ads', slug: 'ads', label: 'Product ads' },
+];
+
 export const MARKETING_MODEL_SLUGS = MODEL_MENU.map((item) => item.slug);
 
 export const MARKETING_NAV_MODELS: MarketingNavItem[] = MODEL_MENU.map((item) => ({
@@ -127,9 +154,42 @@ export const MARKETING_NAV_COMPARE: MarketingNavItem[] = COMPARE_MENU.map((item)
   href: compareLink(item.slug),
 }));
 
+export const MARKETING_NAV_BEST_FOR_USE_CASES: MarketingNavItem[] = BEST_FOR_USE_CASES.map((item) => ({
+  key: item.key,
+  label: item.label,
+  href: bestForLink(item.slug),
+}));
+
+export const MARKETING_NAV_BEST_FOR_HUB: MarketingNavItem = {
+  key: 'best-for',
+  label: 'Best models by use case',
+  href: bestForLink(),
+};
+
+const MARKETING_MODELS_USE_CASE_SECTION: MarketingNavSection = {
+  key: 'useCaseGuides',
+  hideTitle: true,
+  items: [
+    {
+      key: 'all-use-case-guides',
+      label: 'All use-case guides',
+      href: bestForLink(),
+      emphasized: true,
+    },
+    ...MARKETING_NAV_BEST_FOR_USE_CASES,
+  ],
+};
+
+const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
+  key: 'useCaseGuides',
+  hideTitle: true,
+  items: [{ ...MARKETING_NAV_BEST_FOR_HUB, emphasized: true }, ...MARKETING_NAV_BEST_FOR_USE_CASES],
+};
+
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
+  { key: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
   { key: 'image', label: 'Generate image', href: '/app/image' },
 ];
 
@@ -154,6 +214,7 @@ export const MARKETING_NAV_BLOG: MarketingNavItem[] = [
 export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdown>> = {
   models: {
     items: MARKETING_NAV_MODELS,
+    sections: [MARKETING_MODELS_USE_CASE_SECTION],
     allHref: { pathname: '/models' },
     allLabelKey: 'nav.dropdown.allModels',
     allLabelFallback: 'All models',
@@ -166,6 +227,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
   },
   compare: {
     items: MARKETING_NAV_COMPARE,
+    sections: [MARKETING_COMPARE_DECISION_GUIDES_SECTION],
     allHref: { pathname: '/ai-video-engines' },
     allLabelKey: 'nav.dropdown.allComparisons',
     allLabelFallback: 'All comparisons',

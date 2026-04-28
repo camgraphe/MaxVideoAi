@@ -5,6 +5,7 @@ export interface Job {
   jobId: string;
   surface?: JobSurface;
   billingProductKey?: BillingProductKey | null;
+  settingsSnapshot?: unknown;
   engineLabel: string;
   durationSec: number;
   prompt: string;

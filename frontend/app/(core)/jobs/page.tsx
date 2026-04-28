@@ -35,11 +35,13 @@ const DEFAULT_JOBS_COPY = {
     image: 'Image jobs',
     character: 'Character jobs',
     angle: 'Angle jobs',
+    upscale: 'Upscale jobs',
     videoEmpty: 'No video jobs yet.',
     audioEmpty: 'No audio jobs yet.',
     imageEmpty: 'No image jobs yet.',
     characterEmpty: 'No character jobs yet.',
     angleEmpty: 'No angle jobs yet.',
+    upscaleEmpty: 'No upscale jobs yet.',
   },
   teams: {
     title: 'Teams',
@@ -67,6 +69,7 @@ type JobsCopy = typeof DEFAULT_JOBS_COPY;
 function resolveClientJobSurface(job: Job): JobSurface {
   return deriveJobSurface({
     surface: job.surface,
+    settingsSnapshot: job.settingsSnapshot,
     jobId: job.jobId,
     engineId: job.engineId ?? null,
     videoUrl: job.videoUrl ?? null,
@@ -80,6 +83,9 @@ function resolveWorkspaceJobHref(jobId: string, surface: JobSurface, forceImageG
   }
   if (forceImageGroup || surface === 'image') {
     return `/app/image?job=${encodeURIComponent(jobId)}`;
+  }
+  if (surface === 'upscale') {
+    return `/app/tools/upscale?job=${encodeURIComponent(jobId)}`;
   }
   return `/app?job=${encodeURIComponent(jobId)}`;
 }
@@ -147,6 +153,14 @@ export default function JobsPage() {
     isValidating: angleIsValidating,
     mutate: mutateAngle,
   } = useInfiniteJobs(24, { surface: 'angle' });
+  const {
+    data: upscaleData,
+    error: upscaleError,
+    isLoading: upscaleIsLoading,
+    setSize: setUpscaleSize,
+    isValidating: upscaleIsValidating,
+    mutate: mutateUpscale,
+  } = useInfiniteJobs(24, { surface: 'upscale' });
   useRequireAuth({ redirectIfLoggedOut: false });
 
   const videoPages = videoData ?? [];
@@ -154,16 +168,19 @@ export default function JobsPage() {
   const imagePages = imageData ?? [];
   const characterPages = characterData ?? [];
   const anglePages = angleData ?? [];
+  const upscalePages = upscaleData ?? [];
   const videoJobs = videoPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'video');
   const audioJobs = audioPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'audio');
   const imageJobs = imagePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'image');
   const characterJobs = characterPages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'character');
   const angleJobs = anglePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'angle');
+  const upscaleJobs = upscalePages.flatMap((page) => page.jobs).filter((job) => resolveClientJobSurface(job) === 'upscale');
   const videoHasMore = videoPages.length > 0 && videoPages[videoPages.length - 1].nextCursor !== null;
   const audioHasMore = audioPages.length > 0 && audioPages[audioPages.length - 1].nextCursor !== null;
   const imageHasMore = imagePages.length > 0 && imagePages[imagePages.length - 1].nextCursor !== null;
   const characterHasMore = characterPages.length > 0 && characterPages[characterPages.length - 1].nextCursor !== null;
   const angleHasMore = anglePages.length > 0 && anglePages[anglePages.length - 1].nextCursor !== null;
+  const upscaleHasMore = upscalePages.length > 0 && upscalePages[upscalePages.length - 1].nextCursor !== null;
 
   const { groups: apiVideoGroups } = useMemo(
     () => groupJobsIntoSummaries(videoJobs, { includeSinglesAsGroups: true }),
@@ -185,6 +202,10 @@ export default function JobsPage() {
     () => groupJobsIntoSummaries(angleJobs, { includeSinglesAsGroups: true }),
     [angleJobs]
   );
+  const { groups: apiUpscaleGroups } = useMemo(
+    () => groupJobsIntoSummaries(upscaleJobs, { includeSinglesAsGroups: true }),
+    [upscaleJobs]
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -194,10 +215,11 @@ export default function JobsPage() {
       void mutateImage();
       void mutateCharacter();
       void mutateAngle();
+      void mutateUpscale();
     };
     window.addEventListener('jobs:hidden', handleHidden);
     return () => window.removeEventListener('jobs:hidden', handleHidden);
-  }, [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateVideo]);
+  }, [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateUpscale, mutateVideo]);
 
   const groupedVideoJobs = useMemo(
     () => [...apiVideoGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
@@ -219,12 +241,16 @@ export default function JobsPage() {
     () => [...apiAngleGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     [apiAngleGroups]
   );
+  const groupedUpscaleJobs = useMemo(
+    () => [...apiUpscaleGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [apiUpscaleGroups]
+  );
   const groupedJobs = useMemo(
     () =>
-      [...groupedVideoJobs, ...groupedAudioJobs, ...groupedImageJobs, ...groupedCharacterJobs, ...groupedAngleJobs].sort(
+      [...groupedVideoJobs, ...groupedAudioJobs, ...groupedImageJobs, ...groupedCharacterJobs, ...groupedAngleJobs, ...groupedUpscaleJobs].sort(
         (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
       ),
-    [groupedAngleJobs, groupedAudioJobs, groupedCharacterJobs, groupedImageJobs, groupedVideoJobs]
+    [groupedAngleJobs, groupedAudioJobs, groupedCharacterJobs, groupedImageJobs, groupedUpscaleJobs, groupedVideoJobs]
   );
 
   const engineLookup = useMemo(() => {
@@ -263,16 +289,18 @@ export default function JobsPage() {
     image: boolean;
     character: boolean;
     angle: boolean;
+    upscale: boolean;
   }>({
     video: true,
     audio: true,
     image: true,
     character: true,
     angle: true,
+    upscale: true,
   });
   const [savingImageGroupIds, setSavingImageGroupIds] = useState<Set<string>>(new Set());
 
-  const toggleSection = useCallback((section: 'video' | 'audio' | 'image' | 'character' | 'angle') => {
+  const toggleSection = useCallback((section: 'video' | 'audio' | 'image' | 'character' | 'angle' | 'upscale') => {
     setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
@@ -281,6 +309,7 @@ export default function JobsPage() {
   const imageGroups = useMemo(() => normalizeGroupSummaries(groupedImageJobs), [groupedImageJobs]);
   const characterGroups = useMemo(() => normalizeGroupSummaries(groupedCharacterJobs), [groupedCharacterJobs]);
   const angleGroups = useMemo(() => normalizeGroupSummaries(groupedAngleJobs), [groupedAngleJobs]);
+  const upscaleGroups = useMemo(() => normalizeGroupSummaries(groupedUpscaleJobs), [groupedUpscaleJobs]);
   const normalizedGroupMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     videoGroups.forEach((group) => map.set(group.id, group));
@@ -288,8 +317,9 @@ export default function JobsPage() {
     imageGroups.forEach((group) => map.set(group.id, group));
     characterGroups.forEach((group) => map.set(group.id, group));
     angleGroups.forEach((group) => map.set(group.id, group));
+    upscaleGroups.forEach((group) => map.set(group.id, group));
     return map;
-  }, [angleGroups, audioGroups, characterGroups, imageGroups, videoGroups]);
+  }, [angleGroups, audioGroups, characterGroups, imageGroups, upscaleGroups, videoGroups]);
   const hasCuratedVideo = useMemo(
     () => videoGroups.some((group) => Boolean(group.hero.job?.curated)),
     [videoGroups]
@@ -320,12 +350,13 @@ export default function JobsPage() {
           mutateImage((pages) => removeFromPages(pages), false),
           mutateCharacter((pages) => removeFromPages(pages), false),
           mutateAngle((pages) => removeFromPages(pages), false),
+          mutateUpscale((pages) => removeFromPages(pages), false),
         ]);
       } catch (error) {
         console.error('Failed to hide job', error);
       }
     },
-    [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateVideo, summaryMap]
+    [mutateAngle, mutateAudio, mutateCharacter, mutateImage, mutateUpscale, mutateVideo, summaryMap]
   );
 
   const allowRemove = useCallback(
@@ -399,6 +430,7 @@ export default function JobsPage() {
   const imageInitialLoading = imageIsLoading && imageJobs.length === 0 && imageGroups.length === 0;
   const characterInitialLoading = characterIsLoading && characterJobs.length === 0 && characterGroups.length === 0;
   const angleInitialLoading = angleIsLoading && angleJobs.length === 0 && angleGroups.length === 0;
+  const upscaleInitialLoading = upscaleIsLoading && upscaleJobs.length === 0 && upscaleGroups.length === 0;
   const viewerGroup = useMemo(() => {
     if (!activeGroupId) return null;
     const normalized = normalizedGroupMap.get(activeGroupId);
@@ -591,6 +623,21 @@ export default function JobsPage() {
         void mutateAngle();
       },
       onLoadMore: () => setAngleSize((prev) => prev + 1),
+    },
+    {
+      key: 'upscale' as const,
+      title: copy.sections.upscale,
+      empty: copy.sections.upscaleEmpty,
+      groups: upscaleGroups,
+      hasMore: upscaleHasMore,
+      isInitialLoading: upscaleInitialLoading,
+      isValidating: upscaleIsValidating,
+      error: upscaleError,
+      forceImageGroup: false,
+      onRetry: () => {
+        void mutateUpscale();
+      },
+      onLoadMore: () => setUpscaleSize((prev) => prev + 1),
     },
   ];
 

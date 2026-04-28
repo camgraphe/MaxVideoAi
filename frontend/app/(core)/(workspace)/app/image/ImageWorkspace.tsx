@@ -218,6 +218,7 @@ interface ImageWorkspaceCopy {
       generated: string;
       character: string;
       angle: string;
+      upscale: string;
     };
     modal: {
       title: string;
@@ -230,6 +231,7 @@ interface ImageWorkspaceCopy {
       emptyGenerated: string;
       emptyCharacter: string;
       emptyAngle: string;
+      emptyUpscale: string;
     };
   };
   characterPicker: {
@@ -382,6 +384,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       generated: 'Generated images',
       character: 'Character assets',
       angle: 'Angle assets',
+      upscale: 'Upscale assets',
     },
     modal: {
       title: 'Select from library',
@@ -394,6 +397,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
       emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
       emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
+      emptyUpscale: 'No upscale assets saved yet. Save an upscale result first.',
     },
   },
   characterPicker: {
@@ -3393,7 +3397,7 @@ function ImageLibraryModal({
       isCharacterMode
         ? (['character'] as const satisfies readonly AssetLibrarySource[])
         : toolsEnabled
-        ? (['all', 'upload', 'generated', 'character', 'angle'] as const satisfies readonly AssetLibrarySource[])
+        ? (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const satisfies readonly AssetLibrarySource[])
         : (['all', 'upload', 'generated'] as const satisfies readonly AssetLibrarySource[]),
     [isCharacterMode, toolsEnabled]
   );
@@ -3459,7 +3463,9 @@ function ImageLibraryModal({
             ? copy.modal.emptyCharacter
             : activeSource === 'angle'
               ? copy.modal.emptyAngle
-              : copy.modal.empty;
+              : activeSource === 'upscale'
+                ? copy.modal.emptyUpscale
+                : copy.modal.empty;
   const supportedFormatsHint = isCharacterMode
     ? formatTemplate(characterCopy.limitLabel, {
         count: characterSelectionLimit,

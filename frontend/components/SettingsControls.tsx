@@ -60,6 +60,7 @@ interface Props {
   onCameraFixedChange?: (value: boolean) => void;
   safetyChecker?: boolean;
   onSafetyCheckerChange?: (value: boolean) => void;
+  showSafetyCheckerControl?: boolean;
   advancedFields?: Array<{ field: EngineInputField; required: boolean }>;
   advancedFieldValues?: Record<string, unknown>;
   onAdvancedFieldChange?: (field: EngineInputField, value: string) => void;
@@ -199,6 +200,7 @@ export function SettingsControls({
   onCameraFixedChange,
   safetyChecker = true,
   onSafetyCheckerChange,
+  showSafetyCheckerControl = false,
   advancedFields = [],
   advancedFieldValues = {},
   onAdvancedFieldChange,
@@ -297,7 +299,7 @@ export function SettingsControls({
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
   const resolutionLocked = Boolean(caps?.resolutionLocked);
-  const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
+  const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
   const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean');
   const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
@@ -321,6 +323,7 @@ export function SettingsControls({
       engine.keyframes ||
       showKlingV3Controls ||
       showSeedanceControls ||
+      showSafetyCheckerControl ||
       engine.params.cfg_scale ||
       hasGenericAdvancedFields
   );
@@ -439,14 +442,17 @@ export function SettingsControls({
             ) : null}
 
             {!showSeedanceControls ? (
-              <div className="grid gap-3 md:grid-cols-[minmax(0,220px)_auto] md:items-end">
+              <div className="grid gap-3 md:grid-cols-3 md:items-end">
                 <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
                   <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
                   <input
                     type="number"
                     placeholder={controlsCopy.seed.placeholder}
-                    value={seed}
-                    onChange={(e) => setSeed(e.currentTarget.value)}
+                    value={onSeedChange ? seedValue : seed}
+                    onChange={(e) => {
+                      setSeed(e.currentTarget.value);
+                      onSeedChange?.(e.currentTarget.value);
+                    }}
                     className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </label>
@@ -458,6 +464,30 @@ export function SettingsControls({
                   />
                   <span>{controlsCopy.seed.lock}</span>
                 </label>
+                {showSafetyCheckerControl ? (
+                  <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+                    <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Safety checker</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[true, false].map((option) => (
+                        <Button
+                          key={option ? 'generic-safety-on' : 'generic-safety-off'}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onSafetyCheckerChange?.(option)}
+                          className={clsx(
+                            'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+                            option === safetyChecker
+                              ? 'border-brand bg-brand text-on-brand'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          )}
+                        >
+                          {option ? 'On' : 'Off'}
+                        </Button>
+                      ))}
+                    </div>
+                  </label>
+                ) : null}
               </div>
             ) : null}
 
@@ -791,6 +821,7 @@ export function SettingsControls({
                 value={resolution}
                 onChange={onResolutionChange}
                 focusRef={focusRefs?.resolution}
+                disabled={resolutionLocked}
                 labelFor={(opt) => {
                   const resolutionCopy = controlsCopy.resolution;
                   const optionKey = String(opt);
@@ -1171,11 +1202,12 @@ interface FieldGroupProps {
   value: string;
   onChange: (value: string) => void;
   focusRef?: Ref<HTMLDivElement>;
+  disabled?: boolean;
   labelFor?: (option: string | number) => string;
   iconFor?: (option: string | number) => string | undefined;
 }
 
-function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconFor }: FieldGroupProps) {
+function FieldGroup({ label, options, value, onChange, focusRef, disabled = false, labelFor, iconFor }: FieldGroupProps) {
   return (
     <div
       className={clsx(
@@ -1193,9 +1225,11 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
             type="button"
             size="sm"
             variant="outline"
+            disabled={disabled}
             onClick={() => onChange(String(option))}
             className={clsx(
               'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+              disabled && 'cursor-not-allowed opacity-70',
               String(option) === value
                 ? 'border-brand bg-brand text-on-brand'
                 : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'

@@ -1,5 +1,6 @@
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { listFalEngines } from '@/config/falEngines';
+import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
 
 const DISALLOWED_FAL_MODELS = ['beatoven/music-generation'] as const;
 const ALLOWED_FAL_PROXY_HOSTS = new Set([
@@ -28,6 +29,7 @@ export const FAL_PROXY_ALLOWED_ENDPOINTS = Array.from(
       ...engine.modes.map((mode) => mode.falModelId),
     ]),
     ...listAngleToolEngines().map((engine) => engine.falModelId),
+    ...listUpscaleToolEngines().map((engine) => engine.falModelId),
     ...EXTRA_FAL_PROXY_ENDPOINTS,
   ].map(normalizeFalIdentifier))
 ).sort();

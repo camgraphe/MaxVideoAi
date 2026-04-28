@@ -128,6 +128,7 @@ export interface EngineInputField {
   engineParam?: string;
   minDurationSec?: number;
   maxDurationSec?: number;
+  slotLabelPattern?: string;
 }
 
 export interface EngineInputSchema {

@@ -5,7 +5,7 @@ import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import engineCatalog from '@/config/engine-catalog.json';
-import { MARKETING_FOOTER_EXAMPLES } from '@/config/navigation';
+import { MARKETING_FOOTER_EXAMPLES, MARKETING_NAV_BEST_FOR_HUB, MARKETING_NAV_BEST_FOR_USE_CASES } from '@/config/navigation';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
@@ -49,17 +49,19 @@ export function MarketingFooter() {
   }));
 
   const engineItems = [
-    { slug: 'ltx-2-3-fast', labelKey: 'footer.sections.engines.items.ltx23fast', fallback: 'LTX 2.3 Fast' },
-    { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
     { slug: 'seedance-2-0', labelKey: 'footer.sections.engines.items.seedance2_0', fallback: 'Seedance 2.0' },
+    { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
     { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
     { slug: 'veo-3-1-lite', labelKey: 'footer.sections.engines.items.veo3_1lite', fallback: 'Veo 3.1 Lite' },
+    { slug: 'ltx-2-3-fast', labelKey: 'footer.sections.engines.items.ltx23fast', fallback: 'LTX 2.3 Fast' },
+    { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
     { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
+    { slug: 'pika-text-to-video', labelKey: 'footer.sections.engines.items.pikaTextToVideo', fallback: 'Pika Text to Video' },
     { slug: 'sora-2-pro', labelKey: 'footer.sections.engines.items.sora2pro', fallback: 'Sora 2 Pro' },
   ];
   const engineLinks: FooterLink[] = engineItems
     .filter((item) => modelSlugSet.has(item.slug))
-    .map((item) => ({
+    .map<FooterLink>((item) => ({
       key: item.slug,
       label: labelFor(item.labelKey, item.fallback),
       href: { pathname: '/models/[slug]', params: { slug: item.slug } },
@@ -91,13 +93,28 @@ export function MarketingFooter() {
       fallback: 'Kling 3 Pro vs LTX 2.3 Pro',
     },
   ];
-  const comparisonLinks: FooterLink[] = comparisonItems
+  const comparisonLinks: FooterLink[] = [
+    ...comparisonItems
     .filter((item) => modelSlugSet.has(item.left) && modelSlugSet.has(item.right))
     .map((item) => ({
       key: `${item.left}-vs-${item.right}`,
       label: labelFor(item.labelKey, item.fallback),
       href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalCompareSlug(item.left, item.right) } },
-    }));
+    })),
+  ];
+
+  const useCaseLinks: FooterLink[] = [
+    {
+      key: MARKETING_NAV_BEST_FOR_HUB.key,
+      label: labelFor('footer.sections.useCases.items.bestFor', MARKETING_NAV_BEST_FOR_HUB.label),
+      href: MARKETING_NAV_BEST_FOR_HUB.href,
+    },
+    ...MARKETING_NAV_BEST_FOR_USE_CASES.map((item) => ({
+      key: item.key,
+      label: labelFor(`footer.sections.useCases.items.${item.key}`, item.label),
+      href: item.href,
+    })),
+  ];
 
   const exampleLinks: FooterLink[] = [
     ...MARKETING_FOOTER_EXAMPLES.map((item) => ({
@@ -140,6 +157,7 @@ export function MarketingFooter() {
   const brandLabel = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const enginesTitle = labelFor('footer.sections.engines.title', 'AI Video Engines');
   const comparisonsTitle = labelFor('footer.sections.comparisons.title', 'Popular comparisons');
+  const useCasesTitle = labelFor('footer.sections.useCases.title', 'Use cases');
   const examplesTitle = labelFor('footer.sections.examples.title', 'Real examples');
   const productTitle = labelFor('footer.sections.product.title', 'Product');
   const companyTitle = labelFor('footer.sections.company.title', 'Company');
@@ -167,7 +185,7 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-text-secondary sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-5 lg:gap-x-8">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-text-secondary sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-6 lg:gap-x-8">
           <div>
             <p className={sectionTitleClass}>{enginesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={enginesTitle}>
@@ -182,6 +200,16 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{comparisonsTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={comparisonsTitle}>
               {comparisonLinks.map((item) => (
+                <Link key={item.key} href={item.href} className={linkClass}>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div>
+            <p className={sectionTitleClass}>{useCasesTitle}</p>
+            <nav className="mt-3 flex flex-col gap-2" aria-label={useCasesTitle}>
+              {useCaseLinks.map((item) => (
                 <Link key={item.key} href={item.href} className={linkClass}>
                   {item.label}
                 </Link>

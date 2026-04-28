@@ -7,6 +7,7 @@ import { ensureFastStartVideo } from '@/server/video-faststart';
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
 
 function fallbackThumbnail(aspectRatio?: string | null): string {
   const normalized = aspectRatio?.trim().toLowerCase();
@@ -74,6 +75,9 @@ const PROVIDER_ENGINE_MAP: Record<string, string> = {
   luma: 'luma-dream-machine',
   'luma-dream-machine': 'luma-dream-machine',
 };
+const UPSCALE_TOOL_ENGINE_BY_ID = new Map<string, { mediaType: 'image' | 'video' }>(
+  listUpscaleToolEngines().map((engine) => [engine.id, { mediaType: engine.mediaType }])
+);
 
 const COMMON_ASPECT_RATIOS: Array<{ label: string; value: number }> = [
   { label: '21:9', value: 21 / 9 },
@@ -721,7 +725,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const inferredEngine =
     (effectiveEngineId && effectiveEngineId !== 'fal-unknown' && getFalEngineById(effectiveEngineId)) ||
     (job.engine_id && job.engine_id !== 'fal-unknown' ? getFalEngineById(job.engine_id) : null);
-  const isImageEngine = (inferredEngine?.category ?? 'video') === 'image';
+  const upscaleToolEngine = effectiveEngineId ? UPSCALE_TOOL_ENGINE_BY_ID.get(effectiveEngineId) : undefined;
+  const isImageEngine = inferredEngine?.category === 'image' || upscaleToolEngine?.mediaType === 'image';
   const existingImageUrls = normalizeRenderIdList(job.render_ids);
   const existingHeroImage = job.hero_render_id
     ? normalizeMediaUrl(job.hero_render_id) ?? job.hero_render_id

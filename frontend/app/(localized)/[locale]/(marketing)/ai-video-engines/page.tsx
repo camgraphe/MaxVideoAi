@@ -80,7 +80,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       eyebrow: 'Compare engines',
       title: 'Compare AI video engines',
       intro:
-        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter by key limits, and validate pricing before you render. It covers text-to-video, image-to-video, and video-to-video engines, then routes you to the right fit for your shot.',
+        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter by key limits, and validate pricing before you generate. It covers text-to-video, image-to-video, and video-to-video engines, then routes you to the right fit for your shot.',
       compareNow: {
         left: 'Engine A',
         right: 'Engine B',
@@ -229,7 +229,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       eyebrow: 'Comparer les moteurs',
       title: 'Comparatifs de moteurs vidéo IA',
       intro:
-        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant rendu. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
+        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant de générer. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
       compareNow: {
         left: 'Moteur A',
         right: 'Moteur B',
@@ -594,6 +594,28 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 export default async function AiVideoEnginesPage() {
   const { locale } = await resolveDictionary();
   const copy = getCopy(locale);
+  const bestForCta =
+    {
+      en: {
+        title: 'Need a recommendation instead of a matchup?',
+        body: 'Open the Best-for guides for use-case rankings across cinematics, references, ads, UGC, 4K, and multi-shot sequences.',
+        label: 'Browse Best-for guides',
+      },
+      fr: {
+        title: 'Besoin d’une recommandation plutôt que d’un duel ?',
+        body: 'Ouvrez les guides Best-for pour choisir par cas d’usage : cinéma, références, ads, UGC, 4K et séquences multi-shot.',
+        label: 'Voir les guides Best-for',
+      },
+      es: {
+        title: '¿Necesitas una recomendación en lugar de un duelo?',
+        body: 'Abre las guías Best-for para elegir por caso de uso: cine, referencias, anuncios, UGC, 4K y secuencias multi-shot.',
+        label: 'Ver guías Best-for',
+      },
+    }[locale] ?? {
+      title: 'Need a recommendation instead of a matchup?',
+      body: 'Open the Best-for guides for use-case rankings across cinematics, references, ads, UGC, 4K, and multi-shot sequences.',
+      label: 'Browse Best-for guides',
+    };
   const engines = getHubEngines();
   const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
   const scoreMap = await loadHubEngineScoreMap();
@@ -668,27 +690,21 @@ export default async function AiVideoEnginesPage() {
   }));
 
   return (
-    <div className="container-page max-w-6xl pb-[var(--section-padding-y)] pt-6 sm:pt-8">
-      <div className="stack-gap-lg">
-        <section className="relative overflow-hidden py-2 sm:py-4">
-          <div className="pointer-events-none absolute -left-28 top-28 hidden h-56 w-56 opacity-45 lg:block" aria-hidden>
-            <div className="absolute left-8 top-16 h-24 w-24 rotate-45 rounded-[10px] border border-brand/15 bg-brand/5 shadow-[0_28px_80px_rgba(59,130,246,0.16)]" />
-            <div className="absolute left-20 top-2 h-28 w-28 rotate-45 rounded-[10px] border border-brand/12 bg-white/40" />
-            <div className="absolute left-0 top-8 h-20 w-20 rotate-45 rounded-[8px] border border-brand/10 bg-brand/5" />
-          </div>
-          <div className="pointer-events-none absolute -right-28 top-24 hidden h-60 w-60 opacity-40 lg:block" aria-hidden>
-            <div className="absolute right-10 top-20 h-28 w-28 rotate-45 rounded-[10px] border border-emerald-400/18 bg-emerald-400/6 shadow-[0_28px_80px_rgba(16,185,129,0.14)]" />
-            <div className="absolute right-24 top-0 h-24 w-24 rotate-45 rounded-[10px] border border-emerald-400/12 bg-white/35" />
-            <div className="absolute right-0 top-4 h-20 w-20 rotate-45 rounded-[8px] border border-emerald-400/10 bg-emerald-400/6" />
-          </div>
+    <div className="bg-bg">
+      <section className="relative overflow-hidden border-b border-hairline bg-bg px-4 py-14 sm:px-8 sm:py-20">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[url('/assets/compare/compare-hero-reference-light.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/compare/compare-hero-reference-dark.webp')] dark:opacity-70"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.58)_34%,rgba(247,249,253,0.14)_70%,rgba(247,249,253,0.02)_100%)] dark:bg-[radial-gradient(circle_at_50%_24%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
 
-          <div className="relative z-10 mx-auto max-w-5xl">
-            <header className="mx-auto max-w-3xl text-center">
+        <div className="container-page relative z-10 mx-auto max-w-[1220px]">
+            <header className="mx-auto max-w-[760px] text-center">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-text-muted">{copy.hero.eyebrow}</p>
-              <h1 className="mt-2.5 text-[30px] font-semibold leading-tight text-text-primary sm:text-[42px]">
+              <h1 className="mt-3 text-4xl font-semibold leading-[1.04] text-text-primary sm:text-6xl">
                 {copy.hero.title}
               </h1>
-              <p className="mx-auto mt-3 max-w-2xl text-[13px] leading-6 text-text-secondary sm:text-[15px]">{copy.hero.intro}</p>
+              <p className="mx-auto mt-5 max-w-[680px] text-base leading-7 text-text-secondary">{copy.hero.intro}</p>
               {showSeedanceSpotlight ? (
                 <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs font-semibold">
                   <Link
@@ -713,7 +729,7 @@ export default async function AiVideoEnginesPage() {
               ) : null}
             </header>
 
-            <div className="mx-auto mt-6 max-w-4xl stack-gap-sm">
+            <div className="mx-auto mt-8 max-w-[980px] stack-gap-sm">
               <CompareNowWidget
                 options={engineOptions}
                 defaultLeft="seedance-2-0"
@@ -743,6 +759,8 @@ export default async function AiVideoEnginesPage() {
           </div>
         </section>
 
+      <div className="container-page max-w-[1220px] pb-[var(--section-padding-y)] pt-8">
+      <div className="stack-gap-lg">
         <section className="stack-gap">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
@@ -818,6 +836,16 @@ export default async function AiVideoEnginesPage() {
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">{copy.sections.useCasesIntro}</p>
           </div>
           <UseCaseExplorer buckets={useCaseBuckets} compareLabel={copy.popularCompareLabel} />
+          <div className="rounded-2xl border border-hairline bg-surface p-5 shadow-card">
+            <h3 className="text-base font-semibold text-text-primary">{bestForCta.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{bestForCta.body}</p>
+            <Link
+              href={{ pathname: '/ai-video-engines/best-for' }}
+              className="mt-4 inline-flex text-sm font-semibold text-brand transition hover:text-brandHover"
+            >
+              {bestForCta.label} →
+            </Link>
+          </div>
         </section>
 
         <section className="stack-gap">
@@ -882,6 +910,7 @@ export default async function AiVideoEnginesPage() {
         </section>
 
         <FAQSchema questions={faqJsonLdEntries} />
+      </div>
       </div>
     </div>
   );

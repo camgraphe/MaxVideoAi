@@ -1,8 +1,8 @@
-export const JOB_SURFACE_VALUES = ['video', 'image', 'character', 'angle', 'audio'] as const;
+export const JOB_SURFACE_VALUES = ['video', 'image', 'character', 'angle', 'audio', 'upscale'] as const;
 
 export type JobSurface = (typeof JOB_SURFACE_VALUES)[number];
 
-export const USER_ASSET_SOURCE_VALUES = ['upload', 'generated', 'character', 'angle'] as const;
+export const USER_ASSET_SOURCE_VALUES = ['upload', 'generated', 'character', 'angle', 'upscale'] as const;
 
 export type UserAssetSource = (typeof USER_ASSET_SOURCE_VALUES)[number];
 

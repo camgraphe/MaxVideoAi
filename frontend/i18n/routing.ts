@@ -42,6 +42,11 @@ export const routing = defineRouting({
       fr: '/outils/angle',
       es: '/herramientas/angle',
     },
+    '/tools/upscale': {
+      en: '/tools/upscale',
+      fr: '/outils/upscale',
+      es: '/herramientas/upscale',
+    },
     '/tools/character-builder': {
       en: '/tools/character-builder',
       fr: '/outils/character-builder',

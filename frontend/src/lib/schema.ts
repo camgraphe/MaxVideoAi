@@ -280,7 +280,13 @@ export async function ensureBillingSchema(): Promise<void> {
           ('angle-flux-single', 'angle', 'Angle FLUX Single', 'USD', 'run', 4, TRUE, '{"seeded":true,"tool":"angle","engineId":"flux-multiple-angles","variant":"single"}'::jsonb),
           ('angle-flux-multi', 'angle', 'Angle FLUX Multi', 'USD', 'run', 24, TRUE, '{"seeded":true,"tool":"angle","engineId":"flux-multiple-angles","variant":"multi"}'::jsonb),
           ('angle-qwen-single', 'angle', 'Angle Qwen Single', 'USD', 'run', 7, TRUE, '{"seeded":true,"tool":"angle","engineId":"qwen-multiple-angles","variant":"single"}'::jsonb),
-          ('angle-qwen-multi', 'angle', 'Angle Qwen Multi', 'USD', 'run', 40, TRUE, '{"seeded":true,"tool":"angle","engineId":"qwen-multiple-angles","variant":"multi"}'::jsonb)
+          ('angle-qwen-multi', 'angle', 'Angle Qwen Multi', 'USD', 'run', 40, TRUE, '{"seeded":true,"tool":"angle","engineId":"qwen-multiple-angles","variant":"multi"}'::jsonb),
+          ('upscale-image-seedvr', 'upscale', 'Upscale Image SeedVR2', 'USD', 'run', 4, TRUE, '{"seeded":true,"tool":"upscale","engineId":"seedvr-image","mediaType":"image"}'::jsonb),
+          ('upscale-image-topaz', 'upscale', 'Upscale Image Topaz', 'USD', 'run', 12, TRUE, '{"seeded":true,"tool":"upscale","engineId":"topaz-image","mediaType":"image"}'::jsonb),
+          ('upscale-image-recraft-crisp', 'upscale', 'Upscale Image Recraft Crisp', 'USD', 'run', 2, TRUE, '{"seeded":true,"tool":"upscale","engineId":"recraft-crisp","mediaType":"image"}'::jsonb),
+          ('upscale-video-seedvr', 'upscale', 'Upscale Video SeedVR2', 'USD', 'run', 25, TRUE, '{"seeded":true,"tool":"upscale","engineId":"seedvr-video","mediaType":"video","dynamicPricing":true}'::jsonb),
+          ('upscale-video-flashvsr', 'upscale', 'Upscale Video FlashVSR', 'USD', 'run', 18, TRUE, '{"seeded":true,"tool":"upscale","engineId":"flashvsr-video","mediaType":"video","dynamicPricing":true}'::jsonb),
+          ('upscale-video-topaz', 'upscale', 'Upscale Video Topaz', 'USD', 'run', 80, TRUE, '{"seeded":true,"tool":"upscale","engineId":"topaz-video","mediaType":"video","dynamicPricing":true}'::jsonb)
         ON CONFLICT (product_key) DO NOTHING;
       `);
 

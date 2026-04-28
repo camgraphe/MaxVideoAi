@@ -36,6 +36,10 @@ export default async function AdminHomepagePage() {
           id: slot.video.id,
           engineLabel: slot.video.engineLabel,
           durationSec: slot.video.durationSec,
+          aspectRatio: slot.video.aspectRatio,
+          hasAudio: slot.video.hasAudio,
+          finalPriceCents: slot.video.finalPriceCents,
+          currency: slot.video.currency,
           thumbUrl: slot.video.thumbUrl,
           videoUrl: slot.video.videoUrl,
           createdAt: slot.video.createdAt,
@@ -80,7 +84,7 @@ export default async function AdminHomepagePage() {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_340px] xl:items-start">
         <AdminSection
           title="Hero Workspace"
-          description="Assigne un rendu par slot, contrôle le titre affiché et valide immédiatement la preview."
+          description="Assigne un rendu aux cinq sélecteurs hero, contrôle le titre affiché et valide immédiatement la preview."
           action={
             <AdminSectionMeta
               title={`${assignedHeroCount}/${hero.length} hero slots assigned`}

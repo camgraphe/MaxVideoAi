@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { Camera, Sparkles, Wrench } from 'lucide-react';
+import { Camera, Maximize2, Sparkles, Wrench } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { ButtonLink } from '@/components/ui/Button';
@@ -25,6 +25,10 @@ const DEFAULT_TOOLS_COPY = {
   "angleTitle": "Angle / Perspective",
   "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
   "angleBadge": "New viewpoint",
+  "upscaleEyebrow": "Resolution boost",
+  "upscaleTitle": "AI Upscale",
+  "upscaleBody": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in later workflows.",
+  "upscaleBadge": "Image + video",
   "open": "Open Tool"
 } as const;
 
@@ -51,7 +55,10 @@ function ToolPreviewPanel({
 export default function ToolsPage() {
   const { loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const { t } = useI18n();
-  const copy = t('workspace.tools', DEFAULT_TOOLS_COPY) as typeof DEFAULT_TOOLS_COPY;
+  const copy = {
+    ...DEFAULT_TOOLS_COPY,
+    ...((t('workspace.tools') ?? {}) as Partial<typeof DEFAULT_TOOLS_COPY>),
+  };
 
   if (authLoading) {
     return (
@@ -101,7 +108,7 @@ export default function ToolsPage() {
               <p className="mt-2 max-w-2xl text-sm text-text-secondary">{copy.subtitle}</p>
             </section>
 
-            <section className="grid gap-4 md:grid-cols-2">
+            <section className="grid gap-4 lg:grid-cols-3">
               <Card className="overflow-hidden border border-border bg-surface p-0">
                 <ToolPreviewPanel className="aspect-[16/9] p-4">
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
@@ -164,6 +171,49 @@ export default function ToolsPage() {
                       {copy.angleBadge}
                     </span>
                     <ButtonLink href="/app/tools/angle" variant="primary" linkComponent={Link}>
+                      {copy.open}
+                    </ButtonLink>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="overflow-hidden border border-border bg-surface p-0">
+                <ToolPreviewPanel className="aspect-[16/9] p-4">
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
+                  <div className="relative grid h-full grid-cols-2 gap-3 rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
+                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface-2">
+                      <img
+                        src={ANGLE_CARD_BACKGROUND_URL}
+                        alt="Low resolution preview"
+                        className="h-full w-full scale-110 object-cover object-top blur-[1px]"
+                      />
+                    </div>
+                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface-2">
+                      <img
+                        src={ANGLE_CARD_BACKGROUND_URL}
+                        alt="Upscaled preview"
+                        className="h-full w-full object-cover object-top"
+                      />
+                    </div>
+                  </div>
+                </ToolPreviewPanel>
+                <div className="p-5">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
+                      <Maximize2 className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.upscaleEyebrow}</p>
+                      <h2 className="text-lg font-semibold text-text-primary">{copy.upscaleTitle}</h2>
+                    </div>
+                  </div>
+                  <p className="text-sm text-text-secondary">{copy.upscaleBody}</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
+                      <Maximize2 className="h-3.5 w-3.5" />
+                      {copy.upscaleBadge}
+                    </span>
+                    <ButtonLink href="/app/tools/upscale" variant="primary" linkComponent={Link}>
                       {copy.open}
                     </ButtonLink>
                   </div>

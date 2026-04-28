@@ -19,7 +19,7 @@ const fixtures: LocaleFixture[] = [
     englishPath: '/examples/luma',
     localizableInternalPaths: EXAMPLES_INTERNAL_PATHS,
     requiredTextByLocale: {
-      fr: ['tier premium ou sur le tier draft plus rapide'],
+      fr: ['niveau premium ou sur le niveau brouillon plus rapide'],
       es: ['tier premium o al tier draft mas rapido'],
     },
     forbiddenTextByLocale: {

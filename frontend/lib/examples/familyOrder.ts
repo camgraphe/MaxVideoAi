@@ -6,6 +6,7 @@ export const EXAMPLES_HUB_FAMILY_PRIORITY: readonly ModelFamilyId[] = [
   'ltx',
   'kling',
   'wan',
+  'happy-horse',
   'sora',
 ] as const;
 

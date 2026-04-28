@@ -1710,6 +1710,10 @@ async function rollbackPendingPayment(params: {
   const attachmentReferenceImageUrls = processedAttachments
     .filter((attachment) => {
       if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
+      if (engine.id === 'happy-horse-1-0') {
+        if (mode === 'v2v') return attachment.slotId === 'reference_image_urls';
+        if (mode === 'ref2v') return attachment.slotId === 'image_urls' || attachment.slotId === 'reference_images';
+      }
       return (
         attachment.slotId === 'image_urls' ||
         attachment.slotId === 'reference_images' ||
@@ -1784,6 +1788,9 @@ async function rollbackPendingPayment(params: {
   }
   if (mode === 'ref2v' && normalizedReferenceImages.length) {
     validationPayload.image_urls = normalizedReferenceImages;
+  }
+  if (mode === 'v2v' && normalizedReferenceImages.length) {
+    validationPayload.reference_image_urls = normalizedReferenceImages;
   }
   if (mode === 'r2v' && videoUrls.length) {
     validationPayload.video_urls = videoUrls;

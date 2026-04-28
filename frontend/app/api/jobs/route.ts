@@ -187,7 +187,7 @@ const IMAGE_ENGINE_ALIASES = listFalEngines()
   .filter((engine) => (engine.category ?? 'video') === 'image')
   .flatMap((engine) => getEngineAliases(engine));
 
-function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'angle' | 'audio', params: Array<string | number | Date | string[]>) {
+function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'angle' | 'audio' | 'upscale', params: Array<string | number | Date | string[]>) {
   params.push(surface);
   const directIndex = params.length;
 
@@ -197,6 +197,10 @@ function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'an
 
   if (surface === 'angle') {
     return `(surface = $${directIndex} OR job_id LIKE 'tool_angle_%' OR settings_snapshot->>'surface' = 'angle')`;
+  }
+
+  if (surface === 'upscale') {
+    return `(surface = $${directIndex} OR job_id LIKE 'tool_upscale_%' OR settings_snapshot->>'surface' = 'upscale')`;
   }
 
   if (surface === 'image') {
@@ -210,9 +214,10 @@ function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'an
           OR render_ids IS NOT NULL
           OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
         )
-        AND COALESCE(surface, '') NOT IN ('character', 'angle')
-        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('character-builder', 'angle', 'video')
+        AND COALESCE(surface, '') NOT IN ('character', 'angle', 'upscale')
+        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('character-builder', 'angle', 'upscale', 'video')
         AND job_id NOT LIKE 'tool_angle_%'
+        AND job_id NOT LIKE 'tool_upscale_%'
       )
     )`;
   }
@@ -228,8 +233,9 @@ function buildSurfaceFilterClause(surface: 'video' | 'image' | 'character' | 'an
       )
       AND NOT (
         COALESCE(surface, '') = 'audio'
-        OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio')
+        OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale')
         OR job_id LIKE 'tool_angle_%'
+        OR job_id LIKE 'tool_upscale_%'
         OR render_ids IS NOT NULL
         OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
       )
@@ -271,7 +277,7 @@ export async function GET(req: NextRequest) {
     if (VISITOR_WORKSPACE_ENABLED) {
       if (feedType === 'image' || (requestedSurface && isImageLikeSurface(requestedSurface))) {
         const visitorSurface =
-          requestedSurface === 'image' || requestedSurface === 'angle' || requestedSurface === 'character'
+          requestedSurface === 'image' || requestedSurface === 'angle' || requestedSurface === 'character' || requestedSurface === 'upscale'
             ? requestedSurface
             : 'image';
         const jobs = await listVisitorImageLikeJobs(
@@ -310,9 +316,10 @@ export async function GET(req: NextRequest) {
       if (feedType === 'image') {
         conditions.push(
           `(
-            surface IN ('image', 'character', 'angle')
-            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle')
+            surface IN ('image', 'character', 'angle', 'upscale')
+            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'upscale')
             OR job_id LIKE 'tool_angle_%'
+            OR job_id LIKE 'tool_upscale_%'
             OR ${aliasClause}
             OR ${heuristicClause}
           )`
@@ -320,9 +327,10 @@ export async function GET(req: NextRequest) {
       } else if (feedType === 'video') {
         conditions.push(
           `NOT (
-            surface IN ('image', 'character', 'angle', 'audio')
-            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio')
+            surface IN ('image', 'character', 'angle', 'audio', 'upscale')
+            OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale')
             OR job_id LIKE 'tool_angle_%'
+            OR job_id LIKE 'tool_upscale_%'
             OR ${aliasClause}
             OR ${heuristicClause}
           )`
@@ -690,6 +698,7 @@ type JobRow = {
         jobId: r.job_id,
         surface,
         billingProductKey: r.billing_product_key ?? undefined,
+        settingsSnapshot: r.settings_snapshot ?? undefined,
         engineLabel: r.engine_label,
         durationSec: r.duration_sec,
         prompt: r.prompt,
@@ -734,6 +743,7 @@ type JobRow = {
           jobId: video.id,
           surface: 'video' as const,
           billingProductKey: undefined,
+          settingsSnapshot: undefined,
           engineLabel: video.engineLabel,
           durationSec: video.durationSec,
           prompt: video.prompt,

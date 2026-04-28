@@ -234,6 +234,8 @@ export const THEME_TOKEN_DEFS: ThemeTokenDefinition[] = [
   { key: 'engine-lightricks-ink', label: 'Lightricks ink', group: 'engines', input: 'color', advanced: true },
   { key: 'engine-google-bg', label: 'Google bg', group: 'engines', input: 'color', advanced: true },
   { key: 'engine-google-ink', label: 'Google ink', group: 'engines', input: 'color', advanced: true },
+  { key: 'engine-alibaba-bg', label: 'Alibaba bg', group: 'engines', input: 'color', advanced: true },
+  { key: 'engine-alibaba-ink', label: 'Alibaba ink', group: 'engines', input: 'color', advanced: true },
 ];
 
 const TOKEN_DEF_MAP = new Map(THEME_TOKEN_DEFS.map((token) => [token.key, token]));

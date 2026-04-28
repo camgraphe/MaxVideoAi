@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { isDatabaseConfigured, query } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
@@ -6,7 +6,7 @@ import { getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 export const HOMEPAGE_SECTION_TYPES = ['hero', 'gallery', 'playlist_rail'] as const;
 export type HomepageSectionType = (typeof HOMEPAGE_SECTION_TYPES)[number];
 
-export const HERO_SLOT_KEYS = ['hero-1', 'hero-2', 'hero-3', 'hero-4'] as const;
+export const HERO_SLOT_KEYS = ['hero-1', 'hero-2', 'hero-3', 'hero-4', 'hero-5'] as const;
 export const GALLERY_SLOT_KEYS = ['gallery-1', 'gallery-2', 'gallery-3'] as const;
 
 export type HomepageSlot = {
@@ -360,8 +360,33 @@ export async function getHomepageSlots(): Promise<{
 }
 
 const HOMEPAGE_SLOTS_CACHE_KEY = 'homepage-slots';
+export const HOMEPAGE_SLOTS_CACHE_TAG = 'homepage-slots';
 const HOMEPAGE_SLOTS_REVALIDATE_SECONDS = 60;
 
 export const getHomepageSlotsCached = unstable_cache(getHomepageSlots, [HOMEPAGE_SLOTS_CACHE_KEY], {
   revalidate: HOMEPAGE_SLOTS_REVALIDATE_SECONDS,
+  tags: [HOMEPAGE_SLOTS_CACHE_TAG],
 });
+
+async function getSuccessfulGenerationCount(): Promise<number | null> {
+  if (!isDatabaseConfigured()) return null;
+
+  const rows = await query<{ count: string | number | null }>(
+    `
+      SELECT COUNT(*)::bigint AS count
+      FROM app_jobs
+      WHERE LOWER(COALESCE(status, '')) IN ('completed', 'success', 'succeeded', 'finished')
+    `
+  );
+  const count = Number(rows[0]?.count ?? 0);
+  return Number.isFinite(count) && count > 0 ? count : null;
+}
+
+export const getSuccessfulGenerationCountCached = unstable_cache(
+  getSuccessfulGenerationCount,
+  ['homepage-successful-generation-count'],
+  {
+    revalidate: 300,
+    tags: ['homepage-successful-generation-count'],
+  }
+);

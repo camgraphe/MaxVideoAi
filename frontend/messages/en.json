@@ -28,7 +28,7 @@
       }
     ],
     "login": "Log in",
-    "cta": "Start a render",
+    "cta": "Generate",
     "linkLabels": {
       "models": "Models",
       "examples": "Examples",
@@ -56,7 +56,7 @@
           "seedance-1-5-pro": "Seedance 1.5 Pro",
           "ltx-2": "LTX 2",
           "ltx-2-fast": "LTX 2 Fast",
-          "pika-text-to-video": "Pika 2.2",
+          "pika-text-to-video": "Pika Text to Video",
           "wan-2-6": "Wan 2.6",
           "minimax-hailuo-02-text": "MiniMax Hailuo 02"
         }
@@ -140,7 +140,7 @@
         "href": "/legal"
       }
     ],
-    "brandNote": "Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
+    "brandNote": "Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Seedance, Kling, Veo, LTX, Wan, Pika, Sora, and more. Trademarks belong to their owners.",
     "languageLabel": "Language",
     "languages": [
       {
@@ -170,6 +170,7 @@
           "veo3_1lite": "Veo 3.1 Lite",
           "ltx23pro": "LTX 2.3 Pro",
           "pika22": "Pika 2.2",
+          "pikaTextToVideo": "Pika Text to Video",
           "ltx2": "LTX 2",
           "seedance1_5pro": "Seedance 1.5 Pro"
         }
@@ -194,6 +195,16 @@
           "ltx2_vs_veo3_1": "LTX 2 vs Veo 3.1",
           "sora2_vs_wan2_6": "Sora 2 vs Wan 2.6",
           "seedance1_5pro_vs_sora2": "Seedance 1.5 Pro vs Sora 2"
+        }
+      },
+      "useCases": {
+        "title": "Use cases",
+        "items": {
+          "bestFor": "Best models by use case",
+          "cinematic-realism": "Cinematic realism",
+          "image-to-video": "Image-to-video",
+          "fast-drafts": "Fast drafts",
+          "ads": "Product ads"
         }
       },
       "examples": {
@@ -235,6 +246,780 @@
     "crawlerNote": "MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility."
   },
   "home": {
+    "redesign": {
+      "hero": {
+        "eyebrow": "Pay-as-you-go multi-engine AI video workspace",
+        "badgeChips": [
+          "Multi-engine AI video generator",
+          "Price before you generate",
+          "Pay-as-you-go · no subscription"
+        ],
+        "title": "Stop guessing which AI video model to use.",
+        "subtitle": "Compare Seedance, Kling, Veo, LTX and more, preview real outputs, see the cost before you generate, and choose the right AI video engine for every shot.",
+        "primaryCta": "Generate",
+        "secondaryCta": "See examples",
+        "examplesCta": "Compare engines",
+        "trustBadges": [
+          "Live price before you generate",
+          "Pay only successful generations",
+          "No subscription",
+          "Auto-refunds on failed generations"
+        ],
+        "valueCards": [
+          {
+            "title": "Compare engines",
+            "body": "Models, examples and matchups before spending credits."
+          },
+          {
+            "title": "Live quote",
+            "body": "See the cost before you generate."
+          },
+          {
+            "title": "Engine examples",
+            "body": "Browse real outputs by model family."
+          },
+          {
+            "title": "No subscription",
+            "body": "Top up credits when needed. Failed generations are refunded."
+          }
+        ],
+        "mockup": {
+          "promptLabel": "1. Describe the shot",
+          "prompt": "Cinematic product shot, controlled camera move, natural light, clean motion, audio if supported.",
+          "shotTypeLabel": "What are you making?",
+          "shotTypes": [
+            "Cinematic ad",
+            "Product shot",
+            "Character scene",
+            "Fast draft",
+            "Camera motion"
+          ],
+          "engineLabel": "2. Compare recommended engines",
+          "engineRecommendations": [
+            {
+              "engineId": "seedance-2-0",
+              "name": "Seedance 2.0",
+              "provider": "ByteDance",
+              "bestFor": "Cinematic realism",
+              "fallbackPrice": "from $0.36 / 5s",
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 92
+                },
+                {
+                  "label": "Realism",
+                  "value": 90
+                },
+                {
+                  "label": "Speed",
+                  "value": 78
+                }
+              ],
+              "tags": [
+                "Audio",
+                "Reference",
+                "Polished"
+              ]
+            },
+            {
+              "engineId": "veo-3-1-lite",
+              "name": "Veo 3.1 Lite",
+              "provider": "Google",
+              "bestFor": "Realistic motion",
+              "fallbackPrice": "from $0.45 / 5s",
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 89
+                },
+                {
+                  "label": "Realism",
+                  "value": 94
+                },
+                {
+                  "label": "Speed",
+                  "value": 70
+                }
+              ],
+              "tags": [
+                "1080p",
+                "Audio",
+                "Premium"
+              ]
+            },
+            {
+              "engineId": "kling-3-pro",
+              "name": "Kling 3 Pro",
+              "provider": "Kuaishou",
+              "bestFor": "Camera movement",
+              "fallbackPrice": "from $0.29 / 5s",
+              "selected": true,
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 94
+                },
+                {
+                  "label": "Realism",
+                  "value": 86
+                },
+                {
+                  "label": "Speed",
+                  "value": 74
+                }
+              ],
+              "tags": [
+                "Camera",
+                "Audio",
+                "Multi-shot"
+              ]
+            },
+            {
+              "engineId": "ltx-2-3-pro",
+              "name": "LTX 2.3 Pro",
+              "provider": "Lightricks",
+              "bestFor": "Audio and retakes",
+              "fallbackPrice": "from $0.47 / 6s",
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 84
+                },
+                {
+                  "label": "Realism",
+                  "value": 80
+                },
+                {
+                  "label": "Speed",
+                  "value": 78
+                }
+              ],
+              "tags": [
+                "Audio",
+                "Retake",
+                "Extend"
+              ]
+            },
+            {
+              "engineId": "happy-horse-1-0",
+              "name": "Happy Horse 1.0",
+              "provider": "Alibaba",
+              "bestFor": "Unified lip-sync",
+              "fallbackPrice": "from $0.70 / 5s",
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 76
+                },
+                {
+                  "label": "Realism",
+                  "value": 74
+                },
+                {
+                  "label": "Speed",
+                  "value": 72
+                }
+              ],
+              "tags": [
+                "Lip-sync",
+                "Audio",
+                "References"
+              ]
+            }
+          ],
+          "quoteLabel": "Cost to generate this video",
+          "quoteValue": "$0.34",
+          "quoteMeta": "5s · 1080p · image-to-video",
+          "outputLabel": "Output previews",
+          "queueLabel": "Generation status",
+          "queueItems": [
+            "Generating preview",
+            "Receipt saved",
+            "History updated"
+          ],
+          "generateCta": "Generate with this engine",
+          "refundNote": "Credits returned if generation fails",
+          "playLabel": "Play engine preview",
+          "pauseLabel": "Pause engine preview"
+        }
+      },
+      "proof": {
+        "items": [
+          {
+            "id": "engines",
+            "label": "AI engines"
+          },
+          {
+            "id": "providers",
+            "label": "Providers"
+          },
+          {
+            "id": "textToVideo",
+            "label": "Text-to-video"
+          },
+          {
+            "id": "imageToVideo",
+            "label": "Image-to-video"
+          },
+          {
+            "id": "videoToVideo",
+            "label": "Video-to-video"
+          },
+          {
+            "id": "audio",
+            "label": "Audio-supported"
+          },
+          {
+            "id": "fourK",
+            "label": "Options"
+          },
+          {
+            "id": "successfulGenerations",
+            "label": "Successful generations"
+          }
+        ]
+      },
+      "shotTypes": {
+        "title": "Find the right engine by use case.",
+        "subtitle": "Explore a few high-impact creative decisions, or browse the full Best-For hub for every workflow.",
+        "eyebrow": "Best for X",
+        "cta": "View all best-for guides",
+        "hubCtaTitle": "View all best-for guides",
+        "hubCtaBody": "Browse all use cases and find the right engine for every job.",
+        "guideLabel": "Best-for guide",
+        "topPicksLabel": "Top picks",
+        "cards": [
+          {
+            "slug": "cinematic-realism",
+            "title": "Cinematic realism",
+            "body": "Compare engines for lighting, camera motion and polished visual direction.",
+            "cta": "Open cinematic guide"
+          },
+          {
+            "slug": "image-to-video",
+            "title": "Image-to-video",
+            "body": "Turn a still image, style frame or product shot into controlled motion.",
+            "cta": "Open image-to-video guide"
+          },
+          {
+            "slug": "fast-drafts",
+            "title": "Fast drafts",
+            "body": "Find cheaper, faster routes for prompt tests and concept exploration.",
+            "cta": "Open fast drafts guide"
+          },
+          {
+            "slug": "ads",
+            "title": "Product ads",
+            "body": "Shortlist engines for product ads, paid social variants and campaign assets.",
+            "cta": "Open ads guide"
+          }
+        ]
+      },
+      "examples": {
+        "title": "Preview real outputs before you choose an engine.",
+        "subtitle": "Compare real Seedance, Kling, LTX, Veo, Wan and Happy Horse outputs, then check full specs, limits, pricing and prompts before you generate.",
+        "eyebrow": "AI video examples",
+        "cta": "Browse all examples",
+        "modelsCta": "View all model specs",
+        "compareLink": "Compare engines",
+        "providerLabel": "Supported engines:",
+        "viewPrompt": "Clone settings",
+        "fallbackCards": [
+          {
+            "id": "fallback-seedance",
+            "title": "Seedance 2.0",
+            "engine": "Seedance 2.0",
+            "engineId": "seedance-2-0",
+            "modelSlug": "seedance-2-0",
+            "mode": "Reference-to-video",
+            "duration": "12s",
+            "price": "$4.72",
+            "useCase": "Cinematic realism",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "/hero/seedance-2-0.jpg",
+            "imageAlt": "Seedance 2.0 AI video example for cinematic commercial shots.",
+            "examplesSlug": "seedance"
+          },
+          {
+            "id": "fallback-kling",
+            "title": "Kling 3 Pro",
+            "engine": "Kling 3 Pro",
+            "engineId": "kling-3-pro",
+            "modelSlug": "kling-3-pro",
+            "mode": "Image-to-video",
+            "duration": "15s",
+            "price": "$4.37",
+            "useCase": "Camera motion",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "/hero/kling-3-4k-hero.jpg",
+            "imageAlt": "Kling 3 Pro AI video example for camera motion and dynamic scenes.",
+            "examplesSlug": "kling"
+          },
+          {
+            "id": "fallback-ltx",
+            "title": "LTX 2.3 Fast",
+            "engine": "LTX 2.3 Fast",
+            "engineId": "ltx-2-3-fast",
+            "modelSlug": "ltx-2-3-fast",
+            "mode": "Text-to-video",
+            "duration": "10s",
+            "price": "$0.52",
+            "useCase": "Fast drafts",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
+            "imageAlt": "LTX 2.3 Fast AI video example for fast draft generation.",
+            "examplesSlug": "ltx"
+          },
+          {
+            "id": "fallback-veo",
+            "title": "Veo 3.1",
+            "engine": "Veo 3.1",
+            "engineId": "veo-3-1",
+            "modelSlug": "veo-3-1",
+            "mode": "Image-to-video",
+            "duration": "6s",
+            "price": "$3.12",
+            "useCase": "Premium realism",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "/hero/veo-3-1-hero.jpg",
+            "imageAlt": "Veo 3.1 AI video example for premium realism and image-to-video.",
+            "examplesSlug": "veo"
+          },
+          {
+            "id": "fallback-wan",
+            "title": "Wan 2.6",
+            "engine": "Wan 2.6",
+            "engineId": "wan-2-6",
+            "modelSlug": "wan-2-6",
+            "mode": "Text/image-to-video",
+            "duration": "5s",
+            "price": "$0.65",
+            "useCase": "Structured video workflows",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "/hero/wan-26.jpg",
+            "imageAlt": "Wan 2.6 AI video example for structured video workflows.",
+            "examplesSlug": "wan"
+          },
+          {
+            "id": "fallback-happy-horse",
+            "title": "Happy Horse 1.0",
+            "engine": "Happy Horse 1.0",
+            "engineId": "happy-horse-1-0",
+            "modelSlug": "happy-horse-1-0",
+            "mode": "Text/image/reference-to-video",
+            "duration": "10s",
+            "price": "$1.82",
+            "useCase": "Audio-native workflows",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
+            "imageAlt": "Happy Horse 1.0 AI video example for audio-native reference workflows.",
+            "examplesSlug": "happy-horse"
+          }
+        ]
+      },
+      "comparisons": {
+        "title": "Validate the right model before spending credits.",
+        "subtitle": "Engines differ on motion, realism, prompt fidelity, audio, speed, resolution and cost. Compare them side by side before choosing where to spend your credits.",
+        "cta": "Compare models",
+        "cards": [
+          {
+            "id": "seedance-upgrade",
+            "slug": "seedance-1-5-pro-vs-seedance-2-0",
+            "title": "Seedance 1.5 Pro vs Seedance 2.0",
+            "body": "Understand when to use the newer Seedance workflow for audio, references and multi-shot output.",
+            "badges": [
+              "upgrade",
+              "audio",
+              "references"
+            ]
+          },
+          {
+            "id": "ltx-legacy-fast",
+            "slug": "ltx-2-vs-ltx-2-3-fast",
+            "title": "LTX 2 vs LTX 2.3 Fast",
+            "body": "Compare older LTX behavior with the current fast draft route for low-cost iteration.",
+            "badges": [
+              "speed",
+              "price",
+              "drafts"
+            ]
+          },
+          {
+            "id": "ltx-seedance",
+            "slug": "ltx-2-3-fast-vs-seedance-2-0",
+            "title": "LTX 2.3 Fast vs Seedance 2.0",
+            "body": "Choose between cheap draft passes and more polished Seedance output before spending credits.",
+            "badges": [
+              "value",
+              "quality",
+              "workflow"
+            ]
+          },
+          {
+            "id": "ltx-veo",
+            "slug": "ltx-2-3-fast-vs-veo-3-1",
+            "title": "LTX 2.3 Fast vs Veo 3.1",
+            "body": "Compare fast prompt testing with premium Veo realism for the same production brief.",
+            "badges": [
+              "speed",
+              "realism",
+              "cost"
+            ]
+          },
+          {
+            "id": "kling-ltx",
+            "slug": "kling-3-pro-vs-ltx-2-3-pro",
+            "title": "Kling 3 Pro vs LTX 2.3 Pro",
+            "body": "Pick the better route for camera motion, production quality and cost control.",
+            "badges": [
+              "motion",
+              "realism",
+              "price"
+            ]
+          },
+          {
+            "id": "seedance-veo",
+            "slug": "seedance-2-0-vs-veo-3-1",
+            "title": "Seedance 2.0 vs Veo 3.1",
+            "body": "Choose between Seedance control and premium Veo realism before spending credits.",
+            "badges": [
+              "realism",
+              "control",
+              "cost"
+            ]
+          }
+        ],
+        "eyebrow": "Pick before you generate",
+        "primaryCta": "Explore all comparisons",
+        "secondaryCta": "View all models",
+        "scorecardTitle": "Scorecard (side-by-side)",
+        "scorecardSubtitle": "Scores reflect quality, control and cost across 11 criteria.",
+        "scorecardLeftLabel": "Seedance 1.5 Pro",
+        "scorecardRightLabel": "Seedance 2.0",
+        "featureCards": [
+          {
+            "title": "11 comparison criteria",
+            "body": "Quality, motion, audio, cost and more"
+          },
+          {
+            "title": "Real outputs",
+            "body": "See examples from each model"
+          },
+          {
+            "title": "Live pricing",
+            "body": "Know the cost before you generate"
+          },
+          {
+            "title": "Updated often",
+            "body": "Benchmarks refresh as models evolve"
+          }
+        ],
+        "scorecardCriteriaLabel": "Criteria",
+        "scorecardRows": [
+          {
+            "label": "Prompt adherence",
+            "left": 7.8,
+            "right": 8.6
+          },
+          {
+            "label": "Visual quality",
+            "left": 8,
+            "right": 8.8
+          },
+          {
+            "label": "Motion realism",
+            "left": 7.6,
+            "right": 8.7
+          },
+          {
+            "label": "Temporal consistency",
+            "left": 7.2,
+            "right": 8.2
+          },
+          {
+            "label": "Human fidelity",
+            "left": 7.4,
+            "right": 8.4
+          },
+          {
+            "label": "Audio & lip sync",
+            "left": 6.8,
+            "right": 9.2
+          },
+          {
+            "label": "Multi-shot sequencing",
+            "left": 7.1,
+            "right": 8.4
+          },
+          {
+            "label": "Pricing",
+            "left": 9.4,
+            "right": 7.4
+          }
+        ]
+      },
+      "workflow": {
+        "title": "Build the reference before you animate it.",
+        "subtitle": "Generate a source still, lock character continuity, adjust the angle, then move into video with the right engine.",
+        "steps": [
+          {
+            "title": "Generate or upload a source image",
+            "body": "Create a still frame or bring in a reference before the video stage.",
+            "toolLabel": "Generate Image",
+            "href": "/app/image"
+          },
+          {
+            "title": "Lock character consistency",
+            "body": "Build a repeatable character reference for scenes, variants and storyboards.",
+            "toolLabel": "Character Builder",
+            "href": {
+              "pathname": "/tools/character-builder"
+            }
+          },
+          {
+            "title": "Choose angle and composition",
+            "body": "Find the right viewpoint before committing credits to animation.",
+            "toolLabel": "Angle tool",
+            "href": {
+              "pathname": "/tools/angle"
+            }
+          },
+          {
+            "title": "Generate the final video",
+            "body": "Move into text-to-video, image-to-video or video-to-video with the best engine.",
+            "toolLabel": "Open workspace",
+            "href": "/app"
+          }
+        ]
+      },
+      "toolbox": {
+        "title": "Prepare, compare, and generate in one workspace.",
+        "subtitle": "Create source images, build consistent characters, adjust angles, compare engines, and generate videos without switching tools.",
+        "primaryCta": "Open workspace",
+        "secondaryCta": "Browse all tools",
+        "cards": [
+          {
+            "id": "text-to-video",
+            "title": "Text to Video",
+            "body": "Generate videos from prompts.",
+            "shortBody": "Generate from prompts.",
+            "href": "/app",
+            "icon": "text"
+          },
+          {
+            "id": "image-to-video",
+            "title": "Image to Video",
+            "body": "Animate still images.",
+            "shortBody": "Animate stills.",
+            "href": "/app",
+            "icon": "image"
+          },
+          {
+            "id": "video-to-video",
+            "title": "Video to Video",
+            "body": "Transform or restyle existing clips.",
+            "shortBody": "Restyle clips.",
+            "href": "/app",
+            "icon": "video"
+          },
+          {
+            "id": "generate-image",
+            "title": "Generate Image",
+            "body": "Create source frames before animation.",
+            "shortBody": "Create source frames.",
+            "href": "/app/image",
+            "icon": "generateImage"
+          },
+          {
+            "id": "character-builder",
+            "title": "Character Builder",
+            "body": "Create consistent characters.",
+            "shortBody": "Keep characters consistent.",
+            "href": {
+              "pathname": "/tools/character-builder"
+            },
+            "icon": "character"
+          },
+          {
+            "id": "angle-tool",
+            "title": "Angle tool",
+            "body": "Find the right viewpoint or camera angle.",
+            "shortBody": "Change viewpoint.",
+            "href": {
+              "pathname": "/tools/angle"
+            },
+            "icon": "angle"
+          },
+          {
+            "id": "upscale",
+            "title": "AI Upscale",
+            "body": "Upscale images or outputs when supported.",
+            "shortBody": "Enhance outputs.",
+            "href": {
+              "pathname": "/tools/upscale"
+            },
+            "icon": "image"
+          },
+          {
+            "id": "compare-engines",
+            "title": "Compare Engines",
+            "body": "Choose the right model before you generate.",
+            "shortBody": "Choose before generating.",
+            "href": {
+              "pathname": "/ai-video-engines"
+            },
+            "icon": "compare"
+          }
+        ]
+      },
+      "pricingTrust": {
+        "title": "Know the cost before you generate.",
+        "subtitle": "MaxVideoAI shows the price before every video generation, so you stay in control of your credits.",
+        "cta": "View pricing",
+        "supportingText": "MaxVideoAI is a pay-as-you-go multi-engine AI video generator for Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.",
+        "modelsLink": "Models",
+        "examplesLink": "Examples",
+        "compareLink": "Compare engines",
+        "cards": [
+          {
+            "title": "Live quote",
+            "body": "See the price before each generation."
+          },
+          {
+            "title": "Pay-as-you-go",
+            "body": "No subscription required. Add credits when needed."
+          },
+          {
+            "title": "Auto-refunds",
+            "body": "Failed generations return credits automatically."
+          },
+          {
+            "title": "Receipts",
+            "body": "Track engine, settings, duration and cost for every generation."
+          }
+        ]
+      },
+      "providers": {
+        "title": "Supported engines and providers",
+        "subtitle": "Seedance, Kling, Veo, LTX, Wan, Pika, Happy Horse, MiniMax, Luma and Sora are available from one model catalog.",
+        "cta": "View all models",
+        "items": [
+          {
+            "providerKey": "ByteDance",
+            "provider": "ByteDance",
+            "model": "Seedance"
+          },
+          {
+            "providerKey": "Kling by Kuaishou",
+            "provider": "Kling / Kuaishou",
+            "model": "Kling"
+          },
+          {
+            "providerKey": "Google",
+            "provider": "Google",
+            "model": "Veo"
+          },
+          {
+            "providerKey": "Lightricks",
+            "provider": "Lightricks",
+            "model": "LTX"
+          },
+          {
+            "providerKey": "Wan",
+            "provider": "Wan",
+            "model": "Wan"
+          },
+          {
+            "providerKey": "Pika",
+            "provider": "Pika",
+            "model": "Pika"
+          },
+          {
+            "providerKey": "Alibaba",
+            "provider": "Alibaba",
+            "model": "Happy Horse",
+            "href": {
+              "pathname": "/examples/[model]",
+              "params": {
+                "model": "happy-horse"
+              }
+            }
+          },
+          {
+            "providerKey": "MiniMax",
+            "provider": "MiniMax",
+            "model": "MiniMax"
+          },
+          {
+            "providerKey": "Luma AI",
+            "provider": "Luma",
+            "model": "Luma"
+          },
+          {
+            "providerKey": "OpenAI",
+            "provider": "OpenAI",
+            "model": "Sora"
+          }
+        ]
+      },
+      "faq": {
+        "title": "AI video workspace FAQ",
+        "subtitle": "Short answers for choosing the right AI video model before you spend credits.",
+        "items": [
+          {
+            "question": "What is the best AI video generator right now?",
+            "answer": "The best AI video generator depends on the shot. Seedance is strong for cinematic motion and reference-guided workflows, Kling is useful for camera movement, Veo is strong for polished realism, LTX is good for fast drafts, and Wan or Pika can fit specific styles or budget tests. MaxVideoAI helps you compare engines before you generate."
+          },
+          {
+            "question": "How do I make AI-generated videos?",
+            "answer": "To make AI-generated videos, start with a text prompt, image, or existing clip. Then choose the engine that matches the shot, check the price, and generate a short test. On MaxVideoAI, you can preview real examples, compare AI video engines, and see the cost before spending credits."
+          },
+          {
+            "question": "Can I generate AI videos from an image?",
+            "answer": "Yes. Image-to-video AI turns a still image, product shot, character frame, or reference image into a moving clip. It is often the best option when you want to keep the composition, character, product, or visual style grounded."
+          },
+          {
+            "question": "What is the difference between text-to-video and image-to-video AI?",
+            "answer": "A text-to-video AI workflow starts from a written prompt and creates a scene from scratch. An image-to-video AI workflow starts from a still image and adds motion to it. Text-to-video is better for ideation, while image-to-video is usually better for controlled visuals, products, characters, and branded shots."
+          },
+          {
+            "question": "Where can I find AI video prompt examples?",
+            "answer": "For AI video prompt examples, use the examples hub to browse real AI video examples with prompts, engines, formats, duration, and pricing. You can compare Seedance, Kling, LTX, Veo, Wan, Happy Horse and more before building your own generation."
+          },
+          {
+            "question": "How much does AI video generation cost?",
+            "answer": "AI video generation cost depends on the engine, duration, resolution, mode, and audio support. MaxVideoAI shows the estimated price before each generation, so you can compare options before spending credits."
+          },
+          {
+            "question": "Is there a pay-as-you-go AI video generator?",
+            "answer": "Yes. MaxVideoAI is a pay-as-you-go AI video generator instead of forcing a subscription. You add credits when needed, see the price before you generate, and failed generations are refunded automatically."
+          },
+          {
+            "question": "What limits should I check before choosing an AI video model?",
+            "answer": "Before choosing an AI video model, check model limits such as duration, resolution, aspect ratio, audio support, text-to-video or image-to-video support, reference image support, and price. Some models are better for short fast drafts, while others are better for cinematic realism, camera motion, or polished commercial outputs."
+          }
+        ]
+      },
+      "modeLabels": {
+        "t2v": "Text-to-video",
+        "i2v": "Image-to-video",
+        "v2v": "Video-to-video",
+        "ref2v": "Reference-to-video",
+        "r2v": "Reference-to-video",
+        "fl2v": "First/last frame",
+        "a2v": "Audio-to-video",
+        "extend": "Extend video",
+        "retake": "Retake",
+        "unknown": "AI video"
+      }
+    },
     "badges": [
       "PAY-AS-YOU-GO",
       "PRICE-BEFORE",
@@ -243,7 +1028,7 @@
     "hero": {
       "title": "The right engine for every shot.",
       "subtitle": "Professional AI video, minus the hassle. Price before you generate. One hub for your work.",
-      "primaryCta": "Start a render",
+      "primaryCta": "Generate",
       "secondaryCta": "See examples",
       "workspaceCta": "Open the workspace"
     },
@@ -281,7 +1066,7 @@
         "id": "price",
         "label": "Price",
         "heading": "Wallet pricing updates before you press Generate.",
-        "body": "Adjust settings and see the live “This render” chip before you commit. Funds only move when the render succeeds."
+        "body": "Adjust settings and see the live price chip before you commit. Funds only move when the generation succeeds."
       },
       {
         "id": "tracking",
@@ -297,7 +1082,7 @@
       },
       {
         "title": "Wallet-first billing.",
-        "body": "Top up once, monitor spend from the header, and refund automatically if a render fails."
+        "body": "Top up once, monitor spend from the header, and refund automatically if a generation fails."
       },
       {
         "title": "All your engines in one place.",
@@ -423,7 +1208,7 @@
         {
           "id": "minimax-hailuo",
           "label": "MiniMax Hailuo 02 · Concept draft",
-          "description": "Prompt optimiser enabled to block out a storyboard cut before the hero render.",
+          "description": "Prompt optimiser enabled to block out a storyboard cut before the hero generation.",
           "alt": "MiniMax Hailuo Standard concept animation.",
           "meta": {
             "slug": "minimax-hailuo-02-text",
@@ -453,12 +1238,12 @@
         {
           "eyebrow": "Live quote",
           "title": "See the cost before you click Generate",
-          "body": "Pick the engine and settings first. The total updates before the render starts."
+          "body": "Pick the engine and settings first. The total updates before the generation starts."
         },
         {
           "eyebrow": "Automatic refunds",
           "title": "Failed jobs return credits automatically",
-          "body": "Refunds land back in your wallet with an itemised receipt for each failed render."
+          "body": "Refunds land back in your wallet with an itemised receipt for each failed generation."
         },
         {
           "eyebrow": "Wallet-first control",
@@ -493,18 +1278,18 @@
         },
         {
           "q": "How does pricing work?",
-          "a": "You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job."
+          "a": "You see a live price chip before you generate. Load $10 to start and top up anytime. Itemised receipts for each job."
         },
         {
           "q": "What’s the refund policy?",
-          "a": "Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend."
+          "a": "Failed generations auto-refund to your wallet with an itemised receipt. You always keep full control of spend."
         }
       ]
     },
     "priceChipSuffix": "Shown before you launch.",
     "meta": {
-      "title": "Multi-engine AI video generator – Pay-as-you-go | MaxVideoAI",
-      "description": "Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly."
+      "title": "Pay-as-you-go AI Video Generator | MaxVideoAI",
+      "description": "Compare Seedance, Kling, Veo, LTX, Wan, Pika and more before you generate. Preview real outputs, see pricing upfront, and generate with pay-as-you-go credits."
     },
     "compare": {
       "title": "AI video engines in one view",
@@ -542,7 +1327,7 @@
       "startupFameLabel": "Featured on Startup Fame"
     },
     "seoContent": {
-      "heroParagraph": "MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every render so you can pick the right engine with confidence.",
+      "heroParagraph": "MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every generation so you can pick the right engine with confidence.",
       "heroPoints": [
         "Text-to-video, image-to-video, and video-to-video workflows",
         "Compare results across multiple AI video models",
@@ -550,7 +1335,7 @@
       ],
       "definition": {
         "title": "What is an AI video generator?",
-        "body": "Create from text, animate a still, or transform existing footage in one workspace, with pricing visible before you render."
+        "body": "Create from text, animate a still, or transform existing footage in one workspace, with pricing visible before you generate."
       },
       "generateWays": {
         "title": "Generate videos your way",
@@ -570,8 +1355,8 @@
         ]
       },
       "compare": {
-        "title": "Compare AI video models - before you render",
-        "body": "MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every render.",
+        "title": "Compare AI video models before you generate",
+        "body": "MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every generation.",
         "worksWith": "Works with Seedance 2.0, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2, Hailuo 02, Nano Banana, and more.",
         "popularLinks": [
           {
@@ -636,17 +1421,17 @@
     },
     "calculator": {
       "title": "Preview prices in the app",
-      "description": "Open the generator to see the exact price before you create a video.",
-      "cta": "Open the generator"
+      "description": "Open the workspace to see the exact price before you create a video.",
+      "cta": "Open workspace"
     },
     "liveLabel": "Live",
     "comingSoonLabel": "Coming soon",
     "estimator": {
       "title": "Cost Estimator",
-      "subtitle": "Choose the engine, duration, and resolution to see pricing before you queue the render. Charged only if it succeeds.",
+      "subtitle": "Choose the engine, duration, and resolution to see pricing before you queue the generation. Charged only if it succeeds.",
       "walletLink": "Want to see prices inside the app before you generate?",
-      "walletLinkCta": "Open the generator",
-      "chargedNote": "Charged only if render succeeds.",
+      "walletLinkCta": "Open workspace",
+      "chargedNote": "Charged only if the generation succeeds.",
       "audioIncluded": "Audio included by default.",
       "configureLabel": "Configure",
       "durationRangeLabel": "Available",
@@ -675,7 +1460,7 @@
         "veo-3-1-fast": "Use Veo 3.1 Fast for quick text, start-image, last-frame, and extend passes.",
         "veo-3-1-lite": "Use Veo 3.1 Lite for lower-cost text, start-image, and last-frame passes with audio always on.",
         "pika-text-to-video": "Quick social loops with captions and remix-friendly settings.",
-        "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero render."
+        "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero generation."
       },
       "engineRateLabel": "Engine rate",
       "durationLabel": "Duration",
@@ -800,7 +1585,7 @@
     "refunds": {
       "title": "Refunds & protections",
       "points": [
-        "Automatic refunds when renders fail or providers miss SLAs.",
+        "Automatic refunds when generations fail or providers miss SLAs.",
         "Itemised receipts with engine, duration, resolution, and add-ons.",
         "Wallet protections with optional multi-approver top-ups.",
         "Application fee is recognised immediately; vendor share settles on payout.",
@@ -820,7 +1605,7 @@
         },
         {
           "question": "What if a generation fails?",
-          "answer": "Failed renders auto-refund within minutes. You only pay when the job completes successfully."
+          "answer": "Failed generations auto-refund within minutes. You only pay when the job completes successfully."
         },
         {
           "question": "What are member discounts?",
@@ -846,7 +1631,7 @@
     "priceChipPrefix": "This render",
     "meta": {
       "title": "AI Video Pricing — Pay-As-You-Go | MaxVideoAI",
-      "description": "See pricing before you generate. Compare costs across engines (Sora, Veo, Kling, Pika). Pay only for successful renders — no subscription. Pricing shown per clip."
+      "description": "See pricing before you generate. Compare costs across engines (Sora, Veo, Kling, Pika). Pay only for successful generations — no subscription. Pricing shown per clip."
     }
   },
   "workflows": {
@@ -1601,14 +2386,14 @@
       {
         "title": "Price system",
         "items": [
-          "Preview the exact price before you render. The price chip updates with duration, resolution, and automatic discounts.",
+          "Preview the exact price before you generate. The price chip updates with duration, resolution, and automatic discounts.",
           "Starter Credits ($10) and rolling Member status (Member / Plus / Pro) update daily."
         ]
       },
       {
         "title": "Refunds",
         "items": [
-          "If a render fails, your wallet is automatically refunded within minutes and the job includes a short incident note.",
+          "If a generation fails, your wallet is automatically refunded within minutes and the job includes a short incident note.",
           "Itemised receipts list engine, duration, resolution, and a job ID—easy hand-off to finance.",
           {
             "type": "link",
@@ -1650,7 +2435,7 @@
       ],
       "note": "You can edit the brief anytime; updates apply to everyone in the workspace."
     },
-    "pricingCallout": "✅ You always see the price before you render.",
+    "pricingCallout": "✅ You always see the price before you generate.",
     "refundsTimeline": {
       "title": "Refunds timeline",
       "steps": [
@@ -1774,7 +2559,7 @@
           "answer": "No. Credits roll forward month to month and sync across teammates with access."
         },
         {
-          "question": "How fast are failed renders refunded?",
+          "question": "How fast are failed generations refunded?",
           "answer": "Refunds are processed automatically within minutes; each job includes a short incident note for finance."
         },
         {
@@ -1889,7 +2674,7 @@
       "priceTotalUnknown": "Unavailable",
       "audioLabel": "Audio",
       "pricingEyebrow": "Pricing",
-      "pricingBody": "Compare engine rates and plan budgets before you render.",
+      "pricingBody": "Compare engine rates and plan budgets before you generate.",
       "cta": "Compare pricing",
       "ctaDescription": "Explore all engine rates",
       "discountAppliedLabel": "Member discount applied",
@@ -1904,8 +2689,8 @@
     "create": {
       "title": "Create your own",
       "subtitle": "Want to create a video like this?",
-      "body": "Start a render from this prompt or load it in the workspace to remix with your preferred engine, duration, or audio settings.",
-      "cta": "Start a render →"
+      "body": "Generate from this prompt or load it in the workspace to remix with your preferred engine, duration, or audio settings.",
+      "cta": "Generate →"
     },
     "recreate": {
       "title": "Recreate this video",
@@ -1924,12 +2709,12 @@
       "title": "Quiet confidence for AI video teams.",
       "subtitle": "MaxVideo AI is the independent hub for AI video production. We route to the right engine for every shot, price before you generate, and keep your team in control without vendor lock-in."
     },
-      "paragraphs": [
-        "We believe professional teams deserve clarity before they hit render. That means price transparency, reliable routing, and shared context between creatives, producers, and stakeholders.",
-        "Independence matters: we stay neutral across engines, integrate with Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, and rotating betas, and list trademarks only to describe compatibility.",
-        "The product is engineered for teams that need precision without noise. Quiet UI, premium defaults, precise controls, and price-before chips that keep finance in the loop.",
-        "We keep the workflow practical: compare models, prepare assets, generate only when the cost and settings are clear, then review outputs from one workspace instead of scattering production context across provider dashboards."
-      ],
+    "paragraphs": [
+      "We believe professional teams deserve clarity before they hit render. That means price transparency, reliable routing, and shared context between creatives, producers, and stakeholders.",
+      "Independence matters: we stay neutral across engines, integrate with Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, and rotating betas, and list trademarks only to describe compatibility.",
+      "The product is engineered for teams that need precision without noise. Quiet UI, premium defaults, precise controls, and price-before chips that keep finance in the loop.",
+      "We keep the workflow practical: compare models, prepare assets, generate only when the cost and settings are clear, then review outputs from one workspace instead of scattering production context across provider dashboards."
+    ],
     "note": "Trademarks and service marks are property of their respective owners. MaxVideo AI stays independent so you can stay current without switching platforms."
   },
   "contact": {
@@ -2813,7 +3598,7 @@
       },
       "wallet": {
         "title": "Add credits",
-        "description": "Your balance pays for successful renders only. Unused credits stay in your wallet.",
+        "description": "Your balance pays for successful generations only. Unused credits stay in your wallet.",
         "balanceLabel": "Current balance",
         "addFunds": "{amount}",
         "quickAmount": "{amount}",
@@ -2884,7 +3669,7 @@
           "duration": "Duration (sec)",
           "resolution": "Resolution"
         },
-        "note": "Note: You’ll be charged only if the render succeeds.",
+        "note": "Note: You’ll be charged only if the generation succeeds.",
         "memberChipSavings": "Member price — You save {percent}%",
         "memberChipBase": "Member price"
       },
@@ -2909,7 +3694,7 @@
       "refunds": {
         "title": "Protections",
         "points": [
-          "Failed renders are refunded automatically.",
+          "Failed generations are refunded automatically.",
           "Receipts include itemized tax and payment details.",
           "No subscription. Add credits only when you need them."
         ]
@@ -2934,7 +3719,7 @@
             "answer": "Member status applies automatically based on your last 30 days of spend."
           }
         ],
-        "footnote": "VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners."
+        "footnote": "VAT included where applicable. Refunds on failed generations. “Works with” indicates compatibility; trademarks belong to their respective owners."
       },
       "toasts": {
         "success": "Payment successful. Funds added to your wallet.",
@@ -4159,6 +4944,13 @@
           "body": "Change viewpoint, explore alternative compositions, and generate motion-ready frames without rebuilding the whole image from scratch.",
           "cta": "Explore Tool",
           "imageAlt": "Angle workspace screenshot from MaxVideoAI."
+        },
+        "upscale": {
+          "eyebrow": "AI upscale",
+          "title": "Increase resolution before the next workflow",
+          "body": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft, then reuse the sharper asset in Image, Video, or Library.",
+          "cta": "Explore Tool",
+          "imageAlt": "AI upscale workspace with before and after preview."
         }
       },
       "bestStartingPoints": {
@@ -4184,8 +4976,180 @@
             "title": "Change the camera angle from one image",
             "body": "Keep the frame you already trust and generate the viewpoint that fits the next step.",
             "cta": "Open Angle"
+          },
+          "upscale": {
+            "eyebrow": "Upscale",
+            "title": "Raise the resolution before reuse",
+            "body": "Clean up a still or short clip before it becomes a reference, prompt asset, or final deliverable.",
+            "cta": "Open Upscale"
           }
         }
+      }
+    },
+    "upscale": {
+      "meta": {
+        "title": "AI Image & Video Upscale | SeedVR2, Topaz, FlashVSR, Recraft",
+        "description": "Upscale images and short videos with current AI enhancement models including SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in MaxVideoAI workflows.",
+        "keywords": [
+          "ai upscale",
+          "ai image upscaler",
+          "ai video upscaler",
+          "seedvr upscale",
+          "topaz video upscale",
+          "flashvsr upscale",
+          "recraft crisp upscale"
+        ],
+        "imageAlt": "AI image and video upscale before and after preview."
+      },
+      "hero": {
+        "badge": "Image + video upscale",
+        "title": "Upscale assets before they move through the pipeline",
+        "body": "Use the latest AI upscale models in one MaxVideoAI tool: SeedVR2 for general image and video, Topaz for premium enhancement, FlashVSR for fast video passes, and Recraft Crisp for detail-focused stills.",
+        "primaryCta": "Open Upscale",
+        "secondaryCta": "View all tools",
+        "beforeLabel": "Source",
+        "afterLabel": "Upscaled",
+        "studioLabel": "Upscale Studio",
+        "stackLabel": "SeedVR2 · Topaz",
+        "readyBadge": "4x ready",
+        "deliveryLabel": "Delivery asset",
+        "stats": [
+          {
+            "value": "6",
+            "label": "AI models"
+          },
+          {
+            "value": "Live",
+            "label": "provider limits"
+          },
+          {
+            "value": "1",
+            "label": "shared surface"
+          }
+        ],
+        "metrics": [
+          {
+            "label": "Input",
+            "value": "Image / video"
+          },
+          {
+            "label": "Pricing",
+            "value": "Dynamic video"
+          },
+          {
+            "label": "Output",
+            "value": "Library ready"
+          }
+        ]
+      },
+      "models": {
+        "eyebrow": "Model routing",
+        "title": "Best upscale models for each asset type",
+        "body": "The first version exposes the models that matter most now, with dynamic pricing for video and a shared surface that can later appear across Image, Video, Library, and job actions.",
+        "cards": [
+          {
+            "title": "SeedVR2 Image + Video",
+            "body": "Default path for controllable factor or target-resolution upscaling.",
+            "badge": "Default"
+          },
+          {
+            "title": "Topaz Image + Video",
+            "body": "Premium enhancement path for delivery-quality assets and tougher sources.",
+            "badge": "Premium"
+          },
+          {
+            "title": "FlashVSR Video",
+            "body": "Fast video upscale option for cheaper post-processing passes.",
+            "badge": "Fast"
+          },
+          {
+            "title": "Recraft Crisp",
+            "body": "Still-image detail and face-focused upscale for sharp references.",
+            "badge": "Detail"
+          }
+        ]
+      },
+      "modelGuide": {
+        "eyebrow": "Quality and price guide",
+        "title": "Pick the model by asset type, quality target, and MaxVideoAI price behavior",
+        "body": "MaxVideoAI shows the price before generation. Image routes use the configured run price; video routes can adjust dynamically from duration, resolution, frames, and the selected upscale model.",
+        "columns": {
+          "model": "Model",
+          "bestFor": "Best for",
+          "quality": "Quality profile",
+          "price": "MaxVideoAI price",
+          "useWhen": "Use when"
+        },
+        "rows": [
+          {
+            "model": "SeedVR2 Image + Video",
+            "bestFor": "General-purpose upscales when you want factor or target-resolution control.",
+            "quality": "Balanced sharpness with broad image and video coverage.",
+            "price": "Usually the baseline route; video pricing is estimated from metadata before launch.",
+            "useWhen": "Start here for most assets, especially when you need predictable controls."
+          },
+          {
+            "model": "Topaz Image + Video",
+            "bestFor": "Premium enhancement for delivery assets, difficult footage, and restoration-style passes.",
+            "quality": "Higher-end detail recovery and professional finishing bias.",
+            "price": "Premium route; video uses resolution-based pricing and may cost more at 1440p or 4K.",
+            "useWhen": "Use for final selects or source media that deserves a higher-quality pass."
+          },
+          {
+            "model": "FlashVSR Video",
+            "bestFor": "Fast video upscales for cheaper review or social post-processing passes.",
+            "quality": "Speed-first video enhancement with practical temporal consistency.",
+            "price": "Lower-cost video route; MaxVideoAI estimates from duration, frames, and output pixels.",
+            "useWhen": "Use when turnaround and cost matter more than premium restoration."
+          },
+          {
+            "model": "Recraft Crisp",
+            "bestFor": "Still-image references where small details, edges, and faces need extra clarity.",
+            "quality": "Crisp raster detail for image-only enhancement.",
+            "price": "Low fixed image run pricing shown before generation.",
+            "useWhen": "Use for character references, product stills, and prompt assets before reuse."
+          }
+        ]
+      },
+      "workflow": {
+        "eyebrow": "Workflow",
+        "title": "Designed as a standalone tool first, reusable everywhere next",
+        "overlay": {
+          "title": "One output, reused everywhere",
+          "body": "The same upscale surface is ready for Library, job actions, and future generation flows."
+        },
+        "steps": [
+          {
+            "title": "Upload or paste a URL",
+            "body": "Start with an image or a short video from Library, storage, or an external URL."
+          },
+          {
+            "title": "Choose quality mode",
+            "body": "Pick SeedVR2, Topaz, FlashVSR, or Recraft depending on cost, speed, and quality."
+          },
+          {
+            "title": "Reuse the output",
+            "body": "Save the result back to Library and prepare the same action for future in-context upscale buttons."
+          }
+        ]
+      },
+      "faq": [
+        {
+          "q": "Can it upscale video?",
+          "a": "Yes. MaxVideoAI no longer applies a fixed 20 second cap. Video runs use metadata-based dynamic pricing and then follow the selected provider model's own limits."
+        },
+        {
+          "q": "Which model is the default?",
+          "a": "SeedVR2 is the default for image and video because it supports current target-resolution and factor controls."
+        },
+        {
+          "q": "Will Upscale appear elsewhere?",
+          "a": "Yes. The implementation uses a dedicated upscale surface so the same action can later be exposed from Library, generated jobs, Image, and Video flows."
+        }
+      ],
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Upscale details"
       }
     },
     "angle": {

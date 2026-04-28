@@ -4,8 +4,10 @@ import path from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
 const PROD_SITEMAP = process.env.PROD_SITEMAP || 'https://maxvideoai.com/sitemap.xml';
+const QA_BASE_URL = (process.env.QA_BASE_URL ?? '').replace(/\/+$/, '');
+const LOCAL_RUNTIME_SITEMAP = process.env.LOCAL_SITEMAP_URL || (QA_BASE_URL ? `${QA_BASE_URL}/sitemap.xml` : '');
 const DEFAULT_LOCAL_SITEMAP_CANDIDATES = [
-  path.resolve(process.cwd(), 'public', 'generated-sitemaps', 'sitemap.xml'),
+  path.resolve(process.cwd(), '.next', 'generated-sitemaps', 'sitemap.xml'),
   path.resolve(process.cwd(), 'public', 'sitemap.xml'),
 ];
 const LOCAL_SITEMAP =
@@ -70,6 +72,16 @@ async function loadRemoteSitemap(url: string) {
   return expandSitemap(xmlStr, resolver);
 }
 
+async function loadRuntimeSitemap(url: string) {
+  const sitemapBase = new URL(url);
+  const resolver = (loc: string) => {
+    const parsed = new URL(loc, url);
+    return fetchText(`${sitemapBase.origin}${parsed.pathname}`);
+  };
+  const xmlStr = await fetchText(url);
+  return expandSitemap(xmlStr, resolver);
+}
+
 async function loadLocalSitemap(filePath: string) {
   const baseDir = path.dirname(filePath);
   const resolver = async (loc: string) => {
@@ -104,7 +116,10 @@ async function getCanonical(u: string) {
 }
 
 async function main() {
-  const [prodUrls, localUrls] = await Promise.all([loadRemoteSitemap(PROD_SITEMAP), loadLocalSitemap(LOCAL_SITEMAP)]);
+  const localLoader = LOCAL_RUNTIME_SITEMAP
+    ? loadRuntimeSitemap(LOCAL_RUNTIME_SITEMAP)
+    : loadLocalSitemap(LOCAL_SITEMAP);
+  const [prodUrls, localUrls] = await Promise.all([loadRemoteSitemap(PROD_SITEMAP), localLoader]);
   const prodEN = prodUrls.filter(isEN).map(strip);
   const localEN = localUrls.filter(isEN).map(strip);
   const prodSet = new Set(prodEN);

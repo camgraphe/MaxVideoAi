@@ -327,7 +327,9 @@ export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
   const userAgent = req.headers.get('user-agent') ?? '';
   const isLighthouseAudit = /lighthouse/i.test(userAgent);
-  const bypassLocaleRedirect = isLighthouseAudit || req.nextUrl.searchParams.get('nolocale') === '1';
+  const isLoopbackRequest = isLoopbackHost(req.headers.get('x-forwarded-host') ?? host);
+  const bypassLocaleRedirect =
+    isLoopbackRequest || isLighthouseAudit || req.nextUrl.searchParams.get('nolocale') === '1';
   const logoutIntentCookieValue = req.cookies.get(LOGOUT_INTENT_COOKIE)?.value;
   const hasLogoutIntentCookie = logoutIntentCookieValue === '1';
   if (host.startsWith('www.')) {
@@ -444,17 +446,17 @@ export async function middleware(req: NextRequest) {
   if (isMarketingPath) {
     const defaultPrefix = localePathnames[defaultLocale];
     if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
-      const rewriteUrl = req.nextUrl.clone();
       if (defaultPrefix) {
+        const rewriteUrl = req.nextUrl.clone();
         const suffix = pathname === '/' ? '' : pathname;
         rewriteUrl.pathname = `/${defaultPrefix}${suffix}`;
+        if (bypassLocaleRedirect) {
+          rewriteUrl.searchParams.delete('nolocale');
+        }
+        response = NextResponse.rewrite(rewriteUrl);
       } else {
-        rewriteUrl.pathname = pathname || '/';
+        response = NextResponse.next();
       }
-      if (bypassLocaleRedirect) {
-        rewriteUrl.searchParams.delete('nolocale');
-      }
-      response = NextResponse.rewrite(rewriteUrl);
     } else {
       response = handleI18nRouting(req);
     }

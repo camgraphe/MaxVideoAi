@@ -188,31 +188,54 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   const featuredLinkProps = getBlogLinkProps(locale, featured);
 
   return (
-    <main className="container-page max-w-6xl section">
+    <main className="bg-bg">
       <div className="stack-gap-lg">
-        <header className="overflow-hidden rounded-[34px] border border-hairline bg-gradient-to-b from-surface via-surface to-bg/80 shadow-card">
-          <div className="stack-gap p-8 sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-micro text-brand">
-              {content.hero.eyebrow ?? 'The Studio Journal'}
-            </p>
-            <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">
-              {content.hero.title}
-            </h1>
-            <p className="max-w-[62ch] text-base leading-relaxed text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
-          </div>
-          {(content.intro?.cards?.length ?? 0) > 0 ? (
-            <div className="grid gap-px border-t border-hairline bg-hairline lg:grid-cols-3">
-              {(content.intro?.cards ?? []).map((card) => (
-                <div key={card.title} className="bg-surface/95 px-6 py-5 text-sm text-text-secondary backdrop-blur">
-                  <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
-                  <p className="mt-2 leading-7">{card.body}</p>
-                </div>
-              ))}
+        <header className="relative min-h-[440px] overflow-hidden border-b border-hairline bg-bg">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[url('/assets/blog/blog-hero-reference.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/blog/blog-hero-reference-dark.webp')] dark:opacity-70"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.88)_34%,rgba(255,255,255,0.48)_62%,rgba(255,255,255,0.10)_100%)] dark:bg-[linear-gradient(90deg,rgba(3,7,18,0.30)_0%,rgba(3,7,18,0.18)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-bg to-transparent" />
+          <div className="container-page relative flex min-h-[440px] max-w-6xl items-center py-14">
+            <div className="max-w-[520px]">
+              <p className="text-xs font-semibold uppercase tracking-micro text-text-primary">
+                {content.hero.eyebrow ?? 'The Studio Journal'}
+              </p>
+              <h1 className="mt-5 text-4xl font-semibold leading-[1.02] tracking-tight text-text-primary sm:text-6xl">
+                {content.hero.title}
+              </h1>
+              <p className="mt-6 max-w-[52ch] text-base leading-7 text-text-secondary sm:text-lg">
+                {content.hero.subtitle}
+              </p>
+              <Link
+                href="#articles"
+                className="mt-7 inline-flex items-center gap-2 rounded-[7px] bg-text-primary px-5 py-3 text-sm font-semibold text-bg shadow-card transition hover:bg-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                {recentCopy.eyebrow}
+                <span aria-hidden>→</span>
+              </Link>
             </div>
-          ) : null}
+          </div>
         </header>
 
-        <section className="stack-gap">
+        {(content.intro?.cards?.length ?? 0) > 0 ? (
+          <section className="container-page max-w-6xl">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {(content.intro?.cards ?? []).map((card) => (
+                <article
+                  key={card.title}
+                  className="rounded-[8px] border border-hairline bg-white p-5 text-sm text-text-secondary shadow-[0_18px_54px_rgba(33,49,78,0.06)] transition hover:-translate-y-1 hover:shadow-float dark:bg-white/[0.055]"
+                >
+                  <h2 className="text-base font-semibold text-text-primary">{card.title}</h2>
+                  <p className="mt-2 leading-7">{card.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="container-page max-w-6xl stack-gap">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-micro text-brand">{featuredCopy.eyebrow}</p>
@@ -222,7 +245,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             </div>
           </div>
 
-          <article className="group overflow-hidden rounded-[30px] border border-hairline bg-surface/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
+          <article className="group overflow-hidden rounded-[8px] border border-hairline bg-white shadow-[0_18px_54px_rgba(33,49,78,0.06)] transition hover:-translate-y-1 hover:shadow-float dark:bg-white/[0.055]">
             <div className="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-stretch">
               <div className="relative min-h-[280px] overflow-hidden bg-bg sm:min-h-[360px]">
                 <Image
@@ -274,7 +297,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
         </section>
 
         {rest.length > 0 ? (
-          <section className="stack-gap">
+          <section id="articles" className="container-page max-w-6xl scroll-mt-28 stack-gap">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-micro text-brand">{recentCopy.eyebrow}</p>
@@ -290,7 +313,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                 return (
                   <article
                     key={`${getCanonicalBlogSlug(post)}-${locale}`}
-                    className="group overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card transition hover:-translate-y-1 hover:shadow-float"
+                    className="group overflow-hidden rounded-[8px] border border-hairline bg-white shadow-[0_18px_54px_rgba(33,49,78,0.06)] transition hover:-translate-y-1 hover:shadow-float dark:bg-white/[0.055]"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden bg-bg">
                       <Image
@@ -337,7 +360,8 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
           </section>
         ) : null}
 
-        <section className="rounded-[28px] border border-hairline bg-surface/90 p-8 shadow-card sm:p-10">
+        <section className="container-page max-w-6xl">
+        <div className="rounded-[8px] border border-hairline bg-white p-8 shadow-[0_18px_54px_rgba(33,49,78,0.06)] dark:bg-white/[0.055] sm:p-10">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-micro text-brand">FAQ</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">{faq.title}</h2>
@@ -351,6 +375,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             ))}
           </dl>
           {faq.footnote ? <p className="mt-5 text-xs text-text-muted">{renderPressEmail(faq.footnote)}</p> : null}
+        </div>
         </section>
       </div>
 

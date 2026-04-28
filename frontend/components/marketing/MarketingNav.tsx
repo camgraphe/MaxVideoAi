@@ -19,6 +19,7 @@ import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navig
 export function MarketingNav() {
   const pathname = usePathname();
   const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
+  const isHomePage = /^\/(?:fr|es)?\/?$/.test(pathname ?? '');
   const { locale, t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,10 +36,9 @@ export function MarketingNav() {
   const maybeLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : MARKETING_TOP_NAV_LINKS;
   const login = t('nav.login', 'Log in');
-  const cta = t('nav.cta', 'Start a render');
+  const cta = t('nav.cta', 'Generate');
   const generateLabel = t('nav.generate', 'Generate');
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
-  const ctaLabelMobile = locale === 'fr' ? 'Lancer' : locale === 'es' ? 'Generar' : 'Render';
   const generateLabelMobile = locale === 'fr' ? 'Generer' : locale === 'es' ? 'Generar' : 'Generate';
   const isAuthenticated = Boolean(email);
   const themeStorageKey = 'mv-theme';
@@ -251,8 +251,8 @@ export function MarketingNav() {
 
   return (
     <>
-    <header className="sticky top-0 z-40 border-b border-hairline bg-surface">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className={clsx('sticky top-0 z-40 border-b border-hairline bg-surface dark:bg-surface-glass-90 dark:backdrop-blur-xl', isHomePage && 'home-monochrome')}>
+      <div className="mx-auto flex h-16 max-w-[1460px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 sm:gap-6">
           <Button
             type="button"
@@ -282,7 +282,7 @@ export function MarketingNav() {
             />
             <span className="text-sm font-semibold tracking-tight sm:text-lg">{compactBrand}</span>
           </Link>
-          <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary lg:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-5 text-sm font-medium text-text-secondary lg:flex xl:gap-7">
             {links.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
               const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
@@ -303,6 +303,7 @@ export function MarketingNav() {
               }
               const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
               const isOpen = desktopDropdownOpen === item.key;
+              const hasSections = Boolean(dropdown.sections?.length);
               return (
                 <div
                   key={item.key}
@@ -336,27 +337,63 @@ export function MarketingNav() {
                     )}
                   >
                     <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
-                      <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
-                        <Link
-                          href={dropdown.allHref}
-                          className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          role="menuitem"
-                          onClick={() => closeDesktopDropdown(200)}
-                        >
-                          {allLabel}
-                        </Link>
-                        {dropdown.items.map((entry) => (
+                      <div className={clsx('grid gap-3', hasSections ? 'min-w-[520px] grid-cols-[1fr_1fr]' : 'min-w-0 grid-cols-1')}>
+                        <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
                           <Link
-                            key={entry.key}
-                            href={entry.href}
-                            className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            href={dropdown.allHref}
+                            className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             role="menuitem"
                             onClick={() => closeDesktopDropdown(200)}
                           >
-                            {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                            {allLabel}
                           </Link>
-                        ))}
-                      </nav>
+                          {dropdown.items.map((entry) => (
+                            <Link
+                              key={entry.key}
+                              href={entry.href}
+                              className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              role="menuitem"
+                              onClick={() => closeDesktopDropdown(200)}
+                            >
+                              {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                            </Link>
+                          ))}
+                        </nav>
+                        {dropdown.sections?.map((section) => {
+                          const sectionLabel = section.titleKey
+                            ? t(section.titleKey, section.titleFallback ?? section.key)
+                            : (section.titleFallback ?? label);
+
+                          return (
+                            <nav
+                              key={section.key}
+                              className="flex flex-col gap-1 border-l border-hairline pl-3"
+                              role="menu"
+                              aria-label={sectionLabel}
+                            >
+                              {!section.hideTitle && sectionLabel ? (
+                                <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                  {sectionLabel}
+                                </p>
+                              ) : null}
+                              {section.items.map((entry) => (
+                                <Link
+                                  key={entry.key}
+                                  href={entry.href}
+                                  className={clsx(
+                                    'rounded-input px-3 py-2 text-sm transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                    entry.emphasized ? 'font-semibold text-text-primary' : 'text-text-secondary'
+                                  )}
+                                  role="menuitem"
+                                  onClick={() => closeDesktopDropdown(200)}
+                                >
+                                  {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                                </Link>
+                              ))}
+                            </nav>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -364,7 +401,7 @@ export function MarketingNav() {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3">
+        <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3 lg:gap-4">
           <div className="hidden items-center gap-1 md:flex">
             <LanguageToggle variant="icon" />
             <Button
@@ -385,7 +422,7 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex h-9 items-center rounded-pill border border-hairline px-3 text-xs font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
+                className="inline-flex h-9 items-center rounded-pill border border-hairline px-3 text-xs font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white dark:bg-white dark:text-[#030712] dark:shadow-[0_14px_32px_rgba(255,255,255,0.14)] dark:hover:border-white dark:hover:bg-slate-100 dark:hover:text-[#030712] sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
               >
                 <span className="sm:hidden">{generateLabelMobile}</span>
                 <span className="hidden sm:inline">{generateLabel}</span>
@@ -482,14 +519,13 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex h-9 items-center whitespace-nowrap rounded-pill bg-brand px-3 text-xs font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-input bg-[image:var(--brand-gradient)] px-6 py-3 text-sm font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_start_app"
                 data-analytics-cta-location="marketing_nav_desktop"
                 data-analytics-target-family="workspace"
               >
-                <span className="sm:hidden">{ctaLabelMobile}</span>
-                <span className="hidden sm:inline">{cta}</span>
+                <span>{cta}</span>
               </Link>
             </>
           )}
@@ -497,7 +533,7 @@ export function MarketingNav() {
       </div>
     </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6">
+        <div className={clsx('fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6', isHomePage && 'home-monochrome')}>
           <div className="mx-auto flex max-w-sm items-center justify-end">
             <Button
               type="button"
@@ -592,6 +628,34 @@ export function MarketingNav() {
                             {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
                           </Link>
                         ))}
+                        {dropdown.sections?.map((section) => {
+                          const sectionLabel = section.titleKey
+                            ? t(section.titleKey, section.titleFallback ?? section.key)
+                            : (section.titleFallback ?? label);
+
+                          return (
+                            <div key={section.key} className="mt-2 border-t border-hairline pt-2">
+                              {!section.hideTitle && sectionLabel ? (
+                                <p className="px-2 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                  {sectionLabel}
+                                </p>
+                              ) : null}
+                              {section.items.map((entry) => (
+                                <Link
+                                  key={entry.key}
+                                  href={entry.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className={clsx(
+                                    'block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                    entry.emphasized ? 'font-semibold text-text-primary' : undefined
+                                  )}
+                                >
+                                  {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                                </Link>
+                              ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     ) : null}
                   </div>
@@ -603,7 +667,7 @@ export function MarketingNav() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
+                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card dark:bg-white dark:text-[#030712] dark:shadow-[0_14px_32px_rgba(255,255,255,0.14)] dark:hover:bg-slate-100"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {generateLabel}
@@ -634,7 +698,7 @@ export function MarketingNav() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
+                  className="block rounded-input bg-[image:var(--brand-gradient)] px-6 py-3 text-center text-base font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95"
                   onClick={() => setMobileMenuOpen(false)}
                   data-analytics-event="cta_click"
                   data-analytics-cta-name="marketing_nav_start_app"

@@ -20,6 +20,47 @@ const SITEMAP_RUNTIME_GLOBS = [
   '.next/app-path-routes-manifest.json',
   '.next/routes-manifest.json',
 ];
+const FFPROBE_NON_RUNTIME_BINARIES = [
+  'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/bin/darwin/**/*',
+  'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/bin/win32/**/*',
+  'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/bin/linux/ia32/**/*',
+  'frontend/node_modules/ffprobe-static/bin/darwin/**/*',
+  'frontend/node_modules/ffprobe-static/bin/win32/**/*',
+  'frontend/node_modules/ffprobe-static/bin/linux/ia32/**/*',
+];
+const FFPROBE_ALL_BINARIES = [
+  'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/**/*',
+  'frontend/node_modules/ffprobe-static/**/*',
+];
+const SHARP_NON_RUNTIME_BINARIES = [
+  'node_modules/.pnpm/@img+sharp-darwin*/**',
+  'node_modules/.pnpm/@img+sharp-win32*/**',
+  'node_modules/.pnpm/@img+sharp-wasm32*/**',
+  'node_modules/.pnpm/@img+sharp-linux-arm@*/**',
+  'node_modules/.pnpm/@img+sharp-linux-s390x*/**',
+  'node_modules/.pnpm/@img+sharp-linuxmusl*/**',
+  'node_modules/.pnpm/@img+sharp-libvips-darwin*/**',
+  'node_modules/.pnpm/@img+sharp-libvips-win32*/**',
+  'node_modules/.pnpm/@img+sharp-libvips-linux-arm@*/**',
+  'node_modules/.pnpm/@img+sharp-libvips-linux-s390x*/**',
+  'node_modules/.pnpm/@img+sharp-libvips-linuxmusl*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-darwin*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-win32*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-wasm32*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-linux-arm/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-linux-s390x*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-linuxmusl*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-libvips-darwin*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-libvips-win32*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-libvips-linux-arm/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-libvips-linux-s390x*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/sharp-libvips-linuxmusl*/**',
+];
+const SHARP_ALL_BINARIES = [
+  'node_modules/.pnpm/@img+sharp*/**',
+  'node_modules/.pnpm/sharp@*/node_modules/@img/**/*',
+  'frontend/node_modules/sharp/**/*',
+];
 
 const withNextIntl = require('next-intl/plugin')('./i18n/request.ts');
 
@@ -47,7 +88,10 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@ffmpeg-installer/ffmpeg', 'ffprobe-static'],
     outputFileTracingExcludes: {
-      '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo'],
+      '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo', ...FFPROBE_NON_RUNTIME_BINARIES, ...SHARP_NON_RUNTIME_BINARIES],
+      '/api/tools/upscale': [...FFPROBE_ALL_BINARIES, ...SHARP_ALL_BINARIES],
+      '/api/tools/upscale/image': [...FFPROBE_ALL_BINARIES, ...SHARP_NON_RUNTIME_BINARIES],
+      '/api/tools/upscale/video': [...FFPROBE_NON_RUNTIME_BINARIES, ...SHARP_ALL_BINARIES],
     },
     outputFileTracingRoot: repoRoot,
     outputFileTracingIncludes: {
@@ -250,6 +294,21 @@ const nextConfig = {
       {
         source: '/examples/ltx-2-fast',
         destination: '/examples/ltx',
+        permanent: true,
+      },
+      {
+        source: '/ai-video-engines/best-for/vertical-shorts',
+        destination: '/ai-video-engines/best-for/ugc-ads',
+        permanent: true,
+      },
+      {
+        source: '/fr/comparatif/best-for/vertical-shorts',
+        destination: '/fr/comparatif/best-for/ugc-ads',
+        permanent: true,
+      },
+      {
+        source: '/es/comparativa/best-for/vertical-shorts',
+        destination: '/es/comparativa/best-for/ugc-ads',
         permanent: true,
       },
       {

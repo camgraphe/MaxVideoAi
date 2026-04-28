@@ -4,6 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { applyEngineVariantPricing } from '../frontend/src/lib/pricing-addons.ts';
 import { buildPricingDefinition } from '../frontend/src/lib/pricing-definition.ts';
 import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
 
@@ -95,6 +96,25 @@ test('Kling 3 4K pricing definition exposes the native 4K rate', () => {
   assert.equal(definition.durationSteps.max, 15);
 });
 
+test('Happy Horse pricing definition exposes standard and V2V rates', () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-0')?.engine;
+  assert.ok(engine);
+
+  const standardDefinition = buildPricingDefinition(engine);
+  const v2vDefinition = buildPricingDefinition(applyEngineVariantPricing(engine, 'v2v'));
+
+  assert.ok(standardDefinition);
+  assert.ok(v2vDefinition);
+  assert.equal(standardDefinition.baseUnitPriceCents, 14);
+  assert.equal(standardDefinition.resolutionMultipliers['720p'], 1);
+  assert.equal(standardDefinition.resolutionMultipliers['1080p'], 2);
+  assert.equal(standardDefinition.durationSteps.min, 3);
+  assert.equal(standardDefinition.durationSteps.max, 15);
+  assert.equal(v2vDefinition.baseUnitPriceCents, 28);
+  assert.equal(v2vDefinition.resolutionMultipliers['720p'], 1);
+  assert.equal(v2vDefinition.resolutionMultipliers['1080p'], 2);
+});
+
 test('Kling 3 4K benchmark specs mark effective lip sync support', () => {
   const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
   const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
@@ -105,6 +125,78 @@ test('Kling 3 4K benchmark specs mark effective lip sync support', () => {
   assert.ok(native4k);
   assert.equal(native4k.keySpecs?.lipSync, 'Supported');
   assert.equal(native4k.keySpecs?.nativeAudioGeneration, 'Supported');
+});
+
+test('Happy Horse benchmark specs mark unified native audio support', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    specs?: Array<{ modelSlug?: string; keySpecs?: Record<string, unknown> }>;
+  };
+  const happyHorse = benchmarkData.specs?.find((entry) => entry.modelSlug === 'happy-horse-1-0');
+
+  assert.ok(happyHorse);
+  assert.equal(happyHorse.keySpecs?.textToVideo, 'Supported');
+  assert.equal(happyHorse.keySpecs?.imageToVideo, 'Supported');
+  assert.equal(happyHorse.keySpecs?.videoToVideo, 'Supported (video edit)');
+  assert.equal(happyHorse.keySpecs?.referenceImageStyle, 'Supported (1-9 reference stills)');
+  assert.equal(happyHorse.keySpecs?.lipSync, 'Supported');
+  assert.equal(happyHorse.keySpecs?.nativeAudioGeneration, 'Supported');
+});
+
+test('Happy Horse is distributed across relevant best-for pages', () => {
+  const comparePath = path.join(process.cwd(), 'frontend/config/compare-config.json');
+  const compareData = JSON.parse(fs.readFileSync(comparePath, 'utf8')) as {
+    bestForPages?: Array<{ slug: string; topPicks?: string[] }>;
+  };
+  const topPicksBySlug = new Map(compareData.bestForPages?.map((entry) => [entry.slug, entry.topPicks ?? []]) ?? []);
+
+  [
+    'image-to-video',
+    'cinematic-realism',
+    'character-reference',
+    'reference-to-video',
+    'ads',
+    'ugc-ads',
+    'product-videos',
+    'lipsync-dialogue',
+  ].forEach((slug) => {
+    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), true, `${slug} should include Happy Horse`);
+    assert.notEqual(topPicksBySlug.get(slug)?.[0], 'happy-horse-1-0', `${slug} should not rank Happy Horse first`);
+  });
+
+  assert.deepEqual(topPicksBySlug.get('cinematic-realism')?.slice(0, 2), ['seedance-2-0', 'kling-3-pro']);
+  assert.deepEqual(topPicksBySlug.get('ads')?.slice(0, 2), ['seedance-2-0', 'kling-3-pro']);
+  assert.deepEqual(topPicksBySlug.get('character-reference')?.slice(0, 2), ['kling-3-pro', 'seedance-2-0']);
+
+  ['4k-video', 'fast-drafts', 'stylized-anime'].forEach((slug) => {
+    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), false, `${slug} should not include Happy Horse`);
+  });
+});
+
+test('Happy Horse benchmark score is calibrated below Seedance and Kling 3 Pro for realism and motion', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-scores.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    scores?: Array<{
+      modelSlug?: string;
+      fidelity?: number;
+      visualQuality?: number;
+      motion?: number;
+      consistency?: number;
+      lipsyncQuality?: number;
+    }>;
+  };
+  const happyHorse = benchmarkData.scores?.find((entry) => entry.modelSlug === 'happy-horse-1-0');
+  const seedance = benchmarkData.scores?.find((entry) => entry.modelSlug === 'seedance-2-0');
+  const kling = benchmarkData.scores?.find((entry) => entry.modelSlug === 'kling-3-pro');
+
+  assert.ok(happyHorse);
+  assert.ok(seedance);
+  assert.ok(kling);
+  assert.ok((happyHorse.fidelity ?? 0) < (seedance.fidelity ?? 0));
+  assert.ok((happyHorse.visualQuality ?? 0) < (seedance.visualQuality ?? 0));
+  assert.ok((happyHorse.motion ?? 0) < (seedance.motion ?? 0));
+  assert.ok((happyHorse.visualQuality ?? 0) < (kling.visualQuality ?? 0));
+  assert.ok((happyHorse.motion ?? 0) < (kling.motion ?? 0));
 });
 
 test('Kling 3 displayed quotes include the MaxVideoAI margin', async () => {
@@ -143,4 +235,31 @@ test('Kling 3 displayed quotes include the MaxVideoAI margin', async () => {
   assert.equal(native4kSnapshot.base.amountCents, 210);
   assert.equal(native4kSnapshot.margin.amountCents, 63);
   assert.equal(native4kSnapshot.totalCents, 273);
+});
+
+test('Happy Horse displayed quotes include MaxVideoAI margin and V2V double rate', async () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-0')?.engine;
+  assert.ok(engine);
+
+  const standardSnapshot = await computePricingSnapshot({
+    engine,
+    durationSec: 5,
+    resolution: '1080p',
+    mode: 't2v',
+    membershipTier: 'member',
+  });
+  const v2vSnapshot = await computePricingSnapshot({
+    engine: applyEngineVariantPricing(engine, 'v2v'),
+    durationSec: 5,
+    resolution: '1080p',
+    mode: 'v2v',
+    membershipTier: 'member',
+  });
+
+  assert.equal(standardSnapshot.base.amountCents, 140);
+  assert.equal(standardSnapshot.margin.amountCents, 42);
+  assert.equal(standardSnapshot.totalCents, 182);
+  assert.equal(v2vSnapshot.base.amountCents, 280);
+  assert.equal(v2vSnapshot.margin.amountCents, 84);
+  assert.equal(v2vSnapshot.totalCents, 364);
 });

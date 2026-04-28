@@ -19,6 +19,18 @@ const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxCh
   return acc;
 }, {});
 
+const ENGINE_REQUIRED_PROMPT_MODES = listFalEngines().reduce<Record<string, Mode[]>>((acc, entry) => {
+  const requiredPromptFields = (entry.engine.inputSchema?.required ?? []).filter((field) => field.id === 'prompt');
+  const modes = new Set<Mode>();
+  requiredPromptFields.forEach((field) => {
+    (field.requiredInModes ?? []).forEach((mode) => modes.add(mode));
+  });
+  if (modes.size) {
+    acc[entry.id] = Array.from(modes);
+  }
+  return acc;
+}, {});
+
 type Ref2vLimits = {
   imageFieldId: string;
   imageRequired: boolean;
@@ -55,6 +67,28 @@ const ENGINE_REF2V_LIMITS = listFalEngines().reduce<Record<string, Ref2vLimits>>
   };
   return acc;
 }, {});
+
+type V2vReferenceImageLimits = {
+  imageFieldId: string;
+  maxImageCount: number;
+};
+
+const ENGINE_V2V_REFERENCE_IMAGE_LIMITS = listFalEngines().reduce<Record<string, V2vReferenceImageLimits>>(
+  (acc, entry) => {
+    const fields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])];
+    const imageField = fields.find(
+      (field) => field.type === 'image' && field.modes?.includes('v2v') && field.id === 'reference_image_urls'
+    );
+    if (imageField) {
+      acc[entry.id] = {
+        imageFieldId: imageField.id,
+        maxImageCount: imageField.maxCount ?? 5,
+      };
+    }
+    return acc;
+  },
+  {}
+);
 
 function normalizeDurationValue(value: unknown): number | string | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -145,6 +179,17 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     Array.isArray(payload['multi_prompt']) &&
     payload['multi_prompt'].some((entry) => entry && typeof entry === 'object' && typeof (entry as { prompt?: unknown }).prompt === 'string');
 
+  if (ENGINE_REQUIRED_PROMPT_MODES[engineId]?.includes(normalizedMode) && !rawPrompt.trim() && !hasMultiPrompt) {
+    return {
+      ok: false,
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        field: 'prompt',
+        message: 'Prompt is required for this engine mode',
+      },
+    };
+  }
+
   if (typeof promptMaxChars === 'number' && promptMaxChars > 0 && rawPrompt.length > promptMaxChars && !hasMultiPrompt) {
     return {
       ok: false,
@@ -214,6 +259,28 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
           message: 'A source video is required for this engine mode',
         },
       };
+    }
+
+    const imageLimits = ENGINE_V2V_REFERENCE_IMAGE_LIMITS[engineId];
+    if (imageLimits) {
+      const rawImages = payload[imageLimits.imageFieldId];
+      const images = Array.isArray(rawImages)
+        ? rawImages.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
+        : typeof rawImages === 'string' && rawImages.trim().length
+          ? [rawImages.trim()]
+          : [];
+      if (images.length > imageLimits.maxImageCount) {
+        return {
+          ok: false,
+          error: {
+            code: 'ENGINE_CONSTRAINT',
+            field: imageLimits.imageFieldId,
+            message: `Up to ${imageLimits.maxImageCount} reference images are supported`,
+            allowed: [0, imageLimits.maxImageCount],
+            value: images.length,
+          },
+        };
+      }
     }
   }
 
