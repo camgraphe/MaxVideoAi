@@ -12,6 +12,7 @@ import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } fro
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
 import { getVisitorImageLikeJob, getVisitorStarterJob } from '@/server/visitor-workspace';
 import { deriveJobSurface } from '@/lib/job-surface';
+import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,9 @@ function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
   response.headers.set('Cache-Control', 'private, no-store');
   return response;
 }
+
+const FAL_COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED']);
+const FAL_FAILED_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'ABORTED']);
 
 type DbJobRow = {
   id: number;
@@ -58,6 +62,11 @@ type DbJobRow = {
   eta_label: string | null;
   aspect_ratio: string | null;
 };
+
+const JOB_DETAIL_SELECT = `SELECT id, job_id, user_id, status, progress, provider_job_id, surface, billing_product_key, video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
+       FROM app_jobs
+       WHERE job_id = $1
+       LIMIT 1`;
 
 function buildFallbackSettingsSnapshot(job: DbJobRow): unknown {
   const surface = deriveJobSurface({
@@ -214,10 +223,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   let rows: DbJobRow[];
   try {
     rows = await query<DbJobRow>(
-      `SELECT id, job_id, user_id, status, progress, provider_job_id, surface, billing_product_key, video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
-       FROM app_jobs
-       WHERE job_id = $1
-       LIMIT 1`,
+      JOB_DETAIL_SELECT,
       [jobId]
     );
   } catch (error) {
@@ -229,17 +235,17 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
 
-  const job = rows[0];
+  let job = rows[0];
   if (job.user_id && job.user_id !== userId) {
     return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
-  const normalizedVideoUrl = normalizeMediaUrl(job.video_url);
-  const normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
-  const normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
-  const parsedRenders = parseStoredImageRenders(job.render_ids);
-  const parsedRenderIds = extractRenderIds(parsedRenders.entries);
-  const parsedRenderThumbUrls = extractRenderThumbUrls(parsedRenders);
-  const surface = deriveJobSurface({
+  let normalizedVideoUrl = normalizeMediaUrl(job.video_url);
+  let normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
+  let normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
+  let parsedRenders = parseStoredImageRenders(job.render_ids);
+  let parsedRenderIds = extractRenderIds(parsedRenders.entries);
+  let parsedRenderThumbUrls = extractRenderThumbUrls(parsedRenders);
+  let surface = deriveJobSurface({
     surface: job.surface,
     settingsSnapshot: job.settings_snapshot,
     jobId: job.job_id,
@@ -259,11 +265,44 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
       if (statusInfo) {
         const state = typeof statusInfo.status === 'string' ? statusInfo.status.toUpperCase() : undefined;
         const queueResult =
-          state === 'COMPLETED'
+          state && FAL_COMPLETED_STATES.has(state)
             ? ((await falClient.queue.result(falModel, { requestId: job.provider_job_id }).catch(() => null)) as
                 | Record<string, unknown>
                 | null)
             : null;
+        if (queueResult && state && FAL_COMPLETED_STATES.has(state)) {
+          try {
+            await updateJobFromFalWebhook({
+              request_id: job.provider_job_id,
+              status: 'completed',
+              result: queueResult,
+            });
+            const refreshedRows = await query<DbJobRow>(JOB_DETAIL_SELECT, [jobId]);
+            if (refreshedRows[0]) {
+              job = refreshedRows[0];
+              normalizedVideoUrl = normalizeMediaUrl(job.video_url);
+              normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
+              normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
+              parsedRenders = parseStoredImageRenders(job.render_ids);
+              parsedRenderIds = extractRenderIds(parsedRenders.entries);
+              parsedRenderThumbUrls = extractRenderThumbUrls(parsedRenders);
+              surface = deriveJobSurface({
+                surface: job.surface,
+                settingsSnapshot: job.settings_snapshot,
+                jobId: job.job_id,
+                engineId: job.engine_id,
+                videoUrl: job.video_url,
+                renderIds: job.render_ids,
+              });
+            }
+          } catch (refreshError) {
+            console.warn('[api/jobs] failed to apply Fal completed result', {
+              jobId,
+              providerJobId: job.provider_job_id,
+              error: refreshError,
+            });
+          }
+        }
         const sj = (queueResult ? { ...statusInfo, response: queueResult, output: queueResult } : statusInfo) as {
           response?: { video?: { url?: string } };
           output?: { video?: string };
@@ -300,7 +339,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
           if (!thumbUrl) {
             thumbUrl = normalizedThumbUrl ?? null;
           }
-        } else if (st === 'failed') {
+        } else if (st && FAL_FAILED_STATES.has(st.toUpperCase())) {
           status = 'failed';
         } else if (typeof prog === 'number') {
           progress = Math.max(progress, Math.min(100, Math.round(prog)));

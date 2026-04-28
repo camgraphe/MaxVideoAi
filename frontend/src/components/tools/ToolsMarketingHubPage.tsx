@@ -79,9 +79,9 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
           fill
           priority
           sizes="100vw"
-          className="pointer-events-none object-cover object-center dark:brightness-[0.72] dark:contrast-110 dark:invert"
+          className="pointer-events-none object-cover object-center dark:opacity-70 dark:brightness-[0.46] dark:contrast-125 dark:saturate-[1.1]"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.76)_32%,rgba(247,249,253,0.34)_64%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.64)_0%,rgba(3,7,18,0.46)_36%,rgba(3,7,18,0.18)_68%,rgba(3,7,18,0.04)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.76)_32%,rgba(247,249,253,0.34)_64%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.38)_0%,rgba(3,7,18,0.26)_40%,rgba(3,7,18,0.09)_72%,rgba(3,7,18,0.00)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
         <div className="container-page relative flex min-h-[520px] max-w-[1400px] items-center justify-center py-12">
           <div className="mx-auto max-w-[760px] text-center">

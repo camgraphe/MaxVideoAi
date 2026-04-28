@@ -558,9 +558,9 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           fill
           priority
           sizes="100vw"
-          className="pointer-events-none object-cover object-center dark:brightness-[0.72] dark:contrast-110 dark:invert"
+          className="pointer-events-none object-cover object-center dark:opacity-70 dark:brightness-[0.46] dark:contrast-125 dark:saturate-[1.1]"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.93)_0%,rgba(255,255,255,0.76)_34%,rgba(247,249,253,0.36)_68%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.66)_0%,rgba(3,7,18,0.48)_38%,rgba(3,7,18,0.20)_72%,rgba(3,7,18,0.06)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.93)_0%,rgba(255,255,255,0.76)_34%,rgba(247,249,253,0.36)_68%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.38)_0%,rgba(3,7,18,0.26)_40%,rgba(3,7,18,0.09)_72%,rgba(3,7,18,0.00)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bg to-transparent" />
         <div className="container-page relative flex min-h-[520px] max-w-[1220px] items-center justify-center pb-24 pt-14 text-center">
           <div className="mx-auto flex max-w-[760px] flex-col items-center gap-4">

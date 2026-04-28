@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
-export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle';
+export type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale';
 
 export type AssetBrowserAsset = {
   id: string;

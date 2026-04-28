@@ -6,6 +6,7 @@ import {
   buildUpscalePricingPreview,
   resolveUpscaleOutputFetchTimeoutMs,
 } from '../frontend/src/lib/tools-upscale';
+import { resolveFalModelId } from '../frontend/src/lib/fal-catalog';
 
 test('upscale price preview uses the billing product price for image runs', () => {
   const preview = buildUpscalePricingPreview({
@@ -79,4 +80,26 @@ test('upscale output fetch timeout scales beyond the old 20 second video thresho
     UPSCALE_OUTPUT_IMAGE_FETCH_TIMEOUT_MS
   );
   assert.equal(resolveUpscaleOutputFetchTimeoutMs({ mediaType: 'video', durationSec: 45 }), 180_000);
+});
+
+test('upscale polling resolves the dedicated Fal model ids', async () => {
+  const previousTopazVideo = process.env.FAL_MODEL_TOPAZ_VIDEO;
+  const previousSeedvrImage = process.env.FAL_MODEL_SEEDVR_IMAGE;
+  delete process.env.FAL_MODEL_TOPAZ_VIDEO;
+  delete process.env.FAL_MODEL_SEEDVR_IMAGE;
+  try {
+    assert.equal(await resolveFalModelId('topaz-video'), 'fal-ai/topaz/upscale/video');
+    assert.equal(await resolveFalModelId('seedvr-image'), 'fal-ai/seedvr/upscale/image');
+  } finally {
+    if (previousTopazVideo === undefined) {
+      delete process.env.FAL_MODEL_TOPAZ_VIDEO;
+    } else {
+      process.env.FAL_MODEL_TOPAZ_VIDEO = previousTopazVideo;
+    }
+    if (previousSeedvrImage === undefined) {
+      delete process.env.FAL_MODEL_SEEDVR_IMAGE;
+    } else {
+      process.env.FAL_MODEL_SEEDVR_IMAGE = previousSeedvrImage;
+    }
+  }
 });

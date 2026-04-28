@@ -4,8 +4,9 @@
 
 import Link from 'next/link';
 import useSWR from 'swr';
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
 import {
+  ArrowLeft,
   ArrowRight,
   ChevronsLeftRight,
   Coins,
@@ -13,16 +14,17 @@ import {
   Image as ImageIcon,
   LibraryBig,
   Loader2,
-  Maximize2,
   RefreshCw,
   Save,
   Upload,
   Video,
   WandSparkles,
+  ZoomIn,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
+import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { HeaderBar } from '@/components/HeaderBar';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { SelectMenu } from '@/components/ui/SelectMenu';
@@ -32,9 +34,11 @@ import {
   type AssetLibrarySource,
 } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
-import { runUpscaleTool, saveAssetToLibrary, useInfiniteJobs } from '@/lib/api';
+import { getJobStatus, runUpscaleTool, saveAssetToLibrary, useInfiniteJobs } from '@/lib/api';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
+import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import {
@@ -55,6 +59,8 @@ import type {
   UpscaleToolOutput,
   UpscaleToolResponse,
 } from '@/types/tools-upscale';
+import type { GroupSummary } from '@/types/groups';
+import type { Job } from '@/types/jobs';
 
 const SAMPLE_IMAGE_URL =
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
@@ -86,6 +92,8 @@ const DEFAULT_COPY = {
   previewSource: 'Source',
   previewResult: 'Result',
   previewCompare: 'Compare',
+  previewZoom: 'Pixel zoom',
+  previewZoomFit: 'Fit',
   save: 'Save',
   saved: 'Saved to Library.',
   saveFailed: 'Failed to save to Library.',
@@ -117,6 +125,7 @@ const DEFAULT_COPY = {
     generated: 'Generated',
     character: 'Character',
     angle: 'Angle',
+    upscale: 'Upscale',
   },
   authTitle: 'Sign in to upscale',
   authBody: 'Uploads, wallet billing, and Library actions require an account.',
@@ -129,6 +138,7 @@ const SOURCE_FALLBACK_HEIGHT = 1280;
 
 type UploadedAsset = {
   id?: string | null;
+  jobId?: string | null;
   url: string;
   width?: number | null;
   height?: number | null;
@@ -137,6 +147,34 @@ type UploadedAsset = {
 };
 
 type PreviewMode = 'source' | 'result' | 'compare';
+type PreviewZoom = 'fit' | '100' | '200' | '400';
+type RecentUpscaleMedia = {
+  url: string;
+  thumbUrl?: string | null;
+  mediaType: UpscaleMediaType;
+  mimeType: string;
+  source?: {
+    url: string;
+    assetId?: string | null;
+    jobId?: string | null;
+    width?: number | null;
+    height?: number | null;
+    mimeType: string;
+  } | null;
+  job: Job;
+  engineLabel: string;
+  engineId?: string;
+  createdAt: string;
+  totalCents: number | null;
+  currency: string;
+};
+
+const PREVIEW_ZOOM_OPTIONS: Array<{ value: PreviewZoom; label: string }> = [
+  { value: 'fit', label: 'Fit' },
+  { value: '100', label: '100%' },
+  { value: '200', label: '200%' },
+  { value: '400', label: '400%' },
+];
 
 type BillingProductResponse = {
   ok: boolean;
@@ -163,6 +201,12 @@ type UserAssetsResponse = {
   error?: string;
 };
 
+type JobDetailResponse = Partial<Job> & {
+  ok?: boolean;
+  pricing?: Job['pricingSnapshot'];
+  error?: string;
+};
+
 type JobsLibraryResponse = {
   ok?: boolean;
   jobs?: Array<{
@@ -176,6 +220,140 @@ type JobsLibraryResponse = {
 
 function isOutputVideo(output?: UpscaleToolOutput | null) {
   return Boolean(output?.mimeType?.startsWith('video/') || output?.url.match(/\.(mp4|webm|mov)(\?|$)/i));
+}
+
+function firstUsableUrl(...values: Array<string | null | undefined>) {
+  return values.find((value): value is string => typeof value === 'string' && value.trim().length > 0) ?? null;
+}
+
+function inferMimeType(url: string, mediaType: UpscaleMediaType) {
+  if (mediaType === 'video') {
+    if (url.match(/\.webm(\?|$)/i)) return 'video/webm';
+    if (url.match(/\.mov(\?|$)/i)) return 'video/quicktime';
+    return 'video/mp4';
+  }
+  if (url.match(/\.jpe?g(\?|$)/i)) return 'image/jpeg';
+  if (url.match(/\.webp(\?|$)/i)) return 'image/webp';
+  return 'image/png';
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function finiteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function parseRecentImageVariantIndex(id?: string | null) {
+  const match = id?.match(/-image-(\d+)$/);
+  if (!match) return 0;
+  const index = Number.parseInt(match[1], 10);
+  return Number.isFinite(index) && index >= 0 ? index : 0;
+}
+
+function resolveRecentUpscaleSource(job: Job): RecentUpscaleMedia['source'] {
+  const snapshot = asRecord(job.settingsSnapshot);
+  const source = asRecord(snapshot?.source);
+  const rawUrl = source?.mediaUrl;
+  const url = typeof rawUrl === 'string' ? rawUrl.trim() : '';
+  if (!url) return null;
+
+  const metadata = asRecord(source?.metadata);
+  const mediaType = snapshot?.mediaType === 'video' ? 'video' : 'image';
+  return {
+    url,
+    assetId: typeof source?.sourceAssetId === 'string' ? source.sourceAssetId : null,
+    jobId: typeof source?.sourceJobId === 'string' ? source.sourceJobId : null,
+    width: finiteNumber(metadata?.width),
+    height: finiteNumber(metadata?.height),
+    mimeType: inferMimeType(url, mediaType),
+  };
+}
+
+function resolveRecentUpscaleMedia(job: Job | null | undefined, preferredImageIndex = 0): RecentUpscaleMedia | null {
+  if (!job) return null;
+  const videoUrl = firstUsableUrl(job.videoUrl, job.readyVideoUrl);
+  const totalCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
+  const currency = job.currency ?? job.pricingSnapshot?.currency ?? 'USD';
+  const source = resolveRecentUpscaleSource(job);
+  if (videoUrl) {
+    return {
+      url: videoUrl,
+      thumbUrl: job.thumbUrl ?? job.previewFrame ?? null,
+      mediaType: 'video',
+      mimeType: inferMimeType(videoUrl, 'video'),
+      source,
+      job,
+      engineLabel: job.engineLabel,
+      engineId: job.engineId,
+      createdAt: job.createdAt,
+      totalCents,
+      currency,
+    };
+  }
+
+  const renderIds = Array.isArray(job.renderIds)
+    ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    : [];
+  const renderThumbs = Array.isArray(job.renderThumbUrls)
+    ? job.renderThumbUrls.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    : [];
+  const imageUrl = firstUsableUrl(job.heroRenderId, renderIds[preferredImageIndex], renderIds[0], job.thumbUrl, job.previewFrame);
+  if (!imageUrl) return null;
+  return {
+    url: imageUrl,
+    thumbUrl: renderThumbs[preferredImageIndex] ?? renderThumbs[0] ?? job.thumbUrl ?? job.previewFrame ?? imageUrl,
+    mediaType: 'image',
+    mimeType: inferMimeType(imageUrl, 'image'),
+    source,
+    job,
+    engineLabel: job.engineLabel,
+    engineId: job.engineId,
+    createdAt: job.createdAt,
+    totalCents,
+    currency,
+  };
+}
+
+function resolveRecentUpscaleMediaFromGroup(group: GroupSummary): RecentUpscaleMedia | null {
+  const heroJob = group.hero.job ?? null;
+  const fallbackJob = group.members.find((member) => member.job)?.job ?? null;
+  const variantIndex = parseRecentImageVariantIndex(group.hero.id);
+  return resolveRecentUpscaleMedia(heroJob ?? fallbackJob, variantIndex);
+}
+
+function resolveRecentUpscaleJobFromGroup(group: GroupSummary): Job | null {
+  return group.hero.job ?? group.members.find((member) => member.job)?.job ?? null;
+}
+
+function resolveGeneratedImageSource(job: Job | null | undefined): UploadedAsset | null {
+  if (!job) return null;
+  const renderIds = Array.isArray(job.renderIds)
+    ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    : [];
+  const imageUrl = firstUsableUrl(job.heroRenderId, renderIds[0], job.thumbUrl, job.previewFrame);
+  if (!imageUrl) return null;
+  return {
+    id: null,
+    jobId: job.jobId,
+    url: imageUrl,
+    mime: inferMimeType(imageUrl, 'image'),
+    name: `Generated image · ${job.engineLabel}`,
+  };
+}
+
+function hasRenderableUpscaleJobMedia(job: Job): boolean {
+  const hasImageMedia = Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.trim().length > 0);
+  return Boolean(firstUsableUrl(job.videoUrl, job.readyVideoUrl, job.audioUrl) || hasImageMedia);
+}
+
+function resolveUpscaleEngineId(value: string | undefined, mediaType: UpscaleMediaType): UpscaleToolEngineId {
+  const engines = listUpscaleToolEngines(mediaType);
+  return (
+    engines.find((entry) => entry.id === value)?.id ??
+    (mediaType === 'video' ? DEFAULT_UPSCALE_VIDEO_ENGINE_ID : DEFAULT_UPSCALE_IMAGE_ENGINE_ID)
+  );
 }
 
 function mediaTypeFromMime(mime?: string | null): UpscaleMediaType | null {
@@ -310,13 +488,19 @@ export default function UpscaleWorkspace() {
   const [comparePosition, setComparePosition] = useState(50);
   const [compareDragging, setCompareDragging] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('source');
+  const [previewZoom, setPreviewZoom] = useState<PreviewZoom>('fit');
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [libraryAssets, setLibraryAssets] = useState<AssetBrowserAsset[]>([]);
   const [libraryLoading, setLibraryLoading] = useState(false);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [librarySource, setLibrarySource] = useState<AssetLibrarySource>('all');
   const [libraryLoadedKey, setLibraryLoadedKey] = useState<string | null>(null);
-  const { stableJobs: recentJobs, mutate } = useInfiniteJobs(8, { surface: 'upscale' });
+  const [activeRecentGroupId, setActiveRecentGroupId] = useState<string | null>(null);
+  const [savingRecentGroupId, setSavingRecentGroupId] = useState<string | null>(null);
+  const previewScrollerRef = useRef<HTMLDivElement | null>(null);
+  const defaultGeneratedImageAppliedRef = useRef(false);
+  const { stableJobs: recentJobs, mutate } = useInfiniteJobs(12, { surface: 'upscale' });
+  const { stableJobs: recentGeneratedImageJobs } = useInfiniteJobs(8, { surface: 'image' });
 
   const engines = useMemo(() => listUpscaleToolEngines(mediaType), [mediaType]);
   const engine = useMemo(() => engines.find((entry) => entry.id === engineId) ?? engines[0], [engineId, engines]);
@@ -375,15 +559,18 @@ export default function UpscaleWorkspace() {
           ? copy.priceVideoMissing
           : copy.priceReady;
   const canRun = Boolean(user && mediaUrl.trim() && engine && !running && !uploading);
-  const previewUrl = output?.url || mediaUrl || SAMPLE_IMAGE_URL;
-  const previewIsVideo = output ? isOutputVideo(output) : mediaType === 'video' && Boolean(mediaUrl);
   const hasResult = Boolean(output?.url);
-  const activePreviewMode: PreviewMode = hasResult ? previewMode : 'source';
+  const hasSourcePreview = Boolean(mediaUrl.trim());
+  const canCompare = hasResult && hasSourcePreview && result?.mediaType === mediaType;
+  const activePreviewMode: PreviewMode = hasResult ? (previewMode === 'compare' && !canCompare ? 'result' : previewMode) : 'source';
   const sourcePreviewUrl = mediaUrl || SAMPLE_IMAGE_URL;
   const resultPreviewUrl = output?.url || mediaUrl || SAMPLE_IMAGE_URL;
   const sourcePreviewIsVideo = mediaType === 'video' && Boolean(mediaUrl);
   const resultPreviewIsVideo = output ? isOutputVideo(output) : sourcePreviewIsVideo;
-  const compareEnabled = activePreviewMode === 'compare' && hasResult;
+  const compareEnabled = activePreviewMode === 'compare' && canCompare;
+  const previewZoomScale = previewZoom === 'fit' ? 1 : Number(previewZoom) / 100;
+  const isPixelZoom = previewZoom !== 'fit';
+  const mediaFitClass = 'object-contain';
   const sourceWidth = source?.width ?? SOURCE_FALLBACK_WIDTH;
   const sourceHeight = source?.height ?? SOURCE_FALLBACK_HEIGHT;
   const previewFactor = mode === 'factor' ? upscaleFactor : 2;
@@ -391,13 +578,15 @@ export default function UpscaleWorkspace() {
   const outputHeight = output?.height ?? Math.round(sourceHeight * previewFactor);
   const sourceSizeLabel = `${sourceWidth} x ${sourceHeight}`;
   const outputSizeLabel = `${outputWidth} x ${outputHeight}`;
+  const zoomCanvasWidth = activePreviewMode === 'source' ? sourceWidth : outputWidth;
+  const zoomCanvasHeight = activePreviewMode === 'source' ? sourceHeight : outputHeight;
   const mediaTypeLabel = mediaType === 'video' ? 'Video' : 'Image';
   const libraryCacheKey = libraryModalOpen ? buildLibraryCacheKey(mediaType, librarySource) : null;
   const librarySourceOptions = useMemo(
     () =>
       mediaType === 'video'
-        ? (['all', 'upload', 'generated'] as const)
-        : (['all', 'upload', 'generated', 'character', 'angle'] as const),
+        ? (['all', 'upload', 'generated', 'upscale'] as const)
+        : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const),
     [mediaType]
   );
   const visibleLibraryAssets = useMemo(
@@ -409,6 +598,33 @@ export default function UpscaleWorkspace() {
       ),
     [libraryAssets, mediaType]
   );
+  const recentGroups = useMemo(() => {
+    const jobs = recentJobs.map((job) => (!job.videoUrl && job.readyVideoUrl ? { ...job, videoUrl: job.readyVideoUrl } : job));
+    return normalizeGroupSummaries(groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }).groups);
+  }, [recentJobs]);
+  const pendingRecentJobIds = useMemo(
+    () =>
+      recentJobs
+        .filter((job) => {
+          const status = typeof job.status === 'string' ? job.status.toLowerCase() : '';
+          if (status === 'failed' || status === 'cancelled' || status === 'canceled') return false;
+          return status !== 'completed' || !hasRenderableUpscaleJobMedia(job);
+        })
+        .map((job) => job.jobId)
+        .filter((jobId): jobId is string => typeof jobId === 'string' && jobId.length > 0),
+    [recentJobs]
+  );
+  const pendingRecentJobKey = pendingRecentJobIds.join('|');
+  const defaultGeneratedImageSource = useMemo(() => {
+    const sortedJobs = [...recentGeneratedImageJobs].sort(
+      (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
+    );
+    for (const job of sortedJobs) {
+      const candidate = resolveGeneratedImageSource(job);
+      if (candidate) return candidate;
+    }
+    return null;
+  }, [recentGeneratedImageJobs]);
 
   useEffect(() => {
     const url = mediaUrl.trim();
@@ -437,6 +653,78 @@ export default function UpscaleWorkspace() {
     };
   }, [mediaType, mediaUrl]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !pendingRecentJobKey) return undefined;
+    let cancelled = false;
+    const jobIds = pendingRecentJobKey.split('|').filter(Boolean);
+    const pollPendingJobs = async () => {
+      await Promise.all(jobIds.map((jobId) => getJobStatus(jobId).catch(() => null)));
+      if (!cancelled) {
+        void mutate();
+      }
+    };
+    void pollPendingJobs();
+    const interval = window.setInterval(() => {
+      void pollPendingJobs();
+    }, 5_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [mutate, pendingRecentJobKey]);
+
+  useEffect(() => {
+    const url = mediaUrl.trim();
+    if (mediaType !== 'image' || !url) return undefined;
+    if (source?.url === url && source.width && source.height) return undefined;
+
+    let cancelled = false;
+    const image = new window.Image();
+    image.onload = () => {
+      if (cancelled || !image.naturalWidth || !image.naturalHeight) return;
+      setSource((current) => {
+        if (current?.url && current.url !== url) return current;
+        return {
+          ...(current ?? {}),
+          url,
+          width: current?.width ?? image.naturalWidth,
+          height: current?.height ?? image.naturalHeight,
+          mime: current?.mime ?? inferMimeType(url, 'image'),
+        };
+      });
+    };
+    image.src = url;
+    return () => {
+      cancelled = true;
+    };
+  }, [mediaType, mediaUrl, source?.height, source?.url, source?.width]);
+
+  useEffect(() => {
+    if (defaultGeneratedImageAppliedRef.current) return;
+    if (!user || mediaType !== 'image' || source || result || mediaUrl.trim() || !defaultGeneratedImageSource) return;
+    defaultGeneratedImageAppliedRef.current = true;
+    setSource(defaultGeneratedImageSource);
+    setMediaUrl(defaultGeneratedImageSource.url);
+    setPreviewMode('source');
+    setPreviewZoom('100');
+    setMessage(defaultGeneratedImageSource.name ?? null);
+  }, [defaultGeneratedImageSource, mediaType, mediaUrl, result, source, user]);
+
+  useEffect(() => {
+    const scroller = previewScrollerRef.current;
+    if (!scroller) return undefined;
+    if (!isPixelZoom) {
+      scroller.scrollLeft = 0;
+      scroller.scrollTop = 0;
+      return undefined;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      scroller.scrollLeft = Math.max(0, (scroller.scrollWidth - scroller.clientWidth) / 2);
+      scroller.scrollTop = Math.max(0, (scroller.scrollHeight - scroller.clientHeight) / 2);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activePreviewMode, isPixelZoom, previewZoom, resultPreviewUrl, sourcePreviewUrl]);
+
   const fetchLibraryAssets = useCallback(
     async (options?: { source?: AssetLibrarySource; kind?: UpscaleMediaType }) => {
       const sourceFilter = options?.source ?? librarySource;
@@ -458,7 +746,8 @@ export default function UpscaleWorkspace() {
             : `/api/user-assets?limit=80&source=${encodeURIComponent(sourceFilter)}`;
         const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
         if (kind === 'video' && sourceFilter !== 'upload') {
-          requests.push(authFetch('/api/jobs?limit=80&type=video'));
+          const jobsUrl = sourceFilter === 'upscale' ? '/api/jobs?limit=80&surface=upscale' : '/api/jobs?limit=80&type=video';
+          requests.push(authFetch(jobsUrl));
         }
 
         const [assetsResponse, jobsResponse] = await Promise.all(requests);
@@ -618,12 +907,14 @@ export default function UpscaleWorkspace() {
         upscaleFactor,
         targetResolution,
         outputFormat,
+        sourceJobId: source?.jobId ?? null,
         sourceAssetId: source?.id ?? null,
         imageWidth: source?.width ?? null,
         imageHeight: source?.height ?? null,
       });
       setResult(response);
       setPreviewMode('compare');
+      setActiveRecentGroupId(response.jobId ?? null);
       setMessage(`${response.engineLabel} · $${response.pricing.estimatedCostUsd.toFixed(2)}`);
       void mutate();
     } catch (runError) {
@@ -642,7 +933,7 @@ export default function UpscaleWorkspace() {
         jobId: result?.jobId ?? null,
         label: result?.engineLabel ?? 'Upscale',
         source: 'upscale',
-        kind: mediaType,
+        kind: result?.mediaType ?? mediaType,
       });
       setMessage(copy.saved);
     } catch (saveError) {
@@ -682,6 +973,7 @@ export default function UpscaleWorkspace() {
     }
     setSource({
       id: asset.id.startsWith('job:') ? null : asset.id,
+      jobId: asset.id.startsWith('job:') ? asset.id.slice(4) : null,
       url: asset.url,
       width: asset.width ?? null,
       height: asset.height ?? null,
@@ -694,6 +986,163 @@ export default function UpscaleWorkspace() {
     setError(null);
     setMessage(asset.source ? `${copy.library}: ${asset.source}` : copy.library);
     setLibraryModalOpen(false);
+  }
+
+  function buildRecentUpscaleResult(selection: RecentUpscaleMedia): UpscaleToolResponse {
+    const resolvedEngineId = resolveUpscaleEngineId(selection.engineId, selection.mediaType);
+    const totalCents = selection.totalCents ?? 0;
+    return {
+      ok: true,
+      jobId: selection.job.jobId,
+      engineId: resolvedEngineId,
+      engineLabel: selection.engineLabel,
+      mediaType: selection.mediaType,
+      latencyMs: 0,
+      pricing: {
+        estimatedCostUsd: totalCents / 100,
+        actualCostUsd: selection.totalCents == null ? null : totalCents / 100,
+        currency: selection.currency,
+        estimatedCredits: totalCents,
+        actualCredits: selection.totalCents,
+        totalCents: selection.totalCents,
+        billingProductKey: selection.job.billingProductKey ?? null,
+      },
+      output: {
+        url: selection.url,
+        thumbUrl: selection.thumbUrl ?? null,
+        mimeType: selection.mimeType,
+        originUrl: selection.url,
+        source: 'upscale',
+        persisted: true,
+      },
+    };
+  }
+
+  function applyRecentUpscaleMediaType(selection: RecentUpscaleMedia) {
+    if (selection.mediaType === mediaType) return;
+    const nextEngineId = resolveUpscaleEngineId(selection.engineId, selection.mediaType);
+    const resolved =
+      listUpscaleToolEngines(selection.mediaType).find((entry) => entry.id === nextEngineId) ??
+      listUpscaleToolEngines(selection.mediaType)[0];
+    setMediaType(selection.mediaType);
+    setEngineId(resolved.id);
+    setMode(resolved.defaultMode);
+    setUpscaleFactor(resolved.defaultUpscaleFactor);
+    setTargetResolution(resolved.defaultTargetResolution ?? '1080p');
+    setOutputFormat(resolved.defaultOutputFormat);
+    setVideoMetadata(null);
+  }
+
+  async function resolveRecentSelectionWithSource(group: GroupSummary): Promise<RecentUpscaleMedia | null> {
+    const selection = resolveRecentUpscaleMediaFromGroup(group);
+    if (selection?.source?.url) return selection;
+
+    const baseJob = resolveRecentUpscaleJobFromGroup(group);
+    if (!baseJob?.jobId) return selection;
+
+    try {
+      const response = await authFetch(`/api/jobs/${encodeURIComponent(baseJob.jobId)}`);
+      const payload = (await response.json().catch(() => null)) as JobDetailResponse | null;
+      if (!response.ok || !payload?.ok) return selection;
+      const detailedJob: Job = {
+        ...baseJob,
+        settingsSnapshot: payload.settingsSnapshot ?? baseJob.settingsSnapshot,
+        renderIds: payload.renderIds ?? baseJob.renderIds,
+        renderThumbUrls: payload.renderThumbUrls ?? baseJob.renderThumbUrls,
+        heroRenderId: payload.heroRenderId ?? baseJob.heroRenderId,
+        videoUrl: payload.videoUrl ?? baseJob.videoUrl,
+        readyVideoUrl: payload.readyVideoUrl ?? baseJob.readyVideoUrl,
+        thumbUrl: payload.thumbUrl ?? baseJob.thumbUrl,
+        previewFrame: payload.previewFrame ?? baseJob.previewFrame,
+        finalPriceCents: payload.finalPriceCents ?? baseJob.finalPriceCents,
+        currency: payload.currency ?? baseJob.currency,
+        pricingSnapshot: payload.pricingSnapshot ?? payload.pricing ?? baseJob.pricingSnapshot,
+      };
+      return resolveRecentUpscaleMedia(detailedJob, parseRecentImageVariantIndex(group.hero.id)) ?? selection;
+    } catch {
+      return selection;
+    }
+  }
+
+  async function selectRecentUpscale(group: GroupSummary) {
+    setError(null);
+    const selection = await resolveRecentSelectionWithSource(group);
+    if (!selection) {
+      setError('No finished upscale output is available for this job yet.');
+      return;
+    }
+    applyRecentUpscaleMediaType(selection);
+    if (selection.source?.url) {
+      setSource({
+        id: selection.source.assetId ?? null,
+        jobId: selection.source.jobId ?? null,
+        url: selection.source.url,
+        width: selection.source.width ?? null,
+        height: selection.source.height ?? null,
+        mime: selection.source.mimeType,
+        name: 'Recent upscale source',
+      });
+      setMediaUrl(selection.source.url);
+    }
+    setResult(buildRecentUpscaleResult(selection));
+    setActiveRecentGroupId(group.id);
+    setError(null);
+    setMessage(
+      selection.totalCents == null
+        ? selection.engineLabel
+        : `${selection.engineLabel} · ${formatCurrency(selection.totalCents, selection.currency, locale)}`
+    );
+    setPreviewMode(selection.source?.url || (hasSourcePreview && selection.mediaType === mediaType) ? 'compare' : 'result');
+  }
+
+  async function saveRecentUpscale(group: GroupSummary) {
+    const selection = resolveRecentUpscaleMediaFromGroup(group);
+    if (!selection) {
+      setError('No finished upscale output is available for this job yet.');
+      return;
+    }
+    setSavingRecentGroupId(group.id);
+    setError(null);
+    try {
+      await saveAssetToLibrary({
+        url: selection.url,
+        jobId: selection.job.jobId,
+        label: selection.engineLabel,
+        source: 'upscale',
+        kind: selection.mediaType,
+      });
+      setMessage(copy.saved);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : copy.saveFailed);
+    } finally {
+      setSavingRecentGroupId(null);
+    }
+  }
+
+  function handleRecentGroupAction(group: GroupSummary, action: GroupedJobAction) {
+    const selection = resolveRecentUpscaleMediaFromGroup(group);
+    if ((action === 'open' || action === 'view' || action === 'compare' || action === 'continue' || action === 'refine' || action === 'branch') && selection) {
+      void selectRecentUpscale(group);
+      return;
+    }
+    if (!selection) {
+      setError('No finished upscale output is available for this job yet.');
+      return;
+    }
+    if (action === 'download') {
+      triggerAppDownload(selection.url, suggestDownloadFilename(selection.url, `upscale-${selection.job.jobId}`));
+      return;
+    }
+    if (action === 'copy') {
+      void navigator.clipboard
+        ?.writeText(selection.url)
+        .then(() => setMessage('Link copied.'))
+        .catch(() => setError('Unable to copy link.'));
+      return;
+    }
+    if (action === 'save-image') {
+      void saveRecentUpscale(group);
+    }
   }
 
   function updateComparePosition(event: PointerEvent<HTMLDivElement>) {
@@ -758,6 +1207,18 @@ export default function UpscaleWorkspace() {
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-y-auto">
           <div className="mx-auto w-full max-w-[1500px] px-5 py-5 lg:px-8 lg:py-6">
+            <div className="mb-4">
+              <ButtonLink
+                href="/app/tools"
+                variant="ghost"
+                size="sm"
+                linkComponent={Link}
+                className="gap-2 text-slate-600 hover:text-slate-950 dark:text-white/70 dark:hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {copy.back}
+              </ButtonLink>
+            </div>
             <section className="relative overflow-hidden rounded-[28px] border border-transparent bg-[radial-gradient(circle_at_22%_8%,rgba(219,234,254,0.88),transparent_32%),linear-gradient(90deg,#f9fbff_0%,#f5f8fc_58%,#f8fafc_100%)] px-6 py-7 dark:border-white/8 dark:bg-[radial-gradient(circle_at_22%_8%,rgba(37,99,235,0.18),transparent_34%),linear-gradient(90deg,#0c1220_0%,#0a101b_58%,#090d15_100%)] lg:px-10 lg:py-9">
               <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
                 <div className="min-w-0 pt-3">
@@ -808,9 +1269,9 @@ export default function UpscaleWorkspace() {
               </div>
             </section>
 
-            <div className="mt-5 grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-              <section className="space-y-4 lg:sticky lg:top-5 lg:self-start">
-                <Card className="rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+            <div className="mt-5 grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+              <section className="contents xl:sticky xl:top-5 xl:block xl:space-y-4 xl:self-start">
+                <Card className="order-1 rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
                   <div className="mb-5 flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-start gap-3">
                       <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-white/10 dark:text-white/72">1</span>
@@ -844,7 +1305,7 @@ export default function UpscaleWorkspace() {
                   </div>
 
                   <label className="mt-4 block cursor-pointer rounded-[12px] border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center transition hover:border-slate-500 hover:bg-white dark:border-white/14 dark:bg-white/[0.03] dark:hover:border-white/30 dark:hover:bg-white/[0.06]">
-                    <Input
+                    <input
                       type="file"
                       accept={mediaType === 'image' ? 'image/*' : 'video/*'}
                       onChange={handleUpload}
@@ -881,7 +1342,7 @@ export default function UpscaleWorkspace() {
                   </label>
                 </Card>
 
-                <Card className="rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+                <Card className="order-3 rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
                   <div className="mb-5 flex items-start gap-3">
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-white/10 dark:text-white/72">2</span>
                     <div>
@@ -965,19 +1426,19 @@ export default function UpscaleWorkspace() {
                 </Card>
               </section>
 
-              <section className="space-y-4">
-                <Card className="overflow-hidden rounded-[14px] border border-slate-200 bg-white p-0 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
-                  <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                    <div>
+              <section className="contents xl:block xl:space-y-4">
+                <Card className="order-2 overflow-hidden rounded-[14px] border border-slate-200 bg-white p-0 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
+                  <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-4 sm:px-5">
+                    <div className="min-w-0">
                       <h2 className="text-base font-semibold text-slate-950 dark:text-white">Before / after preview</h2>
                       <p className="mt-1 text-xs text-slate-500 dark:text-white/62">Upload a source, choose a recipe, then compare the upscaled result.</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                       <div className="flex rounded-[10px] border border-slate-200 bg-slate-50 p-1 dark:border-white/10 dark:bg-white/[0.04]">
                         {([
                           ['source', copy.previewSource, false],
                           ['result', copy.previewResult, !hasResult],
-                          ['compare', copy.previewCompare, !hasResult],
+                          ['compare', copy.previewCompare, !canCompare],
                         ] as const).map(([modeOption, label, disabled]) => {
                           const active = activePreviewMode === modeOption;
                           return (
@@ -1009,67 +1470,105 @@ export default function UpscaleWorkspace() {
                           </Button>
                         </>
                       ) : null}
-                      <Button variant="outline" size="sm" className="rounded-[10px] border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/72 dark:hover:bg-white/[0.08]">
-                        Fit screen
-                        <Maximize2 className="h-4 w-4" />
-                      </Button>
+                      <div
+                        className={`flex items-center gap-2 rounded-[12px] border px-2 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] transition ${
+                          isPixelZoom
+                            ? 'border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950'
+                            : 'border-slate-300 bg-white text-slate-950 ring-1 ring-slate-950/5 dark:border-white/20 dark:bg-white/[0.07] dark:text-white dark:ring-white/10'
+                        }`}
+                      >
+                        <span
+                          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] ${
+                            isPixelZoom
+                              ? 'bg-white text-slate-950 dark:bg-slate-950 dark:text-white'
+                              : 'bg-slate-950 text-white dark:bg-white dark:text-slate-950'
+                          }`}
+                        >
+                          <ZoomIn className="h-4 w-4" />
+                        </span>
+                        <span className="hidden text-[11px] font-semibold uppercase tracking-[0.12em] sm:inline">
+                          {copy.previewZoom}
+                        </span>
+                        <select
+                          aria-label={copy.previewZoom}
+                          value={previewZoom}
+                          onChange={(event) => setPreviewZoom(event.currentTarget.value as PreviewZoom)}
+                          className="h-8 min-w-[82px] rounded-[8px] border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-950 outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-ring dark:border-white/14 dark:bg-slate-950 dark:text-white dark:hover:bg-slate-900"
+                        >
+                          {PREVIEW_ZOOM_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.value === 'fit' ? copy.previewZoomFit : option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="px-5 pb-5">
-                    <div
-                      className={`relative aspect-[16/8] min-h-[420px] overflow-hidden rounded-[12px] border border-slate-900/10 bg-slate-950 ${
-                        compareEnabled ? 'cursor-ew-resize touch-none select-none' : ''
-                      } ${
-                        compareDragging ? 'ring-2 ring-white/70' : ''
-                      }`}
-                      role={compareEnabled ? 'slider' : 'img'}
-                      aria-label={compareEnabled ? 'Compare source and upscaled preview' : activePreviewMode === 'result' ? 'Upscaled result preview' : 'Source preview'}
-                      aria-valuemin={8}
-                      aria-valuemax={92}
-                      aria-valuenow={Math.round(comparePosition)}
-                      tabIndex={0}
-                      onPointerDown={compareEnabled ? handleComparePointerDown : undefined}
-                      onPointerMove={compareEnabled ? handleComparePointerMove : undefined}
-                      onPointerUp={compareEnabled ? handleComparePointerUp : undefined}
-                      onPointerCancel={compareEnabled ? handleComparePointerUp : undefined}
-                      onKeyDown={(event) => {
-                        if (!compareEnabled) return;
-                        if (event.key === 'ArrowLeft') {
-                          event.preventDefault();
-                          setComparePosition((current) => clampComparePosition(current - 4));
-                        }
-                        if (event.key === 'ArrowRight') {
-                          event.preventDefault();
-                          setComparePosition((current) => clampComparePosition(current + 4));
-                        }
-                        if (event.key === 'Home') {
-                          event.preventDefault();
-                          setComparePosition(8);
-                        }
-                        if (event.key === 'End') {
-                          event.preventDefault();
-                          setComparePosition(92);
-                        }
-                      }}
-                    >
+                  <div className="px-3 pb-3 sm:px-5 sm:pb-5">
+                    <div className="relative aspect-[4/3] min-h-[260px] max-h-[min(72vh,680px)] overflow-hidden rounded-[12px] border border-slate-900/10 bg-slate-950 sm:aspect-[16/9] sm:min-h-[340px] xl:aspect-[16/8] xl:min-h-[420px]">
+                      <div ref={previewScrollerRef} className={`absolute inset-0 ${isPixelZoom ? 'overflow-auto' : 'overflow-hidden'}`}>
+                        <div
+                          className={`relative h-full w-full ${
+                            compareEnabled ? 'cursor-ew-resize touch-none select-none' : ''
+                          } ${
+                            compareDragging ? 'ring-2 ring-white/70' : ''
+                          }`}
+                          style={
+                            isPixelZoom
+                              ? {
+                                  width: `${Math.round(zoomCanvasWidth * previewZoomScale)}px`,
+                                  height: `${Math.round(zoomCanvasHeight * previewZoomScale)}px`,
+                                }
+                              : undefined
+                          }
+                          role={compareEnabled ? 'slider' : 'img'}
+                          aria-label={compareEnabled ? 'Compare source and upscaled preview' : activePreviewMode === 'result' ? 'Upscaled result preview' : 'Source preview'}
+                          aria-valuemin={compareEnabled ? 8 : undefined}
+                          aria-valuemax={compareEnabled ? 92 : undefined}
+                          aria-valuenow={compareEnabled ? Math.round(comparePosition) : undefined}
+                          tabIndex={0}
+                          onPointerDown={compareEnabled ? handleComparePointerDown : undefined}
+                          onPointerMove={compareEnabled ? handleComparePointerMove : undefined}
+                          onPointerUp={compareEnabled ? handleComparePointerUp : undefined}
+                          onPointerCancel={compareEnabled ? handleComparePointerUp : undefined}
+                          onKeyDown={(event) => {
+                            if (!compareEnabled) return;
+                            if (event.key === 'ArrowLeft') {
+                              event.preventDefault();
+                              setComparePosition((current) => clampComparePosition(current - 4));
+                            }
+                            if (event.key === 'ArrowRight') {
+                              event.preventDefault();
+                              setComparePosition((current) => clampComparePosition(current + 4));
+                            }
+                            if (event.key === 'Home') {
+                              event.preventDefault();
+                              setComparePosition(8);
+                            }
+                            if (event.key === 'End') {
+                              event.preventDefault();
+                              setComparePosition(92);
+                            }
+                          }}
+                        >
                       {activePreviewMode === 'source' ? (
                         sourcePreviewIsVideo ? (
-                          <video className="absolute inset-0 h-full w-full object-cover" src={sourcePreviewUrl} controls muted playsInline />
+                          <video className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={sourcePreviewUrl} controls muted playsInline />
                         ) : (
-                          <img className="absolute inset-0 h-full w-full object-cover" src={sourcePreviewUrl} alt="" draggable={false} />
+                          <img className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={sourcePreviewUrl} alt="" draggable={false} />
                         )
                       ) : activePreviewMode === 'result' ? (
                         resultPreviewIsVideo ? (
-                          <video className="absolute inset-0 h-full w-full object-cover" src={resultPreviewUrl} controls muted playsInline />
+                          <video className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={resultPreviewUrl} controls muted playsInline />
                         ) : (
-                          <img className="absolute inset-0 h-full w-full object-cover" src={resultPreviewUrl} alt="" draggable={false} />
+                          <img className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={resultPreviewUrl} alt="" draggable={false} />
                         )
                       ) : resultPreviewIsVideo ? (
                         <>
-                          <video className="absolute inset-0 h-full w-full object-cover" src={resultPreviewUrl} muted playsInline />
+                          <video className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={resultPreviewUrl} muted playsInline />
                           <video
-                            className="absolute inset-0 h-full w-full object-cover brightness-[0.55] saturate-[0.72]"
+                            className={`absolute inset-0 h-full w-full ${mediaFitClass}`}
                             src={sourcePreviewUrl}
                             muted
                             playsInline
@@ -1078,9 +1577,9 @@ export default function UpscaleWorkspace() {
                         </>
                       ) : (
                         <>
-                          <img className="absolute inset-0 h-full w-full object-cover" src={resultPreviewUrl} alt="" draggable={false} />
+                          <img className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={resultPreviewUrl} alt="" draggable={false} />
                           <img
-                            className="absolute inset-0 h-full w-full object-cover brightness-[0.55] saturate-[0.72]"
+                            className={`absolute inset-0 h-full w-full ${mediaFitClass}`}
                             src={sourcePreviewUrl}
                             alt=""
                             draggable={false}
@@ -1102,7 +1601,7 @@ export default function UpscaleWorkspace() {
                         </>
                       ) : null}
 
-                      <div className="absolute left-6 top-6 rounded-[8px] bg-slate-950/82 px-4 py-3 text-white shadow-lg backdrop-blur">
+                      <div className="absolute left-3 top-3 rounded-[8px] bg-slate-950/82 px-3 py-2 text-white shadow-lg backdrop-blur sm:left-6 sm:top-6 sm:px-4 sm:py-3">
                         <p className="text-xs font-semibold">
                           {activePreviewMode === 'result' ? copy.previewResult : copy.previewSource}
                         </p>
@@ -1111,16 +1610,18 @@ export default function UpscaleWorkspace() {
                         </p>
                       </div>
                       {activePreviewMode === 'compare' ? (
-                        <div className="absolute right-6 top-6 rounded-[8px] bg-slate-950/82 px-4 py-3 text-white shadow-lg backdrop-blur">
+                        <div className="absolute right-3 top-3 rounded-[8px] bg-slate-950/82 px-3 py-2 text-white shadow-lg backdrop-blur sm:right-6 sm:top-6 sm:px-4 sm:py-3">
                           <p className="text-xs font-semibold">{copy.previewResult}</p>
                           <p className="mt-1 text-xs text-white/85">{outputSizeLabel}</p>
                         </div>
                       ) : null}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+                <Card className="order-4 rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h2 className="text-base font-semibold text-slate-950 dark:text-white">{copy.recentTitle}</h2>
@@ -1132,28 +1633,27 @@ export default function UpscaleWorkspace() {
                     </Link>
                   </div>
                   <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
-                    {recentJobs.slice(0, 8).map((job) => {
-                      const imageUrl = job.heroRenderId ?? job.renderIds?.[0] ?? job.thumbUrl ?? job.previewFrame ?? null;
-                      const videoUrl = job.videoUrl ?? job.readyVideoUrl ?? null;
+                    {recentGroups.slice(0, 8).map((group) => {
+                      const active = activeRecentGroupId === group.id;
                       return (
-                        <div key={job.jobId} className="w-[118px] shrink-0 overflow-hidden rounded-[10px] bg-slate-50 transition hover:-translate-y-0.5 hover:shadow-card dark:bg-white/[0.045]">
-                          <div className="aspect-[1.25] bg-slate-100 dark:bg-white/[0.06]">
-                            {videoUrl ? (
-                              <video className="h-full w-full object-cover" src={videoUrl} muted />
-                            ) : imageUrl ? (
-                              <img className="h-full w-full object-cover" src={imageUrl} alt="" />
-                            ) : (
-                              <div className="flex h-full items-center justify-center text-xs text-text-muted">No preview</div>
-                            )}
-                          </div>
-                          <div className="p-2">
-                            <p className="truncate text-[11px] font-semibold text-slate-950 dark:text-white">{job.engineLabel}</p>
-                            <p className="mt-1 truncate text-[11px] text-slate-500 dark:text-white/50">{job.status ?? 'completed'}</p>
-                          </div>
+                        <div
+                          key={group.id}
+                          className={`w-[258px] shrink-0 rounded-[14px] transition ${
+                            active ? 'ring-2 ring-slate-950 ring-offset-2 ring-offset-white dark:ring-white dark:ring-offset-slate-950' : ''
+                          }`}
+                        >
+                          <GroupedJobCard
+                            group={group}
+                            onOpen={selectRecentUpscale}
+                            onAction={handleRecentGroupAction}
+                            menuVariant="gallery-image"
+                            allowRemove={false}
+                            savingToLibrary={savingRecentGroupId === group.id}
+                          />
                         </div>
                       );
                     })}
-                    {!recentJobs.length ? (
+                    {!recentGroups.length ? (
                       <div className="w-full rounded-[12px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500 dark:border-white/12 dark:bg-white/[0.035] dark:text-white/55">
                         No upscale runs yet.
                       </div>

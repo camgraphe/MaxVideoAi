@@ -71,6 +71,7 @@ interface LibraryCopy {
     generated: string;
     character: string;
     angle: string;
+    upscale: string;
   };
   assets: {
     title: string;
@@ -81,6 +82,7 @@ interface LibraryCopy {
     emptyGenerated: string;
     emptyCharacter: string;
     emptyAngle: string;
+    emptyUpscale: string;
     deleteError: string;
     deleteButton: string;
     downloadButton: string;
@@ -123,6 +125,7 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     generated: 'Generated images',
     character: 'Character assets',
     angle: 'Angle assets',
+    upscale: 'Upscale assets',
   },
   assets: {
     title: 'Library assets',
@@ -133,6 +136,7 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     emptyGenerated: 'No generated images saved yet. Generate an image and save it to your library.',
     emptyCharacter: 'No character assets saved yet. Generate one in Character Builder to see it here.',
     emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool to see it here.',
+    emptyUpscale: 'No upscale assets saved yet. Save an upscale result to see it here.',
     deleteError: 'Unable to delete this image.',
     deleteButton: 'Delete',
     downloadButton: 'Download',
@@ -178,6 +182,9 @@ function getAssetJobHref(asset: UserAsset): string | null {
   if (asset.source === 'character') {
     return `/app/tools/character-builder?job=${encodeURIComponent(asset.jobId)}`;
   }
+  if (asset.source === 'upscale') {
+    return `/app/tools/upscale?job=${encodeURIComponent(asset.jobId)}`;
+  }
   if (asset.source === 'generated') {
     return `/app/image?job=${encodeURIComponent(asset.jobId)}`;
   }
@@ -194,7 +201,7 @@ export default function LibraryPage() {
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
-  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale'>('all');
   const assetsKey = user
     ? activeSource === 'all'
       ? '/api/user-assets?limit=200'
@@ -231,7 +238,7 @@ export default function LibraryPage() {
   const availableSources = useMemo(
     () =>
       toolsEnabled
-        ? (['all', 'upload', 'generated', 'character', 'angle'] as const)
+        ? (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const)
         : (['all', 'upload', 'generated'] as const),
     [toolsEnabled]
   );
@@ -241,16 +248,19 @@ export default function LibraryPage() {
       ? copy.assets.emptyGenerated
       : activeSource === 'upload'
         ? copy.assets.emptyUploads
-        : activeSource === 'character'
-          ? copy.assets.emptyCharacter
+      : activeSource === 'character'
+        ? copy.assets.emptyCharacter
         : activeSource === 'angle'
-            ? copy.assets.emptyAngle
-        : copy.assets.empty;
+          ? copy.assets.emptyAngle
+          : activeSource === 'upscale'
+            ? copy.assets.emptyUpscale
+            : copy.assets.empty;
   const toolLinks = toolsEnabled
     ? [
         { href: '/app/image', label: copy.hero.ctas.image },
         { href: '/app/tools/angle', label: copy.tabs.angle.replace(/ assets?$/i, '') || 'Angle' },
         { href: '/app/tools/character-builder', label: copy.tabs.character.replace(/ assets?$/i, '') || 'Character' },
+        { href: '/app/tools/upscale', label: copy.tabs.upscale.replace(/ assets?$/i, '') || 'Upscale' },
       ]
     : [{ href: '/app/image', label: copy.hero.ctas.image }];
 

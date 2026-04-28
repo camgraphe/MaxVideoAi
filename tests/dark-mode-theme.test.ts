@@ -8,6 +8,10 @@ const homeSource = readFileSync('frontend/components/marketing/home/HomeRedesign
 const heroShowcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
 const navSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const buttonSource = readFileSync('frontend/components/ui/Button.tsx', 'utf8');
+const toolsHubSource = readFileSync('frontend/src/components/tools/ToolsMarketingHubPage.tsx', 'utf8');
+const pricingPageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx', 'utf8');
+const blogPageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/blog/page.tsx', 'utf8');
+const comparePageSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx', 'utf8');
 
 const lightTokenBlock = tokensSource.slice(tokensSource.indexOf(':root {'), tokensSource.indexOf('\n}\n\n@media'));
 const darkTokenBlock = tokensSource.slice(tokensSource.indexOf('[data-theme="dark"] {'), tokensSource.indexOf('\n}\n\n.card'));
@@ -120,6 +124,30 @@ test('homepage workflow cards avoid light image wash in dark mode', () => {
   assert.match(referenceWorkflowSource, /rgba\(3,7,18,0\.88\)_100%/);
   assert.doesNotMatch(referenceWorkflowSource, /dark:invert/);
   assert.doesNotMatch(referenceWorkflowSource, /rgba\(5,11,20,0\.66\)_100%/);
+});
+
+test('tools pricing and blog hero images use compare-style dark treatment without inversion', () => {
+  const darkHeroImageTreatment = /dark:opacity-70 dark:brightness-\[0\.46\] dark:contrast-125 dark:saturate-\[1\.1\]/;
+  const radialDarkOverlay =
+    /dark:bg-\[radial-gradient\(circle_at_50%_38%,rgba\(3,7,18,0\.38\)_0%,rgba\(3,7,18,0\.26\)_40%,rgba\(3,7,18,0\.09\)_72%,rgba\(3,7,18,0\.00\)_100%\)\]/;
+  const blogDarkOverlay =
+    /dark:bg-\[linear-gradient\(90deg,rgba\(3,7,18,0\.52\)_0%,rgba\(3,7,18,0\.36\)_42%,rgba\(3,7,18,0\.12\)_74%,rgba\(3,7,18,0\.00\)_100%\)\]/;
+
+  assert.match(comparePageSource, /compare-hero-reference-light\.webp/);
+  assert.match(comparePageSource, /dark:bg-\[url\('\/assets\/compare\/compare-hero-reference-dark\.webp'\)\] dark:opacity-70/);
+
+  for (const [pageName, source] of [
+    ['tools', toolsHubSource],
+    ['pricing', pricingPageSource],
+    ['blog', blogPageSource],
+  ] as const) {
+    assert.doesNotMatch(source, /dark:invert/, `${pageName} hero image should not invert in dark mode`);
+    assert.match(source, darkHeroImageTreatment, `${pageName} hero image should use the shared non-inverting dark treatment`);
+  }
+
+  assert.match(toolsHubSource, radialDarkOverlay);
+  assert.match(pricingPageSource, radialDarkOverlay);
+  assert.match(blogPageSource, blogDarkOverlay);
 });
 
 test('marketing navigation dark mode is translucent like the reference header', () => {

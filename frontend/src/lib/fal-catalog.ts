@@ -2,10 +2,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
 import { listFalEngines } from '@/config/falEngines';
+import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
 
 const CATALOG_TTL_MS = 5 * 60 * 1000;
 
 const ENGINE_REGISTRY = listFalEngines();
+const UPSCALE_ENGINE_REGISTRY = listUpscaleToolEngines();
 
 const ENGINE_ID_OVERRIDES: Record<string, string> = ENGINE_REGISTRY.reduce<Record<string, string>>(
   (acc, engine) => {
@@ -16,6 +18,9 @@ const ENGINE_ID_OVERRIDES: Record<string, string> = ENGINE_REGISTRY.reduce<Recor
   },
   {}
 );
+UPSCALE_ENGINE_REGISTRY.forEach((engine) => {
+  ENGINE_ID_OVERRIDES[engine.falModelId] = engine.id;
+});
 
 const DEFAULT_MODEL_MAP: Record<string, string> = ENGINE_REGISTRY.reduce<Record<string, string>>(
   (acc, engine) => {
@@ -24,6 +29,9 @@ const DEFAULT_MODEL_MAP: Record<string, string> = ENGINE_REGISTRY.reduce<Record<
   },
   {}
 );
+UPSCALE_ENGINE_REGISTRY.forEach((engine) => {
+  DEFAULT_MODEL_MAP[engine.id] = engine.falModelId;
+});
 
 type EngineCatalog = {
   engines: EngineCaps[];

@@ -199,9 +199,9 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             fill
             priority
             sizes="100vw"
-            className="pointer-events-none object-cover object-center dark:brightness-[0.72] dark:contrast-110 dark:invert"
+            className="pointer-events-none object-cover object-center dark:opacity-70 dark:brightness-[0.46] dark:contrast-125 dark:saturate-[1.1]"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.88)_34%,rgba(255,255,255,0.48)_62%,rgba(255,255,255,0.10)_100%)] dark:bg-[linear-gradient(90deg,rgba(3,7,18,0.78)_0%,rgba(3,7,18,0.58)_42%,rgba(3,7,18,0.22)_74%,rgba(3,7,18,0.06)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.88)_34%,rgba(255,255,255,0.48)_62%,rgba(255,255,255,0.10)_100%)] dark:bg-[linear-gradient(90deg,rgba(3,7,18,0.52)_0%,rgba(3,7,18,0.36)_42%,rgba(3,7,18,0.12)_74%,rgba(3,7,18,0.00)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-bg to-transparent" />
           <div className="container-page relative flex min-h-[440px] max-w-6xl items-center py-14">
             <div className="max-w-[520px]">

@@ -199,7 +199,7 @@ type UserAsset = {
   canDelete?: boolean;
 };
 
-type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle';
+type AssetLibrarySource = 'all' | 'upload' | 'generated' | 'character' | 'angle' | 'upscale';
 type AssetLibraryKind = 'image' | 'video';
 type UploadableAssetKind = 'image' | 'video' | 'audio';
 type UploadFailurePayload = { error?: unknown; maxMB?: unknown } | null;
@@ -281,17 +281,20 @@ const DEFAULT_WORKSPACE_COPY = {
     emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
     emptyCharacter: 'No character assets saved yet. Generate one in Character Builder first.',
     emptyAngle: 'No angle assets saved yet. Generate one in the Angle tool first.',
+    emptyUpscale: 'No upscale assets saved yet. Save an upscale result first.',
     tabs: {
       all: 'All',
       upload: 'Uploaded',
       generated: 'Generated',
       character: 'Character',
       angle: 'Angle',
+      upscale: 'Upscale',
     },
     shortcuts: {
       createImage: 'Create image',
       changeAngle: 'Change angle',
       characterBuilder: 'Character builder',
+      upscale: 'Upscale',
     },
   },
 } as const;
@@ -474,6 +477,8 @@ function AssetLibraryModal({
         ? copyAssetLibrary.emptyCharacter
       : source === 'angle'
         ? copyAssetLibrary.emptyAngle
+      : source === 'upscale'
+        ? copyAssetLibrary.emptyUpscale
         : assetType === 'video'
           ? uiLocale === 'fr'
             ? "Aucune vidéo enregistrée pour l’instant. Importez ou générez une vidéo pour la voir ici."
@@ -537,8 +542,8 @@ function AssetLibraryModal({
     [assetType, importEndpoint, importFailedLabel, onSelect]
   );
   const sourceOptions = assetType === 'video'
-    ? (['all', 'upload', 'generated'] as const)
-    : (['all', 'upload', 'generated', 'character', 'angle'] as const);
+    ? (['all', 'upload', 'generated', 'upscale'] as const)
+    : (['all', 'upload', 'generated', 'character', 'angle', 'upscale'] as const);
   const searchPlaceholder =
     copyAssetLibrary.searchPlaceholder ??
     (uiLocale === 'fr' ? 'Rechercher des assets…' : uiLocale === 'es' ? 'Buscar assets…' : 'Search assets…');
@@ -567,6 +572,9 @@ function AssetLibraryModal({
     characterBuilder:
       copyAssetLibrary.shortcuts?.characterBuilder ??
       (uiLocale === 'fr' ? 'Character Builder' : uiLocale === 'es' ? 'Character Builder' : 'Character builder'),
+    upscale:
+      copyAssetLibrary.shortcuts?.upscale ??
+      (uiLocale === 'fr' ? 'Upscale' : uiLocale === 'es' ? 'Upscale' : 'Upscale'),
   };
   const browserToolLinks =
     assetType === 'image'
@@ -574,6 +582,7 @@ function AssetLibraryModal({
           { href: '/app/image', label: shortcutLabels.createImage },
           { href: '/app/tools/angle', label: shortcutLabels.changeAngle },
           { href: '/app/tools/character-builder', label: shortcutLabels.characterBuilder },
+          { href: '/app/tools/upscale', label: shortcutLabels.upscale },
         ]
       : [];
 
@@ -2933,7 +2942,8 @@ const showNotice = useCallback((message: string) => {
           : `/api/user-assets?limit=60&source=${encodeURIComponent(source)}`;
       const requests: Array<Promise<Response>> = [authFetch(assetUrl)];
       if (kind === 'video' && source !== 'upload') {
-        requests.push(authFetch(`/api/jobs?limit=60&type=video`));
+        const jobsUrl = source === 'upscale' ? '/api/jobs?limit=60&surface=upscale' : '/api/jobs?limit=60&type=video';
+        requests.push(authFetch(jobsUrl));
       }
 
       const [assetResponse, jobsResponse] = await Promise.all(requests);
