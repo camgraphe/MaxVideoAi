@@ -180,11 +180,15 @@ export function HeroVideoShowcase({
 
   return (
     <div className="relative mx-auto w-full max-w-[710px] overflow-visible px-0 xl:mr-0">
-      <div className="absolute -inset-5 rounded-[38px] bg-[radial-gradient(circle_at_58%_10%,rgba(17,24,39,0.14),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(120,113,108,0.10),transparent_36%)] blur-2xl dark:bg-[radial-gradient(circle_at_58%_10%,rgba(255,255,255,0.09),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(148,163,184,0.10),transparent_36%)]" />
       <div className="relative">
+        <div className="absolute -inset-3 rounded-[34px] bg-[radial-gradient(circle_at_58%_10%,rgba(17,24,39,0.14),transparent_34%),radial-gradient(circle_at_38%_92%,rgba(120,113,108,0.10),transparent_36%)] blur-xl dark:bg-[radial-gradient(circle_at_92%_6%,rgba(217,70,239,0.13),transparent_32%),radial-gradient(circle_at_16%_4%,rgba(96,165,250,0.16),transparent_36%),radial-gradient(circle_at_48%_108%,rgba(59,130,246,0.055),transparent_40%)]" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-px rounded-[23px] opacity-0 dark:bg-[linear-gradient(135deg,rgba(96,165,250,0.74)_0%,rgba(125,211,252,0.36)_43%,rgba(217,70,239,0.76)_100%)] dark:opacity-80 dark:shadow-[0_0_18px_rgba(96,165,250,0.20),22px_-14px_34px_-22px_rgba(217,70,239,0.58)]"
+        />
         <div
           data-hero-player="main"
-          className="relative z-10 overflow-hidden rounded-[22px] border border-white/24 bg-[#070b14] shadow-[0_30px_86px_-44px_rgba(15,23,42,0.95)]"
+          className="relative z-10 overflow-hidden rounded-[22px] border border-white/24 bg-[#070b14] shadow-[0_30px_86px_-44px_rgba(15,23,42,0.95)] dark:border-[rgba(147,197,253,0.30)] dark:shadow-[0_0_0_1px_rgba(96,165,250,0.18),0_0_36px_-20px_rgba(59,130,246,0.62),22px_-18px_46px_-32px_rgba(217,70,239,0.74),-18px_6px_44px_-32px_rgba(96,165,250,0.58),0_30px_80px_-48px_rgba(0,0,0,0.95)]"
         >
           <div className="relative overflow-hidden bg-[#050912]" style={{ aspectRatio: '1.62 / 1' }}>
             {selected.videoSrc ? (
@@ -232,14 +236,14 @@ export function HeroVideoShowcase({
             </p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {(selected.chips?.length ? selected.chips : [selected.bestFor, selected.provider]).slice(0, 3).map((chip) => (
-                <span key={chip} className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md">
+                <span key={chip} className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md dark:bg-surface-glass-70 dark:ring-1 dark:ring-white/[0.08]">
                   {chip}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
+          <div className="absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
             <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{selected.estimateLabel}</p>
             <p className="mt-0.5 text-lg font-semibold leading-none tracking-tight sm:text-xl">
               {primaryPrice}
@@ -254,7 +258,7 @@ export function HeroVideoShowcase({
               aria-label={playLabel}
               aria-pressed={false}
               onClick={handlePlayToggle}
-              className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14]"
+              className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14] dark:border-white/45 dark:focus:ring-[rgba(143,183,255,0.34)]"
             >
               <UIIcon icon={Play} size={28} />
             </button>
@@ -266,7 +270,7 @@ export function HeroVideoShowcase({
                 type="button"
                 aria-label={isPlaying ? pauseLabel : playLabel}
                 onClick={handlePlayToggle}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 dark:hover:bg-white/[0.07] dark:focus:ring-[rgba(143,183,255,0.34)]"
               >
                 <UIIcon icon={isPlaying ? Pause : Play} size={20} />
               </button>
@@ -286,7 +290,7 @@ export function HeroVideoShowcase({
                   style={{ width: `${Math.max(12, progress)}%` }}
                 />
               </div>
-              <span className="hidden rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white sm:inline-flex">
+              <span className="hidden rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white dark:bg-white/[0.08] dark:ring-1 dark:ring-white/[0.08] sm:inline-flex">
                 {selected.resolution}
               </span>
               <button
@@ -294,20 +298,21 @@ export function HeroVideoShowcase({
                 aria-label={isMuted ? 'Turn preview sound on' : 'Turn preview sound off'}
                 aria-pressed={!isMuted}
                 onClick={handleMuteToggle}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 dark:hover:bg-white/[0.07] dark:focus:ring-[rgba(143,183,255,0.34)]"
               >
                 <UIIcon icon={isMuted ? VolumeX : Volume2} size={18} />
               </button>
               <button
                 type="button"
                 aria-label="Fullscreen preview"
-                className="hidden h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 sm:inline-flex"
+                className="hidden h-9 w-9 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 dark:hover:bg-white/[0.07] dark:focus:ring-[rgba(143,183,255,0.34)] sm:inline-flex"
               >
                 <UIIcon icon={Maximize2} size={18} />
               </button>
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       <div className="relative z-20 mt-4">
@@ -323,8 +328,8 @@ export function HeroVideoShowcase({
                 onClick={() => selectEngine(index)}
                 className={
                   selectedThumb
-                    ? 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/90 bg-[#070b14] shadow-[0_0_0_2px_rgba(17,24,39,0.24),0_18px_34px_-24px_rgba(3,7,18,0.76)] focus:outline-none focus:ring-2 focus:ring-slate-400/70 dark:border-white/70 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.20),0_18px_34px_-24px_rgba(0,0,0,0.9)]'
-                    : 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/70 bg-[#070b14] shadow-[0_12px_26px_-24px_rgba(15,23,42,0.7)] transition hover:-translate-y-0.5 hover:border-white/90 hover:shadow-[0_14px_30px_-24px_rgba(3,7,18,0.6)] focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:border-white/14'
+                    ? 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/90 bg-[#070b14] shadow-[0_0_0_2px_rgba(17,24,39,0.24),0_18px_34px_-24px_rgba(3,7,18,0.76)] focus:outline-none focus:ring-2 focus:ring-slate-400/70 dark:border-white/[0.18] dark:shadow-[0_0_0_1px_rgba(143,183,255,0.34),0_18px_34px_-24px_rgba(0,0,0,0.9)]'
+                    : 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/70 bg-[#070b14] shadow-[0_12px_26px_-24px_rgba(15,23,42,0.7)] transition hover:-translate-y-0.5 hover:border-white/90 hover:shadow-[0_14px_30px_-24px_rgba(3,7,18,0.6)] focus:outline-none focus:ring-2 focus:ring-slate-400/60 dark:border-white/[0.08] dark:hover:border-white/[0.16]'
                 }
               >
                 <Image
@@ -353,7 +358,7 @@ export function HeroVideoShowcase({
             {selected.examplesHref ? (
               <Link
                 href={selected.examplesHref}
-                className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-text-primary shadow-[0_12px_30px_-22px_rgba(15,23,42,0.55)] transition hover:border-text-muted hover:bg-white dark:border-white/12 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-text-primary shadow-[0_12px_30px_-22px_rgba(15,23,42,0.55)] transition hover:border-text-muted hover:bg-white dark:border-white/[0.10] dark:bg-surface-glass-70 dark:text-white/88 dark:hover:border-white/[0.16] dark:hover:bg-surface-glass-80"
               >
                 {selected.examplesLabel ?? `View ${selected.name} examples`}
                 <span aria-hidden="true">→</span>
@@ -370,7 +375,6 @@ export function HeroVideoShowcase({
             ) : null}
           </div>
         ) : null}
-      </div>
       </div>
     </div>
   );

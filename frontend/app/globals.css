@@ -43,9 +43,9 @@
   --brand-soft: rgba(248, 250, 252, 0.08);
   --brand-soft-hover: rgba(248, 250, 252, 0.14);
   --brand-border: rgba(248, 250, 252, 0.22);
-  --brand-gradient: linear-gradient(135deg, #f8fafc 0%, #d1d5db 58%, #9ca3af 100%);
-  --brand-gradient-strong: linear-gradient(135deg, #ffffff 0%, #e5e7eb 58%, #cbd5e1 100%);
-  --shadow-brand-button: 0 18px 36px rgba(255, 255, 255, 0.1);
+  --brand-gradient: linear-gradient(135deg, #ffffff 0%, #f8fafc 62%, #e5e7eb 100%);
+  --brand-gradient-strong: linear-gradient(135deg, #ffffff 0%, #ffffff 54%, #f1f5f9 100%);
+  --shadow-brand-button: 0 18px 36px rgba(255, 255, 255, 0.16);
   --shadow-card: 0 1px 0 rgba(255,255,255,.04), 0 24px 70px rgba(0,0,0,.34);
   --on-brand: #030712;
   --ring: rgba(248, 250, 252, 0.38);
@@ -62,10 +62,49 @@ body {
 
 [data-theme="dark"] body {
   background:
-    radial-gradient(1200px 720px at 78% -10%, rgba(80, 112, 255, 0.20), transparent 58%),
-    radial-gradient(920px 620px at 100% 12%, rgba(168, 85, 247, 0.13), transparent 52%),
-    linear-gradient(180deg, #050b14 0%, #07111f 46%, #050b14 100%);
+    radial-gradient(1200px 720px at 78% -10%, rgba(255, 255, 255, 0.035), transparent 64%),
+    radial-gradient(920px 620px at 100% 12%, rgba(125, 211, 252, 0.025), transparent 58%),
+    linear-gradient(180deg, #030712 0%, #040816 46%, #030712 100%);
   background-attachment: fixed;
+}
+
+[data-theme="dark"] .dark-section-neon {
+  position: relative;
+  background-image: radial-gradient(760px 320px at 50% 0%, rgba(255, 255, 255, 0.030), transparent 66%);
+}
+
+[data-theme="dark"] .dark-section-neon::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.46), rgba(217, 70, 239, 0.30), transparent);
+  box-shadow:
+    0 0 24px rgba(96, 165, 250, 0.30),
+    0 0 36px rgba(217, 70, 239, 0.14);
+  opacity: 0.9;
+}
+
+[data-theme="dark"] .dark-neon-panel {
+  border-color: rgba(143, 183, 255, 0.24) !important;
+  box-shadow:
+    0 0 0 1px rgba(143, 183, 255, 0.08),
+    0 0 34px -22px rgba(96, 165, 250, 0.72),
+    0 0 46px -34px rgba(217, 70, 239, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+[data-theme="dark"] .home-hero-dark-grid {
+  background:
+    linear-gradient(rgba(143, 183, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 183, 255, 0.045) 1px, transparent 1px),
+    radial-gradient(620px 220px at 54% 100%, rgba(37, 99, 235, 0.14), transparent 70%);
+  background-size: 78px 78px, 78px 78px, 100% 100%;
+  mask-image: linear-gradient(180deg, transparent 0%, black 34%, black 100%);
+  opacity: 0.55;
+  transform: perspective(720px) rotateX(58deg) translateY(18%);
+  transform-origin: bottom center;
 }
 
 a[href="https://dang.ai/"] {

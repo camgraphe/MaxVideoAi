@@ -13,7 +13,7 @@ const baseClasses =
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-[image:var(--brand-gradient)] text-on-brand shadow-[var(--shadow-brand-button)] hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95',
-  outline: 'border border-hairline bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover active:border-border-hover active:bg-surface-2',
+  outline: 'border border-hairline bg-surface text-text-primary hover:border-border-hover hover:bg-surface-hover active:border-border-hover active:bg-surface-2 dark:border-white/[0.24] dark:bg-white/[0.045] dark:text-white dark:hover:border-white/[0.34] dark:hover:bg-white/[0.085]',
   ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-hover active:bg-surface-2',
 };
 

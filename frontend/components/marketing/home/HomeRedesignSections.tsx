@@ -571,7 +571,7 @@ export function HomeHero({
       {copy.valueCards.map((card) => (
         <div
           key={card.title}
-          className="min-h-[86px] rounded-[14px] border border-black/[0.07] bg-white/68 p-3 text-left backdrop-blur transition hover:border-black/[0.12] hover:bg-white/82 dark:border-white/10 dark:bg-surface-glass-80 dark:hover:border-white/20 dark:hover:bg-surface-glass-70 sm:min-h-[112px] sm:rounded-[18px] sm:p-4"
+          className="dark-neon-panel min-h-[86px] rounded-[14px] border border-black/[0.07] bg-white/68 p-3 text-left backdrop-blur transition hover:border-black/[0.12] hover:bg-white/82 dark:border-white/[0.10] dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.78),rgba(30,41,59,0.32))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_18px_50px_-34px_rgba(0,0,0,0.9)] dark:hover:border-white/[0.16] dark:hover:bg-[linear-gradient(135deg,rgba(20,31,50,0.86),rgba(37,52,78,0.36))] sm:min-h-[112px] sm:rounded-[18px] sm:p-4"
         >
           <span className="block text-[13px] font-semibold leading-4 text-text-primary sm:text-[15px] sm:leading-5">{card.title}</span>
           <span className="mt-1.5 block max-w-[18rem] text-[11px] leading-4 text-text-secondary line-clamp-2 sm:mt-2 sm:text-xs sm:leading-5">{card.body}</span>
@@ -582,7 +582,7 @@ export function HomeHero({
   const proofGridColumnsClass = proofStats.length >= 8 ? 'xl:grid-cols-8' : 'xl:grid-cols-7';
 
   return (
-    <section className="home-hero-section relative overflow-hidden border-b border-hairline bg-bg">
+    <section className="home-hero-section dark-section-neon relative overflow-hidden border-b border-hairline bg-bg">
       <Image
         src={HOME_HERO_IMAGE_URL}
         alt=""
@@ -590,15 +590,16 @@ export function HomeHero({
         fill
         priority
         sizes="100vw"
-        className="pointer-events-none object-cover object-center opacity-65 dark:brightness-[0.72] dark:contrast-110 dark:invert dark:opacity-50"
+        className="pointer-events-none object-cover object-center opacity-65 dark:brightness-[0.58] dark:contrast-110 dark:invert dark:opacity-[0.34]"
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(ellipse_at_78%_16%,rgba(89,125,255,0.22),transparent_42%),radial-gradient(ellipse_at_94%_26%,rgba(168,85,247,0.16),transparent_40%),linear-gradient(180deg,rgba(5,11,20,0.96)_0%,rgba(7,17,31,0.84)_48%,rgba(5,11,20,0.74)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(ellipse_at_78%_16%,rgba(255,255,255,0.055),transparent_46%),radial-gradient(ellipse_at_94%_26%,rgba(125,211,252,0.035),transparent_42%),linear-gradient(180deg,rgba(3,7,18,0.99)_0%,rgba(4,8,22,0.96)_48%,rgba(3,7,18,0.92)_100%)]" />
+      <div className="home-hero-dark-grid pointer-events-none absolute inset-x-0 bottom-0 hidden h-[38%] dark:block" aria-hidden="true" />
       <div className="container-page relative grid max-w-[1400px] gap-7 py-10 min-[900px]:grid-cols-[minmax(340px,0.88fr)_minmax(0,1.12fr)] min-[900px]:items-start min-[900px]:gap-6 min-[900px]:py-12 lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)] lg:gap-7 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
         <div className="scrollbar-rail -mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0 min-[900px]:col-span-2 min-[900px]:pb-0">
           {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
             <span
               key={badge}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-pill border border-brand/15 bg-brand/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand shadow-sm sm:gap-2 sm:px-3 sm:text-[11px] sm:tracking-[0.08em]"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-pill border border-brand/15 bg-brand/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand shadow-sm dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-white/88 sm:gap-2 sm:px-3 sm:text-[11px] sm:tracking-[0.08em]"
             >
               <UIIcon icon={index === 1 ? CircleDollarSign : index === 2 ? RefreshCcw : BadgeDollarSign} size={14} />
               {badge}
@@ -658,7 +659,7 @@ export function HomeHero({
       </div>
       <div className="container-page relative max-w-[1460px] pb-9">
         <div className="scrollbar-rail overflow-x-auto pb-1">
-          <div className={`inline-grid min-w-full auto-cols-[116px] grid-flow-col overflow-hidden rounded-[24px] border border-black/[0.08] bg-white/72 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/[0.12] dark:bg-surface-glass-80 sm:grid sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 ${proofGridColumnsClass}`}>
+          <div className={`dark-neon-panel inline-grid min-w-full auto-cols-[116px] grid-flow-col overflow-hidden rounded-[24px] border border-black/[0.08] bg-white/72 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/[0.08] dark:bg-surface-glass-80 sm:grid sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 ${proofGridColumnsClass}`}>
           {proofStats.map((stat) => {
             const content = (
               <>
@@ -676,12 +677,12 @@ export function HomeHero({
               <Link
                 key={stat.label}
                 href={stat.href}
-                className="relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 py-3 transition hover:bg-white/52 focus:outline-none focus:ring-2 focus:ring-brand/30 dark:hover:bg-white/[0.06] sm:min-h-[76px] sm:py-3 [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:right-0 [&:not(:last-child)]:after:top-4 [&:not(:last-child)]:after:h-[calc(100%-2rem)] [&:not(:last-child)]:after:w-px [&:not(:last-child)]:after:bg-black/[0.08] dark:[&:not(:last-child)]:after:bg-white/[0.10]"
+                className="relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 py-3 transition hover:bg-white/52 focus:outline-none focus:ring-2 focus:ring-brand/30 dark:hover:bg-white/[0.045] sm:min-h-[76px] sm:py-3 [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:right-0 [&:not(:last-child)]:after:top-4 [&:not(:last-child)]:after:h-[calc(100%-2rem)] [&:not(:last-child)]:after:w-px [&:not(:last-child)]:after:bg-black/[0.08] dark:[&:not(:last-child)]:after:bg-white/[0.07]"
               >
                 {content}
               </Link>
             ) : (
-              <div key={stat.label} className="relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 py-3 sm:min-h-[76px] sm:py-3 [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:right-0 [&:not(:last-child)]:after:top-4 [&:not(:last-child)]:after:h-[calc(100%-2rem)] [&:not(:last-child)]:after:w-px [&:not(:last-child)]:after:bg-black/[0.08] dark:[&:not(:last-child)]:after:bg-white/[0.10]">
+              <div key={stat.label} className="relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 py-3 sm:min-h-[76px] sm:py-3 [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:right-0 [&:not(:last-child)]:after:top-4 [&:not(:last-child)]:after:h-[calc(100%-2rem)] [&:not(:last-child)]:after:w-px [&:not(:last-child)]:after:bg-black/[0.08] dark:[&:not(:last-child)]:after:bg-white/[0.07]">
                 {content}
               </div>
             );
@@ -695,7 +696,7 @@ export function HomeHero({
 
 export function ProofBar({ stats }: { stats: ProofStat[] }) {
   return (
-    <section className="border-b border-hairline bg-surface">
+    <section className="dark-section-neon border-b border-hairline bg-surface">
       <div className="container-page grid max-w-[1200px] grid-cols-2 gap-px py-6 sm:grid-cols-4 lg:grid-cols-8">
         {stats.map((stat) => (
           <div key={stat.label} className="px-3 py-3 text-center">
@@ -719,8 +720,8 @@ export function ShotTypeEngineSelector({
   const topPicksLabel = copy.topPicksLabel ?? 'Top picks';
 
   return (
-    <section className="relative overflow-hidden border-b border-hairline bg-bg py-12 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(17,24,39,0.08),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0)_48%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(143,183,255,0.14),transparent_36%),linear-gradient(180deg,rgba(5,11,20,0.92),rgba(5,11,20,0)_52%)]" />
+    <section className="dark-section-neon relative overflow-hidden border-b border-hairline bg-bg py-12 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(17,24,39,0.08),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0)_48%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.035),transparent_40%),linear-gradient(180deg,rgba(3,7,18,0.95),rgba(3,7,18,0)_56%)]" />
       <div className="container-page relative max-w-[1360px] stack-gap-lg">
         <div className="mx-auto max-w-4xl text-center">
           {copy.eyebrow ? (
@@ -744,7 +745,7 @@ export function ShotTypeEngineSelector({
               <Link
                 key={card.id}
                 href={card.href}
-                className="group flex h-full min-h-0 flex-col overflow-hidden rounded-[16px] border border-hairline bg-white/88 shadow-[0_12px_32px_rgba(15,23,42,0.055),0_3px_10px_rgba(15,23,42,0.03)] transition hover:-translate-y-1 hover:border-text-muted/35 hover:shadow-[0_26px_62px_rgba(15,23,42,0.11)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-surface-glass-80 dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)] dark:hover:border-white/20 dark:hover:bg-surface-glass-70 sm:rounded-[20px]"
+                className="dark-neon-panel group flex h-full min-h-0 flex-col overflow-hidden rounded-[16px] border border-hairline bg-white/88 shadow-[0_12px_32px_rgba(15,23,42,0.055),0_3px_10px_rgba(15,23,42,0.03)] transition hover:-translate-y-1 hover:border-text-muted/35 hover:shadow-[0_26px_62px_rgba(15,23,42,0.11)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-surface-glass-80 dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)] dark:hover:border-white/20 dark:hover:bg-surface-glass-70 sm:rounded-[20px]"
                 data-analytics-event="shot_type_card_click"
                 data-analytics-cta-name={card.id}
                 data-analytics-cta-location="shot_type_selector"
@@ -796,7 +797,7 @@ export function ShotTypeEngineSelector({
         {copy.cta ? (
           <Link
             href={{ pathname: '/ai-video-engines/best-for' }}
-            className="group mx-auto flex max-w-[620px] items-center gap-4 rounded-[22px] border border-hairline bg-white/82 p-4 text-left shadow-[0_18px_50px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-text-muted/35 hover:shadow-[0_24px_64px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-surface-glass-80 dark:hover:bg-surface-glass-70"
+            className="dark-neon-panel group mx-auto flex max-w-[620px] items-center gap-4 rounded-[22px] border border-hairline bg-white/82 p-4 text-left shadow-[0_18px_50px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-text-muted/35 hover:shadow-[0_24px_64px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-surface-glass-80 dark:hover:bg-surface-glass-70"
             data-analytics-event="shot_type_card_click"
             data-analytics-cta-name="best-for-hub"
             data-analytics-cta-location="shot_type_hub_cta"
@@ -831,7 +832,7 @@ export function RealExamplesPreview({
   providers?: ProviderItem[];
 }) {
   return (
-    <section className="border-b border-hairline bg-surface py-14 sm:py-16">
+    <section className="dark-section-neon border-b border-hairline bg-surface py-14 sm:py-16">
       <div className="container-page max-w-[1200px]">
         <div className="mx-auto max-w-[880px] text-center">
           <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow ?? 'AI video examples'}</p>
@@ -877,8 +878,8 @@ export function RealExamplesPreview({
           </div>
         </div>
 
-        <div className="mt-7 overflow-hidden rounded-[20px] border border-hairline bg-bg shadow-sm">
-          <div className="divide-y divide-hairline">
+        <div className="dark-neon-panel mt-7 overflow-hidden rounded-[20px] border border-hairline bg-bg shadow-sm dark:border-white/[0.08]">
+          <div className="divide-y divide-hairline dark:divide-white/[0.07]">
             {examples.map((example) => {
               const modeIcon = example.mode.toLowerCase().startsWith('text') ? Type : example.mode.toLowerCase().startsWith('video') ? Video : ImageIcon;
               const showExamplesCta = example.examplesCtaVisible !== false;
@@ -930,7 +931,7 @@ export function RealExamplesPreview({
 
                   <div>
                     {example.price && /[$€£]|\d/.test(example.price) ? (
-                      <span className="inline-flex rounded-pill border border-hairline bg-surface px-2.5 py-1 text-xs font-semibold text-text-primary">
+                      <span className="inline-flex rounded-pill border border-hairline bg-surface px-2.5 py-1 text-xs font-semibold text-text-primary dark:border-white/[0.08] dark:bg-white/[0.035]">
                         {example.price}
                       </span>
                     ) : (
@@ -938,7 +939,7 @@ export function RealExamplesPreview({
                     )}
                   </div>
 
-                  <div className="col-span-2 grid grid-cols-2 gap-2 border-t border-hairline pt-3 lg:col-span-1 lg:col-start-auto lg:grid-cols-1 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                  <div className="col-span-2 grid grid-cols-2 gap-2 border-t border-hairline pt-3 dark:border-white/[0.07] lg:col-span-1 lg:col-start-auto lg:grid-cols-1 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
                     {showExamplesCta ? (
                       <Link
                         href={example.href}
@@ -975,21 +976,21 @@ export function RealExamplesPreview({
         </div>
 
         {providers?.length ? (
-          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-card border border-hairline bg-white/70 px-4 py-3 text-sm shadow-sm dark:bg-surface-glass-70">
+          <div className="dark-neon-panel mt-3 flex flex-wrap items-center gap-2 rounded-card border border-hairline bg-white/70 px-4 py-3 text-sm shadow-sm dark:border-white/[0.08] dark:bg-surface-glass-70">
             <span className="font-semibold text-text-primary">{copy.providerLabel ?? 'Supported engines'}</span>
             {providers.map((item) =>
               item.href ? (
                 <Link
                   key={`${item.provider}-${item.model}`}
                   href={item.href}
-                  className="rounded-pill border border-hairline bg-surface px-3 py-1 font-medium text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                  className="rounded-pill border border-hairline bg-surface px-3 py-1 font-medium text-text-secondary transition hover:border-text-muted hover:text-text-primary dark:border-white/[0.08] dark:bg-white/[0.035] dark:hover:border-white/[0.16]"
                 >
                   {item.model}
                 </Link>
               ) : (
                 <span
                   key={`${item.provider}-${item.model}`}
-                  className="rounded-pill border border-hairline bg-surface px-3 py-1 font-medium text-text-secondary"
+                  className="rounded-pill border border-hairline bg-surface px-3 py-1 font-medium text-text-secondary dark:border-white/[0.08] dark:bg-white/[0.035]"
                 >
                   {item.model}
                 </span>
@@ -1038,8 +1039,8 @@ export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; co
         ];
 
   return (
-    <section className="relative overflow-hidden border-b border-hairline bg-bg section">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(15,23,42,0.05),transparent_26%),linear-gradient(90deg,transparent,rgba(148,163,184,0.09),transparent)] dark:bg-[radial-gradient(circle_at_10%_10%,rgba(255,255,255,0.05),transparent_28%)]" />
+    <section className="dark-section-neon relative overflow-hidden border-b border-hairline bg-bg section">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(15,23,42,0.05),transparent_26%),linear-gradient(90deg,transparent,rgba(148,163,184,0.09),transparent)] dark:bg-[radial-gradient(circle_at_10%_10%,rgba(255,255,255,0.030),transparent_32%)]" />
       <div className="container-page max-w-[1280px] stack-gap-lg">
         <div className="relative grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
@@ -1087,7 +1088,7 @@ export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; co
             <Link
               key={comparison.id}
               href={comparison.href}
-              className="group flex h-full flex-col rounded-[20px] border border-hairline bg-surface p-2 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float sm:p-2.5"
+              className="dark-neon-panel group flex h-full flex-col rounded-[20px] border border-hairline bg-surface p-2 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float sm:p-2.5"
               data-analytics-event="comparison_card_click"
               data-analytics-cta-name={comparison.id}
               data-analytics-cta-location="comparison_preview"
@@ -1141,7 +1142,7 @@ export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; co
             </Link>
           ))}
         </div>
-        <div className="grid gap-3 rounded-[20px] border border-hairline bg-surface/85 p-4 shadow-card sm:grid-cols-2 lg:grid-cols-4">
+        <div className="dark-neon-panel grid gap-3 rounded-[20px] border border-hairline bg-surface/85 p-4 shadow-card sm:grid-cols-2 lg:grid-cols-4">
           {featureCards.map((feature, index) => {
             const icons = [BarChart3, Video, CircleDollarSign, RefreshCcw] as const;
             return (
@@ -1164,7 +1165,7 @@ export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; co
 
 export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: WorkflowStep[] }) {
   return (
-    <section className="border-b border-hairline bg-surface section">
+    <section className="dark-section-neon border-b border-hairline bg-surface section">
       <div className="container-page max-w-[1200px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -1172,7 +1173,7 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
             <Link
               key={step.title}
               href={step.href}
-              className="group relative flex min-h-[178px] flex-col overflow-hidden rounded-card border border-hairline bg-bg p-3 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:bg-surface-glass-80 dark:hover:bg-surface-glass-70 sm:min-h-[218px] sm:p-5"
+              className="dark-neon-panel group relative flex min-h-[178px] flex-col overflow-hidden rounded-card border border-hairline bg-bg p-3 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:bg-surface-glass-80 dark:hover:bg-surface-glass-70 sm:min-h-[218px] sm:p-5"
               data-analytics-event="tool_card_click"
               data-analytics-cta-name={step.toolLabel}
               data-analytics-cta-location="reference_workflow"
@@ -1185,11 +1186,11 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
                 aria-hidden="true"
                 fill
                 sizes="(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 300px"
-                className="object-cover transition duration-500 group-hover:scale-[1.04] dark:opacity-45 dark:invert"
+                className="object-cover transition duration-500 group-hover:scale-[1.04] dark:opacity-[0.28] dark:brightness-[0.72] dark:saturate-[1.18]"
                 loading="lazy"
               />
-              <span className="absolute inset-0 bg-gradient-to-b from-white/92 via-white/78 to-white/55 dark:bg-[linear-gradient(180deg,rgba(5,11,20,0.88)_0%,rgba(7,17,31,0.80)_52%,rgba(5,11,20,0.66)_100%)]" />
-              <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/60 to-transparent dark:from-black/42" />
+              <span className="absolute inset-0 bg-gradient-to-b from-white/92 via-white/78 to-white/55 dark:bg-[linear-gradient(180deg,rgba(3,7,18,0.96)_0%,rgba(4,8,22,0.93)_52%,rgba(3,7,18,0.88)_100%)]" />
+              <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/60 to-transparent dark:from-[rgba(8,16,31,0.76)] dark:via-[rgba(8,16,31,0.24)]" />
               <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-card border border-hairline bg-white/78 text-xs font-semibold text-text-primary shadow-sm backdrop-blur dark:border-white/12 dark:bg-white/[0.08] sm:h-9 sm:w-9 sm:text-sm">
                 {index + 1}
               </span>
@@ -1211,8 +1212,8 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
 
 export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: ToolCard[] }) {
   return (
-    <section className="relative overflow-hidden border-b border-hairline bg-bg section">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(15,23,42,0.055),transparent_34%),linear-gradient(180deg,transparent,rgba(148,163,184,0.08))] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06),transparent_34%)]" />
+    <section className="dark-section-neon relative overflow-hidden border-b border-hairline bg-bg section">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(15,23,42,0.055),transparent_34%),linear-gradient(180deg,transparent,rgba(148,163,184,0.08))] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.030),transparent_38%)]" />
       <div className="container-page relative max-w-[1200px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -1220,7 +1221,7 @@ export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: Tool
             <Link
               key={tool.id}
               href={tool.href}
-              className="group relative min-h-[158px] overflow-hidden rounded-card border border-hairline bg-surface p-3 pb-11 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[188px] sm:p-4 sm:pb-12"
+              className="dark-neon-panel group relative min-h-[158px] overflow-hidden rounded-card border border-hairline bg-surface p-3 pb-11 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[188px] sm:p-4 sm:pb-12"
               data-analytics-event="tool_card_click"
               data-analytics-cta-name={tool.id}
               data-analytics-cta-location="toolbox"
@@ -1289,7 +1290,7 @@ export function TransparentPricingBlock({ copy, cards }: { copy: SectionCopy; ca
   ];
 
   return (
-    <section className="border-b border-hairline bg-surface section">
+    <section className="dark-section-neon border-b border-hairline bg-surface section">
       <div className="container-page max-w-[1280px]">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.86fr)_1px_minmax(0,1.14fr)] lg:items-center lg:gap-12">
           <div className="max-w-[520px]">
@@ -1358,7 +1359,7 @@ export function TransparentPricingBlock({ copy, cards }: { copy: SectionCopy; ca
 
 export function ProviderEngineStrip({ copy, providers }: { copy: SectionCopy; providers: ProviderItem[] }) {
   return (
-    <section className="border-b border-hairline bg-bg section-compact">
+    <section className="dark-section-neon border-b border-hairline bg-bg section-compact">
       <div className="container-page max-w-[1200px] stack-gap">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1374,12 +1375,12 @@ export function ProviderEngineStrip({ copy, providers }: { copy: SectionCopy; pr
               <Link
                 key={`${item.provider}-${item.model}`}
                 href={item.href}
-                className="rounded-card border border-hairline bg-surface p-4 shadow-card transition hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                className="dark-neon-panel rounded-card border border-hairline bg-surface p-4 shadow-card transition hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
               >
                 {content}
               </Link>
             ) : (
-              <div key={`${item.provider}-${item.model}`} className="rounded-card border border-hairline bg-surface p-4 shadow-card">
+              <div key={`${item.provider}-${item.model}`} className="dark-neon-panel rounded-card border border-hairline bg-surface p-4 shadow-card">
                 {content}
               </div>
             );
@@ -1397,12 +1398,12 @@ export function ProviderEngineStrip({ copy, providers }: { copy: SectionCopy; pr
 
 export function HomeFaq({ copy, items }: { copy: SectionCopy; items: FaqItem[] }) {
   return (
-    <section className="bg-bg section">
+    <section className="dark-section-neon bg-bg section">
       <div className="container-page max-w-[900px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
         <div className="space-y-3">
           {items.map((item) => (
-            <details key={item.question} className="group rounded-card border border-hairline bg-surface p-5">
+            <details key={item.question} className="dark-neon-panel group rounded-card border border-hairline bg-surface p-5">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-semibold text-text-primary">
                 <span>{item.question}</span>
                 <UIIcon icon={Box} size={18} className="text-text-muted transition group-open:rotate-45" />

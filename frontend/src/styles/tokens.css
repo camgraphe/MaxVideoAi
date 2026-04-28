@@ -258,9 +258,9 @@
   --brand-soft: rgba(191, 219, 254, 0.11);
   --brand-soft-hover: rgba(191, 219, 254, 0.17);
   --brand-border: rgba(191, 219, 254, 0.28);
-  --brand-gradient: linear-gradient(135deg, #F8FAFC 0%, #D1D5DB 58%, #9CA3AF 100%);
-  --brand-gradient-strong: linear-gradient(135deg, #FFFFFF 0%, #E5E7EB 58%, #CBD5E1 100%);
-  --shadow-brand-button: 0 18px 36px rgba(255, 255, 255, 0.10);
+  --brand-gradient: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 62%, #E5E7EB 100%);
+  --brand-gradient-strong: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 54%, #F1F5F9 100%);
+  --shadow-brand-button: 0 18px 36px rgba(255, 255, 255, 0.16);
   --on-brand: #030712;
   --engine-google-veo-bg: #1F3B5C;
   --engine-google-veo-ink: #EAF2FF;

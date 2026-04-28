@@ -103,6 +103,10 @@ test('homepage real examples component uses compact two-column rows instead of t
   );
 
   assert.match(previewSource, /divide-y/);
+  assert.match(previewSource, /dark:divide-white\/\[0\.07\]/);
+  assert.match(previewSource, /dark:border-white\/\[0\.08\]/);
+  assert.match(previewSource, /dark:bg-white\/\[0\.035\]/);
+  assert.match(previewSource, /dark:hover:border-white\/\[0\.16\]/);
   assert.match(previewSource, /lg:grid-cols-\[132px_220px_165px_72px_82px_170px\]/);
   assert.match(previewSource, /grid-cols-2[^"]*lg:grid-cols-1/);
   assert.match(previewSource, /lg:border-l lg:border-t-0/);
@@ -162,8 +166,8 @@ test('homepage final sections keep alternating backgrounds before the footer', (
   );
   const faqSource = source.slice(source.indexOf('export function HomeFaq'));
 
-  assert.match(pricingSource, /<section className="border-b border-hairline bg-surface section">/);
-  assert.match(faqSource, /<section className="bg-bg section">/);
-  assert.match(faqSource, /rounded-card border border-hairline bg-surface p-5/);
+  assert.match(pricingSource, /<section className="dark-section-neon border-b border-hairline bg-surface section">/);
+  assert.match(faqSource, /<section className="dark-section-neon bg-bg section">/);
+  assert.match(faqSource, /dark-neon-panel group rounded-card border border-hairline bg-surface p-5/);
   assert.doesNotMatch(faqSource, /<section className="bg-surface section">/);
 });

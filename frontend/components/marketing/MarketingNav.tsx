@@ -411,7 +411,7 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex h-9 items-center rounded-pill border border-hairline px-3 text-xs font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
+                className="inline-flex h-9 items-center rounded-pill border border-hairline px-3 text-xs font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white dark:bg-white dark:text-[#030712] dark:shadow-[0_14px_32px_rgba(255,255,255,0.14)] dark:hover:border-white dark:hover:bg-slate-100 dark:hover:text-[#030712] sm:h-auto sm:px-4 sm:py-2 sm:text-sm"
               >
                 <span className="sm:hidden">{generateLabelMobile}</span>
                 <span className="hidden sm:inline">{generateLabel}</span>
@@ -645,7 +645,7 @@ export function MarketingNav() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
+                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card dark:bg-white dark:text-[#030712] dark:shadow-[0_14px_32px_rgba(255,255,255,0.14)] dark:hover:bg-slate-100"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {generateLabel}
