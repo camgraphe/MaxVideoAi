@@ -425,7 +425,7 @@ function readVideoPricingMetadata(url: string): Promise<UpscaleVideoPricingMetad
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-white/55">{children}</span>;
+  return <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">{children}</span>;
 }
 
 function clampComparePosition(value: number) {
@@ -454,8 +454,8 @@ function SegmentButton({
       onClick={onClick}
       className={`inline-flex min-h-[46px] items-center justify-center gap-2 rounded-input border px-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
         active
-          ? 'border-slate-950 bg-slate-950 text-white shadow-[0_12px_28px_rgba(15,23,42,0.18)] dark:border-white dark:bg-white dark:text-slate-950'
-          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 dark:border-white/14 dark:bg-white/[0.055] dark:text-white/80 dark:hover:border-white/24 dark:hover:bg-white/[0.09] dark:hover:text-white'
+          ? 'border-brand bg-brand text-on-brand shadow-card'
+          : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-text-primary'
       }`}
     >
       {children}
@@ -1201,7 +1201,7 @@ export default function UpscaleWorkspace() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f6f8fb] text-slate-950 dark:bg-[#070b12] dark:text-white">
+    <div className="flex min-h-screen flex-col bg-bg text-text-primary">
       <HeaderBar />
       <div className="flex flex-1 min-w-0 flex-col md:flex-row">
         <AppSidebar />
@@ -1213,31 +1213,31 @@ export default function UpscaleWorkspace() {
                 variant="ghost"
                 size="sm"
                 linkComponent={Link}
-                className="gap-2 text-slate-600 hover:text-slate-950 dark:text-white/70 dark:hover:text-white"
+                className="gap-2 text-text-secondary hover:text-text-primary"
               >
                 <ArrowLeft className="h-4 w-4" />
                 {copy.back}
               </ButtonLink>
             </div>
-            <section className="relative overflow-hidden rounded-[28px] border border-transparent bg-[radial-gradient(circle_at_22%_8%,rgba(219,234,254,0.88),transparent_32%),linear-gradient(90deg,#f9fbff_0%,#f5f8fc_58%,#f8fafc_100%)] px-6 py-7 dark:border-white/8 dark:bg-[radial-gradient(circle_at_22%_8%,rgba(37,99,235,0.18),transparent_34%),linear-gradient(90deg,#0c1220_0%,#0a101b_58%,#090d15_100%)] lg:px-10 lg:py-9">
+            <section className="relative overflow-hidden rounded-[28px] border border-border bg-[radial-gradient(circle_at_22%_8%,var(--brand-soft),transparent_32%),linear-gradient(90deg,var(--surface)_0%,var(--surface-2)_58%,var(--bg)_100%)] px-6 py-7 lg:px-10 lg:py-9">
               <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
                 <div className="min-w-0 pt-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-slate-900 dark:text-white">{copy.eyebrow}</p>
-                  <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white lg:text-[44px] lg:leading-[1.05]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-text-primary">{copy.eyebrow}</p>
+                  <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-text-primary lg:text-[44px] lg:leading-[1.05]">
                     {copy.title}
                   </h1>
-                  <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600 dark:text-white/76">{copy.subtitle}</p>
+                  <p className="mt-3 max-w-2xl text-base leading-7 text-text-secondary">{copy.subtitle}</p>
                 </div>
 
-                <div className="rounded-[20px] border border-slate-200/80 bg-white/92 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+                <div className="rounded-[20px] border border-border bg-surface-glass-90 p-5 shadow-card backdrop-blur">
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] bg-slate-950 text-white dark:bg-white dark:text-slate-950">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] bg-brand text-on-brand">
                       <WandSparkles className="h-5 w-5" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-base font-semibold text-slate-950 dark:text-white">{engine?.label ?? 'Upscale engine'}</p>
-                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                        <p className="truncate text-base font-semibold text-text-primary">{engine?.label ?? 'Upscale engine'}</p>
+                        <span className="rounded-full border border-success-border bg-success-bg px-2.5 py-1 text-[11px] font-semibold text-success">
                           Active
                         </span>
                       </div>
@@ -1245,23 +1245,23 @@ export default function UpscaleWorkspace() {
                   </div>
                   <div className="mt-5 grid grid-cols-4 gap-2 text-center">
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-white/45">Mode</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">{mode === 'target' ? targetResolution : `${upscaleFactor}x`}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Mode</p>
+                      <p className="mt-1 text-sm font-semibold text-text-primary">{mode === 'target' ? targetResolution : `${upscaleFactor}x`}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-white/45">Type</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">{mediaTypeLabel}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Type</p>
+                      <p className="mt-1 text-sm font-semibold text-text-primary">{mediaTypeLabel}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-white/45">Format</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">{outputFormat.toUpperCase()}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Format</p>
+                      <p className="mt-1 text-sm font-semibold text-text-primary">{outputFormat.toUpperCase()}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-white/45">Price</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">{priceLabel}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">Price</p>
+                      <p className="mt-1 text-sm font-semibold text-text-primary">{priceLabel}</p>
                     </div>
                   </div>
-                  <Button className="mt-5 w-full rounded-[10px] bg-slate-950 py-3 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-white/90" onClick={handleRun} disabled={!canRun}>
+                  <Button className="mt-5 w-full rounded-[10px] bg-brand py-3 text-on-brand hover:bg-brand-hover" onClick={handleRun} disabled={!canRun}>
                     {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
                     {running ? copy.running : copy.run}
                   </Button>
@@ -1271,13 +1271,13 @@ export default function UpscaleWorkspace() {
 
             <div className="mt-5 grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
               <section className="contents xl:sticky xl:top-5 xl:block xl:space-y-4 xl:self-start">
-                <Card className="order-1 rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
+                <Card className="order-1 rounded-[14px] border border-border bg-surface p-5 shadow-card xl:order-none">
                   <div className="mb-5 flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-start gap-3">
-                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-white/10 dark:text-white/72">1</span>
+                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-text-secondary">1</span>
                       <div>
-                        <h2 className="text-base font-semibold text-slate-950 dark:text-white">Source asset</h2>
-                        <p className="mt-1 text-xs text-slate-500 dark:text-white/62">Add the asset you want to upscale.</p>
+                        <h2 className="text-base font-semibold text-text-primary">Source asset</h2>
+                        <p className="mt-1 text-xs text-text-muted">Add the asset you want to upscale.</p>
                       </div>
                     </div>
                     <Button
@@ -1286,7 +1286,7 @@ export default function UpscaleWorkspace() {
                       size="sm"
                       onClick={openLibraryModal}
                       disabled={!user || running || uploading}
-                      className="h-9 shrink-0 rounded-[10px] border-slate-200 bg-white px-3 text-xs text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/76 dark:hover:bg-white/[0.08]"
+                      className="h-9 shrink-0 rounded-[10px] border-border bg-surface px-3 text-xs text-text-secondary hover:bg-surface-hover hover:text-text-primary"
                     >
                       <LibraryBig className="h-4 w-4" />
                       {copy.library}
@@ -1304,7 +1304,7 @@ export default function UpscaleWorkspace() {
                     </SegmentButton>
                   </div>
 
-                  <label className="mt-4 block cursor-pointer rounded-[12px] border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center transition hover:border-slate-500 hover:bg-white dark:border-white/14 dark:bg-white/[0.03] dark:hover:border-white/30 dark:hover:bg-white/[0.06]">
+                  <label className="mt-4 block cursor-pointer rounded-[12px] border border-dashed border-border bg-bg p-8 text-center transition hover:border-border-hover hover:bg-surface-hover">
                     <input
                       type="file"
                       accept={mediaType === 'image' ? 'image/*' : 'video/*'}
@@ -1312,17 +1312,17 @@ export default function UpscaleWorkspace() {
                       disabled={!user || uploading || running}
                       className="sr-only"
                     />
-                    <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-950 shadow-sm dark:bg-white/10 dark:text-white">
+                    <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-surface text-text-primary shadow-card">
                       {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
                     </span>
-                    <span className="mt-3 block text-sm font-semibold text-slate-950 dark:text-white">Drop file here</span>
-                    <span className="mt-1 block text-xs text-slate-500 dark:text-white/52">{source?.name ?? (mediaType === 'video' ? 'MP4, WebM, MOV' : 'PNG, JPG, WebP up to 200MB')}</span>
+                    <span className="mt-3 block text-sm font-semibold text-text-primary">Drop file here</span>
+                    <span className="mt-1 block text-xs text-text-muted">{source?.name ?? (mediaType === 'video' ? 'MP4, WebM, MOV' : 'PNG, JPG, WebP up to 200MB')}</span>
                   </label>
 
                   <div className="my-4 flex items-center gap-3">
-                    <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
-                    <span className="text-[11px] text-slate-400 dark:text-white/35">or</span>
-                    <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                    <span className="h-px flex-1 bg-hairline" />
+                    <span className="text-[11px] text-text-muted">or</span>
+                    <span className="h-px flex-1 bg-hairline" />
                   </div>
 
                   <label className="block">
@@ -1337,17 +1337,17 @@ export default function UpscaleWorkspace() {
                       }}
                       placeholder="https://example.com/asset.mp4"
                       disabled={running || uploading}
-                      className="rounded-[10px] border-slate-200 bg-white text-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/28"
+                      className="rounded-[10px] border-border bg-surface text-sm text-text-primary placeholder:text-text-muted"
                     />
                   </label>
                 </Card>
 
-                <Card className="order-3 rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
+                <Card className="order-3 rounded-[14px] border border-border bg-surface p-5 shadow-card xl:order-none">
                   <div className="mb-5 flex items-start gap-3">
-                    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-white/10 dark:text-white/72">2</span>
+                    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-text-secondary">2</span>
                     <div>
-                      <h2 className="text-base font-semibold text-slate-950 dark:text-white">{copy.settingsTitle}</h2>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-white/62">Choose how you want to enhance your asset.</p>
+                      <h2 className="text-base font-semibold text-text-primary">{copy.settingsTitle}</h2>
+                      <p className="mt-1 text-xs text-text-muted">Choose how you want to enhance your asset.</p>
                     </div>
                   </div>
 
@@ -1406,35 +1406,35 @@ export default function UpscaleWorkspace() {
                     </label>
                   </div>
 
-                  <div className="mt-5 flex items-center gap-3 rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white text-slate-950 shadow-sm dark:bg-white/10 dark:text-white">
+                  <div className="mt-5 flex items-center gap-3 rounded-[12px] border border-border bg-bg px-4 py-3">
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-surface text-text-primary shadow-card">
                       <Coins className="h-5 w-5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-slate-500 dark:text-white/55">{copy.priceEyebrow}</p>
-                      <p className="mt-1 text-xl font-semibold leading-none text-slate-950 dark:text-white">{priceLabel}</p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-white/52">{priceHint}</p>
+                      <p className="text-xs font-medium text-text-muted">{copy.priceEyebrow}</p>
+                      <p className="mt-1 text-xl font-semibold leading-none text-text-primary">{priceLabel}</p>
+                      <p className="mt-1 text-xs text-text-muted">{priceHint}</p>
                     </div>
                   </div>
 
-                  <Button className="mt-5 w-full rounded-[10px] bg-slate-950 py-3 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-white/90" size="lg" onClick={handleRun} disabled={!canRun}>
+                  <Button className="mt-5 w-full rounded-[10px] bg-brand py-3 text-on-brand hover:bg-brand-hover" size="lg" onClick={handleRun} disabled={!canRun}>
                     {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
                     {running ? copy.running : copy.run}
                   </Button>
-                  {message ? <p className="mt-3 text-sm text-slate-500 dark:text-white/55">{message}</p> : null}
-                  {error ? <p className="mt-3 text-sm font-medium text-danger">{error}</p> : null}
+                  {message ? <p className="mt-3 text-sm text-text-muted">{message}</p> : null}
+                  {error ? <p className="mt-3 text-sm font-medium text-error">{error}</p> : null}
                 </Card>
               </section>
 
               <section className="contents xl:block xl:space-y-4">
-                <Card className="order-2 overflow-hidden rounded-[14px] border border-slate-200 bg-white p-0 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
+                <Card className="order-2 overflow-hidden rounded-[14px] border border-border bg-surface p-0 shadow-card xl:order-none">
                   <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-4 sm:px-5">
                     <div className="min-w-0">
-                      <h2 className="text-base font-semibold text-slate-950 dark:text-white">Before / after preview</h2>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-white/62">Upload a source, choose a recipe, then compare the upscaled result.</p>
+                      <h2 className="text-base font-semibold text-text-primary">Before / after preview</h2>
+                      <p className="mt-1 text-xs text-text-muted">Upload a source, choose a recipe, then compare the upscaled result.</p>
                     </div>
                     <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-                      <div className="flex rounded-[10px] border border-slate-200 bg-slate-50 p-1 dark:border-white/10 dark:bg-white/[0.04]">
+                      <div className="flex rounded-[10px] border border-border bg-bg p-1">
                         {([
                           ['source', copy.previewSource, false],
                           ['result', copy.previewResult, !hasResult],
@@ -1449,8 +1449,8 @@ export default function UpscaleWorkspace() {
                               onClick={() => setPreviewMode(modeOption)}
                               className={`min-h-8 rounded-[8px] px-3 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45 ${
                                 active
-                                  ? 'bg-slate-950 text-white shadow-sm dark:bg-white dark:text-slate-950'
-                                  : 'text-slate-600 hover:bg-white hover:text-slate-950 dark:text-white/64 dark:hover:bg-white/[0.08] dark:hover:text-white'
+                                  ? 'bg-brand text-on-brand shadow-card'
+                                  : 'text-text-secondary hover:bg-surface hover:text-text-primary'
                               }`}
                             >
                               {label}
@@ -1460,28 +1460,28 @@ export default function UpscaleWorkspace() {
                       </div>
                       {output?.url ? (
                         <>
-                          <Button variant="outline" size="sm" onClick={handleSave} className="rounded-[10px] border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/72 dark:hover:bg-white/[0.08]">
-                          <Save className="h-4 w-4" />
-                          {copy.save}
+                          <Button variant="outline" size="sm" onClick={handleSave} className="rounded-[10px] border-border bg-surface text-text-secondary hover:bg-surface-hover hover:text-text-primary">
+                            <Save className="h-4 w-4" />
+                            {copy.save}
                           </Button>
-                          <Button variant="outline" size="sm" onClick={handleDownload} className="rounded-[10px] border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/72 dark:hover:bg-white/[0.08]">
-                          <Download className="h-4 w-4" />
-                          {copy.download}
+                          <Button variant="outline" size="sm" onClick={handleDownload} className="rounded-[10px] border-border bg-surface text-text-secondary hover:bg-surface-hover hover:text-text-primary">
+                            <Download className="h-4 w-4" />
+                            {copy.download}
                           </Button>
                         </>
                       ) : null}
                       <div
                         className={`flex items-center gap-2 rounded-[12px] border px-2 py-1.5 shadow-[0_10px_28px_rgba(15,23,42,0.08)] transition ${
                           isPixelZoom
-                            ? 'border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950'
-                            : 'border-slate-300 bg-white text-slate-950 ring-1 ring-slate-950/5 dark:border-white/20 dark:bg-white/[0.07] dark:text-white dark:ring-white/10'
+                            ? 'border-brand bg-brand text-on-brand'
+                            : 'border-border bg-surface text-text-primary ring-1 ring-border'
                         }`}
                       >
                         <span
                           className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] ${
                             isPixelZoom
-                              ? 'bg-white text-slate-950 dark:bg-slate-950 dark:text-white'
-                              : 'bg-slate-950 text-white dark:bg-white dark:text-slate-950'
+                              ? 'bg-surface text-text-primary'
+                              : 'bg-brand text-on-brand'
                           }`}
                         >
                           <ZoomIn className="h-4 w-4" />
@@ -1493,7 +1493,7 @@ export default function UpscaleWorkspace() {
                           aria-label={copy.previewZoom}
                           value={previewZoom}
                           onChange={(event) => setPreviewZoom(event.currentTarget.value as PreviewZoom)}
-                          className="h-8 min-w-[82px] rounded-[8px] border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-950 outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-ring dark:border-white/14 dark:bg-slate-950 dark:text-white dark:hover:bg-slate-900"
+                          className="h-8 min-w-[82px] rounded-[8px] border border-border bg-surface px-2 text-xs font-semibold text-text-primary outline-none hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {PREVIEW_ZOOM_OPTIONS.map((option) => (
                             <option key={option.value} value={option.value}>
@@ -1506,13 +1506,13 @@ export default function UpscaleWorkspace() {
                   </div>
 
                   <div className="px-3 pb-3 sm:px-5 sm:pb-5">
-                    <div className="relative aspect-[4/3] min-h-[260px] max-h-[min(72vh,680px)] overflow-hidden rounded-[12px] border border-slate-900/10 bg-slate-950 sm:aspect-[16/9] sm:min-h-[340px] xl:aspect-[16/8] xl:min-h-[420px]">
+                    <div className="relative aspect-[4/3] min-h-[260px] max-h-[min(72vh,680px)] overflow-hidden rounded-[12px] border border-border bg-surface-3 sm:aspect-[16/9] sm:min-h-[340px] xl:aspect-[16/8] xl:min-h-[420px]">
                       <div ref={previewScrollerRef} className={`absolute inset-0 ${isPixelZoom ? 'overflow-auto' : 'overflow-hidden'}`}>
                         <div
                           className={`relative h-full w-full ${
                             compareEnabled ? 'cursor-ew-resize touch-none select-none' : ''
                           } ${
-                            compareDragging ? 'ring-2 ring-white/70' : ''
+                            compareDragging ? 'ring-2 ring-ring' : ''
                           }`}
                           style={
                             isPixelZoom
@@ -1590,9 +1590,9 @@ export default function UpscaleWorkspace() {
 
                       {activePreviewMode === 'compare' ? (
                         <>
-                          <div className="absolute inset-y-0 w-px bg-white/90 shadow-[0_0_0_1px_rgba(15,23,42,0.18)]" style={{ left: `${comparePosition}%` }} />
+                          <div className="absolute inset-y-0 w-px bg-on-inverse shadow-[0_0_0_1px_var(--surface-on-media-dark-40)]" style={{ left: `${comparePosition}%` }} />
                           <div
-                            className="absolute top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white text-slate-950 shadow-[0_14px_36px_rgba(15,23,42,0.32)] transition-transform hover:scale-105"
+                            className="absolute top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-surface-on-media-70 bg-on-inverse text-brand shadow-float transition-transform hover:scale-105"
                             style={{ left: `${comparePosition}%` }}
                             aria-hidden="true"
                           >
@@ -1601,18 +1601,18 @@ export default function UpscaleWorkspace() {
                         </>
                       ) : null}
 
-                      <div className="absolute left-3 top-3 rounded-[8px] bg-slate-950/82 px-3 py-2 text-white shadow-lg backdrop-blur sm:left-6 sm:top-6 sm:px-4 sm:py-3">
+                      <div className="absolute left-3 top-3 rounded-[8px] bg-surface-on-media-dark-80 px-3 py-2 text-on-inverse shadow-lg backdrop-blur sm:left-6 sm:top-6 sm:px-4 sm:py-3">
                         <p className="text-xs font-semibold">
                           {activePreviewMode === 'result' ? copy.previewResult : copy.previewSource}
                         </p>
-                        <p className="mt-1 text-xs text-white/85">
+                        <p className="mt-1 text-xs text-on-media-85">
                           {activePreviewMode === 'result' ? outputSizeLabel : sourceSizeLabel}
                         </p>
                       </div>
                       {activePreviewMode === 'compare' ? (
-                        <div className="absolute right-3 top-3 rounded-[8px] bg-slate-950/82 px-3 py-2 text-white shadow-lg backdrop-blur sm:right-6 sm:top-6 sm:px-4 sm:py-3">
+                        <div className="absolute right-3 top-3 rounded-[8px] bg-surface-on-media-dark-80 px-3 py-2 text-on-inverse shadow-lg backdrop-blur sm:right-6 sm:top-6 sm:px-4 sm:py-3">
                           <p className="text-xs font-semibold">{copy.previewResult}</p>
-                          <p className="mt-1 text-xs text-white/85">{outputSizeLabel}</p>
+                          <p className="mt-1 text-xs text-on-media-85">{outputSizeLabel}</p>
                         </div>
                       ) : null}
                         </div>
@@ -1621,13 +1621,13 @@ export default function UpscaleWorkspace() {
                   </div>
                 </Card>
 
-                <Card className="order-4 rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] xl:order-none">
+                <Card className="order-4 rounded-[14px] border border-border bg-surface p-5 shadow-card xl:order-none">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-base font-semibold text-slate-950 dark:text-white">{copy.recentTitle}</h2>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-white/55">Reuse finished assets in Image, Video, or Library.</p>
+                      <h2 className="text-base font-semibold text-text-primary">{copy.recentTitle}</h2>
+                      <p className="mt-1 text-xs text-text-muted">Reuse finished assets in Image, Video, or Library.</p>
                     </div>
-                    <Link href="/app/library" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 hover:text-slate-950 dark:text-white/72 dark:hover:text-white">
+                    <Link href="/app/library" className="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary hover:text-text-primary">
                       View library
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
@@ -1639,7 +1639,7 @@ export default function UpscaleWorkspace() {
                         <div
                           key={group.id}
                           className={`w-[258px] shrink-0 rounded-[14px] transition ${
-                            active ? 'ring-2 ring-slate-950 ring-offset-2 ring-offset-white dark:ring-white dark:ring-offset-slate-950' : ''
+                            active ? 'ring-2 ring-brand ring-offset-2 ring-offset-bg' : ''
                           }`}
                         >
                           <GroupedJobCard
@@ -1654,7 +1654,7 @@ export default function UpscaleWorkspace() {
                       );
                     })}
                     {!recentGroups.length ? (
-                      <div className="w-full rounded-[12px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500 dark:border-white/12 dark:bg-white/[0.035] dark:text-white/55">
+                      <div className="w-full rounded-[12px] border border-dashed border-border bg-bg p-4 text-sm text-text-muted">
                         No upscale runs yet.
                       </div>
                     ) : null}
@@ -1666,7 +1666,7 @@ export default function UpscaleWorkspace() {
         </main>
       </div>
       {libraryModalOpen ? (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/50 px-3 py-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-overlay-bg px-3 py-4 backdrop-blur-sm">
           <button
             type="button"
             className="absolute inset-0 cursor-default"
