@@ -1334,6 +1334,11 @@ const SECTION_SCROLL_MARGIN = 'scroll-mt-[calc(var(--header-height)+64px)]';
 const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
 const HERO_AUTOPLAY_DELAY_MS = 1800;
 const GENERIC_TRUST_LINE = 'Pay-as-you-go · Price shown before you generate';
+const HERO_LIMITS_LINES: Record<AppLocale, string> = {
+  en: 'Model limits: duration, resolution, aspect ratio, audio, and input modes vary by engine.',
+  fr: 'Limites du modèle : durée, résolution, ratio, audio et modes d’entrée varient selon le moteur.',
+  es: 'Límites del modelo: duración, resolución, relación de aspecto, audio y modos de entrada varían según el motor.',
+};
 const BEST_USE_CASE_ICON_KEYS: BestUseCaseIconKey[] = [
   'ads',
   'ugc',
@@ -2429,6 +2434,14 @@ function normalizeMaxResolution(value: string) {
   return value;
 }
 
+function formatHeroLimitChip(label: string | undefined, value: string) {
+  return label ? `${label}: ${value}` : value;
+}
+
+function resolveHeroLimitsLine(locale: AppLocale) {
+  return HERO_LIMITS_LINES[locale] ?? HERO_LIMITS_LINES.en;
+}
+
 function buildAutoHeroSpecChips(values: KeySpecValues | null, locale: AppLocale): HeroSpecChip[] {
   if (!values) return [];
   const chips: HeroSpecChip[] = [];
@@ -2448,8 +2461,8 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null, locale: AppLocale)
   if (isSupported(values.imageToImage)) add(labels.imageToImage, 'imageToVideo');
   if (isSupported(values.textToVideo)) add(labels.textToVideo, 'textToVideo');
   if (isSupported(values.imageToVideo)) add(labels.imageToVideo, 'imageToVideo');
-  if (resolution) add(resolution, 'resolution');
-  if (duration) add(duration, 'duration');
+  if (resolution) add(formatHeroLimitChip(labels.maxResolution, resolution), 'resolution');
+  if (duration) add(formatHeroLimitChip(labels.maxDuration, duration), 'duration');
   if (aspect) add(aspect, 'aspectRatio');
   if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add(labels.audio, 'audio');
 
@@ -3621,6 +3634,7 @@ function MarketingModelPageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues, locale);
+  const heroLimitsLine = isVideoEngine ? resolveHeroLimitsLine(locale) : null;
   const heroMetaLabels = getLocalizedModelMetaLabels(locale);
   const heroTrustLine =
     locale === 'en'
@@ -4017,6 +4031,11 @@ function MarketingModelPageLayout({
                     </span>
                   ))}
                 </div>
+              ) : null}
+              {heroLimitsLine ? (
+                <p className="mx-auto max-w-2xl text-xs font-medium leading-5 text-text-muted">
+                  {heroLimitsLine}
+                </p>
               ) : null}
               {showHeroDescriptions && heroDesc1 ? (
                 <p className="text-base leading-relaxed text-text-secondary">{heroDesc1}</p>

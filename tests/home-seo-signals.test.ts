@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const homeSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx', 'utf8');
 const homeSectionsSource = readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8');
-const englishMessages = JSON.parse(readFileSync('frontend/messages/en.json', 'utf8')) as {
+type HomeMessages = {
   home?: {
     meta?: { title?: string; description?: string };
     redesign?: {
@@ -19,13 +19,25 @@ const englishMessages = JSON.parse(readFileSync('frontend/messages/en.json', 'ut
     };
   };
 };
+const englishMessages = JSON.parse(readFileSync('frontend/messages/en.json', 'utf8')) as HomeMessages;
+const frenchMessages = JSON.parse(readFileSync('frontend/messages/fr.json', 'utf8')) as HomeMessages;
+const spanishMessages = JSON.parse(readFileSync('frontend/messages/es.json', 'utf8')) as HomeMessages;
 
-test('homepage title keeps the AI video generator category while preserving engine comparison intent', () => {
-  const title = englishMessages.home?.meta?.title ?? '';
+test('homepage titles keep the pay-as-you-go differentiator without getting too long', () => {
+  const titles = {
+    en: englishMessages.home?.meta?.title ?? '',
+    fr: frenchMessages.home?.meta?.title ?? '',
+    es: spanishMessages.home?.meta?.title ?? '',
+  };
 
-  assert.match(title, /AI Video Generator/);
-  assert.match(title, /Engine Comparison/);
-  assert.match(title, /MaxVideoAI/);
+  assert.equal(titles.en, 'Pay-as-you-go AI Video Generator | MaxVideoAI');
+  assert.equal(titles.fr, 'Générateur vidéo IA sans abonnement | MaxVideoAI');
+  assert.equal(titles.es, 'Generador de video IA de pago por uso | MaxVideoAI');
+  assert.ok(titles.en.length <= 55, `English title is too long: ${titles.en.length}`);
+  assert.ok(titles.fr.length <= 55, `French title is too long: ${titles.fr.length}`);
+  assert.ok(titles.es.length <= 55, `Spanish title is too long: ${titles.es.length}`);
+  assert.match(englishMessages.home?.meta?.description ?? '', /Compare Seedance, Kling, Veo, LTX, Wan, Pika/);
+  assert.match(englishMessages.home?.meta?.description ?? '', /pay-as-you-go credits/);
 });
 
 test('homepage structured data keeps Organization schema alongside WebApplication schema', () => {

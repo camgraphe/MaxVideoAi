@@ -506,6 +506,8 @@ const HERO_CHIP_LABELS: Record<UiLocale, Record<string, string>> = {
     imageToImage: 'Image→Image',
     textToVideo: 'Text→Video',
     imageToVideo: 'Image→Video',
+    maxDuration: 'Max duration',
+    maxResolution: 'Max resolution',
     audio: 'Audio',
   },
   fr: {
@@ -513,6 +515,8 @@ const HERO_CHIP_LABELS: Record<UiLocale, Record<string, string>> = {
     imageToImage: 'Image→Image',
     textToVideo: 'Texte→Vidéo',
     imageToVideo: 'Image→Vidéo',
+    maxDuration: 'Durée max',
+    maxResolution: 'Résolution max',
     audio: 'Audio',
   },
   es: {
@@ -520,6 +524,8 @@ const HERO_CHIP_LABELS: Record<UiLocale, Record<string, string>> = {
     imageToImage: 'Imagen→Imagen',
     textToVideo: 'Texto→Video',
     imageToVideo: 'Imagen→Video',
+    maxDuration: 'Duración máx.',
+    maxResolution: 'Resolución máx.',
     audio: 'Audio',
   },
 };
