@@ -7,7 +7,7 @@
     "image": "/assets/models/models-hero-horses-reference.png"
   },
   "overview": "Happy Horse 1.0 is Alibaba's unified AI video model on MaxVideoAI for text prompts, first-frame images, R2V reference-image control, and video-to-video editing with native synchronized audio and lip-sync.",
-  "pricingNotes": "Text, image, and R2V runs use Fal's standard per-second rates by resolution. Video edit is billed at the combined input/output rate, so it costs double the standard rate for the selected resolution.",
+  "pricingNotes": "Text, image, and R2V runs use standard per-second rates by resolution. Video edit is billed at a combined input/output rate, so it costs double the standard rate for the selected resolution.",
   "hero": {
     "title": "Happy Horse 1.0 - unified video generation with native audio",
     "intro": "Generate from text, animate an image, guide a scene with up to nine reference images, or edit an existing clip from the same Happy Horse model card.",
@@ -130,13 +130,15 @@
     },
     {
       "q": "Why is V2V priced differently?",
-      "a": "Fal bills Happy Horse video edit at a combined input/output rate, so V2V is double the standard per-second price for the same resolution."
+      "a": "Happy Horse video edit is billed at a combined input/output rate, so V2V is double the standard per-second price for the same resolution."
     }
   ],
   "custom": {
     "galleryTitle": "Happy Horse 1.0 model demos",
     "galleryIntro": "Review the model page clips for native audio, lip-sync, and video-edit behavior. Comparison pages intentionally stay text/spec focused for this launch.",
     "galleryAllCta": "Start a Happy Horse generation ->",
+    "demoTitle": "Demo prompt - Happy Horse 1.0",
+    "demoPromptLabel": "Prompt",
     "quickPricingTitle": "Pricing route",
     "quickPricingItems": [
       "Use 720p for cheaper iteration across text, image, and R2V.",
@@ -161,7 +163,7 @@
         "ctaLabel": "Compare Happy Horse vs Veo 3.1 ->"
       }
     ],
-    "finalPara1": "Happy Horse 1.0 is strongest when the brief needs one model to cover prompt generation, image animation, reference-guided consistency, and source video editing.",
+    "finalPara1": "Happy Horse 1.0 fits best when the brief needs one model to cover prompt generation, image animation, reference-guided consistency, native audio, lip-sync, and source video editing; choose Seedance or Kling first when raw realism, image quality, and motion are the priority.",
     "finalPara2": "For launch work, start with text or R2V to establish the shot, then use V2V when an approved clip needs a directed edit.",
     "finalButton": "Generate with Happy Horse 1.0"
   }

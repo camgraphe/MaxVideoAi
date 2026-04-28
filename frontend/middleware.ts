@@ -327,7 +327,9 @@ export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
   const userAgent = req.headers.get('user-agent') ?? '';
   const isLighthouseAudit = /lighthouse/i.test(userAgent);
-  const bypassLocaleRedirect = isLighthouseAudit || req.nextUrl.searchParams.get('nolocale') === '1';
+  const isLoopbackRequest = isLoopbackHost(req.headers.get('x-forwarded-host') ?? host);
+  const bypassLocaleRedirect =
+    isLoopbackRequest || isLighthouseAudit || req.nextUrl.searchParams.get('nolocale') === '1';
   const logoutIntentCookieValue = req.cookies.get(LOGOUT_INTENT_COOKIE)?.value;
   const hasLogoutIntentCookie = logoutIntentCookieValue === '1';
   if (host.startsWith('www.')) {

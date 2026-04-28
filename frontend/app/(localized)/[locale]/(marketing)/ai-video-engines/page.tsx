@@ -80,7 +80,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       eyebrow: 'Compare engines',
       title: 'Compare AI video engines',
       intro:
-        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter by key limits, and validate pricing before you render. It covers text-to-video, image-to-video, and video-to-video engines, then routes you to the right fit for your shot.',
+        'Pick any two engines and open a side-by-side comparison in one click. Use this hub to scan popular matchups, filter by key limits, and validate pricing before you generate. It covers text-to-video, image-to-video, and video-to-video engines, then routes you to the right fit for your shot.',
       compareNow: {
         left: 'Engine A',
         right: 'Engine B',
@@ -229,7 +229,7 @@ const HUB_COPY: Record<AppLocale, HubCopy> = {
       eyebrow: 'Comparer les moteurs',
       title: 'Comparatifs de moteurs vidéo IA',
       intro:
-        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant rendu. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
+        'Choisissez deux moteurs et ouvrez un comparatif côte à côte en un clic. Utilisez ce hub pour repérer les duels utiles, filtrer sur les limites clés et valider le prix avant de générer. Il couvre texte-vers-vidéo, image-vers-vidéo et vidéo-vers-vidéo, puis vous oriente vers le moteur le plus adapté à votre plan.',
       compareNow: {
         left: 'Moteur A',
         right: 'Moteur B',

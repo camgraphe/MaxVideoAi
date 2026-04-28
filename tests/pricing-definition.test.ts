@@ -161,11 +161,42 @@ test('Happy Horse is distributed across relevant best-for pages', () => {
     'lipsync-dialogue',
   ].forEach((slug) => {
     assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), true, `${slug} should include Happy Horse`);
+    assert.notEqual(topPicksBySlug.get(slug)?.[0], 'happy-horse-1-0', `${slug} should not rank Happy Horse first`);
   });
+
+  assert.deepEqual(topPicksBySlug.get('cinematic-realism')?.slice(0, 2), ['seedance-2-0', 'kling-3-pro']);
+  assert.deepEqual(topPicksBySlug.get('ads')?.slice(0, 2), ['seedance-2-0', 'kling-3-pro']);
+  assert.deepEqual(topPicksBySlug.get('character-reference')?.slice(0, 2), ['kling-3-pro', 'seedance-2-0']);
 
   ['4k-video', 'fast-drafts', 'stylized-anime'].forEach((slug) => {
     assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), false, `${slug} should not include Happy Horse`);
   });
+});
+
+test('Happy Horse benchmark score is calibrated below Seedance and Kling 3 Pro for realism and motion', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-scores.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    scores?: Array<{
+      modelSlug?: string;
+      fidelity?: number;
+      visualQuality?: number;
+      motion?: number;
+      consistency?: number;
+      lipsyncQuality?: number;
+    }>;
+  };
+  const happyHorse = benchmarkData.scores?.find((entry) => entry.modelSlug === 'happy-horse-1-0');
+  const seedance = benchmarkData.scores?.find((entry) => entry.modelSlug === 'seedance-2-0');
+  const kling = benchmarkData.scores?.find((entry) => entry.modelSlug === 'kling-3-pro');
+
+  assert.ok(happyHorse);
+  assert.ok(seedance);
+  assert.ok(kling);
+  assert.ok((happyHorse.fidelity ?? 0) < (seedance.fidelity ?? 0));
+  assert.ok((happyHorse.visualQuality ?? 0) < (seedance.visualQuality ?? 0));
+  assert.ok((happyHorse.motion ?? 0) < (seedance.motion ?? 0));
+  assert.ok((happyHorse.visualQuality ?? 0) < (kling.visualQuality ?? 0));
+  assert.ok((happyHorse.motion ?? 0) < (kling.motion ?? 0));
 });
 
 test('Kling 3 displayed quotes include the MaxVideoAI margin', async () => {

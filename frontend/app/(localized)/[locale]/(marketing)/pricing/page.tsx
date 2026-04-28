@@ -453,7 +453,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       ? (exampleCosts.cards as ExampleCardConfig[])
       : DEFAULT_EXAMPLE_COSTS[locale].cards;
   const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS[locale];
-  const generatorHref = '/generate';
+  const generatorHref = '/app';
 
   const resolvedExampleCards: ExampleCardConfig[] = await Promise.all(
     exampleCards.map(async (card) => {
@@ -526,15 +526,15 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         : 'Want to see real-time prices before you generate?';
   const openGeneratorLabel =
     content.calculator?.cta ??
-    (locale === 'fr' ? 'Ouvrir le générateur' : locale === 'es' ? 'Abrir el generador' : 'Open the generator');
+    (locale === 'fr' ? 'Ouvrir le workspace' : locale === 'es' ? 'Abrir workspace' : 'Open workspace');
   const previewTitle = content.calculator?.title ?? 'Preview prices in the app';
   const previewDescription =
     content.calculator?.description ??
     (locale === 'fr'
       ? 'Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.'
       : locale === 'es'
-        ? 'Abre el generador para ver el precio exacto antes de crear el video.'
-        : 'Open the generator to see the exact price before you create a video.');
+        ? 'Abre el workspace para ver el precio exacto antes de crear el video.'
+        : 'Open the workspace to see the exact price before you create a video.');
   const refundFeatureIcons: LucideIcon[] = [ShieldCheck, WalletCards, CheckCircle2];
   const isNoSubscriptionCopy = (line: string) => {
     const normalized = line.toLowerCase();

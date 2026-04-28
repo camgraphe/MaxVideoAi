@@ -9,19 +9,19 @@ slug: image-to-video
 Image-to-video is about preserving the source image while adding believable motion. The winning model should respect the input frame, avoid identity drift, create motion that fits the image, and let you control the ending when needed. This is different from pure text-to-video: the prompt is not inventing the entire scene, it is directing motion from an approved visual anchor.
 
 ## Best picks
-1. **[Happy Horse 1.0](/models/happy-horse-1-0)** - best overall when an image animation may also need native audio, lip-sync, references, or a V2V edit pass.
-2. **[Seedance 2.0](/models/seedance-2-0)** - best for flexible image-to-video and reference-guided variants.
-3. **[Veo 3.1](/models/veo-3-1)** - best for polished image-to-video clips with clean motion and optional native audio.
-4. **[Kling 3 Pro](/models/kling-3-pro)** - best when the source image is part of a structured, multi-shot, character or product sequence.
+1. **[Seedance 2.0](/models/seedance-2-0)** - best for flexible image-to-video, reference-guided variants, and stronger visual fidelity.
+2. **[Veo 3.1](/models/veo-3-1)** - best for polished image-to-video clips with clean motion and optional native audio.
+3. **[Kling 3 Pro](/models/kling-3-pro)** - best when the source image is part of a structured, multi-shot, character or product sequence.
+4. **[Happy Horse 1.0](/models/happy-horse-1-0)** - best when an image animation mainly needs a unified path into native audio, lip-sync, references, or V2V.
 
 ## Why these models rank here
-Happy Horse 1.0 is the first place to start when a still image may become more than a simple motion test. You can animate the image, move into R2V with multiple references, or edit a generated/source clip with the same model family while keeping native audio and lip-sync in scope.
-
-Seedance 2.0 remains a strong pick when the input image is only one part of a larger reference pack. It is useful for creative teams that have style frames, product references, approved visual direction, or audio references and need the model to hold those constraints during generation.
+Seedance 2.0 is the first place to start when the input image is only one part of a larger reference pack. It is stronger than Happy Horse on the balance of image quality, motion realism, and reference-guided generation, especially for polished production tests.
 
 Veo 3.1 is a strong image-to-video choice when you want a clean, reviewable clip quickly. It tends to fit ad-style workflows: one approved product image, one clear camera move, one duration, and a prompt that explains what should move.
 
 Kling 3 Pro is not just an image-to-video option; it is a control option. Use it when the still image needs to become part of a shot list. If the page, product, or character must appear across several beats, Kling 3 Pro's multi-prompt and Elements workflows are more relevant than a single image animation.
+
+Happy Horse 1.0 remains useful when the workflow needs to stay unified across image-to-video, R2V references, V2V edits, native audio, and lip-sync. It is no longer the best pure quality pick, but it can reduce handoffs when the same asset needs several modes.
 
 ## Prompting checklist
 - Keep the prompt focused on motion, not a new image description.
@@ -37,10 +37,10 @@ Kling 3 Pro is not just an image-to-video option; it is a control option. Use it
 
 ## FAQ
 ### What is the best image-to-video AI generator?
-Happy Horse 1.0 is the best starting point when the same workflow may need image animation, reference images, V2V editing, native audio, or lip-sync. Seedance 2.0 and Veo 3.1 remain strong alternatives for reference-led and polished single-image clips.
+Seedance 2.0 is the best starting point for most image-to-video work because it is stronger on quality, motion, and reference guidance. Happy Horse 1.0 is useful when the same clip also needs native audio, lip-sync, R2V, or V2V.
 
 ### Is image-to-video better than text-to-video?
 Use image-to-video when you already have an approved subject, product, character, or style frame. Use text-to-video when you are still exploring the scene.
 
 ### Which model is best for product image-to-video?
-Start with Happy Horse 1.0, Seedance 2.0, or Kling 3 Pro. Product work needs clean detail, stable framing, predictable movement, and a clear path to reference or edit passes.
+Start with Seedance 2.0, Kling 3 Pro, or Veo 3.1. Product work needs clean detail, stable framing, predictable movement, and a clear path to reference or edit passes.

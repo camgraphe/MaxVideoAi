@@ -19,7 +19,7 @@
       "title": "Best image-to-video AI generator",
       "description": "Best AI video models for turning a still image, style frame, or product shot into controlled motion.",
       "tier": 1,
-      "topPicks": ["happy-horse-1-0", "seedance-2-0", "veo-3-1", "kling-3-pro"],
+      "topPicks": ["seedance-2-0", "veo-3-1", "kling-3-pro", "happy-horse-1-0"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
     },
     {
@@ -27,7 +27,7 @@
       "title": "Best cinematic AI video generator",
       "description": "Best AI video models for cinematic motion, lighting, camera language, and high-end visual polish.",
       "tier": 1,
-      "topPicks": ["happy-horse-1-0", "seedance-2-0", "kling-3-pro", "veo-3-1"],
+      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-0"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-kling-3-pro", "seedance-2-0-vs-veo-3-1"]
     },
     {
@@ -35,7 +35,7 @@
       "title": "Best AI video generator for character reference",
       "description": "Best AI video models when a character, wardrobe, prop, or product identity needs to stay stable across shots.",
       "tier": 1,
-      "topPicks": ["happy-horse-1-0", "kling-3-pro", "seedance-2-0", "kling-3-standard"],
+      "topPicks": ["kling-3-pro", "seedance-2-0", "happy-horse-1-0", "kling-3-standard"],
       "relatedComparisons": ["happy-horse-1-0-vs-kling-3-pro", "happy-horse-1-0-vs-seedance-2-0", "kling-3-pro-vs-kling-3-standard"]
     },
     {
@@ -43,7 +43,7 @@
       "title": "Best reference-to-video AI generator",
       "description": "Best AI video models for guiding output with reference images, video clips, audio, or approved visual material.",
       "tier": 1,
-      "topPicks": ["happy-horse-1-0", "seedance-2-0", "veo-3-1", "kling-3-pro"],
+      "topPicks": ["seedance-2-0", "kling-3-pro", "happy-horse-1-0", "veo-3-1"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-veo-3-1", "kling-3-pro-vs-seedance-2-0"]
     },
     {
@@ -67,7 +67,7 @@
       "title": "Best AI video generator for ads",
       "description": "Best AI video models for product ads, ecommerce creative, paid social variants, and polished campaign assets.",
       "tier": 1,
-      "topPicks": ["happy-horse-1-0", "seedance-2-0", "veo-3-1", "kling-3-pro"],
+      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-0"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
     },
     {
@@ -75,7 +75,7 @@
       "title": "Best AI video generator for UGC videos",
       "description": "Best AI video models for creator-style clips, selfie ads, social proof, short dialogue, and TikTok-style testing.",
       "tier": 2,
-      "topPicks": ["happy-horse-1-0", "veo-3-1", "seedance-2-0", "kling-3-pro"],
+      "topPicks": ["seedance-2-0", "veo-3-1", "happy-horse-1-0", "kling-3-pro"],
       "relatedComparisons": ["happy-horse-1-0-vs-veo-3-1", "happy-horse-1-0-vs-seedance-2-0", "kling-3-pro-vs-veo-3-1"]
     },
     {
@@ -83,7 +83,7 @@
       "title": "Best AI video generator for product videos",
       "description": "Best AI video models for product reveals, ecommerce visuals, packshots, demos, and clean product storytelling.",
       "tier": 2,
-      "topPicks": ["happy-horse-1-0", "ltx-2-3-pro", "seedance-2-0", "kling-3-pro"],
+      "topPicks": ["ltx-2-3-pro", "seedance-2-0", "kling-3-pro", "happy-horse-1-0"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-kling-3-pro", "ltx-2-3-pro-vs-seedance-2-0"]
     },
     {
@@ -91,7 +91,7 @@
       "title": "Best AI video generator for lip sync and dialogue",
       "description": "Best AI video models for speaking characters, short dialogue, native audio, voice control, and social narration.",
       "tier": 2,
-      "topPicks": ["happy-horse-1-0", "seedance-2-0", "veo-3-1", "kling-3-pro"],
+      "topPicks": ["seedance-2-0", "veo-3-1", "happy-horse-1-0", "kling-3-pro"],
       "relatedComparisons": ["happy-horse-1-0-vs-seedance-2-0", "happy-horse-1-0-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
     },
     {

@@ -366,55 +366,55 @@
               ]
             },
             {
-              "engineId": "ltx-2-3-fast",
-              "name": "LTX 2.3 Fast",
+              "engineId": "ltx-2-3-pro",
+              "name": "LTX 2.3 Pro",
               "provider": "Lightricks",
-              "bestFor": "Fast drafts",
-              "fallbackPrice": "from $0.18 / 5s",
+              "bestFor": "Audio and retakes",
+              "fallbackPrice": "from $0.47 / 6s",
               "scores": [
                 {
                   "label": "Motion",
-                  "value": 72
+                  "value": 84
                 },
                 {
                   "label": "Realism",
-                  "value": 68
+                  "value": 80
                 },
                 {
                   "label": "Speed",
-                  "value": 96
+                  "value": 78
                 }
               ],
               "tags": [
-                "Fast",
-                "Cheap",
-                "Draft"
+                "Audio",
+                "Retake",
+                "Extend"
               ]
             },
             {
-              "engineId": "wan-2-6",
-              "name": "Wan 2.6",
-              "provider": "Wan",
-              "bestFor": "Video-to-video workflows",
-              "fallbackPrice": "from $0.22 / 5s",
+              "engineId": "happy-horse-1-0",
+              "name": "Happy Horse 1.0",
+              "provider": "Alibaba",
+              "bestFor": "Unified lip-sync",
+              "fallbackPrice": "from $0.70 / 5s",
               "scores": [
                 {
                   "label": "Motion",
-                  "value": 82
+                  "value": 76
                 },
                 {
                   "label": "Realism",
-                  "value": 78
+                  "value": 74
                 },
                 {
                   "label": "Speed",
-                  "value": 76
+                  "value": 72
                 }
               ],
               "tags": [
-                "Video-to-video",
-                "Structured",
-                "Flexible"
+                "Lip-sync",
+                "Audio",
+                "References"
               ]
             }
           ],
@@ -435,8 +435,6 @@
         }
       },
       "proof": {
-        "liveValue": "Live",
-        "pricingSubLabel": "Before you generate",
         "items": [
           {
             "id": "engines",
@@ -467,8 +465,8 @@
             "label": "Options"
           },
           {
-            "id": "pricing",
-            "label": "Live pricing"
+            "id": "successfulGenerations",
+            "label": "Successful generations"
           }
         ]
       },
@@ -509,7 +507,7 @@
         ]
       },
       "examples": {
-        "title": "Compare real outputs by engine.",
+        "title": "Explore real outputs by engine.",
         "subtitle": "Open focused example pages, check the model behind each result, and see the cost before you generate.",
         "cta": "Browse all examples",
         "modelsCta": "View all models",
@@ -616,7 +614,7 @@
         ]
       },
       "comparisons": {
-        "title": "Compare AI video models before you spend credits.",
+        "title": "Validate the right model before spending credits.",
         "subtitle": "Engines differ on motion, realism, prompt fidelity, audio, speed, resolution and cost. Compare them side by side before choosing where to spend your credits.",
         "cta": "Compare models",
         "cards": [
@@ -676,18 +674,18 @@
             ]
           },
           {
-            "id": "sora-standard-pro",
-            "slug": "sora-2-vs-sora-2-pro",
-            "title": "Sora 2 vs Sora 2 Pro",
-            "body": "Compare standard and premium Sora routes for narrative, character and studio-grade shots.",
+            "id": "seedance-veo",
+            "slug": "seedance-2-0-vs-veo-3-1",
+            "title": "Seedance 2.0 vs Veo 3.1",
+            "body": "Choose between Seedance control and premium Veo realism before spending credits.",
             "badges": [
-              "quality",
-              "audio",
+              "realism",
+              "control",
               "cost"
             ]
           }
         ],
-        "eyebrow": "Compare before you generate",
+        "eyebrow": "Pick before you generate",
         "primaryCta": "Explore all comparisons",
         "secondaryCta": "View all models",
         "scorecardTitle": "Scorecard (side-by-side)",
@@ -874,6 +872,10 @@
         "title": "Know the cost before you generate.",
         "subtitle": "MaxVideoAI shows the price before every video generation, so you stay in control of your credits.",
         "cta": "View pricing",
+        "supportingText": "MaxVideoAI is a pay-as-you-go multi-engine AI video generator for Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.",
+        "modelsLink": "Models",
+        "examplesLink": "Examples",
+        "compareLink": "Compare engines",
         "cards": [
           {
             "title": "Live quote",
@@ -1035,7 +1037,7 @@
         "id": "price",
         "label": "Price",
         "heading": "Wallet pricing updates before you press Generate.",
-        "body": "Adjust settings and see the live “This render” chip before you commit. Funds only move when the render succeeds."
+        "body": "Adjust settings and see the live price chip before you commit. Funds only move when the generation succeeds."
       },
       {
         "id": "tracking",
@@ -1051,7 +1053,7 @@
       },
       {
         "title": "Wallet-first billing.",
-        "body": "Top up once, monitor spend from the header, and refund automatically if a render fails."
+        "body": "Top up once, monitor spend from the header, and refund automatically if a generation fails."
       },
       {
         "title": "All your engines in one place.",
@@ -1177,7 +1179,7 @@
         {
           "id": "minimax-hailuo",
           "label": "MiniMax Hailuo 02 · Concept draft",
-          "description": "Prompt optimiser enabled to block out a storyboard cut before the hero render.",
+          "description": "Prompt optimiser enabled to block out a storyboard cut before the hero generation.",
           "alt": "MiniMax Hailuo Standard concept animation.",
           "meta": {
             "slug": "minimax-hailuo-02-text",
@@ -1207,12 +1209,12 @@
         {
           "eyebrow": "Live quote",
           "title": "See the cost before you click Generate",
-          "body": "Pick the engine and settings first. The total updates before the render starts."
+          "body": "Pick the engine and settings first. The total updates before the generation starts."
         },
         {
           "eyebrow": "Automatic refunds",
           "title": "Failed jobs return credits automatically",
-          "body": "Refunds land back in your wallet with an itemised receipt for each failed render."
+          "body": "Refunds land back in your wallet with an itemised receipt for each failed generation."
         },
         {
           "eyebrow": "Wallet-first control",
@@ -1247,17 +1249,17 @@
         },
         {
           "q": "How does pricing work?",
-          "a": "You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job."
+          "a": "You see a live price chip before you generate. Load $10 to start and top up anytime. Itemised receipts for each job."
         },
         {
           "q": "What’s the refund policy?",
-          "a": "Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend."
+          "a": "Failed generations auto-refund to your wallet with an itemised receipt. You always keep full control of spend."
         }
       ]
     },
     "priceChipSuffix": "Shown before you launch.",
     "meta": {
-      "title": "Multi-engine AI video workspace — Price before you generate | MaxVideoAI",
+      "title": "Compare AI Video Engines Before You Generate | MaxVideoAI",
       "description": "Compare Seedance, Kling, Veo, LTX, Wan, Pika and more before you generate. Preview real outputs, see the cost before you generate and create with pay-as-you-go pricing."
     },
     "compare": {
@@ -1296,7 +1298,7 @@
       "startupFameLabel": "Featured on Startup Fame"
     },
     "seoContent": {
-      "heroParagraph": "MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every render so you can pick the right engine with confidence.",
+      "heroParagraph": "MaxVideoAI is a multi-engine AI video generator where you compare AI video models first, then generate videos from text prompts, images, or existing footage. Live pricing is visible before every generation so you can pick the right engine with confidence.",
       "heroPoints": [
         "Text-to-video, image-to-video, and video-to-video workflows",
         "Compare results across multiple AI video models",
@@ -1304,7 +1306,7 @@
       ],
       "definition": {
         "title": "What is an AI video generator?",
-        "body": "Create from text, animate a still, or transform existing footage in one workspace, with pricing visible before you render."
+        "body": "Create from text, animate a still, or transform existing footage in one workspace, with pricing visible before you generate."
       },
       "generateWays": {
         "title": "Generate videos your way",
@@ -1324,8 +1326,8 @@
         ]
       },
       "compare": {
-        "title": "Compare AI video models - before you render",
-        "body": "MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every render.",
+        "title": "Compare AI video models before you generate",
+        "body": "MaxVideoAI lets you test multiple AI video models in one workspace. Engines differ on speed, prompt fidelity, motion, realism, and style, so you can review outputs side by side, choose the best model for each shot, and keep pricing visible before every generation.",
         "worksWith": "Works with Seedance 2.0, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2, Hailuo 02, Nano Banana, and more.",
         "popularLinks": [
           {
@@ -1390,17 +1392,17 @@
     },
     "calculator": {
       "title": "Preview prices in the app",
-      "description": "Open the generator to see the exact price before you create a video.",
-      "cta": "Open the generator"
+      "description": "Open the workspace to see the exact price before you create a video.",
+      "cta": "Open workspace"
     },
     "liveLabel": "Live",
     "comingSoonLabel": "Coming soon",
     "estimator": {
       "title": "Cost Estimator",
-      "subtitle": "Choose the engine, duration, and resolution to see pricing before you queue the render. Charged only if it succeeds.",
+      "subtitle": "Choose the engine, duration, and resolution to see pricing before you queue the generation. Charged only if it succeeds.",
       "walletLink": "Want to see prices inside the app before you generate?",
-      "walletLinkCta": "Open the generator",
-      "chargedNote": "Charged only if render succeeds.",
+      "walletLinkCta": "Open workspace",
+      "chargedNote": "Charged only if the generation succeeds.",
       "audioIncluded": "Audio included by default.",
       "configureLabel": "Configure",
       "durationRangeLabel": "Available",
@@ -1429,7 +1431,7 @@
         "veo-3-1-fast": "Use Veo 3.1 Fast for quick text, start-image, last-frame, and extend passes.",
         "veo-3-1-lite": "Use Veo 3.1 Lite for lower-cost text, start-image, and last-frame passes with audio always on.",
         "pika-text-to-video": "Quick social loops with captions and remix-friendly settings.",
-        "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero render."
+        "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero generation."
       },
       "engineRateLabel": "Engine rate",
       "durationLabel": "Duration",
@@ -1554,7 +1556,7 @@
     "refunds": {
       "title": "Refunds & protections",
       "points": [
-        "Automatic refunds when renders fail or providers miss SLAs.",
+        "Automatic refunds when generations fail or providers miss SLAs.",
         "Itemised receipts with engine, duration, resolution, and add-ons.",
         "Wallet protections with optional multi-approver top-ups.",
         "Application fee is recognised immediately; vendor share settles on payout.",
@@ -1574,7 +1576,7 @@
         },
         {
           "question": "What if a generation fails?",
-          "answer": "Failed renders auto-refund within minutes. You only pay when the job completes successfully."
+          "answer": "Failed generations auto-refund within minutes. You only pay when the job completes successfully."
         },
         {
           "question": "What are member discounts?",
@@ -1600,7 +1602,7 @@
     "priceChipPrefix": "This render",
     "meta": {
       "title": "AI Video Pricing — Pay-As-You-Go | MaxVideoAI",
-      "description": "See pricing before you generate. Compare costs across engines (Sora, Veo, Kling, Pika). Pay only for successful renders — no subscription. Pricing shown per clip."
+      "description": "See pricing before you generate. Compare costs across engines (Sora, Veo, Kling, Pika). Pay only for successful generations — no subscription. Pricing shown per clip."
     }
   },
   "workflows": {
@@ -2355,14 +2357,14 @@
       {
         "title": "Price system",
         "items": [
-          "Preview the exact price before you render. The price chip updates with duration, resolution, and automatic discounts.",
+          "Preview the exact price before you generate. The price chip updates with duration, resolution, and automatic discounts.",
           "Starter Credits ($10) and rolling Member status (Member / Plus / Pro) update daily."
         ]
       },
       {
         "title": "Refunds",
         "items": [
-          "If a render fails, your wallet is automatically refunded within minutes and the job includes a short incident note.",
+          "If a generation fails, your wallet is automatically refunded within minutes and the job includes a short incident note.",
           "Itemised receipts list engine, duration, resolution, and a job ID—easy hand-off to finance.",
           {
             "type": "link",
@@ -2404,7 +2406,7 @@
       ],
       "note": "You can edit the brief anytime; updates apply to everyone in the workspace."
     },
-    "pricingCallout": "✅ You always see the price before you render.",
+    "pricingCallout": "✅ You always see the price before you generate.",
     "refundsTimeline": {
       "title": "Refunds timeline",
       "steps": [
@@ -2528,7 +2530,7 @@
           "answer": "No. Credits roll forward month to month and sync across teammates with access."
         },
         {
-          "question": "How fast are failed renders refunded?",
+          "question": "How fast are failed generations refunded?",
           "answer": "Refunds are processed automatically within minutes; each job includes a short incident note for finance."
         },
         {
@@ -2643,7 +2645,7 @@
       "priceTotalUnknown": "Unavailable",
       "audioLabel": "Audio",
       "pricingEyebrow": "Pricing",
-      "pricingBody": "Compare engine rates and plan budgets before you render.",
+      "pricingBody": "Compare engine rates and plan budgets before you generate.",
       "cta": "Compare pricing",
       "ctaDescription": "Explore all engine rates",
       "discountAppliedLabel": "Member discount applied",
@@ -3567,7 +3569,7 @@
       },
       "wallet": {
         "title": "Add credits",
-        "description": "Your balance pays for successful renders only. Unused credits stay in your wallet.",
+        "description": "Your balance pays for successful generations only. Unused credits stay in your wallet.",
         "balanceLabel": "Current balance",
         "addFunds": "{amount}",
         "quickAmount": "{amount}",
@@ -3638,7 +3640,7 @@
           "duration": "Duration (sec)",
           "resolution": "Resolution"
         },
-        "note": "Note: You’ll be charged only if the render succeeds.",
+        "note": "Note: You’ll be charged only if the generation succeeds.",
         "memberChipSavings": "Member price — You save {percent}%",
         "memberChipBase": "Member price"
       },
@@ -3663,7 +3665,7 @@
       "refunds": {
         "title": "Protections",
         "points": [
-          "Failed renders are refunded automatically.",
+          "Failed generations are refunded automatically.",
           "Receipts include itemized tax and payment details.",
           "No subscription. Add credits only when you need them."
         ]
@@ -3688,7 +3690,7 @@
             "answer": "Member status applies automatically based on your last 30 days of spend."
           }
         ],
-        "footnote": "VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners."
+        "footnote": "VAT included where applicable. Refunds on failed generations. “Works with” indicates compatibility; trademarks belong to their respective owners."
       },
       "toasts": {
         "success": "Payment successful. Funds added to your wallet.",

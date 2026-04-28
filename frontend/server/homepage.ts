@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { isDatabaseConfigured, query } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
@@ -367,3 +367,26 @@ export const getHomepageSlotsCached = unstable_cache(getHomepageSlots, [HOMEPAGE
   revalidate: HOMEPAGE_SLOTS_REVALIDATE_SECONDS,
   tags: [HOMEPAGE_SLOTS_CACHE_TAG],
 });
+
+async function getSuccessfulGenerationCount(): Promise<number | null> {
+  if (!isDatabaseConfigured()) return null;
+
+  const rows = await query<{ count: string | number | null }>(
+    `
+      SELECT COUNT(*)::bigint AS count
+      FROM app_jobs
+      WHERE LOWER(COALESCE(status, '')) IN ('completed', 'success', 'succeeded', 'finished')
+    `
+  );
+  const count = Number(rows[0]?.count ?? 0);
+  return Number.isFinite(count) && count > 0 ? count : null;
+}
+
+export const getSuccessfulGenerationCountCached = unstable_cache(
+  getSuccessfulGenerationCount,
+  ['homepage-successful-generation-count'],
+  {
+    revalidate: 300,
+    tags: ['homepage-successful-generation-count'],
+  }
+);

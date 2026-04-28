@@ -446,55 +446,55 @@
               ]
             },
             {
-              "engineId": "ltx-2-3-fast",
-              "name": "LTX 2.3 Fast",
+              "engineId": "ltx-2-3-pro",
+              "name": "LTX 2.3 Pro",
               "provider": "Lightricks",
-              "bestFor": "Borradores rápidos",
-              "fallbackPrice": "desde 0,18 $ / 5 s",
+              "bestFor": "Audio y retakes",
+              "fallbackPrice": "desde 0,47 $ / 6 s",
               "scores": [
                 {
                   "label": "Motion",
-                  "value": 72
+                  "value": 84
                 },
                 {
                   "label": "Realismo",
-                  "value": 68
+                  "value": 80
                 },
                 {
                   "label": "Velocidad",
-                  "value": 96
+                  "value": 78
                 }
               ],
               "tags": [
-                "Rápido",
-                "Barato",
-                "Draft"
+                "Audio",
+                "Retake",
+                "Extend"
               ]
             },
             {
-              "engineId": "wan-2-6",
-              "name": "Wan 2.6",
-              "provider": "Wan",
-              "bestFor": "Workflows video a video",
-              "fallbackPrice": "desde 0,22 $ / 5 s",
+              "engineId": "happy-horse-1-0",
+              "name": "Happy Horse 1.0",
+              "provider": "Alibaba",
+              "bestFor": "Lip-sync unificado",
+              "fallbackPrice": "desde 0,70 $ / 5 s",
               "scores": [
                 {
                   "label": "Motion",
-                  "value": 82
+                  "value": 76
                 },
                 {
                   "label": "Realismo",
-                  "value": 78
+                  "value": 74
                 },
                 {
                   "label": "Velocidad",
-                  "value": 76
+                  "value": 72
                 }
               ],
               "tags": [
-                "Video a video",
-                "Estructurado",
-                "Flexible"
+                "Lip-sync",
+                "Audio",
+                "Referencias"
               ]
             }
           ],
@@ -515,8 +515,6 @@
         }
       },
       "proof": {
-        "liveValue": "Live",
-        "pricingSubLabel": "Antes de generar",
         "items": [
           {
             "id": "engines",
@@ -547,8 +545,8 @@
             "label": "Opciones"
           },
           {
-            "id": "pricing",
-            "label": "Precio live"
+            "id": "successfulGenerations",
+            "label": "Generaciones correctas"
           }
         ]
       },
@@ -589,7 +587,7 @@
         ]
       },
       "examples": {
-        "title": "Compara resultados reales por motor.",
+        "title": "Explora resultados reales por motor.",
         "subtitle": "Abre páginas de ejemplos enfocadas, revisa el modelo detrás de cada resultado y ve el coste antes de generar.",
         "cta": "Ver todos los ejemplos",
         "modelsCta": "Ver todos los modelos",
@@ -696,7 +694,7 @@
         ]
       },
       "comparisons": {
-        "title": "Compara modelos de video IA antes de gastar créditos.",
+        "title": "Valida el modelo correcto antes de gastar créditos.",
         "subtitle": "Los motores difieren en movimiento, realismo, fidelidad al prompt, audio, velocidad, resolución y coste. Compáralos lado a lado antes de elegir.",
         "cta": "Comparar modelos",
         "cards": [
@@ -756,18 +754,18 @@
             ]
           },
           {
-            "id": "sora-standard-pro",
-            "slug": "sora-2-vs-sora-2-pro",
-            "title": "Sora 2 vs Sora 2 Pro",
-            "body": "Compara rutas Sora estándar y premium para narrativa, personajes y planos de estudio.",
+            "id": "seedance-veo",
+            "slug": "seedance-2-0-vs-veo-3-1",
+            "title": "Seedance 2.0 vs Veo 3.1",
+            "body": "Elige entre el control de Seedance y el realismo premium de Veo antes de gastar créditos.",
             "badges": [
-              "calidad",
-              "audio",
+              "realismo",
+              "control",
               "coste"
             ]
           }
         ],
-        "eyebrow": "Compara antes de generar",
+        "eyebrow": "Elige antes de generar",
         "primaryCta": "Explorar comparaciones",
         "secondaryCta": "Ver todos los modelos",
         "scorecardTitle": "Scorecard lado a lado",
@@ -954,6 +952,10 @@
         "title": "Conoce el coste antes de generar.",
         "subtitle": "MaxVideoAI muestra el precio antes de cada generación de video para que mantengas el control de tus créditos.",
         "cta": "Ver precios",
+        "supportingText": "MaxVideoAI es un generador de video IA multi-motor de pago por uso para Seedance, Kling, Veo, LTX, Wan, Pika, Sora y más.",
+        "modelsLink": "Modelos",
+        "examplesLink": "Ejemplos",
+        "compareLink": "Comparar motores",
         "cards": [
           {
             "title": "Cotización live",
@@ -1337,7 +1339,7 @@
     },
     "priceChipSuffix": "Visible antes de lanzar.",
     "meta": {
-      "title": "Workspace de video IA multi-motor — Precio antes de generar | MaxVideoAI",
+      "title": "Compara motores de video IA antes de generar | MaxVideoAI",
       "description": "Compara Seedance, Kling, Veo, LTX, Wan, Pika y más antes de generar. Previsualiza resultados reales, mira el coste antes de generar y crea con pago por uso."
     },
     "compare": {
@@ -1384,7 +1386,7 @@
       ],
       "definition": {
         "title": "¿Qué es un generador de video con IA?",
-        "body": "Genera desde texto, anima una imagen o transforma un video existente en un solo workspace, con el precio visible antes de renderizar."
+        "body": "Genera desde texto, anima una imagen o transforma un video existente en un solo workspace, con el precio visible antes de generar."
       },
       "generateWays": {
         "title": "Genera videos a tu manera",
@@ -1470,17 +1472,17 @@
     },
     "calculator": {
       "title": "Previsualiza precios en la app",
-      "description": "Abre el generador para ver el precio exacto antes de crear el video.",
-      "cta": "Abrir el generador"
+      "description": "Abre el workspace para ver el precio exacto antes de crear el video.",
+      "cta": "Abrir workspace"
     },
     "liveLabel": "En vivo",
     "comingSoonLabel": "Próximamente",
     "estimator": {
       "title": "Calculadora de costes",
-      "subtitle": "Elige el motor, la duración y la resolución para ver el precio antes de poner el render en cola. Se cobra solo si tiene éxito.",
+      "subtitle": "Elige el motor, la duración y la resolución para ver el precio antes de poner la generación en cola. Se cobra solo si tiene éxito.",
       "walletLink": "¿Quieres ver los precios en la app antes de generar?",
-      "walletLinkCta": "Abrir el generador",
-      "chargedNote": "Se carga solo si el render tiene éxito.",
+      "walletLinkCta": "Abrir workspace",
+      "chargedNote": "Se cobra solo si la generación tiene éxito.",
       "audioIncluded": "Audio incluido por defecto.",
       "configureLabel": "Configurar",
       "durationRangeLabel": "Disponible",
@@ -1509,7 +1511,7 @@
         "veo-3-1-fast": "Veo 3.1 Fast para pases rápidos de texto, imagen inicial, último frame y extend.",
         "veo-3-1-lite": "Veo 3.1 Lite para pases más baratos de texto, imagen inicial y último frame, con audio siempre activo.",
         "pika-text-to-video": "Bucle social rápido con subtítulos y ajustes amigables para remix.",
-        "minimax-hailuo-02-text": "Bocetos optimizados por prompt antes del render principal."
+        "minimax-hailuo-02-text": "Bocetos optimizados por prompt antes de la generación principal."
       },
       "engineRateLabel": "Tarifa del motor",
       "durationLabel": "Duración",
@@ -2271,7 +2273,7 @@
       {
         "title": "Storyboard Veo 3.1 Fast",
         "engine": "Veo 3.1 Fast · Text-to-video · 16:9",
-        "description": "Cola rápida con audio opcional para iterar motion antes del render final.",
+        "description": "Cola rápida con audio opcional para iterar motion antes de la generación final.",
         "alt": "Clip de ejemplo de Veo 3.1 Fast.",
         "meta": {
           "slug": "veo-3-1-fast",
@@ -2359,7 +2361,7 @@
       {
         "title": "Sistema de precios",
         "items": [
-          "Previsualiza el precio exacto antes de renderizar. La pastilla se ajusta con duración, resolución y descuentos automáticos.",
+          "Previsualiza el precio exacto antes de generar. La pastilla se ajusta con duración, resolución y descuentos automáticos.",
           "Los Starter Credits (10 $) y los estados Miembro / Plus / Pro se recalculan a diario."
         ]
       },
@@ -2408,7 +2410,7 @@
       ],
       "note": "Puedes editar el brief en cualquier momento; los cambios aplican a todo el espacio de trabajo."
     },
-    "pricingCallout": "✅ Siempre ves el precio antes de renderizar.",
+    "pricingCallout": "✅ Siempre ves el precio antes de generar.",
     "refundsTimeline": {
       "title": "Cronología de reembolsos",
       "steps": [
@@ -2647,7 +2649,7 @@
       "priceTotalUnknown": "No disponible",
       "audioLabel": "Audio",
       "pricingEyebrow": "Precios",
-      "pricingBody": "Compara tarifas por motor y planifica presupuestos antes de renderizar.",
+      "pricingBody": "Compara tarifas por motor y planifica presupuestos antes de generar.",
       "cta": "Comparar precios",
       "ctaDescription": "Explora todas las tarifas",
       "discountAppliedLabel": "Descuento de miembro aplicado",
@@ -3532,7 +3534,7 @@
           "duration": "Duración (s)",
           "resolution": "Resolución"
         },
-        "note": "Solo se cobra si el render tiene éxito.",
+        "note": "Solo se cobra si la generación tiene éxito.",
         "memberChipSavings": "Precio miembro — Ahorra {percent} %",
         "memberChipBase": "Precio miembro"
       },

@@ -1453,16 +1453,16 @@ async function resolveRelatedBestForGuides(locale: AppLocale, slug: string): Pro
 
 function getAlsoAvailableModels(slug: string, topPicks: string[]) {
   const preferred: Record<string, string[]> = {
-    'cinematic-realism': ['happy-horse-1-0', 'ltx-2-3-fast', 'wan-2-6', 'pika-text-to-video'],
-    'image-to-video': ['happy-horse-1-0', 'sora-2-pro', 'veo-3-1-fast', 'pika-text-to-video'],
-    'character-reference': ['happy-horse-1-0', 'seedance-2-0', 'sora-2-pro', 'veo-3-1'],
-    'reference-to-video': ['happy-horse-1-0', 'sora-2-pro', 'veo-3-1-fast', 'wan-2-6'],
-    'multi-shot-video': ['happy-horse-1-0', 'ltx-2-3-pro', 'wan-2-6', 'pika-text-to-video'],
+    'cinematic-realism': ['ltx-2-3-fast', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-0'],
+    'image-to-video': ['sora-2-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-0'],
+    'character-reference': ['seedance-2-0', 'sora-2-pro', 'veo-3-1', 'happy-horse-1-0'],
+    'reference-to-video': ['sora-2-pro', 'veo-3-1-fast', 'wan-2-6', 'happy-horse-1-0'],
+    'multi-shot-video': ['ltx-2-3-pro', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-0'],
     '4k-video': ['kling-3-pro', 'veo-3-1', 'sora-2-pro'],
-    ads: ['happy-horse-1-0', 'veo-3-1-fast', 'sora-2-pro', 'pika-text-to-video'],
-    'ugc-ads': ['happy-horse-1-0', 'ltx-2-3-pro', 'veo-3-1-fast', 'pika-text-to-video'],
-    'product-videos': ['happy-horse-1-0', 'kling-3-4k', 'veo-3-1-fast', 'pika-text-to-video'],
-    'lipsync-dialogue': ['happy-horse-1-0', 'ltx-2-3-pro', 'sora-2', 'pika-text-to-video'],
+    ads: ['veo-3-1-fast', 'sora-2-pro', 'pika-text-to-video', 'happy-horse-1-0'],
+    'ugc-ads': ['ltx-2-3-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-0'],
+    'product-videos': ['kling-3-4k', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-0'],
+    'lipsync-dialogue': ['ltx-2-3-pro', 'sora-2', 'pika-text-to-video', 'happy-horse-1-0'],
     'fast-drafts': ['pika-text-to-video', 'minimax-hailuo-02-text', 'wan-2-6'],
     'stylized-anime': ['seedance-2-0', 'wan-2-6', 'ltx-2-3-fast'],
   };

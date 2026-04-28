@@ -20,7 +20,6 @@ import {
   SlidersHorizontal,
   Sparkles,
   SplitSquareHorizontal,
-  Tag,
   Type,
   Video,
   type LucideIcon,
@@ -149,6 +148,11 @@ export type ComparisonCard = {
   href: LocalizedLinkHref;
   imageSrc?: string;
   imageAlt?: string;
+  media?: Array<{
+    imageSrc: string;
+    imageAlt: string;
+    label?: string;
+  }>;
 };
 
 export type WorkflowStep = {
@@ -206,6 +210,10 @@ type SectionCopy = {
   guideLabel?: string;
   topPicksLabel?: string;
   moreGuidesTitle?: string;
+  supportingText?: string;
+  modelsLink?: string;
+  examplesLink?: string;
+  compareLink?: string;
 };
 
 type ToolIconKey =
@@ -234,14 +242,22 @@ const TOOL_ICONS: Record<ToolIconKey, LucideIcon> = {
 };
 
 const TOOLBOX_VISUALS: Record<string, string> = {
-  'text-to-video': '/hero/showcase-ltx-2-3-fast.jpg',
-  'image-to-video': '/hero/best-for-image-to-video.webp',
-  'video-to-video': '/hero/wan-26.jpg',
-  'generate-image': '/hero/best-for-cinematic-realism.webp',
-  'character-builder': '/assets/tools/character-builder-workspace.png',
-  'angle-tool': '/assets/tools/angle-workspace.png',
-  upscale: '/hero/luma-dream.jpg',
-  'compare-engines': '/assets/marketing/vs-kling-sora-scorecard.png',
+  'text-to-video':
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a89d8b58-3c6b-4de6-bf1d-88982b2a33da.jpg',
+  'image-to-video':
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b527318e-2b66-4da2-8ac3-e82155c9806b.jpg',
+  'video-to-video':
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/84413a86-180e-4b46-81f8-0459fb0e905f.jpg',
+  'generate-image':
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/3bfdfcb2-3c20-4b84-9fd5-e3645810d45a.jpg',
+  'character-builder':
+    'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d9851ed8-4db8-4f0c-a547-39d972bd9b64.webp',
+  'angle-tool':
+    'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/c82407ca-701a-447a-878f-491338658cd0.webp',
+  upscale:
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/06c83b77-46aa-4aff-b687-dbeeb6bcbf22.jpg',
+  'compare-engines':
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/de3b13d9-e5b0-4c09-993e-89039642f9fa.jpg',
 };
 
 const REFERENCE_WORKFLOW_VISUALS = [
@@ -251,21 +267,21 @@ const REFERENCE_WORKFLOW_VISUALS = [
   '/assets/marketing/reference-workflow-final-video.webp',
 ] as const;
 
-const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-fast', 'wan-2-6'] as const;
+const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-pro', 'happy-horse-1-0'] as const;
 const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.png';
 const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
   'kling-3-pro': 'image-to-video',
   'seedance-2-0': 'image-to-video',
   'veo-3-1-lite': 'image-to-video',
-  'ltx-2-3-fast': 'text-to-video',
-  'wan-2-6': 'video-to-video',
+  'ltx-2-3-pro': 'audio-to-video',
+  'happy-horse-1-0': 'reference-to-video',
 };
 const HERO_VIDEO_CHIPS: Record<string, string[]> = {
   'kling-3-pro': ['Cinematic', 'Camera move'],
   'seedance-2-0': ['Cinematic', 'Realism'],
   'veo-3-1-lite': ['Realistic', 'Premium'],
-  'ltx-2-3-fast': ['Fast draft', 'Low cost'],
-  'wan-2-6': ['Video-to-video', 'Structured'],
+  'ltx-2-3-pro': ['Audio', 'Retake'],
+  'happy-horse-1-0': ['Lip-sync', 'Unified'],
 };
 
 const PROOF_ICONS: Record<string, LucideIcon> = {
@@ -276,10 +292,21 @@ const PROOF_ICONS: Record<string, LucideIcon> = {
   videoToVideo: Video,
   audio: AudioWaveform,
   fourK: BadgeCheck,
-  pricing: Tag,
+  successfulGenerations: BarChart3,
 };
 
-const HERO_ENGINE_MEDIA: Record<string, { posterSrc: string; videoSrc?: string; resolution: string; duration: string }> = {
+const HERO_ENGINE_MEDIA: Record<
+  string,
+  {
+    posterSrc: string;
+    videoSrc?: string;
+    resolution: string;
+    duration: string;
+    estimateValue?: string;
+    estimateMeta?: string;
+    price?: string;
+  }
+> = {
   'kling-3-pro': {
     posterSrc: '/hero/showcase-kling-3-pro.jpg',
     resolution: '16:9',
@@ -300,15 +327,24 @@ const HERO_ENGINE_MEDIA: Record<string, { posterSrc: string; videoSrc?: string; 
     resolution: '16:9',
     duration: '0:05',
   },
-  'ltx-2-3-fast': {
-    posterSrc: '/hero/showcase-ltx-2-3-fast.jpg',
+  'ltx-2-3-pro': {
+    posterSrc:
+      'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/983f1a91-97d7-40bf-b857-3c5fdbfa6162.jpg',
+    videoSrc: 'https://v3b.fal.media/files/b/0a92e777/yOJovcho63SdNjNfVunD-_kXUBqX1L.mp4',
     resolution: '16:9',
-    duration: '0:05',
+    duration: '0:10',
+    estimateValue: '$0.78',
+    estimateMeta: '10s generation',
   },
-  'wan-2-6': {
-    posterSrc: '/hero/wan-26.jpg',
+  'happy-horse-1-0': {
+    posterSrc:
+      'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a3182fc5-e993-4a3b-9b5a-805997bd3e68.jpg',
+    videoSrc: 'https://v3b.fal.media/files/b/0a980ba7/aoVrsYYBEf6002D3i48f9_6vQQ9p2k.mp4',
     resolution: '16:9',
-    duration: '0:05',
+    duration: '0:10',
+    estimateValue: '$1.82',
+    estimateMeta: '10s generation',
+    price: '$0.18/sec',
   },
   'sora-2': {
     posterSrc: '/hero/showcase-sora-2.jpg',
@@ -415,10 +451,10 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
       bestFor: engine.bestFor,
       chips: HERO_VIDEO_CHIPS[engine.engineId] ?? (engine.tags?.length ? engine.tags.slice(0, 2) : [engine.bestFor, engine.provider]),
       mediaInfo: [engine.modeLabel ?? HERO_VIDEO_MODE_LABELS[engine.engineId], durationLabel, fallbackMedia.resolution].filter(Boolean).join(' · '),
-      price: engine.price ?? engine.fallbackPrice,
+      price: fallbackMedia.price ?? engine.price ?? engine.fallbackPrice,
       estimateLabel: copy.quoteLabel,
-      estimateValue: copy.quoteValue,
-      estimateMeta: '5s generation',
+      estimateValue: fallbackMedia.estimateValue ?? copy.quoteValue,
+      estimateMeta: fallbackMedia.estimateMeta ?? '5s generation',
       examplesHref: engine.examplesHref,
       modelHref: engine.modelHref,
       examplesLabel: engine.examplesLabel,
@@ -512,6 +548,7 @@ export function HomeHero({
       ))}
     </>
   );
+  const proofGridColumnsClass = proofStats.length >= 8 ? 'xl:grid-cols-8' : 'xl:grid-cols-7';
 
   return (
     <section className="relative overflow-hidden border-b border-hairline bg-bg">
@@ -525,8 +562,8 @@ export function HomeHero({
         className="pointer-events-none object-cover object-center opacity-65 dark:brightness-[0.72] dark:contrast-110 dark:invert dark:opacity-50"
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(circle_at_72%_20%,rgba(3,7,18,0.74),transparent_32%),radial-gradient(circle_at_30%_78%,rgba(3,7,18,0.42),transparent_34%),linear-gradient(180deg,rgba(5,10,20,0.92),rgba(8,13,26,0.24)_58%,rgba(8,13,26,0.08)_100%)]" />
-      <div className="container-page relative grid max-w-[1400px] gap-7 py-10 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:items-start xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
-        <div className="scrollbar-rail -mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0 xl:col-span-2 xl:pb-0">
+      <div className="container-page relative grid max-w-[1400px] gap-7 py-10 min-[900px]:grid-cols-[minmax(340px,0.88fr)_minmax(0,1.12fr)] min-[900px]:items-start min-[900px]:gap-6 min-[900px]:py-12 lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)] lg:gap-7 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
+        <div className="scrollbar-rail -mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0 min-[900px]:col-span-2 min-[900px]:pb-0">
           {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
             <span
               key={badge}
@@ -537,7 +574,7 @@ export function HomeHero({
             </span>
           ))}
         </div>
-        <div className="min-w-0 xl:col-start-1 xl:row-start-2 xl:pr-1">
+        <div className="min-w-0 min-[900px]:col-start-1 min-[900px]:row-start-2 min-[900px]:pr-1">
           <h1 className="mt-8 max-w-[20ch] text-4xl font-semibold leading-[1.04] text-text-primary sm:text-5xl md:text-[2.65rem] lg:text-[3.05rem] xl:text-[3.65rem]">
             {renderHeroTitle(copy.title)}
           </h1>
@@ -579,27 +616,28 @@ export function HomeHero({
             </Link>
           </div>
         </div>
-        <div className="min-w-0 xl:col-start-2 xl:row-span-2 xl:row-start-2 xl:self-center">
+        <div className="min-w-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-2 min-[900px]:self-center">
           <HeroVideoShowcase
             items={videoItems}
             playLabel={copy.mockup.playLabel}
             pauseLabel={copy.mockup.pauseLabel}
           />
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:col-start-1 xl:row-start-3">{valueCards}</div>
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 min-[900px]:col-start-1 min-[900px]:row-start-3">{valueCards}</div>
       </div>
-      <div className="container-page relative max-w-[1460px] pb-10">
-        <div className="grid grid-cols-4 gap-px overflow-hidden rounded-[16px] border border-hairline bg-hairline shadow-card backdrop-blur sm:grid-cols-4 lg:grid-cols-8">
+      <div className="container-page relative max-w-[1460px] pb-9">
+        <div className="scrollbar-rail overflow-x-auto pb-1">
+          <div className={`inline-grid min-w-full auto-cols-[116px] grid-flow-col overflow-hidden rounded-[24px] border border-black/[0.08] bg-white/72 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/[0.10] dark:bg-surface/62 sm:grid sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 ${proofGridColumnsClass}`}>
           {proofStats.map((stat) => {
             const content = (
               <>
-              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-text-primary sm:h-8 sm:w-8">
-                <UIIcon icon={PROOF_ICONS[stat.id] ?? Sparkles} size={18} strokeWidth={1.75} className="sm:h-6 sm:w-6" />
-              </span>
-              <span className="min-w-0 text-center sm:text-left">
-                <span className="block text-sm font-semibold leading-none text-text-primary sm:text-base">{stat.value}</span>
-                <span className="mt-1 block text-[10px] font-medium leading-3 text-text-secondary sm:text-xs sm:leading-4">{stat.label}</span>
-              </span>
+                <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-text-primary/90 sm:h-[18px] sm:w-[18px]">
+                  <UIIcon icon={PROOF_ICONS[stat.id] ?? Sparkles} size={16} strokeWidth={1.75} className="sm:h-[18px] sm:w-[18px]" />
+                </span>
+                <span className="min-w-0 text-center">
+                  <span className="block text-lg font-semibold leading-none tracking-tight text-text-primary sm:text-xl">{stat.value}</span>
+                  <span className="mt-1 block text-[10px] font-medium leading-3 text-text-secondary sm:text-[11px] sm:leading-4">{stat.label}</span>
+                </span>
               </>
             );
 
@@ -607,16 +645,17 @@ export function HomeHero({
               <Link
                 key={stat.label}
                 href={stat.href}
-                className="flex min-h-[72px] flex-col items-center justify-center gap-1.5 bg-white/92 px-1.5 py-2 transition hover:bg-bg focus:outline-none focus:ring-2 focus:ring-brand/40 dark:bg-surface/72 sm:min-h-0 sm:flex-row sm:gap-2.5 sm:px-3 sm:py-4"
+                className="relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 py-3 transition hover:bg-white/52 focus:outline-none focus:ring-2 focus:ring-brand/30 dark:hover:bg-white/[0.06] sm:min-h-[76px] sm:py-3 [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:right-0 [&:not(:last-child)]:after:top-4 [&:not(:last-child)]:after:h-[calc(100%-2rem)] [&:not(:last-child)]:after:w-px [&:not(:last-child)]:after:bg-black/[0.08] dark:[&:not(:last-child)]:after:bg-white/[0.10]"
               >
                 {content}
               </Link>
             ) : (
-              <div key={stat.label} className="flex min-h-[72px] flex-col items-center justify-center gap-1.5 bg-white/92 px-1.5 py-2 dark:bg-surface/72 sm:min-h-0 sm:flex-row sm:gap-2.5 sm:px-3 sm:py-4">
+              <div key={stat.label} className="relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 py-3 sm:min-h-[76px] sm:py-3 [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:right-0 [&:not(:last-child)]:after:top-4 [&:not(:last-child)]:after:h-[calc(100%-2rem)] [&:not(:last-child)]:after:w-px [&:not(:last-child)]:after:bg-black/[0.08] dark:[&:not(:last-child)]:after:bg-white/[0.10]">
                 {content}
               </div>
             );
           })}
+          </div>
         </div>
       </div>
     </section>
@@ -990,14 +1029,31 @@ export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; co
             >
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-[124px_minmax(0,1fr)] sm:items-stretch sm:gap-3 lg:grid-cols-[132px_minmax(0,1fr)]">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-[14px] bg-surface-3 sm:h-[124px] sm:aspect-auto lg:h-[132px]">
-                  <Image
-                    src={comparison.imageSrc ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageSrc ?? '/hero/showcase-seedance-2-0.jpg'}
-                    alt={comparison.imageAlt ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageAlt ?? `${comparison.title} AI video comparison preview.`}
-                    fill
-                    sizes="(max-width: 639px) 50vw, (max-width: 1023px) 220px, 132px"
-                    className="object-cover transition duration-500 group-hover:scale-[1.04]"
-                    loading="lazy"
-                  />
+                  {comparison.media && comparison.media.length >= 2 ? (
+                    <div className="absolute inset-0 grid grid-cols-2 gap-px bg-black/20">
+                      {comparison.media.slice(0, 2).map((media) => (
+                        <div key={`${comparison.id}-${media.imageSrc}`} className="relative min-w-0 overflow-hidden">
+                          <Image
+                            src={media.imageSrc}
+                            alt={media.imageAlt}
+                            fill
+                            sizes="(max-width: 639px) 25vw, (max-width: 1023px) 110px, 66px"
+                            className="object-cover transition duration-500 group-hover:scale-[1.05]"
+                            loading="lazy"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <Image
+                      src={comparison.imageSrc ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageSrc ?? '/hero/showcase-seedance-2-0.jpg'}
+                      alt={comparison.imageAlt ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageAlt ?? `${comparison.title} AI video comparison preview.`}
+                      fill
+                      sizes="(max-width: 639px) 50vw, (max-width: 1023px) 220px, 132px"
+                      className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                      loading="lazy"
+                    />
+                  )}
                 </div>
                 <div className="flex min-w-0 flex-col">
                   <div className="flex items-start justify-between gap-3">
@@ -1071,10 +1127,10 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
               <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-card border border-hairline bg-white/78 text-xs font-semibold text-text-primary shadow-sm backdrop-blur dark:bg-white/[0.08] sm:h-9 sm:w-9 sm:text-sm">
                 {index + 1}
               </span>
-              <div className="relative z-10 mt-auto">
-                <h3 className="text-sm font-semibold leading-5 text-text-primary sm:text-lg sm:leading-6">{step.title}</h3>
+              <div className="relative z-10 mt-5 flex flex-1 flex-col sm:mt-6">
+                <h3 className="min-h-[40px] text-sm font-semibold leading-5 text-text-primary sm:min-h-[48px] sm:text-lg sm:leading-6">{step.title}</h3>
                 <p className="mt-1.5 overflow-hidden text-xs leading-5 text-text-secondary [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:mt-2 sm:text-sm sm:leading-6 sm:[-webkit-line-clamp:3]">{step.body}</p>
-                <p className="mt-3 text-xs font-semibold text-text-primary group-hover:text-brand sm:mt-5 sm:text-sm">
+                <p className="mt-auto pt-3 text-xs font-semibold text-text-primary group-hover:text-brand sm:pt-5 sm:text-sm">
                   {step.toolLabel}
                   <span aria-hidden="true" className="ml-2 transition group-hover:translate-x-1">→</span>
                 </p>
@@ -1111,18 +1167,18 @@ export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: Tool
                 aria-hidden="true"
                 fill
                 sizes="(max-width: 767px) 50vw, (max-width: 1199px) 25vw, 280px"
-                className="object-cover opacity-[0.18] transition duration-500 group-hover:scale-[1.04] group-hover:opacity-[0.25] dark:opacity-[0.23] dark:group-hover:opacity-[0.32]"
+                className="object-cover saturate-[1.06] contrast-[1.06] transition duration-500 group-hover:scale-[1.04]"
                 loading="lazy"
               />
-              <span className="absolute inset-0 bg-gradient-to-b from-bg via-bg/88 to-bg/45 dark:from-surface dark:via-surface/90 dark:to-surface/55" />
-              <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/10 to-transparent dark:from-black/30" />
-              <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-[11px] border border-hairline bg-white/75 text-text-primary shadow-sm backdrop-blur dark:bg-white/[0.08] sm:h-9 sm:w-9">
+              <span className="absolute inset-0 bg-[linear-gradient(112deg,rgba(3,7,18,0.66)_0%,rgba(3,7,18,0.48)_42%,rgba(3,7,18,0.22)_72%,rgba(3,7,18,0.10)_100%)]" />
+              <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/58 via-black/18 to-transparent" />
+              <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-[11px] border border-white/25 bg-white/15 text-white shadow-sm backdrop-blur dark:bg-white/10 sm:h-9 sm:w-9">
                 <UIIcon icon={TOOL_ICONS[tool.icon]} size={18} strokeWidth={1.9} />
               </span>
-              <h3 className="relative z-10 mt-4 pr-6 text-sm font-semibold leading-5 text-text-primary sm:text-base">{tool.title}</h3>
-              <p className="relative z-10 mt-1.5 pr-6 text-xs leading-5 text-text-secondary sm:hidden">{tool.shortBody ?? tool.body}</p>
-              <p className="relative z-10 mt-2 hidden pr-7 text-sm leading-6 text-text-secondary sm:block">{tool.body}</p>
-              <span className="absolute bottom-3 right-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-white/82 text-brand shadow-sm backdrop-blur transition group-hover:translate-x-0.5 group-hover:border-brand/30 dark:bg-white/[0.08]">
+              <h3 className="relative z-10 mt-4 pr-6 text-sm font-semibold leading-5 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.48)] sm:text-base">{tool.title}</h3>
+              <p className="relative z-10 mt-1.5 pr-6 text-xs leading-5 text-white/80 drop-shadow-[0_1px_6px_rgba(0,0,0,0.42)] sm:hidden">{tool.shortBody ?? tool.body}</p>
+              <p className="relative z-10 mt-2 hidden pr-7 text-sm leading-6 text-white/80 drop-shadow-[0_1px_6px_rgba(0,0,0,0.42)] sm:block">{tool.body}</p>
+              <span className="absolute bottom-3 right-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/15 text-white shadow-sm backdrop-blur transition group-hover:translate-x-0.5 group-hover:bg-white/20">
                 <span aria-hidden="true">→</span>
               </span>
             </Link>
@@ -1159,37 +1215,75 @@ export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: Tool
 }
 
 export function TransparentPricingBlock({ copy, cards }: { copy: SectionCopy; cards: TrustCard[] }) {
+  const icons = [BadgeDollarSign, CircleDollarSign, RefreshCcw, ClipboardList] as const;
+  const footerLinks = [
+    { href: { pathname: '/models' } as const, label: copy.modelsLink ?? 'Models' },
+    { href: { pathname: '/examples' } as const, label: copy.examplesLink ?? 'Examples' },
+    { href: { pathname: '/ai-video-engines' } as const, label: copy.compareLink ?? 'Compare engines' },
+  ];
+
   return (
     <section className="border-b border-hairline bg-surface section">
-      <div className="container-page grid max-w-[1200px] gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div>
-          <SectionHeader align="left" title={copy.title} subtitle={copy.subtitle} />
-          <ButtonLink
-            href={{ pathname: '/pricing' }}
-            linkComponent={Link}
-            size="lg"
-            className="mt-6"
-            data-analytics-event="pricing_cta_click"
-            data-analytics-cta-name="view_pricing"
-            data-analytics-cta-location="transparent_pricing"
-            data-analytics-target-family="pricing"
-          >
-            {copy.cta ?? 'View pricing'}
-          </ButtonLink>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {cards.map((card, index) => {
-            const icons = [BadgeDollarSign, CircleDollarSign, RefreshCcw, ClipboardList] as const;
-            return (
-              <article key={card.title} className="rounded-card border border-hairline bg-bg p-5 shadow-card">
-                <span className="flex h-10 w-10 items-center justify-center rounded-card border border-brand/20 bg-brand/10 text-brand">
-                  <UIIcon icon={icons[index] ?? CircleDollarSign} size={20} />
+      <div className="container-page max-w-[1280px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.86fr)_1px_minmax(0,1.14fr)] lg:items-center lg:gap-12">
+          <div className="max-w-[520px]">
+            <h2 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl lg:text-5xl lg:leading-[1.08]">
+              {copy.title}
+            </h2>
+            {copy.subtitle ? (
+              <p className="mt-5 max-w-[480px] text-base leading-8 text-text-secondary sm:text-lg">{copy.subtitle}</p>
+            ) : null}
+            <ButtonLink
+              href={{ pathname: '/pricing' }}
+              linkComponent={Link}
+              size="lg"
+              className="mt-7"
+              data-analytics-event="pricing_cta_click"
+              data-analytics-cta-name="view_pricing"
+              data-analytics-cta-location="transparent_pricing"
+              data-analytics-target-family="pricing"
+            >
+              {copy.cta ?? 'View pricing'}
+            </ButtonLink>
+          </div>
+          <span aria-hidden="true" className="hidden h-full min-h-[240px] w-px bg-hairline lg:block" />
+          <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:gap-x-12 lg:gap-y-12">
+            {cards.map((card, index) => (
+              <article key={card.title} className="grid grid-cols-[44px_minmax(0,1fr)] gap-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-brand/20 bg-brand/10 text-brand shadow-sm">
+                  <UIIcon icon={icons[index] ?? CircleDollarSign} size={21} strokeWidth={1.9} />
                 </span>
-                <h3 className="mt-4 text-lg font-semibold text-text-primary">{card.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">{card.body}</p>
+                <span>
+                  <h3 className="text-base font-semibold leading-6 text-text-primary sm:text-lg">{card.title}</h3>
+                  <p className="mt-1.5 text-sm leading-6 text-text-secondary sm:text-[15px]">{card.body}</p>
+                </span>
               </article>
-            );
-          })}
+            ))}
+          </div>
+        </div>
+        <div className="mt-10 flex flex-col gap-5 border-t border-hairline pt-5 md:flex-row md:items-center md:justify-between">
+          <p className="flex max-w-[720px] items-start gap-3 text-sm leading-7 text-text-secondary">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand/20 bg-brand/10 text-brand">
+              <UIIcon icon={BadgeCheck} size={17} strokeWidth={1.9} />
+            </span>
+            <span>
+              {copy.supportingText ??
+                'MaxVideoAI is a pay-as-you-go multi-engine AI video generator for Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.'}
+            </span>
+          </p>
+          <nav aria-label="Pricing section links" className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-brand">
+            {footerLinks.map((item, index) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="inline-flex items-center gap-2 transition hover:text-brand-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              >
+                <span>{item.label}</span>
+                <span aria-hidden="true">→</span>
+                {index < footerLinks.length - 1 ? <span aria-hidden="true" className="ml-3 h-4 w-px bg-hairline" /> : null}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </section>

@@ -12,8 +12,8 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { localeRegions, type AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { listExamples, type GalleryVideo } from '@/server/videos';
-import { getHomepageSlotsCached, type HomepageSlotWithVideo } from '@/server/homepage';
+import { listExampleFamilyPage, listExamples, type GalleryVideo } from '@/server/videos';
+import { getHomepageSlotsCached, getSuccessfulGenerationCountCached, type HomepageSlotWithVideo } from '@/server/homepage';
 import type { Mode } from '@/types/engines';
 import type { HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
 import {
@@ -41,8 +41,6 @@ import {
 export const revalidate = 60;
 
 type ProofConfig = {
-  liveValue: string;
-  pricingSubLabel?: string;
   items: Array<{ id: string; label: string }>;
 };
 
@@ -72,6 +70,12 @@ type ComparisonConfig = {
   badges: string[];
   imageSrc?: string;
   imageAlt?: string;
+};
+
+type ComparisonMediaItem = {
+  imageSrc: string;
+  imageAlt: string;
+  label?: string;
 };
 
 type BestForPageConfig = {
@@ -183,11 +187,12 @@ const EXAMPLE_ENGINE_PRIORITY = [
   'kling-3-pro',
   'veo-3-1',
   'veo-3-1-lite',
-  'ltx-2-3-fast',
-  'wan-2-6',
+  'ltx-2-3-pro',
+  'happy-horse-1-0',
   'pika-text-to-video',
   'sora-2',
-  'ltx-2-3-pro',
+  'ltx-2-3-fast',
+  'wan-2-6',
   'kling-3-standard',
 ] as const;
 
@@ -216,6 +221,8 @@ const HOME_ROUTE_MAP = {
   upscaleTool: { pathname: '/tools/upscale' },
 } satisfies Record<string, LocalizedLinkHref>;
 
+const SUCCESSFUL_GENERATION_PROOF_MINIMUM = 10_000;
+
 const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = {
   Pika: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } },
 };
@@ -223,21 +230,21 @@ const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = {
 const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'wan'] as const;
 type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
 
-type HeroEngineId = 'seedance-2-0' | 'kling-3-pro' | 'veo-3-1-lite' | 'ltx-2-3-fast' | 'wan-2-6';
+type HeroEngineId = 'seedance-2-0' | 'kling-3-pro' | 'veo-3-1-lite' | 'ltx-2-3-pro' | 'happy-horse-1-0';
 
 const HERO_VIDEO_CHIPS: Record<string, string[]> = {
   'kling-3-pro': ['Cinematic', 'Camera move'],
   'seedance-2-0': ['Cinematic', 'Realism'],
   'veo-3-1-lite': ['Realistic', 'Premium'],
-  'ltx-2-3-fast': ['Fast draft', 'Low cost'],
-  'wan-2-6': ['Video-to-video', 'Structured'],
+  'ltx-2-3-pro': ['Audio', 'Retake'],
+  'happy-horse-1-0': ['Lip-sync', 'Unified'],
 };
 
 const HERO_ENGINE_TARGETS: Record<
   HeroEngineId,
   {
     name: string;
-    exampleFamily: HomepageExampleFamily;
+    exampleFamily?: HomepageExampleFamily;
     modelSlug: string;
     mode: Mode;
   }
@@ -245,14 +252,14 @@ const HERO_ENGINE_TARGETS: Record<
   'kling-3-pro': { name: 'Kling 3 Pro', exampleFamily: 'kling', modelSlug: 'kling-3-pro', mode: 'i2v' },
   'seedance-2-0': { name: 'Seedance 2.0', exampleFamily: 'seedance', modelSlug: 'seedance-2-0', mode: 'i2v' },
   'veo-3-1-lite': { name: 'Veo 3.1 Lite', exampleFamily: 'veo', modelSlug: 'veo-3-1-lite', mode: 'i2v' },
-  'ltx-2-3-fast': { name: 'LTX 2.3 Fast', exampleFamily: 'ltx', modelSlug: 'ltx-2-3-fast', mode: 't2v' },
-  'wan-2-6': { name: 'Wan 2.6', exampleFamily: 'wan', modelSlug: 'wan-2-6', mode: 'v2v' },
+  'ltx-2-3-pro': { name: 'LTX 2.3 Pro', exampleFamily: 'ltx', modelSlug: 'ltx-2-3-pro', mode: 'a2v' },
+  'happy-horse-1-0': { name: 'Happy Horse 1.0', modelSlug: 'happy-horse-1-0', mode: 'ref2v' },
 };
 
 const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
   seedance: 'seedance-2-0',
   kling: 'kling-3-pro',
-  ltx: 'ltx-2-3-fast',
+  ltx: 'ltx-2-3-pro',
   veo: 'veo-3-1',
   wan: 'wan-2-6',
 };
@@ -279,6 +286,7 @@ const FALLBACK_MODE_BY_ENGINE: Record<string, Mode> = {
   'ltx-2-3-pro': 'a2v',
   'wan-2-6': 'r2v',
   'pika-text-to-video': 't2v',
+  'happy-horse-1-0': 'ref2v',
 };
 
 function countMode(engines: ReturnType<typeof listFalEngines>, mode: Mode) {
@@ -303,7 +311,7 @@ function computeEngineStats(): EngineStats {
   };
 }
 
-function resolveProofValue(id: string, stats: EngineStats, proof: ProofConfig): string {
+function resolveProofValue(id: string, stats: EngineStats): string {
   switch (id) {
     case 'engines':
       return String(stats.total);
@@ -319,29 +327,51 @@ function resolveProofValue(id: string, stats: EngineStats, proof: ProofConfig): 
       return String(stats.audio);
     case 'fourK':
       return stats.fourK > 0 ? '4K' : '1080p+';
-    case 'pricing':
-      return proof.liveValue;
     default:
       return '';
   }
 }
 
-function buildProofStats(content: RedesignContent, stats: EngineStats): ProofStat[] {
+function formatProofNumber(locale: AppLocale, value: number): string {
+  return new Intl.NumberFormat(localeRegions[locale] ?? 'en-US', {
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function buildProofStats(content: RedesignContent, stats: EngineStats, locale: AppLocale, successfulGenerationCount: number | null): ProofStat[] {
   const hrefByProofId: Partial<Record<string, LocalizedLinkHref>> = {
     engines: HOME_ROUTE_MAP.models,
     providers: HOME_ROUTE_MAP.models,
     textToVideo: HOME_ROUTE_MAP.models,
     imageToVideo: HOME_ROUTE_MAP.models,
     videoToVideo: HOME_ROUTE_MAP.models,
-    pricing: HOME_ROUTE_MAP.pricing,
+    audio: HOME_ROUTE_MAP.models,
+    fourK: HOME_ROUTE_MAP.models,
+    successfulGenerations: HOME_ROUTE_MAP.examples,
   };
 
-  return content.proof.items.map((item) => ({
-    id: item.id,
-    value: item.id === 'pricing' ? item.label : resolveProofValue(item.id, stats, content.proof),
-    label: item.id === 'pricing' ? content.proof.pricingSubLabel ?? 'Before you generate' : item.label,
-    href: hrefByProofId[item.id],
-  }));
+  return content.proof.items.flatMap((item) => {
+    if (item.id === 'successfulGenerations') {
+      if (successfulGenerationCount == null || successfulGenerationCount < SUCCESSFUL_GENERATION_PROOF_MINIMUM) return [];
+      return [
+        {
+          id: item.id,
+          value: formatProofNumber(locale, successfulGenerationCount),
+          label: item.label,
+          href: hrefByProofId[item.id],
+        },
+      ];
+    }
+
+    return [
+      {
+        id: item.id,
+        value: resolveProofValue(item.id, stats),
+        label: item.label,
+        href: hrefByProofId[item.id],
+      },
+    ];
+  });
 }
 
 function buildHeroContent(locale: AppLocale, content: RedesignContent): HomeHeroContent {
@@ -462,9 +492,11 @@ function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName:
   return {
     name: target.name,
     modeLabel: null as string | null,
-    examplesHref: { pathname: '/examples/[model]', params: { model: target.exampleFamily } } satisfies LocalizedLinkHref,
+    examplesHref: target.exampleFamily
+      ? ({ pathname: '/examples/[model]', params: { model: target.exampleFamily } } satisfies LocalizedLinkHref)
+      : undefined,
     modelHref: { pathname: '/models/[slug]', params: { slug: target.modelSlug } } satisfies LocalizedLinkHref,
-    examplesLabel: heroExampleLabel(locale, target.name, target.exampleFamily),
+    examplesLabel: target.exampleFamily ? heroExampleLabel(locale, target.name, target.exampleFamily) : undefined,
     modelLabel: heroModelLabel(locale, target.name),
     mode: target.mode,
   };
@@ -499,6 +531,15 @@ async function loadProgrammedHomepageHeroSlots(): Promise<HomepageSlotWithVideo[
   } catch (error) {
     console.warn('[home] failed to load programmed homepage hero slots', error);
     return [];
+  }
+}
+
+async function loadSuccessfulGenerationCount(): Promise<number | null> {
+  try {
+    return await getSuccessfulGenerationCountCached();
+  } catch (error) {
+    console.warn('[home] failed to load successful generation count', error);
+    return null;
   }
 }
 
@@ -625,19 +666,107 @@ async function loadHomepageExamples(locale: AppLocale, content: RedesignContent)
   });
 }
 
-function buildComparisonCards(content: RedesignContent): ComparisonCard[] {
+function splitComparisonSlug(slug: string): [string, string] | null {
+  const [left, right] = slug.split('-vs-');
+  if (!left || !right) return null;
+  return [left, right];
+}
+
+function resolveComparisonEngineLabel(slug: string): string {
+  return ENGINE_BY_MODEL_SLUG.get(slug)?.marketingName ?? slug.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function compactComparisonLabel(label: string): string {
+  return label
+    .replace(/^Google\s+/i, '')
+    .replace(/^LTX Video 2\.0 Pro$/i, 'LTX 2')
+    .replace(/\s+Text to Video$/i, '')
+    .trim();
+}
+
+async function loadComparisonExamplePools(
+  cards: ComparisonConfig[],
+  usedImageSrcs: Set<string>
+): Promise<Map<HomepageExampleFamily, GalleryVideo[]>> {
+  const families = new Set<HomepageExampleFamily>();
+
+  cards.forEach((card) => {
+    const pair = splitComparisonSlug(card.slug);
+    if (!pair) return;
+    pair.forEach((engineSlug) => {
+      const family = resolveExampleCanonicalSlug(engineSlug);
+      if (family && HOMEPAGE_EXAMPLE_FAMILIES.includes(family as HomepageExampleFamily)) {
+        families.add(family as HomepageExampleFamily);
+      }
+    });
+  });
+
+  const entries = await Promise.all(
+    Array.from(families).map(async (family) => {
+      const result = await listExampleFamilyPage(family, { sort: 'playlist', limit: 14, offset: 0 }).catch((error) => {
+        console.warn(`[home] failed to load comparison thumbnails for "${family}"`, error);
+        return { items: [] as GalleryVideo[] };
+      });
+      const videos = result.items.filter((video) => video.thumbUrl && !usedImageSrcs.has(video.thumbUrl));
+      return [family, videos] as const;
+    })
+  );
+
+  return new Map(entries);
+}
+
+function takeComparisonMediaFromFamily(
+  pool: GalleryVideo[],
+  usedImageSrcs: Set<string>,
+  label: string,
+  title: string
+): ComparisonMediaItem | null {
+  const video = pool.find((candidate) => candidate.thumbUrl && !usedImageSrcs.has(candidate.thumbUrl));
+  if (!video?.thumbUrl) return null;
+  usedImageSrcs.add(video.thumbUrl);
+  return {
+    imageSrc: video.thumbUrl,
+    imageAlt: `${label} example thumbnail used in the ${title} comparison card.`,
+    label: compactComparisonLabel(label),
+  };
+}
+
+async function buildComparisonCardsWithExampleMedia(
+  content: RedesignContent,
+  homepageExamples: HomeExampleCard[]
+): Promise<ComparisonCard[]> {
+  const publishedCards = content.comparisons.cards.filter((card) => isPublishedComparisonSlug(card.slug));
+  const usedImageSrcs = new Set(
+    homepageExamples
+      .map((example) => example.imageSrc)
+      .filter((imageSrc): imageSrc is string => Boolean(imageSrc) && !imageSrc.startsWith('/assets/placeholders/'))
+  );
+  const pools = await loadComparisonExamplePools(publishedCards, usedImageSrcs);
+
   return content.comparisons.cards
     .filter((card) => isPublishedComparisonSlug(card.slug))
-    .map((card) => ({
-      id: card.id,
-      title: card.title,
-      body: card.body,
-      badges: card.badges,
-      cta: content.comparisons.cta,
-      href: { pathname: '/ai-video-engines/[slug]', params: { slug: card.slug } },
-      imageSrc: card.imageSrc,
-      imageAlt: card.imageAlt,
-    }));
+    .map((card) => {
+      const pair = splitComparisonSlug(card.slug);
+      const media = pair?.flatMap((engineSlug) => {
+        const family = resolveExampleCanonicalSlug(engineSlug) as HomepageExampleFamily | null;
+        if (!family || !HOMEPAGE_EXAMPLE_FAMILIES.includes(family)) return [];
+        const label = resolveComparisonEngineLabel(engineSlug);
+        const item = takeComparisonMediaFromFamily(pools.get(family) ?? [], usedImageSrcs, label, card.title);
+        return item ? [item] : [];
+      });
+
+      return {
+        id: card.id,
+        title: card.title,
+        body: card.body,
+        badges: card.badges,
+        cta: content.comparisons.cta,
+        href: { pathname: '/ai-video-engines/[slug]', params: { slug: card.slug } },
+        imageSrc: card.imageSrc,
+        imageAlt: card.imageAlt,
+        media: media && media.length >= 2 ? media : undefined,
+      };
+    });
 }
 
 function filterProviderItems(content: RedesignContent): ProviderItem[] {
@@ -733,15 +862,16 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.home.redesign as RedesignContent;
   const stats = computeEngineStats();
-  const proofStats = buildProofStats(content, stats);
   const hero = buildHeroContent(locale, content);
-  const [examples, programmedHeroSlots] = await Promise.all([
+  const [examples, programmedHeroSlots, successfulGenerationCount] = await Promise.all([
     loadHomepageExamples(locale, content),
     loadProgrammedHomepageHeroSlots(),
+    loadSuccessfulGenerationCount(),
   ]);
+  const proofStats = buildProofStats(content, stats, locale, successfulGenerationCount);
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
-  const comparisons = buildComparisonCards(content);
+  const comparisons = await buildComparisonCardsWithExampleMedia(content, examples);
   const providers = filterProviderItems(content);
   const tools = filterToolCards(content, stats);
   const softwareSchema = buildSoftwareSchema(content);

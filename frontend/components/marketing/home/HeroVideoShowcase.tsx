@@ -335,11 +335,12 @@ export function HeroVideoShowcase({
                   className="object-cover"
                   loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/86 via-black/10 to-transparent" />
-                <span className="absolute bottom-7 left-2.5 inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white/92 text-[#151827]">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.06)_40%,rgba(0,0,0,0.50)_72%,rgba(0,0,0,0.82)_100%)]" />
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(0,0,0,0.62),rgba(0,0,0,0.26)_48%,transparent_78%)]" />
+                <span className="absolute bottom-7 left-2.5 inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white/94 text-[#151827] shadow-[0_6px_16px_-8px_rgba(0,0,0,0.9)]">
                   <UIIcon icon={Play} size={10} />
                 </span>
-                <span className="absolute bottom-2 left-2.5 right-2 truncate text-left text-[10.5px] font-semibold leading-tight text-white">
+                <span className="absolute bottom-2 left-2.5 right-2 truncate text-left text-[10.5px] font-semibold leading-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.92)]">
                   {item.name}
                 </span>
                 {selectedThumb ? <span className="absolute bottom-3 right-2.5 h-2 w-2 rounded-full bg-white" /> : null}
