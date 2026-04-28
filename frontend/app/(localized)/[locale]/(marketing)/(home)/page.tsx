@@ -870,6 +870,19 @@ function buildSoftwareSchema(content: RedesignContent) {
   };
 }
 
+function buildOrganizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'MaxVideo AI',
+    url: 'https://maxvideoai.com',
+    logo: 'https://maxvideoai.com/favicon-512.png',
+    sameAs: [],
+    description:
+      'Independent hub for AI video generation. Price before you generate. Works with Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.',
+  };
+}
+
 function buildFaqSchema(items: FaqItem[]) {
   return {
     '@context': 'https://schema.org',
@@ -929,6 +942,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
   const providers = filterProviderItems(content);
   const tools = filterToolCards(content, stats);
   const softwareSchema = buildSoftwareSchema(content);
+  const organizationSchema = buildOrganizationSchema();
   const faqSchema = buildFaqSchema(content.faq.items);
   const itemListSchema = buildItemListSchema(content, providers);
 
@@ -944,6 +958,9 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       <HomeFaq copy={content.faq} items={content.faq.items} />
       <Script id="home-webapp-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
+      </Script>
+      <Script id="home-organization-jsonld" type="application/ld+json">
+        {JSON.stringify(organizationSchema)}
       </Script>
       <Script id="home-faq-jsonld" type="application/ld+json">
         {JSON.stringify(faqSchema)}
