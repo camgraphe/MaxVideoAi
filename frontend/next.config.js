@@ -253,6 +253,21 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/ai-video-engines/best-for/vertical-shorts',
+        destination: '/ai-video-engines/best-for/ugc-ads',
+        permanent: true,
+      },
+      {
+        source: '/fr/comparatif/best-for/vertical-shorts',
+        destination: '/fr/comparatif/best-for/ugc-ads',
+        permanent: true,
+      },
+      {
+        source: '/es/comparativa/best-for/vertical-shorts',
+        destination: '/es/comparativa/best-for/ugc-ads',
+        permanent: true,
+      },
+      {
         source: '/fr/galerie/ltx-2-fast',
         destination: '/fr/galerie/ltx',
         permanent: true,
