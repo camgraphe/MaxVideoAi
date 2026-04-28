@@ -596,11 +596,11 @@ export function HomeHero({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(ellipse_at_78%_16%,rgba(255,255,255,0.055),transparent_46%),radial-gradient(ellipse_at_94%_26%,rgba(125,211,252,0.035),transparent_42%),linear-gradient(180deg,rgba(3,7,18,0.99)_0%,rgba(4,8,22,0.96)_48%,rgba(3,7,18,0.92)_100%)]" />
       <div className="home-hero-dark-grid pointer-events-none absolute inset-x-0 bottom-0 hidden h-[38%] dark:block" aria-hidden="true" />
       <div className="container-page relative grid max-w-[1400px] gap-7 py-10 min-[900px]:grid-cols-[minmax(340px,0.88fr)_minmax(0,1.12fr)] min-[900px]:items-start min-[900px]:gap-6 min-[900px]:py-12 lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)] lg:gap-7 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
-        <div className="scrollbar-rail -mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0 min-[900px]:col-span-2 min-[900px]:pb-0">
+        <div className="flex min-w-0 flex-wrap gap-2 overflow-visible sm:flex-nowrap sm:overflow-x-auto min-[900px]:col-span-2">
           {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
             <span
               key={badge}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-pill border border-brand/15 bg-brand/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand shadow-sm dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-white/88 sm:gap-2 sm:px-3 sm:text-[11px] sm:tracking-[0.08em]"
+              className="inline-flex max-w-full shrink-0 items-center gap-1.5 whitespace-normal rounded-pill border border-brand/15 bg-brand/10 px-2.5 py-1.5 text-left text-[10px] font-semibold uppercase leading-4 tracking-[0.06em] text-brand shadow-sm dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-white/88 sm:gap-2 sm:px-3 sm:text-[11px] sm:tracking-[0.08em]"
             >
               <UIIcon icon={index === 1 ? CircleDollarSign : index === 2 ? RefreshCcw : BadgeDollarSign} size={14} />
               {badge}

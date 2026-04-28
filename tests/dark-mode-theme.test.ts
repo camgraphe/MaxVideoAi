@@ -79,6 +79,15 @@ test('homepage dark mode follows the reference with luminous hero and tokenized 
   assert.doesNotMatch(homeSource, /dark:bg-white\/\[0\.055\]/);
 });
 
+test('homepage hero badge chips wrap on mobile instead of being clipped', () => {
+  const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ProofBar'));
+
+  assert.match(homeHeroSource, /flex min-w-0 flex-wrap gap-2 overflow-visible sm:flex-nowrap sm:overflow-x-auto/);
+  assert.match(homeHeroSource, /inline-flex max-w-full shrink-0 items-center/);
+  assert.match(homeHeroSource, /whitespace-normal/);
+  assert.doesNotMatch(homeHeroSource, /-mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto/);
+});
+
 test('homepage hero preview uses subdued dark borders instead of bright white outlines', () => {
   const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ProofBar'));
 
