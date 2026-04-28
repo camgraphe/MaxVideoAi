@@ -324,17 +324,17 @@ const HERO_ENGINE_MEDIA: Record<
     ...KLING_3_PRO_HERO_RENDER,
   },
   'seedance-2-0': {
-    posterSrc: '/hero/showcase-seedance-2-0.jpg',
+    posterSrc: '/hero/showcase-seedance-2-0.webp',
     resolution: '16:9',
     duration: '0:05',
   },
   'veo-3-1': {
-    posterSrc: '/hero/showcase-veo-3-1.jpg',
+    posterSrc: '/hero/showcase-veo-3-1.webp',
     resolution: '16:9',
     duration: '0:05',
   },
   'veo-3-1-lite': {
-    posterSrc: '/hero/showcase-veo-3-1.jpg',
+    posterSrc: '/hero/showcase-veo-3-1.webp',
     resolution: '16:9',
     duration: '0:05',
   },
@@ -358,7 +358,7 @@ const HERO_ENGINE_MEDIA: Record<
     price: '$0.18/sec',
   },
   'sora-2': {
-    posterSrc: '/hero/showcase-sora-2.jpg',
+    posterSrc: '/hero/showcase-sora-2.webp',
     resolution: '16:9',
     duration: '0:05',
   },
@@ -381,7 +381,7 @@ const COMPARISON_CARD_MEDIA: Record<string, { imageSrc: string; imageAlt: string
     imageAlt: 'Fast draft AI video comparison preview for LTX models.',
   },
   'ltx-seedance': {
-    imageSrc: '/hero/showcase-seedance-2-0.jpg',
+    imageSrc: '/hero/showcase-seedance-2-0.webp',
     imageAlt: 'AI video comparison preview between LTX and Seedance.',
   },
   'ltx-veo': {
@@ -389,11 +389,11 @@ const COMPARISON_CARD_MEDIA: Record<string, { imageSrc: string; imageAlt: string
     imageAlt: 'AI video comparison preview between LTX and Veo.',
   },
   'kling-ltx': {
-    imageSrc: '/hero/showcase-kling-3-pro.jpg',
+    imageSrc: '/hero/showcase-kling-3-pro.webp',
     imageAlt: 'Camera motion AI video comparison preview between Kling and LTX.',
   },
   'sora-standard-pro': {
-    imageSrc: '/hero/showcase-sora-2.jpg',
+    imageSrc: '/hero/showcase-sora-2.webp',
     imageAlt: 'AI video comparison preview for Sora models.',
   },
 };
@@ -589,6 +589,7 @@ export function HomeHero({
         aria-hidden="true"
         fill
         priority
+        fetchPriority="high"
         sizes="100vw"
         className="pointer-events-none object-cover object-center opacity-65 dark:brightness-[0.58] dark:contrast-110 dark:invert dark:opacity-[0.34]"
       />
@@ -1015,7 +1016,7 @@ function ComparisonScorecard({ copy }: { copy: SectionCopy }) {
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.72),transparent)] dark:bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.08),transparent)]" />
       <Image
-        src="/assets/marketing/comparison-scorecard-transparent.png"
+        src="/assets/marketing/comparison-scorecard-transparent.webp"
         alt="Side-by-side AI video model scorecard comparing Seedance 1.5 Pro and Seedance 2.0 across prompt adherence, visual quality, motion, audio and pricing."
         width={1280}
         height={853}
@@ -1113,7 +1114,7 @@ export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; co
                     </div>
                   ) : (
                     <Image
-                      src={comparison.imageSrc ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageSrc ?? '/hero/showcase-seedance-2-0.jpg'}
+                      src={comparison.imageSrc ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageSrc ?? '/hero/showcase-seedance-2-0.webp'}
                       alt={comparison.imageAlt ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageAlt ?? `${comparison.title} AI video comparison preview.`}
                       fill
                       sizes="(max-width: 639px) 50vw, (max-width: 1023px) 220px, 132px"
@@ -1229,7 +1230,7 @@ export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: Tool
               data-analytics-tool-surface="public"
             >
               <Image
-                src={TOOLBOX_VISUALS[tool.id] ?? '/hero/showcase-seedance-2-0.jpg'}
+                src={TOOLBOX_VISUALS[tool.id] ?? '/hero/showcase-seedance-2-0.webp'}
                 alt=""
                 aria-hidden="true"
                 fill

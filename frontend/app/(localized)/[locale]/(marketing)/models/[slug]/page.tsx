@@ -1109,7 +1109,7 @@ type BestUseCaseIconKey =
   | 'scissors'
   | 'wind'
   | 'coins';
-type BestUseCaseItem = { title: string; icon: BestUseCaseIconKey; chips?: string[] };
+type BestUseCaseItem = { title: string; icon: BestUseCaseIconKey; chips?: string[]; href?: string | null };
 type RelatedItem = {
   brand: string;
   title: string;
@@ -2611,6 +2611,7 @@ function normalizeBestUseCaseItems(value: unknown, locale?: AppLocale): BestUseC
           : '';
     if (!title) continue;
     const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
+    const href = typeof obj.href === 'string' && obj.href.trim() ? obj.href.trim() : null;
     const icon =
       (rawIcon && BEST_USE_CASE_ICON_KEYS.includes(rawIcon as BestUseCaseIconKey)
         ? rawIcon
@@ -2620,6 +2621,7 @@ function normalizeBestUseCaseItems(value: unknown, locale?: AppLocale): BestUseC
       title,
       icon,
       chips,
+      href,
     });
   }
   return items;
@@ -3764,6 +3766,7 @@ function MarketingModelPageLayout({
     const isVideoPrepModel =
       engine.modelSlug === 'veo-3-1' ||
       engine.modelSlug === 'kling-3-pro' ||
+      engine.modelSlug === 'happy-horse-1-0' ||
       engine.modelSlug === 'sora-2-pro' ||
       engine.modelSlug === 'ltx-2-3-pro' ||
       engine.modelSlug === 'ltx-2-3-fast';
@@ -4103,15 +4106,26 @@ function MarketingModelPageLayout({
                       <div className="flex flex-wrap gap-1.5">
                         {bestUseCaseItems.map((item, index) => {
                           const Icon = item.icon ? BEST_USE_CASE_ICON_MAP[item.icon] : null;
-                          return (
+                          const chip = (
                             <Chip
-                              key={`${item.title}-${index}`}
                               variant="outline"
                               className="px-2.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-text-secondary"
                             >
                               {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
                               <span>{item.title}</span>
                             </Chip>
+                          );
+                          if (!item.href) {
+                            return <span key={`${item.title}-${index}`}>{chip}</span>;
+                          }
+                          return (
+                            <Link
+                              key={`${item.title}-${index}`}
+                              href={item.href}
+                              className="inline-flex rounded-full transition hover:border-brand/35 hover:text-brandHover focus:outline-none focus:ring-2 focus:ring-brand/35"
+                            >
+                              {chip}
+                            </Link>
                           );
                         })}
                       </div>

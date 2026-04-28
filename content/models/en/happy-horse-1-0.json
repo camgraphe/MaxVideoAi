@@ -40,19 +40,23 @@
     "items": [
       {
         "title": "Native-audio spokesperson and dialogue clips",
-        "icon": "ugc"
+        "icon": "ugc",
+        "href": "/ai-video-engines/best-for/lipsync-dialogue"
       },
       {
         "title": "Unified text, image, R2V, and V2V production workflows",
-        "icon": "layers"
+        "icon": "layers",
+        "href": "/ai-video-engines/best-for/reference-to-video"
       },
       {
         "title": "Reference-guided character and product consistency",
-        "icon": "product"
+        "icon": "product",
+        "href": "/ai-video-engines/best-for/character-reference"
       },
       {
         "title": "Video edits with natural-language style direction",
-        "icon": "scissors"
+        "icon": "scissors",
+        "href": "/ai-video-engines/best-for/multi-shot-video"
       }
     ]
   },

@@ -40,19 +40,23 @@
     "items": [
       {
         "title": "Clips de portavoz y diálogo con audio nativo",
-        "icon": "ugc"
+        "icon": "ugc",
+        "href": "/es/comparativa/best-for/lipsync-dialogue"
       },
       {
         "title": "Flujo unificado de texto, imagen, R2V y V2V",
-        "icon": "layers"
+        "icon": "layers",
+        "href": "/es/comparativa/best-for/reference-to-video"
       },
       {
         "title": "Consistencia de personaje o producto guiada por referencias",
-        "icon": "product"
+        "icon": "product",
+        "href": "/es/comparativa/best-for/character-reference"
       },
       {
         "title": "Ediciones de video dirigidas con lenguaje natural",
-        "icon": "scissors"
+        "icon": "scissors",
+        "href": "/es/comparativa/best-for/multi-shot-video"
       }
     ]
   },
