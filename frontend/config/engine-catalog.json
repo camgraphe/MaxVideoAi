@@ -3723,6 +3723,7 @@
           "resolution": [
             "1080p"
           ],
+          "resolutionLocked": true,
           "aspectRatio": [
             "16:9",
             "9:16",
@@ -3749,6 +3750,7 @@
           "resolution": [
             "1080p"
           ],
+          "resolutionLocked": true,
           "aspectRatio": [
             "16:9",
             "9:16",
@@ -4838,8 +4840,8 @@
     "brandId": "alibaba",
     "family": "happy-horse",
     "familyExamplesPage": {
-      "stage": "hidden",
-      "showInNav": false,
+      "stage": "indexed",
+      "showInNav": true,
       "publishedModelSlugs": [
         "happy-horse-1-0"
       ],
@@ -4856,8 +4858,8 @@
         "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
