@@ -4849,7 +4849,7 @@
     },
     "versionLabel": "1.0",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,

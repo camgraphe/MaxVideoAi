@@ -5824,7 +5824,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     family: 'happy-horse',
     versionLabel: '1.0',
     availability: 'available',
-    logoPolicy: 'textOnly',
+    logoPolicy: 'logoAllowed',
     surfaces: {
       modelPage: {
         indexable: true,

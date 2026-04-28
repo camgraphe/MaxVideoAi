@@ -28,6 +28,7 @@ const BRAND_PICTOGRAMS: Record<string, EnginePictogram> = {
   runway: { code: 'Rw', backgroundColor: brandColorVar('runway', 'bg'), textColor: brandColorVar('runway', 'ink') },
   lightricks: { code: 'Lt', backgroundColor: brandColorVar('lightricks', 'bg'), textColor: brandColorVar('lightricks', 'ink') },
   google: { code: 'Go', backgroundColor: brandColorVar('google', 'bg'), textColor: brandColorVar('google', 'ink') },
+  alibaba: { code: 'Al', backgroundColor: brandColorVar('alibaba', 'bg'), textColor: brandColorVar('alibaba', 'ink') },
 };
 
 const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {

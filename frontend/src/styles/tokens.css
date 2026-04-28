@@ -84,6 +84,8 @@
   --engine-lightricks-ink: #1F2633;
   --engine-google-bg: #DCE9FF;
   --engine-google-ink: #1F2633;
+  --engine-alibaba-bg: #FFE3CC;
+  --engine-alibaba-ink: #1F2633;
   --accent: #7CA3E8;
   --accent-hover: #5D83D0;
   --accent-active: #4369B1;
@@ -282,6 +284,8 @@
   --engine-lightricks-ink: #EFE5FF;
   --engine-google-bg: #243B5A;
   --engine-google-ink: #EAF2FF;
+  --engine-alibaba-bg: #573013;
+  --engine-alibaba-ink: #FFE9D6;
   --accent: #8CAFEF;
   --accent-hover: #A8C1FF;
   --accent-active: #C0D1FF;

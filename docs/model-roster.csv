@@ -1,5 +1,5 @@
 engineId,marketingName,brandId,modelSlug,family,versionLabel,availability,logoPolicy,modelPageIndexable,modelPageInSitemap
-happy-horse-1-0,Happy Horse 1.0,alibaba,happy-horse-1-0,happy-horse,1.0,available,textOnly,true,true
+happy-horse-1-0,Happy Horse 1.0,alibaba,happy-horse-1-0,happy-horse,1.0,available,logoAllowed,true,true
 seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,v1.5 Pro,available,logoAllowed,true,true
 seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,2.0,available,logoAllowed,true,true
 seedance-2-0-fast,Seedance 2.0 Fast,bytedance,seedance-2-0-fast,seedance,2.0 Fast,available,logoAllowed,true,true
