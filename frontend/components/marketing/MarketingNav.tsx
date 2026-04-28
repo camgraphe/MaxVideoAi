@@ -251,7 +251,7 @@ export function MarketingNav() {
 
   return (
     <>
-    <header className={clsx('sticky top-0 z-40 border-b border-hairline bg-surface', isHomePage && 'home-monochrome')}>
+    <header className={clsx('sticky top-0 z-40 border-b border-hairline bg-surface dark:bg-surface-glass-90 dark:backdrop-blur-xl', isHomePage && 'home-monochrome')}>
       <div className="mx-auto flex h-16 max-w-[1460px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 sm:gap-6">
           <Button

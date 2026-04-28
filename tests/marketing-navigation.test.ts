@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -61,4 +62,36 @@ test('marketing footer keeps crawlable Best-For hub and priority child links', (
     MARKETING_NAV_BEST_FOR_USE_CASES.map((item) => [item.label, hrefPath(item.href)]),
     bestForUseCaseLinks
   );
+});
+
+test('marketing footer separates Best-For use cases from popular comparisons', () => {
+  const source = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
+  const comparisonBlock = source.slice(source.indexOf('const comparisonLinks'), source.indexOf('const useCaseLinks'));
+  const useCaseBlock = source.slice(source.indexOf('const useCaseLinks'), source.indexOf('const exampleLinks'));
+
+  assert.match(source, /useCasesTitle/);
+  assert.match(source, /footer\.sections\.useCases\.title/);
+  assert.doesNotMatch(comparisonBlock, /MARKETING_NAV_BEST_FOR_HUB/);
+  assert.doesNotMatch(comparisonBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
+  assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_HUB/);
+  assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
+});
+
+test('default marketing routes initialize the intl request locale before rendering links', () => {
+  const source = readFileSync('frontend/app/default-marketing-layout.tsx', 'utf8');
+
+  assert.match(source, /import \{ setRequestLocale \} from 'next-intl\/server';/);
+  assert.match(source, /setRequestLocale\(DEFAULT_LOCALE\);/);
+});
+
+test('middleware avoids self-rewriting default-locale marketing routes on loopback', () => {
+  const source = readFileSync('frontend/middleware.ts', 'utf8');
+  const bypassBlock = source.slice(
+    source.indexOf('if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname))'),
+    source.indexOf('response = handleI18nRouting(req);')
+  );
+
+  assert.match(bypassBlock, /if \(defaultPrefix\)/);
+  assert.match(bypassBlock, /response = NextResponse\.rewrite\(rewriteUrl\);/);
+  assert.match(bypassBlock, /else \{\s*response = NextResponse\.next\(\);/s);
 });

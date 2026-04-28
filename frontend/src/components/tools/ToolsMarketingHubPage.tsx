@@ -39,8 +39,8 @@ function ToolCard({
   ctaLocation: string;
 }) {
   return (
-    <article className="flex h-full min-h-[540px] flex-col rounded-[10px] border border-hairline bg-white p-4 shadow-[0_18px_54px_rgba(33,49,78,0.06)] transition hover:-translate-y-1 hover:border-text-muted/30 hover:shadow-float dark:bg-white/[0.055]">
-      <div className="relative overflow-hidden rounded-[8px] bg-[#f5f7fc]">
+    <article className="flex h-full min-h-[540px] flex-col rounded-[10px] border border-hairline bg-white p-4 shadow-[0_18px_54px_rgba(33,49,78,0.06)] transition hover:-translate-y-1 hover:border-text-muted/30 hover:shadow-float dark:bg-white/[0.055] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+      <div className="relative overflow-hidden rounded-[8px] bg-[#f5f7fc] dark:bg-white/[0.045]">
         {visual}
       </div>
       <div className="flex flex-1 flex-col pt-6">
@@ -248,7 +248,7 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Object.entries(content.bestStartingPoints.cards).map(([key, card]) => (
-              <div key={key} className="rounded-[8px] border border-hairline bg-white p-5 shadow-card">
+              <div key={key} className="rounded-[8px] border border-hairline bg-white p-5 shadow-card dark:bg-white/[0.055] dark:shadow-[0_18px_54px_rgba(0,0,0,0.22)]">
                 <span className={`inline-flex h-8 w-8 items-center justify-center ${iconTone}`}>
                   {key === 'image' ? (
                     <ImagePlus className="h-5 w-5" />

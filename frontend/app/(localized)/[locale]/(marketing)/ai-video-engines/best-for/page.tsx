@@ -221,7 +221,7 @@ export default async function BestForHubPage({ params }: { params: { locale: App
             </div>
           </div>
 
-          <aside className="rounded-[20px] border border-hairline bg-surface p-7 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+          <aside className="rounded-[20px] border border-hairline bg-surface p-7 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.featured}</p>
             <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
               {featuredModels.map((slug, index) => {

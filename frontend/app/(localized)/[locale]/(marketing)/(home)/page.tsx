@@ -58,6 +58,7 @@ type FallbackExampleCard = {
   imageSrc: string;
   imageAlt: string;
   examplesSlug?: HomepageExampleFamily;
+  showExamplesCta?: boolean;
   modelCta?: string;
 };
 
@@ -123,6 +124,7 @@ type RedesignContent = {
     subtitle: string;
     cta: string;
     modelsCta?: string;
+    compareLink?: string;
     libraryTitle?: string;
     libraryBody?: string;
     providerLabel?: string;
@@ -223,9 +225,10 @@ const SUCCESSFUL_GENERATION_PROOF_MINIMUM = 10_000;
 
 const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = {
   Pika: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } },
+  Alibaba: { pathname: '/examples/[model]', params: { model: 'happy-horse' } },
 };
 
-const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'wan'] as const;
+const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'wan', 'happy-horse'] as const;
 type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
 
 type HeroEngineId = 'seedance-2-0' | 'kling-3-pro' | 'veo-3-1-lite' | 'ltx-2-3-pro' | 'happy-horse-1-0';
@@ -251,7 +254,7 @@ const HERO_ENGINE_TARGETS: Record<
   'seedance-2-0': { name: 'Seedance 2.0', exampleFamily: 'seedance', modelSlug: 'seedance-2-0', mode: 'i2v' },
   'veo-3-1-lite': { name: 'Veo 3.1 Lite', exampleFamily: 'veo', modelSlug: 'veo-3-1-lite', mode: 'i2v' },
   'ltx-2-3-pro': { name: 'LTX 2.3 Pro', exampleFamily: 'ltx', modelSlug: 'ltx-2-3-pro', mode: 'a2v' },
-  'happy-horse-1-0': { name: 'Happy Horse 1.0', modelSlug: 'happy-horse-1-0', mode: 'ref2v' },
+  'happy-horse-1-0': { name: 'Happy Horse 1.0', exampleFamily: 'happy-horse', modelSlug: 'happy-horse-1-0', mode: 'ref2v' },
 };
 
 const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
@@ -260,6 +263,20 @@ const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
   ltx: 'ltx-2-3-pro',
   veo: 'veo-3-1',
   wan: 'wan-2-6',
+  'happy-horse': 'happy-horse-1-0',
+};
+
+const HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES: Partial<Record<string, { videoId?: string; imageSrc?: string }>> = {
+  'veo-3-1': {
+    videoId: 'job_c36e082d-cd1d-4a25-9f17-02246a878eb9',
+  },
+  'wan-2-6': {
+    videoId: 'job_110f0282-bf5e-4d58-ab34-8b117c94d4e4',
+  },
+  'happy-horse-1-0': {
+    imageSrc:
+      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp',
+  },
 };
 
 const ALLOWED_TOOL_CARD_IDS = new Set([
@@ -466,10 +483,8 @@ function heroExampleLabel(locale: AppLocale, name: string, family: HomepageExamp
   return `View ${familyLabel} examples`;
 }
 
-function heroModelLabel(locale: AppLocale, name: string) {
-  if (locale === 'fr') return `Ouvrir le modèle ${name}`;
-  if (locale === 'es') return `Abrir modelo ${name}`;
-  return `Open ${name} model`;
+function heroModelLabel() {
+  return 'Specs & pricing';
 }
 
 function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName: string) {
@@ -484,7 +499,7 @@ function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName:
       examplesHref: family ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref) : undefined,
       modelHref: { pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref,
       examplesLabel: family ? heroExampleLabel(locale, fallbackName, family) : undefined,
-      modelLabel: heroModelLabel(locale, fallbackName),
+      modelLabel: heroModelLabel(),
     };
   }
   return {
@@ -495,7 +510,7 @@ function buildHeroEngineLinks(locale: AppLocale, engineId: string, fallbackName:
       : undefined,
     modelHref: { pathname: '/models/[slug]', params: { slug: target.modelSlug } } satisfies LocalizedLinkHref,
     examplesLabel: target.exampleFamily ? heroExampleLabel(locale, target.name, target.exampleFamily) : undefined,
-    modelLabel: heroModelLabel(locale, target.name),
+    modelLabel: heroModelLabel(),
     mode: target.mode,
   };
 }
@@ -616,24 +631,64 @@ function sortExamplesByPriority(videos: GalleryVideo[]) {
   });
 }
 
-async function loadHomepageExamples(locale: AppLocale, content: RedesignContent): Promise<HomeExampleCard[]> {
-  const videos = await listExamples('playlist', 40).catch(() => [] as GalleryVideo[]);
-  const realByFamily = new Map<HomepageExampleFamily, GalleryVideo>();
-
-  sortExamplesByPriority(videos).forEach((video) => {
-    if (!video.thumbUrl) return;
+function preferHomepageExampleVideo(
+  videos: GalleryVideo[],
+  targetEngineId: string,
+  family: HomepageExampleFamily | undefined,
+  preferredVideoId?: string
+): GalleryVideo | null {
+  const normalizedTarget = normalizeEngineId(targetEngineId) ?? targetEngineId;
+  const usable = videos.filter((video) => {
+    if (!video.thumbUrl) return false;
     const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
-    const family = resolveExampleCanonicalSlug(engineId);
-    if (!family || !HOMEPAGE_EXAMPLE_FAMILIES.includes(family as HomepageExampleFamily)) return;
-    const typedFamily = family as HomepageExampleFamily;
-    if (!realByFamily.has(typedFamily)) {
-      realByFamily.set(typedFamily, video);
-    }
+    if (engineId === normalizedTarget) return true;
+    return family ? resolveExampleCanonicalSlug(engineId) === family : false;
   });
+  const preferred = preferredVideoId ? usable.find((video) => video.id === preferredVideoId && video.aspectRatio === '16:9') : null;
+  if (preferred) return preferred;
+  const exactEngine = usable.filter((video) => (normalizeEngineId(video.engineId) ?? video.engineId) === normalizedTarget);
+  const exact16x9 = exactEngine.find((video) => video.aspectRatio === '16:9');
+  if (exact16x9) return exact16x9;
+  const family16x9 = usable.find((video) => video.aspectRatio === '16:9');
+  return exactEngine[0] ?? family16x9 ?? usable[0] ?? null;
+}
+
+function formatHomepageExampleDuration(locale: AppLocale, video: GalleryVideo | null, fallback: string): string {
+  if (typeof video?.durationSec === 'number' && Number.isFinite(video.durationSec) && video.durationSec > 0) {
+    return locale === 'fr' ? `${video.durationSec} s` : `${video.durationSec}s`;
+  }
+  return fallback;
+}
+
+function formatHomepageExamplePrice(locale: AppLocale, video: GalleryVideo | null, fallback?: string): string | null {
+  return formatCurrency(locale, video?.currency, video?.finalPriceCents) ?? fallback ?? null;
+}
+
+async function loadHomepageExamples(locale: AppLocale, content: RedesignContent): Promise<HomeExampleCard[]> {
+  const [latestVideos, playlistVideos, familyPools] = await Promise.all([
+    listExamples('date-desc', 120).catch(() => [] as GalleryVideo[]),
+    listExamples('playlist', 120).catch(() => [] as GalleryVideo[]),
+    Promise.all(
+      HOMEPAGE_EXAMPLE_FAMILIES.map(async (family) => {
+        const result = await listExampleFamilyPage(family, { sort: 'date-desc', limit: 24, offset: 0 }).catch(() => ({
+          items: [] as GalleryVideo[],
+          total: 0,
+          limit: 24,
+          offset: 0,
+          hasMore: false,
+        }));
+        return [family, result.items] as const;
+      })
+    ),
+  ]);
+  const familyVideos = new Map(familyPools);
+  const globalCandidates = [...latestVideos, ...sortExamplesByPriority(playlistVideos)];
 
   return content.examples.fallbackCards.flatMap<HomeExampleCard>((fallback) => {
     const family = fallback.examplesSlug;
-    const video = family ? realByFamily.get(family) : null;
+    const familyCandidates = family ? familyVideos.get(family) ?? [] : [];
+    const override = HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES[fallback.engineId];
+    const video = preferHomepageExampleVideo([...globalCandidates, ...familyCandidates], fallback.engineId, family, override?.videoId);
     const engineId = video ? normalizeEngineId(video.engineId) ?? video.engineId : fallback.engineId;
     const modelSlug = fallback.modelSlug ?? (family ? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family] : fallback.engineId);
     const href = family
@@ -647,16 +702,17 @@ async function loadHomepageExamples(locale: AppLocale, content: RedesignContent)
         engineId,
         engine: fallback.engine,
         mode: fallback.mode,
-        duration: fallback.duration,
-        price: fallback.price ?? null,
+        duration: formatHomepageExampleDuration(locale, video, fallback.duration),
+        price: formatHomepageExamplePrice(locale, video, fallback.price),
         useCase: fallback.useCase,
-        imageSrc: video?.thumbUrl ?? fallback.imageSrc,
+        imageSrc: override?.imageSrc ?? video?.thumbUrl ?? fallback.imageSrc,
         videoSrc: null,
         imageAlt: fallback.imageAlt,
         href,
         modelHref: family ? ({ pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref) : undefined,
         cloneHref: undefined,
         ctaLabel: fallback.cta,
+        examplesCtaVisible: fallback.showExamplesCta !== false,
         modelCtaLabel: fallback.modelCta,
         cloneLabel: fallback.cloneCta ?? content.examples.viewPrompt,
       },

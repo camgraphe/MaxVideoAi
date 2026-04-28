@@ -364,7 +364,7 @@ export function HeroVideoShowcase({
                 href={selected.modelHref}
                 className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-text-secondary transition hover:text-text-primary"
               >
-                {selected.modelLabel ?? `Open ${selected.name} model`}
+                {selected.modelLabel ?? 'Specs & pricing'}
                 <span aria-hidden="true">→</span>
               </Link>
             ) : null}

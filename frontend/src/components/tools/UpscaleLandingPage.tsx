@@ -105,6 +105,7 @@ function HeroVisual({
 
 export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent }) {
   const faqEntries = content.faq.map((entry) => ({ question: entry.q, answer: entry.a }));
+  const modelGuide = content.modelGuide;
   const serviceJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -124,10 +125,10 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
       <FAQSchema questions={faqEntries} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }} />
 
-      <section className="border-b border-hairline bg-[linear-gradient(180deg,#ffffff,#f6f8fb)]">
+      <section className="border-b border-hairline bg-[linear-gradient(180deg,#ffffff,#f6f8fb)] dark:bg-[linear-gradient(180deg,#070b12,#0b111c)]">
         <div className="container-page grid min-h-[720px] max-w-6xl gap-10 py-16 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1fr)] lg:items-center lg:py-20">
           <div>
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-hairline bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted shadow-card">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-hairline bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted shadow-card dark:bg-white/[0.055] dark:shadow-[0_18px_54px_rgba(0,0,0,0.22)]">
               <Maximize2 className="h-3.5 w-3.5 text-brand" />
               {content.hero.badge}
             </div>
@@ -165,7 +166,7 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
             {content.models.cards.map((card, index) => {
               const Icon = index === 0 ? Layers3 : index === 1 ? Sparkles : index === 2 ? Gauge : Maximize2;
               return (
-                <article key={card.title} className="rounded-[22px] border border-hairline bg-surface p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(15,23,42,0.10)]">
+                <article key={card.title} className="rounded-[22px] border border-hairline bg-surface p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(15,23,42,0.10)] dark:hover:shadow-[0_22px_70px_rgba(0,0,0,0.30)]">
                   <div className="flex items-center justify-between gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
                       <Icon className="h-5 w-5" />
@@ -177,6 +178,45 @@ export function UpscaleLandingPage({ content }: { content: UpscaleLandingContent
                 </article>
               );
             })}
+          </div>
+
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card">
+            <div className="grid gap-4 border-b border-hairline bg-bg px-5 py-5 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] lg:items-end">
+              <SectionIntro eyebrow={modelGuide.eyebrow} title={modelGuide.title} body={modelGuide.body} />
+              <div className="grid gap-2 sm:grid-cols-3">
+                {content.hero.metrics.map((metric) => (
+                  <div key={metric.label} className="rounded-[12px] border border-hairline bg-surface px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">{metric.label}</p>
+                    <p className="mt-1 text-sm font-semibold text-text-primary">{metric.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-[920px] w-full border-collapse text-left">
+                <thead className="bg-surface-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">
+                  <tr>
+                    <th scope="col" className="px-5 py-4">{modelGuide.columns.model}</th>
+                    <th scope="col" className="px-5 py-4">{modelGuide.columns.bestFor}</th>
+                    <th scope="col" className="px-5 py-4">{modelGuide.columns.quality}</th>
+                    <th scope="col" className="px-5 py-4">{modelGuide.columns.price}</th>
+                    <th scope="col" className="px-5 py-4">{modelGuide.columns.useWhen}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-hairline">
+                  {modelGuide.rows.map((row) => (
+                    <tr key={row.model} className="align-top">
+                      <th scope="row" className="px-5 py-5 text-sm font-semibold text-text-primary">{row.model}</th>
+                      <td className="px-5 py-5 text-sm leading-6 text-text-secondary">{row.bestFor}</td>
+                      <td className="px-5 py-5 text-sm leading-6 text-text-secondary">{row.quality}</td>
+                      <td className="px-5 py-5 text-sm leading-6 text-text-secondary">{row.price}</td>
+                      <td className="px-5 py-5 text-sm leading-6 text-text-secondary">{row.useWhen}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>

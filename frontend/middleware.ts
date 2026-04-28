@@ -446,17 +446,17 @@ export async function middleware(req: NextRequest) {
   if (isMarketingPath) {
     const defaultPrefix = localePathnames[defaultLocale];
     if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
-      const rewriteUrl = req.nextUrl.clone();
       if (defaultPrefix) {
+        const rewriteUrl = req.nextUrl.clone();
         const suffix = pathname === '/' ? '' : pathname;
         rewriteUrl.pathname = `/${defaultPrefix}${suffix}`;
+        if (bypassLocaleRedirect) {
+          rewriteUrl.searchParams.delete('nolocale');
+        }
+        response = NextResponse.rewrite(rewriteUrl);
       } else {
-        rewriteUrl.pathname = pathname || '/';
+        response = NextResponse.next();
       }
-      if (bypassLocaleRedirect) {
-        rewriteUrl.searchParams.delete('nolocale');
-      }
-      response = NextResponse.rewrite(rewriteUrl);
     } else {
       response = handleI18nRouting(req);
     }

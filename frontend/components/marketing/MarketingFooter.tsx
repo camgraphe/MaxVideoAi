@@ -101,14 +101,17 @@ export function MarketingFooter() {
       label: labelFor(item.labelKey, item.fallback),
       href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalCompareSlug(item.left, item.right) } },
     })),
+  ];
+
+  const useCaseLinks: FooterLink[] = [
     {
       key: MARKETING_NAV_BEST_FOR_HUB.key,
-      label: labelFor('footer.sections.comparisons.items.bestFor', MARKETING_NAV_BEST_FOR_HUB.label),
+      label: labelFor('footer.sections.useCases.items.bestFor', MARKETING_NAV_BEST_FOR_HUB.label),
       href: MARKETING_NAV_BEST_FOR_HUB.href,
     },
     ...MARKETING_NAV_BEST_FOR_USE_CASES.map((item) => ({
       key: item.key,
-      label: labelFor(`footer.sections.comparisons.items.${item.key}`, item.label),
+      label: labelFor(`footer.sections.useCases.items.${item.key}`, item.label),
       href: item.href,
     })),
   ];
@@ -154,6 +157,7 @@ export function MarketingFooter() {
   const brandLabel = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const enginesTitle = labelFor('footer.sections.engines.title', 'AI Video Engines');
   const comparisonsTitle = labelFor('footer.sections.comparisons.title', 'Popular comparisons');
+  const useCasesTitle = labelFor('footer.sections.useCases.title', 'Use cases');
   const examplesTitle = labelFor('footer.sections.examples.title', 'Real examples');
   const productTitle = labelFor('footer.sections.product.title', 'Product');
   const companyTitle = labelFor('footer.sections.company.title', 'Company');
@@ -181,7 +185,7 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-text-secondary sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-5 lg:gap-x-8">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-text-secondary sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-6 lg:gap-x-8">
           <div>
             <p className={sectionTitleClass}>{enginesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={enginesTitle}>
@@ -196,6 +200,16 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{comparisonsTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={comparisonsTitle}>
               {comparisonLinks.map((item) => (
+                <Link key={item.key} href={item.href} className={linkClass}>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div>
+            <p className={sectionTitleClass}>{useCasesTitle}</p>
+            <nav className="mt-3 flex flex-col gap-2" aria-label={useCasesTitle}>
+              {useCaseLinks.map((item) => (
                 <Link key={item.key} href={item.href} className={linkClass}>
                   {item.label}
                 </Link>

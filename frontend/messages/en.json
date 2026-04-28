@@ -197,6 +197,16 @@
           "seedance1_5pro_vs_sora2": "Seedance 1.5 Pro vs Sora 2"
         }
       },
+      "useCases": {
+        "title": "Use cases",
+        "items": {
+          "bestFor": "Best models by use case",
+          "cinematic-realism": "Cinematic realism",
+          "image-to-video": "Image-to-video",
+          "fast-drafts": "Fast drafts",
+          "ads": "Product ads"
+        }
+      },
       "examples": {
         "title": "Real examples",
         "items": {
@@ -508,7 +518,8 @@
       },
       "examples": {
         "title": "Preview real outputs before you choose an engine.",
-        "subtitle": "Compare real Seedance, Kling, LTX, Veo, Wan and Pika outputs, then check full specs, limits and pricing before you generate.",
+        "subtitle": "Compare real Seedance, Kling, LTX, Veo, Wan and Happy Horse outputs, then check full specs, limits, pricing and prompts before you generate.",
+        "eyebrow": "AI video examples",
         "cta": "Browse all examples",
         "modelsCta": "View all model specs",
         "compareLink": "Compare engines",
@@ -525,7 +536,7 @@
             "duration": "12s",
             "price": "$4.72",
             "useCase": "Cinematic realism",
-            "cta": "View examples",
+            "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "/hero/seedance-2-0.jpg",
             "imageAlt": "Seedance 2.0 AI video example for cinematic commercial shots.",
@@ -541,7 +552,7 @@
             "duration": "15s",
             "price": "$4.37",
             "useCase": "Camera motion",
-            "cta": "View examples",
+            "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "/hero/kling-3-4k-hero.jpg",
             "imageAlt": "Kling 3 Pro AI video example for camera motion and dynamic scenes.",
@@ -557,7 +568,7 @@
             "duration": "10s",
             "price": "$0.52",
             "useCase": "Fast drafts",
-            "cta": "View examples",
+            "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
             "imageAlt": "LTX 2.3 Fast AI video example for fast draft generation.",
@@ -573,7 +584,7 @@
             "duration": "6s",
             "price": "$3.12",
             "useCase": "Premium realism",
-            "cta": "View examples",
+            "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "/hero/veo-3-1-hero.jpg",
             "imageAlt": "Veo 3.1 AI video example for premium realism and image-to-video.",
@@ -585,30 +596,31 @@
             "engine": "Wan 2.6",
             "engineId": "wan-2-6",
             "modelSlug": "wan-2-6",
-            "mode": "Video-to-video",
+            "mode": "Text/image-to-video",
             "duration": "5s",
             "price": "$0.65",
             "useCase": "Structured video workflows",
-            "cta": "View examples",
+            "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Wan 2.6 AI video example for structured video workflows.",
             "examplesSlug": "wan"
           },
           {
-            "id": "fallback-pika",
-            "title": "Pika Text to Video",
-            "engine": "Pika Text to Video",
-            "engineId": "pika-text-to-video",
-            "modelSlug": "pika-text-to-video",
-            "mode": "Text-to-video",
-            "duration": "",
-            "useCase": "Creative prompt experiments",
-            "cta": "View examples",
+            "id": "fallback-happy-horse",
+            "title": "Happy Horse 1.0",
+            "engine": "Happy Horse 1.0",
+            "engineId": "happy-horse-1-0",
+            "modelSlug": "happy-horse-1-0",
+            "mode": "Text/image/reference-to-video",
+            "duration": "10s",
+            "price": "$1.82",
+            "useCase": "Audio-native workflows",
+            "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
-            "imageSrc": "/hero/pika-22.jpg",
-            "imageAlt": "Pika Text to Video AI video style experiment.",
-            "examplesSlug": "pika"
+            "imageSrc": "https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
+            "imageAlt": "Happy Horse 1.0 AI video example for audio-native reference workflows.",
+            "examplesSlug": "happy-horse"
           }
         ]
       },
@@ -896,7 +908,7 @@
       },
       "providers": {
         "title": "Supported engines and providers",
-        "subtitle": "Seedance, Kling, Veo, LTX, Wan, Pika, MiniMax, Luma and Sora are available from one model catalog.",
+        "subtitle": "Seedance, Kling, Veo, LTX, Wan, Pika, Happy Horse, MiniMax, Luma and Sora are available from one model catalog.",
         "cta": "View all models",
         "items": [
           {
@@ -928,6 +940,17 @@
             "providerKey": "Pika",
             "provider": "Pika",
             "model": "Pika"
+          },
+          {
+            "providerKey": "Alibaba",
+            "provider": "Alibaba",
+            "model": "Happy Horse",
+            "href": {
+              "pathname": "/examples/[model]",
+              "params": {
+                "model": "happy-horse"
+              }
+            }
           },
           {
             "providerKey": "MiniMax",
@@ -4958,13 +4981,13 @@
     "upscale": {
       "meta": {
         "title": "AI Image & Video Upscale | SeedVR2, Topaz, FlashVSR, Recraft",
-        "description": "Upscale images and short videos with current fal.ai models including SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in MaxVideoAI workflows.",
+        "description": "Upscale images and short videos with current AI enhancement models including SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in MaxVideoAI workflows.",
         "keywords": [
           "ai upscale",
           "ai image upscaler",
           "ai video upscaler",
           "seedvr upscale",
-          "topaz upscale fal",
+          "topaz video upscale",
           "flashvsr upscale",
           "recraft crisp upscale"
         ],
@@ -4973,7 +4996,7 @@
       "hero": {
         "badge": "Image + video upscale",
         "title": "Upscale assets before they move through the pipeline",
-        "body": "Use the latest fal.ai upscale endpoints in one MaxVideoAI tool: SeedVR2 for general image and video, Topaz for premium enhancement, FlashVSR for fast video passes, and Recraft Crisp for detail-focused stills.",
+        "body": "Use the latest AI upscale models in one MaxVideoAI tool: SeedVR2 for general image and video, Topaz for premium enhancement, FlashVSR for fast video passes, and Recraft Crisp for detail-focused stills.",
         "primaryCta": "Open Upscale",
         "secondaryCta": "View all tools",
         "beforeLabel": "Source",
@@ -4985,11 +5008,11 @@
         "stats": [
           {
             "value": "6",
-            "label": "fal.ai models"
+            "label": "AI models"
           },
           {
-            "value": "20s",
-            "label": "video cap"
+            "value": "Live",
+            "label": "provider limits"
           },
           {
             "value": "1",
@@ -5013,7 +5036,7 @@
       },
       "models": {
         "eyebrow": "Model routing",
-        "title": "Best fal.ai upscale models for each asset type",
+        "title": "Best upscale models for each asset type",
         "body": "The first version exposes the models that matter most now, with dynamic pricing for video and a shared surface that can later appear across Image, Video, Library, and job actions.",
         "cards": [
           {
@@ -5035,6 +5058,48 @@
             "title": "Recraft Crisp",
             "body": "Still-image detail and face-focused upscale for sharp references.",
             "badge": "Detail"
+          }
+        ]
+      },
+      "modelGuide": {
+        "eyebrow": "Quality and price guide",
+        "title": "Pick the model by asset type, quality target, and MaxVideoAI price behavior",
+        "body": "MaxVideoAI shows the price before generation. Image routes use the configured run price; video routes can adjust dynamically from duration, resolution, frames, and the selected upscale model.",
+        "columns": {
+          "model": "Model",
+          "bestFor": "Best for",
+          "quality": "Quality profile",
+          "price": "MaxVideoAI price",
+          "useWhen": "Use when"
+        },
+        "rows": [
+          {
+            "model": "SeedVR2 Image + Video",
+            "bestFor": "General-purpose upscales when you want factor or target-resolution control.",
+            "quality": "Balanced sharpness with broad image and video coverage.",
+            "price": "Usually the baseline route; video pricing is estimated from metadata before launch.",
+            "useWhen": "Start here for most assets, especially when you need predictable controls."
+          },
+          {
+            "model": "Topaz Image + Video",
+            "bestFor": "Premium enhancement for delivery assets, difficult footage, and restoration-style passes.",
+            "quality": "Higher-end detail recovery and professional finishing bias.",
+            "price": "Premium route; video uses resolution-based pricing and may cost more at 1440p or 4K.",
+            "useWhen": "Use for final selects or source media that deserves a higher-quality pass."
+          },
+          {
+            "model": "FlashVSR Video",
+            "bestFor": "Fast video upscales for cheaper review or social post-processing passes.",
+            "quality": "Speed-first video enhancement with practical temporal consistency.",
+            "price": "Lower-cost video route; MaxVideoAI estimates from duration, frames, and output pixels.",
+            "useWhen": "Use when turnaround and cost matter more than premium restoration."
+          },
+          {
+            "model": "Recraft Crisp",
+            "bestFor": "Still-image references where small details, edges, and faces need extra clarity.",
+            "quality": "Crisp raster detail for image-only enhancement.",
+            "price": "Low fixed image run pricing shown before generation.",
+            "useWhen": "Use for character references, product stills, and prompt assets before reuse."
           }
         ]
       },
@@ -5063,7 +5128,7 @@
       "faq": [
         {
           "q": "Can it upscale video?",
-          "a": "Yes. The first server integration supports short videos with metadata-based dynamic pricing and a conservative duration cap."
+          "a": "Yes. MaxVideoAI no longer applies a fixed 20 second cap. Video runs use metadata-based dynamic pricing and then follow the selected provider model's own limits."
         },
         {
           "q": "Which model is the default?",

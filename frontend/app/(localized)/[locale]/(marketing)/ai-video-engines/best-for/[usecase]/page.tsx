@@ -649,7 +649,7 @@ function TopPicksPanel({
   const comparisonSlug = pickComparisonSlug(picks, relatedComparisons);
 
   return (
-    <section className="rounded-[18px] border border-hairline bg-surface p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+    <section className="rounded-[18px] border border-hairline bg-surface p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
       <div className="flex items-center justify-between gap-3 px-1">
         <h2 className="text-sm font-semibold text-text-primary">{getTopPicksTitle(locale, entry.slug)}</h2>
         <span className="rounded-full border border-hairline bg-surface-2 px-3 py-1 text-xs font-semibold text-text-secondary">

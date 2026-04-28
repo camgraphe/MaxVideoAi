@@ -128,8 +128,8 @@ export const MODEL_FAMILIES = [
     aliases: ['happyhorse', 'happy-horse', 'happyhorse-1-0', 'happy-horse-1.0', 'alibaba-happy-horse'],
     prefixes: ['happy-horse', 'happyhorse', 'alibaba/happy-horse'],
     examplesPage: {
-      stage: 'hidden',
-      showInNav: false,
+      stage: 'indexed',
+      showInNav: true,
       publishedModelSlugs: ['happy-horse-1-0'],
       currentModelSlugs: ['happy-horse-1-0'],
     },

@@ -5833,8 +5833,8 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInSitemap: true,
       },
       examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
+        includeInFamilyResolver: true,
+        includeInFamilyCopy: true,
       },
       compare: {
         suggestOpponents: ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'sora-2-pro'],

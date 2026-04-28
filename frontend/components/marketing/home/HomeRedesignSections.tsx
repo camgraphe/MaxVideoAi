@@ -6,6 +6,7 @@ import {
   AudioWaveform,
   BarChart3,
   Box,
+  Clock,
   CircleDollarSign,
   Clapperboard,
   ClipboardList,
@@ -135,6 +136,7 @@ export type HomeExampleCard = {
   modelHref?: LocalizedLinkHref;
   cloneHref?: LocalizedLinkHref;
   ctaLabel: string;
+  examplesCtaVisible?: boolean;
   modelCtaLabel?: string;
   cloneLabel?: string;
 };
@@ -295,6 +297,17 @@ const PROOF_ICONS: Record<string, LucideIcon> = {
   successfulGenerations: BarChart3,
 };
 
+const KLING_3_PRO_HERO_RENDER = {
+  posterSrc:
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/01245e62-6bb2-4d5d-89c6-c60923a004ad.jpg',
+  videoSrc:
+    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/7b1f1c7b-f7f0-473e-9610-82723604b690.mp4',
+  resolution: '16:9',
+  duration: '0:12',
+  estimateValue: '$2.63',
+  estimateMeta: '12s generation',
+} as const;
+
 const HERO_ENGINE_MEDIA: Record<
   string,
   {
@@ -308,9 +321,7 @@ const HERO_ENGINE_MEDIA: Record<
   }
 > = {
   'kling-3-pro': {
-    posterSrc: '/hero/showcase-kling-3-pro.jpg',
-    resolution: '16:9',
-    duration: '0:05',
+    ...KLING_3_PRO_HERO_RENDER,
   },
   'seedance-2-0': {
     posterSrc: '/hero/showcase-seedance-2-0.jpg',
@@ -511,6 +522,26 @@ function formatBestForPickLabel(label: string) {
     .replace(/^LTX 2\.3 Pro$/i, 'LTX');
 }
 
+function applyHeroMediaOverride(item: HeroVideoShowcaseItem): HeroVideoShowcaseItem {
+  const engineId = item.engineId ?? item.id;
+  if (engineId !== 'kling-3-pro') return item;
+
+  const modeLabel = item.mediaInfo?.split(' · ')[0] ?? HERO_VIDEO_MODE_LABELS['kling-3-pro'];
+  const durationLabel = `${Number(KLING_3_PRO_HERO_RENDER.duration.slice(2))}s`;
+
+  return {
+    ...item,
+    posterSrc: KLING_3_PRO_HERO_RENDER.posterSrc,
+    videoSrc: KLING_3_PRO_HERO_RENDER.videoSrc,
+    duration: KLING_3_PRO_HERO_RENDER.duration,
+    resolution: KLING_3_PRO_HERO_RENDER.resolution,
+    mediaInfo: [modeLabel, durationLabel, KLING_3_PRO_HERO_RENDER.resolution].join(' · '),
+    estimateValue: KLING_3_PRO_HERO_RENDER.estimateValue,
+    estimateMeta: KLING_3_PRO_HERO_RENDER.estimateMeta,
+    imageAlt: 'Kling 3 Pro AI video preview in MaxVideoAI.',
+  };
+}
+
 export function HomeHero({
   copy,
   proofStats,
@@ -533,14 +564,14 @@ export function HomeHero({
   const fallbackByEngine = new Map(fallbackItems.map((item) => [item.engineId ?? item.id, item]));
   const videoItems = HERO_VIDEO_ORDER.flatMap((engineId) => {
     const item = programmedByEngine.get(engineId) ?? fallbackByEngine.get(engineId);
-    return item ? [item] : [];
+    return item ? [applyHeroMediaOverride(item)] : [];
   });
   const valueCards = (
     <>
       {copy.valueCards.map((card) => (
         <div
           key={card.title}
-          className="min-h-[86px] rounded-[14px] border border-black/[0.07] bg-white/68 p-3 text-left backdrop-blur transition hover:border-black/[0.12] hover:bg-white/82 dark:border-white/10 dark:bg-white/[0.055] dark:hover:border-white/15 dark:hover:bg-white/[0.075] sm:min-h-[112px] sm:rounded-[18px] sm:p-4"
+          className="min-h-[86px] rounded-[14px] border border-black/[0.07] bg-white/68 p-3 text-left backdrop-blur transition hover:border-black/[0.12] hover:bg-white/82 dark:border-white/10 dark:bg-surface-glass-80 dark:hover:border-white/20 dark:hover:bg-surface-glass-70 sm:min-h-[112px] sm:rounded-[18px] sm:p-4"
         >
           <span className="block text-[13px] font-semibold leading-4 text-text-primary sm:text-[15px] sm:leading-5">{card.title}</span>
           <span className="mt-1.5 block max-w-[18rem] text-[11px] leading-4 text-text-secondary line-clamp-2 sm:mt-2 sm:text-xs sm:leading-5">{card.body}</span>
@@ -551,7 +582,7 @@ export function HomeHero({
   const proofGridColumnsClass = proofStats.length >= 8 ? 'xl:grid-cols-8' : 'xl:grid-cols-7';
 
   return (
-    <section className="relative overflow-hidden border-b border-hairline bg-bg">
+    <section className="home-hero-section relative overflow-hidden border-b border-hairline bg-bg">
       <Image
         src={HOME_HERO_IMAGE_URL}
         alt=""
@@ -561,7 +592,7 @@ export function HomeHero({
         sizes="100vw"
         className="pointer-events-none object-cover object-center opacity-65 dark:brightness-[0.72] dark:contrast-110 dark:invert dark:opacity-50"
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(circle_at_72%_20%,rgba(3,7,18,0.74),transparent_32%),radial-gradient(circle_at_30%_78%,rgba(3,7,18,0.42),transparent_34%),linear-gradient(180deg,rgba(5,10,20,0.92),rgba(8,13,26,0.24)_58%,rgba(8,13,26,0.08)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(ellipse_at_78%_16%,rgba(89,125,255,0.22),transparent_42%),radial-gradient(ellipse_at_94%_26%,rgba(168,85,247,0.16),transparent_40%),linear-gradient(180deg,rgba(5,11,20,0.96)_0%,rgba(7,17,31,0.84)_48%,rgba(5,11,20,0.74)_100%)]" />
       <div className="container-page relative grid max-w-[1400px] gap-7 py-10 min-[900px]:grid-cols-[minmax(340px,0.88fr)_minmax(0,1.12fr)] min-[900px]:items-start min-[900px]:gap-6 min-[900px]:py-12 lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)] lg:gap-7 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
         <div className="scrollbar-rail -mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0 min-[900px]:col-span-2 min-[900px]:pb-0">
           {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
@@ -627,7 +658,7 @@ export function HomeHero({
       </div>
       <div className="container-page relative max-w-[1460px] pb-9">
         <div className="scrollbar-rail overflow-x-auto pb-1">
-          <div className={`inline-grid min-w-full auto-cols-[116px] grid-flow-col overflow-hidden rounded-[24px] border border-black/[0.08] bg-white/72 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/[0.10] dark:bg-surface/62 sm:grid sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 ${proofGridColumnsClass}`}>
+          <div className={`inline-grid min-w-full auto-cols-[116px] grid-flow-col overflow-hidden rounded-[24px] border border-black/[0.08] bg-white/72 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/[0.12] dark:bg-surface-glass-80 sm:grid sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-4 ${proofGridColumnsClass}`}>
           {proofStats.map((stat) => {
             const content = (
               <>
@@ -689,7 +720,7 @@ export function ShotTypeEngineSelector({
 
   return (
     <section className="relative overflow-hidden border-b border-hairline bg-bg py-12 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(17,24,39,0.08),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0)_48%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(148,163,184,0.12),transparent_34%),linear-gradient(180deg,rgba(8,13,26,0.92),rgba(8,13,26,0)_48%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(17,24,39,0.08),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0)_48%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(143,183,255,0.14),transparent_36%),linear-gradient(180deg,rgba(5,11,20,0.92),rgba(5,11,20,0)_52%)]" />
       <div className="container-page relative max-w-[1360px] stack-gap-lg">
         <div className="mx-auto max-w-4xl text-center">
           {copy.eyebrow ? (
@@ -713,7 +744,7 @@ export function ShotTypeEngineSelector({
               <Link
                 key={card.id}
                 href={card.href}
-                className="group flex h-full min-h-0 flex-col overflow-hidden rounded-[16px] border border-hairline bg-white/88 shadow-[0_12px_32px_rgba(15,23,42,0.055),0_3px_10px_rgba(15,23,42,0.03)] transition hover:-translate-y-1 hover:border-text-muted/35 hover:shadow-[0_26px_62px_rgba(15,23,42,0.11)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-white/[0.055] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)] dark:hover:border-white/20 sm:rounded-[20px]"
+                className="group flex h-full min-h-0 flex-col overflow-hidden rounded-[16px] border border-hairline bg-white/88 shadow-[0_12px_32px_rgba(15,23,42,0.055),0_3px_10px_rgba(15,23,42,0.03)] transition hover:-translate-y-1 hover:border-text-muted/35 hover:shadow-[0_26px_62px_rgba(15,23,42,0.11)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-surface-glass-80 dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)] dark:hover:border-white/20 dark:hover:bg-surface-glass-70 sm:rounded-[20px]"
                 data-analytics-event="shot_type_card_click"
                 data-analytics-cta-name={card.id}
                 data-analytics-cta-location="shot_type_selector"
@@ -765,7 +796,7 @@ export function ShotTypeEngineSelector({
         {copy.cta ? (
           <Link
             href={{ pathname: '/ai-video-engines/best-for' }}
-            className="group mx-auto flex max-w-[620px] items-center gap-4 rounded-[22px] border border-hairline bg-white/82 p-4 text-left shadow-[0_18px_50px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-text-muted/35 hover:shadow-[0_24px_64px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-white/[0.055]"
+            className="group mx-auto flex max-w-[620px] items-center gap-4 rounded-[22px] border border-hairline bg-white/82 p-4 text-left shadow-[0_18px_50px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-text-muted/35 hover:shadow-[0_24px_64px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-brand/35 dark:bg-surface-glass-80 dark:hover:bg-surface-glass-70"
             data-analytics-event="shot_type_card_click"
             data-analytics-cta-name="best-for-hub"
             data-analytics-cta-location="shot_type_hub_cta"
@@ -800,99 +831,24 @@ export function RealExamplesPreview({
   providers?: ProviderItem[];
 }) {
   return (
-    <section className="border-b border-hairline bg-surface section">
-      <div className="container-page max-w-[1200px] stack-gap-lg">
-        <SectionHeader title={copy.title} subtitle={copy.subtitle} />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {examples.map((example) => (
-            <article key={example.id} className="overflow-hidden rounded-card border border-hairline bg-bg shadow-card">
-              <Link
-                href={example.href}
-                className="group block"
-                data-analytics-event="example_category_click"
-                data-analytics-cta-name={example.id}
-                data-analytics-cta-location="examples_preview"
-                data-analytics-target-family="examples"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden bg-surface-3 sm:aspect-[16/10]">
-                  <Image
-                    src={example.imageSrc}
-                    alt={example.imageAlt}
-                    fill
-                    sizes="(max-width: 767px) 50vw, (max-width: 1023px) 50vw, 380px"
-                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/75 to-transparent p-2 text-on-inverse sm:gap-3 sm:p-3">
-                    <div>
-                      <p className="text-xs font-semibold sm:text-sm">{example.engine}</p>
-                      <p className="text-[11px] text-on-media-80 sm:text-xs">{example.mode} · {example.duration}</p>
-                    </div>
-                    {example.price && /[$€£]|\d/.test(example.price) ? (
-                      <span className="rounded-pill bg-white px-2 py-0.5 text-[11px] font-semibold text-[#111827] sm:px-2.5 sm:py-1 sm:text-xs">{example.price}</span>
-                    ) : null}
-                  </div>
-                </div>
-              </Link>
-              <div className="p-3 sm:p-4">
-                <h3 className="text-sm font-semibold leading-5 text-text-primary sm:text-base">{example.title}</h3>
-                <p className="mt-1.5 overflow-hidden text-xs leading-5 text-text-secondary [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:mt-2 sm:text-sm sm:leading-6">{example.useCase}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-hairline pt-3 sm:mt-4 sm:gap-3 sm:pt-4">
-                  <Link
-                    href={example.href}
-                    className="text-xs font-semibold text-brand hover:text-brandHover sm:text-sm"
-                    data-analytics-event="example_category_click"
-                    data-analytics-cta-name={example.id}
-                    data-analytics-cta-location="examples_preview_cta"
-                    data-analytics-target-family="examples"
-                  >
-                    {example.ctaLabel}
-                  </Link>
-                  {example.modelHref ? (
-                    <Link
-                      href={example.modelHref}
-                      className="text-xs font-medium text-text-muted underline underline-offset-4 hover:text-text-primary sm:text-sm"
-                      data-analytics-event="model_card_click"
-                      data-analytics-cta-name={example.id}
-                      data-analytics-cta-location="examples_preview_model"
-                      data-analytics-target-family="models"
-                    >
-                      {example.modelCtaLabel ?? 'Open model'}
-                    </Link>
-                  ) : example.cloneHref ? (
-                    <Link
-                      href={example.cloneHref}
-                      prefetch={false}
-                      className="text-xs font-medium text-text-muted underline underline-offset-4 hover:text-text-primary sm:text-sm"
-                      data-analytics-event="example_clone_click"
-                      data-analytics-cta-name={example.id}
-                      data-analytics-cta-location="examples_preview_clone"
-                      data-analytics-target-family="workspace"
-                    >
-                      {example.cloneLabel ?? copy.viewPrompt ?? 'Clone settings'}
-                    </Link>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-        <div className="rounded-[24px] border border-hairline bg-bg p-5 shadow-card sm:flex sm:items-center sm:justify-between sm:gap-6">
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary">{copy.libraryTitle ?? 'Want the full library?'}</h3>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-text-secondary">{copy.libraryBody ?? copy.subtitle}</p>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-3 sm:mt-0 sm:shrink-0">
+    <section className="border-b border-hairline bg-surface py-14 sm:py-16">
+      <div className="container-page max-w-[1200px]">
+        <div className="mx-auto max-w-[880px] text-center">
+          <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow ?? 'AI video examples'}</p>
+          <h2 className="mt-3 text-3xl font-semibold leading-tight text-text-primary sm:text-4xl">{copy.title}</h2>
+          <p className="mx-auto mt-3 max-w-[780px] text-base leading-7 text-text-secondary">{copy.subtitle}</p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
             <ButtonLink
               href={{ pathname: '/examples' }}
               linkComponent={Link}
               size="md"
               data-analytics-event="example_category_click"
               data-analytics-cta-name="all_examples"
-              data-analytics-cta-location="examples_library_cta"
+              data-analytics-cta-location="examples_preview_header"
               data-analytics-target-family="examples"
             >
               {copy.cta ?? 'Browse all examples'}
+              <span aria-hidden="true">→</span>
             </ButtonLink>
             <ButtonLink
               href={{ pathname: '/models' }}
@@ -901,16 +857,126 @@ export function RealExamplesPreview({
               size="md"
               data-analytics-event="model_card_click"
               data-analytics-cta-name="all_models"
-              data-analytics-cta-location="examples_library_cta"
+              data-analytics-cta-location="examples_preview_header"
               data-analytics-target-family="models"
             >
-              {copy.modelsCta ?? 'View all models'}
+              {copy.modelsCta ?? 'View all model specs'}
+              <span aria-hidden="true">→</span>
             </ButtonLink>
+            <Link
+              href={{ pathname: '/ai-video-engines' }}
+              className="inline-flex min-h-10 items-center gap-2 rounded-input px-2 text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-analytics-event="comparison_card_click"
+              data-analytics-cta-name="compare_engines"
+              data-analytics-cta-location="examples_preview_header"
+              data-analytics-target-family="compare"
+            >
+              {copy.compareLink ?? 'Compare engines'}
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
+
+        <div className="mt-7 overflow-hidden rounded-[20px] border border-hairline bg-bg shadow-sm">
+          <div className="divide-y divide-hairline">
+            {examples.map((example) => {
+              const modeIcon = example.mode.toLowerCase().startsWith('text') ? Type : example.mode.toLowerCase().startsWith('video') ? Video : ImageIcon;
+              const showExamplesCta = example.examplesCtaVisible !== false;
+              const modelHref = example.modelHref ?? example.href;
+              return (
+                <article
+                  key={example.id}
+                  className="grid grid-cols-[112px_1fr] gap-3 px-3 py-3 lg:grid-cols-[132px_220px_165px_72px_82px_170px] lg:items-center lg:gap-3 lg:px-5"
+                >
+                  <Link
+                    href={showExamplesCta ? example.href : modelHref}
+                    className="group relative row-span-4 h-[106px] overflow-hidden rounded-[10px] bg-surface-3 lg:row-span-1 lg:h-[72px] lg:w-[132px]"
+                    data-analytics-event={showExamplesCta ? 'example_category_click' : 'model_card_click'}
+                    data-analytics-cta-name={example.id}
+                    data-analytics-cta-location="examples_preview"
+                    data-analytics-target-family={showExamplesCta ? 'examples' : 'models'}
+                  >
+                    <span className="sr-only">{showExamplesCta ? example.ctaLabel : example.modelCtaLabel ?? 'Specs & pricing'}</span>
+                    <Image
+                      src={example.imageSrc}
+                      alt={example.imageAlt}
+                      fill
+                      sizes="(max-width: 1023px) 112px, 132px"
+                      className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                      loading="lazy"
+                    />
+                  </Link>
+
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold leading-5 text-text-primary">{example.engine}</h3>
+                    <p className="mt-1 text-sm leading-5 text-text-secondary">{example.useCase}</p>
+                  </div>
+
+                  <div className="flex min-w-0 items-center gap-2 text-sm text-text-secondary">
+                    <UIIcon icon={modeIcon} size={16} strokeWidth={1.9} />
+                    <span className="truncate">{example.mode}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-text-secondary">
+                    {example.duration ? (
+                      <>
+                        <UIIcon icon={Clock} size={16} strokeWidth={1.9} />
+                        <span>{example.duration}</span>
+                      </>
+                    ) : (
+                      <span className="text-text-muted">—</span>
+                    )}
+                  </div>
+
+                  <div>
+                    {example.price && /[$€£]|\d/.test(example.price) ? (
+                      <span className="inline-flex rounded-pill border border-hairline bg-surface px-2.5 py-1 text-xs font-semibold text-text-primary">
+                        {example.price}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-text-muted">—</span>
+                    )}
+                  </div>
+
+                  <div className="col-span-2 grid grid-cols-2 gap-2 border-t border-hairline pt-3 lg:col-span-1 lg:col-start-auto lg:grid-cols-1 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                    {showExamplesCta ? (
+                      <Link
+                        href={example.href}
+                        className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-input border border-hairline bg-surface px-2 text-center text-xs font-semibold text-brand hover:text-brandHover sm:text-sm lg:min-h-0 lg:justify-start lg:border-0 lg:bg-transparent lg:px-0 lg:text-left"
+                        data-analytics-event="example_category_click"
+                        data-analytics-cta-name={example.id}
+                        data-analytics-cta-location="examples_preview_cta"
+                        data-analytics-target-family="examples"
+                      >
+                        {example.ctaLabel}
+                        <span aria-hidden="true">→</span>
+                      </Link>
+                    ) : (
+                      <span className="hidden text-sm text-text-muted lg:inline">—</span>
+                    )}
+
+                    <Link
+                      href={modelHref}
+                      aria-label={example.engine === 'Seedance 2.0' ? 'View Seedance 2.0 specs, limits and pricing' : `View ${example.engine} specs, limits and pricing`}
+                      className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-input border border-hairline bg-surface px-2 text-center text-xs font-semibold text-text-secondary hover:text-text-primary sm:text-sm lg:min-h-0 lg:justify-start lg:border-0 lg:bg-transparent lg:px-0 lg:text-left"
+                      data-analytics-event="model_card_click"
+                      data-analytics-cta-name={example.id}
+                      data-analytics-cta-location="examples_preview_model"
+                      data-analytics-target-family="models"
+                    >
+                      {example.modelCtaLabel ?? 'Specs & pricing'}
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+
         {providers?.length ? (
-          <div className="flex flex-wrap items-center justify-center gap-2 rounded-[20px] border border-hairline bg-white/70 px-4 py-3 text-sm shadow-[0_16px_44px_rgba(15,23,42,0.05)] dark:bg-white/[0.045]">
-            <span className="mr-1 font-semibold text-text-primary">{copy.providerLabel ?? 'Supported engines and providers'}</span>
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-card border border-hairline bg-white/70 px-4 py-3 text-sm shadow-sm dark:bg-surface-glass-70">
+            <span className="font-semibold text-text-primary">{copy.providerLabel ?? 'Supported engines'}</span>
             {providers.map((item) =>
               item.href ? (
                 <Link
@@ -929,8 +995,8 @@ export function RealExamplesPreview({
                 </span>
               )
             )}
-            <Link href={{ pathname: '/models' }} className="ml-1 text-sm font-semibold text-brand hover:text-brandHover">
-              {copy.modelsCta ?? 'View all models'}
+            <Link href={{ pathname: '/models' }} className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-brandHover">
+              {copy.modelsCta ?? 'View all model specs'} <span aria-hidden="true">→</span>
             </Link>
           </div>
         ) : null}
@@ -1106,7 +1172,7 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
             <Link
               key={step.title}
               href={step.href}
-              className="group relative flex min-h-[178px] flex-col overflow-hidden rounded-card border border-hairline bg-bg p-3 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:min-h-[218px] sm:p-5"
+              className="group relative flex min-h-[178px] flex-col overflow-hidden rounded-card border border-hairline bg-bg p-3 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:bg-surface-glass-80 dark:hover:bg-surface-glass-70 sm:min-h-[218px] sm:p-5"
               data-analytics-event="tool_card_click"
               data-analytics-cta-name={step.toolLabel}
               data-analytics-cta-location="reference_workflow"
@@ -1119,12 +1185,12 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
                 aria-hidden="true"
                 fill
                 sizes="(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 300px"
-                className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                className="object-cover transition duration-500 group-hover:scale-[1.04] dark:opacity-45 dark:invert"
                 loading="lazy"
               />
-              <span className="absolute inset-0 bg-gradient-to-b from-white/92 via-white/78 to-white/55 dark:from-surface/90 dark:via-surface/76 dark:to-surface/56" />
-              <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/60 to-transparent dark:from-black/24" />
-              <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-card border border-hairline bg-white/78 text-xs font-semibold text-text-primary shadow-sm backdrop-blur dark:bg-white/[0.08] sm:h-9 sm:w-9 sm:text-sm">
+              <span className="absolute inset-0 bg-gradient-to-b from-white/92 via-white/78 to-white/55 dark:bg-[linear-gradient(180deg,rgba(5,11,20,0.88)_0%,rgba(7,17,31,0.80)_52%,rgba(5,11,20,0.66)_100%)]" />
+              <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/60 to-transparent dark:from-black/42" />
+              <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-card border border-hairline bg-white/78 text-xs font-semibold text-text-primary shadow-sm backdrop-blur dark:border-white/12 dark:bg-white/[0.08] sm:h-9 sm:w-9 sm:text-sm">
                 {index + 1}
               </span>
               <div className="relative z-10 mt-5 flex flex-1 flex-col sm:mt-6">
@@ -1331,12 +1397,12 @@ export function ProviderEngineStrip({ copy, providers }: { copy: SectionCopy; pr
 
 export function HomeFaq({ copy, items }: { copy: SectionCopy; items: FaqItem[] }) {
   return (
-    <section className="bg-surface section">
+    <section className="bg-bg section">
       <div className="container-page max-w-[900px] stack-gap-lg">
         <SectionHeader title={copy.title} subtitle={copy.subtitle} />
         <div className="space-y-3">
           {items.map((item) => (
-            <details key={item.question} className="group rounded-card border border-hairline bg-bg p-5">
+            <details key={item.question} className="group rounded-card border border-hairline bg-surface p-5">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-semibold text-text-primary">
                 <span>{item.question}</span>
                 <UIIcon icon={Box} size={18} className="text-text-muted transition group-open:rotate-45" />

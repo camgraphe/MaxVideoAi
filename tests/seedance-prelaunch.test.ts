@@ -13,7 +13,14 @@ import { getVisibleAssetSlotCount, getVisibleAssetSlots } from '../frontend/lib/
 import { getHappyHorseAssetState, getUnifiedHappyHorseMode } from '../frontend/lib/happy-horse-workflow.ts';
 import { getSeedanceAssetState, getSeedanceFieldBlockKey, getUnifiedSeedanceMode } from '../frontend/lib/seedance-workflow.ts';
 import { ENGINE_SELECT_FAMILY_PRIORITY, getEngineSelectFamilyRank } from '../frontend/src/lib/engine-family-priority.ts';
-import { getExampleFamilyCurrentModelSlugs, getExampleFamilyIds, getExampleFamilyModelSlugs } from '../frontend/lib/model-families.ts';
+import {
+  getExampleFamilyCurrentModelSlugs,
+  getExampleFamilyIds,
+  getExampleFamilyModelSlugs,
+  getExampleNavFamilyIds,
+  isIndexedExampleFamilyId,
+  resolveExampleFamilyId,
+} from '../frontend/lib/model-families.ts';
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
 import { canonicalizeFalModelSlug, getFalEngineBySlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
@@ -240,11 +247,20 @@ test('Examples hub family order follows the current business priority without re
     'ltx',
     'kling',
     'wan',
+    'happy-horse',
     'sora',
     'luma',
     'pika',
     'hailuo',
   ]);
+});
+
+test('Happy Horse has a crawlable examples family and appears in example family selectors', () => {
+  assert.equal(isIndexedExampleFamilyId('happy-horse'), true);
+  assert.equal(resolveExampleFamilyId('happy-horse-1-0'), 'happy-horse');
+  assert.deepEqual(getExampleFamilyModelSlugs('happy-horse'), ['happy-horse-1-0']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('happy-horse'), ['happy-horse-1-0']);
+  assert.equal(getExampleNavFamilyIds().includes('happy-horse'), true);
 });
 
 test('Examples family current model groups do not classify new delivery models as older', () => {
@@ -261,12 +277,12 @@ test('Examples family current model groups do not classify new delivery models a
 });
 
 test('Engine select uses the same family priority as the examples hub', () => {
-  assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'sora']);
-  const families = ['sora', 'ltx', 'seedance', 'veo', 'wan', 'kling'];
+  assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'happy-horse', 'sora']);
+  const families = ['sora', 'ltx', 'seedance', 'veo', 'happy-horse', 'wan', 'kling'];
   const sorted = families
     .slice()
     .sort((a, b) => getEngineSelectFamilyRank({ family: a }) - getEngineSelectFamilyRank({ family: b }));
-  assert.deepEqual(sorted, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'sora']);
+  assert.deepEqual(sorted, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'happy-horse', 'sora']);
 });
 
 test('Homepage admin hero pricing labels preserve per-second suffixes', () => {

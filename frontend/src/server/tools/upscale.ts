@@ -16,11 +16,12 @@ import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import { detectVideoMetadata, type VideoMetadata } from '@/server/media/detect-has-audio';
 import {
-  UPSCALE_VIDEO_MAX_DURATION_SEC,
+  UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
   clampUpscaleFactor,
   estimateImageUpscaleCostUsd,
   estimateVideoUpscaleCostUsd,
   getTargetResolutionHeight,
+  resolveUpscaleOutputFetchTimeoutMs,
   resolveUpscaleMode,
   resolveUpscaleOutputFormat,
   resolveUpscaleTargetResolution,
@@ -40,7 +41,6 @@ import type { PricingSnapshot } from '@/types/engines';
 const TOOL_EVENT_NAME = 'tool_upscale_generate';
 const UPSCALE_SURFACE = 'upscale' as const;
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
-const VIDEO_DYNAMIC_MARGIN_MULTIPLIER = 4;
 
 type RunUpscaleToolInput = UpscaleToolRequest & {
   userId: string;
@@ -613,13 +613,17 @@ async function persistUpscaleOutput(params: {
   engineId: UpscaleToolEngineId;
   engineLabel: string;
   outputFormat: UpscaleOutputFormat;
+  durationSec?: number | null;
 }): Promise<UpscaleToolOutput> {
-  const { output, mediaType, userId, jobId, providerJobId, engineId, engineLabel, outputFormat } = params;
+  const { output, mediaType, userId, jobId, providerJobId, engineId, engineLabel, outputFormat, durationSec } = params;
   if (!isStorageConfigured() || !output.url) return output;
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20_000);
+    const timeout = setTimeout(
+      () => controller.abort(),
+      resolveUpscaleOutputFetchTimeoutMs({ mediaType, durationSec })
+    );
     let response: Response;
     try {
       response = await fetch(output.url, { signal: controller.signal });
@@ -756,17 +760,6 @@ export async function runUpscaleTool(input: RunUpscaleToolInput): Promise<Upscal
       code: 'video_metadata_required',
     });
   }
-  if (videoMetadata && videoMetadata.durationSec > UPSCALE_VIDEO_MAX_DURATION_SEC) {
-    throw new UpscaleToolError(`Upscale currently supports videos up to ${UPSCALE_VIDEO_MAX_DURATION_SEC} seconds.`, {
-      status: 413,
-      code: 'video_too_long',
-      detail: {
-        durationSec: videoMetadata.durationSec,
-        maxDurationSec: UPSCALE_VIDEO_MAX_DURATION_SEC,
-      },
-    });
-  }
-
   let pricing: PricingSnapshot;
   let pricingEstimate: { megapixels?: number | null; frames?: number | null; durationSec?: number | null } = {};
   try {
@@ -791,12 +784,12 @@ export async function runUpscaleTool(input: RunUpscaleToolInput): Promise<Upscal
         frames: estimate.frames,
         durationSec: videoMetadata.durationSec,
       };
-      const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * VIDEO_DYNAMIC_MARGIN_MULTIPLIER));
+      const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER));
       pricing = clonePricingWithDynamicTotal(pricing, dynamicCents, {
         surface: UPSCALE_SURFACE,
         billingProductKey,
         providerEstimateUsd: estimate.costUsd,
-        dynamicMultiplier: VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
+        dynamicMultiplier: UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
         videoMetadata,
       });
     } else {
@@ -930,6 +923,7 @@ export async function runUpscaleTool(input: RunUpscaleToolInput): Promise<Upscal
       engineId: engine.id,
       engineLabel: engine.label,
       outputFormat,
+      durationSec: videoMetadata?.durationSec ?? null,
     });
 
     let thumbUrl = PLACEHOLDER_THUMB;
