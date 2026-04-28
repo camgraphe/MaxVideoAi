@@ -1057,7 +1057,6 @@
           }
         ]
       },
-      "seoKeywordBlock": "MaxVideoAI est un générateur vidéo IA multi-moteurs à l’usage pour comparer et générer des vidéos avec Seedance, Kling, Veo, LTX, Wan, Pika, Sora et plus. Comparez les moteurs vidéo IA par cas d’usage, prévisualisez de vrais exemples, voyez le coût avant de générer, et créez des sorties texte-vers-vidéo, image-vers-vidéo ou vidéo-vers-vidéo depuis un seul workspace.",
       "modeLabels": {
         "t2v": "Texte-vers-vidéo",
         "i2v": "Image-vers-vidéo",

@@ -23,7 +23,6 @@ import {
   HomeHero,
   RealExamplesPreview,
   ReferenceWorkflow,
-  SeoKeywordBlock,
   ShotTypeEngineSelector,
   TransparentPricingBlock,
   type ComparisonCard,
@@ -165,7 +164,6 @@ type RedesignContent = {
     subtitle: string;
     items: FaqItem[];
   };
-  seoKeywordBlock: string;
   modeLabels: Partial<Record<Mode | 'unknown', string>>;
 };
 
@@ -887,7 +885,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
       <AiVideoToolbox copy={content.toolbox} tools={tools} />
       <TransparentPricingBlock copy={content.pricingTrust} cards={content.pricingTrust.cards} />
-      <SeoKeywordBlock text={content.seoKeywordBlock} />
       <HomeFaq copy={content.faq} items={content.faq.items} />
       <Script id="home-webapp-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}

@@ -1349,13 +1349,3 @@ export function HomeFaq({ copy, items }: { copy: SectionCopy; items: FaqItem[] }
     </section>
   );
 }
-
-export function SeoKeywordBlock({ text }: { text: string }) {
-  return (
-    <section className="border-b border-hairline bg-bg py-6">
-      <div className="container-page max-w-[1000px]">
-        <p className="text-center text-sm leading-7 text-text-secondary">{text}</p>
-      </div>
-    </section>
-  );
-}

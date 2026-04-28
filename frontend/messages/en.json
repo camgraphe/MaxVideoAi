@@ -977,7 +977,6 @@
           }
         ]
       },
-      "seoKeywordBlock": "MaxVideoAI is a pay-as-you-go multi-engine AI video generator for comparing and generating videos with Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more. Compare AI video engines by use case, preview real examples, see the cost before you generate, and create text-to-video, image-to-video or video-to-video outputs from one workspace.",
       "modeLabels": {
         "t2v": "Text-to-video",
         "i2v": "Image-to-video",
