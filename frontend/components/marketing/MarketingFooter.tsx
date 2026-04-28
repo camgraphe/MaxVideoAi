@@ -5,7 +5,7 @@ import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import engineCatalog from '@/config/engine-catalog.json';
-import { MARKETING_FOOTER_EXAMPLES } from '@/config/navigation';
+import { MARKETING_FOOTER_EXAMPLES, MARKETING_NAV_BEST_FOR_HUB, MARKETING_NAV_BEST_FOR_USE_CASES } from '@/config/navigation';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
@@ -102,10 +102,15 @@ export function MarketingFooter() {
       href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalCompareSlug(item.left, item.right) } },
     })),
     {
-      key: 'best-for',
-      label: labelFor('footer.sections.comparisons.items.bestFor', 'Best models by use case'),
-      href: { pathname: '/ai-video-engines/best-for' },
+      key: MARKETING_NAV_BEST_FOR_HUB.key,
+      label: labelFor('footer.sections.comparisons.items.bestFor', MARKETING_NAV_BEST_FOR_HUB.label),
+      href: MARKETING_NAV_BEST_FOR_HUB.href,
     },
+    ...MARKETING_NAV_BEST_FOR_USE_CASES.map((item) => ({
+      key: item.key,
+      label: labelFor(`footer.sections.comparisons.items.${item.key}`, item.label),
+      href: item.href,
+    })),
   ];
 
   const exampleLinks: FooterLink[] = [

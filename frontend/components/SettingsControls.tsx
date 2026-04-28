@@ -299,7 +299,7 @@ export function SettingsControls({
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
   const resolutionLocked = Boolean(caps?.resolutionLocked);
-  const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
+  const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
   const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean');
   const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
@@ -821,6 +821,7 @@ export function SettingsControls({
                 value={resolution}
                 onChange={onResolutionChange}
                 focusRef={focusRefs?.resolution}
+                disabled={resolutionLocked}
                 labelFor={(opt) => {
                   const resolutionCopy = controlsCopy.resolution;
                   const optionKey = String(opt);
@@ -1201,11 +1202,12 @@ interface FieldGroupProps {
   value: string;
   onChange: (value: string) => void;
   focusRef?: Ref<HTMLDivElement>;
+  disabled?: boolean;
   labelFor?: (option: string | number) => string;
   iconFor?: (option: string | number) => string | undefined;
 }
 
-function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconFor }: FieldGroupProps) {
+function FieldGroup({ label, options, value, onChange, focusRef, disabled = false, labelFor, iconFor }: FieldGroupProps) {
   return (
     <div
       className={clsx(
@@ -1223,9 +1225,11 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
             type="button"
             size="sm"
             variant="outline"
+            disabled={disabled}
             onClick={() => onChange(String(option))}
             className={clsx(
               'min-h-0 h-auto px-3 py-1.5 text-[13px]',
+              disabled && 'cursor-not-allowed opacity-70',
               String(option) === value
                 ? 'border-brand bg-brand text-on-brand'
                 : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'

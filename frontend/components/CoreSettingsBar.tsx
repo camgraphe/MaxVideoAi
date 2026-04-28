@@ -338,7 +338,8 @@ export function CoreSettingsBar({
     return { value: option, label: labels[String(option)] ?? String(option) };
   });
 
-  const showResolutionControl = resolutionOptions.length > 0 && !caps?.resolutionLocked;
+  const resolutionLocked = Boolean(caps?.resolutionLocked);
+  const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
   const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl;
@@ -398,6 +399,7 @@ export function CoreSettingsBar({
             options={resolutionOptionsList}
             value={resolution}
             onChange={(value) => onResolutionChange(String(value))}
+            disabled={resolutionLocked}
           />
         ) : null}
 

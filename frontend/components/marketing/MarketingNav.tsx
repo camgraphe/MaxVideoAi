@@ -303,6 +303,7 @@ export function MarketingNav() {
               }
               const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
               const isOpen = desktopDropdownOpen === item.key;
+              const hasSections = Boolean(dropdown.sections?.length);
               return (
                 <div
                   key={item.key}
@@ -336,27 +337,52 @@ export function MarketingNav() {
                     )}
                   >
                     <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
-                      <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
-                        <Link
-                          href={dropdown.allHref}
-                          className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          role="menuitem"
-                          onClick={() => closeDesktopDropdown(200)}
-                        >
-                          {allLabel}
-                        </Link>
-                        {dropdown.items.map((entry) => (
+                      <div className={clsx('grid gap-3', hasSections ? 'min-w-[520px] grid-cols-[1fr_1fr]' : 'min-w-0 grid-cols-1')}>
+                        <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
                           <Link
-                            key={entry.key}
-                            href={entry.href}
-                            className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            href={dropdown.allHref}
+                            className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             role="menuitem"
                             onClick={() => closeDesktopDropdown(200)}
                           >
-                            {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                            {allLabel}
                           </Link>
+                          {dropdown.items.map((entry) => (
+                            <Link
+                              key={entry.key}
+                              href={entry.href}
+                              className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              role="menuitem"
+                              onClick={() => closeDesktopDropdown(200)}
+                            >
+                              {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                            </Link>
+                          ))}
+                        </nav>
+                        {dropdown.sections?.map((section) => (
+                          <nav
+                            key={section.key}
+                            className="flex flex-col gap-1 border-l border-hairline pl-3"
+                            role="menu"
+                            aria-label={t(section.titleKey, section.titleFallback)}
+                          >
+                            <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                              {t(section.titleKey, section.titleFallback)}
+                            </p>
+                            {section.items.map((entry) => (
+                              <Link
+                                key={entry.key}
+                                href={entry.href}
+                                className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                role="menuitem"
+                                onClick={() => closeDesktopDropdown(200)}
+                              >
+                                {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                              </Link>
+                            ))}
+                          </nav>
                         ))}
-                      </nav>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -590,6 +616,23 @@ export function MarketingNav() {
                           >
                             {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
                           </Link>
+                        ))}
+                        {dropdown.sections?.map((section) => (
+                          <div key={section.key} className="mt-2 border-t border-hairline pt-2">
+                            <p className="px-2 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                              {t(section.titleKey, section.titleFallback)}
+                            </p>
+                            {section.items.map((entry) => (
+                              <Link
+                                key={entry.key}
+                                href={entry.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                              </Link>
+                            ))}
+                          </div>
                         ))}
                       </div>
                     ) : null}
