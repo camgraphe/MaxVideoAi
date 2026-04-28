@@ -9,7 +9,6 @@ const IMAGE_CARD_BACKGROUND_URL =
   'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp';
 const CHARACTER_CARD_BACKGROUND_URL = '/assets/tools/character-builder-workspace.png';
 const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
-const TOOLS_HERO_IMAGE_URL = '/assets/tools/tools-hero-reference.webp';
 
 type ToolsMarketingHubContent = Dictionary['toolMarketing']['hub'];
 
@@ -72,16 +71,11 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
   return (
     <div className="bg-bg">
       <section className="relative min-h-[520px] overflow-hidden border-b border-hairline bg-bg">
-        <Image
-          src={TOOLS_HERO_IMAGE_URL}
-          alt=""
+        <div
           aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="pointer-events-none object-cover object-center dark:opacity-70 dark:brightness-[0.46] dark:contrast-125 dark:saturate-[1.1]"
+          className="pointer-events-none absolute inset-0 bg-[url('/assets/tools/tools-hero-reference.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/tools/tools-hero-reference-dark.webp')] dark:opacity-70"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.76)_32%,rgba(247,249,253,0.34)_64%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.38)_0%,rgba(3,7,18,0.26)_40%,rgba(3,7,18,0.09)_72%,rgba(3,7,18,0.00)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.76)_32%,rgba(247,249,253,0.34)_64%,rgba(247,249,253,0.08)_100%)] dark:bg-[radial-gradient(circle_at_50%_38%,rgba(3,7,18,0.24)_0%,rgba(3,7,18,0.16)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
         <div className="container-page relative flex min-h-[520px] max-w-[1400px] items-center justify-center py-12">
           <div className="mx-auto max-w-[760px] text-center">

@@ -6,12 +6,14 @@ export type MarketingNavItem = {
   key: string;
   label: string;
   href: LocalizedLinkHref;
+  emphasized?: boolean;
 };
 
 export type MarketingNavSection = {
   key: string;
-  titleKey: string;
-  titleFallback: string;
+  titleKey?: string;
+  titleFallback?: string;
+  hideTitle?: boolean;
   items: MarketingNavItem[];
 };
 
@@ -165,24 +167,23 @@ export const MARKETING_NAV_BEST_FOR_HUB: MarketingNavItem = {
 };
 
 const MARKETING_MODELS_USE_CASE_SECTION: MarketingNavSection = {
-  key: 'chooseByUseCase',
-  titleKey: 'nav.dropdown.models.sections.chooseByUseCase.title',
-  titleFallback: 'Choose by use case',
+  key: 'useCaseGuides',
+  hideTitle: true,
   items: [
-    ...MARKETING_NAV_BEST_FOR_USE_CASES,
     {
       key: 'all-use-case-guides',
       label: 'All use-case guides',
       href: bestForLink(),
+      emphasized: true,
     },
+    ...MARKETING_NAV_BEST_FOR_USE_CASES,
   ],
 };
 
 const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
-  key: 'decisionGuides',
-  titleKey: 'nav.dropdown.compare.sections.decisionGuides.title',
-  titleFallback: 'Decision guides',
-  items: [MARKETING_NAV_BEST_FOR_HUB, ...MARKETING_NAV_BEST_FOR_USE_CASES],
+  key: 'useCaseGuides',
+  hideTitle: true,
+  items: [{ ...MARKETING_NAV_BEST_FOR_HUB, emphasized: true }, ...MARKETING_NAV_BEST_FOR_USE_CASES],
 };
 
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [

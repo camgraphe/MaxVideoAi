@@ -42,9 +42,6 @@ const HUB_COPY: Record<
     featured: string;
     tier: string;
     viewModels: string;
-    startTitle: string;
-    startDescription: string;
-    startCta: string;
     chooseTitle: string;
     chooseDescription: string;
     chooseCta: string;
@@ -61,9 +58,6 @@ const HUB_COPY: Record<
     featured: 'Featured models',
     tier: 'Tier',
     viewModels: 'View all models',
-    startTitle: 'Not sure where to start?',
-    startDescription: "Answer a few questions and we'll suggest the best engine for your project.",
-    startCta: 'Find my engine',
     chooseTitle: 'How to choose the right engine',
     chooseDescription: 'Every project is different. Compare quality, speed, cost, and features before you generate.',
     chooseCta: 'Compare engines',
@@ -89,9 +83,6 @@ const HUB_COPY: Record<
     featured: 'Modèles mis en avant',
     tier: 'Tier',
     viewModels: 'Voir tous les modèles',
-    startTitle: 'Vous ne savez pas par où commencer ?',
-    startDescription: 'Répondez à quelques questions et nous suggérerons le bon moteur pour votre projet.',
-    startCta: 'Trouver mon moteur',
     chooseTitle: 'Comment choisir le bon moteur',
     chooseDescription: 'Chaque projet est différent. Comparez qualité, vitesse, coût et fonctionnalités avant de générer.',
     chooseCta: 'Comparer les moteurs',
@@ -117,9 +108,6 @@ const HUB_COPY: Record<
     featured: 'Modelos destacados',
     tier: 'Tier',
     viewModels: 'Ver todos los modelos',
-    startTitle: '¿No sabes por dónde empezar?',
-    startDescription: 'Responde algunas preguntas y sugeriremos el mejor motor para tu proyecto.',
-    startCta: 'Encontrar mi motor',
     chooseTitle: 'Cómo elegir el motor adecuado',
     chooseDescription: 'Cada proyecto es diferente. Compara calidad, velocidad, costo y funciones antes de generar.',
     chooseCta: 'Comparar motores',
@@ -201,24 +189,6 @@ export default async function BestForHubPage({ params }: { params: { locale: App
               ))}
             </div>
 
-            <div className="mt-8 flex flex-col gap-4 rounded-[14px] border border-brand/20 bg-surface/80 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand/10 text-brand">
-                  <Sparkles className="h-5 w-5" aria-hidden />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-text-primary">{copy.startTitle}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-text-secondary">{copy.startDescription}</p>
-                </div>
-              </div>
-              <Link
-                href={{ pathname: '/ai-video-engines' }}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-card border border-hairline bg-surface px-4 py-2.5 text-sm font-semibold text-text-primary shadow-sm transition hover:border-brand/35 hover:text-brandHover"
-              >
-                {copy.startCta}
-                <ChevronRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </div>
           </div>
 
           <aside className="rounded-[20px] border border-hairline bg-surface p-7 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">

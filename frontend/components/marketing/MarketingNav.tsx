@@ -359,29 +359,40 @@ export function MarketingNav() {
                             </Link>
                           ))}
                         </nav>
-                        {dropdown.sections?.map((section) => (
-                          <nav
-                            key={section.key}
-                            className="flex flex-col gap-1 border-l border-hairline pl-3"
-                            role="menu"
-                            aria-label={t(section.titleKey, section.titleFallback)}
-                          >
-                            <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                              {t(section.titleKey, section.titleFallback)}
-                            </p>
-                            {section.items.map((entry) => (
-                              <Link
-                                key={entry.key}
-                                href={entry.href}
-                                className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                role="menuitem"
-                                onClick={() => closeDesktopDropdown(200)}
-                              >
-                                {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
-                              </Link>
-                            ))}
-                          </nav>
-                        ))}
+                        {dropdown.sections?.map((section) => {
+                          const sectionLabel = section.titleKey
+                            ? t(section.titleKey, section.titleFallback ?? section.key)
+                            : (section.titleFallback ?? label);
+
+                          return (
+                            <nav
+                              key={section.key}
+                              className="flex flex-col gap-1 border-l border-hairline pl-3"
+                              role="menu"
+                              aria-label={sectionLabel}
+                            >
+                              {!section.hideTitle && sectionLabel ? (
+                                <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                  {sectionLabel}
+                                </p>
+                              ) : null}
+                              {section.items.map((entry) => (
+                                <Link
+                                  key={entry.key}
+                                  href={entry.href}
+                                  className={clsx(
+                                    'rounded-input px-3 py-2 text-sm transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                    entry.emphasized ? 'font-semibold text-text-primary' : 'text-text-secondary'
+                                  )}
+                                  role="menuitem"
+                                  onClick={() => closeDesktopDropdown(200)}
+                                >
+                                  {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                                </Link>
+                              ))}
+                            </nav>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -617,23 +628,34 @@ export function MarketingNav() {
                             {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
                           </Link>
                         ))}
-                        {dropdown.sections?.map((section) => (
-                          <div key={section.key} className="mt-2 border-t border-hairline pt-2">
-                            <p className="px-2 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                              {t(section.titleKey, section.titleFallback)}
-                            </p>
-                            {section.items.map((entry) => (
-                              <Link
-                                key={entry.key}
-                                href={entry.href}
-                                onClick={() => setMobileMenuOpen(false)}
-                                className="block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                              >
-                                {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
-                              </Link>
-                            ))}
-                          </div>
-                        ))}
+                        {dropdown.sections?.map((section) => {
+                          const sectionLabel = section.titleKey
+                            ? t(section.titleKey, section.titleFallback ?? section.key)
+                            : (section.titleFallback ?? label);
+
+                          return (
+                            <div key={section.key} className="mt-2 border-t border-hairline pt-2">
+                              {!section.hideTitle && sectionLabel ? (
+                                <p className="px-2 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                  {sectionLabel}
+                                </p>
+                              ) : null}
+                              {section.items.map((entry) => (
+                                <Link
+                                  key={entry.key}
+                                  href={entry.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className={clsx(
+                                    'block rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                    entry.emphasized ? 'font-semibold text-text-primary' : undefined
+                                  )}
+                                >
+                                  {t(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`, entry.label)}
+                                </Link>
+                              ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     ) : null}
                   </div>

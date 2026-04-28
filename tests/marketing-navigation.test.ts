@@ -9,6 +9,8 @@ import {
   MARKETING_TOP_NAV_LINKS,
 } from '../frontend/config/navigation.ts';
 
+const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
+
 const bestForUseCaseLinks = [
   ['Cinematic realism', '/ai-video-engines/best-for/cinematic-realism'],
   ['Image-to-video', '/ai-video-engines/best-for/image-to-video'],
@@ -36,24 +38,45 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   );
 
   const modelsDropdown = MARKETING_NAV_DROPDOWNS.models as {
-    sections?: Array<{ titleFallback: string; items: Array<{ label: string; href: unknown }> }>;
+    sections?: Array<{
+      titleFallback?: string;
+      hideTitle?: boolean;
+      items: Array<{ label: string; href: unknown; emphasized?: boolean }>;
+    }>;
   };
-  const chooseByUseCase = modelsDropdown.sections?.find((section) => section.titleFallback === 'Choose by use case');
-  assert.ok(chooseByUseCase, 'Models dropdown should expose a Choose by use case section');
+  const modelsUseCases = modelsDropdown.sections?.[0];
+  assert.ok(modelsUseCases, 'Models dropdown should expose use-case guide links');
+  assert.equal(modelsUseCases.hideTitle, true);
+  assert.notEqual(modelsUseCases.titleFallback, 'Choose by use case');
   assert.deepEqual(
-    chooseByUseCase.items.map((item) => [item.label, hrefPath(item.href)]),
-    [...bestForUseCaseLinks, ['All use-case guides', '/ai-video-engines/best-for']]
+    modelsUseCases.items.map((item) => [item.label, hrefPath(item.href), Boolean(item.emphasized)]),
+    [
+      ['All use-case guides', '/ai-video-engines/best-for', true],
+      ...bestForUseCaseLinks.map(([label, href]) => [label, href, false] as const),
+    ]
   );
 
   const compareDropdown = MARKETING_NAV_DROPDOWNS.compare as {
-    sections?: Array<{ titleFallback: string; items: Array<{ label: string; href: unknown }> }>;
+    sections?: Array<{
+      titleFallback?: string;
+      hideTitle?: boolean;
+      items: Array<{ label: string; href: unknown; emphasized?: boolean }>;
+    }>;
   };
-  const decisionGuides = compareDropdown.sections?.find((section) => section.titleFallback === 'Decision guides');
-  assert.ok(decisionGuides, 'Compare dropdown should expose a Decision guides section');
+  const compareUseCases = compareDropdown.sections?.[0];
+  assert.ok(compareUseCases, 'Compare dropdown should expose decision guide links');
+  assert.equal(compareUseCases.hideTitle, true);
+  assert.notEqual(compareUseCases.titleFallback, 'Decision guides');
   assert.deepEqual(
-    decisionGuides.items.map((item) => [item.label, hrefPath(item.href)]),
-    [['Best models by use case', '/ai-video-engines/best-for'], ...bestForUseCaseLinks]
+    compareUseCases.items.map((item) => [item.label, hrefPath(item.href), Boolean(item.emphasized)]),
+    [
+      ['Best models by use case', '/ai-video-engines/best-for', true],
+      ...bestForUseCaseLinks.map(([label, href]) => [label, href, false] as const),
+    ]
   );
+
+  assert.match(marketingNavSource, /entry\.emphasized/);
+  assert.match(marketingNavSource, /font-semibold text-text-primary/);
 });
 
 test('marketing footer keeps crawlable Best-For hub and priority child links', () => {

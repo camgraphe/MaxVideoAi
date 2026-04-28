@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 const tokensSource = readFileSync('frontend/src/styles/tokens.css', 'utf8');
@@ -126,28 +126,48 @@ test('homepage workflow cards avoid light image wash in dark mode', () => {
   assert.doesNotMatch(referenceWorkflowSource, /rgba\(5,11,20,0\.66\)_100%/);
 });
 
-test('tools pricing and blog hero images use compare-style dark treatment without inversion', () => {
-  const darkHeroImageTreatment = /dark:opacity-70 dark:brightness-\[0\.46\] dark:contrast-125 dark:saturate-\[1\.1\]/;
-  const radialDarkOverlay =
-    /dark:bg-\[radial-gradient\(circle_at_50%_38%,rgba\(3,7,18,0\.38\)_0%,rgba\(3,7,18,0\.26\)_40%,rgba\(3,7,18,0\.09\)_72%,rgba\(3,7,18,0\.00\)_100%\)\]/;
-  const blogDarkOverlay =
-    /dark:bg-\[linear-gradient\(90deg,rgba\(3,7,18,0\.52\)_0%,rgba\(3,7,18,0\.36\)_42%,rgba\(3,7,18,0\.12\)_74%,rgba\(3,7,18,0\.00\)_100%\)\]/;
+test('tools pricing and blog hero images use compare-style derived dark assets', () => {
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const heroAssets = [
+    {
+      name: 'tools',
+      source: toolsHubSource,
+      lightUrl: '/assets/tools/tools-hero-reference.webp',
+      darkUrl: '/assets/tools/tools-hero-reference-dark.webp',
+      darkFile: 'frontend/public/assets/tools/tools-hero-reference-dark.webp',
+      overlay:
+        /dark:bg-\[radial-gradient\(circle_at_50%_38%,rgba\(3,7,18,0\.24\)_0%,rgba\(3,7,18,0\.16\)_42%,rgba\(3,7,18,0\.05\)_76%,rgba\(3,7,18,0\.00\)_100%\)\]/,
+    },
+    {
+      name: 'pricing',
+      source: pricingPageSource,
+      lightUrl: '/assets/pricing/pricing-hero-reference.webp',
+      darkUrl: '/assets/pricing/pricing-hero-reference-dark.webp',
+      darkFile: 'frontend/public/assets/pricing/pricing-hero-reference-dark.webp',
+      overlay:
+        /dark:bg-\[radial-gradient\(circle_at_50%_38%,rgba\(3,7,18,0\.24\)_0%,rgba\(3,7,18,0\.16\)_42%,rgba\(3,7,18,0\.05\)_76%,rgba\(3,7,18,0\.00\)_100%\)\]/,
+    },
+    {
+      name: 'blog',
+      source: blogPageSource,
+      lightUrl: '/assets/blog/blog-hero-reference.webp',
+      darkUrl: '/assets/blog/blog-hero-reference-dark.webp',
+      darkFile: 'frontend/public/assets/blog/blog-hero-reference-dark.webp',
+      overlay:
+        /dark:bg-\[linear-gradient\(90deg,rgba\(3,7,18,0\.30\)_0%,rgba\(3,7,18,0\.18\)_42%,rgba\(3,7,18,0\.05\)_76%,rgba\(3,7,18,0\.00\)_100%\)\]/,
+    },
+  ] as const;
 
   assert.match(comparePageSource, /compare-hero-reference-light\.webp/);
   assert.match(comparePageSource, /dark:bg-\[url\('\/assets\/compare\/compare-hero-reference-dark\.webp'\)\] dark:opacity-70/);
 
-  for (const [pageName, source] of [
-    ['tools', toolsHubSource],
-    ['pricing', pricingPageSource],
-    ['blog', blogPageSource],
-  ] as const) {
-    assert.doesNotMatch(source, /dark:invert/, `${pageName} hero image should not invert in dark mode`);
-    assert.match(source, darkHeroImageTreatment, `${pageName} hero image should use the shared non-inverting dark treatment`);
+  for (const hero of heroAssets) {
+    assert.ok(existsSync(hero.darkFile), `${hero.name} should have a derived dark hero asset`);
+    assert.match(hero.source, new RegExp(`bg-\\[url\\('${escapeRegExp(hero.lightUrl)}'\\)\\]`));
+    assert.match(hero.source, new RegExp(`dark:bg-\\[url\\('${escapeRegExp(hero.darkUrl)}'\\)\\] dark:opacity-70`));
+    assert.match(hero.source, hero.overlay);
+    assert.doesNotMatch(hero.source, /dark:(brightness|contrast|saturate|invert)/, `${hero.name} should use a dark asset instead of CSS image filters`);
   }
-
-  assert.match(toolsHubSource, radialDarkOverlay);
-  assert.match(pricingPageSource, radialDarkOverlay);
-  assert.match(blogPageSource, blogDarkOverlay);
 });
 
 test('marketing navigation dark mode is translucent like the reference header', () => {

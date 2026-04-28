@@ -11,7 +11,6 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
-const BLOG_HERO_IMAGE_URL = '/assets/blog/blog-hero-reference.webp';
 const BLOG_META = {
   en: {
     title: 'Blog — MaxVideoAI',
@@ -192,16 +191,11 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
     <main className="bg-bg">
       <div className="stack-gap-lg">
         <header className="relative min-h-[440px] overflow-hidden border-b border-hairline bg-bg">
-          <Image
-            src={BLOG_HERO_IMAGE_URL}
-            alt=""
+          <div
             aria-hidden="true"
-            fill
-            priority
-            sizes="100vw"
-            className="pointer-events-none object-cover object-center dark:opacity-70 dark:brightness-[0.46] dark:contrast-125 dark:saturate-[1.1]"
+            className="pointer-events-none absolute inset-0 bg-[url('/assets/blog/blog-hero-reference.webp')] bg-cover bg-center opacity-55 dark:bg-[url('/assets/blog/blog-hero-reference-dark.webp')] dark:opacity-70"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.88)_34%,rgba(255,255,255,0.48)_62%,rgba(255,255,255,0.10)_100%)] dark:bg-[linear-gradient(90deg,rgba(3,7,18,0.52)_0%,rgba(3,7,18,0.36)_42%,rgba(3,7,18,0.12)_74%,rgba(3,7,18,0.00)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.88)_34%,rgba(255,255,255,0.48)_62%,rgba(255,255,255,0.10)_100%)] dark:bg-[linear-gradient(90deg,rgba(3,7,18,0.30)_0%,rgba(3,7,18,0.18)_42%,rgba(3,7,18,0.05)_76%,rgba(3,7,18,0.00)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-bg to-transparent" />
           <div className="container-page relative flex min-h-[440px] max-w-6xl items-center py-14">
             <div className="max-w-[520px]">
