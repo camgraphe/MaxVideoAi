@@ -8,7 +8,7 @@ import { Lock, Trash2 } from 'lucide-react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps } from '@/types/engines';
 import { Button } from '@/components/ui/Button';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
-import { getVisibleAssetSlotCount } from '@/lib/asset-slot-layout';
+import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 
@@ -168,43 +168,13 @@ export function AssetDropzone({
   const isCollectionField = maxCount > 1;
 
   const filledAssetCount = useMemo(() => assets.filter((asset) => asset != null).length, [assets]);
-  const slotCount = useMemo(
-    () =>
-      isCollectionField
-        ? 0
-        : getVisibleAssetSlotCount({
-            maxCount,
-            minCount,
-            filledCount: filledAssetCount,
-          }),
-    [filledAssetCount, isCollectionField, maxCount, minCount]
-  );
-
   const displaySlots = useMemo(() => {
-    if (isCollectionField) {
-      const normalized = maxCount > 0 ? assets.slice(0, maxCount) : [...assets];
-      const filledEntries = normalized.flatMap((asset, slotIndex) => (asset ? [{ asset, slotIndex }] : []));
-      let nextAvailableIndex = normalized.findIndex((asset) => asset == null);
-
-      if (nextAvailableIndex < 0 && (maxCount === 0 || filledEntries.length < maxCount)) {
-        nextAvailableIndex = normalized.length;
-      }
-
-      if (nextAvailableIndex >= 0 && (maxCount === 0 || nextAvailableIndex < maxCount)) {
-        return [...filledEntries, { asset: null, slotIndex: nextAvailableIndex }];
-      }
-
-      return filledEntries.length ? filledEntries : [{ asset: null, slotIndex: 0 }];
-    }
-
-    const list = assets.slice(0, slotCount);
-    if (list.length < slotCount) {
-      for (let i = list.length; i < slotCount; i += 1) {
-        list.push(null);
-      }
-    }
-    return list.map((asset, slotIndex) => ({ asset, slotIndex }));
-  }, [assets, isCollectionField, maxCount, slotCount]);
+    return getVisibleAssetSlots({
+      assets,
+      maxCount,
+      minCount,
+    });
+  }, [assets, maxCount, minCount]);
   const handleDisabledAttempt = useCallback(() => {
     if (disabledReason) {
       onError?.(disabledReason);

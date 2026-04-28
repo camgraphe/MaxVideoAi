@@ -9,7 +9,8 @@ import { getPublishedComparisonSlugs, getHubEngines } from '../frontend/lib/comp
 import { orderExamplesHubFamilyIds } from '../frontend/lib/examples/familyOrder.ts';
 import { normalizeHomepageAdminPriceLabel } from '../frontend/lib/homepage-price-label.ts';
 import { normalizeFalDurationValueForModel } from '../frontend/src/lib/fal.ts';
-import { getVisibleAssetSlotCount } from '../frontend/lib/asset-slot-layout.ts';
+import { getVisibleAssetSlotCount, getVisibleAssetSlots } from '../frontend/lib/asset-slot-layout.ts';
+import { getHappyHorseAssetState, getUnifiedHappyHorseMode } from '../frontend/lib/happy-horse-workflow.ts';
 import { getSeedanceAssetState, getSeedanceFieldBlockKey, getUnifiedSeedanceMode } from '../frontend/lib/seedance-workflow.ts';
 import { ENGINE_SELECT_FAMILY_PRIORITY, getEngineSelectFamilyRank } from '../frontend/src/lib/engine-family-priority.ts';
 import { getExampleFamilyCurrentModelSlugs, getExampleFamilyIds, getExampleFamilyModelSlugs } from '../frontend/lib/model-families.ts';
@@ -304,6 +305,24 @@ test('Progressive asset slots start at three and reveal the next slot when the v
   assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 3 }), 4);
   assert.equal(getVisibleAssetSlotCount({ maxCount: 9, filledCount: 8 }), 9);
   assert.equal(getVisibleAssetSlotCount({ maxCount: 3, filledCount: 0 }), 3);
+  assert.deepEqual(
+    getVisibleAssetSlots({ assets: [], maxCount: 9 }).map((slot) => slot.slotIndex),
+    [0, 1, 2]
+  );
+  assert.deepEqual(
+    getVisibleAssetSlots({ assets: [{ id: 'a' }, { id: 'b' }, { id: 'c' }], maxCount: 9 }).map((slot) => slot.slotIndex),
+    [0, 1, 2, 3]
+  );
+  assert.equal(getVisibleAssetSlots({ assets: Array.from({ length: 9 }, () => null), maxCount: 9 }).length, 3);
+});
+
+test('Unified Happy Horse workspace infers R2V and V2V from reference slots', () => {
+  assert.equal(getUnifiedHappyHorseMode({}), 't2v');
+  assert.equal(getUnifiedHappyHorseMode({ image_url: [{ kind: 'image' }] }), 'i2v');
+  assert.equal(getUnifiedHappyHorseMode({ image_urls: [{ kind: 'image' }] }), 'ref2v');
+  assert.equal(getUnifiedHappyHorseMode({ reference_image_urls: [{ kind: 'image' }] }), 'v2v');
+  assert.equal(getUnifiedHappyHorseMode({ video_url: [{ kind: 'video' }] }), 'v2v');
+  assert.equal(getHappyHorseAssetState({ image_urls: [{ kind: 'image' }] }).hasR2vReferenceImage, true);
 });
 
 test('Seedance Fal requests serialize numeric duration selections as string enum values', () => {
