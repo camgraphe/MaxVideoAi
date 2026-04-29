@@ -27,7 +27,7 @@ type VideoRow = {
   featured_order: number | null;
   final_price_cents: number | null;
   currency: string | null;
-  pricing_snapshot: PricingSnapshot | null;
+  pricing_snapshot?: PricingSnapshot | null;
   settings_snapshot?: unknown;
   order_index?: number | null;
 };
@@ -98,7 +98,7 @@ const BASE_SELECT = `
 const BASE_SELECT_WITH_SETTINGS = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
-         final_price_cents, currency, pricing_snapshot, settings_snapshot
+         final_price_cents, currency, settings_snapshot
   FROM app_jobs
 `;
 

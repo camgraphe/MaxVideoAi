@@ -4,23 +4,31 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 
 type CopyPromptButtonProps = {
-  prompt: string;
+  prompt?: string;
+  promptElementId?: string;
   copyLabel?: string;
   copiedLabel?: string;
 };
 
 export function CopyPromptButton({
   prompt,
+  promptElementId,
   copyLabel = 'Copy prompt',
   copiedLabel = 'Copied!',
 }: CopyPromptButtonProps) {
   const [copied, setCopied] = useState(false);
-  const disabled = !prompt?.trim();
+  const disabled = !prompt?.trim() && !promptElementId;
 
   const handleCopy = async () => {
     if (disabled) return;
+    const text = prompt?.trim()
+      ? prompt
+      : promptElementId
+        ? document.getElementById(promptElementId)?.textContent ?? ''
+        : '';
+    if (!text.trim()) return;
     try {
-      await navigator.clipboard.writeText(prompt);
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch (error) {

@@ -4,7 +4,6 @@ import { cache } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import Script from 'next/script';
 import {
   ArrowRight,
   BadgeDollarSign,
@@ -403,6 +402,7 @@ export default async function VideoPage({ params }: PageProps) {
     { label: 'Motion beat', position: 'object-center' },
     { label: 'Final shot', position: 'object-right' },
   ];
+  const fullPromptId = `video-full-prompt-${video.id}`;
 
   return (
     <div className="mx-auto w-full max-w-[1280px] px-4 pb-20 pt-5 sm:px-6 lg:px-8">
@@ -504,7 +504,7 @@ export default async function VideoPage({ params }: PageProps) {
                 </div>
                 <p className="mt-2 text-sm leading-6 text-text-secondary">Text-to-video prompt used to generate this render.</p>
               </div>
-              <CopyPromptButton prompt={signals.promptText} copyLabel="Copy full prompt" copiedLabel="Copied!" />
+              <CopyPromptButton promptElementId={fullPromptId} copyLabel="Copy full prompt" copiedLabel="Copied!" />
             </div>
 
             <div className="mt-5 overflow-hidden rounded-input border border-hairline">
@@ -535,7 +535,7 @@ export default async function VideoPage({ params }: PageProps) {
                 <span className="group-open:hidden">Show full prompt</span>
                 <span className="hidden group-open:inline">Hide full prompt</span>
               </summary>
-              <p className="mt-3 whitespace-pre-line text-sm leading-6 text-text-secondary">{signals.promptText}</p>
+              <p id={fullPromptId} className="mt-3 whitespace-pre-line text-sm leading-6 text-text-secondary">{signals.promptText}</p>
             </details>
           </WatchCard>
 
@@ -705,15 +705,28 @@ export default async function VideoPage({ params }: PageProps) {
       </article>
 
       {videoJsonLd ? (
-        <Script id={`video-jsonld-${video.id}`} type="application/ld+json">
-          {JSON.stringify(videoJsonLd)}
-        </Script>
+        <script
+          id={`video-jsonld-${video.id}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(videoJsonLd) }}
+        />
       ) : null}
       {breadcrumbJsonLd ? (
-        <Script id={`video-breadcrumb-jsonld-${video.id}`} type="application/ld+json">
-          {JSON.stringify(breadcrumbJsonLd)}
-        </Script>
+        <script
+          id={`video-breadcrumb-jsonld-${video.id}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+        />
       ) : null}
     </div>
   );
+}
+
+function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }

@@ -4,6 +4,7 @@ import { getSeoVideoById, getSeoVideosByIds, type GalleryVideo } from '@/server/
 import {
   deriveWatchPageSignals,
   pickRelatedWatchPages,
+  toWatchPageRelatedCandidate,
   type WatchPageDerivedSignals,
   type WatchPageRelatedLink,
 } from '@/server/watch-page-signals';
@@ -73,7 +74,7 @@ const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
 
   const candidateRows = rows.flatMap((row) => {
     if (!row.isEligible || !row.video || !row.signals) return [];
-    return [{ entry: row.entry, video: row.video, signals: row.signals }];
+    return [toWatchPageRelatedCandidate({ entry: row.entry, video: row.video, signals: row.signals })];
   });
 
   return rows.map((row) => ({
@@ -124,7 +125,7 @@ export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchP
   const selectedRows = await listSeoWatchVideoRows();
   const candidateRows = selectedRows.flatMap((row) => {
     if (!row.isEligible || !row.video || !row.signals) return [];
-    return [{ entry: row.entry, video: row.video, signals: row.signals }];
+    return [toWatchPageRelatedCandidate({ entry: row.entry, video: row.video, signals: row.signals })];
   });
 
   return {

@@ -106,10 +106,39 @@ export type WatchPageDerivedSignals = {
 };
 
 type CandidateRow = {
+  id: string;
+  title: string;
+  subtitle: string;
+  engineLabel: string;
+  thumbUrl?: string;
+  engineSlug: string | null;
+  exampleFamily: string | null;
+  mode: string | null;
+  primaryIntent: WatchPageIntent;
+  capabilityTags: string[];
+  styleTags: string[];
+};
+
+export function toWatchPageRelatedCandidate(params: {
   entry: SeoWatchVideoConfig;
   video: GalleryVideo;
   signals: WatchPageDerivedSignals;
-};
+}): CandidateRow {
+  const { entry, video, signals } = params;
+  return {
+    id: entry.id,
+    title: signals.title,
+    subtitle: signals.intro,
+    engineLabel: signals.engineLabel,
+    thumbUrl: video.thumbUrl,
+    engineSlug: signals.engineSlug,
+    exampleFamily: signals.exampleFamily,
+    mode: signals.mode,
+    primaryIntent: signals.primaryIntent,
+    capabilityTags: signals.capabilityTags,
+    styleTags: signals.styleTags,
+  };
+}
 
 const MODE_LABELS: Record<string, string> = {
   t2v: 'Text to video',
@@ -687,47 +716,47 @@ export function pickRelatedWatchPages(params: {
 }): WatchPageRelatedLink[] {
   const { currentId, currentSignals, candidates, limit = 4 } = params;
   const scored = candidates
-    .filter((candidate) => candidate.entry.id !== currentId)
+    .filter((candidate) => candidate.id !== currentId)
     .map((candidate) => {
       let score = 0;
       const reasons: string[] = [];
 
-      if (candidate.signals.exampleFamily && candidate.signals.exampleFamily === currentSignals.exampleFamily) {
+      if (candidate.exampleFamily && candidate.exampleFamily === currentSignals.exampleFamily) {
         score += 4;
         reasons.push('Same example family');
       }
-      if (candidate.signals.primaryIntent === currentSignals.primaryIntent) {
+      if (candidate.primaryIntent === currentSignals.primaryIntent) {
         score += 3;
         reasons.push('Same watch-page intent');
       }
-      const capabilityOverlap = overlapCount(candidate.signals.capabilityTags, currentSignals.capabilityTags);
+      const capabilityOverlap = overlapCount(candidate.capabilityTags, currentSignals.capabilityTags);
       if (capabilityOverlap > 0) {
         score += Math.min(3, capabilityOverlap * 1.5);
         reasons.push('Shared capability');
       }
-      if (candidate.signals.engineSlug && candidate.signals.engineSlug === currentSignals.engineSlug) {
+      if (candidate.engineSlug && candidate.engineSlug === currentSignals.engineSlug) {
         score += 2;
         reasons.push('Same engine');
       }
-      if (candidate.signals.mode && candidate.signals.mode === currentSignals.mode) {
+      if (candidate.mode && candidate.mode === currentSignals.mode) {
         score += 1.5;
       }
-      const styleOverlap = overlapCount(candidate.signals.styleTags, currentSignals.styleTags);
+      const styleOverlap = overlapCount(candidate.styleTags, currentSignals.styleTags);
       if (styleOverlap > 0) {
         score += Math.min(2, styleOverlap);
       }
 
       return {
-        id: candidate.entry.id,
-        href: `/video/${encodeURIComponent(candidate.entry.id)}`,
-        title: candidate.signals.title,
-        subtitle: candidate.signals.intro,
-        engineLabel: candidate.signals.engineLabel,
-        thumbUrl: candidate.video.thumbUrl,
+        id: candidate.id,
+        href: `/video/${encodeURIComponent(candidate.id)}`,
+        title: candidate.title,
+        subtitle: candidate.subtitle,
+        engineLabel: candidate.engineLabel,
+        thumbUrl: candidate.thumbUrl,
         score,
         reason: reasons[0] ?? 'Related example',
-        engineSlug: candidate.signals.engineSlug,
-        exampleFamily: candidate.signals.exampleFamily,
+        engineSlug: candidate.engineSlug,
+        exampleFamily: candidate.exampleFamily,
       };
     })
     .filter((candidate) => candidate.score >= 3)
