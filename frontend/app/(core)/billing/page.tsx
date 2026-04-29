@@ -37,6 +37,9 @@ type ReceiptItem = {
   billing_product_key?: string | null;
   tax_amount_cents: number | null;
   discount_amount_cents: number | null;
+  document_type?: 'receipt' | null;
+  document_label?: string | null;
+  document_url?: string | null;
 };
 
 type MembershipTierInfo = {
@@ -140,8 +143,8 @@ const DEFAULT_BILLING_COPY = {
     statusSoon: 'Coming soon',
   },
   receipts: {
-    title: 'Receipts',
-    subtitle: 'Itemized by engine, duration, and resolution. VAT included where applicable.',
+    title: 'Payment history',
+    subtitle: 'Wallet top-ups, render charges, refunds, and Stripe receipts where available.',
     empty: 'No receipts yet.',
     loading: 'Loading…',
     loadMore: 'Load more',
@@ -157,7 +160,11 @@ const DEFAULT_BILLING_COPY = {
       total: 'Total',
       tax: 'Tax',
       discount: 'Discount',
+      document: 'Document',
     },
+    viewDocument: 'View receipt',
+    receiptLabel: 'Receipt',
+    contactSupport: 'Contact support',
   },
   refunds: {
     title: 'Protections',
@@ -183,7 +190,7 @@ const DEFAULT_BILLING_COPY = {
     cancelled: 'Checkout closed. No charge made.',
   },
   errors: {
-    loadReceipts: 'Failed to load receipts',
+    loadReceipts: 'We couldn’t load your payment history. Refresh the page or contact support.',
     loadMore: 'Failed to load more receipts',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     topupStart: 'Unable to start payment.',
@@ -1011,12 +1018,14 @@ export default function BillingPage() {
   }
 
   async function exportCSV() {
-    const rows: string[] = ['id,type,amount,currency,description,created_at,job_id,tax_amount_cents,discount_amount_cents'];
+    const rows: string[] = [
+      'id,type,amount,currency,description,created_at,job_id,tax_amount_cents,discount_amount_cents,document_type,document_url',
+    ];
     const toSign = (type: string, cents: number) => (type === 'charge' ? -cents : cents);
     receipts.items.forEach((r) => {
       const amt = (toSign(r.type, r.amount_cents) / 100).toFixed(2);
       rows.push(
-        `${r.id},${r.type},${amt},${r.currency},"${(r.description ?? '').replaceAll('"', '""')}",${r.created_at},${r.job_id ?? ''},${r.tax_amount_cents ?? ''},${r.discount_amount_cents ?? ''}`
+        `${r.id},${r.type},${amt},${r.currency},"${(r.description ?? '').replaceAll('"', '""')}",${r.created_at},${r.job_id ?? ''},${r.tax_amount_cents ?? ''},${r.discount_amount_cents ?? ''},${r.document_type ?? ''},${r.document_url ?? ''}`
       );
     });
     const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -1428,6 +1437,9 @@ export default function BillingPage() {
                   const amountClass = signedCents < 0 ? 'text-text-primary' : 'text-success';
                   const taxCents = Number(r.tax_amount_cents ?? 0);
                   const discountCents = Number(r.discount_amount_cents ?? 0);
+                  const hasStripeReceipt =
+                    r.document_type === 'receipt' && typeof r.document_url === 'string' && r.document_url.length > 0;
+                  const shouldShowDocumentRow = hasStripeReceipt || r.type === 'topup';
                   return (
                     <article key={r.id} className="stack-gap-sm rounded-card border border-border bg-bg p-4 text-sm text-text-secondary">
                       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -1465,6 +1477,33 @@ export default function BillingPage() {
                           <div className="flex justify-between text-text-muted">
                             <dt>{copy.receipts.fields.discount}</dt>
                             <dd>{formatMoney(-discountCents, r.currency)}</dd>
+                          </div>
+                        )}
+                        {shouldShowDocumentRow && (
+                          <div className="flex items-center justify-between gap-3 text-text-muted">
+                            <dt>{copy.receipts.fields.document}</dt>
+                            <dd>
+                              {hasStripeReceipt ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <span>{r.document_label ?? copy.receipts.receiptLabel}</span>
+                                  <a
+                                    href={r.document_url ?? '#'}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center rounded-input border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-brand hover:border-brand hover:bg-surface-2"
+                                  >
+                                    {copy.receipts.viewDocument}
+                                  </a>
+                                </span>
+                              ) : (
+                                <a
+                                  href={`mailto:${copy.teams.contactEmail}`}
+                                  className="text-brand underline-offset-2 hover:underline"
+                                >
+                                  {copy.receipts.contactSupport}
+                                </a>
+                              )}
+                            </dd>
                           </div>
                         )}
                       </dl>

@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 import { isDatabaseConfigured, query } from '@/lib/db';
+import { ENV } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
+import { resolveStripeReceiptDocument } from '@/lib/stripe-receipts';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+
+export const runtime = 'nodejs';
+
+const stripe = ENV.STRIPE_SECRET_KEY
+  ? new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
+  : null;
 
 export async function GET(req: NextRequest) {
   const databaseConfigured = isDatabaseConfigured();
@@ -43,13 +52,28 @@ export async function GET(req: NextRequest) {
     billing_product_key: string | null;
     tax_amount_cents: number | null;
     discount_amount_cents: number | null;
+    stripe_payment_intent_id: string | null;
+    stripe_charge_id: string | null;
   };
 
   let rows: ReceiptRow[];
   try {
     rows = await query<ReceiptRow>(
-      `SELECT id, kind, amount_cents, currency, description, created_at, job_id, surface, billing_product_key, tax_amount_cents, discount_amount_cents
-       FROM app_receipts_public
+      `SELECT
+         id,
+         type AS kind,
+         amount_cents,
+         currency,
+         description,
+         created_at,
+         job_id,
+         surface,
+         billing_product_key,
+         NULL::bigint AS tax_amount_cents,
+         NULL::bigint AS discount_amount_cents,
+         stripe_payment_intent_id,
+         stripe_charge_id
+       FROM app_receipts
        ${where}
        ORDER BY id DESC
        LIMIT $${params.length}`,
@@ -64,19 +88,34 @@ export async function GET(req: NextRequest) {
   const items = hasMore ? rows.slice(0, -1) : rows;
   const nextCursor = hasMore ? String(items[items.length - 1].id) : null;
 
-  const sanitized = items.map((row) => ({
-    id: row.id,
-    type: row.kind,
-    amount_cents: row.amount_cents,
-    currency: row.currency,
-    description: row.description,
-    created_at: row.created_at,
-    job_id: row.job_id,
-    surface: row.surface,
-    billing_product_key: row.billing_product_key,
-    tax_amount_cents: row.tax_amount_cents ?? null,
-    discount_amount_cents: row.discount_amount_cents ?? null,
-  }));
+  const sanitized = await Promise.all(
+    items.map(async (row) => {
+      const document = stripe
+        ? await resolveStripeReceiptDocument(stripe, {
+            type: row.kind,
+            stripeChargeId: row.stripe_charge_id,
+            stripePaymentIntentId: row.stripe_payment_intent_id,
+          })
+        : null;
+
+      return {
+        id: row.id,
+        type: row.kind,
+        amount_cents: row.amount_cents,
+        currency: row.currency,
+        description: row.description,
+        created_at: row.created_at,
+        job_id: row.job_id,
+        surface: row.surface,
+        billing_product_key: row.billing_product_key,
+        tax_amount_cents: row.tax_amount_cents ?? null,
+        discount_amount_cents: row.discount_amount_cents ?? null,
+        document_type: document?.type ?? null,
+        document_label: document?.label ?? null,
+        document_url: document?.url ?? null,
+      };
+    })
+  );
 
   return NextResponse.json({ ok: true, receipts: sanitized, nextCursor });
 }

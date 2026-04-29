@@ -3674,8 +3674,8 @@
         "memberChipBase": "Member price"
       },
       "receipts": {
-        "title": "Receipts",
-        "subtitle": "Itemized by engine, duration, and resolution. VAT included where applicable.",
+        "title": "Payment history",
+        "subtitle": "Wallet top-ups, render charges, refunds, and Stripe receipts where available.",
         "empty": "No receipts yet.",
         "loading": "Loading…",
         "loadMore": "Load more",
@@ -3726,7 +3726,7 @@
         "cancelled": "Checkout closed. No charge made."
       },
       "errors": {
-        "loadReceipts": "Failed to load receipts",
+        "loadReceipts": "We couldn’t load your payment history. Refresh the page or contact support.",
         "loadMore": "Failed to load more receipts",
         "loadEngines": "Failed to load engines.",
         "estimator": "Estimator failed",

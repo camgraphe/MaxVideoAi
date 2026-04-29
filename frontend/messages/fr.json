@@ -3575,8 +3575,8 @@
         "memberChipBase": "Tarif membre"
       },
       "receipts": {
-        "title": "Reçus",
-        "subtitle": "Détaillés par moteur, durée et résolution. TVA incluse le cas échéant.",
+        "title": "Historique de paiement",
+        "subtitle": "Recharges du portefeuille, débits de rendu, remboursements et reçus Stripe disponibles.",
         "empty": "Pas encore de reçus.",
         "loading": "Chargement…",
         "loadMore": "Charger plus",
@@ -3627,7 +3627,7 @@
         "cancelled": "Checkout fermé. Aucun débit appliqué."
       },
       "errors": {
-        "loadReceipts": "Impossible de charger les reçus",
+        "loadReceipts": "Impossible de charger votre historique de paiement. Actualisez la page ou contactez le support.",
         "loadMore": "Impossible de charger davantage de reçus",
         "loadEngines": "Impossible de charger les moteurs.",
         "estimator": "L’estimateur a échoué",

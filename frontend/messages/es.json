@@ -3568,8 +3568,8 @@
         "memberChipBase": "Precio miembro"
       },
       "receipts": {
-        "title": "Recibos",
-        "subtitle": "Detallados por motor, duración y resolución. IVA incluido cuando aplica.",
+        "title": "Historial de pagos",
+        "subtitle": "Recargas de billetera, cargos de render, reembolsos y recibos de Stripe disponibles.",
         "empty": "Aún no hay recibos.",
         "loading": "Cargando…",
         "loadMore": "Cargar más",
@@ -3620,7 +3620,7 @@
         "cancelled": "Checkout cerrado. No se aplicó ningún cargo."
       },
       "errors": {
-        "loadReceipts": "No se pudieron cargar los recibos",
+        "loadReceipts": "No pudimos cargar tu historial de pagos. Actualiza la página o contacta con soporte.",
         "loadMore": "No se pudieron cargar más recibos",
         "loadEngines": "No se pudieron cargar los motores.",
         "estimator": "La calculadora falló",
