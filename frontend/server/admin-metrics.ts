@@ -89,6 +89,7 @@ type FailedEngineRow = {
 };
 
 const RANGE_DAYS: Record<MetricsRangeLabel, number> = {
+  '24h': 1,
   '7d': 7,
   '30d': 30,
   '90d': 90,
@@ -130,7 +131,7 @@ function completedCondition(alias: string): string {
   return `LOWER(COALESCE(${alias}.status, '')) IN ('completed', 'success', 'succeeded', 'finished')`;
 }
 
-export const METRIC_RANGE_OPTIONS: MetricsRangeLabel[] = ['7d', '30d', '90d'];
+export const METRIC_RANGE_OPTIONS: MetricsRangeLabel[] = ['24h', '7d', '30d', '90d'];
 export const DEFAULT_METRIC_RANGE: MetricsRangeLabel = '30d';
 
 export function normalizeMetricsRange(candidate?: string | null): MetricsRangeLabel {
@@ -138,6 +139,9 @@ export function normalizeMetricsRange(candidate?: string | null): MetricsRangeLa
     return DEFAULT_METRIC_RANGE;
   }
   const normalized = candidate.trim().toLowerCase();
+  if (normalized === '24h' || normalized.startsWith('24') || normalized === '1d') {
+    return '24h';
+  }
   if (normalized.startsWith('7')) {
     return '7d';
   }
@@ -236,6 +240,15 @@ function mapAmountRows(rows: AmountRow[]): AmountSeriesPoint[] {
 }
 
 function fillDailySeries(points: TimeSeriesPoint[], range: MetricsRange): TimeSeriesPoint[] {
+  if (range.days === 1) {
+    return [
+      {
+        date: range.to,
+        value: points.reduce((sum, point) => sum + point.value, 0),
+      },
+    ];
+  }
+
   const buckets = buildDailyBuckets(range);
   const map = new Map(points.map((point) => [point.date.slice(0, 10), point.value]));
   return buckets.map((iso) => {
@@ -248,6 +261,16 @@ function fillDailySeries(points: TimeSeriesPoint[], range: MetricsRange): TimeSe
 }
 
 function fillAmountSeries(points: AmountSeriesPoint[], range: MetricsRange): AmountSeriesPoint[] {
+  if (range.days === 1) {
+    return [
+      {
+        date: range.to,
+        count: points.reduce((sum, point) => sum + point.count, 0),
+        amountCents: points.reduce((sum, point) => sum + point.amountCents, 0),
+      },
+    ];
+  }
+
   const buckets = buildDailyBuckets(range);
   const map = new Map(points.map((point) => [point.date.slice(0, 10), point]));
   return buckets.map((iso) => {
@@ -743,7 +766,7 @@ export async function fetchAdminMetrics(
           COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
           COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
         FROM app_jobs j
-        WHERE created_at >= NOW() - INTERVAL '30 days'
+        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
           ${excludeUserIdClause('j.user_id', { allowNulls: true })}
       `,
       exclusionParams
@@ -756,7 +779,7 @@ export async function fetchAdminMetrics(
           COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
           COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
         FROM app_jobs j
-        WHERE created_at >= NOW() - INTERVAL '30 days'
+        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
           ${excludeUserIdClause('j.user_id', { allowNulls: true })}
         GROUP BY engine_id, engine_label
         HAVING COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')})) > 0

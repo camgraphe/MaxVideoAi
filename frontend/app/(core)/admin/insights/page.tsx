@@ -16,6 +16,7 @@ import { type AdminMetricItem, AdminMetricGrid } from '@/components/admin-system
 import { AdminShortcutRail } from '@/components/admin-system/surfaces/AdminShortcutRail';
 import { type AdminStatColumn, AdminStatTable } from '@/components/admin-system/surfaces/AdminStatTable';
 import { requireAdmin } from '@/server/admin';
+import { ADMIN_EXCLUDED_USER_IDS, resolveExcludeAdminParam } from '@/lib/admin/exclusions';
 
 const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
@@ -119,8 +120,6 @@ type FocusMetricData = {
   axisFormatter?: (value: number) => string;
   tooltipFormatter?: (value: number) => string;
 };
-
-const ADMIN_EXCLUDED_USER_IDS = ['301cc489-d689-477f-94c4-0b051deda0bc'];
 
 const CHART_THEMES: Record<FocusMetric, ChartTheme> = {
   signups: {
@@ -1081,14 +1080,6 @@ function toneValueClass(tone: SmallStat['tone']) {
   return 'text-text-primary';
 }
 
-function resolveExcludeAdminParam(value: string | string[] | undefined): boolean {
-  const resolved = Array.isArray(value) ? value[value.length - 1] : value;
-  if (resolved == null) return true;
-  const normalized = resolved.trim().toLowerCase();
-  if (!normalized) return true;
-  return !['0', 'false', 'no', 'off'].includes(normalized);
-}
-
 function resolveFocusParam(value: string | string[] | undefined): FocusMetric {
   const resolved = Array.isArray(value) ? value[value.length - 1] : value;
   if (resolved === 'active' || resolved === 'topups' || resolved === 'charges') {
@@ -1851,6 +1842,8 @@ function buildInsightsHref({
 
 function describeRange(label: MetricsRangeLabel) {
   switch (label) {
+    case '24h':
+      return '24 hours';
     case '7d':
       return '7 days';
     case '90d':
