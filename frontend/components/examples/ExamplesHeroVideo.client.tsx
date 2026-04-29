@@ -18,6 +18,7 @@ type ExamplesHeroVideoProps = {
 function shouldDisableHeroAutoplay(): boolean {
   if (typeof window === 'undefined') return true;
   if (isCrawlerUserAgent(navigator.userAgent)) return true;
+  if (window.matchMedia?.('(max-width: 767px)')?.matches) return true;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return true;
   const connection = navigator as Navigator & {
     connection?: {
@@ -80,12 +81,14 @@ export function ExamplesHeroVideo({
       }
     };
 
-    const mediaQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
-    const handleMotionChange = () => {
+    const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    const mobileQuery = window.matchMedia?.('(max-width: 767px)');
+    const handleAutoplayPreferenceChange = () => {
       reduceMotion = shouldDisableHeroAutoplay();
       syncPlayback();
     };
-    mediaQuery?.addEventListener?.('change', handleMotionChange);
+    motionQuery?.addEventListener?.('change', handleAutoplayPreferenceChange);
+    mobileQuery?.addEventListener?.('change', handleAutoplayPreferenceChange);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -113,7 +116,8 @@ export function ExamplesHeroVideo({
 
     return () => {
       observer.disconnect();
-      mediaQuery?.removeEventListener?.('change', handleMotionChange);
+      motionQuery?.removeEventListener?.('change', handleAutoplayPreferenceChange);
+      mobileQuery?.removeEventListener?.('change', handleAutoplayPreferenceChange);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       node.removeEventListener('loadeddata', handleLoadedData);
       node.removeEventListener('playing', handlePlaying);

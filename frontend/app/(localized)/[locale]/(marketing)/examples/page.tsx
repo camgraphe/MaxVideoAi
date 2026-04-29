@@ -1226,6 +1226,7 @@ export default async function ExamplesPage({ params, searchParams }: ExamplesPag
               <article className="group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card">
                 <Link
                   href={mainVideo.card.href}
+                  prefetch={false}
                   className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   aria-label={`${mainVideoCopy.openWatchPage}: ${mainVideoTitle}`}
                 >
@@ -1285,7 +1286,7 @@ export default async function ExamplesPage({ params, searchParams }: ExamplesPag
                 <div className="space-y-2.5 px-5 py-4 text-left sm:px-6 sm:py-4.5">
                   <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
                     {mainVideo.card.modelHref ? (
-                      <Link href={mainVideo.card.modelHref} className="hover:text-text-primary">
+                      <Link href={mainVideo.card.modelHref} prefetch={false} className="hover:text-text-primary">
                         {mainVideo.card.engineLabel}
                       </Link>
                     ) : (
@@ -1316,6 +1317,7 @@ export default async function ExamplesPage({ params, searchParams }: ExamplesPag
                   <div className="flex flex-wrap items-center gap-3 pt-0.5">
                     <Link
                       href={mainVideo.card.href}
+                      prefetch={false}
                       className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-bg transition hover:opacity-90"
                     >
                       {mainVideoCopy.openExample}
@@ -1323,6 +1325,7 @@ export default async function ExamplesPage({ params, searchParams }: ExamplesPag
                     {mainVideo.card.modelHref ? (
                       <Link
                         href={mainVideo.card.modelHref}
+                        prefetch={false}
                         className="inline-flex items-center rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:bg-surface-2"
                       >
                         {mainVideo.card.engineLabel}

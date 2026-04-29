@@ -270,6 +270,7 @@ export function MarketingNav() {
           </Button>
           <Link
             href="/"
+            prefetch={false}
             className="flex items-center gap-1.5 text-text-primary whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:gap-2"
           >
             <Image
@@ -507,6 +508,7 @@ export function MarketingNav() {
             <>
               <Link
                 href="/login?next=/app"
+                prefetch={false}
                 className="inline-flex text-xs font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_login"
@@ -686,6 +688,7 @@ export function MarketingNav() {
               <div className="stack-gap-sm">
                 <Link
                   href="/login?next=/app"
+                  prefetch={false}
                   className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                   data-analytics-event="cta_click"
