@@ -37,7 +37,7 @@ type ReceiptItem = {
   billing_product_key?: string | null;
   tax_amount_cents: number | null;
   discount_amount_cents: number | null;
-  document_type?: 'receipt' | null;
+  document_type?: 'invoice' | 'receipt' | null;
   document_label?: string | null;
   document_url?: string | null;
 };
@@ -162,8 +162,10 @@ const DEFAULT_BILLING_COPY = {
       discount: 'Discount',
       document: 'Document',
     },
-    viewDocument: 'View receipt',
+    viewReceipt: 'View receipt',
+    viewInvoice: 'View invoice',
     receiptLabel: 'Receipt',
+    invoiceLabel: 'Invoice',
     contactSupport: 'Contact support',
   },
   refunds: {
@@ -1437,9 +1439,19 @@ export default function BillingPage() {
                   const amountClass = signedCents < 0 ? 'text-text-primary' : 'text-success';
                   const taxCents = Number(r.tax_amount_cents ?? 0);
                   const discountCents = Number(r.discount_amount_cents ?? 0);
-                  const hasStripeReceipt =
-                    r.document_type === 'receipt' && typeof r.document_url === 'string' && r.document_url.length > 0;
-                  const shouldShowDocumentRow = hasStripeReceipt || r.type === 'topup';
+                  const hasStripeDocument =
+                    (r.document_type === 'invoice' || r.document_type === 'receipt') &&
+                    typeof r.document_url === 'string' &&
+                    r.document_url.length > 0;
+                  const documentLabel =
+                    r.document_type === 'invoice'
+                      ? copy.receipts.invoiceLabel
+                      : r.document_type === 'receipt'
+                        ? copy.receipts.receiptLabel
+                        : null;
+                  const documentActionLabel =
+                    r.document_type === 'invoice' ? copy.receipts.viewInvoice : copy.receipts.viewReceipt;
+                  const shouldShowDocumentRow = hasStripeDocument || r.type === 'topup';
                   return (
                     <article key={r.id} className="stack-gap-sm rounded-card border border-border bg-bg p-4 text-sm text-text-secondary">
                       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -1483,16 +1495,16 @@ export default function BillingPage() {
                           <div className="flex items-center justify-between gap-3 text-text-muted">
                             <dt>{copy.receipts.fields.document}</dt>
                             <dd>
-                              {hasStripeReceipt ? (
+                              {hasStripeDocument ? (
                                 <span className="inline-flex items-center gap-2">
-                                  <span>{r.document_label ?? copy.receipts.receiptLabel}</span>
+                                  <span>{r.document_label ?? documentLabel}</span>
                                   <a
                                     href={r.document_url ?? '#'}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="inline-flex items-center rounded-input border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-brand hover:border-brand hover:bg-surface-2"
                                   >
-                                    {copy.receipts.viewDocument}
+                                    {documentActionLabel}
                                   </a>
                                 </span>
                               ) : (

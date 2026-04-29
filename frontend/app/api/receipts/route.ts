@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ENV } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
-import { resolveStripeReceiptDocument } from '@/lib/stripe-receipts';
+import { resolveStripeBillingDocument } from '@/lib/stripe-receipts';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
@@ -54,6 +54,10 @@ export async function GET(req: NextRequest) {
     discount_amount_cents: number | null;
     stripe_payment_intent_id: string | null;
     stripe_charge_id: string | null;
+    stripe_invoice_id: string | null;
+    stripe_hosted_invoice_url: string | null;
+    stripe_invoice_pdf: string | null;
+    stripe_receipt_url: string | null;
   };
 
   let rows: ReceiptRow[];
@@ -72,7 +76,11 @@ export async function GET(req: NextRequest) {
          NULL::bigint AS tax_amount_cents,
          NULL::bigint AS discount_amount_cents,
          stripe_payment_intent_id,
-         stripe_charge_id
+         stripe_charge_id,
+         stripe_invoice_id,
+         stripe_hosted_invoice_url,
+         stripe_invoice_pdf,
+         stripe_receipt_url
        FROM app_receipts
        ${where}
        ORDER BY id DESC
@@ -90,13 +98,15 @@ export async function GET(req: NextRequest) {
 
   const sanitized = await Promise.all(
     items.map(async (row) => {
-      const document = stripe
-        ? await resolveStripeReceiptDocument(stripe, {
-            type: row.kind,
-            stripeChargeId: row.stripe_charge_id,
-            stripePaymentIntentId: row.stripe_payment_intent_id,
-          })
-        : null;
+      const document = await resolveStripeBillingDocument(stripe, {
+        type: row.kind,
+        stripeInvoiceId: row.stripe_invoice_id,
+        stripeHostedInvoiceUrl: row.stripe_hosted_invoice_url,
+        stripeInvoicePdf: row.stripe_invoice_pdf,
+        stripeReceiptUrl: row.stripe_receipt_url,
+        stripeChargeId: row.stripe_charge_id,
+        stripePaymentIntentId: row.stripe_payment_intent_id,
+      });
 
       return {
         id: row.id,

@@ -239,6 +239,63 @@ async function rollbackStripeEvent(eventId: string) {
   }
 }
 
+type TopupDocumentFields = {
+  stripeCustomerId?: string | null;
+  stripeCheckoutSessionId?: string | null;
+  stripeInvoiceId?: string | null;
+  stripeHostedInvoiceUrl?: string | null;
+  stripeInvoicePdf?: string | null;
+  stripeReceiptUrl?: string | null;
+};
+
+function normalizeStripeId(value: unknown): string | null {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+  }
+  if (typeof value === 'object' && value && 'id' in value) {
+    const id = (value as { id?: unknown }).id;
+    return typeof id === 'string' && id.trim() ? id.trim() : null;
+  }
+  return null;
+}
+
+function normalizeStripeUrl(value: unknown): string | null {
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+  return trimmed ? trimmed : null;
+}
+
+function invoiceDocumentFields(invoice: string | Stripe.Invoice | null | undefined): TopupDocumentFields {
+  if (!invoice) return {};
+  if (typeof invoice === 'string') {
+    return { stripeInvoiceId: normalizeStripeId(invoice) };
+  }
+  return {
+    stripeInvoiceId: normalizeStripeId(invoice.id),
+    stripeHostedInvoiceUrl: normalizeStripeUrl(invoice.hosted_invoice_url),
+    stripeInvoicePdf: normalizeStripeUrl(invoice.invoice_pdf),
+  };
+}
+
+function chargeReceiptUrl(charge: string | Stripe.Charge | null | undefined): string | null {
+  if (!charge || typeof charge === 'string') return null;
+  return normalizeStripeUrl(charge.receipt_url);
+}
+
+async function retrieveChargeReceiptUrl(chargeId: string | null): Promise<string | null> {
+  if (!stripe || !chargeId) return null;
+  try {
+    const charge = await stripe.charges.retrieve(chargeId);
+    return normalizeStripeUrl(charge.receipt_url);
+  } catch (error) {
+    console.warn('[stripe-webhook] failed to retrieve charge receipt URL', {
+      chargeId,
+      error: error instanceof Error ? error.message : error,
+    });
+    return null;
+  }
+}
+
 async function handleCheckoutSession(session: Stripe.Checkout.Session) {
   if (!session.metadata || session.metadata.kind !== 'topup') {
     return;
@@ -258,6 +315,11 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
         ? session.payment_intent.latest_charge
         : session.payment_intent.latest_charge?.id ?? null)
     : null;
+  const stripeReceiptUrl =
+    typeof session.payment_intent === 'object' && session.payment_intent && !Array.isArray(session.payment_intent)
+      ? chargeReceiptUrl(session.payment_intent.latest_charge)
+      : null;
+  const resolvedReceiptUrl = stripeReceiptUrl ?? (await retrieveChargeReceiptUrl(chargeId));
   const platformRevenueCents = !receiptsPriceOnly
     ? session.metadata.platform_fee_cents_usd
       ? Number(session.metadata.platform_fee_cents_usd)
@@ -303,6 +365,10 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
     fxRate,
     fxMarginBps,
     fxRateTimestamp,
+    stripeCustomerId: normalizeStripeId(session.customer),
+    stripeCheckoutSessionId: session.id,
+    stripeReceiptUrl: resolvedReceiptUrl,
+    ...invoiceDocumentFields(session.invoice),
   });
 }
 
@@ -326,6 +392,7 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
     const settlementAmountCents = amountCents;
     const settlementCurrency = currency;
     const chargeId = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
+    const stripeReceiptUrl = chargeReceiptUrl(intent.latest_charge) ?? (await retrieveChargeReceiptUrl(chargeId));
     const platformRevenueCents = receiptsPriceOnly
       ? undefined
       : intent.metadata?.platform_fee_cents_usd
@@ -368,8 +435,57 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
       fxRate,
       fxMarginBps,
       fxRateTimestamp,
+      stripeCustomerId: normalizeStripeId(intent.customer),
+      stripeReceiptUrl,
+      ...invoiceDocumentFields(intent.invoice),
     });
   }
+}
+
+async function updateTopupDocumentFields(
+  receiptId: string | number,
+  fields: TopupDocumentFields & {
+    stripePaymentIntentId?: string | null;
+    stripeChargeId?: string | null;
+  }
+) {
+  const values = {
+    stripePaymentIntentId: normalizeStripeId(fields.stripePaymentIntentId),
+    stripeChargeId: normalizeStripeId(fields.stripeChargeId),
+    stripeCustomerId: normalizeStripeId(fields.stripeCustomerId),
+    stripeCheckoutSessionId: normalizeStripeId(fields.stripeCheckoutSessionId),
+    stripeInvoiceId: normalizeStripeId(fields.stripeInvoiceId),
+    stripeHostedInvoiceUrl: normalizeStripeUrl(fields.stripeHostedInvoiceUrl),
+    stripeInvoicePdf: normalizeStripeUrl(fields.stripeInvoicePdf),
+    stripeReceiptUrl: normalizeStripeUrl(fields.stripeReceiptUrl),
+  };
+  const hasDocumentValue = Object.values(values).some(Boolean);
+  if (!hasDocumentValue) return;
+
+  await query(
+    `UPDATE app_receipts
+     SET stripe_payment_intent_id = COALESCE(stripe_payment_intent_id, $2),
+         stripe_charge_id = COALESCE(stripe_charge_id, $3),
+         stripe_customer_id = COALESCE(stripe_customer_id, $4),
+         stripe_checkout_session_id = COALESCE(stripe_checkout_session_id, $5),
+         stripe_invoice_id = COALESCE(stripe_invoice_id, $6),
+         stripe_hosted_invoice_url = COALESCE(stripe_hosted_invoice_url, $7),
+         stripe_invoice_pdf = COALESCE(stripe_invoice_pdf, $8),
+         stripe_receipt_url = COALESCE(stripe_receipt_url, $9),
+         stripe_document_synced_at = NOW()
+     WHERE id = $1`,
+    [
+      receiptId,
+      values.stripePaymentIntentId,
+      values.stripeChargeId,
+      values.stripeCustomerId,
+      values.stripeCheckoutSessionId,
+      values.stripeInvoiceId,
+      values.stripeHostedInvoiceUrl,
+      values.stripeInvoicePdf,
+      values.stripeReceiptUrl,
+    ]
+  );
 }
 
 async function recordTopup({
@@ -388,6 +504,12 @@ async function recordTopup({
   fxRate,
   fxMarginBps,
   fxRateTimestamp,
+  stripeCustomerId,
+  stripeCheckoutSessionId,
+  stripeInvoiceId,
+  stripeHostedInvoiceUrl,
+  stripeInvoicePdf,
+  stripeReceiptUrl,
 }: {
   userId: string;
   walletAmountCents: number;
@@ -404,6 +526,12 @@ async function recordTopup({
   fxRate?: number | null;
   fxMarginBps?: number | null;
   fxRateTimestamp?: string | Date | null;
+  stripeCustomerId?: string | null;
+  stripeCheckoutSessionId?: string | null;
+  stripeInvoiceId?: string | null;
+  stripeHostedInvoiceUrl?: string | null;
+  stripeInvoicePdf?: string | null;
+  stripeReceiptUrl?: string | null;
 }) {
   const walletCurrencyUpper = walletCurrency ? walletCurrency.toUpperCase() : 'USD';
   const normalizedWalletAmount = Math.max(0, Math.round(walletAmountCents));
@@ -432,12 +560,24 @@ async function recordTopup({
   }
 
   try {
+    const documentFields = {
+      stripePaymentIntentId: paymentIntentId ?? null,
+      stripeChargeId: chargeId ?? null,
+      stripeCustomerId: stripeCustomerId ?? null,
+      stripeCheckoutSessionId: stripeCheckoutSessionId ?? null,
+      stripeInvoiceId: stripeInvoiceId ?? null,
+      stripeHostedInvoiceUrl: stripeHostedInvoiceUrl ?? null,
+      stripeInvoicePdf: stripeInvoicePdf ?? null,
+      stripeReceiptUrl: stripeReceiptUrl ?? null,
+    };
+
     if (paymentIntentId) {
       const existing = await query<{ id: string }>(
         `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
         [paymentIntentId]
       );
       if (existing.length > 0) {
+        await updateTopupDocumentFields(existing[0].id, documentFields);
         return;
       }
     }
@@ -448,6 +588,18 @@ async function recordTopup({
         [chargeId]
       );
       if (existingCharge.length > 0) {
+        await updateTopupDocumentFields(existingCharge[0].id, documentFields);
+        return;
+      }
+    }
+
+    if (stripeCheckoutSessionId) {
+      const existingSession = await query<{ id: string }>(
+        `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
+        [stripeCheckoutSessionId]
+      );
+      if (existingSession.length > 0) {
+        await updateTopupDocumentFields(existingSession[0].id, documentFields);
         return;
       }
     }
@@ -461,8 +613,31 @@ async function recordTopup({
     };
 
     const rows = await query<{ id: number }>(
-      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct, original_amount_cents, original_currency, fx_rate, fx_margin_bps, fx_rate_timestamp)
-       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      `INSERT INTO app_receipts (
+         user_id,
+         type,
+         amount_cents,
+         currency,
+         description,
+         metadata,
+         stripe_payment_intent_id,
+         stripe_charge_id,
+         platform_revenue_cents,
+         destination_acct,
+         original_amount_cents,
+         original_currency,
+         fx_rate,
+         fx_margin_bps,
+         fx_rate_timestamp,
+         stripe_customer_id,
+         stripe_checkout_session_id,
+         stripe_invoice_id,
+         stripe_hosted_invoice_url,
+         stripe_invoice_pdf,
+         stripe_receipt_url,
+         stripe_document_synced_at
+       )
+       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, CASE WHEN $15::text IS NOT NULL OR $16::text IS NOT NULL OR $17::text IS NOT NULL OR $18::text IS NOT NULL OR $19::text IS NOT NULL OR $20::text IS NOT NULL THEN NOW() ELSE NULL END)
        ON CONFLICT DO NOTHING
        RETURNING id`,
       [
@@ -480,10 +655,31 @@ async function recordTopup({
         fxRate ?? null,
         fxMarginBps ?? null,
         fxRateTimestamp ? new Date(fxRateTimestamp) : null,
+        documentFields.stripeCustomerId,
+        documentFields.stripeCheckoutSessionId,
+        documentFields.stripeInvoiceId,
+        documentFields.stripeHostedInvoiceUrl,
+        documentFields.stripeInvoicePdf,
+        documentFields.stripeReceiptUrl,
       ]
     );
 
     if (rows.length === 0) {
+      const fallbackExisting = paymentIntentId
+        ? await query<{ id: string }>(`SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`, [
+            paymentIntentId,
+          ])
+        : chargeId
+          ? await query<{ id: string }>(`SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`, [chargeId])
+          : stripeCheckoutSessionId
+            ? await query<{ id: string }>(
+                `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
+                [stripeCheckoutSessionId]
+              )
+            : [];
+      if (fallbackExisting.length > 0) {
+        await updateTopupDocumentFields(fallbackExisting[0].id, documentFields);
+      }
       console.log('[stripe-webhook] Skipped duplicate wallet top-up', {
         userId,
         amountCents: normalizedWalletAmount,

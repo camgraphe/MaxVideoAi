@@ -266,7 +266,14 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
   sessionMetadata: Record<string, string>;
   paymentIntentMetadata: Record<string, string>;
   productTaxCode: string;
+  customer?: string | null;
+  customerUpdate?: Stripe.Checkout.SessionCreateParams.CustomerUpdate | null;
 };
+
+function normalizeOptionalStripeId(value: string | null | undefined): string | null {
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+  return trimmed ? trimmed : null;
+}
 
 export function buildWalletTopUpCheckoutSessionParams({
   currency,
@@ -281,6 +288,8 @@ export function buildWalletTopUpCheckoutSessionParams({
   sessionMetadata,
   paymentIntentMetadata,
   productTaxCode,
+  customer,
+  customerUpdate,
 }: BuildWalletTopUpCheckoutSessionParamsArgs): WalletTopUpCheckoutSessionParams {
   const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData = {
     metadata: paymentIntentMetadata,
@@ -309,6 +318,14 @@ export function buildWalletTopUpCheckoutSessionParams({
     metadata: sessionMetadata,
     payment_intent_data: paymentIntentData,
   };
+
+  const customerId = normalizeOptionalStripeId(customer);
+  if (customerId) {
+    params.customer = customerId;
+    if (customerUpdate) {
+      params.customer_update = customerUpdate;
+    }
+  }
 
   if (checkoutUiMode === 'elements') {
     if (!returnUrl) {

@@ -47,6 +47,39 @@ test('wallet top-up Checkout keeps PaymentIntent metadata', () => {
   });
 });
 
+test('wallet top-up Checkout can attach a Stripe Customer and update supported billing fields', () => {
+  const params = buildParams({
+    customer: 'cus_123',
+    customerUpdate: {
+      address: 'auto',
+      name: 'auto',
+      shipping: 'auto',
+    },
+  });
+
+  assert.equal(params.customer, 'cus_123');
+  assert.deepEqual(params.customer_update, {
+    address: 'auto',
+    name: 'auto',
+    shipping: 'auto',
+  });
+  assert.equal('invoice_creation' in params, false);
+});
+
+test('wallet top-up Checkout omits customer update without a Stripe Customer', () => {
+  const params = buildParams({
+    customerUpdate: {
+      address: 'auto',
+      name: 'auto',
+      shipping: 'auto',
+    },
+  });
+
+  assert.equal(params.customer, undefined);
+  assert.equal(params.customer_update, undefined);
+  assert.equal('invoice_creation' in params, false);
+});
+
 test('wallet top-up Checkout can create Elements sessions for Express Checkout', () => {
   const params = buildParams({
     checkoutUiMode: 'elements',

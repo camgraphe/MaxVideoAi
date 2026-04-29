@@ -24,6 +24,7 @@ import { findTopupTier } from '@/config/topupTiers';
 import { extractGaClientId } from '@/server/ga4';
 import { buildWalletTopUpCheckoutSessionParams } from '@/lib/stripe-checkout';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
+import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -410,6 +411,9 @@ export async function POST(req: NextRequest) {
   try {
     // Create a one-off Checkout Session for top-up
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+    const stripeCustomerId = await getOrCreateStripeCustomerForUser(stripe, userId, {
+      preferredLocale: checkoutLocale,
+    });
 
     const sessionMetadata: Record<string, string> = {
       kind: 'topup',
@@ -472,6 +476,12 @@ export async function POST(req: NextRequest) {
       sessionMetadata,
       paymentIntentMetadata,
       productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
+      customer: stripeCustomerId,
+      customerUpdate: {
+        address: 'auto',
+        name: 'auto',
+        shipping: 'auto',
+      },
     });
 
     const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
