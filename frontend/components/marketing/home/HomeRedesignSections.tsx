@@ -234,6 +234,11 @@ export type WorkflowSeoSummaryCopy = {
   };
 };
 
+function isWorkspaceHref(href: LocalizedLinkHref): boolean {
+  const pathname = typeof href === 'string' ? href : 'pathname' in href && typeof href.pathname === 'string' ? href.pathname : '';
+  return pathname === '/app' || pathname.startsWith('/app?') || pathname.startsWith('/app/');
+}
+
 type ToolIconKey =
   | 'text'
   | 'image'
@@ -1216,6 +1221,7 @@ export function ReferenceWorkflow({ copy, steps }: { copy: SectionCopy; steps: W
             <Link
               key={step.title}
               href={step.href}
+              prefetch={isWorkspaceHref(step.href) ? false : undefined}
               className="dark-neon-panel group relative flex min-h-[178px] flex-col overflow-hidden rounded-card border border-hairline bg-bg p-3 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:bg-surface-glass-80 dark:hover:bg-surface-glass-70 sm:min-h-[218px] sm:p-5"
               data-analytics-event="tool_card_click"
               data-analytics-cta-name={step.toolLabel}
@@ -1264,6 +1270,7 @@ export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: Tool
             <Link
               key={tool.id}
               href={tool.href}
+              prefetch={isWorkspaceHref(tool.href) ? false : undefined}
               className="dark-neon-panel group relative min-h-[158px] overflow-hidden rounded-card border border-hairline bg-surface p-3 pb-11 shadow-card transition hover:-translate-y-0.5 hover:border-text-muted/40 hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[188px] sm:p-4 sm:pb-12"
               data-analytics-event="tool_card_click"
               data-analytics-cta-name={tool.id}
@@ -1297,6 +1304,7 @@ export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: Tool
         <div className="flex flex-wrap justify-center gap-3">
           <ButtonLink
             href="/app"
+            prefetch={false}
             linkComponent={Link}
             size="lg"
             data-analytics-event="tool_card_click"

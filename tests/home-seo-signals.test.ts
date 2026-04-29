@@ -134,3 +134,19 @@ test('homepage keeps the Startup Fame dofollow link under the best-for hub CTA',
   assert.doesNotMatch(startupComponentSource, /<section/);
   assert.match(startupComponentSource, /text-\[10px\]/);
 });
+
+test('homepage disables prefetch for workspace CTAs that are blocked in robots.txt', () => {
+  const workflowSource = homeSectionsSource.slice(
+    homeSectionsSource.indexOf('export function ReferenceWorkflow'),
+    homeSectionsSource.indexOf('export function AiVideoToolbox')
+  );
+  const toolboxSource = homeSectionsSource.slice(
+    homeSectionsSource.indexOf('export function AiVideoToolbox'),
+    homeSectionsSource.indexOf('export function TransparentPricingBlock')
+  );
+
+  assert.match(homeSectionsSource, /function isWorkspaceHref/);
+  assert.match(workflowSource, /prefetch=\{isWorkspaceHref\(step\.href\) \? false : undefined\}/);
+  assert.match(toolboxSource, /prefetch=\{isWorkspaceHref\(tool\.href\) \? false : undefined\}/);
+  assert.match(toolboxSource, /href="\/app"[\s\S]*?prefetch=\{false\}/);
+});
