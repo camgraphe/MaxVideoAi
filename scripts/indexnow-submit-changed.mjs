@@ -142,6 +142,12 @@ function addDocsUrl(urls, locale, slug) {
   if (locale === 'es') urls.add(toAbsoluteUrl(`/es/docs/${slug}`));
 }
 
+function addBestForHubUrls(urls) {
+  urls.add(toAbsoluteUrl('/ai-video-engines/best-for'));
+  urls.add(toAbsoluteUrl('/fr/comparatif/best-for'));
+  urls.add(toAbsoluteUrl('/es/comparativa/best-for'));
+}
+
 function addBestForUrl(urls, locale, slug) {
   if (locale === 'en') urls.add(toAbsoluteUrl(`/ai-video-engines/best-for/${slug}`));
   if (locale === 'fr') urls.add(toAbsoluteUrl(`/fr/comparatif/best-for/${slug}`));
@@ -194,6 +200,7 @@ function collectUrlsFromChangedFiles(changedFiles) {
     const bestForMatch = filePath.match(/^content\/(en|fr|es)\/best-for\/([^/]+)\.mdx$/);
     if (bestForMatch) {
       const [, locale, slug] = bestForMatch;
+      addBestForHubUrls(urls);
       addBestForUrl(urls, locale, slug);
       return;
     }
@@ -208,6 +215,13 @@ function collectUrlsFromChangedFiles(changedFiles) {
       urls.add(toAbsoluteUrl('/es/ai-video-engines'));
     }
 
+    if (
+      filePath.startsWith('frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/') ||
+      filePath.startsWith('frontend/app/ai-video-engines/best-for/')
+    ) {
+      addBestForHubUrls(urls);
+    }
+
     if (filePath.startsWith('frontend/app/(localized)/[locale]/(marketing)/models/')) {
       urls.add(toAbsoluteUrl('/models'));
       urls.add(toAbsoluteUrl('/fr/modeles'));
@@ -218,6 +232,7 @@ function collectUrlsFromChangedFiles(changedFiles) {
   const comparisonSlugs = collectAllComparisonSlugs();
   const catalogDerivedComparisonSlugs = collectCatalogComparisonSlugsForModels(changedModelSlugs);
   if (compareConfigTouched) {
+    addBestForHubUrls(urls);
     comparisonSlugs.forEach((slug) => addCompareUrlsForSlug(urls, slug));
   } else if (changedModelSlugs.size > 0) {
     const slugsToNotify =

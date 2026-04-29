@@ -900,6 +900,10 @@ function buildFaqSchema(items: FaqItem[]) {
   };
 }
 
+function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
 function buildItemListSchema(content: RedesignContent, providers: ProviderItem[]) {
   return {
     '@context': 'https://schema.org',
@@ -967,9 +971,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       <Script id="home-organization-jsonld" type="application/ld+json">
         {JSON.stringify(organizationSchema)}
       </Script>
-      <Script id="home-faq-jsonld" type="application/ld+json">
-        {JSON.stringify(faqSchema)}
-      </Script>
+      <script id="home-faq-jsonld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqSchema) }} />
       <Script id="home-provider-itemlist-jsonld" type="application/ld+json">
         {JSON.stringify(itemListSchema)}
       </Script>

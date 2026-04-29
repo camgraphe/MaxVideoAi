@@ -69,6 +69,7 @@ test('homepage FAQ targets search-intent questions and shares the same items wit
   assert.match(homeSource, /const faqSchema = buildFaqSchema\(content\.faq\.items\)/);
   assert.match(homeSource, /<HomeFaq copy={content\.faq} items={content\.faq\.items} \/>/);
   assert.match(homeSource, /home-faq-jsonld/);
+  assert.match(homeSource, /<script id="home-faq-jsonld" type="application\/ld\+json" dangerouslySetInnerHTML=/);
   assert.match(answerText, /AI video generator/);
   assert.match(answerText, /AI-generated videos/);
   assert.match(answerText, /text-to-video AI/);

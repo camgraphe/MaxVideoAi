@@ -137,6 +137,17 @@ test('homepage hero uses the current Kling 3 Pro render even when programmed slo
   assert.match(homeHeroSource, /applyHeroMediaOverride\(item\)/);
 });
 
+test('homepage hero avoids initial mobile video downloads', () => {
+  const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
+
+  assert.match(showcaseSource, /const \[shouldAutoplayPreview, setShouldAutoplayPreview\]/);
+  assert.match(showcaseSource, /window\.matchMedia\('\(min-width: 768px\)'\)/);
+  assert.match(showcaseSource, /setShouldLoadVideo\(Boolean\(selected\?\.videoSrc && shouldAutoplayPreview\)\)/);
+  assert.match(showcaseSource, /selected\.videoSrc && shouldLoadVideo/);
+  assert.match(showcaseSource, /autoPlay=\{shouldAutoplayPreview\}/);
+  assert.match(showcaseSource, /fetchPriority="high"/);
+});
+
 test('homepage hero model CTA says specs and pricing instead of open model', () => {
   const homePageSource = readFileSync("frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx", 'utf8');
   const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');

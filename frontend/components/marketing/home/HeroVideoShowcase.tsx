@@ -94,19 +94,40 @@ export function HeroVideoShowcase({
   const [isMuted, setIsMuted] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [shouldAutoplayPreview, setShouldAutoplayPreview] = useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const selected = items[selectedIndex] ?? items[0];
 
   useEffect(() => {
-    let cancelled = false;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    const updatePlaybackPolicy = () => setShouldAutoplayPreview(desktopQuery.matches && !motionQuery.matches);
 
+    updatePlaybackPolicy();
+    desktopQuery.addEventListener('change', updatePlaybackPolicy);
+    motionQuery.addEventListener('change', updatePlaybackPolicy);
+
+    return () => {
+      desktopQuery.removeEventListener('change', updatePlaybackPolicy);
+      motionQuery.removeEventListener('change', updatePlaybackPolicy);
+    };
+  }, []);
+
+  useEffect(() => {
     setHasUserPaused(false);
     setIsMuted(true);
     setIsPlaying(false);
     setProgress(0);
     setCurrentTime(0);
+    setShouldLoadVideo(Boolean(selected?.videoSrc && shouldAutoplayPreview));
+  }, [selected?.id, selected?.videoSrc, shouldAutoplayPreview]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     const video = videoRef.current;
-    if (!video || !selected?.videoSrc) {
+    if (!video || !selected?.videoSrc || !shouldLoadVideo) {
       return () => {
         cancelled = true;
       };
@@ -127,8 +148,9 @@ export function HeroVideoShowcase({
 
     return () => {
       cancelled = true;
+      video.pause();
     };
-  }, [selected?.id, selected?.videoSrc]);
+  }, [selected?.id, selected?.videoSrc, shouldLoadVideo]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -146,6 +168,12 @@ export function HeroVideoShowcase({
   const ratePerSecond = buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
 
   async function handlePlayToggle() {
+    if (selected.videoSrc && !shouldLoadVideo) {
+      setHasUserPaused(false);
+      setShouldLoadVideo(true);
+      return;
+    }
+
     const video = videoRef.current;
     if (!video || !selected.videoSrc) {
       setIsPlaying((value) => {
@@ -191,31 +219,6 @@ export function HeroVideoShowcase({
           className="relative z-10 overflow-hidden rounded-[22px] border border-white/24 bg-[#070b14] shadow-[0_30px_86px_-44px_rgba(15,23,42,0.95)] dark:border-[rgba(147,197,253,0.30)] dark:shadow-[0_0_0_1px_rgba(96,165,250,0.18),0_0_36px_-20px_rgba(59,130,246,0.62),22px_-18px_46px_-32px_rgba(217,70,239,0.74),-18px_6px_44px_-32px_rgba(96,165,250,0.58),0_30px_80px_-48px_rgba(0,0,0,0.95)]"
         >
           <div className="relative overflow-hidden bg-[#050912]" style={{ aspectRatio: '1.62 / 1' }}>
-            {selected.videoSrc ? (
-              <video
-                ref={videoRef}
-                key={selected.id}
-                aria-label={`${selected.name} preview video`}
-                className="absolute inset-0 h-full w-full object-cover"
-                poster={selected.posterSrc}
-                preload="metadata"
-                autoPlay
-                muted={isMuted}
-                playsInline
-                loop
-                onPause={() => setIsPlaying(false)}
-              onPlay={() => setIsPlaying(true)}
-              onTimeUpdate={(event) => {
-                const video = event.currentTarget;
-                setCurrentTime(video.currentTime);
-                if (video.duration && Number.isFinite(video.duration)) {
-                  setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
-                }
-              }}
-            >
-              <source src={selected.videoSrc} type="video/mp4" />
-            </video>
-          ) : (
             <Image
               src={selected.posterSrc}
               alt={selected.imageAlt}
@@ -225,24 +228,48 @@ export function HeroVideoShowcase({
               sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
               className="object-cover"
             />
-          )}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34)_0%,rgba(3,7,18,0.04)_38%,rgba(3,7,18,0.72)_100%)]" />
+            {selected.videoSrc && shouldLoadVideo ? (
+              <video
+                ref={videoRef}
+                key={selected.id}
+                aria-label={`${selected.name} preview video`}
+                className="absolute inset-0 h-full w-full object-cover"
+                poster={selected.posterSrc}
+                preload={shouldAutoplayPreview ? 'metadata' : 'auto'}
+                autoPlay={shouldAutoplayPreview}
+                muted={isMuted}
+                playsInline
+                loop
+                onPause={() => setIsPlaying(false)}
+                onPlay={() => setIsPlaying(true)}
+                onTimeUpdate={(event) => {
+                  const video = event.currentTarget;
+                  setCurrentTime(video.currentTime);
+                  if (video.duration && Number.isFinite(video.duration)) {
+                    setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
+                  }
+                }}
+              >
+                <source src={selected.videoSrc} type="video/mp4" />
+              </video>
+            ) : null}
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34)_0%,rgba(3,7,18,0.04)_38%,rgba(3,7,18,0.72)_100%)]" />
 
-          <div className="absolute left-5 top-5 max-w-[58%] text-white sm:left-7 sm:top-7">
-            <p className="text-xl font-semibold leading-none tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)]">
-              {selected.name}
-            </p>
-            <p className="mt-2 text-sm font-medium text-white/86 drop-shadow-[0_2px_10px_rgba(0,0,0,0.72)]">
-              {selected.mediaInfo ?? `${selected.provider} · ${selected.bestFor}`}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {(selected.chips?.length ? selected.chips : [selected.bestFor, selected.provider]).slice(0, 3).map((chip) => (
-                <span key={chip} className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md dark:bg-surface-glass-70 dark:ring-1 dark:ring-white/[0.08]">
-                  {chip}
-                </span>
-              ))}
+            <div className="absolute left-5 top-5 max-w-[58%] text-white sm:left-7 sm:top-7">
+              <p className="text-xl font-semibold leading-none tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.72)]">
+                {selected.name}
+              </p>
+              <p className="mt-2 text-sm font-medium text-white/86 drop-shadow-[0_2px_10px_rgba(0,0,0,0.72)]">
+                {selected.mediaInfo ?? `${selected.provider} · ${selected.bestFor}`}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {(selected.chips?.length ? selected.chips : [selected.bestFor, selected.provider]).slice(0, 3).map((chip) => (
+                  <span key={chip} className="rounded-full bg-black/36 px-2.5 py-1 text-[11px] font-semibold text-white/88 backdrop-blur-md dark:bg-surface-glass-70 dark:ring-1 dark:ring-white/[0.08]">
+                    {chip}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
 
           <div className="absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
             <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{selected.estimateLabel}</p>
@@ -253,7 +280,7 @@ export function HeroVideoShowcase({
             {ratePerSecond ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{ratePerSecond}</p> : null}
           </div>
 
-          {hasUserPaused ? (
+          {hasUserPaused || (selected.videoSrc && !shouldLoadVideo) ? (
             <button
               type="button"
               aria-label={playLabel}
