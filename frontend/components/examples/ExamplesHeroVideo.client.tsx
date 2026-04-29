@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { isCrawlerUserAgent } from '@/lib/crawler-user-agent';
+
 type ExamplesHeroVideoProps = {
   src: string;
   type: string;
@@ -15,6 +17,7 @@ type ExamplesHeroVideoProps = {
 
 function shouldDisableHeroAutoplay(): boolean {
   if (typeof window === 'undefined') return true;
+  if (isCrawlerUserAgent(navigator.userAgent)) return true;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return true;
   const connection = navigator as Navigator & {
     connection?: {
