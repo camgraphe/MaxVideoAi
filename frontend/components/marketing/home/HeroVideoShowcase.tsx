@@ -223,8 +223,6 @@ export function HeroVideoShowcase({
               src={selected.posterSrc}
               alt={selected.imageAlt}
               fill
-              priority
-              fetchPriority="high"
               sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
               className="object-cover"
             />

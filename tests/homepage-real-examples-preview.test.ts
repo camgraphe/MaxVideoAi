@@ -145,7 +145,8 @@ test('homepage hero avoids initial mobile video downloads', () => {
   assert.match(showcaseSource, /setShouldLoadVideo\(Boolean\(selected\?\.videoSrc && shouldAutoplayPreview\)\)/);
   assert.match(showcaseSource, /selected\.videoSrc && shouldLoadVideo/);
   assert.match(showcaseSource, /autoPlay=\{shouldAutoplayPreview\}/);
-  assert.match(showcaseSource, /fetchPriority="high"/);
+  assert.doesNotMatch(showcaseSource, /loading="eager"/);
+  assert.doesNotMatch(showcaseSource, /fetchPriority="high"/);
 });
 
 test('homepage hero model CTA says specs and pricing instead of open model', () => {
