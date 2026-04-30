@@ -16,11 +16,13 @@ import {
   type GscRangeKey,
   type GscSearchType,
 } from '@/lib/seo/gsc-analysis';
+import { isDatabaseConfigured, query } from '@/lib/db';
 
 const SEARCH_CONSOLE_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 const SEARCH_ANALYTICS_ROW_LIMIT = 25_000;
 const DEFAULT_CACHE_TTL_MS = 30 * 60 * 1000;
+const DASHBOARD_DB_CACHE_PREFIX = 'seo.gsc.dashboard';
 
 type GscAccessToken = {
   token: string;
@@ -568,6 +570,15 @@ async function readDashboardCache(
   }
 
   const cacheFile = resolveCacheFile();
+  const dbEntry = await readDashboardDbCache(range, {
+    ignoreTtl: options?.ignoreTtl,
+    siteUrl: options?.siteUrl,
+  });
+  if (dbEntry) {
+    dashboardCache = dbEntry;
+    return dbEntry;
+  }
+
   if (!cacheFile) return null;
   try {
     const raw = await fs.readFile(cacheFile, 'utf8');
@@ -588,6 +599,7 @@ function cacheEntryMatches(entry: CacheEntry, range: GscRangeKey, siteUrl?: stri
 async function writeDashboardCache(data: GscDashboardData): Promise<void> {
   const entry: CacheEntry = { createdAt: Date.now(), data };
   dashboardCache = entry;
+  await writeDashboardDbCache(entry);
   const cacheFile = resolveCacheFile();
   if (!cacheFile) return;
   try {
@@ -598,6 +610,48 @@ async function writeDashboardCache(data: GscDashboardData): Promise<void> {
       console.warn('[gsc] failed to write cache file', error);
     }
   }
+}
+
+async function readDashboardDbCache(
+  range: GscRangeKey,
+  options?: { ignoreTtl?: boolean; siteUrl?: string | null }
+): Promise<CacheEntry | null> {
+  if (!isDatabaseConfigured() || !options?.siteUrl) return null;
+  try {
+    const rows = await query<{ value: CacheEntry }>('select value from app_settings where key = $1 limit 1', [
+      buildDashboardDbCacheKey(range, options.siteUrl),
+    ]);
+    const entry = rows[0]?.value ?? null;
+    if (!entry || !cacheEntryMatches(entry, range, options.siteUrl)) return null;
+    if (!options.ignoreTtl && !isCacheFresh(entry.createdAt)) return null;
+    return entry;
+  } catch {
+    return null;
+  }
+}
+
+async function writeDashboardDbCache(entry: CacheEntry): Promise<void> {
+  if (!isDatabaseConfigured() || !entry.data.siteUrl) return;
+  try {
+    await query(
+      `
+        insert into app_settings (key, value, updated_at)
+        values ($1, $2::jsonb, now())
+        on conflict (key) do update
+          set value = excluded.value,
+              updated_at = now()
+      `,
+      [buildDashboardDbCacheKey(entry.data.range, entry.data.siteUrl), JSON.stringify(entry)]
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[gsc] failed to write database cache', error);
+    }
+  }
+}
+
+function buildDashboardDbCacheKey(range: GscRangeKey, siteUrl: string): string {
+  return `${DASHBOARD_DB_CACHE_PREFIX}:${siteUrl}:${range}`;
 }
 
 function withCacheAge(data: GscDashboardData, createdAt: number): GscDashboardData {

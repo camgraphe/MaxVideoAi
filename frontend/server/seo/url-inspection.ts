@@ -11,6 +11,7 @@ import type {
   UrlInspectionItem,
   UrlInspectionTarget,
 } from '@/lib/seo/internal-seo-types';
+import { isDatabaseConfigured, query } from '@/lib/db';
 import { fetchSeoCockpitData } from '@/server/seo/cockpit';
 import { inspectGscUrl } from '@/server/seo/gsc';
 
@@ -18,6 +19,8 @@ type UrlInspectionCacheEntry = {
   updatedAt: string;
   items: UrlInspectionItem[];
 };
+
+const URL_INSPECTION_DB_CACHE_KEY = 'seo.gsc.url-inspection';
 
 export type UrlInspectionDashboardData = {
   configured: boolean;
@@ -113,6 +116,9 @@ function selectTargets(
 }
 
 async function readUrlInspectionCache(): Promise<UrlInspectionCacheEntry | null> {
+  const dbEntry = await readUrlInspectionDbCache();
+  if (dbEntry) return dbEntry;
+
   const cacheFile = resolveUrlInspectionCacheFile();
   if (!cacheFile) return null;
   try {
@@ -123,6 +129,8 @@ async function readUrlInspectionCache(): Promise<UrlInspectionCacheEntry | null>
 }
 
 async function writeUrlInspectionCache(entry: UrlInspectionCacheEntry) {
+  await writeUrlInspectionDbCache(entry);
+
   const cacheFile = resolveUrlInspectionCacheFile();
   if (!cacheFile) return;
   try {
@@ -131,6 +139,38 @@ async function writeUrlInspectionCache(entry: UrlInspectionCacheEntry) {
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[gsc-url-inspection] failed to write cache file', error);
+    }
+  }
+}
+
+async function readUrlInspectionDbCache(): Promise<UrlInspectionCacheEntry | null> {
+  if (!isDatabaseConfigured()) return null;
+  try {
+    const rows = await query<{ value: UrlInspectionCacheEntry }>('select value from app_settings where key = $1 limit 1', [
+      URL_INSPECTION_DB_CACHE_KEY,
+    ]);
+    return rows[0]?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeUrlInspectionDbCache(entry: UrlInspectionCacheEntry) {
+  if (!isDatabaseConfigured()) return;
+  try {
+    await query(
+      `
+        insert into app_settings (key, value, updated_at)
+        values ($1, $2::jsonb, now())
+        on conflict (key) do update
+          set value = excluded.value,
+              updated_at = now()
+      `,
+      [URL_INSPECTION_DB_CACHE_KEY, JSON.stringify(entry)]
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[gsc-url-inspection] failed to write database cache', error);
     }
   }
 }

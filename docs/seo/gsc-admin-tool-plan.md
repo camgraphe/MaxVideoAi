@@ -70,12 +70,13 @@ Official endpoints used or planned:
 Phase 1 uses:
 
 - In-memory cache for fast repeat loads.
-- Optional file cache at `.cache/seo/gsc-search-analytics.json`.
+- Production-safe database cache in `app_settings` when `DATABASE_URL` is configured.
+- Optional file cache at `.cache/seo/gsc-search-analytics.json` for local development.
 - Derived in-process aggregates for summary, trend, top queries, top pages, opportunities, and family clusters.
 
 Recommended later storage:
 
-- Postgres table for snapshots, keyed by `source`, `site_url`, `range`, `fetched_at`, and `payload jsonb`.
+- Dedicated Postgres table for historical snapshots, keyed by `source`, `site_url`, `range`, `fetched_at`, and `payload jsonb`.
 - Postgres table or JSON exports for Codex-readable output.
 - Keep generated exports out of git if they include private query data.
 
