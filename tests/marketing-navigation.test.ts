@@ -100,6 +100,13 @@ test('marketing footer separates Best-For use cases from popular comparisons', (
   assert.match(useCaseBlock, /MARKETING_NAV_BEST_FOR_USE_CASES/);
 });
 
+test('marketing nav keeps logged-out state after an explicit workspace logout intent', () => {
+  assert.match(marketingNavSource, /import \{ consumeLogoutIntent, setLogoutIntent \} from '@\/lib\/logout-intent';/);
+  assert.match(marketingNavSource, /const logoutIntentActive = consumeLogoutIntent\(\);/);
+  assert.match(marketingNavSource, /if \(logoutIntentActive\) \{\s*markLoggedOut\(\);\s*void supabase\.auth\.signOut\(\)/s);
+  assert.match(marketingNavSource, /if \(logoutIntentActive\) return;/);
+});
+
 test('default marketing routes initialize the intl request locale before rendering links', () => {
   const source = readFileSync('frontend/app/default-marketing-layout.tsx', 'utf8');
 

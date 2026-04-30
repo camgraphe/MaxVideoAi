@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { setLogoutIntent } from '@/lib/logout-intent';
+import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 
@@ -91,6 +91,14 @@ export function MarketingNav() {
       }
     };
 
+    const markLoggedOut = () => {
+      clearLastKnownAccount();
+      writeLastKnownUserId(null);
+      setEmail(null);
+      setIsAdmin(false);
+      setAccountMenuOpen(false);
+    };
+
     const applySession = (session: Session | null) => {
       if (!mounted) return null;
       const userId = session?.user?.id ?? null;
@@ -101,9 +109,16 @@ export function MarketingNav() {
       return userId;
     };
 
+    const logoutIntentActive = consumeLogoutIntent();
+    if (logoutIntentActive) {
+      markLoggedOut();
+      void supabase.auth.signOut().catch(() => undefined);
+    }
+
     supabase.auth
       .getSession()
       .then(async ({ data }) => {
+        if (logoutIntentActive) return;
         const session = data.session ?? null;
         applySession(session);
         if (!mounted) return;
@@ -118,12 +133,10 @@ export function MarketingNav() {
     const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
       const eventType = event as string;
       if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-        clearLastKnownAccount();
-        writeLastKnownUserId(null);
-        setEmail(null);
-        setIsAdmin(false);
+        markLoggedOut();
         return;
       }
+      if (logoutIntentActive) return;
       applySession(session ?? null);
       void fetchAccountState(session?.access_token);
     });
