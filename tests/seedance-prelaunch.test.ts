@@ -341,7 +341,7 @@ test('Unified Happy Horse workspace infers R2V and V2V from reference slots', ()
   assert.equal(getHappyHorseAssetState({ image_urls: [{ kind: 'image' }] }).hasR2vReferenceImage, true);
 });
 
-test('Seedance Fal requests serialize numeric duration selections as string enum values', () => {
+test('Fal requests serialize numeric duration selections as string enum values where required', () => {
   assert.equal(
     normalizeFalDurationValueForModel('seedance-2-0', 'bytedance/seedance-2.0/text-to-video', 12),
     '12'
@@ -349,6 +349,18 @@ test('Seedance Fal requests serialize numeric duration selections as string enum
   assert.equal(
     normalizeFalDurationValueForModel('seedance-2-0-fast', 'bytedance/seedance-2.0/fast/image-to-video', 4),
     '4'
+  );
+  assert.equal(
+    normalizeFalDurationValueForModel('wan-2-6', 'wan/v2.6/text-to-video', 5),
+    '5'
+  );
+  assert.equal(
+    normalizeFalDurationValueForModel('wan-2-6', 'wan/v2.6/image-to-video', 10),
+    '10'
+  );
+  assert.equal(
+    normalizeFalDurationValueForModel('wan-2-6', 'wan/v2.6/reference-to-video', 15),
+    '15'
   );
   assert.equal(
     normalizeFalDurationValueForModel('veo-3-1', 'fal-ai/veo3.1/text-to-video', 8),

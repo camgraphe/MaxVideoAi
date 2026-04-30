@@ -33,7 +33,8 @@ const ENGINE_MODE_MODEL_MAP = (() => {
   return map;
 })();
 
-const STRING_ENUM_DURATION_MODEL_PATTERN = /^bytedance\/seedance-2\.0(?:\/fast)?\//i;
+const STRING_ENUM_DURATION_MODEL_PATTERN =
+  /^(?:bytedance\/seedance-2\.0(?:\/fast)?\/|wan\/v2\.6\/(?:text-to-video|image-to-video|reference-to-video)$)/i;
 
 export function normalizeFalDurationValueForModel(
   engineId: string,
@@ -44,7 +45,7 @@ export function normalizeFalDurationValueForModel(
     return duration;
   }
 
-  if (STRING_ENUM_DURATION_MODEL_PATTERN.test(modelSlug) || engineId.startsWith('seedance-2-0')) {
+  if (STRING_ENUM_DURATION_MODEL_PATTERN.test(modelSlug) || engineId.startsWith('seedance-2-0') || engineId === 'wan-2-6') {
     return String(Math.round(duration));
   }
 
