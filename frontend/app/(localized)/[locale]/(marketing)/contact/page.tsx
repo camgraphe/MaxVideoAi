@@ -217,7 +217,7 @@ export default async function ContactPage({
           </form>
           <div className="mt-6 rounded-card border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
             {content.form.alt.split('{email}')[0]}
-            <ObfuscatedEmailLink user="support" domain="maxvideo.ai" label="support@maxvideo.ai" />
+            <ObfuscatedEmailLink user="support" domain="maxvideoai.com" label="support@maxvideoai.com" />
             {content.form.alt.split('{email}')[1] ?? ''}
           </div>
         </section>

@@ -109,7 +109,7 @@ export default async function StatusPage({ params }: { params: { locale: AppLoca
               </li>
               <li>
                 <span className="font-semibold text-text-primary">{content.overview.quickReferences[2].label}</span> — {content.overview.quickReferences[2].prefix}{' '}
-                <ObfuscatedEmailLink user="support" domain="maxvideo.ai" label="support@maxvideo.ai" />{' '}
+                <ObfuscatedEmailLink user="support" domain="maxvideoai.com" label="support@maxvideoai.com" />{' '}
                 {content.overview.quickReferences[2].suffix}
               </li>
             </ul>

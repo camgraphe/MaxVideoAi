@@ -892,7 +892,7 @@ const en: Dictionary = {
         { heading: '2. How we use data', body: 'Operate routing, improve product quality, and communicate critical updates.' },
         { heading: '3. Storage & security', body: 'We store data in encrypted systems with least-privilege access. Render assets auto-expire per workspace policy.' },
         { heading: '4. Sharing', body: 'We only share data with underlying engine providers when routing renders. We never sell customer data.' },
-        { heading: '5. Your choices', body: 'Request export or deletion any time via support@maxvideo.ai. Admins control retention windows.' },
+        { heading: '5. Your choices', body: 'Request export or deletion any time via support@maxvideoai.com. Admins control retention windows.' },
       ],
     },
   },
