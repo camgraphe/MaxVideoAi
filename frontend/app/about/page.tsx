@@ -2,12 +2,12 @@ import AboutPage, { generateMetadata as generateLocalizedMetadata } from '../(lo
 import DefaultMarketingLayout from '../default-marketing-layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
+export const generateMetadata = () => generateLocalizedMetadata({ params: Promise.resolve({ locale: DEFAULT_LOCALE }) });
 
 export default function AboutDefaultPage() {
   return (
     <DefaultMarketingLayout>
-      <AboutPage params={{ locale: DEFAULT_LOCALE }} />
+      <AboutPage params={Promise.resolve({ locale: DEFAULT_LOCALE })} />
     </DefaultMarketingLayout>
   );
 }

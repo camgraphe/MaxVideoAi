@@ -30,7 +30,7 @@ import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import { getVideoWatchPageDataById } from '@/server/video-seo';
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 const SITE = SITE_ORIGIN.replace(/\/$/, '');
@@ -43,7 +43,7 @@ const TRAILING_BRAND_SUFFIX = /\s+[—-]\s*MaxVideo\s*AI\s*$/i;
 const getWatchPageData = cache(async (id: string) => getVideoWatchPageDataById(id));
 type WatchPageData = NonNullable<Awaited<ReturnType<typeof getVideoWatchPageDataById>>>;
 
-export const revalidate = 60 * 30;
+export const revalidate = 1800;
 
 function truncateForMeta(title: string, limit: number) {
   if (title.length <= limit) return title;
@@ -232,7 +232,8 @@ function isRenderable(page: Awaited<ReturnType<typeof getVideoWatchPageDataById>
   return true;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const params = await props.params;
   const page = await getWatchPageData(params.id);
   const canonical = `${SITE}/video/${encodeURIComponent(params.id)}`;
 
@@ -279,7 +280,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function VideoPage({ params }: PageProps) {
+export default async function VideoPage(props: PageProps) {
+  const params = await props.params;
   const page = await getWatchPageData(params.id);
   if (!page) notFound();
 

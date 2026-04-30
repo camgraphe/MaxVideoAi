@@ -135,7 +135,7 @@ export default function LoginPage() {
     return DEFAULT_NEXT_PATH;
   });
   const [nextPathReady, setNextPathReady] = useState(false);
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) as string;
+  const authRedirectOrigin = (typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL || '') as string;
   const persistNextTarget = useCallback((value: string) => {
     if (typeof window === 'undefined') return;
     const safe = sanitizeNextPath(value);
@@ -192,10 +192,10 @@ export default function LoginPage() {
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const safeNextPath = useMemo(() => sanitizeNextPath(nextPath), [nextPath]);
   const redirectTo = useMemo(() => {
-    if (!siteUrl) return undefined;
-    const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+    if (!authRedirectOrigin) return undefined;
+    const base = authRedirectOrigin.endsWith('/') ? authRedirectOrigin.slice(0, -1) : authRedirectOrigin;
     return `${base}/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
-  }, [safeNextPath, siteUrl]);
+  }, [authRedirectOrigin, safeNextPath]);
 
   const syncInputState = useCallback(() => {
     const nextEmail = emailRef.current?.value ?? '';
@@ -575,7 +575,7 @@ export default function LoginPage() {
     setStatusTone('info');
     setStatus('Sending reset link…');
     setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: siteUrl || undefined });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) {
       setError(error.message);
       setStatus(null);
@@ -587,9 +587,9 @@ export default function LoginPage() {
 
   async function signInWithGoogle() {
     setError(null);
-    if (!siteUrl) {
+    if (!redirectTo) {
       setStatusTone('info');
-      setStatus('Google sign-in requires NEXT_PUBLIC_SITE_URL to be set.');
+      setStatus('Google sign-in is unavailable because the auth redirect URL could not be resolved.');
       return;
     }
     setStatusTone('info');

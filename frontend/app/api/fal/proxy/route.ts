@@ -5,16 +5,17 @@ import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
-const apiKey = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
-if (!apiKey) {
-  throw new Error('Missing FAL API key. Set FAL_KEY or FAL_API_KEY in your environment.');
-}
-
 const falRoute = createRouteHandler({
   allowedEndpoints: FAL_PROXY_ALLOWED_ENDPOINTS,
   allowUnauthorizedRequests: false,
   isAuthenticated: async () => true,
-  resolveFalAuth: async () => `Key ${apiKey}`,
+  resolveFalAuth: async () => {
+    const apiKey = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
+    if (!apiKey) {
+      throw new Error('Missing FAL API key. Set FAL_KEY or FAL_API_KEY in your environment.');
+    }
+    return `Key ${apiKey}`;
+  },
 });
 
 function guardFalProxyRequest(request: NextRequest) {

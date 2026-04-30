@@ -7,7 +7,8 @@ import { getUserIdentity } from '@/server/supabase-admin';
 
 export const runtime = 'nodejs';
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin(req);
   } catch (error) {
@@ -46,7 +47,8 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
   });
 }
 
-export async function POST(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
   let adminUserId: string;
   try {
     adminUserId = await requireAdmin(req);

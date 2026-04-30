@@ -78,7 +78,8 @@ const COMPANY_COPY: Record<
   },
 };
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const meta = COMPANY_META[locale] ?? COMPANY_META.en;
   return buildSeoMetadata({
@@ -91,7 +92,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default function CompanyPage({ params }: { params: { locale: AppLocale } }) {
+export default async function CompanyPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const copy = COMPANY_COPY[locale] ?? COMPANY_COPY.en;
   const links = copy.links.map((entry) => ({

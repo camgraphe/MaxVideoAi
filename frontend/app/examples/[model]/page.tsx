@@ -9,28 +9,35 @@ export function generateStaticParams() {
   return getMarketingExampleRouteSlugs().map((model) => ({ model }));
 }
 
-export const generateMetadata = ({
-  params,
-  searchParams,
-}: {
-  params: { model: string };
-  searchParams?: Record<string, string | string[] | undefined>;
-}) =>
-  generateLocalizedMetadata({
-    params: { locale: DEFAULT_LOCALE, model: params.model },
-    searchParams: searchParams ?? {},
-  });
+export const generateMetadata = async (
+  props: {
+    params: Promise<{ model: string }>;
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  }
+) => {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
 
-export default function ExamplesModelDefaultPage({
-  params,
-  searchParams,
-}: {
-  params: { model: string };
-  searchParams?: Record<string, string | string[] | undefined>;
-}) {
+  return generateLocalizedMetadata({
+    params: Promise.resolve({ locale: DEFAULT_LOCALE, model: params.model }),
+    searchParams: Promise.resolve(searchParams ?? {}),
+  });
+};
+
+export default async function ExamplesModelDefaultPage(
+  props: {
+    params: Promise<{ model: string }>;
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   return (
     <DefaultMarketingLayout>
-      <ExamplesModelPage params={{ locale: DEFAULT_LOCALE, model: params.model }} searchParams={searchParams ?? {}} />
+      <ExamplesModelPage
+        params={Promise.resolve({ locale: DEFAULT_LOCALE, model: params.model })}
+        searchParams={Promise.resolve(searchParams ?? {})}
+      />
     </DefaultMarketingLayout>
   );
 }

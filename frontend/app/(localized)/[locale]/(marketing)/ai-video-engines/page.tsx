@@ -574,7 +574,8 @@ async function loadHubEngineScoreMap(): Promise<Map<string, number>> {
   return new Map();
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'aiVideoEngines.meta' });
 

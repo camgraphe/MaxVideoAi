@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const nextPath = sanitizeNextPath(nextParam);
 
   if (code) {
-    const supabase = createSupabaseRouteClient();
+    const supabase = await createSupabaseRouteClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       console.error('[auth.callback] exchange failed', error);

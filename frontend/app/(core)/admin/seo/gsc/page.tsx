@@ -22,9 +22,9 @@ import { fetchGscDashboardData, type GscDashboardData, type GscFamilySummary, ty
 export const dynamic = 'force-dynamic';
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     range?: string | string[];
-  };
+  }>;
 };
 
 const RANGE_OPTIONS: Array<{ value: GscRangeKey; label: string }> = [
@@ -46,7 +46,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
 });
 
-export default async function AdminGscSeoPage({ searchParams }: PageProps) {
+export default async function AdminGscSeoPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const range = normalizeGscRange(Array.isArray(searchParams?.range) ? searchParams?.range[0] : searchParams?.range);
   const data = await fetchGscDashboardData({ range });
   const metrics = buildMetricItems(data);

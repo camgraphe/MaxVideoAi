@@ -41,7 +41,8 @@ const CHANGELOG_LINKS: Record<
   },
 };
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.changelog as {
@@ -61,7 +62,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function ChangelogPage({ params }: { params: { locale: AppLocale } }) {
+export default async function ChangelogPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.changelog;
   const related = CHANGELOG_LINKS[params.locale] ?? CHANGELOG_LINKS.en;

@@ -57,7 +57,8 @@ const ABOUT_LINKS: Record<
   },
 };
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const metaCopy = ABOUT_META[locale] ?? ABOUT_META.en;
 
@@ -72,7 +73,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function AboutPage({ params }: { params: { locale: AppLocale } }) {
+export default async function AboutPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.about;
   const related = ABOUT_LINKS[params.locale] ?? ABOUT_LINKS.en;

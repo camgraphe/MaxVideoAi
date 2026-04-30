@@ -2,16 +2,21 @@ import ExamplesPage, { generateMetadata as generateLocalizedMetadata } from '../
 import DefaultMarketingLayout from '../default-marketing-layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export const generateMetadata = ({
-  searchParams,
-}: {
-  searchParams?: Record<string, string | string[] | undefined>;
-}) => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE }, searchParams: searchParams ?? {} });
+export const generateMetadata = async (
+  props: {
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  }
+) => {
+  const searchParams = await props.searchParams;
+  return generateLocalizedMetadata({ params: Promise.resolve({ locale: DEFAULT_LOCALE }), searchParams: Promise.resolve(searchParams ?? {}) });
+};
 
-export default function ExamplesDefaultPage(props: { searchParams?: Record<string, string | string[] | undefined> }) {
+export default async function ExamplesDefaultPage(
+  props: { searchParams?: Promise<Record<string, string | string[] | undefined>> }
+) {
   return (
     <DefaultMarketingLayout>
-      <ExamplesPage params={{ locale: DEFAULT_LOCALE }} searchParams={props.searchParams ?? {}} />
+      <ExamplesPage params={Promise.resolve({ locale: DEFAULT_LOCALE })} searchParams={(await props.searchParams) ?? {}} />
     </DefaultMarketingLayout>
   );
 }

@@ -75,10 +75,10 @@ import {
 } from 'lucide-react';
 
 type PageParams = {
-  params: {
+  params: Promise<{
     locale: AppLocale;
     slug: string;
-  };
+  }>;
 };
 
 function buildCanonicalComparePath({
@@ -3167,7 +3167,8 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
   };
 }
 
-export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
+export async function generateMetadata(props: PageParams): Promise<Metadata> {
+  const params = await props.params;
   const { slug, locale } = params;
   const engine = getFalEngineBySlug(slug);
   if (!engine) {
@@ -4888,7 +4889,8 @@ function MediaPreview({
   );
 }
 
-export default async function ModelDetailPage({ params }: PageParams) {
+export default async function ModelDetailPage(props: PageParams) {
+  const params = await props.params;
   const { slug, locale: routeLocale } = params;
   const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
   if (slug === 'veo-3-1-first-last') {

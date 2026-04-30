@@ -40,7 +40,7 @@ import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
-export const revalidate = 60 * 10;
+export const revalidate = 600;
 
 type ExampleCardConfig = {
   title: string;
@@ -262,7 +262,8 @@ function MiniSparkline({ className }: { className: string }) {
   );
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'pricing.meta' });
   return buildSeoMetadata({
@@ -276,7 +277,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function PricingPage({ params }: { params: { locale: AppLocale } }) {
+export default async function PricingPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;

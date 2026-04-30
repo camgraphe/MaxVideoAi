@@ -85,18 +85,16 @@ const nextConfig = {
       transform: 'lucide-react/dist/esm/icons/{{member}}',
     },
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@ffmpeg-installer/ffmpeg', 'ffprobe-static'],
-    outputFileTracingExcludes: {
-      '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo', ...FFPROBE_NON_RUNTIME_BINARIES, ...SHARP_NON_RUNTIME_BINARIES],
-      '/api/tools/upscale': [...FFPROBE_ALL_BINARIES, ...SHARP_ALL_BINARIES],
-      '/api/tools/upscale/image': [...FFPROBE_ALL_BINARIES, ...SHARP_NON_RUNTIME_BINARIES],
-      '/api/tools/upscale/video': [...FFPROBE_NON_RUNTIME_BINARIES, ...SHARP_ALL_BINARIES],
-    },
-    outputFileTracingRoot: repoRoot,
-    outputFileTracingIncludes: {
-      '*': [...CONTENT_GLOBS, ...SITEMAP_RUNTIME_GLOBS],
-    },
+  serverExternalPackages: ['@ffmpeg-installer/ffmpeg', 'ffprobe-static'],
+  outputFileTracingExcludes: {
+    '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo', ...FFPROBE_NON_RUNTIME_BINARIES, ...SHARP_NON_RUNTIME_BINARIES],
+    '/api/tools/upscale': [...FFPROBE_ALL_BINARIES, ...SHARP_ALL_BINARIES],
+    '/api/tools/upscale/image': [...FFPROBE_ALL_BINARIES, ...SHARP_NON_RUNTIME_BINARIES],
+    '/api/tools/upscale/video': [...FFPROBE_NON_RUNTIME_BINARIES, ...SHARP_ALL_BINARIES],
+  },
+  outputFileTracingRoot: repoRoot,
+  outputFileTracingIncludes: {
+    '*': [...CONTENT_GLOBS, ...SITEMAP_RUNTIME_GLOBS],
   },
   async redirects() {
     return [

@@ -22,7 +22,8 @@ const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', cu
 const dateTimeFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 const shortDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
 
-export default async function AdminUserDetailPage({ params }: { params: { userId: string } }) {
+export default async function AdminUserDetailPage(props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
   const userId = params.userId?.trim();
   if (!userId) {
     notFound();

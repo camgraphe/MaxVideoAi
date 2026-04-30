@@ -19,11 +19,11 @@ export const dynamic = 'force-dynamic';
 type SearchParamValue = string | string[] | undefined;
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     action?: SearchParamValue;
     adminId?: SearchParamValue;
     targetUserId?: SearchParamValue;
-  };
+  }>;
 };
 
 type AuditFilters = {
@@ -50,7 +50,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
   timeStyle: 'short',
 });
 
-export default async function AdminAuditLogPage({ searchParams = {} }: PageProps) {
+export default async function AdminAuditLogPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   try {
     await requireAdmin();
   } catch (error) {
@@ -137,7 +138,7 @@ export default async function AdminAuditLogPage({ searchParams = {} }: PageProps
   );
 }
 
-function normalizeFilters(params: PageProps['searchParams']): AuditFilters {
+function normalizeFilters(params: Awaited<PageProps['searchParams']>): AuditFilters {
   const coerce = (value: SearchParamValue) => {
     const raw = Array.isArray(value) ? value[0] : value;
     return raw?.trim().length ? raw.trim() : '';

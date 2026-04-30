@@ -135,7 +135,8 @@ function buildFallbackSettingsSnapshot(job: DbJobRow): unknown {
   };
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params;
   const jobId = params.jobId;
 
   if (!isDatabaseConfigured()) {

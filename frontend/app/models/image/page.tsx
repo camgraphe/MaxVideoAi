@@ -7,7 +7,7 @@ export const generateMetadata = () => generateLocalizedMetadata({ params: { loca
 
 export default function ImageModelsDefaultPage() {
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <LocaleLayout params={Promise.resolve({ locale: DEFAULT_LOCALE })}>
       <MarketingLayout>
         <ModelsCatalogPage scope="image" />
       </MarketingLayout>

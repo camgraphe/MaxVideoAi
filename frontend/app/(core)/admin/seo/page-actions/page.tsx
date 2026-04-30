@@ -18,12 +18,12 @@ import { fetchUrlInspectionDashboardData } from '@/server/seo/url-inspection';
 export const dynamic = 'force-dynamic';
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     range?: string | string[];
     priority?: string | string[];
     family?: string | string[];
     intent?: string | string[];
-  };
+  }>;
 };
 
 const RANGE_OPTIONS: Array<{ value: GscRangeKey; label: string }> = [
@@ -41,7 +41,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
 });
 
-export default async function AdminSeoPageActionsPage({ searchParams }: PageProps) {
+export default async function AdminSeoPageActionsPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const range = normalizeGscRange(firstParam(searchParams?.range));
   const selectedPriority = normalizePriority(firstParam(searchParams?.priority));
   const selectedFamily = firstParam(searchParams?.family) ?? 'all';
@@ -153,7 +154,6 @@ function BriefDetails({ brief }: { brief: UnifiedPageActionBrief }) {
           <span className="hidden min-h-[34px] items-center rounded-lg border border-border bg-surface px-3 text-xs font-semibold text-text-secondary group-open:inline-flex">Collapse</span>
         </div>
       </summary>
-
       <div className="mt-4 grid gap-4 border-t border-hairline pt-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Copy-ready task</p>

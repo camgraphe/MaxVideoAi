@@ -35,11 +35,11 @@ const percentFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maxi
 type FocusMetric = 'signups' | 'active' | 'topups' | 'charges';
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     range?: string;
     excludeAdmin?: string | string[];
     focus?: string | string[];
-  };
+  }>;
 };
 
 type ChartPoint = {
@@ -147,7 +147,8 @@ const FOCUS_OPTIONS: Array<{ key: FocusMetric; label: string }> = [
   { key: 'charges', label: 'Charges' },
 ];
 
-export default async function AdminInsightsPage({ searchParams }: PageProps) {
+export default async function AdminInsightsPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   try {
     await requireAdmin();
   } catch (error) {

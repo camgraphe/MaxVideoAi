@@ -1903,13 +1903,14 @@ function getComparePageOverride(locale: AppLocale, slug: string): ComparePageOve
   return COMPARE_PAGE_OVERRIDES[locale]?.[slug];
 }
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams?: { order?: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<Params>;
+    searchParams?: Promise<{ order?: string }>;
+  }
+): Promise<Metadata> {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const locale = params.locale ?? 'en';
   const { dictionary } = await resolveDictionary({ locale });
   const compareCopy = (dictionary.comparePage ?? {}) as ComparePageCopy;
@@ -2004,13 +2005,14 @@ export async function generateMetadata({
   return meta;
 }
 
-export default async function CompareDetailPage({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams?: { order?: string };
-}) {
+export default async function CompareDetailPage(
+  props: {
+    params: Promise<Params>;
+    searchParams?: Promise<{ order?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const activeLocale = params.locale ?? 'en';
   const { dictionary } = await resolveDictionary({ locale: activeLocale });
   const compareCopy = (dictionary.comparePage ?? {}) as ComparePageCopy;

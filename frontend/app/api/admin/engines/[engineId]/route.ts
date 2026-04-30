@@ -153,7 +153,8 @@ function sanitizePricing(payload: Record<string, unknown>): EnginePricingDetails
   return details;
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { engineId: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ engineId: string }> }) {
+  const params = await props.params;
   let adminId: string;
   try {
     adminId = await requireAdmin(req);
@@ -257,7 +258,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { engineId: 
   return NextResponse.json({ ok: true, engine: updated });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { engineId: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ engineId: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin(req);
   } catch (response) {

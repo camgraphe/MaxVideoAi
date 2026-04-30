@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function WorkspaceAppLayout({ children }: { children: ReactNode }) {
-  const cookieStore = cookies();
+export default async function WorkspaceAppLayout({ children }: { children: ReactNode }) {
+  const cookieStore = await cookies();
   const impersonation = decodeImpersonationTargetCookie(cookieStore.get(impersonationCookieNames.target)?.value ?? null);
 
   return (

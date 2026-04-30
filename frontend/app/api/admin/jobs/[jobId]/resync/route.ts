@@ -6,7 +6,8 @@ import { logAdminAction } from '@/server/admin-audit';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, { params }: { params: { jobId: string } }) {
+export async function POST(request: Request, props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params;
   let adminId: string;
   try {
     adminId = await requireAdmin();

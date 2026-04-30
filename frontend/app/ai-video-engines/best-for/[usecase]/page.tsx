@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import BestForDetailPage, {
-  dynamicParams,
   generateMetadata as generateLocalizedMetadata,
   generateStaticParams as generateLocalizedStaticParams,
 } from '../../../(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/page';
 import { DEFAULT_LOCALE } from '../../../default-locale-wrapper';
 
-export { dynamicParams };
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const entries = await generateLocalizedStaticParams();
@@ -15,11 +14,15 @@ export async function generateStaticParams() {
     .map((entry) => ({ usecase: entry.usecase }));
 }
 
-export const generateMetadata = ({ params }: { params: { usecase: string } }): Promise<Metadata> =>
-  generateLocalizedMetadata({
-    params: { locale: DEFAULT_LOCALE, usecase: params.usecase },
-  });
+export const generateMetadata = async (props: { params: Promise<{ usecase: string }> }): Promise<Metadata> => {
+  const params = await props.params;
 
-export default function BestForDetailDefaultPage({ params }: { params: { usecase: string } }) {
-  return <BestForDetailPage params={{ locale: DEFAULT_LOCALE, usecase: params.usecase }} />;
+  return generateLocalizedMetadata({
+    params: Promise.resolve({ locale: DEFAULT_LOCALE, usecase: params.usecase }),
+  });
+};
+
+export default async function BestForDetailDefaultPage(props: { params: Promise<{ usecase: string }> }) {
+  const params = await props.params;
+  return <BestForDetailPage params={Promise.resolve({ locale: DEFAULT_LOCALE, usecase: params.usecase })} />;
 }

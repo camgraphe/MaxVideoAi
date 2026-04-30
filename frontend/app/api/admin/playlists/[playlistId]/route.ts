@@ -4,12 +4,13 @@ import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { deletePlaylist, getPlaylist, getPlaylistItems, isPlaylistLockedError, updatePlaylist } from '@/server/playlists';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     playlistId: string;
-  };
+  }>;
 };
 
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export async function GET(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
@@ -38,7 +39,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+export async function PUT(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
@@ -91,7 +93,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }

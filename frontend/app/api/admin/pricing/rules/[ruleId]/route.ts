@@ -13,7 +13,8 @@ function toNumber(value: unknown, fallback = 0): number {
   return fallback;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { ruleId: string } }) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ ruleId: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin(req);
   } catch (response) {
@@ -49,7 +50,8 @@ export async function PUT(req: NextRequest, { params }: { params: { ruleId: stri
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { ruleId: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ ruleId: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin(req);
   } catch (response) {

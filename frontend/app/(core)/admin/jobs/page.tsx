@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/Button';
 type SearchParamValue = string | string[] | undefined;
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     jobId?: SearchParamValue;
     userId?: SearchParamValue;
     engineId?: SearchParamValue;
@@ -23,7 +23,7 @@ type PageProps = {
     outcome?: SearchParamValue;
     from?: SearchParamValue;
     to?: SearchParamValue;
-  };
+  }>;
 };
 
 type UiFilters = {
@@ -66,7 +66,8 @@ const OUTCOME_OPTIONS = [
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
-export default async function AdminJobsAuditPage({ searchParams = {} }: PageProps) {
+export default async function AdminJobsAuditPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const filters = normalizeFilters(searchParams);
 
   if (!process.env.DATABASE_URL) {
@@ -155,7 +156,7 @@ export default async function AdminJobsAuditPage({ searchParams = {} }: PageProp
   );
 }
 
-function normalizeFilters(params: PageProps['searchParams']): UiFilters {
+function normalizeFilters(params: Awaited<PageProps['searchParams']>): UiFilters {
   const coerce = (value: SearchParamValue) => {
     const raw = Array.isArray(value) ? value[0] : value;
     return raw?.trim().length ? raw.trim() : '';

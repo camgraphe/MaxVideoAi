@@ -47,12 +47,12 @@ async function refreshAdminCache(): Promise<void> {
   cacheExpiry = nextExpiry;
 }
 
-function resolveRequestHost(req?: NextRequest): string | null {
+async function resolveRequestHost(req?: NextRequest): Promise<string | null> {
   if (req) {
     return req.headers.get('x-forwarded-host') ?? req.headers.get('host');
   }
   try {
-    const headerStore = headers();
+    const headerStore = await headers();
     return headerStore.get('x-forwarded-host') ?? headerStore.get('host');
   } catch {
     return null;
@@ -65,22 +65,23 @@ function isLoopbackHost(host: string | null | undefined): boolean {
   return normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '::1';
 }
 
-function hasLocalAdminBypassCookie(req?: NextRequest): boolean {
+async function hasLocalAdminBypassCookie(req?: NextRequest): Promise<boolean> {
   if (req) {
     return req.cookies.get(LOCAL_ADMIN_BYPASS_COOKIE)?.value === '1';
   }
   try {
-    return cookies().get(LOCAL_ADMIN_BYPASS_COOKIE)?.value === '1';
+    const cookieStore = await cookies();
+    return cookieStore.get(LOCAL_ADMIN_BYPASS_COOKIE)?.value === '1';
   } catch {
     return false;
   }
 }
 
-export function isLocalAdminBypassEnabled(req?: NextRequest): boolean {
+export async function isLocalAdminBypassEnabled(req?: NextRequest): Promise<boolean> {
   if ((process.env.LOCAL_ADMIN_BYPASS ?? '').trim() !== '1') return false;
-  if (!hasLocalAdminBypassCookie(req)) return false;
+  if (!(await hasLocalAdminBypassCookie(req))) return false;
 
-  const host = resolveRequestHost(req);
+  const host = await resolveRequestHost(req);
   return host ? isLoopbackHost(host) : true;
 }
 
@@ -117,7 +118,7 @@ export async function resolveConfiguredLocalAdminUserId(): Promise<string | null
 }
 
 export async function resolveLocalAdminBypassUserId(req?: NextRequest): Promise<string | null> {
-  if (!isLocalAdminBypassEnabled(req)) {
+  if (!(await isLocalAdminBypassEnabled(req))) {
     return null;
   }
   return resolveConfiguredLocalAdminUserId();
@@ -157,7 +158,7 @@ export async function requireAdmin(req?: NextRequest): Promise<string> {
 
 export async function getUserIdFromCookies(): Promise<string | null> {
   try {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

@@ -149,7 +149,7 @@ const STANDARD_INPUT_FIELD_IDS = new Set([
 
 async function resolveUserId(): Promise<string | null> {
   try {
-    const supabase = createSupabaseRouteClient();
+    const supabase = await createSupabaseRouteClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

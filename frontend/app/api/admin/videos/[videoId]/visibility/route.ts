@@ -3,9 +3,9 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import { requireAdmin, adminErrorToResponse } from '@/server/admin';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     videoId: string;
-  };
+  }>;
 };
 
 type VisibilityUpdateRow = {
@@ -14,7 +14,8 @@ type VisibilityUpdateRow = {
   indexable: boolean | null;
 };
 
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export async function POST(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }

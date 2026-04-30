@@ -57,6 +57,15 @@ function wantsJson(req: NextRequest) {
   return accept.includes('application/json') || accept.includes('text/json');
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function safeRedirectUrl(req: NextRequest, locale?: string | null, success = true, errorCode?: string): string {
   const defaultPath = locale ? `/${locale}/contact` : '/contact';
   // Prefer referer if it is same-origin and points to contact.
@@ -121,6 +130,11 @@ export async function POST(req: NextRequest) {
 
   const from = getDefaultFromAddress() || 'no-reply@maxvideoai.com';
   const subject = 'New contact form message';
+  const htmlName = escapeHtml(name);
+  const htmlEmail = escapeHtml(email);
+  const htmlTopic = escapeHtml(topic || 'n/a');
+  const htmlLocale = escapeHtml(locale || 'unknown');
+  const htmlMessage = escapeHtml(message);
   const lines = [
     `Name: ${name}`,
     `Email: ${email}`,
@@ -140,12 +154,12 @@ export async function POST(req: NextRequest) {
       replyTo: email,
       subject,
       text: lines.join('\n'),
-      html: `<p><strong>Name:</strong> ${name}</p>
-<p><strong>Email:</strong> ${email}</p>
-<p><strong>Topic:</strong> ${topic || 'n/a'}</p>
-<p><strong>Locale:</strong> ${locale || 'unknown'}</p>
+      html: `<p><strong>Name:</strong> ${htmlName}</p>
+<p><strong>Email:</strong> ${htmlEmail}</p>
+<p><strong>Topic:</strong> ${htmlTopic}</p>
+<p><strong>Locale:</strong> ${htmlLocale}</p>
 <p><strong>Message:</strong></p>
-<pre style="white-space:pre-wrap;">${message}</pre>`,
+<pre style="white-space:pre-wrap;">${htmlMessage}</pre>`,
     });
   } catch (error) {
     console.warn('[contact] failed to send email', error instanceof Error ? error.message : error);

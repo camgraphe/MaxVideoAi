@@ -12,24 +12,33 @@ export async function generateStaticParams() {
     .map((entry) => ({ slug: entry.slug }));
 }
 
-export const generateMetadata = ({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams?: { order?: string };
-}): Promise<Metadata> =>
-  generateLocalizedMetadata({
-    params: { locale: DEFAULT_LOCALE, slug: params.slug },
-    searchParams,
-  });
+export const generateMetadata = async (
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams?: Promise<{ order?: string }>;
+  }
+): Promise<Metadata> => {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
 
-export default function CompareDetailDefaultPage({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams?: { order?: string };
-}) {
-  return <CompareDetailPage params={{ locale: DEFAULT_LOCALE, slug: params.slug }} searchParams={searchParams} />;
+  return generateLocalizedMetadata({
+    params: Promise.resolve({ locale: DEFAULT_LOCALE, slug: params.slug }),
+    searchParams: Promise.resolve(searchParams ?? {}),
+  });
+};
+
+export default async function CompareDetailDefaultPage(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams?: Promise<{ order?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
+  return (
+    <CompareDetailPage
+      params={Promise.resolve({ locale: DEFAULT_LOCALE, slug: params.slug })}
+      searchParams={Promise.resolve(searchParams ?? {})}
+    />
+  );
 }

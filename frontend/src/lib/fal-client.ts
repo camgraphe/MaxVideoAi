@@ -6,9 +6,7 @@ export function getFalClient(): FalClient {
   if (!client) {
     const falKey =
       process.env.FAL_KEY ??
-      process.env.FAL_API_KEY ??
-      process.env.NEXT_PUBLIC_FAL_KEY ??
-      process.env.NEXT_PUBLIC_FAL_API_KEY;
+      process.env.FAL_API_KEY;
 
     const config: Parameters<typeof createFalClient>[0] = {};
 

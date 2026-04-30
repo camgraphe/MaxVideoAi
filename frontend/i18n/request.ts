@@ -24,7 +24,8 @@ function loadMessages(locale: AppLocale) {
 }
 
 export default getRequestConfig(async ({ locale, requestLocale }) => {
-  const cookieLocale = cookies().get(LOCALE_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
   const segmentLocale = await requestLocale;
 
   const resolvedLocale =

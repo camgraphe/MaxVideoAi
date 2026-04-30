@@ -104,7 +104,8 @@ export async function generateStaticParams(): Promise<Params[]> {
 
 export const dynamicParams = false;
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<Params> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale ?? 'en';
   const { entry: doc, hasLocalizedVersion } = await getDocEntryWithFallback(locale, params.slug);
   if (!doc) {
@@ -134,7 +135,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   });
 }
 
-export default async function DocPage({ params }: { params: Params }) {
+export default async function DocPage(props: { params: Promise<Params> }) {
+  const params = await props.params;
   const locale = params.locale ?? 'en';
   const { entry: doc, hasLocalizedVersion } = await getDocEntryWithFallback(locale, params.slug);
   if (!doc) {

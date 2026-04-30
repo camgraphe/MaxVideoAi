@@ -5,7 +5,7 @@ import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
 export default function ToolsDefaultLayout({ children }: { children: ReactNode }) {
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <LocaleLayout params={Promise.resolve({ locale: DEFAULT_LOCALE })}>
       <MarketingLayout>{children}</MarketingLayout>
     </LocaleLayout>
   );
