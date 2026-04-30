@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
-const IGNORE_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build']);
+const IGNORE_DIRS = new Set(['.git', 'node_modules', '.next', '.cache', 'dist', 'build']);
 const VALID_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.md', '.mdx', '.json']);
 const BAD_PATTERNS = [/https?:\/\/www\.maxvideoai\.com/gi, /http:\/\/maxvideoai\.com/gi];
 

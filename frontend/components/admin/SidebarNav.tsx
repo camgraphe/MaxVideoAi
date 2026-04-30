@@ -21,6 +21,7 @@ import {
   Palette,
   Receipt,
   Scale,
+  Search,
   Users,
   X,
 } from 'lucide-react';
@@ -42,6 +43,7 @@ const ADMIN_ICON_MAP: Record<string, LucideIcon> = {
   playlists: ListVideo,
   homepage: Home,
   insights: LineChart,
+  search: Search,
   legal: Scale,
   marketing: MailCheck,
   consents: FileDown,
