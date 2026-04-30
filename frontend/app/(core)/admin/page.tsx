@@ -144,6 +144,28 @@ export default async function AdminIndexPage(props: PageProps) {
         </div>
       </header>
 
+      <Panel title="Quick user handoff">
+        <form action="/admin/users" method="get" className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_auto] md:items-end">
+          <label className="grid gap-2 text-sm font-semibold text-text-secondary" htmlFor="admin-user-handoff">
+            Find user
+            <input
+              id="admin-user-handoff"
+              name="search"
+              type="search"
+              placeholder="Search by email or Supabase user ID"
+              className="min-h-[42px] rounded-lg border border-border bg-bg px-3 text-sm font-medium text-text-primary shadow-[0_10px_24px_rgba(15,23,42,0.04)] outline-none transition placeholder:text-text-muted focus:border-brand focus:ring-2 focus:ring-brand/20"
+            />
+          </label>
+          <button
+            type="submit"
+            className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-[0_14px_35px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Users className="h-4 w-4" />
+            Open user
+          </button>
+        </form>
+      </Panel>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5" aria-label="Admin key metrics">
         {kpis.map((card) => (
           <MetricCard key={card.label} card={card} />
