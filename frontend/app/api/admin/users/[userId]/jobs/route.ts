@@ -19,7 +19,8 @@ type JobRow = {
 
 export const runtime = 'nodejs';
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin(req);
   } catch (response) {

@@ -6,9 +6,9 @@ import { requireAdmin, adminErrorToResponse } from '@/server/admin';
 import { ensureJobThumbnail } from '@/server/thumbnails';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     videoId: string;
-  };
+  }>;
 };
 
 type ThumbnailRow = {
@@ -22,7 +22,8 @@ type ThumbnailRow = {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export async function POST(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }

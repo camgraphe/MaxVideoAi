@@ -43,9 +43,9 @@ import { fetchUrlInspectionDashboardData } from '@/server/seo/url-inspection';
 export const dynamic = 'force-dynamic';
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     range?: string | string[];
-  };
+  }>;
 };
 
 const RANGE_OPTIONS: Array<{ value: GscRangeKey; label: string }> = [
@@ -69,7 +69,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
 });
 
-export default async function AdminSeoCockpitPage({ searchParams }: PageProps) {
+export default async function AdminSeoCockpitPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const range = normalizeGscRange(Array.isArray(searchParams?.range) ? searchParams?.range[0] : searchParams?.range);
   const [data, urlInspection] = await Promise.all([
     fetchSeoCockpitData({ range }),
@@ -323,7 +324,6 @@ function PageActionBriefCard({ brief, rank, featured = false }: { brief: Unified
         </div>
         <SeoCopyButton value={brief.copyReadyCodexTask} />
       </div>
-
       <div className="mt-4 grid gap-4 border-t border-hairline pt-4 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Recommended implementation</p>

@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   const redirectTo = resolveRedirect(payload.redirectTo, WORKSPACE_REDIRECT);
   const returnTo = resolveRedirect(payload.returnTo, `/admin/users/${targetUserId}`);
 
-  const supabase = createSupabaseRouteClient();
+  const supabase = await createSupabaseRouteClient();
   const {
     data: { session: currentSession },
   } = await supabase.auth.getSession();

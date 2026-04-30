@@ -10,7 +10,7 @@ import { getTranslations } from 'next-intl/server';
 
 const WORKFLOWS_SLUG_MAP = buildSlugMap('workflows');
 
-export const revalidate = 60 * 10;
+export const revalidate = 600;
 
 type WorkflowExampleEntry = { label: string; slug: string; brandId: string };
 type WorkflowStep = { title: string; description: string };
@@ -202,7 +202,8 @@ function serializeJsonLd(data: unknown): string {
     .replace(/\u2029/g, '\\u2029');
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'workflows.meta' });
   return buildSeoMetadata({
@@ -219,7 +220,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function WorkflowsPage({ params }: { params: { locale: AppLocale } }) {
+export default async function WorkflowsPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.workflows;

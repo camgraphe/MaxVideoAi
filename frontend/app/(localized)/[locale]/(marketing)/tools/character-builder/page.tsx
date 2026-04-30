@@ -6,7 +6,8 @@ import { CharacterBuilderLandingPage } from '@/components/tools/CharacterBuilder
 
 const AVAILABLE_LOCALES: AppLocale[] = ['en', 'fr', 'es'];
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.toolMarketing.characterBuilder;
 
@@ -22,7 +23,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function CharacterBuilderPage({ params }: { params: { locale: AppLocale } }) {
+export default async function CharacterBuilderPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
 
   return <CharacterBuilderLandingPage content={dictionary.toolMarketing.characterBuilder} />;

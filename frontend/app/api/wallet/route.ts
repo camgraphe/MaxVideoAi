@@ -100,7 +100,7 @@ function resolveCheckoutLocale(req: NextRequest, bodyLocale: unknown): AppLocale
 
 async function resolveAuthenticatedUser(): Promise<string | null> {
   try {
-    const supabase = createSupabaseRouteClient();
+    const supabase = await createSupabaseRouteClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

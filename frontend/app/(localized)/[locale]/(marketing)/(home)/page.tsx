@@ -917,7 +917,8 @@ function buildItemListSchema(content: RedesignContent, providers: ProviderItem[]
   };
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'home.meta' });
   return buildSeoMetadata({
@@ -930,7 +931,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function HomePage({ params }: { params: { locale: AppLocale } }) {
+export default async function HomePage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.home.redesign as RedesignContent;

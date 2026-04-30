@@ -12,14 +12,15 @@ import {
 } from '@/server/homepage';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     sectionId: string;
-  };
+  }>;
 };
 
 const VALID_TYPES = new Set(HOMEPAGE_SECTION_TYPES);
 
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+export async function PUT(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
@@ -104,7 +105,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }

@@ -15,7 +15,7 @@ import { SITE_ORIGIN } from '@/lib/siteOrigin';
 const SITE = SITE_ORIGIN.replace(/\/$/, '');
 const DOCS_SLUG_MAP = buildSlugMap('docs');
 
-export const revalidate = 60 * 10;
+export const revalidate = 600;
 
 async function getDocsEntries(locale: AppLocale) {
   const localized = await getContentEntries(`content/${locale}/docs`);
@@ -43,7 +43,8 @@ function resolveDocsLastUpdated(entries: Array<{ updatedAt?: string; date: strin
   return new Date(latestTimestamp).toISOString().slice(0, 10);
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const metaCopy = dictionary.docs?.meta ?? {};
@@ -68,7 +69,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function DocsIndexPage({ params }: { params: { locale: AppLocale } }) {
+export default async function DocsIndexPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.docs;

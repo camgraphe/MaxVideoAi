@@ -1,7 +1,8 @@
 import ModelsCatalogPage, { generateModelsMetadata } from '../ModelsCatalogPage';
 import type { AppLocale } from '@/i18n/locales';
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }) {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   return generateModelsMetadata({ params, scope: 'video' });
 }
 

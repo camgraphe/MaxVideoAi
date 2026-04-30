@@ -6,7 +6,8 @@ import { UpscaleLandingPage } from '@/components/tools/UpscaleLandingPage';
 
 const AVAILABLE_LOCALES: AppLocale[] = ['en', 'fr', 'es'];
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.toolMarketing.upscale;
 
@@ -22,7 +23,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function UpscalePage({ params }: { params: { locale: AppLocale } }) {
+export default async function UpscalePage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
 
   return <UpscaleLandingPage content={dictionary.toolMarketing.upscale} />;

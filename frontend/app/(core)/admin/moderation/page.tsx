@@ -10,8 +10,8 @@ import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink
 type ModerationBucket = 'not-published' | 'published' | 'all';
 type ModerationSurface = 'video' | 'image' | 'audio' | 'character' | 'angle';
 
-function getBaseUrl() {
-  const headerStore = headers();
+async function getBaseUrl() {
+  const headerStore = await headers();
   const forwardedProto = headerStore.get('x-forwarded-proto');
   const forwardedHost = headerStore.get('x-forwarded-host');
   const host = forwardedHost ?? headerStore.get('host');
@@ -41,7 +41,8 @@ async function fetchPendingVideos(
   surface: ModerationSurface
 ): Promise<PendingFetchResult> {
   const params = new URLSearchParams({ limit: '30', bucket, surface });
-  const res = await fetch(`${getBaseUrl()}/api/admin/videos/pending?${params.toString()}`, {
+  const baseUrl = await getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/admin/videos/pending?${params.toString()}`, {
     cache: 'no-store',
     headers: cookieHeader ? { cookie: cookieHeader } : undefined,
   }).catch(() => null);
@@ -71,7 +72,7 @@ async function fetchPendingVideos(
 export const dynamic = 'force-dynamic';
 
 export default async function AdminModerationPage() {
-  const cookieHeader = cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   const initialBucket: ModerationBucket = 'not-published';
   const initialSurface: ModerationSurface = 'video';
   const { videos, nextCursor } = await fetchPendingVideos(cookieHeader, initialBucket, initialSurface).catch((error) => {

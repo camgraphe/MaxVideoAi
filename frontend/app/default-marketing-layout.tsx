@@ -8,7 +8,7 @@ export default function DefaultMarketingLayout({ children }: { children: ReactNo
   setRequestLocale(DEFAULT_LOCALE);
 
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <LocaleLayout params={Promise.resolve({ locale: DEFAULT_LOCALE })}>
       <MarketingLayout>{children}</MarketingLayout>
     </LocaleLayout>
   );

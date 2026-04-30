@@ -82,13 +82,14 @@ function shouldNoindex(searchParams: Record<string, string | string[] | undefine
   return hasUnexpectedParams || hasEngineParam || hasNonDefaultSort || hasPage || hasInvalidPageParam;
 }
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
-  params: { locale: AppLocale; model: string };
-  searchParams?: Record<string, string | string[] | undefined>;
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ locale: AppLocale; model: string }>;
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  }
+): Promise<Metadata> {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const normalized = normalizeExampleSlug(params.model);
   if (!EXAMPLE_MODEL_SLUG_SET.has(normalized)) {
     notFound();
@@ -124,13 +125,14 @@ export async function generateMetadata({
   });
 }
 
-export default async function ExamplesModelPage({
-  params,
-  searchParams,
-}: {
-  params: { locale: AppLocale; model: string };
-  searchParams?: Record<string, string | string[] | undefined>;
-}) {
+export default async function ExamplesModelPage(
+  props: {
+    params: Promise<{ locale: AppLocale; model: string }>;
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const normalized = normalizeExampleSlug(params.model);
   if (!EXAMPLE_MODEL_SLUG_SET.has(normalized)) {
     notFound();
@@ -148,5 +150,5 @@ export default async function ExamplesModelPage({
     engine: normalized,
     __engineFromPath: normalized,
   };
-  return <ExamplesPage params={{ locale: params.locale }} searchParams={mergedSearchParams} />;
+  return <ExamplesPage params={Promise.resolve({ locale: params.locale })} searchParams={mergedSearchParams} />;
 }

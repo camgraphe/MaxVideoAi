@@ -440,7 +440,8 @@ async function resolveAvailableLocales(slug: string): Promise<AppLocale[]> {
   return filtered.length ? filtered : (['en'] as AppLocale[]);
 }
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<Params> }): Promise<Metadata> {
+  const params = await props.params;
   if (!BEST_FOR_PAGES.length) {
     notFound();
   }
@@ -470,7 +471,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   });
 }
 
-export default async function BestForDetailPage({ params }: { params: Params }) {
+export default async function BestForDetailPage(props: { params: Promise<Params> }) {
+  const params = await props.params;
   const entry = getEntry(params.usecase);
   if (!entry) {
     notFound();

@@ -221,13 +221,14 @@ function resolveEngineLabel(raw: string | string[] | undefined): string | null {
   return descriptor?.label ?? engineMeta?.label ?? canonicalEngineParam;
 }
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
-  params: { locale: AppLocale };
-  searchParams: Record<string, string | string[] | undefined>;
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ locale: AppLocale }>;
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+  }
+): Promise<Metadata> {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'gallery.meta' });
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
@@ -284,7 +285,7 @@ export async function generateMetadata({
 }
 
 type ExamplesPageProps = {
-  params: { locale: AppLocale };
+  params: Promise<{ locale: AppLocale }>;
   searchParams: Record<string, string | string[] | undefined>;
 };
 
@@ -393,7 +394,9 @@ function resolveFilterDescriptor(
   return getExampleFamilyDescriptor(canonicalEngineId, { brandId: engineMeta?.brandId }) ?? null;
 }
 
-export default async function ExamplesPage({ params, searchParams }: ExamplesPageProps) {
+export default async function ExamplesPage(props: ExamplesPageProps) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const internalEngineFromPath = Array.isArray(searchParams.__engineFromPath)
     ? searchParams.__engineFromPath[0]
     : searchParams.__engineFromPath;

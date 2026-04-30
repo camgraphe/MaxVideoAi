@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'No active impersonation session' }, { status: 400 });
   }
 
-  const supabase = createSupabaseRouteClient();
+  const supabase = await createSupabaseRouteClient();
   const { error: restoreError } = await supabase.auth.setSession({
     access_token: sessionPayload.accessToken,
     refresh_token: sessionPayload.refreshToken,

@@ -15,7 +15,7 @@ import { deserializeMessages } from '@/lib/i18n/server';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 type LocaleLayoutProps = {
   children: ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 };
 
 export function generateStaticParams() {
@@ -48,7 +48,13 @@ export const viewport: Viewport = {
   themeColor: '#4F5D75',
 };
 
-export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
+export default async function LocaleLayout(props: LocaleLayoutProps) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const locale = params.locale as AppLocale;
   if (!locales.includes(locale)) {
     notFound();

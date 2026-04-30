@@ -10,13 +10,16 @@ export function generateStaticParams() {
   return listFalEngines().map((entry) => ({ slug: entry.modelSlug }));
 }
 
-export const generateMetadata = ({ params }: { params: { slug: string } }) =>
-  generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE, slug: params.slug } });
+export const generateMetadata = async (props: { params: Promise<{ slug: string }> }) => {
+  const params = await props.params;
+  return generateLocalizedMetadata({ params: Promise.resolve({ locale: DEFAULT_LOCALE, slug: params.slug }) });
+};
 
-export default function ModelDetailDefaultPage({ params }: { params: { slug: string } }) {
-  const resolvedParams = { locale: DEFAULT_LOCALE, slug: params.slug };
+export default async function ModelDetailDefaultPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
+  const resolvedParams = Promise.resolve({ locale: DEFAULT_LOCALE, slug: params.slug });
   return (
-    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+    <LocaleLayout params={Promise.resolve({ locale: DEFAULT_LOCALE })}>
       <MarketingLayout>
         <ModelsDetailPage params={resolvedParams} />
       </MarketingLayout>

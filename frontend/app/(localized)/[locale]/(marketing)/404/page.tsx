@@ -5,19 +5,21 @@ import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 
 type Localized404PageProps = {
-  params: {
+  params: Promise<{
     locale: AppLocale;
-  };
+  }>;
 };
 
-export async function generateMetadata({ params }: Localized404PageProps): Promise<Metadata> {
+export async function generateMetadata(props: Localized404PageProps): Promise<Metadata> {
+  const params = await props.params;
   const { dictionary, fallback } = await resolveDictionary({ locale: params.locale });
   return {
     title: dictionary.notFound.metaTitle || fallback.notFound.metaTitle,
   };
 }
 
-export default async function Localized404Page({ params }: Localized404PageProps) {
+export default async function Localized404Page(props: Localized404PageProps) {
+  const params = await props.params;
   const { dictionary, fallback } = await resolveDictionary({ locale: params.locale });
   const copy = dictionary.notFound ?? fallback.notFound;
 

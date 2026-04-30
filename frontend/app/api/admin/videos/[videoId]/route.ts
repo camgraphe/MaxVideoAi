@@ -6,7 +6,8 @@ import { requireAdmin, adminErrorToResponse } from '@/server/admin';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function DELETE(req: NextRequest, { params }: { params: { videoId: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ videoId: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin(req);
   } catch (error) {

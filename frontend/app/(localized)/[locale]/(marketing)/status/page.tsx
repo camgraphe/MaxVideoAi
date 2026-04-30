@@ -23,7 +23,8 @@ const STATUS_META: Record<AppLocale, { title: string; description: string }> = {
   },
 };
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const metaCopy = STATUS_META[locale] ?? STATUS_META.en;
   return buildSeoMetadata({
@@ -79,7 +80,8 @@ const STATUS_LINKS: Record<
   },
 };
 
-export default async function StatusPage({ params }: { params: { locale: AppLocale } }) {
+export default async function StatusPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.status;
   const related = STATUS_LINKS[params.locale] ?? STATUS_LINKS.en;

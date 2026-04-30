@@ -5,12 +5,13 @@ import { getVideoById, updateVideoIndexableForUser } from '@/server/videos';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     videoId: string;
-  };
+  }>;
 };
 
-export async function GET(_req: NextRequest, { params }: RouteParams) {
+export async function GET(_req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
@@ -33,7 +34,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteParams) {
+export async function PATCH(req: NextRequest, props: RouteParams) {
+  const params = await props.params;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }

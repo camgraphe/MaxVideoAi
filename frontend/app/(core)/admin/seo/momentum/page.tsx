@@ -16,13 +16,13 @@ import { fetchSeoCockpitData } from '@/server/seo/cockpit';
 export const dynamic = 'force-dynamic';
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     range?: string | string[];
     priority?: string | string[];
     family?: string | string[];
     type?: string | string[];
     direction?: string | string[];
-  };
+  }>;
 };
 
 const RANGE_OPTIONS: Array<{ value: GscRangeKey; label: string }> = [
@@ -57,7 +57,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
 });
 
-export default async function AdminSeoMomentumPage({ searchParams }: PageProps) {
+export default async function AdminSeoMomentumPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const range = normalizeGscRange(firstParam(searchParams?.range));
   const selectedPriority = normalizePriority(firstParam(searchParams?.priority));
   const selectedFamily = firstParam(searchParams?.family) ?? 'all';

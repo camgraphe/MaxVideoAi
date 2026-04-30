@@ -126,7 +126,8 @@ const HUB_COPY: Record<
   },
 };
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale ?? 'en';
   const copy = HUB_COPY[locale] ?? HUB_COPY.en;
   return buildSeoMetadata({
@@ -147,7 +148,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function BestForHubPage({ params }: { params: { locale: AppLocale } }) {
+export default async function BestForHubPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const locale = params.locale ?? 'en';
   const copy = HUB_COPY[locale] ?? HUB_COPY.en;
   const guides = await resolveHubGuides(locale);

@@ -268,7 +268,8 @@ export async function generateStaticParams(): Promise<Params[]> {
   return params;
 }
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<Params> }): Promise<Metadata> {
+  const params = await props.params;
   const post = await getPost(params.locale, params.slug);
   if (!post) {
     return { title: 'Post not found — MaxVideo AI' };
@@ -326,7 +327,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return metadata;
 }
 
-export default async function BlogPostPage({ params }: { params: Params }) {
+export default async function BlogPostPage(props: { params: Promise<Params> }) {
+  const params = await props.params;
   const { locale, slug } = params;
   const post = await getPost(locale, slug);
   if (!post) {

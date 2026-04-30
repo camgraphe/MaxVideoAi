@@ -6,13 +6,13 @@ import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
+  return generateLocalizedMetadata({ params: Promise.resolve({ locale: DEFAULT_LOCALE }) });
 }
 
 export default function RootPage() {
   return (
     <DefaultMarketingLayout>
-      <HomePage params={{ locale: DEFAULT_LOCALE }} />
+      <HomePage params={Promise.resolve({ locale: DEFAULT_LOCALE })} />
     </DefaultMarketingLayout>
   );
 }

@@ -3,12 +3,13 @@ import { redirect } from 'next/navigation';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 
 type LocalizedVideoPageProps = {
-  params: { videoId: string };
+  params: Promise<{ videoId: string }>;
 };
 
 const SITE = SITE_ORIGIN.replace(/\/$/, '');
 
-export async function generateMetadata({ params }: LocalizedVideoPageProps): Promise<Metadata> {
+export async function generateMetadata(props: LocalizedVideoPageProps): Promise<Metadata> {
+  const params = await props.params;
   const canonical = `${SITE}/video/${encodeURIComponent(params.videoId)}`;
   return {
     title: 'Redirecting…',
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: LocalizedVideoPageProps): Pro
   };
 }
 
-export default function LocalizedVideoRedirect({ params }: LocalizedVideoPageProps) {
+export default async function LocalizedVideoRedirect(props: LocalizedVideoPageProps) {
+  const params = await props.params;
   redirect(`/video/${encodeURIComponent(params.videoId)}`);
 }

@@ -2,19 +2,22 @@ import type { Metadata } from 'next';
 import DocPage, {
   generateMetadata as generateLocalizedMetadata,
   generateStaticParams,
-  dynamicParams,
 } from '@/app/(localized)/[locale]/(marketing)/docs/[slug]/page';
 import DefaultMarketingLayout from '@/app/default-marketing-layout';
 
-export { generateStaticParams, dynamicParams };
+export { generateStaticParams };
+export const dynamicParams = false;
 
-export const generateMetadata = ({ params }: { params: { slug: string } }): Promise<Metadata> =>
-  generateLocalizedMetadata({ params });
+export const generateMetadata = async (props: { params: Promise<{ slug: string }> }): Promise<Metadata> => {
+  const params = await props.params;
+  return generateLocalizedMetadata({ params: Promise.resolve({ locale: 'en', slug: params.slug }) });
+};
 
-export default function DocsSlugDefaultPage({ params }: { params: { slug: string } }) {
+export default async function DocsSlugDefaultPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   return (
     <DefaultMarketingLayout>
-      <DocPage params={params} />
+      <DocPage params={Promise.resolve({ locale: 'en', slug: params.slug })} />
     </DefaultMarketingLayout>
   );
 }

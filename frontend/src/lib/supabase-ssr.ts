@@ -33,7 +33,7 @@ const cookieOptions: CookieOptionsWithName = {
   secure: process.env.NODE_ENV === 'production',
 };
 
-function createServerClientWithCookies(cookieStore: ReturnType<typeof cookies>, cookieOptions?: CookieOptionsWithName) {
+function createServerClientWithCookies(cookieStore: Awaited<Awaited<ReturnType<typeof cookies>>>, cookieOptions?: CookieOptionsWithName) {
   assertSupabaseEnv();
   return createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
     cookieOptions,
@@ -52,13 +52,13 @@ function createServerClientWithCookies(cookieStore: ReturnType<typeof cookies>, 
   });
 }
 
-export function createSupabaseServerClient() {
-  const cookieStore = cookies();
+export async function createSupabaseServerClient() {
+  const cookieStore = await cookies();
   return createServerClientWithCookies(cookieStore, cookieOptions);
 }
 
-export function createSupabaseRouteClient() {
-  const cookieStore = cookies();
+export async function createSupabaseRouteClient() {
+  const cookieStore = await cookies();
   return createServerClientWithCookies(cookieStore, cookieOptions);
 }
 
@@ -86,7 +86,7 @@ export async function updateSession(req: NextRequest, res: NextResponse) {
 }
 
 export async function getRouteAuthContext(req?: NextRequest) {
-  const supabase = createSupabaseRouteClient();
+  const supabase = await createSupabaseRouteClient();
   const accessToken = readBearerAccessToken(req?.headers);
 
   if (accessToken) {

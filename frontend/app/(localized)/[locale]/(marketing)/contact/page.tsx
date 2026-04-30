@@ -34,7 +34,8 @@ function buildLocalizedPath(locale: AppLocale, slug?: string) {
   return (prefix + normalized || '/').replace(/\/{2,}/g, '/');
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const metaCopy = CONTACT_META[locale] ?? CONTACT_META.en;
   return buildSeoMetadata({
@@ -54,13 +55,14 @@ function isFlagged(value: string | string[] | undefined, target = '1') {
   return value === target;
 }
 
-export default async function ContactPage({
-  params,
-  searchParams,
-}: {
-  params: { locale: AppLocale };
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
+export default async function ContactPage(
+  props: {
+    params: Promise<{ locale: AppLocale }>;
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.contact;

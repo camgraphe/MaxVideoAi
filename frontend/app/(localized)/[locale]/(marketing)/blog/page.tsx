@@ -29,7 +29,7 @@ const BLOG_META = {
   },
 } satisfies Record<AppLocale, { title: string; description: string }>;
 
-export const revalidate = 60 * 10;
+export const revalidate = 600;
 
 function getCanonicalBlogSlug(post: Pick<ContentEntry, 'slug' | 'canonicalSlug' | 'lang'>) {
   return post.canonicalSlug ?? (post.lang === 'en' ? post.slug : post.slug);
@@ -132,7 +132,8 @@ function renderPressEmail(text?: string) {
   ));
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+  const params = await props.params;
   const locale = params.locale;
   const metaCopy = BLOG_META[locale];
 
@@ -146,7 +147,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function BlogIndexPage({ params }: { params: { locale: AppLocale } }) {
+export default async function BlogIndexPage(props: { params: Promise<{ locale: AppLocale }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const posts = await getBlogPosts(locale);
   const { dictionary } = await resolveDictionary({ locale });

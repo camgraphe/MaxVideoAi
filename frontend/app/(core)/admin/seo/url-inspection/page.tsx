@@ -15,12 +15,12 @@ import { fetchUrlInspectionDashboardData } from '@/server/seo/url-inspection';
 export const dynamic = 'force-dynamic';
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     range?: string | string[];
     group?: string | string[];
     status?: string | string[];
     severity?: string | string[];
-  };
+  }>;
 };
 
 const RANGE_OPTIONS: Array<{ value: GscRangeKey; label: string }> = [
@@ -51,7 +51,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
 });
 
-export default async function AdminSeoUrlInspectionPage({ searchParams }: PageProps) {
+export default async function AdminSeoUrlInspectionPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const range = normalizeGscRange(firstParam(searchParams?.range));
   const selectedGroup = normalizeGroup(firstParam(searchParams?.group));
   const selectedStatus = normalizeStatus(firstParam(searchParams?.status));

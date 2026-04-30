@@ -13,7 +13,8 @@ type UpdateBody = {
   publishedAt?: string | null;
 };
 
-export async function POST(req: NextRequest, { params }: { params: { key: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ key: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin(req);
   } catch (response) {

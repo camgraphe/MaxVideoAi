@@ -3,7 +3,7 @@ import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 
 export async function POST() {
   try {
-    const supabase = createSupabaseRouteClient();
+    const supabase = await createSupabaseRouteClient();
     await supabase.auth.signOut();
     return NextResponse.json({ ok: true });
   } catch (error) {

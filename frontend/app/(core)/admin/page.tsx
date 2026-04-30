@@ -40,10 +40,10 @@ type StatTone = 'blue' | 'green' | 'violet' | 'amber' | 'rose';
 type AdminHubRange = Extract<MetricsRangeLabel, '24h' | '30d' | '90d'>;
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     range?: string | string[];
     excludeAdmin?: string | string[];
-  };
+  }>;
 };
 
 const HUB_RANGE_OPTIONS: Array<{ value: AdminHubRange; label: string }> = [
@@ -106,7 +106,8 @@ function buildAdminInsightsHref(range: AdminHubRange, excludeAdmin: boolean) {
   return `/admin/insights?${params.toString()}`;
 }
 
-export default async function AdminIndexPage({ searchParams }: PageProps) {
+export default async function AdminIndexPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   const selectedRange = resolveHubRange(searchParams?.range);
   const excludeAdmin = resolveExcludeAdminParam(searchParams?.excludeAdmin);
   const queryOptions = {

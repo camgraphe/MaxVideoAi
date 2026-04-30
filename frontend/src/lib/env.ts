@@ -17,9 +17,7 @@ export function getOptionalEnv(name: string, fallback?: string): string | undefi
 
 const falKey =
   getOptionalEnv('FAL_API_KEY') ??
-  getOptionalEnv('FAL_KEY') ??
-  getOptionalEnv('NEXT_PUBLIC_FAL_API_KEY') ??
-  getOptionalEnv('NEXT_PUBLIC_FAL_KEY');
+  getOptionalEnv('FAL_KEY');
 
 const RECEIPTS_PRICE_ONLY =
   (getOptionalEnv('RECEIPTS_PRICE_ONLY', 'true') ?? 'true').toLowerCase() === 'true';

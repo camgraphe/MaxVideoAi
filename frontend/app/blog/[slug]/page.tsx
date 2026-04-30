@@ -10,11 +10,14 @@ export async function generateStaticParams() {
   return entries.map((entry) => ({ slug: entry.slug }));
 }
 
-export const generateMetadata = ({ params }: { params: { slug: string } }) =>
-  generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE, slug: params.slug } });
+export const generateMetadata = async (props: { params: Promise<{ slug: string }> }) => {
+  const params = await props.params;
+  return generateLocalizedMetadata({ params: Promise.resolve({ locale: DEFAULT_LOCALE, slug: params.slug }) });
+};
 
-export default function BlogPostDefaultPage({ params }: { params: { slug: string } }) {
-  const resolvedParams = { locale: DEFAULT_LOCALE, slug: params.slug };
+export default async function BlogPostDefaultPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
+  const resolvedParams = Promise.resolve({ locale: DEFAULT_LOCALE, slug: params.slug });
   return (
     <DefaultMarketingLayout>
       <BlogPostPage params={resolvedParams} />
