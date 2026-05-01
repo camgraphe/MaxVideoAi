@@ -7,7 +7,9 @@ import { DEFAULT_LOCALE } from '../../default-locale-wrapper';
 import { listFalEngines } from '@/config/falEngines';
 
 export function generateStaticParams() {
-  return listFalEngines().map((entry) => ({ slug: entry.modelSlug }));
+  return listFalEngines()
+    .filter((entry) => entry.surfaces.modelPage.includeInSitemap !== false)
+    .map((entry) => ({ slug: entry.modelSlug }));
 }
 
 export const generateMetadata = async (props: { params: Promise<{ slug: string }> }) => {

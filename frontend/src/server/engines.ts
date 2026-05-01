@@ -1,5 +1,6 @@
 import {
   cloneEngine,
+  getBaseEngineIncludingHidden,
   getBaseEngines,
   getBaseEnginesByCategory,
   normalizeMemberTier,
@@ -260,6 +261,19 @@ export async function getConfiguredEngine(engineId: string, includeDisabled = fa
   if (!engineId) return undefined;
   const engines = await getConfiguredEngines(includeDisabled);
   return engines.find((engine) => engine.id === engineId);
+}
+
+export async function getConfiguredEngineIncludingHidden(
+  engineId: string,
+  includeDisabled = false
+): Promise<EngineCaps | undefined> {
+  if (!engineId) return undefined;
+  const publicEngine = await getConfiguredEngine(engineId, includeDisabled);
+  if (publicEngine) return publicEngine;
+  const hiddenBase = getBaseEngineIncludingHidden(engineId);
+  if (!hiddenBase) return undefined;
+  const [configured] = await getConfiguredEnginesForBase([hiddenBase], includeDisabled);
+  return configured;
 }
 
 export async function computeConfiguredPreflight(request: PreflightRequest): Promise<PreflightResponse> {

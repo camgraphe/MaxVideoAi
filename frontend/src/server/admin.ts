@@ -78,6 +78,7 @@ async function hasLocalAdminBypassCookie(req?: NextRequest): Promise<boolean> {
 }
 
 export async function isLocalAdminBypassEnabled(req?: NextRequest): Promise<boolean> {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') return false;
   if ((process.env.LOCAL_ADMIN_BYPASS ?? '').trim() !== '1') return false;
   if (!(await hasLocalAdminBypassCookie(req))) return false;
 

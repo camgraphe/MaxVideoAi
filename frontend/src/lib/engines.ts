@@ -72,6 +72,11 @@ function buildBaseEngines(entries: typeof REGISTRY_ENTRIES): EngineCaps[] {
 
 const ENGINES_BASE: EngineCaps[] = buildBaseEngines(REGISTRY_BY_CATEGORY.video);
 
+export function getBaseEngineIncludingHidden(engineId: string): EngineCaps | undefined {
+  const entry = REGISTRY_ENTRIES.find((candidate) => candidate.id === engineId);
+  return entry ? cloneEngine(entry.engine) : undefined;
+}
+
 function cloneModeUiCaps(caps: EngineModeUiCaps): EngineModeUiCaps {
   return {
     ...caps,

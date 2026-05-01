@@ -24,9 +24,10 @@ const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED
 export async function runFalPoll() {
   const rows = await query<FalPendingJob>(
     `SELECT job_id, surface, engine_id, provider_job_id, status, updated_at, created_at
-     FROM app_jobs
-     WHERE provider_job_id IS NOT NULL
-       AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress')
+	     FROM app_jobs
+	     WHERE provider_job_id IS NOT NULL
+	       AND COALESCE(provider, 'fal') = 'fal'
+	       AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress')
      ORDER BY updated_at ASC
      LIMIT 10`
   );
@@ -321,8 +322,9 @@ export async function runFalPoll() {
   const staleProvisionals = await query<{ job_id: string; created_at: string }>(
     `SELECT job_id, created_at
        FROM app_jobs
-      WHERE provider_job_id IS NULL
-        AND status = 'pending'
+	      WHERE provider_job_id IS NULL
+	        AND COALESCE(provider, 'fal') = 'fal'
+	        AND status = 'pending'
         AND created_at < NOW() - INTERVAL '5 minutes'
       ORDER BY created_at ASC
       LIMIT 20`
@@ -337,9 +339,10 @@ export async function runFalPoll() {
                 message = 'The render could not start. Please retry.',
                 provisional = FALSE,
                 updated_at = NOW()
-          WHERE job_id = $1
-            AND status = 'pending'
-            AND provider_job_id IS NULL`,
+	          WHERE job_id = $1
+	            AND status = 'pending'
+	            AND provider_job_id IS NULL
+	            AND COALESCE(provider, 'fal') = 'fal'`,
         [stale.job_id]
       );
       await query(

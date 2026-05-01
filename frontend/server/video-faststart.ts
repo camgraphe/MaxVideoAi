@@ -87,7 +87,6 @@ export async function ensureFastStartVideo(options: EnsureFastStartVideoOptions)
   const sourceUrl = normalizeMediaUrl(options.videoUrl) ?? options.videoUrl;
   if (!options.jobId || !/^https?:\/\//i.test(sourceUrl)) return null;
   if (isDisabled() || !isStorageConfigured() || isStorageUrl(sourceUrl)) return null;
-  if (!isMp4Url(sourceUrl)) return null;
 
   const ffmpegPath = getFfmpegPath();
   if (!ffmpegPath) return null;

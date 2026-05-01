@@ -5,7 +5,7 @@ import { isDatabaseConfigured, query, type QueryExecutor, withDbTransaction } fr
 import { randomUUID } from 'crypto';
 import { generateVideo, FalGenerationError } from '@/lib/fal';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
-import { getConfiguredEngine } from '@/server/engines';
+import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/server/engines';
 import Stripe from 'stripe';
 import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
 import type { PricingSnapshot } from '@/types/engines';
@@ -36,6 +36,17 @@ import { convertCents } from '@/lib/exchange';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { recordGenerateMetric } from '@/server/generate-metrics';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/server/admin';
+import {
+  BYTEPLUS_MODELARK_PROVIDER,
+  buildBytePlusSeedanceFastPayload,
+  BytePlusModelArkError,
+  getBytePlusArkConfig,
+  getBytePlusModelArkClient,
+  isBytePlusModelArkEnabled,
+  isBytePlusSeedanceFastEngine,
+  scrubBytePlusError,
+} from '@/server/video-providers/byteplus-modelark';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
@@ -147,7 +158,7 @@ const STANDARD_INPUT_FIELD_IDS = new Set([
   'loop',
 ]);
 
-async function resolveUserId(): Promise<string | null> {
+async function resolveUserId(req?: NextRequest): Promise<string | null> {
   try {
     const supabase = await createSupabaseRouteClient();
     const {
@@ -158,6 +169,10 @@ async function resolveUserId(): Promise<string | null> {
     }
   } catch {
     // swallow helper errors
+  }
+  const localAdminUserId = await resolveLocalAdminBypassUserId(req);
+  if (localAdminUserId) {
+    return localAdminUserId;
   }
   return null;
 }
@@ -500,7 +515,12 @@ export async function POST(req: NextRequest) {
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
 
   const requestedEngineId = String(body.engineId || '');
-  const engine = await getConfiguredEngine(requestedEngineId);
+  const publicEngine = await getConfiguredEngine(requestedEngineId);
+  const engine =
+    publicEngine ??
+    (isBytePlusSeedanceFastEngine(requestedEngineId)
+      ? await getConfiguredEngineIncludingHidden(requestedEngineId)
+      : undefined);
   if (!engine) {
     const disabledEngine = await getConfiguredEngine(requestedEngineId, true);
     if (disabledEngine) {
@@ -511,6 +531,12 @@ export async function POST(req: NextRequest) {
   }
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
+  const isBytePlusV1a = isBytePlusSeedanceFastEngine(engine.id);
+  const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : 'fal';
+
+  if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
+    return NextResponse.json({ ok: false, error: 'Engine unavailable' }, { status: 404 });
+  }
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
@@ -520,6 +546,18 @@ export async function POST(req: NextRequest) {
     await ensureBillingSchema();
   } catch {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+  }
+
+  if (isBytePlusV1a) {
+    try {
+      await requireAdmin(req);
+    } catch (error) {
+      if (error instanceof AdminAuthError) {
+        return NextResponse.json({ ok: false, error: error.message }, { status: error.status });
+      }
+      console.error('[api/generate] failed to check BytePlus admin access', error);
+      return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
+    }
   }
 
   const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
@@ -532,6 +570,10 @@ export async function POST(req: NextRequest) {
       ? 't2v'
       : engine.modes[0] ?? 't2v';
   metricState.mode = mode;
+
+  if (isBytePlusV1a && mode !== 't2v') {
+    return NextResponse.json({ ok: false, error: 'BytePlus V1a only supports text-to-video.' }, { status: 400 });
+  }
 
   const prompt = String(body.prompt || '');
   const multiPromptRaw = Array.isArray(body.multiPrompt) ? body.multiPrompt : null;
@@ -579,7 +621,7 @@ export async function POST(req: NextRequest) {
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
-  let durationSec = Number(body.durationSec || 4);
+  let durationSec = Number(body.durationSec || body.duration || 4);
   if (multiPromptTotalSec > 0) {
     durationSec = multiPromptTotalSec;
   }
@@ -749,6 +791,25 @@ export async function POST(req: NextRequest) {
     pricingResolution = '1080p';
     effectiveResolution = '1080p';
   }
+  if (isBytePlusV1a) {
+    const normalizedDuration = Math.trunc(durationSec);
+    if (!Number.isFinite(durationSec) || normalizedDuration !== durationSec || normalizedDuration < 5 || normalizedDuration > 15) {
+      logMetric('rejected', {
+        errorCode: 'BYTEPLUS_DURATION_UNSUPPORTED',
+        meta: { durationSec },
+      });
+      return NextResponse.json(
+        { ok: false, error: 'BYTEPLUS_DURATION_UNSUPPORTED', message: 'BytePlus V1a duration must be an integer from 5 to 15 seconds.' },
+        { status: 400 }
+      );
+    }
+    durationSec = normalizedDuration;
+    requestedResolution = '720p';
+    pricingResolution = '720p';
+    effectiveResolution = '720p';
+    aspectRatio = '16:9';
+    audioEnabled = false;
+  }
   metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
 
@@ -832,7 +893,7 @@ export async function POST(req: NextRequest) {
     typeof body.payment === 'object' && body.payment
       ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
       : {};
-  const authenticatedUserId = await resolveUserId();
+  const authenticatedUserId = await resolveUserId(req);
   if (!authenticatedUserId) {
     logMetric('rejected', { errorCode: 'AUTH_REQUIRED' });
     return NextResponse.json(
@@ -998,6 +1059,7 @@ type ProvisionalVideoJobInsert = {
   message: string | null;
   etaSeconds: number | null;
   etaLabel: string | null;
+  provider: string;
   finalPriceCents: number;
   pricingSnapshotJson: string;
   costBreakdownJson: string | null;
@@ -1080,6 +1142,7 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
        message,
        eta_seconds,
        eta_label,
+       provider,
        video_url,
        status,
        progress,
@@ -1098,7 +1161,7 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
        provisional
      )
      VALUES (
-       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29::jsonb,$30::jsonb,$31::jsonb,$32,$33,$34,$35,$36,$37,$38,$39
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30::jsonb,$31::jsonb,$32::jsonb,$33,$34,$35,$36,$37,$38,$39,$40
      )`,
     [
       params.jobId,
@@ -1124,6 +1187,7 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
       params.message,
       params.etaSeconds,
       params.etaLabel,
+      params.provider,
       null,
       'pending',
       0,
@@ -1762,7 +1826,7 @@ async function rollbackPendingPayment(params: {
   if (supportsAspectRatio && aspectRatio) {
     validationPayload.aspect_ratio = aspectRatio;
   }
-  if (typeof audioEnabled === 'boolean') {
+  if (typeof audioEnabled === 'boolean' && !isBytePlusV1a) {
     validationPayload.generate_audio = audioEnabled;
   }
 
@@ -2168,10 +2232,10 @@ async function rollbackPendingPayment(params: {
       await query(
         `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
          VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-        [
-          jobId,
-          'fal',
-          requestId,
+	      [
+	        jobId,
+	        providerKey,
+	        requestId,
           engine.id,
           'enqueue',
           JSON.stringify({
@@ -2216,6 +2280,7 @@ async function rollbackPendingPayment(params: {
         message,
         etaSeconds,
         etaLabel,
+        provider: providerKey,
         finalPriceCents: pricing.totalCents,
         pricingSnapshotJson,
         costBreakdownJson,
@@ -2274,6 +2339,120 @@ async function rollbackPendingPayment(params: {
       });
     }
     return NextResponse.json({ ok: false, error: 'Failed to persist job record' }, { status: 500 });
+  }
+
+  if (isBytePlusV1a) {
+    try {
+      const config = getBytePlusArkConfig();
+      const payload = buildBytePlusSeedanceFastPayload({
+        modelId: config.seedanceFastModelId,
+        prompt,
+        durationSec,
+      });
+      const providerTask = await getBytePlusModelArkClient().createSeedanceFastTask(payload);
+      const providerJobId = providerTask.providerJobId;
+      await persistProviderJobId(providerJobId);
+      await query(
+        `UPDATE app_jobs
+         SET status = $2,
+             progress = $3,
+             message = $4,
+             provider = $5,
+             provider_job_id = $6,
+             provisional = FALSE,
+             updated_at = NOW()
+         WHERE job_id = $1`,
+        [
+          jobId,
+          providerTask.status === 'running' ? 'running' : 'queued',
+          providerTask.status === 'running' ? 30 : 10,
+          'BytePlus render submitted.',
+          BYTEPLUS_MODELARK_PROVIDER,
+          providerJobId,
+        ]
+      );
+      logMetric('accepted', {
+        jobId,
+        meta: {
+          providerJobId,
+          provider: BYTEPLUS_MODELARK_PROVIDER,
+          inputSummary: { promptLength: prompt.length, durationSec, resolution: '720p', aspectRatio: '16:9' },
+        },
+      });
+      return NextResponse.json({
+        ok: true,
+        jobId,
+        videoUrl: null,
+        video: null,
+        thumbUrl: placeholderThumb,
+        status: providerTask.status === 'running' ? 'running' : 'queued',
+        progress: providerTask.status === 'running' ? 30 : 10,
+        pricing,
+        paymentStatus,
+        provider: BYTEPLUS_MODELARK_PROVIDER,
+        providerJobId,
+        batchId,
+        groupId,
+        iterationIndex,
+        iterationCount,
+        renderIds,
+        heroRenderId,
+        localKey,
+      });
+    } catch (error) {
+      const providerMessage = scrubBytePlusError(error);
+      const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
+      const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
+      const failureMessage = 'BytePlus could not start this render. Please retry later.';
+      console.warn('[byteplus] task submission failed', {
+        jobId,
+        engineId: engine.id,
+        status: providerStatus,
+        code: errorCode,
+        message: providerMessage,
+      });
+      try {
+        await query(
+          `UPDATE app_jobs
+           SET status = 'failed',
+               progress = 0,
+               message = $2,
+               provider = $3,
+               provisional = FALSE,
+               payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
+               updated_at = NOW()
+           WHERE job_id = $1`,
+          [
+            jobId,
+            failureMessage,
+            BYTEPLUS_MODELARK_PROVIDER,
+            pendingReceipt ? (paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded') : null,
+          ]
+        );
+      } catch (updateError) {
+        console.warn('[byteplus] failed to mark submission failure', { jobId }, updateError);
+      }
+      if (pendingReceipt) {
+        await rollbackPendingPayment({
+          pendingReceipt,
+          walletChargeReserved,
+          refundDescription: `Refund ${engine.label} - ${durationSec}s - BytePlus start failed`,
+        });
+      }
+      logMetric('failed', {
+        jobId,
+        errorCode,
+        meta: { provider: BYTEPLUS_MODELARK_PROVIDER, providerStatus },
+      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: errorCode,
+          message: failureMessage,
+        },
+        { status: providerStatus && providerStatus >= 400 && providerStatus < 500 ? 502 : 503 }
+      );
+    }
   }
 
   try {

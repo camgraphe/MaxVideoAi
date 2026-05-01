@@ -155,6 +155,7 @@ export async function ensureBillingSchema(): Promise<void> {
           message TEXT,
           eta_seconds INTEGER,
           eta_label TEXT,
+          provider TEXT NOT NULL DEFAULT 'fal',
           provider_job_id TEXT,
           status TEXT NOT NULL DEFAULT 'queued',
           progress INTEGER NOT NULL DEFAULT 0,
@@ -198,6 +199,7 @@ export async function ensureBillingSchema(): Promise<void> {
         ADD COLUMN IF NOT EXISTS message TEXT,
         ADD COLUMN IF NOT EXISTS eta_seconds INTEGER,
         ADD COLUMN IF NOT EXISTS eta_label TEXT,
+        ADD COLUMN IF NOT EXISTS provider TEXT NOT NULL DEFAULT 'fal',
         ADD COLUMN IF NOT EXISTS audio_url TEXT,
         ADD COLUMN IF NOT EXISTS cost_breakdown_usd JSONB,
         ADD COLUMN IF NOT EXISTS settings_snapshot JSONB,
@@ -239,6 +241,13 @@ export async function ensureBillingSchema(): Promise<void> {
         CREATE INDEX IF NOT EXISTS app_jobs_provider_job_idx
           ON app_jobs (provider_job_id)
           WHERE provider_job_id IS NOT NULL;
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_provider_pending_poll_idx
+          ON app_jobs (provider, updated_at ASC)
+          WHERE provider_job_id IS NOT NULL
+            AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress');
       `);
 
       await query(`

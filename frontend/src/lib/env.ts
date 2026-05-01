@@ -57,6 +57,14 @@ export const ENV = {
   GA4_API_SECRET: getOptionalEnv('GA4_API_SECRET'),
   FAL_API_KEY: falKey,
   FAL_KEY: falKey,
+  BYTEPLUS_ARK_API_KEY: getOptionalEnv('BYTEPLUS_ARK_API_KEY'),
+  BYTEPLUS_ARK_REGION: getOptionalEnv('BYTEPLUS_ARK_REGION', 'ap-southeast-1'),
+  BYTEPLUS_ARK_BASE_URL: getOptionalEnv('BYTEPLUS_ARK_BASE_URL', 'https://ark.ap-southeast.bytepluses.com/api/v3'),
+  BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID: getOptionalEnv(
+    'BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID',
+    'dreamina-seedance-2-0-fast-260128'
+  ),
+  BYTEPLUS_ARK_ENABLED: getOptionalEnv('BYTEPLUS_ARK_ENABLED', 'false'),
   RESULT_PROVIDER:
     getOptionalEnv('NEXT_PUBLIC_RESULT_PROVIDER') ??
     getOptionalEnv('RESULT_PROVIDER'),

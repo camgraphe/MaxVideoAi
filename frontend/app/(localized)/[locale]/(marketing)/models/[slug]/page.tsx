@@ -1261,7 +1261,11 @@ type SoraCopy = {
 
 export function generateStaticParams() {
   const engines = listFalEngines();
-  return locales.flatMap((locale) => engines.map((entry) => ({ locale, slug: entry.modelSlug })));
+  return locales.flatMap((locale) =>
+    engines
+      .filter((entry) => entry.surfaces.modelPage.includeInSitemap !== false)
+      .map((entry) => ({ locale, slug: entry.modelSlug }))
+  );
 }
 
 const SITE = SITE_ORIGIN.replace(/\/$/, '');
@@ -3171,7 +3175,7 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
   const params = await props.params;
   const { slug, locale } = params;
   const engine = getFalEngineBySlug(slug);
-  if (!engine) {
+  if (!engine || engine.surfaces.modelPage.includeInSitemap === false) {
     return {
       title: 'Model not found - MaxVideo AI',
       robots: { index: false, follow: false },
@@ -4900,7 +4904,7 @@ export default async function ModelDetailPage(props: PageParams) {
     permanentRedirect(`/${localizedModelsBase}/veo-3-1-fast`.replace(/\/{2,}/g, '/'));
   }
   const engine = getFalEngineBySlug(slug);
-  if (!engine) {
+  if (!engine || engine.surfaces.modelPage.includeInSitemap === false) {
     notFound();
   }
 
