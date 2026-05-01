@@ -252,13 +252,19 @@ export async function runBytePlusPoll() {
       const providerCostUsd = Number(((totalTokens * BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS) / 1000).toFixed(6));
       const costBreakdown = {
         provider: BYTEPLUS_MODELARK_PROVIDER,
+        provider_cost_source: 'byteplus_usage_tokens',
         model: config.seedanceFastModelId,
+        mode: 't2v',
+        input_type: 'no_video_input',
         resolution: '720p',
         aspect_ratio: '16:9',
         duration_sec: job.duration_sec,
+        provider_tokens: totalTokens,
         total_tokens: totalTokens,
         completion_tokens: task.usage?.completionTokens ?? null,
         unit_price_usd_per_1k_tokens: BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS,
+        provider_cost_usd_list: providerCostUsd,
+        provider_cost_usd_effective: providerCostUsd,
         vendor_cost_usd: providerCostUsd,
       };
 

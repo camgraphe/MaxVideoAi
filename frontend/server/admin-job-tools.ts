@@ -9,6 +9,7 @@ type LinkableJobRow = {
   user_id: string | null;
   aspect_ratio: string | null;
   thumb_url: string | null;
+  status: string | null;
 };
 
 type LinkFalJobResult = {
@@ -33,7 +34,7 @@ export async function linkFalJob(options: {
   }
 
   const rows = await query<LinkableJobRow>(
-    `SELECT job_id, engine_id, provider_job_id, user_id, aspect_ratio, thumb_url
+    `SELECT job_id, engine_id, provider_job_id, user_id, aspect_ratio, thumb_url, status
        FROM app_jobs
       WHERE job_id = $1
       LIMIT 1`,
@@ -56,6 +57,7 @@ export async function linkFalJob(options: {
     userId: job.user_id,
     aspectRatio: job.aspect_ratio,
     existingThumbUrl: job.thumb_url,
+    currentJobStatus: job.status,
   });
 
   if (!normalizedResult || !videoUrl) {

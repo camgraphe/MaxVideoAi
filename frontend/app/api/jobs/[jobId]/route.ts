@@ -6,6 +6,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
+import { shouldFailVideoJobOnProviderCopyMiss } from '@/server/provider-output-policy';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
@@ -33,6 +34,7 @@ type DbJobRow = {
   status: string;
   progress: number;
   provider_job_id: string | null;
+  provider: string | null;
   surface: string | null;
   billing_product_key: string | null;
   video_url: string | null;
@@ -64,7 +66,7 @@ type DbJobRow = {
   aspect_ratio: string | null;
 };
 
-const JOB_DETAIL_SELECT = `SELECT id, job_id, user_id, status, progress, provider_job_id, surface, billing_product_key, video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
+const JOB_DETAIL_SELECT = `SELECT id, job_id, user_id, status, progress, provider_job_id, provider, surface, billing_product_key, video_url, audio_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`;
@@ -322,30 +324,39 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         let videoUrl = normalizedVideoUrl;
         let thumbUrl = normalizedThumbUrl ?? null;
         if (vUrl) {
-          status = 'completed';
-          progress = 100;
           const normalizedProviderVideoUrl = normalizeMediaUrl(vUrl) ?? vUrl;
-          videoUrl =
-            (await ensureFastStartVideo({
-              jobId,
-              userId: job.user_id ?? undefined,
-              videoUrl: normalizedProviderVideoUrl,
-            })) ?? normalizedProviderVideoUrl;
-          if (/^https?:\/\//i.test(vUrl) && isPlaceholderThumbnail(thumbUrl)) {
-            const generatedThumb = await ensureJobThumbnail({
-              jobId,
-              userId: job.user_id ?? undefined,
-              videoUrl,
-              aspectRatio: job.aspect_ratio ?? undefined,
-              existingThumbUrl: thumbUrl ?? undefined,
-              force: true,
-            });
-            if (generatedThumb) {
-              thumbUrl = generatedThumb;
+          const copiedVideoUrl = await ensureFastStartVideo({
+            jobId,
+            userId: job.user_id ?? undefined,
+            videoUrl: normalizedProviderVideoUrl,
+          });
+          if (
+            !shouldFailVideoJobOnProviderCopyMiss({
+              provider: job.provider ?? 'fal',
+              sourceUrl: normalizedProviderVideoUrl,
+              copiedUrl: copiedVideoUrl,
+              currentJobStatus: job.status,
+            })
+          ) {
+            status = 'completed';
+            progress = 100;
+            videoUrl = copiedVideoUrl ?? normalizedProviderVideoUrl;
+            if (/^https?:\/\//i.test(vUrl) && isPlaceholderThumbnail(thumbUrl)) {
+              const generatedThumb = await ensureJobThumbnail({
+                jobId,
+                userId: job.user_id ?? undefined,
+                videoUrl,
+                aspectRatio: job.aspect_ratio ?? undefined,
+                existingThumbUrl: thumbUrl ?? undefined,
+                force: true,
+              });
+              if (generatedThumb) {
+                thumbUrl = generatedThumb;
+              }
             }
-          }
-          if (!thumbUrl) {
-            thumbUrl = normalizedThumbUrl ?? null;
+            if (!thumbUrl) {
+              thumbUrl = normalizedThumbUrl ?? null;
+            }
           }
         } else if (st && FAL_FAILED_STATES.has(st.toUpperCase())) {
           status = 'failed';
@@ -404,6 +415,16 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
       userId: job.user_id ?? undefined,
       videoUrl: responseVideoUrl,
     });
+    if (
+      shouldFailVideoJobOnProviderCopyMiss({
+        provider: job.provider ?? 'fal',
+        sourceUrl: responseVideoUrl,
+        copiedUrl: fastStartVideo,
+        currentJobStatus: job.status,
+      })
+    ) {
+      responseVideoUrl = null;
+    }
     if (fastStartVideo && fastStartVideo !== responseVideoUrl) {
       responseVideoUrl = fastStartVideo;
       await query(

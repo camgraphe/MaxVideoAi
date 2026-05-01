@@ -15,6 +15,11 @@ import { normalizeMediaUrl } from '@/lib/media';
 import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
+import {
+  buildSafeProviderMediaLog,
+  PROVIDER_VIDEO_COPY_FAILURE_MESSAGE,
+  shouldFailVideoJobOnProviderCopyMiss,
+} from '@/server/provider-output-policy';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
 import { getEngineCaps } from '@/fixtures/engineCaps';
@@ -746,7 +751,7 @@ export async function POST(req: NextRequest) {
       : null;
   const heroRenderId =
     typeof body.heroRenderId === 'string' && body.heroRenderId.trim().length ? body.heroRenderId.trim() : null;
-  const message = typeof body.message === 'string' && body.message.trim().length ? body.message.trim() : null;
+  let message = typeof body.message === 'string' && body.message.trim().length ? body.message.trim() : null;
   const etaSeconds =
     typeof body.etaSeconds === 'number' && Number.isFinite(body.etaSeconds)
       ? Math.max(0, Math.trunc(body.etaSeconds))
@@ -2770,10 +2775,10 @@ async function rollbackPendingPayment(params: {
     placeholderThumb;
   let previewFrame = thumb;
   let video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
-  const videoAsset = generationResult.video ?? null;
+  let videoAsset = generationResult.video ?? null;
   const providerMode = generationResult.provider;
-  const status = generationResult.status ?? (video ? 'completed' : 'queued');
-  const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
+  let status = generationResult.status ?? (video ? 'completed' : 'queued');
+  let progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
   const providerJobId = generationResult.providerJobId ?? batchId ?? null;
 
   // Safety net: if Fal didn’t return a provider job id and we have no video result, treat as failed and refund.
@@ -2824,7 +2829,7 @@ async function rollbackPendingPayment(params: {
       jobId,
       providerJobId,
       status,
-      videoUrl: video,
+      video: buildSafeProviderMediaLog(video),
     });
   }
 
@@ -2846,6 +2851,24 @@ async function rollbackPendingPayment(params: {
       if (videoAsset) {
         videoAsset.url = fastStartVideo;
       }
+    } else if (
+      shouldFailVideoJobOnProviderCopyMiss({
+        provider: providerMode,
+        sourceUrl: sourceVideoUrl,
+        copiedUrl: null,
+      })
+    ) {
+      console.warn('[api/generate] provider video copy failed', {
+        jobId,
+        providerJobId,
+        provider: providerMode,
+        video: buildSafeProviderMediaLog(sourceVideoUrl),
+      });
+      video = null;
+      videoAsset = null;
+      status = 'failed';
+      progress = 0;
+      message = PROVIDER_VIDEO_COPY_FAILURE_MESSAGE;
     }
   }
 

@@ -1,6 +1,7 @@
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
+import { shouldFailVideoJobOnProviderCopyMiss } from '@/server/provider-output-policy';
 import { ensureJobThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
 
@@ -11,12 +12,14 @@ type FetchOptions = {
   userId?: string | null;
   aspectRatio?: string | null;
   existingThumbUrl?: string | null;
+  currentJobStatus?: string | null;
 };
 
 type FetchResult = {
   normalizedResult: Record<string, unknown> | null;
   videoUrl: string | null;
   thumbUrl: string | null;
+  copyFailed?: boolean;
 };
 
 function cloneResult<T>(input: T): T {
@@ -104,6 +107,15 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
         ((normalized.data as Record<string, unknown>).video as Record<string, unknown>).url = fastStartVideo;
       }
       normalized.video_url = fastStartVideo;
+    } else if (
+      shouldFailVideoJobOnProviderCopyMiss({
+        provider: 'fal',
+        sourceUrl: videoUrl,
+        copiedUrl: null,
+        currentJobStatus: options.currentJobStatus,
+      })
+    ) {
+      return { normalizedResult: normalized, videoUrl: null, thumbUrl: null, copyFailed: true };
     }
   }
   if (thumbUrl) {

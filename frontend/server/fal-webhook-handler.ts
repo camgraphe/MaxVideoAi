@@ -4,6 +4,11 @@ import { resolveFalModelId, resolveEngineIdFromModelSlug } from '@/lib/fal-catal
 import { getFalClient } from '@/lib/fal-client';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
+import {
+  buildSafeProviderMediaLog,
+  PROVIDER_VIDEO_COPY_FAILURE_MESSAGE,
+  shouldFailVideoJobOnProviderCopyMiss,
+} from '@/server/provider-output-policy';
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
@@ -802,6 +807,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextThumbUrl = heroImageUrl;
   }
   const hasImageMedia = isImageEngine && imageUrls.length > 0;
+  let providerVideoCopyFailed = false;
 
   if (
     nextStatus === 'completed' &&
@@ -818,6 +824,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
         userId: job.user_id,
         aspectRatio: job.aspect_ratio,
         existingThumbUrl: job.thumb_url,
+        currentJobStatus: job.status,
       });
       if (fallback.normalizedResult) {
         finalPayload = fallback.normalizedResult;
@@ -827,6 +834,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       }
       if (!nextThumbUrl && fallback.thumbUrl) {
         nextThumbUrl = normalizeMediaUrl(fallback.thumbUrl) ?? fallback.thumbUrl;
+      }
+      if (fallback.copyFailed) {
+        providerVideoCopyFailed = true;
       }
     } catch (error) {
       console.warn('[fal-webhook] Fal media recovery failed', {
@@ -873,6 +883,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   let finalVideoUrl = nextVideoUrl ?? job.video_url;
   if (finalVideoUrl && !isImageEngine && nextStatus === 'completed') {
+    const sourceBeforeCopy = finalVideoUrl;
     const fastStartVideo = await ensureFastStartVideo({
       jobId: job.job_id,
       userId: job.user_id ?? undefined,
@@ -881,6 +892,20 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     if (fastStartVideo) {
       finalVideoUrl = fastStartVideo;
       nextVideoUrl = fastStartVideo;
+    } else if (job.status === 'completed') {
+      finalVideoUrl = job.video_url;
+      nextVideoUrl = job.video_url;
+    } else if (
+      shouldFailVideoJobOnProviderCopyMiss({
+        provider: 'fal',
+        sourceUrl: sourceBeforeCopy,
+        copiedUrl: null,
+        currentJobStatus: job.status,
+      })
+    ) {
+      providerVideoCopyFailed = true;
+      finalVideoUrl = null;
+      nextVideoUrl = null;
     }
   }
   const finalThumbUrl = resolvedThumbUrl ?? fallbackThumbnail(job.aspect_ratio);
@@ -908,6 +933,13 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     if (!nextMessage) {
       nextMessage = 'The provider finished this render but returned no video. Please retry or contact support if it persists.';
     }
+  }
+
+  if (providerVideoCopyFailed) {
+    forcedNoMediaFailure = true;
+    nextStatus = 'failed';
+    nextProgress = Math.min(nextProgress, 1);
+    nextMessage = PROVIDER_VIDEO_COPY_FAILURE_MESSAGE;
   }
 
   const shouldClearVideo = isImageEngine || (!finalVideoUrl && !hasImageMedia) || forcedNoMediaFailure;
@@ -972,7 +1004,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     null;
   const shouldAutoRefundFailure =
     nextStatus === 'failed'
-      ? explicitAutoRefundEligibility === true
+      ? providerVideoCopyFailed
+        ? true
+        : explicitAutoRefundEligibility === true
         ? true
         : explicitAutoRefundEligibility === false
           ? false
@@ -987,7 +1021,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       message: normalizedMessage,
       autoRefundEligible: shouldAutoRefundFailure,
       failureOrigin,
-      payload: payload.error ?? payload,
+      falStatus: payload.status ?? null,
+      hasErrorPayload: Boolean(payload.error),
+      providerVideoCopyFailed,
     });
   }
 
@@ -1046,8 +1082,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextStatus,
     previousProgress: job.progress,
     nextProgress,
-    videoUrl: finalVideoUrl ?? null,
-    thumbUrl: finalThumbUrl ?? null,
+    video: buildSafeProviderMediaLog(finalVideoUrl),
+    thumb: buildSafeProviderMediaLog(finalThumbUrl),
+    providerVideoCopyFailed,
     imageCount: hasImageMedia ? imageUrls.length : 0,
     message: normalizedMessage ?? null,
     falStatus: payload.status ?? null,
