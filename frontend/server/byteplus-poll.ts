@@ -4,6 +4,7 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { ensureFastStartVideo } from '@/server/video-faststart';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
+  PUBLIC_SEEDANCE_ENGINE_ID,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
   isBytePlusModelArkEnabled,
@@ -33,6 +34,7 @@ type BytePlusPendingJob = {
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
 const BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0056;
+const BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS = 0.007;
 // Live V1a smoke test: 720p / 16:9 / 5.041667s returned 108,900 tokens, $0.60984 provider cost.
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 
@@ -60,6 +62,12 @@ export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_sn
     generateAudio: job.has_audio === true,
     byteplusBillingInputType: 'no_video_input',
   };
+}
+
+export function getBytePlusUnitPriceUsdPer1kTokens(engineId: string | null | undefined): number {
+  return engineId === PUBLIC_SEEDANCE_ENGINE_ID
+    ? BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS
+    : BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
 }
 
 async function recordPollEvent(
@@ -273,12 +281,13 @@ export async function runBytePlusPoll() {
       }
 
       const totalTokens = task.usage?.totalTokens ?? expected720pTokens(job.duration_sec);
-      const providerCostUsd = Number(((totalTokens * BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS) / 1000).toFixed(6));
+      const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(job.engine_id);
+      const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
       const accounting = getBytePlusAccounting(job);
       const costBreakdown = {
         provider: BYTEPLUS_MODELARK_PROVIDER,
         provider_cost_source: 'byteplus_usage_tokens',
-        model: config.seedanceFastModelId,
+        model: job.engine_id === PUBLIC_SEEDANCE_ENGINE_ID ? config.seedanceModelId : config.seedanceFastModelId,
         mode: accounting.mode,
         input_type: accounting.inputType,
         byteplus_billing_input_type: accounting.byteplusBillingInputType,
@@ -291,7 +300,7 @@ export async function runBytePlusPoll() {
         provider_tokens: totalTokens,
         total_tokens: totalTokens,
         completion_tokens: task.usage?.completionTokens ?? null,
-        unit_price_usd_per_1k_tokens: BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS,
+        unit_price_usd_per_1k_tokens: unitPriceUsdPer1kTokens,
         provider_cost_usd_list: providerCostUsd,
         provider_cost_usd_effective: providerCostUsd,
         vendor_cost_usd: providerCostUsd,

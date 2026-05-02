@@ -2,8 +2,10 @@ import { ENV } from '@/lib/env';
 import type { NormalizedVideoProviderTask, NormalizedVideoProviderUsage } from '@/server/video-providers/types';
 
 export const BYTEPLUS_MODELARK_PROVIDER = 'byteplus_modelark';
+export const PUBLIC_SEEDANCE_ENGINE_ID = 'seedance-2-0';
 export const PUBLIC_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast';
 export const BYTEPLUS_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast-byteplus';
+export const BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-260128';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-fast-260128';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL = 'https://ark.ap-southeast.bytepluses.com/api/v3';
 
@@ -24,6 +26,8 @@ export type BytePlusSeedanceFastPayload = {
   generate_audio: boolean;
   watermark: false;
 };
+
+export type BytePlusSeedancePayload = BytePlusSeedanceFastPayload;
 
 type BytePlusTaskResponse = Record<string, unknown>;
 
@@ -64,8 +68,18 @@ export function isBytePlusSeedanceFastEngine(engineId: string | null | undefined
   return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID;
 }
 
+export function isPublicSeedanceEngine(engineId: string | null | undefined): boolean {
+  return engineId === PUBLIC_SEEDANCE_ENGINE_ID;
+}
+
 export function isPublicSeedanceFastEngine(engineId: string | null | undefined): boolean {
   return engineId === PUBLIC_SEEDANCE_FAST_ENGINE_ID;
+}
+
+export function seedanceProviderOverride(): 'fal' | 'byteplus_modelark' {
+  return ENV.SEEDANCE_2_PROVIDER?.trim().toLowerCase() === BYTEPLUS_MODELARK_PROVIDER
+    ? BYTEPLUS_MODELARK_PROVIDER
+    : 'fal';
 }
 
 export function seedanceFastProviderOverride(): 'fal' | 'byteplus_modelark' {
@@ -74,12 +88,25 @@ export function seedanceFastProviderOverride(): 'fal' | 'byteplus_modelark' {
     : 'fal';
 }
 
+export function shouldRoutePublicSeedanceToBytePlus(engineId: string | null | undefined): boolean {
+  return isPublicSeedanceEngine(engineId) && seedanceProviderOverride() === BYTEPLUS_MODELARK_PROVIDER;
+}
+
 export function shouldRoutePublicSeedanceFastToBytePlus(engineId: string | null | undefined): boolean {
   return isPublicSeedanceFastEngine(engineId) && seedanceFastProviderOverride() === BYTEPLUS_MODELARK_PROVIDER;
 }
 
+export function seedanceBytePlusAdminOnly(): boolean {
+  return envFlagEnabled(ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY ?? 'true');
+}
+
 export function seedanceFastBytePlusAdminOnly(): boolean {
   return envFlagEnabled(ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY ?? 'true');
+}
+
+export function isSeedanceBytePlusModeAllowed(mode: string | null | undefined): boolean {
+  const allowedModes = splitCsvEnv(ENV.SEEDANCE_2_BYTEPLUS_MODES);
+  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase()) : false;
 }
 
 export function isSeedanceFastBytePlusModeAllowed(mode: string | null | undefined): boolean {
@@ -92,11 +119,12 @@ export function getBytePlusArkConfig() {
     apiKey: ENV.BYTEPLUS_ARK_API_KEY,
     region: ENV.BYTEPLUS_ARK_REGION ?? 'ap-southeast-1',
     baseUrl: trimTrailingSlash(ENV.BYTEPLUS_ARK_BASE_URL ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL),
+    seedanceModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MODEL_ID ?? BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
     seedanceFastModelId: ENV.BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
   };
 }
 
-export function buildBytePlusSeedanceFastPayload(params: {
+export function buildBytePlusSeedancePayload(params: {
   modelId: string;
   prompt: string;
   durationSec: number;
@@ -104,7 +132,7 @@ export function buildBytePlusSeedanceFastPayload(params: {
   imageUrl?: string | null;
   endImageUrl?: string | null;
   generateAudio?: boolean;
-}): BytePlusSeedanceFastPayload {
+}): BytePlusSeedancePayload {
   const prompt = params.prompt.trim();
   const duration = Math.trunc(params.durationSec);
   const mode = params.mode ?? 't2v';
@@ -165,6 +193,10 @@ export function buildBytePlusSeedanceFastPayload(params: {
     generate_audio: params.generateAudio === true,
     watermark: false,
   };
+}
+
+export function buildBytePlusSeedanceFastPayload(params: Parameters<typeof buildBytePlusSeedancePayload>[0]): BytePlusSeedanceFastPayload {
+  return buildBytePlusSeedancePayload(params);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -44,15 +44,18 @@ import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { AdminAuthError, requireAdmin, resolveLocalAdminBypassUserId } from '@/server/admin';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
-  buildBytePlusSeedanceFastPayload,
+  buildBytePlusSeedancePayload,
   BytePlusModelArkError,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
   getBytePlusUserSafeErrorMessage,
+  isSeedanceBytePlusModeAllowed,
   isSeedanceFastBytePlusModeAllowed,
   isBytePlusModelArkEnabled,
   isBytePlusSeedanceFastEngine,
+  seedanceBytePlusAdminOnly,
   seedanceFastBytePlusAdminOnly,
+  shouldRoutePublicSeedanceToBytePlus,
   shouldRoutePublicSeedanceFastToBytePlus,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -540,8 +543,10 @@ export async function POST(req: NextRequest) {
   }
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
+  const isPublicSeedanceBytePlus = shouldRoutePublicSeedanceToBytePlus(engine.id);
+  const isPublicSeedanceFastBytePlus = shouldRoutePublicSeedanceFastToBytePlus(engine.id);
   const isBytePlusV1a =
-    isBytePlusSeedanceFastEngine(engine.id) || shouldRoutePublicSeedanceFastToBytePlus(engine.id);
+    isBytePlusSeedanceFastEngine(engine.id) || isPublicSeedanceFastBytePlus || isPublicSeedanceBytePlus;
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : 'fal';
 
   if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
@@ -558,7 +563,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
-  if (isBytePlusV1a && seedanceFastBytePlusAdminOnly()) {
+  const bytePlusRequiresAdmin = isBytePlusV1a && (isPublicSeedanceBytePlus ? seedanceBytePlusAdminOnly() : seedanceFastBytePlusAdminOnly());
+  if (bytePlusRequiresAdmin) {
     try {
       await requireAdmin(req);
     } catch (error) {
@@ -581,8 +587,11 @@ export async function POST(req: NextRequest) {
       : engine.modes[0] ?? 't2v';
   metricState.mode = mode;
 
-  if (isBytePlusV1a && !isSeedanceFastBytePlusModeAllowed(mode)) {
-    return NextResponse.json({ ok: false, error: 'BytePlus V1b only supports the configured Seedance Fast modes.' }, { status: 400 });
+  const bytePlusModeAllowed = isPublicSeedanceBytePlus
+    ? isSeedanceBytePlusModeAllowed(mode)
+    : isSeedanceFastBytePlusModeAllowed(mode);
+  if (isBytePlusV1a && !bytePlusModeAllowed) {
+    return NextResponse.json({ ok: false, error: 'BytePlus V1b only supports the configured Seedance modes.' }, { status: 400 });
   }
 
   const prompt = String(body.prompt || '');
@@ -2356,8 +2365,8 @@ async function rollbackPendingPayment(params: {
   if (isBytePlusV1a) {
     try {
       const config = getBytePlusArkConfig();
-      const payload = buildBytePlusSeedanceFastPayload({
-        modelId: config.seedanceFastModelId,
+      const payload = buildBytePlusSeedancePayload({
+        modelId: isPublicSeedanceBytePlus ? config.seedanceModelId : config.seedanceFastModelId,
         prompt,
         durationSec,
         mode: mode === 'i2v' ? 'i2v' : 't2v',

@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 
 import {
+  BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  buildBytePlusSeedancePayload,
   buildBytePlusSeedanceFastPayload,
   getBytePlusUserSafeErrorMessage,
   normalizeBytePlusTask,
   scrubBytePlusError,
 } from '../../src/server/video-providers/byteplus-modelark';
-import { getBytePlusAccounting } from '../../server/byteplus-poll';
+import { getBytePlusAccounting, getBytePlusUnitPriceUsdPer1kTokens } from '../../server/byteplus-poll';
 
 const payload = buildBytePlusSeedanceFastPayload({
   modelId: 'dreamina-seedance-2-0-fast-260128',
@@ -80,6 +82,39 @@ assert.deepEqual(firstLastPayload.content, [
     role: 'reference_image',
   },
 ]);
+
+const standardSeedancePayload = buildBytePlusSeedancePayload({
+  modelId: BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  prompt: 'Create a premium cinematic product transition.',
+  durationSec: 5,
+  mode: 'i2v',
+  imageUrl: 'https://assets.example.com/start.png',
+  endImageUrl: 'https://assets.example.com/end.png',
+  generateAudio: true,
+});
+
+assert.equal(standardSeedancePayload.model, 'dreamina-seedance-2-0-260128');
+assert.equal(standardSeedancePayload.resolution, '720p');
+assert.equal(standardSeedancePayload.generate_audio, true);
+assert.deepEqual(standardSeedancePayload.content, [
+  {
+    type: 'text',
+    text: 'Use Image 1 as the opening frame and Image 2 as the final frame. Create a premium cinematic product transition.',
+  },
+  {
+    type: 'image_url',
+    image_url: { url: 'https://assets.example.com/start.png' },
+    role: 'reference_image',
+  },
+  {
+    type: 'image_url',
+    image_url: { url: 'https://assets.example.com/end.png' },
+    role: 'reference_image',
+  },
+]);
+
+assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0'), 0.007);
+assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast'), 0.0056);
 
 assert.throws(
   () =>
