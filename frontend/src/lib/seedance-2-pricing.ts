@@ -13,8 +13,12 @@ export type Seedance2TokenQuote = {
   vendorCostPerSecondUsd: number;
 };
 
-function normalizeResolution(resolution: string): Resolution | null {
-  return resolution === '480p' || resolution === '720p' ? resolution : null;
+function normalizeResolution(
+  dimensions: Partial<Record<Resolution, Partial<Record<AspectRatio, TokenVideoPricingDimensions>>>>,
+  resolution: string
+): Resolution | null {
+  const candidate = resolution.trim() as Resolution;
+  return dimensions[candidate] ? candidate : null;
 }
 
 function normalizeAspectRatio(
@@ -46,7 +50,7 @@ export function resolveSeedance2Dimensions(
   resolution: string,
   aspectRatio?: string | null
 ): { aspectRatio: AspectRatio; width: number; height: number } {
-  const normalizedResolution = normalizeResolution(resolution);
+  const normalizedResolution = normalizeResolution(details.tokenPricing.dimensions, resolution);
   if (!normalizedResolution) {
     throw new Error(`Unsupported Seedance 2 resolution: ${resolution}`);
   }

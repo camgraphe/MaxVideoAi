@@ -10,6 +10,7 @@ import {
   scrubBytePlusError,
 } from '../../src/server/video-providers/byteplus-modelark';
 import { getBytePlusAccounting, getBytePlusUnitPriceUsdPer1kTokens } from '../../server/byteplus-poll';
+import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '../../src/lib/seedance-2-pricing';
 import type { EngineCaps } from '../../types/engines';
 
 const payload = buildBytePlusSeedanceFastPayload({
@@ -196,6 +197,20 @@ const baseSeedanceEngine = {
   updatedAt: '2026-05-02T00:00:00Z',
   ttlSec: 600,
   availability: 'available',
+  pricingDetails: {
+    currency: 'USD',
+    tokenPricing: {
+      model: 'fal_tokens',
+      unitPriceUsdPer1kTokens: 0.014,
+      framesPerSecond: 24,
+      defaultAspectRatio: '16:9',
+      dimensions: {
+        '480p': { '16:9': { width: 854, height: 480 } },
+        '720p': { '16:9': { width: 1280, height: 720 } },
+        '1080p': { '16:9': { width: 1920, height: 1080 } },
+      },
+    },
+  },
   modeCaps: {
     t2v: { modes: ['t2v'], resolution: ['480p', '720p'], aspectRatio: ['auto', '16:9'] },
     i2v: { modes: ['i2v'], resolution: ['480p', '720p'], aspectRatio: ['auto', '16:9'] },
@@ -220,6 +235,18 @@ assert.equal(
   bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'aspect_ratio')?.default,
   '16:9'
 );
+
+if (!isSeedance2TokenPricing(bytePlusStandardEngine.pricingDetails)) {
+  throw new Error('Expected Seedance 2 token pricing for BytePlus standard engine test.');
+}
+const standard1080pQuote = computeSeedance2TokenQuote({
+  details: bytePlusStandardEngine.pricingDetails,
+  durationSec: 5,
+  resolution: '1080p',
+  aspectRatio: '16:9',
+});
+assert.equal(standard1080pQuote.width, 1920);
+assert.equal(standard1080pQuote.height, 1080);
 
 assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0'), 0.007);
 assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast'), 0.0056);
