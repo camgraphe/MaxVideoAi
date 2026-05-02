@@ -9,7 +9,7 @@ export const BYTEPLUS_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast-byteplus';
 export const BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-260128';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-fast-260128';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL = 'https://ark.ap-southeast.bytepluses.com/api/v3';
-export const BYTEPLUS_SEEDANCE_MODES: Mode[] = ['t2v', 'i2v', 'ref2v'];
+export const BYTEPLUS_SEEDANCE_MODES: Mode[] = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'];
 export const BYTEPLUS_SEEDANCE_RESOLUTIONS: Resolution[] = ['480p', '720p', '1080p'];
 export const BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS: Resolution[] = ['480p', '720p'];
 export const BYTEPLUS_SEEDANCE_ASPECT_RATIOS: AspectRatio[] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
@@ -92,6 +92,34 @@ function allowedBytePlusModes(value: string | undefined): Mode[] {
   return modes.length ? modes : ['t2v'];
 }
 
+function expandBytePlusFieldModes(field: EngineInputField): EngineInputField {
+  if (field.id === 'image_urls') {
+    return {
+      ...field,
+      label: 'Reference images (up to 9)',
+      description: 'Optional BytePlus visual references for Reference to Video or Video Edit.',
+      modes: ['ref2v', 'v2v'],
+    };
+  }
+  if (field.id === 'video_urls') {
+    return {
+      ...field,
+      label: 'Reference/source videos (up to 3)',
+      description: 'Use video files as BytePlus references, edit sources, or extension sources.',
+      modes: ['ref2v', 'v2v', 'extend'],
+    };
+  }
+  if (field.id === 'audio_urls') {
+    return {
+      ...field,
+      label: 'Reference audio (up to 3)',
+      description: 'Optional BytePlus audio references for pacing or soundtrack guidance.',
+      modes: ['ref2v', 'v2v', 'extend'],
+    };
+  }
+  return field;
+}
+
 function filterInputFieldsForModes(
   fields: EngineInputField[] | undefined,
   allowedModes: Mode[],
@@ -99,6 +127,7 @@ function filterInputFieldsForModes(
 ): EngineInputField[] | undefined {
   if (!fields) return fields;
   return fields
+    .map(expandBytePlusFieldModes)
     .filter((field) => !field.modes?.length || field.modes.some((mode) => allowedModes.includes(mode)))
     .map((field) => {
       if (field.id === 'resolution' && field.type === 'enum') {
@@ -218,16 +247,17 @@ export function applyBytePlusSeedanceRuntimeOptions(
     BYTEPLUS_SEEDANCE_MODES.includes(mode)
   );
   const resolutions = getBytePlusSeedanceAllowedResolutions(engine.id);
+  const baseModeCaps = engine.modeCaps ?? {};
   const modeCaps = engine.modeCaps
     ? Object.fromEntries(
-        Object.entries(engine.modeCaps)
-          .filter(([mode]) => allowedModes.includes(mode as Mode))
-          .map(([mode, caps]) => [
+        allowedModes.map((mode) => {
+          const caps = baseModeCaps[mode] ?? baseModeCaps.ref2v ?? baseModeCaps.i2v ?? baseModeCaps.t2v;
+          return [
             mode,
             caps
               ? {
                   ...caps,
-                  modes: caps.modes.filter((candidate) => allowedModes.includes(candidate)),
+                  modes: [mode],
                   resolution: resolutions,
                   resolutionLocked: false,
                   aspectRatio: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
@@ -235,7 +265,8 @@ export function applyBytePlusSeedanceRuntimeOptions(
                   audioToggle: true,
                 }
               : caps,
-          ])
+          ];
+        })
       )
     : undefined;
 
@@ -279,7 +310,7 @@ export function buildBytePlusSeedancePayload(params: {
   modelId: string;
   prompt: string;
   durationSec: number;
-  mode?: 't2v' | 'i2v' | 'ref2v';
+  mode?: Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'>;
   imageUrl?: string | null;
   endImageUrl?: string | null;
   referenceImageUrls?: string[];
@@ -307,7 +338,7 @@ export function buildBytePlusSeedancePayload(params: {
     throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance.', { code: 'PROMPT_REQUIRED' });
   }
   if (!BYTEPLUS_SEEDANCE_MODES.includes(mode)) {
-    throw new BytePlusModelArkError('BytePlus Seedance supports only configured T2V, I2V, and reference-to-video modes.', {
+    throw new BytePlusModelArkError('BytePlus Seedance supports only configured T2V, I2V, reference, video edit, and extension modes.', {
       code: 'BYTEPLUS_MODE_UNSUPPORTED',
     });
   }
@@ -319,6 +350,16 @@ export function buildBytePlusSeedancePayload(params: {
   if (mode === 'ref2v' && referenceImageUrls.length + referenceVideoUrls.length + referenceAudioUrls.length === 0) {
     throw new BytePlusModelArkError('At least one reference image, video, or audio URL is required for BytePlus Seedance reference-to-video.', {
       code: 'REFERENCE_URL_REQUIRED',
+    });
+  }
+  if (mode === 'ref2v' && referenceImageUrls.length + referenceVideoUrls.length === 0) {
+    throw new BytePlusModelArkError('At least one reference image or video URL is required for BytePlus Seedance reference-to-video.', {
+      code: 'REFERENCE_MEDIA_REQUIRED',
+    });
+  }
+  if ((mode === 'v2v' || mode === 'extend') && referenceVideoUrls.length === 0) {
+    throw new BytePlusModelArkError('At least one source video URL is required for BytePlus Seedance video edit and extension modes.', {
+      code: 'VIDEO_URL_REQUIRED',
     });
   }
   if (!Number.isFinite(duration) || duration < 5 || duration > 15) {
@@ -363,7 +404,7 @@ export function buildBytePlusSeedancePayload(params: {
       });
     }
   }
-  if (mode === 'ref2v') {
+  if (mode === 'ref2v' || mode === 'v2v' || mode === 'extend') {
     for (const url of referenceImageUrls) {
       content.push({
         type: 'image_url',

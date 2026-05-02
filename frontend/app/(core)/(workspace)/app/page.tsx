@@ -4748,8 +4748,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const activeManualMode = useMemo<Mode | null>(() => {
     if (!selectedEngine) return null;
-    if (isUnifiedSeedance) return null;
-    if (referenceInputStatus.hasAudio) return null;
+    if (referenceInputStatus.hasAudio && !isUnifiedSeedance) return null;
     const currentMode = form?.mode ?? null;
     if (
       (currentMode === 'v2v' ||
@@ -4919,7 +4918,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             : selectedEngine.id === 'veo-3-1-lite'
               ? ([] as const)
             : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
-              ? ([] as const)
+              ? (['ref2v', 'v2v', 'extend'] as const)
               : null;
     if (!explicitModes) return undefined;
     const disabledReason = audioWorkflowLocked
@@ -4959,7 +4958,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const handleComposerModeToggle = useCallback(
     (mode: Mode | null) => {
       if (!selectedEngine) return;
-      if (referenceInputStatus.hasAudio && (mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake')) {
+      if (
+        referenceInputStatus.hasAudio &&
+        !isUnifiedSeedance &&
+        (mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake')
+      ) {
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
@@ -4968,7 +4971,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
       );
     },
-    [implicitMode, referenceInputStatus.hasAudio, selectedEngine, showNotice, workflowCopy]
+    [implicitMode, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine, showNotice, workflowCopy]
   );
 
   const handleDurationChange = useCallback(

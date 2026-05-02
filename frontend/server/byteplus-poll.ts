@@ -85,14 +85,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_snapshot' | 'has_audio'>) {
   const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
   const refs = isRecord(settings.refs) ? settings.refs : {};
-  const mode = settings.inputMode === 'ref2v' ? 'ref2v' : settings.inputMode === 'i2v' ? 'i2v' : 't2v';
+  const mode =
+    settings.inputMode === 'extend'
+      ? 'extend'
+      : settings.inputMode === 'v2v'
+        ? 'v2v'
+        : settings.inputMode === 'ref2v'
+          ? 'ref2v'
+          : settings.inputMode === 'i2v'
+            ? 'i2v'
+            : 't2v';
   const hasStartImage = mode === 'i2v' && typeof refs.imageUrl === 'string' && refs.imageUrl.trim().length > 0;
   const hasEndImage = mode === 'i2v' && typeof refs.endImageUrl === 'string' && refs.endImageUrl.trim().length > 0;
   const hasReferenceImages = Array.isArray(refs.referenceImages) && refs.referenceImages.length > 0;
   const hasReferenceVideos = Array.isArray(refs.videoUrls) && refs.videoUrls.length > 0;
   const hasReferenceAudio = typeof refs.audioUrl === 'string' || (Array.isArray(refs.audioUrls) && refs.audioUrls.length > 0);
   const inputType =
-    mode === 'ref2v'
+    mode === 'extend'
+      ? 'video_extension'
+      : mode === 'v2v'
+        ? 'video_edit'
+        : mode === 'ref2v'
       ? 'reference_generation'
       : hasEndImage
         ? 'first_last_frame'

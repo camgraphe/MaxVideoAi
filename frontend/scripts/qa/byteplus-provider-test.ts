@@ -154,6 +154,54 @@ assert.deepEqual(standardSeedance1080pRefPayload.content, [
   },
 ]);
 
+const videoEditPayload = buildBytePlusSeedancePayload({
+  modelId: BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  prompt: 'Replace the product in Video 1 with the product from Image 1 while preserving the camera movement.',
+  durationSec: 6,
+  mode: 'v2v',
+  referenceImageUrls: ['https://assets.example.com/product.png'],
+  referenceVideoUrls: ['https://assets.example.com/source.mp4'],
+  allowedResolutions: ['480p', '720p', '1080p'],
+});
+
+assert.deepEqual(videoEditPayload.content, [
+  {
+    type: 'text',
+    text: 'Replace the product in Video 1 with the product from Image 1 while preserving the camera movement.',
+  },
+  {
+    type: 'image_url',
+    image_url: { url: 'https://assets.example.com/product.png' },
+    role: 'reference_image',
+  },
+  {
+    type: 'video_url',
+    video_url: { url: 'https://assets.example.com/source.mp4' },
+    role: 'reference_video',
+  },
+]);
+
+const videoExtendPayload = buildBytePlusSeedancePayload({
+  modelId: BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  prompt: 'Extend Video 1 with a smooth cinematic continuation.',
+  durationSec: 7,
+  mode: 'extend',
+  referenceVideoUrls: ['https://assets.example.com/source.mp4'],
+  allowedResolutions: ['480p', '720p', '1080p'],
+});
+
+assert.deepEqual(videoExtendPayload.content, [
+  {
+    type: 'text',
+    text: 'Extend Video 1 with a smooth cinematic continuation.',
+  },
+  {
+    type: 'video_url',
+    video_url: { url: 'https://assets.example.com/source.mp4' },
+    role: 'reference_video',
+  },
+]);
+
 assert.throws(
   () =>
     buildBytePlusSeedanceFastPayload({
@@ -221,13 +269,15 @@ const baseSeedanceEngine = {
 
 const bytePlusStandardEngine = applyBytePlusSeedanceRuntimeOptions(baseSeedanceEngine, {
   provider: 'byteplus_modelark',
-  allowedModes: ['t2v', 'i2v', 'ref2v'],
+  allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
 });
 
-assert.deepEqual(bytePlusStandardEngine.modes, ['t2v', 'i2v', 'ref2v']);
+assert.deepEqual(bytePlusStandardEngine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
 assert.deepEqual(bytePlusStandardEngine.resolutions, ['480p', '720p', '1080p']);
 assert.deepEqual(bytePlusStandardEngine.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
 assert.deepEqual(bytePlusStandardEngine.modeCaps?.ref2v?.resolution, ['480p', '720p', '1080p']);
+assert.deepEqual(bytePlusStandardEngine.modeCaps?.v2v?.resolution, ['480p', '720p', '1080p']);
+assert.deepEqual(bytePlusStandardEngine.modeCaps?.extend?.resolution, ['480p', '720p', '1080p']);
 assert.deepEqual(bytePlusStandardEngine.modeCaps?.t2v?.duration, {
   options: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
   default: 5,
@@ -239,6 +289,10 @@ assert.deepEqual(
 assert.deepEqual(
   bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'duration')?.values,
   ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15']
+);
+assert.equal(
+  JSON.stringify(bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'video_urls')).includes('Fal'),
+  false
 );
 assert.equal(
   bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'duration')?.default,
@@ -398,6 +452,53 @@ assert.deepEqual(
     hasReferenceVideos: true,
     hasReferenceAudio: true,
     generateAudio: true,
+    byteplusBillingInputType: 'video_input',
+  }
+);
+
+assert.deepEqual(
+  getBytePlusAccounting({
+    has_audio: true,
+    settings_snapshot: {
+      inputMode: 'v2v',
+      refs: {
+        referenceImages: ['https://assets.example.com/product.png'],
+        videoUrls: ['https://assets.example.com/source.mp4'],
+      },
+    },
+  }),
+  {
+    mode: 'v2v',
+    inputType: 'video_edit',
+    hasStartImage: false,
+    hasEndImage: false,
+    hasReferenceImages: true,
+    hasReferenceVideos: true,
+    hasReferenceAudio: false,
+    generateAudio: true,
+    byteplusBillingInputType: 'video_input',
+  }
+);
+
+assert.deepEqual(
+  getBytePlusAccounting({
+    has_audio: false,
+    settings_snapshot: {
+      inputMode: 'extend',
+      refs: {
+        videoUrls: ['https://assets.example.com/source.mp4'],
+      },
+    },
+  }),
+  {
+    mode: 'extend',
+    inputType: 'video_extension',
+    hasStartImage: false,
+    hasEndImage: false,
+    hasReferenceImages: false,
+    hasReferenceVideos: true,
+    hasReferenceAudio: false,
+    generateAudio: false,
     byteplusBillingInputType: 'video_input',
   }
 );

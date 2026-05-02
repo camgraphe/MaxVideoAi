@@ -1954,14 +1954,14 @@ async function rollbackPendingPayment(params: {
     }
   } else if (needsReferenceImages) {
     const bytePlusHasAnyReference =
-      isBytePlusV1a && (normalizedReferenceImages.length > 0 || videoUrls.length > 0 || Boolean(resolvedAudioUrl) || audioUrls.length > 0);
+      isBytePlusV1a && (normalizedReferenceImages.length > 0 || videoUrls.length > 0);
     if (!normalizedReferenceImages.length && !bytePlusHasAnyReference) {
       logMetric('rejected', {
         errorCode: 'IMAGE_URL_REQUIRED',
         meta: { engineId: engine.id, mode },
       });
       return NextResponse.json(
-        { ok: false, error: isBytePlusV1a ? 'At least one reference image, video, or audio is required for this engine mode' : 'Reference images are required for this engine mode' },
+        { ok: false, error: isBytePlusV1a ? 'At least one reference image or video is required for this engine mode' : 'Reference images are required for this engine mode' },
         { status: 400 }
       );
     }
@@ -2405,12 +2405,24 @@ async function rollbackPendingPayment(params: {
         modelId: isPublicSeedanceBytePlus ? config.seedanceModelId : config.seedanceFastModelId,
         prompt,
         durationSec,
-        mode: mode === 'i2v' ? 'i2v' : mode === 'ref2v' ? 'ref2v' : 't2v',
+        mode:
+          mode === 'i2v'
+            ? 'i2v'
+            : mode === 'ref2v'
+              ? 'ref2v'
+              : mode === 'v2v'
+                ? 'v2v'
+                : mode === 'extend'
+                  ? 'extend'
+                  : 't2v',
         imageUrl: mode === 'i2v' ? initialImageUrl : null,
         endImageUrl: mode === 'i2v' ? endImageUrl : null,
-        referenceImageUrls: mode === 'ref2v' ? normalizedReferenceImages : undefined,
-        referenceVideoUrls: mode === 'ref2v' ? videoUrls : undefined,
-        referenceAudioUrls: mode === 'ref2v' ? Array.from(new Set([...(resolvedAudioUrl ? [resolvedAudioUrl] : []), ...audioUrls])) : undefined,
+        referenceImageUrls: mode === 'ref2v' || mode === 'v2v' ? normalizedReferenceImages : undefined,
+        referenceVideoUrls: mode === 'ref2v' || mode === 'v2v' || mode === 'extend' ? videoUrls : undefined,
+        referenceAudioUrls:
+          mode === 'ref2v' || mode === 'v2v' || mode === 'extend'
+            ? Array.from(new Set([...(resolvedAudioUrl ? [resolvedAudioUrl] : []), ...audioUrls]))
+            : undefined,
         resolution: effectiveResolution,
         ratio: aspectRatio,
         generateAudio: audioEnabled !== false,
@@ -2452,9 +2464,9 @@ async function rollbackPendingPayment(params: {
             generateAudio: audioEnabled !== false,
             hasImage: Boolean(mode === 'i2v' && initialImageUrl),
             hasEndImage: Boolean(mode === 'i2v' && endImageUrl),
-            referenceImageCount: mode === 'ref2v' ? normalizedReferenceImages.length : 0,
-            referenceVideoCount: mode === 'ref2v' ? videoUrls.length : 0,
-            referenceAudioCount: mode === 'ref2v' ? audioUrls.length : 0,
+            referenceImageCount: mode === 'ref2v' || mode === 'v2v' ? normalizedReferenceImages.length : 0,
+            referenceVideoCount: mode === 'ref2v' || mode === 'v2v' || mode === 'extend' ? videoUrls.length : 0,
+            referenceAudioCount: mode === 'ref2v' || mode === 'v2v' || mode === 'extend' ? audioUrls.length : 0,
           },
         },
       });
