@@ -9,7 +9,14 @@ import {
   normalizeBytePlusTask,
   scrubBytePlusError,
 } from '../../src/server/video-providers/byteplus-modelark';
-import { getBytePlusAccounting, getBytePlusUnitPriceUsdPer1kTokens } from '../../server/byteplus-poll';
+import {
+  buildNextBytePlusStorageCopyState,
+  getBytePlusAccounting,
+  getBytePlusStorageCopyState,
+  getBytePlusUnitPriceUsdPer1kTokens,
+  resolveBytePlusStorageCopyMaxAttempts,
+  shouldRetryBytePlusStorageCopy,
+} from '../../server/byteplus-poll';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '../../src/lib/seedance-2-pricing';
 import type { EngineCaps } from '../../types/engines';
 
@@ -501,6 +508,66 @@ assert.deepEqual(
     generateAudio: false,
     byteplusBillingInputType: 'video_input',
   }
+);
+
+assert.equal(resolveBytePlusStorageCopyMaxAttempts('3'), 3);
+assert.equal(resolveBytePlusStorageCopyMaxAttempts('0'), 6);
+assert.deepEqual(getBytePlusStorageCopyState({}), {
+  attempts: 0,
+  firstFailedAt: null,
+  lastFailedAt: null,
+  lastProviderStatus: null,
+  lastReason: null,
+});
+assert.deepEqual(
+  buildNextBytePlusStorageCopyState(
+    {
+      byteplusStorageCopy: {
+        attempts: 1,
+        firstFailedAt: '2026-05-02T18:10:00.000Z',
+      },
+    },
+    {
+      nowIso: '2026-05-02T18:12:00.000Z',
+      providerStatus: 'succeeded',
+      reason: 'provider_video_copy_failed',
+    }
+  ),
+  {
+    attempts: 2,
+    firstFailedAt: '2026-05-02T18:10:00.000Z',
+    lastFailedAt: '2026-05-02T18:12:00.000Z',
+    lastProviderStatus: 'succeeded',
+    lastReason: 'provider_video_copy_failed',
+  }
+);
+assert.equal(
+  shouldRetryBytePlusStorageCopy({
+    state: { attempts: 2 },
+    createdAt: '2026-05-02T18:00:00.000Z',
+    nowMs: Date.parse('2026-05-02T18:12:00.000Z'),
+    maxAttempts: 3,
+  }),
+  true
+);
+assert.equal(
+  shouldRetryBytePlusStorageCopy({
+    state: { attempts: 3 },
+    createdAt: '2026-05-02T18:00:00.000Z',
+    nowMs: Date.parse('2026-05-02T18:12:00.000Z'),
+    maxAttempts: 3,
+  }),
+  false
+);
+assert.equal(
+  shouldRetryBytePlusStorageCopy({
+    state: { attempts: 1 },
+    createdAt: '2026-05-01T18:00:00.000Z',
+    nowMs: Date.parse('2026-05-02T18:30:00.000Z'),
+    maxAttempts: 6,
+    copyWindowMs: 23 * 60 * 60_000,
+  }),
+  false
 );
 
 console.log('byteplus-provider tests passed');

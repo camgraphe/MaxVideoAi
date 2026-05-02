@@ -34,6 +34,8 @@ type BytePlusPendingJob = {
 
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
+const BYTEPLUS_OUTPUT_COPY_WINDOW_MS = 23 * 60 * 60_000;
+const DEFAULT_PROVIDER_VIDEO_COPY_MAX_ATTEMPTS = 6;
 const BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0056;
 const BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS = 0.007;
 // Live V1a smoke test: 720p / 16:9 / 5.041667s returned 108,900 tokens, $0.60984 provider cost.
@@ -80,6 +82,62 @@ function expectedBytePlusTokens(job: Pick<BytePlusPendingJob, 'duration_sec' | '
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+export type BytePlusStorageCopyState = {
+  attempts: number;
+  firstFailedAt: string | null;
+  lastFailedAt: string | null;
+  lastProviderStatus?: string | null;
+  lastReason?: string | null;
+};
+
+export function resolveBytePlusStorageCopyMaxAttempts(raw = process.env.PROVIDER_VIDEO_COPY_MAX_ATTEMPTS ?? process.env.BYTEPLUS_STORAGE_COPY_MAX_ATTEMPTS): number {
+  const parsed = Number.parseInt(String(raw ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 50) : DEFAULT_PROVIDER_VIDEO_COPY_MAX_ATTEMPTS;
+}
+
+export function getBytePlusStorageCopyState(settingsSnapshot: unknown): BytePlusStorageCopyState {
+  const settings = isRecord(settingsSnapshot) ? settingsSnapshot : {};
+  const raw = isRecord(settings.byteplusStorageCopy) ? settings.byteplusStorageCopy : {};
+  const attempts = Number(raw.attempts);
+  return {
+    attempts: Number.isFinite(attempts) && attempts > 0 ? Math.floor(attempts) : 0,
+    firstFailedAt: typeof raw.firstFailedAt === 'string' && raw.firstFailedAt.length ? raw.firstFailedAt : null,
+    lastFailedAt: typeof raw.lastFailedAt === 'string' && raw.lastFailedAt.length ? raw.lastFailedAt : null,
+    lastProviderStatus: typeof raw.lastProviderStatus === 'string' ? raw.lastProviderStatus : null,
+    lastReason: typeof raw.lastReason === 'string' ? raw.lastReason : null,
+  };
+}
+
+export function buildNextBytePlusStorageCopyState(
+  settingsSnapshot: unknown,
+  params: { nowIso?: string; providerStatus?: string | null; reason?: string | null } = {}
+): BytePlusStorageCopyState {
+  const previous = getBytePlusStorageCopyState(settingsSnapshot);
+  const nowIso = params.nowIso ?? new Date().toISOString();
+  return {
+    attempts: previous.attempts + 1,
+    firstFailedAt: previous.firstFailedAt ?? nowIso,
+    lastFailedAt: nowIso,
+    lastProviderStatus: params.providerStatus ?? previous.lastProviderStatus ?? null,
+    lastReason: params.reason ?? previous.lastReason ?? null,
+  };
+}
+
+export function shouldRetryBytePlusStorageCopy(params: {
+  state: Pick<BytePlusStorageCopyState, 'attempts'>;
+  createdAt: string;
+  nowMs?: number;
+  maxAttempts?: number;
+  copyWindowMs?: number;
+}): boolean {
+  const maxAttempts = params.maxAttempts ?? resolveBytePlusStorageCopyMaxAttempts();
+  if (params.state.attempts >= maxAttempts) return false;
+  const createdAtMs = Date.parse(params.createdAt);
+  if (!Number.isFinite(createdAtMs)) return true;
+  const copyWindowMs = params.copyWindowMs ?? BYTEPLUS_OUTPUT_COPY_WINDOW_MS;
+  return (params.nowMs ?? Date.now()) - createdAtMs < copyWindowMs;
 }
 
 export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_snapshot' | 'has_audio'>) {
@@ -236,6 +294,30 @@ async function markJobFailed(job: BytePlusPendingJob, message: string, providerS
   await recordPollEvent(job, 'poll:failed', { providerStatus: providerStatus ?? null, refunded });
 }
 
+async function deferStorageCopyRetry(job: BytePlusPendingJob, state: BytePlusStorageCopyState, providerStatus?: string | null) {
+  await query(
+    `UPDATE app_jobs
+        SET status = 'processing',
+            progress = GREATEST(progress, 90),
+            message = $2,
+            settings_snapshot = jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusStorageCopy}', $3::jsonb, true),
+            updated_at = NOW()
+      WHERE job_id = $1
+        AND status = ANY($4::text[])`,
+    [
+      job.job_id,
+      'Generated video is ready. Copying it to MaxVideoAI storage.',
+      JSON.stringify(state),
+      ACTIVE_JOB_STATUSES,
+    ]
+  );
+  await recordPollEvent(job, 'poll:storage-copy-retry', {
+    providerStatus: providerStatus ?? null,
+    attempts: state.attempts,
+    maxAttempts: resolveBytePlusStorageCopyMaxAttempts(),
+  });
+}
+
 export async function runBytePlusPoll() {
   if (!isBytePlusModelArkEnabled()) {
     return NextResponse.json({ ok: true, enabled: false, checked: 0, updates: 0 });
@@ -323,7 +405,19 @@ export async function runBytePlusPoll() {
         videoUrl: task.videoUrl,
       });
       if (!copiedVideoUrl) {
-        await markJobFailed(job, 'BytePlus output video could not be copied to MaxVideoAI storage.', task.rawStatus);
+        const nextCopyState = buildNextBytePlusStorageCopyState(job.settings_snapshot, {
+          providerStatus: task.rawStatus,
+          reason: 'provider_video_copy_failed',
+        });
+        if (shouldRetryBytePlusStorageCopy({ state: nextCopyState, createdAt: job.created_at })) {
+          await deferStorageCopyRetry(job, nextCopyState, task.rawStatus);
+        } else {
+          await markJobFailed(
+            job,
+            `BytePlus output video could not be copied to MaxVideoAI storage after ${nextCopyState.attempts} attempts.`,
+            task.rawStatus
+          );
+        }
         updates += 1;
         continue;
       }
