@@ -120,7 +120,26 @@ export function HeroVideoShowcase({
     setIsPlaying(false);
     setProgress(0);
     setCurrentTime(0);
-    setShouldLoadVideo(Boolean(selected?.videoSrc && shouldAutoplayPreview));
+
+    if (!selected?.videoSrc || !shouldAutoplayPreview) {
+      setShouldLoadVideo(false);
+      return;
+    }
+
+    setShouldLoadVideo(false);
+    const loadPreview = () => setShouldLoadVideo(true);
+    const idleCallback =
+      typeof window.requestIdleCallback === 'function'
+        ? window.requestIdleCallback(loadPreview, { timeout: 1800 })
+        : window.setTimeout(loadPreview, 1200);
+
+    return () => {
+      if (typeof idleCallback === 'number') {
+        window.clearTimeout(idleCallback);
+      } else if (typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleCallback);
+      }
+    };
   }, [selected?.id, selected?.videoSrc, shouldAutoplayPreview]);
 
   useEffect(() => {
@@ -223,6 +242,8 @@ export function HeroVideoShowcase({
               src={selected.posterSrc}
               alt={selected.imageAlt}
               fill
+              priority
+              fetchPriority="high"
               sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
               className="object-cover"
             />

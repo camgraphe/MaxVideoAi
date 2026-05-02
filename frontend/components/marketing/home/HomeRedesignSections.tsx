@@ -630,8 +630,7 @@ export function HomeHero({
         alt=""
         aria-hidden="true"
         fill
-        priority
-        fetchPriority="high"
+        fetchPriority="low"
         sizes="100vw"
         className="pointer-events-none object-cover object-center opacity-65 dark:brightness-[0.58] dark:contrast-110 dark:invert dark:opacity-[0.34]"
       />
