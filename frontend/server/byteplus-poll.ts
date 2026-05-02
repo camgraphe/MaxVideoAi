@@ -4,6 +4,7 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { ensureFastStartVideo } from '@/server/video-faststart';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
+  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
   PUBLIC_SEEDANCE_ENGINE_ID,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
@@ -38,8 +39,43 @@ const BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS = 0.007;
 // Live V1a smoke test: 720p / 16:9 / 5.041667s returned 108,900 tokens, $0.60984 provider cost.
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 
-function expected720pTokens(durationSec: number): number {
-  return (1280 * 720 * Math.max(1, Math.round(durationSec)) * 24) / 1024;
+const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
+  '480p': {
+    '21:9': { width: 1120, height: 480 },
+    '16:9': { width: 854, height: 480 },
+    '4:3': { width: 640, height: 480 },
+    '1:1': { width: 480, height: 480 },
+    '3:4': { width: 480, height: 640 },
+    '9:16': { width: 480, height: 854 },
+  },
+  '720p': {
+    '21:9': { width: 1680, height: 720 },
+    '16:9': { width: 1280, height: 720 },
+    '4:3': { width: 960, height: 720 },
+    '1:1': { width: 720, height: 720 },
+    '3:4': { width: 720, height: 960 },
+    '9:16': { width: 720, height: 1280 },
+  },
+  '1080p': {
+    '21:9': { width: 2520, height: 1080 },
+    '16:9': { width: 1920, height: 1080 },
+    '4:3': { width: 1440, height: 1080 },
+    '1:1': { width: 1080, height: 1080 },
+    '3:4': { width: 1080, height: 1440 },
+    '9:16': { width: 1080, height: 1920 },
+  },
+};
+
+function expectedBytePlusTokens(job: Pick<BytePlusPendingJob, 'duration_sec' | 'settings_snapshot'>): number {
+  const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+  const core = isRecord(settings.core) ? settings.core : {};
+  const resolution = typeof core.resolution === 'string' ? core.resolution : '720p';
+  const aspectRatio =
+    typeof core.aspectRatio === 'string' && BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(core.aspectRatio as never)
+      ? core.aspectRatio
+      : '16:9';
+  const dimensions = BYTEPLUS_TOKEN_DIMENSIONS[resolution]?.[aspectRatio] ?? BYTEPLUS_TOKEN_DIMENSIONS['720p']['16:9'];
+  return (dimensions.width * dimensions.height * Math.max(1, Math.round(job.duration_sec)) * 24) / 1024;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -49,18 +85,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_snapshot' | 'has_audio'>) {
   const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
   const refs = isRecord(settings.refs) ? settings.refs : {};
-  const mode = settings.inputMode === 'i2v' ? 'i2v' : 't2v';
+  const mode = settings.inputMode === 'ref2v' ? 'ref2v' : settings.inputMode === 'i2v' ? 'i2v' : 't2v';
   const hasStartImage = mode === 'i2v' && typeof refs.imageUrl === 'string' && refs.imageUrl.trim().length > 0;
   const hasEndImage = mode === 'i2v' && typeof refs.endImageUrl === 'string' && refs.endImageUrl.trim().length > 0;
-  const inputType = hasEndImage ? 'first_last_frame' : hasStartImage ? 'image_input' : 'text_input';
+  const hasReferenceImages = Array.isArray(refs.referenceImages) && refs.referenceImages.length > 0;
+  const hasReferenceVideos = Array.isArray(refs.videoUrls) && refs.videoUrls.length > 0;
+  const hasReferenceAudio = typeof refs.audioUrl === 'string' || (Array.isArray(refs.audioUrls) && refs.audioUrls.length > 0);
+  const inputType =
+    mode === 'ref2v'
+      ? 'reference_generation'
+      : hasEndImage
+        ? 'first_last_frame'
+        : hasStartImage
+          ? 'image_input'
+          : 'text_input';
 
   return {
     mode,
     inputType,
     hasStartImage,
     hasEndImage,
+    hasReferenceImages,
+    hasReferenceVideos,
+    hasReferenceAudio,
     generateAudio: job.has_audio === true,
-    byteplusBillingInputType: 'no_video_input',
+    byteplusBillingInputType: hasReferenceVideos ? 'video_input' : 'no_video_input',
   };
 }
 
@@ -280,7 +329,11 @@ export async function runBytePlusPoll() {
         }
       }
 
-      const totalTokens = task.usage?.totalTokens ?? expected720pTokens(job.duration_sec);
+      const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+      const core = isRecord(settings.core) ? settings.core : {};
+      const costResolution = typeof core.resolution === 'string' ? core.resolution : '720p';
+      const costAspectRatio = typeof core.aspectRatio === 'string' ? core.aspectRatio : job.aspect_ratio ?? '16:9';
+      const totalTokens = task.usage?.totalTokens ?? expectedBytePlusTokens(job);
       const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(job.engine_id);
       const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
       const accounting = getBytePlusAccounting(job);
@@ -294,8 +347,11 @@ export async function runBytePlusPoll() {
         generate_audio: accounting.generateAudio,
         has_start_image: accounting.hasStartImage,
         has_end_image: accounting.hasEndImage,
-        resolution: '720p',
-        aspect_ratio: '16:9',
+        has_reference_images: accounting.hasReferenceImages,
+        has_reference_videos: accounting.hasReferenceVideos,
+        has_reference_audio: accounting.hasReferenceAudio,
+        resolution: costResolution,
+        aspect_ratio: costAspectRatio,
         duration_sec: job.duration_sec,
         provider_tokens: totalTokens,
         total_tokens: totalTokens,

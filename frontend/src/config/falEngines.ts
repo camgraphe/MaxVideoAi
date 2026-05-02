@@ -155,6 +155,15 @@ const SEEDANCE_2_TOKEN_DIMENSIONS = {
     '3:4': { width: 720, height: 960 },
     '9:16': { width: 720, height: 1280 },
   },
+  '1080p': {
+    auto: { width: 1920, height: 1080 },
+    '21:9': { width: 2520, height: 1080 },
+    '16:9': { width: 1920, height: 1080 },
+    '4:3': { width: 1440, height: 1080 },
+    '1:1': { width: 1080, height: 1080 },
+    '3:4': { width: 1080, height: 1440 },
+    '9:16': { width: 1080, height: 1920 },
+  },
 } as const;
 
 function buildSeedance2PricingDetails(unitPriceUsdPer1kTokens: number): EnginePricingDetails {

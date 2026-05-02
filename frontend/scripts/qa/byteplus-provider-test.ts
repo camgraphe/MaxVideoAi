@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 import {
   BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  applyBytePlusSeedanceRuntimeOptions,
   buildBytePlusSeedancePayload,
   buildBytePlusSeedanceFastPayload,
   getBytePlusUserSafeErrorMessage,
@@ -9,6 +10,7 @@ import {
   scrubBytePlusError,
 } from '../../src/server/video-providers/byteplus-modelark';
 import { getBytePlusAccounting, getBytePlusUnitPriceUsdPer1kTokens } from '../../server/byteplus-poll';
+import type { EngineCaps } from '../../types/engines';
 
 const payload = buildBytePlusSeedanceFastPayload({
   modelId: 'dreamina-seedance-2-0-fast-260128',
@@ -113,6 +115,112 @@ assert.deepEqual(standardSeedancePayload.content, [
   },
 ]);
 
+const standardSeedance1080pRefPayload = buildBytePlusSeedancePayload({
+  modelId: BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  prompt: 'Use these references to create a cinematic brand video.',
+  durationSec: 8,
+  mode: 'ref2v',
+  resolution: '1080p',
+  ratio: '9:16',
+  referenceImageUrls: ['https://assets.example.com/ref.png'],
+  referenceVideoUrls: ['https://assets.example.com/ref.mp4'],
+  referenceAudioUrls: ['https://assets.example.com/ref.mp3'],
+  generateAudio: true,
+  allowedResolutions: ['480p', '720p', '1080p'],
+});
+
+assert.equal(standardSeedance1080pRefPayload.resolution, '1080p');
+assert.equal(standardSeedance1080pRefPayload.ratio, '9:16');
+assert.deepEqual(standardSeedance1080pRefPayload.content, [
+  {
+    type: 'text',
+    text: 'Use these references to create a cinematic brand video.',
+  },
+  {
+    type: 'image_url',
+    image_url: { url: 'https://assets.example.com/ref.png' },
+    role: 'reference_image',
+  },
+  {
+    type: 'video_url',
+    video_url: { url: 'https://assets.example.com/ref.mp4' },
+    role: 'reference_video',
+  },
+  {
+    type: 'audio_url',
+    audio_url: { url: 'https://assets.example.com/ref.mp3' },
+    role: 'reference_audio',
+  },
+]);
+
+assert.throws(
+  () =>
+    buildBytePlusSeedanceFastPayload({
+      modelId: 'dreamina-seedance-2-0-fast-260128',
+      prompt: 'Fast should not accept 1080p.',
+      durationSec: 5,
+      resolution: '1080p',
+      allowedResolutions: ['480p', '720p'],
+    }),
+  /resolution/i
+);
+
+const baseSeedanceEngine = {
+  id: 'seedance-2-0',
+  label: 'Seedance 2.0',
+  provider: 'ByteDance',
+  status: 'live',
+  latencyTier: 'standard',
+  modes: ['t2v', 'i2v', 'ref2v'],
+  maxDurationSec: 15,
+  resolutions: ['480p', '720p'],
+  aspectRatios: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+  fps: [24],
+  audio: true,
+  upscale4k: false,
+  extend: true,
+  motionControls: true,
+  keyframes: false,
+  params: {},
+  inputLimits: {},
+  inputSchema: {
+    required: [{ id: 'prompt', type: 'text', label: 'Prompt' }],
+    optional: [
+      { id: 'resolution', type: 'enum', label: 'Resolution', values: ['480p', '720p'], default: '720p' },
+      { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', values: ['auto', '16:9'], default: 'auto' },
+      { id: 'image_urls', type: 'image', label: 'Reference images', modes: ['ref2v'], maxCount: 9 },
+      { id: 'video_urls', type: 'video', label: 'Reference videos', modes: ['ref2v'], maxCount: 3 },
+      { id: 'audio_urls', type: 'audio', label: 'Reference audio', modes: ['ref2v'], maxCount: 3 },
+    ],
+  },
+  updatedAt: '2026-05-02T00:00:00Z',
+  ttlSec: 600,
+  availability: 'available',
+  modeCaps: {
+    t2v: { modes: ['t2v'], resolution: ['480p', '720p'], aspectRatio: ['auto', '16:9'] },
+    i2v: { modes: ['i2v'], resolution: ['480p', '720p'], aspectRatio: ['auto', '16:9'] },
+    ref2v: { modes: ['ref2v'], resolution: ['480p', '720p'], aspectRatio: ['auto', '16:9'] },
+  },
+} satisfies EngineCaps;
+
+const bytePlusStandardEngine = applyBytePlusSeedanceRuntimeOptions(baseSeedanceEngine, {
+  provider: 'byteplus_modelark',
+  allowedModes: ['t2v', 'i2v', 'ref2v'],
+});
+
+assert.deepEqual(bytePlusStandardEngine.modes, ['t2v', 'i2v', 'ref2v']);
+assert.deepEqual(bytePlusStandardEngine.resolutions, ['480p', '720p', '1080p']);
+assert.deepEqual(bytePlusStandardEngine.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+assert.deepEqual(bytePlusStandardEngine.modeCaps?.ref2v?.resolution, ['480p', '720p', '1080p']);
+assert.deepEqual(
+  bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values,
+  ['480p', '720p', '1080p']
+);
+assert.equal(
+  bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'aspect_ratio')?.default,
+  '16:9'
+);
+
 assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0'), 0.007);
 assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast'), 0.0056);
 
@@ -197,6 +305,9 @@ assert.deepEqual(
     inputType: 'image_input',
     hasStartImage: true,
     hasEndImage: false,
+    hasReferenceImages: false,
+    hasReferenceVideos: false,
+    hasReferenceAudio: false,
     generateAudio: true,
     byteplusBillingInputType: 'no_video_input',
   }
@@ -218,8 +329,36 @@ assert.deepEqual(
     inputType: 'first_last_frame',
     hasStartImage: true,
     hasEndImage: true,
+    hasReferenceImages: false,
+    hasReferenceVideos: false,
+    hasReferenceAudio: false,
     generateAudio: false,
     byteplusBillingInputType: 'no_video_input',
+  }
+);
+
+assert.deepEqual(
+  getBytePlusAccounting({
+    has_audio: true,
+    settings_snapshot: {
+      inputMode: 'ref2v',
+      refs: {
+        referenceImages: ['https://assets.example.com/ref.png'],
+        videoUrls: ['https://assets.example.com/ref.mp4'],
+        audioUrl: 'https://assets.example.com/ref.mp3',
+      },
+    },
+  }),
+  {
+    mode: 'ref2v',
+    inputType: 'reference_generation',
+    hasStartImage: false,
+    hasEndImage: false,
+    hasReferenceImages: true,
+    hasReferenceVideos: true,
+    hasReferenceAudio: true,
+    generateAudio: true,
+    byteplusBillingInputType: 'video_input',
   }
 );
 

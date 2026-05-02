@@ -46,8 +46,10 @@ import {
   BYTEPLUS_MODELARK_PROVIDER,
   buildBytePlusSeedancePayload,
   BytePlusModelArkError,
+  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
+  getBytePlusSeedanceAllowedResolutions,
   getBytePlusUserSafeErrorMessage,
   isSeedanceBytePlusModeAllowed,
   isSeedanceFastBytePlusModeAllowed,
@@ -823,10 +825,33 @@ export async function POST(req: NextRequest) {
       );
     }
     durationSec = normalizedDuration;
-    requestedResolution = '720p';
-    pricingResolution = '720p';
-    effectiveResolution = '720p';
-    aspectRatio = '16:9';
+    const allowedResolutions = getBytePlusSeedanceAllowedResolutions(engine.id);
+    const bytePlusResolution = requestedResolution === 'auto' ? '720p' : requestedResolution;
+    if (!allowedResolutions.includes(bytePlusResolution as (typeof allowedResolutions)[number])) {
+      logMetric('rejected', {
+        errorCode: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
+        meta: { resolution: requestedResolution, engineId: engine.id },
+      });
+      return NextResponse.json(
+        { ok: false, error: 'BYTEPLUS_RESOLUTION_UNSUPPORTED', message: 'BytePlus does not support this resolution for the selected Seedance model.' },
+        { status: 400 }
+      );
+    }
+    const bytePlusAspectRatio = !aspectRatio || aspectRatio === 'auto' ? '16:9' : aspectRatio;
+    if (!BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(bytePlusAspectRatio as (typeof BYTEPLUS_SEEDANCE_ASPECT_RATIOS)[number])) {
+      logMetric('rejected', {
+        errorCode: 'BYTEPLUS_RATIO_UNSUPPORTED',
+        meta: { aspectRatio, engineId: engine.id },
+      });
+      return NextResponse.json(
+        { ok: false, error: 'BYTEPLUS_RATIO_UNSUPPORTED', message: 'BytePlus does not support this aspect ratio for Seedance.' },
+        { status: 400 }
+      );
+    }
+    requestedResolution = bytePlusResolution;
+    pricingResolution = bytePlusResolution;
+    effectiveResolution = bytePlusResolution;
+    aspectRatio = bytePlusAspectRatio;
     audioEnabled = audioEnabled ?? true;
   }
   metricState.durationSec = durationSec;
@@ -1873,6 +1898,15 @@ async function rollbackPendingPayment(params: {
   if (mode === 'ref2v' && normalizedReferenceImages.length) {
     validationPayload.image_urls = normalizedReferenceImages;
   }
+  if (mode === 'ref2v' && videoUrls.length) {
+    validationPayload.video_urls = videoUrls;
+  }
+  if (mode === 'ref2v') {
+    const refAudioUrls = Array.from(new Set([...(resolvedAudioUrl ? [resolvedAudioUrl] : []), ...audioUrls]));
+    if (refAudioUrls.length) {
+      validationPayload.audio_urls = refAudioUrls;
+    }
+  }
   if (mode === 'v2v' && normalizedReferenceImages.length) {
     validationPayload.reference_image_urls = normalizedReferenceImages;
   }
@@ -1919,13 +1953,15 @@ async function rollbackPendingPayment(params: {
       validationPayload.image_url = initialImageUrl;
     }
   } else if (needsReferenceImages) {
-    if (!normalizedReferenceImages.length) {
+    const bytePlusHasAnyReference =
+      isBytePlusV1a && (normalizedReferenceImages.length > 0 || videoUrls.length > 0 || Boolean(resolvedAudioUrl) || audioUrls.length > 0);
+    if (!normalizedReferenceImages.length && !bytePlusHasAnyReference) {
       logMetric('rejected', {
         errorCode: 'IMAGE_URL_REQUIRED',
         meta: { engineId: engine.id, mode },
       });
       return NextResponse.json(
-        { ok: false, error: 'Reference images are required for this engine mode' },
+        { ok: false, error: isBytePlusV1a ? 'At least one reference image, video, or audio is required for this engine mode' : 'Reference images are required for this engine mode' },
         { status: 400 }
       );
     }
@@ -2369,10 +2405,16 @@ async function rollbackPendingPayment(params: {
         modelId: isPublicSeedanceBytePlus ? config.seedanceModelId : config.seedanceFastModelId,
         prompt,
         durationSec,
-        mode: mode === 'i2v' ? 'i2v' : 't2v',
+        mode: mode === 'i2v' ? 'i2v' : mode === 'ref2v' ? 'ref2v' : 't2v',
         imageUrl: mode === 'i2v' ? initialImageUrl : null,
         endImageUrl: mode === 'i2v' ? endImageUrl : null,
+        referenceImageUrls: mode === 'ref2v' ? normalizedReferenceImages : undefined,
+        referenceVideoUrls: mode === 'ref2v' ? videoUrls : undefined,
+        referenceAudioUrls: mode === 'ref2v' ? Array.from(new Set([...(resolvedAudioUrl ? [resolvedAudioUrl] : []), ...audioUrls])) : undefined,
+        resolution: effectiveResolution,
+        ratio: aspectRatio,
         generateAudio: audioEnabled !== false,
+        allowedResolutions: getBytePlusSeedanceAllowedResolutions(engine.id),
       });
       const providerTask = await getBytePlusModelArkClient().createSeedanceFastTask(payload);
       const providerJobId = providerTask.providerJobId;
@@ -2405,11 +2447,14 @@ async function rollbackPendingPayment(params: {
             mode,
             promptLength: prompt.length,
             durationSec,
-            resolution: '720p',
-            aspectRatio: '16:9',
+            resolution: effectiveResolution,
+            aspectRatio,
             generateAudio: audioEnabled !== false,
             hasImage: Boolean(mode === 'i2v' && initialImageUrl),
             hasEndImage: Boolean(mode === 'i2v' && endImageUrl),
+            referenceImageCount: mode === 'ref2v' ? normalizedReferenceImages.length : 0,
+            referenceVideoCount: mode === 'ref2v' ? videoUrls.length : 0,
+            referenceAudioCount: mode === 'ref2v' ? audioUrls.length : 0,
           },
         },
       });

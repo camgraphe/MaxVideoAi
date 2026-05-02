@@ -1,5 +1,6 @@
 import { ENV } from '@/lib/env';
 import type { NormalizedVideoProviderTask, NormalizedVideoProviderUsage } from '@/server/video-providers/types';
+import type { AspectRatio, EngineCaps, EngineInputField, Mode, Resolution } from '@/types/engines';
 
 export const BYTEPLUS_MODELARK_PROVIDER = 'byteplus_modelark';
 export const PUBLIC_SEEDANCE_ENGINE_ID = 'seedance-2-0';
@@ -8,6 +9,10 @@ export const BYTEPLUS_SEEDANCE_FAST_ENGINE_ID = 'seedance-2-0-fast-byteplus';
 export const BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-260128';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-fast-260128';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL = 'https://ark.ap-southeast.bytepluses.com/api/v3';
+export const BYTEPLUS_SEEDANCE_MODES: Mode[] = ['t2v', 'i2v', 'ref2v'];
+export const BYTEPLUS_SEEDANCE_RESOLUTIONS: Resolution[] = ['480p', '720p', '1080p'];
+export const BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS: Resolution[] = ['480p', '720p'];
+export const BYTEPLUS_SEEDANCE_ASPECT_RATIOS: AspectRatio[] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
 
 type BytePlusContentItem =
   | { type: 'text'; text: string }
@@ -15,13 +20,23 @@ type BytePlusContentItem =
       type: 'image_url';
       image_url: { url: string };
       role: 'reference_image';
+    }
+  | {
+      type: 'video_url';
+      video_url: { url: string };
+      role: 'reference_video';
+    }
+  | {
+      type: 'audio_url';
+      audio_url: { url: string };
+      role: 'reference_audio';
     };
 
 export type BytePlusSeedanceFastPayload = {
   model: string;
   content: BytePlusContentItem[];
-  resolution: '720p';
-  ratio: '16:9';
+  resolution: '480p' | '720p' | '1080p';
+  ratio: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
   duration: number;
   generate_audio: boolean;
   watermark: false;
@@ -58,6 +73,49 @@ function splitCsvEnv(value: string | undefined): string[] {
     .split(',')
     .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
+}
+
+function uniqueNonEmptyUrls(values: Array<string | null | undefined> | undefined): string[] {
+  return Array.from(
+    new Set(
+      (values ?? [])
+        .map((value) => (typeof value === 'string' ? value.trim() : ''))
+        .filter(Boolean)
+    )
+  );
+}
+
+function allowedBytePlusModes(value: string | undefined): Mode[] {
+  const configured = splitCsvEnv(value);
+  const modes = configured.filter((mode): mode is Mode => BYTEPLUS_SEEDANCE_MODES.includes(mode as Mode));
+  return modes.length ? modes : ['t2v'];
+}
+
+function filterInputFieldsForModes(
+  fields: EngineInputField[] | undefined,
+  allowedModes: Mode[],
+  resolutions: Resolution[]
+): EngineInputField[] | undefined {
+  if (!fields) return fields;
+  return fields
+    .filter((field) => !field.modes?.length || field.modes.some((mode) => allowedModes.includes(mode)))
+    .map((field) => {
+      if (field.id === 'resolution' && field.type === 'enum') {
+        return {
+          ...field,
+          values: resolutions,
+          default: resolutions.includes('720p') ? '720p' : resolutions[0] ?? field.default,
+        };
+      }
+      if (field.id === 'aspect_ratio' && field.type === 'enum') {
+        return {
+          ...field,
+          values: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+          default: '16:9',
+        };
+      }
+      return field;
+    });
 }
 
 export function isBytePlusModelArkEnabled(): boolean {
@@ -105,13 +163,94 @@ export function seedanceFastBytePlusAdminOnly(): boolean {
 }
 
 export function isSeedanceBytePlusModeAllowed(mode: string | null | undefined): boolean {
-  const allowedModes = splitCsvEnv(ENV.SEEDANCE_2_BYTEPLUS_MODES);
-  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase()) : false;
+  const allowedModes = allowedBytePlusModes(ENV.SEEDANCE_2_BYTEPLUS_MODES);
+  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase() as Mode) : false;
 }
 
 export function isSeedanceFastBytePlusModeAllowed(mode: string | null | undefined): boolean {
-  const allowedModes = splitCsvEnv(ENV.SEEDANCE_FAST_BYTEPLUS_MODES);
-  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase()) : false;
+  const allowedModes = allowedBytePlusModes(ENV.SEEDANCE_FAST_BYTEPLUS_MODES);
+  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase() as Mode) : false;
+}
+
+export function getBytePlusSeedanceAllowedModes(engineId: string | null | undefined): Mode[] {
+  if (isPublicSeedanceFastEngine(engineId) || isBytePlusSeedanceFastEngine(engineId)) {
+    return allowedBytePlusModes(ENV.SEEDANCE_FAST_BYTEPLUS_MODES);
+  }
+  if (isPublicSeedanceEngine(engineId)) {
+    return allowedBytePlusModes(ENV.SEEDANCE_2_BYTEPLUS_MODES);
+  }
+  return ['t2v'];
+}
+
+export function getBytePlusSeedanceAllowedResolutions(engineId: string | null | undefined): Resolution[] {
+  return isPublicSeedanceEngine(engineId) ? BYTEPLUS_SEEDANCE_RESOLUTIONS : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
+}
+
+export function applyBytePlusSeedanceRuntimeOptions(
+  engine: EngineCaps,
+  options?: {
+    provider?: 'fal' | 'byteplus_modelark';
+    allowedModes?: Mode[];
+  }
+): EngineCaps {
+  const provider =
+    options?.provider ??
+    (isPublicSeedanceEngine(engine.id)
+      ? seedanceProviderOverride()
+      : isPublicSeedanceFastEngine(engine.id) || isBytePlusSeedanceFastEngine(engine.id)
+        ? seedanceFastProviderOverride()
+        : 'fal');
+  if (provider !== BYTEPLUS_MODELARK_PROVIDER) {
+    return engine;
+  }
+
+  const allowedModes = (options?.allowedModes ?? getBytePlusSeedanceAllowedModes(engine.id)).filter((mode) =>
+    BYTEPLUS_SEEDANCE_MODES.includes(mode)
+  );
+  const resolutions = getBytePlusSeedanceAllowedResolutions(engine.id);
+  const modeCaps = engine.modeCaps
+    ? Object.fromEntries(
+        Object.entries(engine.modeCaps)
+          .filter(([mode]) => allowedModes.includes(mode as Mode))
+          .map(([mode, caps]) => [
+            mode,
+            caps
+              ? {
+                  ...caps,
+                  modes: caps.modes.filter((candidate) => allowedModes.includes(candidate)),
+                  resolution: resolutions,
+                  resolutionLocked: false,
+                  aspectRatio: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+                  audioToggle: true,
+                }
+              : caps,
+          ])
+      )
+    : undefined;
+
+  return {
+    ...engine,
+    provider: 'BytePlus ModelArk',
+    modes: allowedModes,
+    resolutions,
+    aspectRatios: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+    fps: [24],
+    audio: true,
+    motionControls: true,
+    keyframes: allowedModes.includes('i2v'),
+    modeCaps,
+    inputSchema: engine.inputSchema
+      ? {
+          ...engine.inputSchema,
+          required: filterInputFieldsForModes(engine.inputSchema.required, allowedModes, resolutions),
+          optional: filterInputFieldsForModes(engine.inputSchema.optional, allowedModes, resolutions),
+        }
+      : engine.inputSchema,
+    providerMeta: {
+      ...engine.providerMeta,
+      provider: BYTEPLUS_MODELARK_PROVIDER,
+    },
+  };
 }
 
 export function getBytePlusArkConfig() {
@@ -128,37 +267,66 @@ export function buildBytePlusSeedancePayload(params: {
   modelId: string;
   prompt: string;
   durationSec: number;
-  mode?: 't2v' | 'i2v';
+  mode?: 't2v' | 'i2v' | 'ref2v';
   imageUrl?: string | null;
   endImageUrl?: string | null;
+  referenceImageUrls?: string[];
+  referenceVideoUrls?: string[];
+  referenceAudioUrls?: string[];
+  resolution?: string | null;
+  ratio?: string | null;
   generateAudio?: boolean;
+  allowedResolutions?: Resolution[];
 }): BytePlusSeedancePayload {
   const prompt = params.prompt.trim();
   const duration = Math.trunc(params.durationSec);
   const mode = params.mode ?? 't2v';
   const imageUrl = typeof params.imageUrl === 'string' ? params.imageUrl.trim() : '';
   const endImageUrl = typeof params.endImageUrl === 'string' ? params.endImageUrl.trim() : '';
+  const referenceImageUrls = uniqueNonEmptyUrls(params.referenceImageUrls);
+  const referenceVideoUrls = uniqueNonEmptyUrls(params.referenceVideoUrls);
+  const referenceAudioUrls = uniqueNonEmptyUrls(params.referenceAudioUrls);
+  const allowedResolutions = params.allowedResolutions?.length ? params.allowedResolutions : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
+  const requestedResolution = (typeof params.resolution === 'string' && params.resolution.trim()
+    ? params.resolution.trim()
+    : '720p') as Resolution;
+  const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
   if (!prompt) {
-    throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance Fast.', { code: 'PROMPT_REQUIRED' });
+    throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance.', { code: 'PROMPT_REQUIRED' });
   }
-  if (mode !== 't2v' && mode !== 'i2v') {
-    throw new BytePlusModelArkError('BytePlus Seedance Fast V1b supports only T2V and I2V.', {
+  if (!BYTEPLUS_SEEDANCE_MODES.includes(mode)) {
+    throw new BytePlusModelArkError('BytePlus Seedance supports only configured T2V, I2V, and reference-to-video modes.', {
       code: 'BYTEPLUS_MODE_UNSUPPORTED',
     });
   }
   if (mode === 'i2v' && !imageUrl) {
-    throw new BytePlusModelArkError('Image URL is required for BytePlus Seedance Fast image-to-video.', {
+    throw new BytePlusModelArkError('Image URL is required for BytePlus Seedance image-to-video.', {
       code: 'IMAGE_URL_REQUIRED',
     });
   }
+  if (mode === 'ref2v' && referenceImageUrls.length + referenceVideoUrls.length + referenceAudioUrls.length === 0) {
+    throw new BytePlusModelArkError('At least one reference image, video, or audio URL is required for BytePlus Seedance reference-to-video.', {
+      code: 'REFERENCE_URL_REQUIRED',
+    });
+  }
   if (!Number.isFinite(duration) || duration < 5 || duration > 15) {
-    throw new BytePlusModelArkError('BytePlus Seedance Fast V1a duration must be between 5 and 15 seconds.', {
+    throw new BytePlusModelArkError('BytePlus Seedance duration must be between 5 and 15 seconds.', {
       code: 'BYTEPLUS_DURATION_UNSUPPORTED',
     });
   }
   if (!params.modelId.trim()) {
-    throw new BytePlusModelArkError('BytePlus Seedance Fast model id is not configured.', {
+    throw new BytePlusModelArkError('BytePlus Seedance model id is not configured.', {
       code: 'BYTEPLUS_MODEL_MISSING',
+    });
+  }
+  if (!allowedResolutions.includes(requestedResolution)) {
+    throw new BytePlusModelArkError('BytePlus Seedance resolution is not supported by this model.', {
+      code: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
+    });
+  }
+  if (!BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(requestedRatio)) {
+    throw new BytePlusModelArkError('BytePlus Seedance aspect ratio is not supported.', {
+      code: 'BYTEPLUS_RATIO_UNSUPPORTED',
     });
   }
 
@@ -183,12 +351,35 @@ export function buildBytePlusSeedancePayload(params: {
       });
     }
   }
+  if (mode === 'ref2v') {
+    for (const url of referenceImageUrls) {
+      content.push({
+        type: 'image_url',
+        image_url: { url },
+        role: 'reference_image',
+      });
+    }
+    for (const url of referenceVideoUrls) {
+      content.push({
+        type: 'video_url',
+        video_url: { url },
+        role: 'reference_video',
+      });
+    }
+    for (const url of referenceAudioUrls) {
+      content.push({
+        type: 'audio_url',
+        audio_url: { url },
+        role: 'reference_audio',
+      });
+    }
+  }
 
   return {
     model: params.modelId.trim(),
     content,
-    resolution: '720p',
-    ratio: '16:9',
+    resolution: requestedResolution as BytePlusSeedancePayload['resolution'],
+    ratio: requestedRatio as BytePlusSeedancePayload['ratio'],
     duration,
     generate_audio: params.generateAudio === true,
     watermark: false,

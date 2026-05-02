@@ -24,6 +24,7 @@ import {
 } from '@/lib/luma-ray2';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 import { getEngineCaps } from '@/fixtures/engineCaps';
+import { applyBytePlusSeedanceRuntimeOptions } from '@/server/video-providers/byteplus-modelark';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -233,7 +234,7 @@ async function getConfiguredEnginesForBase(
   return baseEngines
     .map((engine) => mergeEngine(engine, settingsMap, overridesMap))
     .filter((entry) => includeDisabled || !entry.disabled)
-    .map((entry) => entry.engine);
+    .map((entry) => applyBytePlusSeedanceRuntimeOptions(entry.engine));
 }
 
 export async function getConfiguredEnginesByCategory(
