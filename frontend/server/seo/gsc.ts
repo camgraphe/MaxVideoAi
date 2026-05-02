@@ -22,6 +22,7 @@ const SEARCH_CONSOLE_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonl
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 const SEARCH_ANALYTICS_ROW_LIMIT = 25_000;
 const DEFAULT_CACHE_TTL_MS = 30 * 60 * 1000;
+const DASHBOARD_CACHE_VERSION = 2;
 const DASHBOARD_DB_CACHE_PREFIX = 'seo.gsc.dashboard';
 
 type GscAccessToken = {
@@ -122,6 +123,7 @@ export type GscDashboardData = {
   error: string | null;
   windows: GscDateWindows;
   summary: GscComparisonSummary;
+  detailSummary: GscPerformanceSummary;
   trend: GscTrendPoint[];
   topQueries: GscPerformanceRow[];
   topPages: GscPerformanceRow[];
@@ -136,6 +138,7 @@ export type GscDashboardData = {
 };
 
 type CacheEntry = {
+  version?: number;
   createdAt: number;
   data: GscDashboardData;
 };
@@ -162,22 +165,25 @@ export async function fetchGscDashboardData(options?: {
     });
   }
 
-  const cached = await readDashboardCache(range, { ignoreTtl: true, siteUrl: config.siteUrl });
+  const cached = await readDashboardCache(range, { siteUrl: config.siteUrl });
   if (!options?.forceRefresh) {
     if (cached) {
       return withCacheAge(cached.data, cached.createdAt);
     }
-    return buildEmptyDashboard({
-      range,
-      windows,
-      configured: true,
-      siteUrl: config.siteUrl,
-      error: 'No cached GSC snapshot yet. Click Refresh GSC data to fetch Search Console data.',
-    });
   }
 
   try {
-    const [currentDetailResponse, currentTrendResponse, previousDetailResponse] = await Promise.all([
+    const [currentTotalResponse, previousTotalResponse, currentDetailResponse, currentTrendResponse, previousDetailResponse] = await Promise.all([
+      querySearchAnalytics(config, {
+        window: windows.current,
+        dimensions: [],
+        searchType: 'web',
+      }),
+      querySearchAnalytics(config, {
+        window: windows.previous,
+        dimensions: [],
+        searchType: 'web',
+      }),
       querySearchAnalytics(config, {
         window: windows.current,
         dimensions: ['query', 'page', 'country', 'device'],
@@ -195,17 +201,21 @@ export async function fetchGscDashboardData(options?: {
       }),
     ]);
 
+    const totalRows = parseGscRows(currentTotalResponse.rows, [], 'web');
+    const previousTotalRows = parseGscRows(previousTotalResponse.rows, [], 'web');
     const rows = parseGscRows(currentDetailResponse.rows, ['query', 'page', 'country', 'device'], 'web');
     const previousRows = parseGscRows(previousDetailResponse.rows, ['query', 'page', 'country', 'device'], 'web');
-    const trend = parseGscRows(currentTrendResponse.rows, ['date'], 'web').map((row) => ({
+    const trendRows = parseGscRows(currentTrendResponse.rows, ['date'], 'web');
+    const trend = trendRows.map((row) => ({
       date: row.date ?? '',
       clicks: row.clicks,
       impressions: row.impressions,
       ctr: row.ctr,
       position: row.position,
     }));
-    const currentSummary = summarizeGscPerformance(rows);
-    const previousSummary = summarizeGscPerformance(previousRows);
+    const detailSummary = summarizeGscPerformance(rows);
+    const currentSummary = summarizeGscPerformance(totalRows.length ? totalRows : trendRows.length ? trendRows : rows);
+    const previousSummary = summarizeGscPerformance(previousTotalRows.length ? previousTotalRows : previousRows);
     const data: GscDashboardData = {
       ok: true,
       configured: true,
@@ -223,6 +233,7 @@ export async function fetchGscDashboardData(options?: {
         ctrDelta: currentSummary.ctr - previousSummary.ctr,
         positionDelta: currentSummary.position - previousSummary.position,
       },
+      detailSummary,
       trend,
       topQueries: aggregateRows(rows, 'query').slice(0, 25),
       topPages: aggregateRows(rows, 'page').slice(0, 25),
@@ -543,6 +554,7 @@ function buildEmptyDashboard(args: {
       ctrDelta: 0,
       positionDelta: 0,
     },
+    detailSummary: emptySummary,
     trend: [],
     topQueries: [],
     topPages: [],
@@ -593,11 +605,11 @@ async function readDashboardCache(
 }
 
 function cacheEntryMatches(entry: CacheEntry, range: GscRangeKey, siteUrl?: string | null): boolean {
-  return entry?.data?.range === range && (!siteUrl || entry.data.siteUrl === siteUrl);
+  return entry?.version === DASHBOARD_CACHE_VERSION && entry?.data?.range === range && (!siteUrl || entry.data.siteUrl === siteUrl);
 }
 
 async function writeDashboardCache(data: GscDashboardData): Promise<void> {
-  const entry: CacheEntry = { createdAt: Date.now(), data };
+  const entry: CacheEntry = { version: DASHBOARD_CACHE_VERSION, createdAt: Date.now(), data };
   dashboardCache = entry;
   await writeDashboardDbCache(entry);
   const cacheFile = resolveCacheFile();
@@ -657,6 +669,7 @@ function buildDashboardDbCacheKey(range: GscRangeKey, siteUrl: string): string {
 function withCacheAge(data: GscDashboardData, createdAt: number): GscDashboardData {
   return {
     ...data,
+    detailSummary: data.detailSummary ?? summarizeGscPerformance(data.rows ?? []),
     cacheAgeSeconds: Math.max(0, Math.round((Date.now() - createdAt) / 1000)),
   };
 }

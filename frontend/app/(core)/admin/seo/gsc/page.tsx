@@ -159,6 +159,7 @@ function SnapshotMeta({ data }: { data: GscDashboardData }) {
     data.siteUrl ? `Property: ${data.siteUrl}` : 'Property not configured',
     data.fetchedAt ? `Last refreshed: ${dateTimeFormatter.format(new Date(data.fetchedAt))}` : 'No refreshed snapshot',
     data.cacheAgeSeconds !== null ? `Cache age: ${formatDuration(data.cacheAgeSeconds)}` : null,
+    data.metadata.firstIncompleteDate ? `First incomplete date: ${data.metadata.firstIncompleteDate}` : null,
   ].filter(Boolean);
 
   return (
@@ -208,9 +209,16 @@ function buildMetricItems(data: GscDashboardData): AdminMetricItem[] {
       icon: AlertTriangle,
     },
     {
-      label: 'Tracked rows',
+      label: 'Visible detail clicks',
+      value: numberFormatter.format(data.detailSummary.clicks),
+      helper: `${formatShare(data.detailSummary.clicks, data.summary.clicks)} of total`,
+      tone: 'info',
+      icon: MousePointerClick,
+    },
+    {
+      label: 'Detail rows',
       value: numberFormatter.format(data.rows.length),
-      helper: 'Top Search Analytics rows',
+      helper: 'Visible query/page rows, not total',
       tone: 'info',
       icon: Search,
     },
@@ -382,6 +390,11 @@ function formatDelta(value: number, kind: 'number' | 'percent') {
     return `${sign}${percentFormatter.format(value)} vs previous`;
   }
   return `${sign}${compactFormatter.format(value)} vs previous`;
+}
+
+function formatShare(part: number, total: number) {
+  if (!Number.isFinite(part) || !Number.isFinite(total) || total <= 0) return '0%';
+  return percentFormatter.format(Math.max(0, Math.min(1, part / total)));
 }
 
 function formatDuration(seconds: number) {

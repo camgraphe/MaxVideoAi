@@ -290,8 +290,8 @@ export default async function AdminSeoCockpitPage(props: PageProps) {
         action={<AdminActionLink href={`/admin/seo/gsc?range=${range}`} prefetch={false}>Inspect raw rows</AdminActionLink>}
       >
         <div className="grid gap-3 md:grid-cols-3">
-          <MiniPanel icon={Search} label="Raw queries" value={numberFormatter.format(data.gsc.topQueries.length)} helper="Top aggregated query rows" />
-          <MiniPanel icon={BarChart3} label="Tracked rows" value={numberFormatter.format(data.gsc.rows.length)} helper="Cached Search Analytics rows" />
+          <MiniPanel icon={Search} label="Raw queries" value={numberFormatter.format(data.gsc.topQueries.length)} helper="Top aggregated visible query rows" />
+          <MiniPanel icon={BarChart3} label="Detail rows" value={numberFormatter.format(data.gsc.rows.length)} helper="Visible query/page rows, not total" />
           <MiniPanel icon={ClipboardList} label="Actions" value={numberFormatter.format(data.actions.length)} helper="Generated Codex tasks" />
         </div>
       </AdminSection>
@@ -557,10 +557,11 @@ function SeoCommandDeck({ data, range, urlInspectionCount }: { data: SeoCockpitD
           </div>
 
           <div className="mt-5 grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4">
-            <CommandMetric icon={MousePointerClick} label="Clicks" value={numberFormatter.format(data.gsc.summary.clicks)} helper="Current period" />
-            <CommandMetric icon={BarChart3} label="Impressions" value={compactFormatter.format(data.gsc.summary.impressions)} helper="Search visibility" tone="info" />
+            <CommandMetric icon={MousePointerClick} label="Clicks" value={numberFormatter.format(data.gsc.summary.clicks)} helper="GSC property total" />
+            <CommandMetric icon={BarChart3} label="Impressions" value={compactFormatter.format(data.gsc.summary.impressions)} helper="GSC property total" tone="info" />
             <CommandMetric icon={CircleGauge} label="CTR" value={precisePercentFormatter.format(data.gsc.summary.ctr)} helper="Average click-through" tone={data.gsc.summary.ctr < 0.015 ? 'warning' : 'success'} />
             <CommandMetric icon={TrendingUp} label="Avg position" value={positionFormatter.format(data.gsc.summary.position)} helper="Weighted rank" />
+            <CommandMetric icon={Search} label="Visible detail clicks" value={numberFormatter.format(data.gsc.detailSummary.clicks)} helper={`${formatShare(data.gsc.detailSummary.clicks, data.gsc.summary.clicks)} of total`} tone="info" />
             <CommandMetric icon={Target} label="High actions" value={numberFormatter.format(data.overview.highPriorityActions)} helper="Critical or high" tone={data.overview.highPriorityActions ? 'warning' : 'success'} />
             <CommandMetric icon={AlertTriangle} label="Opportunities" value={numberFormatter.format(data.overview.totalOpportunities)} helper="Strategic clusters" tone={data.overview.totalOpportunities ? 'warning' : 'default'} />
             <CommandMetric icon={FileQuestion} label="Missing content" value={numberFormatter.format(data.missingContentItems.length)} helper="Sections, FAQs, pages" tone={data.missingContentItems.length ? 'info' : 'default'} />
@@ -863,6 +864,11 @@ function formatSigned(value: number) {
 function formatSignedPercent(value: number) {
   if (!Number.isFinite(value)) return '+0.00%';
   return `${value > 0 ? '+' : ''}${(value * 100).toFixed(2)}%`;
+}
+
+function formatShare(part: number, total: number) {
+  if (!Number.isFinite(part) || !Number.isFinite(total) || total <= 0) return '0.00%';
+  return precisePercentFormatter.format(Math.max(0, Math.min(1, part / total)));
 }
 
 function PriorityPill({ priority }: { priority: CodexSeoAction['priority'] }) {
