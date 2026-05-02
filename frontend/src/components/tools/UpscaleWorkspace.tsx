@@ -63,7 +63,7 @@ import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 
 const SAMPLE_IMAGE_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
 
 const DEFAULT_COPY = {
   disabledTitle: 'Tools are disabled',

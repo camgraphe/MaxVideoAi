@@ -4498,11 +4498,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text + Image',
     seoText:
       'Generate videos from text or images using Sora 2 — now with voice-over, ambient sound, and smooth animation. Animate reference stills or craft full prompts with synced audio.',
-    demoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/15d61929-c1ef-4173-bb8c-75cb74b3ee19.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/15d61929-c1ef-4173-bb8c-75cb74b3ee19.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
       altText: 'Sora 2 demo: Director in creative studio beside AI monitors',
     },
     prompts: [
@@ -4588,11 +4588,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text + Image',
     seoText:
       'Generate longer AI videos with sound and scene control using Sora 2 Pro. Perfect for storytelling, explainers, and branded motion design—starting from image or text prompts.',
-    demoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/15d61929-c1ef-4173-bb8c-75cb74b3ee19.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/15d61929-c1ef-4173-bb8c-75cb74b3ee19.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
       altText: 'Sora 2 Pro demo: director alongside AI preview screens',
     },
     prompts: [
@@ -4716,9 +4716,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text, start image, references, last frame, extend',
     seoText:
       'Veo 3.1 on MaxVideoAI unifies text prompts, single start-image animation, multi-reference guidance, optional last-frame control, and video extension in one coherent workflow with optional native audio.',
-    demoUrl: 'https://v3b.fal.media/files/b/kangaroo/oUCiZjQwEy6bIQdPUSLDF_output.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/24eb7037-bfd1-4f18-bdfa-be98c5dc46d7.mp4',
     media: {
-      videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/f9711b1e-53d5-4a1d-9adf-8186784538e3.mp4',
       imagePath: '/hero/veo-3-1-hero.jpg',
       altText: 'Demo video generated with Veo 3.1',
     },
@@ -4942,9 +4942,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text, start image, last frame',
     seoText:
       'Veo 3.1 Lite keeps the unified Veo workflow on MaxVideoAI for text prompts, single start-image animation, and optional first/last-frame control, with native audio always included and lower-cost 720p or 1080p pricing.',
-    demoUrl: 'https://v3b.fal.media/files/b/0a946880/sfDxO-znDhQthS00Pa2Ns_d99979ba04614c3d963ebaa342627b3c.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/a01fb42f-92d9-4312-b1a1-a721fae5400b.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a946880/sfDxO-znDhQthS00Pa2Ns_d99979ba04614c3d963ebaa342627b3c.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/a01fb42f-92d9-4312-b1a1-a721fae5400b.mp4',
       imagePath: '/hero/veo-3-1-hero.jpg',
       altText: 'Demo video generated with Veo 3.1 Lite',
     },
@@ -5340,9 +5340,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'textImage',
     seoText:
       'Create fast, fun, stylized AI videos with Pika. Ideal for 5–10 second animations in vertical or square formats—no audio, fast rendering, high visual impact.',
-    demoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/5e0ea541-cd07-48e9-841d-42b5679e1f3f.mp4',
     media: {
-      videoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/5e0ea541-cd07-48e9-841d-42b5679e1f3f.mp4',
       imagePath: '/hero/pika-22.jpg',
       altText: 'Stylized short clip made with Pika 2.2',
     },
@@ -5448,9 +5448,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'textImage',
     seoText:
       'Bring Kuaishou’s Kling engine into the same prompt lab you already use for Sora and Veo. Flip between Pro text runs, high-fidelity image animatics, or the Standard tier for rapid TikTok loops without changing cards.',
-    demoUrl: 'https://storage.googleapis.com/falserverless/model_tests/kling/kling-v2.5-turbo-pro-text-to-video-output.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/c38daf6b-b998-4bed-9ef9-da9fe662d709.mp4',
     media: {
-      videoUrl: 'https://storage.googleapis.com/falserverless/model_tests/kling/kling-v2.5-turbo-pro-text-to-video-output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/c38daf6b-b998-4bed-9ef9-da9fe662d709.mp4',
       imagePath: '/hero/kling-25.jpg',
       altText: 'Cinematic street scene rendered with Kling 2.5 Turbo',
     },
@@ -5553,9 +5553,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'textImage',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a8500c6/RZ0L5FqW2FFFnCnpcYYDV_output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/0d3ad62a-2594-4bf7-ab5f-f34c784bc9cf.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
       altText: 'Kling 2.6 Pro render: futuristic duel with glowing energy blades',
     },
     prompts: [
@@ -5641,9 +5641,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'Kling 3 Pro brings scene-level prompting, element references, and voice control to longer cinematic clips. Build multi-shot sequences with native audio from one workspace.',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a8500c6/RZ0L5FqW2FFFnCnpcYYDV_output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/0d3ad62a-2594-4bf7-ab5f-f34c784bc9cf.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
       altText: 'Kling 3 Pro render: cinematic duel with glowing energy blades',
     },
     prompts: [
@@ -5741,9 +5741,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'Kling 3 Standard brings scene-level prompting and element references to longer clips with a lower per-second price. Perfect for multi-shot testing and story beats.',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a8500c6/RZ0L5FqW2FFFnCnpcYYDV_output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/0d3ad62a-2594-4bf7-ab5f-f34c784bc9cf.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
       altText: 'Kling 3 Standard render: cinematic duel with glowing energy blades',
     },
     prompts: [
@@ -5864,7 +5864,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'Kling 3 4K routes single prompts, multi-prompt shot plans, and image-to-video jobs to native 4K output for delivery-grade cinematic clips without a separate upscale step.',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a97a910/Cqtl7vJrGsMBpq7Cxbkhs_output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/f85affe5-fee2-4c4b-b4af-f65903173194.mp4',
       imagePath: '/hero/kling-3-4k-hero.jpg',
       altText: 'Kling 3 4K native 4K product hero render',
     },
@@ -6009,9 +6009,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'textImageReferenceVideoEdit',
     seoText:
       'Happy Horse 1.0 combines text-to-video, image-to-video, reference-image R2V, and video-edit workflows in one Alibaba model card, with native audio and lip-sync treated as part of the generation rather than a separate post step.',
-    demoUrl: 'https://v3b.fal.media/files/b/0a97deaa/M8WW7HdKsIUyN03aGVgGK_itq8UxaL.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/69f25df5-9354-4387-a3d2-44b1736727e2.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a97deaa/M8WW7HdKsIUyN03aGVgGK_itq8UxaL.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/69f25df5-9354-4387-a3d2-44b1736727e2.mp4',
       imagePath: '/assets/models/models-hero-horses-reference.webp',
       altText: 'Happy Horse 1.0 unified video model hero preview',
     },
@@ -6226,11 +6226,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'Seedance 2.0 supports text-to-video, image-to-video with optional end frame, and reference-to-video workflows with 480p/720p/1080p output, auto or 4-15 second durations, multimodal references, and native audio generation.',
     media: {
-      videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+      videoUrl: 'https://media.maxvideoai.com/marketing/marketing/15eafeab-582a-4126-80c3-879fdb7740aa.webm',
       imagePath: '/hero/seedance-2-0.jpg',
       altText: 'Seedance 2.0 demo frame showing a cinematic homecoming scene',
     },
-    demoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+    demoUrl: 'https://media.maxvideoai.com/marketing/marketing/15eafeab-582a-4126-80c3-879fdb7740aa.webm',
     prompts: [
       {
         title: 'Action chase test',
@@ -6343,11 +6343,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'Seedance 2.0 Fast is the draft-speed Seedance 2.0 variant for quicker iteration, auto or 4-15 second runs, 480p/720p output, optional end-frame image-to-video, and faster reference-based comparison rounds.',
     media: {
-      videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+      videoUrl: 'https://media.maxvideoai.com/marketing/marketing/15eafeab-582a-4126-80c3-879fdb7740aa.webm',
       imagePath: '/hero/seedance-2-0.jpg',
       altText: 'Seedance 2.0 Fast demo frame',
     },
-    demoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Seedance-2-husband-coming-home.webm',
+    demoUrl: 'https://media.maxvideoai.com/marketing/marketing/15eafeab-582a-4126-80c3-879fdb7740aa.webm',
     prompts: [
       {
         title: 'Fast draft concept',
@@ -6500,9 +6500,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'textImage',
     seoText:
       'Wan 2.5 lets you storyboard cinematic beats with optional audio baked in. Swap between 5 or 10 second renders, 480p to 1080p resolutions, and prompt expansion to squeeze more detail out of shorter briefs.',
-    demoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/wan-25-i2v-output.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/d5fd3f15-47c7-4be6-a0cd-e0828524246e.mp4',
     media: {
-      videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/wan-25-i2v-output.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/d5fd3f15-47c7-4be6-a0cd-e0828524246e.mp4',
       imagePath: '/hero/wan-25.jpg',
       altText: 'Wan 2.5 render of a dragon warrior in golden light.',
     },
@@ -6610,9 +6610,9 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'textImage',
     seoText:
       'Wan 2.6 is a cinematic short-clip engine built for structured prompts and clean scene transitions. Switch between text, image, or reference video inputs to keep subjects consistent while iterating on short 5–15 second beats.',
-    demoUrl: 'https://v3b.fal.media/files/b/0a8675cf/bCu9FiFXSjsSnIwOmjUOY_BVs2IFR3.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/f87943bb-4081-417e-bc8c-1b2392f03b4f.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a8675cf/bCu9FiFXSjsSnIwOmjUOY_BVs2IFR3.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/f87943bb-4081-417e-bc8c-1b2392f03b4f.mp4',
       imagePath: '/hero/wan-26.jpg',
       altText: 'Wan 2.6 demo render with cinematic motion and clean transitions.',
     },
@@ -6806,11 +6806,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'textImage',
     seoText:
       'Run LTX 2.3 Fast for lightweight text-to-video and image-to-video passes with full fast controls: 6–20 second clips, 1080p to 4K, 24/25/48/50 fps, native audio, and optional start-to-end image transitions.',
-    demoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/bb626d67-1a33-4088-ae1f-ccb99738eabc.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/bb626d67-1a33-4088-ae1f-ccb99738eabc.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg',
       altText: 'LTX 2.3 Fast temporary demo clip using LTX 2 Fast media',
     },
     prompts: [
@@ -6916,11 +6916,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'textImage',
     seoText:
       'LTX 2.3 Pro brings Lightricks text, image, audio, extend, and retake workflows into one page while keeping provider controls coherent by mode: 6–10s text/image clips up to 4K, audio-driven video, plus extend and retake tools for source footage.',
-    demoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/cd143fa1-9dca-44ad-98ca-506452d5fd34.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/cd143fa1-9dca-44ad-98ca-506452d5fd34.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg',
       altText: 'LTX 2.3 Pro temporary demo clip using LTX 2 Pro media',
     },
     prompts: [
@@ -7000,11 +7000,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       canonicalPath: '/models/ltx-2-fast',
     },
     type: 'textImage',
-    demoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/bb626d67-1a33-4088-ae1f-ccb99738eabc.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/bb626d67-1a33-4088-ae1f-ccb99738eabc.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg',
       altText: 'LTX-2 Fast sample: continuous walkthrough in a modern office',
     },
     prompts: [
@@ -7080,11 +7080,11 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       canonicalPath: '/models/ltx-2',
     },
     type: 'textImage',
-    demoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
+    demoUrl: 'https://media.maxvideoai.com/renders/marketing/cd143fa1-9dca-44ad-98ca-506452d5fd34.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
+      videoUrl: 'https://media.maxvideoai.com/renders/marketing/cd143fa1-9dca-44ad-98ca-506452d5fd34.mp4',
       imagePath:
-        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg',
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg',
       altText: 'LTX-2 Pro sample: dreamlike city street folding overhead',
     },
     prompts: [
@@ -7166,7 +7166,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       'Bring your existing MaxVideoAI workflow to still imagery. Nano Banana covers both text-to-image runs and prompt-driven edits from the same prompt lab, wallet, and logging stack.',
     media: {
       videoUrl: '/hero/pika-22.mp4',
-      imagePath: 'https://v3b.fal.media/files/b/elephant/swnM7Nh3lbF0WcmLFEd7v.png',
+      imagePath: 'https://media.maxvideoai.com/marketing/marketing/2e71a814-3eed-4965-8beb-bd22d1c243e4.png',
       altText: 'Nano Banana image preview',
     },
     prompts: [
@@ -7254,8 +7254,8 @@ promptExample:
     seoText:
       'Nano Banana Pro brings Google’s Gemini 3 Pro image stack into MaxVideoAI. Render 1K/2K explorations, upgrade to 4K finals, or upload references for precise edits—without leaving the workspace.',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a851821/XWMX6UdfAGFISJGdOLus4.png',
-      imagePath: 'https://v3b.fal.media/files/b/0a851821/XWMX6UdfAGFISJGdOLus4.png',
+      videoUrl: 'https://media.maxvideoai.com/marketing/marketing/5977bed2-7e9a-489c-a437-3232c99bc078.png',
+      imagePath: 'https://media.maxvideoai.com/marketing/marketing/5977bed2-7e9a-489c-a437-3232c99bc078.png',
       altText: 'Nano Banana Pro sample: video editor lit by blue and orange LEDs at triple monitors',
     },
     prompts: [
@@ -7346,8 +7346,8 @@ promptExample:
     seoText:
       'Nano Banana 2 expands the MaxVideoAI image workspace with lower-cost drafts, broader aspect ratios, advanced output controls, optional web-grounded prompting, and support for larger multi-image edit sets.',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/elephant/swnM7Nh3lbF0WcmLFEd7v.png',
-      imagePath: 'https://v3b.fal.media/files/b/elephant/swnM7Nh3lbF0WcmLFEd7v.png',
+      videoUrl: 'https://media.maxvideoai.com/marketing/marketing/2e71a814-3eed-4965-8beb-bd22d1c243e4.png',
+      imagePath: 'https://media.maxvideoai.com/marketing/marketing/2e71a814-3eed-4965-8beb-bd22d1c243e4.png',
       altText: 'Nano Banana 2 sample image preview',
     },
     prompts: [
@@ -7475,8 +7475,8 @@ promptExample:
     seoText:
       'GPT Image 2 brings OpenAI’s quality-first image model into the same MaxVideoAI image workspace as Nano Banana: one model selector for text-to-image and image-to-image, with image_size presets, custom width/height, quality, output format, and mask URL controls.',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/0a9711ec/ogbMf2sTKAjNFA4vpWOrx_HRS2SDhR.png',
-      imagePath: 'https://v3b.fal.media/files/b/0a9711ec/ogbMf2sTKAjNFA4vpWOrx_HRS2SDhR.png',
+      videoUrl: 'https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png',
+      imagePath: 'https://media.maxvideoai.com/marketing/marketing/9b886851-850d-447e-8555-4df29f25df6c.png',
       altText: 'GPT Image 2 sample infographic image preview',
     },
     prompts: [

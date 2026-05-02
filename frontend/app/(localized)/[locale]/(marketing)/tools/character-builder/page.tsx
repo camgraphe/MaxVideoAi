@@ -18,7 +18,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     englishPath: '/tools/character-builder',
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
-    image: 'https://v3b.fal.media/files/b/0a935305/aYrWen8QnYME2LcBPZ33t_w1WcVklb.png',
+    image: 'https://media.maxvideoai.com/marketing/marketing/9f84c21b-595a-4a32-aadc-0f5d70e6151a.png',
     imageAlt: content.meta.imageAlt,
   });
 }

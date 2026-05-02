@@ -9,23 +9,23 @@ import { Card } from '@/components/ui/Card';
 import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 
 const REFERENCE_ASSET_PORTRAIT_URL =
-  'https://v3b.fal.media/files/b/0a9354bf/6jswQE7mDfBZzcMI6j1hD_AQ2sXgYY.png';
+  'https://media.maxvideoai.com/marketing/marketing/517ee430-3e1a-40e4-8ac9-55f422afde88.png';
 
 const LATEST_CHARACTER_SHEET_ASSETS = [
   {
-    url: 'https://v3b.fal.media/files/b/0a935305/aYrWen8QnYME2LcBPZ33t_w1WcVklb.png',
+    url: 'https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png',
     alt: 'Recent Character Builder character sheet render showing four full-body angles and four matching close-ups.',
   },
   {
-    url: 'https://v3b.fal.media/files/b/0a9352f9/DfeXOJDDOofcJnA_koAKi_ebpLqdWt.png',
+    url: 'https://media.maxvideoai.com/marketing/marketing/b508fe8d-a858-41a4-8b27-c9706ea3a50c.png',
     alt: 'Recent coherent character sheet render from MaxVideoAI with multi-angle full-body views and close-ups.',
   },
   {
-    url: 'https://v3b.fal.media/files/b/0a9352ee/98KpFe5eSj8ZPHg_DosEg_8ZnLNqP7.png',
+    url: 'https://media.maxvideoai.com/marketing/marketing/1123d92d-7204-4be9-bd39-5ddb85e09fba.png',
     alt: 'Recent MaxVideoAI character sheet render combining four body angles and four close-up identity views.',
   },
   {
-    url: 'https://v3b.fal.media/files/b/0a9352e7/vPTrpWNZxJdPCTfIY-wBN_6P7khp0V.png',
+    url: 'https://media.maxvideoai.com/marketing/marketing/f195f99e-04b7-4512-85c6-a602d0250b19.png',
     alt: 'Recent reusable character sheet render with stable face, outfit, and silhouette across eight panels.',
   },
 ] as const;
@@ -33,24 +33,24 @@ const LATEST_CHARACTER_SHEET_ASSETS = [
 const [LATEST_SHEET_1, , , LATEST_SHEET_4] = LATEST_CHARACTER_SHEET_ASSETS;
 
 const WORKFLOW_CHARACTER_SHEET_ASSET = {
-  url: 'https://v3b.fal.media/files/b/0a935305/aYrWen8QnYME2LcBPZ33t_w1WcVklb.png',
+  url: 'https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png',
   alt: 'Character Builder sheet used as the reusable reference asset across images and video workflows.',
 } as const;
 const WORKFLOW_NANO_BANANA_ASSET = {
-  url: 'https://v3b.fal.media/files/b/0a93538e/6K9vhOS91LPzVB5aEP9MV_gKcs9ukw.jpg',
+  url: 'https://media.maxvideoai.com/marketing/marketing/ca5357cf-ec09-4327-bc18-03eeff7e7a66.jpg',
   alt: 'Nano Banana still created from the same character sheet reference.',
 } as const;
 const WORKFLOW_VIDEO_START_FRAME_ASSET = {
-  videoUrl: 'https://v3b.fal.media/files/b/0a93539e/DZA2waBj2_15D3zXsFkw3_9yIv4OrO.mp4',
-  url: 'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg',
+  videoUrl: 'https://media.maxvideoai.com/renders/marketing/5816f421-1b4f-456b-aa53-229fa6742cbd.mp4',
+  url: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg',
   alt: 'Video start frame generated from the Nano Banana still and the same character identity.',
 } as const;
 const COMICS_PREVIZ_USE_CASE_ASSET = {
-  url: 'https://v3b.fal.media/files/b/0a93550f/Ikc271a5TYieq_7qBQuVk_4KrRepo5.png',
+  url: 'https://media.maxvideoai.com/marketing/marketing/27e8772d-6705-47d8-925f-4652230d1ba2.png',
   alt: 'Reusable character reference prepared for comics panels and animation previz.',
 } as const;
 const MASCOT_USE_CASE_ASSET = {
-  url: 'https://v3b.fal.media/files/b/0a93562e/5o1aO2LCroDg-PWioialv_ujZx2Wou.png',
+  url: 'https://media.maxvideoai.com/marketing/marketing/de347ddc-1963-45b2-8e17-9d3b31cbaba7.png',
   alt: 'Brand mascot prepared as a reusable consistent character asset.',
 } as const;
 
@@ -95,7 +95,7 @@ const USE_CASE_VISUALS = [
     bodyClassName: 'text-text-secondary',
   },
   {
-    src: 'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/8b29c715-842e-473c-a0d3-5ce8d6d6857f.webp',
+    src: 'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/8b29c715-842e-473c-a0d3-5ce8d6d6857f.webp',
     imageClassName: 'object-cover object-center',
     cardClassName:
       'character-builder-usecase-card border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,246,251,0.96))]',
@@ -484,7 +484,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                 <div className="p-4">
                   <div className="relative aspect-[4/4.8] overflow-hidden rounded-[22px] bg-[linear-gradient(180deg,#fff4ec,#ffffff)]">
                     <Image
-                      src="https://v3b.fal.media/files/b/0a935655/nJlY0mMASmclDhm6ywMDz_0bzxXv5K.png"
+                      src="https://media.maxvideoai.com/marketing/marketing/45c7a9ef-3023-4f30-95f2-5a4598f7e8ba.png"
                       alt={portraitOutputCard.imageAlt}
                       fill
                       sizes="(max-width: 1280px) 100vw, 320px"
@@ -512,7 +512,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                 <div className="px-5 pb-5 pt-4">
                   <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] bg-[#f7f1ea]">
                     <Image
-                      src="https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/5daf21e0-e99a-42e5-891a-eca3ba162344.webp"
+                      src="https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/5daf21e0-e99a-42e5-891a-eca3ba162344.webp"
                       alt={sheetOutputCard.imageAlt}
                       fill
                       sizes="(max-width: 1280px) 100vw, 480px"
@@ -536,7 +536,7 @@ export function CharacterBuilderLandingPage({ content }: { content: CharacterBui
                 <div className="p-4">
                   <div className="relative aspect-[16/11] overflow-hidden rounded-[22px] border border-white/10 bg-black">
                     <Image
-                      src="https://v3b.fal.media/files/b/0a935643/1_y_Iw3TbDfMgsI9Kggki_XflHpwqR.jpg"
+                      src="https://media.maxvideoai.com/marketing/marketing/534f6c60-b23e-4a9b-9064-01d80350d1ec.jpg"
                       alt={videoPrepOutputCard.imageAlt}
                       fill
                       sizes="(max-width: 1280px) 100vw, 360px"

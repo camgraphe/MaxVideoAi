@@ -278,7 +278,7 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
 const PREP_LINK_VISUALS = {
   '/app/image': {
     imageSrc:
-      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp',
+      'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp',
     summary: {
       en: 'Build or clean the source still first.',
       fr: "Construisez ou nettoyez d'abord l'image source.",
@@ -292,7 +292,7 @@ const PREP_LINK_VISUALS = {
   },
   '/tools/character-builder': {
     imageSrc:
-      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/762032e6-d6f1-41cd-a1f3-690a60188a74.webp',
+      'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/762032e6-d6f1-41cd-a1f3-690a60188a74.webp',
     summary: {
       en: 'Lock identity, outfit, and reference quality.',
       fr: "Verrouillez l'identité, la tenue et la qualité de référence.",
@@ -306,7 +306,7 @@ const PREP_LINK_VISUALS = {
   },
   '/tools/angle': {
     imageSrc:
-      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6cff997e-f531-455d-819f-a0481b4cda5c-tool_angle_57d123d8-acdd-4667-9ad4-fdb256313b6a-1.webp',
+      'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6cff997e-f531-455d-819f-a0481b4cda5c-tool_angle_57d123d8-acdd-4667-9ad4-fdb256313b6a-1.webp',
     summary: {
       en: 'Change the viewpoint before you spend video credits.',
       fr: 'Changez le point de vue avant de dépenser des crédits vidéo.',
@@ -2860,9 +2860,9 @@ const DEFAULT_DETAIL_COPY: DetailCopy = {
 
 const MODEL_OG_IMAGE_MAP: Record<string, string> = {
   'sora-2':
-    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
+    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
   'sora-2-pro':
-    'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
+    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
   'veo-3-1': '/hero/veo-3-1-hero.jpg',
   'veo-3-1-fast': '/hero/veo-3-1-hero.jpg',
   'veo-3-1-lite': '/hero/veo-3-1-hero.jpg',

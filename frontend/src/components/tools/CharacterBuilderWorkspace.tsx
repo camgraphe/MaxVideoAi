@@ -1102,9 +1102,9 @@ const REALISM_CARD_META: Record<string, { background: string; accent: string }> 
 };
 
 const CHARACTER_SHEET_PREVIEW_URL =
-  'https://v3b.fal.media/files/b/0a933bb7/R64-QF4-arWq1SzqnpC3r_DPAtirIT.png';
+  'https://media.maxvideoai.com/marketing/marketing/effc3c18-125d-4460-9adc-75216ac599cb.png';
 const PORTRAIT_REFERENCE_PREVIEW_URL =
-  'https://v3b.fal.media/files/b/0a933bb6/ZPDNLhxRWTb-BWCYSw4b2_MV73KIfo.png';
+  'https://media.maxvideoai.com/marketing/marketing/cf56ca3b-ee2f-4daa-b328-e88b43efc390.png';
 
 function VisualChoiceCard({
   selected,

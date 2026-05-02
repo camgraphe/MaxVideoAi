@@ -6,7 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
 
 const IMAGE_CARD_BACKGROUND_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp';
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp';
 const CHARACTER_CARD_BACKGROUND_URL = '/assets/tools/character-builder-workspace.png';
 const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
 

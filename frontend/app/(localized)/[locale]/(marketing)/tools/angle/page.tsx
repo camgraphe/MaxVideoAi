@@ -19,7 +19,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
     image:
-      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp',
+      'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp',
     imageAlt: content.meta.imageAlt,
   });
 }

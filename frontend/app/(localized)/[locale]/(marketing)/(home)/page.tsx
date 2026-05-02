@@ -277,7 +277,7 @@ const HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES: Partial<Record<string, { videoId?: strin
   },
   'happy-horse-1-0': {
     imageSrc:
-      'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp',
+      'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp',
   },
 };
 

@@ -9,21 +9,21 @@ import { Card } from '@/components/ui/Card';
 import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
 
 const ANGLE_SOURCE_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/b2358480-cc56-4fcf-9376-cf010d7222ac.webp';
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/b2358480-cc56-4fcf-9376-cf010d7222ac.webp';
 const ANGLE_OUTPUT_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/7a859184-b718-4481-ae01-35efe66f4c9a.webp';
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/7a859184-b718-4481-ae01-35efe66f4c9a.webp';
 const ANGLE_ALT_THREE_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/79fe6fd7-60cf-4419-a143-a2cb52e9b762.webp';
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/79fe6fd7-60cf-4419-a143-a2cb52e9b762.webp';
 const ANGLE_STORY_SOURCE_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp';
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/d49ec543-8b71-42bb-aa7e-ce5289e28187.webp';
 const ANGLE_HERO_OUTPUT_URL =
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
 const ANGLE_WORKSPACE_SCREENSHOT_PATH = '/assets/tools/angle-workspace.png';
 const ANGLE_LATEST_BATCH_URLS = [
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6ad2e206-588e-4f08-80e7-cf4a18d045bf.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/3164706b-97b3-4407-980c-2195dfd7181d.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/bd02027e-90e1-4927-9439-789611ede414.webp',
-  'https://videohub-uploads-us.s3.amazonaws.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/838d059c-4cf8-4a36-9be7-66fb9ab4604d.webp',
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6ad2e206-588e-4f08-80e7-cf4a18d045bf.webp',
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/3164706b-97b3-4407-980c-2195dfd7181d.webp',
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/bd02027e-90e1-4927-9439-789611ede414.webp',
+  'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/838d059c-4cf8-4a36-9be7-66fb9ab4604d.webp',
 ] as const;
 const MOBILE_IMAGE_MAX_WIDTH = 'mx-auto w-full max-w-[280px] sm:max-w-none';
 

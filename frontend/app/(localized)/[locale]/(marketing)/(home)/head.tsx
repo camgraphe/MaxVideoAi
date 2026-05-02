@@ -8,8 +8,7 @@ export default async function Head() {
 
   return (
     <>
-      <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
-      <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://media.maxvideoai.com" crossOrigin="anonymous" />
       {lcpPosterSrc ? (
         <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" crossOrigin="anonymous" />
       ) : null}
