@@ -1344,7 +1344,7 @@ const SORA_2_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.1,
     currency: 'USD',
-    notes: '$0.10/s via Fal routing (720p guidance)',
+    notes: '$0.10/s via managed provider routing (720p guidance)',
   },
   updatedAt: '2025-02-14T00:00:00Z',
   ttlSec: 600,
@@ -1827,7 +1827,7 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.168,
     currency: 'USD',
-    notes: 'Fal cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
+    notes: 'Provider cost: $0.112/s audio off, $0.168/s audio on, $0.196/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -1961,7 +1961,7 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.126,
     currency: 'USD',
-    notes: 'Fal cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
+    notes: 'Provider cost: $0.084/s audio off, $0.126/s audio on, $0.154/s voice control. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -2100,7 +2100,7 @@ const KLING_3_4K_ENGINE: EngineCaps = {
       '4k': 0.42,
     },
     currency: 'USD',
-    notes: 'Fal cost: $0.420/s native 4K output. MaxVideoAI display prices add platform margin before showing quotes.',
+    notes: 'Provider cost: $0.420/s native 4K output. MaxVideoAI display prices add platform margin before showing quotes.',
   },
   updatedAt: '2026-04-25T00:00:00Z',
   ttlSec: 600,
@@ -2165,7 +2165,7 @@ const HAPPY_HORSE_1_0_ENGINE: EngineCaps = {
         type: 'image',
         label: 'R2V reference images (1-9)',
         description:
-          'Reference subjects with character1, character2, and up to character9 in the prompt. Fal requires 1-9 JPEG, PNG, or WEBP references.',
+          'Reference subjects with character1, character2, and up to character9 in the prompt. Requires 1-9 JPEG, PNG, or WEBP references.',
         modes: ['ref2v'],
         requiredInModes: ['ref2v'],
         minCount: 1,
@@ -2245,7 +2245,7 @@ const HAPPY_HORSE_1_0_ENGINE: EngineCaps = {
         id: 'seed',
         type: 'number',
         label: 'Seed',
-        description: 'Optional random seed for reproducible Happy Horse generations. Fal accepts 0-2147483647.',
+        description: 'Optional random seed for reproducible Happy Horse generations. Accepted range: 0-2147483647.',
         modes: ['t2v', 'i2v', 'ref2v', 'v2v'],
         min: 0,
         max: 2147483647,
@@ -2255,7 +2255,7 @@ const HAPPY_HORSE_1_0_ENGINE: EngineCaps = {
         id: 'enable_safety_checker',
         type: 'boolean',
         label: 'Safety checker',
-        description: 'Enable Fal input and output moderation.',
+        description: 'Enable provider input and output moderation.',
         modes: ['t2v', 'i2v', 'ref2v', 'v2v'],
         default: true,
       },
@@ -2290,7 +2290,7 @@ const HAPPY_HORSE_1_0_ENGINE: EngineCaps = {
     },
     currency: 'USD',
     notes:
-      'Fal cost: $0.14/s for 720p and $0.28/s for 1080p text, image, and R2V runs. Video edit is billed at $0.28/s for 720p and $0.56/s for 1080p.',
+      'Provider cost: $0.14/s for 720p and $0.28/s for 1080p text, image, and R2V runs. Video edit is billed at $0.28/s for 720p and $0.56/s for 1080p.',
   },
   updatedAt: '2026-04-28T00:00:00Z',
   ttlSec: 600,
@@ -2573,7 +2573,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
         id: 'image_urls',
         type: 'image',
         label: 'Reference images (up to 9)',
-        description: 'Optional reference stills for identity, styling, and continuity. Fal allows up to 9 images and 12 total files across all reference inputs.',
+        description: 'Optional reference stills for identity, styling, and continuity. Supports up to 9 images and 12 total files across all reference inputs.',
         modes: ['ref2v'],
         minCount: 1,
         maxCount: 9,
@@ -2583,7 +2583,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
         id: 'video_urls',
         type: 'video',
         label: 'Reference video clips (up to 3)',
-        description: 'Optional motion or pacing references for ref2v. Fal allows up to 3 videos, 2 to 15 seconds combined, under 50 MB total.',
+        description: 'Optional motion or pacing references for ref2v. Supports up to 3 videos, 2 to 15 seconds combined, under 50 MB total.',
         minCount: 0,
         maxCount: 3,
         modes: ['ref2v'],
@@ -2593,7 +2593,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
         id: 'audio_urls',
         type: 'audio',
         label: 'Reference audio clips (up to 3)',
-        description: 'Optional soundtrack, dialogue, or rhythm references for ref2v. Fal allows up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
+        description: 'Optional soundtrack, dialogue, or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
         minCount: 0,
         maxCount: 3,
         modes: ['ref2v'],
@@ -2617,7 +2617,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
   pricing: {
     unit: 'USD/s',
     currency: 'USD',
-    notes: 'Fal bills Seedance 2 from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote.',
+    notes: 'Seedance 2 is billed from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote.',
   },
   updatedAt: '2026-04-05T00:00:00Z',
   ttlSec: 600,
@@ -2717,7 +2717,7 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
         id: 'image_urls',
         type: 'image',
         label: 'Reference images (up to 9)',
-        description: 'Optional still references for draft continuity checks. Fal allows up to 9 images and 12 total files across all reference inputs.',
+        description: 'Optional still references for draft continuity checks. Supports up to 9 images and 12 total files across all reference inputs.',
         modes: ['ref2v'],
         minCount: 1,
         maxCount: 9,
@@ -2727,7 +2727,7 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
         id: 'video_urls',
         type: 'video',
         label: 'Reference video clips (up to 3)',
-        description: 'Optional pacing or motion references for draft-speed ref2v runs. Fal allows up to 3 videos, 2 to 15 seconds combined, under 50 MB total.',
+        description: 'Optional pacing or motion references for draft-speed ref2v runs. Supports up to 3 videos, 2 to 15 seconds combined, under 50 MB total.',
         minCount: 0,
         maxCount: 3,
         modes: ['ref2v'],
@@ -2737,7 +2737,7 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
         id: 'audio_urls',
         type: 'audio',
         label: 'Reference audio clips (up to 3)',
-        description: 'Optional soundtrack or rhythm references for ref2v. Fal allows up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
+        description: 'Optional soundtrack or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
         minCount: 0,
         maxCount: 3,
         modes: ['ref2v'],
@@ -2755,7 +2755,7 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
   pricing: {
     unit: 'USD/s',
     currency: 'USD',
-    notes: 'Fal bills Seedance 2 Fast from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote.',
+    notes: 'Seedance 2 Fast is billed from output tokens. MaxVideoAI adds its margin and rounds up to the next cent before showing the live quote.',
   },
   updatedAt: '2026-04-05T00:00:00Z',
   ttlSec: 600,
@@ -4307,7 +4307,7 @@ const GPT_IMAGE_2_ENGINE: EngineCaps = {
           'custom',
         ],
         default: 'landscape_4_3',
-        description: 'Fal image_size preset or canonical custom size for text-to-image requests.',
+        description: 'Provider image_size preset or canonical custom size for text-to-image requests.',
       },
       {
         id: 'resolution',
@@ -4332,7 +4332,7 @@ const GPT_IMAGE_2_ENGINE: EngineCaps = {
           'custom',
         ],
         default: 'auto',
-        description: 'Use auto to infer the output size, or send a Fal image_size preset/custom object.',
+        description: 'Use auto to infer the output size, or send a provider image_size preset/custom object.',
       },
       {
         id: 'image_width',
@@ -4344,7 +4344,7 @@ const GPT_IMAGE_2_ENGINE: EngineCaps = {
         max: 3840,
         step: 16,
         default: 1024,
-        description: 'Used when Image size is Custom. Fal requires multiples of 16 and max edge 3840px.',
+        description: 'Used when Image size is Custom. Requires multiples of 16 and max edge 3840px.',
       },
       {
         id: 'image_height',
@@ -4438,7 +4438,7 @@ const GPT_IMAGE_2_ENGINE: EngineCaps = {
       auto: 0.22,
     },
     currency: 'USD',
-    notes: 'Fal pricing varies by quality and image_size: 1024x768 costs $0.01/$0.04/$0.15, while 3840x2160 costs $0.02/$0.11/$0.41 for Low/Medium/High.',
+    notes: 'Provider pricing varies by quality and image_size: 1024x768 costs $0.01/$0.04/$0.15, while 3840x2160 costs $0.02/$0.11/$0.41 for Low/Medium/High.',
   },
   updatedAt: '2026-04-23T00:00:00Z',
   ttlSec: 600,
@@ -4975,7 +4975,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         question: 'Can I disable audio in Veo 3.1 Lite?',
-        answer: 'No. Fal exposes Veo 3.1 Lite with native audio always on, so MaxVideoAI keeps audio locked on for this tier.',
+        answer: 'No. Veo 3.1 Lite has native audio always on, so MaxVideoAI keeps audio locked on for this tier.',
       },
     ],
     pricingHint: {
@@ -5054,7 +5054,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'fal-ai/luma-dream-machine/ray-2/modify',
         ui: {
           modes: ['v2v'],
-          notes: 'Modify a source clip with optional prompt and reference-image guidance plus Fal adherence presets.',
+          notes: 'Modify a source clip with optional prompt and reference-image guidance plus provider adherence presets.',
         },
       },
       {
@@ -5121,12 +5121,12 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'What workflows does Luma Ray 2 expose in MaxVideoAI?',
         answer:
-          'Ray 2 now keeps the full public Fal surface inside one model page: text-to-video, image-to-video, modify, and reframe.',
+          'Ray 2 now keeps the full public generation surface inside one model page: text-to-video, image-to-video, modify, and reframe.',
       },
       {
         question: 'Which options are exposed per workflow?',
         answer:
-          'Generate modes keep 5 s or 9 s duration, 540p to 1080p, cinematic aspect ratios, optional loop, and optional end image for image-driven shots. Modify adds Fal adherence presets, and Reframe adds new aspect-ratio plus crop-window controls on a source clip.',
+          'Generate modes keep 5 s or 9 s duration, 540p to 1080p, cinematic aspect ratios, optional loop, and optional end image for image-driven shots. Modify adds adherence presets, and Reframe adds new aspect-ratio plus crop-window controls on a source clip.',
       },
     ],
     surfaces: {
@@ -5198,7 +5198,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'fal-ai/luma-dream-machine/ray-2-flash/modify',
         ui: {
           modes: ['v2v'],
-          notes: 'Modify a source clip quickly with the same Fal adherence and reimagination presets exposed in Flash.',
+          notes: 'Modify a source clip quickly with the same adherence and reimagination presets exposed in Flash.',
         },
       },
       {
@@ -5258,7 +5258,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'Why keep Ray 2 and Ray 2 Flash as the only public Luma models?',
         answer:
-          'The family stays simple at the model level, but each model now exposes the real Fal workflows inside it: generate, modify, and reframe.',
+          'The family stays simple at the model level, but each model now exposes the real workflows inside it: generate, modify, and reframe.',
       },
       {
         question: 'Does Flash use a different pricing path?',
@@ -6171,7 +6171,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: '2.0',
     availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
     logoPolicy: 'textOnly',
-    billingNote: 'Seedance 2 uses Fal token pricing. Generate shows the active route, applies the MaxVideoAI margin, and rounds the quote up to the next cent before each run.',
+    billingNote: 'Seedance 2 uses token-based provider pricing. Generate shows the active route, applies the MaxVideoAI margin, and rounds the quote up to the next cent before each run.',
     engine: SEEDANCE_2_0_ENGINE,
     modes: [
       {
@@ -6288,7 +6288,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: '2.0 Fast',
     availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
     logoPolicy: 'textOnly',
-    billingNote: 'Seedance 2 Fast uses Fal token pricing. Generate shows the active route, applies the MaxVideoAI margin, and rounds the quote up to the next cent before each run.',
+    billingNote: 'Seedance 2 Fast uses token-based provider pricing. Generate shows the active route, applies the MaxVideoAI margin, and rounds the quote up to the next cent before each run.',
     engine: SEEDANCE_2_0_FAST_ENGINE,
     modes: [
       {
@@ -6800,12 +6800,12 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'LTX 2.3 Fast AI Video – Fast Text & Image to Video | MaxVideoAI',
       description:
-        'Generate fast AI video with LTX 2.3 Fast on MaxVideoAI. Text and image workflows support 6–20s clips, 1080p/1440p/4K, native audio, and Fal’s 25/50 fps options.',
+        'Generate fast AI video with LTX 2.3 Fast on MaxVideoAI. Text and image workflows support 6–20s clips, 1080p/1440p/4K, native audio, and 25/50 fps options.',
       canonicalPath: '/models/ltx-2-3-fast',
     },
     type: 'textImage',
     seoText:
-      'Run LTX 2.3 Fast for lightweight text-to-video and image-to-video passes with Fal’s full fast public controls: 6–20 second clips, 1080p to 4K, 24/25/48/50 fps, native audio, and optional start-to-end image transitions.',
+      'Run LTX 2.3 Fast for lightweight text-to-video and image-to-video passes with full fast controls: 6–20 second clips, 1080p to 4K, 24/25/48/50 fps, native audio, and optional start-to-end image transitions.',
     demoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
     media: {
       videoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
@@ -6910,12 +6910,12 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'LTX 2.3 Pro AI Video – Text, Image, Audio, Extend & Retake | MaxVideoAI',
       description:
-        'Use LTX 2.3 Pro on MaxVideoAI for text-to-video, image-to-video, audio-to-video, extend-video and retake-video workflows with Fal’s official 1080p/1440p/4K and 24/25/48/50 fps options.',
+        'Use LTX 2.3 Pro on MaxVideoAI for text-to-video, image-to-video, audio-to-video, extend-video and retake-video workflows with official 1080p/1440p/4K and 24/25/48/50 fps options.',
       canonicalPath: '/models/ltx-2-3-pro',
     },
     type: 'textImage',
     seoText:
-      'LTX 2.3 Pro brings Lightricks text, image, audio, extend, and retake workflows into one page while keeping Fal’s actual controls coherent by mode: 6–10s text/image clips up to 4K, audio-driven video, plus extend and retake tools for source footage.',
+      'LTX 2.3 Pro brings Lightricks text, image, audio, extend, and retake workflows into one page while keeping provider controls coherent by mode: 6–10s text/image clips up to 4K, audio-driven video, plus extend and retake tools for source footage.',
     demoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
     media: {
       videoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
@@ -6974,7 +6974,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           resolution: ['1080p', '1440p', '4k'],
           aspectRatio: ['16:9'],
           audioToggle: true,
-          notes: 'Native audio is on by default; 12–20s runs require 1080p at 25fps per Fal.',
+          notes: 'Native audio is on by default; 12–20s runs require 1080p at 25fps.',
         },
       },
       {
@@ -6988,7 +6988,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           audioToggle: true,
-          notes: 'Upload one reference still; 12–20s runs require 1080p at 25fps per Fal.',
+          notes: 'Upload one reference still; 12–20s runs require 1080p at 25fps.',
         },
       },
     ],
@@ -7130,7 +7130,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     availability: 'available',
     isLegacy: true,
     logoPolicy: 'textOnly',
-    billingNote: '$0.039 per image via Fal queue',
+    billingNote: '$0.039 per image via managed queue',
     engine: NANO_BANANA_ENGINE,
     modes: [
       {
@@ -7158,7 +7158,7 @@ const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Nano Banana – Google Text-to-Image on MaxVideoAI',
       description:
-        'Generate photoreal stills or remix reference shots with Nano Banana, the Google-powered image model available via Fal.ai and MaxVideoAI credits.',
+        'Generate photoreal stills or remix reference shots with Nano Banana, the Google-powered image model available with MaxVideoAI credits.',
       canonicalPath: '/models/nano-banana',
     },
     type: 'image',
@@ -7217,7 +7217,7 @@ promptExample:
     versionLabel: 'Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
-    billingNote: '$0.15 per 1K/2K image · $0.30 at 4K via Fal queue',
+    billingNote: '$0.15 per 1K/2K image · $0.30 at 4K via managed queue',
     engine: NANO_BANANA_PRO_ENGINE,
     modes: [
       {
@@ -7239,7 +7239,7 @@ promptExample:
           resolution: ['1k', '2k', '4k'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
-          notes: 'Upload 1–4 references; Fal handles up to 14 sources without manual masks.',
+          notes: 'Upload 1–4 references; the provider handles up to 14 sources without manual masks.',
         },
       },
     ],
@@ -7281,12 +7281,12 @@ promptExample:
       {
         question: 'How many reference images can I use for edits?',
         answer:
-          'The Fal endpoint accepts up to 14 images via API. The MaxVideoAI composer lets you upload 1–4 refs to keep wardrobe, layout, or people consistent across edits.',
+          'The provider endpoint accepts up to 14 images via API. The MaxVideoAI composer lets you upload 1–4 refs to keep wardrobe, layout, or people consistent across edits.',
       },
       {
         question: 'Is Nano Banana Pro licensed for commercial projects?',
         answer:
-          'Yes. Jobs run through Fal with commercial-use rights, so you can export campaign stills, packaging renders, and product imagery for client deliverables.',
+          'Yes. Jobs run through a provider route with commercial-use rights, so you can export campaign stills, packaging renders, and product imagery for client deliverables.',
       },
     ],
     pricingHint: {
@@ -7411,7 +7411,7 @@ promptExample:
     versionLabel: '2',
     availability: 'available',
     logoPolicy: 'textOnly',
-    billingNote: 'Fal pricing varies by quality and image_size: canonical sizes run from $0.01 low-quality 1024x768 to $0.41 high-quality 3840x2160.',
+    billingNote: 'Provider pricing varies by quality and image_size: canonical sizes run from $0.01 low-quality 1024x768 to $0.41 high-quality 3840x2160.',
     engine: GPT_IMAGE_2_ENGINE,
     modes: [
       {
@@ -7460,7 +7460,7 @@ promptExample:
           ],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
-          notes: 'Upload references for fine-grained edits; optional mask URL and quality controls map to the Fal edit endpoint.',
+          notes: 'Upload references for fine-grained edits; optional mask URL and quality controls map to the provider edit endpoint.',
         },
       },
     ],
@@ -7468,12 +7468,12 @@ promptExample:
     seo: {
       title: 'GPT Image 2 - OpenAI Image Generation & Editing | MaxVideoAI',
       description:
-        'Use GPT Image 2 in MaxVideoAI for text-to-image, image edits, high-fidelity text rendering, product photography, Fal image_size presets/custom size, quality controls, and PNG/JPEG/WEBP output.',
+        'Use GPT Image 2 in MaxVideoAI for text-to-image, image edits, high-fidelity text rendering, product photography, image_size presets/custom size, quality controls, and PNG/JPEG/WEBP output.',
       canonicalPath: '/models/gpt-image-2',
     },
     type: 'image',
     seoText:
-      'GPT Image 2 brings OpenAI’s quality-first image model into the same MaxVideoAI image workspace as Nano Banana: one model selector for text-to-image and image-to-image, with Fal image_size presets, custom width/height, quality, output format, and mask URL controls.',
+      'GPT Image 2 brings OpenAI’s quality-first image model into the same MaxVideoAI image workspace as Nano Banana: one model selector for text-to-image and image-to-image, with image_size presets, custom width/height, quality, output format, and mask URL controls.',
     media: {
       videoUrl: 'https://v3b.fal.media/files/b/0a9711ec/ogbMf2sTKAjNFA4vpWOrx_HRS2SDhR.png',
       imagePath: 'https://v3b.fal.media/files/b/0a9711ec/ogbMf2sTKAjNFA4vpWOrx_HRS2SDhR.png',
@@ -7510,12 +7510,12 @@ promptExample:
       {
         question: 'Which GPT Image 2 controls are available?',
         answer:
-          'The image workspace exposes Fal image_size presets, canonical custom sizes up to 3840x2160, custom width/height, quality levels, num_images, output format, reference images for edits, and an optional mask URL.',
+          'The image workspace exposes image_size presets, canonical custom sizes up to 3840x2160, custom width/height, quality levels, num_images, output format, reference images for edits, and an optional mask URL.',
       },
       {
         question: 'How is GPT Image 2 priced?',
         answer:
-          'Fal prices follow the quality x size table: 1024x768 is $0.01 / $0.04 / $0.15 and 3840x2160 is $0.02 / $0.11 / $0.41 for Low / Medium / High before MaxVideoAI account pricing rules.',
+          'Provider prices follow the quality x size table: 1024x768 is $0.01 / $0.04 / $0.15 and 3840x2160 is $0.02 / $0.11 / $0.41 for Low / Medium / High before MaxVideoAI account pricing rules.',
       },
     ],
     pricingHint: {

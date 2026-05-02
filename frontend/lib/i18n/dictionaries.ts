@@ -618,7 +618,7 @@ const en: Dictionary = {
     hero: {
       title: 'One workspace, every video engine that matters.',
       subtitle:
-        'Fal.ai drops new endpoints weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana.',
+        'New provider endpoints land weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana.',
     },
     availabilityLabels: {
       available: 'Available',
@@ -629,7 +629,7 @@ const en: Dictionary = {
     meta: {
       'sora-2': {
         displayName: 'OpenAI Sora 2',
-        description: 'Text-to-video and remix with native audio via Fal routing.',
+        description: 'Text-to-video and remix with native audio via managed routing.',
         priceBefore: 'Live pricing updates inside the Generate workspace.',
         versionLabel: 'v2',
       },
