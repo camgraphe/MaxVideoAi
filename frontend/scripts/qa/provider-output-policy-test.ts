@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 
+import { normalizeMediaUrl } from '../../lib/media';
 import {
   buildSafeProviderMediaLog,
   buildNextProviderVideoCopyState,
@@ -104,6 +105,11 @@ try {
     host: 'v3.fal.media',
     managedStorage: false,
   });
+  assert.equal(
+    normalizeMediaUrl('https://maxvideoai-renders.s3.eu-west-3.amazonaws.com/renders/job/video.mp4?x=1'),
+    'https://cdn.maxvideoai.com/renders/job/video.mp4?x=1',
+    'managed S3 URLs should be rewritten to S3_PUBLIC_BASE_URL when configured'
+  );
 
   assert.equal(PROVIDER_VIDEO_COPY_RETRY_MESSAGE.length > 0, true);
   assert.equal(resolveProviderVideoCopyMaxAttempts('3'), 3);
