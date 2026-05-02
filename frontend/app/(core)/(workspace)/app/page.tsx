@@ -4748,6 +4748,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const activeManualMode = useMemo<Mode | null>(() => {
     if (!selectedEngine) return null;
+    if (isUnifiedSeedance) return null;
     if (referenceInputStatus.hasAudio && !isUnifiedSeedance) return null;
     const currentMode = form?.mode ?? null;
     if (
@@ -4918,7 +4919,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             : selectedEngine.id === 'veo-3-1-lite'
               ? ([] as const)
             : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
-              ? (['ref2v', 'v2v', 'extend'] as const)
+              ? ([] as const)
               : null;
     if (!explicitModes) return undefined;
     const disabledReason = audioWorkflowLocked
